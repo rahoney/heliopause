@@ -42,6 +42,16 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if err != nil {
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err)
 	}
+	return b.executeNPMInstance(ctx, nativeRuntimePNPM, target, payload, observer.StartPNPMTargetLifecycleProfile)
+}
+
+// Both typed callers validate their opaque layout before this resource owner.
+func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error)) (domain.SandboxResult, error) {
+	spec, known := nativeProjectIdentity(kind)
+	validTarget := kind == nativeRuntimePNPM && validPNPMTargetLifecyclePath(target) || kind == nativeRuntimeBun && validBunTargetLifecyclePath(target)
+	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || startTrace == nil {
+		return domain.SandboxResult{}, errPNPMInstanceExecution
+	}
 	session, err := b.newSessionID()
 	if err != nil || session.String() == "" {
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err)
@@ -80,7 +90,7 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 		}
 		if project.name != "" {
 			cleanup, done := resolverCleanupContext()
-			err := closePNPMProjectVolume(cleanup, b.runner, &project)
+			err := closeWritableOutputVolume(cleanup, b.runner, &project, spec.root)
 			done()
 			if err != nil {
 				if code == "" {
@@ -106,11 +116,11 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if !capability.Available {
 		return finish("M3_DYNAMIC_CAPABILITY_UNAVAILABLE", nil)
 	}
-	project, err = createPNPMProjectVolume(ctx, b.runner, session.String())
+	project, err = createNativeProjectVolume(ctx, b.runner, session.String(), kind)
 	if err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
-	args, err := pnpmInstanceCreateArguments(session, project)
+	args, err := npmInstanceCreateArguments(session, project, kind)
 	if err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
@@ -123,7 +133,7 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 		container = ""
 		return finish("M3_DYNAMIC_SETUP_FAILED", errPNPMInstanceExecution)
 	}
-	trace, err = observer.StartPNPMTargetLifecycleProfile(ctx, container)
+	trace, err = startTrace(ctx, container)
 	if err != nil || trace == nil {
 		return finish("M3_DYNAMIC_OBSERVER_FAILED", err)
 	}
@@ -141,7 +151,7 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
-	if err := copyPNPMInspectionPayload(run, b.runner, container, payload); err != nil {
+	if err := copyNPMInspectionPayload(run, b.runner, container, payload, kind); err != nil {
 		return finish("M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err)
 	}
 	if err := verifyPNPMInstanceNetwork(run, b.runner, container); err != nil {
@@ -150,7 +160,12 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
-	command, err := pnpmTargetLifecycleExecArguments(container, target)
+	var command []string
+	if kind == nativeRuntimeBun {
+		command, err = bunTargetLifecycleExecArguments(container, target)
+	} else {
+		command, err = pnpmTargetLifecycleExecArguments(container, target)
+	}
 	if err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
@@ -165,8 +180,9 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	return finish("", nil)
 }
 
-func pnpmInstanceCreateArguments(session domain.SandboxSessionID, project closureVolume) ([]string, error) {
-	if project.destination() != pnpmProjectRoot || project.projectBuildExecutable {
+func npmInstanceCreateArguments(session domain.SandboxSessionID, project closureVolume, kind nativeRuntimeToolKind) ([]string, error) {
+	spec, known := nativeProjectIdentity(kind)
+	if !known || project.destination() != spec.root || project.projectBuildExecutable {
 		return nil, errPNPMInstanceExecution
 	}
 	mount, err := project.mountArgument(false)

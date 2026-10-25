@@ -13,6 +13,11 @@ import (
 )
 
 func bunBoundPayloadFixture(t *testing.T) artifactnpm.BunInspectionLayout {
+	layout, _ := bunBoundPayloadInputs(t)
+	return layout
+}
+
+func bunBoundPayloadInputs(t *testing.T) (artifactnpm.BunInspectionLayout, artifactnpm.BunInspectionInput) {
 	t.Helper()
 	_, input, inventories := bunPreparationInputFixture(t, BunResolverRuntimeIdentity())
 	name := input.Artifacts()[0].Identity().Name()
@@ -30,7 +35,7 @@ func bunBoundPayloadFixture(t *testing.T) artifactnpm.BunInspectionLayout {
 	if err != nil || !layout.MatchesInput(input) {
 		t.Fatal("complete Bun payload fixture", err)
 	}
-	return layout
+	return layout, input
 }
 
 func TestBunInspectionPayloadKeepsOnlyBoundExecutionData(t *testing.T) {

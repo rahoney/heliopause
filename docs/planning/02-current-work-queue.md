@@ -5275,3 +5275,16 @@ ARTIFACT shell3/2·비대상0/complete trace를 유지하고 helper wait0/Host �
 첫 operator의 동시 compiler 간섭 실패는 원본으로 보존하며 compiler 종료/원상 복원 뒤 같은
 binary로 직렬 확인했다. 다음은 opaque Bun layout를 소비하는 production instance backend이며
 명시 Bun runtime·whole inspection/Policy/cache/transaction/CLI/remote는 계속 미완료다.
+
+[B4d-c production backend 감사](./evidence/package-client-quarantine/p3b4dc-bun-instance-backend-plan-20261025.md)는
+3f328e2의 target primitive를 opaque Bun layout 소비자에 연결한다. 기존 PNPM session/관찰/정리
+body를 private 두-kind engine으로 재사용하고 typed preflight·fresh resource·whole readback 및
+첫 cause/INCOMPLETE를 유지한다. 실제 public peer 전체 instance와 기존 PNPM을 확인한 뒤
+whole inspection/Policy·명시 Bun runtime 연결을 계속한다. M13-004 하나만 IN_PROGRESS다.
+
+[B4d-c 로컬 영수증](./evidence/package-client-quarantine/p3b4dc-bun-instance-backend-local-20261025.json)은
+Quick161.883s/전체 sandbox Race25.135s와 actual79.128s를 연결한다. Fresh public Bun peer
+archive4의 exact instances4를 production backend의 fresh sessions4에서31.41s로 확인했고
+기존 PNPM project2/4 sessions도45.02s가 PASS다. Whole readback/trace·cleanup 뒤 반환,
+helper wait0/Host 전체 동일을 확인했다. 다음은 전체 static/dynamic 집계·coverage·Policy
+연결이며 명시 Bun runtime/cache/transaction/CLI·remote qualification은 아직 미완료다.

@@ -18,6 +18,7 @@ import (
 // Stateful Docker format fixture: it supplies no native execution evidence.
 // Existing volume checks consume the same actual/configured mount views.
 type pnpmInstanceRunner struct {
+	kind                                                 nativeRuntimeToolKind
 	t                                                    *testing.T
 	volume                                               dockerVolumeInspection
 	id                                                   string
@@ -29,6 +30,18 @@ type pnpmInstanceRunner struct {
 	fault                                                string
 	runErr, cleanupErr                                   error
 	cancel                                               context.CancelCauseFunc
+}
+
+func (r *pnpmInstanceRunner) projectSpec() nativeProjectSpec {
+	kind := r.kind
+	if kind == 0 {
+		kind = nativeRuntimePNPM
+	}
+	spec, ok := nativeProjectIdentity(kind)
+	if !ok {
+		r.t.Fatal("unknown fixture native kind")
+	}
+	return spec
 }
 
 func (r *pnpmInstanceRunner) encoded(v any) []byte {
@@ -85,7 +98,7 @@ func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...
 		}
 		filtered = slices.Delete(filtered, mountIndex, mountIndex+2)
 		assertConstrainedCreateCommand(r.t, filtered)
-		if !slices.Contains(args, "type=volume,source="+r.volume.Name+",target="+pnpmProjectRoot+",volume-nocopy") {
+		if !slices.Contains(args, "type=volume,source="+r.volume.Name+",target="+r.projectSpec().root+",volume-nocopy") {
 			r.t.Fatal("fresh project volume absent")
 		}
 		return []byte(r.id), nil
@@ -99,9 +112,9 @@ func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...
 		return nil, nil
 	case "inspect":
 		if args[2] == containerMountInspectTemplate {
-			configured := dockerHostMountInspection{Type: "volume", Source: r.volume.Name, Target: pnpmProjectRoot}
+			configured := dockerHostMountInspection{Type: "volume", Source: r.volume.Name, Target: r.projectSpec().root}
 			configured.VolumeOptions.NoCopy = true
-			mount := dockerContainerMountInspection{ID: r.id, Mounts: []dockerMountInspection{{Type: "volume", Name: r.volume.Name, Source: r.volume.Mountpoint, Destination: pnpmProjectRoot, Driver: "local", RW: true}}, HostMounts: []dockerHostMountInspection{configured}}
+			mount := dockerContainerMountInspection{ID: r.id, Mounts: []dockerMountInspection{{Type: "volume", Name: r.volume.Name, Source: r.volume.Mountpoint, Destination: r.projectSpec().root, Driver: "local", RW: true}}, HostMounts: []dockerHostMountInspection{configured}}
 			if r.fault == "mount-drift" {
 				mount.Mounts[0].Source = "/foreign"
 			}
@@ -127,7 +140,11 @@ func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...
 	case "start":
 		return nil, nil
 	case "exec":
-		if slices.Contains(args, pnpmTargetLifecycleCommand) {
+		command := pnpmTargetLifecycleCommand
+		if r.kind == nativeRuntimeBun {
+			command = bunTargetLifecycleCommand
+		}
+		if slices.Contains(args, command) {
 			r.executions++
 			if r.cancel != nil {
 				r.cancel(r.runErr)
@@ -151,7 +168,7 @@ func (r *pnpmInstanceRunner) RunInput(_ context.Context, input io.Reader, binary
 	r.t.Helper()
 	r.calls++
 	r.events = append(r.events, "copy")
-	if binary != "docker" || !slices.Equal(args, []string{"cp", "--archive", "-", r.id + ":" + pnpmProjectRoot}) {
+	if binary != "docker" || !slices.Equal(args, []string{"cp", "--archive", "-", r.id + ":" + r.projectSpec().root}) {
 		r.t.Fatal("copy destination is not fixed")
 	}
 	if r.fault == "copy" {
@@ -165,7 +182,7 @@ func (r *pnpmInstanceRunner) RunOutput(_ context.Context, output io.Writer, bina
 	r.t.Helper()
 	r.calls++
 	r.events = append(r.events, "readback")
-	if binary != "docker" || !slices.Equal(args, []string{"cp", r.id + ":" + pnpmProjectDirectory, "-"}) {
+	if binary != "docker" || !slices.Equal(args, []string{"cp", r.id + ":" + r.projectSpec().directory, "-"}) {
 		r.t.Fatal("readback is not whole project")
 	}
 	if r.fault == "readback" {
