@@ -28,7 +28,7 @@ func uvProjectTestInput(t *testing.T, intent artifactpypi.UVProjectIntent) artif
 }
 
 func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T) {
-	for _, name := range []string{"nil context", "canceled", "selector", "missing", "duplicate", "runtime", "selected export", "malformed original lock", "add"} {
+	for _, name := range []string{"nil context", "canceled", "selector", "missing", "duplicate", "runtime", "selected export", "malformed original lock", "invalid add selector"} {
 		t.Run(name, func(t *testing.T) {
 			_, runner := uvReaderFixture(t)
 			endpoints := &uvCountingEndpoints{}
@@ -45,7 +45,7 @@ func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T
 				t.Fatal(err)
 			}
 			intent := artifactpypi.UVProjectSync
-			if name == "add" {
+			if name == "invalid add selector" {
 				intent = artifactpypi.UVProjectAdd
 			}
 			controls, err := NewUVProjectOriginalControls(uvProjectTestInput(t, intent))
@@ -73,6 +73,8 @@ func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T
 				controls[4], err = domain.NewProjectControlFile(artifactpypi.UVProjectExportControl, []byte("selected"), true)
 			case "malformed original lock":
 				controls[1], err = domain.NewProjectControlFile(artifactpypi.UVNativeLockControl, []byte("version=99"), true)
+			case "invalid add selector":
+				controls[2], err = domain.NewProjectControlFile(artifactpypi.UVProjectIntentControl, bytes.ReplaceAll(controls[2].Body(), []byte("packaging==25.0"), []byte("https://example.org/payload")), true)
 			}
 			if err != nil {
 				t.Fatal(err)

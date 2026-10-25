@@ -88,8 +88,8 @@ func parseUVProjectOriginalControls(controls []domain.ProjectControlFile) (artif
 	if err != nil {
 		return artifactpypi.UVProjectInput{}, err
 	}
-	if input.Intent() != artifactpypi.UVProjectSync && input.Intent() != artifactpypi.UVProjectLockUpgrade {
-		return artifactpypi.UVProjectInput{}, errors.New("UV project manifest mutation is not qualified")
+	if input.Intent() != artifactpypi.UVProjectSync && input.Intent() != artifactpypi.UVProjectLockUpgrade && input.Intent() != artifactpypi.UVProjectAdd {
+		return artifactpypi.UVProjectInput{}, errors.New("UV project selection intent is unsupported")
 	}
 	if body, present := input.NativeLock(); present {
 		if _, err := artifactpypi.ParseUVNativeProjectLock(input, body); err != nil {
@@ -170,21 +170,28 @@ func (r *UVProjectResolver) materializeProject(ctx context.Context, input artifa
 	lockArgs := []string{"lock"}
 	if input.Intent() == artifactpypi.UVProjectLockUpgrade {
 		lockArgs = append(lockArgs, "--upgrade")
+	} else if input.Intent() == artifactpypi.UVProjectAdd {
+		lockArgs = []string{"add", input.Selector(), "--no-sync"}
 	}
 	lockArgs = append(lockArgs, common...)
 	lockArgs = append(lockArgs, "--no-sources")
 	if _, err := reader.runner.Output(ctx, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, append([]string{uvToolGuestPath}, lockArgs...)...)...); err != nil {
-		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, uvReaderFailure{"native UV project lock failed", err}
+		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, uvReaderFailure{"native UV project selection failed", err}
 	}
 	manifest, err := readUVProjectControl(ctx, reader.runner, session.container, artifactpypi.UVProjectInputControl)
-	if err != nil || !bytes.Equal(manifest, input.Body()) {
-		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, errors.Join(errors.New("native UV selection changed the project manifest"), err)
+	if err != nil {
+		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
 	}
+	selectedInput, err := input.SelectManifest(manifest)
+	if err != nil {
+		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+	}
+	files[artifactpypi.UVProjectInputControl] = manifest
 	lockBody, err := readUVProjectControl(ctx, reader.runner, session.container, artifactpypi.UVNativeLockControl)
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
 	}
-	lock, err := artifactpypi.ParseUVNativeProjectLock(input, lockBody)
+	lock, err := artifactpypi.ParseUVNativeProjectLock(selectedInput, lockBody)
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
 	}
@@ -199,6 +206,11 @@ func (r *UVProjectResolver) materializeProject(ctx context.Context, input artifa
 	export, err := lock.ParseTargetExport(exportBody)
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+	}
+	if input.Intent() == artifactpypi.UVProjectAdd {
+		if err := input.ValidateAddSelection(selectedInput, export.Packages()); err != nil {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+		}
 	}
 	files[artifactpypi.UVNativeLockControl] = lockBody
 	for name, expected := range files {

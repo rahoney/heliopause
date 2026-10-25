@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-D — native empty/public single sync·lock-upgrade and existing UV pip named local QUALIFIED; CLI/Host transaction remain
-Next action: M13-004 — continue P4 native add/version-changing selection; CI413 exact-source/log qualification recorded; group future pushes at backend/CLI boundaries
-Current substep: M13-004/P4-D empty/public single sync+lock-upgrade named local QUALIFIED; next native add/version-changing selection; CI413 exact-source/log named qualification recorded
+Last completed substep: P4-E — native exact/bare add, manifest conservation and actual version-changing upgrade named local QUALIFIED; Host transaction/CLI/tools remain
+Next action: M13-004 — audit P4 project/venv atomic ownership/transaction and approved cache/records; CI413 recorded; group future pushes at backend/CLI boundaries
+Current substep: M13-004/P4-E native add/version-changing selection named local QUALIFIED; next project/venv transaction baseline; CI413 qualification recorded
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
-Independent local next: P4 native add/manifest mutation and version-changing lock-upgrade, then project/venv transaction/CLI and persistent tools; final support/profile matrix open
+Independent local next: P4 project/venv transaction, approved cache/records/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5501,3 +5501,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 CI413 grouped Bun qualification과 실제 timer 소비
 
 [CI413 영수증](./evidence/package-client-quarantine/p3-grouped-bun-ci413-20261026.json)은 source50fd/tree d6a63ab/2475, 모든 checkout38e27d8와 base/source 부모의 일치·Required10SUCCESS를 확인했다. 실제75분 timer가17:20:16UTC/02:20:16KST에 조회했고 전체 경과 metadata는57m14다. Full decoded10logs1,123,173B/64chunks를 전부 readback했다. Observer121씩/Linux72top-level·Bun native9·경계5·whole2/JS정상·typed실패/CLI9/native원본3·PNPMCLI9/CPU232.73s·native macOS와 helper9wait0/final0을 확인했다. P4-A/B/C/D를 기다리는 동안 계속했고 새 push로 취소하지 않았다. 최신 P4 source와 최종 CPU·세CUDA matrix는 범위 밖이며 P7/final affected checkpoint까지 whole acceptance는 열어 둔다. 다음 native add/version-changing selection을 같은 M13-004에서 계속한다.
+
+### 2026-10-26 P4-E add/version-changing selection 착수
+
+[P4-E audit·map·두 번째 검토](./evidence/package-client-quarantine/p4e-uv-project-add-plan-20261026.md)는 기존 D session/controls/census/독립 binder를 재사용해 add manifest conservation과 실제 version delta만 연결한다. Exact UV0.13.4 문서와 native help를 확인했다. Host atomic transaction/CLI/tools는 미완료이며 같은 M13-004에서 작은 helper별 새 CI 없이 진행한다.
+
+### 2026-10-26 P4-E native add/version delta local checkpoint
+
+[Add/delta receipt](./evidence/package-client-quarantine/p4e-uv-project-add-local-20261026.json)의 Quick222.363s/security14.467s/docs0.282s·affected fullRace26.492s와 actual121.396s가 PASS다. Native add exact24.2→25.0·bare/기존 constraint 보존·두 roots와 native sync가 재검증한 old24.2에서 lock-upgrade25.0/manifest 불변을 확인했다. Seed constraint만 synthetic이며11 native selection requests/noSKIP/helperwait0/Host 동일이다. 기존11 owner는 bytes 불변이고 별도 새 CI는 없었다. Host atomic transaction/cache/records/CLI/tools·whole P4는 미완료이며 같은 M13-004에서 다음 audit를 계속한다.

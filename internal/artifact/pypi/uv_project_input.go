@@ -125,6 +125,120 @@ func (p UVProjectInput) Requirements() []UpgradeRequirement {
 	return append([]UpgradeRequirement(nil), p.requirements...)
 }
 
+// SelectManifest accepts only the requested native dependency edit. Other
+// project metadata and requirements remain frozen; this grants no approval.
+func (p UVProjectInput) SelectManifest(body []byte) (UVProjectInput, error) {
+	if !p.Valid() {
+		return UVProjectInput{}, errors.New("UV original project is unavailable")
+	}
+	after, err := ParseUVProjectInput(body, p.lock, p.lockPresent, p.intent, p.selector)
+	if err != nil {
+		return UVProjectInput{}, err
+	}
+	if p.intent != UVProjectAdd {
+		if !bytes.Equal(p.body, body) {
+			return UVProjectInput{}, errors.New("native UV selection changed the project manifest")
+		}
+		return after, nil
+	}
+	metadata := func(body []byte) ([]byte, error) {
+		var wire uvProjectInputWire
+		if err := toml.Unmarshal(body, &wire); err != nil || wire.Project == nil {
+			return nil, errors.New("UV project metadata is unavailable")
+		}
+		wire.Project.Dependencies = nil
+		return json.Marshal(wire)
+	}
+	beforeMetadata, err := metadata(p.body)
+	if err != nil {
+		return UVProjectInput{}, err
+	}
+	afterMetadata, err := metadata(body)
+	if err != nil || !bytes.Equal(beforeMetadata, afterMetadata) {
+		return UVProjectInput{}, errors.New("native UV add changed unrelated project metadata")
+	}
+	selector, err := parseUVProjectRequirement(p.selector)
+	if err != nil {
+		return UVProjectInput{}, err
+	}
+	before := map[string]UpgradeRequirement{}
+	selected := map[string]UpgradeRequirement{}
+	for _, r := range p.requirements {
+		before[r.Project()] = r
+	}
+	for _, r := range after.requirements {
+		selected[r.Project()] = r
+	}
+	expected := len(before)
+	if _, present := before[selector.Project()]; !present {
+		expected++
+	}
+	if len(selected) != expected || selected[selector.Project()].Project() == "" {
+		return UVProjectInput{}, errors.New("native UV add changed the direct dependency set unexpectedly")
+	}
+	for name, requirement := range before {
+		if name != selector.Project() && uvProjectRequirementKey(selected[name]) != uvProjectRequirementKey(requirement) {
+			return UVProjectInput{}, errors.New("native UV add changed an unrelated requirement")
+		}
+	}
+	if selector.Requirement() != selector.Project() {
+		if uvProjectRequirementKey(selected[selector.Project()]) != uvProjectRequirementKey(selector) {
+			return UVProjectInput{}, errors.New("native UV add changed the requested constraint")
+		}
+	} else if original, present := before[selector.Project()]; present && uvProjectRequirementKey(selected[selector.Project()]) != uvProjectRequirementKey(original) {
+		return UVProjectInput{}, errors.New("native UV bare add changed the existing constraint")
+	}
+	return after, nil
+}
+
+// ValidateAddSelection binds a new bare dependency's native lower bound and
+// the user's explicit constraint to its actual selected version. Archives and
+// complete dependency metadata still require independent authentication.
+func (p UVProjectInput) ValidateAddSelection(after UVProjectInput, packages []UVLockedPackage) error {
+	if !p.Valid() || p.intent != UVProjectAdd {
+		return errors.New("UV add selection intent is unavailable")
+	}
+	checked, err := p.SelectManifest(after.Body())
+	if err != nil {
+		return err
+	}
+	selector, err := parseUVProjectRequirement(p.selector)
+	if err != nil {
+		return err
+	}
+	var version string
+	for _, item := range packages {
+		if item.Name == selector.Project() {
+			if version != "" {
+				return errors.New("UV added selection is ambiguous")
+			}
+			version = item.Version
+		}
+	}
+	if version == "" || !selector.AcceptsVersion(version) {
+		return errors.New("UV added version differs from requested requirement")
+	}
+	wasPresent := false
+	for _, r := range p.requirements {
+		if r.Project() == selector.Project() {
+			wasPresent = true
+		}
+	}
+	if selector.Requirement() == selector.Project() && !wasPresent {
+		want, err := parseUVProjectRequirement(selector.Project() + ">=" + version)
+		if err != nil {
+			return err
+		}
+		for _, r := range checked.requirements {
+			if r.Project() == selector.Project() && uvProjectRequirementKey(r) == uvProjectRequirementKey(want) {
+				return nil
+			}
+		}
+		return errors.New("UV new bare dependency lower bound differs from selected version")
+	}
+	return nil
+}
+
 type uvProjectIntentWire struct {
 	Version  int             `json:"version"`
 	Intent   UVProjectIntent `json:"intent"`
