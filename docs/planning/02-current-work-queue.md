@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 IN_PROGRESS and cu132 next; keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; next B2b2 release/installed tuple, remote source remains9410c2d
+Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 IN_PROGRESS (first timer13:22:46KST); keep active timer/turn and continue to P3 after P2 closure
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; next B2b2 release/installed tuple, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5077,3 +5077,16 @@ plan/apply/verify를 연결했다. Actual changed plan·중단 후 재개·재�
 canonical/관련 여섯 package full Race가 PASS다. 첫 source routing/빠진 capture schema/문구
 gate를 보존하고 교정했다. 다음은 B2b2 release/package/installer/activation complete tuple이다.
 Production Bun gVisor/CLI·전체 P3는 아직 열려 있고 remote9410/현재 CI410 timer를 유지한다.
+
+### 2026-10-25 CI410 cu130 checkpoint와 연속 timer 소비
+
+[CI410 cu130](./evidence/package-client-quarantine/p2c5b5d-ci410-qualification-20261025.json)은
+65분 첫 timer에서8SUCCESS/Linux pending을 확인하고15분 다음 timer에서 Required 포함
+10SUCCESS를 확인했다. Source/all checkout9410·whole treee4ea/2280files 동일, full decoded
+logs10개를 매 chunk readback으로 보존했다. Linux65/observer112씩·PNPM cache/transaction/
+CLI9operation/native3, CPU286.74s/cu1301094.44s·native macOS Go1.27.3, helper7wait0와 final
+original0/CONFIRMED_STOPPED/stop0/client errors0를 확인했다. 전체 경과79m48이다.
+Same remote9410에서 마지막 필수 cu132411을 한 번 dispatch했고95분 첫 timer는13:22:46KST다.
+Active turn을 유지해 그 시각에 결과를 소비하며 Bun B2b2 로컬 작업을 이어간다. 작은 Bun
+단위로 push/CI를 만들지 않았고 그 local source를 이번 성공으로 전용하지 않는다. P2 전체
+acceptance/support는 cu132와 최종 matrix 전까지 열려 있다.
