@@ -140,3 +140,60 @@ func TestProjectManifestRejectsForeignControlsNodesEdgesAndCancellation(t *testi
 		})
 	}
 }
+
+func TestProjectManifestPreservesExplicitControlAbsence(t *testing.T) {
+	original, nodes, controls := projectRecordFixture(t, true)
+	op, _ := domain.NewOperationID()
+	ordinary, ordinaryBody, ordinarySBOM, err := (evidence.Generator{}).BuildProject(context.Background(), op, original, nodes, nil, controls, "synthetic-runtime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	explicit, explicitBody, explicitSBOM, err := (evidence.Generator{}).BuildProjectWithControlPresence(context.Background(), op, original, nodes, nil, controls, "synthetic-runtime")
+	if err != nil || ordinary != explicit || string(ordinaryBody) != string(explicitBody) || string(ordinarySBOM) != string(explicitSBOM) {
+		t.Fatal("present-control wire changed", err)
+	}
+	var ids []domain.ContentDigest
+	for _, present := range []bool{false, true} {
+		control, err := domain.NewProjectControlFile("selected.lock", nil, present)
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest, _ := domain.NewProjectControlDigest(control.Name(), control.Digest())
+		prior := original.Inspected().Snapshot()
+		snapshot, err := domain.NewDependencyFreeProjectSnapshot(prior.Context(), prior.Source(), []domain.ProjectControlDigest{digest}, prior.GraphDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		inspected, err := domain.NewInspectedProjectSet(snapshot, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		set, err := domain.NewProjectVerifiedSet(inspected, original.Decision())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !present {
+			if id, _, _, err := (evidence.Generator{}).BuildProject(context.Background(), op, set, nil, nil, []domain.ProjectControlFile{control}, "synthetic-runtime"); err == nil || id.String() != "" {
+				t.Fatal("ordinary builder accepted absent control")
+			}
+		}
+		id, body, _, err := (evidence.Generator{}).BuildProjectWithControlPresence(context.Background(), op, set, nil, nil, []domain.ProjectControlFile{control}, "synthetic-runtime")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var record struct {
+			Controls []struct {
+				Name, SHA256 string
+				Content      []byte
+				Absent       bool
+			} `json:"project_controls"`
+		}
+		if json.Unmarshal(body, &record) != nil || len(record.Controls) != 1 || record.Controls[0].Absent == present || record.Controls[0].SHA256 != control.Digest().String() {
+			t.Fatal("explicit presence lost")
+		}
+		ids = append(ids, id)
+	}
+	if ids[0] == ids[1] {
+		t.Fatal("absent and present zero-byte controls share Manifest identity")
+	}
+}

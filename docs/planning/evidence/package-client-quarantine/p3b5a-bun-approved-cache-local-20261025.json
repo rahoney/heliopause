@@ -1,0 +1,118 @@
+{
+  "work_item": "M13-004/P3-B5a",
+  "baseline": "7544a0939512607325f858846c262e58b71e28b5",
+  "status": {
+    "IMPLEMENTED": "YES (typed Bun approved data cache, whole native provenance and explicit absent controls)",
+    "WIRED": "YES (fresh public native selection/quarantine/current Evidence/Policy/Stage/Open)",
+    "QUALIFIED": "YES (named local scope)",
+    "ACCEPTANCE_CLOSED": "YES (local approved cache only); NO (whole Bun/remote)",
+    "MISSING": [
+      "private materialization and retained target ownership/transaction/CLI",
+      "explicit Bun runtime lane",
+      "whole affected-profile qualification and CI412 backend result"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/evidence/project_manifest.go",
+      "sha256": "2162e0e661a1e067d5f1fd4482ad9e1cfdfc35ae4323223b83b51017005124b1",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/evidence/project_manifest_test.go",
+      "sha256": "c7e0ca2ca8e942945a9cbb7f1c5e491389c3cf2e3a0850f2b4a26f6da3e6a9a8",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_cache_integration_test.go",
+      "sha256": "f5e2ffaeda059b71d55b879e7a80bfb34d76ee5a51aecd7825c7d0184a8d9d39",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "sha256": "4ab04c9bf490fd6a06eb765374443f583bfbe948adca73f890eac794f15ad448",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_approval.go",
+      "sha256": "69ac79224580c2bead192aee62ca225ffcb3ad681bde9cabe281283eb9185343",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_cache.go",
+      "sha256": "0cb093bb003e8b41031e9f7334b9367bc44d1aa64a6d5143419aa3666107941c",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_cache_approval.go",
+      "sha256": "4d065b8053b171d0607528ce47e143e7250375461ca4eeced38f76e7898c8f10",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_cache_records.go",
+      "sha256": "e796a5c214e81df4f1fc3a30e2913d46b6ab75b4e0182462580634f262963100",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_cache_test.go",
+      "sha256": "e51bba936903c3909352d0955c1495125fea2b17cb8e2b96a5bff4491c290a47",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5a-qualified-quick.json",
+      "exit": 0,
+      "seconds": 152.123,
+      "receipt_sha256": "c81d13a558e81d4917a04f681ec023948fbd9d2b795f933db5b2e3c353a7e4a9"
+    },
+    {
+      "receipt": "p3b5a-qualified-security.json",
+      "exit": 0,
+      "seconds": 11.126,
+      "receipt_sha256": "3e4ea72a7e9ce6c5491c9ad4d9f8b597b706fee62f009937f58e16e825d674db"
+    },
+    {
+      "receipt": "p3b5a-qualified-docs.json",
+      "exit": 0,
+      "seconds": 0.237,
+      "receipt_sha256": "870a98360242aa59ff2d214a8c63fa08b8923b56a99393c302b99a28d36a29bc"
+    },
+    {
+      "receipt": "p3b5a-cache-full-race.json",
+      "exit": 0,
+      "seconds": 158.098,
+      "receipt_sha256": "769d08e4f62dced990328ed0981e3d0c0459d8f48ffda2ead3d5d621ba46b92d"
+    },
+    {
+      "receipt": "p3b5a-bun-cache-v1-result.json",
+      "exit": 0,
+      "seconds": 90.683,
+      "receipt_sha256": "4157b39c6a6c64f4c939fd8d390ac233887d1b52d2135668be260614d3f0b6d7"
+    }
+  ],
+  "mechanical_reuse": {
+    "receipt": "p3b5a-cache-mechanical-reuse.json",
+    "five_original_PNPM_bodies_normalized_identical": true
+  },
+  "actual": {
+    "Bun": "peer4 public archives/all instances and explicit empty0; operation Manifest/SBOM/full native provenance, absent lock preserved, sealed data tamper rejected",
+    "PNPM": "existing public peer4/empty0 cache and private preparation Verify/Close",
+    "operator_seconds": 90.683,
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL",
+    "Host_install": "NOT_RUN"
+  },
+  "first_failure": {
+    "receipt": "p3b5a-first-failure-assessment.json",
+    "fixture": "normal7/no-name mismatched tracked6/name; corrected exact source fixture",
+    "empty": "all-present record builder rejected absent lock; ordinary guard/present bytes preserved, separate presence-aware common body path binds absence to Manifest"
+  },
+  "unchanged": [
+    "source authenticity/integrity/static/lifecycle/Policy gates",
+    "observer/network/filesystem grants and budgets",
+    "existing ordinary ProjectRecordBuilder all-present contract",
+    "sealed cache schema2 and project-cache handle"
+  ],
+  "remote": "CI412 remains frozen7544a09; this later local phase is not its qualified source; no new push/CI"
+}

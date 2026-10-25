@@ -5315,3 +5315,20 @@ quarantine2를 실행하고 설치/work 정리·helper wait0/Host 전체 동일�
 backend local commits를 묶어 한 번 push하고 ordinary CI의 macOS/Required를 실제 timer로
 확인한다. 기다리는 동안 independent cache/transaction/CLI를 계속하며 전체 Bun acceptance는
 아직 닫지 않는다. Job/Required/기존 timeout·PNPM 전환과 runtime/Policy 권한은 유지한다.
+
+CI412/run40192015597은7544a09/tree3b7dbd03(2423files)의 backend 묶음에서 실행 중이다.
+시작12:11:17UTC와 ordinary408의60m30+새 Bun script142.666s를 근거로 첫 실제 timer를
+13:16:17UTC/22:16:17KST에 등록했다. DUE만으로 완료라 하지 않고 결과/원본/source를 확인한다.
+[B5a approved cache 감사](./evidence/package-client-quarantine/p3b5a-bun-approved-cache-plan-20261025.md)는
+그 결과와 독립적인 typed Bun staging/records를 진행한다. 기존 publication/Evidence/byte reader를
+재사용하고 같은 M13-004에서 cache→private materialization/transaction/CLI를 계속한다. 현재 CI
+후보를 새 push로 취소하지 않는다.
+
+[B5a 로컬 영수증](./evidence/package-client-quarantine/p3b5a-bun-approved-cache-local-20261025.json)은
+Bun 승인 cache/actual operation records·전체 native provenance와 absent lock 보존을 연결한다.
+실제 native 선택→검역/Evidence/Policy→Stage/Open은 peer4/empty0, 기존 PNPM 승인 cache·private
+준비도 combined90.683s·helperwait0/Host 동일로 PASS다. 전체 evidence/promotion/bootstrap
+Race158.098s와 canonical Quick/security/docs도 통과했다. 첫 fixture mismatch·all-present record
+거부 원본을 보존하고 ordinary builder guard/present bytes를 유지했다. 다섯 공용 body의 PNPM
+정규화 동일성을 대조했다. Local cache subset은 닫혔으며 private materialization/transaction/CLI·
+명시 Bun runtime·remote/whole P3는 열려 있다. CI412 source7544를 취소하는 push는 하지 않는다.

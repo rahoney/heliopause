@@ -58,18 +58,22 @@ func NewPNPMVerifiedCache(intake, evidence, cache string, frozen artifactnpm.PNP
 func pnpmCacheHash(body []byte) string { sum := sha256.Sum256(body); return hex.EncodeToString(sum[:]) }
 
 func (c *PNPMVerifiedCache) verifySources(ctx context.Context, input artifactnpm.PNPMInspectionInput) (resultErr error) {
-	if len(input.Artifacts()) == 0 {
+	return verifyNPMProjectCacheSources(ctx, c.intakeRoot, input.Artifacts())
+}
+
+func verifyNPMProjectCacheSources(ctx context.Context, intakeRoot string, subjects []domain.AcquiredArtifact) (resultErr error) {
+	if len(subjects) == 0 {
 		return nil
 	}
-	if err := trustedExistingDirectory(c.intakeRoot); err != nil {
+	if err := trustedExistingDirectory(intakeRoot); err != nil {
 		return err
 	}
-	root, err := os.OpenRoot(c.intakeRoot)
+	root, err := os.OpenRoot(intakeRoot)
 	if err != nil {
 		return err
 	}
 	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
-	for _, subject := range input.Artifacts() {
+	for _, subject := range subjects {
 		if _, err := artifactnpm.ReadPNPMIntakeArchive(ctx, root, subject); err != nil {
 			return err
 		}
@@ -78,6 +82,16 @@ func (c *PNPMVerifiedCache) verifySources(ctx context.Context, input artifactnpm
 }
 
 func renderPNPMCacheLayout(ctx context.Context, layout artifactnpm.PNPMInspectionLayout) ([]byte, error) {
+	return renderNPMProjectCacheLayout(ctx, layout)
+}
+
+type npmProjectCacheLayout interface {
+	Digest() domain.ContentDigest
+	Entries() []artifactnpm.PNPMLayoutEntry
+	ReadFile(string) ([]byte, error)
+}
+
+func renderNPMProjectCacheLayout(ctx context.Context, layout npmProjectCacheLayout) ([]byte, error) {
 	if ctx == nil || layout.Digest().String() == "" {
 		return nil, errors.New("pnpm cache layout is unavailable")
 	}
@@ -155,18 +169,47 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 	if err := ctx.Err(); err != nil {
 		return staged, errors.Join(err, context.Cause(ctx))
 	}
-	if err := ensureTrustedRoot(c.cacheRoot); err != nil {
+	return publishNPMProjectCache(ctx, set, doc, c.cacheRoot, c.frozen.Controls(), archive, material, c.beforeTreeSync, npmProjectCachePNPM)
+}
+
+type npmProjectCacheClient uint8
+
+const (
+	npmProjectCachePNPM npmProjectCacheClient = iota + 1
+	npmProjectCacheBun
+)
+
+type npmProjectCacheSpec struct{ prefix, stagePrefix, provenanceName string }
+
+func npmProjectCacheIdentity(client npmProjectCacheClient) (npmProjectCacheSpec, bool) {
+	switch client {
+	case npmProjectCachePNPM:
+		return npmProjectCacheSpec{"pnpm", ".pnpm-stage-", "pnpm-provenance.json"}, true
+	case npmProjectCacheBun:
+		return npmProjectCacheSpec{"bun", ".bun-stage-", "bun-provenance.json"}, true
+	default:
+		return npmProjectCacheSpec{}, false
+	}
+}
+
+func publishNPMProjectCache(ctx context.Context, set domain.ProjectVerifiedSet, doc pnpmCacheDocument, cacheRoot string, controls []domain.ProjectControlFile, archive []byte, material pnpmProjectRecords, beforeTreeSync func(string) error, client npmProjectCacheClient) (staged domain.StagedProjectSet, resultErr error) {
+	spec, known := npmProjectCacheIdentity(client)
+	if !known {
+		return staged, errors.New("unknown project cache client")
+	}
+	var err error
+	if err := ensureTrustedRoot(cacheRoot); err != nil {
 		return staged, err
 	}
 	run, err := domain.NewRunID()
 	if err != nil {
 		return staged, err
 	}
-	temporary, err := os.MkdirTemp(c.cacheRoot, ".pnpm-stage-")
+	temporary, err := os.MkdirTemp(cacheRoot, spec.stagePrefix)
 	if err != nil {
 		return staged, err
 	}
-	final := filepath.Join(c.cacheRoot, run.String())
+	final := filepath.Join(cacheRoot, run.String())
 	published := false
 	defer func() {
 		if !published {
@@ -180,7 +223,7 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 	if err := os.Mkdir(data, 0o700); err != nil {
 		return staged, err
 	}
-	for _, control := range c.frozen.Controls() {
+	for _, control := range controls {
 		if err := writePrivateRecord(data, control.Name(), control.Body()); err != nil {
 			return staged, err
 		}
@@ -201,7 +244,7 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 		name string
 		body []byte
 	}{
-		{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
+		{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {spec.provenanceName, material.provenance},
 	} {
 		if err := writePrivateRecord(records, record.name, record.body); err != nil {
 			return staged, err
@@ -236,8 +279,8 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 	if err := os.Chmod(filepath.Join(temporary, "receipt.json"), 0o444); err != nil {
 		return staged, err
 	}
-	if c.beforeTreeSync != nil {
-		if err := c.beforeTreeSync(temporary); err != nil {
+	if beforeTreeSync != nil {
+		if err := beforeTreeSync(temporary); err != nil {
 			return staged, err
 		}
 	}
@@ -251,10 +294,11 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 		return staged, err
 	}
 	published = true
-	if err := syncDirectory(c.cacheRoot); err != nil {
+	if err := syncDirectory(cacheRoot); err != nil {
 		return staged, errors.Join(err, os.RemoveAll(final))
 	}
 	return staged, nil
+
 }
 
 // OpenProjectCache rechecks current recorded approval and every sealed data
@@ -278,6 +322,15 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 // Retained callers supply controller-owned approval; current callers additionally
 // regenerate their records from the exact in-memory approved operation.
 func openPNPMApprovedCache(ctx context.Context, cacheRoot, handle string, digest domain.ContentDigest, expected pnpmCacheDocument, material *pnpmProjectRecords) (directory string, resultErr error) {
+	return openNPMApprovedProjectCache(ctx, cacheRoot, handle, digest, expected, material, npmProjectCachePNPM)
+}
+
+func openNPMApprovedProjectCache(ctx context.Context, cacheRoot, handle string, digest domain.ContentDigest, expected pnpmCacheDocument, material *pnpmProjectRecords, client npmProjectCacheClient) (directory string, resultErr error) {
+	spec, known := npmProjectCacheIdentity(client)
+	if !known {
+		return "", errors.New("unknown project cache client")
+	}
+
 	id, ok := strings.CutPrefix(handle, "project-cache:")
 	if !ok {
 		return "", errors.New("pnpm cache handle is invalid")
@@ -322,7 +375,7 @@ func openPNPMApprovedCache(ctx context.Context, cacheRoot, handle string, digest
 			name string
 			body []byte
 		}{
-			{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
+			{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {spec.provenanceName, material.provenance},
 		} {
 			found := false
 			for _, file := range expected.Records {

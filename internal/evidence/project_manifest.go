@@ -12,20 +12,37 @@ import (
 )
 
 type projectManifestPayload struct {
-	Schema          string            `json:"schema"`
-	OperationID     string            `json:"operation_id"`
-	Target          manifestTarget    `json:"target"`
-	Resolver        manifestResolver  `json:"resolver"`
-	DependencyFree  bool              `json:"dependency_free"`
-	Policy          manifestPolicy    `json:"policy"`
-	Entries         []manifestEntry   `json:"entries"`
-	Edges           []manifestEdge    `json:"edges"`
-	ProjectControls []manifestControl `json:"project_controls"`
+	Schema          string                   `json:"schema"`
+	OperationID     string                   `json:"operation_id"`
+	Target          manifestTarget           `json:"target"`
+	Resolver        manifestResolver         `json:"resolver"`
+	DependencyFree  bool                     `json:"dependency_free"`
+	Policy          manifestPolicy           `json:"policy"`
+	Entries         []manifestEntry          `json:"entries"`
+	Edges           []manifestEdge           `json:"edges"`
+	ProjectControls []projectManifestControl `json:"project_controls"`
 }
 
 // BuildProject emits records for an actual complete approved project, including
 // an explicitly empty set. It does not weaken the requested-primary builder.
 func (Generator) BuildProject(ctx context.Context, operation domain.OperationID, set domain.ProjectVerifiedSet, nodes []domain.LockedDependency, edges []domain.DependencyEdge, controls []domain.ProjectControlFile, runtime string) (domain.ContentDigest, []byte, []byte, error) {
+	return buildProjectRecords(ctx, operation, set, nodes, edges, controls, runtime, false)
+}
+
+// BuildProjectWithControlPresence binds explicit absent controls without manufacturing files.
+// The ordinary builder retains its all-present contract.
+func (Generator) BuildProjectWithControlPresence(ctx context.Context, operation domain.OperationID, set domain.ProjectVerifiedSet, nodes []domain.LockedDependency, edges []domain.DependencyEdge, controls []domain.ProjectControlFile, runtime string) (domain.ContentDigest, []byte, []byte, error) {
+	return buildProjectRecords(ctx, operation, set, nodes, edges, controls, runtime, true)
+}
+
+type projectManifestControl struct {
+	Name    string `json:"name"`
+	SHA256  string `json:"sha256"`
+	Content []byte `json:"content"`
+	Absent  bool   `json:"absent,omitempty"`
+}
+
+func buildProjectRecords(ctx context.Context, operation domain.OperationID, set domain.ProjectVerifiedSet, nodes []domain.LockedDependency, edges []domain.DependencyEdge, controls []domain.ProjectControlFile, runtime string, controlPresence bool) (domain.ContentDigest, []byte, []byte, error) {
 	if ctx == nil || operation.String() == "" || !set.Valid() || !validContextText(runtime) {
 		return domain.ContentDigest{}, nil, nil, errors.New("project records require actual operation, approval and runtime")
 	}
@@ -59,7 +76,7 @@ func (Generator) BuildProject(ctx context.Context, operation domain.OperationID,
 	}
 	reasons := set.Decision().Reasons()
 	sort.Strings(reasons)
-	payload := projectManifestPayload{Schema: "helox.verified-project-manifest/v1", OperationID: operation.String(), Target: manifestTarget{Path: snapshot.Context().Target().String(), RequiresNew: snapshot.Context().RequiresNewTarget()}, Resolver: manifestResolver{runtime, snapshot.GraphDigest().String()}, DependencyFree: snapshot.DependencyFree(), Policy: manifestPolicy{string(set.Decision().Decision()), set.Decision().PolicyID(), set.Decision().Version(), reasons}, Entries: []manifestEntry{}, Edges: []manifestEdge{}, ProjectControls: []manifestControl{}}
+	payload := projectManifestPayload{Schema: "helox.verified-project-manifest/v1", OperationID: operation.String(), Target: manifestTarget{Path: snapshot.Context().Target().String(), RequiresNew: snapshot.Context().RequiresNewTarget()}, Resolver: manifestResolver{runtime, snapshot.GraphDigest().String()}, DependencyFree: snapshot.DependencyFree(), Policy: manifestPolicy{string(set.Decision().Decision()), set.Decision().PolicyID(), set.Decision().Version(), reasons}, Entries: []manifestEntry{}, Edges: []manifestEdge{}, ProjectControls: []projectManifestControl{}}
 	for _, node := range ordered {
 		i, ok := inspections[node.Node()]
 		if !ok {
@@ -85,7 +102,7 @@ func (Generator) BuildProject(ctx context.Context, operation domain.OperationID,
 	})
 	byName := map[string]domain.ProjectControlFile{}
 	for _, c := range controls {
-		if !c.Present() || c.Name() == "" || byName[c.Name()].Name() != "" {
+		if !controlPresence && !c.Present() || c.Name() == "" || byName[c.Name()].Name() != "" {
 			return domain.ContentDigest{}, nil, nil, errors.New("project record controls are missing or repeated")
 		}
 		byName[c.Name()] = c
@@ -95,7 +112,7 @@ func (Generator) BuildProject(ctx context.Context, operation domain.OperationID,
 		if c.Digest() != digest.Digest() {
 			return domain.ContentDigest{}, nil, nil, errors.New("project record control differs from approval")
 		}
-		payload.ProjectControls = append(payload.ProjectControls, manifestControl{c.Name(), c.Digest().String(), c.Body()})
+		payload.ProjectControls = append(payload.ProjectControls, projectManifestControl{c.Name(), c.Digest().String(), c.Body(), !c.Present()})
 	}
 	unsigned, err := canonicalManifestObject(payload)
 	if err != nil {
