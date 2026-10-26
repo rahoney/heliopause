@@ -312,3 +312,39 @@ Race161.117s(test146.803s)가 PASS다. Separate sibling 뒤 같은 whole-validat
 [L4-A receipt](./p4l4a-tool-interpreter-materializer-local-20261026.json)가 최초 실패와
 고정 inert pip recipe diagnostic6.276s/네 명령의 별도 범위를 연결한다. 실제 Go tool backend/
 Host publication/CLI 완료가 아니며 다음 L4-B roots/receipt binding을 계속한다.
+
+### L4-C fresh receipt/exposed links 원자 반영 baseline·수정 지도·재검토
+
+기존 pypiVenvTransaction.commitSelectionWithProject/prepareSelection/backup/append-only journal/
+rollback/removeBackup는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named PyPI/project)다.
+Tool의 controller receipt·external symlink 참여는 NO/NO/NO/NO이며 이 gap만 확장한다.
+기존 distribution ownership schema2나 selected wheel destination 규칙을 바꾸지 않는다.
+
+Concrete tool participant를 optional로 둔다. Receipt는 approved projected control의 exact
+regular-file snapshot으로 기존 ordered publication/backup/rollback에 참여하되 distribution
+ownership으로 기록하지 않는다. Exposed links는 bin-root 안의 별도0700 private directory에서
+정확한 target을 가진 symlink로 미리 만들고 inode를 동결한 뒤 anchored no-replace rename한다.
+Cross-device link source는 만들지 않는다. 별도 interpreter/command를 실행하지 않는다.
+Native root receipt·bin root/private sources·prepared link identity와 mutation intent/result는
+기존 append-only journal에 연결한다. 각 mutation은 기존 guard·root identity 검사에 합류한다.
+
+New links는 venv files/receipt 반영 뒤 게시하고 directory sync/whole readback을 확인한다.
+오류는 원래 backup disposal 전에 동일 rollback 안에서 links→receipt/files를 원복한다.
+Unknown published/private link나 foreign replacement는 unlink하지 않으며 recovery/두 guard를
+보존한다. Private cleanup 오류도 backup 폐기 전에 판정하고 안전한 원복은 계속한다.
+기존 nil participant의 모든 경로와 old tests는 유지한다. Fresh only이며 retired scripts/
+native upgrade/current backend/CLI는 이 helper 완료로 닫지 않는다.
+
+L4-B 최초 Quick179.778s는 interpreter-bytes negative fixture가 자기 소유0500 파일을
+다시 쓰려다 permission denied로 실패했다. Byte drift assertion에 도달하지 않았으며
+guard의 제품 결함이나 잘못된 허용으로 분류하지 않는다. Fixture를 처음부터0700으로
+만들어 동일 inode/mode에서 bytes 변경만 검사한다. 원본 p4l4b-target-receipt-v1-quick을
+보존하고 같은 검사 규칙으로 재검증한다.
+
+L4-B named local 최종은 Quick153.950s/security13.300s/docs0.256s·PyPI/Promotion 전체
+Race164.114s(test2.831s/147.112s)가 PASS다. Projection은 원본 bytes와 omitted/explicit
+options를 보존하고 actual target/bin/interpreter claim만 별도 control에 결합한다.
+Namespace·두 root·empty 원본·alias bytes·command 충돌/대소문자·동시 lock과 foreign/uncertain
+보존을 확인했다. [L4-B receipt](./p4l4b-tool-target-receipt-local-20261026.json)가 fixture 최초
+실패와 정확한 helper 범위를 소유한다. 실제 승인/반입/CLI·native upgrade는 미완료이며
+다음 L4-C의 concrete journal/links/receipt 참여를 이어간다.

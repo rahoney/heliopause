@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L4A — final-interpreter-bound offline materializer helper/default and full Promotion Race named local QUALIFIED; tool backend/publication remain
+Last completed substep: P4-L4B — inert UV receipt layout projection and fresh target/external command guards named local QUALIFIED; current approval/publication remain
 Next action: M13-004 — persistent tool explicit target/exposed-root guard, current approval/cache and atomic publication; then original upgrade/pipx/public CLI; grouped final CI boundary retained
-Current substep: M13-004/P4-L4B explicit target/command-root guard and native receipt layout binding; L1/L2/L3/L4A named local qualified
+Current substep: M13-004/P4-L4C fresh tool receipt/exposed links participation in existing venv journal/rollback; current backend/CLI remain
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5606,3 +5606,11 @@ canonical3·Promotion 전체 Race와 별도 inert recipe diagnostic을 연결한
 validator가 잡은 최초 view 위치 오류를 보존하고 separate sibling으로 교정했다. Host Python/
 Artifact command는 실행하지 않았고 backend/승인·반입/CLI는 아직 미완료다. 같은 M13-004의
 L4-B target/명령 root·receipt 결합을 계속하며 작은 helper별 push/CI는 추가하지 않는다.
+
+### 2026-10-26 P4-L4B target/receipt guards
+
+[L4-B receipt](./evidence/package-client-quarantine/p4l4b-tool-target-receipt-local-20261026.json)은
+canonical3·PyPI/Promotion 전체 Race와 strict native-layout projection·two-root/interpreter/
+command guard의 부정 회귀를 연결한다. Fixture 권한으로 assertion 전 실패한 최초 원본은
+보존했다. Actual approval/반입/CLI는 미완료이며 같은 M13-004에서 L4-C의 receipt/노출
+links를 기존 원복에 참여시킨다. 작은 helper별 push/full CI는 추가하지 않는다.
