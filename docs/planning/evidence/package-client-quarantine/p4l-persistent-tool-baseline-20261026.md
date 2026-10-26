@@ -348,3 +348,42 @@ Namespace·두 root·empty 원본·alias bytes·command 충돌/대소문자·동
 보존을 확인했다. [L4-B receipt](./p4l4b-tool-target-receipt-local-20261026.json)가 fixture 최초
 실패와 정확한 helper 범위를 소유한다. 실제 승인/반입/CLI·native upgrade는 미완료이며
 다음 L4-C의 concrete journal/links/receipt 참여를 이어간다.
+
+L4-C 최초 Quick137.822s는 publication/원복 본체 뒤 Close에서 destination directory identity
+drift였다. 새 publication 소비자가 기존 engine이 정상 제거한 backup까지 fresh guard의
+전체 mutation inventory로 다시 검사했다. 원본 p4l4c-tool-publication-v1-quick을 보존한다.
+종료 검사는 persistent venv/site/scripts/bin roots·config·두 mutation lock의 identity/mode를
+유지하며, engine이 이미 폐기한 temporary backup을 요구하지 않는 별도 release helper로
+분리한다. Persistent root 변경 거부와 동일 publication/원복/취소 회귀를 재검증한다.
+
+### L4-D current primary install workflow baseline·수정 지도·재검토
+
+Existing PreparedInstallService/InstallSession·InstallInspectService·Evidence Manifest/LocalStaging·
+verifyPythonSelectionManifest는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named pip/UV pip)다.
+UVToolSelection/L1..L4C의 실제 native/source/receipt/guard/RECORD/rollback helper는 재사용한다.
+Tool 전용 session·여섯 native/Host controls·target-bound materializer·그 approved publication
+연결은 NO/NO/NO/NO이며 현재 gap이다. Project cache/새 Core intent/Policy는 만들지 않는다.
+
+Promotion의 concrete native-tool selector와 기존 InstallPreparation를 연결한다. Begin에서
+existing explicit target와 bin root를 동결하고 native fresh selection 뒤 projected receipt와
+target/root/config/interpreter fingerprint control을 원본 네 controls와 함께 Manifest로 전달한다.
+Source/runtime/whole wheel graph가 일치하지 않으면 current inspection 앞에 결과를 반환하지 않는다.
+Approve 뒤 기존 staged-bundle 검증을 공용 내부 helper로 옮겨 그대로 재사용하고 동일 RECORD
+materializer의 tool recipe·C의 journal/publication을 호출한다. Host Python/노출 명령은 실행하지 않는다.
+
+Tool private materialization은 approved input files·validated output destinations의 명시 inventory로
+정리하며 unknown bytes를 새 ownership으로 채택하지 않는다. Existing PNPMPreparedProject의
+whole file body reader를 large Python wheel 정리에 전용하지 않고 기존 bounded/streaming
+pypiFileSnapshot을 재사용한다. Cleanup을 backup 폐기 전에 같은 원복 경계에 포함하며 source
+outputs가 실제 transaction으로 이동한 경우만 inventory에서 retire한다. Future placeholder나
+기존 qualified implementation의 대체는 없다. CLI/original native upgrade/pipx·최종 profile
+qualification은 별도 남은 acceptance다.
+
+L4-C named local 최종은 focused Race13.257s(test2.609s), Quick162.708s/security10.887s/
+docs0.261s·Promotion 전체 Race145.864s(test143.664s)가 PASS다. Receipt/두 exposed links와
+세 distribution files를 함께 반영하고 일곱 fault/중간 취소에서 원복했다. Foreign link는
+journal/backup/두 guard와 보존하며 late private foreign cleanup 실패는 원래 venv/receipt/
+links 원복 뒤에도 foreign bytes·복구 경계를 보존한다. Persistent root 변경은 release에서
+계속 거부한다. [L4-C receipt](./p4l4c-tool-atomic-publication-local-20261026.json)가 최초 Close
+오류와 finite optional hooks 외 기존 engine 본문 동일성을 연결한다. Actual current 승인/
+backend/CLI는 다음 L4-D이며 전체 persistent tools 완료나 Host command 실행 성공은 아니다.

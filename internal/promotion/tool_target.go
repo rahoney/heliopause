@@ -288,7 +288,7 @@ func (g *toolFreshTarget) Close() error {
 			g.closeErr = errors.Join(g.closeErr, err)
 		}
 	}
-	if err := g.tx.verifyIdentity(); err != nil {
+	if err := g.verifyReleaseIdentity(); err != nil {
 		g.tx.recovery = true
 		g.closeErr = errors.Join(g.closeErr, err)
 	}
@@ -302,4 +302,28 @@ func (g *toolFreshTarget) Close() error {
 	}
 	g.closeErr = errors.Join(g.closeErr, g.tx.close())
 	return g.closeErr
+}
+
+// The common engine has already removed its owned backup after publication or
+// successful rollback. Release checks persistent roots, not retired temporary
+// directories from that engine's mutation inventory.
+func (g *toolFreshTarget) verifyReleaseIdentity() error {
+	if err := g.tx.guard.verify(); err != nil {
+		return err
+	}
+	if !g.tx.config.matches(filepath.Join(g.tx.plan.root, "pyvenv.cfg")) {
+		return errors.New("tool venv configuration changed before guard release")
+	}
+	roots := []string{g.tx.plan.root, g.tx.plan.site, filepath.Join(g.tx.plan.root, "bin")}
+	if g.bin.root != nil {
+		roots = append(roots, g.binRoot)
+	}
+	for _, path := range roots {
+		before, ok := g.tx.directories[path]
+		info, err := os.Lstat(path)
+		if !ok || err != nil || !os.SameFile(before, info) || before.Mode() != info.Mode() {
+			return errors.New("tool persistent root changed before guard release")
+		}
+	}
+	return nil
 }

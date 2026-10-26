@@ -326,6 +326,7 @@ func (g pypiVenvGuard) release() (resultErr error) {
 // One guard, backup area and ledger cover all exact destinations.
 type pypiVenvTransaction struct {
 	project                                         *uvProjectFileTransaction
+	tool                                            *toolPublication
 	plan                                            pypiVenvPlan
 	guard                                           pypiVenvGuard
 	current                                         pypiVenvState
@@ -464,6 +465,9 @@ func (t *pypiVenvTransaction) freezeParents(path string) error {
 	return nil
 }
 func (t *pypiVenvTransaction) verifyIdentity() error {
+	if err := t.tool.verifyBoundary(); err != nil {
+		return err
+	}
 	if t.project != nil {
 		if err := t.project.guard.verify(); err != nil {
 			return err
@@ -515,6 +519,9 @@ func (t *pypiVenvTransaction) checkBefore() error {
 // Check the fixed roots and the current file's ancestry at each mutation;
 // full directory-set reconciliation remains at freeze and completion.
 func (t *pypiVenvTransaction) verifyPathIdentity(path string) error {
+	if err := t.tool.verifyBoundary(); err != nil {
+		return err
+	}
 	if t.project != nil {
 		if err := t.project.guard.verify(); err != nil {
 			return err
@@ -712,6 +719,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 		}
 		if err := t.appendJournal(struct {
 			Project           *uvProjectJournalControls `json:",omitempty"`
+			Tool              *toolPublicationJournal   `json:",omitempty"`
 			Root              string
 			Before            map[string]*pypiFileSnapshot
 			Current, Desired  pypiVenvState
@@ -719,7 +727,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			Metadata          *pypiFileSnapshot
 			Directories       map[string]pypiFileSnapshot
 			AbsentDirectories map[string]bool
-		}{t.projectJournal(), t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
+		}{t.projectJournal(), t.tool.journal(), t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
 			return err
 		}
 	}
@@ -839,6 +847,9 @@ func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, co
 	if t.project != nil {
 		return errors.New("held project controls require explicit project publication")
 	}
+	if t.tool != nil {
+		return errors.New("held tool controls require explicit tool publication")
+	}
 	return t.commitSelectionWithProject(destinations, complete, dependencyFree)
 }
 
@@ -848,6 +859,10 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 		return err
 	}
 	projectControls, err := t.prepareProjectControls()
+	if err != nil {
+		return err
+	}
+	toolControls, err := t.prepareToolControls()
 	if err != nil {
 		return err
 	}
@@ -876,6 +891,13 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 				return
 			}
 		}
+		if t.tool != nil {
+			if err := t.tool.cleanup(); err != nil {
+				t.recovery = true
+				resultErr = errors.Join(resultErr, err, errors.New("tool cleanup uncertain; recovery retained"))
+				return
+			}
+		}
 		if err := t.removeBackup(resultErr == nil); err != nil {
 			t.recovery = true
 			resultErr = errors.Join(resultErr, err, errors.New("recovery cleanup failed"))
@@ -899,6 +921,7 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 		}
 	}
 	ordered = append(ordered, projectControls...)
+	ordered = append(ordered, toolControls...)
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].key() < ordered[j].key() })
 	backups := append(append([]pypiDestination(nil), ordered...), obsolete...)
 	for _, d := range backups {
@@ -1009,6 +1032,9 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 			return err
 		}
 	}
+	if err := t.tool.publishLinks(); err != nil {
+		return err
+	}
 	if err := t.step("sync"); err != nil {
 		return err
 	}
@@ -1031,6 +1057,9 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 		return err
 	}
 	if err := t.plan.verifyState(desired); err != nil {
+		return err
+	}
+	if err := t.tool.verifyPublished(); err != nil {
 		return err
 	}
 	for _, d := range ordered {
@@ -1070,12 +1099,15 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 	if t.project != nil {
 		return t.project.cleanup()
 	}
+	if t.tool != nil {
+		return t.tool.cleanup()
+	}
 	return nil
 }
 func (t *pypiVenvTransaction) syncDirectories() error {
 	paths := []string{}
 	for path := range t.directories {
-		if path == t.plan.root || pathWithin(t.plan.root, path) || t.project != nil && path == t.project.root {
+		if path == t.plan.root || pathWithin(t.plan.root, path) || t.project != nil && path == t.project.root || t.tool != nil && path == t.tool.guard.binRoot {
 			paths = append(paths, path)
 		}
 	}
@@ -1092,6 +1124,9 @@ func (t *pypiVenvTransaction) rollback() error {
 		return err
 	}
 	if err := t.verifyIdentity(); err != nil {
+		return err
+	}
+	if err := t.tool.rollbackLinks(); err != nil {
 		return err
 	}
 	meta := filepath.Join(t.plan.root, pypiVenvMetadata)

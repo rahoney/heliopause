@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L4B — inert UV receipt layout projection and fresh target/external command guards named local QUALIFIED; current approval/publication remain
+Last completed substep: P4-L4C — fresh receipt/external links in existing venv journal, fault/cancel rollback and foreign recovery named local QUALIFIED; actual tool backend remains
 Next action: M13-004 — persistent tool explicit target/exposed-root guard, current approval/cache and atomic publication; then original upgrade/pipx/public CLI; grouped final CI boundary retained
-Current substep: M13-004/P4-L4C fresh tool receipt/exposed links participation in existing venv journal/rollback; current backend/CLI remain
+Current substep: M13-004/P4-L4D ordinary current whole inspection/Manifest/staging to guarded tool native selector/materializer/publication; CLI/native upgrades remain
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5614,3 +5614,11 @@ canonical3·PyPI/Promotion 전체 Race와 strict native-layout projection·two-r
 command guard의 부정 회귀를 연결한다. Fixture 권한으로 assertion 전 실패한 최초 원본은
 보존했다. Actual approval/반입/CLI는 미완료이며 같은 M13-004에서 L4-C의 receipt/노출
 links를 기존 원복에 참여시킨다. 작은 helper별 push/full CI는 추가하지 않는다.
+
+### 2026-10-26 P4-L4C fresh receipt/links atomic helper
+
+[L4-C receipt](./evidence/package-client-quarantine/p4l4c-tool-atomic-publication-local-20261026.json)은
+기존 venv engine의 optional participant·전체 Promotion Race와 fault/cancel·foreign/late cleanup
+원복을 연결한다. Native receipt는 distribution ownership으로 위장하지 않으며 두 root와
+journal·복구 경계를 보존한다. 최초 Close lifecycle 오류는 원본에 남겼다. 실제 tool current
+approval/반입·CLI는 아직 미완료이고 같은 M13-004에서 L4-D를 계속한다. 새 push/full CI는 없다.
