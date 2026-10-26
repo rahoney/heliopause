@@ -207,3 +207,53 @@ M4-A1 native receipt DATA projection은 canonical Quick250.828s/security13.770s/
 고정 native Python·private exposure projection을 확인했다.
 [A1 receipt](./p4m4a-uv-tool-native-layout-local-20261026.json)가 source와 검증 범위를 소유한다.
 Metadata-only archive/native query/actual upgrade/current update pipeline은 아직 미완료다.
+
+### M4-A2 bounded original replay archive 착수 감사·수정 지도·재검토
+
+A1 receipt projection은 named local QUALIFIED다. 기존 UpgradeInput METADATA/strict native
+receipt, UV installed WHEEL header·tag grammar, fresh whole output scanner, archive stdin
+transport와 private native session은 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named scopes)다.
+Original METADATA/WHEEL의 exact membership와 controller-only replay archive는 NO/NO/NO/NO다.
+MISSING은 bounded canonical original controls, runtime/receipt/alias/비실행 command placeholder
+구성, generated-only RECORD, malformed/collision/zero-transfer 회귀다. Actual upgrade/query와
+current approval/Host publication은 이후 M4-B/C/D이며 이 helper 성공으로 닫지 않는다.
+
+기존 uv_installed_controls.go의 per-distribution header parser 본문을 private helper로
+기계적으로 추출해 fresh selector와 replay 검증이 공유한다. 기존 aggregate/lock/candidate
+선택은 유지한다. 새 replay 검증은 M1 original metadata와 정확히 같은 WHEEL controls만 받고
+기존 expanded tag/compatibility grammar·중복/aggregate bound를 사용한다. WHEEL은 후보 선택
+데이터이며 authentic old wheel·ownership/이전 ALLOW를 대신하지 않는다.
+
+Sandbox archive builder는 fixed current Python/UV cfg와 image Python aliases, A1 native receipt,
+받은 METADATA/WHEEL 및 controller가 생성한 metadata·placeholder 경로만 기록한 RECORD를
+생성한다. Old command는 실행 bit 없는 고정 placeholder이며 원본 프로그램/.pth/compiled
+code/원본 RECORD/Host interpreter를 담지 않는다. RECORD의 main command 경로는 생성한
+placeholder만 가리켜 native retirement가 inert 원본에도 동일하게 작동하도록 한다. 전체
+relative paths/type/link target/UID/GID/mode/수량·bytes를 닫고 docker cp --archive stdin만
+사용한다. User bytes가 executable 명령·tar 경로 또는 runtime alias가 되지 않는다.
+
+수정 지도는 기존 per-control parser 공유, replay validator 및 tar/전송 helper와 해당 tests다.
+기존 selector/scanner는 대체하지 않으며 cfg literal은 동일한 shared producer/validator로 묶는다.
+두 번째 검토: fake lock·unverified archive selection으로 기존 selector를 우회하지 않고 실제
+archive/source binding은 M4-B에 유지한다. Controller DATA construction과 actual gVisor query
+admission을 분리하고 역할·권한·예산을 넓히지 않는다. Local canonical/관련 전체 Race 및
+필요한 named offline native consumer를 검증한 뒤 실제 upgrade session 연결을 계속한다.
+
+A2 first Quick231.061s는 unsupported-WHEEL fixture가 이미 지원된2.0을 사용한 것과
+controller tools/.lock0600이 기존 pinned native reader의 empty0666 규칙과 다른 두 오류였다.
+Fixture를99.0으로, private0700 tool home의 빈 auxiliary만 native와 같은 mode로 교정했다.
+기존 supportedWheelVersion·whole reader의 거부 규칙은 유지한다.
+
+별도 검토에서 새 replay validator가 raw bound 전에 bytes.Clone하는 경로를 확인했다.
+같은 test SHA60103987의 focused before3.648s/FAIL은1,048,577B 입력 거부에1,061,300B/op를
+할당했고 raw bounds 선행 후 after3.434s/PASS는4,209B/op였다. Valid controls의 defensive
+copy와 모든 membership/tag 검사는 유지했다. 이는 새 prototype의 한정된 allocation 측정이며
+RSS/누수나 과거 Windows OOM 원인으로 쓰지 않는다. First assessment/allocation before·after
+및 shared parser/cfg mechanical reuse 원본을 보존하고 최종 canonical/전체 관련 Race를 확인한다.
+
+A2 final canonical Quick239.500s/security14.192s/docs0.280s와 PyPI/Sandbox 전체
+Race26.057s가 PASS다. Existing scanner가 controller replay를 DATA로 읽는 회귀와 fixed stdin
+transport/zero-transfer·primary cause/취소·membership/tag/bounds/collision/RECORD 경계를
+확인했다. Actual native query/upgrade, source binding/current update/CLI는 미완료이며
+[A2 receipt](./p4m4b-uv-tool-original-replay-local-20261026.json)가 named scope를 소유한다.
+같은 M13-004에서 M4-B actual resolver를 계속하며 helper별 push/CI는 추가하지 않는다.

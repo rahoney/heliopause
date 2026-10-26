@@ -130,8 +130,9 @@ type InstalledProject struct {
 	extraRequirements           []BoundedRequirement
 }
 
-func (p InstalledProject) Project() string { return p.project }
-func (p InstalledProject) Version() string { return p.version }
+func (p InstalledProject) Project() string   { return p.project }
+func (p InstalledProject) Version() string   { return p.version }
+func (p InstalledProject) Directory() string { return p.directory }
 
 // Requirements returns active version constraints. Extra obligations are kept
 // separately by UpgradeInput.RequiredUpgradeExtras and the immutable metadata.

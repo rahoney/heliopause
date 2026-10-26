@@ -150,7 +150,7 @@ func scanUVToolNativeOutput(input io.Reader, project string, expectedLock []byte
 				}
 				lock = body
 			default:
-				expected := fmt.Sprintf("home = /usr/local/bin\nimplementation = CPython\nuv = %s\nversion_info = %s\ninclude-system-site-packages = false\n", runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
+				expected := uvToolVenvConfiguration()
 				if string(body) != expected {
 					return uvToolNativeOutput{}, errors.New("UV tool environment differs from pinned Python")
 				}
@@ -210,4 +210,8 @@ func scanUVToolNativeOutput(input io.Reader, project string, expectedLock []byte
 	}
 	sort.Slice(result.controls, func(i, j int) bool { return result.controls[i].DistInfo < result.controls[j].DistInfo })
 	return result, nil
+}
+
+func uvToolVenvConfiguration() string {
+	return fmt.Sprintf("home = /usr/local/bin\nimplementation = CPython\nuv = %s\nversion_info = %s\ninclude-system-site-packages = false\n", runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
 }

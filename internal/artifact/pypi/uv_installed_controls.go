@@ -23,12 +23,7 @@ func selectUVInstalledWheelControls(packages []UVLockedPackage, python string, c
 	if controls == nil || (!allowEmpty && len(packages) == 0) || len(controls) != len(packages) {
 		return nil, errors.New("uv installed controls are incomplete")
 	}
-	type installedWheel struct {
-		Name    string   `json:"name"`
-		Version string   `json:"version"`
-		Tags    []string `json:"wheel_tags"`
-	}
-	snapshot := make([]installedWheel, 0, len(controls))
+	snapshot := make([]uvInstalledWheelSnapshot, 0, len(controls))
 	var total int
 	for _, control := range controls {
 		for _, body := range [][]byte{control.Metadata, control.Wheel} {
@@ -37,29 +32,45 @@ func selectUVInstalledWheelControls(packages []UVLockedPackage, python string, c
 			}
 			total += len(body)
 		}
-		metadata, err := parseRFC822Metadata(control.Metadata, defaultWheelMaxMetadata)
-		if err != nil || len(metadata.all("name")) != 1 || len(metadata.all("version")) != 1 {
-			return nil, errors.New("uv installed metadata identity is invalid")
+		value, err := readUVInstalledWheelControl(control)
+		if err != nil {
+			return nil, err
 		}
-		rawName, _ := metadata.first("name")
-		name, err := NormalizeProjectName(rawName)
-		version, _ := metadata.first("version")
-		if err != nil || control.DistInfo != wheelDistInfo(name, version) {
-			return nil, errors.New("uv installed dist-info identity differs from metadata")
-		}
-		wheel, err := parseRFC822Metadata(control.Wheel, defaultWheelMaxMetadata)
-		if err != nil || len(wheel.all("wheel-version")) != 1 {
-			return nil, errors.New("uv installed WHEEL header is invalid")
-		}
-		wheelVersion, _ := wheel.first("wheel-version")
-		if !supportedWheelVersion(wheelVersion) {
-			return nil, errors.New("uv installed WHEEL version is unsupported")
-		}
-		snapshot = append(snapshot, installedWheel{name, version, wheel.all("tag")})
+		snapshot = append(snapshot, value)
 	}
 	body, err := json.Marshal(snapshot)
 	if err != nil {
 		return nil, errors.New("uv installed snapshot encoding failed")
 	}
 	return selectUVInstalledWheels(packages, python, body, target, allowEmpty)
+}
+
+type uvInstalledWheelSnapshot struct {
+	Name    string   `json:"name"`
+	Version string   `json:"version"`
+	Tags    []string `json:"wheel_tags"`
+}
+
+// The existing per-control header grammar is shared without granting archive
+// authentication. Callers retain their own aggregate and selection boundaries.
+func readUVInstalledWheelControl(control UVInstalledWheelControls) (uvInstalledWheelSnapshot, error) {
+	metadata, err := parseRFC822Metadata(control.Metadata, defaultWheelMaxMetadata)
+	if err != nil || len(metadata.all("name")) != 1 || len(metadata.all("version")) != 1 {
+		return uvInstalledWheelSnapshot{}, errors.New("uv installed metadata identity is invalid")
+	}
+	rawName, _ := metadata.first("name")
+	name, err := NormalizeProjectName(rawName)
+	version, _ := metadata.first("version")
+	if err != nil || control.DistInfo != wheelDistInfo(name, version) {
+		return uvInstalledWheelSnapshot{}, errors.New("uv installed dist-info identity differs from metadata")
+	}
+	wheel, err := parseRFC822Metadata(control.Wheel, defaultWheelMaxMetadata)
+	if err != nil || len(wheel.all("wheel-version")) != 1 {
+		return uvInstalledWheelSnapshot{}, errors.New("uv installed WHEEL header is invalid")
+	}
+	wheelVersion, _ := wheel.first("wheel-version")
+	if !supportedWheelVersion(wheelVersion) {
+		return uvInstalledWheelSnapshot{}, errors.New("uv installed WHEEL version is unsupported")
+	}
+	return uvInstalledWheelSnapshot{name, version, wheel.all("tag")}, nil
 }
