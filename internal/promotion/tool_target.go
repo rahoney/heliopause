@@ -104,6 +104,26 @@ func snapshotToolInterpreter(path string) ([]toolInterpreterMember, error) {
 	return nil, errors.New("tool interpreter alias chain exceeds bounds")
 }
 
+func verifyToolInterpreterSnapshot(members []toolInterpreterMember) error {
+	for _, member := range members {
+		info, err := os.Lstat(member.path)
+		if err != nil || !os.SameFile(member.info, info) || member.info.Mode() != info.Mode() {
+			return errors.New("tool interpreter identity changed")
+		}
+		if member.file != nil {
+			if !member.file.matches(member.path) {
+				return errors.New("tool interpreter bytes changed")
+			}
+		} else {
+			link, err := os.Readlink(member.path)
+			if err != nil || link != member.link {
+				return errors.New("tool interpreter alias changed")
+			}
+		}
+	}
+	return nil
+}
+
 func beginToolFreshTarget(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string) (result *toolFreshTarget, resultErr error) {
 	return beginToolTarget(ctx, install, requirement, binRoot, trustedRoots, false)
 }
@@ -224,21 +244,8 @@ func (g *toolFreshTarget) verify(ctx context.Context) error {
 			return errors.New("fresh tool requires an empty distribution and ownership namespace")
 		}
 	}
-	for _, member := range g.interpreter {
-		info, err := os.Lstat(member.path)
-		if err != nil || !os.SameFile(member.info, info) || member.info.Mode() != info.Mode() {
-			return errors.New("tool interpreter identity changed")
-		}
-		if member.file != nil {
-			if !member.file.matches(member.path) {
-				return errors.New("tool interpreter bytes changed")
-			}
-		} else {
-			link, err := os.Readlink(member.path)
-			if err != nil || link != member.link {
-				return errors.New("tool interpreter alias changed")
-			}
-		}
+	if err := verifyToolInterpreterSnapshot(g.interpreter); err != nil {
+		return err
 	}
 	if err := g.verifyCommandCaseCollisions(); err != nil {
 		return err

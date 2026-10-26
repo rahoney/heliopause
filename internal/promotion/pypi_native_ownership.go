@@ -246,6 +246,10 @@ func proveNativePyPIWheelFootprint(project *pypiNativeDistribution, wheel artifa
 }
 
 func proveNativePythonWheelFootprint(client pypiNativeClient, project *pypiNativeDistribution, wheel artifactpypi.WheelInspection, digest string, loadRuntime func() (pypiNativeRuntime, error)) ([]pypiDestination, []pypiNativeProofFile, error) {
+	return proveNativePythonWheelFootprintWithUVToolScripts(client, project, wheel, digest, loadRuntime, nil)
+}
+
+func proveNativePythonWheelFootprintWithUVToolScripts(client pypiNativeClient, project *pypiNativeDistribution, wheel artifactpypi.WheelInspection, digest string, loadRuntime func() (pypiNativeRuntime, error), scripts *uvNativeToolScriptProof) ([]pypiDestination, []pypiNativeProofFile, error) {
 	if nativeClientName(client) == "" {
 		return nil, nil, errors.New("native installer format is unsupported")
 	}
@@ -267,12 +271,29 @@ func proveNativePythonWheelFootprint(client pypiNativeClient, project *pypiNativ
 	if wheel.Project != project.project || wheel.Version != project.version || wheel.ObservedSHA256 != digest || wheel.DeclaredSHA256 != digest {
 		return nil, nil, errors.New("native footprint is not bound to the authentic original wheel")
 	}
+	var scriptClaims map[string]string
 	for _, entry := range wheel.Surface.EntryPointDetails {
 		if entry.Group == "console_scripts" || entry.Group == "gui_scripts" {
-			return nil, nil, errors.New("native generated entry-point ownership is unsupported")
+			if scripts == nil || client != nativeUVClient {
+				return nil, nil, errors.New("native generated entry-point ownership is unsupported")
+			}
+			key, err := scripts.scriptClaim(project, entry)
+			if err != nil {
+				return nil, nil, err
+			}
+			if scriptClaims == nil {
+				scriptClaims = map[string]string{}
+			}
+			if scriptClaims[key] != "" {
+				return nil, nil, errors.New("native UV console-script ownership is ambiguous")
+			}
+			scriptClaims[key] = "pinned-uv-console-script"
 		}
 	}
 	matched := map[string]string{}
+	for key, role := range scriptClaims {
+		matched[key] = role
+	}
 	pythonSources := map[string]pypiNativeFile{}
 	selfKey := "site/" + project.directory + "/RECORD"
 	for _, file := range wheel.Surface.InstalledFiles {
