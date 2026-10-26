@@ -17,8 +17,8 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-L4E — public fresh uv tool install JSON/human/foreign refusals plus existing UV CLI actual named local QUALIFIED; original upgrades/pipx remain
 Next action: M13-004 — grouped P4 project/fresh tool CI checkpoint with actual timer; continue native original tool upgrade diagnostic and managed ownership/retired links
-Current substep: M13-004/P4-M native original tool upgrade baseline/controlled replay diagnostic; pipx remains
-Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
+Current substep: M13-004/P4-M2 held original roots/receipt/managed scripts/exposed link guard; M1 typed original/intent input named local QUALIFIED; native adapter/pipx remain
+Acceptance audit: CI414 RUNNING/QUEUED on backend294bb57/tree5a140885; real timer due2026-10-26T03:48:42Z; public CLI64cb05d local only; CI413 closed; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
