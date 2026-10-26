@@ -16,9 +16,9 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-M4D — public managed uv tool upgrade JSON/human/current full approval plus canonical CI bootstrap/sandbox recipes named local QUALIFIED; remote cohort/native adoption/pipx remain
-Next action: M13-004 — push the qualified UV tool end-to-end cohort once, register actual CI timer, continue N native tool ownership baseline/source proof while it runs
-Current substep: M13-004/P4-N native tool original ownership baseline; M4-D public managed upgrade named local QUALIFIED; public native adoption/pipx remain
-Acceptance audit: CI414 final consumed04:10:00UTC: 8SUCCESS/Quick+Required FAILURE; whole10 checkout/source matches; Linux72/observer121/CPU258.26s/helper9wait0 PASS; fixture foreground mitigation LOCAL VERIFIED, remote Git2.55 OPEN; later local source separate; no active CI timer
+Next action: M13-004 — investigate CI415 PNPM peer RAW SENDTO fd14 FD_STATE_UNKNOWN; preserve N1 local DATA matcher and use targeted existing consumer before another grouped CI
+Current substep: M13-004 — CI415 common FD tracking investigation; P4-N1 byte matcher local qualified only, production native tool adoption/pipx remain
+Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate

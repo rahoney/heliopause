@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "scope": "OFFLINE_SYNTHETIC_NATIVE_SCRIPT_DATA_ONLY; wrappers never executed; no public source/ownership/Policy qualification",
+  "uv": "0.13.4",
+  "wheel_sha256": "10157dc50eb58c4db50de41ee4946184c8e880412fba02f69d310ff5058922de",
+  "cases": [
+    {
+      "name": "short",
+      "python": "/workspace/short/tools/haa-tool-fixture/bin/python",
+      "scripts": [
+        {
+          "name": "haa-demo",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/short/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvd29ya3NwYWNlL3Nob3J0L3Rvb2xzL2hhYS10b29sLWZpeHR1cmUvYmluL3B5dGhvbgojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "61eb4d245b9ccb368aced7e93531025e12cecc3393961c0031faabb6f2445f66",
+          "mode": "0o755"
+        },
+        {
+          "name": "haa-alt",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/short/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvd29ya3NwYWNlL3Nob3J0L3Rvb2xzL2hhYS10b29sLWZpeHR1cmUvYmluL3B5dGhvbgojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "61eb4d245b9ccb368aced7e93531025e12cecc3393961c0031faabb6f2445f66",
+          "mode": "0o755"
+        }
+      ]
+    },
+    {
+      "name": "space",
+      "python": "/workspace/has space/tools/haa-tool-fixture/bin/python",
+      "scripts": [
+        {
+          "name": "haa-demo",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/has space/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL2hhcyBzcGFjZS90b29scy9oYWEtdG9vbC1maXh0dXJlL2Jpbi9weXRob24nICIkMCIgIiRAIgonICcnJwojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "fcc72fcb9500a17dd4c806f8b80e7d1d6440877906efa6d11bc242da0d8e9462",
+          "mode": "0o755"
+        },
+        {
+          "name": "haa-alt",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/has space/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL2hhcyBzcGFjZS90b29scy9oYWEtdG9vbC1maXh0dXJlL2Jpbi9weXRob24nICIkMCIgIiRAIgonICcnJwojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "fcc72fcb9500a17dd4c806f8b80e7d1d6440877906efa6d11bc242da0d8e9462",
+          "mode": "0o755"
+        }
+      ]
+    },
+    {
+      "name": "long",
+      "python": "/workspace/pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/tools/haa-tool-fixture/bin/python",
+      "scripts": [
+        {
+          "name": "haa-demo",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL3BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcC90b29scy9oYWEtdG9vbC1maXh0dXJlL2Jpbi9weXRob24nICIkMCIgIiRAIgonICcnJwojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "73876972ce5460db1cc6df112c21ad8299c4c7de8637d75f1baba6a1dcf74da3",
+          "mode": "0o755"
+        },
+        {
+          "name": "haa-alt",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL3BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcC90b29scy9oYWEtdG9vbC1maXh0dXJlL2Jpbi9weXRob24nICIkMCIgIiRAIgonICcnJwojIC0qLSBjb2Rpbmc6IHV0Zi04IC0qLQppbXBvcnQgc3lzCmZyb20gaGFhX3Rvb2xfZml4dHVyZSBpbXBvcnQgbWFpbgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQobWFpbigpKQo=",
+          "sha256": "73876972ce5460db1cc6df112c21ad8299c4c7de8637d75f1baba6a1dcf74da3",
+          "mode": "0o755"
+        }
+      ]
+    },
+    {
+      "name": "quote",
+      "python": "/workspace/single ' quoted/tools/haa-tool-fixture/bin/python",
+      "scripts": [
+        {
+          "name": "haa-demo",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/single ' quoted/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL3NpbmdsZSAnIiciJyBxdW90ZWQvdG9vbHMvaGFhLXRvb2wtZml4dHVyZS9iaW4vcHl0aG9uJyAiJDAiICIkQCIKJyAnJycKIyAtKi0gY29kaW5nOiB1dGYtOCAtKi0KaW1wb3J0IHN5cwpmcm9tIGhhYV90b29sX2ZpeHR1cmUgaW1wb3J0IG1haW4KaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIGlmIHN5cy5hcmd2WzBdLmVuZHN3aXRoKCItc2NyaXB0LnB5dyIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi0xMV0KICAgIGVsaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi5leGUiKToKICAgICAgICBzeXMuYXJndlswXSA9IHN5cy5hcmd2WzBdWzotNF0KICAgIHN5cy5leGl0KG1haW4oKSkK",
+          "sha256": "52f6b732a59dc069a82fe9d56e639c7c8daf4c4f1991f70421ca791fe146ca9a",
+          "mode": "0o755"
+        },
+        {
+          "name": "haa-alt",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/single ' quoted/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL3NpbmdsZSAnIiciJyBxdW90ZWQvdG9vbHMvaGFhLXRvb2wtZml4dHVyZS9iaW4vcHl0aG9uJyAiJDAiICIkQCIKJyAnJycKIyAtKi0gY29kaW5nOiB1dGYtOCAtKi0KaW1wb3J0IHN5cwpmcm9tIGhhYV90b29sX2ZpeHR1cmUgaW1wb3J0IG1haW4KaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIGlmIHN5cy5hcmd2WzBdLmVuZHN3aXRoKCItc2NyaXB0LnB5dyIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi0xMV0KICAgIGVsaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi5leGUiKToKICAgICAgICBzeXMuYXJndlswXSA9IHN5cy5hcmd2WzBdWzotNF0KICAgIHN5cy5leGl0KG1haW4oKSkK",
+          "sha256": "52f6b732a59dc069a82fe9d56e639c7c8daf4c4f1991f70421ca791fe146ca9a",
+          "mode": "0o755"
+        }
+      ]
+    },
+    {
+      "name": "utf8",
+      "python": "/workspace/éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé/tools/haa-tool-fixture/bin/python",
+      "scripts": [
+        {
+          "name": "haa-demo",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL8Opw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpL3Rvb2xzL2hhYS10b29sLWZpeHR1cmUvYmluL3B5dGhvbicgIiQwIiAiJEAiCicgJycnCiMgLSotIGNvZGluZzogdXRmLTggLSotCmltcG9ydCBzeXMKZnJvbSBoYWFfdG9vbF9maXh0dXJlIGltcG9ydCBtYWluCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICBpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLXNjcmlwdC5weXciKToKICAgICAgICBzeXMuYXJndlswXSA9IHN5cy5hcmd2WzBdWzotMTFdCiAgICBlbGlmIHN5cy5hcmd2WzBdLmVuZHN3aXRoKCIuZXhlIik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTRdCiAgICBzeXMuZXhpdChtYWluKCkpCg==",
+          "sha256": "0129496fd8914af64b34bef7ee8fa8ff67443823a99bf9e39c9065e091f6c437",
+          "mode": "0o755"
+        },
+        {
+          "name": "haa-alt",
+          "module": "haa_tool_fixture",
+          "attr": "main",
+          "python": "/workspace/éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé/tools/haa-tool-fixture/bin/python",
+          "body": "IyEvYmluL3NoCicnJ2V4ZWMnICcvd29ya3NwYWNlL8Opw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpL3Rvb2xzL2hhYS10b29sLWZpeHR1cmUvYmluL3B5dGhvbicgIiQwIiAiJEAiCicgJycnCiMgLSotIGNvZGluZzogdXRmLTggLSotCmltcG9ydCBzeXMKZnJvbSBoYWFfdG9vbF9maXh0dXJlIGltcG9ydCBtYWluCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICBpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLXNjcmlwdC5weXciKToKICAgICAgICBzeXMuYXJndlswXSA9IHN5cy5hcmd2WzBdWzotMTFdCiAgICBlbGlmIHN5cy5hcmd2WzBdLmVuZHN3aXRoKCIuZXhlIik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTRdCiAgICBzeXMuZXhpdChtYWluKCkpCg==",
+          "sha256": "0129496fd8914af64b34bef7ee8fa8ff67443823a99bf9e39c9065e091f6c437",
+          "mode": "0o755"
+        }
+      ]
+    }
+  ],
+  "origin": "p4m-tool-native-wrapper-query-v1-stdout.json and result.json; operator retained p4m prefix; immutable original preserved"
+}
