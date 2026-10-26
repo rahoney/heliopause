@@ -15,7 +15,7 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-// UVToolSelection is fresh native selection and independently bound archives.
+// UVToolSelection is native selection and independently bound archives.
 // It grants no inspection/Policy, target ownership or Host installation status.
 type UVToolSelection struct {
 	resolution domain.DependencyResolution
@@ -31,6 +31,41 @@ func (s UVToolSelection) Controls() []domain.ProjectControlFile {
 // session creates a fresh private tool home; original-environment upgrades need
 // a separate authenticated pre-query guard and are not routed here.
 func (r *UVResolver) ResolveToolInstall(ctx context.Context, requirement artifactpypi.UpgradeRequirement) (UVToolSelection, error) {
+	return r.resolveToolSelection(ctx, requirement, nil, nil, nil)
+}
+
+// ResolveToolUpgrade queries only a controller-created metadata-only view. The
+// caller retains the original Host guard and must still inspect and approve the
+// complete new selection; a native no-op grants no approval or ownership.
+func (r *UVResolver) ResolveToolUpgrade(ctx context.Context, original artifactpypi.UVToolUpgradeInput, wheels []artifactpypi.UVInstalledWheelControls) (UVToolSelection, error) {
+	if ctx == nil {
+		return UVToolSelection{}, errors.New("UV tool upgrade requires a context")
+	}
+	if err := ctx.Err(); err != nil {
+		return UVToolSelection{}, err
+	}
+	control, err := original.Control()
+	if err != nil {
+		return UVToolSelection{}, err
+	}
+	runtime := PinnedPythonRuntime()
+	checked, err := artifactpypi.ParseUVToolUpgradeInput([]domain.ProjectControlFile{control}, runtime.PythonVersion)
+	if err != nil {
+		return UVToolSelection{}, err
+	}
+	target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
+	wheels, err = checked.ReplayWheelControls(wheels, target)
+	if err != nil {
+		return UVToolSelection{}, err
+	}
+	wheelControl, err := checked.ReplayWheelsControl(wheels, target)
+	if err != nil {
+		return UVToolSelection{}, err
+	}
+	return r.resolveToolSelection(ctx, checked.Request(), &checked, wheels, []domain.ProjectControlFile{control, wheelControl})
+}
+
+func (r *UVResolver) resolveToolSelection(ctx context.Context, requirement artifactpypi.UpgradeRequirement, original *artifactpypi.UVToolUpgradeInput, wheels []artifactpypi.UVInstalledWheelControls, originalControls []domain.ProjectControlFile) (UVToolSelection, error) {
 	if r == nil || r.reader == nil || ctx == nil || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return UVToolSelection{}, errors.New("UV tool selection requires one supported public requirement")
 	}
@@ -41,19 +76,31 @@ func (r *UVResolver) ResolveToolInstall(ctx context.Context, requirement artifac
 	if err != nil || canonical.Requirement() != requirement.Requirement() {
 		return UVToolSelection{}, errors.New("UV tool requirement is not canonical")
 	}
+	operation, intent := "install", "fresh-install"
+	expected := requirement
+	if original != nil {
+		operation, intent = "upgrade", "managed-upgrade"
+		expected = original.Receipt().Requirement()
+	}
+	runtimeIdentity := "uv-tool-" + operation + ":" + UVResolverRuntimeIdentity()
 	var tool uvToolNativeOutput
 	native, err := r.withUVNativeSessionForToolInstall(ctx, func(ctx context.Context, session uvNativeSession) (uvNativeOutput, error) {
-		args := []string{uvToolGuestPath, "tool", "install", requirement.Requirement(), "--no-sources", "--link-mode", "copy"}
+		if original != nil {
+			if err := introduceUVToolUpgradeInput(ctx, r.reader.runner.(inputCommandRunner), session.container, *original, wheels); err != nil {
+				return uvNativeOutput{}, uvReaderFailure{"introduce metadata-only UV tool original failed", err}
+			}
+		}
+		args := []string{uvToolGuestPath, "tool", operation, requirement.Requirement(), "--no-sources", "--link-mode", "copy"}
 		args = append(args, uvNativeCommonArguments()...)
 		exec := boundaryExecArguments(session.container, boundaryLaunchMode, args...)
 		if _, err := r.reader.runner.Output(ctx, "docker", exec...); err != nil {
-			return uvNativeOutput{}, uvReaderFailure{"native UV tool install selection failed", err}
+			return uvNativeOutput{}, uvReaderFailure{"native UV tool " + operation + " selection failed", err}
 		}
 		first, err := readUVToolNativeOutput(ctx, r.reader.runner, session.container, requirement.Project(), nil)
 		if err != nil {
 			return uvNativeOutput{}, err
 		}
-		if !first.receipt.Requirement().SameConstraints(requirement) {
+		if !first.receipt.Requirement().SameConstraints(expected) {
 			return uvNativeOutput{}, errors.New("UV tool changed the requested root constraint")
 		}
 		frozen, reference, err := uvToolFrozenRequirements(first, requirement)
@@ -103,10 +150,11 @@ func (r *UVResolver) ResolveToolInstall(ctx context.Context, requirement artifac
 	if err != nil {
 		return UVToolSelection{}, err
 	}
-	controls, err := uvToolSelectionControls(requirement, tool)
+	controls, err := uvToolSelectionControlsForIntent(requirement, tool, intent, runtimeIdentity)
 	if err != nil {
 		return UVToolSelection{}, err
 	}
+	controls = append(controls, originalControls...)
 	var result UVToolSelection
 	err = r.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		graph, err := tool.receipt.BindWheels(lock, inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits())
@@ -129,7 +177,7 @@ func (r *UVResolver) ResolveToolInstall(ctx context.Context, requirement artifac
 		if err != nil {
 			return err
 		}
-		resolution, err := domain.NewDependencyResolution(graph, "uv-tool-install:"+UVResolverRuntimeIdentity(), digest)
+		resolution, err := domain.NewDependencyResolution(graph, runtimeIdentity, digest)
 		if err != nil {
 			return err
 		}
@@ -192,10 +240,14 @@ func uvToolFrozenRequirements(output uvToolNativeOutput, requirement artifactpyp
 }
 
 func uvToolSelectionControls(requirement artifactpypi.UpgradeRequirement, output uvToolNativeOutput) ([]domain.ProjectControlFile, error) {
+	return uvToolSelectionControlsForIntent(requirement, output, "fresh-install", "uv-tool-install:"+UVResolverRuntimeIdentity())
+}
+
+func uvToolSelectionControlsForIntent(requirement artifactpypi.UpgradeRequirement, output uvToolNativeOutput, operation, runtime string) ([]domain.ProjectControlFile, error) {
 	intent, err := json.Marshal(struct {
 		Version                                   int
 		Intent, Requirement, Runtime, RuntimeLock string
-	}{1, "fresh-install", requirement.Requirement(), "uv-tool-install:" + UVResolverRuntimeIdentity(), runtimeidentity.RuntimeLockSHA256})
+	}{1, operation, requirement.Requirement(), runtime, runtimeidentity.RuntimeLockSHA256})
 	if err != nil {
 		return nil, err
 	}

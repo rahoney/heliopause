@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L4E — public fresh uv tool install JSON/human/foreign refusals plus existing UV CLI actual named local QUALIFIED; original upgrades/pipx remain
-Next action: M13-004 — continue M4-B actual native upgrade/query/whole source binding; preserve CI414 failure and local fixture mitigation; defer new push to next necessary feature cohort
-Current substep: M13-004/P4-M4B actual native upgrade/query/source binding; M4-A2 metadata-only replay named local QUALIFIED; M1 input/M2 guard/M3 complete publication named local QUALIFIED; public upgrade/adoption/pipx remain
+Last completed substep: P4-M4B — metadata-only original actual upgrade/no-op plus complete public source binding and fresh/existing UV regression named local QUALIFIED; current update/CLI/adoption/pipx remain
+Next action: M13-004 — continue M4-C held original/current whole approval and complete Host update binding; preserve CI414 failure and local fixture mitigation; defer new push to next necessary feature cohort
+Current substep: M13-004/P4-M4C current update binding; M4-B actual upgrade/no-op/source binding named local QUALIFIED; M1 input/M2 guard/M3 complete publication named local QUALIFIED; public upgrade/adoption/pipx remain
 Acceptance audit: CI414 final consumed04:10:00UTC: 8SUCCESS/Quick+Required FAILURE; whole10 checkout/source matches; Linux72/observer121/CPU258.26s/helper9wait0 PASS; fixture foreground mitigation LOCAL VERIFIED, remote Git2.55 OPEN; later local source separate; no active CI timer
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED

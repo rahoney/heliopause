@@ -7104,6 +7104,8 @@ bool VerifyUVPythonQueryBoundary() {
     topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
     topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
     topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    topology.expected.push_back({"/haa-site", "workspace", "/", "9p", false, false, false, false});
+    topology.anchors.emplace(6, MountAnchor{6, "/haa-site", "workspace"});
     gvisor::sentry::ExecveInfo image;
     *image.mutable_context_data() = parent;
     auto* child = image.mutable_context_data();
@@ -7113,6 +7115,11 @@ bool VerifyUVPythonQueryBoundary() {
     child->set_process_name("arbitrary-name");
     image.set_binary_path("/usr/local/bin/python3.14");
     image.set_execfn(scenario == "canonical" ? "/usr/local/bin/python3.14" : "/usr/local/bin/python");
+    if (scenario.compare(0, 5, "tool-") == 0) image.set_execfn("/haa-site/tools/cowsay/bin/python");
+    if (scenario == "tool-traversal") image.set_execfn("/haa-site/tools/../cowsay/bin/python");
+    if (scenario == "tool-case") image.set_execfn("/haa-site/tools/Cowsay/bin/python");
+    if (scenario == "tool-other-alias") image.set_execfn("/haa-site/tools/cowsay/bin/python3");
+    if (scenario == "tool-underscore") image.set_execfn("/haa-site/tools/cow_say/bin/python");
     image.add_argv(image.execfn()); image.add_argv("-I"); image.add_argv("-B"); image.add_argv("-c");
     const std::string launcher = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()";
     image.add_argv(launcher);
@@ -7157,12 +7164,16 @@ bool VerifyUVPythonQueryBoundary() {
     if (scenario == "tmp-bind") topology.expected[1].filesystem_type = "9p";
     if (scenario == "tmp-exec") topology.expected[1].noexec = false;
     if (scenario == "missing-tmp") topology.anchors.erase(2);
+    if (scenario == "tool-missing-output") topology.anchors.erase(6);
+    if (scenario == "tool-output-kind") topology.expected[3].filesystem_type = "tmpfs";
+    if (scenario == "tool-output-readonly") topology.expected[3].read_only = true;
+    if (scenario == "tool-output-shadow") topology.anchors.emplace(5, MountAnchor{5, "/haa-site/tools/cowsay", "workspace"});
     const auto* selected = scenario == "no-topology" ? nullptr : &topology;
     const char* profile = scenario == "other-profile" ? kProfilePyPI : kProfileUVResolver;
     ProfileRegistration registration;
     const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
         payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
-    const bool normal = scenario == "normal" || scenario == "canonical";
+    const bool normal = scenario == "normal" || scenario == "canonical" || scenario == "tool-normal";
     if (normal && (!parsed || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected"))) return false;
     if (!normal) DrainDatagram(output[1]);
     if (state.groups[100].uv_python_query_active != normal) return false;
@@ -7180,6 +7191,32 @@ bool VerifyUVPythonQueryBoundary() {
     if (readable() != normal) return false;
     if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
     if (!normal) return true;
+    const std::string env = "/haa-site/tools/cowsay";
+    anchor = MountAnchor{4, "/haa-site", "workspace"};
+    for (const std::string& path : {env + "/pyvenv.cfg", env, env + "/lib", env + "/lib/python3.14", env + "/lib/python3.14/site-packages"}) {
+      open.set_pathname(path); open.set_flags(557056);
+      const auto expected = scenario == "tool-normal" ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != expected) return false;
+    }
+    for (const std::string& path : {env + "/lib/python3.14/site-packages/evil.pth", env + "/lib/python3.14/site-packages/sitecustomize.py",
+        env + "/lib/python3.14/site-packages/cowsay/__init__.py", env + "/lib/python3.14/site-packages/evil.so",
+        env + "/lib/python3.14/site-packages/cowsay-6.1.dist-info/METADATA", std::string("/haa-site/tools/other/pyvenv.cfg"),
+        env + "/../cowsay/pyvenv.cfg", std::string("/haa-site/pylock.toml"),
+        std::string("/tmp/../haa-site/tools/cowsay/lib/python3.14/site-packages/evil.pth"),
+        std::string("/tmp/output-alias/evil.pth")}) {
+      open.set_pathname(path); open.set_flags(557056);
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kOutside) return false;
+    }
+    open.set_pathname(env + "/pyvenv.cfg");
+    for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenAppend, kOpenTruncate}) {
+      open.set_flags(flags);
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kOutside) return false;
+    }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{5, "/haa-site/tools", "workspace"}, MountAnchor{4, "/haa-site", "system"}}) {
+      if (ClassifyFilesystemOpen(open, state, profile, &wrong) != FilesystemClass::kOutside) return false;
+    }
+    anchor = MountAnchor{2, "/proc", "system"};
     for (const char* path : {"/proc/sys/vm/overcommit_ratio", "/proc/99/maps", "/proc/101/maps", "/proc/self/maps", "/proc/100/environ", "/proc/100/status", "/proc/100/cgroup", "/dev/null", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"}) {
       open.set_pathname(path); if (readable()) return false;
     }
@@ -7271,7 +7308,12 @@ bool VerifyUVPythonQueryBoundary() {
     descendant.mutable_context_data()->set_thread_group_start_time_ns(1010);
     descendant.mutable_context_data()->set_parent_thread_group_id(100);
     *open.mutable_context_data() = descendant.context_data();
-    if (state.groups[101].uv_python_query_candidate || state.groups[101].uv_python_query_active || readable()) return false;
+    if (state.groups[101].uv_python_query_candidate || state.groups[101].uv_python_query_active ||
+        !state.groups[101].uv_python_query_restricted || readable()) return false;
+    open.set_pathname(env + "/lib/python3.14/site-packages/evil.pth");
+    MountAnchor tool_anchor{4, "/haa-site", "workspace"};
+    if (ClassifyFilesystemOpen(open, state, profile, &tool_anchor) != FilesystemClass::kOutside) return false;
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
     if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
         !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable()) return false;
     // A second exact exec in the original child cannot renew the role.
@@ -7281,7 +7323,8 @@ bool VerifyUVPythonQueryBoundary() {
     return true;
   };
   bool passed = true;
-  for (const char* scenario : {"normal", "canonical", "binary", "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
+  for (const char* scenario : {"normal", "canonical", "tool-normal", "tool-traversal", "tool-case", "tool-underscore", "tool-other-alias",
+      "tool-missing-output", "tool-output-kind", "tool-output-readonly", "tool-output-shadow", "binary", "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
       "extra-code", "embedded-nul", "traversal", "escaped-path", "wrong-module", "extra-arg", "short-argv", "parent-class", "parent-role",
       "parent-start", "parent-expected", "parent-generation", "parent-expected-class", "parent-network", "parent-eligible", "parent-unconsumed",
       "parent-pending", "parent-clone", "oci-origin", "wrong-parent", "direct-root", "artifact-child", "missing-clone", "child-network", "child-pending",

@@ -2,9 +2,43 @@ package pypi
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+const UVToolUpgradeWheelsControlName = "uv-tool-upgrade-wheels.json"
+
+// ReplayWheelsControl binds the exact bounded replay WHEEL data to the original
+// METADATA digest. It confers no source authenticity or ownership authority.
+func (u UVToolUpgradeInput) ReplayWheelsControl(controls []UVInstalledWheelControls, target WheelTarget) (domain.ProjectControlFile, error) {
+	checked, err := u.ReplayWheelControls(controls, target)
+	if err != nil {
+		return domain.ProjectControlFile{}, err
+	}
+	type wheel struct {
+		Directory string `json:"directory"`
+		Metadata  string `json:"metadata"`
+		Wheel     []byte `json:"wheel"`
+	}
+	files := make([]wheel, 0, len(checked))
+	for _, c := range checked {
+		sum := sha256.Sum256(c.Metadata)
+		files = append(files, wheel{c.DistInfo, hex.EncodeToString(sum[:]), c.Wheel})
+	}
+	body, err := json.Marshal(struct {
+		Version int     `json:"version"`
+		Wheels  []wheel `json:"wheels"`
+	}{1, files})
+	if err != nil || len(body) > upgradeInputLimit {
+		return domain.ProjectControlFile{}, errors.New("tool replay wheel control exceeds byte bounds")
+	}
+	return domain.NewProjectControlFile(UVToolUpgradeWheelsControlName, body, true)
+}
 
 // ReplayWheelControls returns a defensive, canonical copy of inert controls for
 // the exact M1 original. It authenticates neither the old archive nor ownership

@@ -459,6 +459,9 @@ struct ProcessState {
     // demoted to ARTIFACT and never joins expected/control network groups.
     bool uv_python_query_candidate = false;
     bool uv_python_query_active = false;
+    // Query descendants retain this restriction, never the active admission.
+    bool uv_python_query_restricted = false;
+    std::string uv_python_query_environment;
     bool cargo_build_rustc_active = false;
     bool cargo_lld_launcher_candidate = false;
     bool cargo_lld_launcher_active = false;
@@ -757,14 +760,39 @@ bool HasExactPNPMQueryCreator(const gvisor::common::ContextData& context,
 // This grammar is the pinned UV's launcher, not arbitrary Python code. The
 // module producer is the authenticated UV in a private, no-build namespace;
 // neither these random names nor a diagnostic hash authenticate code on their own.
+std::string UVToolQueryEnvironment(const std::string& execfn, const TopologyState* topology) {
+  const std::string prefix = "/haa-site/tools/", suffix = "/bin/python";
+  if (topology == nullptr || execfn.size() <= prefix.size() + suffix.size() ||
+      execfn.compare(0, prefix.size(), prefix) != 0 ||
+      execfn.compare(execfn.size() - suffix.size(), suffix.size(), suffix) != 0) return "";
+  const std::string project = execfn.substr(prefix.size(), execfn.size() - prefix.size() - suffix.size());
+  auto alnum = [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'); };
+  if (project.size() > 214 || !alnum(project.front()) || !alnum(project.back())) return "";
+  for (char c : project) if (!alnum(c) && c != '-') return "";
+  size_t expected = 0, actual = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint != "/haa-site") continue;
+    if (mount.mount_class != "workspace" || mount.parent != "/" ||
+        mount.filesystem_type != "9p" || mount.read_only) return "";
+    expected++;
+  }
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == "/haa-site" && mount.mount_class == "workspace") actual++;
+    else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(execfn, mount.mountpoint)) return "";
+  }
+  return expected == 1 && actual == 1 ? prefix + project : "";
+}
+
 bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
                           const TopologyState* topology) {
+  const bool tool_alias = !UVToolQueryEnvironment(message.execfn(), topology).empty();
   if (message.binary_path() != "/usr/local/bin/python3.14" ||
-      (message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
+      (!tool_alias && message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
       message.argv_size() != 5 || message.argv(0) != message.execfn() ||
       message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
       !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
-      !IsPinnedReadOnlyRootPath(topology, message.execfn()) || !IsUVToolImage(topology, kUVToolPath)) return false;
+      (!tool_alias && !IsPinnedReadOnlyRootPath(topology, message.execfn())) || !IsUVToolImage(topology, kUVToolPath)) return false;
   const std::string prefix = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"";
   const std::string suffix = "\")] + sys.path; from python.get_interpreter_info import main; main()";
   const std::string& code = message.argv(4);
@@ -3413,6 +3441,27 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return exact_pre_sentry_loader ? FilesystemClass::kHelperOnly : FilesystemClass::kUnknown;
   }
   const auto* tracked = FindFilesystemGroup(message.context_data(), state);
+  // Interpreter discovery is never installed-code admission. This precedes
+  // the general workspace rule, also after clone/reexec; startup/package files,
+  // other environments and writes remain actionable ARTIFACT accesses.
+  std::string query_path;
+  if (profile != nullptr && strcmp(profile, kProfileUVResolver) == 0 &&
+      tracked->uv_python_query_restricted &&
+      ((anchor != nullptr && IsAtOrBelowMountpoint(anchor->mountpoint, "/haa-site")) ||
+       IsAtOrBelowMountpoint(path, "/haa-site") ||
+       (NormalizeAbsolutePath(path, &query_path) && IsAtOrBelowMountpoint(query_path, "/haa-site")))) {
+    const std::string& env = tracked->uv_python_query_environment;
+    const bool exact_directory = !env.empty() && (path == env || path == env + "/lib" ||
+        path == env + "/lib/python3.14" || path == env + "/lib/python3.14/site-packages");
+    const bool exact_config = !env.empty() && path == env + "/pyvenv.cfg";
+    const bool allowed = tracked->uv_python_query_active &&
+        HasExactUVQueryCreator(message.context_data(), *tracked, state) &&
+        anchor != nullptr && anchor->mount_class == "workspace" && anchor->mountpoint == "/haa-site" &&
+        !IsWriteCapableOpen(message.flags()) &&
+        ((exact_config && message.flags() == 557056) ||
+         (exact_directory && (message.flags() == 557056 || message.flags() == 622592)));
+    return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+  }
   if (IsPinnedProjectBuildHandoffRead(message.context_data(), state, path,
                                   message.flags(), profile, anchor)) {
     return FilesystemClass::kHelperOnly;
@@ -3749,6 +3798,8 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
+  state->groups.find(child_group)->second.uv_python_query_restricted = creator->second.uv_python_query_restricted;
+  state->groups.find(child_group)->second.uv_python_query_environment = creator->second.uv_python_query_environment;
   if (creator->second.role == ProcessState::Role::kControl)
     state->groups.find(child_group)->second.pnpm_target_lifecycle = creator->second.pnpm_target_lifecycle;
   state->groups.find(child_group)->second.executable_locator = creator->second.executable_locator;
@@ -4229,6 +4280,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.role = ProcessState::Role::kArtifact;
       group->second.current_image_class = ProcessClass::kPython;
       group->second.uv_python_query_active = true;
+      group->second.uv_python_query_restricted = true;
+      group->second.uv_python_query_environment = UVToolQueryEnvironment(message.execfn(), topology);
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
       process_state->fd_states = candidate.fd_states;

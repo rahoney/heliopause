@@ -257,3 +257,84 @@ transport/zero-transfer·primary cause/취소·membership/tag/bounds/collision/R
 확인했다. Actual native query/upgrade, source binding/current update/CLI는 미완료이며
 [A2 receipt](./p4m4b-uv-tool-original-replay-local-20261026.json)가 named scope를 소유한다.
 같은 M13-004에서 M4-B actual resolver를 계속하며 helper별 push/CI는 추가하지 않는다.
+
+### M4-B actual resolver 착수 감사·수정 지도·재검토
+
+A2 replay는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(named helper)다.
+ResolveToolInstall/withUVNativeSessionForToolInstall/whole reader/정확한 version export와
+독립 source/archive BindWheels는 YES이며 다시 구현하지 않는다. 실제 ResolveToolUpgrade는
+NO/NO/NO/NO다. MISSING은 concrete M1+A2 입력을 같은 session에 전송하고 actual native
+upgrade positional 조건·원래 receipt 조건을 각각 검증하며 전체 결과/원본 controls를 묶는
+selection이다. Current update/public CLI/adoption/pipx는 별도 C/D 후속이다.
+
+Fresh public wrapper를 유지하고 기존 resolver 본문을 private shared selection으로 추출한다.
+Original branch만 typed replay와 tool upgrade를 선택하며 freeze/export/readback/public bind
+본문을 공유한다. Native receipt는 original 조건을 보존하고 selected main은 positional 조건도
+만족해야 한다. Provenance는 별도 upgrade runtime/intent, immutable M1 control 및 canonical
+original WHEEL body+METADATA digest를 결합해 교환을 막는다. Original WHEEL은 신뢰 권한이 아니다.
+
+두 번째 검토: no-op도 전체 native output과 독립 wheel 인증을 거친다. Invalid/canceled input은
+network/tool launch 전에 거부하고 primary cause를 보존한다. 실제 gVisor query가 기존 exact
+observer boundary에서 거부되는지 먼저 확인하며 C++/권한/예산을 선제 변경하지 않는다.
+Synthetic old cowsay metadata에서 실제 public 선택을 확인하는 소비자는 metadata 재구성/
+selection 범위만 증명하며 native adoption/managed Host upgrade라고 쓰지 않는다.
+
+B first actual8.010s는 bounded upgrade5.13s에서 pinned Python clone의 OCI libpython
+read를 OTHER/CONTROL로 분류해 실패했다. Image catalogue의 exact Python/libpython 경로와
+locator를 대조했다. Native original query alias는 현재 exact root-execfn predicate에 없으며
+이를 원인 후보로 실제 검증한다. Host snapshot 동일/helperwait0/CONFIRMED_STOPPED다.
+
+Observer 수정 지도: 고정 OCI Python binary·동일 exact native query argv/temp topology·
+실제 UV clone/세대에 한해서 controller tool-output 안의 canonical project/bin/python alias를
+추가한다. Alias는 trust를 주지 않으며 query는 기존처럼 ARTIFACT로 demote한다. Tool output
+mount/shadow를 검증하고, query와 후손의 /haa-site 접근은 그 env의 cfg/고정 directory 조회만
+남긴다. 일반 workspace read 이전에 .pth/sitecustomize/패키지 code/다른 env/쓰기 거부를
+강제해 post-install 재조회도 startup clearance로 쓰지 못하게 한다. Root-query 기존 소비자와
+모든 creator/세대/역할/argv/mount/shadow·clone/재exec 부정 latch를 함께 확인한다.
+C++ 전체 canonical builder 및 actual original/no-op/fresh/기존 UV 회귀 전에는 qualified가 아니다.
+
+Prequalification 검토에서 query 제한은 문자열 prefix만으로 적용하지 않고 kernel mount
+anchor/정규화된 경로까지 포함하도록 보완했다. /tmp/../haa-site 및 output symlink alias가
+일반 workspace 분류로 빠지지 않도록 같은 startup negative에 추가한다. 첫 canonical build
+중 Root에만 보완했고 frozen 첫 source와 최종 candidate를 구분한다. 최종 whole builder와
+실제 소비자는 보완된 source에서 다시 수행하며 첫 결과를 최종 source에 전용하지 않는다.
+
+First observer builder243.246s는120PASS/1FAIL이다. 새 test output anchor4가 기존 세
+shadow negative의 예약 id4와 겹쳐 map.emplace가 shadow를 넣지 못했다. 새 fixture만6으로
+옮기고 기존 shadow 거부는 유지한다. First latch assessment와 frozen sources/log를 보존하며
+최종 candidate의 whole builder/actual 전에는 해결 검증으로 기록하지 않는다.
+
+### M4-C current update 연결 사전 감사·수정 지도
+
+Existing InstallUpdateService/ports.InstallUpdateSession는 Reference와 일반 InstallSession을
+통해 current 전체 inspection/Evidence/Policy/Manifest/staging을 재사용할 수 있다. Fresh
+uvToolInstallSession과 M2/M3 guard/publisher는 IMPLEMENTED=YES이며 대체하지 않는다.
+Managed native tool upgrade preparation/factory는 NO/NO/NO/NO다. MISSING은 held original의
+ledger-owned WHEEL bytes를 같은 file snapshot/digest에 대조하고 B typed original에 전달하는
+update entry, 원본 controls의 exact equality, eight-control current Manifest/target 결합 및
+동일 complete publisher로의 인계다. B actual/query qualification에 의존하는 결과는 아직 없다.
+
+현재 fresh preparation/session의 선택 dispatch만 original branch로 확장하고 concrete update
+preparation은 기존 constructor/guard/현재 application update service를 사용한다. Original
+METADATA와 WHEEL은 같은 distribution/version/archive owner여야 하며 native receipt만으로
+소유권을 부여하지 않는다. Native original adoption은 이 managed lane에서 계속 거부한다.
+일반 target control은 held original일 때만 managed-upgrade intent를 사용하고 fresh bytes는
+보존한다. Fresh four native controls와 original six를 구분하고 M1/WHEEL 원문 및 별도 현재
+Host receipt/target을 current Manifest에 묶는다. No-op도 현재 full 검사/Policy를 거친다.
+
+두 번째 검토: update interface를 위해 fake graph/input을 만들지 않고 native positional
+requirement를 그대로 Reference로 보존한다. Root/bin 두 lock을 원본 capture 전부터 current
+승인/complete commit·cleanup까지 유지하며 실패/취소/foreign/recovery semantics는 M2/M3를
+사용한다. Runtime/Host interpreter와 설치 command는 실행하지 않는다. 로컬 source/guard
+부정 회귀·전체 Promotion/Bootstrap Race와 실제 managed update/no-op·현재 승인 누락/변조
+거부·기존 fresh 소비자 전에는 C를 닫지 않는다. CLI/native adoption/pipx는 계속 별도다.
+
+M4-B named local qualification: Quick230.455s/security14.157s/docs0.258s·PyPI/Sandbox
+전체 Race29.456s·workflow0.794s가 PASS다. Final unmodified observer builder241.514s/121PASS·0FAIL
+및 actual115.945s는 upgrade/no-op23.20s·fresh14.75s·기존 UV75.66s를 확인했다.
+원본 metadata는 synthetic DATA이며 선택 전체 public wheel은 각각 독립 인증했다.
+NoSKIP/helperwait0/CONFIRMED_STOPPED·Host 보호 snapshot 동일이다. Original source/ownership
+인증·current approval/Host update/public CLI·native adoption/pipx와 최종 profile는 아직 미완료다.
+[B receipt](./p4m4c-uv-tool-upgrade-resolver-local-20261026.json)와 first failure/latch assessment가
+exact source/범위를 소유한다. 같은 M13-004에서 M4-C current update를 계속하며 새 push/CI는
+그 backend/CLI 묶음의 필요한 경계까지 보류한다.

@@ -129,3 +129,21 @@ func TestUVToolReplayRejectsOversizedWheelBeforeCopy(t *testing.T) {
 		t.Fatal("over-limit WHEEL copied before rejection")
 	}
 }
+
+func TestUVToolReplayControlBindsOriginalWheelBytes(t *testing.T) {
+	input, controls := toolReplayControlsFixture(t)
+	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
+	first, err := input.ReplayWheelsControl(controls, target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	controls[0].Wheel = append(controls[0].Wheel, []byte("Generator: changed-inert-metadata\n")...)
+	second, err := input.ReplayWheelsControl(controls, target)
+	if err != nil || first.Name() != UVToolUpgradeWheelsControlName || first.Digest() == second.Digest() {
+		t.Fatal("changed original WHEEL did not change provenance", err)
+	}
+	controls[0].Metadata[0] = 'x'
+	if _, err := input.ReplayWheelsControl(controls, target); err == nil {
+		t.Fatal("unbound original metadata accepted")
+	}
+}
