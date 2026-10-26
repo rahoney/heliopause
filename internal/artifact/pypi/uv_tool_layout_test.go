@@ -89,3 +89,48 @@ func TestUVToolLayoutRejectsWrongNamespaceAndOverlappingRoots(t *testing.T) {
 		t.Fatal("pipx metadata projected as UV")
 	}
 }
+
+func TestUVToolSelectionLayoutNeverRetainsOriginalInterpreterOrExposure(t *testing.T) {
+	body, err := os.ReadFile("testdata/persistent-tool/uv-installed.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	receipt, err := ParseUVToolReceipt(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	host, err := receipt.WithUVLayout("/user/tools/haa-tool-fixture", "/user/commands")
+	if err != nil {
+		t.Fatal(err)
+	}
+	environment, bin := "/haa-site/tools/haa-tool-fixture", "/haa-site/tool-bin"
+	originalBody := host.Body()
+	selected, err := host.WithUVSelectionLayout(environment, bin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := selected.ValidateLayout(environment, bin, "/usr/local/bin/python"); err != nil {
+		t.Fatal(err)
+	}
+	if !selected.Requirement().SameConstraints(host.Requirement()) || !bytes.Equal(host.Body(), originalBody) {
+		t.Fatal("original semantics changed")
+	}
+	var before, after uvToolReceiptWire
+	if toml.Unmarshal(host.Body(), &before) != nil || toml.Unmarshal(selected.Body(), &after) != nil {
+		t.Fatal("receipt wire")
+	}
+	after.Tool.Python = before.Tool.Python
+	for i := range after.Tool.Entrypoints {
+		if after.Tool.Entrypoints[i].Path == before.Tool.Entrypoints[i].Path {
+			t.Fatal("original command exposure retained")
+		}
+		after.Tool.Entrypoints[i].Path = before.Tool.Entrypoints[i].Path
+	}
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("selection projection changed original recipe or commands")
+	}
+	repeated, err := selected.WithUVSelectionLayout(environment, bin)
+	if err != nil || !bytes.Equal(repeated.Body(), selected.Body()) {
+		t.Fatal("selection layout is not stable", err)
+	}
+}

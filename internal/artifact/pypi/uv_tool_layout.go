@@ -13,6 +13,18 @@ import (
 // original receipt must remain a separate control; neither value grants file
 // ownership, execution permission or approval.
 func (r ToolReceipt) WithUVLayout(environment, binDirectory string) (ToolReceipt, error) {
+	return r.withUVLayout(environment, binDirectory, path.Join(environment, "bin", "python"))
+}
+
+// WithUVSelectionLayout relocates only inert native metadata into the private
+// selection session. The interpreter is the existing pinned image Python, never
+// a path supplied by the original installation. The original receipt remains a
+// separate control. This projection grants no execution or ownership authority.
+func (r ToolReceipt) WithUVSelectionLayout(environment, binDirectory string) (ToolReceipt, error) {
+	return r.withUVLayout(environment, binDirectory, "/usr/local/bin/python")
+}
+
+func (r ToolReceipt) withUVLayout(environment, binDirectory, interpreter string) (ToolReceipt, error) {
 	if !r.Valid() || r.client != "uv" || !validToolAbsolutePath(environment) || !validToolAbsolutePath(binDirectory) {
 		return ToolReceipt{}, errors.New("UV tool layout requires a parsed receipt and explicit roots")
 	}
@@ -34,7 +46,6 @@ func (r ToolReceipt) WithUVLayout(environment, binDirectory string) (ToolReceipt
 	if !ok || len(entries) != len(r.commands) {
 		return ToolReceipt{}, errors.New("UV tool receipt entrypoint table differs")
 	}
-	interpreter := path.Join(environment, "bin", "python")
 	tool["python"] = interpreter
 	for _, value := range entries {
 		entry, ok := value.(map[string]any)

@@ -200,3 +200,10 @@ state에 다시 대조하며 resolver는 private 입력만 받는다. 새 curren
 원본 control을 결합하고 현재 full Policy/inspection 뒤 같은 M3 complete publisher만 사용한다.
 Native adoption/pipx는 별도 acceptance로 남긴다. Future generic interface나 실행 runner
 placeholder는 추가하지 않는다.
+
+M4-A1 native receipt DATA projection은 canonical Quick250.828s/security13.770s/docs0.260s와
+전체 PyPI Race7.689s가 PASS다. 기존 Host projection 본문은 같은 interpreter 값을 wrapper에서
+전달하도록 바뀐 것 외에 byte-identical이며 원래 receipt/조건/options/command identity와
+고정 native Python·private exposure projection을 확인했다.
+[A1 receipt](./p4m4a-uv-tool-native-layout-local-20261026.json)가 source와 검증 범위를 소유한다.
+Metadata-only archive/native query/actual upgrade/current update pipeline은 아직 미완료다.

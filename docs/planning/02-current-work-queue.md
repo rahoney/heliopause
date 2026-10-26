@@ -18,7 +18,7 @@ Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P
 Last completed substep: P4-L4E — public fresh uv tool install JSON/human/foreign refusals plus existing UV CLI actual named local QUALIFIED; original upgrades/pipx remain
 Next action: M13-004 — consume CI414 at actual timer due03:48:42UTC; continue native original replay/query/whole source binding; no additional helper-only push
 Current substep: M13-004/P4-M4 native metadata-only original replay/upgrade and current update binding; M1 input/M2 guard/M3 complete publication named local QUALIFIED; public upgrade/adoption/pipx remain
-Acceptance audit: CI414 RUNNING/QUEUED on backend294bb57/tree5a140885; real timer due2026-10-26T03:48:42Z; public CLI64cb05d local only; CI413 closed; historical CI411 timeout cause remains unconfirmed
+Acceptance audit: CI414 first actual timer consumed03:49:19UTC: Quick fixture TempDir cleanup FAIL, Linux RUNNING, Required not created; follow-up real timer04:09:19UTC; backend294bb57 only; local follow-ups separate; CI413 closed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
