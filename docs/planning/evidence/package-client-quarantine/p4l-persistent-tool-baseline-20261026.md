@@ -447,3 +447,20 @@ NoSKIP/helperwait0/CONFIRMED_STOPPED/Host 보호 snapshot 동일이고 Source �
 Host command 실행으로 확대하지 않는다. [L4-D receipt](./p4l4d-uv-tool-approved-install-local-20261026.json)가
 최초 actual/fixture 실패와 narrow SameConstraints 교정·기존 본문 재사용을 소유한다.
 이제 L4-E public fresh install CLI와 실제 결과를 이어가며 original upgrade/pipx는 남는다.
+
+L4-E 최초 actual31.285s는 JSON 요청28.61s의 실제 완료/ALLOW/반입 결과 뒤 Manifest
+확인 fixture에서 실패했다. Fixture가 실제 runtime_identity를 Runtime 기본 이름으로 읽어
+빈 값으로 비교한 것이며 production verifyPythonSelectionManifest는 이미 올바른 필드를
+검사한다. Human/foreign 거부/기존 UV CLI는 failfast로 미도달이다. 원본
+p4l4e-tool-cli-native-v1-*와 helperwait0/Host 보호 snapshot 동일을 보존한다.
+제품/default-test source는 유지하고 realcorpus fixture의 JSON tag만 교정해 actual을 재검증한다.
+
+L4-E named local 최종: canonical Quick72.642s/security/docs/workflow 및 CLI·Bootstrap 전체
+Race27.842s가 PASS다. Realcorpus fixture의 runtime_identity tag만 교정한 actual v2는
+317.049s이며 공개 tool CLI77.71s(JSON29.98s/명시 human·공백 root29.59s/unowned site1.62s/
+occupied command16.52s)와 기존 UV CLI236.61s의 일곱 요청이 PASS다. Current full checks/
+Evidence/ALLOW·여섯 controls·receipt/links/RECORD·target interpreter·기존 재설치 거부의
+inventory 보존, NoSKIP/helperwait0/CONFIRMED_STOPPED/Host 보호 snapshot 동일을 확인했다.
+[Public CLI receipt](./p4l4e-uv-tool-cli-local-20261026.json)가 source/check/raw 대응을 소유한다.
+다음은 [P4-M baseline](./p4m-uv-tool-upgrade-baseline-20261026.md)의 original upgrade 진단과
+기존 소유권/외부 retired commands 결합이다. Whole P4/pipx/final profiles는 미완료다.

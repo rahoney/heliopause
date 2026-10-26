@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, persistent tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install named local 검증, original upgrades/pipx 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -294,3 +294,10 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 [P4-J native adoption](../planning/evidence/package-client-quarantine/p4j-uv-project-adoption-local-20261026.json)은 고정 native UV 공개 wheel 설치 전체의 명시 `--adopt`를 add/sync에 연결한다. Unselected 원본도 authentic old wheel과 대조하며 generated scripts/compiled caches/cross-scheme 출력·unknown source는 인계하지 않는다. Current 선택 전체는 다시 검사·승인하고 원본 proof는 records에만 결합한다. Marker/이전 ALLOW만으로 인계하거나 설치하지 않는다.
 
 [P4-K3 lock-only CLI](../planning/evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)는 `uv lock --upgrade`의 complete current 검역·cache readback 뒤 native lock만 갱신한다. Machine schema `helox.project-lock-update-result/v1`의 lock_update_status와 installation_status=NOT_REQUESTED를 구분하며 human에서도 설치 없음과 실제 Manifest/SBOM을 표시한다. 후속 sync는 선택 전체를 다시 검사한다.
+
+[P4-L4E fresh tool CLI](../planning/evidence/package-client-quarantine/p4l4e-uv-tool-cli-local-20261026.json)는
+`helox uv tool install <public-requirement> --target <absolute-existing-tool-venv> --bin-dir <absolute-existing-bin>`를
+현재 complete 검사·승인·원자 반영에 연결한다. Target basename은 정규화 package 이름이며 고정
+runtime의 빈 venv와 별도의 기존 bin root를 명시한다. Bare/exact/bounded 요구와 JSON/human을
+지원하고 기존 tool 재설치·foreign 파일/명령 충돌은 보존 후 거부한다. Linux amd64 named local
+범위이며 runtime 생성·원본 upgrade/adoption·pipx·tool 실행은 아직 지원을 선언하지 않는다.

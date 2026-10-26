@@ -188,6 +188,12 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 	if err := os.Mkdir(venv, 0o700); err != nil {
 		t.Fatal(err)
 	}
+	toolTarget, toolBin := filepath.Join(root, "cowsay"), filepath.Join(root, "tool-bin")
+	for _, path := range []string{toolTarget, toolBin} {
+		if err := os.Mkdir(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
 	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n", "uv.lock": "version=1\nrevision=5\nrequires-python='==" + runtimeidentity.PythonVersion + "'\n[[package]]\nname='haa-launcher-project'\nversion='0.1.0'\nsource={virtual='.'}\n"} {
 		if err := os.WriteFile(name, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
@@ -215,6 +221,12 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 				}
 				if arg == "/absolute/path/venv" {
 					args[index] = venv
+				}
+				if arg == "/absolute/path/cowsay" {
+					args[index] = toolTarget
+				}
+				if arg == "/absolute/path/bin" {
+					args[index] = toolBin
 				}
 			}
 			fresh, err := New(io.Discard, io.Discard)
