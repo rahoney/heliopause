@@ -14,12 +14,14 @@ func TestUVToolHelpAndInvalidInputDoNotPrepareRuntime(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", cache)
 	t.Setenv("PATH", cache)
 	for _, language := range []string{"en", "ko"} {
-		var out, diagnostic bytes.Buffer
-		if err := Run(context.Background(), []string{"--lang", language, "uv", "tool", "install", "--help"}, &out, &diagnostic); err != nil {
-			t.Fatal(err)
-		}
-		if !strings.Contains(out.String(), "--bin-dir") || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "cowsay") {
-			t.Fatal("tool scope missing from static help")
+		for _, operation := range []string{"install", "upgrade"} {
+			var out, diagnostic bytes.Buffer
+			if err := Run(context.Background(), []string{"--lang", language, "uv", "tool", operation, "--help"}, &out, &diagnostic); err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(out.String(), "--bin-dir") || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "cowsay") {
+				t.Fatal("tool scope missing from static help")
+			}
 		}
 	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
@@ -29,6 +31,11 @@ func TestUVToolHelpAndInvalidInputDoNotPrepareRuntime(t *testing.T) {
 	for _, args := range [][]string{{"uv", "tool", "install", "cowsay"}, {"uv", "tool", "install", "cowsay", "--target", root, "--bin-dir", root}, {"uv", "tool", "install", "cowsay", "--with", "other"}} {
 		if err := Run(context.Background(), args, &bytes.Buffer{}, &bytes.Buffer{}); err == nil {
 			t.Fatal("invalid tool input accepted")
+		}
+	}
+	for _, args := range [][]string{{"uv", "tool", "upgrade", "cowsay"}, {"uv", "tool", "upgrade", "cowsay", "--all"}} {
+		if err := Run(context.Background(), args, &bytes.Buffer{}, &bytes.Buffer{}); err == nil {
+			t.Fatal("invalid upgrade accepted")
 		}
 	}
 	entries, err := os.ReadDir(cache)

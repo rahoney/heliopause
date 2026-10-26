@@ -86,7 +86,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | COMPLETE — [qualification/acceptance](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json); P1a baseline은 당시 감사 |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | IN_PROGRESS — backend CI407 named remote QUALIFIED; CLI/native original ownership named local QUALIFIED; whole-source remote/affected-profile matrix and P2 acceptance pending |
 | P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | IN_PROGRESS — native selection/source/layout/quarantine/cache/transaction/CLI/native ownership and explicit Bun Artifact boundary named local QUALIFIED; whole native runtime inspection/Evidence/Policy/CLI named local QUALIFIED; [grouped hosted CI413](./evidence/package-client-quarantine/p3-grouped-bun-ci413-20261026.json) named QUALIFIED; final support/profile matrix pending |
-| P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | IN_PROGRESS — [P4-K3 public lock-only](./evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json) joins qualified add/sync/native adoption/current complete inspection and atomic publication with distinct no-install lock update; [fresh uv tool CLI](./evidence/package-client-quarantine/p4l4e-uv-tool-cli-local-20261026.json) named local qualified; original upgrades/pipx pending |
+| P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | IN_PROGRESS — [P4-K3 public lock-only](./evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json) joins qualified add/sync/native adoption/current complete inspection and atomic publication with distinct no-install lock update; [fresh uv tool CLI](./evidence/package-client-quarantine/p4l4e-uv-tool-cli-local-20261026.json)와 [managed upgrade CLI/CI recipes](./evidence/package-client-quarantine/p4m6-uv-tool-upgrade-cli-ci-local-20261026.json) named local qualified; native tool adoption/pipx와 remote/final profiles pending |
 | P5 execution foundation + npx | full frozen set·entrypoint·sandbox run·output/exit/lifecycle 계약 | actual 정상/악성/취소/재다운로드 거부, stdout-only 우선; 생성 파일/TTY는 별도 acceptance | NOT_STARTED |
 | P6 uvx·bunx·pipx run·pnpm dlx | P5 재사용, 각각 parser/runtime/selection adapters | 각 alias real end-to-end, forced runtime/backend·cache negatives | NOT_STARTED |
 | P7 통합 qualification/인계 | 모든 목표 command/옵션 지원표·remaining gaps 대조 | exact-source CI/실제 runtime·기존 소비자·docs/help·cleanup 모두 연결 | NOT_STARTED |
@@ -143,6 +143,9 @@ All10 job log의 first→last는 약67m15s이며 queue 포함 created→updated�
 workflow의 다음 후보는 최근 CI41357m14s/CI414 job-window67m15s와 실제 queue를 근거로
 약75분 첫 확인을 추정하고, 남은 job/실측에 맞춰 갱신한다. CI414 Quick fixture cleanup 실패는
 재실행으로 숨기지 않고 local lifecycle 보완 및 Git2.55 remote 검증 OPEN을 유지한다.
+P4-M4D의 추가 local CI recipes는 sandbox40.537s/bootstrap304.877s였다. 이를 hosted 시간으로
+동일시하지 않고 앞 job-window 약67분과 추가 소비자 약6분 및 실제 queue를 고려해 해당
+cohort의 첫 확인은 약80분으로 추정한다. 실제 run/head/시작·due는 실행별 timer 기록이 소유한다.
 짧은 API polling이나 작은 수정별 push/full CI 반복은 하지 않는다. 새 원격 실행은 위에서 정한
 구현 묶음/공통 동작 경계와 명시된 최종 profile qualification에만 사용한다.
 

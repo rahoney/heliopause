@@ -223,14 +223,18 @@ func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]
 }
 
 func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers map[string]Installer, updaters map[packageUpgradeMode]map[string]Installer) error {
+	return addPackageClientOperation(root, id, "install", installers, updaters)
+}
+
+func addPackageClientOperation(root *cobra.Command, id PackageClientID, operation string, installers map[string]Installer, updaters map[packageUpgradeMode]map[string]Installer) error {
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
-	descriptor, ok := packageClientByOperation(id, "install")
+	descriptor, ok := packageClientByOperation(id, operation)
 	if !ok {
 		return errors.New("unsupported package client binding")
 	}
-	if installCommand, findErr := PackageClientInstallCommand(root, id); findErr == nil {
+	if installCommand, findErr := packageClientCommand(root, id, operation); findErr == nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
 			if err := descriptor.validate(command, args); err != nil {
 				return err

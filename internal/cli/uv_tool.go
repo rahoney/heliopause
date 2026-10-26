@@ -59,6 +59,10 @@ func validateUVToolInstallRawArgs(args []string) error {
 // Syntax preflight creates no runtime/cache and grants no ownership or Policy.
 // The prepared install session freezes both actual roots independently.
 func validateUVToolInstallArgs(command *cobra.Command, args []string) error {
+	return validateUVToolArgs(command, args, "install")
+}
+
+func validateUVToolArgs(command *cobra.Command, args []string, operation string) error {
 	if err := cobra.ExactArgs(1)(command, args); err != nil {
 		return err
 	}
@@ -79,26 +83,26 @@ func validateUVToolInstallArgs(command *cobra.Command, args []string) error {
 		return err
 	}
 	if !command.Flags().Changed("target") || !command.Flags().Changed("bin-dir") || target == "" || bin == "" {
-		return errors.New("UV tool install requires explicit --target and --bin-dir")
+		return errors.New("UV tool " + operation + " requires explicit --target and --bin-dir")
 	}
 	for _, value := range []string{target, bin} {
 		if _, err := domain.NewInstallTarget(value); err != nil || strings.ContainsAny(value, ",:\\\x00\r\n") {
-			return errors.New("UV tool install paths must be supported absolute directories")
+			return errors.New("UV tool " + operation + " paths must be supported absolute directories")
 		}
 		resolved, err := filepath.EvalSymlinks(value)
 		if err != nil || resolved != value {
-			return errors.New("UV tool install paths or parents are unavailable or symlinked")
+			return errors.New("UV tool " + operation + " paths or parents are unavailable or symlinked")
 		}
 		info, err := os.Lstat(value)
 		if err != nil || !info.IsDir() {
-			return errors.New("UV tool install paths must be existing directories")
+			return errors.New("UV tool " + operation + " paths must be existing directories")
 		}
 	}
 	if filepath.Base(target) != requirement.Project() {
-		return errors.New("UV tool install target directory must match the normalized package name")
+		return errors.New("UV tool " + operation + " target directory must match the normalized package name")
 	}
 	if target == bin || strings.HasPrefix(target+"/", bin+"/") || strings.HasPrefix(bin+"/", target+"/") {
-		return errors.New("UV tool install target and command directories must be separate")
+		return errors.New("UV tool " + operation + " target and command directories must be separate")
 	}
 	return nil
 }

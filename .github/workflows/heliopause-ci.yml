@@ -425,7 +425,13 @@ jobs:
             cd internal/sandbox
             HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'
           )
+          bash scripts/ci-uv-tools.sh
           HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          bash scripts/ci-uv-tools.sh bootstrap
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'
           # A compiled test binary keeps the caller's cwd; match go test's package cwd.
           (

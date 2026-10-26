@@ -90,6 +90,12 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		} else {
 			findings = append(findings, validateBunRuntimeScript(string(script))...)
 		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-uv-tools.sh"))
+		if err != nil {
+			findings = append(findings, "UV tools qualification script is unavailable")
+		} else {
+			findings = append(findings, validateUVToolsScript(string(script))...)
+		}
 	}
 	if len(findings) != 0 {
 		return &checkFailure{class: findingFailure, step: "CI configuration", detail: strings.Join(findings, "\n")}
@@ -151,6 +157,8 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "Bun", []string{"bash scripts/ci-bun-runtime.sh", "bash scripts/ci-bun-runtime.sh project"})...)
 	findings = append(findings, validateBunInspectionClientOrder(contents)...)
 	findings = append(findings, validateBunProjectClientOrder(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV tools", []string{"bash scripts/ci-uv-tools.sh", "bash scripts/ci-uv-tools.sh bootstrap"})...)
+	findings = append(findings, validateUVToolsClientOrder(contents)...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{

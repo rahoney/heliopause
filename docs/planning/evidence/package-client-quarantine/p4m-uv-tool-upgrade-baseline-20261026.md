@@ -379,3 +379,36 @@ install의 shared path를 회귀 검사한다. 새 actual tool consumers를 cano
 묶을 때 기존 helper lifecycle/timeout/coverage와 원격 취소 정책을 유지한다. 전체 CI는 이
 cohort의 local end-to-end 뒤 한 번 시작하고 실측 기반 실제 timer로 결과를 소비하며 기다리는
 동안 native adoption/pipx의 같은 item 작업을 계속한다.
+
+D first workflow2.227s는 PASS이나 Quick97.701s는 runtimeOwnerFixture가 새
+ci-uv-tools.sh를 복사하지 않아 future-Go logical fixture의 workflow 검사에서 실패했다.
+실제 repository workflow와 product packages는 통과했고 current script 하나만 fixture closure에
+추가한다. Go/runtime pin·production validator·coverage는 유지하며 first assessment/log를
+보존하고 최종 canonical 검증을 확인한다. Public CLI/CI script actual은 아직 미완료다.
+
+D final default canonical Quick59.691s/security11.095s/docs0.261s/workflow0.744s와
+CLI/Bootstrap/checker 전체 Race45.340s는 PASS다. First actual CI bootstrap305.504s는
+fresh80.68s/current Evidence failure52.68s/managed backend83.62s 및 public upgrade
+JSON28.43s/human28.70s까지 통과한 뒤 unsupported --adopt의 preflight 거부를 backend JSON
+거부 helper로 검사해 실패했다. 기존 helper/production은 유지하고 새 assertion만 error/빈
+operation 출력/staging·원본 불변에 맞춘다. First raw/assessment/Host 동일/helperwait0를
+보존하며 전체 recipe의 최종 성공 전에는 이 첫 실행을 PASS라고 표시하지 않는다.
+
+D final unmodified CI bootstrap recipe304.877s가 네 actual function을 모두 통과했다.
+Fresh CLI79.06s/current Evidence failure52.21s/managed backend82.18s/public upgrade
+CLI87.47s(JSON28.50s/human28.43s와 unsupported option·unowned 원본 거부)다. 별도
+unmodified CI sandbox recipe40.537s의 fresh15.46s와 upgrade/no-op22.54s도 PASS다.
+두 실행 모두 NoSKIP/helperwait0/CONFIRMED_STOPPED·Host snapshot 동일이다. Final 교정은
+realcorpus test assertion뿐이며 default Quick/Race 대상 production은 불변이다. Canonical
+format과 corrected tagged build/full recipe로 확인했고 불필요한 default 검사는 반복하지 않았다.
+[D receipt](./p4m6-uv-tool-upgrade-cli-ci-local-20261026.json)가 source/범위를 소유한다.
+
+Shared CLI 본문은 operation lookup 두 곳을 parameter로 전달한 것 외에 byte-identical이고
+17 native/current/publication/helper/다른 client owner는 불변이다. CI는 기존 realcorpus client를
+재사용하며 새 bootstrap scope의 explicit client/helper 시작·sandbox 복원을 추가한다. 기존
+PNPM/Bun validator/source와 jobs/permissions/runtime pin/예산은 유지한다. Python fixture는
+정확한 pinned image의 never-started label-owned container에서 DATA로만 복사하고 consumer
+전에 제거하며, query 실패는 부재로 취급하지 않는다. 다음 ordinary remote는 이 end-to-end
+cohort 한 번이며 실제 timer와 함께 결과/원본을 소비한다. Remote/원본 native adoption/pipx 및
+최종 CPU/CUDA 지원 qualification은 미완료다. 같은 M13-004에서 N native tool ownership의
+기존 old-wheel/RECORD/generated-script/source proof 감사와 현재 guard 재사용을 계속한다.
