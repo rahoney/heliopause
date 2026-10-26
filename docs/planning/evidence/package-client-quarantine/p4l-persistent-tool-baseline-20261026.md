@@ -216,3 +216,99 @@ catalogue와 이 exact source를 연결했으며 directory 하위 파일이나 �
 새 current canonical observer는 raw p4l3-uv-tool-directory-observer-canonical-v1.json이다.
 이후 actual operator는 이 source/binary를 사용해야 하며 옛 B6b source hash를 현재로 전용하지 않는다.
 다음은 L4의 명시 existing target·외부 command root를 함께 동결하는 guard/current 승인·반입 gap이다.
+
+## L4 target / approved publication baseline와 선택한 재사용 경로
+
+L3 commit72cacd1/tree8edf8eb95754c83d1136ea65625853106ef2c081/2574를 기준으로 다시 감사한다.
+Read: domain Install/DependencyResolution.WithProjectControls, InstallPreparation/InstallSession,
+UVInstallPreparation, PyPIPromotion/promoteHeldVenv, pypiVenvTransaction/guard/rollback, Evidence
+selection controls/verifyPythonSelectionManifest, UV project/controller cleanup 및 관련 canonical
+Architecture/Domain/Security 문서를 확인한다. M13-004 하나만 IN_PROGRESS다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Primary complete graph·opaque native controls·current full inspection/Policy/Manifest·ordinary staging | YES | YES(existing installs) | YES(named existing) | YES(named scopes) | Tool runtime/target/bin-root controls를 같은 기존 흐름에 결합 |
+| Existing venv file ownership/backup/journal/rollback | YES | YES | YES(named old scopes) | YES(named old scopes) | Root native receipt와 external exposed symlink를 함께 commit/rollback |
+| Fixed pip offline wheel/RECORD materializer | YES | YES | YES(existing scopes) | YES(named old scopes) | Tool command의 target-specific interpreter binding을 실제 recipe로 확인 |
+| Explicit existing tool venv + external bin-root original guard | NO | NO | NO | NO | Canonical disjoint roots·before-native collision/identity guard·user data 보존 |
+| Approved native tool receipt/exposed command publication | NO | NO | NO | NO | Current records/readback·real target wrappers·cross-root guarded failure/recovery |
+| Existing tool native upgrade / pipx production / public tools CLI | NO | NO | NO | NO | 별도 남은 acceptance; 이번 fresh/install 단위로 닫지 않음 |
+
+Project snapshot/cache 경로를 새로 복제하지 않는다. 기존 DependencyResolution.WithProjectControls가
+raw native controls와 target 관련 bytes를 current Verified Manifest/staging에 전달하고
+verifyPythonSelectionManifest가 정확한 runtime/lock/target/controls를 대조한다. Primary graph로도
+whole set inspection/Policy가 이미 있으므로 이 실제 경로를 reuse한다.
+
+초기 target은 명시 existing venv와 existing external bin directory다. Runtime provisioning·global
+install은 밖이며 package namespace/root·interpreter/layout·bin-root를 함께 동결해야 한다. 기존
+ordinary UV/pip/project 구현은 대체하지 않는다. Tool root receipt와 노출 링크는 controller 소유
+metadata이지 distribution archive 파일로 위장하지 않는다. 일반 오류는 기존 venv 원복과 결합하고
+foreign/uncertain 상태는 원본·backup·guard를 보존한다. 새 interface/config/CI placeholder는 없다.
+
+Source review에서 현재 materializer는 fixed image pip --target을 사용한다. Tool에서는 wrapper의
+interpreter가 실제 target venv와 일치해야 한다. 기존 RECORD/whole file validator를 다시 만들지
+않고 fixed pip의 실제 출력으로 이 gap을 확인한다. Synthetic inert wheel과 네트워크 없는 pinned
+Python/Pip만 사용하며 노출 command·Artifact import·Host Python은 실행하지 않는다.
+
+### L4-A interpreter-bound materializer evidence·수정 지도·재검토
+
+Offline inert diagnostic6.276s의 네 명령은 모두 exit0이다. 기존 fixed pip --target은
+#!/usr/local/bin/python을 만들었다. 같은 fixed pip의 --python에 empty controlled venv를
+지정하면 target venv Python을 가리키는 표준 wrapper와 그 bytes의 RECORD가 생성됐다.
+공백 경로도 pip의 shell preamble로 처리됐으며, UV native도 그 existing venv interpreter
+pointer를 receipt에 보존했다. Artifact import/command·Host Python은 실행하지 않았고
+never-network container 제거 뒤 Docker inventories는 동일하다. 원본 p4l4-tool-materializer-
+diagnostic-v1-*가 source/argv/출력을 소유한다. Tool-specific target binding은 실제 acceptance gap이며
+기존 일반 pip/UV script behavior의 전면 해결 또는 Host tool 실행 성공으로 확대하지 않는다.
+
+기존 materializePythonProject의 runner→scheme relocation→RECORD/hash/identity validation 본문은
+arguments만 받는 내부 helper로 그대로 재사용한다. 기존 caller는 기존 arguments를 유지한다.
+새 tool-specific wrapper는 private empty Python view를 final target path에 guest에서만 mount하고
+fixed image Python/pip --python으로 설치한다. Host target files/Host Python을 mount/실행하지 않는다.
+Approved wheels는 별도 /workspace/site에만 materialize하고 empty interpreter site와 분리한다.
+Target mount가 fixed runtime/loader·/workspace·control root를 가리거나 CSV/비정규 경로가 되면
+사전에 거부한다. Native wrapper/RECORD bytes는 pip가 만들며 임의 문자열 치환하지 않는다.
+
+Private interpreter view는 known directories/pyvenv.cfg/fixed symlink만 포함하고 cleanup도 동일
+inode/mode/bytes/link를 확인해 명시 inventory로 수행한다. Foreign file/changed bytes는 보존하고
+원래 오류와 cleanup 오류를 합치며 결과를 폐기한다. 이 helper의 실제 backend wiring/현재
+inspection·승인·receipt/exposed transaction/CLI는 다음 gap으로 남긴다. 기존 controller와 Native
+runtime의 권한·version·budget·Policy는 바꾸지 않는다. 독립 source 대체/재작성은 없다.
+
+L4-A 최초 Quick160.897s는 새 보조 interpreter directory가 materialization root 안에 있어
+기존 whole validator의 private output outside the controlled installation scheme에서 실패했다.
+원본 p4l4a-interpreter-bound-v2-quick을 보존한다. 기존 scheme whitelist를 넓히지 않고
+보조 view를 같은 private parent의 별도 random0700 sibling으로 분리한다. 각 guest mount와
+known-inventory cleanup도 그 exact sibling에 결합한다. 같은 회귀 재검증 전 해결로 표시하지 않는다.
+
+### L4-B explicit target/receipt binding baseline와 수정 지도
+
+L3의 원본 receipt는 private guest의 /haa-site 경로와 base interpreter를 가리킨다.
+이를 Host native receipt로 그대로 게시할 수 없다. 기존 strict inert parser/명령 집합은
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named L1..L3)이며 다시 구현하지 않는다.
+Host target·external bin·interpreter 관계를 담은 별도 approved control과 strict 재해석 가능한
+receipt projection은 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+이 projection은 원본 native body와 구별하고 원본 control을 보존하며 current Manifest에
+함께 결합한다. Native argv로 stored options를 전달하거나 과거 ALLOW를 재사용하지 않는다.
+
+수정 지도: PyPI leaf의 순수 UV receipt layout projection은 strict parsed single-public root,
+requirement/options/command 집합을 유지하고 python/install-path만 명시 target으로 결합한다.
+원본→projection semantic 대조·strict 재해석을 수행하며 ownership/Policy가 되지 않는다.
+Promotion의 새 concrete target guard는 기존 venv transaction·bin-root mutation guard를 함께
+보유한다. Existing canonical/disjoint user-owned non-writable roots·package basename·empty
+distribution/ownership·native receipt 부재·interpreter alias chain 및 command 충돌을 동결한다.
+Runtime provisioning·기존 native adoption/upgrade는 이 fresh guard에서 거부한다.
+
+두 번째 검토: 경로 claim이 Host 파일 소유권이 아니며 모든 native/current approval/publication
+앞뒤에 identity/bytes를 재확인한다. 정체 불명 alias/파일·recovery는 보존하고 두 guard를
+실패 원인과 함께 종료한다. 기존 venv/Project transaction을 덮어쓰거나 pending symlink를
+distribution 소유 파일로 위장하지 않는다. 실제 atomic links/receipt/current workflow·CLI는
+다음 gap으로 남겨 둔다.
+
+L4-A named local 최종은 Quick166.975s/security12.356s/docs0.292s·Promotion 전체
+Race161.117s(test146.803s)가 PASS다. Separate sibling 뒤 같은 whole-validator 회귀가
+정상 결과5개·cleanup 실패 시 성공 결과 폐기/foreign 보존을 확인했다. 기존 materializer
+본문은 arguments 전달 한 곳 외에 동일함을 mechanical receipt로 대조했다.
+[L4-A receipt](./p4l4a-tool-interpreter-materializer-local-20261026.json)가 최초 실패와
+고정 inert pip recipe diagnostic6.276s/네 명령의 별도 범위를 연결한다. 실제 Go tool backend/
+Host publication/CLI 완료가 아니며 다음 L4-B roots/receipt binding을 계속한다.

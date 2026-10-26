@@ -678,8 +678,12 @@ func readBoundedPromotionFile(filename string, limit int64) ([]byte, error) {
 
 // Existing pip/UV installs and complete sync share the exact offline recipe and RECORD validator.
 func (p *PyPIPromotion) materializePythonProject(ctx context.Context, temporary string, requirements []byte, expected map[string]pypiExpected) ([]pypiDestination, error) {
+	return p.materializePythonProjectWithArguments(ctx, temporary, requirements, expected, pypiPromotionArguments(temporary, artifactpypi.ResourcePolicyFromContext(ctx)))
+}
+
+func (p *PyPIPromotion) materializePythonProjectWithArguments(ctx context.Context, temporary string, requirements []byte, expected map[string]pypiExpected, arguments []string) ([]pypiDestination, error) {
 	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, resourcePolicy)); err != nil {
+	if err := p.runner.Run(ctx, temporary, arguments); err != nil {
 		return nil, err
 	}
 	if err := relocateStagedSchemeRoots(temporary); err != nil {
