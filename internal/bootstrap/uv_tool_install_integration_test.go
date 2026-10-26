@@ -40,93 +40,8 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 	if os.Getenv("HELOX_UV_TOOL_INSTALL_INTEGRATION") != "1" || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user UV tool installation qualification")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
-	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	launcher, err := hosttool.NewSystemObserverLauncher()
-	if err != nil {
-		t.Fatal(err)
-	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := observer.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	resolverPolicy, err := newSystemResolverPolicyAdapter()
-	if err != nil {
-		t.Fatal(err)
-	}
-	native, err := sandbox.NewLinuxUVResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := native.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	root, err := filepath.EvalSymlinks(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	intakeRoot, evidenceRoot, stagingRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging")
-	intake, err := artifactpypi.NewPublicIntake(intakeRoot)
-	if err != nil {
-		t.Fatal(err)
-	}
-	runtime := sandbox.PinnedPythonRuntime()
-	static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
-	if err != nil {
-		t.Fatal(err)
-	}
-	backend, err := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot, executor, observer.Observer(), newObservationResourceAdapter())
-	if err != nil {
-		t.Fatal(err)
-	}
-	dynamic, err := inspectionpypi.NewDynamicInspector(backend)
-	if err != nil {
-		t.Fatal(err)
-	}
-	inspector, err := inspectionpypi.NewCompositeInspector(static, dynamic)
-	if err != nil {
-		t.Fatal(err)
-	}
-	store, err := local.NewStore(evidenceRoot)
-	if err != nil {
-		t.Fatal(err)
-	}
-	inspection, err := application.NewInstallInspectService(native, intake, verificationpypi.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	staging, err := promotion.NewLocalStaging(intakeRoot, evidenceRoot, stagingRoot)
-	if err != nil {
-		t.Fatal(err)
-	}
-	promoter, err := promotion.NewPyPIPromotionWithRunner(stagingRoot, executor)
-	if err != nil {
-		t.Fatal(err)
-	}
-	base, err := application.NewInstallService(inspection, evidencerecord.Generator{}, staging, promoter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	bindings := pythonClientBindings{installer: base, promoter: promoter, resolver: native, nativeLookup: native, intake: intake, intakeRoot: intakeRoot, evidenceRoot: evidenceRoot, stagingRoot: stagingRoot, inspector: inspector, evidence: store}
-	interpreter := uvToolTargetInterpreterFixture(t)
+	ctx, bindings, root, interpreter := uvToolApprovedIntegrationFixture(t)
+	store, stagingRoot := bindings.evidence, bindings.stagingRoot
 	seen := map[string]bool{}
 	for _, step := range []struct{ name, requirement string }{{"plain", "cowsay==6.1"}, {"env with spaces", "cowsay>=6.1,<=6.1"}} {
 		t.Run(step.name, func(t *testing.T) {
@@ -257,6 +172,98 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 			}
 		})
 	}
+}
+
+func uvToolApprovedIntegrationFixture(t *testing.T) (context.Context, pythonClientBindings, string, []byte) {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
+	t.Cleanup(cancel)
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := executor.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	launcher, err := hosttool.NewSystemObserverLauncher()
+	if err != nil {
+		t.Fatal(err)
+	}
+	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
+		return launcher.StartObserver(start, remote, output)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := observer.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	resolverPolicy, err := newSystemResolverPolicyAdapter()
+	if err != nil {
+		t.Fatal(err)
+	}
+	native, err := sandbox.NewLinuxUVResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := native.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	intakeRoot, evidenceRoot, stagingRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging")
+	intake, err := artifactpypi.NewPublicIntake(intakeRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := sandbox.PinnedPythonRuntime()
+	static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot, executor, observer.Observer(), newObservationResourceAdapter())
+	if err != nil {
+		t.Fatal(err)
+	}
+	dynamic, err := inspectionpypi.NewDynamicInspector(backend)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := inspectionpypi.NewCompositeInspector(static, dynamic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := local.NewStore(evidenceRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspection, err := application.NewInstallInspectService(native, intake, verificationpypi.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	staging, err := promotion.NewLocalStaging(intakeRoot, evidenceRoot, stagingRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	promoter, err := promotion.NewPyPIPromotionWithRunner(stagingRoot, executor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	base, err := application.NewInstallService(inspection, evidencerecord.Generator{}, staging, promoter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bindings := pythonClientBindings{installer: base, promoter: promoter, resolver: native, nativeLookup: native, intake: intake, intakeRoot: intakeRoot, evidenceRoot: evidenceRoot, stagingRoot: stagingRoot, inspector: inspector, evidence: store}
+	interpreter := uvToolTargetInterpreterFixture(t)
+	return ctx, bindings, root, interpreter
 }
 
 func uvToolTargetInterpreterFixture(t *testing.T) []byte {

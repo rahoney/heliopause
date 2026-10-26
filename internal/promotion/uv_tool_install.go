@@ -21,6 +21,7 @@ type uvToolNativeSelector interface {
 type UVToolInstallPreparation struct {
 	promoter     *PyPIPromotion
 	resolver     uvToolNativeSelector
+	upgrade      uvToolUpgradeNativeSelector
 	binRoot      string
 	trustedRoots []string
 }
@@ -38,7 +39,7 @@ func NewUVToolInstallPreparation(promoter *PyPIPromotion, resolver uvToolNativeS
 	if !stagingBound {
 		return nil, errors.New("UV tool guard omits actual trusted staging")
 	}
-	return &UVToolInstallPreparation{promoter, resolver, binRoot, append([]string(nil), trustedRoots...)}, nil
+	return &UVToolInstallPreparation{promoter: promoter, resolver: resolver, binRoot: binRoot, trustedRoots: append([]string(nil), trustedRoots...)}, nil
 }
 
 type uvToolInstallSession struct {
@@ -48,6 +49,7 @@ type uvToolInstallSession struct {
 	install                                       domain.InstallContext
 	resolution                                    domain.DependencyResolution
 	receipt                                       domain.ProjectControlFile
+	originalWheels                                []artifactpypi.UVInstalledWheelControls
 	attempted, resolved, promoteAttempted, closed bool
 	closeErr                                      error
 }
@@ -75,12 +77,21 @@ func (s *uvToolInstallSession) ResolveDependencies(ctx context.Context, referenc
 		return domain.DependencyResolution{}, err
 	}
 	s.attempted = true
-	selected, err := s.owner.resolver.ResolveToolInstall(ctx, s.guard.requirement)
+	var selected sandbox.UVToolSelection
+	var err error
+	if s.guard.original != nil {
+		if s.owner.upgrade == nil {
+			return domain.DependencyResolution{}, errors.New("UV tool original selector is unavailable")
+		}
+		selected, err = s.owner.upgrade.ResolveToolUpgrade(ctx, s.guard.original.input, s.originalWheels)
+	} else {
+		selected, err = s.owner.resolver.ResolveToolInstall(ctx, s.guard.requirement)
+	}
 	if err = errors.Join(err, s.guard.verify(ctx)); err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	resolution, controls := selected.Resolution(), selected.Controls()
-	if err := validateUVToolSelection(resolution, controls, s.guard.requirement); err != nil {
+	if err := s.validateSelection(resolution, controls); err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	var native artifactpypi.ToolReceipt
@@ -120,11 +131,18 @@ func (s *uvToolInstallSession) ResolveDependencies(ctx context.Context, referenc
 }
 
 func validateUVToolSelection(resolution domain.DependencyResolution, controls []domain.ProjectControlFile, requirement artifactpypi.UpgradeRequirement) error {
+	return validateUVToolNativeSelection(resolution, controls, requirement, "uv-tool-install:"+sandbox.UVResolverRuntimeIdentity(), []string{"uv-tool-intent.json", "uv-tool-receipt.toml", "uv-tool-pylock.toml", "uv-tool-census.json"})
+}
+
+func validateUVToolNativeSelection(resolution domain.DependencyResolution, controls []domain.ProjectControlFile, requirement artifactpypi.UpgradeRequirement, runtime string, names []string) error {
 	graph := resolution.Graph()
-	if resolution.RuntimeIdentity() != "uv-tool-install:"+sandbox.UVResolverRuntimeIdentity() || resolution.LockfileDigest().String() == "" || len(resolution.ProjectControls()) != 0 || len(graph.Nodes()) == 0 || len(graph.Derivations()) != 0 || len(controls) != 4 {
-		return errors.New("UV tool selection lacks its exact fresh native wheel-only input")
+	if resolution.RuntimeIdentity() != runtime || resolution.LockfileDigest().String() == "" || len(resolution.ProjectControls()) != 0 || len(graph.Nodes()) == 0 || len(graph.Derivations()) != 0 || len(controls) != len(names) {
+		return errors.New("UV tool selection lacks its exact native wheel-only input")
 	}
-	wanted := map[string]bool{"uv-tool-intent.json": true, "uv-tool-receipt.toml": true, "uv-tool-pylock.toml": true, "uv-tool-census.json": true}
+	wanted := map[string]bool{}
+	for _, name := range names {
+		wanted[name] = true
+	}
 	for _, control := range controls {
 		if !wanted[control.Name()] || !control.Present() || len(control.Body()) == 0 {
 			return errors.New("UV tool native controls are missing or changed")
@@ -189,12 +207,16 @@ func uvToolTargetControl(g *toolFreshTarget, nativeLock domain.ContentDigest) (d
 		}
 		members = append(members, interpreter{member.path, member.link, digest, d, i, uint32(member.info.Mode()), member.info.Size()})
 	}
+	intent := "fresh-install"
+	if g.original != nil {
+		intent = "managed-upgrade"
+	}
 	body, err := json.Marshal(struct {
 		Version                                                    int
 		Intent, Requirement, NativeLock, ConfigSHA256, Interpreter string
 		Target, Exposed                                            root
 		InterpreterMembers                                         []interpreter
-	}{1, "fresh-install", g.requirement.Requirement(), nativeLock.String(), g.tx.config.Digest, filepath.Join(g.tx.plan.root, "bin", "python"), root{g.tx.plan.root, device, inode, uint32(rootInfo.Mode())}, root{g.binRoot, bd, bi, uint32(g.bin.rootInfo.Mode())}, members})
+	}{1, intent, g.requirement.Requirement(), nativeLock.String(), g.tx.config.Digest, filepath.Join(g.tx.plan.root, "bin", "python"), root{g.tx.plan.root, device, inode, uint32(rootInfo.Mode())}, root{g.binRoot, bd, bi, uint32(g.bin.rootInfo.Mode())}, members})
 	if err != nil {
 		return domain.ProjectControlFile{}, err
 	}

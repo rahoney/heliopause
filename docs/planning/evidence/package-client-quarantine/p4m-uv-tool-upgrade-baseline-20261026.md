@@ -338,3 +338,44 @@ NoSKIP/helperwait0/CONFIRMED_STOPPED·Host 보호 snapshot 동일이다. Origina
 [B receipt](./p4m4c-uv-tool-upgrade-resolver-local-20261026.json)와 first failure/latch assessment가
 exact source/범위를 소유한다. 같은 M13-004에서 M4-C current update를 계속하며 새 push/CI는
 그 backend/CLI 묶음의 필요한 경계까지 보류한다.
+
+C first canonical Quick214.628s/security11.472s/docs0.281s는 PASS다. Actual175.459s의
+기존 fresh CLI86.29s와 managed seed/upgrade/no-op86.64s가 모두 PASS이며 각 update는
+새 current Run/Evidence·Policy와 eight controls/Host receipt/원자 반영을 확인했다. Old public6.0
+files는 실제 현재 HAA 설치로 인증·소유했고 historical unversioned receipt 조건만 synthetic이다.
+Native exact pin을 실제로 풀었다고 주장하지 않는다. NoSKIP/helperwait0/Host 동일이다.
+Current Evidence failure 부정 actual과 Promotion/Bootstrap 전체 Race는 아직 진행 중이다.
+
+C final Promotion/Bootstrap 전체 Race173.315s와 별도 current Evidence failure actual56.766s
+(test54.17s)는 PASS다. Actual authentic public6.1 exact-pin no-op에서 현재 Record 실패의
+primary cause를 보존하고 Bundle/반입 없음·원본 inode/bytes/mode/links 불변을 확인했다.
+이 부정 test만 realcorpus tag 파일로 추가했으며 성공 actual의 production/positive test source는
+불변이다. Canonical format과 새 tagged test build/actual로 검증하고 unchanged default Quick을
+반복하지 않는다. Current Manifest exact verification 및 Promote/Close·native/observer·M2/M3
+등13 owner files와 기존 fresh assertion body는 byte-identical이다. Setup 추출은 동일한
+cleanup 의존 순서를 유지하고 TempDir 정리만 그 뒤에 오도록 등록했다.
+[C receipt](./p4m5-uv-tool-current-update-local-20261026.json)가 source/검증 범위를 소유한다.
+M4-C는 named backend/factory만 local qualified이며 public upgrade CLI/native adoption/pipx·
+remote/final profiles는 미완료다. Same M13-004에서 D 공개 명령/CI cohort 연결을 계속한다.
+
+### M4-D public upgrade CLI 착수 감사·수정 지도·재검토
+
+C native/current service와 fresh descriptor/parser/lazy bootstrap/presentation은
+IMPLEMENTED/WIRED/QUALIFIED=YES(named scopes)다. Public uv tool upgrade는 NO/NO/NO/NO다.
+MISSING은 exact upgrade leaf, 명시 target/bin preflight와 current update dispatch, JSON/human
+실제 managed upgrade/no-op/거부·기존 fresh 회귀 및 필요한 CI wiring/cohort qualification이다.
+
+같은 UVToolPackageClient에 upgrade descriptor를 추가하고 existing operation-aware registry를
+사용한다. 기존 addPackageClientInstall 본문은 operation만 parameter로 추출해 install wrapper와
+upgrade leaf가 공유하며 request/rendering/Policy 동작을 재작성하지 않는다. Upgrade는 항상
+current update mode이며 positional 조건을 보존한다. Target/bin 검사는 기존 syntax-only
+preflight를 공유하고 backend가 held managed 원본을 검증한다. Runtime 준비/Host interpreter
+실행/implicit target/adoption/추가 native option을 만들지 않는다. Help는 native가 원래 receipt
+조건을 유지하고 positional 조건을 추가한다는 점과 no-op도 재검사한다는 동작을 설명한다.
+
+두 번째 검토: root.Find와 selected operation이 같은 descriptor를 소비하고 lazy binding은
+선택된 leaf의 bin-dir만 읽는다. 기존 fresh JSON/human/foreign refusals와 다른 package
+install의 shared path를 회귀 검사한다. 새 actual tool consumers를 canonical CI scope/validator에
+묶을 때 기존 helper lifecycle/timeout/coverage와 원격 취소 정책을 유지한다. 전체 CI는 이
+cohort의 local end-to-end 뒤 한 번 시작하고 실측 기반 실제 timer로 결과를 소비하며 기다리는
+동안 native adoption/pipx의 같은 item 작업을 계속한다.
