@@ -1,6 +1,7 @@
 package promotion
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -19,9 +20,11 @@ type toolPublishedLink struct {
 	Device, Inode              uint64
 	info                       os.FileInfo
 	published                  bool
+	rolledBack                 bool
 }
 
 type toolPublication struct {
+	original        *toolOriginalPublication
 	ctx             context.Context
 	guard           *toolFreshTarget
 	receipt         pypiDestination
@@ -35,7 +38,8 @@ type toolPublication struct {
 }
 
 type toolPublicationJournal struct {
-	Workspace            *toolWorkspaceJournal `json:",omitempty"`
+	Original             *toolOriginalLinkJournal `json:",omitempty"`
+	Workspace            *toolWorkspaceJournal    `json:",omitempty"`
 	BinRoot, PrivateRoot string
 	Receipt              pypiDestination
 	Links                []toolPublishedLink
@@ -45,14 +49,18 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	if err := g.verify(ctx); err != nil {
 		return err
 	}
-	if g.original != nil {
-		return errors.New("original tool publication needs complete command reconciliation")
-	}
 	if g.tx.tool != nil || g.tx.project != nil || len(g.commands) == 0 || !receipt.Present() || receipt.Name() != uvToolHostReceiptControl {
 		return errors.New("tool publication requires one frozen controller receipt")
 	}
 	parsed, err := artifactpypi.ParseUVToolReceipt(receipt.Body())
-	if err != nil || !reflect.DeepEqual(parsed.Commands(), g.commands) || !parsed.Requirement().SameConstraints(g.requirement) {
+	nativeRequirement := g.requirement
+	if g.original != nil {
+		nativeRequirement = g.original.input.Receipt().Requirement()
+		if !g.original.selected.Valid() || !bytes.Equal(g.original.selected.Body(), receipt.Body()) {
+			return errors.New("original tool receipt differs from frozen selection")
+		}
+	}
+	if err != nil || !reflect.DeepEqual(parsed.Commands(), g.commands) || !parsed.Requirement().SameConstraints(nativeRequirement) {
 		return errors.New("tool publication receipt differs from frozen native selection")
 	}
 	if err := parsed.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin", "python")); err != nil {
@@ -63,7 +71,7 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 		for _, d := range destinations {
 			if d.Scheme == "scripts" && d.Relative == command.Name && d.Distribution == g.requirement.Project() {
 				info, err := os.Lstat(d.Source)
-				if err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 || d.ArtifactDigest == "" || !g.requirement.AcceptsVersion(d.Version) {
+				if err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 || d.ArtifactDigest == "" || !g.requirement.AcceptsVersion(d.Version) || !nativeRequirement.AcceptsVersion(d.Version) {
 					return errors.New("tool command lacks its main distribution executable output")
 				}
 				found = true
@@ -76,6 +84,9 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	p := &toolPublication{guard: g, ctx: ctx}
 	defer func() {
 		cleanupErr := p.cleanup()
+		if !g.tx.journalStarted {
+			cleanupErr = errors.Join(cleanupErr, p.disposeOriginal())
+		}
 		if cleanupErr != nil {
 			g.tx.recovery = true
 		}
@@ -139,15 +150,23 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	if err := g.verify(ctx); err != nil {
 		return err
 	}
+	p.original, err = prepareToolOriginalPublication(p)
+	if err != nil {
+		return err
+	}
 	g.tx.tool = p
-	return g.tx.commitSelectionWithProject(destinations, false, false)
+	err = g.tx.commitSelectionWithProject(destinations, g.original != nil, false)
+	if err == nil && g.original != nil {
+		g.original.committed = true
+	}
+	return err
 }
 
 func (p *toolPublication) journal() *toolPublicationJournal {
 	if p == nil {
 		return nil
 	}
-	return &toolPublicationJournal{p.guard.work.journal(), p.guard.binRoot, p.private, p.receipt, append([]toolPublishedLink(nil), p.links...)}
+	return &toolPublicationJournal{Original: p.original.journal(), Workspace: p.guard.work.journal(), BinRoot: p.guard.binRoot, PrivateRoot: p.private, Receipt: p.receipt, Links: append([]toolPublishedLink(nil), p.links...)}
 }
 
 func toolLinkMatches(root *os.Root, name string, link toolPublishedLink) bool {
@@ -162,6 +181,9 @@ func toolLinkMatches(root *os.Root, name string, link toolPublishedLink) bool {
 func (p *toolPublication) verifyBoundary() error {
 	if p == nil {
 		return nil
+	}
+	if err := p.original.verify(); err != nil {
+		return err
 	}
 	g := p.guard
 	if g == nil {
@@ -200,7 +222,8 @@ func (t *pypiVenvTransaction) prepareToolControls() ([]pypiDestination, error) {
 	if err := p.verifyBoundary(); err != nil {
 		return nil, err
 	}
-	if _, frozen := t.before[p.receipt.Final]; !frozen || t.before[p.receipt.Final] != nil || !p.receiptSnapshot.matches(p.receipt.Source) {
+	before, frozen := t.before[p.receipt.Final]
+	if !frozen || (p.original == nil && before != nil) || (p.original != nil && (before == nil || !before.matches(p.receipt.Final))) || !p.receiptSnapshot.matches(p.receipt.Source) {
 		return nil, errors.New("tool receipt lacks frozen absence or private copy")
 	}
 	if err := t.freezeParents(filepath.Dir(p.receipt.Source)); err != nil {
@@ -215,6 +238,9 @@ func (p *toolPublication) publishLinks() error {
 		return nil
 	}
 	t := p.guard.tx
+	if err := p.original.backup(); err != nil {
+		return err
+	}
 	for i := range p.links {
 		link := &p.links[i]
 		if err := p.ctx.Err(); err != nil {
@@ -259,6 +285,9 @@ func (p *toolPublication) verifyPublished() error {
 	if err := p.verifyBoundary(); err != nil {
 		return err
 	}
+	if err := p.guard.verifyCommandCaseCollisions(); err != nil {
+		return err
+	}
 	for _, link := range p.links {
 		if !link.published || !toolLinkMatches(p.guard.bin.root, link.Name, link) {
 			return errors.New("tool command link reconciliation failed")
@@ -276,7 +305,7 @@ func (p *toolPublication) rollbackLinks() error {
 	}
 	for i := len(p.links) - 1; i >= 0; i-- {
 		link := p.links[i]
-		if !link.published {
+		if !link.published || link.rolledBack {
 			continue
 		}
 		if !toolLinkMatches(p.guard.bin.root, link.Name, link) {
@@ -285,6 +314,10 @@ func (p *toolPublication) rollbackLinks() error {
 		if err := p.guard.tx.remove(link.Path); err != nil {
 			return err
 		}
+		p.links[i].rolledBack = true
+	}
+	if err := p.original.rollback(); err != nil {
+		return err
 	}
 	return syncDirectory(p.guard.binRoot)
 }
@@ -295,6 +328,9 @@ func (p *toolPublication) cleanup() (resultErr error) {
 	}
 	p.cleanupDone = true
 	defer func() { p.cleanupErr = resultErr }()
+	if err := p.original.verify(); err != nil {
+		return err
+	}
 	if p.receipt.Source != "" {
 		if _, err := os.Lstat(p.receipt.Source); err == nil {
 			if p.receiptSnapshot.info == nil || !p.receiptSnapshot.matches(p.receipt.Source) {

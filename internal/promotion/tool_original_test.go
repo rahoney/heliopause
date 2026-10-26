@@ -85,8 +85,11 @@ func TestToolOriginalGuardRetainsOwnedWholeStateAndSeparateRequest(t *testing.T)
 	}
 	receipt := g.original.input.Receipt()
 	control, _ := domain.NewProjectControlFile(uvToolHostReceiptControl, receipt.Body(), true)
+	if err := g.freezeCommands(context.Background(), receipt); err != nil {
+		t.Fatal(err)
+	}
 	if err := g.freezeCommands(context.Background(), receipt); err == nil {
-		t.Fatal("fresh command publication accepted original")
+		t.Fatal("repeated original selection accepted")
 	}
 	if err := g.commitTool(context.Background(), nil, control, ""); err == nil {
 		t.Fatal("fresh transaction accepted original")

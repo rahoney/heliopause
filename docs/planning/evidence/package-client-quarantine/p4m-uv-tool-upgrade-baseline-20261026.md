@@ -149,3 +149,54 @@ receipt를 설명하지 못한다. 별도 병렬 venv engine 대신 현재 compl
 외부 symlinks의 identity-aware 참여만 추가한다. Current new-set ALLOW/Manifest가 없는 공개
 호출 경로는 만들지 않는다. Fault/cancel/foreign/cleanup 실패 및 기존 fresh 실제 소비자를
 검증하고 synthetic helper 성공을 public upgrade qualification으로 확대하지 않는다.
+
+M3 named complete publisher는 canonical Quick176.358s/security11.439s/docs0.255s 및
+전체 Promotion Race162.792s가 PASS다. Changed/same-version·열 fault 원복·취소·foreign 보존·
+post-publication disposal recovery와 신규 명령/late case collision 거부를 확인했다. 기존
+complete venv engine은 optional original-link 처분 hook 하나 외에 baseline과 byte-identical이다.
+Actual80.336s의 기존 fresh CLI77.46s 네 case도 PASS이며 NoSKIP/helperwait0/Host 보호
+snapshot 동일이다. [M3 receipt](./p4m3-uv-tool-complete-publication-local-20261026.json)가 정확한
+source/검증 범위를 소유하며 native upgrade/current update pipeline/CLI는 미완료다.
+
+## M4 managed native upgrade baseline·수정 지도·두 번째 검토
+
+M1 original/positional control, M2 managed guard, M3 complete file/link publication은 named
+local 범위이며 native tool upgrade resolver/전송/current update pipeline/public CLI는
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. Fresh native session,
+whole output scanner, exact pylock/export, public source/whole wheel binding, primary current
+approval 및 prepared/update session은 구현되어 있으므로 대체하지 않는다.
+
+MISSING은 (A) controller-created metadata-only original replay와 receipt runtime relocation,
+(B) 실제 pinned UV tool upgrade와 bounded complete census/pylock·독립 archive binding,
+(C) held original/control/current whole approval를 complete publisher에 연결하는 prepared update,
+(D) public CLI와 실제 managed upgrade/no-op/failure·기존 fresh 회귀다. 한 단계의 helper/진단을
+다른 단계나 전체 P4의 qualification으로 확대하지 않는다.
+
+A는 기존 UpgradeInput의 METADATA와 guard가 같은 digest로 고정한 WHEEL만 사용한다. Native
+uninstall용 RECORD는 그 metadata 경로들만 controller가 생성하며 원본 RECORD/프로그램/.pth/
+startup/code/Host interpreter는 전송하지 않는다. Receipt는 strict parser와 public fixed recipe를
+유지하고 원본 control을 보존한 채 private tool/bin roots 및 고정 runtime Python으로만 projection한다.
+고정 pyvenv/alias와 비실행 command placeholder를 tar로 생성하며 이름·type·mode·UID/GID·수량·
+합산 bytes를 닫는다. Original WHEEL은 no-op retained native output의 후보 선택 데이터이고
+archive/source authentication이나 이전 ALLOW를 대신하지 않는다.
+
+B는 기존 fresh native session 안에서 actual uv tool upgrade positional 요구를 사용한다.
+원래 receipt 조건은 유지하며 추가 positional 조건을 selected main version에도 검사한다.
+선택 전체 versions를 freeze/export하고 기존 complete controls/whole source bind를 재사용한다.
+Native whole selection의 원본·receipt·links가 export 전후 달라지면 거부한다. 기존 pip upgrade
+alias나 current full inspection을 생략하는 native no-op 결과는 사용하지 않는다.
+
+고정 UV source의 original environment query는 -I/-B/-c이며 -S가 아니다. 따라서 query 전에
+view가 metadata-only라는 controller construction을 확인하며 실제 observer의 alias/venv read
+경계도 검증한다. 현재 IsExactUVPythonQuery는 execfn을 고정 OCI-root Python 경로로 제한한다.
+Target alias가 실제 execfn에 나타나는지는 아직 actual로 확인하지 않았다. Artifact startup을
+CONTROL로 허용하거나 broad workspace read/실행 권한을 추가하지 않는다. 실제 deny가 있으면
+exact producer/argv/mount/input 단계와 기존 역할을 대조하고 관련 latches/기존 실제 소비자를
+포함해 필요한 최소 경계만 검토한다. 이 baseline은 역할·예산 변경을 승인하지 않는다.
+
+두 번째 검토: existing fresh scanner는 WHEEL/명령 scaffold가 필요하므로 METADATA-only 진단
+성공만으로 호출을 연결하지 않는다. 원래 receipt·root links·metadata는 실제 query 전후 held
+state에 다시 대조하며 resolver는 private 입력만 받는다. 새 current Manifest가 정확한 선택과
+원본 control을 결합하고 현재 full Policy/inspection 뒤 같은 M3 complete publisher만 사용한다.
+Native adoption/pipx는 별도 acceptance로 남긴다. Future generic interface나 실행 runner
+placeholder는 추가하지 않는다.

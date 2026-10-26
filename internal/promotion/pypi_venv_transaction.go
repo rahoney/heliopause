@@ -897,6 +897,11 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 				resultErr = errors.Join(resultErr, err, errors.New("tool cleanup uncertain; recovery retained"))
 				return
 			}
+			if err := t.tool.disposeOriginal(); err != nil {
+				t.recovery = true
+				resultErr = errors.Join(resultErr, err, errors.New("original tool link cleanup uncertain; recovery retained"))
+				return
+			}
 		}
 		if err := t.removeBackup(resultErr == nil); err != nil {
 			t.recovery = true

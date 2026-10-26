@@ -17,9 +17,11 @@ import (
 // original code remains on the Host as inert guarded data and is not transported
 // or executed. Current new-set inspection and complete publication are separate.
 type toolOriginalState struct {
-	input    artifactpypi.UVToolUpgradeInput
-	metadata pypiInstalledSnapshot
-	links    []toolPublishedLink
+	input     artifactpypi.UVToolUpgradeInput
+	metadata  pypiInstalledSnapshot
+	links     []toolPublishedLink
+	selected  artifactpypi.ToolReceipt
+	committed bool
 }
 
 func beginToolOriginalTarget(ctx context.Context, install domain.InstallContext, request artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string) (*toolFreshTarget, error) {
@@ -151,4 +153,84 @@ func (s *toolOriginalState) verify(ctx context.Context, g *toolFreshTarget) erro
 		return err
 	}
 	return s.verifyLinks(g)
+}
+
+func (g *toolFreshTarget) freezeOriginalCommands(ctx context.Context, receipt artifactpypi.ToolReceipt) error {
+	if g.original == nil || len(g.commands) != 0 || g.original.selected.Valid() || !receipt.Requirement().SameConstraints(g.original.input.Receipt().Requirement()) {
+		return errors.New("original tool command selection is repeated or changed its original requirement")
+	}
+	if err := receipt.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin/python")); err != nil {
+		return err
+	}
+	if _, err := artifactpypi.NewUVToolUpgradeInput(receipt, g.requirement, g.original.metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion); err != nil {
+		return err
+	}
+	old := map[string]toolPublishedLink{}
+	for _, link := range g.original.links {
+		old[link.Name] = link
+	}
+	directory, err := os.Open(g.binRoot)
+	if err != nil {
+		return err
+	}
+	entries, readErr := directory.ReadDir(100001)
+	closeErr := directory.Close()
+	if errors.Join(readErr, closeErr) != nil || len(entries) > 100000 {
+		return errors.New("tool command directory is unavailable or exceeds bounds")
+	}
+	for _, command := range receipt.Commands() {
+		if command.Name == toolBinTransactionLock {
+			return errors.New("new tool command collides with controller guard")
+		}
+		for _, entry := range entries {
+			if strings.EqualFold(entry.Name(), command.Name) {
+				if _, ok := old[command.Name]; !ok || entry.Name() != command.Name {
+					return errors.New("new tool command collides with an existing command")
+				}
+			}
+		}
+		if _, ok := old[command.Name]; !ok {
+			if _, err := os.Lstat(command.Path); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("new exposed command destination is occupied")
+			}
+			g.tx.before[command.Path] = nil
+		}
+		internal := filepath.Join(g.tx.plan.root, "bin", command.Name)
+		if _, ok := g.tx.current.Files["scripts/"+command.Name]; !ok {
+			if _, err := os.Lstat(internal); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("new tool script would replace unowned data")
+			}
+			g.tx.before[internal] = nil
+		}
+	}
+	g.commands = receipt.Commands()
+	g.original.selected = receipt
+	return g.verify(ctx)
+}
+
+// Check the complete frozen new command set before mutation and at final
+// reconciliation. Unknown case aliases are preserved and force rollback.
+func (g *toolFreshTarget) verifyCommandCaseCollisions() error {
+	if len(g.commands) == 0 {
+		return nil
+	}
+	file, err := g.bin.root.Open(".")
+	if err != nil {
+		return err
+	}
+	entries, readErr := file.ReadDir(100001)
+	closeErr := file.Close()
+	if errors.Join(readErr, closeErr) != nil || len(entries) > 100000 {
+		return errors.New("tool command namespace is unavailable or exceeds bounds")
+	}
+	wanted := map[string]string{}
+	for _, command := range g.commands {
+		wanted[strings.ToLower(command.Name)] = command.Name
+	}
+	for _, entry := range entries {
+		if name, ok := wanted[strings.ToLower(entry.Name())]; ok && name != entry.Name() {
+			return errors.New("tool command namespace acquired a foreign case alias")
+		}
+	}
+	return nil
 }

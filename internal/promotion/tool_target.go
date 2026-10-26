@@ -240,6 +240,9 @@ func (g *toolFreshTarget) verify(ctx context.Context) error {
 			}
 		}
 	}
+	if err := g.verifyCommandCaseCollisions(); err != nil {
+		return err
+	}
 	return g.tx.checkBefore()
 }
 
@@ -248,7 +251,7 @@ func (g *toolFreshTarget) freezeCommands(ctx context.Context, receipt artifactpy
 		return err
 	}
 	if g.original != nil {
-		return errors.New("original tool needs complete command reconciliation before publication")
+		return g.freezeOriginalCommands(ctx, receipt)
 	}
 	if len(g.commands) != 0 || receipt.Client() != "uv" || !receipt.Requirement().SameConstraints(g.requirement) {
 		return errors.New("tool command selection is repeated or differs from request")
@@ -301,7 +304,7 @@ func (g *toolFreshTarget) Close() error {
 	if g.closed {
 		return g.closeErr
 	}
-	if g.original != nil {
+	if g.original != nil && !g.original.committed {
 		if err := g.original.verifyLinks(g); err != nil {
 			g.tx.recovery = true
 			g.closeErr = errors.Join(g.closeErr, err)
