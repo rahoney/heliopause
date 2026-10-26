@@ -18,10 +18,11 @@ import (
 const toolBinTransactionLock = ".heliopause-tool-bin-transaction.lock"
 const uvToolHostReceipt = "uv-receipt.toml"
 
-// Fresh tools retain both roots before native selection. This guard does not
-// support adoption/upgrade, create a venv or execute its Host interpreter.
+// Tool targets retain both roots before native selection. Original targets use
+// a separate managed-state proof; neither path executes the Host interpreter.
 type toolFreshTarget struct {
 	work        *toolPythonWorkspace
+	original    *toolOriginalState
 	tx          *pypiVenvTransaction
 	bin         goProjectGuard
 	binRoot     string
@@ -104,6 +105,10 @@ func snapshotToolInterpreter(path string) ([]toolInterpreterMember, error) {
 }
 
 func beginToolFreshTarget(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string) (result *toolFreshTarget, resultErr error) {
+	return beginToolTarget(ctx, install, requirement, binRoot, trustedRoots, false)
+}
+
+func beginToolTarget(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool) (result *toolFreshTarget, resultErr error) {
 	if ctx == nil || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || !install.Valid() || install.Mode() != domain.InstallPythonVenv || requirement.Project() == "" || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() || len(trustedRoots) == 0 {
 		return nil, errors.New("tool target requires explicit Linux amd64 venv, requirement and trusted storage")
 	}
@@ -163,10 +168,17 @@ func beginToolFreshTarget(ctx context.Context, install domain.InstallContext, re
 		return nil, err
 	}
 	receipt := filepath.Join(root, uvToolHostReceipt)
-	if _, err := os.Lstat(receipt); !errors.Is(err, os.ErrNotExist) {
-		return nil, errors.New("fresh tool target already has native receipt or uncertain data")
+	if original {
+		result.original, err = captureToolOriginal(ctx, result, receipt)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if _, err := os.Lstat(receipt); !errors.Is(err, os.ErrNotExist) {
+			return nil, errors.New("fresh tool target already has native receipt or uncertain data")
+		}
+		tx.before[receipt] = nil
 	}
-	tx.before[receipt] = nil
 	result.interpreter, err = snapshotToolInterpreter(filepath.Join(root, "bin", "python"))
 	if err != nil {
 		return nil, err
@@ -197,14 +209,20 @@ func (g *toolFreshTarget) verify(ctx context.Context) error {
 	if err := g.tx.checkBefore(); err != nil {
 		return err
 	}
-	site, err := os.Open(g.tx.plan.site)
-	if err != nil {
-		return err
-	}
-	entries, readErr := site.ReadDir(1)
-	closeErr := site.Close()
-	if !errors.Is(readErr, io.EOF) || closeErr != nil || len(entries) != 0 || len(g.tx.current.Files) != 0 {
-		return errors.New("fresh tool requires an empty distribution and ownership namespace")
+	if g.original != nil {
+		if err := g.original.verify(ctx, g); err != nil {
+			return err
+		}
+	} else {
+		site, err := os.Open(g.tx.plan.site)
+		if err != nil {
+			return err
+		}
+		entries, readErr := site.ReadDir(1)
+		closeErr := site.Close()
+		if !errors.Is(readErr, io.EOF) || closeErr != nil || len(entries) != 0 || len(g.tx.current.Files) != 0 {
+			return errors.New("fresh tool requires an empty distribution and ownership namespace")
+		}
 	}
 	for _, member := range g.interpreter {
 		info, err := os.Lstat(member.path)
@@ -228,6 +246,9 @@ func (g *toolFreshTarget) verify(ctx context.Context) error {
 func (g *toolFreshTarget) freezeCommands(ctx context.Context, receipt artifactpypi.ToolReceipt) error {
 	if err := g.verify(ctx); err != nil {
 		return err
+	}
+	if g.original != nil {
+		return errors.New("original tool needs complete command reconciliation before publication")
 	}
 	if len(g.commands) != 0 || receipt.Client() != "uv" || !receipt.Requirement().SameConstraints(g.requirement) {
 		return errors.New("tool command selection is repeated or differs from request")
@@ -279,6 +300,12 @@ func (g *toolFreshTarget) Close() error {
 	}
 	if g.closed {
 		return g.closeErr
+	}
+	if g.original != nil {
+		if err := g.original.verifyLinks(g); err != nil {
+			g.tx.recovery = true
+			g.closeErr = errors.Join(g.closeErr, err)
+		}
 	}
 	g.closed = true
 	// Keep both locks if either root's identity is uncertain. Independent FDs

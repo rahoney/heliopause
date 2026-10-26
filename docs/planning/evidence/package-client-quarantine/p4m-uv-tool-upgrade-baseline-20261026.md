@@ -107,3 +107,45 @@ commitTool에서 명시 거부한다. Common begin 본문은 receipt capture/마
 기준과 같은지 기계적으로 비교한다. 두 번째 검토: original guard는 현재 ledger의 파일 digest와
 고정 원본을 검증하는 pre-query guard이며 이전 ALLOW의 재사용이나 native receipt만의 adoption이
 아니다. 새 current full 검사·whole-output/source binding 및 old link retirement/rollback은 남는다.
+
+M2 named guard는 canonical Quick171.037s/security11.569s/docs0.247s·전체 Promotion
+Race160.938s와 기존 fresh CLI actual을 통과했다. Actual의 CLI78.29s는 JSON30.73s/human
+공백 root29.56s/두 foreign 거부1.61s·16.38s이며 NoSKIP/helperwait0/Host 보호 snapshot 동일이다.
+Native original upgrade나 Host command 실행으로 확대하지 않는다. Common begin 본문과
+fresh publication은 original mode capture/거부 분기를 제외하면 baseline과 byte-identical이고
+기존 transaction/snapshot/inventory/native resolver는 변경하지 않았다.
+[M2 receipt](./p4m2-uv-tool-original-guard-local-20261026.json)가 source·검증 범위를 소유한다.
+
+## M3 complete tool publication baseline·수정 지도·두 번째 검토
+
+기존 complete PyPI venv backup/journal/retirement·원복, C fresh native receipt/새 exposed link
+publication 및 M2 original guard는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named local)다.
+기존 old exposed links의 backup/retirement·원복과 원래 receipt 교체는 NO/NO/NO/NO다.
+MISSING은 retained/retired/new command 집합의 guarded 반영·원래 link inode 보존·두 filesystem
+경계의 recovery이며 current native upgrade/source/inspection/CLI는 이후 acceptance다.
+
+M3는 기존 toolPublication에 concrete optional original-link participant를 붙인다. Fresh nil
+경로는 유지한다. g.freezeCommands는 original mode에서 새 receipt가 원본 receipt 조건을
+유지하는지 확인하고 positional 요구도 실제 새 main version에 적용한다. 기존 명령은 M2의
+exact old link를, 신규 명령은 exact absence와 foreign/internal collision을 고정한다. 기존
+commitSelectionWithProject의 complete=true로 기존 owned files/retired scripts를 반영하고
+원래 receipt regular file도 같은 backup/rollback에 둔다. Ledger schema는 유지한다.
+
+외부 bin과 같은 filesystem의 소유0700 backup root에 old symlinks를 anchored/no-replace rename하고
+journal에 device/inode/target과 intent/result를 남긴다. New link publication 전 old 전체를
+고정하고 정상 readback에서 retired absence/new identities/old backups를 확인한다. Rollback은
+새 links를 제거한 다음 old link inode를 되돌리고 기존 venv 원복을 수행한다. Unknown/foreign
+link나 backup은 지우지 않으며 원본 journal·backup/두 lock을 보존한다.
+
+Old link backup은 rollback에 필요한 데이터이므로 기존 private workspace cleanup에서 삭제하지
+않는다. Common transaction의 post-rollback/private-cleanup 뒤 regular backup disposal 앞에서
+명시적으로 처분한다. 처분 불확실성은 false success나 사라진 old inode의 복원으로 표시하지
+않고 recovery error와 남은 regular backup/journal을 보존한다. 기존 fresh cleanup body는
+그대로 재사용한다. 수정은 tool publication/original helper, 필요한 optional disposal hook 및
+관련 tests에 한정하고 runtime/observer/권한·한도·native semantics를 변경하지 않는다.
+
+두 번째 검토: 기존 fresh guard만 우회해서 old file을 덮는 방식은 외부 retired links와 원본
+receipt를 설명하지 못한다. 별도 병렬 venv engine 대신 현재 complete engine을 사용하며
+외부 symlinks의 identity-aware 참여만 추가한다. Current new-set ALLOW/Manifest가 없는 공개
+호출 경로는 만들지 않는다. Fault/cancel/foreign/cleanup 실패 및 기존 fresh 실제 소비자를
+검증하고 synthetic helper 성공을 public upgrade qualification으로 확대하지 않는다.

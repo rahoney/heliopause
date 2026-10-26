@@ -45,6 +45,9 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	if err := g.verify(ctx); err != nil {
 		return err
 	}
+	if g.original != nil {
+		return errors.New("original tool publication needs complete command reconciliation")
+	}
 	if g.tx.tool != nil || g.tx.project != nil || len(g.commands) == 0 || !receipt.Present() || receipt.Name() != uvToolHostReceiptControl {
 		return errors.New("tool publication requires one frozen controller receipt")
 	}
