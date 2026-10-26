@@ -45,6 +45,10 @@ func fixture(t *testing.T) (string, string) {
 		t.Fatal(err)
 	}
 	gitTest(t, root, "init", "-q")
+	// Keep this disposable repository's Git writers inside the command lifetime.
+	// Background maintenance must finish before TempDir removes its object store.
+	gitTest(t, root, "config", "--local", "maintenance.autoDetach", "false")
+	gitTest(t, root, "config", "--local", "gc.autoDetach", "false")
 	gitTest(t, root, "add", "--all")
 	commitTest(t, root)
 	return root, state

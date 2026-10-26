@@ -138,6 +138,11 @@ CI 대기 중에는 그 결과에 의존하지 않는 같은 item의 설계 검�
 끝내지 않는다. 응답을 유지하고 실제 시계 대기 도구를 사용하여 정한 시각에 결과·원본 로그를
 확인한 뒤 다음 검증/구현으로 계속한다. 타이머의 DUE 기록은 결과 확인이나 작업 재개의 증거가
 아니다. 대기 중 결과에 의존하지 않는 같은 item의 설계·baseline audit·로컬 작업을 진행한다.
+CI414(2026-10-26)의 first65분 timer와 추가20분 timer는 실제 결과/전체 로그 소비까지 확인했다.
+All10 job log의 first→last는 약67m15s이며 queue 포함 created→updated와 구분한다. 동일 ordinary
+workflow의 다음 후보는 최근 CI41357m14s/CI414 job-window67m15s와 실제 queue를 근거로
+약75분 첫 확인을 추정하고, 남은 job/실측에 맞춰 갱신한다. CI414 Quick fixture cleanup 실패는
+재실행으로 숨기지 않고 local lifecycle 보완 및 Git2.55 remote 검증 OPEN을 유지한다.
 짧은 API polling이나 작은 수정별 push/full CI 반복은 하지 않는다. 새 원격 실행은 위에서 정한
 구현 묶음/공통 동작 경계와 명시된 최종 profile qualification에만 사용한다.
 
