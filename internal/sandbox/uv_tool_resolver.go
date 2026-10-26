@@ -53,7 +53,7 @@ func (r *UVResolver) ResolveToolInstall(ctx context.Context, requirement artifac
 		if err != nil {
 			return uvNativeOutput{}, err
 		}
-		if first.receipt.Requirement().Requirement() != requirement.Requirement() {
+		if !first.receipt.Requirement().SameConstraints(requirement) {
 			return uvNativeOutput{}, errors.New("UV tool changed the requested root constraint")
 		}
 		frozen, reference, err := uvToolFrozenRequirements(first, requirement)

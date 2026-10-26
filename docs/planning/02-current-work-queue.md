@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L4C — fresh receipt/external links in existing venv journal, fault/cancel rollback and foreign recovery named local QUALIFIED; actual tool backend remains
+Last completed substep: P4-L4D — fresh UV tool current whole approval/installed-file publication plus existing UV CLI actual named local QUALIFIED; public CLI/upgrades remain
 Next action: M13-004 — persistent tool explicit target/exposed-root guard, current approval/cache and atomic publication; then original upgrade/pipx/public CLI; grouped final CI boundary retained
-Current substep: M13-004/P4-L4D ordinary current whole inspection/Manifest/staging to guarded tool native selector/materializer/publication; CLI/native upgrades remain
+Current substep: M13-004/P4-L4E public fresh uv tool install descriptor/lazy binding/current result and actual CLI; original upgrades/pipx remain
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5622,3 +5622,12 @@ links를 기존 원복에 참여시킨다. 작은 helper별 push/full CI는 추�
 원복을 연결한다. Native receipt는 distribution ownership으로 위장하지 않으며 두 root와
 journal·복구 경계를 보존한다. 최초 Close lifecycle 오류는 원본에 남겼다. 실제 tool current
 approval/반입·CLI는 아직 미완료이고 같은 M13-004에서 L4-D를 계속한다. 새 push/full CI는 없다.
+
+### 2026-10-26 P4-L4D current approved tool backend
+
+[L4-D receipt](./evidence/package-client-quarantine/p4l4d-uv-tool-approved-install-local-20261026.json)은
+canonical3·네 package 전체 Race와 actual297.347s의 tool 두 요청/기존 UV CLI 일곱 요청을
+연결한다. Constraint 절 순서만 바꾸는 native output을 같은 절 집합으로 한정 비교하고 원본
+intent/receipt와 source/runtime/Policy를 보존했다. 최초 actual와 wildcard fixture 실패도
+보존했다. NoSKIP/helperwait0/Host 동일이며 public CLI/원본 upgrade/pipx는 아직 미완료다.
+같은 M13-004의 L4-E 공개 명령을 계속하고 grouped end-to-end CI 경계를 유지한다.

@@ -35,6 +35,7 @@ type toolPublication struct {
 }
 
 type toolPublicationJournal struct {
+	Workspace            *toolWorkspaceJournal `json:",omitempty"`
 	BinRoot, PrivateRoot string
 	Receipt              pypiDestination
 	Links                []toolPublishedLink
@@ -48,7 +49,7 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 		return errors.New("tool publication requires one frozen controller receipt")
 	}
 	parsed, err := artifactpypi.ParseUVToolReceipt(receipt.Body())
-	if err != nil || !reflect.DeepEqual(parsed.Commands(), g.commands) || parsed.Requirement().Requirement() != g.requirement.Requirement() {
+	if err != nil || !reflect.DeepEqual(parsed.Commands(), g.commands) || !parsed.Requirement().SameConstraints(g.requirement) {
 		return errors.New("tool publication receipt differs from frozen native selection")
 	}
 	if err := parsed.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin", "python")); err != nil {
@@ -143,7 +144,7 @@ func (p *toolPublication) journal() *toolPublicationJournal {
 	if p == nil {
 		return nil
 	}
-	return &toolPublicationJournal{p.guard.binRoot, p.private, p.receipt, append([]toolPublishedLink(nil), p.links...)}
+	return &toolPublicationJournal{p.guard.work.journal(), p.guard.binRoot, p.private, p.receipt, append([]toolPublishedLink(nil), p.links...)}
 }
 
 func toolLinkMatches(root *os.Root, name string, link toolPublishedLink) bool {
@@ -358,6 +359,9 @@ func (p *toolPublication) cleanup() (resultErr error) {
 		if err := p.guard.tx.appendJournal(struct{ ToolPrivateRemoved string }{p.private}); err != nil {
 			return errors.Join(resultErr, err)
 		}
+	}
+	if p.guard.work != nil {
+		resultErr = errors.Join(resultErr, p.guard.work.Close())
 	}
 	return errors.Join(resultErr, syncDirectory(p.guard.binRoot))
 }

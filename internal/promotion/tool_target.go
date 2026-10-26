@@ -21,6 +21,7 @@ const uvToolHostReceipt = "uv-receipt.toml"
 // Fresh tools retain both roots before native selection. This guard does not
 // support adoption/upgrade, create a venv or execute its Host interpreter.
 type toolFreshTarget struct {
+	work        *toolPythonWorkspace
 	tx          *pypiVenvTransaction
 	bin         goProjectGuard
 	binRoot     string
@@ -228,7 +229,7 @@ func (g *toolFreshTarget) freezeCommands(ctx context.Context, receipt artifactpy
 	if err := g.verify(ctx); err != nil {
 		return err
 	}
-	if len(g.commands) != 0 || receipt.Client() != "uv" || receipt.Requirement().Requirement() != g.requirement.Requirement() {
+	if len(g.commands) != 0 || receipt.Client() != "uv" || !receipt.Requirement().SameConstraints(g.requirement) {
 		return errors.New("tool command selection is repeated or differs from request")
 	}
 	root := g.tx.plan.root

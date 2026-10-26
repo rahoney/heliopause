@@ -387,3 +387,63 @@ links 원복 뒤에도 foreign bytes·복구 경계를 보존한다. Persistent 
 계속 거부한다. [L4-C receipt](./p4l4c-tool-atomic-publication-local-20261026.json)가 최초 Close
 오류와 finite optional hooks 외 기존 engine 본문 동일성을 연결한다. Actual current 승인/
 backend/CLI는 다음 L4-D이며 전체 persistent tools 완료나 Host command 실행 성공은 아니다.
+
+L4-D 최초 actual37.800s에서 plain fresh tool27.64s는 current whole 검사/ALLOW·Manifest/
+Evidence readback·receipt/links/RECORD·정리와 기존 target 재설치 거부까지 PASS였다. 공백 target
+단계6.11s는 native 요청 조건 비교에서 실패했고 기존 UV CLI 회귀는 failfast로 미도달이다.
+Helperwait0/CONFIRMED_STOPPED/Host 보호 snapshot 동일이며 전체 tool 완료로 확대하지 않는다.
+원본 p4l4d-approved-tool-native-v1-*는 편집하지 않는다.
+
+별도 inert/offline native receipt 진단1.730s는 요청 >=1.0,<=1.0을 고정 UV가
+<=1.0,>=1.0 순서로 기록함을 확인했다. 연산자/버전은 같고 비교 순서만 달랐다.
+원본 p4l4-tool-constraint-shape-v1-*가 같은 pin·실행0 fixture/Host Python 미실행·
+소유 container 정리와 Docker inventories 동일의 한정 범위를 소유한다.
+
+추가 gap은 tool adapter의 constraint conjunction 비교(IMPLEMENTED=NO/WIRED=NO/
+QUALIFIED=NO/ACCEPTANCE_CLOSED=NO)다. 기존 bounded parser/후보 Satisfies/원본 native body/
+선택 graph를 다시 구현하거나 바꾸지 않는다. 순수 SameConstraints는 동일 source/project의
+같은 operator/version/prefix 절 집합만 순서와 중복에 무관하게 비교한다. 같은 선택 버전을
+허용한다는 이유로 다른 범위·prefix·compatible release를 같게 취급하지 않는다.
+Native selection·guard·receipt publication의 exact 문자열 비교만 이 한정 helper로 연결하고
+원래 요청 intent와 native receipt bytes는 별도 controls에 보존한다. 두 번째 검토에서도
+source/runtime/whole graph/승인/target·Native argv·budget/observer 권한은 유지한다.
+
+SameConstraints 최초 Quick221.430s는 새 negative fixture의 1.*/1.0.*가 기존 bounded
+grammar의 세 component 이상 wildcard 조건에 맞지 않아 parser에서 실패했다. 비교 assertion에
+도달하지 않았고 production parser는 유지한다. 기존 지원 형식인 1.0.0.*와 1.0.0.0.*로
+negative를 표현해 서로 다른 prefix를 계속 거부한다. 원본 p4l4d-approved-tool-v3-quick을
+보존하고 focused 확인 뒤 canonical/전체 affected/native를 재검증한다.
+
+## L4-E public fresh UV tool install baseline·수정 지도·두 번째 검토
+
+D의 current primary pipeline/backend는 구현되어 있고 plain actual은 PASS지만 constraint 순서
+교정 후 전체 재검증은 진행 중이다. 이를 기존 UV pip 명령 alias로 공개하지 않는다.
+CLI client descriptor/preflight/localized help·기존 Install request/결과 renderer/Bootstrap lazy
+composition은 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(named old clients)다.
+Public uv tool install descriptor/binding/actual CLI는 NO/NO/NO/NO다.
+
+uv-tool client ID와 uv/tool/install leaf 하나를 현재 registry에 추가하고 generic 기존
+addPackageClientInstall/ExecuteInstall을 재사용한다. 기존 flags/renderer/core 흐름을 복제하지
+않는다. --target은 normalized package basename을 가진 explicit existing empty venv,
+--bin-dir는 disjoint explicit existing external directory이며 implicit VIRTUAL_ENV/global
+root는 선택하지 않는다. Bare/exact/bounded public requirement를 현재 parser로 정규화한다.
+Unknown/native passthrough options·repeated/unsafe roots는 runtime/cache 준비 전에 거부한다.
+
+Bootstrap installer adapter는 실제 parsed bin directory로 D의 newUVToolInstallService를
+만든다. 실제 UV resolver는 existing nativeLookup에서 선택하며 base pipeline의 현재
+inspection/Policy/Manifest/staging을 보존한다. Help와 common launcher example의 최소 source/
+venv/bin fixture도 함께 확인한다. 두 번째 검토: 기존 PIP/UV pip/project/PNPM/Bun routes·
+기본 presentation과 unsupported platform zero-launch를 보존하며 새 result schema나
+미래 upgrade/run 명령 placeholder는 없다. D actual 재검증 후 public wiring을 진행한다.
+
+L4-D named local 최종: conjunction focused Race4.631s/Quick65.549s/security13.326s/
+docs0.258s·전체 PyPI/Promotion/Sandbox/Bootstrap Race160.736s가 PASS다. Actual v2는
+297.347s이며 새 tool56.91s의 plain27.25s/공백28.29s와 기존 UV CLI237.92s의 일곱
+정상·native adoption/retained 요청이 모두 PASS다. 새 요청들은 current full required checks/
+Evidence readback/ALLOW·여섯 controls·Manifest/SBOM/staging·native receipt/links/RECORD·
+final interpreter와 기존 target 재설치 거부의 whole identity/bytes/mode 보존을 확인했다.
+NoSKIP/helperwait0/CONFIRMED_STOPPED/Host 보호 snapshot 동일이고 Source 의미·권한·한도는
+유지한다. Interpreter fixture는 고정 image의 비실행 DATA이며 Host runtime provisioning이나
+Host command 실행으로 확대하지 않는다. [L4-D receipt](./p4l4d-uv-tool-approved-install-local-20261026.json)가
+최초 actual/fixture 실패와 narrow SameConstraints 교정·기존 본문 재사용을 소유한다.
+이제 L4-E public fresh install CLI와 실제 결과를 이어가며 original upgrade/pipx는 남는다.

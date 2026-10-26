@@ -50,23 +50,31 @@ func newPyPIPromotion(stagingRoot string, runner DockerRunner, goos, goarch stri
 	return &PyPIPromotion{filepath.Clean(stagingRoot), runner, goos, goarch}, nil
 }
 
+func (p *PyPIPromotion) validatedPyPIStagedRoot(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle) (string, error) {
+	if ctx == nil || ctx.Err() != nil || p == nil || p.goos != "linux" || p.goarch != "amd64" {
+		return "", errors.New("automatic PyPI Promotion requires Linux amd64")
+	}
+	if !bundle.Valid() || staged.ManifestID() != bundle.ManifestID() || staged.Handle() != "staging:"+bundle.ManifestID().String() || verifyDocuments(bundle) != nil {
+		return "", errors.New("PyPI staged bundle binding is invalid")
+	}
+	if err := artifactpypi.CheckTemporaryDisk(p.stagingRoot, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
+		return "", err
+	}
+	stagedRoot := filepath.Join(p.stagingRoot, bundle.ManifestID().String())
+	if filepath.Dir(stagedRoot) != p.stagingRoot || rejectSymlinkPath(stagedRoot) != nil || verifyStagedRecords(stagedRoot, bundle) != nil {
+		return "", errors.New("PyPI staged records are unavailable or untrusted")
+	}
+	return stagedRoot, nil
+}
+
 func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, installContext domain.InstallContext) (promoted domain.PromotedInstall, resultErr error) {
 	return p.promote(ctx, staged, bundle, installContext, nil, nil)
 }
 
 func (p *PyPIPromotion) promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, installContext domain.InstallContext, held *pypiVenvTransaction, verify func(context.Context) error) (promoted domain.PromotedInstall, resultErr error) {
-	if ctx == nil || ctx.Err() != nil || p == nil || p.goos != "linux" || p.goarch != "amd64" {
-		return domain.PromotedInstall{}, errors.New("automatic PyPI Promotion requires Linux amd64")
-	}
-	if !bundle.Valid() || staged.ManifestID() != bundle.ManifestID() || staged.Handle() != "staging:"+bundle.ManifestID().String() || verifyDocuments(bundle) != nil {
-		return domain.PromotedInstall{}, errors.New("PyPI staged bundle binding is invalid")
-	}
-	if err := artifactpypi.CheckTemporaryDisk(p.stagingRoot, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
+	stagedRoot, err := p.validatedPyPIStagedRoot(ctx, staged, bundle)
+	if err != nil {
 		return domain.PromotedInstall{}, err
-	}
-	stagedRoot := filepath.Join(p.stagingRoot, bundle.ManifestID().String())
-	if filepath.Dir(stagedRoot) != p.stagingRoot || rejectSymlinkPath(stagedRoot) != nil || verifyStagedRecords(stagedRoot, bundle) != nil {
-		return domain.PromotedInstall{}, errors.New("PyPI staged records are unavailable or untrusted")
 	}
 	if installContext.Mode() == domain.InstallPythonVenv {
 		if held != nil {
