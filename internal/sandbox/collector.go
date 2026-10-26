@@ -70,18 +70,22 @@ type FaultBudgetDiagnostic struct {
 // FaultRawDiagnostic explains a rejected send syscall without preserving its
 // payload, address, path or mutable process name. It confers no permission.
 type FaultRawDiagnostic struct {
-	Check              string `json:"check"`
-	Sysno              uint64 `json:"sysno"`
-	FD                 uint64 `json:"fd"`
-	KernelImage        string `json:"kernel_image"`
-	Role               string `json:"role"`
-	Provenance         string `json:"provenance"`
-	ExecutableLocator  uint64 `json:"executable_locator"`
-	SocketpairObserved bool   `json:"socketpair_observed,omitempty"`
-	SocketpairFDMatch  bool   `json:"socketpair_fd_match,omitempty"`
-	SocketpairDomain   int32  `json:"socketpair_domain,omitempty"`
-	SocketpairType     uint32 `json:"socketpair_type,omitempty"`
-	SocketpairSource   string `json:"socketpair_source,omitempty"`
+	Check               string `json:"check"`
+	Sysno               uint64 `json:"sysno"`
+	FD                  uint64 `json:"fd"`
+	KernelImage         string `json:"kernel_image"`
+	Role                string `json:"role"`
+	Provenance          string `json:"provenance"`
+	ExecutableLocator   uint64 `json:"executable_locator"`
+	SocketpairObserved  bool   `json:"socketpair_observed,omitempty"`
+	SocketpairFDMatch   bool   `json:"socketpair_fd_match,omitempty"`
+	SocketpairDomain    int32  `json:"socketpair_domain,omitempty"`
+	SocketpairType      uint32 `json:"socketpair_type,omitempty"`
+	SocketpairSource    string `json:"socketpair_source,omitempty"`
+	FDLastOperation     string `json:"fd_last,omitempty"`
+	FDLastFamily        int32  `json:"fd_last_family,omitempty"`
+	FDPreviousOperation string `json:"fd_previous,omitempty"`
+	FDPreviousFamily    int32  `json:"fd_previous_family,omitempty"`
 }
 
 // FaultLedgerDiagnostic describes the host-owned aggregate ledger, whose
@@ -378,6 +382,12 @@ func (d TraceDiagnostic) String() string {
 		site += fmt.Sprintf(" raw_check=%s raw_sysno=%d raw_fd=%d raw_kernel_image=%s raw_role=%s raw_provenance=%s raw_executable_fnv1a64=%016x", r.Check, r.Sysno, r.FD, r.KernelImage, r.Role, r.Provenance, r.ExecutableLocator)
 		if r.SocketpairObserved {
 			site += fmt.Sprintf(" raw_socketpair_observed=true raw_socketpair_fd_match=%t raw_socketpair_domain=%d raw_socketpair_type=%d raw_socketpair_source=%s", r.SocketpairFDMatch, r.SocketpairDomain, r.SocketpairType, r.SocketpairSource)
+		}
+		if r.FDLastOperation != "" {
+			site += fmt.Sprintf(" raw_fd_last=%s raw_fd_last_family=%d", r.FDLastOperation, r.FDLastFamily)
+		}
+		if r.FDPreviousOperation != "" {
+			site += fmt.Sprintf(" raw_fd_previous=%s raw_fd_previous_family=%d", r.FDPreviousOperation, r.FDPreviousFamily)
 		}
 	}
 	if d.FaultLedger.EventLimit != 0 {

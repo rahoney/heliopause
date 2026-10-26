@@ -9,6 +9,8 @@ import (
 
 func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 	raw := FaultRawDiagnostic{Check: "DESCRIPTOR", Sysno: 46, FD: ^uint64(0), KernelImage: "CARGO", Role: "CONTROL", Provenance: "DIRECT_EXEC_ROOT", ExecutableLocator: ^uint64(0), SocketpairObserved: true, SocketpairFDMatch: true, SocketpairDomain: -2147483648, SocketpairType: ^uint32(0), SocketpairSource: "GUEST_RETURN_BUFFER"}
+	raw.FDLastOperation, raw.FDPreviousOperation = "CLOSE_RANGE", "CLOSE_RANGE"
+	raw.FDLastFamily, raw.FDPreviousFamily = -2147483648, -2147483648
 	record := helperRecord{ContainerID: strings.Repeat("a", 64), Kind: "stream-fault", Reason: "FD_STATE_UNKNOWN", FaultSite: "RAW", FaultRaw: &raw}
 	body, err := json.Marshal(record)
 	if err != nil || len(body) > maximumHelperRecordBytes {
@@ -28,6 +30,10 @@ func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 		func(r *helperRecord) { r.FaultRaw.Provenance = "artifact claimed" },
 		func(r *helperRecord) { r.FaultRaw.SocketpairSource = "TRUSTED" },
 		func(r *helperRecord) { r.FaultRaw.SocketpairObserved = false },
+		func(r *helperRecord) { r.FaultRaw.FDLastOperation = "/private/descriptor" },
+		func(r *helperRecord) { r.FaultRaw.FDPreviousOperation = "TRUSTED" },
+		func(r *helperRecord) { r.FaultRaw.FDLastOperation = "" },
+		func(r *helperRecord) { r.FaultRaw.FDPreviousOperation = "" },
 	} {
 		copyRecord, copyRaw := record, raw
 		copyRecord.FaultRaw = &copyRaw
@@ -44,6 +50,9 @@ func TestFaultRawDiagnosticIsBoundedAndPreservesFailure(t *testing.T) {
 	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: fault})
 	if len(observations) != 0 || limitation != "M3_DYNAMIC_OBSERVER_FAILED" || diagnostic.SessionComplete || diagnostic.Reason != record.Reason || diagnostic.FaultRaw != raw || !strings.Contains(diagnostic.String(), "raw_check=DESCRIPTOR raw_sysno=46 raw_fd=18446744073709551615 raw_kernel_image=CARGO raw_role=CONTROL raw_provenance=DIRECT_EXEC_ROOT") {
 		t.Fatal("raw diagnostic repaired or hid the original failure")
+	}
+	if !strings.Contains(diagnostic.String(), "raw_fd_last=CLOSE_RANGE raw_fd_last_family=-2147483648 raw_fd_previous=CLOSE_RANGE raw_fd_previous_family=-2147483648") {
+		t.Fatal("bounded prior FD mutations lost")
 	}
 }
 

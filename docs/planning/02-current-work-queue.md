@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-M4D — public managed uv tool upgrade JSON/human/current full approval plus canonical CI bootstrap/sandbox recipes named local QUALIFIED; remote cohort/native adoption/pipx remain
-Next action: M13-004 — investigate CI415 PNPM peer RAW SENDTO fd14 FD_STATE_UNKNOWN; preserve N1 local DATA matcher and use targeted existing consumer before another grouped CI
-Current substep: M13-004 — CI415 common FD tracking investigation; P4-N1 byte matcher local qualified only, production native tool adoption/pipx remain
+Last completed substep: P4-N1 DATA matcher committed693ba4a; bounded RAW FD diagnostic named local Quick/Race/canonical122/current peer PASS; CI415 cause/repair OPEN
+Next action: M13-004 — N2A authenticated old wheel + held interpreter + native console-script footprint; preserve CI415 unresolved FD cause and next-needed-CI10min status timers
+Current substep: M13-004/P4-N2A native tool script ownership proof; native enrollment/current adoption/public opt-in/pipx remain
 Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED

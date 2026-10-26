@@ -984,6 +984,15 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 func validFaultSite(record helperRecord) bool {
 	if record.FaultRaw != nil {
 		r := record.FaultRaw
+		for _, operation := range []string{r.FDLastOperation, r.FDPreviousOperation} {
+			if operation != "" && !validFixed(operation, "SOCKET", "SOCKETPAIR", "CLOSE", "DUP", "FCNTL", "CLONE", "EXEC", "CLOSE_RANGE") {
+				return false
+			}
+		}
+		if (r.FDLastOperation == "" && (r.FDLastFamily != 0 || r.FDPreviousOperation != "")) ||
+			(r.FDPreviousOperation == "" && r.FDPreviousFamily != 0) {
+			return false
+		}
 		if (r.SocketpairObserved && r.SocketpairSource != "GUEST_RETURN_BUFFER") ||
 			(!r.SocketpairObserved && (r.SocketpairFDMatch || r.SocketpairDomain != 0 || r.SocketpairType != 0 || r.SocketpairSource != "")) {
 			return false

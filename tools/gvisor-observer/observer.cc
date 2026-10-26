@@ -529,6 +529,15 @@ struct ProcessState {
   uint64_t fault_image_locator = 0;
   std::string fault_open_diagnostic;
   std::string fault_raw_diagnostic;
+  // Diagnostic only: these bounded scalars are never descriptor authority.
+  struct FDMutationDiagnostic {
+    int32_t group_id;
+    int64_t group_start;
+    int32_t fd;
+    const char* operation;
+    int32_t family;
+  };
+  std::vector<FDMutationDiagnostic> fd_mutation_diagnostics;
 };
 
 struct NormalizedCounts {
@@ -4005,6 +4014,99 @@ bool ValidateContextContainer(const gvisor::common::ContextData& context, std::s
   return true;
 }
 
+void RecordFDMutationDiagnostic(ProcessState* state, int32_t group, int64_t start,
+                                int32_t fd, const char* operation, int32_t family) {
+  constexpr size_t maximum = 16;
+  if (state->fd_mutation_diagnostics.size() == maximum)
+    state->fd_mutation_diagnostics.erase(state->fd_mutation_diagnostics.begin());
+  state->fd_mutation_diagnostics.push_back({group, start, fd, operation, family});
+}
+
+// Parse a separate diagnostic projection. No outcome, descriptor or accounting
+// decision consumes this projection, including when a message is later rejected.
+void CaptureFDMutationDiagnostic(const Header& header, const char* payload, size_t size,
+                                 ProcessState* state) {
+  auto family = [&](int32_t group, int32_t fd) {
+    auto table = state->fd_states.find(group);
+    if (table == state->fd_states.end()) return int32_t{-1};
+    auto entry = table->second.find(fd);
+    return entry == table->second.end() ? int32_t{-1} : entry->second.raw_family;
+  };
+  auto record = [&](const gvisor::common::ContextData& context, int32_t fd,
+                    const char* operation, int32_t domain) {
+    RecordFDMutationDiagnostic(state, context.thread_group_id(),
+        context.thread_group_start_time_ns(), fd, operation, domain);
+  };
+  switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
+    case gvisor::common::MESSAGE_SYSCALL_SOCKET: {
+      gvisor::syscall::Socket m;
+      if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 &&
+          m.exit().result() >= 0 && m.exit().result() <= INT_MAX)
+        record(m.context_data(), static_cast<int32_t>(m.exit().result()), "SOCKET", m.domain());
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_SOCKETPAIR_RESULT: {
+      gvisor::syscall::SocketPairResult m;
+      if (m.ParseFromArray(payload, size) && m.success() && m.errorno() == 0) {
+        record(m.context_data(), m.socket1(), "SOCKETPAIR", m.domain());
+        record(m.context_data(), m.socket2(), "SOCKETPAIR", m.domain());
+      }
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_CLOSE: {
+      gvisor::syscall::Close m;
+      if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 && m.exit().result() >= 0)
+        record(m.context_data(), m.fd(), "CLOSE", family(m.context_data().thread_group_id(), m.fd()));
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_DUP: {
+      gvisor::syscall::Dup m;
+      if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 &&
+          m.exit().result() >= 0 && m.exit().result() <= INT_MAX)
+        record(m.context_data(), static_cast<int32_t>(m.exit().result()), "DUP", family(m.context_data().thread_group_id(), m.old_fd()));
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_FCNTL: {
+      gvisor::syscall::Fcntl m;
+      if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 &&
+          m.exit().result() >= 0 && m.exit().result() <= INT_MAX &&
+          (m.cmd() == kFcntlDupFD || m.cmd() == kFcntlDupFDCloexec))
+        record(m.context_data(), static_cast<int32_t>(m.exit().result()), "FCNTL", family(m.context_data().thread_group_id(), m.fd()));
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_CLONE:
+    case gvisor::common::MESSAGE_SYSCALL_FORK: {
+      int64_t child = -1;
+      if (header.message_type == gvisor::common::MESSAGE_SYSCALL_CLONE) {
+        gvisor::syscall::Clone m;
+        if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 &&
+            (m.flags() & kCloneThread) == 0) child = m.exit().result();
+      } else {
+        gvisor::syscall::Fork m;
+        if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0) child = m.exit().result();
+      }
+      if (child > 0 && child <= INT_MAX) {
+        auto group = state->groups.find(static_cast<int32_t>(child));
+        if (group != state->groups.end())
+          RecordFDMutationDiagnostic(state, group->first, group->second.start_time_ns, -1, "CLONE", -1);
+      }
+      break;
+    }
+    case gvisor::common::MESSAGE_SENTRY_EXEC: {
+      gvisor::sentry::ExecveInfo m;
+      if (m.ParseFromArray(payload, size)) record(m.context_data(), -1, "EXEC", -1);
+      break;
+    }
+    case gvisor::common::MESSAGE_SYSCALL_RAW: {
+      gvisor::syscall::Syscall m;
+      if (m.ParseFromArray(payload, size) && m.sysno() == kSyscallCloseRange)
+        record(m.context_data(), -1, "CLOSE_RANGE", -1);
+      break;
+    }
+    default: break;
+  }
+}
+
 void ApplyExecCloexec(ProcessState* state, int32_t group_id) {
   auto table = state->fd_states.find(group_id);
   if (table == state->fd_states.end()) return;
@@ -5049,6 +5151,16 @@ std::string FaultRawDiagnostic(const gvisor::syscall::Syscall& message,
         ",\"socketpair_type\":" + std::to_string(group.diagnostic_socketpair_type) +
         ",\"socketpair_source\":\"GUEST_RETURN_BUFFER\"";
   }
+  size_t retained = 0;
+  for (auto it = state.fd_mutation_diagnostics.rbegin(); it != state.fd_mutation_diagnostics.rend(); ++it) {
+    if (it->group_id != message.context_data().thread_group_id() ||
+        it->group_start != message.context_data().thread_group_start_time_ns() ||
+        (it->fd != -1 && static_cast<uint64_t>(it->fd) != message.arg1())) continue;
+    const char* prefix = retained == 0 ? "fd_last" : "fd_previous";
+    diagnostic += std::string(",\"") + prefix + "\":\"" + it->operation +
+        "\",\"" + prefix + "_family\":" + std::to_string(it->family);
+    if (++retained == 2) break;
+  }
   return diagnostic + "}";
 }
 
@@ -5267,6 +5379,7 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
     set_fault_site(FaultSite::kDroppedCount);
     return false;
   }
+  CaptureFDMutationDiagnostic(header, payload, payload_size, process_state);
   switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
     case gvisor::common::MESSAGE_CONTAINER_START:
       if (!ParseContainerStart(payload, payload_size, output, container_id, process_state, reason)) {
