@@ -20,6 +20,7 @@ type pipxActualResources struct {
 	mu                         sync.Mutex
 	creates, registers, closes int
 	cpu                        uint64
+	lastReadCPU, readCount     uint64
 	inject, injected           bool
 }
 
@@ -41,6 +42,10 @@ func (r *pipxActualResources) Read(ctx context.Context, transaction string) (Obs
 	lease, err := r.ObservationResourceClient.Read(ctx, transaction)
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.readCount++
+	if err == nil {
+		r.lastReadCPU = lease.UsageUsec
+	}
 	if err == nil && r.inject && !r.injected && r.registers >= 3 {
 		r.injected = true
 		return lease, errors.New("test-only accounting transport failure after real read")
@@ -101,7 +106,7 @@ func TestLinuxPipxAcquiredRuntimeTransactionIntegration(t *testing.T) {
 			code, _ := result.LimitationCode()
 			resources.mu.Lock()
 			defer resources.mu.Unlock()
-			t.Logf("status=%s code=%s commands=%d creates=%d registers=%d closes=%d cpu_usec=%d injected=%t observer_reason=%s error=%v", result.Status(), code, len(result.Commands), resources.creates, resources.registers, resources.closes, resources.cpu, resources.injected, integrationObserverFaultReason(supervisor), runErr)
+			t.Logf("status=%s code=%s commands=%d creates=%d registers=%d closes=%d cpu_usec=%d last_read_cpu_usec=%d read_count=%d injected=%t observer_reason=%s error=%v", result.Status(), code, len(result.Commands), resources.creates, resources.registers, resources.closes, resources.cpu, resources.lastReadCPU, resources.readCount, resources.injected, integrationObserverFaultReason(supervisor), runErr)
 			if resources.creates != 1 || resources.closes != 1 {
 				t.Fatal("transaction resource owner not closed exactly once")
 			}

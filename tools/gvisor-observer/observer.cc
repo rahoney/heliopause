@@ -110,6 +110,12 @@ constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
 constexpr char kProfilePipxRuntime[] = "github-pipx-runtime";
+constexpr char kProfilePipxNativeResolver[] = "pipx-native-resolver";
+constexpr char kPipxNativeProgramPrefix[] = "import importlib.machinery, sys\nversion = '";
+constexpr char kPipxNativeProgramSuffix[] = "'\nminor = version.split('.')[:2]\nstdlib = '/usr/local/lib/python' + '.'.join(minor)\nexpected = ['/usr/local/lib/python' + ''.join(minor) + '.zip', stdlib, stdlib + '/lib-dynload']\nif sys.version.split()[0] != version or not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode) or 'site' in sys.modules or sys.path != expected:\n    raise RuntimeError('pipx native interpreter differs from pinned isolated startup')\nroot = '/haa-pipx/pipx-runtime.zip'\nspec = importlib.machinery.PathFinder.find_spec('pipx', [root])\nif spec is None or spec.origin != root + '/pipx/__init__.py' or list(spec.submodule_search_locations or []) != [root + '/pipx']:\n    raise RuntimeError('pipx native package is outside original ZIP')\nentry = importlib.machinery.PathFinder.find_spec('pipx.__main__', spec.submodule_search_locations)\nif entry is None or entry.origin != root + '/pipx/__main__.py':\n    raise RuntimeError('pipx native entry is outside original ZIP')\nsys.path.append(root)\nsys.argv = ['pipx', *sys.argv[1:]]\nfrom pipx.__main__ import cli\nraise SystemExit(cli())\n";
+constexpr char kPipxNativeMetadataQuery[] = "\nimport json\nimport os\nimport platform\nimport sys\n\nimpl_ver = sys.implementation.version\nimplementation_version = \"{0.major}.{0.minor}.{0.micro}\".format(impl_ver)\nif impl_ver.releaselevel != \"final\":\n    implementation_version = \"{}{}{}\".format(\n        implementation_version,\n        impl_ver.releaselevel[0],\n        impl_ver.serial,\n    )\n\nsys_path = sys.path\ntry:\n    sys_path.remove(\"\")\nexcept ValueError:\n    pass\n\nprint(\n    json.dumps(\n        {\n            \"sys_path\": sys_path,\n            \"python_version\": \"{0.major}.{0.minor}.{0.micro}\".format(sys.version_info),\n            \"environment\": {\n                \"implementation_name\": sys.implementation.name,\n                \"implementation_version\": implementation_version,\n                \"os_name\": os.name,\n                \"platform_machine\": platform.machine(),\n                \"platform_release\": platform.release(),\n                \"platform_system\": platform.system(),\n                \"platform_version\": platform.version(),\n                \"python_full_version\": platform.python_version(),\n                \"platform_python_implementation\": platform.python_implementation(),\n                \"python_version\": \".\".join(platform.python_version_tuple()[:2]),\n                \"sys_platform\": sys.platform,\n            },\n        }\n    )\n)\n";
+constexpr char kPipxNativePipArguments[] = "--pip-args=--no-build --no-sources --no-config --no-cache --no-python-downloads --no-managed-python --link-mode=copy --index-url=https://pypi.org/simple/";
+
 constexpr char kProfileTerraformProvider[] = "terraform-provider";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
 constexpr char kProfileGoBuild[] = "go-module-build";
@@ -132,8 +138,12 @@ bool IsPipxRuntimeProfile(const char* profile) {
   return profile != nullptr && strcmp(profile, kProfilePipxRuntime) == 0;
 }
 
+bool IsPipxNativeProfile(const char* profile) {
+  return profile != nullptr && strcmp(profile, kProfilePipxNativeResolver) == 0;
+}
+
 bool IsPythonRuntimeProfile(const char* profile) {
-  return IsPythonProfile(profile) || IsPipxRuntimeProfile(profile);
+  return IsPythonProfile(profile) || IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile);
 }
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
@@ -379,6 +389,7 @@ const char* FaultSiteName(FaultSite site) {
 struct ProcessState {
   enum class Role { kUnknown, kControl, kArtifact };
   enum class Provenance { kUnknown, kOCIRoot, kDirectExecRoot, kCloneChild };
+  enum class PipxNativeImage { kNone, kRoot, kUV, kUVQuery, kMetadataQuery };
   enum class OCIBootstrapStage { kNotOCI, kAwaitingBootstrapShell, kAwaitingDemotion, kAwaitingSleep, kComplete };
   struct UnexpectedExecDiagnostic {
     bool present = false;
@@ -494,6 +505,13 @@ struct ProcessState {
     std::string pnpm_target_lifecycle{};
     bool pnpm_target_npm_pending = false;
     bool pnpm_target_npm_consumed = false;
+    // Native pipx remains ARTIFACT. These facts authorize neither CONTROL nor
+    // networking and are never inherited as active admission by a clone.
+    PipxNativeImage pipx_native_image = PipxNativeImage::kNone;
+    bool pipx_native_candidate = false;
+    bool pipx_native_query_restricted = false;
+    std::string pipx_native_operation, pipx_native_project, pipx_native_requirement;
+    std::string pipx_native_environment;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -803,15 +821,9 @@ std::string UVToolQueryEnvironment(const std::string& execfn, const TopologyStat
   return expected == 1 && actual == 1 ? prefix + project : "";
 }
 
-bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
-                          const TopologyState* topology) {
-  const bool tool_alias = !UVToolQueryEnvironment(message.execfn(), topology).empty();
-  if (message.binary_path() != "/usr/local/bin/python3.14" ||
-      (!tool_alias && message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
-      message.argv_size() != 5 || message.argv(0) != message.execfn() ||
-      message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
-      !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
-      (!tool_alias && !IsPinnedReadOnlyRootPath(topology, message.execfn())) || !IsUVToolImage(topology, kUVToolPath)) return false;
+bool IsExactUVPythonQueryProgram(const gvisor::sentry::ExecveInfo& message,
+                                   const TopologyState* topology) {
+  if (topology == nullptr || message.argv_size() != 5) return false;
   const std::string prefix = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"";
   const std::string suffix = "\")] + sys.path; from python.get_interpreter_info import main; main()";
   const std::string& code = message.argv(4);
@@ -841,6 +853,181 @@ bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
   }
   return expected_tmp == 1 && actual_tmp == 1;
 }
+
+bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
+                          const TopologyState* topology) {
+  const bool tool_alias = !UVToolQueryEnvironment(message.execfn(), topology).empty();
+  if (message.binary_path() != "/usr/local/bin/python3.14" ||
+      (!tool_alias && message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
+      message.argv_size() != 5 || message.argv(0) != message.execfn() ||
+      message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
+      (!tool_alias && !IsPinnedReadOnlyRootPath(topology, message.execfn())) || !IsUVToolImage(topology, kUVToolPath)) return false;
+  return IsExactUVPythonQueryProgram(message, topology);
+}
+
+bool IsPipxNativeTopology(const TopologyState* topology) {
+  if (topology == nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id == 0 || topology->expected.size() != 6) return false;
+  const std::vector<ExpectedMount> required{
+      {"/", "oci-root", "/", "", true, false, false, false},
+      {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+      {"/haa-runtime", "helper", "/", "9p", false, false, false, false},
+      {"/haa-pipx", "workspace", "/", "9p", true, false, false, false},
+      {"/haa-wheels", "workspace", "/", "9p", true, false, false, false},
+      {"/haa-site", "workspace", "/", "9p", false, false, false, false}};
+  for (const auto& target : required) {
+    size_t expected = 0, actual = 0;
+    for (const auto& mount : topology->expected) {
+      if (mount.mountpoint != target.mountpoint) continue;
+      if (mount.mount_class != target.mount_class || mount.parent != target.parent ||
+          mount.filesystem_type != target.filesystem_type || mount.read_only != target.read_only ||
+          mount.noexec != target.noexec || mount.nosuid != target.nosuid || mount.nodev != target.nodev) return false;
+      expected++;
+    }
+    for (const auto& entry : topology->anchors) {
+      const auto& mount = entry.second;
+      if (mount.mountpoint == target.mountpoint) {
+        if (mount.mount_class != target.mount_class) return false;
+        actual++;
+      } else if (target.mountpoint != "/" && IsAtOrBelowMountpoint(mount.mountpoint, target.mountpoint)) return false;
+    }
+    if (expected != 1 || actual != 1) return false;
+  }
+  return true;
+}
+
+bool IsPipxNativeProject(const std::string& project) {
+  if (project.empty() || project.size() > 214 || project.front() == '-' || project.back() == '-') return false;
+  char previous = 0;
+  for (char c : project) {
+    if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-') || (c == '-' && previous == '-')) return false;
+    previous = c;
+  }
+  return true;
+}
+
+std::string PipxNativeEnvironment(const TopologyState* topology, const std::string& project) {
+  return IsPipxNativeTopology(topology) && IsPipxNativeProject(project) ? "/haa-site/pipx/venvs/" + project : "";
+}
+
+bool IsPipxNativeProgram(const std::string& code) {
+  const std::string prefix = kPipxNativeProgramPrefix, suffix = kPipxNativeProgramSuffix;
+  if (code.size() <= prefix.size() + suffix.size() || code.size() > prefix.size() + suffix.size() + 20 ||
+      code.compare(0, prefix.size(), prefix) != 0 || code.compare(code.size() - suffix.size(), suffix.size(), suffix) != 0) return false;
+  const std::string version = code.substr(prefix.size(), code.size() - prefix.size() - suffix.size());
+  size_t dots = 0, digits = 0;
+  for (char c : version) {
+    if (c == '.') { if (digits == 0 || ++dots > 2) return false; digits = 0; }
+    else if (c >= '0' && c <= '9') { if (++digits > 6) return false; }
+    else return false;
+  }
+  return dots == 2 && digits > 0;
+}
+
+bool ParsePipxNativeRoot(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,
+                         ProcessState::GroupState* group) {
+  if (group == nullptr || !IsPipxNativeTopology(topology) ||
+      message.binary_path() != "/usr/local/bin/python3.14" || message.execfn() != "/usr/local/bin/python" ||
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path()) || !IsPinnedReadOnlyRootPath(topology, message.execfn()) ||
+      !IsUVToolImage(topology, kUVToolPath) || message.argv_size() < 7 ||
+      message.argv(0) != message.execfn() || message.argv(1) != "-I" || message.argv(2) != "-S" ||
+      message.argv(3) != "-B" || message.argv(4) != "-c" || !IsPipxNativeProgram(message.argv(5))) return false;
+  const std::string operation = message.argv(6);
+  std::string project, requirement;
+  if (operation == "--version") {
+    if (message.argv_size() != 7) return false;
+  } else {
+    if ((operation != "install" && operation != "upgrade") || message.argv_size() != (operation == "install" ? 13 : 11) ||
+        message.argv(8) != "--backend" || message.argv(9) != "uv" ||
+        message.argv(message.argv_size()-1) != kPipxNativePipArguments) return false;
+    if (operation == "install" && (message.argv(10) != "--python" || message.argv(11) != "/usr/local/bin/python")) return false;
+    requirement = message.argv(7);
+    if (requirement.empty() || requirement.size() > 4096) return false;
+    size_t end = 0;
+    while (end < requirement.size()) {
+      const char c = requirement[end];
+      if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) break;
+      end++;
+    }
+    project = requirement.substr(0,end);
+    if (!IsPipxNativeProject(project) || (operation == "upgrade" && requirement != project)) return false;
+    if (end < requirement.size() && requirement[end] != '<' && requirement[end] != '>' && requirement[end] != '=' &&
+        requirement[end] != '!' && requirement[end] != '~' && requirement[end] != '[') return false;
+    for (unsigned char c : requirement) if (c <= 32 || c >= 127 || c == '\\' || c == '\'' || c == '"') return false;
+  }
+  group->pipx_native_image = ProcessState::PipxNativeImage::kRoot;
+  group->pipx_native_operation = operation;
+  group->pipx_native_project = project;
+  group->pipx_native_requirement = requirement;
+  return true;
+}
+
+bool IsPipxNativeActiveGroup(const ProcessState::GroupState& group) {
+  return group.role == ProcessState::Role::kArtifact && !group.root_eligible && group.root_consumed &&
+      !group.trusted_control_network_active && !group.demotion_pending && !group.launch_target_pending && !group.handoff_target_pending;
+}
+
+const ProcessState::GroupState* PipxNativeCreator(const gvisor::common::ContextData& context,
+    const ProcessState::GroupState& group, const ProcessState& state, ProcessState::PipxNativeImage kind) {
+  if (!IsPipxNativeActiveGroup(group) || group.provenance != ProcessState::Provenance::kCloneChild ||
+      !context.is_exec_session() || context.parent_thread_group_id() != group.clone_creator_group_id ||
+      state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end() || !HasExactCloneCreator(group,state)) return nullptr;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  if (!IsPipxNativeActiveGroup(parent) || parent.pipx_native_image != kind ||
+      state.expected_groups.find(group.clone_creator_group_id) != state.expected_groups.end() ||
+      (parent.pipx_native_operation != "install" && parent.pipx_native_operation != "upgrade") ||
+      !IsPipxNativeProject(parent.pipx_native_project)) return nullptr;
+  if (kind == ProcessState::PipxNativeImage::kRoot) {
+    return parent.provenance == ProcessState::Provenance::kDirectExecRoot && parent.current_image_class == ProcessClass::kPython ? &parent : nullptr;
+  }
+  if (kind != ProcessState::PipxNativeImage::kUV || parent.provenance != ProcessState::Provenance::kCloneChild ||
+      parent.current_image_class != ProcessClass::kUV || !HasExactCloneCreator(parent,state)) return nullptr;
+  const auto& root = state.groups.find(parent.clone_creator_group_id)->second;
+  return IsPipxNativeActiveGroup(root) && root.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      root.current_image_class == ProcessClass::kPython && root.pipx_native_image == ProcessState::PipxNativeImage::kRoot &&
+      root.pipx_native_operation == parent.pipx_native_operation && root.pipx_native_project == parent.pipx_native_project &&
+      root.pipx_native_requirement == parent.pipx_native_requirement &&
+      state.expected_groups.find(parent.clone_creator_group_id) == state.expected_groups.end() ? &parent : nullptr;
+}
+
+bool IsExactPipxNativeUVChild(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,
+                            const ProcessState::GroupState& parent) {
+  if (!IsPipxNativeTopology(topology) || !IsUVToolImage(topology,message.binary_path()) ||
+      message.binary_path() != kUVToolPath || message.execfn() != kUVToolPath ||
+      message.argv_size() < 2 || message.argv(0) != kUVToolPath) return false;
+  if (message.argv_size() == 2 && message.argv(1) == "--version") return true;
+  const std::string env = PipxNativeEnvironment(topology,parent.pipx_native_project);
+  if (env.empty()) return false;
+  if (message.argv_size() == 7 && parent.pipx_native_operation == "install" && message.argv(1) == "venv" &&
+      message.argv(2) == "--python" && message.argv(3) == "/usr/local/bin/python" &&
+      message.argv(4) == "--allow-existing" && message.argv(5) == "--quiet" && message.argv(6) == env) return true;
+  const bool upgrade = parent.pipx_native_operation == "upgrade";
+  if (message.argv_size() != (upgrade ? 16 : 15) || message.argv(1) != "pip" || message.argv(2) != "install" ||
+      message.argv(3) != "--python" || message.argv(4) != env+"/bin/python" || message.argv(5) != "--quiet") return false;
+  int at = 6;
+  if (upgrade && message.argv(at++) != "--upgrade") return false;
+  for (const char* value : {"--no-build", "--no-sources", "--no-config", "--no-cache", "--no-python-downloads",
+      "--no-managed-python", "--link-mode=copy", "--index-url=https://pypi.org/simple/"}) if (message.argv(at++) != value) return false;
+  return message.argv(at) == parent.pipx_native_requirement;
+}
+
+bool IsExactPipxNativePythonQuery(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,
+    const ProcessState::GroupState& parent, bool metadata, std::string* environment) {
+  if (environment == nullptr || !IsPipxNativeTopology(topology) || message.binary_path() != "/usr/local/bin/python3.14" ||
+      !IsPinnedReadOnlyRootPath(topology,message.binary_path())) return false;
+  const std::string env = PipxNativeEnvironment(topology,parent.pipx_native_project);
+  const bool alias = message.execfn() == env+"/bin/python";
+  if (env.empty() || (!alias && (metadata || (message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
+      !IsPinnedReadOnlyRootPath(topology,message.execfn())))) return false;
+  if (message.argv_size() != (metadata ? 3 : 5) || message.argv(0) != message.execfn()) return false;
+  if (metadata) {
+    if (message.argv(1) != "-c" || message.argv(2) != kPipxNativeMetadataQuery) return false;
+  } else if (message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
+             !IsExactUVPythonQueryProgram(message,topology)) return false;
+  *environment = alias ? env : "";
+  return true;
+}
+
 
 bool IsExactPNPMNodeQuery(const gvisor::sentry::ExecveInfo& message,
                           const TopologyState* topology) {
@@ -1851,7 +2038,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (profile == nullptr) return ProcessClass::kUnknown;
-  if (strcmp(profile, kProfileUVResolver) == 0 && path == kUVToolPath) return ProcessClass::kUV;
+  if ((strcmp(profile, kProfileUVResolver) == 0 || IsPipxNativeProfile(profile)) && path == kUVToolPath) return ProcessClass::kUV;
   if (strcmp(profile, kProfilePNPMResolver) == 0 && path == kPNPMToolPath) return ProcessClass::kPNPM;
   if ((strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0) && path == kBunToolPath) return ProcessClass::kBun;
   if (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) {
@@ -1879,7 +2066,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
     if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js") return ProcessClass::kNpm;
   }
-  if (IsPipxRuntimeProfile(profile)) {
+  if (IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) {
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
   }
   if (IsPythonProfile(profile)) {
@@ -2144,6 +2331,10 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
   if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) return HasPrefix(path, "/work/");
+  if (IsPipxNativeProfile(profile)) {
+    return path == "/tmp" || HasPrefix(path,"/tmp/") || path == "/haa-site" || HasPrefix(path,"/haa-site/") ||
+        path == "/haa-pipx" || path == "/haa-pipx/pipx-runtime.zip" || path == "/haa-wheels" || HasPrefix(path,"/haa-wheels/");
+  }
   if (IsPipxRuntimeProfile(profile)) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-pipx" || path == "/haa-pipx/pipx-runtime.zip";
@@ -2508,7 +2699,7 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
         IsExactLibc6(normalized);
   }
   if (!IsPythonRuntimeProfile(profile)) return false;
-  if (IsPipxRuntimeProfile(profile) && (normalized == "/usr/local/bin/pip" ||
+  if ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && (normalized == "/usr/local/bin/pip" ||
       normalized == "/etc/pip.conf" || normalized == "/usr/local/lib/python3.14/site-packages" ||
       HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/"))) return false;
   if (group->role == ProcessState::Role::kArtifact) {
@@ -2723,6 +2914,47 @@ bool IsPinnedPNPMRuntimeRead(const gvisor::common::ContextData& context,
       !group->root_eligible && group->root_consumed && group->trusted_control_network_active &&
       !group->demotion_pending && !group->launch_target_pending && !group->handoff_target_pending;
 }
+
+const ProcessState::GroupState* PipxNativeQueryParent(const gvisor::common::ContextData& context,
+    const ProcessState& state, const ProcessState::GroupState& group) {
+  if (!group.pipx_native_query_restricted || group.current_image_class != ProcessClass::kPython) return nullptr;
+  const auto kind = group.pipx_native_image;
+  if (kind != ProcessState::PipxNativeImage::kUVQuery && kind != ProcessState::PipxNativeImage::kMetadataQuery) return nullptr;
+  const auto* parent = PipxNativeCreator(context,group,state,kind == ProcessState::PipxNativeImage::kUVQuery
+      ? ProcessState::PipxNativeImage::kUV : ProcessState::PipxNativeImage::kRoot);
+  if (parent == nullptr || group.pipx_native_project != parent->pipx_native_project ||
+      group.pipx_native_operation != parent->pipx_native_operation || group.pipx_native_requirement != parent->pipx_native_requirement) return nullptr;
+  const std::string env = "/haa-site/pipx/venvs/"+parent->pipx_native_project;
+  if ((!group.pipx_native_environment.empty() && group.pipx_native_environment != env) ||
+      (kind == ProcessState::PipxNativeImage::kMetadataQuery && group.pipx_native_environment != env)) return nullptr;
+  return parent;
+}
+
+// Reuse immutable ELF/Python ABI facts only. The native UV child never receives
+// the existing direct CONTROL driver's proc, resolver or network permissions.
+bool IsPipxNativeABIRead(const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (!IsPipxNativeProfile(profile) || anchor == nullptr || IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context,state);
+  if (group == nullptr) return false;
+  const auto* root = PipxNativeCreator(context,*group,state,ProcessState::PipxNativeImage::kRoot);
+  const auto* uv = PipxNativeCreator(context,*group,state,ProcessState::PipxNativeImage::kUV);
+  if (flags == 557056 && group->pipx_native_candidate) {
+    if (root != nullptr && path == kUVToolPath && anchor->mount_class == "helper" && anchor->mountpoint == "/haa-runtime") return true;
+    if (uv != nullptr && (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3.14") &&
+        anchor->mountpoint == "/" && anchor->mount_class == "oci-root") return true;
+  }
+  if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
+      group->current_image_class == ProcessClass::kUV && flags == 557056 &&
+      anchor->mountpoint == "/" && anchor->mount_class == "oci-root" && IsExactPinnedLibraryRead(path)) return true;
+  if (PipxNativeQueryParent(context,state,*group) == nullptr || group->pipx_native_image != ProcessState::PipxNativeImage::kUVQuery) return false;
+  if (anchor->mountpoint == "/proc" && anchor->mount_class == "system") {
+    return flags == 557056 && path == "/proc/"+std::to_string(context.thread_group_id())+"/maps";
+  }
+  return group->pipx_native_environment.empty() && anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
+      path == "/usr/local/lib/python3.14/site-packages" && (flags == 557056 || flags == 622592);
+}
+
 
 bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
                           const ProcessState& state, const std::string& path,
@@ -3090,7 +3322,7 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
-       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfilePipxRuntime) == 0 || strcmp(profile, kProfileTerraformProvider) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
+       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfilePipxRuntime) == 0 || strcmp(profile, kProfilePipxNativeResolver) == 0 || strcmp(profile, kProfileTerraformProvider) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
        strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0 ||
        strcmp(profile, kProfileCargoBuild) == 0);
 }
@@ -3506,6 +3738,49 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
          (exact_directory && (message.flags() == 557056 || message.flags() == 622592)));
     return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
   }
+  // A query never inherits general installed/output or DATA-input access.
+  // Retain this restriction after clone/reexec, even when active admission ends.
+  if (IsPipxNativeProfile(profile) && tracked->pipx_native_query_restricted) {
+    if (PipxNativeQueryParent(message.context_data(),state,*tracked) == nullptr || IsWriteCapableOpen(message.flags())) return FilesystemClass::kOutside;
+    std::string normalized;
+    const bool site = (anchor != nullptr && IsAtOrBelowMountpoint(anchor->mountpoint,"/haa-site")) ||
+        IsAtOrBelowMountpoint(path,"/haa-site") || (NormalizeAbsolutePath(path,&normalized) && IsAtOrBelowMountpoint(normalized,"/haa-site"));
+    const bool data = (anchor != nullptr && (IsAtOrBelowMountpoint(anchor->mountpoint,"/haa-pipx") || IsAtOrBelowMountpoint(anchor->mountpoint,"/haa-wheels"))) ||
+        IsAtOrBelowMountpoint(path,"/haa-pipx") || IsAtOrBelowMountpoint(path,"/haa-wheels") ||
+        (NormalizeAbsolutePath(path,&normalized) && (IsAtOrBelowMountpoint(normalized,"/haa-pipx") || IsAtOrBelowMountpoint(normalized,"/haa-wheels")));
+    if (data) return FilesystemClass::kOutside;
+    if (site) {
+      const std::string& env = tracked->pipx_native_environment;
+      const bool directory = !env.empty() && (path == env || path == env+"/lib" || path == env+"/lib/python3.14" || path == env+"/lib/python3.14/site-packages");
+      const bool config = !env.empty() && path == env+"/pyvenv.cfg";
+      const bool allowed = PipxNativeQueryParent(message.context_data(),state,*tracked) != nullptr && anchor != nullptr &&
+          anchor->mountpoint == "/haa-site" && anchor->mount_class == "workspace" && !IsWriteCapableOpen(message.flags()) &&
+          ((config && message.flags() == 557056) || (directory && (message.flags() == 557056 || message.flags() == 622592)));
+      return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+    }
+  }
+  if (IsPipxNativeProfile(profile)) {
+    std::string normalized;
+    const bool normalized_ok = NormalizeAbsolutePath(path,&normalized);
+    const bool data = (anchor != nullptr && (IsAtOrBelowMountpoint(anchor->mountpoint,"/haa-pipx") || IsAtOrBelowMountpoint(anchor->mountpoint,"/haa-wheels"))) ||
+        IsAtOrBelowMountpoint(path,"/haa-pipx") || IsAtOrBelowMountpoint(path,"/haa-wheels") ||
+        (normalized_ok && (IsAtOrBelowMountpoint(normalized,"/haa-pipx") || IsAtOrBelowMountpoint(normalized,"/haa-wheels")));
+    if (data) {
+      const bool root = IsPipxNativeActiveGroup(*tracked) && tracked->provenance == ProcessState::Provenance::kDirectExecRoot &&
+          tracked->current_image_class == ProcessClass::kPython && tracked->pipx_native_image == ProcessState::PipxNativeImage::kRoot &&
+          message.context_data().is_exec_session() && message.context_data().parent_thread_group_id() == 0 &&
+          state.expected_groups.find(message.context_data().thread_group_id()) == state.expected_groups.end();
+      const bool uv = tracked->pipx_native_image == ProcessState::PipxNativeImage::kUV && tracked->current_image_class == ProcessClass::kUV &&
+          PipxNativeCreator(message.context_data(),*tracked,state,ProcessState::PipxNativeImage::kRoot) != nullptr;
+      const bool zip = (path == "/haa-pipx" || path == "/haa-pipx/pipx-runtime.zip") && anchor != nullptr && anchor->mountpoint == "/haa-pipx";
+      const bool wheel = (path == "/haa-wheels" || (HasPrefix(path,"/haa-wheels/") && path.find('/',12) == std::string::npos &&
+          path.size() > 4 && path.compare(path.size()-4,4,".whl") == 0)) && anchor != nullptr && anchor->mountpoint == "/haa-wheels";
+      const bool allowed = (root || uv) && normalized_ok && path == normalized && !IsWriteCapableOpen(message.flags()) &&
+          anchor != nullptr && anchor->mount_class == "workspace" && (zip || wheel);
+      return allowed ? FilesystemClass::kWorkspace : FilesystemClass::kOutside;
+    }
+    if (IsPipxNativeABIRead(message.context_data(),state,path,message.flags(),profile,anchor)) return FilesystemClass::kHelperOnly;
+  }
   if (IsPinnedProjectBuildHandoffRead(message.context_data(), state, path,
                                   message.flags(), profile, anchor)) {
     return FilesystemClass::kHelperOnly;
@@ -3715,7 +3990,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
         (profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
-         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfilePipxNativeResolver && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
@@ -3754,7 +4029,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
   if (peer->registered && !peer->terminal && peer->container_id == id &&
       peer->session_generation == generation && profile != profiles->end() &&
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
-      (!IsPipxRuntimeProfile(profile->second.profile.c_str()) || mode == kPythonHandoffMode || mode == kLaunchMode)) {
+      (!(IsPipxRuntimeProfile(profile->second.profile.c_str()) || IsPipxNativeProfile(profile->second.profile.c_str())) || mode == kPythonHandoffMode || mode == kLaunchMode)) {
     auto pending = profile->second.pending_admissions.end();
     for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
       if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
@@ -3848,6 +4123,15 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
   state->groups.find(child_group)->second.uv_python_query_restricted = creator->second.uv_python_query_restricted;
   state->groups.find(child_group)->second.uv_python_query_environment = creator->second.uv_python_query_environment;
+  auto& native_child = state->groups.find(child_group)->second;
+  native_child.pipx_native_query_restricted = creator->second.pipx_native_query_restricted;
+  native_child.pipx_native_environment = creator->second.pipx_native_environment;
+  native_child.pipx_native_candidate = IsPipxNativeActiveGroup(creator->second) &&
+      (creator->second.pipx_native_operation == "install" || creator->second.pipx_native_operation == "upgrade") &&
+      ((creator->second.pipx_native_image == ProcessState::PipxNativeImage::kRoot &&
+        creator->second.provenance == ProcessState::Provenance::kDirectExecRoot && creator->second.current_image_class == ProcessClass::kPython) ||
+       (creator->second.pipx_native_image == ProcessState::PipxNativeImage::kUV &&
+        creator->second.provenance == ProcessState::Provenance::kCloneChild && creator->second.current_image_class == ProcessClass::kUV));
   if (creator->second.role == ProcessState::Role::kControl)
     state->groups.find(child_group)->second.pnpm_target_lifecycle = creator->second.pnpm_target_lifecycle;
   state->groups.find(child_group)->second.executable_locator = creator->second.executable_locator;
@@ -4213,7 +4497,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     std::string admission_nonce;
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
-        (IsPipxRuntimeProfile(profile) && boundary_mode != BoundaryMode::kPythonHandoff &&
+        ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && boundary_mode != BoundaryMode::kPythonHandoff &&
          !(boundary_mode == BoundaryMode::kLaunch && IsExactPipxReadiness(message, true))) ||
         !ExtractBoundaryAdmissionNonce(message, boundary_mode, &admission_nonce) ||
         !ConsumeDirectExecAdmission(registration, boundary_mode, admission_nonce) ||
@@ -4228,6 +4512,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.pnpm_target_lifecycle = message.argv(7);
     new_direct_root = true;
   }
+  const bool pipx_native_candidate = group->second.pipx_native_candidate;
+  group->second.pipx_native_candidate = false;
+  group->second.pipx_native_image = ProcessState::PipxNativeImage::kNone;
   group->second.runtime_cache_query = false;
   const bool pnpm_query_candidate = group->second.pnpm_node_query_candidate;
   group->second.pnpm_node_query_candidate = false;
@@ -4545,7 +4832,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   }
   if (group->second.role == ProcessState::Role::kControl &&
       group->second.launch_target_pending) {
-    if (IsPipxRuntimeProfile(profile) && !IsExactPipxReadiness(message, false)) {
+    if ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && !IsExactPipxReadiness(message, false)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
@@ -4569,6 +4856,35 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (group->second.role == ProcessState::Role::kArtifact) {
+    if (IsPipxNativeProfile(profile) && pipx_native_candidate) {
+      const auto* root = PipxNativeCreator(message.context_data(),group->second,candidate,ProcessState::PipxNativeImage::kRoot);
+      const auto* uv = PipxNativeCreator(message.context_data(),group->second,candidate,ProcessState::PipxNativeImage::kUV);
+      const ProcessState::GroupState* parent = nullptr;
+      std::string environment;
+      if (root != nullptr && group->second.current_image_class == ProcessClass::kUV && IsExactPipxNativeUVChild(message,topology,*root)) {
+        parent = root;
+        group->second.pipx_native_image = ProcessState::PipxNativeImage::kUV;
+      } else if (root != nullptr && group->second.current_image_class == ProcessClass::kPython &&
+                 IsExactPipxNativePythonQuery(message,topology,*root,true,&environment)) {
+        parent = root;
+        group->second.pipx_native_image = ProcessState::PipxNativeImage::kMetadataQuery;
+      } else if (uv != nullptr && group->second.current_image_class == ProcessClass::kPython &&
+                 IsExactPipxNativePythonQuery(message,topology,*uv,false,&environment)) {
+        parent = uv;
+        group->second.pipx_native_image = ProcessState::PipxNativeImage::kUVQuery;
+      }
+      if (parent != nullptr) {
+        group->second.pipx_native_operation = parent->pipx_native_operation;
+        group->second.pipx_native_project = parent->pipx_native_project;
+        group->second.pipx_native_requirement = parent->pipx_native_requirement;
+        group->second.pipx_native_environment = environment;
+        group->second.pipx_native_query_restricted = group->second.pipx_native_image != ProcessState::PipxNativeImage::kUV;
+        ApplyExecCloexec(&candidate,group_id);
+        process_state->groups = candidate.groups;
+        process_state->fd_states = candidate.fd_states;
+        return Send(output,*container_id,"process-exec-expected");
+      }
+    }
     group->second.pnpm_target_lifecycle.clear();
     group->second.pnpm_target_npm_pending = false;
     if (strcmp(profile,kProfileCargoBuild) == 0 && cargo_program_query_candidate &&
@@ -4689,6 +5005,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     if (group->second.handoff_target_pending && process_class == group->second.handoff_target_class) {
+      if (IsPipxNativeProfile(profile) && !ParsePipxNativeRoot(message,topology,&group->second)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN";
+        return false;
+      }
       group->second.handoff_target_pending = false;
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
@@ -4913,7 +5233,14 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
     if (!Send(output, *container_id, "filesystem-outside-workspace")) return false;
     ++counts->immediate_records; return true;
   }
-  if (anchor->second.mount_class == "workspace") {
+  // Workspace attribution does not override a query's narrower read/write
+  // contract. Dispatch restricted queries and the native profile through the
+  // same predicate used for non-workspace opens, after all resolved-path and
+  // mount/correlation checks above. Other profiles retain their fast path.
+  const bool restricted_workspace = IsPipxNativeProfile(profile) ||
+      (strcmp(profile, kProfileUVResolver) == 0 && group != state->groups.end() &&
+       group->second.uv_python_query_restricted);
+  if (anchor->second.mount_class == "workspace" && !restricted_workspace) {
     if (counts->workspace_access < kMaxNormalizedObservationCount) ++counts->workspace_access;
     return true;
   }
@@ -4922,6 +5249,10 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   final_open.set_pathname(result.resolved_pathname()); final_open.set_flags(result.flags()); final_open.set_sysno(result.sysno());
   const FilesystemClass filesystem_class = ClassifyFilesystemOpen(
       final_open, *state, profile, &anchor->second);
+  if (anchor->second.mount_class == "workspace" && filesystem_class == FilesystemClass::kWorkspace) {
+    if (counts->workspace_access < kMaxNormalizedObservationCount) ++counts->workspace_access;
+    return true;
+  }
   switch (filesystem_class) {
     case FilesystemClass::kRuntimeRoot: if (counts->runtime_root_access < kMaxNormalizedObservationCount) ++counts->runtime_root_access; return true;
     case FilesystemClass::kHelperOnly: return true;

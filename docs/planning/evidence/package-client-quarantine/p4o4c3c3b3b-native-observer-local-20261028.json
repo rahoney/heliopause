@@ -1,0 +1,253 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b3b CPP dedicated offline Artifact profile, production workspace dispatch and named legacy consumer qualification only",
+  "baseline": {
+    "source": "4fc2eda86b3867f22f722283188cc17ba3d85989",
+    "tree": "d9361bde9fb2b00c9cb1d7e13534b7ad14f3b1b5",
+    "files": 2839
+  },
+  "implemented": "YES (CPP profile/closed root/actual clone-parent UV and two exact queries/FS restrictions); NO (native Go session/factory/CLI)",
+  "wired": "YES (helper IPC/bootstrap/Sentry/OpenResult parser and latches); NO (new native gVisor execution consumer)",
+  "qualified": "YES (named CPP/production parser and legacy scopes locally); NO (new native execution/hosted/final profiles)",
+  "acceptance_closed": "YES (this bounded CPP primitive/legacy regression scope); NO (whole pipx/M13-004)",
+  "source": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "dadfd97a9535aaa892d8c28af48c5175a0517aed996a0ee30208974fc59181bb"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "a64564987838ba6c0ce091000d6e95973c24649839cf75d9c8d54f59945c72dc"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_observer_program_test.go",
+      "sha256": "f3f27dfb9dfc4ede29f6e02bf7e184e385dc02ea9e0fdfa2836f36cd93a62824"
+    },
+    {
+      "path": "internal/sandbox/pipx_dynamic_real_test.go",
+      "sha256": "9e8a2b5793b15e7740bc7ef6ee5268c288c5fb159ed5cbccb5c2de1b7b7ac7cf"
+    }
+  ],
+  "cpp": {
+    "seconds": 248.821,
+    "exit_code": 0,
+    "latches_pass": 128,
+    "latches_fail": 0,
+    "observer": {
+      "bytes": 3189072,
+      "sha256": "893a0966ce3591d8ee10a82c44c0f666c0b0c0424aea68cd8546a759eded88e3"
+    },
+    "log_sha256": "8e287831e7660cced3033bd3ca0b3376c3f62111703cd3cd32d16abc78d1a6ec"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 1.633,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 100.854,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 16.611,
+      "log_sha256": "a23fc8fea7b55e74d7fb7a0fb74fad9a37d0989b52a38253eba20b070950716a"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 0.492,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 1.235,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "bootstrap-build",
+      "exit_code": 0,
+      "seconds": 4.011,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.328,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 10.05,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "tagged_cpu_diagnostic_checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.67,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 1.042,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 7.026,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "diagnostic_change_scope": "only last already-returned trusted CPU/count under existing mutex and log; no extra requests/product/criteria changes; default Quick predates this tag-only diagnostic; final tagged vet/build and both actual controls cover it",
+  "red": {
+    "seconds": 247.67,
+    "production_sha256": "859206dd5c6457805159d8324393fd4b7e4edacb241cc6e9a4c176e34f2fa905",
+    "test_sha256": "02d3780068af386aa7cbb7fe45f9e0dc1ca44e4007c6aa430279b538722b0f9c",
+    "log_sha256": "498714f784c20cf0011680d6d78d293f4abbca19dcbd0d70b295763df9a10c57",
+    "finding": "correlated normalized Open/OpenResult on valid workspace anchors bypassed the classifier; old UV3 scenarios/new native2 queries recorded0 findings/workspace1 for prohibited accesses",
+    "unchanged_old_uv_contract": "old UV restricts installed output reads/writes; native queries additionally reject every write; unnormalized aliases are rejected by earlier protocol format guards"
+  },
+  "mechanical_reuse": {
+    "path": "../../../github-logs/package-client-quarantine-20261021/p4o4c3c3b3b-mechanical-reuse.json",
+    "sha256": "b41a55f957c73879001d9600ec928c882993b39700d089b62dc8bafcadc34b55"
+  },
+  "grammar_facts": {
+    "path": "../../../github-logs/package-client-quarantine-20261021/p4o4c3c3b3b-native-program-facts.json",
+    "sha256": "26189ae2ce9943ea4549b58c9e3d29432223d0380a533c3598ce223b7a62c45f",
+    "metadata_query_bytes": 1304,
+    "source_version_slot": "Go canonical owner supplies the pinned numeric version; latch1.2.3 is syntax only and no runtime version attestation"
+  },
+  "legacy_actual": {
+    "first_operator_seconds": 241.585,
+    "first_operator_exit": 1,
+    "first_four_passed": [
+      "TestUVPublicNativeResolverIntegration",
+      "TestUVPublicToolInstallResolverIntegration",
+      "TestUVPublicToolUpgradeResolverIntegration",
+      "TestUVPublicNativeUpdateResolverIntegration"
+    ],
+    "bootstrap_operator_seconds": 494.626,
+    "bootstrap_operator_exit": 0,
+    "bootstrap_five_passed": [
+      "TestLinuxUVToolInstallCLIIntegration",
+      "TestUVPublicToolUpgradeEvidenceFailureIntegration",
+      "TestUVPublicToolApprovedUpgradeIntegration",
+      "TestLinuxUVToolUpgradeCLIIntegration",
+      "TestLinuxUVToolNativeAdoptionCLIIntegration"
+    ],
+    "zip_final_parent": "TestLinuxPipxAcquiredRuntimeTransactionIntegration",
+    "zip_final_control_seconds": 90.306,
+    "zip_final_parent_pass": true,
+    "exact_unique_parents": 10,
+    "same_final_cpp_sha256": "893a0966ce3591d8ee10a82c44c0f666c0b0c0424aea68cd8546a759eded88e3",
+    "binary_sha256": {
+      "sandbox_first_four": "f0288b894fef7f122274c66282af36c6edd049885cb9998987219dbd40c34b28",
+      "bootstrap_five": "89c6bc9912da3578533121e119ef5e2097a5e87db70c25f759a14acb46ee0e07",
+      "zip_tag_diagnostic": "3ab4883db98aafa4c3992ac9ef171da7dc696a0fb6a503cdefb1601a5cd8ed97"
+    },
+    "reused_run_boundary": "Go product/legacy consumer code unchanged; later tagged ZIP diagnostic is separately rebuilt and run; new native profile itself has no actual consumer yet",
+    "no_skip": true,
+    "host5_docker_inputs_readback_unchanged": true,
+    "helper_wait_zero_counts": [
+      2,
+      3,
+      1,
+      1
+    ],
+    "helper_confirmed_stopped_and_no_helpers_after": true,
+    "first_log_sha256": "f45e0a64e6d552cd9042c5f7a143f2c9470e1bd275cf71f4e56959a45f36f500",
+    "bootstrap_log_sha256": "343f3f5dfedfafd1977346daaafb3b630967fafe28c3cdbd424998b5b56201f5",
+    "scope": "ordinary localUID1000/live public selectors and fixed ZIP only; not frozen public resolution/hostedUID1001/whole profile support"
+  },
+  "cpu_controls": {
+    "same_test_binary_sha256": "3ab4883db98aafa4c3992ac9ef171da7dc696a0fb6a503cdefb1601a5cd8ed97",
+    "same_tagged_test_sha256": "9e8a2b5793b15e7740bc7ef6ee5268c288c5fb159ed5cbccb5c2de1b7b7ac7cf",
+    "tag_only_diagnostics_mechanically_proven": true,
+    "old": {
+      "seconds": 91.516,
+      "observer_sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45",
+      "samples": [
+        {
+          "status": "COMPLETED",
+          "cpu_usec": 12532282,
+          "last_read_cpu_usec": 12532063,
+          "reads": 150,
+          "injected": false
+        },
+        {
+          "status": "INCOMPLETE",
+          "cpu_usec": 651390,
+          "last_read_cpu_usec": 651192,
+          "reads": 12,
+          "injected": true
+        },
+        {
+          "status": "COMPLETED",
+          "cpu_usec": 12800383,
+          "last_read_cpu_usec": 12800177,
+          "reads": 149,
+          "injected": false
+        }
+      ],
+      "log_sha256": "8c0d8c22149cde3d5387aeb316fc08a76ad603c88bc4c36463525ed564629674"
+    },
+    "new": {
+      "seconds": 90.306,
+      "observer_sha256": "893a0966ce3591d8ee10a82c44c0f666c0b0c0424aea68cd8546a759eded88e3",
+      "samples": [
+        {
+          "status": "COMPLETED",
+          "cpu_usec": 12468039,
+          "last_read_cpu_usec": 12467796,
+          "reads": 149,
+          "injected": false
+        },
+        {
+          "status": "INCOMPLETE",
+          "cpu_usec": 644048,
+          "last_read_cpu_usec": 643836,
+          "reads": 11,
+          "injected": true
+        },
+        {
+          "status": "COMPLETED",
+          "cpu_usec": 12447486,
+          "last_read_cpu_usec": 12447249,
+          "reads": 146,
+          "injected": false
+        }
+      ],
+      "log_sha256": "a1358396268606d093b1c61d55b9145b7aec2cce369914166b62fd56d87c7c33"
+    },
+    "limits_unchanged": {
+      "ceiling_usec": 30000000,
+      "reserve_usec": 17000000,
+      "authorization_threshold_usec": 13000000
+    },
+    "disposition": "initial CPU authorization refusal retained; old/new controls each ran once and passed without a product/budget/coverage change; no attribution or fix of the initial CPU sample delta is claimed"
+  },
+  "initial_cpu_failure": {
+    "status": "retained, no source cause/fix claimed",
+    "primary": "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE: CPU authorization exhausted during complete-after unit termination",
+    "resource_close_cpu_zero": "untrusted response; not actual zero usage",
+    "failure_log_sha256": "f45e0a64e6d552cd9042c5f7a143f2c9470e1bd275cf71f4e56959a45f36f500",
+    "post_failure_cgroup_readback_sha256": "992eb918a5d7dec3b6437de403adda03b4293e1ae15819f5d4612bc7dfe7bbf7",
+    "post_failure_scope": "exact slice absent and keeper inactive/MainPID0 at later readback; original failed Close remains unqualified"
+  },
+  "remote": "CI421/run40598317489 only approved six commits through e859487; first20min poll8SUCCESS/Linux running, next due23:34:47UTC; this later local candidate is not in that payload",
+  "missing": [
+    "actual dedicated native gVisor session with complete attachment/trace/accounting/cleanup checks",
+    "installed protected ZIP/frozen selection lifecycle and complete native output consumer",
+    "fresh/upgrade/current Evidence/Policy/Host transaction/CLI/final support qualification"
+  ]
+}

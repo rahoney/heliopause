@@ -1402,3 +1402,125 @@ writer 거부/회복, noSKIP/Host5/Docker/42input/ZIP/source/binary 불변과 �
 등록/actual runc는 외부 helper admission/Policy가 아니며 old helper의 unknown-profile
 거부를 fallback으로 우회하지 않는다. 다음 B의 exact ARTIFACT parent→UV child→query
 및 readonly runtime/installed-query 제한·부정 latches와 기존 consumers를 계속한다.
+
+### C3c3b3b — CPP 전용 offline Artifact chain의 source 전 수정 지도
+
+기준 `4fc2eda86b3867f22f722283188cc17ba3d85989`/
+`d9361bde9fb2b00c9cb1d7e13534b7ad14f3b1b5`/2839파일이다. Tracked tree는 clean이다.
+A constructor/Go6mount는 네 상태 YES(그 scope), 기존 helper registration·clone/start-time/
+readiness/Python ABI·UV query grammar도 YES(각 기존 scope)다. 새 native profile의 CPP
+registration/ARTIFACT parent-child-query와 실제 native helper consumer는 네 상태 NO다.
+B는 concrete CPP primitive/latches와 Go↔CPP controller grammar drift 검사만 구현하고,
+실제 helper session/installed supply는 C에서 연결한다. 전체 acceptance를 닫지 않는다.
+
+1. 새 `pipx-native-resolver`를 existing profile IPC/bootstrap loader에 등록한다. Old UV와
+   acquired ZIP의 의미는 유지한다. Native direct launch는 기존 exact readiness만 허용하고
+   native program은 기존 irreversible Python ARTIFACT handoff를 소비한다. Native root,
+   UV clone child, 두 Python query는 모두 ARTIFACT/네트워크 비활성/expected group 부재다.
+2. GroupState 끝에 이 profile만의 bounded active image·one-shot clone candidate와 root
+   operation/project/request/query-environment를 둔다. Actual clone creator ID/start time,
+   direct consumed root→UV clone→query clone 관계를 매 실행·read에서 확인한다. 재실행은
+   active/candidate를 소모하고 query 제한은 후손에도 유지한다. 이름/locator/hash/stdout는
+   authority가 아니며 parent 종료·재사용·role/network/pending 변조에서 복구하지 않는다.
+3. Root는 C3c2 closed program/flags/install·bare upgrade/version 구문과 일치한다. Program의
+   Python version field는 canonical Go owner가 넣고 고정 program 자체가 pinned startup을
+   검사한다. CPP는 digit/dot field 외 나머지 code bytes를 exact template로 제한하며 Go
+   test가 현재 canonical program/고정 pip args와 CPP template의 byte 일치를 검사한다.
+   UV 자식은 고정 path/image·version, exact venv와 install/upgrade argv만 허용한다.
+4. UV Python query의 기존 program grammar만 두 실제 소비자에서 공유하고 old CONTROL
+   creator predicate는 변경하지 않는다. Native venv alias는 별도의 fixed pipx environment로
+   검증한다. Pipx 자체 query는 selected ZIP의 `fetch_info_in_venv` 원문을 실행 없이 AST/
+   dedent한 exact1304B/SHA256 `f306acdd8d55713a6732097b055dfb729846cf389c6e5de785a4663b50b10ee2`
+   와 venv Python `-c`를 결합한다. Cwd는 A의 readonly OCI `/`이다. Query에 subject 코드/
+   startup hook·다른 env·재실행·후손 권한을 부여하지 않는다.
+5. ABI/loader의 기존 immutable path primitive만 재사용한다. Native UV의 CONTROL/proc/
+   DNS 권한을 복제하지 않는다. ZIP/wheels는 exact attested RO input이고 site만 writable
+   output이다. Query의 installed site는 exact config·필수 directory read만 허용하고
+   `.pth`/customization/package/native/data payload·write·다른 env와 alias는 workspace
+   fallback 전에 거부한다. Honeytoken precedence와 기존 FS/network/FD guards를 유지한다.
+6. Registration/closed root·UV child·두 query·readonly inputs/restricted reads의 정상/부정
+   latches에서 actual clone 흐름·flags·argv·topology/shadow·role/start-time/pending/reexec/
+   descendant·wrong profile/CONTROL 부재를 확인한다. 기존 전체 latch/Go profiles/affected
+   canonical checks를 지킨다. 첫 native actual의 미확정 syscall/FS 요구는 C에서 exact
+   evidence를 보존한 뒤 최소 범위로 검토하며 허용 목록을 추정 복제하지 않는다.
+
+기존 `HasExactNativeQueryCreator/HasExactUVQueryCreator/HasExactPNPMQueryCreator`,
+`IsExactPipxReadiness`, `IsPinnedUVRuntimeRead/IsPinnedUVPythonQueryRead` 여섯 body의
+0554b0a SHA를 보존했다. Source/primitive 성공은 aggregate Artifact inspection CPU·
+installed current/Policy/Host publication/CLI 또는 모든 native 동작의 성공이 아니다.
+
+### C3c3b3b production OpenResult 소비자 대조 — source 전 추가 지도
+
+첫 canonical builder233.582s/128latches는 helper predicate 단독 경로까지다.
+`ParseOpenResultAndSend`는 normalized path/mount/shadow 검증 뒤 workspace를 바로 집계해
+`ClassifyFilesystemOpen`을 호출하지 않는다. Old UV restricted query와 새 native profile의
+predicate는 IMPLEMENTED=YES, workspace OpenResult 적용은 WIRED=NO/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO다. MISSING은 실제 request→result 상관 경로의 read/write/정상 cfg
+회귀와 해당 분기의 최소 wiring·기존 실제 소비자 검증이다. 우선 기존 production bytes를
+유지한 protocol 회귀로 관측을 확정한다. Non-normalized alias는 앞 format guard가 거부하므로
+이 finding을 별도 normalization 결함으로 확대하지 않는다. 기존 여섯 predicate body는 유지한다.
+
+Canonical RED247.670s는 old UV3정상 시나리오와 native2query에서 실제 workspace dispatch의
+findings0/workspace1을 확인했다. Old UV predicate는 설치 output 읽기/쓰기 제한이며 일반
+/tmp write 금지가 아니다. RED에서 도달하지 않은 뒤 tmp-write 기대만 existing installed
+config-write로 교정한다. Production patch는 old UV restricted query 및 new native profile만
+기존 classifier로 통과시키고 kWorkspace 결과를 정상 집계한다. 다른 profile의 fast path·
+honeytoken 우선순위·normalized path/mount/shadow/correlation 검증·기존 여섯 body는 유지한다.
+원본 RED source/build/log는 raw의 open-red prefix로 보존했고 후속 GREEN/actual은 아직 미완료다.
+
+첫 GREEN242.206s/128latches 뒤 최종 source 검토에서 `kWorkspace` 정상 집계의 위치를
+workspace anchor일 때로만 좁힌다. Generic switch의 새 case를 제거해 다른 profile의
+non-workspace 분기는 baseline과 그대로 유지한다. 추가 old UV /tmp write 정상 회귀는
+기존 계약을 보존하며 installed-code/write 제한으로 범위를 고정한다. 최종 builder/actual은 별도다.
+
+### C3c3b3b affected actual 첫 결과 — qualification OPEN
+
+최종 canonical248.821s/128latches와 Quick100.854s/영향 Race16.611s/tag vet·두 build/
+docs·security는 PASS다. 첫 actual241.585s에서 UV public/native update/tool install·upgrade
+네 parent는 PASS이나 acquired ZIP의 complete-after가 unit-termination CPU authorization
+exhausted로 INCOMPLETE다. 같은 test의 complete-before는20units/CPU12.849869s, 오류 주입은
+실제 Read 뒤 INCOMPLETE/zero commands를 확인했다. Complete-after Close CPU는0이지만
+response untrusted이므로 실제 사용0으로 해석하지 않는다. 원본 및 모든 source/binaries/
+Host5/Docker/42input/ZIP 불변, helper2wait0·confirmed cleanup/client 복원은 PASS다.
+아직 bootstrap5는 NOT_REACHED다. Raw affected-actual-v1 log/result/source를 보존한다.
+수정 뒤 실패했다는 이유로 CPP wiring이 CPU 원인이라 단정하지 않으며 budget/reserve/
+coverage·COMPLETE 기대를 완화하지 않는다. 미실행5는 별도로 검증하고 exact old/new observer
+대조와 추가 trusted CPU scalar 관측으로 해당 ZIP 실패의 원인·한계를 먼저 확인한다.
+
+별도 actual bootstrap494.626s의5 exact parents/noSKIP가 PASS다. New/managed/native adoption·두 CLI·Evidence failure와 원본/Host/Docker/고정42input·ZIP 불변, helper3wait0/confirmed lifecycle/client 복원을 확인했다. 첫4와 함께9parent는 named local qualified다. Acquired ZIP CPU 대조가 남아 B 전체 qualification은 OPEN이다.
+
+CPU 관측 추가의 source 전 지도: canonical observationPolicyForPython의30s ceiling/
+parallel2×(poll1s+stop7s)+uncertainty1s=reserve17s, authorization threshold13s는
+IMPLEMENTED/WIRED/기존 scope QUALIFIED=YES다. 새 실제 실패의 마지막 유효 Read sample은
+로그 연결 NO라 원인 판단이 부족하다. Tagged pipxActualResources.Read가 이미 받는 trusted
+lease의 last positive CPU와 read-count만 같은 mutex 아래 보존·출력한다. 추가 요청이나
+product source·한도·coverage·unit 결과·기존 성공 기대를 바꾸지 않는다. Old canonical124
+observer와 final128 observer를 같은 diagnostic binary/ZIP에 한 번씩 대조한다. 이는
+가설 검증이며 반복해 green을 만드는 재시도가 아니다.
+
+### C3c3b3b named local 결과 — 2026-10-28
+
+[C3c3b3b receipt](./p4o4c3c3b3b-native-observer-local-20261028.json)의 최종 canonical
+248.821s/128latches·Quick100.854s/전체 영향 Race16.611s/tag vet·두 build/docs/security와
+생산 request→result RED247.670s→GREEN이 CPP primitive 범위를 검증한다. 기존 여섯 guard,
+UV selector/program과 generic OpenResult switch는 byte-identical이다. Old UV restricted와
+new native만 resolved workspace dispatch를 기존 predicate에 연결하고 다른 profiles/
+correlation/mount/shadow/honeytoken/default budget을 유지했다. Native는 ARTIFACT/네트워크
+비활성으로 고정하고 actual clone/start/parent/재실행/후손과 original1304B query를 검사했다.
+
+실제4parent241.585s의 부분 PASS와 별도 bootstrap5/494.626s PASS, 동일 diagnostic binary의
+old91.516s/new90.306s ZIP 정상→실제 오류 주입→정상 PASS로 고유10parent의 named local
+범위를 확인했다. Final normal CPU12.468039/12.447486s, old12.532282/12.800383s이며
+17s reserve/13s 실행 한도·제품/coverage/expectation은 바뀌지 않았다. 첫 complete-after의
+CPU refusal은 그대로 남기며 source 원인·해결/일정한 비용 재현을 주장하지 않는다. Tag는
+기존 trusted Read의 last CPU/count 출력만 바꾼 것을 기계적으로 확인했고 tag vet/build와
+두 대조가 그 source를 검증했다. Host5/Docker/원본42/ZIP/source 불변·noSKIP·helper
+각2/3/1/1wait0·복원/부재를 확인했다. 첫 실패 exact slice는 뒤 readback에서 부재/keeper
+inactive0이나 당시 resource Close의 불신 상태를 qualification으로 바꾸지 않는다.
+
+CPP profile/IPC/closed Artifact chain/실제 parser dispatch는 IMPLEMENTED=YES/WIRED=YES/
+QUALIFIED=YES/ACCEPTANCE_CLOSED=YES(이 named local 범위)다. 새 native Go session/factory/
+full query 실행은 여전히 NO/NO/NO/NO이며 이후 C에서 기존 sealed owners·constructor·
+installed supplier·typed accounting/CPU watch/trace lifecycle를 연결한다. Aggregate native
+CPU·실제 syscall 요구·current Policy/Host publication/CLI/hosted/final profiles는 남는다.
+CI421는 e859487만 소비하므로 이 source를 hosted qualified로 쓰지 않는다.

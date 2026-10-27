@@ -15,15 +15,43 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3a closed offline constructor/Go topology locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3b CPP dedicated ARTIFACT parent/UV child/query profile and negative latches; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-C3c3b3b IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
+Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-C3c3b3c baseline audit and dedicated observed offline native session/installed supply; initial ZIP CPU refusal retained with old/new controls PASS; approved e859487 pushed and CI42140598317489 IN_PROGRESS; actual first20min query23:14:47UTC:8SUCCESS/Linux running; next timer due23:34:47UTC; CI415 cause OPEN
+Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C3c3b3b CPP 전용 Artifact profile 로컬 검증
+
+[C3c3b3b receipt](./evidence/package-client-quarantine/p4o4c3c3b3b-native-observer-local-20261028.json)의
+canonical128latches/production Open→OpenResult RED→GREEN·Quick/Race와 기존 실제10parent
+범위를 확인했다. 첫 ZIP CPU 한도 거부는 보존했고, 동일 진단 binary의 old/new 대조는
+각1회 PASS이며 제품/17s reserve/coverage를 바꾸지 않았다. 새 native gVisor 실행/전체
+accounting·installed supply/current Policy/CLI는 남으므로 같은 M13-004의 C3c3b3c에서
+관련 baseline/Read를 다시 확인하고 그 acceptance gap만 연결한다. CI421 e859487에는
+이 후속 local source가 없고, 첫20분8SUCCESS/Linux 진행·다음23:34:47UTC timer를 유지한다.
+
+### 2026-10-28 CI421 첫20분 직접 확인
+
+실제 timer는23:14:33.000137UTC 발화했고23:14:47UTC에 fresh run/jobs를 직접 조회했다.
+Head e859487가 같고8SUCCESS/Linux IN_PROGRESS이며 Required/qualification은 OPEN이다.
+Raw ci421-poll01/timer-fired가 원본을 소유한다. 다음 실제20분 timer의 due는
+23:34:47UTC(08:34:47KST)다. 재push/재dispatch/취소 없이 같은 local C3c3b3b를 계속한다.
+
+### 2026-10-28 승인된6commit checkpoint CI421 시작
+
+사용자의 권장안 진행 지시를 승인 대기 중이던 exact6commit payload의 승인으로 소비했다.
+Fresh PR38 head1e5d21e를 확인하고 기존 milestone branch에 e859487까지만 fast-forward
+push했다. 후속 local B3/C3 commits와 미완료 CPP 후보는 전송하지 않았다.
+CI421/run40598317489 head e859487가22:54:33UTC 시작됐고 첫 실제9jobs IN_PROGRESS다.
+최근 같은 workflow73m44를 완료 예상의 근거로만 쓰고, 실제20분 timer session27620의
+첫 due23:14:33UTC(08:14:33KST)에 run/jobs를 직접 조회한다. 원본은 raw ci421-initial.json/
+/tmp/haa-ci421-poll01.json이며 DUE만으로 조회 완료라 하지 않는다. Required/원본 로그/
+source 대조 전 qualification은 OPEN이다. 같은 M13-004/C3c3b3b의 local 검증을 계속한다.
 
 ### 2026-10-28 P4-O4-C3c3b3a offline constructor/Go topology 로컬 검증
 
