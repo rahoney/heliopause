@@ -457,10 +457,7 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 		if err := ctx.Err(); err != nil {
 			return Result{}, err
 		}
-		mode := executableMode
-		if item.Role == "release-metadata" || ReleaseFile(item).IsRuntimeData() {
-			mode = metadataMode
-		}
+		mode := assetCopyMode(item, executableMode, metadataMode)
 		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), mode); err != nil {
 			return Result{}, errors.New("stage release asset")
 		}
@@ -703,4 +700,13 @@ func syncDirectory(path string) error {
 		return err
 	}
 	return closeErr
+}
+
+// assetCopyMode is shared by the copier and interrupted-copy validation so DATA
+// and passive metadata never inherit the native executable permission ceiling.
+func assetCopyMode(item asset, executableMode, metadataMode os.FileMode) os.FileMode {
+	if item.Role == "release-metadata" || ReleaseFile(item).IsRuntimeData() {
+		return metadataMode
+	}
+	return executableMode
 }

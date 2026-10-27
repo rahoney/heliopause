@@ -63,7 +63,7 @@ func (i *Installer) DiscardSystemCopy(ctx context.Context, request Request) (res
 		installRecordName: {int64(len(record)), 0444},
 	}
 	for _, file := range input.files {
-		expected[file.Name] = expectedCopy{file.Size, 0555}
+		expected[file.Name] = expectedCopy{file.Size, assetCopyMode(file, 0555, 0444)}
 	}
 	entries, err := os.ReadDir(directory)
 	if err != nil || len(entries) > len(expected) {

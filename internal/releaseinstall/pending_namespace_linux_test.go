@@ -242,7 +242,7 @@ func TestInterruptedSystemCopyInDisposableNamespace(t *testing.T) {
 						}
 						for _, name := range names {
 							mode := os.FileMode(0555)
-							if name == manifestName || name == sbomName || name == runtimeImagesName {
+							if name == manifestName || name == sbomName || name == runtimeImagesName || name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" {
 								mode = 0444
 							}
 							payload, err := os.ReadFile(filepath.Join(bundle, name))

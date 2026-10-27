@@ -713,3 +713,94 @@ Race40.331s·workflow/release-gate/docs/security를 통과했다. 최종 test so
 realcorpus go vet 결과에 연결한다. Publish는 기존 bundle 검증기의 exact filename 목록을
 이미 소비하므로 중복 목록·새 job을 만들지 않았다. Actual graph/current Evidence·Policy,
 protected DATA 복구, native pipx/CLI·hosted/final profile 범위는 B3c 이후에 남는다.
+
+
+## B3c — actual graph/current Evidence와 DATA 복구의 source 전 대조
+
+기준e018227/tree8915d55c/2802다. B3b의 실제15asset/19bundle·metadata/SBOM/package 검증은
+같은 source inventory로 닫았으며 서명/hosted/새 required 관찰을 대신하지 않는다.
+
+| 기존 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| frozen HAA graph13/native6/DATA pair | YES | YES | YES(default graph mechanics) | NO(actual current pipeline) | coherent actual ZIP/NOTICE/v3 fixture의 전체 current pipeline |
+| required ZIP inspector/production composition | YES | YES | YES(B2d actual isolated inspector) | NO(complete pipeline) | same graph/current Evidence·Policy·staging와 missing runner·unsigned proof 거부 |
+| whole-set pipeline test fixture | YES | YES(legacy11 subjects) | YES(existing named scope) | YES(existing scope) | original selected DATA pair를 기존 fixture에 붙인 explicit realcorpus consumer |
+| root wire/private stage/cleanup | YES | YES(complete payload selector) | YES(legacy namespace/default wire) | NO(DATA actual) | real ZIP의 full12payload stage/bytes/mode·corrupt/truncated refusal/cleanup |
+| bootstrap/partial-copy recovery/source cleanup | YES | YES(complete payload selector) | YES(legacy namespace/B3a copy) | NO(DATA actual) | original ZIP/NOTICE가 있는 named namespace 복사·중단 재개·정리 |
+| full new signed native/runtime/CLI/hosted | YES(existing owners) | YES(partial current tuple) | NO(current full set) | NO | new signed qualification·native pipx/hosted/final matrix |
+
+### 재사용과 명시 범위
+
+1. HeliopauseReleaseSet/NewReleaseSetInspector/기존 M6·M4 Policy/application install/staging을
+   그대로 쓴다. 기존 test fixture를 DATA pair와 BindCurrentRuntime으로 첫 resolve 전에
+   일관되게 갱신한다. 새 resolver나 graph/Policy 모델·production test hook은 만들지 않는다.
+   외부 artifact integration test의 test-only typed adapter가 기존 sandbox/backend와 Host
+   resource client를 연결한다. Production composition 자체의 검증 범위는 B2d actual로 유지한다.
+2. 실제ZIP의 required20unit completion/Evidence6를 whole graph13subjects의 새 current
+   검사·Evidence·Policy로 소비한다. 나머지 native6는 기존 source/staging fixture의 fake
+   sandbox이며 그 실행 성공·authenticity로 확대하지 않는다. Positive의 integrity-only
+   verifier도 fixture 전용이며 별도 production SDK는 unsigned set을 계속 거부해야 한다.
+   Missing ZIP runner는 required incomplete로 staging/promoter에 도달하지 않아야 한다.
+3. 기존 root namespace test의 auth/current/proof mock 경계를 그대로 표시한다.
+   Production prepareWireRelease/readBootstrapSet/cleanupBootstrapSource의 unsigned
+   거부와 private filesystem primitive의 positive를 분리한다. 실제 build candidate의
+  12payload와 ZIP/NOTICE 원본·root private0600/installed0444를 검증하고 새 auth 권한이나
+   persistent Host 설치를 만들지 않는다. 부분 copy/오류 후 정리는 source/대상 inode·bytes/
+   mode를 확인하고 UNKNOWN/foreign 교체를 삭제하지 않는다.
+4. 기본 테스트에는 외부 wheel/selected ZIP cache를 추가하지 않는다. Explicit realcorpus
+   또는 root namespace 입력을 사용하고 고정 source/check binary/observer/ZIP·Host 보호5파일/
+   Docker/helper 종료를 원본으로 연결한다. Quick·affected Race/tag vet와 actual을 겹치지 않는다.
+   기존 C2 six-file guards·예산·required coverage를 보존한다.
+
+수정/검증 대상은 기존 test fixture와 explicit actual tests이며 product 경로는 baseline 구현을
+재사용한다. 실제 consumer가 구체 gap을 반증할 때만 해당 owner를 최소 수정한다.
+
+
+### B3c2 partial-copy mode의 직접 반증 — 수정 전
+
+기준e018227의 pending_unix.go/DiscardSystemCopy는 input.files의 intended mode를 모두0555로
+설정하지만 installer.go의 기존 copier는 release-metadata/IsRuntimeData를 metadataMode
+(system0444)로 쓴다. 같은 실제 source의 root namespace v1(10.645s)은 full12payload/
+255,942,560B root0600 stage/세 오류 정리와 새 DATA bootstrap 정상·부분 복구를 통과한 뒤,
+0555 DATA partial copy를 거부해야 하는 negative에서 실제 cleanup/재설치를 허용해 실패했다.
+Host5파일/Docker/원본 ZIP은 같다. Auth/crypto filesystem doubles의 named 범위이며 실제
+signed/public 설치 취약점 실행이나 B3a 도입 인과를 주장하지 않는다.
+
+이는 기존 mode owner의 consumer gap이다. Copier의 기존 역할별 mode 선택을 private helper로
+재사용해 pending cleanup도 system0444/0555를 똑같이 소비하게 한다. 기존 native mode나
+public/user mode·prefix/inode/ownership/whole-set-before-delete guard를 변경하지 않는다.
+동일 namespace test SHA의 RED→GREEN과 기존 affected checks/namespace를 확인한 뒤에만
+해결로 기록한다. 기존 root operator의 named_pass substring은 하위 PASS를 부모 PASS로
+집계했으나 exit1 때문에 전체 성공으로 닫지 않았다. 원본 scalar를 편집하지 않고 후속
+operator는 exact top-level PASS 정규식으로 판정한다.
+
+
+B3c2 v2의 동일 namespace test SHA6356a578은8.246s/네 top-level PASS(noSKIP)로
+RED→GREEN이다. 실제12payload255942560B stage·세 실패 정리·DATA 정상/부분 복구·tamper
+거부 뒤 재시도·foreign 보존과 legacy bootstrap/stage를 함께 확인했다. 보호5파일/Docker/
+원본은 같다. 같은 owner의 기존 pending namespace complete fixture는 NOTICE도0555로
+합성한 것을 source 대조에서 발견했다. 실제 copier/기존 system namespace 기대는
+NOTICE0444이므로 독립 fixed notice 두 이름의 fixture mode만 바로잡고,24case/SIGKILL의
+기존 실제 pending 시험도 수행한다. 발견 전 실행 실패를 만들어낸 것으로 기록하지 않는다.
+
+
+### B3c named local 완료와 남은 소비자 — 2026-10-28
+
+[한정 영수증](./p4o4b3c-current-graph-data-recovery-local-20261028.json)이 각 source/check/
+actual과 최초 RED를 연결한다. 최종 composed source의 실제 ZIP20unit 관찰이 graph13subjects/
+32checks/37Evidence와 current store readback·기존 Policy/staging으로 이어졌다. Missing runner는
+required incomplete로 staging을 막고, 별도 production SDK negative는 실제 ZIP 관찰 완료와
+무관하게 unsigned set을 거부했다. 나머지 native6는 기존 sandbox fixture·promoter는 spy이며
+native 실행/authenticity/Host activation으로 확대하지 않는다.
+
+Same test SHA의 DATA partial-mode RED→GREEN, actual12payload255942560B root private0600
+stage/세 오류 정리·DATA installed0444/정상·재시도·부분 복구·변조 거부·foreign 보존과 legacy
+bootstrap/stage 및 pending24case/SIGKILL을 통과했다. Copier의 기존 mode 선택만 공유해
+cleanup ceiling을 맞췄으며 기존 원본 prefix/inode/ownership/whole-set guard는 유지했다.
+Host5파일/Docker/selected ZIP 불변/noSKIP와 graph helperwait0/confirmed stopped를 확인했다.
+최종 Quick37.624s/affected2 owner Race4.148s/tag vet/docs/security도 PASS다.
+
+B3d에서는 existing hosted actual consumer의 명시 입력/setup/UID1001/cleanup 연결을 먼저
+대조한다. 새 job을 만들거나 default test에 외부 cache를 숨기지 않는다. 그 뒤 installed pipx
+runtime/native tools/CLI와 signed/current activation 및 full supported profiles는 별도로 닫는다.
+e859487까지의 기존 push 승인 대기는 그대로이며 새 CI/20분 timer는 아직 시작되지 않았다.
