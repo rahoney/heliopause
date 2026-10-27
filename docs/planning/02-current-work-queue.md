@@ -15,15 +15,30 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: CI419/source504e698 Required10SUCCESS; same checkout05b3/tree d2b385/2737; C1/C2 local DATA + existing hosted regression qualified
-Next action: CI420/run40515351597 common owner/checker hosted regression; B2 source-owner audit prepared; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B1d local supply/consumers qualified; hosted pending; whole pipx/final profiles remain
+Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
+Next action: M13-004/P4-O4-B2 acquired ZIP typed supply/units and external observation; monitor new CI every20min; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B2 IN_PROGRESS; B1d common hosted regression qualified; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 CI420 최종 확인과20분 직접 조회 요청
+
+[CI420 qualification](./evidence/package-client-quarantine/ci420-pytest-supply-hosted-qualification-20261028.json)은
+Required 포함10SUCCESS와 all10 checkout729b/source1e5d21e tree391df742/2772 동일을
+확인했다. 시작13:48:39UTC→Required15:02:23UTC는73분44초, Linux73분7초다.
+원본10logs1,163,500B의 readback/hash와 Linux79PASS/noSKIP·CPU248.37s·helper11wait0/
+최종 confirmed cleanup을 대조했다. 기존 공통 공급/checker와 hosted 소비자 범위이며 새 ZIP
+gVisor 외부 관찰/전체 pipx 지원 완료는 남는다. CI415의 역사적 FD 원인은 계속 OPEN이다.
+
+사용자는 이후 CI를20분 타이머로 직접 조회하고 작업을 계속하도록 요청했다.
+[검증·감시 규칙](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)의 간격을
+갱신하며 timer DUE와 실제 조회를 구분한다. 이번 final은 사용자 재개 뒤 fresh fetch이며
+지난 응답 종료 후 지속 자동 감시했다고 표시하지 않는다. 현재 진행 중인 CI는 없다.
+같은 M13-004/B2의 준비된 baseline에 따라 acquired typed 공급/고정 관찰 unit부터 진행한다.
 
 ### 2026-10-27 CI420 첫10분 실제 조회
 

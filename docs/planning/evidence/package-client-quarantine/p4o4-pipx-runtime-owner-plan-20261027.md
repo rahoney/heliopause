@@ -311,7 +311,8 @@ Quick44.492s/관련3 package 전체 Race39.114s/actual0.895s/docs/security PASS�
 ## B2 — 새 공급 뒤 실행 owner의 수정 전 대조
 
 기준1e5d21e/tree391df742/2772files다. B1d의11 distributions/20units(15required/5post-install)와
-C1/C2 actual DATA는 로컬 검증했고 CI420의 공통 owner/checker hosted 회귀는 진행 중이다.
+C1/C2 actual DATA는 로컬 검증했고 CI420의 공통 owner/checker hosted 회귀는10SUCCESS다.
+Source1e5d21e와 checkout729b의 전체 tree391df742/2772 동일·원본 로그/정리를 확인했다.
 이 대조는 source 변경 전 준비이며 새 observer profile·backend 완료가 아니다.
 
 | 실제 책임/위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | B2 MISSING |
