@@ -65,6 +65,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	case pipxObserverProfile:
 		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
 		return []observerMountExpectation{root, tmp, runtime, data}, true
+	case pipxNativeResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		wheels := observerMountExpectation{pipxNativeWheels, "workspace", "/", "9p", true, false, false, false}
+		site := observerMountExpectation{pythonSitePath, "workspace", "/", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, data, wheels, site}, true
 	case bunProjectResolverProfile:
 		runtime.FSType, runtime.NoSUID = "9p", false
 		project := observerMountExpectation{bunProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}

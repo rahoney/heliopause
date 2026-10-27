@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b2 complete native output/original control binding locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3 dedicated offline native profile/session baseline and edit map; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-C3c3b3 IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
+Last completed substep: P4-O4-C3c3b3a closed offline constructor/Go topology locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-C3c3b3b CPP dedicated ARTIFACT parent/UV child/query profile and negative latches; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-C3c3b3b IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-C3c3b3a offline constructor/Go topology 로컬 검증
+
+[C3c3b3a receipt](./evidence/package-client-quarantine/p4o4c3c3b3a-offline-runtime-local-20261028.json)의
+Quick390.740s/전체 영향 Race24.889s/tag vet·build/docs/security와 actual12.907s가 PASS다.
+고정 network none/cwd `/`/환경·sealed RO inputs와 same-frozen-ID output을 결합하고
+기존 memory/tmp를 유지·per-process CPU를30으로 좁혔다. Actual은 runtime flag만 runc로
+바꿔 원본 control/native install/no-op·RO/불변·정리를 확인했다. New Go6mount/default
+trace와 old UV/ZIP4mount 분리를 검사했지만 CPP native profile/실제 session/Policy/CLI는
+미완료다. 같은 M13-004/C3c3b3b에서 기존 CONTROL 권한을 넓히지 않는 별도 ARTIFACT
+chain과 negative latches를 계속한다. 기존 push 승인 대기이며 새 CI/타이머는 없다.
 
 ### 2026-10-28 P4-O4-C3c3b2 complete native output 로컬 검증
 

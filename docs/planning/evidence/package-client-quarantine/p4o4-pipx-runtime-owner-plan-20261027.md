@@ -1341,3 +1341,64 @@ Fresh CI420은 Required 포함10SUCCESS/PR38 head1e5d21e이며 이번 로컬 후
 같은 M13-004의 다음 C3c3b3에서 exact offline parent→UV child→installed Python query의
 전용 외부 profile/session baseline과 수정 지도를 대조한다. 기존 CONTROL/network
 상속 조건을 새 chain으로 확대하지 않는다.
+
+## C3c3b3 — offline native profile/session의 source 전 baseline
+
+기준 `0554b0ae6519b75840142078967b6a4a6a74bb81`, tree
+`d5c90876d800d259903a04d07ed4d5a390c02f13`/2836파일이며 tracked tree는 clean이다.
+Queue/client09/plan20·M8/M10·D-015와 routed lessons, C3c3a/b1/b2의 원본/한도를 대조했다.
+
+| 책임 / 기존 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `pipxNativeArguments/Environment`, C2 ZIP·C3c3a wheel owners, C3c3b2 output | YES | YES (diagnostic) | YES (named local) | YES (각 scopes) | production offline create/session·installed 공급 consumer |
+| `pythonResolverCreateArguments`, canonical bootstrap/demotion/ownership cleanup | YES | YES (기존 resolvers) | YES (기존 scopes) | YES (그 scopes) | native pipx 고정 network-none/workdir/env/RO input binding; builder 재작성 금지 |
+| `SharedObserver` profile/topology/control IPC + default trace budget | YES | YES (기존 profiles) | YES (기존 scopes) | YES (그 scopes) | pipx-native 전용6 mount topology·helper registration |
+| C++ `HasExactCloneCreator`, UV query·Python ABI·readiness/ARTIFACT handoff | YES | YES (각 기존 profiles) | YES (기존 scopes) | YES (그 scopes) | 별도 offline Artifact parent→UV child→query chain; 기존 CONTROL predicate 확대 금지 |
+| Native pipx observer/profile/session/factory | NO | NO | NO | NO | 아래 A/B/C의 concrete consumers/actual, 이후 install·upgrade/current/Policy/CLI |
+
+### C3c3b3a — 고정 offline container 구성·Go topology의 수정 지도
+
+첫 범위는 `pipx_native_runtime.go`의 compile-time profile/closed create arguments와
+`shared_observer.go`의 별도 topology다. 새 package·network policy·daemon·Host path/config
+입력을 만들지 않는다. 기존 generic profile registration/trace transport를 재사용하므로
+새 optional observer interface는 만들지 않는다. CPP 쪽 지원 전 actual helper는 이 profile을
+거부하며 그 거부를 fallback으로 우회하지 않는다.
+
+1. Existing resolver create builder의 hardened flags/고정 image/empty Config.User/canonical
+   bootstrap을 재사용한다. Native phase는 network none·workdir `/`·고정 pipx 환경이다.
+   기존 resolver의 CPU60 per-process를 public profile의30으로 좁히고 memory512MiB와
+   private tmpfs128MiB를 유지한다. 이는 aggregate Artifact inspection CPU accounting의
+   증명이 아니며 뒤 기존 inspection의 CPU watch/ledger를 변경하지 않는다.
+2. Sealed ZIP와 frozen wheels의 RO mount, exact UV runtime 및 별도 writable output만
+   받는다. Output manifest를 same frozen wheel ID에 결합하고 public promotion128MiB를
+   지킨다. Unsealed/changed/foreign-root/UV 이외 tool·공통 builder drift를 조기 거부한다.
+3. Go topology는 root/tmp/runtime + ZIP RO/wheels RO/site RW의6 mount다. Existing UV와
+   acquired ZIP topology는 그대로이며 wheel-inspection profile로 분류하지 않는다. Trace는
+   existing default10k/2MiB이고 임의 budget 확대·네트워크 상속은 없다.
+4. 기존 native diagnostic의 reader create만 이 builder를 직접 소비한다. Runc는 test가
+   고정 runtime flag 하나만 교체하며 다른 container/command/원본/RO/metadata 검증을
+   유지한다. Canonical checks·영향 Race/tag build·actual/불변·정리로 이 constructor scope를
+   검증한다. Go topology/actual runc 성공을 CPP observer/session/Policy 성공으로 쓰지 않는다.
+
+이후 B는 별도 CPP profile/실제 clone·query argv/파일 접근·부정 latches와 기존 consumers,
+C는 실제 helper에 관찰되는 offline native session/installed supply를 연결한다. Root·UV
+자식·Python query는 ARTIFACT로 유지하고 arbitrary code/재실행/후손·network/CONTROL
+권한을 상속시키지 않는다. 기존 `HasExactUVQueryCreator`의 body는 변경하지 않는다.
+
+
+### C3c3b3a named local 결과 — 2026-10-28
+
+[C3c3b3a receipt](./p4o4c3c3b3a-offline-runtime-local-20261028.json)의 Quick390.740s/
+전체 영향 Race24.889s/tag vet·build/docs/security와 actual12.907s가 PASS다. 기존 hardened
+resolver builder를 재사용해 network none·cwd `/`·고정 pipx 환경, sealed ZIP/wheels RO와
+same frozen ID의 output128MiB/UV runtime을 결합했다. Memory512MiB/tmp128MiB를 유지하고
+per-process CPU60을30으로 좁혔다. Aggregate inspection CPU accounting의 증명은 아니다.
+새 Go topology는6mount/default10k·2MiB이며 old UV/ZIP4mount와 wheel-phase 분리는 유지했다.
+
+Runc diagnostic은 product constructor의 runtime flag만 교체하고 기존 owned name/label을
+추가했다. 실제 install/no-op·config 대조·원본 control/graph2/별도 capture·RO EROFS/foreign
+writer 거부/회복, noSKIP/Host5/Docker/42input/ZIP/source/binary 불변과 정리가 PASS다.
+기존 generic builder/native argv/input/output/volume·CPP source는 그대로다. Go profile
+등록/actual runc는 외부 helper admission/Policy가 아니며 old helper의 unknown-profile
+거부를 fallback으로 우회하지 않는다. 다음 B의 exact ARTIFACT parent→UV child→query
+및 readonly runtime/installed-query 제한·부정 latches와 기존 consumers를 계속한다.

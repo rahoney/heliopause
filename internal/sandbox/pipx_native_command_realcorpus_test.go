@@ -232,26 +232,37 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 		}
 		k := &keeper{owner: id.String(), name: "haa-uv-resolver-" + id.String()}
 		keepers = append(keepers, k)
-		args := []string{"create", "--pull", "never", "--name", k.name, "--label", uvResolverOwnerLabel + "=" + k.owner, "--runtime", "runc", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
-		args = append(args, mounts...)
+		var args []string
 		if native {
-			// Empty Config.User preserves both root runtime and UID1000 data
-			// in Docker stdin archives. PID1 immediately drops real authority.
-			if user != "" {
-				t.Fatal("native diagnostic must retain the image's empty Config.User")
+			if user != "" || len(mounts) != 0 {
+				t.Fatal("native diagnostic cannot override user or mounts")
 			}
-			args = append(args, "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP")
+			var err error
+			args, err = pipxNativeCreateArguments(data, wheelData, uv, output)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Only the runtime changes for this runc diagnostic. It cannot establish
+			// gVisor attribution/admission or activate the dedicated external profile.
+			changed := 0
+			for i := 0; i < len(args)-1; i++ {
+				if args[i] == "--runtime" {
+					if args[i+1] != gVisorRuntimeName {
+						t.Fatal("unexpected native runtime")
+					}
+					args[i+1] = "runc"
+					changed++
+				}
+			}
+			if changed != 1 {
+				t.Fatal("canonical native runtime flag missing or duplicated")
+			}
+			args = append([]string{"create", "--name", k.name, "--label", uvResolverOwnerLabel + "=" + k.owner}, args[1:]...)
 		} else {
+			args = []string{"create", "--pull", "never", "--name", k.name, "--label", uvResolverOwnerLabel + "=" + k.owner, "--runtime", "runc", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
+			args = append(args, mounts...)
 			args = append(args, "--user", user)
-		}
-		if native {
-			args = append(args, pipxNativeEnvironmentArguments()...)
-		} else {
 			args = append(args, isolatedContainerEnvironmentArguments()...)
-		}
-		if native {
-			args = append(args, "--entrypoint", "/bin/sh", pythonImageReference, "-ceu", boundaryContainerCommand())
-		} else {
 			args = append(args, "--entrypoint", "/bin/sleep", pythonImageReference, "300")
 		}
 		body, err := runner.Output(ctx, "docker", args...)
@@ -311,19 +322,11 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	output, err = createClosureVolume(ctx, runner, session.String()+"-native-output", runtimeidentity.PipxToolSHA256, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
+	output, err = createClosureVolume(ctx, runner, session.String()+"-native-output", frozen.id, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
 	if err != nil {
 		t.Fatal(err)
 	}
-	uvMount, err := uv.mountArgument()
-	if err != nil {
-		t.Fatal(err)
-	}
-	outputMount, err := output.mountArgument(false)
-	if err != nil {
-		t.Fatal(err)
-	}
-	reader := create("native-reader", "", []string{"--mount", ro, "--mount", wheelRO, "--mount", uvMount, "--mount", outputMount}, true)
+	reader := create("native-reader", "", nil, true)
 	// This runc-only framing value is controller-created and confers neither
 	// observer admission nor completion authority. Use the canonical helper
 	// solely to remove the Docker exec capability set before every target.
