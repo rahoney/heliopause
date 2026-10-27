@@ -16,14 +16,25 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI419/source504e698 Required10SUCCESS; same checkout05b3/tree d2b385/2737; C1/C2 local DATA + existing hosted regression qualified
-Next action: M13-004/P4-O4-B1 acquired fixed ZIP surface and typed inspection input; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B1 IN_PROGRESS; C1/C2 DATA and common existing hosted regression qualified; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B1d user-approved explicit pytest runtime supply; keep required coverage; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B1d IN_PROGRESS; C1/C2 DATA and common existing hosted regression qualified; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O4-B1b/c 검증과 명시 공급 확대 승인
+
+[B1b/c receipt](./evidence/package-client-quarantine/p4o4b1bc-pipx-plan-intake-local-20261027.json)는
+Quick44.492s/관련 전체 Race39.114s/actual0.895s/docs/security PASS,7 distributions/
+9required·3post-install 계획과 원본 HAA identity/handle·bounded growth/cancel 거부를 확인했다.
+고정 Python runc에서 loader/base import는 exit0, pytest plugin은 pytest 부재 exit1이다.
+사용자가 권장안인 pytest와 의존성의 명시 runtime 공급 추가·새 전체 검증을 승인했다.
+Required 범위는 유지하고 자동 보조 설치·plugin 선택 검사 전환은 하지 않는다.
+같은 item의 B1d 공급 baseline/official 입력 확인을 계속한다. 새 runtime/observer·release와
+전체 pipx 지원은 아직 미완료이며 이 로컬 helper 묶음만으로 CI를 반복 실행하지 않는다.
 
 ### 2026-10-27 P4-O4-B1a ZIP snapshot 로컬 검증
 

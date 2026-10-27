@@ -108,3 +108,19 @@ func TestValidateCurrentImportsScopesGitHubAdapterEdges(t *testing.T) {
 		}
 	}
 }
+
+func TestPipxReleaseInspectionParserEdgesRemainScoped(t *testing.T) {
+	const modulePath = "example.test/project"
+	for _, dependency := range []string{"internal/artifact/pypi", "internal/runtimeidentity"} {
+		allowed := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/internal/inspection/githubrelease", Imports: []string{modulePath + "/" + dependency}}})
+		if len(allowed) != 0 {
+			t.Fatal("reviewed ZIP parser/pin edge refused", allowed)
+		}
+		for _, owner := range []string{"internal/core/domain", "internal/application"} {
+			findings := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/" + owner, Imports: []string{modulePath + "/" + dependency}}})
+			if len(findings) != 1 {
+				t.Fatal("concrete ZIP dependency escaped adapter scope", owner, dependency, findings)
+			}
+		}
+	}
+}

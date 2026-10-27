@@ -42,3 +42,44 @@ func TestPipxRuntimeZIPActualSelectedSnapshot(t *testing.T) {
 	}
 	t.Logf("selected bytes=%d members=%d immutable snapshot and altered/truncated/appended refusals passed", len(before), len(value.Files()))
 }
+
+func TestPipxRuntimeZIPActualObservationPlan(t *testing.T) {
+	filename := os.Getenv("HELOX_PIPX_RUNTIME_ZIP")
+	if filename == "" {
+		t.Skip("explicit selected pipx ZIP is required")
+	}
+	body, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, err := ParsePipxRuntimeZIP(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	plan, err := value.ObservationPlan()
+	if err != nil || !plan.Valid() {
+		t.Fatal("selected plan rejected", err)
+	}
+	required, commands := 0, 0
+	for _, unit := range plan.Units() {
+		if unit.Coverage == RequiredObservation {
+			required++
+		} else if unit.Coverage == PostInstallCommandObservation {
+			commands++
+		} else {
+			t.Fatal("unknown coverage")
+		}
+		t.Logf("unit %s coverage=%q", unit.Candidate, unit.Coverage)
+	}
+	if len(plan.Distributions()) != 7 || required != 9 || commands != 3 {
+		t.Fatal("selected plan census changed", plan.Distributions(), plan.Units())
+	}
+	units := plan.Units()
+	units[0].Candidate = "caller mutation"
+	distributions := plan.Distributions()
+	distributions[0].Version = "caller mutation"
+	if plan.Units()[0].Candidate == units[0].Candidate || plan.Distributions()[0].Version == distributions[0].Version || !bytes.Equal(plan.ZIP().Bytes(), body) {
+		t.Fatal("plan is mutable")
+	}
+	t.Logf("original distributions=%d required=%d post-install=%d; no Python execution", len(plan.Distributions()), required, commands)
+}

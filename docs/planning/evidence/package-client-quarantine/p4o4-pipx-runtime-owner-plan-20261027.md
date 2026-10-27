@@ -226,3 +226,84 @@ B1a snapshot의 named local 결과는 [receipt](./p4o4b1a-pipx-zip-input-local-2
 `ports.DownloadReader`는 진행률 wrapper이며 자체 read bound가 없음을 source에서 확인했다.
 다음 intake consumer는 `io.LimitReader`로 selected size+1을 명시하고 실제 길이/hash를
 검사한다. 기존 helper 이름이나 total 인자를 byte budget으로 간주하지 않는다.
+
+## B1b — ZIP 내부 metadata와 required observation 계획
+
+기준294b70b에서 snapshot IMPLEMENTED=YES/WIRED=YES(parser)/QUALIFIED=YES(local)/
+ACCEPTANCE_CLOSED=YES(snapshot only)다. ZIP plan은 네 상태 모두 NO이며 MISSING은
+원본 embedded7 METADATA/WHEEL/RECORD의 완전 분할과 Python import surface, immutable
+required unit 계획이다. 기존 `validateRecord`, `parseRFC822Metadata`, `parseEntryPointsTxt`,
+`classifyWheelSurface`를 재사용한다. ZIP을 wheel로 위장해 `BuildObservationPlan`을 호출하지 않는다.
+
+각 distribution의 namespace/dist-info/data를 원본 RECORD와 대조하고 미소유·중복 파일은
+거부한다. RECORD self exemption은 기존 계약대로 검증하고 snapshot의 실제 size/hash를
+분류 입력에 연결한다. 기존 classifier가 확인한 module/package import와 고정 loader target
+`pipx.__main__`을 독립 required direct-import unit으로 동결한다. 이 target은 설치 후 사용자
+command 기능 attestation이 아니라 검사 대상 runtime loader의 module이다. Optional dependency를
+오류 출력으로 추가하거나 실행 후 coverage를 낮추지 않는다. ZIP의 data resource는 원본 위치를
+유지하며 classifier의 installed destination을 실제 extraction 지시로 사용하지 않는다.
+
+두 번째 검토: 고정 supply의 현재 순수 Python namespace만 받으며 일반 ZIP/namespace/native/
+startup lane은 열지 않는다. 기존 observation unit type을 재사용하되 wheel의 Project/Version
+또는 installation 계획을 재사용하지 않는다. Artifact identity는 다음 intake/composite에서 원본
+HAA release identity로 유지한다. Plan 생성은 실행·외부 Evidence·Policy 완료가 아니다.
+
+B1b metadata 원문 추가 대조에서 argcomplete console2·userpath console1과 platformdirs
+pytest11 plugin1을 확인했다. Entry point가 없다는 가정을 사용하지 않는다. 기존
+`ObservationPlan.importCoverage`의 사전 분류를 재사용해 console/gui-only target은
+POST_INSTALL_COMMAND, 다른 plugin group은 required로 보존한다. 고정 loader module은
+독립 required다. 실제 platformdirs.pytest_plugin의 `import pytest`와 pytest가 없는 현재
+7-wheel 공급을 확인했으나 runtime 실패를 아직 실행 증거로 주장하지 않는다. 오류 기반
+자동 추가나 required 완화는 하지 않으며 실제 검증/명시 prerequisites 책임은 후속으로 남긴다.
+
+B1b 첫 Quick230.844s는 새 synthetic fixture의 WHEEL에 Root-Is-Purelib가 없어서
+정상 case만 거부했다. 기존 toolTestWheel은 이 field를 생략하므로 새 fixture의 exact
+WHEEL override를 RECORD 생성 전에 전달한다. 실제 selected7 WHEEL에는 모두 true가
+있으며 product pure-Python guard를 완화하지 않는다. 첫 source/check 원본은 별도 보존한다.
+
+## B1c — acquired HAA identity와 입력 reader 연결
+
+B1b v2의 focused2.786s/Quick36.493s/PyPI 전체 Race9.334s/actual2.703s/docs/security는
+PASS이며 static plan은7 distribution/9required/3post-install units다. Same ZIP의 fixed Python
+runc 진단은 loader1.208s/기본 platformdirs0.495s exit0, pytest plugin0.600s는 missing pytest
+exit1이다. Raw `p4o4b1b-import-diagnostic`에 argv/image/state/정리·보호5파일/Docker/원본 불변을
+보존했다. GVisor/observer 결과가 아니며 원본 plugin 실패를 required 성공으로 바꾸지 않는다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| selected ZIP snapshot/metadata plan | YES | YES(explicit bytes) | YES(local) | YES(static only) | acquired artifact tuple 연결 |
+| controlled intake reader | YES(other formats) | NO(pipx) | NO(pipx) | NO(pipx) | exact HAA source/name/asset/size/digest + bounded read + immutable tuple |
+| required runtime completion | NO | NO | NO | NO | plugin import 실패 처리 방향, external observer/backend |
+
+`StaticInspector.openAsset`를 재사용하는 private `readPipxRuntimeInput`을 추가한다.
+입력은 원본 domain.AcquiredArtifact와 선택 ZIP의 immutable plan을 함께 보존한다.
+고정 asset `pipx-runtime-linux-amd64.zip`만 받으며 original HAA version/handle을
+pipx version으로 치환하지 않는다. Frozen manifest/version 일치는 기존 ReleaseSetInspector의
+책임으로 유지한다. `io.LimitReader(selected size+1)`로 실제 read를 제한하고 진행률 wrapper는
+bound 권한으로 쓰지 않는다. 길이/hash·context·close 실패는 typed input을 반환하지 않는다.
+
+Dependency review: inspection/githubrelease → artifact/pypi는 original ZIP format/plan parser를
+소비하는 구체 adapter 간 edge이며 runtimeidentity는 selected immutable pin만 읽는다.
+현재 architecture allow map의 이 owner 두 edge만 추가한다. Core/Application·다른 consumer의
+금지 edge는 유지하고 positive/negative 회귀로 scope를 검사한다. 새 service/package·Policy
+예외나 passive inspection 성공 분기는 만들지 않는다. 두 번째 검토에서도 input reader가
+required check/Evidence를 발행하지 않고 후속 composite만 판정을 연결하도록 유지한다.
+
+B1c 첫 Quick34.181s는 새 test의 literal nil Context 호출을 Staticcheck SA1012가
+거부했다. 제품 guard나 lint 설정은 유지하고 잘못된 test 호출만 제거한다. 명시 취소
+Context의 cause 보존 회귀는 그대로 둔다. 최초 source/check 원본을 별도 보존한다.
+
+사용자에게 진행 방향 결정을 요청했다. 현재 고정7-wheel 공급과 필수 plugin 조건은
+유지하며 (1) pytest와 의존성을 명시 runtime 공급으로 추가해 전체 새 pin을 재검증하거나,
+(2) 새 ZIP 범위에 한해 미사용 plugin 관찰 disposition을 별도 승인하거나,
+(3) 현재 공급/규칙을 유지하고 pipx 경로를 차단 상태로 남기는 선택이다.
+응답 전에는 어느 선택도 승인된 것으로 취급하지 않으며 독립 intake 검증만 마무리한다.
+
+사용자가 “권장안대로 진행해”로 (1)을 승인했다. 기존 required coverage를 유지하며
+pytest와 필요한 의존성을 명시적인 고정 runtime 공급에 추가하고 새 전체 bytes를 검증한다.
+검사 중 recursive augmentation이나 plugin coverage 완화는 승인 범위가 아니다.
+B1b/c 최종 [로컬 receipt](./p4o4b1bc-pipx-plan-intake-local-20261027.json)는
+Quick44.492s/관련3 package 전체 Race39.114s/actual0.895s/docs/security PASS와
+원본 HAA identity/handle 보존·읽는 도중 growth/cancel 거부를 연결한다.
+다음 B1d는 새 공급의 publisher/whole RECORD/명시 root graph·namespace·NOTICE·bound와
+기존 selected owner/generator/maintenance/transport 소비자 baseline을 먼저 대조한다.

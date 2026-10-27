@@ -160,9 +160,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/verification/releaseprovenance": true,
 		},
 		modulePath + "/internal/inspection/githubrelease": {
-			modulePath + "/internal/core/domain":    true,
-			modulePath + "/internal/core/ports":     true,
-			modulePath + "/internal/releaseinstall": true,
+			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/core/ports":      true,
+			modulePath + "/internal/releaseinstall":  true,
+			modulePath + "/internal/artifact/pypi":   true,
+			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/verification/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
