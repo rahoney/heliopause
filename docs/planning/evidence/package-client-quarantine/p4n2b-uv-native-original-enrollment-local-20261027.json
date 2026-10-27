@@ -1,0 +1,107 @@
+{
+  "scope": "HELD_NATIVE_UV_ORIGINAL_AND_UNAPPROVED_IN_MEMORY_ENROLLMENT_ONLY; synthetic source ports, no public native/Policy/publication/CLI qualification",
+  "baseline": "3e38f46a0e9eee7794df99ea0a1ac61a2502a798",
+  "implemented": true,
+  "existing_complete_ownership_engine_wired": true,
+  "production_native_tool_update_wired": false,
+  "named_local_qualified": true,
+  "whole_native_adoption_acceptance_closed": false,
+  "supported_recipe": "same existing M1 fixed public wheel-only recipe only; native defaults and local/index overrides remain unsupported",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.62,
+      "source": "/tmp/hpr-bx53162k/source",
+      "explicit_copy_back": [
+        "internal/artifact/pypi/tool_receipt.go",
+        "internal/promotion/pypi_native_ownership.go",
+        "internal/promotion/uv_tool_native_original_linux_test.go"
+      ],
+      "delta": [
+        "docs/planning/02-current-work-queue.md",
+        "docs/planning/evidence/package-client-quarantine/p4n2b-uv-native-original-enrollment-plan-20261027.md",
+        "internal/artifact/pypi/tool_receipt.go",
+        "internal/promotion/pypi_native_ownership.go",
+        "internal/promotion/tool_target.go",
+        "internal/promotion/tool_original.go",
+        "internal/promotion/uv_tool_native_original.go",
+        "internal/promotion/uv_tool_native_original_linux_test.go"
+      ]
+    },
+    "quick": {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 237.517,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    "security": {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.858,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "docs": {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.271,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "full-affected-race": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/promotion",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 171.172,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "25f5d13f1d6eb4279542c4e736ab9060896c363d973456d7df84eea51b2ed34b"
+    }
+  },
+  "reuse_proof": "p4n2b-default-owner-reuse-v1.json",
+  "verified": [
+    "raw receipt bytes remain separate from checked Host metadata projection",
+    "base/target alias chains share one held terminal inode and bytes; no Host Python execution",
+    "real independent intake/hash/installed footprint checks over synthetic old source; cache absence and M2 complete main-command/link census reused",
+    "unsupported recipe/other interpreter/foreign link refused before original lookup",
+    "missing/unowned receipt command, tampered archive/RECORD-consistent script and caches refused; original raw receipt/ledger absence/locks preserved",
+    "default managed path does not adopt; concurrent guard and later base drift refused"
+  ],
+  "missing": [
+    "native backend current full inspection/Evidence/Policy and raw/source proof controls bound to current Manifest",
+    "M3 publication/rollback using native original and absent prior on-disk ledger",
+    "public opt-in/preflight/help and actual public-native originals/negative consumers",
+    "broader native default recipes; pipx and remaining final profiles",
+    "CI415 exact FD cause and next necessary grouped hosted result"
+  ]
+}

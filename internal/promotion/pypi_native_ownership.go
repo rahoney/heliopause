@@ -21,11 +21,12 @@ import (
 )
 
 type pypiNativeEnrollment struct {
-	resolver   ports.DependencyResolver
-	intake     ports.Artifact
-	intakeRoot string
-	runner     DockerRunner
-	client     pypiNativeClient
+	resolver    ports.DependencyResolver
+	intake      ports.Artifact
+	intakeRoot  string
+	runner      DockerRunner
+	client      pypiNativeClient
+	toolScripts *uvNativeToolScriptProof
 }
 
 // WithNativeEnrollment adds only the concrete old-footprint collaborators to an
@@ -124,7 +125,16 @@ func (e *pypiNativeEnrollment) selectOwnershipSubjects(ctx context.Context, subj
 		if err != nil {
 			return selection, err
 		}
-		destinations, files, err := proveNativePythonWheelFootprint(e.client, project, wheel, digest, loadRuntime)
+		var destinations []pypiDestination
+		var files []pypiNativeProofFile
+		if e.toolScripts != nil {
+			if e.client != nativeUVClient || e.toolScripts.tx == nil || e.toolScripts.tx.plan.root != install.Target().String() {
+				return selection, errors.New("native UV tool source proof differs from its held target")
+			}
+			destinations, files, err = e.toolScripts.prove(ctx, project, wheel, digest)
+		} else {
+			destinations, files, err = proveNativePythonWheelFootprint(e.client, project, wheel, digest, loadRuntime)
+		}
 		if err != nil {
 			return selection, err
 		}

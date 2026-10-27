@@ -129,6 +129,10 @@ func beginToolFreshTarget(ctx context.Context, install domain.InstallContext, re
 }
 
 func beginToolTarget(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool) (result *toolFreshTarget, resultErr error) {
+	return beginToolTargetWithNative(ctx, install, requirement, binRoot, trustedRoots, original, nil)
+}
+
+func beginToolTargetWithNative(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool, native *pypiNativeEnrollment) (result *toolFreshTarget, resultErr error) {
 	if ctx == nil || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || !install.Valid() || install.Mode() != domain.InstallPythonVenv || requirement.Project() == "" || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() || len(trustedRoots) == 0 {
 		return nil, errors.New("tool target requires explicit Linux amd64 venv, requirement and trusted storage")
 	}
@@ -189,7 +193,11 @@ func beginToolTarget(ctx context.Context, install domain.InstallContext, require
 	}
 	receipt := filepath.Join(root, uvToolHostReceipt)
 	if original {
-		result.original, err = captureToolOriginal(ctx, result, receipt)
+		if native != nil {
+			result.original, err = captureUVToolNativeOriginal(ctx, result, receipt, install, native)
+		} else {
+			result.original, err = captureToolOriginal(ctx, result, receipt)
+		}
 		if err != nil {
 			return nil, err
 		}

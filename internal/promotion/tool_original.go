@@ -1,6 +1,7 @@
 package promotion
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -13,15 +14,16 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
-// This is a held managed original, never receipt-only native adoption. The
-// original code remains on the Host as inert guarded data and is not transported
-// or executed. Current new-set inspection and complete publication are separate.
+// This is a held managed or independently authenticated native original. A raw
+// receipt never grants ownership. Original code remains guarded Host DATA and
+// is not transported or executed; current approval/publication stay separate.
 type toolOriginalState struct {
 	input     artifactpypi.UVToolUpgradeInput
 	metadata  pypiInstalledSnapshot
 	links     []toolPublishedLink
 	selected  artifactpypi.ToolReceipt
 	committed bool
+	native    *uvToolNativeOriginalProof
 }
 
 func beginToolOriginalTarget(ctx context.Context, install domain.InstallContext, request artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string) (*toolFreshTarget, error) {
@@ -29,17 +31,36 @@ func beginToolOriginalTarget(ctx context.Context, install domain.InstallContext,
 }
 
 func captureToolOriginal(ctx context.Context, g *toolFreshTarget, receiptPath string) (*toolOriginalState, error) {
+	return captureToolOriginalWithProjection(ctx, g, receiptPath, nil)
+}
+
+func readToolOriginalReceipt(receiptPath string) (artifactpypi.ToolReceipt, pypiFileSnapshot, error) {
 	before, err := snapshotBoundedPromotionFile(receiptPath, 4<<20)
 	if err != nil || before.Mode.Perm()&0022 != 0 {
-		return nil, errors.New("original tool requires a regular private native receipt")
+		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, errors.New("original tool requires a regular private native receipt")
 	}
 	body, err := readBoundedPromotionFile(receiptPath, 4<<20)
 	if err != nil || !before.matches(receiptPath) {
-		return nil, errors.New("original tool receipt changed")
+		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, errors.New("original tool receipt changed")
 	}
 	receipt, err := artifactpypi.ParseUVToolReceipt(body)
 	if err != nil {
+		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, err
+	}
+	return receipt, before, nil
+}
+
+func captureToolOriginalWithProjection(ctx context.Context, g *toolFreshTarget, receiptPath string, projection *artifactpypi.ToolReceipt) (*toolOriginalState, error) {
+	receipt, before, err := readToolOriginalReceipt(receiptPath)
+	if err != nil {
 		return nil, err
+	}
+	if projection != nil {
+		expected, err := receipt.WithUVLayout(g.tx.plan.root, g.binRoot)
+		if err != nil || !bytes.Equal(expected.Body(), projection.Body()) {
+			return nil, errors.New("native tool original projection changed its raw receipt semantics")
+		}
+		receipt = *projection
 	}
 	if err := receipt.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin/python")); err != nil {
 		return nil, err
@@ -151,6 +172,11 @@ func (s *toolOriginalState) verify(ctx context.Context, g *toolFreshTarget) erro
 	}
 	if err := s.metadata.verify(ctx, g.tx); err != nil {
 		return err
+	}
+	if s.native != nil {
+		if err := s.native.verify(ctx, g); err != nil {
+			return err
+		}
 	}
 	return s.verifyLinks(g)
 }

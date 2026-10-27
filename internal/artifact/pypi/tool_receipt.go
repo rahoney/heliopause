@@ -30,8 +30,12 @@ func (r ToolReceipt) Valid() bool                     { return r.client != "" }
 func (r ToolReceipt) Client() string                  { return r.client }
 func (r ToolReceipt) Requirement() UpgradeRequirement { return r.requirement }
 func (r ToolReceipt) Version() string                 { return r.version }
-func (r ToolReceipt) Commands() []ToolCommand         { return append([]ToolCommand(nil), r.commands...) }
-func (r ToolReceipt) Body() []byte                    { return bytes.Clone(r.body) }
+
+// InterpreterPath is an unapproved metadata claim; callers must bind a held
+// alias/file snapshot independently and must never execute this path as input.
+func (r ToolReceipt) InterpreterPath() string { return r.interpreter }
+func (r ToolReceipt) Commands() []ToolCommand { return append([]ToolCommand(nil), r.commands...) }
+func (r ToolReceipt) Body() []byte            { return bytes.Clone(r.body) }
 
 // UpgradeRequirement preserves the actual client semantics: UV retains its
 // receipt constraint; pipx 1.18.4 explicitly removes version constraints.

@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-N2A declared native UV console-script footprint helper named local QUALIFIED; default pip/UV refusal and existing interpreter verifier reused; ownership enrollment/public adoption remain
-Next action: M13-004 — N2B raw native tool receipt/base-interpreter/link guard and complete authenticated old-wheel enrollment; reuse existing controlled layout projection; CI415 cause OPEN; next needed CI status timer10min
-Current substep: M13-004/P4-N2B native tool original enrollment; N2A helper locally qualified only; current native approval/public opt-in/pipx/final profiles remain
+Last completed substep: P4-N2B native receipt/base-interpreter/link guard plus existing complete original enrollment named local QUALIFIED; raw and projected receipts separate; only in-memory ownership, no native current approval/publication yet
+Next action: M13-004 — N2C native tool update service/current Manifest raw+source controls and existing M3 atomic publication/rollback; then explicit CLI and actual public-native consumers; CI415 cause OPEN and next required CI timer10min
+Current substep: M13-004/P4-N2C native tool current approval/publication; N2A/B helpers locally qualified only; public opt-in/pipx/default native recipes/final profiles remain
 Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
