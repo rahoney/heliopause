@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 func TestPipxSystemDataInDisposableNamespace(t *testing.T) {
@@ -71,6 +72,23 @@ func TestPipxSystemDataInDisposableNamespace(t *testing.T) {
 	}
 	if err := os.WriteFile(manifestPath, raw, 0600); err != nil {
 		t.Fatal(err)
+	}
+	sbom, err := os.ReadFile(filepath.Join(bundle, sbomName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	images, err := os.ReadFile(filepath.Join(bundle, runtimeImagesName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	materials, err := releasefixture.BindCurrentRuntime(raw, sbom, images)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string][]byte{manifestName: materials.Manifest, sbomName: materials.SBOM, runtimeImagesName: materials.Images} {
+		if err := os.WriteFile(filepath.Join(bundle, name), body, 0600); err != nil {
+			t.Fatal(err)
+		}
 	}
 	installer, err := NewSystemInstaller(allowVerifier{})
 	if err != nil {

@@ -40,6 +40,8 @@ func fixture(t *testing.T) packageFixture {
 	inputs[filepath.Join(f.assets, "pnpm-NOTICE.txt")] = "pnpm-notices-payload"
 	inputs[filepath.Join(f.assets, "bun-linux-amd64")] = "bun-native-payload"
 	inputs[filepath.Join(f.assets, "bun-NOTICE.txt")] = "bun-notices-payload"
+	inputs[filepath.Join(f.assets, "pipx-runtime-linux-amd64.zip")] = "pipx-data-payload"
+	inputs[filepath.Join(f.assets, "pipx-NOTICE.txt")] = "pipx-notices-payload"
 	for p, b := range inputs {
 		if err := os.WriteFile(p, []byte(b), 0o600); err != nil {
 			t.Fatal(err)
@@ -85,7 +87,7 @@ func TestPackagesContainBoundedPayloadAndAreReproducible(t *testing.T) {
 		for _, want := range []struct {
 			name, body string
 			mode       int64
-		}{{"helox", "cli-native-payload", 0o555}, {"haa_gvisor_observer", "observer-native-payload", 0o555}, {"haa-network-policy-helper", "policy-native-payload", 0o500}, {"haa-release-installer", "installer-native-payload", 0o500}, {"pnpm", "pnpm-native-payload", 0o555}, {"pnpm-NOTICE.txt", "pnpm-notices-payload", 0o444}, {"bun", "bun-native-payload", 0o555}, {"bun-NOTICE.txt", "bun-notices-payload", 0o444}} {
+		}{{"helox", "cli-native-payload", 0o555}, {"haa_gvisor_observer", "observer-native-payload", 0o555}, {"haa-network-policy-helper", "policy-native-payload", 0o500}, {"haa-release-installer", "installer-native-payload", 0o500}, {"pnpm", "pnpm-native-payload", 0o555}, {"pnpm-NOTICE.txt", "pnpm-notices-payload", 0o444}, {"bun", "bun-native-payload", 0o555}, {"bun-NOTICE.txt", "bun-notices-payload", 0o444}, {"pipx-runtime-linux-amd64.zip", "pipx-data-payload", 0o444}, {"pipx-NOTICE.txt", "pipx-notices-payload", 0o444}} {
 			m, ok := members[root+want.name]
 			if !ok || string(m.body) != want.body || m.mode&0o7777 != want.mode || m.owner != "root" || m.group != "root" || m.mtime != testEpoch {
 				t.Fatalf("%s payload %s = %#v", format, want.name, m)

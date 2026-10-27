@@ -65,6 +65,9 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 	}
 	seen := map[string]bool{}
 	applications := map[string]string{"pnpm": runtimeidentity.PNPMVersion, "bun": runtimeidentity.BunVersion}
+	if manifest.HasPipxRuntime() {
+		applications["pipx"] = runtimeidentity.PipxVersion
+	}
 	for _, item := range value.Components {
 		if version, found := applications[item.Name]; found {
 			if item.Type != "application" || item.Version != version || len(item.Properties) != 0 || seen[item.Name] {
@@ -87,7 +90,23 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 
 // ValidateRuntimeImages compares the fixed passive runtime image records to
 // the running controller's lock. Artifact metadata never selects host tools.
-func ValidateRuntimeImages(body []byte) error {
+func ValidateRuntimeImages(body []byte) error { return validateRuntimeImages(body, nil) }
+
+// ValidateRuntimeImagesForRelease binds legacy/v3 metadata to the exact DATA
+// membership. Metadata never selects a runtime or bypasses acquired inspection.
+func ValidateRuntimeImagesForRelease(body []byte, manifest ReleaseManifest) error {
+	expected := manifest.HasPipxRuntime()
+	if expected {
+		for _, file := range manifest.Files() {
+			if file.IsRuntimeData() && (file.SHA256 != runtimeidentity.PipxToolSHA256 || file.Size != runtimeidentity.PipxToolSize) || file.Name == "pipx-NOTICE.txt" && (file.SHA256 != runtimeidentity.PipxNoticesSHA256 || file.Size != runtimeidentity.PipxNoticesSize) {
+				return errors.New("release pipx DATA differs from current runtime owner")
+			}
+		}
+	}
+	return validateRuntimeImages(body, &expected)
+}
+
+func validateRuntimeImages(body []byte, expectedData *bool) error {
 	type image struct {
 		Name       string `json:"name"`
 		Reference  string `json:"reference"`
@@ -96,6 +115,9 @@ func ValidateRuntimeImages(body []byte) error {
 		Version    string `json:"runtime_version"`
 	}
 	type nativeTool struct {
+		Role          string `json:"role,omitempty"`
+		Mode          string `json:"mode,omitempty"`
+		RuntimeImage  string `json:"runtime_image,omitempty"`
 		Name          string `json:"name"`
 		Version       string `json:"tool_version"`
 		Platform      string `json:"platform"`
@@ -120,7 +142,15 @@ func ValidateRuntimeImages(body []byte) error {
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
 	}
-	if value.Schema != "helox.runtime-image-manifest/v2" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 || len(value.Tools) != 2 {
+	hasData := value.Schema == "helox.runtime-image-manifest/v3"
+	toolCount := 2
+	if hasData {
+		toolCount = 3
+	}
+	if expectedData != nil && *expectedData != hasData {
+		return errors.New("runtime metadata and release DATA membership differ")
+	}
+	if (value.Schema != "helox.runtime-image-manifest/v2" && !hasData) || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 || len(value.Tools) != toolCount {
 		return errors.New("runtime image manifest contract is unsupported")
 	}
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
@@ -145,6 +175,9 @@ func ValidateRuntimeImages(body []byte) error {
 	expectedTools := map[string]nativeTool{
 		"pnpm": {Name: "pnpm", Version: runtimeidentity.PNPMVersion, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: runtimeidentity.PNPMToolSHA256, Size: runtimeidentity.PNPMToolSize, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: runtimeidentity.PNPMNoticesSHA256, NoticesSize: runtimeidentity.PNPMNoticesSize},
 		"bun":  {Name: "bun", Version: runtimeidentity.BunVersion, Platform: "linux/amd64", Asset: runtimeidentity.BunNativeAssetName, SHA256: runtimeidentity.BunToolSHA256, Size: runtimeidentity.BunToolSize, NoticesAsset: "bun-NOTICE.txt", NoticesSHA256: runtimeidentity.BunNoticesSHA256, NoticesSize: runtimeidentity.BunNoticesSize},
+	}
+	if hasData {
+		expectedTools["pipx"] = nativeTool{Name: "pipx", Version: runtimeidentity.PipxVersion, Platform: "linux/amd64", Asset: runtimeidentity.PipxRuntimeAssetName, SHA256: runtimeidentity.PipxToolSHA256, Size: runtimeidentity.PipxToolSize, NoticesAsset: "pipx-NOTICE.txt", NoticesSHA256: runtimeidentity.PipxNoticesSHA256, NoticesSize: runtimeidentity.PipxNoticesSize, Role: "pipx-runtime", Mode: "0444", RuntimeImage: runtimeidentity.PythonImageReference}
 	}
 	for _, tool := range value.Tools {
 		want, found := expectedTools[tool.Name]

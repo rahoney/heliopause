@@ -223,7 +223,7 @@ func prepare(ctx context.Context, version string, deps preparationDependencies) 
 	if err != nil {
 		return fail(ports.BootstrapExportFailed, err)
 	}
-	if err := releaseinstall.ValidateRuntimeImages(images); err != nil {
+	if err := releaseinstall.ValidateRuntimeImagesForRelease(images, manifest); err != nil {
 		return fail(ports.BootstrapProvenanceFailed, err)
 	}
 	notices, err := output.read("pnpm-NOTICE.txt", 64<<10)

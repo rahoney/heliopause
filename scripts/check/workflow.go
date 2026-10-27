@@ -361,6 +361,7 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 	})...)
 	findings = append(findings, validatePNPMReleaseSupply(contents)...)
 	findings = append(findings, validateBunReleaseSupply(contents)...)
+	findings = append(findings, validatePipxReleaseSupply(contents)...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",
@@ -758,6 +759,20 @@ func validateBunReleaseSupply(contents string) []string {
 		`go run ./scripts/release-manifest \`,
 		`--asset "$dist/bun-linux-amd64" \`,
 		`--asset "$dist/bun-NOTICE.txt" \`,
+	})
+}
+
+func validatePipxReleaseSupply(contents string) []string {
+	return validateOrderedNativeReleaseSupply(contents, "pipx", []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`pipx_input="$RUNNER_TEMP/helox-pipx-supply"`,
+		`go run ./scripts/update-runtime fetch-pipx-supply --root "$GITHUB_WORKSPACE" --output "$pipx_input"`,
+		`go run ./scripts/update-runtime materialize-pipx --root "$GITHUB_WORKSPACE" --input "$pipx_input" --output "$dist/pipx-runtime-linux-amd64.zip" --notices-output "$dist/pipx-NOTICE.txt"`,
+		`go run ./scripts/runtime-image-manifest \`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/pipx-runtime-linux-amd64.zip" \`,
+		`--asset "$dist/pipx-NOTICE.txt" \`,
 	})
 }
 

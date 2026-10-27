@@ -109,7 +109,7 @@ func stageCheckedWire(ctx context.Context, reader io.Reader, peer *controllerPee
 	if err != nil {
 		return nil, err
 	}
-	if err := releaseinstall.ValidateRuntimeImages(images); err != nil {
+	if err := releaseinstall.ValidateRuntimeImagesForRelease(images, release.manifest); err != nil {
 		return nil, errors.Join(ErrProtocol, err)
 	}
 	notices, err := readProtected(ctx, filepath.Join(directory, "pnpm-NOTICE.txt"), 64<<10)

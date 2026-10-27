@@ -13,6 +13,7 @@ func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	bindSyntheticUV(&lock)
 	bindSyntheticPNPM(&lock)
 	bindSyntheticBun(&lock)
+	bindSyntheticPipx(&lock)
 	lock.RustImage.Reference = "rust:1.99.0-bookworm@sha256:" + strings.Repeat("d", 64)
 	lock.RustImage.RustVersion = "1.99.0"
 	lock.RustImage.Architecture = "amd64"
@@ -52,6 +53,7 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	bindSyntheticUV(&input)
 	bindSyntheticPNPM(&input)
 	bindSyntheticBun(&input)
+	bindSyntheticPipx(&input)
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -76,6 +78,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	bindSyntheticUV(&input)
 	bindSyntheticPNPM(&input)
 	bindSyntheticBun(&input)
+	bindSyntheticPipx(&input)
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -223,7 +226,7 @@ func TestManifestRequiresSeparateBoundedPNPMTool(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(manifest.Images) != 5 || len(manifest.Tools) != 2 || manifest.Tools[0].Name != "pnpm" || manifest.Tools[0].SHA256 != pinned.PNPMTool.Tool.SHA256 {
+	if len(manifest.Images) != 5 || len(manifest.Tools) != 3 || manifest.Tools[0].Name != "pnpm" || manifest.Tools[0].SHA256 != pinned.PNPMTool.Tool.SHA256 {
 		t.Fatalf("native tool/image identity mixed: %+v", manifest)
 	}
 	for name, mutate := range map[string]func(*runtimeLock){
@@ -264,7 +267,7 @@ func TestManifestRequiresSeparateBoundedBunTool(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(manifest.Images) != 5 || len(manifest.Tools) != 2 || manifest.Tools[1].Name != "bun" || manifest.Tools[1].SHA256 != pinned.BunTool.Tool.SHA256 {
+	if len(manifest.Images) != 5 || len(manifest.Tools) != 3 || manifest.Tools[1].Name != "bun" || manifest.Tools[1].SHA256 != pinned.BunTool.Tool.SHA256 {
 		t.Fatalf("native tool/image identity mixed: %+v", manifest)
 	}
 	for name, mutate := range map[string]func(*runtimeLock){
@@ -280,5 +283,48 @@ func TestManifestRequiresSeparateBoundedBunTool(t *testing.T) {
 				t.Fatal("unbound native tool accepted")
 			}
 		})
+	}
+}
+
+func bindSyntheticPipx(lock *runtimeLock) {
+	lock.PipxTool.Version = "1.2.3"
+	lock.PipxTool.Architecture = "amd64"
+	lock.PipxTool.RuntimeImage = "python_image"
+	lock.PipxTool.Tool.SHA256 = strings.Repeat("f", 64)
+	lock.PipxTool.Tool.Size = 1024
+	lock.PipxTool.Notices.SHA256 = strings.Repeat("e", 64)
+	lock.PipxTool.Notices.Size = 1024
+}
+
+func TestManifestRequiresExplicitPipxDataRoleAndPythonBinding(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pinned runtimeLock
+	if err := json.Unmarshal(body, &pinned); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := buildManifest(pinned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data := manifest.Tools[2]
+	if manifest.Schema != "helox.runtime-image-manifest/v3" || len(manifest.Tools) != 3 || data.Name != "pipx" || data.Role != "pipx-runtime" || data.Mode != "0444" || data.RuntimeImage != pinned.PythonImage.Reference || data.Asset != "pipx-runtime-linux-amd64.zip" || data.SHA256 != pinned.PipxTool.Tool.SHA256 {
+		t.Fatal("pipx DATA became executable or lost owner binding")
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"missing":      func(l *runtimeLock) { l.PipxTool.Version = "" },
+		"architecture": func(l *runtimeLock) { l.PipxTool.Architecture = "arm64" },
+		"runtime":      func(l *runtimeLock) { l.PipxTool.RuntimeImage = "node_image" },
+		"hash":         func(l *runtimeLock) { l.PipxTool.Tool.SHA256 = "" },
+		"size":         func(l *runtimeLock) { l.PipxTool.Tool.Size = 8<<20 + 1 },
+		"notices":      func(l *runtimeLock) { l.PipxTool.Notices.Size = 64<<10 + 1 },
+	} {
+		candidate := pinned
+		mutate(&candidate)
+		if _, err := buildManifest(candidate); err == nil {
+			t.Fatal("invalid pipx DATA owner accepted", name)
+		}
 	}
 }

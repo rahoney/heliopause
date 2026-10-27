@@ -58,15 +58,8 @@ func freezePipxSupply(version, input, state string) (metadata, error) {
 			}
 			dirs[parent] = true
 		}
-		f, err := os.OpenFile(filepath.Join(directory, fact.Path), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
-		if err != nil {
+		if err := writePipxFrozenInput(filepath.Join(directory, fact.Path), data); err != nil {
 			return metadata{}, err
-		}
-		n, writeErr := f.Write(data)
-		syncErr := f.Sync()
-		closeErr := f.Close()
-		if n != len(data) || writeErr != nil || syncErr != nil || closeErr != nil {
-			return metadata{}, errors.Join(errors.New("pipx frozen write incomplete"), writeErr, syncErr, closeErr)
 		}
 		if !strings.HasSuffix(fact.Path, ".whl") {
 			documents = append(documents, pipxFrozenDocument{fact.Path, data})
@@ -144,6 +137,20 @@ func verifyFrozenPipxSupply(version string, m metadata, state string) error {
 	expected := metadata{Architecture: "amd64", Pipx: &pipxSupplyMetadata{u.Owner, documents, notices}}
 	if !reflect.DeepEqual(m, expected) {
 		return errors.New("pipx frozen plan metadata differs from supply")
+	}
+	return nil
+}
+
+func writePipxFrozenInput(name string, data []byte) error {
+	f, err := os.OpenFile(name, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	n, writeErr := f.Write(data)
+	syncErr := f.Sync()
+	closeErr := f.Close()
+	if n != len(data) || writeErr != nil || syncErr != nil || closeErr != nil {
+		return errors.Join(errors.New("pipx frozen write incomplete"), writeErr, syncErr, closeErr)
 	}
 	return nil
 }

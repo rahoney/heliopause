@@ -68,6 +68,9 @@ jobs:
           curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_archive" "$bun_url"
           go run ./scripts/update-runtime materialize-bun --root "$GITHUB_WORKSPACE" --archive "$bun_archive" --output "$dist/bun-linux-amd64" --notices-output "$dist/bun-NOTICE.txt"
           rm -- "$bun_archive"
+          pipx_input="$RUNNER_TEMP/helox-pipx-supply"
+          go run ./scripts/update-runtime fetch-pipx-supply --root "$GITHUB_WORKSPACE" --output "$pipx_input"
+          go run ./scripts/update-runtime materialize-pipx --root "$GITHUB_WORKSPACE" --input "$pipx_input" --output "$dist/pipx-runtime-linux-amd64.zip" --notices-output "$dist/pipx-NOTICE.txt"
           go run ./scripts/runtime-image-manifest \
             --runtime-lock scripts/runtimes.lock.json \
             --output "$dist/helox-runtime-images.json"
@@ -106,6 +109,8 @@ jobs:
             --asset "$dist/pnpm-NOTICE.txt" \
             --asset "$dist/bun-linux-amd64" \
             --asset "$dist/bun-NOTICE.txt" \
+            --asset "$dist/pipx-runtime-linux-amd64.zip" \
+            --asset "$dist/pipx-NOTICE.txt" \
             --asset "$dist/helox-linux-amd64.deb" \
             --asset "$dist/helox-linux-amd64.rpm"
       - name: Attest release candidate provenance

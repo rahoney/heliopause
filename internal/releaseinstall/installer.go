@@ -223,7 +223,7 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if err != nil {
 			return installationInput{}, err
 		}
-		if err := ValidateRuntimeImages(images); err != nil {
+		if err := ValidateRuntimeImagesForRelease(images, strict); err != nil {
 			return installationInput{}, err
 		}
 		notices, err := readRegular(filepath.Join(bundle, "pnpm-NOTICE.txt"))

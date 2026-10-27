@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const manifestSchema = "helox.runtime-image-manifest/v2"
+const manifestSchema = "helox.runtime-image-manifest/v3"
 
 var (
 	digestPattern        = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
@@ -21,6 +21,20 @@ var (
 )
 
 type runtimeLock struct {
+	PipxTool struct {
+		Version      string `json:"pipx_version"`
+		Architecture string `json:"architecture"`
+		RuntimeImage string `json:"runtime_image"`
+		Tool         struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pipx_tool"`
+
 	SchemaVersion int `json:"schema_version"`
 	GoImage       struct {
 		Reference    string `json:"reference"`
@@ -83,6 +97,9 @@ type runtimeImageManifest struct {
 }
 
 type runtimeToolEntry struct {
+	Role          string `json:"role,omitempty"`
+	Mode          string `json:"mode,omitempty"`
+	RuntimeImage  string `json:"runtime_image,omitempty"`
 	Name          string `json:"name"`
 	Version       string `json:"tool_version"`
 	Platform      string `json:"platform"`
@@ -203,6 +220,10 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if !versionPattern.MatchString(bun.Version) || bun.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+bun.Tool.SHA256) || bun.Tool.Size <= 0 || bun.Tool.Size > 128<<20 || !digestPattern.MatchString("sha256:"+bun.Notices.SHA256) || bun.Notices.Size <= 0 || bun.Notices.Size > 64<<10 {
 		return runtimeImageManifest{}, errors.New("bun native runtime tool identity is invalid")
 	}
+	pipx := lock.PipxTool
+	if !versionPattern.MatchString(pipx.Version) || pipx.Architecture != "amd64" || pipx.RuntimeImage != "python_image" || !digestPattern.MatchString("sha256:"+pipx.Tool.SHA256) || pipx.Tool.Size <= 0 || pipx.Tool.Size > 8<<20 || !digestPattern.MatchString("sha256:"+pipx.Notices.SHA256) || pipx.Notices.Size <= 0 || pipx.Notices.Size > 64<<10 {
+		return runtimeImageManifest{}, errors.New("pipx DATA runtime tool identity is invalid")
+	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
@@ -212,7 +233,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
 		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
-		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}, {Name: "bun", Version: bun.Version, Platform: "linux/amd64", Asset: "bun-linux-amd64", SHA256: bun.Tool.SHA256, Size: bun.Tool.Size, NoticesAsset: "bun-NOTICE.txt", NoticesSHA256: bun.Notices.SHA256, NoticesSize: bun.Notices.Size}},
+		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}, {Name: "bun", Version: bun.Version, Platform: "linux/amd64", Asset: "bun-linux-amd64", SHA256: bun.Tool.SHA256, Size: bun.Tool.Size, NoticesAsset: "bun-NOTICE.txt", NoticesSHA256: bun.Notices.SHA256, NoticesSize: bun.Notices.Size}, {Name: "pipx", Version: pipx.Version, Platform: "linux/amd64", Asset: "pipx-runtime-linux-amd64.zip", SHA256: pipx.Tool.SHA256, Size: pipx.Tool.Size, NoticesAsset: "pipx-NOTICE.txt", NoticesSHA256: pipx.Notices.SHA256, NoticesSize: pipx.Notices.Size, Role: "pipx-runtime", Mode: "0444", RuntimeImage: python.Reference}},
 	}, nil
 }
 

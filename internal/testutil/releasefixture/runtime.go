@@ -54,7 +54,18 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	if !ok {
 		return Materials{}, errors.New("synthetic SBOM components missing")
 	}
-	s["components"] = append(components, map[string]any{"type": "application", "name": "pnpm", "version": runtimeidentity.PNPMVersion}, map[string]any{"type": "application", "name": "bun", "version": runtimeidentity.BunVersion})
+	kept := make([]any, 0, len(components))
+	for _, raw := range components {
+		item, ok := raw.(map[string]any)
+		if !ok {
+			return Materials{}, errors.New("synthetic SBOM component invalid")
+		}
+		name, _ := item["name"].(string)
+		if name != "pnpm" && name != "bun" && name != "pipx" {
+			kept = append(kept, raw)
+		}
+	}
+	s["components"] = append(kept, map[string]any{"type": "application", "name": "pnpm", "version": runtimeidentity.PNPMVersion}, map[string]any{"type": "application", "name": "bun", "version": runtimeidentity.BunVersion})
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
 	identities := map[string]struct{ reference, repository, version string }{
 		"node":   {runtimeidentity.NodeImageReference, "docker.io/library/node", nodeVersion},
@@ -63,15 +74,25 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 		"rust":   {runtimeidentity.RustImageReference, "docker.io/library/rust", runtimeidentity.RustVersion},
 	}
 	entries, ok := im["images"].([]any)
-	if !ok || len(entries) != len(identities) {
+	if !ok || (len(entries) != len(identities) && len(entries) != len(identities)+1) {
 		return Materials{}, errors.New("synthetic image inventory mismatch")
 	}
+	rebased := make([]any, 0, 4)
+	uvSeen := false
 	for _, raw := range entries {
 		item, ok := raw.(map[string]any)
 		if !ok {
 			return Materials{}, errors.New("synthetic image entry invalid")
 		}
 		name, _ := item["name"].(string)
+		if name == "uv" {
+			if uvSeen {
+				return Materials{}, errors.New("duplicate synthetic UV image")
+			}
+			uvSeen = true
+			continue
+		}
+		rebased = append(rebased, raw)
 		identity, found := identities[name]
 		if !found {
 			return Materials{}, errors.New("synthetic image identity ambiguous")
@@ -80,10 +101,26 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 		item["reference"], item["repository"], item["digest"], item["runtime_version"] = identity.reference, identity.repository, digest, identity.version
 		delete(identities, name)
 	}
+	if len(identities) != 0 {
+		return Materials{}, errors.New("synthetic image inventory incomplete")
+	}
 	_, uvDigest, _ := strings.Cut(runtimeidentity.UVImageReference, "@")
-	im["images"] = append(entries, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
+	im["images"] = append(rebased, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
 	im["schema"] = "helox.runtime-image-manifest/v2"
 	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}, map[string]any{"name": "bun", "tool_version": runtimeidentity.BunVersion, "platform": "linux/amd64", "asset": runtimeidentity.BunNativeAssetName, "sha256": runtimeidentity.BunToolSHA256, "size": runtimeidentity.BunToolSize, "notices_asset": "bun-NOTICE.txt", "notices_sha256": runtimeidentity.BunNoticesSHA256, "notices_size": runtimeidentity.BunNoticesSize}}
+	hasData := false
+	if assets, ok := m["assets"].([]any); ok {
+		for _, raw := range assets {
+			if item, ok := raw.(map[string]any); ok && item["name"] == runtimeidentity.PipxRuntimeAssetName {
+				hasData = true
+			}
+		}
+	}
+	if hasData {
+		s["components"] = append(s["components"].([]any), map[string]any{"type": "application", "name": "pipx", "version": runtimeidentity.PipxVersion})
+		im["schema"] = "helox.runtime-image-manifest/v3"
+		im["tools"] = append(im["tools"].([]any), map[string]any{"name": "pipx", "tool_version": runtimeidentity.PipxVersion, "platform": "linux/amd64", "asset": runtimeidentity.PipxRuntimeAssetName, "sha256": runtimeidentity.PipxToolSHA256, "size": runtimeidentity.PipxToolSize, "notices_asset": "pipx-NOTICE.txt", "notices_sha256": runtimeidentity.PipxNoticesSHA256, "notices_size": runtimeidentity.PipxNoticesSize, "role": "pipx-runtime", "mode": "0444", "runtime_image": runtimeidentity.PythonImageReference})
+	}
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}
 	var err error

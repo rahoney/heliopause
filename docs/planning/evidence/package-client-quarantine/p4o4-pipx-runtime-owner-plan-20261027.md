@@ -640,3 +640,76 @@ strict pair/role/platform/bounds, DATA의 native fallback 부재와 unsigned wir
 root single-link0444·bytes/Host/Docker 불변/noSKIP이다. 서명·artifact 실행·full release 성공이
 아니다. Producer/metadata·실제 complete graph current Evidence/Policy와 root DATA 복구·native
 pipx/CLI 및 hosted/final profiles는 남는다. 다음 B3b를 로컬에서 계속하며 e859487 push는 승인 대기다.
+
+## B3b — producer/metadata/같은 build set의 source 전 세부 지도
+
+기준3eab830/tree254e9d11/2795다. B3a의 parser/selector·graph/wire/protected mode는 named local
+검증했고 새15-asset producer와 실제 complete current inspection/복구는 아직 없다.
+E859487 checkpoint의 push는 승인 대기이며 재시도하지 않는다.
+
+| 기존 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| selected42-input offline materializer/NOTICE | YES | YES(developer) | YES(named local) | YES(materializer scope) | release/CI의 같은 입력 준비·호출 |
+| frozen official download·size/hash 검증 | YES(SDK downloader) | NO(pipx inputs) | NO(pipx fetch) | NO | 기존 downloader와 owner/metadata를 재사용하는 고정 wheel 취득 |
+| runtime-image manifest/strict passive validator | YES(v2/2 tools) | NO(pipx DATA) | NO(pipx record) | NO | 명시 v3·DATA role/mode/Python binding, legacy v2 pair 경계 |
+| release assets/SBOM/size-hash binding | YES(13 assets) | NO(pipx pair) | NO(pipx producer) | NO |15assets와11 distribution inventory·same selected owner |
+| package payload/build/attest/bundle/publish | YES | YES(existing) | YES(existing scopes) | YES(existing scopes) | same ZIP/NOTICE/manifest 집합의 생성/복사/검증 |
+| pipeline graph/current inspection | YES(B2/B3a) | YES(selected adapter) | YES(named boundaries) | NO(complete actual) | actual selected ZIP의 전체 graph/current Evidence·Policy와 root 복구 |
+
+### 수정 범위와 재사용
+
+1. `scripts/update-runtime`에 현재 release/CI 준비용 `fetch-pipx-supply`만 둔다. 현재 source
+   owner의42개 path/hash와 canonical31 metadata/proof bytes를 먼저 확인한다. Frozen metadata에서
+   exact filename/size/hash·HTTPS files.pythonhosted.org URL을 고르고 기존 bounded downloader를
+   사용한다. Redirect 예외·ambient proxy/credential·live version resolve를 만들지 않는다.
+   새 외부 private directory에만 input을 보관하고42개 bytes/hash 확인 뒤 입력 준비 scope를
+   출력한다. Wheel/code는 실행·추출하지 않는다. 제공9proof와 두 NOT_PROVIDED를 그대로
+   보존하고 기존 materialize-pipx가 whole wheel/proof/closure/ZIP/NOTICE를 다시 검증한다.
+2. Runtime image manifest는 명시 v3으로 확장한다. 기존5images·PNPM/Bun records는 보존하고
+   pipx record에 fixed DATA role, mode0444, pinned Python image와 ZIP/NOTICE identity를 둔다.
+   기존 validator를 재사용하는 release-bound entry가 manifest의 DATA pair와 v2/v3·selected
+   identity를 함께 검사한다. Legacy pair 부재의 v2는 유지하며 새 pair가 있는 release가
+   old metadata로 완료되거나 반대 상태가 되는 것은 거부한다. Metadata가 runtime/tool을
+   선택하거나 Host authority를 만드는 흐름은 없다.
+3. 기존 release producer는 fixed15assets를 요구하고 ZIP/NOTICE의 size/hash를 같은 runtime
+   owner에 묶는다. SBOM은 기존 Go/native 목록에 pipx와 selected input의11 distribution
+   census를 연결한다. Wheel filename은 source-owner inventory metadata로만 파싱하며 signature/
+   safety authority가 아니다. 실제 whole wheel 의미는 materializer와 B2 inspector가 소유한다.
+   Actual ZIP의 원본 plan census와 producer SBOM을 별도 대조한다. 새 version owner나
+   임의 최신 dependency 목록을 만들지 않는다.
+4. OS package에는 같은 ZIP과 NOTICE를0444 DATA로 추가한다. 기존 본체/helper modes와
+   package lifecycle·network download 금지·native 관리 설치 자동 등록 금지를 유지한다.
+5. Build workflow는 frozen fetch→기존 offline materialize→package/manifest→현재 attest 순서를
+   명시한다. Asset/attestation/checksum/bundle verifier/publish 목록과 independent workflow
+   기대값을 함께 잇고 누락/추가/치환/조건부·주석-only 명령을 거부한다. 작은 별도 CI job은
+   만들지 않는다. 현재 공통 checkpoint push는 승인 전 실행하지 않는다.
+
+### 검증과 재검토
+
+가장 작은 metadata/asset/URL/owner·명령별 부정 검사부터 시작한다. Canonical Quick와 영향받은
+전체 Race·workflow/release-gate를 순차 실행한다. Default test는 외부 wheel/cache를 요구하지
+않고 synthetic/기존 공개 metadata fixture의 한계를 표시한다. 실제 frozen42input fetch/
+materialize·15asset 생성/bundle/package 검사와 actual ZIP census 대조를 별도로 수행한다.
+Metadata v2/legacy13 fixture와 v3/새15 pair를 혼합하지 않고 published 원본은 변경하지 않는다.
+그 뒤 실제 complete graph/current Evidence·Policy와 protected DATA recovery를 검증한다.
+서명·설치·공개 배포와 named local/hosted/full profile 범위를 구분하며 상위 acceptance를
+부분 성공으로 닫지 않는다.
+
+
+### B3b named local 결과 — 2026-10-28
+
+[한정 영수증](./p4o4b3b-producer-data-local-20261028.json)이 source/각 체크/원본 inventory와
+최초 operator·test compile 오류를 연결한다. 고정31문서·11wheel/42inputs는 network 전에 owner
+대조 후 기존 downloader로 취득하고 기존 offline whole wheel/proof/closure 검증기로 같은
+ZIP/NOTICE를 생성했다. 제공9proof/두 NOT_PROVIDED·예산·required 관찰은 변하지 않았다.
+새 runtime metadata는 명시 v3/5images+3tools/DATA0444·Python/ZIP/NOTICE binding이며,
+legacy v2와 DATA pair 혼합을 거부한다. 같은15assets/19bundle/DEB·RPM 원본 DATA0444와
+SBOM11distribution을 실제 ZIP 원본 plan에 대조했고 두 package의 재생성도 byte-identical이다.
+Host 보호5파일/Docker/입력은 같고 noSKIP다. Fixture v1.2.3/commit/workflow label은 서명·실제
+hosted build identity가 아니며 native binaries compile과 package 생성만 수행했다.
+
+B3b1 Quick229.165s/affected6 owner Race47.233s와 B3b2 Quick63.583s/두 scripts 전체
+Race40.331s·workflow/release-gate/docs/security를 통과했다. 최종 test source는 별도 Quick와
+realcorpus go vet 결과에 연결한다. Publish는 기존 bundle 검증기의 exact filename 목록을
+이미 소비하므로 중복 목록·새 job을 만들지 않았다. Actual graph/current Evidence·Policy,
+protected DATA 복구, native pipx/CLI·hosted/final profile 범위는 B3c 이후에 남는다.

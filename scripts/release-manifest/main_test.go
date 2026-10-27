@@ -33,7 +33,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 13 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 15 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -107,6 +107,8 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"pnpm-NOTICE.txt",
 		"bun-linux-amd64",
 		"bun-NOTICE.txt",
+		"pipx-runtime-linux-amd64.zip",
+		"pipx-NOTICE.txt",
 		"helox-linux-amd64.deb",
 		"helox-linux-amd64.rpm",
 	}
@@ -135,6 +137,23 @@ func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 	lock.GVisor.Commit = strings.Repeat("a", 40)
 	lock.PNPMTool.Version = "1.2.3"
 	lock.BunTool.Version = "1.2.3"
+	lock.PipxTool.Version = "1.2.3"
+	lock.PipxTool.Architecture = "amd64"
+	lock.PipxTool.RuntimeImage = "python_image"
+	// Reuse the canonical source inventory as metadata; the produced bytes below
+	// remain synthetic and do not assert upstream/runtime authenticity.
+	actual, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var source runtimeLock
+	if err := json.Unmarshal(actual, &source); err != nil {
+		t.Fatal(err)
+	}
+	lock.PipxTool.Inputs = source.PipxTool.Inputs
+	for index, input := range lock.PipxTool.Inputs {
+		lock.PipxTool.Inputs[index].Path = strings.Replace(input.Path, "pipx/pipx-"+source.PipxTool.Version+"-", "pipx/pipx-1.2.3-", 1)
+	}
 	for _, path := range paths {
 		switch filepath.Base(path) {
 		case "pnpm-linux-amd64":
@@ -165,6 +184,21 @@ func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 			}
 			lock.BunTool.Notices.SHA256 = record.SHA256
 			lock.BunTool.Notices.Size = record.Size
+		case "pipx-runtime-linux-amd64.zip":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PipxTool.Tool.SHA256 = record.SHA256
+			lock.PipxTool.Tool.Size = record.Size
+		case "pipx-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PipxTool.Notices.SHA256 = record.SHA256
+			lock.PipxTool.Notices.Size = record.Size
+
 		}
 	}
 	body, err := json.Marshal(lock)
@@ -228,6 +262,39 @@ func TestBunReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T
 			for _, path := range []string{sbom, manifest} {
 				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					t.Fatal("substituted bun produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestPipxReleaseDataMustMatchOwnerAndCensusBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"pipx-runtime-linux-amd64.zip", "pipx-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			buildNativeHeloxTest(t, binary)
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substitution"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			images := filepath.Join(root, "helox-runtime-images.json")
+			if err := os.WriteFile(images, []byte("metadata"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			output := filepath.Join(root, "helox-release-manifest.json")
+			sbom := filepath.Join(root, "helox-release-sbom.cdx.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, images, output, assets)
+			if err == nil || !strings.Contains(err.Error(), "pipx release DATA differs") {
+				t.Fatal("substituted DATA accepted", err)
+			}
+			for _, path := range []string{output, sbom} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("invalid DATA produced metadata")
 				}
 			}
 		})

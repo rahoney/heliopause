@@ -125,7 +125,7 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 	} else if artifact.Identity().Variant() == "pipx-NOTICE.txt" {
 		err = releaseinstall.ValidatePipxNotices(body)
 	} else {
-		err = releaseinstall.ValidateRuntimeImages(body)
+		err = releaseinstall.ValidateRuntimeImagesForRelease(body, manifest)
 	}
 	if err != nil {
 		return i.invalidMetadata(artifact)

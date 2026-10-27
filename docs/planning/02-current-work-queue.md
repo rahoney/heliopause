@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-B3a complete DATA selection/modes named local qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-B3b local producer/metadata/build complete DATA set; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B3b IN_PROGRESS; B3a graph/protected DATA mechanics locally qualified; actual full set/pipx/hosted/final profiles remain
+Last completed substep: P4-O4-B3b complete DATA producer/metadata/packages named local qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-B3c actual complete DATA graph/current Evidence/Policy and protected recovery; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B3c IN_PROGRESS; B3a selection/file mechanics and B3b actual producer locally qualified; actual inspection/recovery/pipx/hosted/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B3b complete DATA producer·metadata·package 로컬 검증
+
+[B3b receipt](./evidence/package-client-quarantine/p4o4b3b-producer-data-local-20261028.json)는
+frozen42input 취득→기존 offline materializer→명시 runtime metadata v3/3tools→15asset/19bundle을
+검증했다. Actual original ZIP의11distribution과 SBOM 일치, DEB/RPM 원본 DATA root0444·
+재생성 byte-identical·Host 보호5파일/Docker/입력 불변/noSKIP를 확인했다. 기본 Quick와 관련
+전체 Race, workflow/release-gate/docs/security 및 명시 actual tests가 PASS다. 로컬 unsigned
+fixture이며 서명·hosted qualification·패키지 설치·artifact 실행 성공이 아니다. 같은 M13-004의
+B3c actual complete graph/current Evidence·Policy와 protected DATA 복구를 계속한다.
+원격 e859487 checkpoint는 기존 사용자 승인 대기로 새 CI/timer를 시작하지 않았다.
 
 ### 2026-10-28 P4-O4-B3a complete DATA 선택·mode 로컬 검증
 

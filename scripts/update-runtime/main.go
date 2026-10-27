@@ -87,6 +87,9 @@ func run(args []string, out io.Writer) error {
 	if args[0] == "verify-pipx-closure" {
 		return verifyPipxClosure(args[1:], out)
 	}
+	if args[0] == "fetch-pipx-supply" {
+		return fetchPipxSupply(args[1:], out)
+	}
 	if args[0] == "materialize-pipx" {
 		return materializePipx(args[1:], out)
 	}

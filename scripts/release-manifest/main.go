@@ -11,6 +11,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,6 +40,24 @@ func (values *stringList) Set(value string) error {
 }
 
 type runtimeLock struct {
+	PipxTool struct {
+		Version      string `json:"pipx_version"`
+		Architecture string `json:"architecture"`
+		RuntimeImage string `json:"runtime_image"`
+		Inputs       []struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+		} `json:"inputs"`
+		Tool struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pipx_tool"`
+
 	SchemaVersion int `json:"schema_version"`
 	PNPMTool      struct {
 		Version string `json:"pnpm_version"`
@@ -189,7 +208,7 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 5 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 5 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) || !releaseVersion.MatchString("v"+lock.PipxTool.Version) || lock.PipxTool.Architecture != "amd64" || lock.PipxTool.RuntimeImage != "python_image" {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)
@@ -199,7 +218,11 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 	if err := checkNativeAssetBindings(lock, assets); err != nil {
 		return err
 	}
-	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version, lock.BunTool.Version); err != nil {
+	distributions, err := pipxSourceDistributions(lock)
+	if err != nil {
+		return err
+	}
+	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version, lock.BunTool.Version, distributions); err != nil {
 		return err
 	}
 	sbom, err := fileRecord(sbomPath)
@@ -240,6 +263,10 @@ func checkNativeAssetBindings(lock runtimeLock, assets []releaseAsset) error {
 		if asset.Name == "bun-linux-amd64" && (asset.SHA256 != lock.BunTool.Tool.SHA256 || asset.Size != lock.BunTool.Tool.Size) || asset.Name == "bun-NOTICE.txt" && (asset.SHA256 != lock.BunTool.Notices.SHA256 || asset.Size != lock.BunTool.Notices.Size) {
 			return errors.New("bun release asset differs from its selected runtime owner")
 		}
+		if asset.Name == "pipx-runtime-linux-amd64.zip" && (asset.SHA256 != lock.PipxTool.Tool.SHA256 || asset.Size != lock.PipxTool.Tool.Size || asset.Size > 8<<20) || asset.Name == "pipx-NOTICE.txt" && (asset.SHA256 != lock.PipxTool.Notices.SHA256 || asset.Size != lock.PipxTool.Notices.Size || asset.Size > 64<<10) {
+			return errors.New("pipx release DATA differs from its selected runtime owner")
+		}
+
 	}
 	return nil
 }
@@ -263,6 +290,8 @@ func assetSpecs() map[string]struct {
 		"pnpm-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
 		"bun-linux-amd64":                       {platform: "linux/amd64", role: "bun"},
 		"bun-NOTICE.txt":                        {platform: "linux/amd64", role: "release-metadata"},
+		"pipx-runtime-linux-amd64.zip":          {platform: "linux/amd64", role: "pipx-runtime"},
+		"pipx-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
 		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
 		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
 	}
@@ -299,7 +328,43 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 	return assets, primary, nil
 }
 
-func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string) error {
+// Filename parsing supplies source-owner inventory metadata only. Whole wheel
+// semantics/proofs remain owned by the offline materializer and acquired inspector.
+func pipxSourceDistributions(lock runtimeLock) ([]artifactpypi.PipxRuntimeDistribution, error) {
+	if len(lock.PipxTool.Inputs) != 42 {
+		return nil, errors.New("pipx source inventory is incomplete")
+	}
+	var distributions []artifactpypi.PipxRuntimeDistribution
+	seen := map[string]bool{}
+	main := false
+	for _, input := range lock.PipxTool.Inputs {
+		if !strings.HasSuffix(input.Path, ".whl") {
+			continue
+		}
+		directory, filename, ok := strings.Cut(input.Path, "/")
+		if !ok || strings.Contains(filename, "/") {
+			return nil, errors.New("pipx source wheel path is invalid")
+		}
+		project, version, py, abi, platform, err := artifactpypi.ParseWheelFilename(filename)
+		if err != nil || directory != project || seen[project] || strings.Join(py, ".") != "py3" || strings.Join(abi, ".") != "none" || strings.Join(platform, ".") != "any" {
+			return nil, errors.New("pipx source wheel inventory is invalid")
+		}
+		seen[project] = true
+		if project == "pipx" {
+			if version != lock.PipxTool.Version {
+				return nil, errors.New("pipx source version differs")
+			}
+			main = true
+		}
+		distributions = append(distributions, artifactpypi.PipxRuntimeDistribution{Project: project, Version: version})
+	}
+	if !main || len(distributions) != 11 {
+		return nil, errors.New("pipx source distribution census is incomplete")
+	}
+	return distributions, nil
+}
+
+func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string, distributions []artifactpypi.PipxRuntimeDistribution) error {
 	build, err := buildinfo.ReadFile(binary)
 	if err != nil || build.Main.Path == "" {
 		return errors.New("read native helox build information")
@@ -313,6 +378,14 @@ func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string) er
 	}
 	components = append(components, cyclonedxComponent{Type: "application", Name: "pnpm", Version: pnpmVersion})
 	components = append(components, cyclonedxComponent{Type: "application", Name: "bun", Version: bunVersion})
+	for _, distribution := range distributions {
+		kind, name := "library", "pypi/"+distribution.Project
+		if distribution.Project == "pipx" {
+			kind, name = "application", "pipx"
+		}
+		components = append(components, cyclonedxComponent{Type: kind, Name: name, Version: distribution.Version})
+	}
+
 	sort.Slice(components, func(left, right int) bool {
 		if components[left].Name == components[right].Name {
 			return components[left].Version < components[right].Version

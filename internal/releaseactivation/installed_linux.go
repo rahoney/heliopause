@@ -145,7 +145,7 @@ func readRecordedRelease(ctx context.Context, record registration) (InstalledRel
 	if err != nil {
 		return InstalledRelease{}, err
 	}
-	if err := releaseinstall.ValidateRuntimeImages(images); err != nil {
+	if err := releaseinstall.ValidateRuntimeImagesForRelease(images, manifest); err != nil {
 		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
 	}
 	notices, err := readProtected(ctx, filepath.Join(directory, "pnpm-NOTICE.txt"), 64<<10)
