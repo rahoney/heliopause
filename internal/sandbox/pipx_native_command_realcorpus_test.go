@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -459,6 +460,7 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 		if _, err := receipt.WithPipxLayout("/explicit/held/userpath", "/explicit/commands", "/explicit/runtime/python"); err != nil {
 			t.Fatal(err)
 		}
+		pipxDiagnosticCompleteCensus(t, ctx, runner, reader.id, phase)
 		t.Logf("native_%s version=%s original_graph=%d exposed=%d request=%s; no entrypoint execution/Policy", phase, receipt.Version(), len(graph.Nodes()), len(links), receipt.Requirement().Requirement())
 	}
 	check("install")
@@ -538,4 +540,66 @@ func pipxDiagnosticLinks(t *testing.T, ctx context.Context, runner *hosttool.Exe
 		t.Fatal(err)
 	}
 	return links
+}
+
+// This bounded diagnostic records data facts only. It is neither a product
+// allowlist nor an inspection completion/admission signal.
+func pipxDiagnosticCompleteCensus(t *testing.T, ctx context.Context, runner CommandRunner, container, phase string) {
+	t.Helper()
+	type fact struct {
+		Name         string `json:"name"`
+		Kind         byte   `json:"kind"`
+		UID, GID     int
+		Mode, Size   int64
+		Link, SHA256 string
+	}
+	var facts []fact
+	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
+	_, err := readUVNativeTar(ctx, runner, container, pythonSitePath+"/.", func(input io.Reader) (uvNativeOutput, error) {
+		limit := policy.MaxGraphUncompressed() + policy.MaxGraphFiles()*8192 + (32 << 20)
+		bounded := &io.LimitedReader{R: input, N: limit}
+		archive := tar.NewReader(bounded)
+		var size int64
+		seen := map[string]bool{}
+		for {
+			h, err := archive.Next()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return uvNativeOutput{}, err
+			}
+			name := strings.TrimSuffix(strings.TrimPrefix(h.Name, "./"), "/")
+			if name != "" && name != "." && !validClosureDestination(name) || seen[name] || h.Size < 0 || h.Size > policy.MaxGraphUncompressed()-size || int64(len(facts)) >= policy.MaxGraphFiles()*8+512 {
+				return uvNativeOutput{}, fmt.Errorf("native diagnostic census invalid or over bounds")
+			}
+			size += h.Size
+			seen[name] = true
+			row := fact{Name: name, Kind: h.Typeflag, UID: h.Uid, GID: h.Gid, Mode: h.Mode, Size: h.Size, Link: h.Linkname}
+			if h.Typeflag == tar.TypeReg || h.Typeflag == 0 {
+				hash := sha256.New()
+				if n, err := io.CopyN(hash, archive, h.Size); err != nil || n != h.Size {
+					return uvNativeOutput{}, fmt.Errorf("native diagnostic census truncated: %w", err)
+				}
+				row.SHA256 = hex.EncodeToString(hash.Sum(nil))
+			}
+			facts = append(facts, row)
+		}
+		if err := drainUVTarPadding(bounded); err != nil {
+			return uvNativeOutput{}, err
+		}
+		if bounded.N == 0 {
+			return uvNativeOutput{}, fmt.Errorf("native diagnostic census tar bound exhausted")
+		}
+		return uvNativeOutput{}, nil
+	})
+	if err != nil {
+		t.Fatal("complete native DATA census", err)
+	}
+	sort.Slice(facts, func(i, j int) bool { return facts[i].Name < facts[j].Name })
+	body, err := json.Marshal(facts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("native_complete_DATA_census phase=%s facts=%s", phase, body)
 }

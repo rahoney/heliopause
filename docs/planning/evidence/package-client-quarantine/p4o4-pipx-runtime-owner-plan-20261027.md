@@ -1235,3 +1235,58 @@ NoSKIP/보호5파일·Docker·42input·ZIP·source/binary 불변과 전체 owned
 외부 관찰/Policy/target 반영/CLI 성공은 아니다. 다음 C3c3b의 exact parent→UV child→
 Python query와 전용 offline profile/session baseline·수정 지도를 계속한다. 기존 UV
 CONTROL/network predicate와 acquired ZIP profile을 넓혀 재사용하지 않는다.
+
+
+## C3c3b — native session/profile/output의 source 전 baseline
+
+기준 `547aaaeff6c3e3564b4d5b90a333f87361f03a17`, tree
+`ce4e5a1311b8e35e0f25a2d6f1268f2a352ededd`/2832파일이며 tracked tree는 clean이다.
+Queue/client09/plan20·M8/M10·D-015, C3c3a receipt/사전 지도와 artifact/sandbox/evidence/CI
+lessons를 대조했다. 이 범위에서는 기존 구현을 대체하지 않는다.
+
+| 책임 / 기존 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `preparePipxTool` protected current reader + C2 ZIP owner | YES | YES (reader/acquired ZIP) | YES (named scopes) | YES (그 scopes) | native session consumer |
+| C3c3a `freezePipxNativeInput/pipxWheelVolume` | YES | YES (native diagnostic) | YES (named local) | YES (transport scope) | actual installed session/factory |
+| `readUVNativeTar` bounded transport/`scanUVToolNativeOutput` UV census | YES | YES (UV) | YES (기존 scopes) | YES (그 scopes) | pipx client-specific output/receipt/scaffold·완전 census; UV receipt로 위장 금지 |
+| `pipxDiagnosticFile/Links` actual metadata/link capture | YES | YES (diagnostic) | YES (runc) | YES (그 scope) | 전체 native tree의 census·unknown/foreign 제거 없는 거부; 현재 named files만으로 complete라고 하지 않음 |
+| `HasExactUVQueryCreator/IsExactUVPythonQuery`와 acquired ZIP profile | YES | YES (각 기존 profile) | YES (기존 scopes) | YES (그 scopes) | offline pipx parent→UV child→Python query 전용 profile/provenance; CONTROL/network 조건을 새 chain으로 확대하지 않음 |
+| Pipx installed native session/complete census/profile/CLI | NO | NO | NO | NO | 아래 C3c3b1 data census부터, 이후 구체 profile/session 지도 |
+
+### C3c3b1 — 전체 native census의 입력과 수정 순서
+
+Native 출력은 UV와 달리 `pipx/venvs/<project>/pipx_metadata.json` 외에 `pipx/logs`,
+`.cache`/standalone interpreter cache 및 별도 tool-bin/man/completion을 가진다. 고정 ZIP
+원문 `pipx/paths.py`/`main.py`/`backends/uv.py`/`venv_inspect.py`를 실행 없이 대조했다.
+가변 로그나 보조 파일을 임의로 허용하거나 기존 named metadata 몇 개로 complete라고
+표시하지 않기 위해, 먼저 기존 actual diagnostic의 install/no-op 각 시점에 bounded 전체
+`/haa-site/.` tar DATA census를 기록한다. 기존 `readUVNativeTar` 전송을 재사용하고
+entry name/type/owner/mode/size/link/hash만 기록하며 코드 실행·artifact 완료 권한은 없다.
+원본 공급/명령/권한/예산·C3c3a owner는 바꾸지 않는다.
+
+그 actual과 exact source에서 pipx-specific scaffold/control 의미를 확정한 뒤 production
+census reader를 추가한다. 기존 UV scanner를 재작성하거나 pipx JSON을 가짜 UV TOML로
+변환하지 않는다. 고정 venv configuration/whole archive 검증·receipt/link validation과
+streaming transport·tar bounds를 재사용한다. Negative는 extra/missing/changed controls,
+foreign env/link/owner/mode/duplicate/type/overflow/trailing와 producer failure/cancel이다.
+이를 실제 diagnostic에 연결해 old named-file 결과와 같은 원본 metadata/link/graph를
+확인한 뒤 새 전용 profile/session을 구현한다. Runc census는 observer/Policy 성공이 아니다.
+
+
+### C3c3b1 named local DATA 결과 — 2026-10-28
+
+[C3c3b1 receipt](./p4o4c3c3b1-native-census-local-20261028.json)의 Quick57.091s/tag
+vet·build/docs/security와 actual12.554s가 PASS다. Production/default test bytes는547aaae와
+같고 tagged diagnostic만 확장했다. Install84/508193B와 no-op85/510597B의 전체 tar
+census에서 추가 timestamp 로그1개와 changed pipx metadata 외 모든 facts가 같았다.
+원본2distribution·UV scaffold·pipx `.cache`/`py` cache tag186B·`.userpath.lock`/
+venv `.lock`·별도 tool-bin/빈 man을 확인했다. 보호5파일/Docker/42input/ZIP/source/binary
+불변/noSKIP·owned 정리가 PASS다. 이 목록은 data-only 관측이며 production 허용 목록이나
+artifact 완료 authority가 아니다. 원본 body/log는 복제하지 않고 facts/hash만 보존했다.
+
+Selected ZIP의 exact5 source SHA도 연결했다. `fetch_info_in_venv`의 installed Python은
+`-c`만 사용하며 empty sys.path 제거 전에 json/os/platform/sys를 import한다. Cwd/실행
+provenance는 새 profile에서 독립 고정해야 한다. UV의 direct CONTROL query predicate나
+기존 acquired ZIP import 성공은 이 chain의 권한이 아니다. 다음 C3c3b2에서 공통 bounded
+transport와 기존 receipt/layout/replay/whole wheel 검증을 재사용하는 pipx 전용 complete
+output reader를 추가한다. 기존 UV scanner와 C3c3a production source를 재작성하지 않는다.

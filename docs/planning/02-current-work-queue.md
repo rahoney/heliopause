@@ -15,15 +15,25 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3a frozen whole original/readonly wheel input locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b installed native session/dedicated offline profile baseline and edit map; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-C3c3b IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
+Last completed substep: P4-O4-C3c3b1 complete native DATA census/source contract locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-C3c3b2 production complete native output reader/whole original binding; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-C3c3b2 IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-C3c3b1 전체 native DATA census 로컬 검증
+
+[C3c3b1 receipt](./evidence/package-client-quarantine/p4o4c3c3b1-native-census-local-20261028.json)의
+Quick57.091s/tag vet·build/docs/security와 actual12.554s가 PASS다. 기존 production/default
+test bytes를 유지하고 bounded 전체 native tree의 facts/hash만 수집했다. Install84/508193B,
+no-op85/510597B이며 차이는 새 로그1개와 pipx metadata다. Exact selected source5 SHA와
+query의 실제 -c/import 순서도 대조했다. NoSKIP/Host5/Docker/42input/ZIP/source 불변과
+정리를 확인했으며 data census는 production allowlist/observer/Policy가 아니다. 같은
+M13-004/C3c3b2의 전용 complete output reader를 계속하고 기존 push 승인은 대기다.
 
 ### 2026-10-28 P4-O4-C3c3a frozen whole wheel/RO input 로컬 검증
 
