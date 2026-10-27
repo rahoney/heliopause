@@ -895,3 +895,95 @@ filesystem/source fixture 범위이며 실제 Host activation으로 확대하지
 ParsePipxToolReceipt와 fixed installed DATA reader/RO transport는 이미 있으므로 새로 쓰지
 않고 실제 consumer gap만 확인한다. Hosted/current signed/full support profile 범위는
 별도이며 e859487까지의 push 승인 대기는 계속한다.
+
+
+## C3 — installed pipx/native persistent tool의 source 전 baseline
+
+2026-10-28 source `a324c452af58101f0c94cda9120c872de5a0bd5f`, tree
+`f473631e66256a41c046a745778ed836014a0588`/2811파일의 tracked working tree는 clean이다.
+Private check source의 HEAD는 과거 기준선이지만 index/blob/mode와 전체 disk는 위 후보와
+동일하게 유지한다. 기존 e859487 checkpoint push만 사용자 승인 대기이며 새 CI는 없다.
+
+| 기존 책임 / 근거 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `pypi.ParsePipxToolReceipt`, `ToolReceipt.UpgradeRequirement/ValidateLayout/ValidateExposedCommands`, `tool_receipt_test.go` actual installed/upgraded0.12 fixture | YES | YES (inert parser/tests) | YES (기존 named parser) | NO (C3 consumer) | 실제 native output/Host guard 소비 연결; parser 재구현 없음 |
+| `ToolReceipt.BindWheels`, `tool_wheels.go` complete original wheel/source/lock 및 pipx startup-hook 거부 | YES | YES (기존 graph binding) | YES (기존 named parser/negative) | NO (C3 native consumer) | native pipx complete selection과 연결; `.pth`/customization 지원 확대 없음 |
+| `pipx_tool_supply.go` installed current root/file-held DATA reader와 `pipx_data_volume.go` seed/RO anchor/seal/readers | YES | YES (B2 acquired consumer/C2 tests) | YES (named local) | NO (installed native consumer) | 현재 설치 supply로 native 실행 준비; RW native-volume 우회 금지 |
+| `uv_resolver.go` native lifecycle/typed public network/trace/cleanup, `uv_tool_resolver.go` UV tool native selection | YES | YES (UV만) | YES (CI417 등 UV named scope) | YES (기존 UV named scope) | pipx fixed Python ZIP loader/closed operation/profile, backend UV child/query provenance 및 pipx receipt/complete census export adapter |
+| `uv_tool_layout.go` explicit held-root metadata projection | YES (UV만) | YES (UV) | YES (UV named) | YES (UV named) | pipx internal app paths/source-interpreter를 명시적으로 구분하는 inert projection; UV client 거부 유지 |
+| `uv_tool_upgrade_input.go`, native metadata-only original replay/installed wheel controls | YES (UV만) | YES (UV) | YES (UV named) | YES (UV named) | pipx schema/backend와 unconstrained upgrade 의미의 별도 bounded original input; stored pip_args/Host interpreter 실행 금지 |
+| `UVToolInstallPreparation`, existing target/command locks/current whole-set Policy/atomic materializer/rollback, bootstrap/CLI descriptor | YES (UV만) | YES (UV) | YES (UV named) | YES (UV named) | 기존 transaction 재사용을 위한 pipx adapter, fresh/managed/native original entry와 CLI validation/help/current approval/retired scripts/negative/rollback |
+| B3 complete ZIP/NOTICE release graph/installed DATA/producer/package/CI recipes | YES | YES | YES (named local) | NO (hosted/signing/native final) | 새 hosted UID1001, signed native activation 및 final matrix; C3 성공으로 대체하지 않음 |
+
+### C3a — inert receipt projection의 수정 지도
+
+첫 source 단위는 `internal/artifact/pypi/pipx_tool_layout.go`의 작은 adapter다.
+이미 구현된 strict0.12 parser와 generic held layout/command validation을 그대로 호출한다.
+Caller가 명시한 environment·별도 bin directory·source interpreter에 원본 app_paths와
+source_interpreter만 재배치하고, 원본 bytes와 requirement/version/backend/options/노출 집합,
+필드 생략·null을 보존한다. Pipx source_interpreter는 source Python claim이며 UV처럼
+무조건 environment/bin/python으로 해석하지 않는다. 이 inert 변환은 Host 경로를 열거나
+실행하지 않으며 ownership/runtime admission/Policy를 부여하지 않는다.
+
+기존 UV `WithUVLayout/WithUVSelectionLayout`의 pipx 거부를 유지한다. Pipx projection도
+UV/zero/캐시와 원본 불일치·잘못된 source interpreter·명령/환경 identity·중첩된 roots를
+거부한다. Installed/upgraded actual fixture의 constraint/retired/new commands, opaque
+pip_args와 원본의 불변, 누락/명시 null 보존을 검사한다. 해당 package 전체 Race와
+canonical Quick/docs/security를 실행하고 named local 범위만 기록한다.
+
+### 두 번째 검토와 후속 순서
+
+고정 ZIP hash 또는 DATA 역할은 CONTROL 실행 권한이 아니다. C3 native runtime은 기존
+C2 RO lifetime owner와 M8/D-015의 exact direct-root provenance를 별도로 연결한다.
+기존 acquired observer의 ARTIFACT import profile을 trusted pipx CLI로 재명명하지 않는다.
+고정 pipx1.18.4 UV backend는 child UV를 실행하고 installed Python metadata query는 -S가
+없다. 이를 parser 성공으로 admission하거나 startup surface를 숨기지 않는다.
+
+C3a 뒤에 pipx metadata-only original input/고정 실행 argv·환경과 native profile의 세부
+수정 지도를 먼저 확정한다. Native fresh/upgrade whole selection→독립 source/wheel graph→
+기존 검사·Policy→동일 bytes의 guarded publication→bootstrap/CLI 순서로 작은 단위를
+이어간다. 원본 pip_args/Host PATH/interpreter forwarding, runtime/backend 자동 탐지,
+오류 기반 공급 보강, helper별 CI, P6 run placeholder는 추가하지 않는다.
+
+
+### C3b — metadata-only pipx upgrade input의 source 전 세부 지도
+
+`UVToolUpgradeInput`은 UV의 positional constraint와 원본 options를 보존하는 기존 구현이다.
+Pipx parser/UpgradeRequirement는 이미 별도로 구현되어 있어 UV input에 pipx를 위장하지
+않는다. Pipx의 원본 receipt·complete inert METADATA·pinned Python을 한 bounded control로
+묶는 consumer는 아직 없다(IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO).
+
+`pipx_tool_upgrade_input.go`에 원본 receipt와 기존 `UpgradeInput`을 합성한다. Strict pipx
+parser로 다시 읽고 cached claims 불일치·Python mismatch·root 누락/중복/version mismatch를
+거부한다. 원본 requirement는 원본 metadata에 남기고 새 request는 기존
+`ToolReceipt.UpgradeRequirement()`의 unconstrained canonical project만 유도한다. Caller가
+new constraint를 주입하거나 원본 backend·source interpreter를 실행 recipe로 사용할 수 없다.
+
+Stored pip_args는 opaque parser 데이터다. 이 새 실행 입력 경계에서는 empty/native default와
+fixed public index/wheel-only/no-config/no-cache/no-download/no-sources/copy의 명시 option만
+받으며 duplicate·unknown·다른 index·local find-links·offline/no-index·source build override를
+거부한다. 원본 recipe를 argv로 반환하지 않고 원본 bytes만 보존한다. 추후 resolver는
+controller-owned 새 fixed argv를 생성한다. 이 제한은 parser의 opaque 저장 계약이나 이미
+지원하는 UV 의미를 바꾸지 않는다.
+
+`UVToolUpgradeInput.ReplayWheelControls/ReplayWheelsControl`의 기존 검증 본문을 두 실제
+소비자가 쓰는 private helper로 추출한다. UV wrapper와 canonical control name/body는
+그대로 유지하고 pipx wrapper만 새 고정 control name을 사용한다. Complete metadata/hash,
+WHEEL identity/tag/runtime/중복/합계 bytes/defensive copy 검사를 복제하거나 완화하지 않는다.
+Original receipt·metadata claim은 authentic old archive/ownership/current approval가 아니며
+installed code/startup/interpreter/원본 RECORD를 replay input에 포함하지 않는다.
+
+검증은 canonical Quick와 전체 PyPI Race, UV 기존 input/replay 회귀, pipx old constraint와
+새 unconstrained request·version/backend/recipe/혼합 control·encoded combined bound·수정 후
+defensive copy 및 complete replay negatives다. Runtime/query admission과 public CLI는 여전히
+MISSING이며 이 inert 입력 성공으로 acceptance를 닫지 않는다.
+
+
+### C3a named local 결과 — 2026-10-28
+
+[C3a receipt](./p4o4c3a-receipt-layout-local-20261028.json)의 Quick40.768s/전체 PyPI Race9.298s/
+docs/security가 PASS다. Actual installed/upgraded0.12 fixture의 원본 semantics/opaque recipe와
+생략·null, source interpreter/환경 interpreter 분리·별도 link inventory·wrong client와 changed
+claim/unsafe roots 거부를 검증했다. 첫 Quick268.696s의 fixture []string/JSON []any 비교 오류는
+원본을 보존하고 test 타입만 교정했다. Filesystem 실행·ownership·native/CLI 성공은 아니다.
+다음은 위 C3b의 bounded original input과 기존 replay 검증 재사용이며 전체 acceptance는 열린다.
