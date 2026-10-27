@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
-Next action: M13-004/P4-O4-B2c existing transaction integration and actual gVisor ZIP; monitor new CI every20min; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B2c IN_PROGRESS; B2a input/program and B2b profile/latches locally qualified; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B2d required release inspection/factory; group common checkpoint and monitor new CI every20min; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B2d IN_PROGRESS; B2c actual acquired ZIP/common transaction locally qualified; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -25,13 +25,34 @@ Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### 2026-10-28 P4-O4-B2c acquired ZIP 실제 transaction 로컬 검증
+
+[B2c receipt](./evidence/package-client-quarantine/p4o4b2c-acquired-runtime-transaction-local-20261028.json)는
+최종 canonical 검사·sandbox 전체 Race, canonical124latches와 새 ZIP actual87.436s의
+20units 정상→회계 오류 주입 INCOMPLETE/commands0→20units 정상, 기존 wheel/네 작은 policy·
+prerequisite sequence151.871s를 연결한다. 각 정상 Register22/Close1·CPU12.76/12.47s이며
+한도는 유지했다. 첫 준비 실패의 shell resolved path를 정확한 pinned tuple로 교정했고
+두 원본을 보존했다. NoSKIP/helperwait0/confirmed cleanup·보호5파일/Docker/원본 ZIP 동일이다.
+Named local scope만 닫고 required release composite/factory는 같은 M13-004/B2d에서 계속한다.
+Hosted/common/full CPU·CUDA 및 전체 pipx/CLI acceptance는 남는다. 개별 helper CI는 없다.
+
+### 2026-10-28 P4-O4-B2c 공통 transaction 연결·readiness 교정 중
+
+[B2c owner map](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md#b2c--기존-transaction-연결의-source-전-세부-지도)에 따라 기존 원장/CPU watch/unit loop/cleanup을
+공유하고 acquired ZIP은 기존 C2 DATA seed/bind/seal만 사용한다. 첫 Go Quick202.663s/
+Race22.662s PASS 뒤 source 대조에서 공통 readiness CONTROL launch와 B2b의 일괄 launch
+거부 충돌을 확정했다. B2b의 해당 규칙은 superseded이며 canonical exact readiness tuple만
+허용하는 후보의 Quick53.090s/Race22.217s/docs/security PASS를 확인했다. 실제 gVisor
+transaction과 교정 observer의 canonical latches는 아직 진행 중이다. 작은 helper별 CI는
+추가하지 않고 같은 M13-004 하나에서 계속한다.
+
 ### 2026-10-28 P4-O4-B2b fixed observer profile 로컬 검증
 
 [B2b receipt](./evidence/package-client-quarantine/p4o4b2b-observer-profile-local-20261028.json)는
 새 profile/topology·동일 shared budget의 Quick204.610s/sandbox Race25.051s/docs/security와
 canonical observer build274.583s/전체124latches PASS를 확인했다. 기존 wheel profile을
-유지하며 새 ZIP은 단일 DATA path와 ARTIFACT Python handoff만 사용하고 pip/site·CONTROL
-launch/ELF handoff를 거부한다. Host helper 설치·활성화와 실제 ZIP transaction 완료는
+유지하며 새 ZIP은 단일 DATA path와 ARTIFACT Python handoff를 사용한다. 최초의 pip/site·
+CONTROL launch/ELF handoff 거부 중 CONTROL launch 일괄 거부는 B2c에서 반증되어 교정 중이다. Host helper 설치·활성화와 실제 ZIP transaction 완료는
 아직 없으며 같은 M13-004/B2c에서 기존 실행/회계/정리 owner를 연결한다.
 
 ### 2026-10-28 P4-O4-B2a 입력과 고정 program 로컬 검증

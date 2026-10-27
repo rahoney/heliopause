@@ -1067,16 +1067,74 @@ bool VerifyPipxRuntimeReadBoundary() {
       after.trusted_control_network_active==baseline.trusted_control_network_active;
 }
 
+bool VerifyPipxRuntimeReadiness() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, output) != 0) return false;
+  bool success = true;
+  for (int scenario = 0; scenario < 13; ++scenario) {
+    gvisor::sentry::ExecveInfo image;
+    auto* context = image.mutable_context_data();
+    context->set_container_id(kFirstID); context->set_thread_group_id(99);
+    context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+    context->set_is_exec_session(true); context->set_process_name("arbitrary-comm");
+    image.set_binary_path(kBoundaryHelperPath); image.set_execfn(kBoundaryHelperPath);
+    for (const auto& arg : std::vector<std::string>{kBoundaryHelperPath,kLaunchMode,std::string(64,'e'),"/bin/sh","-ceu",kBoundaryReadinessScript}) image.add_argv(arg);
+    if (scenario >= 1 && scenario <= 6) image.set_argv(scenario - 1,"foreign");
+    if (scenario == 7) image.add_argv("extra");
+    if (scenario == 8) image.set_binary_path("/tmp/haa-boundary");
+    if (scenario == 9) image.set_execfn("/tmp/haa-boundary");
+    if (scenario == 10) image.mutable_context_data()->set_parent_thread_group_id(88);
+    if (scenario == 11) image.mutable_context_data()->set_is_exec_session(false);
+    if (scenario == 12) image.set_argv(5,std::string(kBoundaryReadinessScript)+"; /usr/local/bin/python -c evil");
+    ProfileRegistration registration;
+    registration.session_generation=std::string(64,'a');
+    registration.pending_admissions.push_back(ProfileRegistration::PendingAdmission{registration.session_generation,kLaunchMode,std::string(64,'e')});
+    ProcessState state; std::string payload,id;const char* reason=nullptr;
+    if (!image.SerializeToString(&payload)) { success=false; break; }
+    const bool accepted=ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,kProfilePipxRuntime,&registration,&state,&reason);
+    if (accepted != (scenario == 0)) { success=false; break; }
+    if (accepted) {
+      if (!ExpectRecordExact(output[1],kFirstID,"process-exec-expected") ||
+          state.groups[99].role != ProcessState::Role::kControl ||
+          !state.groups[99].root_consumed || !state.groups[99].demotion_pending ||
+          registration.pending_admissions[0].state != ProfileRegistration::AdmissionState::kConsumed) { success=false; break; }
+      // Exercise the actual demotion and target transitions, with kernel-resolved
+      // dash distinct from the controller's /bin/sh invocation name.
+      auto demotion=image;
+      demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+      for(const char* arg:{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--","/bin/sh","-ceu",kBoundaryReadinessScript})demotion.add_argv(arg);
+      if(!demotion.SerializeToString(&payload)||!ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,kProfilePipxRuntime,&registration,&state,&reason)||!ExpectRecordExact(output[1],kFirstID,"process-exec-expected")){success=false;break;}
+      auto target=image;target.set_binary_path("/usr/bin/dash");target.set_execfn("/bin/sh");target.clear_argv();
+      for(const char* arg:{"/bin/sh","-ceu",kBoundaryReadinessScript})target.add_argv(arg);
+      for(int mutation=0;mutation<5;++mutation){
+        auto bad=target;auto unchanged=state;
+        if(mutation==0)bad.set_binary_path("/bin/sh");
+        if(mutation==1)bad.set_execfn("/usr/bin/dash");
+        if(mutation==2)bad.set_argv(2,"python -c evil");
+        if(mutation==3)bad.add_argv("extra");
+        if(mutation==4)bad.set_argv(1,"-c");
+        reason=nullptr;
+        if(!bad.SerializeToString(&payload)||ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,kProfilePipxRuntime,&registration,&unchanged,&reason)||!unchanged.groups[99].launch_target_pending){success=false;break;}
+      }
+      if(!success||!target.SerializeToString(&payload)||!ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,kProfilePipxRuntime,&registration,&state,&reason)||!ExpectRecordExact(output[1],kFirstID,"process-exec-expected")||state.groups[99].launch_target_pending){success=false;break;}
+    } else if (!state.groups.empty() || registration.pending_admissions[0].state != ProfileRegistration::AdmissionState::kPending) { success=false; break; }
+  }
+  close(output[0]);close(output[1]);return success;
+}
+
 bool VerifyPipxRuntimeAdmission(const std::string& control) {
   constexpr char id[]="7a7a7a7a7a7a7a7a";
   if (!RegisterProfile(control,id,kProfilePipxRuntime)) return false;
   const auto client=gControlClients.find(id);
   if (client==gControlClients.end()) return false;
   const auto generation=TestSessionGeneration(id);
-  for (const char* mode : {kLaunchMode,kELFHandoffMode}) {
+  for (const char* mode : {kELFHandoffMode}) {
     if (!ControlAdmissionOnFD(client->second,id,mode,generation,std::string(64,'b'),"arm","rejected")) return false;
   }
-  if (!ArmAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
+  if (!ArmAdmission(control,id,kLaunchMode,std::string(64,'d')) ||
+      !CancelAdmission(control,id,kLaunchMode,std::string(64,'d')) ||
+      !VerifyPipxRuntimeReadiness() ||
+      !ArmAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
       !CancelAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
       !InvalidateProfile(control,id,generation)) return false;
   close(client->second);gControlClients.erase(client);

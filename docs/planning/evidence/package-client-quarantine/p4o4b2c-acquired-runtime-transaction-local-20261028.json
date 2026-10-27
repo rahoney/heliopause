@@ -1,0 +1,285 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B2c",
+  "baseline_commit": "3a5b3a2",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES(acquired backend/common transaction)",
+    "QUALIFIED": "YES(named local scope)",
+    "ACCEPTANCE_CLOSED": "YES(named local transaction scope only)",
+    "MISSING": [
+      "required release composite/factory",
+      "complete release DATA membership/install/recovery",
+      "native pipx tools/CLI",
+      "grouped hosted/common consumers",
+      "final full CPU/three CUDA support matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/pypi_dynamic.go",
+      "sha256": "a3c38dbeee4d21914404a93a1681a39cede4a44e64768af1d89783e315af9fd6"
+    },
+    {
+      "path": "internal/sandbox/pypi_dynamic_factory.go",
+      "sha256": "cbb42a75763029bf1c98becb750421e78df8d2db12effeef118914144847bebe"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_runtime.go",
+      "sha256": "d0277ed4a390b4ba64b67c36840d557cace36ceeeaa84a5c00047eb6c81d031e"
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "sha256": "d88123377249323961708e8036cdaa4c5162a7bbc85359dd4368985e2db352d4"
+    },
+    {
+      "path": "internal/sandbox/pipx_dynamic.go",
+      "sha256": "089af683123bc9684f67045a8fa4898cc05e03a3da93b2e23ae3d3b10f67a343"
+    },
+    {
+      "path": "internal/sandbox/pipx_dynamic_test.go",
+      "sha256": "d8160e7b71fb29dde6a8adb6cbd1e3ab9cfa6539462a136b919d5ccce575cb99"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper_test.go",
+      "sha256": "120a1247b45f38f27e437ada003301db9454d2f4bc15cf1a09f1f828eff3403c"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "a4aec7cd892204779528b59c78fc9f560ba0c506c1a2479064ff00aa7fbfb7f9"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "661653a517309352f572d273af6a33599b59e0e3a281248a4c75ff92b4085848"
+    },
+    {
+      "path": "internal/sandbox/pipx_dynamic_real_test.go",
+      "sha256": "56fa125d29e4a46f9327117d7aeb28ea5bdd080375c8ca6e2506792032fe9d4b"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.79
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 43.305
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 16.78
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.243
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.232
+    }
+  ],
+  "canonical_observer_build": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4b2c-v4-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 245.432,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "a4aec7cd892204779528b59c78fc9f560ba0c506c1a2479064ff00aa7fbfb7f9"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "661653a517309352f572d273af6a33599b59e0e3a281248a4c75ff92b4085848"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "c032418714f02ac399f018278270f0fb983343676fa89f2b95eb13cf3fd74359",
+    "observer": {
+      "bytes": 3159696,
+      "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+    }
+  },
+  "actual": {
+    "exit": 0,
+    "seconds": 87.436,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "d08d81e6e37e2b7612075c7304d0da6ab5960376f029483659a94d4681d8406f",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4b2c-actual-v2/protected-client",
+        "sha256": "0c8ec5733ab633b629e260562cca55de389873bc8e2db41acd8779ecfced3b39"
+      },
+      {
+        "path": "/tmp/haa-p4o4b2c-actual-v2/observer",
+        "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_dynamic_real_test.go",
+        "sha256": "56fa125d29e4a46f9327117d7aeb28ea5bdd080375c8ca6e2506792032fe9d4b"
+      }
+    ],
+    "passed_named_tests": [
+      "TestLinuxPipxAcquiredRuntimeTransactionIntegration"
+    ],
+    "named_pass": true
+  },
+  "wheel_regression": {
+    "exit": 0,
+    "seconds": 151.871,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "75a9d5474602d9d89d2c22ea687c029d680ecf9f704955000594eb4998734560",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4b2c-wheel-regression-v1/protected-client",
+        "sha256": "0c8ec5733ab633b629e260562cca55de389873bc8e2db41acd8779ecfced3b39"
+      },
+      {
+        "path": "/tmp/haa-p4o4b2c-wheel-regression-v1/observer",
+        "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_dynamic_real_test.go",
+        "sha256": "56fa125d29e4a46f9327117d7aeb28ea5bdd080375c8ca6e2506792032fe9d4b"
+      }
+    ],
+    "passed_named_tests": [
+      "TestLinuxPyPIWheelDynamicIntegration",
+      "TestLinuxPythonRootPolicyTransactionSequenceIntegration",
+      "TestLinuxInspectionPrerequisiteSequenceIntegration"
+    ],
+    "named_pass": true
+  },
+  "actual_cases": [
+    {
+      "name": "complete-before",
+      "seconds": 39.79,
+      "status": "COMPLETED",
+      "units": 20,
+      "commands": 5,
+      "registrations": 22,
+      "create": 1,
+      "close": 1,
+      "cpu_usec": 12759290
+    },
+    {
+      "name": "accounting-failure",
+      "seconds": 6.43,
+      "status": "INCOMPLETE",
+      "commands": 0,
+      "registrations": 3,
+      "create": 1,
+      "close": 1,
+      "cpu_usec": 664460,
+      "injection": "test-only error after actual resource Read; not actual helper outage"
+    },
+    {
+      "name": "complete-after",
+      "seconds": 39.36,
+      "status": "COMPLETED",
+      "units": 20,
+      "commands": 5,
+      "registrations": 22,
+      "create": 1,
+      "close": 1,
+      "cpu_usec": 12472671
+    }
+  ],
+  "regression_scope": {
+    "top_level_pass": [
+      "TestLinuxPyPIWheelDynamicIntegration",
+      "TestLinuxPythonRootPolicyTransactionSequenceIntegration",
+      "TestLinuxInspectionPrerequisiteSequenceIntegration"
+    ],
+    "root_policy_sequence_cases": 10,
+    "prerequisite_positive_negative_and_next_cpu_cases": 8,
+    "full_cuda": false,
+    "new_acquired_subject": "synthetic HAA v9.8.7 original release identity; not a published release"
+  },
+  "preserved_failure": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b2c-first-actual-assessment.json",
+    "target_condition_superseded": "binary_path=/bin/sh; exact pinned resolved image is /usr/bin/dash with execfn=/bin/sh",
+    "go_binary_and_input_unchanged_between_actuals": true,
+    "control_launch_blanket_rejection_superseded": true
+  },
+  "invariants": [
+    "same default pypi CPU30s/memory512MiB/tmpfs256MiB/wall5m/trace10k-2MiB; no increased budget",
+    "original acquired HAA identity/digest/handle; no installed runtime read/fake wheel",
+    "C2 root writer removed before DATA seal; all observation attachments readonly",
+    "same existing ledger/CPU watch/unit loop/cleanup/finalize; external completion only",
+    "CONTROL exact readiness only; Python ARTIFACT handoff; ELF rejected",
+    "private mount namespace only; Host protected5files/Docker/source ZIP unchanged; helper wait0/confirmed stopped"
+  ],
+  "evidence_inventory": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b2c-final-evidence-inventory.json",
+    "files": 89,
+    "sha256": "532130611566f5a55646acdaf3649c9cd703cf11156672427befd2e097a96f4a"
+  }
+}

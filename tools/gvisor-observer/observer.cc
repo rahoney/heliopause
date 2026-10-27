@@ -1163,6 +1163,21 @@ bool ExtractBoundaryAdmissionNonce(const gvisor::sentry::ExecveInfo& message,
   return ValidAdmissionNonce(*nonce);
 }
 
+// Exact controller-owned readiness tuple; diagnostic command shapes grant no authority.
+constexpr char kBoundaryReadinessScript[] = R"HAA(test "$(id -u)" = 1000; test "$(id -g)" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq "^${field}:[[:space:]]+0000000000000000$" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq "^${field}:[[:space:]]+0000000000000000$" /proc/self/status; done)HAA";
+
+bool IsExactPipxReadiness(const gvisor::sentry::ExecveInfo& message, bool boundary) {
+  const int offset = boundary ? 3 : 0;
+  const char* binary = boundary ? kBoundaryHelperPath : "/usr/bin/dash";
+  const char* invoked = boundary ? kBoundaryHelperPath : "/bin/sh";
+  if (message.binary_path() != binary || message.execfn() != invoked ||
+      message.argv_size() != offset + 3) return false;
+  if (boundary && (message.argv(0) != kBoundaryHelperPath ||
+      message.argv(1) != kLaunchMode || !ValidAdmissionNonce(message.argv(2)))) return false;
+  return message.argv(offset) == "/bin/sh" && message.argv(offset + 1) == "-ceu" &&
+      message.argv(offset + 2) == kBoundaryReadinessScript;
+}
+
 bool ConsumeDirectExecAdmission(ProfileRegistration* registration, BoundaryMode mode,
                                 const std::string& nonce) {
   const char* expected_mode = BoundaryModeName(mode);
@@ -3739,7 +3754,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
   if (peer->registered && !peer->terminal && peer->container_id == id &&
       peer->session_generation == generation && profile != profiles->end() &&
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
-      (!IsPipxRuntimeProfile(profile->second.profile.c_str()) || mode == kPythonHandoffMode)) {
+      (!IsPipxRuntimeProfile(profile->second.profile.c_str()) || mode == kPythonHandoffMode || mode == kLaunchMode)) {
     auto pending = profile->second.pending_admissions.end();
     for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
       if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
@@ -4198,6 +4213,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     std::string admission_nonce;
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
+        (IsPipxRuntimeProfile(profile) && boundary_mode != BoundaryMode::kPythonHandoff &&
+         !(boundary_mode == BoundaryMode::kLaunch && IsExactPipxReadiness(message, true))) ||
         !ExtractBoundaryAdmissionNonce(message, boundary_mode, &admission_nonce) ||
         !ConsumeDirectExecAdmission(registration, boundary_mode, admission_nonce) ||
         candidate.groups.size() >= kMaxTrackedProcessGroups ||
@@ -4528,6 +4545,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   }
   if (group->second.role == ProcessState::Role::kControl &&
       group->second.launch_target_pending) {
+    if (IsPipxRuntimeProfile(profile) && !IsExactPipxReadiness(message, false)) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
     const ProcessClass process_class = ProcessClassForPath(message.binary_path(), profile);
     const TrackResult tracked_result = TrackExpectedProcessGroup(message.context_data(), process_class, &candidate);
     if (tracked_result != TrackResult::kTracked) {

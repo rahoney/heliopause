@@ -184,7 +184,7 @@ func (i *PythonArtifactIntroducer) validatedWheelDestinations(target domain.Acqu
 }
 
 // PythonDynamicBackend owns bounded, independent runsc-trace observations for
-// a statically declared wheel surface. It returns observations only;
+// a statically declared wheel surface or selected runtime ZIP. It returns observations only;
 // it never creates Findings, Evidence, Policy or Promotion state.
 type PythonDynamicBackend struct {
 	runner       CommandRunner
@@ -196,13 +196,25 @@ type PythonDynamicBackend struct {
 }
 
 func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactIntroducer, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PythonDynamicBackend, error) {
-	if runner == nil || introducer == nil || observer == nil || probe == nil {
+	if introducer == nil {
+		return nil, errors.New("python dynamic backend is not configured")
+	}
+	backend, err := newPythonObservationBackend(runner, observer, probe)
+	if err != nil {
+		return nil, err
+	}
+	backend.introducer = introducer
+	return backend, nil
+}
+
+func newPythonObservationBackend(runner CommandRunner, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PythonDynamicBackend, error) {
+	if runner == nil || observer == nil || probe == nil {
 		return nil, errors.New("python dynamic backend is not configured")
 	}
 	if _, ok := runner.(discardCommandRunner); !ok {
 		return nil, errors.New("python dynamic runner must discard command output")
 	}
-	return &PythonDynamicBackend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
+	return &PythonDynamicBackend{runner: admissionAwareRunner(runner), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
 func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, imports []string) (domain.SandboxResult, error) {

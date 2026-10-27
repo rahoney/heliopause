@@ -419,8 +419,9 @@ asset 경로로 교정했다. 제품 guard나 selected digest를 바꾸지 않�
 classifier와 필요한 immutable runtime read만 같은 기존 predicate로 재사용하고 pip binary/
 site-packages·pip.conf, `/haa-site`를 승계하지 않는다. ARTIFACT role·관찰된 executable
 identity·정확한 proc identity 검사는 유지한다. DATA는 exact ZIP과 parent만 읽고 write·다른
-member 경로는 거부한다. Profile의 direct admission은 `--handoff-python`만 받으며
-CONTROL launch와 ELF handoff는 protocol에서 거부한다. 기존 profile 의미는 보존한다.
+member 경로는 거부한다. B2b 최초 구현은 direct admission을 `--handoff-python`만 받도록 제한했다.
+이 일괄 CONTROL launch 거부는 아래 B2c의 canonical readiness 연결 대조로 반증되어
+superseded다. ELF handoff 거부와 ARTIFACT Python 원칙은 유지한다.
 
 Go factory의 phase별 `/haa-pipx` topology와 C++ 실제 registration/admission·latch를 함께
 검증한다. Host tmpfs noexec와 guest9p flags를 혼동하지 않는다. Quick/관련 Race·pinned
@@ -432,3 +433,77 @@ sandbox Race25.051s/docs/security PASS와 canonical observer build274.583s/전�
 124latches PASS를 연결한다. 새 fixed ZIP read와 ARTIFACT-only Python admission의
 production protocol 거부/정상 회귀를 포함한다. Helper는 빌드했으며 Host에 설치·활성화하지
 않았다. 실제 acquired ZIP의 gVisor transaction·완료 원장·CPU/cleanup은 B2c에 남는다.
+
+## B2c — 기존 transaction 연결의 source 전 세부 지도
+
+기준3a5b3a2다. B2a input/program과 B2b profile/latches는 각각 로컬 검증했고 새 profile의
+실제 acquired ZIP transaction은 아직 없다. M13-004 하나만 IN_PROGRESS다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| acquired bytes/20unit + fixed profile | YES | YES(named local helpers) | YES(local) | YES(named helper scopes) | 실제 backend entry |
+| wheel manifest/install preparation | YES | YES(wheel) | YES(existing) | YES(wheel) | 기존 구현 유지; ZIP은 C2 DATA seed/bind/seal 사용 |
+| unit loop·CPU watch·external finish·cleanup/finalize | YES | YES(wheel) | YES(existing) | YES(wheel) | 같은 기존 실행 함수를 ZIP에서도 소비 |
+| actual ZIP gVisor transaction | NO | NO | NO | NO | helper/Host 사전상태·20unit·원본 identity·정리/회계 실제 검증 |
+
+기존 `executeTrustedTransaction`의 wheel 검증 앞부분은 유지한다. 이후 shared ledger 생성,
+unit loop와 cleanup/finalize를 private transaction spec을 받는 기존 공통 실행으로 옮긴다.
+동등한 새 완료 원장·CPU watcher·정리 loop를 만들지 않는다. Spec은 두 trusted constructor만
+만들고 arbitrary user mode/callback/path를 받지 않는다. Wheel은 기존 manifest/install/검증,
+ZIP은 B2a input과 C2 volume/seed/bind/seal을 사용한다. 기존 wave의 명령·순서·coverage·
+오류/observer/accounting 조건은 보존한다.
+
+새 fixed ZIP entry는 wheel intake directory를 필수 입력으로 요구하지 않는다. 현재 backend의
+command/probe/session 구성을 재사용하되 wheel introducer는 기존 wheel constructor만 요구한다.
+새 entry는 원본 HAA identity와 frozen plan을 받고 pypi resource class의 기존 고정 한도만
+사용한다. Image/CPU/memory/wall/trace 한도를 올리거나 context의 다른 PyTorch budget을
+승계하지 않는다. ZIP phase container의 preparation memory도 기본 RuntimeMemory 이내다.
+
+`startPhase`의 실제 mount/cgroup/observer 연결은 fixed content별 factory를 고른다. ZIP은
+B2b typed topology와 같은 shared ledger를 사용한다. 각 unit 전후 C2 readback/readonly
+attachment 검증을 연결하고 writer 제거 뒤 seal해야 관찰을 시작한다. Cleanup은 기존
+terminate→resource close→owned volume disposal→finalize를 유지하며 UNKNOWN/첫 오류를
+보존한다. B2b에서 빌드한 helper를 새 실제 입력의 observer로 사용하고 Host 보호 파일/
+Docker 상태·source/helper identity·정리 원본을 묶는다. Fake wheel이나 Python stdout로
+COMPLETED를 생성하지 않는다.
+
+먼저 Quick/관련 전체 Race·정상/부정 회귀를 수행하고, 새 helper의 실제 ZIP transaction과
+기존 wheel·작은 네 Python root policy 실패/정상 회계·필수 실제 CPU/hosted 소비자를 확인한다.
+공통 observer/transaction의 전체 supported profile qualification은 각각의 실제 결과로
+관리하고 대표 성공을 다른 CUDA profile로 확대하지 않는다. Release required composite와
+최종 native pipx/CLI는 다음 연결 경계에 남는다.
+
+B2c 첫 Go 연결 후보의 Quick202.663s/sandbox Race22.662s/docs/security는 PASS다.
+그러나 source 대조에서 공통 `startPhase` → `awaitBoundaryHelper`가 고정 CONTROL
+readiness launch를 필수 실행하므로 B2b protocol의 일괄 launch 거부와 충돌함을 확인했다.
+실제 gVisor 실행 전의 확정된 연결 결함이며 runtime 실패 결과로 쓰지 않는다.
+첫 source/checks는 `p4o4b2c-first-*` 원본으로 보존했다. 수정은 launch ARM을 허용하되
+소비 시 helper binary/execfn·nonce·전체 고정 readiness argv만 받고, demotion 뒤 target도
+같은 tuple로 재검증한다. 임의 shell/Python CONTROL·ELF handoff는 거부한다.
+Diagnostic command phase는 권한에 사용하지 않는다. 기존 Go/C++ raw-string lexer로
+readiness literal drift를 검사하고 실제 production parser의 정상/12개 부정 입력을 검증한다.
+
+첫 actual v1은6.617s/INCOMPLETE, preparation의 SENTRY_EXEC/PROCESS_PROVENANCE_UNKNOWN으로
+중단됐다(7expected events, Create/Register/Close각1, CPU227794usec). ZIP import는 미도달이다.
+보호5파일/Docker/원본ZIP 불변, helper wait0/CONFIRMED_STOPPED·잔존helper0을 확인했다.
+`p4o4b2c-first-actual-*` 원본과 assessment를 보존했다. 새 target predicate는 binary_path=/bin/sh를
+요구하지만 기존 pinned OCI bootstrap은 /usr/bin/dash와 execfn=/bin/sh를 구분한다. 같은 정확한
+resolved tuple과 실제 demotion→target chain 정상/변이5개 거부를 추가한다. 첫 trace에는 argv가
+없으므로 첫 실패의 인과는 다음 actual 대조까지 미확정이다. Budget/role/topology와 전체 coverage는
+완화하지 않는다.
+
+같은 Go binary/선택 ZIP/default budget에서 target 경로 구분만 교정한 observer의
+canonical build245.432s/124latches와 actual v2 87.436s가 PASS다. 정상39.79/39.36s 두 요청은
+각20units/Register22/Close1·CPU12759290/12472671usec·post-install command5개를 완료했다.
+중간 실제 Read 뒤 test-only 오류 주입6.43s는 INCOMPLETE/commands0/Register3/Close1이다.
+실제 helper 자체의 장애 재현과 구분한다. Host 보호5파일/Docker/선택 ZIP 불변과
+helperwait0/CONFIRMED_STOPPED·잔존helper0을 확인했다. Source condition 수정과 실제
+준비→관찰 완료 대조로 첫 target 경로 오류의 named 해결을 확인했으며 한도를 변경하지 않았다.
+기존 wheel/네 작은 Python root policy·prerequisite sequence 회귀와 최종 source 검증은 진행 중이다.
+
+B2c [로컬 receipt](./p4o4b2c-acquired-runtime-transaction-local-20261028.json)는 최종 canonical
+profiles·sandbox 전체 Race와 canonical124latches, 새 acquired transaction87.436s 및 기존
+wheel/작은 네 policy·prerequisite sequence151.871s/noSKIP·helperwait0/Host 동일을 연결한다.
+기존 완료 원장/CPU watch/unit loop/cleanup을 재사용한 named local 경계만 닫았다.
+Required release composite/factory·배포/설치 membership과 native pipx/CLI·hosted/final full
+profile matrix는 남는다. 다음 B2d에서 원본 HAA subject의 required check/Evidence로 연결한다.
