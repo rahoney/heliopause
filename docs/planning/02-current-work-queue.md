@@ -25,6 +25,21 @@ Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### 2026-10-27 P4-O4-B1a ZIP snapshot 로컬 검증
+
+[B1a receipt](./evidence/package-client-quarantine/p4o4b1a-pipx-zip-input-local-20261027.json)는
+Quick256.943s/PyPI 전체 Race8.661s/actual2.347s/docs/security PASS를 연결한다.
+Selected2505814B/190files의 immutable copy와 변조·잘림·추가 바이트 거부를 확인했다.
+Python은 실행하지 않았으며 original HAA intake binding·surface/typed plan·observer는 남는다.
+같은 M13-004/B1의 다음 입력 연결을 계속하며 이 helper 단독으로 push하지 않는다.
+
+### 2026-10-27 P4-O4-B1a 착수
+
+[기존 B1 수정 지도](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)의
+세부 baseline에 따라 acquired ZIP immutable bytes/file facts부터 연결한다. Fixed selected pin과
+원본 HAA identity를 보존하며 Python surface/typed plan·동적 관찰·release 전체 연결은 남는다.
+기존 supply/wheel parser를 재사용하고 M13-004 하나만 IN_PROGRESS로 유지한다.
+
 ### 2026-10-27 CI419 최종 결과 확인
 
 [CI419 qualification](./evidence/package-client-quarantine/ci419-pipx-data-hosted-qualification-20261027.json)은

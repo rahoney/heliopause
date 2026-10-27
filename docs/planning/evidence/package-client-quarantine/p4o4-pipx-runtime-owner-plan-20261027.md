@@ -197,3 +197,32 @@ reader와 같은 held root/current/inode 검증이 아니다. 이보다 강한 �
 member body를 열어 CRC/metadata를 검증하는 함수는 아니다. 새 acquired ZIP consumer는
 읽은 immutable bytes의 실제 길이/digest를 별도로 묶고 Python surface에 필요한 member
 내용을 bounded하게 검사해야 한다. 이 확인은 기존 구현의 대체 요구가 아니라 B1 gap 구체화다.
+
+## B1a — acquired ZIP immutable input의 세부 baseline
+
+기준46b91a6, CI419는 source504e698의 기존 소비자까지 검증했다. B1a source 전 판정:
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `PipxSupplyClosure.ZIP` 원본 member 공급 | YES | YES(supply) | YES(O3/A) | YES(supply only) | acquired ZIP snapshot 소비 |
+| `wheelEntryPath`/`readZipEntry` | YES | YES(wheel) | YES(existing) | YES(wheel only) | ZIP 전체 bound·fixed pin·immutable file facts |
+| acquired runtime ZIP typed input | NO | NO | NO | NO | caller buffer와 분리된 bytes/file digest snapshot, invalid zero value |
+| `StaticInspector.openAsset`/bounded intake read | YES | YES(existing) | YES(existing) | YES(existing) | original HAA identity/size/digest에 묶인 ZIP typed input |
+
+새 `pypi.PipxRuntimeZIP`은 selected runtime identity의 exact size/hash를 검사한 후
+owned byte copy와 bounded member facts를 만든다. 기존 wheel path/entry reader를 재사용하고
+정렬·중복·파일/디렉터리 충돌·Store/0444·고정 timestamp·전체 expanded budget·CRC를 확인한다.
+Public constructor의 pin을 시험용 caller override로 열지 않는다. Synthetic 구조 회귀는 private
+parser를 검사하고 actual selected ZIP은 explicit realcorpus 입력으로 public constructor를 검사한다.
+외부 accessor는 copy만 반환한다. 임의 ZIP 지원·wheel identity·Policy Evidence는 만들지 않는다.
+
+Inspection의 다음 소비자는 기존 controlled intake reader/DownloadReader와 original acquired
+identity를 재사용하며 HAA release version을 pipx version으로 바꾸지 않는다. Static input 생성은
+required inspection 완료가 아니다. Embedded 실제 RECORD/metadata와 Python surface·typed plan,
+외부 observer/backend 연결은 B1b/B2에 남는다. 두 번째 검토에서도 installed-root reader를
+새 acquisition의 대체 경로로 쓰지 않고 기존 release/native/wheel 구현은 유지한다.
+
+B1a snapshot의 named local 결과는 [receipt](./p4o4b1a-pipx-zip-input-local-20261027.json)를 따른다.
+`ports.DownloadReader`는 진행률 wrapper이며 자체 read bound가 없음을 source에서 확인했다.
+다음 intake consumer는 `io.LimitReader`로 selected size+1을 명시하고 실제 길이/hash를
+검사한다. 기존 helper 이름이나 total 인자를 byte budget으로 간주하지 않는다.
