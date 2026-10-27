@@ -16,14 +16,29 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
-Next action: M13-004/P4-O3 — immutable candidate materialization/loader baseline and concrete edit map; CI415 cause OPEN
-Current substep: M13-004/P4-O2 named LOCAL QUALIFIED; O3 baseline next; whole pipx/final profiles remain
+Next action: M13-004/P4-O4 — single runtime owner/maintenance/release/typed DATA ZIP supply audit; CI415 cause OPEN
+Current substep: M13-004/P4-O3 candidate/basic loader LOCAL QUALIFIED; O4 owner audit next; whole pipx/final profiles remain
 Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O3 한정 로컬 검증
+
+[O3 receipt](./evidence/package-client-quarantine/p4o3-pipx-loader-local-20261027.json)의
+Quick221.019s/affected Race37.284s/docs·security와 실제 ZIP 생성·원본190파일 대조,
+결정성·기존 출력 보존·frozen27파일 불변을 확인했다. Fixed Python runc guest의
+metadata/version/help도 PASS이며 보호5파일/Docker·candidate bytes는 동일하다.
+GVisor/observer/native pipx/CLI 검증으로 확대하지 않고 O4 single owner 감사로 이어간다.
+
+### 2026-10-27 P4-O3 착수
+
+[O3 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4o3-pipx-loader-plan-20261027.md)에
+따라 O2 held bytes와 typed manifest, 기존 no-replace publisher를 재사용한다.
+원본 RECORD·license를 보존한 readonly ZIP 후보와 fixed Python isolated loader를 검증한다.
+공통 runtime/observer·native install·upgrade/CLI acceptance는 별도 MISSING이다.
 
 ### 2026-10-27 P4-O2 한정 로컬 검증
 

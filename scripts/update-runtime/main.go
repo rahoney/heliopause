@@ -87,6 +87,9 @@ func run(args []string, out io.Writer) error {
 	if args[0] == "verify-pipx-closure" {
 		return verifyPipxClosure(args[1:], out)
 	}
+	if args[0] == "materialize-pipx-candidate" {
+		return materializePipxCandidate(args[1:], out)
+	}
 	if args[0] == "materialize-pnpm" {
 		return materializePNPM(args[1:], out)
 	}

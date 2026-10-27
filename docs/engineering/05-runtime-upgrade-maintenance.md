@@ -575,6 +575,19 @@ Receipt 범위는 `STATIC_WHEEL_CLOSURE_AND_PUBLISH_PROOFS_ONLY`다. 공급 byte
 closure의 사실이며 immutable loader/runtime admission·native 동작·설치/지원 qualification은
 후속 단계다. 입력의 후보 버전은 별도 product version lock을 만들거나 pin을 자동 채택하지 않는다.
 
+### pipx readonly 후보의 명시 출력
+
+```sh
+go run ./scripts/update-runtime materialize-pipx-candidate --root /absolute/repo --input /absolute/frozen-pipx-closure --output /absolute/external/pipx-runtime.zip
+```
+
+위 공급 검증과 같은 held wheel bytes를 사용해 모든 원본 member·RECORD·license를
+보존하는 결정적 ZIP을 생성한다. Whole archive와 member hash를 재대조하고 현재 검토한
+root module/dist-info 배치만 허용한다. Relocation·충돌·8MiB 초과는 거부한다.
+출력은 source tree 밖의 새 파일이며 기존 no-replace publisher로0444를 기록한다.
+이 명령은 Python을 실행하거나 설치·runtime pin을 변경하지 않는다. Isolated loader,
+gVisor/observer와 실제 pipx install/upgrade 지원은 별도 qualification이다.
+
 ### pnpm release 공급의 offline 검증
 
 현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과
