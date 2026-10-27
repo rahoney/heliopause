@@ -48,7 +48,7 @@ func (c *checker) runGitleaks(step string, arguments ...string) error {
 	if err := c.verifyTool(tool); err != nil {
 		return err
 	}
-	return c.runAnalysis(step, c.toolExecutable(tool), arguments...)
+	return c.runGitleaksWithPublicMetadata(step, c.toolExecutable(tool), arguments...)
 }
 
 func (c *checker) runVulnerability() error {

@@ -103,3 +103,6 @@ docs/planning/evidence/m12-005-qualification/remote-ci/run37570546443-job1126279
 docs/planning/evidence/m12-005-qualification/remote-ci/run37570546443-job112627946164.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-005-qualification/remote-ci/run37570546443-job112627946173.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-005-qualification/remote-ci/run37570546443-job112640874591.log whitespace=-blank-at-eol
+
+# Preserve the original Pygments AUTHORS license text in the generated notices.
+tools/pipx/NOTICE whitespace=-blank-at-eol

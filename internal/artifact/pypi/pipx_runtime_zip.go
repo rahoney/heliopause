@@ -63,10 +63,11 @@ func pipxRuntimeZIPFiles(body []byte) ([]PipxRuntimeZIPFile, error) {
 	seen := make(map[string]bool, len(archive.File))
 	previous := ""
 	var total int64
+	expandedLimit := PublicPyPIProfile().ResourcePolicy().MaxGraphUncompressed()
 	fixedTime := time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC)
 	for _, member := range archive.File {
 		name, directory, ok := wheelEntryPath(member)
-		if !ok || directory || name <= previous || strings.ContainsAny(name, "\x00\r\n") || member.Mode().Perm() != 0444 || member.Method != zip.Store || !member.Modified.Equal(fixedTime) || member.Comment != "" || member.UncompressedSize64 > uint64(pipxSupplyZIPLimit-total) {
+		if !ok || directory || name <= previous || strings.ContainsAny(name, "\x00\r\n") || member.Mode() != 0444 || (member.Method != zip.Store && member.Method != zip.Deflate) || !member.Modified.Equal(fixedTime) || member.Comment != "" || member.UncompressedSize64 > uint64(expandedLimit-total) {
 			return nil, errors.New("pipx runtime ZIP member metadata is invalid")
 		}
 		for parent := path.Dir(name); parent != "."; parent = path.Dir(parent) {
@@ -74,7 +75,7 @@ func pipxRuntimeZIPFiles(body []byte) ([]PipxRuntimeZIPFile, error) {
 				return nil, errors.New("pipx runtime ZIP file and directory collide")
 			}
 		}
-		data, err := readZipEntry(member, pipxSupplyZIPLimit-total)
+		data, err := readZipEntry(member, expandedLimit-total)
 		if err != nil || uint64(len(data)) != member.UncompressedSize64 {
 			return nil, errors.New("pipx runtime ZIP member bytes are invalid")
 		}

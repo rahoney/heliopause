@@ -66,7 +66,7 @@ func TestPipxRuntimeInputActualAcquisitionBinding(t *testing.T) {
 				}
 				return
 			}
-			if err != nil || !input.plan.Valid() || input.artifact.Identity() != artifact.Identity() || input.artifact.Digest() != artifact.Digest() || input.artifact.ContentHandle() != artifact.ContentHandle() || len(input.plan.Units()) != 12 {
+			if err != nil || !input.plan.Valid() || input.artifact.Identity() != artifact.Identity() || input.artifact.Digest() != artifact.Digest() || input.artifact.ContentHandle() != artifact.ContentHandle() || len(input.plan.Units()) != 20 {
 				t.Fatal("original HAA acquisition binding lost", err)
 			}
 			if err := os.WriteFile(held, []byte("changed after acquisition"), 0600); err != nil {

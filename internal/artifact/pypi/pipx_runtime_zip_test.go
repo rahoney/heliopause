@@ -3,6 +3,7 @@ package pypi
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/binary"
 	"os"
 	"testing"
 	"time"
@@ -36,7 +37,7 @@ func runtimeZIPHeader(name string) zip.FileHeader {
 }
 
 func TestPipxRuntimeZIPMemberFactsAndRefusals(t *testing.T) {
-	for _, mode := range []string{"valid", "duplicate", "unsorted", "traversal", "absolute", "backslash", "nul", "collision", "symlink", "writable", "compressed", "timestamp", "crc", "truncated", "empty", "bound"} {
+	for _, mode := range []string{"valid", "duplicate", "unsorted", "traversal", "absolute", "backslash", "nul", "collision", "symlink", "writable", "setuid", "compressed", "unsupported-method", "expanded", "timestamp", "crc", "truncated", "empty", "bound"} {
 		t.Run(mode, func(t *testing.T) {
 			headers := []zip.FileHeader{runtimeZIPHeader("a.py"), runtimeZIPHeader("b/c.py")}
 			switch mode {
@@ -58,6 +59,8 @@ func TestPipxRuntimeZIPMemberFactsAndRefusals(t *testing.T) {
 				headers[0].SetMode(os.ModeSymlink | 0444)
 			case "writable":
 				headers[0].SetMode(0644)
+			case "setuid":
+				headers[0].SetMode(os.ModeSetuid | 0444)
 			case "compressed":
 				headers[0].Method = zip.Deflate
 			case "timestamp":
@@ -65,6 +68,18 @@ func TestPipxRuntimeZIPMemberFactsAndRefusals(t *testing.T) {
 			}
 			body := runtimeZIPFixture(t, headers)
 			switch mode {
+			case "unsupported-method":
+				index := bytes.Index(body, []byte{'P', 'K', 1, 2})
+				if index < 0 {
+					t.Fatal("central header missing")
+				}
+				binary.LittleEndian.PutUint16(body[index+10:], 99)
+			case "expanded":
+				index := bytes.Index(body, []byte{'P', 'K', 1, 2})
+				if index < 0 {
+					t.Fatal("central header missing")
+				}
+				binary.LittleEndian.PutUint32(body[index+24:], uint32(PublicPyPIProfile().ResourcePolicy().MaxGraphUncompressed()+1))
 			case "crc":
 				at := bytes.Index(body, []byte("original member"))
 				if at < 0 {
@@ -79,7 +94,7 @@ func TestPipxRuntimeZIPMemberFactsAndRefusals(t *testing.T) {
 				body = make([]byte, pipxSupplyZIPLimit+1)
 			}
 			facts, err := pipxRuntimeZIPFiles(body)
-			if mode != "valid" {
+			if mode != "valid" && mode != "compressed" {
 				if err == nil || facts != nil {
 					t.Fatal("invalid ZIP accepted")
 				}

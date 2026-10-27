@@ -20,12 +20,36 @@
     "runtime_bundle": {
       "architecture": "amd64",
       "members": [
-        {"path": "containerd-shim-runsc-v1", "size": 43865876, "sha512": "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"},
-        {"path": "gvisor-bin/checkpointgofer", "size": 68249064, "sha512": "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"},
-        {"path": "gvisor-bin/gvisor-sentry-prewarmer", "size": 1416, "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-        {"path": "gvisor-bin/gvisor_sentry", "size": 51923536, "sha512": "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"},
-        {"path": "gvisor-bin/runsc-metric-server", "size": 53387149, "sha512": "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"},
-        {"path": "runsc", "size": 110972712, "sha512": "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"}
+        {
+          "path": "containerd-shim-runsc-v1",
+          "size": 43865876,
+          "sha512": "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"
+        },
+        {
+          "path": "gvisor-bin/checkpointgofer",
+          "size": 68249064,
+          "sha512": "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"
+        },
+        {
+          "path": "gvisor-bin/gvisor-sentry-prewarmer",
+          "size": 1416,
+          "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+        },
+        {
+          "path": "gvisor-bin/gvisor_sentry",
+          "size": 51923536,
+          "sha512": "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"
+        },
+        {
+          "path": "gvisor-bin/runsc-metric-server",
+          "size": 53387149,
+          "sha512": "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"
+        },
+        {
+          "path": "runsc",
+          "size": 110972712,
+          "sha512": "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"
+        }
       ]
     }
   },
@@ -137,32 +161,60 @@
       "source_id": "pytorch-cpu",
       "index_url": "https://download.pytorch.org/whl/cpu/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu126",
       "source_id": "pytorch-cu126",
       "index_url": "https://download.pytorch.org/whl/cu126/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu130",
       "source_id": "pytorch-cu130",
       "index_url": "https://download.pytorch.org/whl/cu130/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu132",
       "source_id": "pytorch-cu132",
       "index_url": "https://download.pytorch.org/whl/cu132/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     }
   ],
   "bazel": {
@@ -176,56 +228,76 @@
     "runtime_image": "python_image",
     "inputs": [
       {
-        "path": "argcomplete/argcomplete-3.7.2-py3-none-any.whl",
-        "sha256": "6029205678bdd9c1c728a155f5f9ecf5812393f969eef58807641a2bc2aa5b19"
-      },
-      {
         "path": "argcomplete/identity.json",
         "sha256": "2aa271eaa8e23a6fa386c45bd4b4bb1900d4d890c998a73ea9cc7a25741a613f"
-      },
-      {
-        "path": "argcomplete/metadata.json",
-        "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
       },
       {
         "path": "argcomplete/provenance.json",
         "sha256": "61d0ce76874cb85aa884c3bd09712e77f3de22674f350c8b85575bb982805e1e"
       },
       {
-        "path": "click/click-8.5.0-py3-none-any.whl",
-        "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+        "path": "argcomplete/metadata.json",
+        "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
+      },
+      {
+        "path": "argcomplete/argcomplete-3.7.2-py3-none-any.whl",
+        "sha256": "6029205678bdd9c1c728a155f5f9ecf5812393f969eef58807641a2bc2aa5b19"
       },
       {
         "path": "click/identity.json",
         "sha256": "0c782df5b1ec8b77c1c7852d068595d85108b148689ae3b7d2ec14b6d77c3e0c"
       },
       {
-        "path": "click/metadata.json",
-        "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
-      },
-      {
         "path": "click/provenance.json",
         "sha256": "aa8c59737151791b2b9e7a8ed0d5a6885ec49fbb73968a04d7eeb9421c4499bd"
       },
       {
-        "path": "filelock/filelock-4.2.1-py3-none-any.whl",
-        "sha256": "7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44"
+        "path": "click/metadata.json",
+        "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
+      },
+      {
+        "path": "click/click-8.5.0-py3-none-any.whl",
+        "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
       },
       {
         "path": "filelock/identity.json",
         "sha256": "fd45ded86c1bd040adb5fd88f587d7a1f14a9fe5503df6e47d4e464683f53007"
       },
       {
-        "path": "filelock/metadata.json",
-        "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
-      },
-      {
         "path": "filelock/provenance.json",
         "sha256": "fac996da43df0c56fd2b6d32aaa7055d1400bb6693464ef4a0ae7665bcee21a5"
       },
       {
+        "path": "filelock/metadata.json",
+        "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
+      },
+      {
+        "path": "filelock/filelock-4.2.1-py3-none-any.whl",
+        "sha256": "7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44"
+      },
+      {
+        "path": "iniconfig/identity.json",
+        "sha256": "a65e4790576254a49e22d60eeec17d875923673db33e48c4de745cca657040e9"
+      },
+      {
+        "path": "iniconfig/provenance.json",
+        "sha256": "8a8aaa6c314e055657f034eeb166fc849f563271480a203937e60ccffb6fa458"
+      },
+      {
+        "path": "iniconfig/metadata.json",
+        "sha256": "ab4d5df71d2a4f01a0eb418d7809bb22dca3293991a369309f068c07c1471557"
+      },
+      {
+        "path": "iniconfig/iniconfig-2.3.1-py3-none-any.whl",
+        "sha256": "9121e2c1fdb355232495be3194c8dfe87ccc2d5dee45947b78e68f499790d7a7"
+      },
+      {
         "path": "packaging/identity.json",
         "sha256": "dbe36d2bd692258ad8665d52ef412c8e6f4ae72b2121cb4f88e7214d80367995"
+      },
+      {
+        "path": "packaging/provenance.json",
+        "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
       },
       {
         "path": "packaging/metadata.json",
@@ -236,12 +308,12 @@
         "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
       },
       {
-        "path": "packaging/provenance.json",
-        "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
-      },
-      {
         "path": "pipx/identity.json",
         "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+      },
+      {
+        "path": "pipx/provenance.json",
+        "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
       },
       {
         "path": "pipx/metadata.json",
@@ -252,12 +324,12 @@
         "sha256": "4672195db7e89526cda1e54cbea116164a58bd40e1c03fe12e380de16b5399a4"
       },
       {
-        "path": "pipx/provenance.json",
-        "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
-      },
-      {
         "path": "platformdirs/identity.json",
         "sha256": "dd0e98078e6bb963388e7ecfe10ccaf287342950e85634b9826e6dd1344b8721"
+      },
+      {
+        "path": "platformdirs/provenance.json",
+        "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
       },
       {
         "path": "platformdirs/metadata.json",
@@ -268,8 +340,48 @@
         "sha256": "502ce08e9d36cf90579ee44e1e764838842fa658e4975ef47344fd053011d2c8"
       },
       {
-        "path": "platformdirs/provenance.json",
-        "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
+        "path": "pluggy/identity.json",
+        "sha256": "ed441748303ceab5b066b09b27110416314556903a96063f1efe91e745b5b913"
+      },
+      {
+        "path": "pluggy/provenance.json",
+        "sha256": "0fd8944cb68a31293201d7aeda2846ebb50299c581e05e263bf4624615ef37ec"
+      },
+      {
+        "path": "pluggy/metadata.json",
+        "sha256": "9e8f441bba8382eabf6febf386a5b9610cfe0c16b60b96e7b4b1831bd6d96361"
+      },
+      {
+        "path": "pluggy/pluggy-1.7.0-py3-none-any.whl",
+        "sha256": "7dd7b0d8832ba3cb632c306926ded123429211b83641b35dc5c41ad2d34f9bec"
+      },
+      {
+        "path": "pygments/identity.json",
+        "sha256": "bb84e4efaa9205120791bede856e697b924d2b5a38a13887a15820c23962160b"
+      },
+      {
+        "path": "pygments/metadata.json",
+        "sha256": "330104a10adc8a587e3f98f4e207557125ca0c1d489e129334da5acb2b813a03"
+      },
+      {
+        "path": "pygments/pygments-2.21.0-py3-none-any.whl",
+        "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+      },
+      {
+        "path": "pytest/identity.json",
+        "sha256": "539695b1208aa9be893d3a8a3cdfb2d0abfc979aa267347b7c597e178392a3aa"
+      },
+      {
+        "path": "pytest/provenance.json",
+        "sha256": "b135b9a81bb14af10cbb940ecec8c902672d2297488d2088e185c00dc6cc33ea"
+      },
+      {
+        "path": "pytest/metadata.json",
+        "sha256": "8ed48304ba7fd0ae974a041f117487b499d553b40e5ce55a9ece677e946f68dd"
+      },
+      {
+        "path": "pytest/pytest-9.1.1-py3-none-any.whl",
+        "sha256": "37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c"
       },
       {
         "path": "userpath/identity.json",
@@ -286,13 +398,13 @@
     ],
     "tool": {
       "path": "pipx-runtime.zip",
-      "sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
-      "size": 2505814
+      "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "size": 2455948
     },
     "notices": {
       "path": "tools/pipx/NOTICE",
-      "sha256": "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85",
-      "size": 28839
+      "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0",
+      "size": 44855
     }
   }
 }

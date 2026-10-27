@@ -82,7 +82,7 @@ func pipxRuntimeZIPPlan(body []byte) ([]PipxRuntimeDistribution, []PlannedObserv
 		owners[project] = parts[0]
 		distributions = append(distributions, PipxRuntimeDistribution{project, version})
 	}
-	if owners["pipx"] == "" || len(distributions) > 7 {
+	if owners["pipx"] == "" || len(distributions) > 11 {
 		return nil, nil, errors.New("pipx runtime distribution set is invalid")
 	}
 	sort.Slice(distributions, func(i, j int) bool { return distributions[i].Project < distributions[j].Project })
@@ -95,7 +95,7 @@ func pipxRuntimeZIPPlan(body []byte) ([]PipxRuntimeDistribution, []PlannedObserv
 		original := map[string]PipxRuntimeZIPFile{}
 		for _, fact := range facts {
 			head := strings.SplitN(fact.Path, "/", 2)[0]
-			if head != distribution.Project && head != distInfo && head != dataDir {
+			if !pipxSupplyOwnsSite(distribution.Project, fact.Path) && head != distInfo && head != dataDir {
 				continue
 			}
 			if assigned[fact.Path] {
@@ -199,12 +199,12 @@ func pipxRuntimeDistributionImports(distribution PipxRuntimeDistribution, distIn
 		return nil, errors.New("pipx runtime executable surface is unsupported")
 	}
 	for _, file := range surface.InstalledFiles {
-		if file.Scheme == SchemeSite && (file.ArchivePath != file.Destination || !strings.HasPrefix(file.Destination, distribution.Project+"/")) {
+		if file.Scheme == SchemeSite && (file.ArchivePath != file.Destination || !pipxSupplyOwnsSite(distribution.Project, file.Destination)) {
 			return nil, errors.New("pipx runtime module namespace requires relocation")
 		}
 	}
 	for _, name := range imports {
-		if name != distribution.Project && !strings.HasPrefix(name, distribution.Project+".") {
+		if !pipxSupplyOwnsImport(distribution.Project, name) {
 			return nil, errors.New("pipx runtime import escapes original owner")
 		}
 	}
@@ -217,7 +217,7 @@ func pipxRuntimeDistributionImports(distribution PipxRuntimeDistribution, distIn
 	required := deduplicateSorted(imports)
 	candidates := append([]string(nil), required...)
 	for _, entry := range details {
-		if !installedModuleExists(surface.InstalledFiles, entry.Module) || (entry.Module != distribution.Project && !strings.HasPrefix(entry.Module, distribution.Project+".")) {
+		if !installedModuleExists(surface.InstalledFiles, entry.Module) || !pipxSupplyOwnsImport(distribution.Project, entry.Module) {
 			return nil, errors.New("pipx runtime entrypoint has no owned module")
 		}
 		candidates = append(candidates, entry.Module)

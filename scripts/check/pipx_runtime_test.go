@@ -47,7 +47,7 @@ func TestPipxRuntimeSourceOwnerRequiresEveryMetadataInput(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "input-count":
-				pin["inputs"] = pin["inputs"].([]any)[:26]
+				pin["inputs"] = pin["inputs"].([]any)[:41]
 			case "duplicate":
 				inputs := pin["inputs"].([]any)
 				inputs[1] = inputs[0]

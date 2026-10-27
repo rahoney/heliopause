@@ -42,7 +42,11 @@ func freezePipxSupply(version, input, state string) (metadata, error) {
 	documents := []pipxFrozenDocument{}
 	dirs := map[string]bool{}
 	for _, fact := range supply.files {
-		data, err := readFrozenSupplyFile(input, fact.Path, 1<<20)
+		limit := int64(1 << 20)
+		if strings.HasSuffix(fact.Path, ".whl") {
+			limit = 8 << 20
+		}
+		data, err := readFrozenSupplyFile(input, fact.Path, limit)
 		if err != nil || hash(data) != fact.SHA256 {
 			return metadata{}, errors.New("pipx input changed while freezing")
 		}
@@ -88,7 +92,7 @@ func freezePipxSupply(version, input, state string) (metadata, error) {
 
 func verifyFrozenPipxSupply(version string, m metadata, state string) error {
 	u := m.Pipx
-	if u == nil || u.Owner.Version != version || !validPipxOwner(u.Owner) || len(u.Documents) != 20 {
+	if u == nil || u.Owner.Version != version || !validPipxOwner(u.Owner) || len(u.Documents) != 31 {
 		return errors.New("pipx frozen owner is missing or invalid")
 	}
 	directory := filepath.Join(state, "pipx-supply")

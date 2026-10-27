@@ -54,7 +54,7 @@ func selectedPipxOwner(body []byte) ([]byte, error) {
 	for _, field := range []string{"", "/pipx_version", "/architecture", "/runtime_image", "/inputs", "/tool", "/tool/path", "/tool/sha256", "/tool/size", "/notices", "/notices/path", "/notices/sha256", "/notices/size"} {
 		expected["/pipx_tool"+field] = true
 	}
-	for i := 0; i < 27; i++ {
+	for i := 0; i < 42; i++ {
 		for _, suffix := range []string{"", "/path", "/sha256"} {
 			expected["/pipx_tool/inputs/"+strconv.Itoa(i)+suffix] = true
 		}
@@ -78,7 +78,7 @@ func selectedPipxOwner(body []byte) ([]byte, error) {
 }
 
 func validPipxOwner(pin pipxMaterializationOwner) bool {
-	if !versionPattern.MatchString(pin.Version) || pin.Architecture != "amd64" || pin.RuntimeImage != "python_image" || len(pin.Inputs) != 27 || pin.Tool.Path != "pipx-runtime.zip" || !digestPattern.MatchString(pin.Tool.SHA256) || pin.Tool.Size <= 0 || pin.Tool.Size > 8<<20 || pin.Notices.Path != "tools/pipx/NOTICE" || !digestPattern.MatchString(pin.Notices.SHA256) || pin.Notices.Size <= 0 || pin.Notices.Size > 64<<10 {
+	if !versionPattern.MatchString(pin.Version) || pin.Architecture != "amd64" || pin.RuntimeImage != "python_image" || len(pin.Inputs) != 42 || pin.Tool.Path != "pipx-runtime.zip" || !digestPattern.MatchString(pin.Tool.SHA256) || pin.Tool.Size <= 0 || pin.Tool.Size > 8<<20 || pin.Notices.Path != "tools/pipx/NOTICE" || !digestPattern.MatchString(pin.Notices.SHA256) || pin.Notices.Size <= 0 || pin.Notices.Size > 64<<10 {
 		return false
 	}
 	seen := map[string]bool{}
@@ -89,22 +89,22 @@ func validPipxOwner(pin pipxMaterializationOwner) bool {
 			return false
 		}
 		switch project {
-		case "argcomplete", "click", "filelock", "packaging", "pipx", "platformdirs", "userpath":
+		case "argcomplete", "click", "filelock", "iniconfig", "packaging", "pipx", "platformdirs", "pluggy", "pygments", "pytest", "userpath":
 		default:
 			return false
 		}
-		if name != "identity.json" && name != "metadata.json" && (name != "provenance.json" || project == "userpath") && (!strings.HasPrefix(name, project+"-") || !strings.HasSuffix(name, "-py3-none-any.whl")) {
+		if name != "identity.json" && name != "metadata.json" && (name != "provenance.json" || (project == "userpath" || project == "pygments")) && (!strings.HasPrefix(name, project+"-") || !strings.HasSuffix(name, "-py3-none-any.whl")) {
 			return false
 		}
 		seen[f.Path] = true
 		counts[project]++
 	}
-	for _, project := range []string{"argcomplete", "click", "filelock", "packaging", "pipx", "platformdirs", "userpath"} {
+	for _, project := range []string{"argcomplete", "click", "filelock", "iniconfig", "packaging", "pipx", "platformdirs", "pluggy", "pygments", "pytest", "userpath"} {
 		want := 4
-		if project == "userpath" {
+		if project == "userpath" || project == "pygments" {
 			want = 3
 		}
-		if counts[project] != want || !seen[project+"/identity.json"] || !seen[project+"/metadata.json"] || project != "userpath" && !seen[project+"/provenance.json"] {
+		if counts[project] != want || !seen[project+"/identity.json"] || !seen[project+"/metadata.json"] || (project != "userpath" && project != "pygments") && !seen[project+"/provenance.json"] {
 			return false
 		}
 	}

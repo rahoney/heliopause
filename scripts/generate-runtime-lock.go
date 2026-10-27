@@ -583,12 +583,12 @@ func validate(lock runtimeLock) error {
 		return errors.New("bun publisher/archive/native data owner is invalid")
 	}
 	pipx := lock.PipxTool
-	if !exactVersion.MatchString(pipx.Version) || pipx.Architecture != "amd64" || pipx.RuntimeImage != "python_image" || len(pipx.Inputs) != 27 || pipx.Tool.Path != "pipx-runtime.zip" || !hex256.MatchString(pipx.Tool.SHA256) || pipx.Tool.Size <= 0 || pipx.Tool.Size > 8<<20 || pipx.Notices.Path != "tools/pipx/NOTICE" || !hex256.MatchString(pipx.Notices.SHA256) || pipx.Notices.Size <= 0 || pipx.Notices.Size > 64<<10 {
+	if !exactVersion.MatchString(pipx.Version) || pipx.Architecture != "amd64" || pipx.RuntimeImage != "python_image" || len(pipx.Inputs) != 42 || pipx.Tool.Path != "pipx-runtime.zip" || !hex256.MatchString(pipx.Tool.SHA256) || pipx.Tool.Size <= 0 || pipx.Tool.Size > 8<<20 || pipx.Notices.Path != "tools/pipx/NOTICE" || !hex256.MatchString(pipx.Notices.SHA256) || pipx.Notices.Size <= 0 || pipx.Notices.Size > 64<<10 {
 		return errors.New("pipx immutable supply owner is invalid")
 	}
 	pipxInputs := map[string]bool{}
 	for _, input := range pipx.Inputs {
-		if !hex256.MatchString(input.SHA256) || len(input.Path) > 256 || !regexp.MustCompile(`^(argcomplete|click|filelock|packaging|pipx|platformdirs|userpath)/(identity\.json|metadata\.json|provenance\.json|[a-z]+-[0-9]+(?:\.[0-9]+)+-py3-none-any\.whl)$`).MatchString(input.Path) || pipxInputs[input.Path] {
+		if !hex256.MatchString(input.SHA256) || len(input.Path) > 256 || !regexp.MustCompile(`^(argcomplete|click|filelock|iniconfig|packaging|pipx|platformdirs|pluggy|pygments|pytest|userpath)/(identity\.json|metadata\.json|provenance\.json|[a-z]+-[0-9]+(?:\.[0-9]+)+-py3-none-any\.whl)$`).MatchString(input.Path) || pipxInputs[input.Path] {
 			return errors.New("pipx supply input identity is invalid")
 		}
 		pipxInputs[input.Path] = true

@@ -31,9 +31,10 @@ func (c PipxSupplyClosure) ZIP(inputs []UVWheelInput) ([]byte, error) {
 	}
 	wanted := make(map[string]map[string]PipxSupplyFile)
 	var total int64
+	expandedLimit := PublicPyPIProfile().ResourcePolicy().MaxGraphUncompressed()
 	allNames := map[string]bool{}
 	for _, file := range c.files {
-		if file.Size < 0 || file.Size > pipxSupplyZIPLimit-total || allNames[file.Path] || (file.Scheme != SchemeData && file.Path != file.Destination) {
+		if file.Size < 0 || file.Size > expandedLimit-total || allNames[file.Path] || (file.Scheme != SchemeData && file.Path != file.Destination) {
 			return nil, errors.New("pipx ZIP manifest exceeds bounds, collides or requires relocation")
 		}
 		total += file.Size
@@ -93,7 +94,7 @@ func (c PipxSupplyClosure) ZIP(inputs []UVWheelInput) ([]byte, error) {
 	var output bytes.Buffer
 	writer := zip.NewWriter(&output)
 	for _, name := range names {
-		header := &zip.FileHeader{Name: name, Method: zip.Store}
+		header := &zip.FileHeader{Name: name, Method: zip.Deflate}
 		header.SetMode(0444)
 		header.Modified = time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC)
 		member, err := writer.CreateHeader(header)

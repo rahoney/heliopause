@@ -28,7 +28,7 @@ func TestPipxRuntimeZIPActualSelectedSnapshot(t *testing.T) {
 	copyBody := value.Bytes()
 	copyBody[0] ^= 1
 	facts := value.Files()
-	if len(facts) != 190 {
+	if len(facts) != 657 {
 		t.Fatal("unexpected original member census", len(facts))
 	}
 	facts[0].Path = "caller mutation"
@@ -71,7 +71,7 @@ func TestPipxRuntimeZIPActualObservationPlan(t *testing.T) {
 		}
 		t.Logf("unit %s coverage=%q", unit.Candidate, unit.Coverage)
 	}
-	if len(plan.Distributions()) != 7 || required != 9 || commands != 3 {
+	if len(plan.Distributions()) != 11 || required != 15 || commands != 5 {
 		t.Fatal("selected plan census changed", plan.Distributions(), plan.Units())
 	}
 	units := plan.Units()

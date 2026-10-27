@@ -54,6 +54,16 @@ func (c PipxSupplyClosure) Files() []PipxSupplyFile { return append([]PipxSupply
 // native uv lock or installed receipt. It reuses the existing complete archive,
 // metadata, marker and constraint checks for the current pinned Python tuple.
 func BindPipxSupplyClosure(packages []UVLockedPackage, inputs []UVWheelInput, pages []SimpleProject) (PipxSupplyClosure, error) {
+	return bindPipxSupplyClosure(packages, inputs, pages, []string{"pipx"})
+}
+
+// BindPipxRuntimeSupply validates the explicitly selected pipx and pytest runtime
+// roots. It does not invent an upstream pipx dependency or augment a user graph.
+func BindPipxRuntimeSupply(packages []UVLockedPackage, inputs []UVWheelInput, pages []SimpleProject) (PipxSupplyClosure, error) {
+	return bindPipxSupplyClosure(packages, inputs, pages, []string{"pipx", "pytest"})
+}
+
+func bindPipxSupplyClosure(packages []UVLockedPackage, inputs []UVWheelInput, pages []SimpleProject, roots []string) (PipxSupplyClosure, error) {
 	policy := PublicPyPIProfile().ResourcePolicy()
 	if len(packages) == 0 || len(packages) > policy.MaxGraphArtifacts() {
 		return PipxSupplyClosure{}, errors.New("pipx supply closure count is invalid")
@@ -107,7 +117,7 @@ func BindPipxSupplyClosure(packages []UVLockedPackage, inputs []UVWheelInput, pa
 		for _, f := range w.Files {
 			mapped, ok := installed[f.Path]
 			head := strings.SplitN(mapped.Destination, "/", 2)[0]
-			allowed := mapped.Scheme == SchemeSite && head == w.Project || mapped.Scheme == SchemeDistInfo && head == w.Project+"-"+w.Version+".dist-info" || mapped.Scheme == SchemeData && mapped.Role == RuntimeRoleResource
+			allowed := mapped.Scheme == SchemeSite && pipxSupplyOwnsSite(w.Project, mapped.Destination) || mapped.Scheme == SchemeDistInfo && head == w.Project+"-"+w.Version+".dist-info" || mapped.Scheme == SchemeData && mapped.Role == RuntimeRoleResource
 			key := "site/" + mapped.Destination
 			if mapped.Scheme == SchemeData {
 				key = "data/" + mapped.Destination
@@ -147,30 +157,8 @@ func BindPipxSupplyClosure(packages []UVLockedPackage, inputs []UVWheelInput, pa
 	if err := validatePipxSupplyConstraints(checked, runtimeidentity.PythonVersion); err != nil {
 		return PipxSupplyClosure{}, err
 	}
-	reference, err := ParseReference("pipx@" + rootVersion)
-	if err != nil {
+	if err := validatePipxSupplyGraphs(checked, roots); err != nil {
 		return PipxSupplyClosure{}, err
-	}
-	if _, err := BuildLockedGraph(reference, checked); err != nil {
-		return PipxSupplyClosure{}, err
-	}
-	byName := map[string]Candidate{}
-	for _, c := range checked {
-		byName[c.project] = c
-	}
-	reached := map[string]bool{}
-	queue := []string{"pipx"}
-	for len(queue) > 0 {
-		name := queue[0]
-		queue = queue[1:]
-		if reached[name] {
-			continue
-		}
-		reached[name] = true
-		queue = append(queue, byName[name].dependencies...)
-	}
-	if len(reached) != len(checked) {
-		return PipxSupplyClosure{}, errors.New("pipx supply includes unreachable wheels")
 	}
 	// A regular file must never also be a parent directory in the merged tree.
 	for filename := range paths {
@@ -276,9 +264,67 @@ func pipxSupplyRecord(input UVWheelInput, name string, limit int64) (int64, stri
 
 func pipxSupplyProject(name string) bool {
 	switch name {
-	case "pipx", "argcomplete", "click", "filelock", "packaging", "platformdirs", "userpath":
+	case "pipx", "argcomplete", "click", "filelock", "packaging", "platformdirs", "userpath", "pytest", "iniconfig", "pluggy", "pygments":
 		return true
 	default:
 		return false
 	}
+}
+
+// Each explicitly requested runtime root retains the existing single-primary
+// graph contract. Shared dependencies have identical original candidate bytes.
+func validatePipxSupplyGraphs(candidates []Candidate, roots []string) error {
+	byName := make(map[string]Candidate, len(candidates))
+	for _, candidate := range candidates {
+		byName[candidate.project] = candidate
+	}
+	complete := map[string]bool{}
+	for _, root := range roots {
+		main, ok := byName[root]
+		if !ok {
+			return errors.New("pipx runtime supply root is missing")
+		}
+		reached := map[string]bool{}
+		queue := []string{root}
+		var subset []Candidate
+		for len(queue) > 0 {
+			name := queue[0]
+			queue = queue[1:]
+			if reached[name] {
+				continue
+			}
+			candidate, ok := byName[name]
+			if !ok {
+				return errors.New("pipx runtime dependency is missing")
+			}
+			reached[name] = true
+			complete[name] = true
+			candidate.primary = name == root
+			subset = append(subset, candidate)
+			queue = append(queue, candidate.dependencies...)
+		}
+		reference, err := ParseReference(root + "@" + main.version)
+		if err != nil {
+			return err
+		}
+		if _, err := BuildLockedGraph(reference, subset); err != nil {
+			return err
+		}
+	}
+	if len(complete) != len(candidates) {
+		return errors.New("pipx supply includes unreachable wheels")
+	}
+	return nil
+}
+
+// These are reviewed original import namespaces, not trust or execution grants.
+// The pytest wheel also owns _pytest and the single py.py compatibility module.
+func pipxSupplyOwnsSite(project, destination string) bool {
+	head := strings.SplitN(destination, "/", 2)[0]
+	return head == project || project == "pytest" && (head == "_pytest" || destination == "py.py")
+}
+
+func pipxSupplyOwnsImport(project, module string) bool {
+	root := strings.SplitN(module, ".", 2)[0]
+	return root == project || project == "pytest" && (root == "_pytest" || module == "py")
 }

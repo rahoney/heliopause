@@ -16,14 +16,25 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI419/source504e698 Required10SUCCESS; same checkout05b3/tree d2b385/2737; C1/C2 local DATA + existing hosted regression qualified
-Next action: M13-004/P4-O4-B1d user-approved explicit pytest runtime supply; keep required coverage; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B1d IN_PROGRESS; C1/C2 DATA and common existing hosted regression qualified; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B1d common owner/checker hosted regression; then B2 runtime/observer; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B1d local supply/consumers qualified; hosted pending; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O4-B1d 명시 공급과 로컬 소비자 검증
+
+[D2/D3 receipt](./evidence/package-client-quarantine/p4o4b1d23-pytest-runtime-supply-local-20261027.json)는
+11wheel/42inputs/657원본 파일·새 Deflate ZIP과15required/5post-install plan, 실제 frozen
+유지보수·HAA identity·DATA 전달·보호 파일/Docker 불변을 확인했다. Fixed Python runc의
+15필수 imports와 기존 pytest plugin도 exit0이다. Gitleaks는 공식 metadata MD5 두 건을
+오탐했으며 exact 원본 SHA256/path/rule/위치 확인과 다른 current/history token 검출 회귀를
+통과했다. Quick187.424s/checker Race36.759s/security와 sandbox Race/workflow/release-gate도
+PASS다. Common owner/checker hosted 회귀로 이어가며 B2 외부 관찰·release/native pipx/CLI와
+전체 지원 완료는 남긴다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-27 P4-O4-B1d 승인된 공급 확대 착수
 

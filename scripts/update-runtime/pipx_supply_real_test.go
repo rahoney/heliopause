@@ -92,7 +92,7 @@ func TestPipxFrozenActualSupplyPlanAndInterruptedApply(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.Metadata.Pipx == nil || len(p.Metadata.Pipx.Documents) != 20 || p.Metadata.Image != "" || len(p.Changes) != 3 || len(p.RequiredQualification) == 0 {
+	if p.Metadata.Pipx == nil || len(p.Metadata.Pipx.Documents) != 31 || p.Metadata.Image != "" || len(p.Changes) != 3 || len(p.RequiredQualification) == 0 {
 		t.Fatalf("unexpected frozen plan: changes=%d", len(p.Changes))
 	}
 	primary := errors.New("forced pipx apply interruption")

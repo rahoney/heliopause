@@ -87,3 +87,41 @@ releaseprovenance Race7.606s/docs/security PASS와 기존5+새3 dependency proof
 crypto 검증·wrong identity/publisher/env/ref/signature/statement 거부를 연결한다.
 새 no-environment claim 검증은 JSON null과 signed OID23 부재/정확한 OID24 ref를 요구한다.
 기존 main/환경형 공급 검사는 유지한다. 새11-wheel whole supply/ZIP/runtime acceptance는 남는다.
+
+## D3 security의 공개 MD5 오탐과 수정 전 audit
+
+D3 Quick254.937s/관련4 package Race47.307s와 actual materialize1.640s/
+원본 snapshot·20unit plan·intake·frozen interrupted apply6.663s는 PASS다. Security14.450s는
+Gitleaks square-access-token 두 건으로 실패했다. Redacted report는 Pygments 공식 metadata의
+두 MD5 field를 가리키며 실제 원본 wheel의 MD5와 일치했다. 원문·SHA256 binding을 바꾸거나
+line fingerprint로 그 JSON 전체를 제외하지 않는다. 첫 source/check/report를 보존했다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| pinned Gitleaks·redaction·detection contract | YES | YES | YES(existing) | YES(existing) | 정확한 공개 metadata 오탐의 좁은 disposition |
+| exact public-byte disposition | NO | NO | NO | NO | report의 path/rule/두 위치와 current 또는 historical 원본 전체 SHA256 확인; 다른 finding/실행 오류 보존 |
+
+기존 runGitleaks만 bounded redacted JSON report를 함께 받도록 연결한다. Exit1의 두 exact
+finding에 한해 canonical path·rule·위치와 전체 official metadata SHA256을 확인한다.
+History는 보고된 exact40hex commit의 해당 blob을 읽고 같은 원본 hash를 확인한다.
+Unknown finding·changed bytes·다른 위치/경로·불완전 report·실행 오류는 기존 실패를 유지한다.
+Global ignore·rule 비활성화·metadata 변형·새 credential baseline은 추가하지 않는다.
+기존 PAT/generic 검출과 같은 경로의 다른 token, 변조/다른 경로 및 history 회귀를 검증한다.
+
+## D2/D3 로컬 결과와 다음 경계
+
+[D2/D3 receipt](./p4o4b1d23-pytest-runtime-supply-local-20261027.json)는 새11-wheel/42inputs와
+9verified proof·2NOT_PROVIDED,657원본 member/expanded8,560,611B의 byte 동일성을 연결한다.
+Deflate ZIP2,455,948B/NOTICE44,855B를 schema5 owner에 반영했다. D3 Quick254.937s/
+관련4 package Race47.307s, corrected checker Quick187.424s/Race36.759s/security9.954s,
+추가 sandbox Race22.833s/workflow/release-gate가 PASS다. 첫 MD5 오탐 실패는 보존하며
+실제 scanner의 current/history 원본 처리와 변조·같은 경로 다른 token·다른 경로 검출을 확인했다.
+
+Actual selected materialize1.640s/immutable snapshot·20unit plan·HAA intake·frozen interrupted
+apply6.663s가 PASS다. 보호 source0.275s/DATA volume5.216s는 원본·보호5파일·Docker 상태
+불변과 noSKIP를 확인했다. Fixed Python runc의 필수15 imports는 모두 exit0이며 기존 실패
+plugin은1.442s로 성공했다. 이는 import 진단이며 gVisor/외부 observer·Policy 완료가 아니다.
+
+D1~D3의 명시 공급과 named local 소비자는 검증했으며 common owner/checker hosted 회귀를
+다음 묶음으로 확인한다. B2 runtime/외부 관찰·release composite·native pipx/CLI와 전체
+P4 acceptance는 남는다. 기존7-wheel/Store 결과를 새 bytes의 qualification으로 승계하지 않았다.

@@ -562,15 +562,17 @@ P4-O2의 전체 공급 검증은 같은 developer command에서 별도 scope로 
 go run ./scripts/update-runtime verify-pipx-closure --input /absolute/frozen-pipx-closure
 ```
 
-입력에는 argcomplete/click/filelock/packaging/pipx/platformdirs/userpath의 일곱 하위
-디렉터리가 필요하다. 각각 identity.json, 공식 exact-release metadata.json과 exact wheel을
-두고 제공된 provenance.json도 함께 둔다. Pipx 본체 identity는 위 형식이며 서명된 다섯
-dependency identity에는 project도 포함한다. Userpath identity는 version/wheel_sha256만
-받고 signature `NOT_PROVIDED`를 유지한다. Userpath에 제공된 proof는 미지원 정책으로
-거부하며 무시하지 않는다. 나머지 여섯 proof는 고정 publisher로 모두 검증한다.
+입력에는 argcomplete/click/filelock/iniconfig/packaging/pipx/platformdirs/pluggy/pygments/pytest/userpath의
+열한 하위 디렉터리가 필요하다. 각각 identity.json, 공식 exact-release metadata.json과 exact
+wheel을 두고 제공된 provenance.json도 함께 둔다. Pipx 본체 identity는 위 형식이며 서명된
+여덟 dependency identity에는 project도 포함한다. Userpath/Pygments identity는
+version/wheel_sha256만 받고 signature `NOT_PROVIDED`를 유지한다. 이 두 공급물에 제공된
+proof는 미지원 정책으로 거부하며 무시하지 않는다. 나머지 아홉 proof는 고정 publisher로 검증한다.
 
 기존 whole wheel ZIP/RECORD와 독립 metadata, 현재 고정 Python의 dependency/marker/
-constraint 검사를 재사용하고 complete reachable closure·namespace/파일 충돌을 확인한다.
+constraint 검사를 재사용한다. 명시 runtime root인 pipx와 pytest 각각의 complete reachable
+single-primary graph와 그 합집합, namespace/파일 충돌을 확인한다. Pytest 공급은 pipx의
+upstream Requires-Dist나 사용자 설치 graph를 변경하지 않는다.
 Receipt 범위는 `STATIC_WHEEL_CLOSURE_AND_PUBLISH_PROOFS_ONLY`다. 공급 bytes와 static
 closure의 사실이며 immutable loader/runtime admission·native 동작·설치/지원 qualification은
 후속 단계다. 입력의 후보 버전은 별도 product version lock을 만들거나 pin을 자동 채택하지 않는다.
@@ -583,16 +585,18 @@ go run ./scripts/update-runtime materialize-pipx-candidate --root /absolute/repo
 
 위 공급 검증과 같은 held wheel bytes를 사용해 모든 원본 member·RECORD·license를
 보존하는 결정적 ZIP을 생성한다. Whole archive와 member hash를 재대조하고 현재 검토한
-root module/dist-info 배치만 허용한다. Relocation·충돌·8MiB 초과는 거부한다.
+root module/dist-info 배치만 허용한다. Pytest의 원본 `_pytest`와 `py.py`도 동일 ownership 검사를 받는다.
+결정적 Deflate 표현의 encoded8MiB와 기존 PyPI graph expanded budget을 각각 검사한다.
+Relocation·충돌·각 상한 초과는 거부하며 member·RECORD·license를 삭제하지 않는다.
 출력은 source tree 밖의 새 파일이며 기존 no-replace publisher로0444를 기록한다.
 이 명령은 Python을 실행하거나 설치·runtime pin을 변경하지 않는다. Isolated loader,
 gVisor/observer와 실제 pipx install/upgrade 지원은 별도 qualification이다.
 
 ### pipx selected owner와 frozen 유지보수
 
-Runtime lock schema5의 `pipx_tool`이 선택 버전·Python owner 참조·공급 입력27개의
-path/hash와 ZIP/NOTICE identity를 소유한다. `tools/pipx/supply`의20개 문서는 동결된
-입력 DATA이며 wheel7개는 외부 취득 입력이다. Source identity/proof를 바꾸면 입력 hash와
+Runtime lock schema5의 `pipx_tool`이 선택 버전·Python owner 참조·공급 입력42개의
+path/hash와 ZIP/NOTICE identity를 소유한다. `tools/pipx/supply`의31개 문서는 동결된
+입력 DATA이며 wheel11개는 외부 취득 입력이다. Source identity/proof를 바꾸면 입력 hash와
 실제 ZIP을 다시 검증한다. Version 선택을 별도 lock으로 복제하지 않는다.
 
 ```sh

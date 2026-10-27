@@ -556,6 +556,12 @@ gitleaks detect --no-git --redact --no-banner --source .
 - 실제 Secret을 baseline에 넣어 승인하지 않는다. 발견 시 노출 범위를 조사하고 실제 credential이면 먼저 revoke/rotate한다.
 - synthetic credential/honeytoken fixture가 탐지되면 실제 유효 Secret이 아님을 확인하고 exact fixture path·rule·값 pattern에만 좁은 allowlist를 적용한다.
 - broad directory ignore, generic entropy rule 비활성화와 blanket `gitleaks:allow`를 사용하지 않는다.
+- 공식 Pygments metadata의 두 공개 wheel MD5는 pinned scanner의 Square token 오탐이다.
+  Canonical checker는 redacted report의 exact path/rule/두 위치와 전체 원본 SHA256을 모두
+  확인한 경우만 이 두 finding을 식별한다. History는 해당 exact commit blob을 재대조한다.
+  다른 finding·변조·불완전 report·도구 오류는 실패를 유지하며 rule/ignore를 넓히지 않는다.
+  [검증 근거](../planning/evidence/package-client-quarantine/p4o4b1d23-pytest-runtime-supply-local-20261027.json)는
+  current/history 원본과 같은 경로의 다른 token·변조·다른 경로의 검출 회귀를 연결한다.
 - Git history 또는 pull request commit range 검사는 Step 11에서 event별 범위를 확정한다.
 
 ## 13. Generated code, fixture와 build tag

@@ -18,10 +18,10 @@ func checkPipxProofFiles(root string, lock map[string]any) error {
 		return errors.New("pipx version is invalid")
 	}
 	inputs, ok := pin["inputs"].([]any)
-	if !ok || len(inputs) != 27 {
+	if !ok || len(inputs) != 42 {
 		return errors.New("pipx input set differs")
 	}
-	namePattern := regexp.MustCompile(`^(argcomplete|click|filelock|packaging|pipx|platformdirs|userpath)/(identity\.json|metadata\.json|provenance\.json|[a-z]+-[0-9]+(?:\.[0-9]+)+-py3-none-any\.whl)$`)
+	namePattern := regexp.MustCompile(`^(argcomplete|click|filelock|iniconfig|packaging|pipx|platformdirs|pluggy|pygments|pytest|userpath)/(identity\.json|metadata\.json|provenance\.json|[a-z]+-[0-9]+(?:\.[0-9]+)+-py3-none-any\.whl)$`)
 	digestPattern := regexp.MustCompile(`^[a-f0-9]{64}$`)
 	seen := map[string]bool{}
 	counts := map[string]int{}
@@ -50,12 +50,12 @@ func checkPipxProofFiles(root string, lock map[string]any) error {
 			return err
 		}
 	}
-	for _, project := range []string{"argcomplete", "click", "filelock", "packaging", "pipx", "platformdirs", "userpath"} {
+	for _, project := range []string{"argcomplete", "click", "filelock", "iniconfig", "packaging", "pipx", "platformdirs", "pluggy", "pygments", "pytest", "userpath"} {
 		want := 4
-		if project == "userpath" {
+		if project == "userpath" || project == "pygments" {
 			want = 3
 		}
-		if counts[project] != want || !seen[project+"/identity.json"] || !seen[project+"/metadata.json"] || project != "userpath" && !seen[project+"/provenance.json"] || project == "userpath" && seen[project+"/provenance.json"] {
+		if counts[project] != want || !seen[project+"/identity.json"] || !seen[project+"/metadata.json"] || (project != "userpath" && project != "pygments") && !seen[project+"/provenance.json"] || (project == "userpath" || project == "pygments") && seen[project+"/provenance.json"] {
 			return errors.New("pipx project inputs are incomplete")
 		}
 	}

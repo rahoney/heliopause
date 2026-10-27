@@ -1,0 +1,582 @@
+{
+  "scope": "P4-O4-B1d explicit fixed runtime supply and named local consumers; not complete pipx runtime",
+  "status": "LOCAL_QUALIFIED_HOSTED_PENDING",
+  "baseline_commit": "a5fccd2",
+  "source_identity": [
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_plan.go",
+      "sha256": "76b2bc498cb605332a6f8394adaeba53b5c5e32b928a53144710b2cc727f59bb"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip.go",
+      "sha256": "81219a7ec9714cadb1ab49fd18cd9b3d2e0646f26f9366a1abbc57271673d732"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip_realcorpus_test.go",
+      "sha256": "a3036538e40b256e8c438a614be096cdc124a0790b1b2e59b916d19363a4756d"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip_test.go",
+      "sha256": "27be78fe48ac20e39d878aad3cd5e30d23c4ce75170ae2032ef4fd75fb380c5f"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_closure.go",
+      "sha256": "8aafa1e8d206a9d505344bfc4ab3a45035343f4e03ed4d8ee4d306e0649c2905"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_closure_test.go",
+      "sha256": "1e91f81c2e7cb5f418a45515bdab9677511f5f747a5ad6cadde7c3468e5793cf"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_zip.go",
+      "sha256": "887a1abaf6e6461c291bbbb7005204b2e0c10cbcec2190ef20441bceacefcc67"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_zip_test.go",
+      "sha256": "56c279d1aecd07b5b09d8c0f3e93c37f763b4fba061556ba196c4f932d96d74e"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_input_realcorpus_test.go",
+      "sha256": "36b6709c82165bb3645b4dfa24c98e4f0bd77b8026190373045e61d5db3e8ff1"
+    },
+    {
+      "path": "scripts/check/pipx_runtime.go",
+      "sha256": "cd80650c383e2e53bd80b0050333a737e0dc0498c0a8e8961885cec21add07ae"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_test.go",
+      "sha256": "4dab2107f4f7fb202d1ebf17b43e9f5cf6fe1bcda20911af83370c7a21c3c139"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "21e685f83a7cf9a55f6ee9800ee306b78f3b374163d5343a927e0ad0bc8fc0dd"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_closure.go",
+      "sha256": "b7456e74b965e2c72c8355792e02b9cd4b9bc9beb258b3f983b60a0e02a46b37"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_owner.go",
+      "sha256": "71e128fd0d5643664bd02ef3c1ce683a8b1764a7af655b5e8f8326f4c780fb0b"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply.go",
+      "sha256": "a482bc664a9ac4bc01dcca49654e937cc927f0aee2ab454c1cabc2965dd7beac"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply_real_test.go",
+      "sha256": "1475efd83f38e87ba1a766ab15a194c0d8b9b40c0d91ac2d53ec91039132f454"
+    },
+    {
+      "path": "tools/pipx/NOTICE",
+      "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_supply_test.go",
+      "sha256": "b1c7889e6dd9865321e07564f6e19d53b9a11077d21474de137445a433184df4"
+    },
+    {
+      "path": "tools/pipx/supply/pytest/identity.json",
+      "sha256": "539695b1208aa9be893d3a8a3cdfb2d0abfc979aa267347b7c597e178392a3aa"
+    },
+    {
+      "path": "tools/pipx/supply/pytest/metadata.json",
+      "sha256": "8ed48304ba7fd0ae974a041f117487b499d553b40e5ce55a9ece677e946f68dd"
+    },
+    {
+      "path": "tools/pipx/supply/pytest/provenance.json",
+      "sha256": "b135b9a81bb14af10cbb940ecec8c902672d2297488d2088e185c00dc6cc33ea"
+    },
+    {
+      "path": "tools/pipx/supply/iniconfig/identity.json",
+      "sha256": "a65e4790576254a49e22d60eeec17d875923673db33e48c4de745cca657040e9"
+    },
+    {
+      "path": "tools/pipx/supply/iniconfig/metadata.json",
+      "sha256": "ab4d5df71d2a4f01a0eb418d7809bb22dca3293991a369309f068c07c1471557"
+    },
+    {
+      "path": "tools/pipx/supply/iniconfig/provenance.json",
+      "sha256": "8a8aaa6c314e055657f034eeb166fc849f563271480a203937e60ccffb6fa458"
+    },
+    {
+      "path": "tools/pipx/supply/pluggy/identity.json",
+      "sha256": "ed441748303ceab5b066b09b27110416314556903a96063f1efe91e745b5b913"
+    },
+    {
+      "path": "tools/pipx/supply/pluggy/metadata.json",
+      "sha256": "9e8f441bba8382eabf6febf386a5b9610cfe0c16b60b96e7b4b1831bd6d96361"
+    },
+    {
+      "path": "tools/pipx/supply/pluggy/provenance.json",
+      "sha256": "0fd8944cb68a31293201d7aeda2846ebb50299c581e05e263bf4624615ef37ec"
+    },
+    {
+      "path": "tools/pipx/supply/pygments/identity.json",
+      "sha256": "bb84e4efaa9205120791bede856e697b924d2b5a38a13887a15820c23962160b"
+    },
+    {
+      "path": "tools/pipx/supply/pygments/metadata.json",
+      "sha256": "330104a10adc8a587e3f98f4e207557125ca0c1d489e129334da5acb2b813a03"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "6e97bf346a630d6809e936d615790d957f105d9a5d4232bf09c486a56db0886a"
+    },
+    {
+      "path": "scripts/check/gitleaks_public_metadata.go",
+      "sha256": "4319132b2c904b07945d66e7ce5cc903fac4f03dc18dfbe5bf5b1a708b01bb41"
+    },
+    {
+      "path": "scripts/check/gitleaks_public_metadata_test.go",
+      "sha256": "c9ac7bce35415aefdbaee7ac07eb9825758f214ee839a7727947e796b6b43dad"
+    },
+    {
+      "path": "scripts/check/gitleaks_test.go",
+      "sha256": "2989e5c6d4151d01a8f28ea6bd388069528459bdd384acb0b06bb4c00844055e"
+    },
+    {
+      "path": "scripts/check/security.go",
+      "sha256": "45bd341352ef130d5ed9336665730d14803181c117a985150ed78946d039676d"
+    }
+  ],
+  "supply": {
+    "inputs": 42,
+    "wheels": 11,
+    "provided_verified": 9,
+    "not_provided": 2,
+    "members": 657,
+    "expanded_bytes": 8560611,
+    "all_original_member_bytes_identical": true,
+    "encoded_bytes": 2455948,
+    "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+  },
+  "supply_checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.911
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 122.81
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./scripts/update-runtime"
+      ],
+      "exit_code": 0,
+      "seconds": 28.51
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.316
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 14.39
+    }
+  ],
+  "supply_actual_checks": [
+    {
+      "step": "closure",
+      "command": [
+        "go",
+        "run",
+        "./scripts/update-runtime",
+        "verify-pipx-closure",
+        "--input",
+        "/tmp/haa-p4o4b1d-candidate-20261027/supply"
+      ],
+      "exit_code": 0,
+      "seconds": 1.769
+    },
+    {
+      "step": "materialize",
+      "command": [
+        "go",
+        "run",
+        "./scripts/update-runtime",
+        "materialize-pipx-candidate",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--input",
+        "/tmp/haa-p4o4b1d-candidate-20261027/supply",
+        "--output",
+        "/tmp/haa-p4o4b1d2-assets/pipx-runtime.zip"
+      ],
+      "exit_code": 0,
+      "seconds": 0.507
+    }
+  ],
+  "owner_first_checks": [
+    {
+      "step": "generate",
+      "command": [
+        "go",
+        "run",
+        "./scripts/generate-runtime-lock.go"
+      ],
+      "exit_code": 0,
+      "seconds": 0.276
+    },
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.266
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 254.937
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/inspection/githubrelease",
+        "./scripts/update-runtime",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 47.307
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.261
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 1,
+      "seconds": 14.45
+    }
+  ],
+  "first_security_failure": {
+    "rule": "square-access-token",
+    "findings": 2,
+    "file": "tools/pipx/supply/pygments/metadata.json",
+    "cause": "two public MD5 fields match actual official wheel MD5; not credentials",
+    "original_bytes_preserved": true,
+    "disposition": "exact path/rule/two positions and full current or historical original SHA256; other findings and execution failures preserved"
+  },
+  "corrected_checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.249
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 187.424
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 36.759
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.347
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.954
+    }
+  ],
+  "owner_actual_checks": [
+    {
+      "step": "materialize",
+      "command": [
+        "go",
+        "run",
+        "./scripts/update-runtime",
+        "materialize-pipx",
+        "--root",
+        "/tmp/haa-p4o1-20261027-source",
+        "--input",
+        "/tmp/haa-p4o4b1d-candidate-20261027/supply",
+        "--output",
+        "/tmp/haa-p4o4b1d3-selected-assets/pipx-runtime-linux-amd64.zip",
+        "--notices-output",
+        "/tmp/haa-p4o4b1d3-selected-assets/pipx-NOTICE.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 1.64
+    },
+    {
+      "step": "actual",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-v",
+        "./internal/artifact/pypi",
+        "./internal/inspection/githubrelease",
+        "./scripts/update-runtime",
+        "-run",
+        "^TestPipx(RuntimeZIPActual|RuntimeInputActual|FrozenActual)"
+      ],
+      "exit_code": 0,
+      "seconds": 6.663
+    }
+  ],
+  "post_checks": [
+    {
+      "step": "sandbox-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 22.833
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p4o4b1d3-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 6.581
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 0.675
+    },
+    {
+      "step": "release-gate",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "release-gate"
+      ],
+      "exit_code": 0,
+      "seconds": 0.305
+    }
+  ],
+  "host_operator_checks": [
+    {
+      "step": "source-actual",
+      "command": [
+        "sudo",
+        "-n",
+        "python3",
+        "/tmp/haa-p4o4b1d3-source-actual.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.616
+    },
+    {
+      "step": "data-actual",
+      "command": [
+        "sudo",
+        "-n",
+        "python3",
+        "/tmp/haa-p4o4b1d3-data-actual.py"
+      ],
+      "exit_code": 0,
+      "seconds": 5.475
+    },
+    {
+      "step": "import-diagnostic",
+      "command": [
+        "sudo",
+        "-n",
+        "python3",
+        "/tmp/haa-p4o4b1d3-import-diagnostic.py"
+      ],
+      "exit_code": 0,
+      "seconds": 11.538
+    }
+  ],
+  "source_actual": {
+    "exit_code": 0,
+    "seconds": 0.275,
+    "no_skip": true,
+    "named_pass": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "scope": "actual protected source/tar roundtrip in disposable namespaces; no Python/ZIP execution or observer qualification"
+  },
+  "data_actual": {
+    "exit_code": 0,
+    "seconds": 5.216,
+    "no_skip": true,
+    "named_pass": true,
+    "host_unchanged": true,
+    "input_unchanged": true,
+    "scope": "actual Docker/runc DATA volume only; fixed sleep/touch; no Python/ZIP execution or observer qualification"
+  },
+  "static_plan": {
+    "distributions": 11,
+    "required": 15,
+    "post_install_commands": 5,
+    "required_imports": [
+      "_pytest",
+      "argcomplete",
+      "click",
+      "filelock",
+      "iniconfig",
+      "packaging",
+      "pipx",
+      "pipx.__main__",
+      "platformdirs",
+      "platformdirs.pytest_plugin",
+      "pluggy",
+      "py",
+      "pygments",
+      "pytest",
+      "userpath"
+    ]
+  },
+  "runc_import_diagnostic": {
+    "scope": "fixed Python runc import diagnostic only; not gVisor, external observer, Policy or inspection completion",
+    "image_id": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191",
+    "required_imports": 15,
+    "all_exit_zero": true,
+    "plugin_seconds": 1.442,
+    "host_unchanged": true,
+    "input_unchanged": true
+  },
+  "preserved": [
+    "whole original 657 members including RECORD and licenses",
+    "Domain single-primary graph per explicitly selected root",
+    "encoded DATA 8MiB and existing expanded graph/memory/CPU/wall budgets",
+    "required plugin coverage and original HAA artifact identity",
+    "schema5 single runtime owner; no installed runtime activation",
+    "pinned Gitleaks/default rules and unknown findings failure"
+  ],
+  "missing": [
+    "hosted common consumers on this source",
+    "B2 gVisor external observer/backend ZIP profile and completion ledger",
+    "release/self-update composite, native pipx/CLI and final profile qualification"
+  ],
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d23-raw-inventory.json",
+  "notice_whitespace": {
+    "notice_path": "tools/pipx/NOTICE",
+    "original_member": "pygments-2.21.0.dist-info/licenses/AUTHORS",
+    "original_sha256": "71a83872ad82f57be692cf827e048e2cd51d45169cfa1ea3f28706d97a872c0f",
+    "original_trailing_whitespace_lines": [
+      126
+    ],
+    "original_bytes_preserved_in_notice": true,
+    "disposition": "exact NOTICE path blank-at-eol attribute only; no source trim or global ignore"
+  }
+}

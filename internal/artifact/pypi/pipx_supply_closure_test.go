@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"slices"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -14,13 +16,28 @@ func pipxSupplyFixture(t *testing.T, requirement, entries string, extras ...whee
 	mainExtras := append([]wheelTestEntry{{name: "pipx/__main__.py", body: []byte("def cli(): return 0\n")}}, extras...)
 	main := toolTestWheel(t, "pipx", requirement, entries, mainExtras...)
 	child := toolTestWheel(t, "click", "", "")
+	return pipxSupplySelections(t, map[string][]byte{"pipx": main, "click": child})
+}
+
+func pipxSupplySelections(t *testing.T, wheels map[string][]byte) ([]UVLockedPackage, []UVWheelInput, []SimpleProject) {
+	t.Helper()
 	var packages []UVLockedPackage
 	var inputs []UVWheelInput
 	var pages []SimpleProject
-	for _, item := range []struct {
-		name string
-		body []byte
-	}{{"pipx", main}, {"click", child}} {
+	names := make([]string, 0, len(wheels))
+	for name := range wheels {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	// Keep the historical fixture's primary at index zero for mutation tests.
+	if i := slices.Index(names, "pipx"); i >= 0 {
+		names[0], names[i] = names[i], names[0]
+	}
+	for _, name := range names {
+		item := struct {
+			name string
+			body []byte
+		}{name, wheels[name]}
 		sum := sha256.Sum256(item.body)
 		digest := hex.EncodeToString(sum[:])
 		filename := item.name + "-1.0.0-py3-none-any.whl"

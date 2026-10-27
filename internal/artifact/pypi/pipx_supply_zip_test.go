@@ -40,7 +40,7 @@ func TestPipxSupplyZIPPreservesOriginalBytesDeterministically(t *testing.T) {
 		if err != nil || closeErr != nil || member.Name != fact.Path || int64(len(data)) != fact.Size || pipxSupplyDigest(data) != fact.SHA256 {
 			t.Fatal("original member changed", fact.Path)
 		}
-		if member.Method != zip.Store || !member.Mode().IsRegular() || member.Mode().Perm() != 0444 || member.Modified.Year() != 1980 {
+		if member.Method != zip.Deflate || !member.Mode().IsRegular() || member.Mode().Perm() != 0444 || member.Modified.Year() != 1980 {
 			t.Fatal("ZIP metadata is not canonical")
 		}
 	}
@@ -85,7 +85,7 @@ func TestPipxSupplyZIPRefusesChangedInputsAndUnsupportedLayout(t *testing.T) {
 			case "file-collision":
 				closure.files[1].Path = closure.files[0].Path
 			case "expansion":
-				closure.files[0].Size = pipxSupplyZIPLimit + 1
+				closure.files[0].Size = PublicPyPIProfile().ResourcePolicy().MaxGraphUncompressed() + 1
 			}
 			if body, err := closure.ZIP(inputs); err == nil || body != nil {
 				t.Fatal("unsupported/changed supply produced candidate")

@@ -31,7 +31,7 @@ type pipxInputFact struct {
 func verifyPipxClosure(args []string, out io.Writer) error {
 	flags := flag.NewFlagSet("update-runtime verify-pipx-closure", flag.ContinueOnError)
 	flags.SetOutput(out)
-	input := flags.String("input", "", "absolute frozen directory with seven project subdirectories: identity.json, metadata.json, wheel and supplied provenance.json")
+	input := flags.String("input", "", "absolute frozen directory with eleven project subdirectories: identity.json, metadata.json, wheel and supplied provenance.json")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func readPipxClosure(input string) (pipxClosureSupply, error) {
 	var pages []pypi.SimpleProject
 	var proofs []pipxPublishFact
 	var files []pipxInputFact
-	for _, project := range []string{"argcomplete", "click", "filelock", "packaging", "pipx", "platformdirs", "userpath"} {
+	for _, project := range []string{"argcomplete", "click", "filelock", "iniconfig", "packaging", "pipx", "platformdirs", "pluggy", "pygments", "pytest", "userpath"} {
 		directory := filepath.Join(input, project)
 		read := func(name string, limit int64) ([]byte, error) {
 			body, err := readFrozenSupplyFile(directory, name, limit)
@@ -107,14 +107,14 @@ func readPipxClosure(input string) (pipxClosureSupply, error) {
 			fact.Status = "VERIFIED"
 			fact.ProvenanceSHA256 = receipt.ProvenanceSHA256()
 			fact.Invocation = receipt.Invocation()
-		case "userpath":
+		case "userpath", "pygments":
 			version, digest, err = readPipxUnsignedIdentity(identityBody)
 			if err != nil {
 				return pipxClosureSupply{}, err
 			}
-			filename = "userpath-" + version + "-py3-none-any.whl"
+			filename = project + "-" + version + "-py3-none-any.whl"
 			if _, err := os.Lstat(filepath.Join(directory, "provenance.json")); !os.IsNotExist(err) {
-				return pipxClosureSupply{}, errors.New("userpath supplied proof needs a reviewed publisher policy")
+				return pipxClosureSupply{}, errors.New("unsigned supply with a provided proof needs a reviewed publisher policy")
 			}
 			fact.Status = "NOT_PROVIDED"
 		default:
@@ -143,7 +143,7 @@ func readPipxClosure(input string) (pipxClosureSupply, error) {
 		if err != nil {
 			return pipxClosureSupply{}, err
 		}
-		wheel, err := read(filename, 1<<20)
+		wheel, err := read(filename, 8<<20)
 		if err != nil {
 			return pipxClosureSupply{}, err
 		}
@@ -166,7 +166,7 @@ func readPipxClosure(input string) (pipxClosureSupply, error) {
 		pages = append(pages, page)
 		proofs = append(proofs, fact)
 	}
-	closure, err := pypi.BindPipxSupplyClosure(packages, inputs, pages)
+	closure, err := pypi.BindPipxRuntimeSupply(packages, inputs, pages)
 	if err != nil {
 		return pipxClosureSupply{}, err
 	}
@@ -175,7 +175,7 @@ func readPipxClosure(input string) (pipxClosureSupply, error) {
 
 func readPipxUnsignedIdentity(body []byte) (string, string, error) {
 	if len(body) == 0 || len(body) > 4096 {
-		return "", "", errors.New("unsigned userpath identity exceeds bound")
+		return "", "", errors.New("unsigned pipx runtime dependency identity exceeds bound")
 	}
 	var id struct {
 		Version     string `json:"version"`
@@ -183,15 +183,15 @@ func readPipxUnsignedIdentity(body []byte) (string, string, error) {
 	}
 	spans, err := jsonSpans(body)
 	if err != nil || len(spans) != 3 {
-		return "", "", errors.New("unsigned userpath identity is invalid")
+		return "", "", errors.New("unsigned pipx runtime dependency identity is invalid")
 	}
 	for _, key := range []string{"", "/version", "/wheel_sha256"} {
 		if _, ok := spans[key]; !ok {
-			return "", "", errors.New("unsigned userpath identity fields are invalid")
+			return "", "", errors.New("unsigned pipx runtime dependency identity fields are invalid")
 		}
 	}
 	if json.Unmarshal(body, &id) != nil || !versionPattern.MatchString(id.Version) || !digestPattern.MatchString(id.WheelSHA256) {
-		return "", "", errors.New("unsigned userpath identity is unsupported")
+		return "", "", errors.New("unsigned pipx runtime dependency identity is unsupported")
 	}
 	return id.Version, id.WheelSHA256, nil
 }
