@@ -15,15 +15,43 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
+Last completed substep: CI418/source012c7b4 Required10SUCCESS; whole checkout4b88/tree3649f0bd/2726 identical; Linux79PASS/native123.40s/CPU245.96s/helper11wait0/final0
 Next action: M13-004/P4-O4-B — executable Python ZIP inspection/release/typed DATA role edit map; CI415 cause OPEN
-Current substep: M13-004/P4-O4-A selected owner/maintenance LOCAL QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
-Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
+Current substep: M13-004/P4-O4-A selected owner/maintenance + existing hosted regression QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
+Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI418 원격 검증 확인
+
+[CI418 qualification](./evidence/package-client-quarantine/ci418-pipx-owner-hosted-qualification-20261027.json)에서
+Required 포함10SUCCESS, 전체 checkout4b88/source012c7b4 tree3649f0bd/2726 동일과
+원본10 logs readback/hash를 확인했다. Linux79PASS/noSKIP, actual native UV123.40s,
+CPU245.96s, helper11wait0/final CONFIRMED_STOPPED·original/client/restore0이다.
+Linux elapsed64분57초, workflow 시작→Required65분29초(최종 run 갱신65분30초)다.
+이전70–90분 예상보다 빨리 완료됐으며 다음 동일 workflow 예상의 참고 실측으로 남긴다.
+아래 시작/권장 조회 기록은 역사이며 현재 대기 중인 run은 없다. 자동10분 감시를 수행했다고
+표시하지 않는다. 공통 runtime owner와 기존 hosted 소비자의 회귀 범위만 닫고 O4-B/C의
+Python ZIP 검역·배포·readonly transport/native pipx/CLI 및 전체 P4 acceptance는 남긴다.
+
+### 2026-10-27 CI418 공통 runtime owner 검증 시작
+
+O1~O4-A 공급·single owner/schema5·maintenance의 누적6 commits를 milestone branch에
+push했다. Source012c7b4/tree3649f0bd71148e402687a72344b42640413211f1/2726files는
+검사 사본의 전체 index/blob/mode 및 실제 disk와 같다. 최종 staged docs0.276s/security14.350s/
+workflow0.661s/release-gate0.302s도 PASS이며 named local 범위를 넘어 성공을 전용하지 않는다.
+[CI418/run40476591687](https://github.com/rahoney/heliopause/actions/runs/40476591687)은
+2026-10-27 08:52:39UTC(17:52:39KST)에 시작했다. 첫 조회9jobs 중 Docs/Representative Wheel
+Corpus2SUCCESS, 나머지7IN_PROGRESS다. Required는 아직 생성/완료되지 않았다.
+직전 CI417의 전체76분46초를 근거로 예상70–90분(19:02–19:22KST)을 기록하며 보장하지 않는다.
+조기 실패의 다음 권장 조회는**09:02:39UTC(18:02:39KST)**다.
+응답 종료 뒤 자동 조회·재개는 없으며 새 push로 이 후보를 취소하지 않는다. 원본 run/jobs는
+local raw owner의 ci418-initial-*에 readback/hash와 함께 보존한다. Whole P4 acceptance는
+미완료다. 독립 다음 작업은 O4-B map의 fixed ZIP execution inspection/readonly transport
+준비·실행 경계이며 이번 push는 구현된 전체 pipx 지원이나 공개 배포가 아니다.
 
 ### 2026-10-27 P4-O4-A 한정 로컬 검증
 
