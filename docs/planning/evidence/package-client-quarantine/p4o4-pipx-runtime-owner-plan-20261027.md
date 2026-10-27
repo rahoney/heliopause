@@ -1159,3 +1159,79 @@ RW output 아래에 있으므로 생산 경로의 immutable RO input으로 승�
 C3c3 installed supply·별도 RO wheel input/native session/profile의 baseline audit다. 고정
 ZIP C2 owner와 기존 UV native/whole archive/current Policy/transaction을 재사용하며 새
 CONTROL/network 상속·generic resolver 재작성은 하지 않는다. Whole acceptance는 열린다.
+
+
+## C3c3 — installed native session/RO wheel input/profile의 source 전 baseline
+
+기준 `45a2c8a19c7553c70157d72a2998ee87b3c1fa6e`, tree
+`ed6127f3855efb9783bde186bfb31da2754d6caa`/2827파일이며 tracked tree는 clean이다.
+Read는 Queue/client09/plan20·M8/M10·D-015, 위 C1/C2/B2/B3/C3와 routed lessons다.
+
+| 기존 책임 / symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `readInstalledPipxTool/preparePipxTool`, `readInstalledNativeTool`의 held current/root/file·root0444·whole SHA/size | YES | YES (reader/tests) | YES (named source/namespace) | YES (reader scope) | native factory의 actual current consumer; signed current qualification은 별도 |
+| `pipxDataVolume`의 fixed ZIP seed/RO anchor/seal/readers | YES | YES (B2 acquired) | YES (named local) | YES (그 scope) | native session consumer; dynamic wheels를 ZIP owner로 위장하지 않음 |
+| C3c1 whole original pre-query gate, C3c2 closed program/offline native diagnostic | YES | YES (static/diagnostic) | YES (named local) | NO (native session) | immutable byte snapshot/RO transport와 gVisor/profile 호출 |
+| `closureVolume/createInputVolume/verifyAttachments`, `closeWritableOutputVolume` | YES | YES (기존 typed roots) | YES (기존 scopes) | YES (기존 scopes) | 별도 fixed wheel root/용량의 구체 consumer |
+| `UVResolver.withUVNativeSessionForToolInstall`의 native supply/lifecycle/trace/cleanup와 independent archive/source reader | YES | YES (UV) | YES (기존 scopes) | YES (그 scopes) | pipx offline native session/frozen selection; 기존 UV를 재작성하지 않음 |
+| Pipx whole wheel freeze/RO lifetime/native profile/complete native census | NO | NO | NO | NO | 아래 C3c3a, 이후 native profile/session/output/factory의 구체 지도·actual |
+
+### C3c3a — immutable whole wheel snapshot/별도 RO transport의 수정 지도
+
+첫 source 범위는 whole original bytes를 동결하는 `pipx_native_input.go`, 별도
+`pipx_wheel_volume.go`와 기존 generic volume의 fixed-root 연결이다. 기존 runtime ZIP C2
+owner는 그대로 재사용하고 dynamic archive를 그 고정 SHA/kind에 넣지 않는다.
+
+1. Caller의 UV native lock/whole inputs/independent pages를 받아 public64MiB compressed/
+   64artifact와 pinned target을 지킨다. Reader bytes를 새 소유 snapshot으로 먼저 복사한 뒤
+   C3c1 gate로 그 frozen reader들 전체를 다시 검증한다. URL·filename·size/hash·중복/누락/
+   closure와 startup surface를 같은 bytes에 결합한다. Snapshot은 immutable file facts와
+   body를 소유하고 manifest ID를 facts에서 유도하며 source/runtime/Policy 권한은 만들지 않는다.
+2. Wheel input은 고정 `/haa-wheels`의 root0:0 regular0444 DATA/noexec volume이다.
+   Capacity는 기존 public compressed ceiling64MiB와 고정 HAA transport overhead1MiB로만
+   정한다. Artifact/source/graph 예산은 늘리지 않는다. `createInputVolume`의 compile-time
+   whitelist/root options와 `closeWritableOutputVolume`의 같은 고정 root만 확장한다.
+   기존 ZIP의 exact8MiB/selected SHA·기존 UV/PNPM/Bun/Go/Cargo 분기는 보존한다.
+3. 기존 closure identity/attachment 검증 위에 새 wheel owner의 single-use seed→RO anchor→
+   writer 제거→seal/readers를 연결한다. Root·shadow/alias·foreign/RW attachment·unknown
+   query를 거부하며 모든 원본 filename/UID/mode/size/hash와 전체 entry census를 streaming
+   readback한다. 부분 copy는 재시도/채택하지 않고 cleanup은 exact unattached owner만 한다.
+4. C3c2 native 환경의 fixed find-links만 `/haa-wheels`로 옮기고, 기존 runc diagnostic의
+   wheel copy를 새 frozen input/RO owner로 대체한다. Writer/anchor는 ZIP과 wheel의 별도
+   identity를 동시에 attestate한다. Root write EROFS·foreign RW 거부→제거 후 정상과 실제
+   offline native/config/metadata/link/replay·cleanup을 같은 original2wheel에서 확인한다.
+   Source interpreter/Host PATH/backend 선택과 closed operation/argv는 유지한다.
+
+새 RO input은 C3c2 RW diagnostic의 성공을 생산 불변성으로 확대하지 않기 위한 실제 gap이다.
+공통 두 파일의 좁은 fixed-root 추가가 필요하므로 C2 six-source 중
+`pypi_closure_volume.go`/`uv_runtime.go` bytes는 이 item에서 달라진다. 나머지 네 source와
+기존 ZIP pin/capacity/modes/semantics는 고정하고, 두 공통 파일의 전후 diff/기존 C2·UV
+volume tests 및 실제 C2 RO data와 새 native diagnostic을 함께 검사한다. 이전 six SHA를
+억지로 덮어쓰거나 canonical guard를 완화하지 않는다. 이는 기존 구현 대체/재작성이나
+사용자 선택 root/config API가 아니다.
+
+두 번째 검토: input hash/RO role은 safety/Artifact admission이 아니다. Query 실행은 아직
+별도 profile의 MISSING이며 새 CONTROL/network 상속을 만들지 않는다. C3c3a는 Go
+canonical Quick·영향 전체 Race·tag vet/actual build/docs/security와 immutable snapshot,
+변조/부정 tar·attachment/unknown/partial copy·EROFS/foreign writer·전체 정리를 검증한다.
+새 helper CI/미래 milestone interface는 추가하지 않는다. 이후 C3c3b에서 설치 공급/native
+session와 새 전용 profile의 parent→UV child→Python query provenance를 먼저 대조한다.
+
+
+### C3c3a named local 결과 — 2026-10-28
+
+[C3c3a receipt](./p4o4c3c3a-frozen-readonly-wheels-local-20261028.json)의 첫 canonical
+Quick248.619s/전체 sandbox Race16.476s·PyPI cached/tag vet·build/docs/security와 실제
+17.977s가 PASS다. Frozen bytes의 whole original/source/graph/startup gate를 별도
+root0:0/0444/noexec `/haa-wheels`에 결합했다. Single-use copy·RO anchor·writer 제거·
+seal/readers, 변조·누락·부분 copy·shadow/alias·foreign/unknown 거부를 검사했다. 실제 기존
+C2 ZIP5.43s와 새 native12.36s는 root write EROFS·foreign RW 거부→소유 writer 제거 후
+정상, config negative/positive·native install/no-op·metadata/link/graph2/replay를 확인했다.
+NoSKIP/보호5파일·Docker·42input·ZIP·source/binary 불변과 전체 owned 정리도 PASS다.
+
+공통 두 파일만 사전 지도대로 fixed root/capacity/close 분기를 추가했고 그 전후 SHA와
+좁은 diff SHA를 기록했다. C2 나머지 네 source와 원래 six-SHA manifest는 불변이다.
+이것은 RO transport/runc named qualification이며 installed current/native session·gVisor
+외부 관찰/Policy/target 반영/CLI 성공은 아니다. 다음 C3c3b의 exact parent→UV child→
+Python query와 전용 offline profile/session baseline·수정 지도를 계속한다. 기존 UV
+CONTROL/network predicate와 acquired ZIP profile을 넓혀 재사용하지 않는다.

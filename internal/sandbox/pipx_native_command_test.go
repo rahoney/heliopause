@@ -100,7 +100,7 @@ func TestPipxNativeEnvironmentUsesOnlyFixedOfflineGuestInputs(t *testing.T) {
 		"HOME": "/tmp", "PATH": "/haa-runtime:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 		"PIPX_HOME": "/haa-site/pipx", "PIPX_BIN_DIR": "/haa-site/tool-bin", "PIPX_MAN_DIR": "/haa-site/tool-man", "PIPX_COMPLETION_DIR": "/haa-site/tool-completions",
 		"PIPX_DEFAULT_PYTHON": "/usr/local/bin/python", "PIPX_DEFAULT_BACKEND": "uv", "PYTHONDONTWRITEBYTECODE": "1",
-		"UV_OFFLINE": "true", "UV_NO_INDEX": "true", "UV_FIND_LINKS": "/haa-site/wheels", "UV_NO_CONFIG": "true", "UV_PYTHON_DOWNLOADS": "never", "UV_NO_CACHE": "true",
+		"UV_OFFLINE": "true", "UV_NO_INDEX": "true", "UV_FIND_LINKS": "/haa-wheels", "UV_NO_CONFIG": "true", "UV_PYTHON_DOWNLOADS": "never", "UV_NO_CACHE": "true",
 	} {
 		if values[key] != value {
 			t.Fatal("fixed guest environment differs", key, values[key])

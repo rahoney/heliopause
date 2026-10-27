@@ -15,15 +15,27 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c2 closed native pipx program/offline install-noop diagnostic locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3 installed supply/readonly wheel input/native session/profile baseline audit; C3c2 named local runc qualified; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-C3c3 IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
+Last completed substep: P4-O4-C3c3a frozen whole original/readonly wheel input locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-C3c3b installed native session/dedicated offline profile baseline and edit map; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-C3c3b IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-C3c3a frozen whole wheel/RO input 로컬 검증
+
+[C3c3a receipt](./evidence/package-client-quarantine/p4o4c3c3a-frozen-readonly-wheels-local-20261028.json)의
+Quick248.619s/전체 sandbox Race16.476s·PyPI cached/tag vet·build/docs/security와 실제
+17.977s가 PASS다. Whole original/source/startup gate와 root0:0/0444/noexec 별도 RO
+wheel input, single-use writer→anchor→제거→seal/readers를 결합했다. 실제 기존 ZIP과
+새 wheel의 root write EROFS·foreign RW 거부/제거 후 정상, native install/no-op·config
+대조/metadata/link/graph2/replay, noSKIP·Host5/Docker/42input/ZIP/source 불변과 정리를
+확인했다. C2 공통 두 source의 좁은 fixed-root diff와 나머지 네 source 불변을 기록했다.
+Production installed current/native session·gVisor/Policy/CLI는 미완료이며 같은 M13-004의
+C3c3b baseline/edit map을 계속한다. 기존 e859487 push는 승인 대기이고 새 CI는 없다.
 
 ### 2026-10-28 P4-O4-C3c2 native program/offline 진단 로컬 검증
 

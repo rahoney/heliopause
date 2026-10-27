@@ -18,7 +18,7 @@ const (
 
 const pipxNativeHome = pythonSitePath + "/pipx"
 const pipxNativeBin = pythonSitePath + "/tool-bin"
-const pipxNativeWheels = pythonSitePath + "/wheels"
+const pipxNativeWheels = "/haa-wheels"
 
 // This creates closed argv, never execution permission. Its caller must hold
 // the installed DATA lease, admit the runtime/query and validate the complete

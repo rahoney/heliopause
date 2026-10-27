@@ -68,11 +68,14 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
 		return closureVolume{}, errors.New("pipx DATA volume requires the selected immutable identity")
+	}
+	if len(project) == 1 && project[0].destination == pipxNativeWheels && capacity != pipxWheelInputCapacity {
+		return closureVolume{}, errors.New("pipx whole-wheel volume requires the fixed capacity")
 	}
 	name, err := closureVolumeName(transaction)
 	if err != nil {
@@ -113,7 +116,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 }
 
 func (v closureVolume) tmpfsOptions() string {
-	if v.destination() == pipxRuntimeRoot {
+	if v.destination() == pipxRuntimeRoot || v.destination() == pipxNativeWheels {
 		return "size=" + strconv.FormatInt(v.capacity, 10) + ",nosuid,nodev,uid=0,gid=0,mode=0755,noexec"
 	}
 	options := "size=" + strconv.FormatInt(v.capacity, 10) + closureTmpfsOptions

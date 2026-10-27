@@ -138,6 +138,10 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 		t.Fatal("requires declared ordinary UID1000 diagnostic caller")
 	}
 	input := pipxDiagnosticFrozenInput(t) // Before any native interpreter/Docker.
+	frozen, err := freezePipxNativeInput(context.Background(), input.lock, input.inputs, input.pages)
+	if err != nil {
+		t.Fatal(err)
+	}
 	zipBody, err := os.ReadFile(os.Getenv("HELOX_PIPX_RUNTIME_ZIP"))
 	if err != nil {
 		t.Fatal(err)
@@ -157,6 +161,7 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	}
 	var keepers []*keeper
 	var data *pipxDataVolume
+	var wheelData *pipxWheelVolume
 	var uv nativeRuntimeVolume
 	var output closureVolume
 	remove := func(cleanup context.Context, k *keeper) error {
@@ -187,6 +192,11 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 				t.Error("UV cleanup", err)
 			}
 		}
+		if wheelData != nil {
+			if err := wheelData.close(cleanup, runner); err != nil {
+				t.Error("wheel DATA cleanup", err)
+			}
+		}
 		if data != nil {
 			if err := data.close(cleanup, runner); err != nil {
 				t.Error("DATA cleanup", err)
@@ -205,6 +215,10 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 		t.Fatal(err)
 	}
 	data, err = createPipxDataVolume(ctx, runner, session.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheelData, err = createPipxWheelVolume(ctx, runner, session.String(), frozen)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -256,22 +270,39 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	writer := create("writer", "0:0", []string{"--mount", rw}, false)
+	wheelRW, err := wheelData.preparationMount()
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer := create("writer", "0:0", []string{"--mount", rw, "--mount", wheelRW}, false)
 	if err := data.seed(ctx, runner, &pipxPreparedTool{body: zipBody}, writer.id); err != nil {
+		t.Fatal(err)
+	}
+	if err := wheelData.seed(ctx, runner, writer.id); err != nil {
 		t.Fatal(err)
 	}
 	ro, err := data.readerMount()
 	if err != nil {
 		t.Fatal(err)
 	}
-	anchor := create("anchor", "1000:1000", []string{"--mount", ro}, false)
+	wheelRO, err := wheelData.readerMount()
+	if err != nil {
+		t.Fatal(err)
+	}
+	anchor := create("anchor", "1000:1000", []string{"--mount", ro, "--mount", wheelRO}, false)
 	if err := data.bindAnchor(ctx, runner, anchor.id); err != nil {
+		t.Fatal(err)
+	}
+	if err := wheelData.bindAnchor(ctx, runner, anchor.id); err != nil {
 		t.Fatal(err)
 	}
 	if err := remove(ctx, writer); err != nil {
 		t.Fatal(err)
 	}
 	if err := data.seal(ctx, runner); err != nil {
+		t.Fatal(err)
+	}
+	if err := wheelData.seal(ctx, runner); err != nil {
 		t.Fatal(err)
 	}
 	uv, err = createUVRuntimeVolume(ctx, runner)
@@ -290,7 +321,7 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reader := create("native-reader", "", []string{"--mount", ro, "--mount", uvMount, "--mount", outputMount}, true)
+	reader := create("native-reader", "", []string{"--mount", ro, "--mount", wheelRO, "--mount", uvMount, "--mount", outputMount}, true)
 	// This runc-only framing value is controller-created and confers neither
 	// observer admission nor completion authority. Use the canonical helper
 	// solely to remove the Docker exec capability set before every target.
@@ -318,6 +349,9 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	if err := data.verifyReader(ctx, runner, reader.id); err != nil {
 		t.Fatal(err)
 	}
+	if err := wheelData.verifyReader(ctx, runner, reader.id); err != nil {
+		t.Fatal(err)
+	}
 	if err := uv.verifyTarget(ctx, runner, reader.id); err != nil {
 		t.Fatal(err)
 	}
@@ -343,25 +377,28 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 		t.Fatal("negative failed outside the intended UV config parser", configErr)
 	}
 	t.Log("negative native UV venv rejected poisoned guest uv.toml without UV_NO_CONFIG")
-	var transport bytes.Buffer
-	archive := tar.NewWriter(&transport)
-	if err := archive.WriteHeader(&tar.Header{Name: "wheels/", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
+	// A foreign RW attachment invalidates the complete reader census. Restoring
+	// the exact owned inventory must recover before native execution.
+	foreign := create("foreign-wheel-writer", "0:0", []string{"--mount", wheelRW}, false)
+	if err := wheelData.verifyReader(ctx, runner, reader.id); err == nil {
+		t.Fatal("foreign RW wheel attachment accepted")
+	}
+	if err := remove(ctx, foreign); err != nil {
 		t.Fatal(err)
 	}
-	for _, wheel := range input.wheels {
-		if err := archive.WriteHeader(&tar.Header{Name: "wheels/" + wheel.filename, Typeflag: tar.TypeReg, Mode: 0400, Uid: 1000, Gid: 1000, Size: int64(len(wheel.body))}); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := archive.Write(wheel.body); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := archive.Close(); err != nil {
+	if err := wheelData.verifyReader(ctx, runner, reader.id); err != nil {
 		t.Fatal(err)
 	}
-	if err := runner.RunInput(ctx, &transport, "docker", "cp", "--archive", "-", reader.id+":"+pythonSitePath); err != nil {
+	// Explicit root touch distinguishes filesystem EROFS from UID permission
+	// denial. It executes no wheel/Python code and grants no native authority.
+	touch, touchErr := runner.RunBounded(ctx, "docker", "exec", "--user", "0:0", anchor.id, "/usr/bin/touch", pipxNativeWheels+"/forbidden")
+	if touchErr == nil || !strings.Contains(strings.ToLower(string(touch)), "read-only file system") {
+		t.Fatal("wheel RO root write did not fail EROFS", touchErr)
+	}
+	if err := wheelData.verifyReader(ctx, runner, reader.id); err != nil {
 		t.Fatal(err)
 	}
+	t.Log("wheel original RO root write EROFS; foreign RW rejected then owned removal recovered")
 	execute := func(operation pipxNativeOperation, request artifactpypi.UpgradeRequirement) []byte {
 		t.Helper()
 		args, err := pipxNativeArguments(operation, request)
@@ -432,6 +469,9 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 	execute(pipxNativeUpgrade, upgrade)
 	check("noop_upgrade")
 	if err := data.verifyReader(ctx, runner, reader.id); err != nil {
+		t.Fatal(err)
+	}
+	if err := wheelData.verifyReader(ctx, runner, reader.id); err != nil {
 		t.Fatal(err)
 	}
 	if err := uv.verifyTarget(ctx, runner, reader.id); err != nil {
