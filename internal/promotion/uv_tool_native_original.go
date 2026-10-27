@@ -13,14 +13,35 @@ import (
 
 const uvToolOriginalNativeReceiptControl = "uv-tool-original-native-receipt.toml"
 
+func uvToolNativeOriginalControls(ctx context.Context, g *toolFreshTarget) ([]domain.ProjectControlFile, error) {
+	if ctx == nil || g == nil {
+		return nil, errors.New("UV tool original controls require a held target")
+	}
+	if g.original == nil || g.original.native == nil {
+		return nil, nil
+	}
+	if err := g.verify(ctx); err != nil {
+		return nil, err
+	}
+	p := g.original.native
+	if !p.rawReceipt.Present() || p.rawReceipt.Name() != uvToolOriginalNativeReceiptControl ||
+		p.rawReceipt.Digest().String() != p.receipt.Digest || !p.ownership.Present() ||
+		p.ownership.Name() != "pypi-update-native-ownership.json" || p.ownershipSHA == "" ||
+		p.ownership.Digest().String() != p.ownershipSHA {
+		return nil, errors.New("UV tool native original controls lack their held raw/source binding")
+	}
+	return []domain.ProjectControlFile{p.rawReceipt, p.ownership}, nil
+}
+
 // Raw claims and independent source proof remain separate from current approval.
 // No original program or interpreter is transported or executed.
 type uvToolNativeOriginalProof struct {
-	rawReceipt  domain.ProjectControlFile
-	ownership   domain.ProjectControlFile
-	receipt     pypiFileSnapshot
-	interpreter []toolInterpreterMember
-	scripts     *uvNativeToolScriptProof
+	rawReceipt   domain.ProjectControlFile
+	ownership    domain.ProjectControlFile
+	ownershipSHA string
+	receipt      pypiFileSnapshot
+	interpreter  []toolInterpreterMember
+	scripts      *uvNativeToolScriptProof
 }
 
 func beginToolNativeOriginalTarget(ctx context.Context, install domain.InstallContext, request artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, native *pypiNativeEnrollment) (*toolFreshTarget, error) {
@@ -44,6 +65,9 @@ func (p *uvToolNativeOriginalProof) verify(ctx context.Context, g *toolFreshTarg
 	}
 	if !p.receipt.matches(filepath.Join(g.tx.plan.root, uvToolHostReceipt)) {
 		return errors.New("native UV tool raw receipt changed")
+	}
+	if p.ownershipSHA != "" && (!p.ownership.Present() || p.ownership.Digest().String() != p.ownershipSHA) {
+		return errors.New("native UV tool authenticated source control changed")
 	}
 	if err := verifyToolInterpreterSnapshot(p.interpreter); err != nil {
 		return err
@@ -123,6 +147,7 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 	if !proof.ownership.Present() {
 		return nil, errors.New("native UV tool complete original source proof is absent")
 	}
+	proof.ownershipSHA = proof.ownership.Digest().String()
 	state, err := captureToolOriginalWithProjection(ctx, g, receiptPath, &projection)
 	if err != nil {
 		return nil, err

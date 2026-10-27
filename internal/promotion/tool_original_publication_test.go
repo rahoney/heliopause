@@ -21,6 +21,11 @@ func toolOriginalPublicationFixture(t *testing.T, noop bool) (*toolFreshTarget, 
 	if err != nil {
 		t.Fatal(err)
 	}
+	return toolOriginalPublicationMaterial(t, g, noop)
+}
+
+func toolOriginalPublicationMaterial(t *testing.T, g *toolFreshTarget, noop bool) (*toolFreshTarget, []pypiDestination, domain.ProjectControlFile, string) {
+	t.Helper()
 	fixture := "uv-upgraded.toml"
 	version := "1.1.0"
 	commands := []string{"haa-demo", "haa-new"}

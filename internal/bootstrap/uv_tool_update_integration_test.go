@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -73,9 +72,9 @@ func TestUVPublicToolApprovedUpgradeIntegration(t *testing.T) {
 	for _, entry := range previous.Bundle().Set().Inspected().Inspections() {
 		seen[entry.RunID().String()] = true
 	}
-	for _, step := range []string{"changed-version", "same-version-current-approval"} {
+	for _, step := range []string{"changed-version", "same-version-current-approval", "managed-explicit-adopt-current-approval"} {
 		t.Run(step, func(t *testing.T) {
-			request, err := application.NewInstallUpdateRequest(artifactpypi.PublicPyPIProfile().Source(), "cowsay==6.1", install, false)
+			request, err := application.NewInstallUpdateRequest(artifactpypi.PublicPyPIProfile().Source(), "cowsay==6.1", install, step == "managed-explicit-adopt-current-approval")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -141,14 +140,5 @@ func TestUVPublicToolApprovedUpgradeIntegration(t *testing.T) {
 			}
 			t.Logf("uv_tool_current_upgrade case=%s selected=6.1 controls=8 current_runs=%d", step, len(seen))
 		})
-	}
-	before := uvToolTargetState(t, venv, bin)
-	request, err := application.NewInstallUpdateRequest(artifactpypi.PublicPyPIProfile().Source(), "cowsay", install, true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rejected, err := service.Install(ctx, request)
-	if err == nil || rejected.Bundle().Valid() || rejected.Promoted().ManifestID().String() != "" || !reflect.DeepEqual(before, uvToolTargetState(t, venv, bin)) {
-		t.Fatal("unsupported native adoption modified target")
 	}
 }

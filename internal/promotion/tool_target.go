@@ -193,7 +193,7 @@ func beginToolTargetWithNative(ctx context.Context, install domain.InstallContex
 	}
 	receipt := filepath.Join(root, uvToolHostReceipt)
 	if original {
-		if native != nil {
+		if native != nil && result.tx.metadata == nil {
 			result.original, err = captureUVToolNativeOriginal(ctx, result, receipt, install, native)
 		} else {
 			result.original, err = captureToolOriginal(ctx, result, receipt)

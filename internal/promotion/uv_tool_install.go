@@ -22,6 +22,7 @@ type UVToolInstallPreparation struct {
 	promoter     *PyPIPromotion
 	resolver     uvToolNativeSelector
 	upgrade      uvToolUpgradeNativeSelector
+	native       *pypiNativeEnrollment
 	binRoot      string
 	trustedRoots []string
 }
@@ -119,6 +120,11 @@ func (s *uvToolInstallSession) ResolveDependencies(ctx context.Context, referenc
 		return domain.DependencyResolution{}, err
 	}
 	controls = append(controls, receipt, target)
+	originalControls, err := uvToolNativeOriginalControls(ctx, s.guard)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	controls = append(controls, originalControls...)
 	resolution, err = resolution.WithProjectControls(controls)
 	if err != nil {
 		return domain.DependencyResolution{}, err
@@ -210,6 +216,9 @@ func uvToolTargetControl(g *toolFreshTarget, nativeLock domain.ContentDigest) (d
 	intent := "fresh-install"
 	if g.original != nil {
 		intent = "managed-upgrade"
+		if g.original.native != nil {
+			intent = "native-adoption-upgrade"
+		}
 	}
 	body, err := json.Marshal(struct {
 		Version                                                    int

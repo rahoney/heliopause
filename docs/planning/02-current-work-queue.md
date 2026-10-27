@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-N2B native receipt/base-interpreter/link guard plus existing complete original enrollment named local QUALIFIED; raw and projected receipts separate; only in-memory ownership, no native current approval/publication yet
-Next action: M13-004 — N2C native tool update service/current Manifest raw+source controls and existing M3 atomic publication/rollback; then explicit CLI and actual public-native consumers; CI415 cause OPEN and next required CI timer10min
-Current substep: M13-004/P4-N2C native tool current approval/publication; N2A/B helpers locally qualified only; public opt-in/pipx/default native recipes/final profiles remain
+Last completed substep: P4-N2C internal enrollment/current controls and synthetic native publication/rollback named local checkpoint; existing public managed/fresh/current Evidence actual qualified; PUBLIC NATIVE current approval remains unqualified
+Next action: M13-004 — N2D explicit native tool CLI/preflight/help and actual public-native producer/current Evidence/Manifest10 controls/publication; CI415 cause OPEN and next required CI timer10min
+Current substep: M13-004/P4-N2D explicit native tool opt-in and actual consumers; N2C internal wiring verified only in named scopes; pipx/default native recipes/final profiles remain
 Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-N2C 정전 후 로컬 체크포인트
+
+[N2C receipt](./evidence/package-client-quarantine/p4n2c-uv-native-current-update-local-20261027.json)는
+단독 Quick208.494s/affected full Race163.552s와 security/docs·canonical observer122latches,
+기존 UV tool 네 actual 소비자376.837s를 연결한다. 명시 native enrollment와 raw/source controls,
+synthetic 원본의 ledger 부재/원복·취소/late foreign cleanup, managed 반복 adopt의 현재 재검사를
+확인했다. Helperwait0/Host 보호 파일·Docker 동일이며 정전 후 사라진 두 /run directory만 별도
+복구했다. 최초 시험 준비 오류와 중첩 실행의 두300s timeout은 원본으로 보존한다. 실제 PUBLIC
+NATIVE 원본의 current 승인/Manifest/CLI는 아직 미검증이며 [N2D 지도](./evidence/package-client-quarantine/p4n2d-uv-native-tool-cli-plan-20261027.md)와
+그 실제 소비자로 이어간다. M13-004 하나만 IN_PROGRESS이고 새 push/full CI는 없다.
 
 ### 2026-10-24 CI402 ordinary checkpoint 확인
 

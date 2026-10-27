@@ -21,5 +21,9 @@ func newUVToolUpdateService(b pythonClientBindings, binRoot string) (*applicatio
 	if err != nil {
 		return nil, err
 	}
+	preparation, err = preparation.WithNativeEnrollment(native, b.intake, b.intakeRoot)
+	if err != nil {
+		return nil, err
+	}
 	return application.NewInstallUpdateService(b.installer, preparation)
 }

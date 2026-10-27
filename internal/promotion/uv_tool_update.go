@@ -36,6 +36,22 @@ func NewUVToolUpdatePreparation(promoter *PyPIPromotion, resolver uvToolUpdateNa
 	return &UVToolUpdatePreparation{shared}, nil
 }
 
+func (p *UVToolUpdatePreparation) WithNativeEnrollment(resolver ports.DependencyResolver, intake ports.Artifact, intakeRoot string) (*UVToolUpdatePreparation, error) {
+	if p == nil || p.shared == nil || resolver == nil || intake == nil || !filepath.IsAbs(intakeRoot) || filepath.Clean(intakeRoot) != intakeRoot {
+		return nil, errors.New("UV tool native enrollment requires actual original-source capabilities")
+	}
+	bound := false
+	for _, root := range p.shared.trustedRoots {
+		bound = bound || root == intakeRoot
+	}
+	if !bound {
+		return nil, errors.New("UV tool original intake is outside frozen storage boundaries")
+	}
+	shared := *p.shared
+	shared.native = &pypiNativeEnrollment{resolver: resolver, intake: intake, intakeRoot: intakeRoot, runner: shared.promoter.runner, client: nativeUVClient}
+	return &UVToolUpdatePreparation{shared: &shared}, nil
+}
+
 func (p *UVToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, source domain.SourceID, selector string, install domain.InstallContext, adopt bool) (result ports.InstallUpdateSession, resultErr error) {
 	if p == nil || p.shared == nil || ctx == nil || source != artifactpypi.PublicPyPIProfile().Source() || !install.Valid() {
 		return nil, errors.New("UV tool upgrade requires one supported existing public tool")
@@ -43,7 +59,7 @@ func (p *UVToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, source
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if adopt {
+	if adopt && p.shared.native == nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("UV native tool adoption requires independent original enrollment"))
 	}
 	requirement, err := artifactpypi.ParseUpgradeRequirement(selector)
@@ -54,7 +70,12 @@ func (p *UVToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, source
 	if err != nil {
 		return nil, err
 	}
-	guard, err := beginToolOriginalTarget(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots)
+	var guard *toolFreshTarget
+	if adopt {
+		guard, err = beginToolNativeOriginalTarget(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots, p.shared.native)
+	} else {
+		guard, err = beginToolOriginalTarget(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots)
+	}
 	if err != nil {
 		return nil, err
 	}
