@@ -26,6 +26,20 @@ import (
 // enrollment subsequently performs its own public old-wheel authentication.
 func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, target string) {
 	t.Helper()
+	uvNativeOriginalDataFixture(t, ctx, wheel, target, "", nil, "")
+}
+
+func uvNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin string, interpreter []byte, requirement string) {
+	t.Helper()
+	if requirement != "cowsay==6.0" && requirement != "cowsay>=6.0,<=6.1" {
+		t.Fatal("unsupported native tool fixture requirement")
+	}
+	uvNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement)
+}
+
+func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement string) {
+	t.Helper()
+	tool := toolBin != ""
 	const label = "io.heliopause.test.uv-native-original"
 	client := t.TempDir()
 	ownerDigest := sha256.Sum256([]byte(client))
@@ -119,10 +133,35 @@ func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, ta
 	}
 	// Explicit runc is only a fixture data generator; the product still uses
 	// its normal authenticated gVisor observer and network-policy path.
-	container := create(runtimeidentity.PythonImageReference, "", []string{"infinity"},
-		"--runtime", "runc", "--network", "none", "--read-only", "--user", "1000:1000", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1",
+	network := "none"
+	var mounts []string
+	var base string
+	if tool {
+		root := filepath.Dir(toolBin)
+		if !filepath.IsAbs(root) || strings.ContainsAny(root, ",:\\\x00\r\n") || target != filepath.Join(root, "tools", "cowsay") || toolBin != filepath.Join(root, "commands") || len(interpreter) == 0 || len(interpreter) > 16<<20 {
+			t.Fatal("native tool fixture requires its own explicit public cowsay roots and image interpreter DATA")
+		}
+		if err := os.MkdirAll(filepath.Dir(target), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Mkdir(toolBin, 0700); err != nil {
+			t.Fatal(err)
+		}
+		base = filepath.Join(root, "base-python3.14")
+		if err := os.WriteFile(base, interpreter, 0700); err != nil {
+			t.Fatal(err)
+		}
+		// This isolated native producer consumes a real public wheel. No index
+		// override or rewritten receipt masquerades as a public installation.
+		network = "bridge"
+		mounts = []string{"--mount", "type=bind,src=" + root + ",dst=" + root}
+	}
+	containerArgs := []string{
+		"--runtime", "runc", "--network", network, "--read-only", "--user", "1000:1000", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", "/haa-fixture:rw,exec,nosuid,nodev,size=96m,uid=1000,gid=1000,mode=0700", "--entrypoint", "/bin/sleep")
+		"--tmpfs", "/haa-fixture:rw,exec,nosuid,nodev,size=96m,uid=1000,gid=1000,mode=0700", "--entrypoint", "/bin/sleep"}
+	containerArgs = append(containerArgs, mounts...)
+	container := create(runtimeidentity.PythonImageReference, "", []string{"infinity"}, containerArgs...)
 	checked(nil, 16<<10, "start", container)
 	// Only the verified UV binary is executable in this private tmpfs. The
 	// authentic wheel and local registry HTML are copied as inert input data.
@@ -158,11 +197,27 @@ with os.fdopen(fd,"wb") as f:
 		{"index/packages/" + filename, wheel, 0444},
 		{"index/simple/idna/index.html", []byte("<a href=\"../../packages/" + filename + "#sha256=" + hex.EncodeToString(wheelSum[:]) + "\">" + filename + "</a>"), 0444},
 	} {
+		if tool && entry.name != "uv" {
+			continue
+		}
 		guest(entry.body, 16<<10, "/usr/local/bin/python", "-I", "-B", "-c", writeData, "/haa-fixture/"+entry.name, fmt.Sprint(len(entry.body)), fmt.Sprint(entry.mode))
 	}
 	execute := func(args ...string) []byte {
 		t.Helper()
 		return guest(nil, 64<<10, args...)
+	}
+	if tool {
+		// Both the receipt's base Python path and generated wrapper paths are
+		// produced directly at their final private Host locations. They remain
+		// foreign DATA until the product independently proves the entire source.
+		execute("/usr/bin/env", "UV_TOOL_DIR="+filepath.Dir(target), "UV_TOOL_BIN_DIR="+toolBin,
+			"UV_COMPILE_BYTECODE=false", "PYTHONDONTWRITEBYTECODE=1",
+			"/haa-fixture/uv", "tool", "install", toolRequirement, "--python", base,
+			"--no-build", "--no-sources", "--link-mode", "copy", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python")
+		checked(nil, 16<<10, "rm", "--force", container)
+		delete(owned, container)
+		t.Logf("actual_uv_native_tool_original requirement=%s uv=%s python=%s artifacts_executed=0", toolRequirement, runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
+		return
 	}
 	checked(nil, 16<<10, "exec", "--detach", "--user", "1000:1000", container, "/usr/local/bin/python", "-I", "-B", "-m", "http.server", "8123", "--bind", "127.0.0.1", "--directory", "/haa-fixture/index")
 	execute("/usr/local/bin/python", "-I", "-B", "-c", `import urllib.request,time

@@ -55,3 +55,91 @@ CLI/Bootstrap/Promotion/PyPI affected Race와 actual tagged compilation을 사�
 선택을 추가하고 기존 checker의 skip/missing-consumer 부정 회귀를 확장한다. 기존 네
 소비자와 두 client scope·helper/restore·12m 제한은 유지한다.
 작은 helper별 push/full CI를 추가하지 않으며 hosted/final CPU·CUDA acceptance는 계속 열어 둔다.
+
+## 첫 현재 후보와 actual — 완료 판정 아님
+
+N2C는17293ac로 로컬 보존했다. N2D 초기 canonical Quick274.740s/security19.604s/
+docs0.509s/workflow1.298s와 tagged compile3.748s가 PASS다. 기존 native fixture의 locked
+supply/bounded Docker I/O·cleanup, guest writer와 native pip 데이터 생산/반출 세 구간은
+N2C와 byte-identical임을 확인했다. 기존 default fixture 실제 소비자 검증은 아직 남는다.
+
+Exact ci-uv-tools bootstrap actual344.580s는 앞 네 기존 소비자 PASS 뒤 새 native 원본
+생성4.30s에 도달했다. No-adopt 호출은 UPDATE_ORIGINAL_STATE_UNSUPPORTED로 거부됐지만
+새 assertion이 generic UPDATE_PREPARATION_FAILED를 기대해 실패했다. Current native
+inspection/승인/Manifest/반입·Evidence 실패는 NOT_REACHED다. Helperwait0/confirmed stop와
+Host 보호 파일/Docker 동일은 확인했다. `p4n2d-first-actual-assessment-20261027.json`과
+first-tool-actual-v2 원본을 유지하며 이를 product guard의 회귀나 native 지원 완료로 쓰지 않는다.
+
+교정은 no-adopt의 기존 거부 code family와 fixture regular/single-link 확인, bounded 원본
+inventory/raw receipt DATA 진단이다. 원본을 바꾸지 않은 current Evidence 실패를 변조
+시험보다 먼저 확인한다. 다음 actual은 기존 helper/data/env를 유지한 채 새 native consumer
+하나만 선택하며, 성공 여부와 기존 네 소비자의 앞 결과를 각 실행/소스 범위대로 구분한다.
+
+좁힌 v3 actual5.063s는 native 원본의 regular files/alias·활성화 scaffold·원본 receipt를
+DATA로 남겼다. 이번 no-adopt는 generic preparation/layout 거부였으므로 한 코드만 고정한
+assertion은 여전히 부정확했다. 첫 실행의 내부 원인은 원본 DATA가 없어 미확정이다.
+두 관측된 원본 거부 코드만 허용하되 FAILED·current checks/references0·원본 inode/bytes/
+mode/link 동일·ledger 부재를 함께 요구한다. 당시 explicit mutated adoption에는 generic preparation
+거부를 요구했으나, 아래 v4 관측으로 같은 두 code family로 교정했다. Product gate는 바꾸지 않고 정상 native current 경로를 먼저 확인한다.
+원본은 `p4n2d-native-only-v3-assessment.json`과 같은 prefix의 raw다.
+
+V4는 genuine native current inspection 뒤 실제 Evidence permission failure와 원본 불변을
+확인했다. Mutated original도 같은 두 기존 거부 코드 중 하나였으므로 arbitrary error가 아닌
+그 code family/zero-current-check/원본 불변을 함께 요구한다. V5 native actual126.927s는
+exact6.0 원본의 현재 승인/Manifest10·반입과 managed 반복 adopt의 새 Evidence/Manifest8을
+모두 PASS했다. Helperwait0/Host 동일·exact named test1도 확인했다. 제품 gate 변경은 없다.
+
+### 추가 actual version-change 범위와 재검토
+
+기존 supported bounded requirement의 실제 버전 교체도 확인한다. Native producer가 원문
+`cowsay>=6.0,<=6.1`로 실제6.1을 설치하고, explicit positional6.0은 그 원래 범위 안에서
+6.0을 선택해야 한다. 이는 실제 downgrade를 포함한 version replacement 증거이며 native
+원본 조건을 합성하거나 새로운 recipe/options를 허용하지 않는다. Raw receipt·old6.1 source
+전체 proof/current6.0 검사/Manifest10 및 old6.1 METADATA 제거를 같은 publisher로 검증한다.
+고정 native UV가 이 선택을 수행하지 못하면 최초 실패/의미를 확인하고 product guard나
+원래 constraint를 바꾸어 통과시키지 않는다. 공통 fixture는 두 literal public requirements만
+허용하고 default native pip의 network-none/data writer/export body는 유지한다.
+
+
+## 최종 native 소비자 — named local 검증
+
+V6 actual171.767s는 tagged binary `a54bd23e`와 frozen whole-source2656 file inventory를
+연결하며 exact named test1/noSKIP/helperwait0/CONFIRMED_STOPPED·보호 파일5개와 Docker
+전후 동일을 확인했다. Genuine exact6.0과 bounded6.1→6.0의 현재 complete required 검사,
+서로 다른 Evidence4개씩, Policy ALLOW, Manifest10 controls와 raw receipt/old-source proof,
+현재 Host receipt·반입을 검증했다. Bounded 원문은 보존하고 old6.1 metadata만 제거하며
+사용자 파일을 보존한다. Managed 반복 --adopt는 새 Evidence4개/Manifest8로 재승인한다.
+현재 Evidence의 실제 permission failure와 no-adopt/script·receipt 변조 거부도 원본 파일의
+inode/bytes/modes/links와 ledger 부재를 보존한다.
+
+이 결과는 fixed `--no-build --no-sources --link-mode copy` public-wheel recipe의 명시
+native 인계에 한정한다. Ordinary native 기본 recipe·pipx·hosted/final profiles와 M13-004
+전체 acceptance는 열려 있다. 앞 exact five-consumer script의 네 기존 PASS와 후속 native-only
+PASS를 구분하며 첫 전체 실행을 all-success로 고쳐 쓰지 않는다. 원본 prefix는
+`p4n2d-native-bounded-v6-*`, full source inventory는 `p4n2d-native-v6-source.json`이다.
+기존 native sync/project의 affected actual과 최종 canonical/Race 결과는 local receipt에 연결한다.
+
+
+기존 default native fixture affected actual281.476s는 동일 binary에서 exact named2/noSKIP로
+native project add/sync122.81s와 complete sync156.69s를 통과했다. Multi-root·retained·empty·
+explicit native 인계와 사용자 파일 보존을 확인했고 helperwait0/CONFIRMED_STOPPED·보호 파일5개/
+Docker 전후 동일이다. 기존 default native writer·network-none/export 경계의 실제 회귀 증거이며
+새 tool recipe 밖의 일반 native 지원 선언은 아니다. `p4n2d-native-default-fixture-v1-*`를 따른다.
+
+
+## 최종 audit 및 체크포인트
+
+| 현재 N2D 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 명시 --adopt/preflight/help/typed 요청 | YES | YES(public CLI) | YES(named local) | YES(named recipe) | hosted exact candidate 검증 |
+| Authentic native 원본/current10 controls/실제 원자 반영 | YES | YES(existing engine) | YES(named local exact/bounded) | YES(named recipe) | ordinary native defaults/다른 recipe는 unsupported |
+| 현재 Evidence 실패·변조/no-adopt·managed 재승인 | YES | YES | YES(named local) | YES(named cases) | hosted/final profile |
+| 기존 native project/complete sync 영향 경로 | YES(reused) | YES | YES(same binary actual2) | YES(named regression) | broader profile acceptance는 별도 |
+| P4/M13-004 전체 | YES(partial) | YES(partial) | NO(whole) | NO | pipx·hosted/final support matrix 및 P5..P7 |
+
+Final canonical Quick62.462s/full affected PyPI·Promotion·Bootstrap·CLI·checker Race183.469s,
+workflow1.088s/docs0.446s/security12.445s와 tagged compilation이 PASS다. 실제 whole-source2656의
+모든 실행 입력은 최종 후보와 같고 이후 차이는 문서뿐이다. [Local receipt](./p4n2d-uv-native-tool-cli-local-20261027.json)가
+명령/결과/원본 hash·source binding·첫 실패 보존을 연결한다. Raw는 local owner의 자료이며
+SHA 참조를 원격 raw 보관으로 주장하지 않는다. 최종 문서 변화에는 docs/security만 적용하고
+실행 입력이 바뀌지 않은 Quick/Race/actual을 근거 없이 반복하지 않는다.

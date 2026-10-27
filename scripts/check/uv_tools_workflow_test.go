@@ -21,6 +21,8 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 	for name, candidate := range map[string]string{
 		"skip native":          strings.Replace(original, "HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1", "HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=0", 1),
 		"skip current failure": strings.Replace(original, "HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=1", "HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=0", 1),
+		"skip native adoption": strings.Replace(original, "HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=1", "HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=0", 1),
+		"omit native adoption": strings.Replace(original, "TestLinuxUVTool(Install|Upgrade|NativeAdoption)CLIIntegration", "TestLinuxUVTool(Install|Upgrade)CLIIntegration", 1),
 		"ignore bootstrap":     strings.Replace(original, uvToolBootstrapCommand, uvToolBootstrapCommand+" || true", 1),
 		"comment native":       strings.Replace(original, uvToolNativeCommand, "# "+uvToolNativeCommand, 1),
 		"wrong package":        strings.Replace(original, "cd internal/bootstrap", "cd internal/sandbox", 1),

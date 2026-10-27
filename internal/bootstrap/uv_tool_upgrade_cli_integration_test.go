@@ -148,11 +148,11 @@ func TestLinuxUVToolUpgradeCLIIntegration(t *testing.T) {
 	approved := uvToolStagedIDs(t, staging)
 	out.Reset()
 	diagnostic.Reset()
-	if err := Run(ctx, []string{"--output", "json", "uv", "tool", "upgrade", "cowsay", "--target", venv, "--bin-dir", bin, "--adopt"}, &out, &diagnostic); err == nil || len(bytes.TrimSpace(out.Bytes())) != 0 || !reflect.DeepEqual(approved, uvToolStagedIDs(t, staging)) {
+	if err := Run(ctx, []string{"--output", "json", "uv", "tool", "upgrade", "cowsay", "--target", venv, "--bin-dir", bin, "--all"}, &out, &diagnostic); err == nil || len(bytes.TrimSpace(out.Bytes())) != 0 || !reflect.DeepEqual(approved, uvToolStagedIDs(t, staging)) {
 		t.Fatal("unsupported option did not fail before operation/approval", err, out.String())
 	}
 	if !reflect.DeepEqual(state, uvToolTargetState(t, venv, bin)) {
-		t.Fatal("unsupported adoption changed managed tool")
+		t.Fatal("unsupported option changed managed tool")
 	}
 	foreign, foreignBin := filepath.Join(root, "unowned", "cowsay"), filepath.Join(root, "unowned", "commands")
 	prepareUVToolTargetFixture(t, foreign, foreignBin, uvToolTargetInterpreterFixture(t))

@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install 및 managed uv tool upgrade named local 검증/CI415는 선행 PNPM peer FD 추적에서 실패하여 tool recipe 미도달, native tool adoption/pipx 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption named local actual 검증/CI415는 선행 PNPM peer FD 추적에서 실패하여 tool recipe 미도달, pipx·remote/final profiles 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -301,3 +301,13 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 runtime의 빈 venv와 별도의 기존 bin root를 명시한다. Bare/exact/bounded 요구와 JSON/human을
 지원하고 기존 tool 재설치·foreign 파일/명령 충돌은 보존 후 거부한다. Linux amd64 named local
 범위이며 runtime 생성·원본 upgrade/adoption·pipx·tool 실행은 아직 지원을 선언하지 않는다.
+
+
+[P4-N2D native tool 인계](../planning/evidence/package-client-quarantine/p4n2d-uv-native-tool-cli-plan-20261027.md)는
+`helox uv tool upgrade <public-requirement> --target <absolute-existing-tool-venv> --bin-dir <absolute-existing-bin> --adopt`를
+명시적으로 연결한다. `--no-build --no-sources --link-mode copy`로 설치한 고정 UV의 공개 wheel
+형식만 지원하며 일반 native 기본값·다른 recipe/옵션은 지원하지 않는다. 원본 전체를 authentic
+old wheel과 독립 대조하고 raw receipt/source proof를 현재 Manifest에 결합한다. 원래 설치 조건을
+보존하면서 현재 전체를 새로 검사·승인하며, 이전 ALLOW나 소유권 proof만으로 반입하지 않는다.
+실제 exact6.0·bounded6.1→6.0과 managed 반복 인계, 현재 Evidence 실패/변조 거부의 원본 보존을
+named local에서 확인했다. Runtime 준비·Host 툴 실행·pipx와 hosted/final qualification은 별도다.
