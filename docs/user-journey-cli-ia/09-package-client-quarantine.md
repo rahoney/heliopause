@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption named local actual 검증/CI415는 선행 PNPM peer FD 추적에서 실패하여 tool recipe 미도달, pipx·remote/final profiles 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption CI417 named hosted 검증, pipx·최종 support/profile matrix 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -279,7 +279,7 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 ## 현재 UV project installed lane
 
 [P4-K3 로컬 검증](../planning/evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)과
-아래 native 인계 검증의 현재 지원은 다음 범위다. 새 public release/installed binary 갱신이나 remote qualification을 뜻하지 않는다.
+아래 native 인계 검증의 현재 지원은 다음 범위다. Named hosted 결과는 CI417의 source별 영수증을 따르며 새 public release/installed binary 갱신을 뜻하지 않는다.
 
 | 항목 | 현재 지원 |
 | --- | --- |
@@ -300,7 +300,7 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 현재 complete 검사·승인·원자 반영에 연결한다. Target basename은 정규화 package 이름이며 고정
 runtime의 빈 venv와 별도의 기존 bin root를 명시한다. Bare/exact/bounded 요구와 JSON/human을
 지원하고 기존 tool 재설치·foreign 파일/명령 충돌은 보존 후 거부한다. Linux amd64 named local
-범위이며 runtime 생성·원본 upgrade/adoption·pipx·tool 실행은 아직 지원을 선언하지 않는다.
+범위이며 runtime 생성·pipx·tool 실행은 아직 지원을 선언하지 않는다. Managed upgrade와 명시 native 인계는 아래 지원 범위를 따른다.
 
 
 [P4-N2D native tool 인계](../planning/evidence/package-client-quarantine/p4n2d-uv-native-tool-cli-plan-20261027.md)는
@@ -310,4 +310,4 @@ runtime의 빈 venv와 별도의 기존 bin root를 명시한다. Bare/exact/bou
 old wheel과 독립 대조하고 raw receipt/source proof를 현재 Manifest에 결합한다. 원래 설치 조건을
 보존하면서 현재 전체를 새로 검사·승인하며, 이전 ALLOW나 소유권 proof만으로 반입하지 않는다.
 실제 exact6.0·bounded6.1→6.0과 managed 반복 인계, 현재 Evidence 실패/변조 거부의 원본 보존을
-named local에서 확인했다. Runtime 준비·Host 툴 실행·pipx와 hosted/final qualification은 별도다.
+[CI417](../planning/evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)의 source518800c에서 named hosted로 확인했다. Runtime 준비·Host 툴 실행·pipx와 최종 profile qualification은 별도다.

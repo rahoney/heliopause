@@ -15,15 +15,30 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-N2D actual native171.767s exact-pin/managed repeat/bounded6.1→6.0 and affected default fixture281.476s PASS; final Quick62.462s/full affected Race183.469s/canonical workflow·docs·security PASS
-Next action: M13-004 — consume corrected source518800c CI417 Linux/Required and exact checkout/logs; P4-O formal supply bridge/closure edit map remains; CI415 cause OPEN
-Current substep: M13-004/CI417 corrected fixture hosted qualification pending; source518800c named local PASS, first10min query8SUCCESS/Linux IN_PROGRESS; independent P4-O evidence audit recorded, no production supply pin
-Acceptance audit: CI41640441186696/1b16544:8SUCCESS/Linux+Required FAILURE; native producer EACCES0.77s/current approval NOT_REACHED; existing tools4 and PNPM peer PASS; all10checkoutd695/tree616b/source whole equality and decoded958507B preserved. CI415 FD cause OPEN; new necessary hosted CI uses actual10min status polling.
+Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
+Next action: M13-004/P4-O — formal bounded PEP740 publish bridge and immutable pipx closure/loader/runtime concrete edit map/second review; CI415 cause OPEN
+Current substep: M13-004/P4-O supply/runtime gap audit; UV fresh/managed/native supported recipes named hosted QUALIFIED by CI417; pipx/final profiles remain
+Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI417 최종 검증
+
+[CI417 qualification](./evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)을
+확인했다. Required 포함10SUCCESS이며 source518800c와 all10 checkout1fab621의 전체
+똑같은 tree df689208/2660을 대조했다. Linux79PASS/noSKIP, 두 observer build의122latches,
+실제 UID1001/native current138.06s의 원본/현재 승인/Manifest10·managed 재승인8,
+기존 tool exact5·CPU282.58s·native macOS와 helper11wait0/final original0을 확인했다.
+Raw decoded10logs1200139B를 편집 없이 보존하고 모두 readback/SHA를 대조했다.
+
+CI416 fixture UID 문제와 supported UV tools의 named hosted gap은 닫는다. P4/M13-004
+전체 acceptance, pipx·ordinary native default recipe·최종 profile matrix는 남는다. CI415의
+FD 원인은 peer PASS만으로 닫지 않는다. 같은 item의 다음은 기존 P4-O baseline에서 확인한
+공급/provenance/immutable loader·runtime 경계의 concrete edit map/두 번째 검토다.
+현재 결과 반영은 문서만 변경하고 새 push/full CI를 만들지 않는다.
 
 ### 2026-10-27 CI417 교정 후보 인계
 

@@ -93,3 +93,14 @@ Policy/resource budget 변경이 없고 새 driver/package/config/job을 후보�
 ACCEPTANCE_CLOSED=NO다. 최종 staged docs/security·whole candidate 결과는 companion
 raw evidence에 연결하고, 원인/입력이 바뀐 이 후보의 실제 hosted acceptance에서만 새 CI를
 실행한다. CI416 실패나 CI415 FD 원인을 새 로컬 PASS로 덮어 쓰지 않는다.
+
+
+## CI417 corrected hosted closure
+
+[CI417 qualification](./ci417-uv-tools-hosted-qualification-20261027.json)이 최종 결과를 소유한다.
+동일 source518800c의 Required10SUCCESS/whole checkout equality와 실제 Host1001/
+guest1001:1001/private0700을 확인했다. Native current 인계138.06s, current Evidence 실패의
+원본 보존, exact-pin/managed 반복/bounded version change가 모두 PASS다. CI416 fixture UID
+수정은 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES(named regression),
+MISSING 없음으로 닫는다. CI416 당시 numeric uid 자체를 새로 관측한 것은 아니며 그 원본의
+EACCES와 local RED→GREEN 증거는 보존한다. P4 전체와 CI415 FD 원인은 별도 남은 범위다.

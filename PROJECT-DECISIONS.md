@@ -205,10 +205,11 @@ held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를
 [최종 로컬 검증·source 반영](./docs/planning/evidence/package-client-quarantine/go1273-local-qualification-20261023.json)을
 완료했고 [G127 누적 acceptance](./docs/planning/evidence/package-client-quarantine/go1273-acceptance-20261024.json)로
 동일 후보 네 CI·native platform과 coherent Host SDK/tools/runtime1.27.3 전환·readback·정리를
-확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. P2 pnpm의 backend는 CI407의 named remote 검증을 마쳤고 사용자 CLI·native 설치 인계의 독립 원본 source proof도 named local 검증했다. P2 source9410c2d는 CI408 ordinary/409 cu126을 통과했고 cu130/132의 필수 qualification은 진행한다. 이와 독립적인 P3 Bun의 publisher checksum/실제 archive 공급 검증을 같은 M13-004에서 로컬 연결했다. Native runtime/설치·실행과 전체 P2/P3 acceptance는 아직 미완료다.
-요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
-P1 acceptance 다음/P2 이전에 검증한다. UV project는 P4이며 실행기와 다른 client의 지원은
-각 단계의 별도 acceptance를 따른다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
+확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. 이후 P2 pnpm/P3 Bun/P4 UV
+project·persistent tools는 named local/hosted 검증을 누적했다. [CI417 qualification](./docs/planning/evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)은
+supported fresh/managed/native UV tool과 UID1001 current 승인, Required10SUCCESS를 확인한다.
+다음은 P4-O pipx 공급/provenance/immutable loader·runtime 경계이며 전체 support/profile
+matrix·P4/P5–P7 acceptance는 미완료다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
 현재 단일 active item은 M13-004이며 구체 순서·상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 ## Open Decisions

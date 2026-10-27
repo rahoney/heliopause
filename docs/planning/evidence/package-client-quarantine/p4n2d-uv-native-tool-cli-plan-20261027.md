@@ -143,3 +143,12 @@ workflow1.088s/docs0.446s/security12.445s와 tagged compilation이 PASS다. 실�
 명령/결과/원본 hash·source binding·첫 실패 보존을 연결한다. Raw는 local owner의 자료이며
 SHA 참조를 원격 raw 보관으로 주장하지 않는다. 최종 문서 변화에는 docs/security만 적용하고
 실행 입력이 바뀌지 않은 Quick/Race/actual을 근거 없이 반복하지 않는다.
+
+
+## 후속 hosted 결과
+
+[CI417 qualification](./ci417-uv-tools-hosted-qualification-20261027.json)이 source518800c의
+supported fresh/managed/native tool exact5와 native UID1001 current 승인을 확인했다.
+CI416 producer UID 교정의 named acceptance와 이 native hosted gap은 닫혔다. 앞 단계의
+부분/실패 결과는 원래 scope로 유지하며 pipx·ordinary defaults·전체 profile/P4 acceptance는
+이 결과로 닫지 않는다.
