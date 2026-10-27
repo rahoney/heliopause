@@ -143,3 +143,57 @@ fixed DATA kind와 readonly transport는 이 실행 경로의 선행조건이다
 역할·volume 생존·정리, fixed 별도 mountpoint 또는 검증된 exact pair 공급을 구체화해야 한다.
 기존 UV/PNPM/Bun의 검증된 mount 계약을 전체적으로 느슨하게 바꾸지 않는다. 이 준비/실행
 경계의 actual test와 external observation 이전에는 공급 pin을 runtime 권한으로 쓰지 않는다.
+
+## C2 뒤 B1 입력·실행 owner 대조 — 2026-10-27
+
+기준504e698/tree d2b3853588cfd7a3c1ecaaeddb0b75355f5a8f04/2737files다.
+C1/C2는 fixed DATA 공급과 실제 readonly volume만 named local QUALIFIED다.
+공통 기존 소비자의 CI419는 진행 중이며 그 결과를 선취하지 않는다.
+
+| 기존 위치/책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | B1 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `pypi.PipxSupplyClosure`/`ZIP` | YES(authenticated wheel→ZIP) | YES(materializer) | YES(O2/O3/A) | YES(supply only) | acquired release ZIP의 정적 surface 입력과 typed binding |
+| `githubrelease.StaticInspector.openAsset` | YES(intake handle/path/size) | YES(native/passive) | YES(existing) | YES(existing) | fixed ZIP reader에서 재사용; bounded bytes/hash는 별도 확인 |
+| `githubrelease.inspectZIP` | YES(archive path/size/type) | YES(generic static) | YES(existing) | YES(existing) | 실제 member bytes/CRC·Python surface·required plan |
+| `ReleaseSetInspector` | YES(native/passive) | NO(Python ZIP) | NO | NO | 별도 required inspection 전략; metadata/native fallback 금지 |
+| `pipxDataVolume` | YES | YES(private DATA) | YES(local runc DATA) | NO(runtime) | acquired artifact bytes와 관찰 대상 identity 연결 |
+| `observationTransaction` | YES(typed units/외부 회계) | YES(wheel) | YES(existing) | YES(existing) | ZIP에 맞는 사전 unit 계획과 기존 완료 validator 연결 |
+| `SharedObserver`/C++ process role | YES(wheel/native profiles) | NO(release ZIP) | NO | NO | 고정 loader/ZIP topology·ARTIFACT role·외부 완료와 회귀 |
+
+공급 materializer는 원본 wheel별 RECORD/metadata/공급 proof를 검증한 `PipxSupplyClosure`만
+받는다. ZIP 소비자가 release artifact를 wheel이라고 위장하거나 wheel URL을 새로 resolve해
+이 생성자를 통과시키지 않는다. Release의 acquired bytes와 그 identity/digest를 유지하며
+기존 ZIP bound/path/metadata 및 Python 실행 surface 규칙을 재사용할 reader가 필요하다.
+선택된 ZIP pin은 입력 동일성을 좁히지만 동적 검사 완료를 대신하지 않는다.
+
+`preparePipxTool`은 **이미 설치된** fixed DATA 공급 owner다. Self-update의 새 acquired ZIP을
+검사할 때 current 설치 파일을 읽어 대신 검사하지 않는다. `StaticInspector.openAsset`의
+intake 선택과 기존 metadata 소비자의 bounded read/hash 패턴을 사용해 동일 acquired ZIP을 C1의 bounded DATA transport로
+전달하고, 외부 Evidence는 HAA release의 원래 GitHub identity/version/digest에 묶는다.
+Pipx package version을 HAA release version으로 바꾸거나 그 반대로 바꾸지 않는다.
+
+`InspectWheelWithPlan`은 `ValidateTypedObservationPlan`과 `validatedWheelDestinations`를
+필수 전제로 사용한다. 직접 호출해 가짜 wheel plan을 만드는 방법은 제외한다. 기존
+`observationTransaction`의 unit 중복/누락·CPU/trace/cleanup 검사를 재사용하되 ZIP의
+실제 요구 실험을 사전에 고정하는 adapter가 필요하다. 정확한 required unit 집합과
+loader handoff를 정하기 전 새 ExecutionCompleted/Evidence를 발행하지 않는다.
+
+`SharedObserver.pythonClosureExpectedTopology`와 C++ `IsPythonProfile`은 현재 wheel의
+`/haa-site` preparation/anchor/observation을 소유한다. 여기에 새 profile 문자열만 추가하면
+wheel의 설치·파일 권한을 잘못 승계할 수 있다. 새 ZIP 검사에서는 `/haa-pipx`의 RO DATA와
+고정 Python loader를 구분하고, release ZIP 코드가 실행되는 시점부터 ARTIFACT로 귀속한다.
+후속 trusted pipx resolver의 CONTROL/설치된 target Python query의 ARTIFACT 경계와도
+섞지 않는다. 기존 admission·trace·resource ledger·helper stop/wait를 재사용하며 stdout,
+help exit0, pin 일치나 Python token을 완료 authority로 쓰지 않는다.
+
+따라서 다음 source 전 audit는 acquired ZIP surface/typed required plan → 해당 계획의
+external observer/backend → required composite → complete release DATA set 순서다.
+기존 native6·passive metadata·wheel/UV/PNPM/Bun 소비자의 성공 조건은 유지한다.
+이 대조는 B1 구현 완료나 신규 observer profile 승인·qualification 기록이 아니다.
+
+추가 정밀 대조: `openAsset` 자체는 handle/path/lstat size→open이며 protected installed
+reader와 같은 held root/current/inode 검증이 아니다. 이보다 강한 보장을 이미 구현됐다고
+표시하지 않는다. `inspectZIP`도 central-directory path/type/count/expanded-size를 검사하며
+member body를 열어 CRC/metadata를 검증하는 함수는 아니다. 새 acquired ZIP consumer는
+읽은 immutable bytes의 실제 길이/digest를 별도로 묶고 Python surface에 필요한 member
+내용을 bounded하게 검사해야 한다. 이 확인은 기존 구현의 대체 요구가 아니라 B1 gap 구체화다.

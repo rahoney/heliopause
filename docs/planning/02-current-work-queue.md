@@ -15,15 +15,40 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: CI418/source012c7b4 Required10SUCCESS; whole checkout4b88/tree3649f0bd/2726 identical; Linux79PASS/native123.40s/CPU245.96s/helper11wait0/final0
+Last completed substep: P4-O4-C1/C2 fixed DATA/readonly volume LOCAL_QUALIFIED at504e698; common hosted CI419 pending
 Next action: M13-004/P4-O4 common-volume grouped hosted regression; B1 fixed ZIP inspection plan; CI415 cause OPEN
-Current substep: M13-004/P4-O4-A selected owner/maintenance + existing hosted regression QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
+Current substep: M13-004/P4-O4-C1/C2 local DATA qualified; CI419 existing hosted regression IN_PROGRESS; O4-B1 inspection plan; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI419 첫10분 결과 조회
+
+실제 타이머10:49:16UTC 발화 뒤10:49:43UTC에 run/jobs를 조회했다. 동일 source504e698의
+8jobs SUCCESS와 gVisor Linux Integration IN_PROGRESS이며 Required 최종 결과는 미완료다.
+첫 조회의 원본 run/jobs/clock은 `ci419-poll01-*`에 readback/hash로 보존한다.
+다음 권장 조회는10:59:43UTC(19:59:43KST), 최근 실측 기반 예상 완료는20:44–20:59KST다.
+외부 CI가 남아 현재 checkpoint에서 인계할 수 있으며 응답 종료 뒤 자동 조회·재개는 없다.
+다음 재개는 이 exact run의 checkout/tree·최종10 conclusions와 named actual/cleanup을 먼저
+확인하고, 같은 M13-004/O4-B1 acquired ZIP surface/typed observation plan으로 이어간다.
+B1 audit만 추가했고 CI 실행 중 제품 source를 더 변경하거나 재push하지 않았다.
+
+### 2026-10-27 CI419 공통 DATA volume 회귀 시작
+
+C1/C2와 앞 CI418 결과 기록의3 commits를 묶어 push했다. Source504e698/tree
+d2b3853588cfd7a3c1ecaaeddb0b75355f5a8f04/2737files는 검사 사본의 전체 index/blob/mode와
+실제 disk가 같다. 최종 staged docs0.254s/security9.310s도 PASS다.
+[CI419/run40490143737](https://github.com/rahoney/heliopause/actions/runs/40490143737)은
+10:39:14UTC(19:39:14KST)에 시작했고 초기9개 선행 job은 IN_PROGRESS다.
+직전 CI41865분29초/CI41776분46초를 근거로65–80분(20:44–20:59KST)을 예상한다.
+조기 실패 조회의 실제 타이머를10:49:14UTC(19:49:14KST)에 두었으며 조회 완료와 구분한다.
+기존 hosted 소비자 회귀 결과를 기다리는 동안 [B1 입력/실행 owner 대조](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)를
+계속한다. 신규 actual pipx DATA 시험은 로컬 explicit fixture이며 이번 CI가 Python ZIP
+실행이나 전체 pipx 지원을 검증한다고 표시하지 않는다. 작은 local 문서 변경을 재push해
+실행 중 후보를 취소하지 않는다.
 
 ### 2026-10-27 P4-O4-C2 한정 로컬 검증
 
