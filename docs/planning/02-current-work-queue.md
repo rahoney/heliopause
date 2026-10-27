@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-N2D actual native171.767s exact-pin/managed repeat/bounded6.1→6.0 and affected default fixture281.476s PASS; final Quick62.462s/full affected Race183.469s/canonical workflow·docs·security PASS
-Next action: M13-004 — N2D exact candidate checkpoint and grouped E2E hosted qualification with actual10min status polling, then pipx supply/runtime audit; CI415 cause OPEN
-Current substep: M13-004/P4-N2D named local qualified; fixed native tool recipe actual confirmed, pipx/default native recipes/hosted/final profiles remain
+Next action: M13-004 — consume CI416 Linux/Required and exact checkout/raw logs; P4-O supply verification concrete edit map/second review; CI415 cause OPEN
+Current substep: M13-004/P4-O baseline audit recorded (no product source/pin changes); N2D1b16544 named local qualified; CI416 first10min query8SUCCESS/Linux running, Required pending
 Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -36,7 +36,13 @@ noSKIP/exact named tests/helperwait0/CONFIRMED_STOPPED·보호5파일/Docker 동
 고정 recipe의 named local 범위만 검증한다. Final Quick62.462s/full affected Race183.469s와
 canonical workflow/docs/security도 PASS이며 hosted/pipx/
 ordinary native default recipe/final profiles는 남는다. 기존 N2C의 native actual gap은 이
-후속 범위에서만 닫는다. M13-004 하나만 IN_PROGRESS이며 새 push/CI는 아직 없다.
+후속 범위에서만 닫는다. N2D1b16544의 전체tree616b506b/2657을 확인하고 누적6 commits를
+기존 milestone branch에 묶어 push했다. CI416/run40441186696은02:55UTC 시작했으며
+실제10분 상태 조회의 첫 결과를03:05:29UTC에 소비했다. 8SUCCESS/Linux integration
+IN_PROGRESS이며 Required 결론은 아직 없다. 예상70–90분과 early-failure 감시는 구분한다.
+다음 권장 상태 확인은03:15:29UTC(12:15:29KST)이며 종료 뒤 자동 재개를 약속하지 않는다.
+독립 후속은 [P4-O pipx baseline](./evidence/package-client-quarantine/p4o-pipx-supply-runtime-baseline-20261027.md)의
+공급 증거·runtime 역할 감사이며 M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-27 P4-N2C 정전 후 로컬 체크포인트
 
