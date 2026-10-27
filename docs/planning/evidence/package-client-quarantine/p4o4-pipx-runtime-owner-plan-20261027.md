@@ -1094,3 +1094,68 @@ corpus2.640s는 canonical42 input hash/readback·두 authenticated archive graph
 archive 거부를 확인했다. Native-shaped lock은 test 내부 parser-binding fixture이며 실제
 solver/query나 current Policy/Host 반입 결과가 아니다. 다음은 위 C3c2 fixed native program/
 argv·offline actual diagnostic이며 native current/hosted/final acceptance는 계속 열린다.
+
+
+C3c2 source 착수 기준은 `a7e7dd8e599d3784ba143dff43ac9197b1ea9b26`, tree
+`dc49dbbafe6778f769f8238464a0318ee1f97f8d`/2823파일이다. Runc fixture의 임시 Python
+container lifetime/name/label·AOU cleanup은 기존 native UV container owner를 재사용할 수
+있으며 이것은 실행 class/profile·CONTROL/network admission이 아니다. Selected ZIP은 C2
+별도 RO DATA owner를 유지하고 UV upstream supply는 기존 never-started pinned OCI reader로
+읽는다. Host current pipx 설치나 caller path를 가장하지 않는다. 실제 pre-query corpus는
+동일한 userpath/click 원본이며 새 입력·dependency 보강은 없다.
+
+
+### C3c2 첫 actual — fixture 소유권 반증과 수정 전 대조
+
+첫 Quick226.744s/sandbox 전체 Race27.155s/tag vet·build/docs/security는 PASS였으나 runc
+actual5.642s는 UV introduce readback에서 실패했다. Pipx program/설치는 미도달이며 Host5/
+Docker/42input/ZIP·source는 동일하고 owned 자원은 정리됐다. First actual/source를 보존했다.
+별도 DATA4B-only6조건은 Docker stdin cp --archive가 명시 Config.User=1000이면 tar UID0도
+1000으로, 명시0이면 tar UID1000도0으로 바꾸고, Config.User가 비어 있어야 원본0/1000을
+각각 보존함을 확인했다. 두 probe는 Python/artifact를 실행하지 않고 Host/Docker가 같다.
+
+Fixture native reader는 qualified UV의 implicit root Config.User와 canonical boundary bootstrap을
+누락했다. Source 수정은 test fixture에 한정해 --user를 생략하고 기존 boundaryContainerCommand의
+짧은 bootstrap·즉시 UID1000/empty groups/zero caps/NNP 하강을 재사용한다. 모든 native exec도
+같은 고정 helper의 demotion을 통과시키며 readiness script로 상태를 확인한다. Runc test의
+controller nonce는 helper framing뿐이며 observer admission/completion authority가 아니다.
+Root PID1 sleep·명시 Config.User=0으로 대체하면 원본1000 control까지 root로 바뀌므로 그
+방법은 사용하지 않는다. Product transport의 root owner/mode/hash guard와 C2 six source는
+유지한다. 수정 뒤 새 결과는 아직 없고 이 방법을 해결 검증으로 기록하지 않는다.
+
+
+C3c2 v2 Quick33.773s/tag vet/build/docs/security와 runc actual9.753s는 PASS다. 같은
+product program/argv SHA에서 canonical PID1/exec readiness·native version/install/no-op,
+strict0.12 receipt·별도 링크·원본 graph2·실제 metadata/WHEEL replay를 확인했다. Source와
+Host5/Docker/42input/ZIP은 동일하다. 여섯 DATA-only 조건과 함께 fixture 소유권 교정의
+한정 효과를 검증했다. 추가로 private guest HOME의 malformed uv.toml이 UV_NO_CONFIG 없는
+고정 UV venv에서는 실제 거부되고, 같은 파일이 있는 native pipx venv는 고정 환경으로
+성공하는지 negative/positive를 연결한다. Host config 또는 일반 package code를 실행하지
+않으며 실제 native/gVisor/profile·Host current/Policy 완료로 확대하지 않는다.
+
+
+C3c2 v3 Quick33.712s/tag vet/build/docs/security는 PASS였으나 actual5.594s는 fixture의
+Docker cp→runtime /tmp 준비에서 exit1로 중단됐다. Source RunInput은 stderr를 보존하지
+않으므로 daemon의 상세 원인은 미확정이다. Config parser/native install은 미도달이고
+readiness와 Host5/Docker/42input/ZIP·source 불변/정리는 확인했다. Bootstrap 교정의
+반증이나 product no-config 실패로 쓰지 않는다. Config 준비만 demoted guest의 고정
+stdlib-only Python 데이터 쓰기로 바꾸고, 실제 parser negative 조건은 유지한다.
+
+
+### C3c2 named local 결과 — 2026-10-28
+
+[C3c2 receipt](./p4o4c3c2-native-program-offline-local-20261028.json)의 최종 Quick33.889s/
+tag vet·actual build/docs/security와 actual9.800s는 PASS다. 동일 product/default test SHA의
+첫 전체 sandbox Race27.155s를 보존했고 최종 repeat는 cached다. Runc ordinary1000의
+version/install/no-op, canonical PID1/모든 exec demotion·strict0.12 receipt/별도 link/
+원본 graph2·실제 metadata/WHEEL replay와 projection을 확인했다. Private malformed
+uv.toml은 no-config가 없는 UV venv에서 실제 parser 거부되고 같은 파일이 있는 pipx
+venv는 고정 환경으로 성공했다. NoSKIP·Host5/Docker/42input/ZIP·source/binary 불변과
+owned 자원 정리다. 최초 소유권/두 번째 준비 copy 실패와 DATA-only6조건 원본은 보존했다.
+
+구현은 closed native program/argv/fixed 환경까지다. Native current 설치 공급이나 gVisor
+관찰/Policy/Host publication·public CLI 성공은 아니다. 현재 diagnostic wheelhouse는 private
+RW output 아래에 있으므로 생산 경로의 immutable RO input으로 승계하지 않는다. 다음은
+C3c3 installed supply·별도 RO wheel input/native session/profile의 baseline audit다. 고정
+ZIP C2 owner와 기존 UV native/whole archive/current Policy/transaction을 재사용하며 새
+CONTROL/network 상속·generic resolver 재작성은 하지 않는다. Whole acceptance는 열린다.
