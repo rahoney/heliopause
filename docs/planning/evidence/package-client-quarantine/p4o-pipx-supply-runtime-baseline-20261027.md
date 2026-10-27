@@ -115,3 +115,30 @@ Source checkout/full decoded logs·native tool exact5 실제 실행·FD 실패 �
 결론과 연결한다. 이번 문서 전용 checkpoint는 그 실행 후보에 새 push하지 않는다.
 다음은 pipx whole immutable closure의 concrete edit map/second review이며 공급 helper를
 만들었다거나 pipx가 지원된다고 표시하지 않는다.
+
+
+## CI417 대기 중 독립 공급 증거 감사
+
+CI416 fixture-only 교정518800c/tree df689208은 별도 actual/canonical 검증 뒤 push했고
+CI417/run40449588924는04:24:47UTC에 시작했다. 이 대기 중 제품 코드·pin은 바꾸지 않고
+기존 P4-O 미완료인 dependency 증거를 확인했다.
+
+공식 repository ID·owner ID와 각 workflow run의 source commit/event/path/success를 별도
+조회한 뒤, 제공 proof5개와 실제 archive digest를 기존 pinned Sigstore root/library에서
+검증하는 사설 offline 진단2.751s/exit0이 PASS였다. Argcomplete/click/filelock/packaging/
+platformdirs 각각 exact SAN/source/ref/repo IDs/run/subject와 SCT1·log1·observer timestamp1,
+wrong digest 거부를 확인했다. Source repo는 filelock=tox-dev/filelock이고 packaging의 실제
+publisher는 tag push가 아닌 main/workflow_dispatch다. 한 publisher policy를 다른 도구로
+일반화하지 않는다. Stdout/stderr/source/policy/input hashes는 p4o-dependency-publish-actual-*
+및 고정 source text로 보존했다. 기존 HAA/UV/PNPM verifier는 변경하지 않았다.
+
+여섯 wheel DATA census의 Python module96개는 기존 release pyz와 집합/bytes가 모두
+같았다. Pipx 본체52개와 구분하며 전체 archive 구조·RECORD 검증, dependency constraints/markers,
+immutable loader·runtime/post-install Artifact 역할·공급 pin/admission은 여전히 미완료다.
+Userpath1.9.2는 signature endpoint404이며 DATA/hash/module 대조만 확인했다. 그 부재를
+서명 성공이나 공급 authority로 바꾸지 않는다.
+
+또한 사설 진단은 라이브러리가 노출하는 SAN/source/run identity를 검증했으며 PyPI publisher의
+signed environment/subject OID(57264.1.23/.24)까지 검증한 production PEP740 bridge는 아니다.
+정식 bounded decoder/publisher 정책은 그 경계와 negative 회귀를 concrete edit map에 포함해야
+한다. 이 결과를 runtime 공급 전체 QUALIFIED, pipx 지원 또는 P4 acceptance로 표시하지 않는다.

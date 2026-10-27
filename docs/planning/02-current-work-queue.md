@@ -16,14 +16,30 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-N2D actual native171.767s exact-pin/managed repeat/bounded6.1→6.0 and affected default fixture281.476s PASS; final Quick62.462s/full affected Race183.469s/canonical workflow·docs·security PASS
-Next action: M13-004 — fixture correction named local PASS: docs/security PASS; exact candidate checkpoint then new hosted Linux/Required qualification; CI415 cause OPEN
-Current substep: M13-004/CI416 fixture-only UID correction; UID1001 producer RED1.668s→GREEN1.818s; Quick281.578s/Bootstrap Race17.703s/native168.356s/default275.437s PASS; hosted fix NOT_QUALIFIED; P4-O baseline preserved
+Next action: M13-004 — consume corrected source518800c CI417 Linux/Required and exact checkout/logs; P4-O formal supply bridge/closure edit map remains; CI415 cause OPEN
+Current substep: M13-004/CI417 corrected fixture hosted qualification pending; source518800c named local PASS, first10min query8SUCCESS/Linux IN_PROGRESS; independent P4-O evidence audit recorded, no production supply pin
 Acceptance audit: CI41640441186696/1b16544:8SUCCESS/Linux+Required FAILURE; native producer EACCES0.77s/current approval NOT_REACHED; existing tools4 and PNPM peer PASS; all10checkoutd695/tree616b/source whole equality and decoded958507B preserved. CI415 FD cause OPEN; new necessary hosted CI uses actual10min status polling.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI417 교정 후보 인계
+
+CI416의 tool fixture UID 고정을 ordinary1001에서 RED1.668s→GREEN1.818s로 대조했고,
+Quick281.578s/Bootstrap Race17.703s·native current actual168.356s/affected default275.437s,
+최종 staged docs/security·전체2660파일 index/disk/mode 일치를 확인해518800c로 보존·push했다.
+제품 source/runtime/observer·Policy/resource budget은 바꾸지 않았다. Named local 결과와
+corrected hosted acceptance는 구분한다.
+
+CI417/run40449588924는 source518800c/tree df689208이며04:24:47UTC 시작했다. 첫 실제10분
+query를04:35:03UTC에 소비했고8SUCCESS/Linux IN_PROGRESS, Required 결론은 아직 없다.
+다음 권장 확인은04:45:03UTC(13:45:03KST)이다. 대화 종료 뒤 자동 재개를 약속하지 않는다.
+예상70–90분과10분 early-failure 감시는 별개이며 원격 결과/whole checkout/decoded logs 전에는
+hosted 해결을 선언하지 않는다. 독립 P4-O의 제공 proof5개와 wheel digest·module census 추가
+진단은 [기존 baseline](./evidence/package-client-quarantine/p4o-pipx-supply-runtime-baseline-20261027.md)에
+기록했으며 runtime 공급·native pipx 지원은 계속 미완료다.
 
 ### 2026-10-27 CI416 실패 소비
 
