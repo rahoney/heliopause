@@ -987,3 +987,42 @@ docs/security가 PASS다. Actual installed/upgraded0.12 fixture의 원본 semant
 claim/unsafe roots 거부를 검증했다. 첫 Quick268.696s의 fixture []string/JSON []any 비교 오류는
 원본을 보존하고 test 타입만 교정했다. Filesystem 실행·ownership·native/CLI 성공은 아니다.
 다음은 위 C3b의 bounded original input과 기존 replay 검증 재사용이며 전체 acceptance는 열린다.
+
+
+### C3b named local 결과 — 2026-10-28
+
+[C3b receipt](./p4o4c3b-original-upgrade-input-local-20261028.json)의 Quick248.212s/전체 PyPI
+Race9.898s/docs/security가 PASS다. 원본 requirement/version과 bare-project upgrade request,
+정확한 main METADATA version·pinned Python, opaque recipe의 새 실행 입력 제한과 mixed/
+noncanonical/control·encoded bound를 검증했다. Shared replay 본문은 명시 parameter 이름 외
+기존 bytes와 같으며 전체 UV 회귀와 pipx complete census/hash/tag/runtime/copy가 PASS다.
+Stored args/interpreter를 실행하거나 native/public CLI·ownership/Policy가 완료된 것은 아니다.
+
+### C3c1 — native metadata 조회 전 whole wheel gate의 source 전 대조
+
+| 기존 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `ToolReceipt.BindWheels`의 pipx whole closure startup gate | YES | YES (receipt 이후) | YES (기존 L2) | YES (그 binder 범위) | native metadata query 이전의 실제 소비자 |
+| `UVLock.BindWheels`, `bindUVSelectedWheels`, `inspectUVArchiveCandidates`의 original hash/RECORD·aggregate/source/constraints/graph | YES | YES (UV) | YES (기존 scopes) | YES (UV scopes) | 같은 authentic original input에 pipx pre-query gate 결합 |
+| Pipx pre-query whole graph entry | NO | NO | NO | NO | receipt를 조작/합성하지 않고 원본 whole wheel을 검증하는 좁은 entry |
+
+C3c1은 `UVLock.BindPipxQueryWheels`에서 기존 native UV lock의 실제 original selected wheels,
+independent source pages, pinned target/limits를 검증하고 `validatePipxMetadataSurface`를 전체
+closure에 적용한다. 기존 receipt-after-selection binder를 가짜 receipt로 우회하지 않는다.
+이미 구현된 `bindUVSelectedWheels`는 private collector helper에 위임하고 기존 UV wheel/
+project caller는 nil collector로 같은 source/hash/expansion/empty/project 의미를 유지한다.
+새 entry는 nonempty single root를 요구하고 authenticated Requires-Dist graph만 반환한다.
+
+Whole archive hash/RECORD/filename/ABI·metadata/source URL/hash/yanked/Requires-Python,
+missing/extra/duplicate wheel/pages·aggregate/closure 제약과 root/dependency의 `.pth` 및
+customization surface 거부를 검사한다. 기존 ordinary UV의 supported surface를 pipx 제한으로
+넓혀 막지 않는다. 선택 자료 검증은 safety/current Policy·runtime admission이 아니며 실제
+native query 전 호출·installed RO supply/native program/profile/CLI는 후속 MISSING이다.
+
+Native 실행의 후속 지도에서는 public acquisition과 Artifact-capable query를 분리한다.
+고정 UV backend의 native resolution을 재사용해 immutable wheel 입력을 먼저 동결하고,
+pipx는 network-none에서 해당 original wheel들만 소비하는 경로를 검토한다. 실제 pipx
+frontend/receipt/census와 원본 constraints/upgrade semantics의 대조 없이 UV tool alias나
+새 client 지원으로 선언하지 않는다. Backend child에 CONTROL/network 권한을 상속하거나
+existing D-015/zero-authority 계약을 바꾸는 선택은 하지 않는다. 실행 argv/환경과 실제
+선택의 source 전 지도·qualification은 C3c1과 별도로 필요하다.

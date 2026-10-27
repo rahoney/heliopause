@@ -20,6 +20,10 @@ func (u UVToolUpgradeInput) ReplayWheelsControl(controls []UVInstalledWheelContr
 	if err != nil {
 		return domain.ProjectControlFile{}, err
 	}
+	return newToolReplayWheelsControl(UVToolUpgradeWheelsControlName, checked)
+}
+
+func newToolReplayWheelsControl(name string, checked []UVInstalledWheelControls) (domain.ProjectControlFile, error) {
 	type wheel struct {
 		Directory string `json:"directory"`
 		Metadata  string `json:"metadata"`
@@ -37,7 +41,7 @@ func (u UVToolUpgradeInput) ReplayWheelsControl(controls []UVInstalledWheelContr
 	if err != nil || len(body) > upgradeInputLimit {
 		return domain.ProjectControlFile{}, errors.New("tool replay wheel control exceeds byte bounds")
 	}
-	return domain.NewProjectControlFile(UVToolUpgradeWheelsControlName, body, true)
+	return domain.NewProjectControlFile(name, body, true)
 }
 
 // ReplayWheelControls returns a defensive, canonical copy of inert controls for
@@ -47,11 +51,17 @@ func (u UVToolUpgradeInput) ReplayWheelControls(controls []UVInstalledWheelContr
 	if _, err := u.Control(); err != nil {
 		return nil, err
 	}
-	metadata := u.original.MetadataFiles()
+	return replayToolWheelControls(u.receipt, u.original, controls, target)
+}
+
+// Both native clients freeze the same inert METADATA/WHEEL surface. Callers
+// validate their own original input before entering this shared bounded owner.
+func replayToolWheelControls(receipt ToolReceipt, original UpgradeInput, controls []UVInstalledWheelControls, target WheelTarget) ([]UVInstalledWheelControls, error) {
+	metadata := original.MetadataFiles()
 	if len(metadata) == 0 || len(controls) != len(metadata) {
 		return nil, errors.New("tool replay requires complete original wheel controls")
 	}
-	python := strings.Split(u.original.Python(), ".")
+	python := strings.Split(original.Python(), ".")
 	if len(python) != 3 || target.Python != "cp"+python[0]+python[1] || target.ABI != target.Python || target.Platform == "" {
 		return nil, errors.New("tool replay target differs from original runtime")
 	}
@@ -60,7 +70,7 @@ func (u UVToolUpgradeInput) ReplayWheelControls(controls []UVInstalledWheelContr
 		expected[file.Directory] = file.Body
 	}
 	seen := map[string]UVInstalledWheelControls{}
-	total := len(u.receipt.Body())
+	total := len(receipt.Body())
 	for _, source := range controls {
 		// Reject raw input before allocating any copy of its payload.
 		for _, body := range [][]byte{source.Metadata, source.Wheel} {

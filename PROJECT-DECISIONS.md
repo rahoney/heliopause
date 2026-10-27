@@ -208,7 +208,7 @@ held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를
 확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. 이후 P2 pnpm/P3 Bun/P4 UV
 project·persistent tools는 named local/hosted 검증을 누적했다. [CI417 qualification](./docs/planning/evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)은
 supported fresh/managed/native UV tool과 UID1001 current 승인, Required10SUCCESS를 확인한다.
-P4-O4의 고정 pipx 공급/원본 ZIP 검사·DATA 배포/복구와 [기존 CI 소비자 연결](./docs/planning/evidence/package-client-quarantine/p4o4b3d-hosted-actual-wiring-local-20261028.json)은 named local 검증을 마쳤다. 최신 hosted 기준선은 [CI420](./docs/planning/evidence/package-client-quarantine/ci420-pytest-supply-hosted-qualification-20261028.json)이며 새 source의 hostedUID1001/current signed/native/full profile은 별도다. 기존 e859487 checkpoint push는 사용자 승인 대기다. 다음은 P4-O4-C3b pipx original upgrade 입력과 native 실행·CLI 연결이고, 전체 matrix·P4/P5–P7 acceptance는 미완료다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
+P4-O4의 고정 pipx 공급/원본 ZIP 검사·DATA 배포/복구와 [기존 CI 소비자 연결](./docs/planning/evidence/package-client-quarantine/p4o4b3d-hosted-actual-wiring-local-20261028.json)은 named local 검증을 마쳤다. 최신 hosted 기준선은 [CI420](./docs/planning/evidence/package-client-quarantine/ci420-pytest-supply-hosted-qualification-20261028.json)이며 새 source의 hostedUID1001/current signed/native/full profile은 별도다. 기존 e859487 checkpoint push는 사용자 승인 대기다. 다음은 P4-O4-C3c1 pipx 조회 전 whole-wheel gate와 native 실행·CLI 연결이고, 전체 matrix·P4/P5–P7 acceptance는 미완료다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
 현재 단일 active item은 M13-004이며 구체 순서·상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 ## Open Decisions
