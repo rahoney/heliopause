@@ -478,6 +478,16 @@ jobs:
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          bash scripts/ci-pipx-runtime.sh inspect
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pipx-graph-test" ./internal/artifact/githubrelease
+          haa_install_ci_client "$RUNNER_TEMP/helox-pipx-graph-test"
+          haa_start_policy_helper
+          bash scripts/ci-pipx-runtime.sh graph
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-releaseactivation-test" ./internal/releaseactivation
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-releaseinstall-test" ./internal/releaseinstall
+          bash scripts/ci-pipx-runtime.sh namespace
           # Restore the production client before leaving the integration step.
           haa_install_ci_client "$RUNNER_TEMP/helox"
           haa_start_policy_helper

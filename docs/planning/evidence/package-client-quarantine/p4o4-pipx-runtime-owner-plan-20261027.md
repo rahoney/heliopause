@@ -804,3 +804,94 @@ B3d에서는 existing hosted actual consumer의 명시 입력/setup/UID1001/clea
 대조한다. 새 job을 만들거나 default test에 외부 cache를 숨기지 않는다. 그 뒤 installed pipx
 runtime/native tools/CLI와 signed/current activation 및 full supported profiles는 별도로 닫는다.
 e859487까지의 기존 push 승인 대기는 그대로이며 새 CI/20분 timer는 아직 시작되지 않았다.
+
+
+## B3d — existing hosted actual 소비자의 source 전 대조
+
+기준2c52c03/tree13388565/2806이다. B3c 최종 graph84.436s와 root8.246s/pending0.220s는
+named local qualified이며 새 hosted 결과가 아니다. Push 승인 대기는 e859487까지의 기존
+여섯 commit에 한정한다. 승인이 도착해도 이후 HEAD를 임의 포함하지 않는다.
+
+| 책임/위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| frozen fetch/materialize-pipx | YES | YES(release build) | YES(actual42inputs) | YES(named scope) | ordinary Linux CI 실제 소비자의 명시 공급 |
+| B2d actual required inspector | YES | YES(local protected bootstrap client) | YES(local) | NO(hosted) | 기존 tagged bootstrap test client에서 fixed input actual 호출 |
+| B3c actual current graph test | YES | YES(local protected artifact test client) | YES(local) | NO(hosted) | 기존 job 내 artifact test binary/client/helper/cwd·입력 연결 |
+| root DATA bootstrap/cleanup·legacy pending | YES | YES(local namespace) | YES(local) | NO(hosted) | 기존 job 내 explicit root mount/net namespace commands |
+| full12payload255942560B wire actual | YES | YES(local build candidate) | YES(local file mechanics) | YES(named scope) | ordinary CI에 full producer build를 숨기지 않음; protected signed/full set qualification은 별도 |
+| ci-integration-cleanup helper/client lifecycle | YES | YES(existing owners) | YES(existing named local/CI420) | YES(existing scope) | 새 concrete client의 같은 owned replacement/restore 순서 |
+| independent workflow/script checker | YES(existing clients) | YES(existing) | YES(existing) | YES(existing) | 새 pipx mode/env/filter/package cwd·compile/client/helper/order/cleanup 누락의 부정 회귀 |
+
+### 수정 지도·명시 입력과 재사용
+
+- 새 CI job·image·dependency·timeout·관찰 예산을 만들지 않는다. 기존 Linux integration
+  job/owned foreground helper/client replacement와 마지막 production restore를 재사용한다.
+  기존 PNPM/Bun/UV concrete contiguous recipes를 보존한다. 추가 block은 기존 PyPI dynamic
+  종료 뒤 production client restore 앞에 두고 tagged bootstrap client→inspect, 새 tagged
+  artifact client→graph, explicit namespace tests→기존 production restore 순서로 잇는다.
+- 현재 work에 필요한 scripts/ci-pipx-runtime.sh는 inspect/graph/namespace의 exact mode만
+  받는다. 각 호출은 새 RUNNER_TEMP private directory에서 같은 frozen42inputs를 취득하고
+  기존 offline materializer로 같은 ZIP/NOTICE를 만든다. 숨은 /tmp wheel cache·live version
+  resolve·install-time augmentation은 없다. 기존 CI client가 호출을 소유하고 script는 부모
+  helper lifecycle/trap을 바꾸지 않는다. 자기 mktemp directory만 정리하고 첫 오류를 보존한다.
+- Graph는 현재 test fixture의 explicit SBOM 입력을 쓴다. Local B3c는 actual B3b producer
+  SBOM을 썼고 hosted source/staging fixture는 canonical v0.1.0 producer SBOM을 명시 복사해
+  기존 BindCurrentRuntime으로 synthetic identity/current runtime에 rebind한다. 원본은
+  변경하지 않는다. Native6 fake sandbox/integrity-only positive와 unsigned SDK negative의
+  한계를 유지한다. Full current producer11distribution census는 B3b actual가 소유한다.
+  이 explicit historical input의 실제 local recipe도 별도로 검증한다.
+- Namespace mode는 DATA bootstrap5case/기존 bootstrap·stage 및 기존 pending24case/SIGKILL을
+  root mount+network namespace에서만 실행한다. Full original native payload wire 시험은
+  B3c의 actual complete producer scope로 유지하며 ordinary CI에 미작성 producer fixture나
+  임의 native stub 디렉터리를 몰래 만들지 않는다. No registration/runtime activation이다.
+- 새 driver는 Go test exit만 보지 않고 exact top-level required PASS와 noSKIP를 확인한다.
+  Empty filter/no-tests·하위 PASS·SKIP·exit failure를 기본 harness 회귀에서 거부한다.
+  이것은 trusted Go test dispatch 검증이며 artifact stdout에 제품 완료 authority를 주지 않는다.
+- 기존 scripts/check의 concrete script/env/filter/cwd와 client compile/owned helper/마지막
+  restore 기대값을 새 owner 전용으로 확장한다. 주석/echo/누락/중복/다른 package/무시된
+  오류/조건부 step과 wrong client·restore 생략을 부정 검사한다. Bash syntax와 실제 stubbed
+  dispatch/failure cleanup, canonical Quick·checker 전체 Race/workflow/release-gate/docs/security,
+  실제 fixed corpus/보호 client source·UID1001 조건을 순차 대조한다. 실행 후보를 변경하며
+  actual/check를 겹치지 않는다.
+
+새 scope를 기존 cohort의 qualification으로 포장하지 않고 exact inputs/source/client/helper/
+cleanup/first failure를 보존한다. 사용자 승인이 없으면 새 push·CI/timer를 시작하지 않는다.
+
+
+B3d의 initial concrete tests/workflow와 shell harness는 PASS였다. 첫 전체 Quick80.090s는
+TestRuntimeVersionOwnersAllowCoordinatedFutureGoInputs의 runtimeOwnerFixture가 새
+ci-pipx-runtime.sh를 복사하지 않아 strict workflow checker의 unavailable 거부에서 실패했다.
+Logical future Go fixture의 기존 explicit helper inventory에 새 script만 포함한다. Guard나
+runtime pin/미래 SDK 지원 범위를 바꾸지 않고 첫 source/Quick를 p4o4b3d-first에 보존했다.
+
+
+B3d 첫 actual0.297s는 제품/driver 호출 전에 private app-parent overlay 준비의 원본 gVisor
+inode assertion에서 중단됐다. Host5파일/Docker/입력·helper0은 같고 모든 actual test는
+NOT_REACHED다. /tmp-only 별도 mount namespace의4조합 대조에서 libmount 기본 canonicalization은
+held parent/child FD 모두 새 가림 경로를 다시 선택했고 --no-canonicalize는 둘 다 원본
+dev/inode를 보존했다. Operator에 그 flag만 추가하며 제품 runtime permission·trusted path/
+원본 inode guard를 느슨하게 하지 않는다. 첫 원본과4조합은 p4o4b3d-recipe-actual-v1 및
+p4o4b3d-bind-probe-result.json에 보존했다. 새 source/check 변경이 아니므로 canonical PASS를
+임의 반복하지 않고 같은 actual recipe를 corrected namespace operator로 검증한다.
+
+
+### B3d named local recipe와 다음 경계 — 2026-10-28
+
+[한정 영수증](./p4o4b3d-hosted-actual-wiring-local-20261028.json)이 actual135.807s의6개 exact
+top-level/noSKIP, 네 helperwait0/confirmed cleanup·client 복원/입력 directory0·Host5파일/
+Docker/소스 불변을 확인했다. 원본 gVisor dev/inode는 RO bind로 보존했고 client 교체는
+private app-parent namespace만 바꿨다. Current frozen42input/ZIP/NOTICE와 explicit historical
+SBOM source/staging fixture로 세 driver mode를 그대로 실행했다. 로컬 ordinaryUID1000
+범위이며 hostedUID1001·새 CI qualification이 아니다.
+
+Driver harness는 empty/no-tests·SKIP·child-only/duplicate PASS·nonzero exit·준비 실패와
+cleanup 실패를 실제 Bash로 검증했다. Independent concrete workflow/driver guard와 최종
+Quick47.782s/checker 전체 Race40.351s/workflow/release-gate/docs/security도 PASS다.
+새 job/image/dependency/timeout/관찰 예산은 없고 PNPM/Bun/UV recipes 및 기존 owned helper/
+마지막 production restore를 유지했다. Root auth/current/crypto와 native6 sandbox는 기존
+filesystem/source fixture 범위이며 실제 Host activation으로 확대하지 않는다.
+
+다음은 P4-O4-C3 installed pipx runtime/native install·upgrade/CLI owner audit다.
+ParsePipxToolReceipt와 fixed installed DATA reader/RO transport는 이미 있으므로 새로 쓰지
+않고 실제 consumer gap만 확인한다. Hosted/current signed/full support profile 범위는
+별도이며 e859487까지의 push 승인 대기는 계속한다.

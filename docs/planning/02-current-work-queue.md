@@ -15,15 +15,27 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-B3c actual ZIP current graph/Evidence and root DATA recovery named local qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-B3d existing hosted actual consumers baseline/wiring, then installed pipx runtime/native tools; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B3d IN_PROGRESS; B3a/b/c named local qualified; hosted actual wiring/pipx/signed-native/final profiles remain
+Last completed substep: P4-O4-B3d existing hosted actual wiring/driver locally qualified UID1000; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-C3 installed pipx runtime/native install-upgrade/CLI owner baseline audit; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-C3 IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B3d 기존 hosted actual 소비자 연결·로컬 recipe 검증
+
+[B3d receipt](./evidence/package-client-quarantine/p4o4b3d-hosted-actual-wiring-local-20261028.json)는
+기존 Linux job에 fixed42input inspect/graph/namespace와 owned client/helper/production restore를
+연결했다. Actual135.807s/로컬UID1000의6개 exact top-level PASS/noSKIP·helper4wait0/confirmed
+cleanup·client 복원/입력 directory0·Host5파일/Docker/소스 동일을 확인했다. Framework
+empty/SKIP/child-only/duplicate/exit와 준비·cleanup 오류의 Bash 회귀, 최종 Quick47.782s/
+checker 전체 Race40.351s·workflow/release-gate/docs/security도 PASS다. Logical fixture 입력
+누락·operator FD bind의 최초 실패는 보존했고 제품 guard/예산은 완화하지 않았다.
+HostedUID1001/새 CI·native pipx/signed activation/full matrix는 아직 미완료다.
+동일 M13-004의 C3 installed pipx runtime/native install·upgrade/CLI owner audit를 계속한다.
 
 ### 2026-10-28 P4-O4-B3c 실제 graph·Evidence와 DATA 복구 로컬 검증
 

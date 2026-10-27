@@ -90,6 +90,12 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		} else {
 			findings = append(findings, validateBunRuntimeScript(string(script))...)
 		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-pipx-runtime.sh"))
+		if err != nil {
+			findings = append(findings, "pipx runtime qualification script is unavailable")
+		} else {
+			findings = append(findings, validatePipxRuntimeScript(string(script))...)
+		}
 		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-uv-tools.sh"))
 		if err != nil {
 			findings = append(findings, "UV tools qualification script is unavailable")
@@ -163,6 +169,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "Bun", []string{"bash scripts/ci-bun-runtime.sh", "bash scripts/ci-bun-runtime.sh project"})...)
 	findings = append(findings, validateBunInspectionClientOrder(contents)...)
 	findings = append(findings, validateBunProjectClientOrder(contents)...)
+	findings = append(findings, validatePipxInspectionClientOrder(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV tools", []string{"bash scripts/ci-uv-tools.sh", "bash scripts/ci-uv-tools.sh bootstrap"})...)
 	findings = append(findings, validateUVToolsClientOrder(contents)...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
