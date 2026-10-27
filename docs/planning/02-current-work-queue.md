@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
-Next action: M13-004/P4-O4-B2b fixed ZIP observer profile/topology; monitor new CI every20min; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B2 IN_PROGRESS; B1d common hosted regression qualified; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B2c existing transaction integration and actual gVisor ZIP; monitor new CI every20min; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B2c IN_PROGRESS; B2a input/program and B2b profile/latches locally qualified; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B2b fixed observer profile 로컬 검증
+
+[B2b receipt](./evidence/package-client-quarantine/p4o4b2b-observer-profile-local-20261028.json)는
+새 profile/topology·동일 shared budget의 Quick204.610s/sandbox Race25.051s/docs/security와
+canonical observer build274.583s/전체124latches PASS를 확인했다. 기존 wheel profile을
+유지하며 새 ZIP은 단일 DATA path와 ARTIFACT Python handoff만 사용하고 pip/site·CONTROL
+launch/ELF handoff를 거부한다. Host helper 설치·활성화와 실제 ZIP transaction 완료는
+아직 없으며 같은 M13-004/B2c에서 기존 실행/회계/정리 owner를 연결한다.
 
 ### 2026-10-28 P4-O4-B2a 입력과 고정 program 로컬 검증
 

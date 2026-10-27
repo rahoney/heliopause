@@ -247,6 +247,8 @@ bool RegisterProfileWithGeneration(const std::string& path, const char* containe
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     topology += ";/haa-site|workspace|/|tmpfs|0|0|1|0";
+  } else if (IsPipxRuntimeProfile(profile)) {
+    topology += ";/haa-pipx|workspace|/|9p|1|0|0|0";
   } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     topology += ";/work|workspace|/|tmpfs|0|0|1|0";
   }
@@ -292,6 +294,8 @@ gvisor::sentry::MountTopologySnapshot BuildCanonicalTopologySnapshot(const char*
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     add_mount(next_id++, "/haa-site", "tmpfs", false, false);
+  } else if (IsPipxRuntimeProfile(profile)) {
+    add_mount(next_id++, "/haa-pipx", "9p", true, false);
   } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     add_mount(next_id++, "/work", "tmpfs", false, false);
   }
@@ -1009,6 +1013,74 @@ bool VerifyCargoRustcQueryBoundary(const std::string& pathname =
        "missing-clone", "unsealed", "writable-root", "shadow", "no-topology", "other-profile"}) ok = run(scenario) && ok;
   close(output[0]); close(output[1]);
   return ok;
+}
+
+bool VerifyPipxRuntimeReadBoundary() {
+  if (IsPythonProfile(kProfilePipxRuntime) ||
+      ProcessClassForPath("/usr/local/bin/python", kProfilePipxRuntime) != ProcessClass::kPython ||
+      ProcessClassForPath("/usr/local/bin/pip", kProfilePipxRuntime) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/bin/uname", kProfilePipxRuntime) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/local/bin/pip", kProfilePyPI) != ProcessClass::kPip ||
+      IsWorkspacePath("/haa-site/module.py", kProfilePipxRuntime) ||
+      IsWorkspacePath("/haa-pipx/foreign.zip", kProfilePipxRuntime)) return false;
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("mutable-name");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kPython;
+  const auto baseline = state.groups[99];
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_flags(557056);
+  MountAnchor root{1, "/", "oci-root"};
+  for (const char* path : {"/usr/local/lib/python3.14/json/__init__.py", "/usr/local/lib/libpython3.14.so.1.0"}) {
+    open.set_pathname(path);
+    if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &root) != FilesystemClass::kRuntimeRoot) return false;
+  }
+  for (const char* path : {"/usr/local/bin/pip", "/etc/pip.conf", "/usr/local/lib/python3.14/site-packages/pip/__init__.py", "/usr/local/lib/python3.14/site-packages/foreign.py", "/proc/98/maps", "/haa-site/module.py"}) {
+    open.set_pathname(path);
+    auto result = ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &root);
+    if (result == FilesystemClass::kRuntimeRoot || result == FilesystemClass::kWorkspace) return false;
+  }
+  MountAnchor data{4, "/haa-pipx", "workspace"};
+  open.set_pathname("/haa-pipx/pipx-runtime.zip");
+  if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kWorkspace) return false;
+  for (uint64_t flags : {kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenTruncate,kOpenAppend}) {
+    open.set_flags(flags);
+    if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kOutside) return false;
+  }
+  open.set_flags(557056);open.set_pathname("/haa-pipx/foreign.zip");
+  if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kOutside) return false;
+  open.set_pathname("/usr/local/lib/python3.14/json/__init__.py");
+  state.groups[99].current_image_class=ProcessClass::kUnknown;
+  open.mutable_context_data()->set_process_name("python");
+  if (ClassifyFilesystemOpen(open,state,kProfilePipxRuntime,&root)==FilesystemClass::kRuntimeRoot) return false;
+  const auto& after=state.groups[99];
+  return after.role==baseline.role && after.provenance==baseline.provenance &&
+      after.root_eligible==baseline.root_eligible && after.root_consumed==baseline.root_consumed &&
+      after.trusted_control_network_active==baseline.trusted_control_network_active;
+}
+
+bool VerifyPipxRuntimeAdmission(const std::string& control) {
+  constexpr char id[]="7a7a7a7a7a7a7a7a";
+  if (!RegisterProfile(control,id,kProfilePipxRuntime)) return false;
+  const auto client=gControlClients.find(id);
+  if (client==gControlClients.end()) return false;
+  const auto generation=TestSessionGeneration(id);
+  for (const char* mode : {kLaunchMode,kELFHandoffMode}) {
+    if (!ControlAdmissionOnFD(client->second,id,mode,generation,std::string(64,'b'),"arm","rejected")) return false;
+  }
+  if (!ArmAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
+      !CancelAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
+      !InvalidateProfile(control,id,generation)) return false;
+  close(client->second);gControlClients.erase(client);
+  return true;
 }
 
 bool VerifyGitHubArtifactRuntimeReadBoundary() {
@@ -8344,6 +8416,8 @@ int main(int argc, char** argv) {
       VerifyCargoRustcQueryBoundary("/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable");
   const bool go_runtime_read = VerifyGoResolverRuntimeReadBoundary();
   const bool github_artifact_runtime_read = VerifyGitHubArtifactRuntimeReadBoundary();
+  const bool pipx_runtime_read = VerifyPipxRuntimeReadBoundary();
+  const bool pipx_runtime_admission = running && VerifyPipxRuntimeAdmission(control);
   const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
   const bool go_build_handoff_read = VerifyGoBuildHandoffReadBoundary();
   const bool cargo_build_handoff_read = VerifyGoBuildHandoffReadBoundary(kProfileCargoBuild);
@@ -8437,7 +8511,7 @@ int main(int argc, char** argv) {
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -8445,6 +8519,8 @@ int main(int argc, char** argv) {
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"Pipx fixed ZIP runtime and read boundary",pipx_runtime_read},
+      {"Pipx ARTIFACT-only Python admission",pipx_runtime_admission},
       {"Bun Artifact exact native runtime reads", bun_artifact_reads},
       {"Bun Artifact native image and command boundary", bun_artifact_image},
       {"UV exact interpreter query boundary", uv_python_query},

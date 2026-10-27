@@ -62,6 +62,9 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case pipxObserverProfile:
+		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, data}, true
 	case bunProjectResolverProfile:
 		runtime.FSType, runtime.NoSUID = "9p", false
 		project := observerMountExpectation{bunProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}
@@ -115,7 +118,7 @@ type observationTraceLedger struct {
 const maximumGoBuildLedgerEvents = 20000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != goBuildProfile && profile != cargoBuildProfile {
+	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)

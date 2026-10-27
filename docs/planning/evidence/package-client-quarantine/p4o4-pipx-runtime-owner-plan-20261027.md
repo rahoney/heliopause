@@ -401,3 +401,34 @@ exit0와 preloaded/invalid/missing3개 사전 거부, 보호5파일/Docker/원�
 첫 operator의 잘못된 파일 경로는 Docker/Python 전 파일 read에서 실패했고 정확한 retained
 asset 경로로 교정했다. 제품 guard나 selected digest를 바꾸지 않았으며 최초 원본을 보존했다.
 외부 관찰과 실제 transaction은 다음 B2b 이후에 남는다. 이 helper만으로 CI를 재실행하지 않는다.
+
+## B2b — fixed ZIP observer의 source 전 세부 지도
+
+기준4ab40c2다. 기존 shared observer/control protocol·ARTIFACT one-shot handoff·trace budget을
+재사용한다. 새 profile 식별자는 `github-pipx-runtime` 하나이며 일반 GitHub ZIP 지원이 아니다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| control session/generation/nonce·mount sealing | YES(existing) | YES(existing) | YES(existing) | YES(existing) | fixed ZIP profile 등록과 typed topology |
+| wheel Python runtime/process predicates | YES | YES(wheel) | YES(existing) | YES(wheel) | pip/site 권한을 제외한 ZIP 전용 분기 |
+| trace ledger·phase budget | YES | YES(existing) | YES(existing) | YES(existing) | 새 fixed profile의 동일 default budget 허용 |
+| fixed DATA topology/profile | NO | NO | NO | NO | preparation RW·anchor/observation RO, 단일 ZIP 읽기·쓰기/foreign 경로 거부 |
+| 새 profile의 실제 transaction | NO | NO | NO | NO | B2c 이후 준비/실행/회계/정리 연결 |
+
+`IsPythonProfile`은 wheel 전용으로 유지한다. 별도 fixed profile에서 pinned Python
+classifier와 필요한 immutable runtime read만 같은 기존 predicate로 재사용하고 pip binary/
+site-packages·pip.conf, `/haa-site`를 승계하지 않는다. ARTIFACT role·관찰된 executable
+identity·정확한 proc identity 검사는 유지한다. DATA는 exact ZIP과 parent만 읽고 write·다른
+member 경로는 거부한다. Profile의 direct admission은 `--handoff-python`만 받으며
+CONTROL launch와 ELF handoff는 protocol에서 거부한다. 기존 profile 의미는 보존한다.
+
+Go factory의 phase별 `/haa-pipx` topology와 C++ 실제 registration/admission·latch를 함께
+검증한다. Host tmpfs noexec와 guest9p flags를 혼동하지 않는다. Quick/관련 Race·pinned
+compiler의 전체 observer latches를 먼저 실행하고, 외부 gVisor transaction은 다음 B2c에서
+실제로 연결한다. Runtime/profile 추가를 기존 완성 경로의 재구현이나 예산 확대로 사용하지 않는다.
+
+B2b [로컬 receipt](./p4o4b2b-observer-profile-local-20261028.json)는 Quick204.610s/
+sandbox Race25.051s/docs/security PASS와 canonical observer build274.583s/전체
+124latches PASS를 연결한다. 새 fixed ZIP read와 ARTIFACT-only Python admission의
+production protocol 거부/정상 회귀를 포함한다. Helper는 빌드했으며 Host에 설치·활성화하지
+않았다. 실제 acquired ZIP의 gVisor transaction·완료 원장·CPU/cleanup은 B2c에 남는다.

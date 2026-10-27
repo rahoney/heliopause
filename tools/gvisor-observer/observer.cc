@@ -109,6 +109,7 @@ constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
+constexpr char kProfilePipxRuntime[] = "github-pipx-runtime";
 constexpr char kProfileTerraformProvider[] = "terraform-provider";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
 constexpr char kProfileGoBuild[] = "go-module-build";
@@ -124,6 +125,15 @@ bool IsPythonProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0);
+}
+// Wheel preparation keeps its original profile. The ZIP only shares the
+// immutable interpreter ABI and the irreversible Python ARTIFACT handoff.
+bool IsPipxRuntimeProfile(const char* profile) {
+  return profile != nullptr && strcmp(profile, kProfilePipxRuntime) == 0;
+}
+
+bool IsPythonRuntimeProfile(const char* profile) {
+  return IsPythonProfile(profile) || IsPipxRuntimeProfile(profile);
 }
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
@@ -1854,6 +1864,9 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
     if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js") return ProcessClass::kNpm;
   }
+  if (IsPipxRuntimeProfile(profile)) {
+    if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
+  }
   if (IsPythonProfile(profile)) {
     if (path == "/usr/bin/uname") return ProcessClass::kUname;
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
@@ -2116,6 +2129,10 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
   if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) return HasPrefix(path, "/work/");
+  if (IsPipxRuntimeProfile(profile)) {
+    return path == "/tmp" || HasPrefix(path, "/tmp/") ||
+        path == "/haa-pipx" || path == "/haa-pipx/pipx-runtime.zip";
+  }
   if (IsPythonProfile(profile) || strcmp(profile, kProfileUVResolver) == 0) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-site" || HasPrefix(path, "/haa-site/");
@@ -2475,7 +2492,10 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
     return normalized == "/etc/ld.so.cache" ||
         IsExactLibc6(normalized);
   }
-  if (!IsPythonProfile(profile)) return false;
+  if (!IsPythonRuntimeProfile(profile)) return false;
+  if (IsPipxRuntimeProfile(profile) && (normalized == "/usr/local/bin/pip" ||
+      normalized == "/etc/pip.conf" || normalized == "/usr/local/lib/python3.14/site-packages" ||
+      HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/"))) return false;
   if (group->role == ProcessState::Role::kArtifact) {
     // comm is mutable by ordinary Python/native code. Artifact reads depend
     // on the observed current executable, never on a claimed thread name.
@@ -3055,7 +3075,7 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
-       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
+       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfilePipxRuntime) == 0 || strcmp(profile, kProfileTerraformProvider) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
        strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0 ||
        strcmp(profile, kProfileCargoBuild) == 0);
 }
@@ -3368,7 +3388,7 @@ bool IsPinnedProjectBuildHandoffRead(
 bool IsExactHAAELFHandoffDemotionRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile) {
-  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileTerraformProvider) != 0 && !IsPythonProfile(profile)) ||
+  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileTerraformProvider) != 0 && !IsPythonRuntimeProfile(profile)) ||
       IsWriteCapableOpen(flags)) return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
@@ -3511,6 +3531,9 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsCargoBuildConfigurationWrite(message.context_data(), state, path, message.flags(), profile)) return FilesystemClass::kOutside;
+  if (IsPipxRuntimeProfile(profile) &&
+      (path == "/haa-pipx" || HasPrefix(path, "/haa-pipx/")) &&
+      (!IsWorkspacePath(path, profile) || IsWriteCapableOpen(message.flags()))) return FilesystemClass::kOutside;
   if (IsWorkspacePath(path, profile)) return FilesystemClass::kWorkspace;
   if (IsClearlyOutsideWorkspace(path) ||
       (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
@@ -3546,7 +3569,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
                               message.flags(), profile) ||
       IsPinnedNpmRuntimeRead(message.context_data(), state, path, message.flags(), profile)) {
-    return profile != nullptr && IsPythonProfile(profile) &&
+    return profile != nullptr && IsPythonRuntimeProfile(profile) &&
             IsPinnedRuntimeRootRead(message.context_data(), state, path,
                                     message.flags(), profile)
         ? FilesystemClass::kRuntimeRoot : FilesystemClass::kHelperOnly;
@@ -3677,7 +3700,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
         (profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
-         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
@@ -3715,7 +3738,8 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
   auto profile = profiles->find(id); const char* status = "rejected";
   if (peer->registered && !peer->terminal && peer->container_id == id &&
       peer->session_generation == generation && profile != profiles->end() &&
-      profile->second.session_generation == generation && profile->second.control_fd == peer->fd) {
+      profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
+      (!IsPipxRuntimeProfile(profile->second.profile.c_str()) || mode == kPythonHandoffMode)) {
     auto pending = profile->second.pending_admissions.end();
     for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
       if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
