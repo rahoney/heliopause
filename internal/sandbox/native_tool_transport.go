@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"path"
 
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
@@ -18,6 +19,7 @@ const (
 	nativeRuntimeUV nativeRuntimeToolKind = iota
 	nativeRuntimePNPM
 	nativeRuntimeBun
+	nativeRuntimePipx
 )
 
 type nativeRuntimeToolSpec struct {
@@ -28,6 +30,13 @@ type nativeRuntimeToolSpec struct {
 	maxBytes                             int64
 }
 
+func (s nativeRuntimeToolSpec) fileMode() int64 {
+	if s.installedName == runtimeidentity.PipxRuntimeAssetName {
+		return 0444
+	}
+	return 0555
+}
+
 func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpec, bool) {
 	switch kind {
 	case nativeRuntimeUV:
@@ -36,9 +45,17 @@ func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpe
 		return nativeRuntimeToolSpec{"pnpm", pnpmToolGuestPath, runtimeidentity.PNPMToolSHA256, runtimeidentity.PNPMToolSize, "haa-pnpm-runtime-", "io.heliopause.pnpm-runtime", "io.heliopause.pnpm-tool-sha256", runtimeidentity.PNPMNativeAssetName, uvRuntimeVolumeOptions, 64 << 20}, true
 	case nativeRuntimeBun:
 		return nativeRuntimeToolSpec{"bun", bunToolGuestPath, runtimeidentity.BunToolSHA256, runtimeidentity.BunToolSize, "haa-bun-runtime-", "io.heliopause.bun-runtime", "io.heliopause.bun-tool-sha256", runtimeidentity.BunNativeAssetName, "size=134217728,nosuid,nodev,uid=0,gid=0,mode=0755", 128 << 20}, true
+	case nativeRuntimePipx:
+		// DATA transport only. The existing single-writer native volume is
+		// unavailable for this kind; readonly lifecycle is a separate owner.
+		return nativeRuntimeToolSpec{name: "pipx-runtime.zip", guestPath: pipxToolGuestPath, sha256: runtimeidentity.PipxToolSHA256, size: runtimeidentity.PipxToolSize, installedName: runtimeidentity.PipxRuntimeAssetName, maxBytes: 8 << 20}, true
 	default:
 		return nativeRuntimeToolSpec{}, false
 	}
+}
+
+func validPipxTransportIdentity(identity nativeToolFileIdentity, kind nativeRuntimeToolKind) bool {
+	return kind != nativeRuntimePipx || identity == (nativeToolFileIdentity{runtimeidentity.PipxToolSize, runtimeidentity.PipxToolSHA256, 0444})
 }
 
 var errNativeToolTransport = errors.New("immutable native tool transport is unavailable or changed")
@@ -69,7 +86,7 @@ func (w *nativeToolArchiveOutput) Write(body []byte) (int, error) {
 func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutput, container, path string, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
 	validPath := path == spec.guestPath || kind == nativeRuntimeUV && path == runtimeidentity.UVToolPath
-	if ctx == nil || runner == nil || !known || !validPath || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > spec.maxBytes {
+	if ctx == nil || runner == nil || !known || !validPath || !validPipxTransportIdentity(identity, kind) || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > spec.maxBytes {
 		return nil, errNativeToolTransport
 	}
 	output := nativeToolArchiveOutput{limit: identity.size + 64<<10}
@@ -81,7 +98,7 @@ func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutp
 
 func scanNativeToolTar(body []byte, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
-	if !known || identity.size <= 0 || identity.size > spec.maxBytes || int64(len(body)) > identity.size+64<<10 {
+	if !known || !validPipxTransportIdentity(identity, kind) || identity.size <= 0 || identity.size > spec.maxBytes || int64(len(body)) > identity.size+64<<10 {
 		return nil, errNativeToolTransport
 	}
 	input := bytes.NewReader(body)
@@ -127,7 +144,7 @@ func introduceNativeTool(ctx context.Context, runner CommandRunner, container st
 	done := make(chan error, 1)
 	go func() {
 		archive := tar.NewWriter(writer)
-		err := archive.WriteHeader(&tar.Header{Name: spec.name, Typeflag: tar.TypeReg, Mode: 0555, Uid: 0, Gid: 0, Size: int64(len(body))})
+		err := archive.WriteHeader(&tar.Header{Name: spec.name, Typeflag: tar.TypeReg, Mode: spec.fileMode(), Uid: 0, Gid: 0, Size: int64(len(body))})
 		if err == nil {
 			_, err = archive.Write(body)
 		}
@@ -135,12 +152,12 @@ func introduceNativeTool(ctx context.Context, runner CommandRunner, container st
 		_ = writer.CloseWithError(err)
 		done <- err
 	}()
-	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":/haa-runtime")
+	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":"+path.Dir(spec.guestPath))
 	_ = reader.CloseWithError(commandErr)
 	copyErr := <-done
 	if err := errors.Join(commandErr, copyErr, ctx.Err()); err != nil {
 		return errors.Join(errNativeToolTransport, err)
 	}
-	_, err := readNativeToolFromContainer(ctx, output, container, spec.guestPath, nativeToolFileIdentity{spec.size, spec.sha256, 0555}, kind)
+	_, err := readNativeToolFromContainer(ctx, output, container, spec.guestPath, nativeToolFileIdentity{spec.size, spec.sha256, spec.fileMode()}, kind)
 	return err
 }

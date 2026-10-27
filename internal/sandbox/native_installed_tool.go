@@ -65,7 +65,7 @@ func readInstalledNativeTool(ctx context.Context, installation string, kind nati
 	}
 	name := target + "/" + spec.installedName
 	beforeFile, err := root.Lstat(name)
-	if err != nil || !nativePinnedFile(beforeFile, spec.size) {
+	if err != nil || !nativePinnedFileMode(beforeFile, spec.size, os.FileMode(spec.fileMode())) {
 		return nil, errInstalledNativeTool
 	}
 	file, err := root.Open(name)
@@ -79,7 +79,7 @@ func readInstalledNativeTool(ctx context.Context, installation string, kind nati
 		}
 	}()
 	opened, err := file.Stat()
-	if err != nil || !os.SameFile(beforeFile, opened) || !nativePinnedFile(opened, spec.size) {
+	if err != nil || !os.SameFile(beforeFile, opened) || !nativePinnedFileMode(opened, spec.size, os.FileMode(spec.fileMode())) {
 		return nil, errInstalledNativeTool
 	}
 	body, err := io.ReadAll(io.LimitReader(file, spec.size+1))
@@ -95,7 +95,7 @@ func readInstalledNativeTool(ctx context.Context, installation string, kind nati
 	afterTarget, targetErr := root.Readlink("current")
 	afterRoot, rootErr := os.Lstat(installation)
 	if fileErr != nil || currentErr != nil || targetErr != nil || rootErr != nil ||
-		!os.SameFile(beforeFile, afterFile) || !nativePinnedFile(afterFile, spec.size) ||
+		!os.SameFile(beforeFile, afterFile) || !nativePinnedFileMode(afterFile, spec.size, os.FileMode(spec.fileMode())) ||
 		!os.SameFile(current, afterCurrent) || !nativeRootCurrent(afterCurrent) || afterTarget != target ||
 		!os.SameFile(beforeRoot, afterRoot) || !nativeRootDirectory(afterRoot) {
 		return nil, errInstalledNativeTool
@@ -140,7 +140,11 @@ func nativeRootCurrent(info os.FileInfo) bool {
 }
 
 func nativePinnedFile(info os.FileInfo, size int64) bool {
-	return nativeRootOwned(info) && info.Mode().IsRegular() && info.Mode().Perm() == 0555 &&
+	return nativePinnedFileMode(info, size, 0555)
+}
+
+func nativePinnedFileMode(info os.FileInfo, size int64, mode os.FileMode) bool {
+	return (mode == 0555 || mode == 0444) && nativeRootOwned(info) && info.Mode().IsRegular() && info.Mode().Perm() == mode &&
 		info.Mode()&(os.ModeSetuid|os.ModeSetgid|os.ModeSticky) == 0 && info.Size() == size &&
 		info.Sys().(*syscall.Stat_t).Nlink == 1
 }

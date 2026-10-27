@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI418/source012c7b4 Required10SUCCESS; whole checkout4b88/tree3649f0bd/2726 identical; Linux79PASS/native123.40s/CPU245.96s/helper11wait0/final0
-Next action: M13-004/P4-O4-B — executable Python ZIP inspection/release/typed DATA role edit map; CI415 cause OPEN
+Next action: M13-004/P4-O4-C2 — readonly supply lifecycle/live transport; then B inspection/release; CI415 cause OPEN
 Current substep: M13-004/P4-O4-A selected owner/maintenance + existing hosted regression QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,21 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O4-C1 한정 로컬 검증
+
+[C1 receipt](./evidence/package-client-quarantine/p4o4c1-pipx-data-transport-local-20261027.json)는
+fixed DATA reader/transport의 Quick230.736s/sandbox 전체 Race25.658s/docs/security PASS와
+actual ZIP2505814B의 disposable namespace 보호 파일·15개 거부0.149s/noSKIP·원본 불변을
+연결한다. Actual은 DATA tar roundtrip이며 Docker/Python 실행이나 readonly mount 완료가
+아니다. 기존 UV/PNPM/Bun을 유지하고 다음 C2 실제 mount lifecycle로 이어간다.
+
+### 2026-10-27 P4-O4-C1 착수
+
+[C1 baseline/수정 지도](./evidence/package-client-quarantine/p4o4c1-pipx-data-transport-plan-20261027.md)에
+따라 기존 held file reader/typed transport에 fixed pipx DATA를 연결한다. 기존 Python
+preparation/anchor readonly owner는 다음 C2에서 재사용한다. Public runtime/CLI와 release
+acceptance는 열려 있으며 M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-27 CI418 원격 검증 확인
 

@@ -38,7 +38,7 @@ func createPNPMRuntimeVolume(ctx context.Context, runner CommandRunner) (nativeR
 
 func createNativeRuntimeVolume(ctx context.Context, runner CommandRunner, kind nativeRuntimeToolKind) (nativeRuntimeVolume, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
-	if ctx == nil || runner == nil || !known {
+	if ctx == nil || runner == nil || !known || spec.volumePrefix == "" {
 		return nativeRuntimeVolume{}, errUVRuntimeVolume
 	}
 	owner, err := domain.NewSandboxSessionID()
@@ -70,7 +70,7 @@ func (v *nativeRuntimeVolume) verify(ctx context.Context, runner CommandRunner) 
 		return errNativeRuntimeVolume
 	}
 	spec, known := nativeRuntimeToolIdentity(v.kind)
-	if !known || ctx == nil || runner == nil || v.owner == "" || v.name != spec.volumePrefix+v.owner {
+	if !known || spec.volumePrefix == "" || ctx == nil || runner == nil || v.owner == "" || v.name != spec.volumePrefix+v.owner {
 		return errUVRuntimeVolume
 	}
 	body, err := runner.Output(ctx, "docker", "volume", "inspect", "--format", "{{json .}}", v.name)
@@ -89,7 +89,7 @@ func (v *nativeRuntimeVolume) verify(ctx context.Context, runner CommandRunner) 
 
 func (v nativeRuntimeVolume) mountArgument() (string, error) {
 	spec, known := nativeRuntimeToolIdentity(v.kind)
-	if !known || v.owner == "" || v.name != spec.volumePrefix+v.owner || v.createdAt == "" || v.mountpoint == "" {
+	if !known || spec.volumePrefix == "" || v.owner == "" || v.name != spec.volumePrefix+v.owner || v.createdAt == "" || v.mountpoint == "" {
 		return "", errUVRuntimeVolume
 	}
 	return "type=volume,source=" + v.name + ",target=/haa-runtime,volume-nocopy", nil
