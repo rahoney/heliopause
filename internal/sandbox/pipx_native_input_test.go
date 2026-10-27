@@ -43,10 +43,10 @@ func pipxFrozenInputFixture(t *testing.T, extra map[string][]byte) (*pipxNativeI
 	inputs := []artifactpypi.UVWheelInput{{URL: url, Reader: bytes.NewReader(body), Size: int64(len(body))}}
 	pages := []artifactpypi.SimpleProject{page}
 	frozen, err := freezePipxNativeInput(context.Background(), lock, inputs, pages)
-	if extra == nil && err != nil {
+	if len(extra["startup.pth"]) == 0 && err != nil {
 		t.Fatal(err)
 	}
-	if extra != nil && (err == nil || !strings.Contains(err.Error(), "startup")) {
+	if len(extra["startup.pth"]) != 0 && (err == nil || !strings.Contains(err.Error(), "startup")) {
 		t.Fatal("startup fixture failed outside expected gate", err)
 	}
 	return frozen, lock, inputs, pages, body

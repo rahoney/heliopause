@@ -1,0 +1,311 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b2 production complete pipx native DATA reader and whole-frozen-original control binding; named local only",
+  "baseline": {
+    "source": "0f158dce4df8b932b9f79ccdaae3ed0a2277011f",
+    "tree": "bf0863887a72231221933fd94889adc0b98055c8",
+    "files": 2833
+  },
+  "implemented": "YES (complete pipx scanner/whole original binding)",
+  "wired": "YES (actual native diagnostic); NO (production native session/profile/factory/CLI)",
+  "qualified": "YES (named local runc complete-output scope)",
+  "acceptance_closed": "NO (whole native pipx/CLI)",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_input.go",
+      "sha256": "8462d39311118e667ecae1cab7b0e4d0e6d7dced0cf752c93bc6384a26deda8f"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input_test.go",
+      "sha256": "ba06bcd88dcd273d7bff5e3faf04a5292767d0eab3d756015fee543578ba0362"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_output.go",
+      "sha256": "ecd894899420fa0284ec0c4c74a1535f0c233c25b0bda4a487ecbefd5016fd1d"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_output_test.go",
+      "sha256": "84e455f7d64a74e84802309f6f67fbc0a5d9e5843728265903e899495309399d"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+      "sha256": "971f9336cd628b2179e61eb4f0c594b3c4b664bafe66eeb186ad7bf437a32f0a"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.704,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 54.864,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 23.501,
+      "log_sha256": "4159961fd0e90a9e3123fd40be8451403aae21a902f5ba1194be87ff84f080a4"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 1.068,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 7.175,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.253,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 9.669,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "race_scope": [
+    "ok  \tgithub.com/rahoney/heliopause/internal/sandbox\t14.455s",
+    "ok  \tgithub.com/rahoney/heliopause/internal/artifact/pypi\t(cached)"
+  ],
+  "actual": {
+    "scope": "runc ordinary1000 complete pipx native output reader and whole frozen source/control binding; no gVisor/installed current/Policy/publication",
+    "seconds": 13.048,
+    "exit_code": 0,
+    "failure": null,
+    "top_level_passes": [
+      "TestPipxActualOfflineNativeProgram"
+    ],
+    "exact_parent_pass": true,
+    "no_skip": true,
+    "Host_Docker_input42_ZIP_identical": true,
+    "binary_sha256": "4abc474ab5c81fc6590a81dd1a08e2bd8aad5b2e89643952441871cf053029c0",
+    "binary_unchanged": true,
+    "source": [
+      {
+        "path": "internal/sandbox/pipx_native_output.go",
+        "sha256": "ecd894899420fa0284ec0c4c74a1535f0c233c25b0bda4a487ecbefd5016fd1d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_output_test.go",
+        "sha256": "84e455f7d64a74e84802309f6f67fbc0a5d9e5843728265903e899495309399d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "8462d39311118e667ecae1cab7b0e4d0e6d7dced0cf752c93bc6384a26deda8f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input_test.go",
+        "sha256": "ba06bcd88dcd273d7bff5e3faf04a5292767d0eab3d756015fee543578ba0362"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_test.go",
+        "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+        "sha256": "971f9336cd628b2179e61eb4f0c594b3c4b664bafe66eeb186ad7bf437a32f0a"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_query_wheels.go",
+        "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+      }
+    ],
+    "source_unchanged": true
+  },
+  "actual_complete_reader_checks": [
+    "complete tree root/parent scaffold/UID1000/type/mode/census/bounds",
+    "exact runtime aliases/UV configuration and receipt-bound native scripts/external links",
+    "native METADATA and WHEEL exact size/SHA256 against InspectWheel.Files from immutable original bytes",
+    "existing ToolReceipt.BindWheels, original metadata parser and replay, unapproved graph2",
+    "same receipt/links/control bytes as separate named native DATA captures for install and no-op",
+    "noSKIP/owned cleanup/Host5 Docker input42 ZIP binary source unchanged"
+  ],
+  "payload_boundary": "all native payload/log/activation bytes remain unapproved DATA and are discarded; this is not full native payload RECORD equality or runtime admission/Policy/Host publication",
+  "reused_owners": [
+    {
+      "path": "internal/sandbox/uv_tool_output.go",
+      "sha256": "581f94a52857cb1d359291592ec7ae52f9120b4c8003ca25eb5250649a490a54",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "6afa8f5b1ccae2c4ebd9e4493d1c01c8cf15cf06bfc0cd59a5948d7ac5752d99",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume.go",
+      "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_tool_supply.go",
+      "sha256": "37aee0a1fb673201d8075cc707da9d2ea10f45b40e8cf2f0a20ffcac7e53cfe9",
+      "identical_to_baseline": true
+    },
+    {
+      "path": "internal/sandbox/pipx_data_volume.go",
+      "sha256": "ee73bd0afc33b8239eeb7e8584f852ab6a59c321088621760e6731261ee6fc9c",
+      "identical_to_baseline": true
+    }
+  ],
+  "first_candidate": {
+    "quick_seconds": 223.583,
+    "sandbox_race_seconds": 24.203,
+    "initial_tests_passed": true,
+    "production_bytes_identical_to_final": true,
+    "not_final_test_set": true
+  },
+  "first_failure": {
+    "regression": "TestPipxNativeOutputRejectsCrossWheelControlCollision",
+    "seconds": 5.904,
+    "exit_code": 1,
+    "stage": "fixture freeze before native output binder",
+    "cause": "fixture expected to reach binder, but existing primary dist-info guard already rejects the foreign top-level controls",
+    "exact_final_stage": "DIST_INFO_IDENTITY; final test confirms direct InspectWheel and freeze refusal before native input/output",
+    "not_a_new_product_collision_defect": true,
+    "no_product_change_after_failure": true,
+    "test_correction": "assert existing pre-query refusal; keep normal nested vendored metadata payload accepted",
+    "raw": "p4o4c3c3b2-collision-red-result.json",
+    "failed_test_source_sha256": "8a8ebda3c996abb2e8554a0ffbd3fc65ba559c562873688fb85663a997a3cb6c",
+    "failed_source_preservation": "exact formatted bytes reconstructed and required to match the already-recorded SHA256 before saving; raw p4o4c3c3b2-collision-red-test.go.txt"
+  },
+  "remote_recheck": {
+    "checked_at": "2026-10-27 21:29:31 UTC",
+    "repo": "rahoney/heliopause",
+    "pull": 38,
+    "head_ref": "milestone/m13-release-build-packages",
+    "head_sha": "1e5d21e102bd3f6b6e1b680603f0569e2e0b390e",
+    "run": {
+      "id": 40515351597,
+      "number": 420,
+      "head_sha": "1e5d21e102bd3f6b6e1b680603f0569e2e0b390e",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "jobs": [
+      {
+        "id": 122227768168,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768495,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768508,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768546,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768630,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768814,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768915,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227768932,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122227769043,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 122268839786,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "local_new_source_not_remote": true,
+    "monitor": "No new CI started, no live timer; future authorized CI uses actual 20min timer/direct queries.",
+    "branch_endpoint": {
+      "first": "INVALID_ARGUMENT; tool URL path rejection",
+      "fallback": "PR38 fresh head confirms branch SHA"
+    }
+  },
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "dedicated offline pipx parent/UV child/installed Python query external profile and native session",
+    "installed current supply factory and existing full inspection/Evidence/Policy/target transaction/public CLI",
+    "hostedUID1001/signed-native and final support/profile qualification"
+  ]
+}

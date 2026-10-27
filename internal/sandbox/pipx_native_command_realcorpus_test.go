@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -434,6 +435,10 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 			t.Fatal("native root/version differs")
 		}
 		links := pipxDiagnosticLinks(t, ctx, runner, reader.id)
+		complete, err := readPipxNativeOutput(ctx, runner, reader.id, "userpath", frozen)
+		if err != nil || !bytes.Equal(complete.receipt.Body(), receipt.Body()) || !reflect.DeepEqual(complete.links, links) || len(complete.controls) != 2 || len(complete.graph.Nodes()) != 2 {
+			t.Fatal("complete native output differs from named original controls", err)
+		}
 		if err := receipt.ValidateExposedCommands(environment, pipxNativeBin, "/usr/local/bin/python", links); err != nil {
 			t.Fatal(err)
 		}
@@ -447,6 +452,15 @@ func TestPipxActualOfflineNativeProgram(t *testing.T) {
 			base := environment + "/lib/python3.14/site-packages/" + w.directory
 			m := pipxDiagnosticFile(t, ctx, runner, reader.id, base+"/METADATA")
 			wheel := pipxDiagnosticFile(t, ctx, runner, reader.id, base+"/WHEEL")
+			found := false
+			for _, captured := range complete.controls {
+				if captured.DistInfo == w.directory {
+					found = bytes.Equal(captured.Metadata, m) && bytes.Equal(captured.Wheel, wheel)
+				}
+			}
+			if !found {
+				t.Fatal("complete native control bytes differ from separate capture")
+			}
 			metadata = append(metadata, artifactpypi.InstalledMetadataFile{Directory: w.directory, Body: m})
 			wheels = append(wheels, artifactpypi.UVInstalledWheelControls{DistInfo: w.directory, Metadata: m, Wheel: wheel})
 		}

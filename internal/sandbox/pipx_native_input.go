@@ -29,6 +29,8 @@ type pipxNativeInput struct {
 	files []pipxNativeInputFile
 	graph domain.LockedDependencyGraph
 	id    string
+	lock  artifactpypi.UVLock
+	pages []artifactpypi.SimpleProject
 }
 
 func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) (*pipxNativeInput, error) {
@@ -82,6 +84,8 @@ func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs
 		return nil, err
 	}
 	result.graph = graph
+	result.lock = lock
+	result.pages = append([]artifactpypi.SimpleProject(nil), pages...)
 	result.id, err = result.manifestID()
 	if err != nil {
 		return nil, err

@@ -1290,3 +1290,54 @@ provenance는 새 profile에서 독립 고정해야 한다. UV의 direct CONTROL
 기존 acquired ZIP import 성공은 이 chain의 권한이 아니다. 다음 C3c3b2에서 공통 bounded
 transport와 기존 receipt/layout/replay/whole wheel 검증을 재사용하는 pipx 전용 complete
 output reader를 추가한다. 기존 UV scanner와 C3c3a production source를 재작성하지 않는다.
+
+### C3c3b2 — production complete native output reader의 구체 수정 지도
+
+Source 전 기준은 `0f158dce4df8b932b9f79ccdaae3ed0a2277011f`/
+`bf0863887a72231221933fd94889adc0b98055c8`/2833파일이다. 기존 bounded tar transport,
+UV config grammar·receipt/layout/whole wheel·original replay는 IMPLEMENTED/WIRED/
+QUALIFIED/ACCEPTANCE_CLOSED=YES(각 기존 scope)이며 재작성하지 않는다. Pipx 전용
+complete scanner/whole-frozen-output binding은 네 상태 모두 NO이고 그 부분만 MISSING이다.
+
+1. `pipx_native_output.go`가 `/haa-site/.`의 전체 tree를 기존 `readUVNativeTar`로 읽고
+   pipx home/단일 venv·exact UV runtime alias/config·METADATA/WHEEL·receipt·별도 bin을
+   결합한다. 고정된 초기 console-only subset이므로 man/completion payload·다른 환경·
+   외부/임의 alias·타입/소유권/부모 scaffold/중복/누락/overflow/trailing을 거부한다.
+   알려진 log grammar/cache/activation scaffold는 bounded DATA로 폐기하며 실행하거나
+   Policy Evidence로 쓰지 않는다. Receipt에 없는 venv script도 거부한다.
+2. C3c3a snapshot이 기존 immutable parsed lock/독립 source facts를 함께 보존하여
+   `ToolReceipt.BindWheels`를 같은 frozen whole bytes에 재사용한다. 실제 native 두 control의
+   size/SHA를 기존 `InspectWheel.Files`의 authentic METADATA/WHEEL에 대조하고 C3b original
+   parser/replay를 재사용한다. Original reader를 다시 열거나 native metadata를 source로
+   가장하지 않는다. Graph는 계속 unapproved이며 native payload를 Host에 반출하지 않는다.
+3. 기존 actual check가 새 complete reader와 이전 named metadata/link 결과를 직접 대조한다.
+   Unit 정상/negative와 producer failure/cancel, 기존 UV/PyPI/sandbox regression·canonical
+   profile/tag build·동일 original actual에서 검사한다. C3c3a common 두 파일·ZIP owner와
+   native argv/환경은 바꾸지 않는다. Output census는 이미 실행된 query의 admission을
+   소급 부여하지 않으며 전용 observer/session·Policy/CLI는 계속 남긴다.
+
+
+### C3c3b2 named local 결과 — 2026-10-28
+
+[C3c3b2 receipt](./p4o4c3c3b2-complete-native-output-local-20261028.json)의 최종
+Quick54.864s/전체 sandbox·PyPI Race23.501s/tag vet·build/docs/security와 actual13.048s가
+PASS다. 전체 native tree의 fixed scaffold/owner/type/mode/부모·census/한도와 receipt-bound
+script/link를 읽고, native METADATA/WHEEL의 size/SHA를 immutable 원본의 기존
+InspectWheel.Files에 대조했다. 같은 frozen lock/source에서 기존 receipt graph/original
+parser/replay를 재사용하며 install/no-op의 graph2·이전 별도 capture와 같은 receipt/link/
+control bytes를 확인했다. 전체 raw DATA facts도 유지했고 noSKIP/Host5/Docker/42input/
+ZIP/source/binary 불변·owned 정리가 PASS다. Native payload/log/activation은 폐기하는
+unapproved DATA이며 native 전체 payload의 RECORD 일치·실행 허용·Policy가 아니다.
+
+최초 Quick223.583s/Race24.203s의 production과 최종 production bytes는 같다. 추가
+collision 회귀 첫5.904s는 기존 InspectWheel이 입력을 먼저 거부해 intended binder에
+도달하지 못한 fixture 기대 오류였다. Final은 기존 DIST_INFO_IDENTITY/freeze 거부를
+정확히 확인하고 정상 nested dist-info payload도 보존했다. 새 제품 collision 결함이나
+RED→GREEN source 수정으로 주장하지 않는다. 원본 실패/source SHA를 보존했다. 기존
+UV scanner/transport와 C3c3a volume/native argv/공통 owner bytes는 그대로다.
+
+Fresh CI420은 Required 포함10SUCCESS/PR38 head1e5d21e이며 이번 로컬 후보가 아니다.
+새 CI/타이머는 없고 e859487 checkpoint push는 기존 자동 승인 검토 거부 후 승인 대기다.
+같은 M13-004의 다음 C3c3b3에서 exact offline parent→UV child→installed Python query의
+전용 외부 profile/session baseline과 수정 지도를 대조한다. 기존 CONTROL/network
+상속 조건을 새 chain으로 확대하지 않는다.
