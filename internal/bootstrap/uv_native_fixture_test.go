@@ -134,9 +134,14 @@ func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte
 	// Explicit runc is only a fixture data generator; the product still uses
 	// its normal authenticated gVisor observer and network-policy path.
 	network := "none"
+	fixtureUID, fixtureGID := 1000, 1000
 	var mounts []string
 	var base string
 	if tool {
+		fixtureUID, fixtureGID = os.Geteuid(), os.Getegid()
+		if fixtureUID == 0 {
+			t.Fatal("native tool fixture requires an ordinary Host user")
+		}
 		root := filepath.Dir(toolBin)
 		if !filepath.IsAbs(root) || strings.ContainsAny(root, ",:\\\x00\r\n") || target != filepath.Join(root, "tools", "cowsay") || toolBin != filepath.Join(root, "commands") || len(interpreter) == 0 || len(interpreter) > 16<<20 {
 			t.Fatal("native tool fixture requires its own explicit public cowsay roots and image interpreter DATA")
@@ -156,10 +161,17 @@ func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte
 		network = "bridge"
 		mounts = []string{"--mount", "type=bind,src=" + root + ",dst=" + root}
 	}
+	// A tool producer writes directly into private Host-owned roots. Its guest
+	// and tmpfs identities must match that owner; hosted users need not be 1000.
+	fixtureUser := fmt.Sprintf("%d:%d", fixtureUID, fixtureGID)
+	tmpfsOwner := fmt.Sprintf("uid=%d,gid=%d", fixtureUID, fixtureGID)
+	if tool {
+		t.Logf("native_tool_fixture_identity host_uid=%d host_gid=%d guest=%s private_roots=0700", os.Geteuid(), os.Getegid(), fixtureUser)
+	}
 	containerArgs := []string{
-		"--runtime", "runc", "--network", network, "--read-only", "--user", "1000:1000", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1",
-		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", "/haa-fixture:rw,exec,nosuid,nodev,size=96m,uid=1000,gid=1000,mode=0700", "--entrypoint", "/bin/sleep"}
+		"--runtime", "runc", "--network", network, "--read-only", "--user", fixtureUser, "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1",
+		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m," + tmpfsOwner + ",mode=0700",
+		"--tmpfs", "/haa-fixture:rw,exec,nosuid,nodev,size=96m," + tmpfsOwner + ",mode=0700", "--entrypoint", "/bin/sleep"}
 	containerArgs = append(containerArgs, mounts...)
 	container := create(runtimeidentity.PythonImageReference, "", []string{"infinity"}, containerArgs...)
 	checked(nil, 16<<10, "start", container)
@@ -169,7 +181,7 @@ func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte
 	wheelSum := sha256.Sum256(wheel)
 	guest := func(input []byte, limit int, args ...string) []byte {
 		t.Helper()
-		arguments := []string{"exec", "--interactive", "--user", "1000:1000", container, "/usr/bin/env", "-i", "PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "LANG=C", "LC_ALL=C"}
+		arguments := []string{"exec", "--interactive", "--user", fixtureUser, container, "/usr/bin/env", "-i", "PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "LANG=C", "LC_ALL=C"}
 		return checked(input, limit, append(arguments, args...)...)
 	}
 	// docker cp writes to a read-only container are refused even when its

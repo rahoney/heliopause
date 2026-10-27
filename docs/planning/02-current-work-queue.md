@@ -16,14 +16,24 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-N2D actual native171.767s exact-pin/managed repeat/bounded6.1→6.0 and affected default fixture281.476s PASS; final Quick62.462s/full affected Race183.469s/canonical workflow·docs·security PASS
-Next action: M13-004 — consume CI416 Linux/Required and exact checkout/raw logs; P4-O supply verification concrete edit map/second review; CI415 cause OPEN
-Current substep: M13-004/P4-O baseline audit recorded (no product source/pin changes); N2D1b16544 named local qualified; CI416 first10min query8SUCCESS/Linux running, Required pending
-Acceptance audit: CI41540330433276/a8389de completed13:48:48UTC:8SUCCESS/Linux+Required FAILURE; PNPM single PASS/peer FD_STATE_UNKNOWN; UV tool recipes NOT_REACHED. Exact10 decoded logs897772B preserved. Old80m timer superseded after failure consumption; next active CI status timers10min, grouped CI execution unchanged.
+Next action: M13-004 — fixture correction named local PASS: docs/security PASS; exact candidate checkpoint then new hosted Linux/Required qualification; CI415 cause OPEN
+Current substep: M13-004/CI416 fixture-only UID correction; UID1001 producer RED1.668s→GREEN1.818s; Quick281.578s/Bootstrap Race17.703s/native168.356s/default275.437s PASS; hosted fix NOT_QUALIFIED; P4-O baseline preserved
+Acceptance audit: CI41640441186696/1b16544:8SUCCESS/Linux+Required FAILURE; native producer EACCES0.77s/current approval NOT_REACHED; existing tools4 and PNPM peer PASS; all10checkoutd695/tree616b/source whole equality and decoded958507B preserved. CI415 FD cause OPEN; new necessary hosted CI uses actual10min status polling.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI416 실패 소비
+
+[실패 조사 지도](./evidence/package-client-quarantine/ci416-native-fixture-uid-investigation-20261027.md)는
+TestLinuxUVToolNativeAdoptionCLIIntegration의 원본 producer EACCES/0.77s를 소유한다.
+기존 tool 네 소비자와 PNPM peer는 PASS이고 native current inspection은 NOT_REACHED다.
+8SUCCESS/Linux·Required FAILURE, helperwait0/final CONFIRMED_STOPPED·RESTORED/primary1과
+all10 같은 checkout/raw logs를 보존했다. Tool-only bind root와 고정 guest1000 관계를
+non1000 ordinary user에서 재현하며 product guard·권한·예산은 바꾸지 않는다. CI 재실행은
+원인/후보 교정·로컬 검증 뒤 실제 hosted acceptance 경계에서만 수행한다.
 
 ### 2026-10-27 P4-N2D 실제 native 인계
 
