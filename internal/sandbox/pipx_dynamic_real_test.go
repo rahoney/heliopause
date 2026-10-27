@@ -83,6 +83,11 @@ func TestLinuxPipxAcquiredRuntimeTransactionIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer func() {
+				if err := executor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
 			client, err := hosttool.NewSystemObservationResourceClient()
 			if err != nil {
 				t.Fatal(err)

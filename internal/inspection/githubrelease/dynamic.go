@@ -29,11 +29,16 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	checkID, _ := domain.NewCheckID("github-release-elf-dynamic")
+	return githubDynamicReport(artifact, result, "github-release-elf-dynamic")
+}
+
+// Both fixed GitHub runtime consumers retain the same observation normalization.
+func githubDynamicReport(artifact domain.AcquiredArtifact, result domain.SandboxResult, name string) (domain.InspectionReport, error) {
+	checkID, _ := domain.NewCheckID(name)
 	if result.Status() != domain.SandboxCompleted {
 		limitation, _ := result.LimitationCode()
 		capability, status := domain.CapabilitySupported, domain.ExecutionIncomplete
-		if limitation == "M3_LINUX_ONLY" || limitation == "M3_RUNTIME_UNAVAILABLE" || limitation == "M3_RUNTIME_VERSION_UNSUPPORTED" || limitation == "M3_IMAGE_UNAVAILABLE" {
+		if limitation == "M3_LINUX_ONLY" || limitation == "M3_RUNTIME_UNAVAILABLE" || limitation == "M3_RUNTIME_VERSION_UNSUPPORTED" || limitation == "M3_IMAGE_UNAVAILABLE" || (name == pipxRuntimeCheck && limitation == "P4_PIPX_RUNTIME_UNAVAILABLE") {
 			capability, status = domain.CapabilityUnsupported, domain.ExecutionNotExecuted
 		}
 		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
@@ -51,8 +56,8 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		incomplete, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
 		return domain.NewInspectionReport(incomplete, nil, nil)
 	}
-	evidenceID, _ := domain.NewEvidenceID("github-release-elf-dynamic-result")
-	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "github-release-elf-dynamic", summary)
+	evidenceID, _ := domain.NewEvidenceID(name + "-result")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), name, summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

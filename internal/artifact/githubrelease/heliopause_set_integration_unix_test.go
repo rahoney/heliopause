@@ -82,7 +82,7 @@ func TestHeliopauseSetUsesExistingCompleteWorkflowAndStopsBeforePromotion(t *tes
 			if err != nil {
 				t.Fatal(err)
 			}
-			inspector, err := inspectiongithub.NewReleaseSetInspector(f.IntakeRoot, f.Source.Manifest, native)
+			inspector, err := inspectiongithub.NewReleaseSetInspector(f.IntakeRoot, f.Source.Manifest, native, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

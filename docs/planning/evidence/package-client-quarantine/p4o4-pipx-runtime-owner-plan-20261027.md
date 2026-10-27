@@ -507,3 +507,67 @@ wheel/작은 네 policy·prerequisite sequence151.871s/noSKIP·helperwait0/Host 
 기존 완료 원장/CPU watch/unit loop/cleanup을 재사용한 named local 경계만 닫았다.
 Required release composite/factory·배포/설치 membership과 native pipx/CLI·hosted/final full
 profile matrix는 남는다. 다음 B2d에서 원본 HAA subject의 required check/Evidence로 연결한다.
+
+## B2d — required inspector와 composition의 source 전 대조
+
+기준548946a/tree c5b8cada/2784다. B2c acquired backend와 실제 transaction은 named local
+QUALIFIED이며 전체 full profile/hosted 범위는 열려 있다. M13-004 하나만 IN_PROGRESS다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| acquired ZIP static reader/typed plan | YES | YES(explicit) | YES(local) | YES(input) | Inspector에서 같은 reader 소비 |
+| ZIP external transaction | YES | YES(backend) | YES(named local) | YES(named local) | typed runner를 required check에 연결 |
+| GitHub dynamic summary/findings normalization | YES | YES(native) | YES(existing) | YES(native) | 같은 함수를 fixed ZIP check에서도 소비 |
+| post-install typed outcomes | YES(backend)/YES(wheel Evidence) | NO(ZIP report) | NO(ZIP report) | NO | exact five modules/owner/unit·disposition 검증과 HAA Evidence |
+| release set/factory | YES(native) | NO(ZIP inspector) | NO(ZIP) | NO(ZIP) | fixed inspector/real resources 연결; complete DATA membership는 이후 배포 묶음 |
+
+기존 GitHub dynamic의 Domain check/summary/Finding 정규화를 private 공통 함수로 추출해
+native의 check/kind/오류/관찰 의미를 유지한다. 새 fixed ZIP inspector만 기존 static reader와
+B2c runner를 연결한다. Required check는 `github-release-pipx-runtime`이고 원본 HAA identity/
+digest를 보존한다. Completed라 해도 resource observation, 누락/중복/추가/잘못된 command
+module·owner·unit은 완료 Evidence를 만들지 않는다. 기존 post-install 의미대로 exact typed
+outcome을 같은 required check의 별도 Evidence에 담되 functionality/later enforcement는 false다.
+Artifact 출력이나 wheel identity로 변환하지 않는다. 일반 ZIP/새 Core port는 만들지 않는다.
+
+첫 source 지도는 inspection/githubrelease → sandbox typed result edge를 제안했다.
+그러나 첫 Quick18.859s의 실제 test build에서 artifact/githubrelease 내부 test → inspector →
+sandbox → terraformprovider → artifact/githubrelease 순환이 확정되어 이 제안은 superseded다.
+Inspector가 소비할 bounded 결과/명령 타입을 소유하고 기존 composition root의 작은 adapter가
+B2c typed 결과를 그대로 변환한다. 새 concrete import edge와 Core/Application 변경은 없다.
+첫 source/check는 p4o4b2d-first 원본에 보존했다. 기존 artifact test를 우회하거나 compiler
+검사를 줄이지 않는다.
+기존 native pipeline fixture에는 ZIP runner 부재를 명시하고 선택되지 않은 옛 manifest는
+유지한다. 실제 self-update factory는 held executor/observer와 기존 resource client로 새 backend를
+전달한다. Manifest membership/설치·서명·복구의 완전한 DATA set은 다음 배포 묶음에서 함께
+연결하며 지금 full release/pipx 지원 완료를 표시하지 않는다.
+
+Go 기본/태그 회귀와 실제 selected ZIP intake→runner→Domain report/Evidence를 검증한다.
+부정 typed 결과와 실제 정상·회계 오류는 완료를 분리하며 기존 native normalization/unsigned
+release pipeline 회귀도 유지한다. 공통 runtime의 hosted 검증은 이 required inspection 경계와
+묶고20분 실제 timer 조회를 적용한다.
+
+두 번째 Quick58.828s는 import cycle을 통과한 뒤 새 단일 command array summary가
+Domain Evidence의 기존1024B 상한을 초과해 기본 정상 회귀에서 실패했다. 원본 source/check는
+p4o4b2d-second에 보존했다. 기존 wheel command Evidence처럼 명령별 bounded row를 같은
+required check에 연결한다. 상한·Domain 계약을 바꾸지 않고 aggregate1+command5개의
+Evidence를 요구한다. 실제 backend/typed outcomes와 원본 HAA identity는 유지한다.
+
+세 번째 Quick42.413s는 command row summary 상한을 통과했고 긴 새 Evidence ID prefix가
+기존64B identifier 상한을 초과한 오류를 검출했다. p4o4b2d-third 원본을 보존하고 기존
+명령 Evidence처럼 짧은 `pipx-command-<disposition>-<unit hash>` identifier를 사용한다.
+원본 HAA subject/check/kind와 전체64hex unit은 summary에 보존하며 한도는 바꾸지 않는다.
+
+V4의 Quick41.719s/영향4 package 전체 Race51.296s/selected input1.262s와 docs/security가
+PASS다. 추가 source 검토에서 새 pipx unavailable code를 기존 native inspector에까지 적용하지
+않도록 exact check name으로 범위를 좁혔다. 실제 focused RED는 native unknown code의 기존
+SUPPORTED/INCOMPLETE 대신 UNSUPPORTED/NOT_EXECUTED가 된 것을 검출했다. 새 pipx check만
+이 code를 해석하도록 교정하며 두 소비자 상태 회귀를 유지한다. V4와 RED 원본을 보존했다.
+
+B2d [로컬 receipt](./p4o4b2d-required-runtime-inspection-local-20261028.json)는 최종 Quick42.543s/
+inspector Race2.132s, 앞선 affected4 package full Race51.296s, selected ZIP1.308s/docs/security와
+실제 required inspection41.606s를 연결한다. 원본 HAA acquired identity의 required check1개/
+Finding0/Evidence6·commands5가 완성됐고 이후 intake 변조는 거부됐다. NoSKIP/helperwait0/
+confirmed cleanup·보호5파일/Docker/원본ZIP 동일이다. 처음 세 실패와 native capability RED를
+보존했으며 현재 상한·계층 경계·native 의미는 유지했다. 실제 complete release DATA graph와
+build/sign/install/recovery·native pipx tools/CLI 및 final profiles는 남는다. 다음 B3에서
+complete membership를 연결하고 이 required inspection 경계를 공통 hosted checkpoint로 묶는다.

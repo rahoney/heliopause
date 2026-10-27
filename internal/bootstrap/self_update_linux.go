@@ -12,6 +12,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -80,6 +81,14 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 	if err != nil {
 		return nil, err
 	}
+	pipxBackend, err := sandbox.NewLinuxPipxRuntimeBackendWithExecutor(executor, observer, newObservationResourceAdapter())
+	if err != nil {
+		return nil, err
+	}
+	pipxInspection, err := inspectiongithub.NewPipxRuntimeInspector(intakeRoot, pipxReleaseObservationRunner{backend: pipxBackend})
+	if err != nil {
+		return nil, err
+	}
 	store, err := local.NewStore(evidenceRoot)
 	if err != nil {
 		return nil, err
@@ -117,7 +126,7 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 		if err != nil {
 			return content, err
 		}
-		content.Inspection, err = inspectiongithub.NewReleaseSetInspector(intakeRoot, source.Manifest, native)
+		content.Inspection, err = inspectiongithub.NewReleaseSetInspector(intakeRoot, source.Manifest, native, pipxInspection)
 		return content, err
 	}
 	var once sync.Once
@@ -135,4 +144,20 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 		return nil, err
 	}
 	return updater, nil
+}
+
+// This adapter preserves the existing transaction result without adding a
+// dependency from the release inspector back into sandbox implementation.
+type pipxReleaseObservationRunner struct{ backend *sandbox.PythonDynamicBackend }
+
+func (r pipxReleaseObservationRunner) InspectPipxRuntime(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.PipxRuntimePlan) (inspectiongithub.PipxRuntimeObservation, error) {
+	observed, err := r.backend.InspectPipxRuntime(ctx, artifact, plan)
+	if err != nil {
+		return inspectiongithub.PipxRuntimeObservation{}, err
+	}
+	result := inspectiongithub.PipxRuntimeObservation{SandboxResult: observed.SandboxResult}
+	for _, command := range observed.Commands {
+		result.Commands = append(result.Commands, inspectiongithub.PipxCommandObservation{Module: command.Module, UnitID: command.UnitID, OwnerSHA256: command.OwnerSHA256, ZeroExit: command.ZeroExit})
+	}
+	return result, nil
 }

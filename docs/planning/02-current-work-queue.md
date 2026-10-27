@@ -16,14 +16,25 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
-Next action: M13-004/P4-O4-B2d required release inspection/factory; group common checkpoint and monitor new CI every20min; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B2d IN_PROGRESS; B2c actual acquired ZIP/common transaction locally qualified; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B3 complete release DATA membership; grouped common CI checkpoint then direct20min timer queries; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B3 IN_PROGRESS; B2d required inspector/real factory locally qualified; complete membership/whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B2d required 검사·Evidence 로컬 검증
+
+[B2d receipt](./evidence/package-client-quarantine/p4o4b2d-required-runtime-inspection-local-20261028.json)는
+최종 Quick42.543s/inspector Race2.132s, affected4 package full Race51.296s와 selected ZIP/
+docs/security, 실제 required inspection41.606s를 연결한다. 원본 HAA identity의 required
+check1/Finding0/Evidence6·commands5와 후속 intake 변조 거부를 확인했다. Import cycle·
+summary1024B·ID64B와 native capability의 첫 실패 원본을 보존하고 기존 경계/한도를 유지했다.
+NoSKIP/helperwait0/Host 동일이며 source는 공통 hosted checkpoint로 묶는다. 새 ZIP actual은
+현재 named local이며 기존 CI의 hosted 소비자 범위와 구분한다. 같은 M13-004/B3에서 complete
+release DATA membership/build/sign/install/recovery를 계속한다. Whole pipx/CLI·final profiles는 남는다.
 
 ### 2026-10-28 P4-O4-B2c acquired ZIP 실제 transaction 로컬 검증
 

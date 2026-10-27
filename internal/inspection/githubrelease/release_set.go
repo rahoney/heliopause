@@ -19,9 +19,10 @@ type ReleaseSetInspector struct {
 	manifest func() (releaseinstall.ReleaseManifest, error)
 	metadata *ReleaseManifestInspector
 	native   ports.Inspection
+	pipx     ports.Inspection
 }
 
-func NewReleaseSetInspector(intakeRoot string, manifest func() (releaseinstall.ReleaseManifest, error), native ports.Inspection) (*ReleaseSetInspector, error) {
+func NewReleaseSetInspector(intakeRoot string, manifest func() (releaseinstall.ReleaseManifest, error), native, pipx ports.Inspection) (*ReleaseSetInspector, error) {
 	if manifest == nil || native == nil {
 		return nil, errors.New("release set inspection requires frozen metadata and native checks")
 	}
@@ -29,7 +30,7 @@ func NewReleaseSetInspector(intakeRoot string, manifest func() (releaseinstall.R
 	if err != nil {
 		return nil, err
 	}
-	return &ReleaseSetInspector{manifest, metadata, native}, nil
+	return &ReleaseSetInspector{manifest: manifest, metadata: metadata, native: native, pipx: pipx}, nil
 }
 
 func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
@@ -62,6 +63,12 @@ func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.Acqui
 	}
 	if selected.Name == "" || selected.SHA256 != artifact.Digest().String() || uint64(selected.Size) != artifact.SizeBytes() {
 		return domain.InspectionReport{}, errors.New("release inspection subject is absent from the manifest")
+	}
+	if name == "pipx-runtime-linux-amd64.zip" {
+		if i.pipx == nil {
+			return pipxRuntimeIncomplete("P4_PIPX_RUNTIME_INSPECTION_UNAVAILABLE")
+		}
+		return i.pipx.Inspect(ctx, artifact)
 	}
 	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" || name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" {
 		return i.inspectMetadata(ctx, artifact, manifest)
