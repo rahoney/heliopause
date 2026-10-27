@@ -121,15 +121,9 @@ func (s *HeliopauseReleaseSet) ResolveDependencies(ctx context.Context, referenc
 	if metadata.Version() != manifestResolved.Identity().Version() || metadata.RuntimeLockSHA256() != s.lockSHA256 || metadata.GVisorRelease() != runtimeidentity.GVisorRelease || metadata.GVisorCommit() != runtimeidentity.GVisorCommit {
 		return resolution, errors.New("release version or runtime lock differs from the active installation")
 	}
-	native, err := metadata.NativeUpdateFiles()
+	selected, err := metadata.NativeUpdatePayloads()
 	if err != nil {
 		return resolution, err
-	}
-	selected := append([]releaseinstall.ReleaseFile(nil), native...)
-	for _, file := range metadata.Files() {
-		if file.Role == "release-metadata" {
-			selected = append(selected, file)
-		}
 	}
 	entries := []FrozenEntry{manifestEntry}
 	var total uint64 = manifestSize

@@ -15,15 +15,38 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
-Next action: M13-004/P4-O4-B3 complete release DATA membership; grouped common CI checkpoint then direct20min timer queries; CI415 cause OPEN
-Current substep: M13-004/P4-O4-B3 IN_PROGRESS; B2d required inspector/real factory locally qualified; complete membership/whole pipx/final profiles remain
-Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
+Last completed substep: P4-O4-B3a complete DATA selection/modes named local qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
+Next action: M13-004/P4-O4-B3b local producer/metadata/build complete DATA set; e859487 push/CI AWAITING_USER_APPROVAL after auto-review rejection; direct20min queries when CI starts; CI415 cause OPEN
+Current substep: M13-004/P4-O4-B3b IN_PROGRESS; B3a graph/protected DATA mechanics locally qualified; actual full set/pipx/hosted/final profiles remain
+Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B3a complete DATA 선택·mode 로컬 검증
+
+[B3a receipt](./evidence/package-client-quarantine/p4o4b3a-complete-data-selection-local-20261028.json)는
+native6 보존·ZIP/NOTICE pair·legacy10/new12payload와11/13subjects를 한 selector로 연결했다.
+Graph/wire/route의 정상·변조·누락 runner 거부, unsigned fixture의 authenticity 거부와 초기
+Quick187.064s/affected6 owner Race171.897s·추가 후보 Quick42.684s/관련3 owner Race14.630s를
+확인했다. Actual selected ZIP/NOTICE의 private mount/network namespace 복사0.221s는 root
+single-link0444·Host/Docker/원본 동일/noSKIP다. File mechanics 범위이며 producer/metadata와
+actual complete graph current Evidence/Policy·root DATA 복구·native pipx/CLI·hosted/final profiles는
+남는다. 같은 M13-004/B3b를 로컬에서 계속하고 원격 e859487 checkpoint는 승인 대기다.
+
+### 2026-10-28 공통 checkpoint push의 외부 승인 대기
+
+로컬 source e859487/tree6753df83/2789까지 검증·commit했다. 기존 원격 branch는1e5d21e다.
+정상 `git push origin milestone/m13-release-build-packages`는 실행 전에 자동 승인 검토가
+private 코드/영수증 외부 전송의 명시 목적지·payload 승인 근거 부족으로 거부했다.
+거부를 우회하거나 재시도하지 않았다. 사용자에게 기존 GitHub rahoney/heliopause의
+같은 milestone branch로21387da~e859487 여섯 commit push 승인을 비동기로 요청했다.
+해제 조건은 해당 목적지/payload의 사용자 승인이다. 새 CI는 아직 시작되지 않았고
+20분 실제 조회는 시작 뒤 연결한다. 이 checkpoint만 승인 대기이며 M13-004 전체는
+IN_PROGRESS다. 같은 B3의 독립 로컬 DATA membership 작업을 계속한다. 로컬 원본
+p4o4b2d-push-auto-review-rejection.json이 거부와 미실행 상태를 보존한다.
 
 ### 2026-10-28 P4-O4-B2d required 검사·Evidence 로컬 검증
 

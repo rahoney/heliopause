@@ -51,19 +51,14 @@ func newWireRelease(body []byte, proofs [][]byte) (wireRelease, error) {
 }
 
 func releasePayloads(manifest releaseinstall.ReleaseManifest, manifestSize int64) ([]releaseinstall.ReleaseFile, error) {
-	native, err := manifest.NativeUpdateFiles()
+	files, err := manifest.NativeUpdatePayloads()
 	if err != nil {
 		return nil, errors.Join(ErrProtocol, err)
 	}
-	files := append([]releaseinstall.ReleaseFile(nil), native...)
-	for _, file := range manifest.Files() {
-		if file.Role == "release-metadata" {
-			files = append(files, file)
-		}
-	}
-	if len(files) != 10 || manifestSize <= 0 || manifestSize > 1<<20 {
+	if manifestSize <= 0 || manifestSize > 1<<20 {
 		return nil, ErrProtocol
 	}
+
 	total := manifestSize
 	for _, file := range files {
 		if file.Size <= 0 || file.Size > 512<<20 || file.Size > (1<<30)-total {

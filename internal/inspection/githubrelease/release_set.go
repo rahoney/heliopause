@@ -70,7 +70,7 @@ func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.Acqui
 		}
 		return i.pipx.Inspect(ctx, artifact)
 	}
-	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" || name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" {
+	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" || name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" || name == "pipx-NOTICE.txt" {
 		return i.inspectMetadata(ctx, artifact, manifest)
 	}
 	native, err := manifest.NativeUpdateFiles()
@@ -90,7 +90,7 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 	if artifact.Identity().Variant() == "helox-release-sbom.cdx.json" {
 		limit = 8 << 20
 	}
-	if artifact.Identity().Variant() == "pnpm-NOTICE.txt" || artifact.Identity().Variant() == "bun-NOTICE.txt" {
+	if artifact.Identity().Variant() == "pnpm-NOTICE.txt" || artifact.Identity().Variant() == "bun-NOTICE.txt" || artifact.Identity().Variant() == "pipx-NOTICE.txt" {
 		limit = 64 << 10
 	}
 	if artifact.SizeBytes() == 0 || artifact.SizeBytes() > uint64(limit) {
@@ -122,6 +122,8 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 		err = releaseinstall.ValidatePNPMNotices(body)
 	} else if artifact.Identity().Variant() == "bun-NOTICE.txt" {
 		err = releaseinstall.ValidateBunNotices(body)
+	} else if artifact.Identity().Variant() == "pipx-NOTICE.txt" {
+		err = releaseinstall.ValidatePipxNotices(body)
 	} else {
 		err = releaseinstall.ValidateRuntimeImages(body)
 	}

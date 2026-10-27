@@ -58,20 +58,13 @@ func newPublicSource(ctx context.Context, intake, version string) (releaseSource
 }
 
 func bootstrapFiles(manifest releaseinstall.ReleaseManifest) ([]releaseinstall.ReleaseFile, error) {
-	native, err := manifest.NativeUpdateFiles()
+	payloads, err := manifest.NativeUpdatePayloads()
 	if err != nil {
 		return nil, err
 	}
 	files := []releaseinstall.ReleaseFile{{Name: "helox-release-manifest.json", Role: "release-metadata", SHA256: manifest.SHA256()}}
-	files = append(files, native...)
-	for _, file := range manifest.Files() {
-		if file.Role == "release-metadata" {
-			files = append(files, file)
-		}
-	}
-	if len(files) != 11 {
-		return nil, errors.New("native bootstrap requires eleven exact subjects")
-	}
+	files = append(files, payloads...)
+
 	sort.Slice(files, func(i, j int) bool { return files[i].Name < files[j].Name })
 	return files, nil
 }
@@ -247,6 +240,16 @@ func prepare(ctx context.Context, version string, deps preparationDependencies) 
 	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
 		return fail(ports.BootstrapProvenanceFailed, err)
 	}
+	if manifest.HasPipxRuntime() {
+		pipxNotices, err := output.read("pipx-NOTICE.txt", 64<<10)
+		if err != nil {
+			return fail(ports.BootstrapProvenanceFailed, err)
+		}
+		if err := releaseinstall.ValidatePipxNotices(pipxNotices); err != nil {
+			return fail(ports.BootstrapProvenanceFailed, err)
+		}
+	}
+
 	sum := sha256.Sum256(proof)
 	digest := hex.EncodeToString(sum[:])
 	proofName := digest + ".json"

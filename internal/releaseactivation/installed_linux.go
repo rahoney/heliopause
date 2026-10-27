@@ -110,21 +110,16 @@ func readRecordedRelease(ctx context.Context, record registration) (InstalledRel
 	if err != nil || manifest.Version() != record.Version || manifest.SHA256() != record.ManifestSHA256 || manifest.GVisorRelease() != runtimeidentity.GVisorRelease || manifest.GVisorCommit() != runtimeidentity.GVisorCommit {
 		return InstalledRelease{}, ErrUntrusted
 	}
-	native, err := manifest.NativeUpdateFiles()
+	selected, err := manifest.NativeUpdatePayloads()
 	if err != nil {
 		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
 	}
-	selected := append([]releaseinstall.ReleaseFile(nil), native...)
-	for _, file := range manifest.Files() {
-		if file.Role == "release-metadata" {
-			selected = append(selected, file)
-		}
-	}
+
 	subjects := []releaseprovenance.Subject{{Name: "helox-release-manifest.json", SHA256: manifest.SHA256()}}
 	var total int64 = int64(len(manifestBody))
 	for _, file := range selected {
 		mode := os.FileMode(0555)
-		if file.Role == "release-metadata" {
+		if file.Role == "release-metadata" || file.IsRuntimeData() {
 			mode = 0444
 		}
 		if file.Size <= 0 || file.Size > 512<<20 || file.Size > (1<<30)-total {
@@ -167,6 +162,16 @@ func readRecordedRelease(ctx context.Context, record registration) (InstalledRel
 	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
 		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
 	}
+	if manifest.HasPipxRuntime() {
+		pipxNotices, err := readProtected(ctx, filepath.Join(directory, "pipx-NOTICE.txt"), 64<<10)
+		if err != nil {
+			return InstalledRelease{}, errors.Join(ErrUntrusted, err)
+		}
+		if err := releaseinstall.ValidatePipxNotices(pipxNotices); err != nil {
+			return InstalledRelease{}, errors.Join(ErrUntrusted, err)
+		}
+	}
+
 	proofs, err := readStoredProofs(ctx, manifest.SHA256())
 	if err != nil {
 		return InstalledRelease{}, err

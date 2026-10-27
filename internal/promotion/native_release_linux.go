@@ -67,7 +67,7 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 		return result, releaseactivation.ErrUntrusted
 	}
 	inspections := bundle.Set().Inspected().Inspections()
-	if len(inspections) != 11 {
+	if len(inspections) != 11 && len(inspections) != 13 {
 		return result, releaseactivation.ErrUntrusted
 	}
 	byName := map[string]domain.AcquiredArtifact{}
@@ -87,19 +87,11 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 	if err != nil {
 		return result, err
 	}
-	native, err := manifest.NativeUpdateFiles()
-	if err != nil || manifest.SHA256() != primary.Digest().String() {
+	selected, err := manifest.NativeUpdatePayloads()
+	if err != nil || manifest.SHA256() != primary.Digest().String() || len(inspections) != len(selected)+1 {
 		return result, releaseactivation.ErrUntrusted
 	}
-	selected := append([]releaseinstall.ReleaseFile(nil), native...)
-	for _, file := range manifest.Files() {
-		if file.Role == "release-metadata" {
-			selected = append(selected, file)
-		}
-	}
-	if len(selected) != 10 {
-		return result, releaseactivation.ErrUntrusted
-	}
+
 	for _, file := range selected {
 		artifact, ok := byName[file.Name]
 		if !ok || artifact.Identity().Version() != manifest.Version() || artifact.Digest().String() != file.SHA256 || artifact.SizeBytes() != uint64(file.Size) {

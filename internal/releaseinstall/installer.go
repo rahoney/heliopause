@@ -191,7 +191,7 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if err != nil {
 			return installationInput{}, err
 		}
-		if _, err := strict.NativeUpdateFiles(); err != nil {
+		if _, err := strict.NativeUpdatePayloads(); err != nil {
 			return installationInput{}, err
 		}
 		for _, name := range append([]string{manifestName, sbomName, runtimeImagesName}, selectedNames(files)...) {
@@ -240,6 +240,16 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if err := ValidateBunNotices(bunNotices); err != nil {
 			return installationInput{}, err
 		}
+		if strict.HasPipxRuntime() {
+			pipxNotices, err := readRegular(filepath.Join(bundle, "pipx-NOTICE.txt"))
+			if err != nil {
+				return installationInput{}, err
+			}
+			if err := ValidatePipxNotices(pipxNotices); err != nil {
+				return installationInput{}, err
+			}
+		}
+
 	}
 	if err := ctx.Err(); err != nil {
 		return installationInput{}, err
@@ -326,9 +336,34 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 			}
 		}
 		for _, item := range value.Assets {
+			if item.Name == runtimeidentity.PipxRuntimeAssetName {
+				want[item.Name] = "pipx-runtime"
+			}
+			if item.Name == "pipx-NOTICE.txt" {
+				want[item.Name] = "release-metadata"
+			}
+		}
+		for _, item := range value.Assets {
 			if item.Name == "haa-release-installer-linux-amd64" {
 				want[item.Name] = "release-installer"
 				break
+			}
+		}
+	}
+	if goos == "linux" && goarch == "amd64" {
+		_, zip := want[runtimeidentity.PipxRuntimeAssetName]
+		_, notices := want["pipx-NOTICE.txt"]
+		if zip != notices {
+			return nil, errors.New("pipx DATA and notices must be selected together")
+		}
+		if zip {
+			for name, role := range nativeUpdateRoleSet() {
+				if want[name] != role {
+					return nil, errors.New("pipx DATA requires the complete native role set")
+				}
+			}
+			if want["pnpm-NOTICE.txt"] != "release-metadata" || want["bun-NOTICE.txt"] != "release-metadata" {
+				return nil, errors.New("pipx DATA requires existing client notices")
 			}
 		}
 	}
@@ -341,6 +376,9 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 		}
 		if seen[item.Name] || item.Role != role || item.Platform != goos+"/"+goarch || !validRecord(record{Name: item.Name, SHA256: item.SHA256, Size: item.Size}, item.Name) {
 			return nil, errors.New("release asset binding is invalid")
+		}
+		if ReleaseFile(item).IsRuntimeData() && item.Size > 8<<20 || item.Name == "pipx-NOTICE.txt" && item.Size > 64<<10 {
+			return nil, errors.New("pipx DATA or notices exceed their fixed role")
 		}
 		seen[item.Name] = true
 		selected = append(selected, item)
@@ -420,7 +458,7 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 			return Result{}, err
 		}
 		mode := executableMode
-		if item.Role == "release-metadata" {
+		if item.Role == "release-metadata" || ReleaseFile(item).IsRuntimeData() {
 			mode = metadataMode
 		}
 		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), mode); err != nil {

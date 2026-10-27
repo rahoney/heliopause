@@ -186,3 +186,12 @@ func ValidateBunNotices(body []byte) error {
 	}
 	return nil
 }
+
+// ValidatePipxNotices preserves original whole-wheel notices as bounded DATA.
+func ValidatePipxNotices(body []byte) error {
+	sum := sha256.Sum256(body)
+	if int64(len(body)) != runtimeidentity.PipxNoticesSize || len(body) > 64<<10 || !utf8.Valid(body) || hex.EncodeToString(sum[:]) != runtimeidentity.PipxNoticesSHA256 {
+		return errors.New("pipx passive notices differ from the selected runtime owner")
+	}
+	return nil
+}

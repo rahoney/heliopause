@@ -571,3 +571,72 @@ confirmed cleanup·보호5파일/Docker/원본ZIP 동일이다. 처음 세 실�
 보존했으며 현재 상한·계층 경계·native 의미는 유지했다. 실제 complete release DATA graph와
 build/sign/install/recovery·native pipx tools/CLI 및 final profiles는 남는다. 다음 B3에서
 complete membership를 연결하고 이 required inspection 경계를 공통 hosted checkpoint로 묶는다.
+
+## B3 — complete DATA 배포 연결의 source 전 대조
+
+기준 e859487/tree6753df83/2789다. B2c actual external transaction과 B2d required inspector는
+named local qualified다. 원격은1e5d21e이며 e859487까지 여섯 commit의 push가 자동 승인 검토에
+거부되어 사용자 승인 대기다. 이를 우회하지 않고 같은 M13-004의 독립 로컬 작업을 계속한다.
+새 CI/20분 timer 조회는 아직 시작하지 않았다.
+
+| 책임/기존 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| manifest strict parser·native6 selector | YES | YES(existing) | YES(existing) | YES(existing scopes) | fixed ZIP/NOTICE pair·새15-asset set, native6 유지 |
+| release graph/required inspection/frozen proofs | YES | YES(native)/YES(ZIP inspector only) | YES(named local) | YES(named scopes) | complete graph의 ZIP DATA 포함·actual current check |
+| promotion/bootstrap/wire/protected copy/recovery | YES | YES(native+metadata) | YES(existing) | YES(existing scopes) | 같은 DATA membership와 nonexecutable modes·bounds·cleanup |
+| installer/installed reader | YES | YES(native/C1 reader) | YES(named scopes) | YES(named scopes) | ZIP0444·NOTICE0444 선택/설치/검증·옛 설치 형식 보존 |
+| release manifest/SBOM/runtime metadata | YES | YES(13 assets/2 tools) | YES(existing) | YES(existing) | selected pipx ZIP/NOTICE·whole supply metadata 표시 |
+| build/package/attest/publish exact set | YES | YES(existing) | YES(existing) | YES(existing) | 같은 새 DATA set의 생성/검증·OS package 포함 |
+
+한 번에 기존 완성 구현을 대체하지 않는다. 아래 책임 단위로 현재 gap만 잇는다.
+
+### B3a — graph/protected DATA set
+
+- `NativeUpdateFiles`의 native6와 기존 notices 요구는 유지한다. 같은 manifest owner에
+  native selector를 재사용하는 complete payload selector를 두어, 현재 여러 owner가 반복하는
+  native+metadata 선택에 정확한 ZIP DATA를 추가한다. 기존13-asset native set의10payload와
+  새15-asset set의12payload를 각각 완전한 집합으로 검사한다. Manifest 자신을 포함한 subject는
+  각각11/13개이며 고정 total1GiB/file512MiB 및 기존 proof/frame 상한은 올리지 않는다.
+- ZIP의 정확한 role은 `pipx-runtime`, platform linux/amd64, NAME은 selected owner의
+  `pipx-runtime-linux-amd64.zip`다. `pipx-NOTICE.txt`는 기존 release-metadata role이다.
+  ZIP/NOTICE는 pair이며 기존 Bun/PNPM/installer가 있는 완전한 set에서만 허용한다.
+  Structural reader의 역사8/9/11/13-asset 허용은 보존하고 producer는 최종15개를 요구한다.
+  옛 형식 수용을 pipx 지원 qualification으로 표시하지 않는다.
+- `ReleaseFile.IsRuntimeData`는 위 fixed name/role/platform을 식별하는 mode 분기다.
+  DATA는 안전성·검사 완료 판정이 아니다. system 설치0444, private root staging0600으로 두며 user 설치의 기존 metadata0600은 보존한다.
+  executable0555/0500 경로에 넣지 않는다. 같은 분기를 installer·root stage·installed hash·
+  bootstrap/cleanup에 전부 연결해야 새 manifest가 실행 경로에 도달할 수 있다.
+- 기존 graph·promotion·bootstrap·wire·installed read/cleanup owner는 complete selector를
+  소비한다. 누락/추가/치환/중복·UNKNOWN·후속 cleanup이 첫 실패를 덮는 기존 거부를 유지한다.
+  원본 HAA identity와 ZIP required check를 보존하고 native ELF 검사로 ZIP을 보내지 않는다.
+- Exact NOTICE hash/size 검증은 기존 metadata owner에 추가한다. Actual ZIP/whole plan 검사는
+  B2d inspector가 소유하고 installed 실행은 C1/C2 exact selected identity가 다시 검증한다.
+  DATA transport로 artifact를 Host에서 import하거나 root 준비 중 실행하지 않는다.
+
+### B3b — producer와 소비자의 같은 완전 집합
+
+기존 materialize-pipx와 runtime owner를 그대로 사용해 frozen11-wheel/42input의 actual ZIP과
+NOTICE를 생성한다. Release manifest/SBOM/runtime metadata/OS packages·build/attest/bundle
+verification/publish list를 같은15-asset set으로 확장한다. Metadata의 DATA 기록을 native ELF
+실행 역할로 사용하지 않는다. 전체 supplied wheel·제공 proof/NOT_PROVIDED 구분을 보존하며
+새 dependency 자동 선택·source pin refresh·install-time download는 없다. 필요한 fetch도
+selected frozen inputs만 받으며 기존 materializer가 전체 bytes/hash/proof를 재검증한다.
+
+### 검증과 두 번째 검토
+
+먼저 legacy parser/native6·새 pair/역할/크기·complete subject set·DATA mode의 정상/부정
+회귀를 검사한다. 실제 selected ZIP→complete graph→required current Evidence·Policy가
+도달하는지 확인하고, root copy/installed read/wire/rollback·foreign/unknown cleanup도 현재
+owner에서 검증한다. 새 unsigned fixture는 authenticity 성공으로 쓰지 않는다. 실제 서명·
+activation은 승인된 기존 controlled fixture/절차 범위만 사용하고 main merge·공개 배포·
+영구 runtime 교체를 하지 않는다. 소유 경로의 canonical Quick/관련 Race/docs/security 및
+producer/workflow/release-gate를 순차 실행하며 full profile/hosted 범위는 별도 증거로 닫는다.
+
+B3a [로컬 receipt](./p4o4b3a-complete-data-selection-local-20261028.json)는 초기 Quick187.064s/
+affected6 owner full Race171.897s와 추가 graph/wire/route 후보의 Quick42.684s/관련3 owner
+Race14.630s/docs/security PASS를 연결한다. Native6와 legacy10/new12payload·11/13subjects,
+strict pair/role/platform/bounds, DATA의 native fallback 부재와 unsigned wire의 실제 authenticity
+거부를 확인했다. Actual selected ZIP/NOTICE의 private mount/network namespace 복사0.221s는
+root single-link0444·bytes/Host/Docker 불변/noSKIP이다. 서명·artifact 실행·full release 성공이
+아니다. Producer/metadata·실제 complete graph current Evidence/Policy와 root DATA 복구·native
+pipx/CLI 및 hosted/final profiles는 남는다. 다음 B3b를 로컬에서 계속하며 e859487 push는 승인 대기다.

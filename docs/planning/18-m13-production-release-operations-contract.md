@@ -270,6 +270,7 @@ Core assets:
 - Linux network-policy helper
 - lock-pinned pnpm native client와 source-bound passive notices — [현재 P2 공급·배포 범위](./evidence/package-client-quarantine/p2b2-pnpm-runtime-plan-20261024.md); 실제 guest/제품 qualification과 구분
 - lock-pinned Bun native client와 source-bound passive notices — [현재 P3 공급·배포 범위](./evidence/package-client-quarantine/p3b2b2-bun-release-plan-20261025.md); 실제 gVisor/client qualification은 후속으로 유지
+- lock-pinned pipx Python ZIP DATA와 원본 NOTICE — [현재 P4 공급·배포 범위](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md). `pipx-runtime-linux-amd64.zip`은 native6와 별도인 fixed `pipx-runtime` role이며 system installed0444/private root staging0600으로 다룬다. `pipx-NOTICE.txt`는 release-metadata다. DATA role은 safety·검사 완료·Host import/실행 권한이 아니며 실제 전체 공급/지원 qualification은 별도로 확인한다.
 - runtime-image manifest
 - release manifest
 - SBOM

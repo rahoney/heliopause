@@ -327,7 +327,7 @@ func readBootstrapSet(ctx context.Context) (nativeBootstrapSet, error) {
 	for _, file := range release.files {
 		expected[file.Name] = true
 		mode := os.FileMode(0500)
-		if file.Role == "release-metadata" {
+		if file.Role == "release-metadata" || file.IsRuntimeData() {
 			mode = 0600
 		}
 		if err := hashProtected(ctx, filepath.Join(bootstrapDirectory, file.Name), file.SHA256, file.Size, mode); err != nil {
@@ -370,6 +370,16 @@ func readBootstrapSet(ctx context.Context) (nativeBootstrapSet, error) {
 	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
 		return set, errors.Join(ErrUntrusted, err)
 	}
+	if manifest.HasPipxRuntime() {
+		pipxNotices, err := readProtected(ctx, filepath.Join(bootstrapDirectory, "pipx-NOTICE.txt"), 64<<10)
+		if err != nil {
+			return set, errors.Join(ErrUntrusted, err)
+		}
+		if err := releaseinstall.ValidatePipxNotices(pipxNotices); err != nil {
+			return set, errors.Join(ErrUntrusted, err)
+		}
+	}
+
 	configs, err := readNativeConfigSnapshots(ctx)
 	if err != nil {
 		return set, err
@@ -476,18 +486,14 @@ func discardBootstrapSource(ctx context.Context, installed InstalledRelease) err
 		return errors.Join(ErrCleanup, err)
 	}
 	expected := map[string]releaseinstall.ReleaseFile{"helox-release-manifest.json": {Name: "helox-release-manifest.json", Role: "release-metadata", SHA256: installed.manifest.SHA256(), Size: int64(len(body))}}
-	native, err := installed.manifest.NativeUpdateFiles()
+	payloads, err := installed.manifest.NativeUpdatePayloads()
 	if err != nil {
 		return errors.Join(ErrCleanup, err)
 	}
-	for _, file := range native {
+	for _, file := range payloads {
 		expected[file.Name] = file
 	}
-	for _, file := range installed.manifest.Files() {
-		if file.Role == "release-metadata" {
-			expected[file.Name] = file
-		}
-	}
+
 	entries, err := os.ReadDir(bootstrapDirectory)
 	if err != nil || len(entries) > len(expected) {
 		return ErrCleanup
@@ -499,7 +505,7 @@ func discardBootstrapSource(ctx context.Context, installed InstalledRelease) err
 			return ErrCleanup
 		}
 		mode := os.FileMode(0500)
-		if value.Role == "release-metadata" {
+		if value.Role == "release-metadata" || value.IsRuntimeData() {
 			mode = 0600
 		}
 		path := filepath.Join(bootstrapDirectory, entry.Name())

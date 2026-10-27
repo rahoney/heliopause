@@ -126,6 +126,16 @@ func stageCheckedWire(ctx context.Context, reader io.Reader, peer *controllerPee
 	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
 		return nil, errors.Join(ErrProtocol, err)
 	}
+	if release.manifest.HasPipxRuntime() {
+		pipxNotices, err := readProtected(ctx, filepath.Join(directory, "pipx-NOTICE.txt"), 64<<10)
+		if err != nil {
+			return nil, errors.Join(ErrProtocol, err)
+		}
+		if err := releaseinstall.ValidatePipxNotices(pipxNotices); err != nil {
+			return nil, errors.Join(ErrProtocol, err)
+		}
+	}
+
 	if err := syncProtectedDirectory(directory); err != nil {
 		return nil, err
 	}

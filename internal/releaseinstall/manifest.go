@@ -12,6 +12,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
+
 	"golang.org/x/mod/semver"
 )
 
@@ -68,14 +70,8 @@ func (m ReleaseManifest) Files() []ReleaseFile {
 // NativeUpdateFiles selects the complete approved Linux/amd64 native role set.
 // Historical releases lacking any current native role or its notices fail closed.
 func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
-	roles := map[string]string{
-		"helox-linux-amd64":                     "helox",
-		"haa_gvisor_observer-linux-amd64":       "gvisor-observer",
-		"haa-network-policy-helper-linux-amd64": "network-policy-helper",
-		"haa-release-installer-linux-amd64":     "release-installer",
-		"pnpm-linux-amd64":                      "pnpm",
-		"bun-linux-amd64":                       "bun",
-	}
+	roles := nativeUpdateRoleSet()
+
 	notices := map[string]bool{"pnpm-NOTICE.txt": false, "bun-NOTICE.txt": false}
 	result := make([]ReleaseFile, 0, len(roles))
 	for _, item := range m.Files() {
@@ -91,6 +87,56 @@ func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 		return nil, errors.New("release does not contain the complete native update role set")
 	}
 	return result, nil
+}
+
+func nativeUpdateRoleSet() map[string]string {
+	return map[string]string{
+		"helox-linux-amd64":                     "helox",
+		"haa_gvisor_observer-linux-amd64":       "gvisor-observer",
+		"haa-network-policy-helper-linux-amd64": "network-policy-helper",
+		"haa-release-installer-linux-amd64":     "release-installer",
+		"pnpm-linux-amd64":                      "pnpm",
+		"bun-linux-amd64":                       "bun",
+	}
+}
+
+// IsRuntimeData identifies the fixed nonexecutable transport role only.
+// It grants neither inspection completion nor permission to execute ZIP contents.
+func (f ReleaseFile) IsRuntimeData() bool {
+	return f.Name == runtimeidentity.PipxRuntimeAssetName && f.Platform == "linux/amd64" && f.Role == "pipx-runtime"
+}
+
+func (m ReleaseManifest) HasPipxRuntime() bool {
+	for _, file := range m.Files() {
+		if file.IsRuntimeData() {
+			return true
+		}
+	}
+	return false
+}
+
+// NativeUpdatePayloads shares the existing complete native selection with all
+// graph, proof, protected copy and recovery consumers. Legacy sets stay distinct.
+func (m ReleaseManifest) NativeUpdatePayloads() ([]ReleaseFile, error) {
+	native, err := m.NativeUpdateFiles()
+	if err != nil {
+		return nil, err
+	}
+	files := append([]ReleaseFile(nil), native...)
+	for _, file := range m.Files() {
+		if file.Role == "release-metadata" || file.IsRuntimeData() {
+			files = append(files, file)
+		}
+	}
+	expected := 10
+	if m.HasPipxRuntime() {
+		expected = 12
+	}
+	if len(files) != expected {
+		return nil, errors.New("native update payload set is incomplete")
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].Name < files[j].Name })
+	return files, nil
 }
 
 func parseManifest(body []byte) (manifest, error) {
@@ -136,8 +182,10 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		"pnpm-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
 		"bun-linux-amd64":                       {"linux/amd64", "bun"},
 		"bun-NOTICE.txt":                        {"linux/amd64", "release-metadata"},
+		runtimeidentity.PipxRuntimeAssetName:    {"linux/amd64", "pipx-runtime"},
+		"pipx-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
 	}
-	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 {
+	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 && len(value.Assets) != 15 {
 		return ReleaseManifest{}, errors.New("release asset set is incomplete")
 	}
 	seen := make(map[string]bool, len(value.Assets))
@@ -152,6 +200,9 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		if item.Name == "bun-NOTICE.txt" && item.Size > 64<<10 || item.Name == "bun-linux-amd64" && item.Size > 128<<20 {
 			return ReleaseManifest{}, errors.New("bun native or notice size exceeds its fixed role")
 		}
+		if item.Name == runtimeidentity.PipxRuntimeAssetName && item.Size > 8<<20 || item.Name == "pipx-NOTICE.txt" && item.Size > 64<<10 {
+			return ReleaseManifest{}, errors.New("pipx DATA or notices exceed their fixed role")
+		}
 		seen[item.Name] = true
 	}
 	if seen["pnpm-linux-amd64"] != seen["pnpm-NOTICE.txt"] || seen["pnpm-linux-amd64"] && !seen["haa-release-installer-linux-amd64"] {
@@ -160,8 +211,11 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 	if seen["bun-linux-amd64"] != seen["bun-NOTICE.txt"] || seen["bun-linux-amd64"] && (!seen["pnpm-linux-amd64"] || !seen["haa-release-installer-linux-amd64"]) {
 		return ReleaseManifest{}, errors.New("native bun and passive notices require the complete current release set")
 	}
+	if seen[runtimeidentity.PipxRuntimeAssetName] != seen["pipx-NOTICE.txt"] || seen[runtimeidentity.PipxRuntimeAssetName] && !seen["bun-linux-amd64"] {
+		return ReleaseManifest{}, errors.New("pipx DATA and notices require the complete current release set")
+	}
 	for name := range want {
-		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && !seen[name] {
+		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && name != runtimeidentity.PipxRuntimeAssetName && name != "pipx-NOTICE.txt" && !seen[name] {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}
