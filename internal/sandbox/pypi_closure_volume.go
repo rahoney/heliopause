@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const closureVolumeLabel = "io.heliopause.observation-transaction"
@@ -66,8 +68,11 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
+	}
+	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
+		return closureVolume{}, errors.New("pipx DATA volume requires the selected immutable identity")
 	}
 	name, err := closureVolumeName(transaction)
 	if err != nil {
@@ -90,9 +95,15 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		"--label", closureVolumeLabel+"="+transaction,
 		"--label", closureManifestLabel+"="+manifestID, name)
 	if err != nil || strings.TrimSpace(string(created)) != name {
+		if volume.destination() == pipxRuntimeRoot {
+			return volume, errors.New("pipx DATA volume creation outcome is unavailable")
+		}
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
 	if err := volume.verify(ctx, runner); err != nil {
+		if volume.destination() == pipxRuntimeRoot {
+			return volume, err
+		}
 		// Never adopt a volume whose post-create identity is uncertain. The caller
 		// must still fail closed if this best-effort cleanup cannot complete.
 		_ = discardCommand(ctx, runner, "docker", "volume", "rm", name)
@@ -102,6 +113,9 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 }
 
 func (v closureVolume) tmpfsOptions() string {
+	if v.destination() == pipxRuntimeRoot {
+		return "size=" + strconv.FormatInt(v.capacity, 10) + ",nosuid,nodev,uid=0,gid=0,mode=0755,noexec"
+	}
 	options := "size=" + strconv.FormatInt(v.capacity, 10) + closureTmpfsOptions
 	if v.goBuild || (v.projectBuildDestination != "" && !v.projectBuildExecutable) {
 		options += ",noexec"
@@ -198,12 +212,12 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 		return errors.New("python closure container mount identity is invalid")
 	}
 	for _, mount := range actual.Mounts {
-		if mount.Type == "bind" {
+		if mount.Type == "bind" || (v.destination() == pipxRuntimeRoot && (pipxShadowMount(mount.Destination) || (mount.Name == v.name && mount.Destination != pipxRuntimeRoot))) {
 			return errors.New("python closure container has an unauthorized bind mount")
 		}
 	}
 	for _, mount := range actual.HostMounts {
-		if mount.Type == "bind" {
+		if mount.Type == "bind" || (v.destination() == pipxRuntimeRoot && (pipxShadowMount(mount.Target) || (mount.Source == v.name && mount.Target != pipxRuntimeRoot))) {
 			return errors.New("python closure container requests an unauthorized bind mount")
 		}
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-const pipxToolGuestPath = "/haa-pipx/pipx-runtime.zip"
+const pipxToolGuestPath = pipxRuntimeRoot + "/pipx-runtime.zip"
 
 var errPipxToolSupply = errors.New("pipx immutable ZIP supply is unavailable or changed")
 

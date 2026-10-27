@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI418/source012c7b4 Required10SUCCESS; whole checkout4b88/tree3649f0bd/2726 identical; Linux79PASS/native123.40s/CPU245.96s/helper11wait0/final0
-Next action: M13-004/P4-O4-C2 — readonly supply lifecycle/live transport; then B inspection/release; CI415 cause OPEN
+Next action: M13-004/P4-O4 common-volume grouped hosted regression; B1 fixed ZIP inspection plan; CI415 cause OPEN
 Current substep: M13-004/P4-O4-A selected owner/maintenance + existing hosted regression QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,24 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O4-C2 한정 로컬 검증
+
+[C2 receipt](./evidence/package-client-quarantine/p4o4c2-pipx-readonly-volume-local-20261027.json)는
+Quick258.661s/sandbox 전체 Race23.229s/docs/security/workflow PASS와 actual DATA5.020s를
+연결한다. Root preparation→ordinary RO anchor/reader, writer 제거 전 seal 거부,
+foreign RW attachment 거부와 root write EROFS·동일 ZIP/보호5파일/Docker 정리를 확인했다.
+첫 두 readback 실패는 fixture writer UID1000의 실제 tar owner로 좁혀 원본을 보존했다.
+별도 format cwd 오류의 raw4개는 역사적 원본 bytes로 복구했다. Python/ZIP 코드 실행은
+없고 gVisor/observer·release·native pipx/CLI 및 전체 P4 acceptance는 남는다.
+공통 volume 변경의 기존 hosted 소비자 회귀를 다음 묶음으로 확인하고 B1을 준비한다.
+
+### 2026-10-27 P4-O4-C2 착수
+
+[C2 baseline/수정 지도](./evidence/package-client-quarantine/p4o4c2-pipx-readonly-volume-plan-20261027.md)에
+따라 기존 closure volume의 identity/attachment owner와 C1 DATA 공급을 연결한다.
+Writer 제거와 live readonly anchor/consumer·실제 byte readback·정리를 검증하며
+runtime/observer·release·native pipx/CLI 완료는 남는다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-27 P4-O4-C1 한정 로컬 검증
 
