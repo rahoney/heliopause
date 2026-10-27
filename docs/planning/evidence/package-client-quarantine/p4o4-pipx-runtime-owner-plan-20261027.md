@@ -307,3 +307,65 @@ Quick44.492s/관련3 package 전체 Race39.114s/actual0.895s/docs/security PASS�
 원본 HAA identity/handle 보존·읽는 도중 growth/cancel 거부를 연결한다.
 다음 B1d는 새 공급의 publisher/whole RECORD/명시 root graph·namespace·NOTICE·bound와
 기존 selected owner/generator/maintenance/transport 소비자 baseline을 먼저 대조한다.
+
+## B2 — 새 공급 뒤 실행 owner의 수정 전 대조
+
+기준1e5d21e/tree391df742/2772files다. B1d의11 distributions/20units(15required/5post-install)와
+C1/C2 actual DATA는 로컬 검증했고 CI420의 공통 owner/checker hosted 회귀는 진행 중이다.
+이 대조는 source 변경 전 준비이며 새 observer profile·backend 완료가 아니다.
+
+| 실제 책임/위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | B2 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `readPipxRuntimeInput` + immutable `PipxRuntimePlan` | YES | YES(explicit intake) | YES(local) | YES(input only) | 동일 acquired bytes를 backend로 전달 |
+| `pipxPreparedTool`/`pipxDataVolume` | YES | YES(installed/explicit fixture) | YES(local DATA) | YES(DATA only) | installed current 대신 acquired ZIP의 typed 공급 진입점 |
+| `freezePythonObservationUnits` | YES(wheel) | YES(wheel) | YES(existing) | YES(wheel) | ZIP 원본 HAA digest/고정 loader program에 묶인20units |
+| `observationTransaction`/CPU watch/`pythonTransactionExecutor` | YES | YES(wheel) | YES(existing) | YES(wheel) | 기존 loop/terminate/cleanup을 재사용하는 ZIP 준비·검증 전략 |
+| `SharedObserver`/C++ profile·topology·process role | YES(existing profiles) | NO(ZIP) | NO(ZIP) | NO(ZIP) | fixed `/haa-pipx` DATA topology와 ARTIFACT Python handoff |
+| `ReleaseSetInspector`/required composite | YES(native/passive) | NO(ZIP) | NO(ZIP) | NO(ZIP) | B2 완료 결과를 원본 HAA identity의 required check/Evidence로 연결 |
+
+### 재사용할 구현과 실제 전제
+
+- `InspectWheelWithPlan`은 Project/Version·typed wheel plan과 validated wheel destinations를
+  요구한다. ZIP을 wheel로 위장해 호출하지 않는다. 현재 private input이 가진 원본 acquired
+  artifact와 immutable plan을 새 fixed consumer가 함께 받도록 한다. 선택된 version/digest는
+  HAA subject이며 distribution 내부 pipx version과 교체하지 않는다.
+- `executeTrustedTransaction`의 앞부분은 whole wheel manifest 재검증·pip 설치·installed
+  manifest readback이다. ZIP은 이 준비 부분을 통과할 대상이 아니다. 반면 이후 unit launch,
+  `beginUnit`/`finishUnit`, CPU sampling, observer usage, `terminatePhase`, `cleanup`과
+  `finalize`는 이미 완료 책임을 갖는다. 이 기존 경로를 private 공통 단계로 분리해 재사용하고
+  동등한 새 ledger/cleanup 구현을 복제하지 않는다. 기존 wheel 준비와 부정 검사는 유지한다.
+- `pythonDirectObservation`은 `/haa-site`의 PathFinder/origin 검증과 sys.path.insert(0)를
+  전제로 한다. ZIP용 고정 loader는 `-I -S -B`, pinned stdlib 경로 우선과 append된 exact ZIP,
+  원본 module 존재·origin 검증을 적용해야 한다. 현재 runc import 진단은 이 새 external
+  admission program의 qualification이 아니며 Python token/stdout를 완료 근거로 쓰지 않는다.
+- `pythonObservationCreateArguments`와 `startPhase`는 shared closure volume 및 observer
+  phase와 cgroup lease를 연결한다. ZIP 준비 writer→RO anchor/reader의 기존 C2 검사를
+  이 실제 lifecycle에 연결한다. Host tmpfs noexec와 guest9p flags를 동일한 사실로 쓰지 않는다.
+- `ObservationResourceClient.Create`의 기존 `pypi` class는 고정 Python 자원 한도를
+  반환한다. 새 consumer가 같은 한도를 쓰더라도 artifact identity를 PyPI로 바꾸지 않는다.
+  CPU reserve·transition accounting·trace credits·wall/launch 제한은 기존 owner가 유지한다.
+
+### profile 분리와 두 번째 검토
+
+C++ `IsPythonProfile`은 runtime loader만이 아니라 `ClassifyProcess`의 pip/uname와
+`IsWorkspacePath`의 `/haa-site`도 함께 포함한다. 새 ZIP profile을 이 목록에 단순 추가하면
+wheel 준비 권한까지 승계하므로 그렇게 구현하지 않는다. 필요한 pinned Python loader/read·
+ARTIFACT direct handoff만 기존 predicate를 좁혀 재사용하고, 새 profile의 exact DATA mount
+및 비허용 pip·다른 path/role·network·symlink/foreign attachment 거부를 검증한다.
+Go의 expected topology/trace ledger와 C++ admission/분류가 같은 역할을 가리켜야 한다.
+
+실행 순서는 (1) acquired typed 공급/고정20units, (2) exact ZIP profile/topology·기존 observer
+latch 회귀, (3) 재사용 transaction의 실제 gVisor 단일 ZIP/모든 required units·failure/cleanup,
+(4) required release composite다. Common transaction을 건드릴 때 기존 wheel·CPU/CUDA 및
+UV/PNPM/Bun의 영향 범위를 먼저 정하고 실제 필요한 소비자를 검증한다. 미확정 실패를
+resource/trust 확대나 자동 dependency 추가로 처리하지 않는다. Release13-assets 확장과
+설치/서명/복구 membership은 B2 이후 같은 O4 map 순서를 따른다.
+
+추가 caller 대조: `bootstrap/self_update_linux.go`의 factory는 현재 native inspector만
+`NewReleaseSetInspector`에 전달한다. B2 이후 여기서 실제 ZIP runner를 공급하고 absence를
+성공으로 취급하지 않아야 한다. 기존 PyPI dynamic report는 wheel/source 조건을 요구하므로
+그 inspector를 HAA ZIP에 직접 재사용하지 않는다. Generic Domain check/Evidence 및
+관찰 summary·findings 정규화 책임은 유지하면서 fixed ZIP required check로 연결한다.
+`inspection/githubrelease`의 현재 architecture allow map에는 sandbox edge가 없으므로
+실제 typed runner/result binding을 정할 때 필요한 edge만 구체적으로 검토한다. Core/
+Application에 구체 sandbox/pypi 의존성을 추가하거나 미래 placeholder interface를 만들지 않는다.

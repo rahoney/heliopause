@@ -125,3 +125,10 @@ plugin은1.442s로 성공했다. 이는 import 진단이며 gVisor/외부 observ
 D1~D3의 명시 공급과 named local 소비자는 검증했으며 common owner/checker hosted 회귀를
 다음 묶음으로 확인한다. B2 runtime/외부 관찰·release composite·native pipx/CLI와 전체
 P4 acceptance는 남는다. 기존7-wheel/Store 결과를 새 bytes의 qualification으로 승계하지 않았다.
+
+최종 stage는41paths/전체2772files tree391df742로 root/private index·blob·mode·disk가
+일치했다. Docs0.310s/security9.627s PASS 뒤1e5d21e로 커밋했고, 실제 그 commit을 포함한
+security-history59.464s도 PASS다. Pygments AUTHORS 원본의 EOL 공백 한 곳은 원문과
+NOTICE의 완전 동일성을 확인해 exact NOTICE path의 blank-at-eol 속성만 적용했다.
+원본 trim이나 generator 오류 숨김이 아니다. 이후 같은 source로 CI420을 시작했으며 원격
+Required/전체 pipx qualification은 미완료다. B2 source 전 대조는 기존 O4 owner map을 따른다.

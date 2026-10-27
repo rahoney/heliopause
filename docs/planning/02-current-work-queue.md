@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI419/source504e698 Required10SUCCESS; same checkout05b3/tree d2b385/2737; C1/C2 local DATA + existing hosted regression qualified
-Next action: M13-004/P4-O4-B1d common owner/checker hosted regression; then B2 runtime/observer; CI415 cause OPEN
+Next action: CI420/run40515351597 common owner/checker hosted regression; B2 source-owner audit prepared; CI415 cause OPEN
 Current substep: M13-004/P4-O4-B1d local supply/consumers qualified; hosted pending; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,32 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 CI420 첫10분 실제 조회
+
+13:58:39UTC 타이머가13:58:41UTC에 발화했고13:58:55UTC fresh run/jobs 조회는
+동일 source1e5d21e의7SUCCESS, macOS와 gVisor Linux Integration IN_PROGRESS다.
+Required 최종 결과는 미완료이며 실패로도 성공으로도 추정하지 않는다. 원본 readback/hash와
+실제 timer는 local ci420-poll01-scope/inventory에 보존했다. 다음 권장 조회는
+14:08:55UTC(23:08:55KST), 예상 완료는23:53–다음날00:08KST다.
+외부 CI가 남아 이 checkpoint에서 인계하며 응답 종료 뒤 자동 조회·재개는 없다.
+다음 재개는 이 exact run의 전체 conclusions·checkout/source tree·원본 로그와 cleanup을
+확인한 뒤 같은 M13-004/B2 기존 transaction/observer 연결로 이어간다. B2 audit는 준비했고
+새 product source/profile 구현은 아직 시작하지 않았다. 실행 중 후보를 재push하지 않는다.
+
+### 2026-10-27 CI420 새 공급과 공통 검사 소비자 검증 시작
+
+누적6 commits를 milestone branch에 push했다. Source1e5d21e/tree391df742/2772files는
+검사 사본의 전체 index/blob/mode·disk와 동일하며 최종 docs0.310s/security9.627s,
+실제 새 commit을 포함한 security-history59.464s도 PASS다.
+[CI420/run40515351597](https://github.com/rahoney/heliopause/actions/runs/40515351597)은
+13:48:39UTC(22:48:39KST)에 시작했다. 초기9개 선행 job이 생성됐고 Docs는 SUCCESS다.
+직전 CI41965분35초와 동일 workflow를 근거로65–80분,23:53–다음날00:08KST를 예상한다.
+첫10분 실제 시계 타이머는13:58:39UTC(22:58:39KST)이며 조회 완료와 구분한다.
+기다리는 동안 [B2 수정 전 대조](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md#b2--새-공급-뒤-실행-owner의-수정-전-대조)를
+진행했다. 기존 transaction/cleanup을 재사용하고 wheel profile의 pip·/haa-site 권한을
+새 ZIP에 자동 승계하지 않는다. 실행 중 후보의 source를 추가 수정하거나 재push하지 않았다.
+원본 initial run/jobs readback과 source/tree/checks는 local ci420-start-scope가 소유한다.
 
 ### 2026-10-27 P4-O4-B1d 명시 공급과 로컬 소비자 검증
 
