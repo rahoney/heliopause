@@ -190,17 +190,28 @@ func validPyPIPublisherClaims(cert *x509.Certificate, policy pypiPublisherPolicy
 	if cert == nil {
 		return false
 	}
+	subject := "repo:" + strings.TrimPrefix(policy.repository, "https://github.com/") + ":environment:" + policy.environment
+	if policy.environment == "" {
+		if policy.trigger != "push" || !strings.HasPrefix(policy.ref, "refs/tags/") {
+			return false
+		}
+		subject = "repo:" + strings.TrimPrefix(policy.repository, "https://github.com/") + ":ref:" + policy.ref
+	}
 	for _, claim := range []struct {
-		oid   asn1.ObjectIdentifier
-		value string
+		oid    asn1.ObjectIdentifier
+		value  string
+		absent bool
 	}{
-		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 23}, policy.environment},
-		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 24}, "repo:" + strings.TrimPrefix(policy.repository, "https://github.com/") + ":environment:" + policy.environment},
+		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 23}, policy.environment, policy.environment == ""},
+		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 24}, subject, false},
 	} {
 		count := 0
 		for _, extension := range cert.Extensions {
 			if !extension.Id.Equal(claim.oid) {
 				continue
+			}
+			if claim.absent {
+				return false
 			}
 			count++
 			var value asn1.RawValue
@@ -209,7 +220,7 @@ func validPyPIPublisherClaims(cert *x509.Certificate, policy pypiPublisherPolicy
 				return false
 			}
 		}
-		if count != 1 {
+		if !claim.absent && count != 1 {
 			return false
 		}
 	}

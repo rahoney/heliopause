@@ -152,7 +152,7 @@ func decodePyPIPublish(body []byte, filename, digest string, policy pypiPublishe
 		return nil, nil, err
 	}
 	publisher, err := pipxObject(group["publisher"], "kind", "repository", "workflow", "environment")
-	if err != nil || pipxString(publisher["kind"]) != "GitHub" || pipxString(publisher["repository"]) != strings.TrimPrefix(policy.repository, "https://github.com/") || pipxString(publisher["workflow"]) != policy.workflow || pipxString(publisher["environment"]) != policy.environment {
+	if err != nil || pipxString(publisher["kind"]) != "GitHub" || pipxString(publisher["repository"]) != strings.TrimPrefix(policy.repository, "https://github.com/") || pipxString(publisher["workflow"]) != policy.workflow || !validPyPIPublisherEnvironment(publisher["environment"], policy.environment) {
 		return nil, nil, errPipxJSON
 	}
 	attestationBody, err := pipxOne(group["attestations"])
@@ -236,4 +236,13 @@ func validPyPIPublishStatement(body []byte, filename, sha256 string) bool {
 	}
 	digest, err := pipxObject(subject["digest"], "sha256")
 	return err == nil && pipxString(digest["sha256"]) == sha256
+}
+
+// A publisher without a GitHub environment declares JSON null, not an empty
+// string or an arbitrary value that failed string decoding.
+func validPyPIPublisherEnvironment(raw json.RawMessage, expected string) bool {
+	if expected == "" {
+		return bytes.Equal(bytes.TrimSpace(raw), []byte("null"))
+	}
+	return pipxString(raw) == expected
 }

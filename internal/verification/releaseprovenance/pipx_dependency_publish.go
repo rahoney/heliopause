@@ -88,6 +88,12 @@ func pipxDependencyPolicy(project, version string) (pypiPublisherPolicy, bool) {
 		return pypiPublisherPolicy{"https://github.com/pypa/packaging", "publish.yml", "refs/heads/main", "19837758", "pypa", "647025", "workflow_dispatch", "pypi"}, true
 	case "platformdirs":
 		return pypiPublisherPolicy{"https://github.com/tox-dev/platformdirs", "release.yaml", "refs/tags/" + version, "367032142", "tox-dev", "20345659", "push", "release"}, true
+	case "pytest":
+		return pypiPublisherPolicy{"https://github.com/pytest-dev/pytest", "deploy.yml", "refs/heads/release-" + version, "37489525", "pytest-dev", "8897583", "workflow_dispatch", "deploy"}, true
+	case "iniconfig":
+		return pypiPublisherPolicy{"https://github.com/pytest-dev/iniconfig", "test.yml", "refs/tags/v" + version, "66012563", "pytest-dev", "8897583", "push", "pypi-upload"}, true
+	case "pluggy":
+		return pypiPublisherPolicy{"https://github.com/pytest-dev/pluggy", "deploy.yml", "refs/tags/" + version, "34739117", "pytest-dev", "8897583", "push", ""}, true
 	default:
 		return pypiPublisherPolicy{}, false
 	}

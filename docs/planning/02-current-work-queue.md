@@ -25,6 +25,14 @@ Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### 2026-10-27 P4-O4-B1d 승인된 공급 확대 착수
+
+[B1d baseline/수정 지도](./evidence/package-client-quarantine/p4o4b1d-pytest-runtime-supply-plan-20261027.md)에
+따라 기존 publisher·whole wheel·single-root graph를 재사용해 두 명시 runtime 공급 root를
+검증한다. pytest/iniconfig/pluggy의 제공 proof와 Pygments의 proof 부재를 구분하고, 전체 원본을
+보존하는 Deflate 표현으로 기존8MiB DATA 전송 용량을 유지한다. 새 source/owner/pin은 아직
+qualification 전이며 기존 필수 검사·resource budget·Domain single-primary 계약은 유지한다.
+
 ### 2026-10-27 P4-O4-B1b/c 검증과 명시 공급 확대 승인
 
 [B1b/c receipt](./evidence/package-client-quarantine/p4o4b1bc-pipx-plan-intake-local-20261027.json)는

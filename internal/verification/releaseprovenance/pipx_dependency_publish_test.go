@@ -27,7 +27,7 @@ func actualPipxDependency(t *testing.T, project string) ([]byte, PipxDependencyP
 }
 
 func TestPipxDependencyOfficialPublishPolicies(t *testing.T) {
-	for _, project := range []string{"argcomplete", "click", "filelock", "packaging", "platformdirs"} {
+	for _, project := range []string{"argcomplete", "click", "filelock", "packaging", "platformdirs", "pytest", "iniconfig", "pluggy"} {
 		t.Run(project, func(t *testing.T) {
 			body, id := actualPipxDependency(t, project)
 			receipt, err := VerifyPipxDependencyPublish(context.Background(), body, id)
