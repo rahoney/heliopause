@@ -21,6 +21,10 @@ func selectedVersion(root, component string) (string, error) {
 	if component == "terraform" || component == "github" {
 		return "inspection-subject", nil
 	}
+	if component == "pipx" {
+		pin, err := readPipxMaterializationOwner(root)
+		return pin.Version, err
+	}
 	if component == "bun" {
 		body, _, err := readRegular(root, runtimeFile)
 		if err != nil {
@@ -215,6 +219,10 @@ func renderChanges(p plan, state string) ([]change, error) {
 			if err := verifyFrozenPNPMSupply(p.Version, p.Metadata, state); err != nil {
 				return nil, err
 			}
+		} else if p.Component == "pipx" {
+			if err := verifyFrozenPipxSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
 		} else if p.Component == "bun" {
 			if err := verifyFrozenBunSupply(p.Version, p.Metadata, state); err != nil {
 				return nil, err
@@ -224,7 +232,7 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
-		if p.Component == "pnpm" || p.Component == "bun" {
+		if p.Component == "pnpm" || p.Component == "bun" || p.Component == "pipx" {
 			replacements = map[string]any{}
 		}
 		owners := map[string]string{}
@@ -257,6 +265,14 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
 			replacements["/uv_image/tool/size"] = u.ToolSize
 			owners["uv"] = p.Version
+		case "pipx":
+			u := p.Metadata.Pipx
+			replacements["/pipx_tool"] = u.Owner
+			for _, doc := range u.Documents {
+				files["tools/pipx/supply/"+doc.Path] = doc.Body
+			}
+			files["tools/pipx/NOTICE"] = u.Notices
+			owners["pipx"] = p.Version
 		case "bun":
 			u := p.Metadata.Bun
 			replacements["/bun_tool/bun_version"] = p.Version

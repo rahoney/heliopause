@@ -126,22 +126,28 @@ func validateRuntimeLockWorkflow(root, contents string) []string {
 
 func runtimeLockStrings(value any) []string {
 	var values []string
-	var visit func(any)
-	visit = func(current any) {
+	var visit func(any, string)
+	visit = func(current any, location string) {
 		switch typed := current.(type) {
 		case map[string]any:
-			for _, child := range typed {
-				visit(child)
+			for key, child := range typed {
+				next := location + "/" + key
+				// These exact validated enum fields reference owner keys; they are not
+				// copied runtime identities. Other fields retain the literal check.
+				if next == "/pipx_tool/runtime_image" && child == "python_image" || next == "/bun_tool/runtime_image" && child == "node_image" {
+					continue
+				}
+				visit(child, next)
 			}
 		case []any:
 			for _, child := range typed {
-				visit(child)
+				visit(child, location+"/[]")
 			}
 		case string:
 			values = append(values, typed)
 		}
 	}
-	visit(value)
+	visit(value, "")
 	return values
 }
 

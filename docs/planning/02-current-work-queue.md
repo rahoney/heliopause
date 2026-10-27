@@ -16,14 +16,30 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
-Next action: M13-004/P4-O4 — single runtime owner/maintenance/release/typed DATA ZIP supply audit; CI415 cause OPEN
-Current substep: M13-004/P4-O3 candidate/basic loader LOCAL QUALIFIED; O4 owner audit next; whole pipx/final profiles remain
+Next action: M13-004/P4-O4-B — executable Python ZIP inspection/release/typed DATA role edit map; CI415 cause OPEN
+Current substep: M13-004/P4-O4-A selected owner/maintenance LOCAL QUALIFIED; O4-B/C release/runtime IN_PROGRESS; whole pipx/final profiles remain
 Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O4-A 한정 로컬 검증
+
+[O4-A receipt](./evidence/package-client-quarantine/p4o4a-pipx-runtime-owner-local-20261027.json)는
+단일 selected owner/frozen maintenance의 실제 공급·apply 중단 복구·변조 거부를 연결한다.
+최종 NOTICE 생성기 교정 후보 Quick248.69s/affected Race35.863s/actual4.637s가 PASS다.
+이전 후보 scripts 전체 Race119.715s와 canonical 결과는 이전 bytes 범위로 보존했다.
+ZIP/NOTICE0444·선택 hash/원본27입력 불변이며 release13assets/2tools는 유지된다.
+O4-B active Python ZIP 검사·배포·activation과 O4-C typed transport/actual gVisor·observer·
+native/CLI가 남는다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-27 P4-O4 착수
+
+[O4 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)에
+따라 기존 runtime lock/generator/maintenance/release·installed reader를 재사용한다.
+새 pipx 공급 owner와 DATA ZIP role을 연결하며 native/observer·CLI acceptance는 열어 둔다.
 
 ### 2026-10-27 P4-O3 한정 로컬 검증
 

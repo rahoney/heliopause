@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+	RuntimeLockSHA256            = "2105a8899ff5bb70fe7c30fac203430d13e22fbe04d08dbc63e76ee83945e4f1"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -58,6 +58,13 @@ const (
 	PNPMToolSHA256               = "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
 	PNPMNoticesPath              = "tools/pnpm/NOTICE"
 	PNPMNoticesSHA256            = "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
+	PipxVersion                  = "1.18.4"
+	PipxArchitecture             = "amd64"
+	PipxRuntimeImage             = "python_image"
+	PipxToolPath                 = "pipx-runtime.zip"
+	PipxToolSHA256               = "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4"
+	PipxNoticesPath              = "tools/pipx/NOTICE"
+	PipxNoticesSHA256            = "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85"
 	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion                = "3.14.7"
 	PipVersion                   = "26.2.1"
@@ -82,6 +89,8 @@ const (
 	BunArchiveSize               = 51794595
 	BunToolSize                  = 107308936
 	BunNoticesSize               = 14877
+	PipxToolSize                 = 2505814
+	PipxNoticesSize              = 28839
 )
 
 type PythonSourceProfileLock struct {

@@ -189,7 +189,7 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 4 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 5 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)

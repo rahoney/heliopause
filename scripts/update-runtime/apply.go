@@ -153,6 +153,11 @@ func checkCandidate(p plan, candidate string, complete bool) error {
 }
 
 func verifyPlan(p plan, state, goPath string, out io.Writer) error {
+	if p.Component == "pipx" && p.Version != p.Current {
+		if err := verifyFrozenPipxSupply(p.Version, p.Metadata, state); err != nil {
+			return err
+		}
+	}
 	if p.Component == "bun" && p.Version != p.Current {
 		if err := verifyFrozenBunSupply(p.Version, p.Metadata, state); err != nil {
 			return err

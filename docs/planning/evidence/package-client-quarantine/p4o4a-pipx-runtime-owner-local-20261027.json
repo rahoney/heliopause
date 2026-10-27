@@ -1,0 +1,907 @@
+{
+  "scope": "P4-O4-A SELECTED_OWNER_AND_FROZEN_MAINTENANCE_ONLY",
+  "status": "LOCAL_QUALIFIED",
+  "baseline_commit": "ec07636",
+  "source_identity": [
+    {
+      "path": "internal/runtimeidentity/native_paths.go",
+      "sha256": "4480760b60f3910402904378a35f8ac62ce7c5c4baeb2fb0c2fb82d4eb33f906"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "f44e1cfe12f716236d41053cf9be332753be81e71059884e8a168779b65121ee"
+    },
+    {
+      "path": "scripts/check/pipx_runtime.go",
+      "sha256": "975dbd36aae66246fd09d68d70150337c58ad68cb0eca37c1ff99814620d4924"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_test.go",
+      "sha256": "c321bf4c34a207182547e613ef6d36db872a3704a145209ef0241406cce36f7b"
+    },
+    {
+      "path": "scripts/check/runtime_versions.go",
+      "sha256": "58c129ca8ca1d6db047f9276dacda0dab9b7ea01bf2eb7d62779986a035ebada"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "40a460e250205b77ad56a787f45954bcb373a8fa91a46f3c8c0dd9d1067bdf4e"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "c71a11d17d4b0d7a95cc05f3f51831fbb25371962bcd0ef7e86d77c09f631a61"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "6498d90951ea49a65515980c60b7673d45c205dad27b0576ff6721b19d6c0d48"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "517a0b04ef48b3ce987f9355e7cceb2d1daf5f73047f7b05a1d7f9864231466b"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "6b31d28546578b21dfd753a6c7d4a053107d659f9dc498b60184a368dac9aa8e"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "05201677be0a93ff341da1b46f6db207f5e763c41ee5de2a87676d88d604e72d"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "379b5e97e73c31f2cecdb1b3f185e894a8fe168159610d647210a6e8d5e4d43d"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "2105a8899ff5bb70fe7c30fac203430d13e22fbe04d08dbc63e76ee83945e4f1"
+    },
+    {
+      "path": "scripts/update-runtime/apply.go",
+      "sha256": "e2261b8605be4939a4a2bbd74af4e4ff81bb81fe1309e8c655b7f6dae2c1b0cf"
+    },
+    {
+      "path": "scripts/update-runtime/bun_owner.go",
+      "sha256": "dfad27097bbfe4cef297b73165124ac48197e82192fccdbbbbeb73c0abd776fe"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor.go",
+      "sha256": "55624891c0d11e28bb43196f0c693bf43ec0a770647c0c2c8fd3bba1189444ea"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "ad360e25ea6f7ecd2a6f781eb1024bfa906b90f1c4eb8b70fc13d92ebee86541"
+    },
+    {
+      "path": "scripts/update-runtime/metadata.go",
+      "sha256": "404c54c466f0d6174a506c1694c05038ca1c3b08a60363724358113d11234107"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "5eee7fa0dbe31c372a789bd6d3ee3353416521770fa2853f34c7aa3f5de4d86f"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_notices.go",
+      "sha256": "db72e164e2f9269f099c6a706fddf0799fb4ce772a337f5471b49b44d84079c6"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_owner.go",
+      "sha256": "2ba703c817de72908bb1b0edd8a6db96ebc605f68765ef22815dbbb7c133858e"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_owner_test.go",
+      "sha256": "d708fd4143544c94f0e12d92c62c6c5f4f1e2a22a7edcce5d891eaf6b4f9b5c2"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_production_materialize.go",
+      "sha256": "c32418aa16861050a3d59f4fc434c4f10ba011f9b33b104e37b7e8a4031b17f4"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply.go",
+      "sha256": "44889e5443a54b128a7db7290ff18ce3bb8eb3fedf1e0672fa6465fab097f81d"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply_real_test.go",
+      "sha256": "618c003cf058acbc3490ab12ae5fc8a49bf29b9dd78c2206d056248f544b299b"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_supply_test.go",
+      "sha256": "90b1204ffde6e9054c2e7b327de547be2160a50bab10bce28b5b3c030113ecb4"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize.go",
+      "sha256": "67cfd91ee0563315425251298f87dd745e1f68ae8061c95c4eea76230115638d"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "0f05e70600c05cedd0cd09ee181b5077d74e77c1b250da5859e2a9a620a86594"
+    },
+    {
+      "path": "scripts/version-support.lock.json",
+      "sha256": "01f829bf3858c9553cf92742fceb7d4ef4aed8168e53e10b14576f51178266e0"
+    },
+    {
+      "path": "tools/pipx/NOTICE",
+      "sha256": "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85"
+    },
+    {
+      "path": "tools/pipx/supply/argcomplete/identity.json",
+      "sha256": "2aa271eaa8e23a6fa386c45bd4b4bb1900d4d890c998a73ea9cc7a25741a613f"
+    },
+    {
+      "path": "tools/pipx/supply/argcomplete/metadata.json",
+      "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
+    },
+    {
+      "path": "tools/pipx/supply/argcomplete/provenance.json",
+      "sha256": "61d0ce76874cb85aa884c3bd09712e77f3de22674f350c8b85575bb982805e1e"
+    },
+    {
+      "path": "tools/pipx/supply/click/identity.json",
+      "sha256": "0c782df5b1ec8b77c1c7852d068595d85108b148689ae3b7d2ec14b6d77c3e0c"
+    },
+    {
+      "path": "tools/pipx/supply/click/metadata.json",
+      "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
+    },
+    {
+      "path": "tools/pipx/supply/click/provenance.json",
+      "sha256": "aa8c59737151791b2b9e7a8ed0d5a6885ec49fbb73968a04d7eeb9421c4499bd"
+    },
+    {
+      "path": "tools/pipx/supply/filelock/identity.json",
+      "sha256": "fd45ded86c1bd040adb5fd88f587d7a1f14a9fe5503df6e47d4e464683f53007"
+    },
+    {
+      "path": "tools/pipx/supply/filelock/metadata.json",
+      "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
+    },
+    {
+      "path": "tools/pipx/supply/filelock/provenance.json",
+      "sha256": "fac996da43df0c56fd2b6d32aaa7055d1400bb6693464ef4a0ae7665bcee21a5"
+    },
+    {
+      "path": "tools/pipx/supply/packaging/identity.json",
+      "sha256": "dbe36d2bd692258ad8665d52ef412c8e6f4ae72b2121cb4f88e7214d80367995"
+    },
+    {
+      "path": "tools/pipx/supply/packaging/metadata.json",
+      "sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d"
+    },
+    {
+      "path": "tools/pipx/supply/packaging/provenance.json",
+      "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
+    },
+    {
+      "path": "tools/pipx/supply/pipx/identity.json",
+      "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+    },
+    {
+      "path": "tools/pipx/supply/pipx/metadata.json",
+      "sha256": "6ca59553a93bb8acd15a284ba0aed78ea5b268553be9552c192d21f9d67b65b0"
+    },
+    {
+      "path": "tools/pipx/supply/pipx/provenance.json",
+      "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
+    },
+    {
+      "path": "tools/pipx/supply/platformdirs/identity.json",
+      "sha256": "dd0e98078e6bb963388e7ecfe10ccaf287342950e85634b9826e6dd1344b8721"
+    },
+    {
+      "path": "tools/pipx/supply/platformdirs/metadata.json",
+      "sha256": "5781ba4a967abd0810ac5c502d8a6431df37bfe0ecc50675e928b51380a302e9"
+    },
+    {
+      "path": "tools/pipx/supply/platformdirs/provenance.json",
+      "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
+    },
+    {
+      "path": "tools/pipx/supply/userpath/identity.json",
+      "sha256": "fed5040bafd0dd49bb05c82f106a33fed29c47e1199e81ac2925645273f67f20"
+    },
+    {
+      "path": "tools/pipx/supply/userpath/metadata.json",
+      "sha256": "5036ea2024f48dc69289bdce02d3aebad8d53eda892846f70ba99752c647ef93"
+    }
+  ],
+  "checks": [
+    {
+      "step": "generate",
+      "exit_code": 0,
+      "seconds": 0.079
+    },
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.646
+    },
+    {
+      "step": "actual",
+      "exit_code": 0,
+      "seconds": 4.637
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 248.69
+    },
+    {
+      "step": "race",
+      "exit_code": 0,
+      "seconds": 35.863
+    }
+  ],
+  "actual_test": "TestPipxFrozenActualSupplyPlanAndInterruptedApply PASS/noSKIP; synthetic previous 0.0.1 owner only, actual current 7-wheel supply",
+  "materialization": {
+    "exit_code": 0,
+    "seconds": 1.697,
+    "assets": [
+      {
+        "path": "pipx-runtime-linux-amd64.zip",
+        "sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
+        "size": 2505814,
+        "mode": "0o444"
+      },
+      {
+        "path": "pipx-NOTICE.txt",
+        "sha256": "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85",
+        "size": 28839,
+        "mode": "0o444"
+      }
+    ],
+    "input_files": 27,
+    "inputs_unchanged": true,
+    "execution": "Go DATA-only; no Python or activation"
+  },
+  "first_failures": [
+    {
+      "attempt": "first",
+      "seconds": 60.233,
+      "cause": "workflow identity collector confused exact python_image owner-key reference with a copied runtime identity"
+    },
+    {
+      "attempt": "v2",
+      "seconds": 13.612,
+      "cause": "new regression test missing slices import"
+    },
+    {
+      "attempt": "v3",
+      "seconds": 206.673,
+      "cause": "gVisor capture retained schema4 guard; audit also found PNPM materialization guard"
+    },
+    {
+      "failure": "tools/pipx/NOTICE:525: new blank line at EOF",
+      "cause": "generator appended newline after every original license even when already terminated",
+      "source_license_bytes_preserved": true,
+      "correction": "append separator newline only for nonterminated original license",
+      "new_notices_size": 28839,
+      "sha256": "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85"
+    }
+  ],
+  "preserved_boundaries": [
+    "runtime compiler and Python image unchanged",
+    "6 provided publisher proofs verified; userpath proof not provided",
+    "release producers still emit existing 13 assets and 2 tool records",
+    "no Python execution, protected runtime activation, push or remote CI in O4-A"
+  ],
+  "missing": [
+    "O4-B executable Python ZIP inspection and release artifact/typed DATA role/bootstrap/wire/activation",
+    "O4-C readonly typed transport and actual gVisor/observer/native pipx/public CLI",
+    "whole P4 and final support profiles"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-docs.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-docs.stdout.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "size": 22
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-race.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-race.stdout.log",
+      "sha256": "9a8cd31dc623938020c2cc3ca54921829bd61bfbf6cf3cd49ea78039b9f265e0",
+      "size": 448
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-release-gate.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-release-gate.stdout.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73",
+      "size": 21
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-results.json",
+      "sha256": "58169900abfbc13634e692450b47dbe128d28732e912f178754bb15c2f1dab39",
+      "size": 370
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-security.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-security.stdout.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f",
+      "size": 80
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-workflow.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-workflow.stdout.log",
+      "sha256": "08c47b9b669dadca49573b8fb203c13b99c53e5ab9b208af361101551a1d4b5a",
+      "size": 1071
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-format.stdout.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "size": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-generate.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-generate.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-quick.stderr.log",
+      "sha256": "0abf667070c40c3cea453323bc72720f6560ac51ce6addbe4eb84d38de919c76",
+      "size": 106
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-quick.stdout.log",
+      "sha256": "0fb3d4c7e12b87cc248c87bd1362cc700ce91c04b4a567c60ce1c3f50245a935",
+      "size": 227
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-results.json",
+      "sha256": "0211e7fd9c5ccd30ea77aa142536de0cdbf70f74b0356a60e762e506db24500f",
+      "size": 221
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-materialize-actual.py",
+      "sha256": "4110b89dee6040fb55565662788f8e392089bb67e7ab5e25e16d33cbd23e73a5",
+      "size": 1697
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-materialize-result.json",
+      "sha256": "b93400c4809eecb18fa6c2ec8161b70a2dca24e6fdbb10e9d19aeb2632eb0af5",
+      "size": 525
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-materialize.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-materialize.stdout.log",
+      "sha256": "e207c1186cb301235f69db62f3236366c6d7554d5d9161702b95d85a9b22651e",
+      "size": 313
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-record.py",
+      "sha256": "1adb83639bbc9119e8eca908e7edf91f6f97e130b9ab3f8d534001e004c6ee19",
+      "size": 6636
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-remaining-check.py",
+      "sha256": "39f136f6495cadd460a6646fb4bc014ca585aaae388f3ea8e39e46b28a02f47b",
+      "size": 733
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-source-before-qualification.json",
+      "sha256": "a351885d7567887c8ade7b62b2c8462560670a0b4ca1c25548c2d619f45d2750",
+      "size": 7185
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-check.py",
+      "sha256": "661d2bbf68fb2830b0c24f1d968ca9b0ed7843f537bfbe4f0c17ddd386356385",
+      "size": 984
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-format.stdout.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "size": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-quick.stderr.log",
+      "sha256": "f15fb049d97f3513a31c59961727b24955d5c997e72e0729c9a466c5ebd64971",
+      "size": 4570
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-quick.stdout.log",
+      "sha256": "2301fbc800b952ba04f4adc5558ac9ec9b87d00fb45e8777d81fec741302fa1a",
+      "size": 181
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v2-results.json",
+      "sha256": "9f8e1b98e59eca7298a714d789a55187b2f72628fa6d43cfa6fa70168d82c9b7",
+      "size": 147
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-check.py",
+      "sha256": "782a2506f9033e8905a7f30b25089b283907b1a0d4ea35d2e8fc2f3468b33c74",
+      "size": 1117
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-focused.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-focused.stdout.log",
+      "sha256": "ec9126a696f0419389fc83ecc39664362d06b8e7d631a106946b1c80b9e7b8c8",
+      "size": 121
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-format.stdout.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "size": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-quick.stderr.log",
+      "sha256": "733cfe81237168f030e789ff7a339b19b5a1aa5dec87353f8063df32de584ff8",
+      "size": 24222
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-quick.stdout.log",
+      "sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479",
+      "size": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v3-results.json",
+      "sha256": "93ccd13347fedcc9ad3d0467306f3cc278df7aae9757e30dd2c5dbc1bcc8ff39",
+      "size": 220
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-actual.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-actual.stdout.log",
+      "sha256": "9f90840ee5469d013302b4fb01520547c455f1b9c9537f990ac0b46a4e18d468",
+      "size": 198
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-check.py",
+      "sha256": "5af4a53ecf8e72c54c43df78f4e16b107e8c6d66e63fe02d34e6fb8047531f1b",
+      "size": 1164
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-focused.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-focused.stdout.log",
+      "sha256": "ecd2078f526dbdcc0c69cedec258e2a95d240cf98dd9e8a4462a14845a30869a",
+      "size": 121
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-format.stdout.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "size": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-quick.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-quick.stdout.log",
+      "sha256": "a5efbe2e142a90caa406564279fd586d2e1a0bed82b0bb65c6e01ea595e4071c",
+      "size": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-v4-results.json",
+      "sha256": "9ed0af3c55d6bcbf0a8e34c8c4c585db5aa9fbc02ca293ef0549ad164bb98941",
+      "size": 292
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-final-record.py",
+      "sha256": "4cbd8ef7a1afbb9357e543ed69e3b89c0369dd4a885342bfd19130118aa01de0",
+      "size": 4562
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-first-stage-failure.json",
+      "sha256": "b6c85efe51b80d1def3891325c95c6eafe46c2c75b29cb3576212c53316c7c0d",
+      "size": 398
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-actual.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-actual.stdout.log",
+      "sha256": "e6c9c21be60e0815eae958f942434b763660d075e66def930ce88073bc7ce5bd",
+      "size": 198
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-check.py",
+      "sha256": "abca3e535934c7d41b28e2ef31b117a01a94e3a29f3a47d48264204172447161",
+      "size": 1469
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-format.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-format.stdout.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "size": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-generate.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-generate.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-materialize-result.json",
+      "sha256": "83a5bd2752f14f4cac35591d031d10f3181a6af1d21848a5839e06558486271d",
+      "size": 525
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-materialize.py",
+      "sha256": "0ecd8228d4e235d0bc1c8cbb1a5a17c80aaf88435ce84e6c3e0c1533bbebf6a2",
+      "size": 1725
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-materialize.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-materialize.stdout.log",
+      "sha256": "43f523d7857b7dd4b37af716124fabc3d60bd37cdf2effc8a12e0ab8cb0dd752",
+      "size": 313
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-quick.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-quick.stdout.log",
+      "sha256": "a5efbe2e142a90caa406564279fd586d2e1a0bed82b0bb65c6e01ea595e4071c",
+      "size": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-race.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-race.stdout.log",
+      "sha256": "fedbd5265f5477983aeacf53cded024b24fde8192a185bbd61f3d4aecc618df6",
+      "size": 133
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-results.json",
+      "sha256": "5a8db712d6baf77163ecb6acbea4d8d3b8344f65f6ec7585b7e31b32ec29b40f",
+      "size": 364
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4a-notice-source.json",
+      "sha256": "b3039ef1ebe0ac3f44537c294cff36a7f313dd32fba9693d288282359f01d511",
+      "size": 7185
+    }
+  ],
+  "prior_candidate": {
+    "source_identity": [
+      {
+        "path": "internal/runtimeidentity/native_paths.go",
+        "sha256": "4480760b60f3910402904378a35f8ac62ce7c5c4baeb2fb0c2fb82d4eb33f906"
+      },
+      {
+        "path": "internal/runtimeidentity/runtime_lock_gen.go",
+        "sha256": "a20fe1ed427868554b150638cd981eacd609b30bed409ad9432d281d7e1681f9"
+      },
+      {
+        "path": "scripts/check/pipx_runtime.go",
+        "sha256": "975dbd36aae66246fd09d68d70150337c58ad68cb0eca37c1ff99814620d4924"
+      },
+      {
+        "path": "scripts/check/pipx_runtime_test.go",
+        "sha256": "c321bf4c34a207182547e613ef6d36db872a3704a145209ef0241406cce36f7b"
+      },
+      {
+        "path": "scripts/check/runtime_versions.go",
+        "sha256": "58c129ca8ca1d6db047f9276dacda0dab9b7ea01bf2eb7d62779986a035ebada"
+      },
+      {
+        "path": "scripts/check/runtime_versions_test.go",
+        "sha256": "40a460e250205b77ad56a787f45954bcb373a8fa91a46f3c8c0dd9d1067bdf4e"
+      },
+      {
+        "path": "scripts/check/workflow.go",
+        "sha256": "c71a11d17d4b0d7a95cc05f3f51831fbb25371962bcd0ef7e86d77c09f631a61"
+      },
+      {
+        "path": "scripts/generate-runtime-lock.go",
+        "sha256": "6498d90951ea49a65515980c60b7673d45c205dad27b0576ff6721b19d6c0d48"
+      },
+      {
+        "path": "scripts/release-manifest/main.go",
+        "sha256": "517a0b04ef48b3ce987f9355e7cceb2d1daf5f73047f7b05a1d7f9864231466b"
+      },
+      {
+        "path": "scripts/release-manifest/main_test.go",
+        "sha256": "6b31d28546578b21dfd753a6c7d4a053107d659f9dc498b60184a368dac9aa8e"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main.go",
+        "sha256": "05201677be0a93ff341da1b46f6db207f5e763c41ee5de2a87676d88d604e72d"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main_test.go",
+        "sha256": "379b5e97e73c31f2cecdb1b3f185e894a8fe168159610d647210a6e8d5e4d43d"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "b916cc961767b01c05252aa818d210e9ba1f9cf6e17bdf688f9f08aa5fd203cb"
+      },
+      {
+        "path": "scripts/update-runtime/apply.go",
+        "sha256": "e2261b8605be4939a4a2bbd74af4e4ff81bb81fe1309e8c655b7f6dae2c1b0cf"
+      },
+      {
+        "path": "scripts/update-runtime/bun_owner.go",
+        "sha256": "dfad27097bbfe4cef297b73165124ac48197e82192fccdbbbbeb73c0abd776fe"
+      },
+      {
+        "path": "scripts/update-runtime/gvisor.go",
+        "sha256": "55624891c0d11e28bb43196f0c693bf43ec0a770647c0c2c8fd3bba1189444ea"
+      },
+      {
+        "path": "scripts/update-runtime/main.go",
+        "sha256": "ad360e25ea6f7ecd2a6f781eb1024bfa906b90f1c4eb8b70fc13d92ebee86541"
+      },
+      {
+        "path": "scripts/update-runtime/metadata.go",
+        "sha256": "404c54c466f0d6174a506c1694c05038ca1c3b08a60363724358113d11234107"
+      },
+      {
+        "path": "scripts/update-runtime/patch.go",
+        "sha256": "5eee7fa0dbe31c372a789bd6d3ee3353416521770fa2853f34c7aa3f5de4d86f"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_notices.go",
+        "sha256": "0cd1fc1a3b2b160e50330c3cc11911e93907b2be8a5c12c64449ae54df35c13a"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_owner.go",
+        "sha256": "2ba703c817de72908bb1b0edd8a6db96ebc605f68765ef22815dbbb7c133858e"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_owner_test.go",
+        "sha256": "d708fd4143544c94f0e12d92c62c6c5f4f1e2a22a7edcce5d891eaf6b4f9b5c2"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_production_materialize.go",
+        "sha256": "c32418aa16861050a3d59f4fc434c4f10ba011f9b33b104e37b7e8a4031b17f4"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_supply.go",
+        "sha256": "44889e5443a54b128a7db7290ff18ce3bb8eb3fedf1e0672fa6465fab097f81d"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_supply_real_test.go",
+        "sha256": "618c003cf058acbc3490ab12ae5fc8a49bf29b9dd78c2206d056248f544b299b"
+      },
+      {
+        "path": "scripts/update-runtime/pipx_supply_test.go",
+        "sha256": "90b1204ffde6e9054c2e7b327de547be2160a50bab10bce28b5b3c030113ecb4"
+      },
+      {
+        "path": "scripts/update-runtime/pnpm_materialize.go",
+        "sha256": "67cfd91ee0563315425251298f87dd745e1f68ae8061c95c4eea76230115638d"
+      },
+      {
+        "path": "scripts/update-runtime/update_test.go",
+        "sha256": "0f05e70600c05cedd0cd09ee181b5077d74e77c1b250da5859e2a9a620a86594"
+      },
+      {
+        "path": "scripts/version-support.lock.json",
+        "sha256": "01f829bf3858c9553cf92742fceb7d4ef4aed8168e53e10b14576f51178266e0"
+      },
+      {
+        "path": "tools/pipx/NOTICE",
+        "sha256": "10010065ec7189a43127ad8b0a8bbf9b06d9d0eaa9b5ff9f9c1ef27e6bb694eb"
+      },
+      {
+        "path": "tools/pipx/supply/argcomplete/identity.json",
+        "sha256": "2aa271eaa8e23a6fa386c45bd4b4bb1900d4d890c998a73ea9cc7a25741a613f"
+      },
+      {
+        "path": "tools/pipx/supply/argcomplete/metadata.json",
+        "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
+      },
+      {
+        "path": "tools/pipx/supply/argcomplete/provenance.json",
+        "sha256": "61d0ce76874cb85aa884c3bd09712e77f3de22674f350c8b85575bb982805e1e"
+      },
+      {
+        "path": "tools/pipx/supply/click/identity.json",
+        "sha256": "0c782df5b1ec8b77c1c7852d068595d85108b148689ae3b7d2ec14b6d77c3e0c"
+      },
+      {
+        "path": "tools/pipx/supply/click/metadata.json",
+        "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
+      },
+      {
+        "path": "tools/pipx/supply/click/provenance.json",
+        "sha256": "aa8c59737151791b2b9e7a8ed0d5a6885ec49fbb73968a04d7eeb9421c4499bd"
+      },
+      {
+        "path": "tools/pipx/supply/filelock/identity.json",
+        "sha256": "fd45ded86c1bd040adb5fd88f587d7a1f14a9fe5503df6e47d4e464683f53007"
+      },
+      {
+        "path": "tools/pipx/supply/filelock/metadata.json",
+        "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
+      },
+      {
+        "path": "tools/pipx/supply/filelock/provenance.json",
+        "sha256": "fac996da43df0c56fd2b6d32aaa7055d1400bb6693464ef4a0ae7665bcee21a5"
+      },
+      {
+        "path": "tools/pipx/supply/packaging/identity.json",
+        "sha256": "dbe36d2bd692258ad8665d52ef412c8e6f4ae72b2121cb4f88e7214d80367995"
+      },
+      {
+        "path": "tools/pipx/supply/packaging/metadata.json",
+        "sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d"
+      },
+      {
+        "path": "tools/pipx/supply/packaging/provenance.json",
+        "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
+      },
+      {
+        "path": "tools/pipx/supply/pipx/identity.json",
+        "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+      },
+      {
+        "path": "tools/pipx/supply/pipx/metadata.json",
+        "sha256": "6ca59553a93bb8acd15a284ba0aed78ea5b268553be9552c192d21f9d67b65b0"
+      },
+      {
+        "path": "tools/pipx/supply/pipx/provenance.json",
+        "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
+      },
+      {
+        "path": "tools/pipx/supply/platformdirs/identity.json",
+        "sha256": "dd0e98078e6bb963388e7ecfe10ccaf287342950e85634b9826e6dd1344b8721"
+      },
+      {
+        "path": "tools/pipx/supply/platformdirs/metadata.json",
+        "sha256": "5781ba4a967abd0810ac5c502d8a6431df37bfe0ecc50675e928b51380a302e9"
+      },
+      {
+        "path": "tools/pipx/supply/platformdirs/provenance.json",
+        "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
+      },
+      {
+        "path": "tools/pipx/supply/userpath/identity.json",
+        "sha256": "fed5040bafd0dd49bb05c82f106a33fed29c47e1199e81ac2925645273f67f20"
+      },
+      {
+        "path": "tools/pipx/supply/userpath/metadata.json",
+        "sha256": "5036ea2024f48dc69289bdce02d3aebad8d53eda892846f70ba99752c647ef93"
+      }
+    ],
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.701
+      },
+      {
+        "step": "focused",
+        "exit_code": 0,
+        "seconds": 5.08
+      },
+      {
+        "step": "actual",
+        "exit_code": 0,
+        "seconds": 3.655
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 177.832
+      },
+      {
+        "step": "race",
+        "exit_code": 0,
+        "seconds": 119.715
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.292
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 13.713
+      },
+      {
+        "step": "workflow",
+        "exit_code": 0,
+        "seconds": 0.7
+      },
+      {
+        "step": "release-gate",
+        "exit_code": 0,
+        "seconds": 0.312
+      }
+    ],
+    "materialization": {
+      "exit_code": 0,
+      "seconds": 1.597,
+      "assets": [
+        {
+          "path": "pipx-runtime-linux-amd64.zip",
+          "sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
+          "size": 2505814,
+          "mode": "0o444"
+        },
+        {
+          "path": "pipx-NOTICE.txt",
+          "sha256": "10010065ec7189a43127ad8b0a8bbf9b06d9d0eaa9b5ff9f9c1ef27e6bb694eb",
+          "size": 28849,
+          "mode": "0o444"
+        }
+      ],
+      "input_files": 27,
+      "inputs_unchanged": true,
+      "execution": "Go DATA-only; no Python or activation"
+    },
+    "note": "28849B NOTICE candidate; replaced only generated separator newlines after staged EOF failure"
+  }
+}

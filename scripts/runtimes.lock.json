@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "gvisor": {
     "release": "release-20260907.0",
     "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
@@ -169,5 +169,130 @@
     "version": "8.3.1",
     "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",
     "linux_x86_64_sha512": "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
+  },
+  "pipx_tool": {
+    "pipx_version": "1.18.4",
+    "architecture": "amd64",
+    "runtime_image": "python_image",
+    "inputs": [
+      {
+        "path": "argcomplete/argcomplete-3.7.2-py3-none-any.whl",
+        "sha256": "6029205678bdd9c1c728a155f5f9ecf5812393f969eef58807641a2bc2aa5b19"
+      },
+      {
+        "path": "argcomplete/identity.json",
+        "sha256": "2aa271eaa8e23a6fa386c45bd4b4bb1900d4d890c998a73ea9cc7a25741a613f"
+      },
+      {
+        "path": "argcomplete/metadata.json",
+        "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
+      },
+      {
+        "path": "argcomplete/provenance.json",
+        "sha256": "61d0ce76874cb85aa884c3bd09712e77f3de22674f350c8b85575bb982805e1e"
+      },
+      {
+        "path": "click/click-8.5.0-py3-none-any.whl",
+        "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+      },
+      {
+        "path": "click/identity.json",
+        "sha256": "0c782df5b1ec8b77c1c7852d068595d85108b148689ae3b7d2ec14b6d77c3e0c"
+      },
+      {
+        "path": "click/metadata.json",
+        "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
+      },
+      {
+        "path": "click/provenance.json",
+        "sha256": "aa8c59737151791b2b9e7a8ed0d5a6885ec49fbb73968a04d7eeb9421c4499bd"
+      },
+      {
+        "path": "filelock/filelock-4.2.1-py3-none-any.whl",
+        "sha256": "7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44"
+      },
+      {
+        "path": "filelock/identity.json",
+        "sha256": "fd45ded86c1bd040adb5fd88f587d7a1f14a9fe5503df6e47d4e464683f53007"
+      },
+      {
+        "path": "filelock/metadata.json",
+        "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
+      },
+      {
+        "path": "filelock/provenance.json",
+        "sha256": "fac996da43df0c56fd2b6d32aaa7055d1400bb6693464ef4a0ae7665bcee21a5"
+      },
+      {
+        "path": "packaging/identity.json",
+        "sha256": "dbe36d2bd692258ad8665d52ef412c8e6f4ae72b2121cb4f88e7214d80367995"
+      },
+      {
+        "path": "packaging/metadata.json",
+        "sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d"
+      },
+      {
+        "path": "packaging/packaging-26.3-py3-none-any.whl",
+        "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+      },
+      {
+        "path": "packaging/provenance.json",
+        "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
+      },
+      {
+        "path": "pipx/identity.json",
+        "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+      },
+      {
+        "path": "pipx/metadata.json",
+        "sha256": "6ca59553a93bb8acd15a284ba0aed78ea5b268553be9552c192d21f9d67b65b0"
+      },
+      {
+        "path": "pipx/pipx-1.18.4-py3-none-any.whl",
+        "sha256": "4672195db7e89526cda1e54cbea116164a58bd40e1c03fe12e380de16b5399a4"
+      },
+      {
+        "path": "pipx/provenance.json",
+        "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
+      },
+      {
+        "path": "platformdirs/identity.json",
+        "sha256": "dd0e98078e6bb963388e7ecfe10ccaf287342950e85634b9826e6dd1344b8721"
+      },
+      {
+        "path": "platformdirs/metadata.json",
+        "sha256": "5781ba4a967abd0810ac5c502d8a6431df37bfe0ecc50675e928b51380a302e9"
+      },
+      {
+        "path": "platformdirs/platformdirs-4.13.4-py3-none-any.whl",
+        "sha256": "502ce08e9d36cf90579ee44e1e764838842fa658e4975ef47344fd053011d2c8"
+      },
+      {
+        "path": "platformdirs/provenance.json",
+        "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
+      },
+      {
+        "path": "userpath/identity.json",
+        "sha256": "fed5040bafd0dd49bb05c82f106a33fed29c47e1199e81ac2925645273f67f20"
+      },
+      {
+        "path": "userpath/metadata.json",
+        "sha256": "5036ea2024f48dc69289bdce02d3aebad8d53eda892846f70ba99752c647ef93"
+      },
+      {
+        "path": "userpath/userpath-1.9.2-py3-none-any.whl",
+        "sha256": "2cbf01a23d655a1ff8fc166dfb78da1b641d1ceabf0fe5f970767d380b14e89d"
+      }
+    ],
+    "tool": {
+      "path": "pipx-runtime.zip",
+      "sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
+      "size": 2505814
+    },
+    "notices": {
+      "path": "tools/pipx/NOTICE",
+      "sha256": "441375115b159e0f115d1aca652be18467032b5fa0c4a54e8332822873dedc85",
+      "size": 28839
+    }
   }
 }

@@ -160,6 +160,25 @@ type runtimeLock struct {
 			Size   int64  `json:"size"`
 		} `json:"notices"`
 	} `json:"bun_tool"`
+	PipxTool struct {
+		Version      string `json:"pipx_version"`
+		Architecture string `json:"architecture"`
+		RuntimeImage string `json:"runtime_image"`
+		Inputs       []struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+		} `json:"inputs"`
+		Tool struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pipx_tool"`
 	PythonSources []struct {
 		Name              string   `json:"name"`
 		SourceID          string   `json:"source_id"`
@@ -512,7 +531,7 @@ func readLock(path string) (runtimeLock, error) {
 }
 
 func validate(lock runtimeLock) error {
-	if lock.SchemaVersion != 4 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
+	if lock.SchemaVersion != 5 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
 		return errors.New("gVisor or Bazel identity is invalid")
 	}
 	if lock.GVisor.Patch.Path == "" || !strings.HasPrefix(lock.GVisor.Patch.Path, "tools/gvisor/") || !strings.HasSuffix(lock.GVisor.Patch.Path, ".patch") || strings.Contains(lock.GVisor.Patch.Path, "..") || !hex256.MatchString(lock.GVisor.Patch.SHA256) {
@@ -562,6 +581,17 @@ func validate(lock runtimeLock) error {
 	bun := lock.BunTool
 	if !exactVersion.MatchString(bun.Version) || bun.Architecture != "amd64" || bun.RuntimeImage != "node_image" || bun.Archive.URL != "https://github.com/oven-sh/bun/releases/download/bun-v"+bun.Version+"/bun-linux-x64.zip" || !hex256.MatchString(bun.Archive.SHA256) || bun.Archive.Size <= 0 || bun.Archive.Size > 64<<20 || bun.Publisher.Fingerprint != "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59" || bun.Publisher.ChecksumsPath != "tools/bun/SHASUMS256.txt.asc" || !hex256.MatchString(bun.Publisher.ChecksumsSHA256) || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(bun.SourceCommitObserved) || bun.Tool.Path != "bun" || !hex256.MatchString(bun.Tool.SHA256) || bun.Tool.Size <= 0 || bun.Tool.Size > 128<<20 || bun.Notices.Path != "tools/bun/NOTICE" || !hex256.MatchString(bun.Notices.SHA256) || bun.Notices.Size <= 0 || bun.Notices.Size > 64<<10 {
 		return errors.New("bun publisher/archive/native data owner is invalid")
+	}
+	pipx := lock.PipxTool
+	if !exactVersion.MatchString(pipx.Version) || pipx.Architecture != "amd64" || pipx.RuntimeImage != "python_image" || len(pipx.Inputs) != 27 || pipx.Tool.Path != "pipx-runtime.zip" || !hex256.MatchString(pipx.Tool.SHA256) || pipx.Tool.Size <= 0 || pipx.Tool.Size > 8<<20 || pipx.Notices.Path != "tools/pipx/NOTICE" || !hex256.MatchString(pipx.Notices.SHA256) || pipx.Notices.Size <= 0 || pipx.Notices.Size > 64<<10 {
+		return errors.New("pipx immutable supply owner is invalid")
+	}
+	pipxInputs := map[string]bool{}
+	for _, input := range pipx.Inputs {
+		if !hex256.MatchString(input.SHA256) || len(input.Path) > 256 || !regexp.MustCompile(`^(argcomplete|click|filelock|packaging|pipx|platformdirs|userpath)/(identity\.json|metadata\.json|provenance\.json|[a-z]+-[0-9]+(?:\.[0-9]+)+-py3-none-any\.whl)$`).MatchString(input.Path) || pipxInputs[input.Path] {
+			return errors.New("pipx supply input identity is invalid")
+		}
+		pipxInputs[input.Path] = true
 	}
 	if lock.GVisor.RuntimeBundle.Architecture != "amd64" || len(lock.GVisor.RuntimeBundle.Members) != 6 {
 		return errors.New("gVisor runtime bundle identity is invalid")
@@ -648,6 +678,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 		{"PNPMVersion", lock.PNPMTool.Version}, {"PNPMArchitecture", lock.PNPMTool.Architecture}, {"PNPMArchiveURL", lock.PNPMTool.Archive.URL}, {"PNPMArchiveSHA256", lock.PNPMTool.Archive.SHA256},
 		{"BunVersion", lock.BunTool.Version}, {"BunArchitecture", lock.BunTool.Architecture}, {"BunRuntimeImage", lock.BunTool.RuntimeImage}, {"BunArchiveURL", lock.BunTool.Archive.URL}, {"BunArchiveSHA256", lock.BunTool.Archive.SHA256}, {"BunPublisherFingerprint", lock.BunTool.Publisher.Fingerprint}, {"BunChecksumsPath", lock.BunTool.Publisher.ChecksumsPath}, {"BunChecksumsSHA256", lock.BunTool.Publisher.ChecksumsSHA256}, {"BunSourceCommitObserved", lock.BunTool.SourceCommitObserved}, {"BunToolPath", lock.BunTool.Tool.Path}, {"BunToolSHA256", lock.BunTool.Tool.SHA256}, {"BunNoticesPath", lock.BunTool.Notices.Path}, {"BunNoticesSHA256", lock.BunTool.Notices.SHA256},
 		{"PNPMSourceCommit", lock.PNPMTool.Provenance.SourceCommit}, {"PNPMWorkflowRun", lock.PNPMTool.Provenance.WorkflowRun}, {"PNPMBundlePath", lock.PNPMTool.Provenance.BundlePath}, {"PNPMBundleSHA256", lock.PNPMTool.Provenance.BundleSHA256}, {"PNPMToolPath", lock.PNPMTool.Tool.Path}, {"PNPMToolSHA256", lock.PNPMTool.Tool.SHA256}, {"PNPMNoticesPath", lock.PNPMTool.Notices.Path}, {"PNPMNoticesSHA256", lock.PNPMTool.Notices.SHA256},
+		{"PipxVersion", lock.PipxTool.Version}, {"PipxArchitecture", lock.PipxTool.Architecture}, {"PipxRuntimeImage", lock.PipxTool.RuntimeImage}, {"PipxToolPath", lock.PipxTool.Tool.Path}, {"PipxToolSHA256", lock.PipxTool.Tool.SHA256}, {"PipxNoticesPath", lock.PipxTool.Notices.Path}, {"PipxNoticesSHA256", lock.PipxTool.Notices.SHA256},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
 		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
@@ -664,6 +695,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	fmt.Fprintf(&output, "\tPNPMArchiveSize = %d\n\tPNPMToolSize = %d\n", lock.PNPMTool.Archive.Size, lock.PNPMTool.Tool.Size)
 	fmt.Fprintf(&output, "\tPNPMNoticesSize = %d\n", lock.PNPMTool.Notices.Size)
 	fmt.Fprintf(&output, "\tBunArchiveSize = %d\n\tBunToolSize = %d\n\tBunNoticesSize = %d\n", lock.BunTool.Archive.Size, lock.BunTool.Tool.Size, lock.BunTool.Notices.Size)
+	fmt.Fprintf(&output, "\tPipxToolSize = %d\n\tPipxNoticesSize = %d\n", lock.PipxTool.Tool.Size, lock.PipxTool.Notices.Size)
 	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)

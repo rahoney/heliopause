@@ -36,6 +36,30 @@ func fixture(t *testing.T) (string, string) {
 		}
 		writeTest(t, filepath.Join(root, path), body)
 	}
+	var pipxFixture struct {
+		Pipx struct {
+			Inputs []struct {
+				Path string `json:"path"`
+			} `json:"inputs"`
+		} `json:"pipx_tool"`
+	}
+	lockBody, err := os.ReadFile(filepath.Join(source, "scripts/runtimes.lock.json"))
+	if err != nil || json.Unmarshal(lockBody, &pipxFixture) != nil {
+		t.Fatal("pipx fixture owner unavailable", err)
+	}
+	names := []string{"tools/pipx/NOTICE"}
+	for _, input := range pipxFixture.Pipx.Inputs {
+		if !strings.HasSuffix(input.Path, ".whl") {
+			names = append(names, "tools/pipx/supply/"+input.Path)
+		}
+	}
+	for _, name := range names {
+		body, err := os.ReadFile(filepath.Join(source, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		writeTest(t, filepath.Join(root, name), body)
+	}
 	root, err = filepath.EvalSymlinks(root)
 	if err != nil {
 		t.Fatal(err)

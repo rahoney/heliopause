@@ -588,6 +588,29 @@ root module/dist-info 배치만 허용한다. Relocation·충돌·8MiB 초과는
 이 명령은 Python을 실행하거나 설치·runtime pin을 변경하지 않는다. Isolated loader,
 gVisor/observer와 실제 pipx install/upgrade 지원은 별도 qualification이다.
 
+### pipx selected owner와 frozen 유지보수
+
+Runtime lock schema5의 `pipx_tool`이 선택 버전·Python owner 참조·공급 입력27개의
+path/hash와 ZIP/NOTICE identity를 소유한다. `tools/pipx/supply`의20개 문서는 동결된
+입력 DATA이며 wheel7개는 외부 취득 입력이다. Source identity/proof를 바꾸면 입력 hash와
+실제 ZIP을 다시 검증한다. Version 선택을 별도 lock으로 복제하지 않는다.
+
+```sh
+go run ./scripts/update-runtime materialize-pipx --root /absolute/repo --input /absolute/frozen-pipx-closure --output /absolute/external/pipx-runtime-linux-amd64.zip --notices-output /absolute/external/pipx-NOTICE.txt
+```
+
+이 selected-owner 명령은 전체 공급 path/hash, canonical metadata와 원본 license/NOTICE,
+생성 ZIP/notices identity를 대조하고 두 새 파일을0444로 보존한다. 설치·활성화나 검사 완료를
+부여하지 않는다. 아직 release workflow/self-update의 executable ZIP 검사 경로에 연결되지
+않았으며 기존 native asset 집합에 ZIP을 passive metadata로 끼워 넣지 않는다.
+
+`plan --component pipx --version X.Y.Z --pipx-proof /absolute/frozen-supply --review JSON`은
+다른 버전의 입력을 기존 external state 아래 동결하고 apply/verify 전에 같은 proof/bytes를
+재검증한다. Same-version은 acquisition 없이 기존 supply/review를 보존하며 새 proof를
+거부한다. Source 변경은 기존 candidate/journal/lock 경로를 사용한다. 실제 upstream release
+검증과 synthetic 이전 owner의 plan/apply 회귀는 구분하며, gVisor/native operations/public CLI와
+최종 profile qualification은 별도다.
+
 ### pnpm release 공급의 offline 검증
 
 현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과

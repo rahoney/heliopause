@@ -60,7 +60,7 @@ func readBunMaterializationOwner(root string) (bunMaterializationOwner, error) {
 	return pin, nil
 }
 
-// selectedBunOwner returns the exact schema4 owner bytes after duplicate and
+// selectedBunOwner returns the exact schema5 owner bytes after duplicate and
 // canonical-field checks. Both version selection and materialization consume it.
 func selectedBunOwner(body []byte) ([]byte, error) {
 	fields, err := jsonSpans(body)
@@ -85,7 +85,7 @@ func selectedBunOwner(body []byte) ([]byte, error) {
 	}
 	schema, ok := fields["/schema_version"]
 	var version int
-	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 4 {
+	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 5 {
 		return nil, errors.New("bun runtime owner schema is invalid")
 	}
 	owner := fields["/bun_tool"]

@@ -32,8 +32,8 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 	if err := json.Unmarshal(body, &lock); err != nil {
 		return nil, err
 	}
-	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true, "pnpm_tool": true, "bun_tool": true}
-	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(4) {
+	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true, "pnpm_tool": true, "bun_tool": true, "pipx_tool": true}
+	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(5) {
 		return nil, errors.New("runtime version owners: missing or unsupported lock component")
 	}
 	for key := range lock {
@@ -46,7 +46,7 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		"Go": "go_image.go_version", "Docker": "docker.ci_engine_version",
 		"gVisor": "gvisor.release", "Bazel": "bazel.version", "Rust/Cargo": "rust_image.rust_version",
 		"uv": "uv_image.uv_version", "npm": "node_image.npm_version", "Python": "python_image.python_version", "pip": "python_image.pip_version",
-		"pnpm": "pnpm_tool.pnpm_version", "Bun": "bun_tool.bun_version",
+		"pnpm": "pnpm_tool.pnpm_version", "Bun": "bun_tool.bun_version", "pipx": "pipx_tool.pipx_version",
 	} {
 		value, err := runtimeOwnerString(lock, path)
 		if err != nil {
@@ -61,6 +61,9 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		return nil, err
 	}
 	if err := checkBunProofFile(root, lock); err != nil {
+		return nil, err
+	}
+	if err := checkPipxProofFiles(root, lock); err != nil {
 		return nil, err
 	}
 	node, err := runtimeOwnerString(lock, "node_image.reference")

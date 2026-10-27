@@ -7,3 +7,5 @@ const NativeInstallRoot = "/usr/lib/heliopause"
 const PNPMNativeAssetName = "pnpm-linux-" + PNPMArchitecture
 
 const BunNativeAssetName = "bun-linux-" + BunArchitecture
+
+const PipxRuntimeAssetName = "pipx-runtime-linux-" + PipxArchitecture + ".zip"
