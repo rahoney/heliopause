@@ -16,14 +16,32 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
-Next action: M13-004/P4-O — formal bounded PEP740 publish bridge and immutable pipx closure/loader/runtime concrete edit map/second review; CI415 cause OPEN
-Current substep: M13-004/P4-O supply/runtime gap audit; UV fresh/managed/native supported recipes named hosted QUALIFIED by CI417; pipx/final profiles remain
+Next action: M13-004/P4-O2 — dependency publish policies/full archive closure/immutable loader concrete edit map/second review; CI415 cause OPEN
+Current substep: M13-004/P4-O1 offline single-wheel publish verifier/actual developer command named LOCAL QUALIFIED; whole pipx/final profiles remain
 Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O1 한정 로컬 검증
+
+[O1 receipt](./evidence/package-client-quarantine/p4o1-pipx-publish-local-20261027.json)의
+canonical Quick180.173s·두 affected package 전체 Race30.077s·actual supply1.680s·
+docs0.420s/security18.779s가 PASS다. Fixed pipx publisher/certificate environment·subject와
+single wheel 실제 bytes를 검증하고 frozen 입력 불변을 확인했다. Initial formatter 순서와
+SA1012 시험 표현 실패는 원본과 구분해 보존했다. O1 developer 공급 사실 검증만 닫으며
+dependency closure/immutable loader/runtime·native·CLI/hosted/final matrix는 미완료다.
+같은 M13-004에서 O2 edit map으로 이어가고 새 push/full CI는 없다.
+
+### 2026-10-27 P4-O1 착수
+
+[O1 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4o1-pipx-publish-plan-20261027.md)에
+따라 기존 pinned Sigstore/root와 developer frozen reader를 재사용한다. 별도 fixed pipx
+publisher의 bounded PEP740/certificate environment·subject/단일 wheel bytes 검증만 추가한다.
+전체 dependency closure/immutable loader/runtime·native/CLI·P4 acceptance는 후속 missing이다.
+M13-004 하나만 IN_PROGRESS이며 작은 helper별 새 push/full CI는 하지 않는다.
 
 ### 2026-10-27 CI417 최종 검증
 

@@ -1,0 +1,260 @@
+{
+  "schema": "helox.pipx-publish-local-qualification/v1",
+  "baseline": {
+    "commit": "27caa9a7932444f242b592c633aa13c95785adaf",
+    "tree": "95a5f475e9a0779e3c27cb945581f9a4efdfaf65"
+  },
+  "scope": "OFFLINE_SINGLE_WHEEL_PUBLISH_PROOF_AND_ACQUIRED_BYTES_ONLY",
+  "status": {
+    "implemented": true,
+    "wired": "existing developer command only",
+    "qualified": "NAMED_LOCAL",
+    "acceptance_closed": "O1 only; whole pipx/P4/M13-004 OPEN"
+  },
+  "sources": [
+    {
+      "path": "internal/verification/releaseprovenance/pipx_publish.go",
+      "sha256": "674aaa8955015edbc1f649de0c3b1f5951da0b9c69edd5a20234180d5e090e6a"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_publish_json.go",
+      "sha256": "b18b612f5f2663997f8108fa0f0cfa79a163def0032938426bf6cd835e8a7b59"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_publish_test.go",
+      "sha256": "e5fc999a1f7e69cb4617ccb4591cf98dcc5d178e78921ed10710b844e14f0436"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-1.18.4/identity.json",
+      "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-1.18.4/provenance.json",
+      "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "f04182512098634efdd5242d2dd5de81a11c024e67e4ccc538094b312f1b3eed"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_publish.go",
+      "sha256": "712b42ec4fa18b1a9e43c572ef933798e891ed16773cc0b395187dfcee51dc7e"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_publish_test.go",
+      "sha256": "ec894d4eddb2bea93dabbbff5e89fbe986075566e70eb9114014ffe61ffb6373"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "elapsed_seconds": 180.173
+    },
+    {
+      "step": "race",
+      "exit_code": 0,
+      "elapsed_seconds": 30.077,
+      "logs": [
+        {
+          "path": "haa-p4o1-race.stdout.log",
+          "size": 148,
+          "sha256": "3b21cb3159695952f74a941432db1d4dceb966073289a77c03743ea1896f5dfa"
+        },
+        {
+          "path": "haa-p4o1-race.stderr.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "step": "actual",
+      "exit_code": 0,
+      "elapsed_seconds": 1.68,
+      "logs": [
+        {
+          "path": "haa-p4o1-actual.stdout.log",
+          "size": 473,
+          "sha256": "df461627838fbfdad4a29f7fc89d847b203686b898548c88ea241d81bcb6de15"
+        },
+        {
+          "path": "haa-p4o1-actual.stderr.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "elapsed_seconds": 0.42,
+      "logs": [
+        {
+          "path": "haa-p4o1-docs.stdout.log",
+          "size": 22,
+          "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+        },
+        {
+          "path": "haa-p4o1-docs.stderr.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "elapsed_seconds": 18.779,
+      "logs": [
+        {
+          "path": "haa-p4o1-security.stdout.log",
+          "size": 80,
+          "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+        },
+        {
+          "path": "haa-p4o1-security.stderr.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "actual": {
+    "schema": "helox.pipx-publish-supply/v1",
+    "scope": "SINGLE_WHEEL_PUBLISH_PROOF_ONLY",
+    "identity": {
+      "version": "1.18.4",
+      "source_commit": "b6919968a12a675012feae5ee4ae91ab56636e8c",
+      "workflow_run": "39104119239",
+      "wheel_sha256": "4672195db7e89526cda1e54cbea116164a58bd40e1c03fe12e380de16b5399a4"
+    },
+    "provenance_sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084",
+    "invocation": "https://github.com/pypa/pipx/actions/runs/39104119239/attempts/1",
+    "wheel_size": 181563
+  },
+  "frozen_inputs_unchanged": true,
+  "initial_failures": [
+    {
+      "scope": "operator sequencing",
+      "result": "format check refused four unformatted new source files",
+      "cause": "private transfer completion was not consumed before first format; corrected by format after transfer",
+      "raw": "p4o1-quick-first.log"
+    },
+    {
+      "scope": "new negative test form",
+      "result": "Staticcheck SA1012 on literal nil Context",
+      "correction": "typed absent Context preserves nil rejection test",
+      "raw": "p4o1-quick-formatted.log"
+    }
+  ],
+  "missing": [
+    "dependency publish policies and full archive/RECORD/constraints/markers closure",
+    "immutable loader and single runtime maintenance/admission owner",
+    "native artifact startup roles/backend/selection/public CLI",
+    "hosted/final support profile acceptance; CI415 cause separate OPEN"
+  ],
+  "raw_storage": "local untracked; hashes do not claim remote backup",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-actual.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-actual.stdout.log",
+      "size": 473,
+      "sha256": "df461627838fbfdad4a29f7fc89d847b203686b898548c88ea241d81bcb6de15"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-docs.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-docs.stdout.log",
+      "size": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-format-final.log",
+      "size": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-format.log",
+      "size": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-paths.json",
+      "size": 676,
+      "sha256": "831620ba6083d7e00d53d4617f6dbc1acaf6b75e4769eeb885a288ceda86c916"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-qualification-results.json",
+      "size": 1739,
+      "sha256": "fe6af2d02166ea96936ab2439867febb3d76080e47e8fbbd3ce19cddcd917f04"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-quick-final-result.json",
+      "size": 73,
+      "sha256": "1fdb060a02e870a3c66276ee63c73b0e92dbe0bb0d78bedd07b00fb2d1266903"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-quick-final.log",
+      "size": 1354,
+      "sha256": "61eb7ae13a11254b02b59cdaa49ae46bb90999adecd16893e5de930aa02024bd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-quick-first.log",
+      "size": 385,
+      "sha256": "e6de8fa90abc8227362b48989a1ee11d60414b5a30981182af6ffc66f811879f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-quick-formatted.log",
+      "size": 1575,
+      "sha256": "689e44d70f2d2c32da4c4cdc66fdf840f2f9dbc78cad5373ce3827ef2bf8627e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-race.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-race.stdout.log",
+      "size": 148,
+      "sha256": "3b21cb3159695952f74a941432db1d4dceb966073289a77c03743ea1896f5dfa"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-security.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-security.stdout.log",
+      "size": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-source-before-qualification.json",
+      "size": 1620,
+      "sha256": "9fcd304212671df14ee32dc2044c86a2c0eb64652ea9163a0f37d59ea8d2fd28"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-supply-after.json",
+      "size": 432,
+      "sha256": "afc4e7c2dffa94de520a4562417815ffbd3530bcfde0374db3e9119e8d4a397d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-supply-before.json",
+      "size": 432,
+      "sha256": "afc4e7c2dffa94de520a4562417815ffbd3530bcfde0374db3e9119e8d4a397d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o1-fulcio-oid-fetched.json",
+      "size": 30386,
+      "sha256": "095b7f5851a7985d7d0d0fc304bf2307336ba6b224a5f6a329de2acbc7fb2d35"
+    }
+  ]
+}

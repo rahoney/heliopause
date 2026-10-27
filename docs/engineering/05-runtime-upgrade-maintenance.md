@@ -538,6 +538,24 @@ native identity를 다시 확인한다. 누락/변조/symlink/권한 변경은 �
 live tag로 대체하지 않는다. 같은 버전은 supply flag를 거부하고 기존 pin/review를 유지한다.
 Canonical configuration 검증과 실제 UV sandbox/observer/CLI qualification은 별도다.
 
+### pipx publish 공급의 offline 검증
+
+P4-O1의 developer command는 명시한 frozen directory의 identity.json(version,
+source_commit, workflow_run, wheel_sha256), provenance.json 및
+`pipx-<version>-py3-none-any.whl`을 읽는다.
+
+```sh
+go run ./scripts/update-runtime verify-pipx-publish --input /absolute/frozen-pipx-proof
+```
+
+단일 wheel의 실제 SHA-256과 bounded PEP740 publish/v1 proof, 고정 pypa/pipx
+release.yml publisher의 certificate/tag/source/run·environment·token subject 및
+기존 offline Sigstore root/SCT/log/timestamp를 검증한다. 성공 receipt의 범위는
+`SINGLE_WHEEL_PUBLISH_PROOF_ONLY`다. 전체 dependency closure·immutable loader와
+runtime admission은 [P4-O baseline](../planning/evidence/package-client-quarantine/p4o-pipx-supply-runtime-baseline-20261027.md)의
+후속 acceptance이며 이 명령은 네트워크·추출·Python 실행·pin 변경·설치를 수행하지 않는다.
+기존 HAA/UV/PNPM SLSA publisher 정책은 유지한다.
+
 ### pnpm release 공급의 offline 검증
 
 현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과
