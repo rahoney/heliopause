@@ -556,6 +556,25 @@ runtime admission은 [P4-O baseline](../planning/evidence/package-client-quarant
 후속 acceptance이며 이 명령은 네트워크·추출·Python 실행·pin 변경·설치를 수행하지 않는다.
 기존 HAA/UV/PNPM SLSA publisher 정책은 유지한다.
 
+P4-O2의 전체 공급 검증은 같은 developer command에서 별도 scope로 수행한다.
+
+```sh
+go run ./scripts/update-runtime verify-pipx-closure --input /absolute/frozen-pipx-closure
+```
+
+입력에는 argcomplete/click/filelock/packaging/pipx/platformdirs/userpath의 일곱 하위
+디렉터리가 필요하다. 각각 identity.json, 공식 exact-release metadata.json과 exact wheel을
+두고 제공된 provenance.json도 함께 둔다. Pipx 본체 identity는 위 형식이며 서명된 다섯
+dependency identity에는 project도 포함한다. Userpath identity는 version/wheel_sha256만
+받고 signature `NOT_PROVIDED`를 유지한다. Userpath에 제공된 proof는 미지원 정책으로
+거부하며 무시하지 않는다. 나머지 여섯 proof는 고정 publisher로 모두 검증한다.
+
+기존 whole wheel ZIP/RECORD와 독립 metadata, 현재 고정 Python의 dependency/marker/
+constraint 검사를 재사용하고 complete reachable closure·namespace/파일 충돌을 확인한다.
+Receipt 범위는 `STATIC_WHEEL_CLOSURE_AND_PUBLISH_PROOFS_ONLY`다. 공급 bytes와 static
+closure의 사실이며 immutable loader/runtime admission·native 동작·설치/지원 qualification은
+후속 단계다. 입력의 후보 버전은 별도 product version lock을 만들거나 pin을 자동 채택하지 않는다.
+
 ### pnpm release 공급의 offline 검증
 
 현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과

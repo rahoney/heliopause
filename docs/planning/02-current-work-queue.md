@@ -16,14 +16,30 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI417/source518800c Required10SUCCESS; whole checkout1fab/tree df689208/2660 identical; Linux79PASS/native UID1001 actual138.06s/CPU282.58s/observer122/helper11wait0/final0; CI416 fixture UID acceptance CLOSED(named)
-Next action: M13-004/P4-O2 — dependency publish policies/full archive closure/immutable loader concrete edit map/second review; CI415 cause OPEN
-Current substep: M13-004/P4-O1 offline single-wheel publish verifier/actual developer command named LOCAL QUALIFIED; whole pipx/final profiles remain
+Next action: M13-004/P4-O3 — immutable candidate materialization/loader baseline and concrete edit map; CI415 cause OPEN
+Current substep: M13-004/P4-O2 named LOCAL QUALIFIED; O3 baseline next; whole pipx/final profiles remain
 Acceptance audit: CI41740449588924 completed05:41:32UTC:Required10SUCCESS; all10 same checkout1fab/tree df689208/source518800c and decoded1200139B preserved/readback verified. CI416 UID fix hosted qualified. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-27 P4-O2 한정 로컬 검증
+
+[O2 receipt](./evidence/package-client-quarantine/p4o2-pipx-closure-local-20261027.json)의
+Quick232.433s/affected 전체 Race77.646s/docs·security와 actual1.353s가 PASS다.
+7 wheels/190파일/제공 proof6과 실제 변조7종 거부·frozen27파일 불변을 확인했다.
+공급 검증만 닫으며 같은 M13-004에서 O3 immutable loader baseline으로 이어간다.
+Runtime/native/CLI/hosted·전체 P4 acceptance는 미완료이고 새 push/full CI는 없다.
+
+### 2026-10-27 P4-O2 착수
+
+[O2 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4o2-pipx-closure-plan-20261027.md)에
+따라 O1 private 검증 로직과 기존 whole wheel/metadata/marker/constraint/graph를 재사용한다.
+제공 dependency proof5개의 fixed publisher 검증과 실제7-wheel closure를 연결하며 userpath
+서명 미제공 경계를 유지한다. DATA-only whole RECORD 진단0.582s는 PASS였고 formal 공급·
+immutable loader/runtime·native·CLI acceptance는 미완료다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-27 P4-O1 한정 로컬 검증
 

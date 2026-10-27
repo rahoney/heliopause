@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -131,6 +132,10 @@ func pipxBase64(body []byte, limit int) ([]byte, error) {
 }
 
 func decodePipxPublish(body []byte, expected PipxPublishIdentity) ([]byte, []byte, error) {
+	return decodePyPIPublish(body, expected.WheelFilename(), expected.WheelSHA256, pipxPublisherPolicy(expected.Version))
+}
+
+func decodePyPIPublish(body []byte, filename, digest string, policy pypiPublisherPolicy) ([]byte, []byte, error) {
 	if err := boundPipxJSON(body, maxBundle); err != nil {
 		return nil, nil, err
 	}
@@ -147,7 +152,7 @@ func decodePipxPublish(body []byte, expected PipxPublishIdentity) ([]byte, []byt
 		return nil, nil, err
 	}
 	publisher, err := pipxObject(group["publisher"], "kind", "repository", "workflow", "environment")
-	if err != nil || pipxString(publisher["kind"]) != "GitHub" || pipxString(publisher["repository"]) != "pypa/pipx" || pipxString(publisher["workflow"]) != "release.yml" || pipxString(publisher["environment"]) != "release" {
+	if err != nil || pipxString(publisher["kind"]) != "GitHub" || pipxString(publisher["repository"]) != strings.TrimPrefix(policy.repository, "https://github.com/") || pipxString(publisher["workflow"]) != policy.workflow || pipxString(publisher["environment"]) != policy.environment {
 		return nil, nil, errPipxJSON
 	}
 	attestationBody, err := pipxOne(group["attestations"])
@@ -175,7 +180,7 @@ func decodePipxPublish(body []byte, expected PipxPublishIdentity) ([]byte, []byt
 		return nil, nil, err
 	}
 	statement, err := pipxBase64(envelope["statement"], 64<<10)
-	if err != nil || !validPipxStatement(statement, expected) {
+	if err != nil || !validPyPIPublishStatement(statement, filename, digest) {
 		return nil, nil, errPipxJSON
 	}
 	if _, err := pipxBase64(envelope["signature"], 256); err != nil {
@@ -198,6 +203,10 @@ func decodePipxPublish(body []byte, expected PipxPublishIdentity) ([]byte, []byt
 }
 
 func validPipxStatement(body []byte, expected PipxPublishIdentity) bool {
+	return validPyPIPublishStatement(body, expected.WheelFilename(), expected.WheelSHA256)
+}
+
+func validPyPIPublishStatement(body []byte, filename, sha256 string) bool {
 	if boundPipxJSON(body, 64<<10) != nil {
 		return false
 	}
@@ -222,9 +231,9 @@ func validPipxStatement(body []byte, expected PipxPublishIdentity) bool {
 		return false
 	}
 	subject, err := pipxObject(subjectBody, "name", "digest")
-	if err != nil || pipxString(subject["name"]) != expected.WheelFilename() {
+	if err != nil || pipxString(subject["name"]) != filename {
 		return false
 	}
 	digest, err := pipxObject(subject["digest"], "sha256")
-	return err == nil && pipxString(digest["sha256"]) == expected.WheelSHA256
+	return err == nil && pipxString(digest["sha256"]) == sha256
 }

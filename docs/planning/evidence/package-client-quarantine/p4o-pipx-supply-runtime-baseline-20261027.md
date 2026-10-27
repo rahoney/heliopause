@@ -74,7 +74,7 @@ publisher/digest·transparency 부재·바뀐 payload는 모두 거부했다. Si
 39104119239/attempts/1이며 publish/v1의 null/empty predicate 의미는 공식 PEP740/명세와 대조했다.
 이는 metadata publish proof에 한정하며 기존 SLSA verifier를 바꾸지 않았다.
 
-공식 PyPI의 exact wheel181563B를 DATA로 취득해 signed SHA와 대조했고 52개 pipx module의
+공식 PyPI의 exact wheel181563B를 DATA로 취득해 signed SHA와 대조했고 52개 pipx Python source/stub member(51 `.py`+1 `.pyi`)의
 집합/bytes는 이전 release pyz census와 모두 같았다. 나머지 bundled dependencies의 전체
 authentic closure와 supply/maintenance/admission은 미완료다. Scratch console은 도구 결과로
 확인했지만 raw stdout file을 캡처하지 않았으므로 derived `p4o-publish-diagnostic.json`에 그
@@ -133,7 +133,7 @@ publisher는 tag push가 아닌 main/workflow_dispatch다. 한 publisher policy�
 및 고정 source text로 보존했다. 기존 HAA/UV/PNPM verifier는 변경하지 않았다.
 
 여섯 wheel DATA census의 Python module96개는 기존 release pyz와 집합/bytes가 모두
-같았다. Pipx 본체52개와 구분하며 전체 archive 구조·RECORD 검증, dependency constraints/markers,
+같았다. Pipx 본체의 source/stub52개와 구분하며 전체 archive 구조·RECORD 검증, dependency constraints/markers,
 immutable loader·runtime/post-install Artifact 역할·공급 pin/admission은 여전히 미완료다.
 Userpath1.9.2는 signature endpoint404이며 DATA/hash/module 대조만 확인했다. 그 부재를
 서명 성공이나 공급 authority로 바꾸지 않는다.

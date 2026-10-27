@@ -80,89 +80,113 @@ func (r PipxPublishReceipt) Invocation() string            { return r.invocation
 // VerifyPipxPublish verifies the fixed upstream pipx GitHub publisher, entirely
 // offline, without extending the existing HAA/UV/PNPM build provenance policies.
 func VerifyPipxPublish(ctx context.Context, body []byte, expected PipxPublishIdentity) (PipxPublishReceipt, error) {
-	if ctx == nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish context is required")
-	}
-	if err := ctx.Err(); err != nil {
-		return PipxPublishReceipt{}, err
-	}
 	if !expected.valid() {
 		return PipxPublishReceipt{}, errors.New("pipx publish identity is invalid")
 	}
-	converted, certDER, err := decodePipxPublish(body, expected)
+	proof, err := verifyPyPIPublish(ctx, body, pypiPublishRequest{expected.SourceCommit, expected.WorkflowRun, expected.WheelSHA256, expected.WheelFilename()}, pipxPublisherPolicy(expected.Version))
 	if err != nil {
 		return PipxPublishReceipt{}, err
+	}
+	return PipxPublishReceipt{expected, proof.provenanceSHA256, proof.invocation}, nil
+}
+
+// Policy is private: only the fixed upstream entry points select a publisher.
+type pypiPublisherPolicy struct {
+	repository, workflow, ref, repositoryID, owner, ownerID, trigger, environment string
+}
+
+type pypiPublishRequest struct{ SourceCommit, WorkflowRun, WheelSHA256, Filename string }
+type pypiPublishProof struct{ provenanceSHA256, invocation string }
+
+func pipxPublisherPolicy(version string) pypiPublisherPolicy {
+	return pypiPublisherPolicy{pipxRepository, "release.yml", "refs/tags/" + version, "151871286", "pypa", "647025", "push", "release"}
+}
+
+func verifyPyPIPublish(ctx context.Context, body []byte, expected pypiPublishRequest, policy pypiPublisherPolicy) (pypiPublishProof, error) {
+	if ctx == nil {
+		return pypiPublishProof{}, errors.New("PyPI publish context is required")
+	}
+	if err := ctx.Err(); err != nil {
+		return pypiPublishProof{}, err
+	}
+	converted, certDER, err := decodePyPIPublish(body, expected.Filename, expected.WheelSHA256, policy)
+	if err != nil {
+		return pypiPublishProof{}, err
 	}
 	cert, err := x509.ParseCertificate(certDER)
 	if err != nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish certificate is invalid")
+		return pypiPublishProof{}, errors.New("PyPI publish certificate is invalid")
 	}
 	key, ok := cert.PublicKey.(*ecdsa.PublicKey)
 	if !ok || key.Curve != elliptic.P256() {
-		return PipxPublishReceipt{}, errors.New("pipx publish certificate requires ECDSA P256")
+		return pypiPublishProof{}, errors.New("PyPI publish certificate requires ECDSA P256")
 	}
 	trusted, err := root.NewTrustedRootFromJSON(publicRoot)
 	if err != nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish trust root is unavailable")
+		return pypiPublishProof{}, errors.New("PyPI publish trust root is unavailable")
 	}
 	verifier, err := verify.NewVerifier(trusted, verify.WithSignedCertificateTimestamps(1), verify.WithTransparencyLog(1), verify.WithObserverTimestamps(1))
 	if err != nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish verifier is unavailable")
+		return pypiPublishProof{}, errors.New("PyPI publish verifier is unavailable")
 	}
 	var signed bundle.Bundle
 	if signed.UnmarshalJSON(converted) != nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish bundle is invalid")
+		return pypiPublishProof{}, errors.New("PyPI publish bundle is invalid")
 	}
-	ref := "refs/tags/" + expected.Version
-	signer := pipxRepository + "/.github/workflows/release.yml@" + ref
+	ref := policy.ref
+	signer := policy.repository + "/.github/workflows/" + policy.workflow + "@" + ref
 	san, err := verify.NewSANMatcher(signer, "")
 	if err != nil {
-		return PipxPublishReceipt{}, err
+		return pypiPublishProof{}, err
 	}
 	issuer, err := verify.NewIssuerMatcher("https://token.actions.githubusercontent.com", "")
 	if err != nil {
-		return PipxPublishReceipt{}, err
+		return pypiPublishProof{}, err
 	}
 	identity, err := verify.NewCertificateIdentity(san, issuer, certificate.Extensions{
 		BuildSignerURI: signer, BuildSignerDigest: expected.SourceCommit,
-		RunnerEnvironment: "github-hosted", SourceRepositoryURI: pipxRepository,
+		RunnerEnvironment: "github-hosted", SourceRepositoryURI: policy.repository,
 		SourceRepositoryDigest: expected.SourceCommit, SourceRepositoryRef: ref,
-		SourceRepositoryIdentifier: "151871286", SourceRepositoryOwnerURI: "https://github.com/pypa",
-		SourceRepositoryOwnerIdentifier: "647025", BuildConfigURI: signer,
-		BuildConfigDigest: expected.SourceCommit, BuildTrigger: "push",
+		SourceRepositoryIdentifier: policy.repositoryID, SourceRepositoryOwnerURI: "https://github.com/" + policy.owner,
+		SourceRepositoryOwnerIdentifier: policy.ownerID, BuildConfigURI: signer,
+		BuildConfigDigest: expected.SourceCommit, BuildTrigger: policy.trigger,
 		SourceRepositoryVisibilityAtSigning: "public",
 	})
 	if err != nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish certificate policy is invalid")
+		return pypiPublishProof{}, errors.New("PyPI publish certificate policy is invalid")
 	}
 	digest, _ := hex.DecodeString(expected.WheelSHA256)
 	verified, err := verifier.Verify(&signed, verify.NewPolicy(verify.WithArtifactDigest("sha256", digest), verify.WithCertificateIdentity(identity)))
 	if err != nil || verified == nil || verified.Statement == nil || verified.Signature == nil || verified.Signature.Certificate == nil {
-		return PipxPublishReceipt{}, errors.New("pipx publish attestation verification failed")
+		return pypiPublishProof{}, errors.New("PyPI publish attestation verification failed")
 	}
 	// This is the same leaf DER passed to sigstore above. These two signed OIDs
 	// are not exposed by the pinned library's certificate.Extensions type.
-	if !validPipxPublisherClaims(cert) {
-		return PipxPublishReceipt{}, errors.New("pipx publish environment or token subject mismatch")
+	if !validPyPIPublisherClaims(cert, policy) {
+		return pypiPublishProof{}, errors.New("PyPI publish environment or token subject mismatch")
 	}
 	invocation := verified.Signature.Certificate.RunInvocationURI
-	attempt, found := strings.CutPrefix(invocation, pipxRepository+"/actions/runs/"+expected.WorkflowRun+"/attempts/")
+	attempt, found := strings.CutPrefix(invocation, policy.repository+"/actions/runs/"+expected.WorkflowRun+"/attempts/")
 	statement := verified.Statement
 	if !found || !runNumber.MatchString(attempt) || statement.GetType() != "https://in-toto.io/Statement/v1" || statement.GetPredicateType() != pipxPublishPredicate || len(statement.GetSubject()) != 1 || (statement.GetPredicate() != nil && len(statement.GetPredicate().GetFields()) != 0) {
-		return PipxPublishReceipt{}, errors.New("pipx publish statement or invocation mismatch")
+		return pypiPublishProof{}, errors.New("PyPI publish statement or invocation mismatch")
 	}
 	subject := statement.GetSubject()[0]
-	if subject == nil || subject.GetName() != expected.WheelFilename() || len(subject.GetDigest()) != 1 || subject.GetDigest()["sha256"] != expected.WheelSHA256 {
-		return PipxPublishReceipt{}, errors.New("pipx publish signed wheel mismatch")
+	if subject == nil || subject.GetName() != expected.Filename || len(subject.GetDigest()) != 1 || subject.GetDigest()["sha256"] != expected.WheelSHA256 {
+		return pypiPublishProof{}, errors.New("PyPI publish signed wheel mismatch")
 	}
 	if err := ctx.Err(); err != nil {
-		return PipxPublishReceipt{}, err
+		return pypiPublishProof{}, err
 	}
 	sum := sha256.Sum256(body)
-	return PipxPublishReceipt{expected, hex.EncodeToString(sum[:]), invocation}, nil
+	return pypiPublishProof{hex.EncodeToString(sum[:]), invocation}, nil
 }
 
 func validPipxPublisherClaims(cert *x509.Certificate) bool {
+	return validPyPIPublisherClaims(cert, pipxPublisherPolicy(""))
+}
+
+func validPyPIPublisherClaims(cert *x509.Certificate, policy pypiPublisherPolicy) bool {
 	if cert == nil {
 		return false
 	}
@@ -170,8 +194,8 @@ func validPipxPublisherClaims(cert *x509.Certificate) bool {
 		oid   asn1.ObjectIdentifier
 		value string
 	}{
-		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 23}, "release"},
-		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 24}, "repo:pypa/pipx:environment:release"},
+		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 23}, policy.environment},
+		{asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 57264, 1, 24}, "repo:" + strings.TrimPrefix(policy.repository, "https://github.com/") + ":environment:" + policy.environment},
 	} {
 		count := 0
 		for _, extension := range cert.Extensions {

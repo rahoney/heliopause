@@ -238,6 +238,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/scripts/check": {},
 		modulePath + "/scripts/update-runtime": {
+			// Developer supply composition reuses the existing bounded wheel provider.
+			modulePath + "/internal/artifact/pypi":                  true,
 			modulePath + "/internal/verification/releaseprovenance": true,
 		},
 	}
