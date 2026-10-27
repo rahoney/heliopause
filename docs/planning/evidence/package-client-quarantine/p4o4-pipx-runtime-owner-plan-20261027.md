@@ -370,3 +370,34 @@ resource/trust 확대나 자동 dependency 추가로 처리하지 않는다. Rel
 `inspection/githubrelease`의 현재 architecture allow map에는 sandbox edge가 없으므로
 실제 typed runner/result binding을 정할 때 필요한 edge만 구체적으로 검토한다. Core/
 Application에 구체 sandbox/pypi 의존성을 추가하거나 미래 placeholder interface를 만들지 않는다.
+
+## B2a — acquired 공급과 고정 unit의 source 전 세부 지도
+
+CI420 종료 checkpoint 뒤 시작한다. M13-004 하나만 IN_PROGRESS다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| immutable plan/intake | YES | YES(private intake) | YES(local) | YES(input only) | sandbox의 acquired input 구성 |
+| C1 DATA introducer | YES | YES(installed/fixture) | YES(local DATA) | YES(DATA only) | current 설치를 읽지 않는 typed acquired 공급 구성 |
+| wheel unit identity/freezer | YES | YES(wheel) | YES(existing) | YES(wheel) | 같은 identity 계산의 재사용과 ZIP용 고정 program |
+| ZIP program의 origin/stdlib 사전검사 | NO | NO | NO | NO | fixed stdlib 우선·원본 ZIP origin·단위별 새 interpreter |
+
+기존 `pipxPreparedTool.introduce`/DATA transport는 그대로 사용한다. 새 private constructor는
+원본 HAA source/name/version/variant/digest/handle와 selected immutable plan을 함께 보존하고
+그 bytes로만 도구를 만든다. 기존 unit identity 계산을 작은 공통 helper로 옮겨 기존 wheel의
+계산 결과를 유지하고, 새20unit에는 원본 HAA subject와 고정 ZIP program을 묶는다.
+Program은 -I -S -B·고정 Python/stdlib 순서·원본 ZIP 내부 target origin을 검증한 후
+ZIP을 append해 import한다. Unit coverage와 기존 필수 plugin은 바꾸지 않는다.
+
+Zero/changed/foreign identity·중복/추가/잘못된 unit·취소를 거부하고 실제 selected ZIP의
+20unit/원본 identity/기존 DATA roundtrip, 고정 image의 program 정상·부정 실행을 확인한다.
+이는 source/input/loader만의 묶음이다. 외부 observer·완료 원장 실행·release wiring은
+다음 B2b 이후에 기존 owner를 재사용해 연결하며 B2a가 Evidence를 발행하지 않는다.
+
+B2a [로컬 receipt](./p4o4b2a-acquired-input-program-local-20261028.json)는
+Quick239.916s/sandbox 전체 Race25.955s/actual6.716s/docs/security PASS와 원본 HAA
+subject/immutable DATA·20unit·기존 transport 재사용을 연결한다. 고정 program의 runc20개
+exit0와 preloaded/invalid/missing3개 사전 거부, 보호5파일/Docker/원본 불변을 확인했다.
+첫 operator의 잘못된 파일 경로는 Docker/Python 전 파일 read에서 실패했고 정확한 retained
+asset 경로로 교정했다. 제품 guard나 selected digest를 바꾸지 않았으며 최초 원본을 보존했다.
+외부 관찰과 실제 transaction은 다음 B2b 이후에 남는다. 이 helper만으로 CI를 재실행하지 않는다.

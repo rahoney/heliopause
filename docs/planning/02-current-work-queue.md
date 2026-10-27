@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: CI420/source1e5d21e Required10SUCCESS; same checkout729b/tree391df742/2772; fixed supply/common checker hosted regression qualified
-Next action: M13-004/P4-O4-B2 acquired ZIP typed supply/units and external observation; monitor new CI every20min; CI415 cause OPEN
+Next action: M13-004/P4-O4-B2b fixed ZIP observer profile/topology; monitor new CI every20min; CI415 cause OPEN
 Current substep: M13-004/P4-O4-B2 IN_PROGRESS; B1d common hosted regression qualified; whole pipx/final profiles remain
 Acceptance audit: CI41840476591687 Required completed09:58:08UTC:10SUCCESS; all10 same checkout4b88/tree3649f0bd/source012c7b4. CI415 FD cause remains OPEN; peer PASS does not establish causality.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,15 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P4-O4-B2a 입력과 고정 program 로컬 검증
+
+[B2a receipt](./evidence/package-client-quarantine/p4o4b2a-acquired-input-program-local-20261028.json)는
+원본 HAA acquired identity/handle와 immutable ZIP DATA·20unit의 결합, 기존 C1 transport
+재사용을 확인했다. Quick239.916s/sandbox Race25.955s/actual6.716s/docs/security PASS와
+새 고정 program의 runc20 exit0·사전 거부3개/보호5파일·Docker·원본 불변을 확인했다.
+이는 source/input/program 범위이며 외부 observer·실제 gVisor transaction 완료가 아니다.
+같은 M13-004/B2b의 fixed profile/topology로 이어가고 작은 helper 단독 CI는 실행하지 않는다.
 
 ### 2026-10-28 CI420 최종 확인과20분 직접 조회 요청
 

@@ -68,14 +68,18 @@ func freezePythonObservationUnits(plan artifactpypi.ObservationPlan, closureID s
 		default:
 			return nil, errors.New("python observation unit kind is unsupported")
 		}
-		identity := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%s\x00%s\x00%s", closureID, index, unit.kind, unit.candidate, unit.program)))
-		if unit.coverage != artifactpypi.RequiredObservation {
-			identity = sha256.Sum256(append(identity[:], []byte(unit.coverage)...))
-		}
-		unit.id = string(unit.kind) + ":" + hex.EncodeToString(identity[:])
+		unit.id = observationUnitIdentity(closureID, index, unit)
 		units = append(units, unit)
 	}
 	return units, nil
+}
+
+func observationUnitIdentity(closureID string, index int, unit observationUnit) string {
+	identity := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%s\x00%s\x00%s", closureID, index, unit.kind, unit.candidate, unit.program)))
+	if unit.coverage != artifactpypi.RequiredObservation {
+		identity = sha256.Sum256(append(identity[:], []byte(unit.coverage)...))
+	}
+	return string(unit.kind) + ":" + hex.EncodeToString(identity[:])
 }
 
 // A declarative .pth addition may refer to a directory installed by another

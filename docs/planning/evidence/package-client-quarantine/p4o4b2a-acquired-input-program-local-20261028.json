@@ -1,0 +1,263 @@
+{
+  "scope": "P4-O4-B2a acquired immutable DATA binding, frozen units and fixed runc program only",
+  "status": "LOCAL_QUALIFIED_INPUT_AND_PROGRAM",
+  "baseline_commit": "03c4588",
+  "source_identity": [
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "sha256": "8e19da7c9394bc6c2d81083652309e7271a1757b97827d615c04a538ecacc8c5"
+    },
+    {
+      "path": "internal/sandbox/pipx_observation_input.go",
+      "sha256": "16d537d29b4ee96e6f28e7f9db9962846af3a8c605b3c0b21b53705efc8db4fe"
+    },
+    {
+      "path": "internal/sandbox/pipx_observation_input_test.go",
+      "sha256": "41082388a3295338688a56df856d4ea491cf8e2cc7fd611c83cd31d0943d64f1"
+    },
+    {
+      "path": "internal/sandbox/pipx_observation_input_real_test.go",
+      "sha256": "67341099b1c2ee08f38b948dab74c6a03ee15ae739d74152d9071a0c78bae9af"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.642
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 239.916
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 25.955
+    },
+    {
+      "step": "actual",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-v",
+        "./internal/sandbox",
+        "-run",
+        "^TestPipxObservationActualAcquiredInputAndFrozenProgram$"
+      ],
+      "exit_code": 0,
+      "seconds": 6.716
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.258
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.821
+    }
+  ],
+  "selected_zip_sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+  "units": 20,
+  "required": 15,
+  "post_install_commands": 5,
+  "program_sha256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+  "controller_unit_facts": [
+    {
+      "ID": "DIRECT_IMPORT:f5013cde468c35a888d7f44955360d58f2b31dcb264b05c0cd670800307aecbc",
+      "Candidate": "_pytest",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:7f14189710d0c71c08ba59f1740092e9c74b5a0ad951dfab965d9158a8ba4dde",
+      "Candidate": "_pytest.config",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": "POST_INSTALL_COMMAND"
+    },
+    {
+      "ID": "DIRECT_IMPORT:4bb37ecbbe748cd5e6e78ab1d31db4a7a56eacec3cb741b40f323cf4e4c77250",
+      "Candidate": "argcomplete",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:9988fe8d98db189103ea01f030f92aa69c62be425f3f9e0e69c15a77a2df0495",
+      "Candidate": "argcomplete.scripts.activate_global_python_argcomplete",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": "POST_INSTALL_COMMAND"
+    },
+    {
+      "ID": "DIRECT_IMPORT:03f95a317d18565d9806d0a718d78e85dbf01a88394c9a2a4f3dd79cc25b31eb",
+      "Candidate": "argcomplete.scripts.register_python_argcomplete",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": "POST_INSTALL_COMMAND"
+    },
+    {
+      "ID": "DIRECT_IMPORT:155c720ac81758feb10c61be2a3436b6fdc69215a32cf55647af8693197724d6",
+      "Candidate": "click",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:6b55a038125fa7833918ea985f7f3ba9f0160a4ddb63c231bc5815bcc08f3b9a",
+      "Candidate": "filelock",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:1474ef067247798703f1464b52b74b2049bbac5af8a349b8ef00e08dc04b6ee9",
+      "Candidate": "iniconfig",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:e012ce3e926466afc8833c56dcc7d27b36816018a4efe2fe4188f5f4b7eeae0c",
+      "Candidate": "packaging",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:22e5314bffe8beaf676a6c74e782aaed2ced776742d44de942e30185f386fbe1",
+      "Candidate": "pipx",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:4e7d681f8ff28e77e4b9e2f914768d1240b5b96c3af4bcfac1821a5a313bec05",
+      "Candidate": "pipx.__main__",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:2d9d3b716f90e607a2674be3d4044acaac122601b5b5799ff4feaa14432e7c03",
+      "Candidate": "platformdirs",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:544071d6f759bacc175126170336dbe1da8bfd6f7a59adc2861341a8f2abe562",
+      "Candidate": "platformdirs.pytest_plugin",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:bf1ac2c21cdbdeff9cc3113057f530957106f76b2a432326f981d0f3e5783002",
+      "Candidate": "pluggy",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:c286f147a282d35b142ee7da542ceaf854818f437de69d7bfdaea56151683151",
+      "Candidate": "py",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:445099e7bfd0968fb7ea9716c745dcc51e49d3333977308ef3388585c6334f17",
+      "Candidate": "pygments",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:ad3f282cca6b48af513253107c9df8d1b14be24380fe6dbca1d27dce9725e505",
+      "Candidate": "pygments.cmdline",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": "POST_INSTALL_COMMAND"
+    },
+    {
+      "ID": "DIRECT_IMPORT:07f97d068189b833e6f6bbd2601f803e2002c8089cbc88f075d57ab084f603fb",
+      "Candidate": "pytest",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:ff7f1da7d7e5b1789a8594dc5ffe08fbc66b47e2397a5933375af5373bc5d284",
+      "Candidate": "userpath",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": ""
+    },
+    {
+      "ID": "DIRECT_IMPORT:94490d5c791ce2090cae77e951f72e2c7b50e3801a7e9cdfc290b4b8afd9eac0",
+      "Candidate": "userpath.cli",
+      "OwnerDigest": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "ProgramSHA256": "83ba5e8d16c02f60a2723954e835b3048e4e1b8a4baeec2921213153e977aa9f",
+      "Coverage": "POST_INSTALL_COMMAND"
+    }
+  ],
+  "runc": {
+    "scope": "frozen controller ZIP program in fixed Python runc; 20 original units and 3 preflight refusals; not gVisor/external observer/inspection completion",
+    "image_id": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191",
+    "normal_zero_exit": 20,
+    "preflight_refusals": 3,
+    "host_unchanged": true,
+    "input_unchanged": true
+  },
+  "first_operator_failure": {
+    "cause": "broad task-prefix replacement changed the frozen input path to a nonexistent path",
+    "stage": "input file read; no Docker/Python execution reached",
+    "correction": "use exact retained selected asset path; digest assertion unchanged",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p4o4b2a-program-operator.log"
+  },
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4b2a-raw-inventory.json",
+  "missing": [
+    "B2b external observer profile/topology and direct ARTIFACT admission",
+    "existing transaction execution/accounting/cleanup with actual gVisor",
+    "required release composite and complete release/native pipx/CLI qualification"
+  ]
+}
