@@ -1004,7 +1004,8 @@ Stored args/interpreter를 실행하거나 native/public CLI·ownership/Policy�
 | --- | --- | --- | --- | --- | --- |
 | `ToolReceipt.BindWheels`의 pipx whole closure startup gate | YES | YES (receipt 이후) | YES (기존 L2) | YES (그 binder 범위) | native metadata query 이전의 실제 소비자 |
 | `UVLock.BindWheels`, `bindUVSelectedWheels`, `inspectUVArchiveCandidates`의 original hash/RECORD·aggregate/source/constraints/graph | YES | YES (UV) | YES (기존 scopes) | YES (UV scopes) | 같은 authentic original input에 pipx pre-query gate 결합 |
-| Pipx pre-query whole graph entry | NO | NO | NO | NO | receipt를 조작/합성하지 않고 원본 whole wheel을 검증하는 좁은 entry |
+| `BindPipxSupplyClosure/BindPipxRuntimeSupply`의 installed runtime 공급 startup gate | YES | YES (고정 supply) | YES (O2/B1d) | YES (supply scope) | arbitrary user tool 소비자가 아님; supply root/project/namespace 제약 유지 |
+| Pipx user-tool pre-query whole graph entry | NO | NO | NO | NO | receipt를 조작/합성하지 않고 원본 whole wheel을 검증하는 좁은 entry |
 
 C3c1은 `UVLock.BindPipxQueryWheels`에서 기존 native UV lock의 실제 original selected wheels,
 independent source pages, pinned target/limits를 검증하고 `validatePipxMetadataSurface`를 전체
@@ -1026,3 +1027,70 @@ frontend/receipt/census와 원본 constraints/upgrade semantics의 대조 없이
 새 client 지원으로 선언하지 않는다. Backend child에 CONTROL/network 권한을 상속하거나
 existing D-015/zero-authority 계약을 바꾸는 선택은 하지 않는다. 실행 argv/환경과 실제
 선택의 source 전 지도·qualification은 C3c1과 별도로 필요하다.
+
+
+C3c1 source 착수 기준은 `2f350163238a4dd41bb69bc0eb754a3bd90f80d9`,
+tree `1aa93a1c2bb6b5fe0c8f55d5ea360a8e3f55a163`/2819파일이다. 추가 대조한 기존 supply
+binder도 같은 startup gate를 이미 쓰지만 고정 pipx/pytest 공급 root와 namespace·실행 surface
+제약을 소유한다. 이 owner를 arbitrary tool resolver로 넓히지 않고 shared wheel/source/graph
+검증에만 새 pre-query entry를 연결한다. C3b 이후 source 교체나 별도 resolver engine은 없다.
+
+
+C3c1 명시 actual corpus는 기존42개 frozen input의 원본 userpath/click 두 wheel과 각 exact
+release metadata다. Canonical input hash42개를 먼저 대조하고 native-shaped lock은 test 내부의
+parser-binding fixture임을 명시한다. 새 native solver/query 성공으로 쓰지 않는다. 전체 원본
+archive/source/RECORD·dependency graph와 changed archive 거부를 검사하며 supply를
+다운로드/보강하거나 artifact/Host interpreter를 실행하지 않는다. 고정 runtime supply와
+일반 user-tool graph는 서로 다른 owner 범위로 유지한다.
+
+
+### C3c2 — fixed native pipx program/argv의 source 전 세부 지도
+
+| 기존 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| O3/B2 isolated `-I -S -B` ZIP loader/stdlib-first original namespace | YES | YES (developer/acquired observation) | YES (그 named scopes) | YES (그 scopes) | native CLI의 closed operation/argv·fixed offline 환경 |
+| C2 DATA seed/RO anchor/seal/readers·UV protected supply/runtime volume | YES | YES (각 기존 consumer) | YES (named local/UV scopes) | YES (그 scopes) | native 실행 consumer 결합; DATA pin을 실행 권한으로 쓰지 않음 |
+| `ParsePipxToolReceipt`, C3a projection/C3b original input | YES | YES (inert) | YES (named local) | NO (native consumer) | 실제 native metadata/layout와 대조 |
+| Native fixed CLI program·offline fixed roots/argv | NO | NO | NO | NO | exact fixed program과 typed install/upgrade/version, explicit guest 환경 |
+
+첫 source 범위는 `internal/sandbox/pipx_native_command.go`의 fixed program과 private
+closed-operation argv/환경 builder다. Public CLI나 CONTROL admission/profile은 여기서
+추가하지 않는다. Python path/flags·stdlib-only startup·original ZIP namespace를 고정하고
+원본 pipx.__main__.cli를 호출한다. Requirement는 기존 public canonical parser의 단일
+spec이며 upgrade는 bare project만 받는다. 임의 argv/path/program/backend/Host PATH 또는
+원본 receipt pip_args·source_interpreter를 받지 않는다.
+
+Install은 native `install <spec> --backend uv --python /usr/local/bin/python`, upgrade는
+native `upgrade <project> --backend uv`에 controller-owned nonempty `--pip-args`만 준다.
+Selected pipx 원본 `commands/upgrade.py:443`은 nonempty 새 pip_args가 저장 recipe보다
+우선하며578은 원래 specifier를 제거한다. Fixed flags는 no-build/no-sources/no-config/
+no-cache/no-python-downloads/no-managed-python/copy/public index이고 Python flag는 pipx에만
+준다. Backend는 venv Python을 별도로 지정하므로 기존 UV common argv의 --python을
+중복 전달하지 않는다. 원본 immutable source를 수정/monkeypatch하지 않는다.
+
+환경은 고정 guest PATH의 protected `/haa-runtime/uv`, pinned Python, private `/haa-site/pipx`
+HOME와 tool-bin/man/completion roots, bytecode off 및 explicit offline/no-index/frozen wheel
+find-links를 사용한다. UV venv 단계에도 no-config/no-download가 적용되는지 exact selected
+UV의 실제 동작으로 확인한다. Public network 획득은 이 native phase 밖에서 종료한다.
+Source interpreter는 고정 guest Python이며 Artifact-capable query는 별도 admission 대상이다.
+
+검증: canonical Quick/전체 sandbox Race·tag vet/docs/security와 operation/canonical source/
+constraint·고정 argv/env의 negative를 먼저 실행한다. 명시 runc/network-none/read-only/
+cap-drop/ordinary1000 guest에서 selected ZIP·fixed UV·기존 frozen userpath/click 원본의
+version/native install/no-op upgrade와 strict0.12 metadata·separate link inventory를 대조한다.
+C2 owner의 writer→RO anchor→writer 제거→seal/readers와 exact owned cleanup을 재사용한다.
+검사 대상 명령 entrypoint는 실행하지 않는다. 이 runc diagnostic은 actual program/argv·
+offline native 의미 범위이며 gVisor/external observation·installed current 공급·current
+Policy/Host publication 또는 whole support qualification이 아니다. Changed-version/retired
+commands, public native frozen selection과 runtime/profile·guarded promotion/CLI는 남는다.
+
+
+### C3c1 named local 결과 — 2026-10-28
+
+[C3c1 receipt](./p4o4c3c1-prequery-wheel-gate-local-20261028.json)의 Quick251.469s/전체 PyPI
+Race9.934s/tag vet/docs/security가 PASS다. Whole original/source/graph와 pre-query startup
+거부를 결합했고 기존 UV·fixed supply owner 의미를 유지했다. 명시 original userpath/click
+corpus2.640s는 canonical42 input hash/readback·두 authenticated archive graph와 changed
+archive 거부를 확인했다. Native-shaped lock은 test 내부 parser-binding fixture이며 실제
+solver/query나 current Policy/Host 반입 결과가 아니다. 다음은 위 C3c2 fixed native program/
+argv·offline actual diagnostic이며 native current/hosted/final acceptance는 계속 열린다.

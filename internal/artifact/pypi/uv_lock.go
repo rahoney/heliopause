@@ -186,10 +186,14 @@ func (l UVLock) BindWheels(inputs []UVWheelInput, pages []SimpleProject, target 
 }
 
 func bindUVSelectedWheels(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
+	return bindUVSelectedWheelsWithSurface(packages, python, root, inputs, pages, target, limits, nil)
+}
+
+func bindUVSelectedWheelsWithSurface(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits, surface func(WheelInspection) error) ([]Candidate, error) {
 	if len(pages) != len(packages) {
 		return nil, errors.New("uv selected wheel set is incomplete")
 	}
-	candidates, err := uvArchiveCandidates(packages, python, root, inputs, target, limits)
+	candidates, err := inspectUVArchiveCandidates(packages, python, root, inputs, target, limits, surface)
 	if err != nil {
 		return nil, err
 	}
