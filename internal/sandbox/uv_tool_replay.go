@@ -135,6 +135,10 @@ func uvToolUpgradeReplayArchive(input artifactpypi.UVToolUpgradeInput, controls 
 		}
 	}
 	directories := map[string]bool{"tools": true, "tool-bin": true, env: true, env + "/bin": true, env + "/lib": true, env + "/lib/python3.14": true, site: true}
+	return serializeToolReplayArchive(files, directories)
+}
+
+func serializeToolReplayArchive(files map[string]uvToolReplayMember, directories map[string]bool) ([]byte, error) {
 	var names, dirs []string
 	for name := range files {
 		names = append(names, name)

@@ -1,0 +1,131 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-b3a inert original metadata/scaffold deterministic archive and fixed stdin transport only",
+  "baseline_commit": "c7e6c5c8985da0ee3fce0842b34b469b09b2f42e",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (archive and fixed transport boundary/tests)",
+    "QUALIFIED": "YES (named default/Race fixtures)",
+    "ACCEPTANCE_CLOSED": "YES (C-b3a helper scope only)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "9fea37711a3f3608e6830865ce786f2be7f6406e5e03c16bbf02f7ab635f22cb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "a8aad4c93f385a5924ff1af39738c83501c5f61677cd2cb6c36cb27e8d04e941"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "187209d663a7a43f5bc724ca3d767681aba1544a6ac4a3e430bdaaced33bbd93"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "8fcdc1b9f213feede45bcee8a6c21d9c96b25e3ea8c6308bfc0320c8fc514f11"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "6cb4ff24b8d9ea1a25ad851e082ec6899b22ae63eb0db4cbc24ff829083ec2eb"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "e84061b4cc0cac72db9abd1aba5b0caa2faf06efeac010efd9d2285a798c6047"
+      },
+      {
+        "path": "internal/sandbox/uv_tool_replay.go",
+        "sha256": "1733d908ea2033d82a20915cd524aa601994fa8c5f12d6d31f844f1efd4fea84"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay.go",
+        "sha256": "0a257af136b90a8fd46cf74c68bf9701178e55ddf5c88aadf3d0a6e8ee1c826d"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay_test.go",
+        "sha256": "1f0d451f5adc7a200313963f9d185c23252d46c549e28745a5abffa713640dce"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "0a342bfb51fd113e0ee65378a0fc2b3467330262f8918a2fbab4ac7c42d33b20",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.694
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 206.627
+      },
+      {
+        "step": "sandbox-race",
+        "exit_code": 0,
+        "seconds": 26.962
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.114
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.371
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.254
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 13.014
+      }
+    ]
+  },
+  "mechanical_reuse": {
+    "baseline_commit": "c7e6c5c8985da0ee3fce0842b34b469b09b2f42e",
+    "path": "internal/sandbox/uv_tool_replay.go",
+    "old_serializer_tail_bytes": 1636,
+    "old_serializer_tail_sha256": "7bd3a8d88b5ad793400cbfb6dd4dff0dac3065512689d3b2d10dbaea550c78f5",
+    "extracted_serializer_body_byte_identical": true,
+    "uv_input_and_file_generation_unchanged": true,
+    "postformat_inverse_extraction_equals_entire_baseline_file": true,
+    "prior_public_factory_go9_unchanged": true
+  },
+  "new_boundary_tests": [
+    "exact controlled tar membership/UID/GID/modes",
+    "original receipt constraints preserved; new upgrade request is bare project",
+    "canonical guest aliases and no Host paths/original package modules/interpreter bytes/original RECORD",
+    "only generated inert0400 commands and verified METADATA/WHEEL; generated RECORD paths/hash/size",
+    "no fabricated native log; initial replay not completed native output",
+    "invalid original/missing or changed WHEEL/collision/context/cancel/foreign container/runner command0",
+    "producer failure preserved with exact docker cp --archive stdin/guest path",
+    "existing serializer byte limit and existing UV replay regressions"
+  ],
+  "cpp18_unchanged": true,
+  "prior_actual_reused_scope": "C-b2 fresh public path source9 unchanged; no new actual original-aware native upgrade claim",
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-b3a-",
+  "MISSING": [
+    "C-b3b observed original-aware upgrade session and production public upgrade",
+    "actual native version delta/no-op and whole source binding",
+    "current complete inspection/Policy/cache/Host transaction/CLI",
+    "hosted/final CPU-CUDA/signed-native and legacy ZIP CPU boundary qualification"
+  ]
+}

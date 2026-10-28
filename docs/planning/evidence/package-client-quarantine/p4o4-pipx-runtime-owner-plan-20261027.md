@@ -2087,3 +2087,51 @@ C-b2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 YES(이 fresh public selec
 범위)다. 검사/Policy/Host 승인이나 signed/hosted 지원은 아니다. 같은 M13-004/C-b3의
 원본 upgrade baseline을 확인하며 current 전체 검사·cache·transaction·CLI/최종 profiles 및
 legacy mixed CPU parent는 MISSING이다. 새 push/원격 CI/타이머는 시작하지 않았다.
+
+## C-b3a — inert pipx original replay builder source 전 감사
+
+기준c7e6c5c/tree965d1f94/2853파일에서 related lessons/Queue와 C3b/UV replay/strict Pipx
+original parser·layout를 대조했다. Fixed selected ZIP의 data-only source 확인에서
+pipx.commands.upgrade._upgrade_package는 parse_specifier_for_upgrade를 호출하고,
+venv.upgrade_package는 backend.install(upgrade=True) 뒤 bare specifier로 metadata를
+갱신한다. 저장된 version 제약을 실행 argv에 그대로 넘기지 않는 기존 계약과 일치한다.
+
+| 책임 / 기존 symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| PipxToolUpgradeInput/Control·ReplayWheelControls·WithPipxLayout | YES | YES (inert parser) | YES (기존) | YES (parser scopes) | generated native guest metadata view |
+| UV original replay metadata/scaffold/RECORD+tar serializer | YES | YES (UV) | YES (기존) | YES (UV scope) | 기존 serializer의 byte-identical 추출·pipx builder 소비 |
+| pipx bounded replay archive/fixed transport | NO | NO | NO | NO | 아래 C-b3a builder/negative 및 controller-only tar/command0 |
+| original-aware native session/public upgrade/current Policy·CLI | NO | NO | NO | NO | C-b3b 이후; 이번 scaffold를 native 성공으로 쓰지 않음 |
+
+기존 uv_tool_replay.go의 metadata/UV layout는 변경하지 않는다. 그 함수의 deterministic
+serializer 꼬리만 private serializeToolReplayArchive(files, directories)로 추출해 byte-identical
+본문을 재사용한다. Generic ports나 새 protocol을 만들지 않는다. 새 pipx_tool_replay.go는
+PipxToolUpgradeInput의 exact Control/Replay 검증과 WithPipxLayout을 소비해 canonical
+pipx/venvs/<project>·tool-bin/immutable Python aliases·pyvenv.cfg·pipx metadata·검증한
+METADATA/WHEEL만 넣는다. 별도 기존 inert command stub/생성 RECORD를 재사용하고
+원래 RECORD/모듈/hook/code/interpreter payload를 복사하지 않는다. Pipx fixed auxiliary
+scaffold는 source 전 exact census의 경로/mode를 따르며 genuine native log를 위조하지 않는다.
+따라서 이 초기 view를 이미 완료한 native output으로 표시하지 않는다.
+
+입력의 original recipe/Host path·source interpreter는 실행 인자가 아니다. Fixed transport는
+검증한 full container-ID와 /haa-site의 docker cp --archive stdin만 쓴다. Whole source/새 native
+selection·target ownership/Policy authority는 생성하지 않는다. Invalid/changed/missing WHEEL,
+command/path collision·취소·foreign container/runner/oversize는 command0/zero archive다.
+검증은 canonical Quick/전체 sandbox Race/tag build/docs/security, tar membership/UID/mode/
+원본 불변·생성 RECORD와 UV serializer 기계적 동일성이다. Native version delta/no-op, 실제
+observed original-aware session/public upgrade와 current 검사·CLI는 다음 gap이다.
+
+### C-b3a inert archive/고정 transport 한정 검증
+
+[로컬 receipt](./p4o4c3c3b3c-b3a-inert-original-replay-local-20261028.json)의
+format0.694s/Quick206.627s/전체 sandbox Race26.962s/tag vet1.114s/build7.371s/docs0.254s/
+security13.014s가 PASS다. Go12 source/binary0a342bfb를 pre/post 결합했고 기존 public factory
+Go9는 B2 actual source와 동일하다. Serializer 본문은 byte-identical이며 추출을 역으로
+돌리면 기존 uv_tool_replay.go 전체와 같다. Fixed original/view의 exact membership·UID/mode,
+원본/Host 경로 보존 경계·generated RECORD·inert0400 commands·byte limit 및 기존 UV와
+invalid/cancel/collision/변조·foreign target command0/생산자 오류 보존을 검증했다.
+C-b3a IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 YES(archive/port fixture 범위)다.
+실제 original-aware native 업그레이드/새 metadata 결과를 검증한 것이 아니며 원본 코드/
+interpreter/RECORD나 가짜 native log를 복사하지 않는다. 같은 C-b3b에서 기존 session을
+operation-aware로 좁게 연결하고 native version delta/no-op/정리를 실제 확인한다.
+Current 검사/Policy·cache·guarded transaction·CLI와 hosted/final/legacy CPU gap은 남는다.
