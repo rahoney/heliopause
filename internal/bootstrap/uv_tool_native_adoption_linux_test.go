@@ -102,6 +102,33 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 	if os.Getenv("HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION") != "1" {
 		t.Skip("requires authenticated pinned native UV tool CLI environment")
 	}
+	nativeToolAdoptionCLIIntegration(t, false)
+}
+
+func TestLinuxPipxToolNativeAdoptionCLIIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PIPX_TOOL_NATIVE_ADOPTION_INTEGRATION") != "1" {
+		t.Skip("requires authenticated pinned native pipx tool CLI environment")
+	}
+	nativeToolAdoptionCLIIntegration(t, true)
+}
+
+func nativeToolAdoptionCLIIntegration(t *testing.T, pipx bool) {
+	t.Helper()
+	environments, receiptName, rawControl, hostControl := "tools", "uv-receipt.toml", "uv-tool-original-native-receipt.toml", "uv-tool-host-receipt.toml"
+	parseReceipt := artifactpypi.ParseUVToolReceipt
+	fixture := uvNativeToolOriginalFixture
+	command := []string{"uv", "tool", "upgrade"}
+	selected := "6.0"
+	if pipx {
+		environments, receiptName, rawControl, hostControl = "venvs", "pipx_metadata.json", "pipx-tool-original-native-receipt.json", "pipx-tool-host-receipt.json"
+		parseReceipt = artifactpypi.ParsePipxToolReceipt
+		fixture = pipxNativeToolOriginalFixture
+		command = []string{"pipx", "upgrade"}
+		selected = "6.1"
+	}
+	arguments := func(selector, target, bin string) []string {
+		return append(append([]string{"--lang", "en", "--output", "json"}, command...), selector, "--target", target, "--bin-dir", bin)
+	}
 	if os.Geteuid() == 0 {
 		t.Fatal("native tool qualification requires ordinary user")
 	}
@@ -117,13 +144,13 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 	if err := os.Mkdir(native, 0700); err != nil {
 		t.Fatal(err)
 	}
-	target, bin := filepath.Join(native, "tools", "cowsay"), filepath.Join(native, "commands")
-	uvNativeToolOriginalFixture(t, ctx, target, bin, uvNativeToolImageInterpreter(t), "cowsay==6.0")
+	target, bin := filepath.Join(native, environments, "cowsay"), filepath.Join(native, "commands")
+	fixture(t, ctx, target, bin, uvNativeToolImageInterpreter(t), "cowsay==6.0")
 	note := filepath.Join(target, "user-note")
 	if err := os.WriteFile(note, []byte("preserve native user data"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	receiptPath := filepath.Join(target, "uv-receipt.toml")
+	receiptPath := filepath.Join(target, receiptName)
 	originalFiles := uvNativeToolFiles(t, native)
 	for _, path := range []string{receiptPath, filepath.Join(target, "bin", "cowsay"), filepath.Join(target, "pyvenv.cfg")} {
 		file, present := originalFiles[path]
@@ -140,12 +167,12 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	parsed, err := artifactpypi.ParseUVToolReceipt(originalReceipt)
+	parsed, err := parseReceipt(originalReceipt)
 	if err != nil || parsed.Requirement().Requirement() != "cowsay==6.0" {
 		t.Fatal("native producer did not retain its actual exact public requirement", err)
 	}
 	t.Logf("actual_native_tool_raw_receipt=%q", originalReceipt)
-	args := []string{"--lang", "en", "--output", "json", "uv", "tool", "upgrade", "cowsay", "--target", target, "--bin-dir", bin}
+	args := arguments("cowsay", target, bin)
 	refuse := func(flags ...string) {
 		t.Helper()
 		before := uvNativeToolFiles(t, native)
@@ -214,10 +241,10 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 				if err := os.Mkdir(bounded, 0700); err != nil {
 					t.Fatal(err)
 				}
-				target = filepath.Join(bounded, "tools", "cowsay")
+				target = filepath.Join(bounded, environments, "cowsay")
 				boundedBin := filepath.Join(bounded, "commands")
-				uvNativeToolOriginalFixture(t, ctx, target, boundedBin, uvNativeToolImageInterpreter(t), "cowsay>=6.0,<=6.1")
-				originalReceipt, err = os.ReadFile(filepath.Join(target, "uv-receipt.toml"))
+				fixture(t, ctx, target, boundedBin, uvNativeToolImageInterpreter(t), "cowsay>=6.0,<=6.1")
+				originalReceipt, err = os.ReadFile(filepath.Join(target, receiptName))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -230,7 +257,14 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 				if err := os.WriteFile(note, []byte("preserve native user data"), 0600); err != nil {
 					t.Fatal(err)
 				}
-				phaseArgs = []string{"--lang", "en", "--output", "json", "uv", "tool", "upgrade", "cowsay==6.0", "--target", target, "--bin-dir", boundedBin}
+				selector := "cowsay==6.0"
+				if pipx {
+					selector = "cowsay"
+				}
+				phaseArgs = arguments(selector, target, boundedBin)
+			}
+			if pipx {
+				wantRequirement, _ = artifactpypi.ParseUpgradeRequirement("cowsay")
 			}
 			var out, diagnostic bytes.Buffer
 			if err := bootstrap.Run(ctx, append(phaseArgs, "--adopt"), &out, &diagnostic); err != nil {
@@ -276,44 +310,51 @@ func TestLinuxUVToolNativeAdoptionCLIIntegration(t *testing.T) {
 			if step != "managed-repeat-adopt" {
 				wanted = 10
 			}
+			if pipx {
+				wanted++
+			}
 			if err != nil || json.Unmarshal(manifest, &record) != nil || len(record.Controls) != wanted {
 				t.Fatal("native current Manifest/control binding missing", err)
 			}
-			published, err := os.ReadFile(filepath.Join(target, "uv-receipt.toml"))
+			published, err := os.ReadFile(filepath.Join(target, receiptName))
 			if err != nil {
 				t.Fatal(err)
 			}
 			raw, source, host := false, false, false
 			for _, control := range record.Controls {
 				switch control.Name {
-				case "uv-tool-original-native-receipt.toml":
+				case rawControl:
 					raw = bytes.Equal(control.Content, originalReceipt)
 				case "pypi-update-native-ownership.json":
 					source = len(control.Content) > 0
-				case "uv-tool-host-receipt.toml":
+				case hostControl:
 					host = bytes.Equal(control.Content, published)
 				}
 			}
 			if !host || (step != "managed-repeat-adopt" && (!raw || !source)) || (step == "managed-repeat-adopt" && (raw || source)) {
 				t.Fatal("raw source proof/managed current approval conflated")
 			}
-			receipt, err := artifactpypi.ParseUVToolReceipt(published)
+			receipt, err := parseReceipt(published)
 			if err != nil || !receipt.Requirement().SameConstraints(wantRequirement) {
 				t.Fatal("authentic native original constraint changed", err)
 			}
-			metadata, err := os.ReadFile(filepath.Join(target, "lib/python3.14/site-packages/cowsay-6.0.dist-info/METADATA"))
-			if err != nil || !bytes.Contains(metadata, []byte("Version: 6.0")) {
+			metadata, err := os.ReadFile(filepath.Join(target, "lib/python3.14/site-packages/cowsay-"+selected+".dist-info/METADATA"))
+			if err != nil || !bytes.Contains(metadata, []byte("Version: "+selected)) {
 				t.Fatal("selected current native version missing", err)
 			}
-			if step == "native-bounded-version-change" {
-				if _, err := os.Lstat(filepath.Join(target, "lib/python3.14/site-packages/cowsay-6.1.dist-info/METADATA")); !errors.Is(err, os.ErrNotExist) {
+			if (!pipx && step == "native-bounded-version-change") || (pipx && step == "native-exact-pin") {
+				retired := "6.1"
+				if pipx {
+					retired = "6.0"
+				}
+				if _, err := os.Lstat(filepath.Join(target, "lib/python3.14/site-packages/cowsay-"+retired+".dist-info/METADATA")); !errors.Is(err, os.ErrNotExist) {
 					t.Fatal("retired authentic native old6.1 remained", err)
 				}
 			}
 			if body, err := os.ReadFile(note); err != nil || string(body) != "preserve native user data" {
 				t.Fatal("native user file changed", err)
 			}
-			t.Logf("actual_native_tool_adoption case=%s controls=%d current_evidence=%d original_requirement=%s selected=6.0", step, wanted, len(seen), wantRequirement.Requirement())
+			t.Logf("actual_native_tool_adoption pipx=%t case=%s controls=%d current_evidence=%d current_requirement=%s selected=%s", pipx, step, wanted, len(seen), wantRequirement.Requirement(), selected)
 		})
 	}
 }

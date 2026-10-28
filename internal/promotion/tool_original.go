@@ -61,10 +61,15 @@ func captureToolOriginalWithProjection(ctx context.Context, g *toolFreshTarget, 
 		return nil, err
 	}
 	if projection != nil {
-		if g.client != toolClientUV {
-			return nil, errors.New("pipx native enrollment is unavailable")
+		if g.client == toolClientPipx {
+			if g.original == nil || g.original.native == nil || g.original.native.ownershipSHA == "" {
+				return nil, errors.New("pipx original projection requires complete independent source proof")
+			}
+			if err := g.original.native.verify(ctx, g); err != nil {
+				return nil, err
+			}
 		}
-		expected, err := receipt.WithUVLayout(g.tx.plan.root, g.binRoot)
+		expected, err := g.client.projectReceipt(receipt, g.tx.plan.root, g.binRoot)
 		if err != nil || !bytes.Equal(expected.Body(), projection.Body()) {
 			return nil, errors.New("native tool original projection changed its raw receipt semantics")
 		}

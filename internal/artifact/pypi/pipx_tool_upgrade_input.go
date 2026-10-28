@@ -151,3 +151,35 @@ func ParsePipxToolUpgradeInput(controls []domain.ProjectControlFile, python stri
 	}
 	return input, nil
 }
+
+// NativeUVEnrollmentRecipeSupported narrows the first native original format.
+// It is a static data-format gate, never source/ownership/execution authority.
+func (u PipxToolUpgradeInput) NativeUVEnrollmentRecipeSupported() bool {
+	if !u.receipt.Valid() || u.receipt.Client() != "pipx" {
+		return false
+	}
+	var wire pipxToolReceiptWire
+	if json.Unmarshal(u.receipt.Body(), &wire) != nil || wire.Main == nil || !supportedPipxUpgradeRecipe(wire.Main.PipArgs) {
+		return false
+	}
+	noBuild, noSources, copyMode := false, false, false
+	for i := 0; i < len(wire.Main.PipArgs); i++ {
+		name, value, equal := strings.Cut(wire.Main.PipArgs[i], "=")
+		switch name {
+		case "--no-build":
+			noBuild = true
+		case "--no-sources":
+			noSources = true
+		case "--link-mode":
+			if !equal {
+				i++
+				if i >= len(wire.Main.PipArgs) {
+					return false
+				}
+				value = wire.Main.PipArgs[i]
+			}
+			copyMode = value == "copy"
+		}
+	}
+	return noBuild && noSources && copyMode
+}

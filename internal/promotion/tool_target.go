@@ -138,7 +138,7 @@ func beginToolTargetWithNative(ctx context.Context, install domain.InstallContex
 }
 
 func beginToolTargetForClient(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool, native *pypiNativeEnrollment, client toolClient) (result *toolFreshTarget, resultErr error) {
-	if !client.valid() || client == toolClientPipx && native != nil {
+	if !client.valid() {
 		return nil, errors.New("tool client or original mode is unavailable")
 	}
 	if ctx == nil || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || !install.Valid() || install.Mode() != domain.InstallPythonVenv || requirement.Project() == "" || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() || len(trustedRoots) == 0 {

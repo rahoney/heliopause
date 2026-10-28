@@ -14,7 +14,10 @@ import (
 )
 
 func TestPipxClientRoutesDistinctCanonicalInstallAndBareUpdate(t *testing.T) {
-	for _, step := range []struct{ operation, input string }{{"install", "Demo_Package@1.0"}, {"install", "demo-package>=1,<2"}, {"upgrade", "demo-package"}} {
+	for _, step := range []struct {
+		operation, input string
+		adopt            bool
+	}{{"install", "Demo_Package@1.0", false}, {"install", "demo-package>=1,<2", false}, {"upgrade", "demo-package", false}, {"upgrade", "demo-package", true}} {
 		target, bin := uvToolCLIPaths(t)
 		root, err := New(&bytes.Buffer{}, io.Discard)
 		if err != nil {
@@ -30,6 +33,9 @@ func TestPipxClientRoutesDistinctCanonicalInstallAndBareUpdate(t *testing.T) {
 			t.Fatal(err)
 		}
 		args := []string{"--output", "json", "--lang", "ko", "pipx", step.operation, step.input, "--target", target, "--bin-dir", bin}
+		if step.adopt {
+			args = append(args, "--adopt")
+		}
 		if source, err := PreparePresentation(root, args); err != nil || source != "pypi" || SelectedPackageClient(root) != PipxPackageClient || SelectedPackageClientOperation(root) != step.operation {
 			t.Fatal("pipx route/client/operation changed", err)
 		}
@@ -47,7 +53,7 @@ func TestPipxClientRoutesDistinctCanonicalInstallAndBareUpdate(t *testing.T) {
 			t.Fatal("canonical request changed")
 		}
 		if step.operation == "upgrade" {
-			expected, err := application.NewInstallUpdateRequest(request.Source(), step.input, request.Context(), false)
+			expected, err := application.NewInstallUpdateRequest(request.Source(), step.input, request.Context(), step.adopt)
 			if err != nil || request != expected {
 				t.Fatal("pipx update/adoption intent changed", err)
 			}
@@ -73,7 +79,7 @@ func TestPipxClientRefusesUnsafeImplicitAndNativeOptionsBeforeBinding(t *testing
 			{"other", "--target", target, "--bin-dir", bin},
 			{"demo-package", "--target", target, "--target", target, "--bin-dir", bin},
 			{"demo-package", "--target", target, "--bin-dir", bin, "--bin-dir", bin},
-			{"demo-package", "--target", target, "--bin-dir", bin, "--adopt"},
+			{"demo-package", "--target", target, "--bin-dir", bin, "--adopt", "--adopt=false"},
 			{"demo-package", "--target", target, "--bin-dir", bin, "--backend", "uv"},
 			{"demo-package", "--target", target, "--bin-dir", bin, "--python", "/foreign/python"},
 			{"demo-package", "--target", target, "--bin-dir", bin, "--pip-args=--index-url=foreign"},
@@ -88,6 +94,10 @@ func TestPipxClientRefusesUnsafeImplicitAndNativeOptionsBeforeBinding(t *testing
 				t.Fatal("unsupported pipx input accepted", op, tail)
 			}
 		}
+	}
+	root, _ := New(io.Discard, io.Discard)
+	if _, err := PreparePresentation(root, []string{"pipx", "install", "demo-package", "--target", target, "--bin-dir", bin, "--adopt"}); err == nil {
+		t.Fatal("fresh install accepted adoption")
 	}
 	for _, input := range []string{"Demo_Package", "demo-package==1", "demo-package>=1", "demo-package[extra]"} {
 		root, _ := New(io.Discard, io.Discard)

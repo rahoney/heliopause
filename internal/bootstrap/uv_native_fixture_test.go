@@ -38,6 +38,18 @@ func uvNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin 
 }
 
 func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement string) {
+	createNativeOriginalDataFixture(t, ctx, wheel, target, toolBin, interpreter, toolRequirement, false)
+}
+
+func pipxNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin string, interpreter []byte, requirement string) {
+	t.Helper()
+	if requirement != "cowsay==6.0" && requirement != "cowsay>=6.0,<=6.1" {
+		t.Fatal("unsupported native pipx fixture requirement")
+	}
+	createNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement, true)
+}
+
+func createNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement string, pipx bool) {
 	t.Helper()
 	tool := toolBin != ""
 	const label = "io.heliopause.test.uv-native-original"
@@ -143,7 +155,11 @@ func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte
 			t.Fatal("native tool fixture requires an ordinary Host user")
 		}
 		root := filepath.Dir(toolBin)
-		if !filepath.IsAbs(root) || strings.ContainsAny(root, ",:\\\x00\r\n") || target != filepath.Join(root, "tools", "cowsay") || toolBin != filepath.Join(root, "commands") || len(interpreter) == 0 || len(interpreter) > 16<<20 {
+		environments := "tools"
+		if pipx {
+			environments = "venvs"
+		}
+		if !filepath.IsAbs(root) || strings.ContainsAny(root, ",:\\\x00\r\n") || target != filepath.Join(root, environments, "cowsay") || toolBin != filepath.Join(root, "commands") || len(interpreter) == 0 || len(interpreter) > 16<<20 {
 			t.Fatal("native tool fixture requires its own explicit public cowsay roots and image interpreter DATA")
 		}
 		if err := os.MkdirAll(filepath.Dir(target), 0700); err != nil {
@@ -189,7 +205,7 @@ func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte
 	// mount directly, without relaxing the rootfs or executing artifact code.
 	const writeData = `import os,sys
 p=sys.argv[1]; remaining=int(sys.argv[2]); mode=int(sys.argv[3])
-assert p in ("/haa-fixture/uv","/haa-fixture/index/packages/idna-3.10-py3-none-any.whl","/haa-fixture/index/simple/idna/index.html")
+assert p in ("/haa-fixture/uv","/haa-fixture/pipx-runtime.zip","/haa-fixture/index/packages/idna-3.10-py3-none-any.whl","/haa-fixture/index/simple/idna/index.html")
 assert 0 < remaining <= 64*1024*1024 and mode in (292,365)
 os.makedirs(os.path.dirname(p),mode=0o700,exist_ok=True)
 fd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
@@ -214,9 +230,41 @@ with os.fdopen(fd,"wb") as f:
 		}
 		guest(entry.body, 16<<10, "/usr/local/bin/python", "-I", "-B", "-c", writeData, "/haa-fixture/"+entry.name, fmt.Sprint(len(entry.body)), fmt.Sprint(entry.mode))
 	}
+	if pipx {
+		const zipPath = "/usr/lib/heliopause/current/pipx-runtime-linux-amd64.zip"
+		file, err := os.Open(zipPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		before, err := file.Stat()
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, readErr := io.ReadAll(io.LimitReader(file, runtimeidentity.PipxToolSize+1))
+		closeErr := file.Close()
+		after, statErr := os.Stat(zipPath)
+		sum := sha256.Sum256(body)
+		if readErr != nil || closeErr != nil || statErr != nil || !before.Mode().IsRegular() || before.Mode().Perm() != 0444 || !os.SameFile(before, after) || len(body) != runtimeidentity.PipxToolSize || hex.EncodeToString(sum[:]) != runtimeidentity.PipxToolSHA256 {
+			t.Fatal("native pipx fixture ZIP differs from compiled supply")
+		}
+		guest(body, 16<<10, "/usr/local/bin/python", "-I", "-B", "-c", writeData, "/haa-fixture/pipx-runtime.zip", fmt.Sprint(len(body)), fmt.Sprint(0444))
+	}
 	execute := func(args ...string) []byte {
 		t.Helper()
 		return guest(nil, 64<<10, args...)
+	}
+	if pipx {
+		const program = `import sys
+sys.path.append('/haa-fixture/pipx-runtime.zip')
+sys.argv=['pipx',*sys.argv[1:]]
+from pipx.__main__ import cli
+raise SystemExit(cli())`
+		arguments := "--no-build --no-sources --link-mode=copy --no-config --no-cache --no-python-downloads --no-managed-python --index-url=https://pypi.org/simple/"
+		execute("/usr/bin/env", "PATH=/haa-fixture:/usr/local/bin:/usr/bin:/bin", "PIPX_HOME="+filepath.Dir(filepath.Dir(target)), "PIPX_BIN_DIR="+toolBin, "PIPX_MAN_DIR="+filepath.Join(filepath.Dir(toolBin), "man"), "PIPX_COMPLETION_DIR="+filepath.Join(filepath.Dir(toolBin), "completions"), "UV_COMPILE_BYTECODE=false", "PYTHONDONTWRITEBYTECODE=1", "/usr/local/bin/python", "-I", "-S", "-B", "-c", program, "install", toolRequirement, "--backend", "uv", "--python", base, "--pip-args="+arguments)
+		checked(nil, 16<<10, "rm", "--force", container)
+		delete(owned, container)
+		t.Logf("actual_pipx_native_tool_original requirement=%s pipx=%s backend_uv=%s python=%s raw_receipt_rewritten=false host_artifact_execution=0", toolRequirement, runtimeidentity.PipxVersion, runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
+		return
 	}
 	if tool {
 		// Both the receipt's base Python path and generated wrapper paths are

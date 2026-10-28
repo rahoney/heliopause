@@ -2484,3 +2484,98 @@ C-c3 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 public install/man
 lane만 뜻한다. Native adoption/run/hosted/final/signed 및 독립 legacy ZIP CPU gap은 남는다.
 같은 M13-004/C-d1에서 기존 whole native wheel/source·script·interpreter proof를 재사용하는
 native pipx original의 baseline을 감사하고 실제 missing만 구현한다.
+
+## C-d1 — native pipx original의 source 전 감사
+
+기준f5c0100/tree7f75a1a9/2870files와 실제 clean tracked Git/고정42·ZIP의 직전 actual 불변을
+확인했다. INDEX·artifact L01/L02/L15, sandbox L03/L08/evidence L16, client09/plan20와
+기존 N2D canonical native tool 지도, uvToolNativeOriginalProof/capture·whole original
+enrollment·uvNativeToolScriptProof·pypiNativeClient·native fixture를 읽었다. M13-004 하나만 active다.
+
+| 기존 owner / 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Pipx typed original/고정 native upgrade/current 승인·CLI | YES | YES(managed) | YES(B3b/C2/C3) | YES(그 scopes) | unmanaged original의 독립 source·whole ownership proof |
+| UV tool raw receipt/held interpreter/link/native proof | YES | YES(UV) | YES(existing local/hosted scopes) | YES(UV fixed recipe) | closed pipx codec/원본 projection·raw receipt 이름 |
+| pypiNativeEnrollment·prepareUVCompleteOwnership / old whole wheel/metadata/script/caches | YES | YES(pip/UV formats) | YES(existing scopes) | YES(existing formats) | pipx의 고정 UV backend 형식으로 같은 engine 소비 |
+| uvNativeToolScriptProof / pinned Python·실제 UV 생성 script 증명 | YES | YES(UV backend) | YES(existing) | YES(existing) | pipx UV backend original에서 같은 byte grammar 소비 |
+| Pipx native enrollment fixed recipe/static gate | NO | NO | NO | NO | no-build/no-sources/link-mode copy가 명시된 한정 original |
+| Pipx optional native capability/current source proof/actual·CLI flag | NO | NO | NO | NO | 아래 bridge/default 다음의 actual public native qualification |
+
+`pypiNativeClient`는 user client ID가 아닌 concrete ownership format이다. Native pipx는
+이미 pinned backend=UV만 지원하므로 같은 INSTALLER/RECORD/generated-script/캐시 부재
+형식의 nativeUVClient와 old-wheel resolver identity를 재사용한다. Pipx를 UV tool 명령으로
+실행하거나 raw JSON을 가짜 UV TOML로 바꾸지 않는다. 기존 wheel/script/source engine은
+다시 구현하지 않고 byte-identical하게 유지한다. Raw recipe/name/RECORD는 여전히 DATA이고
+whole archive·file inode/mode/hash·기존 symlink/interpreter snapshot을 독립 증명해야 한다.
+
+처음 허용하는 native 형식은 public wheel-only/no-build/no-sources/link-mode copy recipe다.
+PipxToolUpgradeInput의 typed fixed-format 판별을 추가하며 이 static bool 자체는 ownership/
+실행/승인 권한이 아니다. Empty/default/다른 recipe·backend와 compiled cache/foreign files는
+인계 전에 거부한다. Native raw receipt/control과 projected original input은 분리하고 같은
+고정 interpreter의 실제 inode/hash가 target alias와 같음을 기존 owner로 검증한다. Projected
+pipx internal app paths와 external link는 이미 구현한 closed codec/held bin에서만 계산한다.
+
+기존 native tool proof를 closed toolClient에 맞게 소비하게 확장한다. Zero/default UV의 control/
+receipt/parser·flags·proof/출력은 유지한다. Pipx projection은 전체 독립 source proof 이후에만
+managed guard에 들어간다. WithNativeEnrollment는 기존 intake/actual trusted roots와 concrete
+old-source resolver를 보유하는 immutable copy이며 explicit adopt 없이는 사용하지 않는다.
+Current selected whole 검사/Policy·승인 cache/원자 반영은 C2/C3를 그대로 소비한다. Native
+raw/source2 controls를 현재 native7/Host2와 함께 기록하며 current approval로 오인하지 않는다.
+
+첫 bridge는 canonical Quick/영향 Promotion·PyPI 및 기존 UV/Pipx guard/default/Race로
+원본/control/client/recipe·WHEEL/foreign/cancel/동시 ownership과 proof-before-query 경계를
+검증한다. 실제 native pipx producer/무수정 raw receipt·공식 old wheel/source와 현재 approval/
+CLI --adopt는 다음 acceptance이며 관찰 전 QUALIFIED/ACCEPTANCE_CLOSED는 NO다. 기존 native
+fixture의 bounded Docker supply/identity/cleanup과 실제 host 경로 생성 owner를 확장해서
+raw interpreter/receipt/script를 다시 쓰지 않는다. Runtime/observer/권한·예산·coverage·Core는
+변경하지 않으며 native 기본값 전체 지원·hosted/final/signed·legacy ZIP CPU gap은 별도다.
+
+C-d1 v1 format1.680s 뒤 Quick95.694s는 Staticcheck U1000으로 기존 readToolOriginalReceipt
+wrapper가 이제 미사용임을 검출했다. UV native 분기는 기존 wrapper를 그대로 소비하고 새
+pipx 분기만 closed codec reader를 사용하도록 좁혔다. 경고 억제/공개 API 위장이나 기존
+wrapper 재구현은 하지 않는다. 첫 source7/Quick를 보존하며 다음 검사로 실제 bridge를 확인한다.
+
+### C-d1 실제 원본/public adopt 연결 전 추가 map
+
+Bridge의 focused14.092s(PYPI0.130s/Promotion7.091s)가 PASS다. 같은 D1에서 다음 missing을
+연결한다. Pipx upgrade만 --adopt bool/중복 거부를 추가하고 기존 typed update request에
+전달한다. Production factory가 현재 base old-wheel resolver/intake의 optional native capability를
+명시 보유하되 adopt=false는 기존 managed guard만 소비한다. 현재 install에는 flag를 열지 않는다.
+
+기존 uvNativeOriginalDataFixture의 locked UV binary/actual UID·bounded Docker I/O·소유 container
+확인·정리를 같은 owner로 재사용한다. 새 concrete pipx fixture만 compiled SHA의 fixed ZIP를
+0444 DATA로 공급하고 pinned Python image에서 실제 pipx CLI/UV backend fixed recipe를 호출한다.
+PIPX_HOME의 venvs/cowsay·별도 bin·원본 base interpreter를 같은 absolute private Host 경로로
+만들며 raw receipt/interpreter/script를 수정하지 않는다. Runc는 old foreign DATA producer만
+소유하고 product의 source proof/current 검사·Policy는 기존 gVisor/typed egress를 유지한다.
+
+Actual assertion body는 기존 native UV parent와 공유하되 pipx의 원래6.0 exact pin은 변경하지
+않고 bare upgrade의 현재6.1 선택을 확인한다. No-adopt·원본/script 변조·현재 real Evidence
+write 실패는 원본 inode/bytes/mode/links·미등록 ledger를 보존해야 한다. Native raw/source와
+현재 native7/Host2의11controls, managed repeat의9controls/새 Evidence와 독립 bounded old6.1
+no-op도 확인한다. UV의 원래 exact pin 유지·bounded 선택/controls10·8은 그대로다. Public
+flag/실제 producer/current 승인 검증 전 whole native acceptance는 닫지 않는다.
+
+### C-d1 fixed native original/public adopt 한정 완료
+
+[한정 receipt](./p4o4c3c3b3c-d1-native-original-local-20261028.json)는 format1.502s/
+Quick227.569s/전체 Promotion·PyPI·Bootstrap·CLI Race179.722s/tag vet2.274s/build3.526s/
+docs0.333s/security14.341s와 source45/binaryd066b76f를 연결한다.
+기존 whole UV ownership/script grammar·publication/current selector 등10owner는 baseline과
+byte-identical이다. 첫 U1000/bridge focused 결과도 보존한다. Runtime/observer는 기존 C1-v5
+CPP128/ae301892를 그대로 썼고 budget/coverage/Policy를 바꾸지 않았다.
+
+실제 366.291s의 UV·pipx native 두 named parent/noSKIP가 PASS다. Fixed ZIP/pinned
+Python·UV backend의 genuine pipx original exact6.0 receipt/script/interpreter를 다시 쓰지 않고
+독립 old wheel·whole source proof 뒤 bare upgrade의 현재6.1을 승인·반영했다. Native11controls는
+원본 raw JSON/ownership proof와 native7/Host2를 구분하며 managed 반복9controls는 새 현재
+Evidence를 쓴다. 별도 genuine bounded6.1 원본에서도 bare6.1 no-op를 현재 검사했고 user data를
+보존했다. 기존 UV exact6.0/반복·bounded6.1→6.0의 control10/8도 같은 assertion body에서 PASS다.
+No-adopt/script·receipt 변조와 실제 현재 Evidence write 실패는 기존 inode/bytes/modes/links와
+미등록 ledger를 보존했다. Host5/Docker·원본42/ZIP·Go45/CPP6 동일/helperwait0/final stopped·부재다.
+
+C-d1 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 fixed recipe의 명시 native
+인계 local 범위다. Ordinary native defaults·다른 recipe는 계속 거부하고 run은 P6다. Hosted/
+final/signed·독립 legacy ZIP CPU gap은 남는다. 같은 M13-004/C-d2에서 existing hosted job과
+보유 input/helper owner에 C-b/C-c/C-d named consumers를 연결하기 전 baseline/정확한 수정
+지도를 작성한다. 작은 helper별 새 job/push나 새 public publication을 추가하지 않는다.

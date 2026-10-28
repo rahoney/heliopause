@@ -12,6 +12,14 @@ import (
 )
 
 const uvToolOriginalNativeReceiptControl = "uv-tool-original-native-receipt.toml"
+const pipxToolOriginalNativeReceiptControl = "pipx-tool-original-native-receipt.json"
+
+func (c toolClient) originalNativeReceiptControl() string {
+	if c == toolClientPipx {
+		return pipxToolOriginalNativeReceiptControl
+	}
+	return uvToolOriginalNativeReceiptControl
+}
 
 func uvToolNativeOriginalControls(ctx context.Context, g *toolFreshTarget) ([]domain.ProjectControlFile, error) {
 	if ctx == nil || g == nil {
@@ -24,7 +32,7 @@ func uvToolNativeOriginalControls(ctx context.Context, g *toolFreshTarget) ([]do
 		return nil, err
 	}
 	p := g.original.native
-	if !p.rawReceipt.Present() || p.rawReceipt.Name() != uvToolOriginalNativeReceiptControl ||
+	if !p.rawReceipt.Present() || p.rawReceipt.Name() != g.client.originalNativeReceiptControl() ||
 		p.rawReceipt.Digest().String() != p.receipt.Digest || !p.ownership.Present() ||
 		p.ownership.Name() != "pypi-update-native-ownership.json" || p.ownershipSHA == "" ||
 		p.ownership.Digest().String() != p.ownershipSHA {
@@ -45,6 +53,15 @@ type uvToolNativeOriginalProof struct {
 }
 
 func beginToolNativeOriginalTarget(ctx context.Context, install domain.InstallContext, request artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, native *pypiNativeEnrollment) (*toolFreshTarget, error) {
+	return beginToolNativeOriginalTargetForClient(ctx, install, request, binRoot, trustedRoots, native, toolClientUV)
+}
+
+func beginToolNativeOriginalTargetForClient(ctx context.Context, install domain.InstallContext, request artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, native *pypiNativeEnrollment, client toolClient) (*toolFreshTarget, error) {
+	// nativeUVClient is the concrete UV-generated ownership format. Pipx uses
+	// this only for its already-fixed UV backend, not as a tool command alias.
+	if !client.valid() {
+		return nil, errors.New("native tool client unavailable")
+	}
 	if native == nil || native.client != nativeUVClient || native.resolver == nil || native.intake == nil {
 		return nil, errors.New("native UV tool requires existing public original enrollment capabilities")
 	}
@@ -55,15 +72,15 @@ func beginToolNativeOriginalTarget(ctx context.Context, install domain.InstallCo
 	if !bound {
 		return nil, errors.New("native UV tool original intake is outside held storage boundaries")
 	}
-	return beginToolTargetWithNative(ctx, install, request, binRoot, trustedRoots, true, native)
+	return beginToolTargetForClient(ctx, install, request, binRoot, trustedRoots, true, native, client)
 }
 
 func (p *uvToolNativeOriginalProof) verify(ctx context.Context, g *toolFreshTarget) error {
 	if p == nil || g == nil || p.scripts == nil || p.scripts.tx != g.tx ||
-		!p.rawReceipt.Present() || p.rawReceipt.Name() != uvToolOriginalNativeReceiptControl {
+		!p.rawReceipt.Present() || p.rawReceipt.Name() != g.client.originalNativeReceiptControl() {
 		return errors.New("native UV tool original proof is unavailable or changed its target")
 	}
-	if !p.receipt.matches(filepath.Join(g.tx.plan.root, uvToolHostReceipt)) {
+	if !p.receipt.matches(filepath.Join(g.tx.plan.root, g.client.receiptName())) {
 		return errors.New("native UV tool raw receipt changed")
 	}
 	if p.ownershipSHA != "" && (!p.ownership.Present() || p.ownership.Digest().String() != p.ownershipSHA) {
@@ -79,7 +96,14 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 	if len(g.tx.current.Files) != 0 || g.tx.metadata != nil || native == nil || native.client != nativeUVClient {
 		return nil, errors.New("native UV tool enrollment requires an entirely unmanaged original")
 	}
-	raw, before, err := readToolOriginalReceipt(receiptPath)
+	var raw artifactpypi.ToolReceipt
+	var before pypiFileSnapshot
+	var err error
+	if g.client == toolClientPipx {
+		raw, before, err = readToolOriginalReceiptForClient(receiptPath, g.client)
+	} else {
+		raw, before, err = readToolOriginalReceipt(receiptPath)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -91,15 +115,28 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 	if err != nil {
 		return nil, err
 	}
-	projection, err := raw.WithUVLayout(g.tx.plan.root, g.binRoot)
+	projection, err := g.client.projectReceipt(raw, g.tx.plan.root, g.binRoot)
 	if err != nil {
 		return nil, err
 	}
 	// Preserve M1's existing fixed public wheel-only recipe gate. Raw defaults
 	// or overrides are not rewritten to masquerade as that supported profile.
-	input, err := artifactpypi.NewUVToolUpgradeInput(projection, g.requirement, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
-	if err != nil {
-		return nil, err
+	candidate := &toolOriginalState{metadata: metadata}
+	if g.client == toolClientPipx {
+		input, err := artifactpypi.NewPipxToolUpgradeInput(projection, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
+		if err != nil {
+			return nil, err
+		}
+		if !input.NativeUVEnrollmentRecipeSupported() || !input.Request().SameConstraints(g.requirement) {
+			return nil, errors.New("native pipx original requires its fixed public UV wheel-only recipe and bare project")
+		}
+		candidate.pipx = &input
+	} else {
+		input, err := artifactpypi.NewUVToolUpgradeInput(projection, g.requirement, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
+		if err != nil {
+			return nil, err
+		}
+		candidate.input = input
 	}
 	scripts, err := newUVNativeToolScriptProof(ctx, g.tx)
 	if err != nil {
@@ -114,13 +151,13 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 		a.file.Digest != b.file.Digest || a.file.Size != b.file.Size || a.file.Mode != b.file.Mode {
 		return nil, errors.New("native UV tool receipt and target do not share the held original interpreter")
 	}
-	rawControl, err := domain.NewProjectControlFile(uvToolOriginalNativeReceiptControl, raw.Body(), true)
+	rawControl, err := domain.NewProjectControlFile(g.client.originalNativeReceiptControl(), raw.Body(), true)
 	if err != nil {
 		return nil, err
 	}
 	proof := &uvToolNativeOriginalProof{rawReceipt: rawControl, receipt: before, interpreter: rawInterpreter, scripts: scripts}
-	candidate := &toolOriginalState{input: input, metadata: metadata, native: proof}
-	for _, command := range raw.Commands() {
+	candidate.native = proof
+	for _, command := range g.client.exposedCommands(raw, g.binRoot) {
 		if command.Name == toolBinTransactionLock {
 			return nil, errors.New("native original command collides with its guard")
 		}

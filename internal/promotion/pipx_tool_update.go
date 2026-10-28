@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"path/filepath"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -19,8 +20,8 @@ type pipxToolUpdateNativeSelector interface {
 	pipxToolUpgradeNativeSelector
 }
 
-// Managed HAA state is mandatory. Native receipt-only adoption is a distinct,
-// unavailable capability; old recipe and interpreter claims never become argv.
+// Managed state is mandatory by default. Native adoption needs explicit source
+// capabilities and opt-in; old recipe/interpreter claims never become argv.
 type PipxToolUpdatePreparation struct{ shared *UVToolInstallPreparation }
 
 func NewPipxToolUpdatePreparation(promoter *PyPIPromotion, resolver pipxToolUpdateNativeSelector, binRoot string, trustedRoots []string) (*PipxToolUpdatePreparation, error) {
@@ -39,7 +40,7 @@ func (p *PipxToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, sour
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if adopt {
+	if adopt && p.shared.native == nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("pipx native adoption is unavailable"))
 	}
 	requirement, err := artifactpypi.ParseUpgradeRequirement(selector)
@@ -50,7 +51,12 @@ func (p *PipxToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, sour
 	if err != nil {
 		return nil, err
 	}
-	guard, err := beginToolTargetForClient(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots, true, nil, toolClientPipx)
+	var guard *toolFreshTarget
+	if adopt {
+		guard, err = beginToolNativeOriginalTargetForClient(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots, p.shared.native, toolClientPipx)
+	} else {
+		guard, err = beginToolTargetForClient(ctx, install, requirement, p.shared.binRoot, p.shared.trustedRoots, true, nil, toolClientPipx)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -126,4 +132,22 @@ func (s *uvToolInstallSession) validatePipxSelection(resolution domain.Dependenc
 		}
 	}
 	return nil
+}
+
+// The explicit capability authenticates only UV-generated native originals.
+// Current whole-set inspection and approval remain mandatory after enrollment.
+func (p *PipxToolUpdatePreparation) WithNativeEnrollment(resolver ports.DependencyResolver, intake ports.Artifact, intakeRoot string) (*PipxToolUpdatePreparation, error) {
+	if p == nil || p.shared == nil || resolver == nil || intake == nil || !filepath.IsAbs(intakeRoot) || filepath.Clean(intakeRoot) != intakeRoot {
+		return nil, errors.New("native pipx enrollment requires actual old-source capabilities")
+	}
+	bound := false
+	for _, root := range p.shared.trustedRoots {
+		bound = bound || root == intakeRoot
+	}
+	if !bound {
+		return nil, errors.New("native pipx original intake is outside held trusted storage")
+	}
+	shared := *p.shared
+	shared.native = &pypiNativeEnrollment{resolver: resolver, intake: intake, intakeRoot: intakeRoot, runner: shared.promoter.runner, client: nativeUVClient}
+	return &PipxToolUpdatePreparation{shared: &shared}, nil
 }

@@ -30,5 +30,9 @@ func newPipxToolUpdateService(b pythonClientBindings, native *sandbox.PipxResolv
 	if err != nil {
 		return nil, err
 	}
+	preparation, err = preparation.WithNativeEnrollment(b.nativeLookup, b.intake, b.intakeRoot)
+	if err != nil {
+		return nil, err
+	}
 	return application.NewInstallUpdateService(b.installer, preparation)
 }

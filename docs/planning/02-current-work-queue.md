@@ -15,15 +15,25 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-c3 public production CLI named local actual374.394s four parent PASS; C-c1/C-c2 current backend PASS; CI421 prior hosted scope
-Next action: M13-004/P4-O4-C3c3b3c C-d1 native pipx original independent source/script/interpreter proof baseline; public install/managed upgrade CLI locally verified; final/legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
-Current substep: M13-004/P4-O4-C3c3b3c C-d1 IN_PROGRESS; public install/managed upgrade locally closed; native adoption/hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-d1 explicit native pipx original/current approval named local actual366.291s two parent PASS; C-c3 public CLI PASS; prior CI421 consumed
+Next action: M13-004/P4-O4-C3c3b3c C-d2 existing hosted consumer/input/helper owner baseline and grouped wiring; final/legacy ZIP CPU boundary OPEN; no active CI/timer
+Current substep: M13-004/P4-O4-C3c3b3c C-d2 IN_PROGRESS; fixed native original and public CLI locally closed; hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-d1 fixed native pipx original 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-d1-native-original-local-20261028.json)의
+Quick227.569s/영향4package 전체 Race179.722s/tag/docs/security 및 source45 actual366.291s
+UV·pipx 두 parent가 PASS다. Genuine pipx raw exact6.0 원본의 독립 whole source/script/interpreter
+증명 뒤 bare6.1 반영, native11/managed9controls·새 현재 Evidence, bounded native6.1 no-op와
+원본/현재 Evidence 실패 보존을 확인했다. 기존 UV native10/8도 PASS이며 source/Host/입력/정리는
+모두 확인했다. Native 기본 recipe/run·hosted/final/signed 및 legacy ZIP CPU gap은 남는다.
+같은 M13-004/C-d2에서 기존 hosted 소비자의 grouped 연결 audit를 계속한다.
 
 ### 2026-10-28 C-c3 public production pipx CLI 한정 완료
 
