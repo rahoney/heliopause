@@ -165,6 +165,7 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validateKernelTerminalQualification(contents)...)
 	findings = append(findings, validatePlatformBuildCache(contents)...)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)

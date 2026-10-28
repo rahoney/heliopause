@@ -15,15 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3c2b target-image DATA dependency named local QUALIFIED; source1322/Go c79f6942/CPP0c09f44f130; actual8roots9.827s/existing3parents12.296s; no Artifact Node user-run
-Next action: CI426/source4db0111 Required10SUCCESS consumed at21:33:27UTC; no active timer; wire existing Linux8root target/terminal parent then meaningful grouped common-observer push; independent exact Artifact Node mode/profile/lifecycle missing; CI425 native cause OPEN
-Current substep: M13-004/P5-C3c2b IN_PROGRESS; target-image dependency local complete; hosted actual-parent wiring next; dedicated Artifact Node profile/mode/user-run/output/CLI/final OPEN
+Last completed substep: P5-C3c hosted kernel actual-parent wiring locally qualified; source1324/checkerRace47.748s/Bash7cases; same CPP0c09 + production readonly fresh2 actual56.226s; hosted pending
+Next action: final whole candidate check/commit and authorized grouped milestone push; register new CI run/head and actual20min timer; preserve any active run; then dedicated Artifact Node profile/mode and result lifecycle owner audit. CI426 Required10SUCCESS consumed/no active timer.
+Current substep: M13-004/P5-C3c grouped hosted checkpoint IN_PROGRESS; local wiring/current readonly combo qualified; dedicated Artifact Node profile/mode/user-run/output/CLI/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P5-C3c runtime/admission/guest outcome and bounded stream contracts; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 기존 Linux CI kernel parent 연결 로컬 검증
+
+[Wiring receipt](./evidence/package-client-quarantine/p5c3c-hosted-kernel-wiring-local-20261029.json)의
+canonical7/checker fullRace47.748s·workflow9 negatives/Bash7guard와 current source1324/Go3575dbab/
+CPP0c09 readonly production fresh2 actual56.226s가 PASS다. 기존8root/제품/CPP는 재구현하지
+않고 기존 job/태그 빌드·protected client/helper를 재사용했다. Source/Host/42/ZIP/Docker·정리와
+최초 producer hash guard 중단/교정은 개별 원본에 보존한다. 새 hosted는 아직 PENDING이며
+완료한 C3c 단위를 한 번 push해 새run/20min timer를 등록한 뒤 같은 item의 Node profile을 계속한다.
 
 ### 2026-10-29 CI426 종료와 target-image dependency 검증
 
