@@ -200,3 +200,19 @@ docs/workflow/platform21.553s와 기존 checker 전체 Race22.786s는 PASS다. �
 owned Go TMPDIR0이며 새 native 자원은 없다. IMPLEMENTED/WIRED=YES/QUALIFIED=LOCAL ONLY/
 ACCEPTANCE_CLOSED=NO다. Native macOS/Required가 MISSING이며 내부 지연 원인은 미확정이다.
 로컬 platform은 기존 cache 결과이며 cold macOS 성능으로 비교하지 않는다.
+
+
+## CI425/source418a — 같은 deadline 관측의 재발, 직접 원인 OPEN
+
+[CI425 observation](./ci425-macos-deadline-observation-20261029.json)은 실제20min 조회18:08:03UTC의
+7SUCCESS/macOS FAILURE/Linux 진행과 all8checkout3cc28f9e/tree016df83d/2926 동일을 연결한다.
+Native default6m에서47started/45finished·active2/unavailable=false/truncated=false이며 promotion/
+update-runtime은 active root 없이 ok215.960s/137.413s가 있었다. 새 Hosttool package는2.658s로
+완료했다. Command available=true/exited=false/exit-1·user507825/system371003ms이고 individual
+FAIL은 없다. 개별 ok/높은 CPU/마지막 root를 완료나 syscall·cache·SDK 원인으로 바꾸지 않는다.
+
+직전 green CI424와 runner/capture/aggregate-file-budget test의 blob은 같다. 이 사실만으로
+whole-source 인과를 부정하거나 새 기능을 원인이라고 단정하지 않는다. CI369와 같은 관측
+형태를 보존하며 기존5m/6m/coverage/offline/Required를 유지한다. 같은 실패의 blind rerun이나
+새 진단 framework를 추가하지 않고 Linux를 끝까지 소비한다. 독립 C3b 구현 후 다음 실제
+의미 있는 grouped native macOS/Required가 열린 gate다. 이번 후보의 직접 원인은 OPEN이다.
