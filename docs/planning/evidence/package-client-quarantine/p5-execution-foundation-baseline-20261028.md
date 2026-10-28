@@ -313,3 +313,47 @@ sdist derivation source로 만든 invalid fixture였고 기존 Domain에서 serv
 Valid sdist fixture로 고쳤으며 제품/Domain/검사 guard는 바꾸지 않았다. 최초 source/log는 보존했다.
 B2c API 범위는 IMPLEMENTED/QUALIFIED=YES, actual P5 flow WIRED=NO다. Resolution 선택/
 실제 adapter factory·selected bytes/Node proof/records/staging·Backend/CLI는 여전히 MISSING이다.
+
+## P5-B2d — selected Node bytes의 실제 controlled reader, source 전 감사/지도/재검토
+
+기준a4ce06b/tree3c143e4b/2906files와 runtime1293을 양쪽에서 확인했다. 단일 M13-004의
+다음 gap이며 CI423 qualification은 여전히6dd에만 적용한다.
+
+| 책임 / actual owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| inspection/npm Inspector.InspectArchive / inspect / archiveCapture | YES | YES(PNPM/Bun) | YES(existing suites) | YES(existing scopes) | 선택된 한 member bytes capture를 같은 bounded walk에서 결합 |
+| openInventorySource / copyArchivePayload / capture.finish | YES | YES(existing) | YES(existing) | YES(existing) | 그대로 재사용; 새 tar/gzip parser나 전체 archive memory copy 불필요 |
+| artifact/npm ExecutionEntry.Matches / BindNodeTarget | YES | NO(actual P5) | YES(local) | YES(value) | controlled actual source에서 측정한 body 전달 |
+| Inspector.ReadNodeExecutionEntry | NO | NO | NO | NO | 아래 같은 원본/full inventory와 selected bytes reader |
+
+수정 지도는 기존 inspection/npm/archive_inventory.go의 capture에 optional selectedPath/body를
+더하고 execution_entry.go와 회귀를 추가하는 세 source다. 기존 parser/Inspect/InspectArchive의
+기본 capture는 빈 selectedPath이며 report·위반·size/hash/원본 전체 읽기 의미는 바꾸지 않는다.
+이미 구현된 기능을 대체/재작성하지 않고 기존 entry payload copy에 선택된 한 body의 writer만
+결합한다. Default read의 writer는 기존 digest이며 선택된 payload에만 bounded buffer를 사용한다.
+
+새 ReadNodeExecutionEntry는 기존 ExecutionEntry를 받고 같은 inspect/capture를 호출한다.
+Regular controlled source·whole compressed size/SHA·tar/gzip/trailing·path/link/type/manifest·전체
+member facts를 다시 확인하고 original entry.Matches인 경우만 기존 BindNodeTarget으로 넘긴다.
+Target path를 Host filepath로 사용하거나 extract/execute하지 않는다. Bytes bound20MiB,
+전체 decoded200MiB·entry1만개/manifest1MiB는 기존 owner 그대로다. 새 port/runtime/Policy는 없다.
+
+두 번째 검토: archive 순서(선택 member가 manifest 앞/뒤), 빈 JS와 explicit command,
+wrong interpreter·다른 member facts/manifest·원본 변조/source symlink·CRC/trailing·취소/zero를
+검증한다. 원본 source가 맞아도 inventory를 거짓으로 만든 경우 proof를 반환하지 않는다.
+이 proof는 현재 whole 검사/Policy·introduction rehash/실행 admission을 대신하지 않는다.
+Canonical format/quick와 기존 소비자를 포함한 inspection/npm 전체 Race를 수행하며 actual
+factory/staging/backend/CLI 연결은 이후 MISSING으로 유지한다.
+
+### B2d named local controlled Node entry read 결과
+
+[로컬 receipt](./p5b2d-controlled-node-entry-read-local-20261029.json)의 Quick279.401s/
+inspection/npm fullRace17.241s/docs0.305s/security12.156s가 PASS다.
+기존1292source는 그대로이며 archive capture의 optional selected writer 한 곳과 새2file이다.
+기본 Inspect/InspectArchive report/whole source guards를 유지하고 실제 controlled read에서
+manifest 순서·빈 JS·explicit command/alias, original 전체 inventory와 member bytes를 확인했다.
+Selected/다른 member digest/size/mode·manifest·acquisition 치환과 CRC/trailing/source symlink·
+wrong interpreter/options·nil/zero/cancel/cause를 거부한다. Extract/Host·Node 실행은 없다.
+API 범위 IMPLEMENTED/QUALIFIED=YES이며 actual P5 command flow WIRED=NO다. 다음은 real
+resolver/fresh whole inspection/Node/context/records/staging preparation 조립이며 Backend/CLI와
+실제 hostile/final qualification은 여전히 MISSING이다. CI423에는 이 source가 없다.

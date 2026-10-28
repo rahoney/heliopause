@@ -33,13 +33,15 @@ func (i *Inspector) InspectArchive(ctx context.Context, artifact domain.Acquired
 }
 
 type archiveCapture struct {
-	compressed *io.LimitedReader
-	buffered   *bufio.Reader
-	decoded    *io.LimitedReader
-	digest     hash.Hash
-	entries    []artifactnpm.ArchiveEntry
-	manifest   []byte
-	inventory  artifactnpm.ArchiveInventory
+	compressed   *io.LimitedReader
+	buffered     *bufio.Reader
+	decoded      *io.LimitedReader
+	digest       hash.Hash
+	entries      []artifactnpm.ArchiveEntry
+	manifest     []byte
+	inventory    artifactnpm.ArchiveInventory
+	selectedPath string
+	selectedBody []byte
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -94,8 +96,21 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		if manifest != nil {
 			_, _ = digest.Write(manifest) // hash.Hash.Write never fails.
 			c.manifest = append([]byte(nil), manifest...)
-		} else if err := copyArchivePayload(ctx, digest, reader, header.Size); err != nil {
-			return err
+			if item.Path == c.selectedPath {
+				c.selectedBody = bytes.Clone(manifest)
+			}
+		} else {
+			var selected bytes.Buffer
+			var writer io.Writer = digest
+			if item.Path == c.selectedPath {
+				writer = io.MultiWriter(digest, &selected)
+			}
+			if err := copyArchivePayload(ctx, writer, reader, header.Size); err != nil {
+				return err
+			}
+			if item.Path == c.selectedPath {
+				c.selectedBody = selected.Bytes()
+			}
 		}
 		var err error
 		item.Digest, err = domain.NewSHA256Digest(hex.EncodeToString(digest.Sum(nil)))
