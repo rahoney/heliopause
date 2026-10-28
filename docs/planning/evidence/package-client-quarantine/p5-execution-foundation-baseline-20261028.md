@@ -2,7 +2,8 @@
 
 기준 source12034457a69eabed0429d05d96dbf79bbef3409a/tree d4b0e921/2883files다.
 승인된28commit은 CI422에서 검증 중이며 이번 문서·상태 정정은 그 source에 포함하지 않는다.
-실제 Root/private1281runtime source SHA는 C-e2/v2와 같고 새 production code는 작성하지 않았다.
+최초 감사 당시 Root/private1281runtime source SHA는 C-e2/v2와 같았고 production 변경은 없었다.
+후속 P5-A의 실제 수정·한정 결과는 아래 지도와 receipt를 따른다.
 현재 단일 active work item은 M13-004다. 이 문서는 대기 중 독립 baseline 감사이며 P5
 구현/qualification 완료나 새 runtime/CLI capability를 뜻하지 않는다.
 
@@ -76,3 +77,39 @@ npm flags/allow-scripts·shell-call을 그대로 forwarding하는 것은 초기 
 기존 implementation 위치를 다시 대조한다. CI422 결과 확인은 독립20min timer를 우선하며
 source 변경을 새 push해 실행 중 후보를 취소하지 않는다. Whole current hosted/final4profiles/
 signed와 P5/P6/P7 acceptance는 계속 OPEN이다.
+
+## P5-A — exact bin 선택, source 작성 전 지도와 두 번째 검토
+
+Local baseline ccbd93f/tree8153faad/2885files이며 current runtime1281은 CI422와 같다.
+현재 단계는 M13-004 안의 독립 P5-A다. P4 hosted/final 결과를 전제로 실행 권한을 추가하지 않는다.
+`pnpmInventoryBins`/`ArchiveInventory`는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES
+(기존 구조/layout 범위)다. P5 typed entry 선택은 네 상태 모두NO이며 MISSING은 정확한 command,
+원본 acquired identity/handle·manifest·target file facts binding과 ambiguity 거부다.
+
+수정은 기존 `internal/artifact/npm`의 새 `execution_entry.go`와 그 회귀에 한정한다. 기존 parser,
+Node shebang validator·runtime/observer/inspection/Policy·CLI를 재작성하지 않는다. Constructor는
+기존 bin parser를 호출하고 자동 선택은 단일 bin의 이름이 package basename과 같을 때만 허용한다.
+다중 bin은 동일 target alias여도 명시 선택이 필요하며 단일 다른 command도 명시한다. 선택 결과는
+전체 immutable inventory와 정확한 regular target facts를 보유하고 다른 intake handle/manifest/
+member facts와의 substitution을 거부한다. 이 값은 구조적 선택일 뿐 bytes/Node interpreter/현재
+전체 검사·Policy/실행 승인이 아니다. Host 파일 열기·실행·환경 탐지는 하지 않는다.
+
+두 번째 검토: upstream npm의 단일 target alias 추론과 HAA의 명시 ambiguity 계약을 구분했다.
+기존 parser의 strict JSON/path/bundle/실제 regular member 검사를 우회하지 않는다. 새 생성자는
+다른 `SandboxRequest`/가짜 InstallTarget 또는 placeholder interface/package/job을 만들지 않는다.
+회귀는 bare·scoped/string·명시 다른 command와 다중 bin/alias·누락·duplicate/unsafe target·
+zero value·동일 이름의 다른 acquisition/manifest/target digest/size/mode 치환을 검증한다.
+Canonical format/quick와 기존 npm 전체 Race로 기존 parser 소비자도 확인한다. CLI/run/전체 P5
+acceptance는 미완료이며 이 작은 구현을 이유로 새 push/CI를 시작하지 않는다.
+
+### P5-A named local 결과
+
+[로컬 receipt](./p5a-execution-entry-local-20261028.json)의 focused2.040s/Quick37.506s/npm 전체
+Race49.102s/docs0.267s/security14.043s가 PASS다. 기존1281source와 parser는 그대로이며
+새2file만 추가했다. Exact/scoped/명시 command·다중 bin/같은 target alias와 다른 acquire handle/
+manifest·target 및 다른 member digest/size/mode 치환·zero value를 검증했다. 첫 Quick265.854s는
+새 test의 noncanonical base32 RunID로 inventory fixture 생성에서 실패했으며 기존 canonical
+생성자로 고쳤다. 최초 실패 원본을 보존했고 production 검증을 완화하지 않았다.
+P5-A 구조적 선택은 IMPLEMENTED/WIRED=YES(기존 parser에 연결)/QUALIFIED=YES(local)/
+ACCEPTANCE_CLOSED=YES(선택 범위)다. P5 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는NO이며
+실행/CLI/현재 whole 검사·runtime/입출력·취소는 다음 missing이다. CI422에는 이 source가 없다.

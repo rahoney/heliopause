@@ -16,14 +16,32 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: M13-004/P4-O4-C3c3b3c C-e4 CI422/run40688745132 head1203445; poll01 12:53:42UTC 8SUCCESS/Linux running; next20min13:13:42UTC/session29688; independent P5 baseline while waiting
-Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; approved28commit source1203445 pushed/CI422 running; current whole hosted/final/signed remain
+Next action: CI422 Linux PyTorch report candidate refusal first-cause diagnostic; P5-A structural entry locally qualified; no active timer/run
+Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source1203445 CI422 Linux/Required FAILURE; 8SUCCESS; current whole hosted/final/signed remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
-P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
+P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS exact bin selection only; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P5-A 구조적 진입점 선택 로컬 검증
+
+[P5-A receipt](./evidence/package-client-quarantine/p5a-execution-entry-local-20261028.json)의
+Quick37.506s/npm fullRace49.102s/focused/docs/security가 PASS다. 기존1281source/parser는
+불변이고 새2file의 구조적 선택·원본 전체 binding만 검증했다. 실행·CLI/전체 P5는 미완료다.
+첫 test ID 형식 오류와 교정을 보존했다. CI422는 두 번째 실제20min 조회13:13:49UTC에
+Linux/Required FAILURE·나머지8SUCCESS다. 최초 torch pip report candidate 거부와 helper6wait0/
+복원을 확인했으며 현재 원인 진단을 계속한다. Timer2는 소비 종료했고 새 timer/재실행은 없다.
+
+### 2026-10-28 P5-A exact bin 선택 착수
+
+[P5-A 지도·두 번째 검토](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)에
+따라 기존 npm inventory/bin parser를 재사용하는 구조적 typed entry 선택만 추가한다. 기존
+parser/runtime/검역 authority는 보존하며 현재 전체 검사·실행·CLI는 후속이다. CI422 source는
+1203445로 고정하고 20분 타이머를 계속 소비한다. M13-004 하나만 active다.
+종료 시험 ELF 사본18개/364359003B는 원본·전체 참조0/query errors0 확인 후 제거했으며 현재
+바이너리/고정 입력·공유 cache/작은 raw는 보존했다. Raw p4-e-completed-copies-cleanup이 근거다.
 
 ### 2026-10-28 CI 대기 중 P5 baseline 독립 감사
 
