@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4 C-e4 ordinary hosted CI423/source6dd QUALIFIED; Required10SUCCESS/Linux92/noSKIP/CPP128/helper14wait0; P5-B2b local composition/records qualified/unwired
-Next action: CI424 poll04 17:21:04UTC 8SUCCESS/Linux in progress; next actual20min17:41:04UTC/session96151; P5-C1 bounded Host output local qualified; next P5-C2 actual sandbox/admission/lifecycle owner audit; B2f hosted new step pending
-Current substep: M13-004/P5-C user-run runtime/output/lifecycle baseline IN_PROGRESS after B2f local production preparation; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
+Next action: CI424 poll04 17:21:04UTC 8SUCCESS/Linux in progress; next actual20min17:41:04UTC/session96151; P5-C2 complete npm layout DATA binding local qualified; next offline full-set materialization/admission/lifecycle; B2f hosted step pending
+Current substep: M13-004/P5-C3 offline whole-set materialization owner audit IN_PROGRESS after C2 local complete layout DATA binding; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
 Acceptance audit: CI423/source6dd Required10SUCCESS; all10 checkoutb571e02/tree feab8ef9/2891 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; canonical resolver positive qualified. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
 Independent local next: P5 fresh whole execution inspection/application; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED

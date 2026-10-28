@@ -549,3 +549,47 @@ artifact 프로그램 실행 또는 전체 P5 qualification으로 기록하지 �
 독립 child의 명시 test cleanup, private copy/formatter/JSON 및 기존 trusted identity/env/stdin
 경계를 확인했다. 실제 P5 user-run/admission/guest completion/terminal rendering/전체 lifecycle은
 아직 미완료이며 same M13-004의 다음 missing으로 계속한다. CI424 source4ec에는 이 소스가 없다.
+
+
+## P5-C2 — npm execution layout의 구현 전 감사/지도/두 번째 검토
+
+기준d09b0a1/tree8e20fe74/2922tracked·1303source다. C1 Host transport는 한정 검증됐고
+실제 backend/CLI는 아직 missing이다. CI424 source4ec는 별도로 진행 중이며 timer05를 유지한다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| npm ParsePackageLockV3/packageNameFromLockPath/resolveLockedDependencyPath | YES | YES(resolver) | YES(named) | YES(existing) | 재사용; npm path/Node lookup 의미 재작성 금지 |
+| indexNPMProjectInventories/pnpmInventoryBins/SelectExecutionEntry/BindNodeTarget | YES | YES(existing APIs) | YES(named) | YES(existing) | current execution set의 모든 inventory와 실제 selected member 연결 |
+| ParsePNPMLayoutArchive/readFile/pnpmLayoutEntryModeOwner | YES | YES(PNPM/Bun) | YES(named) | YES(existing) | 일반 npm record paths 전체의 exact file census binding |
+| promotion.generatedNPMProject/preparePromotionProject/validatePromotionOutput | YES | YES(install) | YES(existing) | YES(existing) | 후속 controller materialization에서 재사용; Host install 위장 금지 |
+| DockerArtifactIntroducer.freezeNPMProjectArchives/readPNPMIntakeArchive | YES | YES(PNPM/Bun) | YES(named) | YES(existing) | 후속 npm execution full-set freeze에서 재사용 |
+| npm NodeExecutionLayout binding | NO | NO | NO | NO | 아래 data proof; 실행/admission authority는 아님 |
+
+수정 지도는 internal/artifact/npm/execution_layout.go와 test 두 파일이다. 기존 bounded tar
+parser를 그대로 받고 현재 approved set과 exact acquisition inventory, npm record path/Node
+lookup edges·전체 regular file/dir census, 원래 selected command/member/Node bytes를 결합한다.
+Symlink/hardlink·foreign/missing files·다른 source/intake/entry·Node lookup 치환은 거부한다.
+Member mode는 기존 normalized file permission/owner rule을 재사용한다. Scope 밖의 별도 native
+metadata/.bin/generated file은 암묵 허용하지 않는다. Runtime admission/읽기 전용 seal은 별도다.
+
+Digest는 실제 census bytes와 source/Policy/runtime/member facts에만 결합한다. Raw argv를
+포함하거나 해시하지 않는다. MatchesExecution은 operation·정확한 set/resolution/member facts를
+대조하며 같은 file layout의 private argv 차이는 file identity를 바꾸지 않는다. 기본 formatter와
+JSON은 raw program bytes를 노출하지 않는다. 신규 parser/lock generator/Host extraction은 없다.
+
+두 번째 검토: adapters에서 runtime pin import를 늘리지 않고 실제 canonical Node pin은 bootstrap/
+backend가 소유한다. Source before census+새2file만 변경하며 기존1303source는 그대로다.
+전체 graph/secondary 변경·edge lookup shadowing·inventory/handle/command/member 치환과
+zero/nil/cancel/cause, getter copies·argv-independent digest를 unit/기존 npm full Race 및 canonical
+format/quick/docs/security로 검증한다. Actual sandbox materialization/user-run/CLI는 계속 missing이다.
+
+
+### C2 named local complete-layout DATA binding
+
+[Receipt](./p5c2-current-node-layout-local-20261029.json)은 canonical Quick/전체 npm Race/docs/security를
+연결한다. 기존1303입력은 그대로이며 새2file만 추가했다. Existing parser/path lookup/inventory/
+Node validator로 exact full tree와 selected entry를 결합하고 주/다른 dependency 변조·누락·추가/
+link/mode·foreign inventory/intake/command/member·Node lookup 불일치와 취소 cause를 거부했다.
+Argv-independent identity·copy/private formatting/JSON 경계도 확인했다. Fixture DATA/API 검증이며
+actual M3/materialization/immutable mount/admission/사용자 실행이나 전체 P5 qualification은 아니다.
+다음은 기존 controller lock/source freeze와 연결한 offline full-set materialization이다.
