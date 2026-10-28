@@ -1524,3 +1524,138 @@ full query 실행은 여전히 NO/NO/NO/NO이며 이후 C에서 기존 sealed ow
 installed supplier·typed accounting/CPU watch/trace lifecycle를 연결한다. Aggregate native
 CPU·실제 syscall 요구·current Policy/Host publication/CLI/hosted/final profiles는 남는다.
 CI421는 e859487만 소비하므로 이 source를 hosted qualified로 쓰지 않는다.
+
+## C3c3b3c — 실제 native session의 source 전 baseline
+
+기준 `65a0139cd6321df19403f32737fb5529dc28d2ce`/tree
+`ae241fb390723424ad33fccf81b74d7523d6f3b9`/2841파일이며 tracked/index가 clean이다.
+INDEX와 sandbox L03/L08/L13/L18, artifact L01/L02/L15, evidence L16 및 CI L06,
+Queue/M13-004 Read·client09·plan20·M8 zero-authority/observer ownership·M10 supply trust·
+D-015를 확인했다. 이미 구현된 owner를 대체하거나 새 Core/완료 프로토콜을 만들지 않는다.
+
+| 책임 / 실제 symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `freezePipxNativeInput`, ZIP/wheel sealed RO owners, `readPipxNativeOutput` | YES | YES (각 진단/reader) | YES (named local) | YES (그 scopes) | 실제 observed session에서 같은 frozen ID/whole input/output을 소비 |
+| `pipxNativeCreateArguments`/고정 argv·env·cwd, CPP profile128 | YES | YES (constructor/IPC/parser) | YES (A/B scopes) | YES (A/B scopes) | runsc native target의 실제 admission/trace/실제 FS·syscall 요구 |
+| `ObservationResourceClient`, `observationPolicyForPython`/CPU watch/lifecycle | YES | YES (기존 transaction) | YES (기존 scopes) | YES (그 scopes) | native metadata phase를 기존 pypi30s/17s reserve와 attested cgroup에 연결 |
+| `nativeResolverOwnership/verify/remove`, closure/runtime volume cleanup | YES | YES (기존 owners) | YES (기존 scopes) | YES (그 scopes) | new lifecycle의 unknown CREATE/부분 준비/trace·accounting 실패 정리 |
+| `preparePipxTool` protected installed DATA reader | YES | YES (별도 공급 tests) | YES (named local) | YES (공급 scope) | production native caller/installed complete set consumer와 연결 |
+| 실제 fresh native session/factory·original upgrade/current/CLI | NO | NO | NO | NO | 아래 C-a 이후 C-b/공통 current inspection·transaction·CLI |
+
+### C-a — fresh native 관찰·회계·정리의 수정 지도
+
+1. 같은 sandbox package의 좁은 `pipx_native_session.go`에서 existing prepared ZIP와
+   immutable frozen input, typed canonical requirement 및 기존 runner/observer/resource
+   ports만 소비한다. Fresh root project/version/source가 frozen primary와 일치하는지
+   command 전에 확인한다. Caller path/env/cwd/network/argv 입력은 없다. 이 primitive는
+   unapproved metadata selection만 반환하며 public installed factory는 다음 C-b다.
+2. 기존 owners로 root DATA writer→RO anchor→writer 제거→seal을 연결한다. DATA keeper는
+   고정 runc sleep/이미지/환경과 bounded mounts뿐이며 artifact/Python을 실행하지 않는다.
+   기존 native UV ownership/attested cleanup을 재사용하고 ZIP를 ELF runtime으로 분류하지
+   않는다. Native reader는 A constructor를 그대로 호출하고 검증된 typed lease의 cpuset/
+   cgroup 및 기존 transaction/phase/manifest labels만 결합한다. Runtime override는 없다.
+3. 고정 network-none 새 profile을 명시 지원하는 observer만 허용한다. Docker start 전에
+   StartProfile, 실제 mount anchor·empty Config.User/canonical demotion/readiness, RO inputs와
+   UV/별도 output의 attachment/readback을 확인한다. Admission-aware runner와 기존 Python
+   ARTIFACT handoff를 통해 fixed install만 실행한다. CONTROL/network 권한 상속이나 old
+   profile fallback은 없다. 새 syscall grant는 최초 실제 deny/정확한 source 전에 추정하지 않는다.
+4. 기존 `pypi` typed resource lease/one CPU와 zero-unit operational ledger/CPU watch를
+   재사용한다. 새 inspection unit/kind/완료 authority를 만들지 않고 metadata phase는
+   `COMPLETED`를 발행하지 않는다. 실제 reader Register 이후에만 artifact를 실행하고
+   lifecycle sample·30s ceiling/17s reserve/5m wall/default10k·2MiB를 유지한다. Counter/
+   identity/transition/trace/cleanup 불확실성에서는 selection을 지운다.
+5. 전체 native DATA를 기존 reader/binder로 검증하고 요청 constraint와 frozen closure에
+   다시 결합한다. 종료 뒤 stream completion과 actionable observations·aggregate accounting/
+   owner별 cleanup을 확인한 뒤에만 결과를 반환한다. stdout/exit0/nonce/log/metadata는
+   완료·Policy authority가 아니다. Primary 오류와 독립적으로 안전한 정리는 보존한다.
+6. 기본 negative는 nil/변조된 input/다른 root/unsupported observer·lease와 command0,
+   attachment/unknown CREATE/중간 실패 정리를 검증한다. Tagged actual은 original42
+   fixture/fixed ZIP/동일 binary·final observer로 실제 fresh 실행/complete output을 확인하고
+   Host/Docker/입력/원본 불변·CPU/trace/admission·정리를 기록한다. Synthetic UV lock fixture를
+   live native public resolution/installed source authentication/Policy/Host publication으로
+   확대하지 않는다. Installed wrapper·original upgrade·current Evidence/CLI는 다음 gap이다.
+
+### C-a 최초 actual과 첫 필요한 native read의 수정 지도
+
+첫 operator2.021s는 package cwd 오류로 Go0.00s/새 session 미도달이며 원본을 보존하고
+internal/sandbox cwd만 교정했다. 동일 binary/CPP/input의 actual-v2 12.006s는 실제
+profile/root/child에 도달해 STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_PROC, typed
+VM_OVERCOMMIT_MEMORY·system /proc·flags557056·ARTIFACT/CLONE_CHILD에서 중단됐다.
+실행 locator7fd94847cbee0d11은 /haa-runtime/uv와 일치하지만 FNV는 인증이 아니다.
+Closed expected exec30개/typed 역할과 locator를 함께 해석한 UV 자식 진단 가설이며,
+허용은 아래 기존 kernel-derived image/parent 조건을 모두 통과해야만 적용한다.
+
+`IsPipxNativeABIRead`의 active UV/root creator 검증은 IMPLEMENTED/WIRED=YES이나 이
+exact proc read는 NO/NO/NO/NO다. MISSING은 native profile·actual active UV image·
+ARTIFACT clone/소모된 살아있는 root parent·네트워크 비활성·expected group 부재·
+/proc system anchor·exact path/557056 read-only tuple 하나다. 기존 CONTROL predicate/
+proc prefix/self cgroup·maps/DNS 권한을 복제하지 않는다. Positive production OpenResult와
+wrong profile/role/parent/start/pending/reexec/flags/path/anchor negatives를 추가한다.
+
+별도 tagged counter는 boundaryPythonHandoffMode 대신 실제 origin framing을 읽어야 한다.
+`boundaryExecArguments`/`directExecOrigin`의 기존 변환을 재사용해 counter만 보정한다.
+첫 targets0을 native 미실행으로 해석하지 않으며 production admission/Source/limit에는
+변경이 없다. v2 creates1/register1/close1/CPU2.151674s·zero returned controls와
+Host5/Docker/42input/ZIP/source 동일, helperwait0/부재를 확인했다. 최초 source/log/
+result는 raw actual-v2/before-proc prefix로 보존했고 추가 read·actual 재검증은 미완료다.
+
+Native proc v3 canonical255.443s/128latches PASS 뒤 actual-v3 12.675s는 기존 VM read를
+지나 expected31·PROC_SELF_CGROUP/system/557056·ARTIFACT/CLONE_CHILD에서 중단됐다.
+Target attempt1/CPU2.188053s/register1/close1와 원본/Host 불변·helperwait0/부재를 확인했다.
+첫 read의 추가가 모든 startup을 해결했다는 주장은 하지 않는다. 같은 active UV/kernel
+creator guard에서 context.thread_group_id() 자신의 exact /proc/<id>/cgroup만 MISSING이다.
+다른 PID·proc/self alias·mountinfo·maps·DNS·다른 profile/query/CONTROL은 추가하지 않는다.
+같은 positive protocol과 다른 PID/flags/role/anchor 부정을 확장하고 기존 여섯 body를 유지한다.
+원본 source/log/result는 raw actual-v3/before-cgroup에 보존했다.
+
+Native proc v4 canonical265.074s/128latches PASS 뒤 actual-v4 11.352s는 cgroup 읽기를
+지나 PROC_SELF_MOUNTINFO/system/557056에서 중단됐다. 같은 Go v3/고정42input/ZIP과
+source 불변, target attempt1/expected31/CPU2.159176s/register1/close1·Host/Docker 동일/
+helperwait0/부재다. MISSING은 같은 active native UV와 살아있는 root creator에 한정한
+자기 /proc/<thread_group_id>/mountinfo exact read다. IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED는 이 tuple에 대해 모두 NO다. 기존 CONTROL·다른 PID·literal self
+alias·query·maps·네트워크 권한은 추가하지 않는다. 기존 shared guard negatives와 새
+production protocol positive/다른 PID negative를 확장한다. Go code3와 CPP build6를
+각각 hash 바인딩했고 진행 문서는 runtime 입력이 아니므로 과거 build source manifest를
+덮지 않았다. Raw actual-v4/v4-observer/before-mountinfo가 원본 범위를 소유한다.
+
+Native proc v5 canonical269.097s/128latches PASS 뒤 actual-v5 11.445s는 자기 mountinfo를
+지나 CGROUP_CPU_QUOTA/system/557056에서 중단됐다. Same Go v3·source/고정입력/Host/
+Docker 불변, target1/expected31/CPU2.187782s/register1/close1/helperwait0/부재다.
+현재 quota tuple의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. 같은
+active native UV/root-creator·role/parent/start guard에서 system anchor
+/sys/fs/cgroup/cpu와 exact cpu.cfs_quota_us/557056만 MISSING으로 추가 검증한다.
+Period/다른 cgroup 파일·query/CONTROL/network는 아직 허용하지 않는다. 각 native read의
+실제 protocol positive와 공통 부정 matrix를 적용하며 원본 actual-v5/v5-observer/
+before-cpuquota를 보존했다. 새 session cleanup default tests는 unknown CREATE의
+attested owner/foreign·query 거부와 observer/회계 실패 아래 독립 exact drainage를 확인한다.
+
+C-a追加 cleanup tests의 첫 Quick82.392s는 lost-accounting fixture가 RunDiscard를
+제공하지 않아 rm 시도 기록 기대에서 실패했다. 실제 fallback owner discardCommand는
+Output fallback을 허용하지 않는다. 제품 제거 실패로 단정하지 않고 fixture의 명시적
+port를 보완한다. 이 점검에서 새 session의 다른 세 capability와 달리 discard capability
+사전검사가 빠졌고 tagged wrapper도 underlying System의 RunDiscard를 전달하지 않은
+것을 source로 확인했다. 그 capability의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED
+는 NO/NO/NO/NO다. MISSING만 좁혀 command 전 raw runner의 discard 지원을 확인하고
+실제 wrapper는 기존 System port에 위임하며 default unsupported-port의 command0과
+cleanup 회귀를 검증한다. Docker Output fallback/정리 성공 위조/예산 변경은 추가하지
+않는다. 첫 Quick/source는 raw v4/before-discard로 보존했다.
+
+Discard 보완의 canonical format0.821s/Quick88.470s/전체 Sandbox+PyPI Race25.561s/
+tag vet1.045s/tag build7.838s/docs0.346s/security13.999s는 PASS다. 소스 Go3의 pre-tag-build
+hash를 보존하고 종료 뒤 동일함을 대조했다. 생산 source SHA430c88cb의 정확한 역치환은
+이전1ea6e4fd와 동일하므로 새 생산 변화는 pre-command discard 지원 검사뿐이다.
+Fresh actual 성공/각 syscall read/설치 공급 인증·current Policy·CLI는 이 기본 검사로
+닫지 않는다. CPU quota CPP의 canonical 검증을 순차로 진행한다.
+
+C-a 중간 checkpoint: native CPU quota CPP v6 canonical274.359s/128latches PASS이며
+새 Go v5 actual-v6 12.047s는 다음 CPU period read에서 중단됐다. Subject는 quota와
+period 둘만의 진단 class이고 locator aea5f4520ac7eba5는 exact period와 대응한다.
+Locator는 인증이 아니며 실제 grant는 기존 kernel-derived active UV/root creator guard로
+한정한다. Target1/expected31/CPU2.454022s/Create/Register/Close1·zero returned selection,
+source/Host/Docker/고정입력 불변과 helperwait0/부재다. 현재 후보는 기본/CPP 한정
+qualified이고 실제 native acceptance는 NO다. 정전 재개를 위해 이 독립 구현/negative
+검증을 중간 commit으로 보존한 뒤 같은 C-a의 exact period gap부터 계속한다.
+[p4o4c3c3b3c1 checkpoint](./p4o4c3c3b3c1-native-session-checkpoint-20261028.json)가
+현재 source/check/실패 scope를 소유한다. Public factory·installed supply/current Policy/
+CLI나 전체 native 완료를 주장하지 않는다.

@@ -15,15 +15,49 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI420/source1e5d21e Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3c baseline audit and dedicated observed offline native session/installed supply; initial ZIP CPU refusal retained with old/new controls PASS; approved e859487 pushed and CI42140598317489 IN_PROGRESS; actual first20min query23:14:47UTC:8SUCCESS/Linux running; next timer due23:34:47UTC; CI415 cause OPEN
+Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI421/sourcee859487 Required10SUCCESS
+Next action: M13-004/P4-O4-C3c3b3c baseline audit and dedicated observed offline native session/installed supply; initial ZIP CPU refusal retained with old/new controls PASS; CI42140598317489/sourcee859487 Required10SUCCESS verified with decoded10logs/source tree; four actual20min polls consumed; no active timer; CI415 cause OPEN
 Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
-Acceptance audit: latest hosted baseline CI42040515351597 Required completed15:02:23UTC:10SUCCESS; all10 checkout729b/tree391df742/source1e5d21e. Current B2/B3 changes are named local only; CI415 FD cause remains OPEN.
+Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-a native 관찰의 첫 실제 경계 확인
+
+기존 Go canonical/영향 Race와 typed session은 구현됐고, 고정 원본42/ZIP의 실제 실행은
+UV startup의 exact read에서 중단됐다. v5에서 자기 proc 읽기를 지나 최초 오류는
+CPU quota/system/557056이었고, v6의 다음 오류는 CPU period 읽기다. 각 실행의 Host/Docker/입력·source 불변과 helper
+wait0/부재를 확인했고 원본은 보존했다. [Owner map](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)의
+source 전 tuple audit에 따라 필요한 native-only read만 검증한다. [중간 구현/checkpoint](./evidence/package-client-quarantine/p4o4c3c3b3c1-native-session-checkpoint-20261028.json)의
+Go canonical/전체 영향 Race·CPP128는 통과했고 실제 native install은 미완료다. C-a QUALIFIED/
+ACCEPTANCE_CLOSED는 NO, installed supply·upgrade/current Policy·CLI는 후속 MISSING이다.
+
+### 2026-10-28 CI421 Required10 성공·원본 대조
+
+[CI421 qualification](./evidence/package-client-quarantine/ci421-pipx-zip-primitives-hosted-qualification-20261028.json)의
+source e859487/checkout57a5633 전체 tree6753df83·2789파일이 같고 Required 포함10SUCCESS다.
+10 decoded logs1,150,764B/readback·Linux79/noSKIP/helper11wait0/final confirmed lifecycle,
+두CPP124 및 CPU236.66s를 확인했다. Workflow64m47이며 Source/supply/common와 기존
+hosted 범위만 닫는다. New ZIP actual parent는 미실행이고 후속 B3/C3/native는 포함되지
+않았다. 실제 timer4 발화00:16:10.000150UTC 뒤00:16:42UTC에 완료를 직접 조회했다.
+추가 timer/push/재dispatch 없이 local C-a를 계속하며 CI415 원인은 OPEN이다.
+
+### 2026-10-28 CI421 세 번째20분 직접 확인
+
+Timer23:55:24.567997UTC 발화 뒤23:56:10UTC fresh run/jobs에서 같은 e859487 head와
+8SUCCESS/Linux IN_PROGRESS를 확인했다. Raw ci421-poll03/timer-fired가 근거이며
+다음20분 due2026-10-28 00:16:10UTC(09:16:10KST)를 등록했다. 새 push/취소 없이
+local native C-a의 실제 소비자 연결을 계속한다. Required/qualification은 OPEN이다.
+
+### 2026-10-28 CI421 두 번째20분 직접 확인
+
+Timer23:34:47.000171UTC 발화 뒤23:35:24UTC fresh run/jobs의 같은 e859487 head와
+8SUCCESS/Linux IN_PROGRESS를 직접 확인했다. 원본은 raw ci421-poll02/timer-fired다.
+다음 실제20분 timer due23:55:24UTC(08:55:24KST)를 등록했다. Required/qualification은
+OPEN이며 같은 C3c3b3c의 local native session baseline·연결 작업을 계속한다.
 
 ### 2026-10-28 C3c3b3b CPP 전용 Artifact profile 로컬 검증
 

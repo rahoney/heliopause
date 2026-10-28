@@ -2944,6 +2944,18 @@ bool IsPipxNativeABIRead(const gvisor::common::ContextData& context, const Proce
     if (uv != nullptr && (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3.14") &&
         anchor->mountpoint == "/" && anchor->mount_class == "oci-root") return true;
   }
+  // Actual pinned native UV startup reads this guest VM setting. This is
+  // neither the CONTROL driver's proc grant nor permission for a query.
+  if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
+      group->current_image_class == ProcessClass::kUV && flags == 557056 &&
+      anchor->mountpoint == "/proc" && anchor->mount_class == "system" &&
+      (path == "/proc/sys/vm/overcommit_memory" ||
+       path == "/proc/"+std::to_string(context.thread_group_id())+"/cgroup" ||
+       path == "/proc/"+std::to_string(context.thread_group_id())+"/mountinfo")) return true;
+  if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
+      group->current_image_class == ProcessClass::kUV && flags == 557056 &&
+      anchor->mountpoint == "/sys/fs/cgroup/cpu" && anchor->mount_class == "system" &&
+      path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us") return true;
   if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
       group->current_image_class == ProcessClass::kUV && flags == 557056 &&
       anchor->mountpoint == "/" && anchor->mount_class == "oci-root" && IsExactPinnedLibraryRead(path)) return true;

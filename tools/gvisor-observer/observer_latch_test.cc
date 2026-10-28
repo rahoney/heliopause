@@ -8448,6 +8448,55 @@ bool VerifyPipxNativeReadAndReexecBoundary() {
   close(output[0]);close(output[1]);return ok;
 }
 
+bool VerifyPipxNativeUVProcReadBoundary() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;auto topology=PipxNativeTestTopology();topology.anchors.emplace(7,MountAnchor{7,"/proc","system"});topology.anchors.emplace(8,MountAnchor{8,"/sys/fs/cgroup/cpu","system"});
+ ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)){close(output[0]);close(output[1]);return false;}
+ gvisor::common::ContextData child;
+ if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child)||!PipxNativeTestParse(PipxNativeTestUV(child),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const auto baseline=state;MountAnchor anchor{7,"/proc","system"};
+ const std::string path="/proc/sys/vm/overcommit_memory";
+ auto permitted=[&](const gvisor::common::ContextData& context,const char* profile,const std::string& target,uint64_t flags,const MountAnchor& mount){return IsPipxNativeABIRead(context,state,target,flags,profile,&mount);};
+ const std::vector<std::pair<std::string,MountAnchor>> reads={
+  {path,anchor},{"/proc/100/cgroup",anchor},{"/proc/100/mountinfo",anchor},
+  {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}}};
+ for(const auto& read:reads){
+  if(!permitted(child,kProfilePipxNativeResolver,read.first,557056,read.second)||
+     !VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],read.first,read.second.mount_id,557056,false))ok=false;
+  for(uint64_t flags:{uint64_t{0},kOpenLargefile,uint64_t{622592},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate})if(permitted(child,kProfilePipxNativeResolver,read.first,flags,read.second))ok=false;
+  for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(child,profile,read.first,557056,read.second))ok=false;
+  if(permitted(root.context_data(),kProfilePipxNativeResolver,read.first,557056,read.second))ok=false;
+ }
+ MountAnchor quota{8,"/sys/fs/cgroup/cpu","system"};
+ for(const char* target:{"/sys/fs/cgroup/cpu/cpu.cfs_period_us","/sys/fs/cgroup/cpu/cpu.shares","/sys/fs/cgroup/cpu/cpu.stat","/sys/fs/cgroup/cpu/../cpu/cpu.cfs_quota_us"})if(permitted(child,kProfilePipxNativeResolver,target,557056,quota))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{8,"/sys/fs/cgroup","system"},{8,"/sys/fs/cgroup/cpu","workspace"},{8,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",557056,mount))ok=false;
+ for(const char* target:{"/proc/sys/vm/overcommit_ratio","/proc/self/maps","/proc/100/maps","/proc/101/cgroup","/proc/self/cgroup","/proc/101/mountinfo","/proc/self/mountinfo","/proc/sys/vm/../vm/overcommit_memory"})if(permitted(child,kProfilePipxNativeResolver,target,557056,anchor))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{7,"/proc/sys","system"},{7,"/proc","workspace"},{7,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,path,557056,mount))ok=false;
+ for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(child,profile,path,557056,anchor))ok=false;
+ if(permitted(root.context_data(),kProfilePipxNativeResolver,path,557056,anchor))ok=false;
+ for(int scenario=0;scenario<13;++scenario){
+  state=baseline;auto context=child;
+  switch(scenario){
+   case 0:state.groups[100].role=ProcessState::Role::kControl;break;
+   case 1:state.groups[100].current_image_class=ProcessClass::kPython;break;
+   case 2:state.groups[100].pipx_native_image=ProcessState::PipxNativeImage::kUVQuery;break;
+   case 3:state.groups[100].trusted_control_network_active=true;break;
+   case 4:state.groups[100].start_time_ns++;break;
+   case 5:state.groups[99].start_time_ns++;break;
+   case 6:state.groups[99].role=ProcessState::Role::kControl;break;
+   case 7:state.groups[99].pipx_native_image=ProcessState::PipxNativeImage::kNone;break;
+   case 8:state.groups[100].handoff_target_pending=true;break;
+   case 9:state.expected_groups[100]=ProcessState::ExpectedGroup{1000,ProcessClass::kUV};break;
+   case 10:context.set_parent_thread_group_id(98);break;
+   case 11:context.set_is_exec_session(false);break;
+   case 12:state.groups.erase(99);break;
+  }
+  for(const auto& read:reads)if(permitted(context,kProfilePipxNativeResolver,read.first,557056,read.second))ok=false;
+ }
+ close(output[0]);close(output[1]);return ok;
+}
+
 bool VerifyPipxNativeProfileAdmission(const std::string& control) {
   constexpr char id[]="7b7b7b7b7b7b7b7b";
   if(!RegisterProfile(control,id,kProfilePipxNativeResolver))return false;
@@ -8741,7 +8790,7 @@ int main(int argc, char** argv) {
   const bool pipx_runtime_read = VerifyPipxRuntimeReadBoundary();
   const bool pipx_native_root = VerifyPipxNativeRootAndTopologyBoundary();
   const bool pipx_native_clone = VerifyPipxNativeCloneAndQueryBoundary();
-  const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary();
+  const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary() && VerifyPipxNativeUVProcReadBoundary();
   const bool pipx_native_admission = running && VerifyPipxNativeProfileAdmission(control);
   const bool pipx_runtime_admission = running && VerifyPipxRuntimeAdmission(control);
   const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
