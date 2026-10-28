@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4 C-e4 ordinary hosted CI423/source6dd QUALIFIED; Required10SUCCESS/Linux92/noSKIP/CPP128/helper14wait0; P5-B2b local composition/records qualified/unwired
-Next action: P5-B2c source owner audit/map for current whole execution inspection/application; reuse existing resolver and per-entry/batch lifecycle; no fake InstallTarget
-Current substep: M13-004/P5-B2c baseline IN_PROGRESS; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
+Next action: P5-B2d measured selected Node entry bytes through existing static archive capture; then actual resolver/inspection/context/records/staging composition
+Current substep: M13-004/P5-B2d archive entry binding baseline IN_PROGRESS; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
 Acceptance audit: CI423/source6dd Required10SUCCESS; all10 checkoutb571e02/tree feab8ef9/2891 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; canonical resolver positive qualified. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
 Independent local next: P5 fresh whole execution inspection/application; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-B2c fresh whole inspection 로컬 검증
+
+[B2c receipt](./evidence/package-client-quarantine/p5b2c-fresh-execution-inspection-local-20261029.json)의
+Quick40.217s/application fullRace4.233s/docs/security가 PASS다. Existing install/project per-entry·
+batch helper와 Policy를 그대로 재사용한 새2file이다. 반복 resolution도 fresh whole 검사를
+수행하며 누락/치환·entry/set 거부·부분 실패/store 원인·ID/취소/derived 거부를 확인했다.
+Actual command flow는 아직 WIRED=NO이며 다음은 기존 archive capture의 selected bytes와
+실제 resolver/inspection/Node/context/records/staging 조립이다. 단일 M13-004를 계속한다.
 
 ### 2026-10-29 CI423 current ordinary hosted qualification
 

@@ -269,3 +269,47 @@ argv/hash 비저장·nil/zero/cancel 거부를 검증했다. 첫 Quick44.490s의
 B2b는 IMPLEMENTED/QUALIFIED=YES(local composition/records), 실제 P5 flow WIRED=NO다.
 Metadata helper와 record 생성 범위만 acceptance를 닫고 fresh whole application/실제 staging
 handoff·backend/CLI는 남긴다. CI423 성공은 이전6dd source이며 이 source를 포함하지 않는다.
+
+## P5-B2c — fresh complete resolved inspection, source 전 audit/map/두 번째 검토
+
+기준338c2fd/tree e4c10fcd/2903files이며 runtime1291은 양쪽에서 같다. CI423은6dd만
+ordinary named qualified이며 이 이후 P5 source는 제외한다. Active item은 여전히 M13-004다.
+
+| 책임 / actual owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| InstallInspectService.inspectDependency / inspectDependencyBatch | YES | YES(existing install/project) | YES(existing) | YES(existing) | non-install resolved execution use case에서 호출 |
+| dependencyAwareInspection.InspectGraph / whole-set Policy / VerifiedSet | YES | YES(existing) | YES(existing) | YES(existing) | 새 실행 요청에서도 fresh Evidence/Run·전체 집합 ALLOW 연결 |
+| ProjectInspectService의 이미 해결된 per-entry component 조립 패턴 | YES | YES(existing project) | YES(existing) | YES(existing) | InstallRequest/target 없는 primary graph workflow |
+| NPMResolver.resolveDependencies/ResolveDependencies | YES | YES(install) | YES(CI423) | YES(existing) | non-install caller wiring은 후속; 본체는 target을 사용하지 않음 |
+| ExecutionInspectService / fresh result | NO(P5) | NO | NO | NO | 아래 이미 선택된 resolution 입력의 fresh 검사와 결과 |
+
+수정 지도는 existing application package의 execution_inspect.go와 회귀만이다. 이미 선택된
+DependencyResolution을 받고 ProjectInspectService처럼 기존 InstallInspectService의 per-entry
+component를 조립한다. Resolver/InstallRequest/InstallTarget을 가짜로 만들지 않는다. 기존 private
+inspectDependency와 InspectGraph용 batch helper를 그대로 호출하며 새 검사 엔진·Policy·
+승인 집합/cache·port/interface/package를 만들지 않는다. Resolution 선택/Node proof/records/
+staging/backend/CLI 조립은 다음 단계이며 이 service 성공을 actual 실행으로 표시하지 않는다.
+
+결과는 private 생성자로만 만드는 ExecutionInspection(operation/resolution/VerifiedSet)이다.
+실패 시 operation/resolution 진단은 보존하되 approved set은 없다. Complete denial은 기존
+ProjectPolicyFailure와 같은 방식의 typed failure로 complete inspected facts/decision을 보존한다.
+Provider/Evidence/ID/Policy 오류와 cancel은 원래 cause를 유지한다. Derived graph는 초기 lane에서
+ports 호출 전에 거부한다. Graph-aware capability는 기존 install과 같은 선택 조건으로 재사용한다.
+
+두 번째 검토: 반복 호출마다 새 operation/entry Run·acquire/verify/inspect/Evidence/entry/set Policy를
+수행한다. 같은 resolution/digest를 cached ALLOW로 바꾸지 않는다. 모든 nodes와 Policy가 끝나고
+현재 context가 살아 있을 때만 기존 NewVerifiedSet으로 성공한다. Entry/set 거부·missing/foreign
+report·원본 provider+store 오류·취소/ID 실패와 repeated request의 fresh independent 기록을 검증한다.
+Canonical format/quick와 application 전체 Race를 수행하고 기존 install/project 소비자를 보존한다.
+
+### B2c named local fresh whole inspection 결과
+
+[로컬 receipt](./p5b2c-fresh-execution-inspection-local-20261029.json)의 corrected Quick40.217s/
+application fullRace4.233s/docs0.306s/security13.163s가 PASS다. 기존1291source는 불변이며
+새2file만 추가했다. 반복 resolution의 fresh operation/entry Run·acquisition/검사/Evidence,
+whole graph batch·missing/foreign·entry/set denial과 false aggregate ALLOW·provider/store
+original cause·ID/nil/zero/cancel·derived 거부를 확인했다. 첫 Quick257.574s는 새 test가 wheel을
+sdist derivation source로 만든 invalid fixture였고 기존 Domain에서 service 진입 전에 거부됐다.
+Valid sdist fixture로 고쳤으며 제품/Domain/검사 guard는 바꾸지 않았다. 최초 source/log는 보존했다.
+B2c API 범위는 IMPLEMENTED/QUALIFIED=YES, actual P5 flow WIRED=NO다. Resolution 선택/
+실제 adapter factory·selected bytes/Node proof/records/staging·Backend/CLI는 여전히 MISSING이다.
