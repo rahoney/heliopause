@@ -156,3 +156,72 @@ B1은 IMPLEMENTED/QUALIFIED=YES(value local), WIRED=NO(P5 run/CLI), ACCEPTANCE_C
 (value 한정)다. A의 parser 내부 재사용도 실제 P5 flow 연결을 뜻하지 않으므로 WIRED=NO로
 명확히 기록한다. Exact runtime pin/whole graph·argv/source-policy는 B2에 남고 전체 P5는
 WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. CI423은 이전6dd source이며 이 변경을 포함하지 않는다.
+
+## P5-B2 — full execution context의 actual owner 대조 / source 전 지도
+
+기준0626301/tree8afa32f1/2894files이며 runtime1285는 양쪽 사본에서 같다. CI423 source는
+6dd3136으로 고정돼 있고 새 B2 변경을 포함하지 않는다. 아래 기존 owner를 실제 source로 확인했다.
+
+| 책임 / 실제 source·symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | B2 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `core/domain/manifest.go:VerifiedSet/NewVerifiedSet`, `VerifiedBundle` | YES | YES(existing install) | YES(existing scopes) | YES(existing scopes) | execution context에 재사용; InstallContext가 없는 generic set이므로 대체 불필요 |
+| `promotion/staging.go:LocalStaging.Stage/verifyDocuments/stageArtifact` | YES | YES(existing) | YES(existing named scopes) | YES(existing scopes) | 새 execution bundle과 현재 Evidence/source의 handoff 검증; fake target 불필요 |
+| `evidence/manifest.go:Generator.Build/BuildVerifiedBundle/manifestEntries` | YES | YES(install manifest) | YES(existing) | YES(install scope) | existing entry/SBOM helpers 재사용하는 execution-only context/schema; target 필드를 거짓으로 채우지 않음 |
+| `application/install_inspect.go:inspectDependency/inspectDependencyBatch`, `ProjectInspectService` composition | YES | YES(existing) | YES(existing) | YES(existing scopes) | current whole graph 검사 결과를 non-install execution outcome에 연결; 새 inspection engine 금지 |
+| `LockedDependencyGraph/DependencyResolution/InspectedDependencySet` | YES | YES | YES(existing) | YES(existing scopes) | approved set과 원래 resolution 전체 동일성·선택된 primary/acquisition/member·argv/runtime/source/policy 동결 |
+| `ExecutionEntry/NodeExecutionEntry` | YES | NO(P5 flow) | YES(local value) | YES(value scopes) | composition에서 generic context로 변환·canonical runtime binding |
+| execution context/manifest/application run path | NO(P5 lane) | NO | NO | NO | 아래 순서로 missing만 추가 |
+
+B2는 우선 기존 VerifiedSet/Resolution과 정확한 선택 member·OperationID·argv·required runtime을
+immutable non-install context로 묶는다. Core는 artifact/npm/runtimeidentity를 import하지 않는다.
+Node adapter의 bytes proof는 그대로 재사용하고 bootstrap의 기존 runtime owner로만 exact pin을
+결합한다. Context 자체를 외부 승인 token이나 cached ALLOW로 쓰지 않는다. Primary entry는
+현재 single-package lane에 한정하고 multi-package/derived build는 별도 capability 전 거부한다.
+
+argv는 shell text가 아닌 복사한 vector다. Input 문법/bounds를 canonical client09에 정한 뒤
+source를 쓴다. Arbitrary argv를 일반 로그·Evidence/Manifest·artifact/cache identity에 저장하지 않으며
+run request 메모리에서만 보유한다. Source/policy fingerprint는 기존 normalized resolution/
+Policy identities에서 도출한다. Staging은 보관 전용이고 실제 실행 전 whole current 검사와
+introduction-time rehash·폐기/출력/취소는 다음 acceptance다.
+
+구현 전 두 번째 검토에서는 existing graph/set/Policy 생성자와 source/policy 관련 canonical
+계약을 다시 대조한다. New approval-set/새 staging framework·placeholder port를 만들지 않는다.
+이 감사는 새 source 구현이나 B2 완료를 뜻하지 않는다. CI423 실제 timer2 due14:33:07UTC를
+우선 소비하고 source 변경은 해당 source/검증 범위로만 기록한다.
+
+### B2a 수정 지도 확정 / source 전 두 번째 검토
+
+기존 `VerifiedSet`/`DependencyResolution`을 새 `domain.ExecutionContext`로 묶는다. 새 approval-set,
+InstallTarget·SandboxRequest 위장 또는 기존 staging 변경은 없다. 정확한 primary acquired subject,
+선택 member의 상대 locator/digest/size·command, required runtime identity와 argv를 복사한
+immutable metadata context다. 승인 set의 전체 graph와 resolution의 nodes/edges가 같아야 하며
+현재 lane은 derived/multi-package entry를 거부한다. Source fingerprint는 resolution lock digest,
+Policy fingerprint는 실제 entry/set Policy ID/version만 사용하고 raw argv를 hash하지 않는다.
+
+Core는 source/runtime adapter를 import하지 않으며 runtime 문자열 자체를 source 인증이나
+실행 권한으로 해석하지 않는다. Exact Node pin 결합은 별도 bootstrap composition에서 Node
+bytes proof와 함께 검증할 missing이다. Context는 fresh inspection service가 제공한 set과 함께
+사용하며 cache/external JSON을 승인 authority로 재구성하지 않는다. CLI/run flow 연결은 아직 없다.
+
+Client09의 새 input bounds(128args/총32KiB, UTF-8/NUL, 빈 값 보존)를 constructor와 독립 preflight
+validator가 공유한다. Source는 기존 domain package의 새 execution_context.go와 그 회귀에
+한정한다. Whole graph/primary/acquisition substitution·zero/unsafe member/invalid runtime·
+argv copy와 경계·policy/source identity를 검증하고 canonical format/quick/domain fullRace를
+실행한다. API 단독 성공을 runtime binding/application/실제 실행 qualification으로 전용하지 않는다.
+
+### B2a named local metadata context 완료
+
+[로컬 receipt](./p5b2a-execution-context-local-20261028.json)의 Quick288.508s/domain fullRace2.620s/
+docs0.295s/security17.228s가 PASS다. 기존1285source는 같고 새2file만 추가했다. Generic
+VerifiedSet/Resolution을 재사용하고 exact graph·primary/acquisition·member·runtime metadata,
+source lock/실제 Policy identities와 private argv를 묶었다. Graph/다른 intake/secondary entry·
+unsafe/zero/invalid runtime과 argv128/32KiB·복사 불변·Policy version 변화를 검증했다.
+B2a는 IMPLEMENTED/QUALIFIED=YES(metadata API local), WIRED=NO(P5 actual flow), value acceptance만
+YES다. Runtime 문자열은 인증/실행 권한이 아니다. 다음 B2b의 Node bytes proof→canonical runtime
+composition과 fresh whole 검사/application/Manifest/staging·실제 backend/CLI는 미완료다.
+CI423 source6dd를 이 결과로 확대하거나 새 source push로 취소하지 않는다.
+
+B2a final record 뒤 첫 security6.576s는 sandbox의 shared Go cache read-only로 실패했다.
+같은 환경의 go list가 정확한 cache file write 거부를 확인했으며 scanner의 cascading type
+오류를 source 결함으로 단정하지 않는다. 최초 결과/진단을 보존하고 같은 pinned tool/cache를
+사용 가능한 기존 권한에서 canonical docs/security를 다시 확인한다.

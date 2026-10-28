@@ -102,6 +102,12 @@ CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유�
 - 일반 실행 argv의 `--` 경계와 HAA global flags를 구분한다. Shell 문자열 eval,
   `npx -c`, 임의 interpreter override는 초기 scope에서 거부한다. stdin/TTY 전달은
   명시 capability이며 interactive 지원 전에는 필요한 tool을 조용히 headless로 실행하지 않는다.
+- 초기 execution context의 프로그램 인자는 최대128개/합계32KiB UTF-8 bytes다. HAA flags와
+  선택 command는 이 count에 포함하지 않는다. 빈 인자·공백·줄바꿈은 vector의 데이터로
+  보존하며 NUL/invalid UTF-8과 한도 초과는 거부한다. CLI는 네트워크·획득 전에 검사한다.
+  Raw argv는 request 메모리에서만 보유하고 일반 log/Evidence/Manifest·artifact/cache identity에
+  저장하지 않는다. 기존 trusted direct-exec admission의 요청 결합은 유지한다. 실제 credential을
+  인자로 전달하는 capability는 초기 범위에 없으며 runtime credential 주입을 제공하지 않는다.
 - SIGINT/timeout/observer fault에 원래 오류를 보존하고 child/helper/container까지
   drain한다. 정리 불명확을 성공으로 바꾸지 않는다. 재실행은 오염된 cache를 승인으로 보지 않는다.
 

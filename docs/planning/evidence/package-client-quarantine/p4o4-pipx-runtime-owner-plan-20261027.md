@@ -3268,3 +3268,11 @@ Current whole/Linux/pipx/UID1001/final/signed는 결과 전 OPEN이다. 대기 �
 8SUCCESS/Linux IN_PROGRESS를 조회했다. 완료8 decoded logs442775B의 매 chunk readback과
 all8checkoutb571e02/tree feab8ef9/2891 source 동일을 확인했다. Required/current Linux는
 미확정이고 다음20min due14:33:07UTC/session84800을 등록했다. P5-B1 새 source는 이 CI 밖이다.
+
+두 번째 timer는14:33:07.000143UTC 발화 뒤14:33:31UTC 실제 조회에서 same6dd/8SUCCESS·
+Linux 진행을 확인했다. Consumed receipt를 별도 보존했고 다음 due14:53:31UTC/session61538을
+등록했다. 이 조회는 전체 qualification이나 새 P5 source 성공이 아니다.
+
+세 번째 timer는14:53:31.000621UTC 발화 뒤14:53:43UTC 실제 조회에서 same6dd/8SUCCESS·
+Linux 진행을 확인했다. 다음 due15:13:43UTC/session51968을 등록했고 현재 source를 새 push로
+취소하지 않는다. Whole Linux/Required와 P5 새 source는 아직 해당 qualification 밖이다.

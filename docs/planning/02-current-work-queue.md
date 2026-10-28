@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: CI423 poll01 14:13:07UTC 8SUCCESS/Linux running; next20min14:33:07UTC/session84800; P5-B1 Node bytes API locally qualified/unwired, continue B2 full context
+Next action: CI423 poll03 14:53:43UTC 8SUCCESS/Linux running; next20min15:13:43UTC/session51968; P5-B2a context API locally qualified/unwired; next canonical Node runtime composition/current whole inspection
 Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source6dd3136 CI423 registered after approved4commit push; current whole hosted/final/signed remain
 Acceptance audit: CI422/source1203445 Linux+Required FAILURE; all10 checkout403e7ce/tree d4b0e921/2883 matches; 8SUCCESS/Linux24PASS/noSKIP/helper6wait0/restore; first torch report candidate refusal unresolved. Previous full success CI421/e859; current whole/final/signed OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,24 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 P5-B2a metadata context 로컬 검증
+
+[B2a receipt](./evidence/package-client-quarantine/p5b2a-execution-context-local-20261028.json)의
+Quick288.508s/domain fullRace2.620s/docs/security가 PASS다. 기존1285source와 VerifiedSet/
+Resolution을 유지하고 새2file의 complete graph/primary acquisition/member/runtime metadata·
+private argv와 source/Policy identity를 검증했다. 실제 P5 flow는 WIRED=NO이며 다음은 Node proof와
+canonical runtime의 composition 및 current 검사/Manifest·run 연결이다. CI423은 third actual
+20min query14:53:43UTC에도8SUCCESS/Linux 진행이며 next15:13:43UTC/session51968이다.
+
+### 2026-10-28 P5-B2 기존 owner 재사용 감사
+
+[B2 actual owner 감사](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)는
+VerifiedSet/VerifiedBundle/LocalStaging이 generic이고 InstallContext를 요구하지 않음을 실제
+source에서 확인했다. Existing inspection helpers·Manifest entry/SBOM builders를 재사용하고
+non-install context/entry·argv/runtime/source-policy 동결의 missing만 수행한다. Source 전
+계약·문법/bounds와 두 번째 검토는 진행 중이며 B2 구현/실제 run 연결은 아직 미완료다.
+CI423 source6dd와 실제 다음 due14:33:07UTC/session84800은 그대로다.
 
 ### 2026-10-28 CI423 첫20min 소비와 P5-B1 로컬 검증
 
