@@ -107,6 +107,9 @@ CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유�
   연결한다. InstallTarget은 없으며 기존 VerifiedBundle/SBOM과 보관 전용 staging을 재사용한다.
   Raw argv나 그 hash·프로그램 출력은 기록하지 않는다. Manifest ID를 실제 실행 요청이나
   argv의 승인 token으로 사용하지 않는다. 실제 실행 전 fresh 검사와 private 요청 결합이 필요하다.
+- 초기 실행의 명시 command는 기존 selected-command 규칙(최대214 UTF-8 bytes, 비어 있지 않은
+  단일 이름, path/colon/control 금지)을 I/O 전 검증한다. 생략한 command는 기존 bin 선택의
+  ambiguity 규칙으로만 결정한다. 준비 request의 일반 formatter는 raw 인자를 표시하지 않고 JSON 직렬화는 거부한다.
 - 초기 execution context의 프로그램 인자는 최대128개/합계32KiB UTF-8 bytes다. HAA flags와
   선택 command는 이 count에 포함하지 않는다. 빈 인자·공백·줄바꿈은 vector의 데이터로
   보존하며 NUL/invalid UTF-8과 한도 초과는 거부한다. CLI는 네트워크·획득 전에 검사한다.

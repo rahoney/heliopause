@@ -357,3 +357,81 @@ wrong interpreter/options·nil/zero/cancel/cause를 거부한다. Extract/Host·
 API 범위 IMPLEMENTED/QUALIFIED=YES이며 actual P5 command flow WIRED=NO다. 다음은 real
 resolver/fresh whole inspection/Node/context/records/staging preparation 조립이며 Backend/CLI와
 실제 hostile/final qualification은 여전히 MISSING이다. CI423에는 이 source가 없다.
+
+## P5-B2e — preparation workflow의 owner 감사와 수정 지도
+
+기준4ecf37b/tree d88cd820/2909files·runtime1295다. Root/기존 private의 exact6commit 공개
+후보는 고정했고 별도 tmp clone에서만 다음 작업을 한다. 이전 승인은6dd까지이며 새 공개
+push/CI는 별도 pending이다. 이 사본의 이후 source는6commit payload에 포함하지 않는다.
+
+| 책임 / actual owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| NPMResolver.resolveDependencies / ResolveDependencies | YES | YES(install) | YES(CI423) | YES(existing) | 같은 본체의 target 없는 execution entry method |
+| ExecutionInspectService.InspectResolved | YES | NO(actual command flow) | YES(local) | YES(API) | 준비 workflow에서 매번 호출 |
+| Inspector.InspectArchive / ReadNodeExecutionEntry, npm selection/proof | YES | NO(actual P5 flow) | YES(local/shared inspector) | YES(API) | 현재 primary의 실제 source와 요청 command 조립 |
+| bootstrap.newNodeExecutionContext / domain.ExecutionContext | YES | NO(actual flow) | YES(local) | YES(value) | concrete entry binder와 실제 private argv를 workflow에서 결합 |
+| Generator.BuildExecution / LocalStaging.Stage | YES | YES(records API / existing storage) | YES(named local) | YES(API/existing) | 같은 요청의 current set/bundle/staged handoff |
+| 실행 준비 request/workflow와 실제 adapter factory | NO | NO | NO | NO | 아래 비설치 준비 흐름; 실제 프로그램 실행은 별도 |
+
+준비 흐름은 Application이 소유한다. 새 ExecutionPreparationRequest는 ref/optional explicit
+command/private copied argv만 가진다. Domain의 기존 command/argv 검증을 preflight로 재사용해
+invalid 입력을 어떤 resolver/entry I/O보다 먼저 거부한다. Runtime override/InstallTarget/Host
+project·environment·stdin/TTY/output export를 요청에 추가하지 않는다.
+
+Application이 현재 필요한 좁은 resolver/entry-binder/execution-record interfaces를 소유하며,
+같은 변경에서 concrete NPM resolver·Node binder·Generator가 구현하고 실제 factory가 연결한다.
+미래 port/package/job placeholder는 없다. 기존 Staging Port와 fresh inspection service를 그대로
+사용한다. Resolve once→fresh whole inspect→actual selected Node proof→current request context
+재결합→execution Manifest/SBOM→보관 전용 staging 순서다. Promotion/프로그램 실행은 없다.
+
+Entry binder는 기존 Node context 조립을 호출하되 raw argv 없이 measured facts를 제공한다.
+Application은 returned context의 승인/argv를 재사용하지 않고 실제 fresh operation/resolution/
+VerifiedSet와 현재 request argv로 NewExecutionContext를 다시 호출한다. 그래서 오래된 primary
+intake나 다른 command 치환은 거부되고 cache ALLOW/외부 context가 실행 권한이 되지 않는다.
+Records provider는 실제 Generator이며 bundle의 완전한 immutable Domain set을 fresh set과
+대조한다. Staging 결과의 manifest ID/handle도 같은 bundle이어야 한다. 원본 provider 오류와
+완료된 검사 결과를 보존하고 모든 후속 경계에서 cancellation을 확인한다.
+
+수정 지도: 기존 domain/execution_context.go의 command 검증을 동일 의미의 재사용 preflight로
+추출하고 회귀를 추가한다. 기존 sandbox/npm_resolver.go에 target 없는 실행용 method를
+추가하되 본체/parser/network/lifecycle는 그대로다. application/execution_prepare.go와 회귀,
+bootstrap/node_execution_prepare.go와 회귀 및 resolver의 실행 진입점 회귀만 추가한다.
+새 canonical runtime/pin·Policy/guard·기존 install/project 기능은 변경하지 않는다.
+
+두 번째 검토: zero/invalid/bounded input은 I/O 전 거부, resolve는 요청당1회이고 반복 호출은
+fresh inspection/Policy다. Pipeline의 provider/entry/records/stage 오류·wrong current set/member/
+command/staging identity와 cancellation은 complete preparation을 만들지 않는다. 실제
+concrete Node reader·canonical runtime/records/staging handoff와 기존 install resolver 소비자를
+canonical format/quick 및 domain/application/bootstrap/evidence/sandbox 영향 Race로 검증한다.
+준비 성공은 user program의 실행·stdout/exit/cancel/lifecycle qualification이나 CLI 지원이 아니다.
+
+B2e source 전 최종 대조: command preflight는 기존 domain 생성자의214bytes/UTF-8/text/path
+규칙 그대로이며 explicit command에만 I/O 전에 적용한다. 생략은 기존 exact bin 선택으로만
+확정한다. 새 private request는 argv clone/읽기 copy와 일반 formatter redaction을 제공한다.
+Context binder의 반환값은 measured entry facts만 소비하고 operation/set/resolution/argv는
+현재 값으로 다시 구성한다. Records provider의 bundle set은 immutable Domain 값의 정확한
+동등 비교로 current set과 대조하며 새로운 authorization/hash/cache identity는 만들지 않는다.
+
+실제 factory의 입력 재검토: 일반 Inspection interface를 그대로 받으면 static-only 조립도
+가능하므로 concrete Backend를 받고 기존 DynamicInspector와 static+dynamic CompositeInspector를
+factory 안에서 조립한다. 기존 Policy/Composite 생성자 계약을 바꾸지 않는다. 별도의 DATA-only
+fixture 시험은 실제 Node 실행/production dynamic qualification으로 표시하지 않는다.
+
+B2e 첫 Quick105.434s는 private field-only request를 기본 json.Marshal에 직접 넘긴 새
+privacy test의 SA9005다. Source/최초 로그를 보존했다. Request는 실행용 private 메모리 값이므로
+explicit MarshalJSON이 generic private-request 오류로 직렬화를 거부하게 하고 회귀도 그 계약을
+검증한다. Raw argv/log/Evidence 비저장 계약을 유지하며 scanner rule을 끄지 않는다.
+
+### B2e named local preparation / DATA storage handoff 결과
+
+[로컬 receipt](./p5b2e-execution-preparation-local-20261029.json)의 corrected Quick229.702s/
+영향5package fullRace39.718s/docs0.271s/security16.332s가 PASS다.
+기존1292source는 그대로이며 command preflight/회귀와 target 없는 resolver entry만 기존 owner를
+확장했다. 새5file은 preparation workflow·실제 Node adapter 조립/회귀다. Invalid input 전 I/O,
+매 요청 fresh 검사·cached intake/records·다른 command/staging receipt·원본 provider/취소 cause와
+private argv/formatter·JSON 거부를 확인했다. 실제 archive/SRI/static/Evidence/Node proof/records/
+staging 반복 handoff와 변조/다른 interpreter 거부는 DATA-only/M1 fixture다. Production M3 dynamic/
+live resolver·사용자 프로그램 실행으로 확대하지 않는다. 실제 factory는 Backend로 기존 static+
+dynamic Composite를 조립하며 준비 workflow 내부 WIRED=YES, actual command/backend/CLI는NO다.
+첫 SA9005 source/log를 보존했고 raw argv/hash/output은 records에 없다. 다음은 실제 준비
+qualification과 user-run transport/lifecycle이며 full P5·CLI/final은 계속 MISSING이다.

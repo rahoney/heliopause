@@ -33,6 +33,15 @@ func ValidateExecutionArguments(arguments []string) error {
 	return nil
 }
 
+// ValidateExecutionCommand validates an explicit command before any intake.
+// Omitted selection is handled separately by the ecosystem's exact bin parser.
+func ValidateExecutionCommand(command string) error {
+	if validateBoundedText(command, 214, "execution command") != nil || command == "." || command == ".." || strings.ContainsAny(command, "/\\:") {
+		return errors.New("execution command requires a bounded single name")
+	}
+	return nil
+}
+
 // ExecutionContextData joins an already verified set to one requested member.
 // Composition supplies the required runtime and the adapter's measured member
 // facts. Arguments are private request data; do not log or persist this input.
@@ -76,8 +85,7 @@ func NewExecutionContext(data ExecutionContextData) (ExecutionContext, error) {
 		return ExecutionContext{}, invalid
 	}
 	if validateBoundedText(data.RuntimeIdentity, maxInstallTargetLength, "execution runtime identity") != nil ||
-		validateBoundedText(data.Command, 214, "execution command") != nil || data.Command == "." || data.Command == ".." ||
-		strings.ContainsAny(data.Command, "/\\:") || data.EntryDigest.value == "" || !validExecutionMemberPath(data.EntryPath) {
+		ValidateExecutionCommand(data.Command) != nil || data.EntryDigest.value == "" || !validExecutionMemberPath(data.EntryPath) {
 		return ExecutionContext{}, invalid
 	}
 	primaryMatches := 0

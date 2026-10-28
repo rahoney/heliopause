@@ -16,14 +16,42 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4 C-e4 ordinary hosted CI423/source6dd QUALIFIED; Required10SUCCESS/Linux92/noSKIP/CPP128/helper14wait0; P5-B2b local composition/records qualified/unwired
-Next action: P5-B2e actual resolver/fresh inspection/Node context/records/staging preparation composition after owner audit/map; backend/CLI remain
-Current substep: M13-004/P5-B2e preparation composition baseline IN_PROGRESS; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
+Next action: CI424 poll01 16:20:03UTC 8SUCCESS/Linux in progress; next actual20min16:40:03UTC/session40231; P5-C runtime/output/lifecycle owner audit and production preparation qualification; backend/CLI remain
+Current substep: M13-004/P5-C runtime/output/lifecycle owner audit IN_PROGRESS after B2e local preparation; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
 Acceptance audit: CI423/source6dd Required10SUCCESS; all10 checkoutb571e02/tree feab8ef9/2891 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; canonical resolver positive qualified. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
 Independent local next: P5 fresh whole execution inspection/application; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-B2e preparation 로컬 검증
+
+[B2e receipt](./evidence/package-client-quarantine/p5b2e-execution-preparation-local-20261029.json)의
+Quick229.702s/영향5package fullRace39.718s/docs/security가 PASS다.
+Target 없는 resolver→fresh 검사→actual Node proof→current context→records→staging을 연결했다.
+보관 handoff actual은 fixed DATA/M1 fixture이며 production dynamic/user program은 미수행이다.
+Private request의 argv copy·format/JSON 보호와 cached entry/records·wrong staging/command·
+최초 provider/취소 cause를 확인했다. 준비 내부 WIRED=YES, actual backend/CLI는 아직NO다.
+[CI424 registration](./evidence/package-client-quarantine/ci424-registration-20261029.json)의 첫 timer
+소비16:20:03UTC는8SUCCESS/Linux 진행·all8checkout/tree동일이다. 다음16:40:03UTC/session40231.
+
+### 2026-10-29 사용자 연속 CI/push 권한
+
+사용자는 취침 중 중요한 CI test와 milestone branch push를 다시 묻지 않고 진행하며 실제
+20min timer 조회를 계속하도록 명시했다. 이 승인 이후 필요한 grouped branch push/기존 CI는
+구체 후보 검토·canonical 검증 후 자율 진행한다. 실행 중인 CI424 source4ec를 새 push로 취소하지
+않고 독립 B2e 작업을 계속한다. Main reviewer merge·milestone acceptance 규칙은 유지한다.
+
+### 2026-10-29 승인된6commit/source4ec CI424 등록
+
+사용자 '진행해' 승인으로6dd3136 다음부터4ecf37b까지6commit/26file만 기존 공개 milestone
+branch에 정상 FF push했다. Whole candidate2909files/tree d88cd820/Root·기존 private의
+index+disk blob/mode와 runtime1295를 재확인했다. Main 병합/tag/release와 후속 tmp B2e 변경은
+payload 밖이다. [CI424](https://github.com/rahoney/heliopause/actions/runs/40721538953)는
+15:59:44UTC 등록됐다. Initial Docs/corpus SUCCESS·나머지 진행이며 Required/whole result는
+미확정이다. 실제 timer6768의 첫 due16:19:44UTC에 fresh run/jobs를 조회하고 계속이면
+다음20min을 등록한다. 독립 B2e 작업은 별도 clone에서 계속하며 이 source를 취소하지 않는다.
 
 ### 2026-10-29 P5-B2d controlled Node entry bytes 로컬 검증
 

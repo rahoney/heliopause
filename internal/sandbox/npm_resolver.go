@@ -116,6 +116,12 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	return r.resolveDependencies(ctx, reference, nil)
 }
 
+// ResolveExecutionDependencies selects the same isolated complete graph
+// without manufacturing an installation target for an ephemeral execution.
+func (r *NPMResolver) ResolveExecutionDependencies(ctx context.Context, reference domain.ArtifactReference) (domain.DependencyResolution, error) {
+	return r.resolveDependencies(ctx, reference, nil)
+}
+
 // ResolveDependencyUpdate selects once from frozen existing public controls.
 func (r *NPMResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (resolution domain.DependencyResolution, resultErr error) {
 	if ctx == nil || !install.Valid() || install.Mode() != domain.InstallNPMProject || len(controls) != 2 {

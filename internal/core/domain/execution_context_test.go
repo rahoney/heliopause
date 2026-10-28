@@ -189,3 +189,22 @@ func TestExecutionArgumentPreflightAndContextShareExactBounds(t *testing.T) {
 		})
 	}
 }
+
+func TestExecutionCommandPreflightKeepsExistingContextRules(t *testing.T) {
+	for _, test := range []struct {
+		value    string
+		accepted bool
+	}{
+		{"tool", true}, {strings.Repeat("a", 214), true}, {"", false}, {".", false}, {"..", false}, {"/bin/sh", false}, {`C:\tool`, false},
+		{"tool\nother", false}, {" tool", false}, {strings.Repeat("a", 215), false}, {string([]byte{0xff}), false},
+	} {
+		if err := domain.ValidateExecutionCommand(test.value); (err == nil) != test.accepted {
+			t.Fatal("command preflight boundary differs", err)
+		}
+		data := executionContextFixture(t)
+		data.Command = test.value
+		if value, err := domain.NewExecutionContext(data); (err == nil) != test.accepted || value.Valid() != test.accepted {
+			t.Fatal("command context and preflight diverged", err)
+		}
+	}
+}

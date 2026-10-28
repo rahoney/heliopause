@@ -3297,3 +3297,18 @@ synthetic lock·public metadata와 실제 CLI를 구분한다. Signed15asset/19b
 final CPU/세CUDA·지원표/전체 P4는 아직NO다. CI422의 원래 report 버전/bytes 미수집 한계도
 유지하며 current green을 과거 직접 인과 해결로 바꾸지 않는다. 후속 local B1/B2 source는 이
 CI에 없고 같은 M13-004의 P5 current whole execution inspection/application을 계속한다.
+
+### P5 grouped source4ec CI424 — 기존 공통 capture 소비자 재검증
+
+사용자 승인된6commit/26file의 정확한4ec/tree d88cd820/2909·runtime1295만 push했고
+[CI424](https://github.com/rahoney/heliopause/actions/runs/40721538953)가15:59:44UTC 시작됐다.
+후속 B2e 사본의 변경은 포함하지 않는다. Required/whole checkout/logs/hosted 결과는 미확정이며
+기존 CI423 qualification은6dd named scope로 유지한다. Timer6768은 첫16:19:44UTC DUE를
+실제 fresh query로 소비하고 계속 중이면 다음20min을 연결한다. 현재 ordinary timeout/coverage,
+CPP/SDK와 CPU30/17/13·fixed42/원본ZIP·canonical pin은 바꾸지 않았다. Raw ci424-initial/
+timer01과 p5-grouped candidate/approval이 source와 실제 승인을 소유한다.
+
+CI424 첫 timer는16:19:44.596545UTC에 발화했고16:20:03UTC fresh run/jobs에서 same4ec의
+8SUCCESS/Linux 진행을 직접 조회했다. 완료8logs443254B의 매 chunk readback과 all8checkout
+2823b654/tree d88cd820/2909 source 동일·CPP128을 확인했다. Required/Linux qualification은
+미확정이며 다음20min16:40:03UTC/session40231을 등록했다. B2e local source는 이 CI 밖이다.
