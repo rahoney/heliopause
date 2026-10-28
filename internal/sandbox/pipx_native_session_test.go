@@ -7,6 +7,8 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"testing/synctest"
+	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -222,4 +224,42 @@ type pipxNativeDiscardCleanupRunner struct{ uvOwnedContainerRunner }
 func (r *pipxNativeDiscardCleanupRunner) RunDiscard(ctx context.Context, name string, args ...string) error {
 	_, err := r.Output(ctx, name, args...)
 	return err
+}
+
+type pipxNativeDelayedCleanupResources struct {
+	ObservationResourceClient
+	lease      ObservationResourceLease
+	closes     int
+	stopBudget time.Duration
+}
+
+func (r *pipxNativeDelayedCleanupResources) Terminate(ctx context.Context, _ string, _ string) (ObservationResourceLease, error) {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return ObservationResourceLease{}, errors.New("unbounded stop")
+	}
+	r.stopBudget = time.Until(deadline)
+	select {
+	case <-time.After(4 * time.Second):
+		return r.lease, nil
+	case <-ctx.Done():
+		return ObservationResourceLease{}, ctx.Err()
+	}
+}
+func (r *pipxNativeDelayedCleanupResources) Close(ctx context.Context, _ string) (ObservationResourceLease, error) {
+	r.closes++
+	return r.lease, ctx.Err()
+}
+func TestPipxNativeTrustedCleanupDoesNotTruncateLegitimateStop(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		resources := &pipxNativeDelayedCleanupResources{lease: ObservationResourceLease{CgroupParent: "owned", CPU: 2}}
+		runner := &pipxNativeNoCommands{}
+		keeper := &pipxNativeKeeper{id: strings.Repeat("c", 64), attempted: true}
+		session := pipxNativeSession{runner: runner, resources: resources, lease: resources.lease, reader: keeper, keepers: []*pipxNativeKeeper{keeper}, registrationAttempted: true, resourceCreated: true}
+		started := time.Now()
+		err := session.cleanup()
+		if err != nil || time.Since(started) != 4*time.Second || resources.stopBudget != 7*time.Second || resources.closes != 1 || !keeper.removed || runner.calls != 0 {
+			t.Fatal("trusted teardown truncated or stop became unbounded", err, resources, runner.calls)
+		}
+	})
 }

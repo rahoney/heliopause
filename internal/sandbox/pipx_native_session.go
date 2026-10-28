@@ -328,9 +328,7 @@ func runPipxNativeInstall(ctx context.Context, runner CommandRunner, observer Tr
 	}
 	s := &pipxNativeSession{runner: preparedRunner, observer: observer, resources: resources, transaction: identity.String(), ledger: ledger}
 	defer func() {
-		cleanup, done := resolverCleanupContext()
-		defer done()
-		cleanupErr := s.close(cleanup)
+		cleanupErr := s.cleanup()
 		if err := ctx.Err(); err != nil {
 			cleanupErr = errors.Join(cleanupErr, err)
 		}
@@ -400,6 +398,14 @@ func (s *pipxNativeSession) collectTrace(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// Match the existing Python transaction's trusted cleanup bound. Guest CPU,
+// wall authorization and each typed stop's seven-second bound remain separate.
+func (s *pipxNativeSession) cleanup() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	return s.close(ctx)
 }
 
 func (s *pipxNativeSession) close(ctx context.Context) error {

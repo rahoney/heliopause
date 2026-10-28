@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -279,6 +280,18 @@ const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 // exposing any test seam outside this package.
 var observerControlEndpoint = ObserverControlEndpoint
 
+func (d *FaultOutsideDiagnostic) UnmarshalJSON(payload []byte) error {
+	type compact FaultOutsideDiagnostic
+	var decoded compact
+	decoder := json.NewDecoder(bytes.NewReader(payload))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&decoded); err != nil {
+		return err
+	}
+	*d = FaultOutsideDiagnostic(decoded)
+	return nil
+}
+
 type helperRecord struct {
 	ContainerID          string                 `json:"container_id"`
 	Kind                 string                 `json:"kind"`
@@ -298,22 +311,24 @@ type helperRecord struct {
 }
 
 type observerFault struct {
-	reason, site string
-	imageLocator uint64
-	open         FaultOpenDiagnostic
-	budget       FaultBudgetDiagnostic
-	raw          FaultRawDiagnostic
-	ledger       FaultLedgerDiagnostic
+	reason, site     string
+	imageLocator     uint64
+	firstOutsideOpen FaultOpenDiagnostic
+	open             FaultOpenDiagnostic
+	budget           FaultBudgetDiagnostic
+	raw              FaultRawDiagnostic
+	ledger           FaultLedgerDiagnostic
 }
 
-func (e observerFault) Error() string                           { return "observer stream is incomplete" }
-func (e observerFault) TraceFaultReason() string                { return e.reason }
-func (e observerFault) TraceFaultSite() string                  { return e.site }
-func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
-func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
-func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
-func (e observerFault) TraceFaultRaw() FaultRawDiagnostic       { return e.raw }
-func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic { return e.ledger }
+func (e observerFault) Error() string                                   { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string                        { return e.reason }
+func (e observerFault) TraceFaultSite() string                          { return e.site }
+func (e observerFault) TraceFaultImageLocator() uint64                  { return e.imageLocator }
+func (e observerFault) TraceFaultFirstOutsideOpen() FaultOpenDiagnostic { return e.firstOutsideOpen }
+func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic             { return e.open }
+func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic         { return e.budget }
+func (e observerFault) TraceFaultRaw() FaultRawDiagnostic               { return e.raw }
+func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic         { return e.ledger }
 
 const maximumHelperRecordBytes = 1024
 
@@ -698,6 +713,9 @@ func (o *SharedObserver) receive() {
 				if record.FaultOpen != nil {
 					fault.open = *record.FaultOpen
 				}
+				if record.FaultOpen != nil && record.FaultOpen.FirstOutside != nil {
+					fault.firstOutsideOpen = record.FaultOpen.FirstOutside.openDiagnostic()
+				}
 				if record.FaultBudget != nil {
 					fault.budget = *record.FaultBudget
 				}
@@ -1021,17 +1039,26 @@ func validFaultSite(record helperRecord) bool {
 		}
 	}
 	if record.FaultOpen != nil {
-		open := record.FaultOpen
-		if open.RustcArgc > 33 {
-			return false
+		opens := []*FaultOpenDiagnostic{record.FaultOpen}
+		if first := record.FaultOpen.FirstOutside; first != nil {
+			if record.Kind != "stream-fault" || record.Reason != "STREAM_FAULT" || record.FaultBudget != nil || record.FaultRaw != nil || first.PathLocator == 0 {
+				return false
+			}
+			compact := first.openDiagnostic()
+			opens = append(opens, &compact)
 		}
-		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
-			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
-			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
-			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
-			!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
-			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
-			return false
+		for _, open := range opens {
+			if open.RustcArgc > 33 {
+				return false
+			}
+			if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
+				!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
+				(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
+				!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
+				!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_COMM", "PROC_THREAD_COMM", "PROC_PARENT_COMM", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+				!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
+				return false
+			}
 		}
 	}
 	if record.FaultImageLocator != 0 && (record.Kind != "stream-fault" || record.FaultSite != "OPEN_RESULT_CLASSIFICATION_IMAGE") {

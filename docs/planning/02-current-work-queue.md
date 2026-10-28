@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI421/sourcee859487 Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3c baseline audit and dedicated observed offline native session/installed supply; initial ZIP CPU refusal retained with old/new controls PASS; CI42140598317489/sourcee859487 Required10SUCCESS verified with decoded10logs/source tree; four actual20min polls consumed; no active timer; CI415 cause OPEN
+Next action: M13-004/P4-O4-C3c3b3c C-a exact declared venv site-packages624640 after cfg32768 actual v16; scoped diagnostic checkpoint; legacy ZIP mixed CPU boundary OPEN; parent comm verified; CI421 Required10SUCCESS consumed/no active timer; CI415 cause OPEN
 Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -25,11 +25,27 @@ Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### 2026-10-28 C-a query/diagnostic 중간 검증
+
+[한정 checkpoint](./evidence/package-client-quarantine/p4o4c3c3b3c1-native-query-diagnostics-checkpoint-20261028.json)의
+Go canonical/focused Race·CPP128와 actual cfg32768/parent 관계/first-finding·trusted cleanup을
+보존한다. v16은 outside3의 최초 exact venv site-packages624640와 후속 immutable
+os-release557056에서 미완료다. 기존 ZIP actual의 normal-before20units/5commands와
+회계 거부는 PASS, normal-after는 활성 CPU13s 경계 INCOMPLETE이며 전체 qualification은
+OPEN이다. Budget/coverage나 CPU 인과를 바꾸지 않고 현재 native read gap을 계속한다.
+
 ### 2026-10-28 C-a native 관찰의 첫 실제 경계 확인
 
 기존 Go canonical/영향 Race와 typed session은 구현됐고, 고정 원본42/ZIP의 실제 실행은
 UV startup의 exact read에서 중단됐다. v5에서 자기 proc 읽기를 지나 최초 오류는
-CPU quota/system/557056이었고, v6의 다음 오류는 CPU period 읽기다. 각 실행의 Host/Docker/입력·source 불변과 helper
+CPU quota/system/557056이었고, v6의 다음 오류는 CPU period 읽기였고 v7은 DEV_NULL 읽기에서 중단됐다. v8은 base query의 OCI directory624640과 별도
+cleanup 실패를 보존했고, 정확한 잔여 DATA/keeper 소유권을 확인해 복구했다. v9의
+query flag/새 trusted cleanup 경로는 실제 통과했으며 다음 active UV의 고정 interpreter
+read557056를 검증했다. v10의 다음 proc/OTHER 읽기는 /proc/24/comm 후보이며
+v11 판정 불변 실행에서 자기 TGID 관계는 반증됐다. 부모/current thread 관계의 진단만
+확장한 v12 actual에서 PROC_PARENT_COMM을 확인했다. 기존 live root creator에 묶인
+exact parent comm read는 v13에서 통과했고 그 뒤 첫 outside4와 후속 OCI fault를 보존했다.
+현재 권한을 유지한 v14 first-outside diagnostic을 검증 중이다. 다른 PID/SELF·thread는 불허다. 각 실행의 Host/Docker/입력·source 불변과 helper
 wait0/부재를 확인했고 원본은 보존했다. [Owner map](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)의
 source 전 tuple audit에 따라 필요한 native-only read만 검증한다. [중간 구현/checkpoint](./evidence/package-client-quarantine/p4o4c3c3b3c1-native-session-checkpoint-20261028.json)의
 Go canonical/전체 영향 Race·CPP128는 통과했고 실제 native install은 미완료다. C-a QUALIFIED/

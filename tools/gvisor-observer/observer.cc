@@ -556,6 +556,7 @@ struct ProcessState {
   FaultSite terminal_fault_site = FaultSite::kNone;
   uint64_t fault_image_locator = 0;
   std::string fault_open_diagnostic;
+  std::string first_outside_open_diagnostic;
   std::string fault_raw_diagnostic;
   // Diagnostic only: these bounded scalars are never descriptor authority.
   struct FDMutationDiagnostic {
@@ -2442,6 +2443,9 @@ const char* FaultOpenSubject(const gvisor::common::ContextData& context,
   if (path == self + "/maps") return "PROC_SELF_MAPS";
   if (path == self + "/statm") return "PROC_SELF_STATM";
   if (path == self + "/cgroup") return "PROC_SELF_CGROUP";
+  if (path == self + "/comm") return "PROC_SELF_COMM";
+  if (context.thread_id() > 0 && path == "/proc/" + std::to_string(context.thread_id()) + "/comm") return "PROC_THREAD_COMM";
+  if (context.parent_thread_group_id() > 0 && path == "/proc/" + std::to_string(context.parent_thread_group_id()) + "/comm") return "PROC_PARENT_COMM";
   if (path == self + "/mountinfo") return "PROC_SELF_MOUNTINFO";
   if (path == "/proc/sys/vm/overcommit_memory") return "VM_OVERCOMMIT_MEMORY";
   if (path == "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size") return "THP_PAGE_SIZE";
@@ -2485,6 +2489,31 @@ std::string FaultOpenDiagnostic(const gvisor::syscall::Open& message,
             ",\"native_cc_invocation\":" + (group->diagnostic_native_cc ? "true" : "false") : "") +
       (group != nullptr && group->diagnostic_build_target_image ? std::string(",\"build_target_image\":true") : "") +
       (group != nullptr && group->diagnostic_image == DiagnosticImage::kRustLld ? std::string(",\"lld_same_group\":") + (group->diagnostic_lld_same_group ? "true" : "false") : "") + "}";
+}
+
+// Preserve the first native finding without names, contents or mutable comm.
+std::string FirstOutsideOpenDiagnostic(const gvisor::syscall::Open& message,
+    const ProcessState& state,const MountAnchor& anchor) {
+ const auto* group=FindFilesystemGroup(message.context_data(),state);
+ uint64_t locator=14695981039346656037ULL;
+ for(unsigned char byte:message.pathname()){locator^=byte;locator*=1099511628211ULL;}
+ return std::string("{\"image\":\"")+ProcessClassName(FilesystemProcessClass(message.context_data(),state))+
+  "\",\"role\":\""+RoleName(group==nullptr?ProcessState::Role::kUnknown:group->role)+
+  "\",\"provenance\":\""+ProvenanceName(group==nullptr?ProcessState::Provenance::kUnknown:group->provenance)+
+  "\",\"subject\":\""+FaultOpenSubject(message.context_data(),message.pathname(),anchor)+
+  "\",\"mount\":\""+anchor.mount_class+"\",\"flags\":"+std::to_string(message.flags())+
+  ",\"path_locator\":"+std::to_string(locator==0?1:locator)+"}";
+}
+
+// Existing Send stays unchanged. Only a native classification fault can carry
+// this compact context; reserve 256 bytes for its fixed envelope header.
+std::string FaultOpenWithFirstOutside(const ProcessState& state,const char* reason,const std::string& budget) {
+ const std::string& open=state.fault_open_diagnostic;
+ const std::string& first=state.first_outside_open_diagnostic;
+ if(open.empty()||first.empty()||reason==nullptr||strcmp(reason,"STREAM_FAULT")!=0||!budget.empty()||!state.fault_raw_diagnostic.empty())return open;
+ const std::string field=",\"first_outside\":"+first;
+ if(open.back()!='}'||open.size()+field.size()>768)return open;
+ return open.substr(0,open.size()-1)+field+"}";
 }
 
 bool IsExactLibcapNg0(const std::string& path) {
@@ -2951,20 +2980,26 @@ bool IsPipxNativeABIRead(const gvisor::common::ContextData& context, const Proce
       anchor->mountpoint == "/proc" && anchor->mount_class == "system" &&
       (path == "/proc/sys/vm/overcommit_memory" ||
        path == "/proc/"+std::to_string(context.thread_group_id())+"/cgroup" ||
-       path == "/proc/"+std::to_string(context.thread_group_id())+"/mountinfo")) return true;
+       path == "/proc/"+std::to_string(context.thread_group_id())+"/mountinfo" ||
+       path == "/proc/"+std::to_string(context.parent_thread_group_id())+"/comm")) return true;
   if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
       group->current_image_class == ProcessClass::kUV && flags == 557056 &&
       anchor->mountpoint == "/sys/fs/cgroup/cpu" && anchor->mount_class == "system" &&
-      path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us") return true;
+      (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+       path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us")) return true;
   if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
       group->current_image_class == ProcessClass::kUV && flags == 557056 &&
-      anchor->mountpoint == "/" && anchor->mount_class == "oci-root" && IsExactPinnedLibraryRead(path)) return true;
+      anchor->mountpoint == "/dev" && anchor->mount_class == "system" && path == "/dev/null") return true;
+  if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
+      group->current_image_class == ProcessClass::kUV && flags == 557056 &&
+      anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
+      (IsExactPinnedLibraryRead(path) || path == "/usr/local/bin/python3.14")) return true;
   if (PipxNativeQueryParent(context,state,*group) == nullptr || group->pipx_native_image != ProcessState::PipxNativeImage::kUVQuery) return false;
   if (anchor->mountpoint == "/proc" && anchor->mount_class == "system") {
     return flags == 557056 && path == "/proc/"+std::to_string(context.thread_group_id())+"/maps";
   }
   return group->pipx_native_environment.empty() && anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
-      path == "/usr/local/lib/python3.14/site-packages" && (flags == 557056 || flags == 622592);
+      path == "/usr/local/lib/python3.14/site-packages" && (flags == 557056 || flags == 622592 || flags == 624640);
 }
 
 
@@ -3767,7 +3802,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       const bool config = !env.empty() && path == env+"/pyvenv.cfg";
       const bool allowed = PipxNativeQueryParent(message.context_data(),state,*tracked) != nullptr && anchor != nullptr &&
           anchor->mountpoint == "/haa-site" && anchor->mount_class == "workspace" && !IsWriteCapableOpen(message.flags()) &&
-          ((config && message.flags() == 557056) || (directory && (message.flags() == 557056 || message.flags() == 622592)));
+          ((config && (message.flags() == 557056 || message.flags() == kOpenLargefile)) || (directory && (message.flags() == 557056 || message.flags() == 622592)));
       return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
     }
   }
@@ -5265,6 +5300,9 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
     if (counts->workspace_access < kMaxNormalizedObservationCount) ++counts->workspace_access;
     return true;
   }
+  if (filesystem_class == FilesystemClass::kOutside && IsPipxNativeProfile(profile) && state->first_outside_open_diagnostic.empty()) {
+    state->first_outside_open_diagnostic = FirstOutsideOpenDiagnostic(final_open,*state,anchor->second);
+  }
   switch (filesystem_class) {
     case FilesystemClass::kRuntimeRoot: if (counts->runtime_root_access < kMaxNormalizedObservationCount) ++counts->runtime_root_access; return true;
     case FilesystemClass::kHelperOnly: return true;
@@ -6043,10 +6081,11 @@ int main(int argc, char** argv) {
           ",\"other\":" + std::to_string(stream.other_records) +
           ",\"workspace\":" + std::to_string(stream.normalized_counts.workspace_access) + "}";
     }
+    const std::string fault_open = stream.fault ? FaultOpenWithFirstOutside(stream.process_state,stream.fault_reason,fault_budget) : "";
     Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason, nullptr, 0,
          stream.fault ? FaultSiteName(stream.process_state.terminal_fault_site) : nullptr,
          stream.fault ? stream.process_state.fault_image_locator : 0,
-         stream.fault ? stream.process_state.fault_open_diagnostic : "", fault_budget,
+         fault_open, fault_budget,
          stream.fault ? stream.process_state.fault_raw_diagnostic : "");
     if (registration != nullptr) profiles.erase(stream.container_id);
     close(client);

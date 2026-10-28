@@ -7279,7 +7279,7 @@ bool VerifyTerraformProviderProfileBoundary() {
 bool VerifyRestrictedWorkspaceOpen(const gvisor::common::ContextData& context,
     const ProcessState& baseline, const TopologyState& topology, const char* profile,
     int output, int input, const std::string& path, uint64_t mount_id,
-    uint32_t flags, bool outside, bool workspace=false) {
+    uint32_t flags, bool outside, bool workspace=false,ProcessState* after=nullptr) {
   auto state=baseline;
   gvisor::syscall::Open open;
   *open.mutable_context_data()=context;
@@ -7292,7 +7292,9 @@ bool VerifyRestrictedWorkspaceOpen(const gvisor::common::ContextData& context,
   *result.mutable_context_data()=open.context_data();
   result.set_resolved_pathname(path);result.set_mount_id(mount_id);
   result.set_flags(flags);result.set_sysno(257);result.set_success(true);result.set_errorno(0);
-  if(!result.SerializeToString(&payload)||!ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason))return false;
+  const bool parsed=result.SerializeToString(&payload)&&ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+  if(after!=nullptr)*after=state;
+  if(!parsed)return false;
   const bool counted=counts.immediate_records==(outside?1:0)&&counts.workspace_access==(workspace?1:0)&&state.pending_opens.empty();
   if(!counted){fprintf(stderr,"restricted workspace dispatch: profile=%s outside=%d findings=%llu workspace=%llu\n",profile,outside,static_cast<unsigned long long>(counts.immediate_records),static_cast<unsigned long long>(counts.workspace_access));DrainDatagram(input);return false;}
   return !outside||ExpectRecordExact(input,kFirstID,"filesystem-outside-workspace");
@@ -8419,6 +8421,9 @@ bool VerifyPipxNativeReadAndReexecBoundary() {
 
     MountAnchor site{6,"/haa-site","workspace"};const std::string env="/haa-site/pipx/venvs/fixture";
     for(const std::string& path:{env+"/pyvenv.cfg",env,env+"/lib",env+"/lib/python3.14",env+"/lib/python3.14/site-packages"}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kHelperOnly)ok=false;}
+    if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/pyvenv.cfg",6,kOpenLargefile,false))ok=false;
+    for(uint64_t flags:{uint64_t{0},kOpenLargefile|kOpenWriteOnly,kOpenLargefile|kOpenReadWrite,kOpenLargefile|kOpenCreate,kOpenLargefile|kOpenAppend,kOpenLargefile|kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
+    open.set_flags(557056);
     for(const std::string& path:{env+"/lib/python3.14/site-packages/evil.pth",env+"/lib/python3.14/site-packages/sitecustomize.py",env+"/lib/python3.14/site-packages/fixture/__init__.py",env+"/lib/python3.14/site-packages/foreign.so",env+"/lib/python3.14/site-packages/fixture-1.0.dist-info/METADATA",std::string("/haa-site/pipx/venvs/other/pyvenv.cfg"),std::string("/tmp/../haa-site/pipx/venvs/fixture/pyvenv.cfg"),std::string("/tmp/output-alias/pyvenv.cfg")}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
     for(uint64_t flags:{kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;
       MountAnchor tmp{2,"/tmp","workspace"};open.set_pathname("/tmp/query-write");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&tmp)!=FilesystemClass::kOutside)ok=false;}
@@ -8448,19 +8453,107 @@ bool VerifyPipxNativeReadAndReexecBoundary() {
   close(output[0]);close(output[1]);return ok;
 }
 
+bool VerifyPipxNativeFirstOutsideDiagnostic() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;const auto topology=PipxNativeTestTopology();ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ gvisor::common::ContextData uv,query;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)||
+    !PipxNativeTestClone(root.context_data(),100,1000,&state,&uv)||
+    !PipxNativeTestParse(PipxNativeTestUV(uv),output[0],output[1],&state,&registration,topology)||
+    !PipxNativeTestClone(uv,101,1010,&state,&query)||
+    !PipxNativeTestParse(PipxNativeTestQuery(query,false),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const std::string env="/haa-site/pipx/venvs/fixture";
+ ProcessState first,second,later;
+ if(!VerifyRestrictedWorkspaceOpen(query,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib",6,624640,true,false,&first))ok=false;
+ const std::string saved=first.first_outside_open_diagnostic;
+ if(saved.empty()||saved.find(env)!=std::string::npos||saved.find("\"flags\":624640")==std::string::npos)ok=false;
+ if(!VerifyRestrictedWorkspaceOpen(query,first,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14",6,624640,true,false,&second)||second.first_outside_open_diagnostic!=saved)ok=false;
+ if(VerifyRestrictedWorkspaceOpen(uv,second,topology,kProfilePipxNativeResolver,output[0],output[1],"/usr/lib/os-release",1,557056,false,false,&later)||
+    later.first_outside_open_diagnostic!=saved||later.fault_open_diagnostic.empty())ok=false;
+ auto emit=[&](const std::string& first_open){
+  ProcessState diagnostic=later;diagnostic.first_outside_open_diagnostic=first_open;
+  const std::string packed=FaultOpenWithFirstOutside(diagnostic,"STREAM_FAULT","");
+  if(!Send(output[0],kFirstID,"stream-fault","STREAM_FAULT",nullptr,0,"OPEN_RESULT_CLASSIFICATION_IMAGE",UINT64_MAX,packed))return std::string();
+  char bytes[2048];const ssize_t n=recv(output[1],bytes,sizeof(bytes),MSG_DONTWAIT);
+  return n>0?std::string(bytes,static_cast<size_t>(n)):std::string();
+ };
+ const std::string record=emit(saved);
+ if(record.empty()||record.size()>1024||record.find("\"first_outside\":"+saved)==std::string::npos||
+    record.find("\"fault_open\":"+later.fault_open_diagnostic.substr(0,later.fault_open_diagnostic.size()-1))==std::string::npos||record.find(env)!=std::string::npos)ok=false;
+ const std::string bounded=emit(std::string(2048,'x'));
+ if(bounded.empty()||bounded.size()>1024||bounded.find("first_outside")!=std::string::npos||bounded.find("\"reason\":\"STREAM_FAULT\"")==std::string::npos)ok=false;
+ close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeBaseQueryDirectoryRead() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;const auto topology=PipxNativeTestTopology();ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ gvisor::common::ContextData uv,query;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)||
+    !PipxNativeTestClone(root.context_data(),100,1000,&state,&uv)||
+    !PipxNativeTestParse(PipxNativeTestUV(uv),output[0],output[1],&state,&registration,topology)||
+    !PipxNativeTestClone(uv,101,1010,&state,&query)||
+    !PipxNativeTestParse(PipxNativeTestQuery(query,false,false),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const auto baseline=state;MountAnchor anchor{1,"/","oci-root"};const std::string path="/usr/local/lib/python3.14/site-packages";
+ auto permitted=[&](const gvisor::common::ContextData& context,const char* profile,const std::string& target,uint64_t flags,const MountAnchor& mount){return IsPipxNativeABIRead(context,state,target,flags,profile,&mount);};
+ if(!state.groups[101].pipx_native_environment.empty()||!permitted(query,kProfilePipxNativeResolver,path,624640,anchor)||
+    !VerifyRestrictedWorkspaceOpen(query,state,topology,kProfilePipxNativeResolver,output[0],output[1],path,1,624640,false))ok=false;
+ for(const char* target:{"/usr/local/lib/python3.14/site-packages/evil.pth","/usr/local/lib/python3.14/site-packages/foreign.py","/usr/local/lib/python3.14/../python3.14/site-packages"})if(permitted(query,kProfilePipxNativeResolver,target,624640,anchor))ok=false;
+ for(uint64_t flags:{uint64_t{0},kOpenLargefile,uint64_t{624640}|kOpenWriteOnly,uint64_t{624640}|kOpenReadWrite,uint64_t{624640}|kOpenCreate,uint64_t{624640}|kOpenAppend,uint64_t{624640}|kOpenTruncate})if(permitted(query,kProfilePipxNativeResolver,path,flags,anchor))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/","workspace"},{1,"/usr/local/lib/python3.14","oci-root"}})if(permitted(query,kProfilePipxNativeResolver,path,624640,mount))ok=false;
+ for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(query,profile,path,624640,anchor))ok=false;
+ for(int scenario=0;scenario<9;++scenario){
+  state=baseline;auto context=query;
+  switch(scenario){
+   case 0:state.groups[101].role=ProcessState::Role::kControl;break;
+   case 1:state.groups[101].pipx_native_environment="/haa-site/pipx/venvs/fixture";break;
+   case 2:state.groups[101].start_time_ns++;break;
+   case 3:state.groups[100].start_time_ns++;break;
+   case 4:state.groups[99].start_time_ns++;break;
+   case 5:state.groups[100].role=ProcessState::Role::kControl;break;
+   case 6:state.groups[101].trusted_control_network_active=true;break;
+   case 7:context.set_parent_thread_group_id(99);break;
+   case 8:state.groups[101].handoff_target_pending=true;break;
+  }
+  if(permitted(context,kProfilePipxNativeResolver,path,624640,anchor))ok=false;
+ }
+ state=baseline;gvisor::common::ContextData descendant;
+ if(!PipxNativeTestClone(query,102,1020,&state,&descendant)||permitted(descendant,kProfilePipxNativeResolver,path,624640,anchor))ok=false;
+ close(output[0]);close(output[1]);return ok;
+}
+
 bool VerifyPipxNativeUVProcReadBoundary() {
  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
- bool ok=true;auto topology=PipxNativeTestTopology();topology.anchors.emplace(7,MountAnchor{7,"/proc","system"});topology.anchors.emplace(8,MountAnchor{8,"/sys/fs/cgroup/cpu","system"});
+ bool ok=true;auto topology=PipxNativeTestTopology();topology.anchors.emplace(7,MountAnchor{7,"/proc","system"});topology.anchors.emplace(8,MountAnchor{8,"/sys/fs/cgroup/cpu","system"});topology.anchors.emplace(9,MountAnchor{9,"/dev","system"});
  ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
  if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)){close(output[0]);close(output[1]);return false;}
  gvisor::common::ContextData child;
  if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child)||!PipxNativeTestParse(PipxNativeTestUV(child),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
  const auto baseline=state;MountAnchor anchor{7,"/proc","system"};
+ gvisor::syscall::Open comm;*comm.mutable_context_data()=child;comm.set_pathname("/proc/100/comm");comm.set_flags(557056);
+ const auto before_comm=ClassifyFilesystemOpen(comm,state,kProfilePipxNativeResolver,&anchor);
+ const std::string comm_diagnostic=FaultOpenDiagnostic(comm,state,anchor);
+ if(IsPipxNativeABIRead(child,state,comm.pathname(),comm.flags(),kProfilePipxNativeResolver,&anchor)||
+    ClassifyFilesystemOpen(comm,state,kProfilePipxNativeResolver,&anchor)!=before_comm||
+    comm_diagnostic.find("\"subject\":\"PROC_SELF_COMM\"")==std::string::npos||
+    strcmp(FaultOpenSubject(child,"/proc/99/comm",anchor),"PROC_PARENT_COMM")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/98/comm",anchor),"OTHER")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/self/comm",anchor),"OTHER")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/100/comm/extra",anchor),"OTHER")!=0)ok=false;
+
+ auto thread=child;thread.set_thread_id(104);
+ if(strcmp(FaultOpenSubject(thread,"/proc/104/comm",anchor),"PROC_THREAD_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/100/comm",anchor),"PROC_SELF_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/99/comm",anchor),"PROC_PARENT_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/103/comm",anchor),"OTHER")!=0)ok=false;
  const std::string path="/proc/sys/vm/overcommit_memory";
  auto permitted=[&](const gvisor::common::ContextData& context,const char* profile,const std::string& target,uint64_t flags,const MountAnchor& mount){return IsPipxNativeABIRead(context,state,target,flags,profile,&mount);};
  const std::vector<std::pair<std::string,MountAnchor>> reads={
-  {path,anchor},{"/proc/100/cgroup",anchor},{"/proc/100/mountinfo",anchor},
-  {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}}};
+  {path,anchor},{"/proc/100/cgroup",anchor},{"/proc/100/mountinfo",anchor},{"/proc/99/comm",anchor},
+  {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
+  {"/sys/fs/cgroup/cpu/cpu.cfs_period_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
+  {"/dev/null",MountAnchor{9,"/dev","system"}},
+  {"/usr/local/bin/python3.14",MountAnchor{1,"/","oci-root"}}};
  for(const auto& read:reads){
   if(!permitted(child,kProfilePipxNativeResolver,read.first,557056,read.second)||
      !VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],read.first,read.second.mount_id,557056,false))ok=false;
@@ -8469,9 +8562,15 @@ bool VerifyPipxNativeUVProcReadBoundary() {
   if(permitted(root.context_data(),kProfilePipxNativeResolver,read.first,557056,read.second))ok=false;
  }
  MountAnchor quota{8,"/sys/fs/cgroup/cpu","system"};
- for(const char* target:{"/sys/fs/cgroup/cpu/cpu.cfs_period_us","/sys/fs/cgroup/cpu/cpu.shares","/sys/fs/cgroup/cpu/cpu.stat","/sys/fs/cgroup/cpu/../cpu/cpu.cfs_quota_us"})if(permitted(child,kProfilePipxNativeResolver,target,557056,quota))ok=false;
+ for(const char* target:{"/sys/fs/cgroup/cpu/cpuacct.usage","/sys/fs/cgroup/cpu/cpu.shares","/sys/fs/cgroup/cpu/cpu.stat","/sys/fs/cgroup/cpu/../cpu/cpu.cfs_quota_us"})if(permitted(child,kProfilePipxNativeResolver,target,557056,quota))ok=false;
  for(const auto& mount:std::vector<MountAnchor>{{8,"/sys/fs/cgroup","system"},{8,"/sys/fs/cgroup/cpu","workspace"},{8,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",557056,mount))ok=false;
- for(const char* target:{"/proc/sys/vm/overcommit_ratio","/proc/self/maps","/proc/100/maps","/proc/101/cgroup","/proc/self/cgroup","/proc/101/mountinfo","/proc/self/mountinfo","/proc/sys/vm/../vm/overcommit_memory"})if(permitted(child,kProfilePipxNativeResolver,target,557056,anchor))ok=false;
+ MountAnchor image{1,"/","oci-root"};
+ for(const char* target:{"/usr/local/bin/python","/usr/local/bin/python3.13","/usr/bin/python3.14","/usr/local/bin/python3.14/extra"})if(permitted(child,kProfilePipxNativeResolver,target,557056,image))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/usr/local/bin","oci-root"},{1,"/","workspace"}})if(permitted(child,kProfilePipxNativeResolver,"/usr/local/bin/python3.14",557056,mount))ok=false;
+ MountAnchor device{9,"/dev","system"};
+ for(const char* target:{"/dev/zero","/dev/random","/dev/tty","/dev/../dev/null"})if(permitted(child,kProfilePipxNativeResolver,target,557056,device))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{9,"/dev/other","system"},{9,"/dev","workspace"},{9,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/dev/null",557056,mount))ok=false;
+ for(const char* target:{"/proc/sys/vm/overcommit_ratio","/proc/self/maps","/proc/100/maps","/proc/101/cgroup","/proc/self/cgroup","/proc/101/mountinfo","/proc/self/mountinfo","/proc/100/comm","/proc/98/comm","/proc/99/comm/extra","/proc/self/comm","/proc/sys/vm/../vm/overcommit_memory"})if(permitted(child,kProfilePipxNativeResolver,target,557056,anchor))ok=false;
  for(const auto& mount:std::vector<MountAnchor>{{7,"/proc/sys","system"},{7,"/proc","workspace"},{7,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,path,557056,mount))ok=false;
  for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(child,profile,path,557056,anchor))ok=false;
  if(permitted(root.context_data(),kProfilePipxNativeResolver,path,557056,anchor))ok=false;
@@ -8790,7 +8889,7 @@ int main(int argc, char** argv) {
   const bool pipx_runtime_read = VerifyPipxRuntimeReadBoundary();
   const bool pipx_native_root = VerifyPipxNativeRootAndTopologyBoundary();
   const bool pipx_native_clone = VerifyPipxNativeCloneAndQueryBoundary();
-  const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary() && VerifyPipxNativeUVProcReadBoundary();
+  const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary() && VerifyPipxNativeUVProcReadBoundary() && VerifyPipxNativeBaseQueryDirectoryRead() && VerifyPipxNativeFirstOutsideDiagnostic();
   const bool pipx_native_admission = running && VerifyPipxNativeProfileAdmission(control);
   const bool pipx_runtime_admission = running && VerifyPipxRuntimeAdmission(control);
   const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();

@@ -1,0 +1,266 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b3c1 trusted cleanup, exact native startup/query ABI reads and bounded first-finding diagnostic checkpoint only",
+  "baseline": {
+    "commit": "2b59af83e29a730b9f4640f6433b2d1f48e578c0",
+    "tree": "7eec66c039e1d772d3cdf9afcafad44dd56cb648",
+    "files": 2846
+  },
+  "implemented": "YES for existing private metadata phase, trusted cleanup and diagnostic owners",
+  "wired": "YES in named actual native profile/typed cgroup/normalized OpenResult/first-finding producer-consumer path; production installed public composition remains MISSING",
+  "qualified": "PARTIAL: canonical Go checks, native CPP128, named readonly tuples and diagnostic delivery/cleanup; full native actual and whole legacy ZIP consumer are NO",
+  "acceptance_closed": "NO",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_session.go",
+      "sha256": "26bf8979985d6c7b8e29dd5cf3ea973de9649efc897256af426d7c78ecb964db"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session_test.go",
+      "sha256": "f7b09f9d72b3077592fbcf40c1bb73e3d3b3b396122bb654c108520987494e24"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session_real_test.go",
+      "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+    },
+    {
+      "path": "internal/sandbox/fault_open_diagnostic_test.go",
+      "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+    },
+    {
+      "path": "internal/sandbox/collector.go",
+      "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "d023197e15c9bc371b66f1cd8583349681352f7eb379f7cf6ec4148a8c7c0407"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "6ae64c3e4065ca834f26e46a0264ae1b12b39c0a856a823bc9e596f56f7be252"
+    }
+  ],
+  "go_current_test_fixture_checks": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "26bf8979985d6c7b8e29dd5cf3ea973de9649efc897256af426d7c78ecb964db"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "f7b09f9d72b3077592fbcf40c1bb73e3d3b3b396122bb654c108520987494e24"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "eea7a02bb362ae424aa5d9ddefaa6f5f6c145f33f047279ba017ec516a49b4e3",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.67
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 47.859
+      },
+      {
+        "step": "focused-race",
+        "exit_code": 0,
+        "seconds": 10.116
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 0.987
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.112
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.247
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 9.499
+      }
+    ]
+  },
+  "production_3package_race": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-v10-checks.json",
+    "seconds": 30.337,
+    "packages": [
+      "internal/sandbox",
+      "internal/artifact/pypi",
+      "internal/bootstrap"
+    ],
+    "production_Go_unchanged_since_that_check": true
+  },
+  "cpp": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4c3c3b3c1-v16-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 248.128,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "d023197e15c9bc371b66f1cd8583349681352f7eb379f7cf6ec4148a8c7c0407"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "6ae64c3e4065ca834f26e46a0264ae1b12b39c0a856a823bc9e596f56f7be252"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "83fc6ab584bef4268bb0518dd29e7ad240bc1aa889c998eccb3adeb181bac049",
+    "observer": {
+      "bytes": 3201920,
+      "sha256": "fdd0b6b8d95f7b4203484c402f690067e1fd46dad157403c5f426076aa5627d3"
+    }
+  },
+  "cpp_named_latches": 128,
+  "ordinary_send_restored_byte_identical_to_B": true,
+  "wire_limit_bytes": 1024,
+  "nested_fault_object_limit_bytes": 768,
+  "latest_actual": {
+    "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v16-result.json",
+    "seconds": 10.999,
+    "native_qualified": false,
+    "first_outside": {
+      "image": "PYTHON",
+      "role": "ARTIFACT",
+      "provenance": "CLONE_CHILD",
+      "mount": "workspace",
+      "flags": 624640,
+      "path_locator": "9f6f5b57da59c77b",
+      "diagnostic_candidate": "/haa-site/pipx/venvs/userpath/lib/python3.14/site-packages",
+      "locator_is_authority": false
+    },
+    "earlier_outside_findings": 3,
+    "expected_exec": 34,
+    "later_fault": "STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_IMAGE/immutable /usr/lib/os-release557056",
+    "cpu_usec": 2034085,
+    "typed_create_register_close": [
+      1,
+      1,
+      1
+    ],
+    "returned_controls_and_graph": [
+      0,
+      0
+    ],
+    "source_input_host_docker_unchanged": true,
+    "helper_wait0_and_absent": true
+  },
+  "legacy_envelope_controls": {
+    "flat_candidate": {
+      "helper_sha256": "0a8d4fdd9565f2cf55c46e6d18e166526a232faeb3d7a0dcd4668deea103d76d",
+      "go_sha256": "da662a20228a3130e6896368d861258d9bdc7db292d94ebdea354990b12f43b3",
+      "seconds": 44.065,
+      "whole_parent_pass": false,
+      "first_normal_cpu_usec": 13112164,
+      "cause": "active CPU authorization exhausted; no observer fault"
+    },
+    "same_Go_B_counterpart_once": {
+      "helper_sha256": "893a0966ce3591d8ee10a82c44c0f666c0b0c0424aea68cd8546a759eded88e3",
+      "go_sha256": "da662a20228a3130e6896368d861258d9bdc7db292d94ebdea354990b12f43b3",
+      "seconds": 89.246,
+      "whole_parent_pass": true,
+      "normal_cpu_usec": [
+        12781611,
+        12754892
+      ],
+      "normal_units_and_commands": [
+        20,
+        5
+      ],
+      "accounting_refusal_preserved": true
+    },
+    "nested_candidate": {
+      "helper_sha256": "0964f6b42c09c6c40852e79d238154685d6a233707483d7d1c720496b37d331e",
+      "go_sha256": "bf7e08a92ae9942ea18d9d1991fab41954808010a9570557e2d5e565dd2a1b9d",
+      "seconds": 95.923,
+      "whole_parent_pass": false,
+      "complete_before": {
+        "cpu_usec": 12572241,
+        "units": 20,
+        "commands": 5
+      },
+      "accounting_refusal_preserved": true,
+      "complete_after": {
+        "cpu_usec": 13057189,
+        "status": "INCOMPLETE",
+        "primary_code": "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE",
+        "cause": "active CPU authorization exhausted; no observer fault"
+      }
+    },
+    "interpretation": "one counterpart and within-candidate mixed normal results; no fixed overhead or CPU-cause claim; no repeat until green; whole ZIP qualification remains OPEN",
+    "all_trials_original_host_docker_equal_and_helper_wait0_absent": true
+  },
+  "cleanup_failure_v8": {
+    "original_final_close": "unqualified connection failure/CPU0, retained",
+    "owned_recovery": "root exact tx/data volume/keeper executable+argv+cgroup verified; stop/drained/revert/cgroup absent/exact volume removed",
+    "operational_cpu_stat_usec": 2233228,
+    "original_qualification_repaired": false,
+    "root_cause_of_secondary_queries": "OPEN; source short cleanup parent3s < nested stop7s separately confirmed",
+    "current_cleanup": "fresh existing Python transaction trusted30s bound, per-stop7s and guest limits unchanged; fake-time legitimate4s and later named actual cleanup qualified only"
+  },
+  "negative_fixture": {
+    "issue": "map float64 roundtrip lost uint64 maximum before intended mutation; direct RED",
+    "correction": "test-only UseNumber plus positive decode before extra-field mutation",
+    "focused_green_and_race_pass": true,
+    "production_decoder_changed_by_fixture_fix": false
+  },
+  "diagnostic_wire": "flat experimental local v14 format superseded; current matched cohort uses compact nonrecursive fault_open.first_outside only; old normal envelope/sender reused",
+  "remote": "CI421/sourcee859487 hosted scope only; this checkpoint remains local/unpushed",
+  "budgets_and_authority": "unchanged public CPU30s/wall5m/17s reserve/active13s and original trace limits/coverage; metadata phase creates no inspection units or COMPLETED/Policy authority",
+  "missing": [
+    "exact declared venv site-packages directory624640 read and any subsequent observed outside/fault gaps",
+    "fresh native complete output and accounting-refusal actual qualification",
+    "whole existing ZIP consumer CPU-boundary qualification/root cause",
+    "installed protected ZIP/whole selection production composition",
+    "native original upgrade/current Evidence/Policy/transaction/CLI/final profiles"
+  ]
+}

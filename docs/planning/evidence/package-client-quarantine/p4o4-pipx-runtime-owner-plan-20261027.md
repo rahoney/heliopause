@@ -1630,7 +1630,7 @@ Period/다른 cgroup 파일·query/CONTROL/network는 아직 허용하지 않는
 before-cpuquota를 보존했다. 새 session cleanup default tests는 unknown CREATE의
 attested owner/foreign·query 거부와 observer/회계 실패 아래 독립 exact drainage를 확인한다.
 
-C-a追加 cleanup tests의 첫 Quick82.392s는 lost-accounting fixture가 RunDiscard를
+C-a 추가 cleanup tests의 첫 Quick82.392s는 lost-accounting fixture가 RunDiscard를
 제공하지 않아 rm 시도 기록 기대에서 실패했다. 실제 fallback owner discardCommand는
 Output fallback을 허용하지 않는다. 제품 제거 실패로 단정하지 않고 fixture의 명시적
 port를 보완한다. 이 점검에서 새 session의 다른 세 capability와 달리 discard capability
@@ -1659,3 +1659,269 @@ qualified이고 실제 native acceptance는 NO다. 정전 재개를 위해 이 �
 [p4o4c3c3b3c1 checkpoint](./p4o4c3c3b3c1-native-session-checkpoint-20261028.json)가
 현재 source/check/실패 scope를 소유한다. Public factory·installed supply/current Policy/
 CLI나 전체 native 완료를 주장하지 않는다.
+
+### C-a checkpoint 이후 exact CPU period tuple — source 전 감사
+
+기준2b59af83/tree7eec66c0·2846file의 tracked/index clean을 확인했다. 새로 구현할 owner는
+없으며 기존 IsPipxNativeABIRead의 quota 분기만 재사용한다. 실제 v6 first
+CGROUP_CPU_QUOTA는 두 exact file만의 진단 class이며 locator aea5f4520ac7eba5와
+기존 source 판정은 cpu.cfs_period_us에 대응한다. 이 tuple만 IMPLEMENTED=NO/
+WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은 기존 active UV/
+root-creator/flags557056/system anchor를 모두 유지한 exact period read와 protocol
+positive·다른파일/anchor/flags/role/parent/profile negative다. 다른 predicate·budget·
+CONTROL/network/query 예외는 변경하지 않는다. Same Go v5/input42/ZIP으로 CPP만
+바꾼 다음 실제 실행을 확인한다. 기존 raw/normalized checkpoint는 수정하지 않는다.
+
+Native period CPP v7 canonical273.990s/128PASS 뒤 same Go v5 actual-v7 11.849s는
+period를 지나 DEV_NULL/system/557056에서 중단됐다. 같은 active UV·ARTIFACT clone
+이며 target1/expected31/CPU2.201962s/Create/Register/Close1·zero selection, 원본/Host/
+Docker/source 불변과 helperwait0/부재를 확인했다. 신규 tuple의 독립 상태는
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은
+기존 active UV/root creator guard 아래 /dev system anchor의 exact /dev/null557056
+읽기뿐이다. 다른 device/쓰기/CONTROL/query/프로필 권한은 추가하지 않는다.
+모든 existing startup read의 shared 부정 matrix와 exact protocol positive/다른
+device·anchor negative를 연결한다. Raw actual-v7/v7-observer/before-devnull을 보존했다.
+
+### C-a v8 새 query read와 별도 trusted cleanup 경계 — source 전 감사
+
+CPP v8 canonical282.259s/128PASS 뒤 actual-v8 15.518s는 expected32의 pinned PYTHON/
+ARTIFACT clone이 OCI_IMAGE/624640에서 중단됐다. 동일 고정 image의 retained catalogue
+6611항목에서 locator1c10289943d3da57은 exact /usr/local/lib/python3.14/site-packages
+디렉터리1개에 대응한다. FNV는 인증이 아니며 기존 base UV-query의 kernel image/
+parent/root/empty environment guard 아래 이미 허용한 그 exact OCI directory에
+624640만 MISSING이다. 이 flags tuple의 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED는 모두 NO다. 기존 installed environment/다른 image path·mount/
+query descendant·쓰기와 기존 profile 거부를 유지한다. Whole protocol positive와
+부정 matrix를 확장하며 원본 before-query-flags/v8-observer/actual-v8은 보존했다.
+
+별도로 이번 actual은 DATA volume1개와 exact transaction keeper가 남고 Close가
+untrusted CPU0/connection failure여서 Host-before/after 동일이 아니다. 보호5파일/
+container/image/network는 동일했다. 실제 typed volume labels·시간·expected source ZIP/
+8MiB options·attachment0, transaction SHA-derived systemd parent/keeper·sleep executable/
+argv/cgroup/PID·only owned process를 root 재검증했다. Canonical keeper stop→PID0/drained→
+CPU stat→parent stop/revert→cgroup 부재와 exact owned volume 삭제를 확인해 Docker volume
+inventory/보호5파일을 복구했다. 후속 usage2.233228s는 운영 조회이며 original Close/
+accounting/qualification을 복구하지 않는다. v8-recovery-preflight/result/operator가 근거다.
+
+새 native session defer가 resolverCleanupContext의3s를 전체 close parent로 써서 내부
+7s stop/trace와 여러 owner·최종 Close를 그보다 짧게 제한하는 source 결합을 확인했다.
+실제 secondary query 실패가 deadline 때문에 발생했는지는 상세 원본이 없어 OPEN이다.
+기존 pythonTransactionExecutor.cleanup의 fresh bounded30s를 전용 session에도 재사용하는
+wrapper만 MISSING으로 판정한다. Owner/close 구현은 IMPLEMENTED=YES이며 재작성하지
+않는다. 새 wrapper의 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. Artifact CPU30s/
+active13s·17s reserve/wall5m와7s typed stop은 유지한다. 느린 정상 trusted stop4s 뒤
+독립 정리와 final Close 도달을 fake-time 기본 회귀로 검증하고 actual을 다시 확인한다.
+
+Cleanup wrapper의 Go v6 canonical format0.928s/Quick92.301s/전체 Sandbox+PyPI
+Race25.955s/tag vet1.108s/tag build7.878s/docs0.284s/security13.898s는 PASS다.
+Fake-time의 정상 typed stop4s가 원래7s 하위 bound를 유지하고 final Close까지
+정상 도달했음을 확인했다. Native source26bf8979와 binary843fd1d2 및 Go3 pre-tag-build/
+after hash를 raw v6-go-build-identity로 연결했다. Query flag CPP와 다음 실제 실행은
+별도이며 v8의 실패·복구/최종 회계 미확정 기록을 그대로 유지한다.
+또한 보존 image catalogue SHA b1152ba7의 image ID f9a89f9c/4rootfs diff를 현재
+pinned image inspect와 대조해 동일함을 확인했다. 새 디렉터리 locator 해석은 해당
+DATA catalogue 범위이고 실행/정리 권한을 부여하는 인증으로 사용하지 않는다.
+
+Native base-query CPP v9 canonical266.203s/128PASS와 Go v6의 actual-v9 11.697s는
+해당 디렉터리 읽기를 지나 active UV의 OCI_IMAGE/557056에서 중단됐다. 같은 pin의
+검증한 catalogue 유일 locator b982a2d37572906d는 /usr/local/bin/python3.14다.
+기존 candidate Python exec pre-read는 구현돼 있으나 active UV의 이 exact data read는
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은
+기존 active UV/root creator/557056/root OCI anchor 아래 그 exact immutable interpreter
+read뿐이다. 실행 권한/다른 interpreter·query/CONTROL/쓰기 grant는 추가하지 않는다.
+이미 구현된 library predicate body는 그대로 두고 native-only ABI 조건에 exact path를
+결합하며 전체 startup read의 shared protocol/부정 matrix와 다른 path/mount negatives를
+확장한다. Source 전 raw actual-v9/v9-observer/before-uv-interpreter를 보존했다.
+
+이번 actual은 target1/expected32/CPU2.236594s/Create/Register/Close1·zero selection과
+source/원본/Host/Docker 동일/helperwait0/부재다. 새 trusted cleanup 후보의 scoped actual
+정리는 확인했지만, 다른 최초 query 경계로 진행한 실행이므로 v8 secondary failure의
+직접 deadline 인과나 모든 환경 해결을 주장하지 않는다. 그 원본/회계 미확정은 유지한다.
+
+### C-a v10 proc subject 미확정 — 권한 변경 전 진단만 확장
+
+CPP v10 canonical249.710s/128PASS 뒤 actual-v10 11.642s는 interpreter read를 지나
+PROC/system/OTHER557056·locator af9436c8a49acc7a에서 중단됐다. Active UV locator와
+expected32/target1/CPU2.068873s/Create/Register/Close1·zero selection, 원본/source/
+Host/Docker 동일/helperwait0/부재를 확인했다. 139529개 고정 후보의 진단 lookup은
+/proc/24/comm 하나와 대응하지만 실제 current TGID는 보존 진단에 없으므로 자기
+파일인지는 미확정이다. 이 FNV 대조를 auth나 grant 근거로 사용하지 않는다.
+
+FaultOpenSubject·fixed typed Go validation은 IMPLEMENTED/WIRED/QUALIFIED=YES이나
+PROC_SELF_COMM 구분은 NO/NO/NO/NO다. MISSING은 kernel context.thread_group_id()와
+exact path 비교한 fixed subject의 진단 및 typed enum 전송·정상/다른 PID·잘못된
+subject 부정뿐이다. 파일명/숫자 PID를 출력하지 않고 기존 bounded diagnostic owner를
+확장한다. 판정/권한/불허·profile·CPU·완료 규칙은 전혀 바꾸지 않는다. Go5(session3+
+parser/진단 test2) 소스와 새 binary를 연결하고 full canonical/관련 Race/CPP 뒤
+같은 frozen input의 판정 불변 actual로 자기 comm인지 직접 확인한다. 실제 자기
+파일 확인 전에는 comm 허용 분기를 추가하지 않는다. Raw actual-v10/v10-observer/
+lookup/before-self-comm-diagnostic이 원본 범위를 소유한다.
+
+PROC_SELF_COMM 진단만의 Go v7 format0.798s/Quick99.802s/전체 Sandbox+PyPI+Bootstrap
+Race28.804s/tag vet1.072s/tag build7.394s/docs0.265s/security13.911s는 PASS다.
+Go5 pre-tag-build/after identity와 binary5798196a를 raw v7-go-build-identity로 연결했다.
+새 producer subject 한 줄·consumer fixed enum 한 항목을 제거하면 원본과 byte-identical
+인 v11-diagnostic-only-proof를 확인했다. Permission source 변화는 없고 현재 native
+comm read는 계속 불허다. CPP와 판정 불변 actual의 자기 relation 확인은 미완료다.
+
+CPP v11 진단 canonical253.978s/128PASS와 판정 불변 actual-v11 11.047s는 같은
+locator/proc OTHER557056를 반환했다. Current TGID와 exact comm 비교가 false이므로
+자기 프로세스 comm 가설은 직접 반증됐다. Target1/expected32/CPU2.151287s/typed3회1,
+zero selection·source/고정입력/Host/Docker 동일/helperwait0/부재를 보존했다.
+SELF 분류는 올바른 negative relation 증거이며 grant나 해결법이 아니다.
+
+현재 MISSING은 kernel parent TGID 또는 current thread ID와의 관계를 구분하는
+fixed diagnostic2항목(PROC_PARENT_COMM/PROC_THREAD_COMM)뿐이다. 그 relation의
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 모두 NO다. PID/파일 내용은
+출력하지 않고 기존 fixed subject owner를 확장한다. SELF/parent/thread/other의
+정상·negative와 typed parsing/failure 보존을 검사한다. 실제 관계 확인 전에는
+허용 분기를 추가하지 않는다. CPU/정리/판정 source는 그대로 둔다. 원본 v11/
+before-comm-relation을 보존했고 이번 parser 변경의 관련 Go5를 다시 연결한다.
+
+### C-a 실제 parent comm relation 확인 후 exact read — source 전 감사
+
+Parent/thread 진단 Go v8 format0.742s/Quick85.961s/전체3package Race31.409s/tag vet
+1.046s/build7.259s/docs0.251s/security13.982s와 CPP v12 canonical248.736s/128PASS다.
+Go5/binary6c92be8c의 판정 불변 actual-v12 11.076s는 PROC_PARENT_COMM/system/557056을
+직접 반환했다. Current TGID 가설은 반증된 상태이고 kernel parent TGID relation을
+확인했다. Target1/expected32/CPU2.234468s/Create/Register/Close1·zero returned selection,
+source/원본/Host/Docker 동일/helperwait0/부재다. Comm 값이나 숫자PID/FNV를 image
+인증으로 쓰지 않았다. Raw v8-go-build/v12-observer/actual-v12가 이 진단 범위를 소유한다.
+
+기존 PipxNativeCreator의 active UV→살아있는 root creator/역할·start·parent·no CONTROL/
+network 검증은 IMPLEMENTED/WIRED=YES다. 그 actor의 parent exact comm read만
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은
+기존 root creator 검증에 묶인 /proc/<context.parent_thread_group_id()>/comm557056
+system/proc anchor 하나다. SELF/thread/다른 PID/alias/쓰기·query/기존 profile은 추가하지
+않는다. 모든 startup read의 shared 부정 matrix와 parent protocol positive/자기·다른
+PID 부정을 확장한다. Comm의 mutable 내용은 읽기 DATA이며 authority로 사용하지 않는다.
+기존 predicate owner를 대체하지 않고 이 missing tuple만 추가한다.
+
+### C-a v13 최초 finding 보존 — 권한 변경 전 bounded 진단 감사
+
+Parent read CPP v13 canonical260.826s/128PASS 뒤 actual-v13 11.745s는 expected34와
+filesystem-outside-workspace4건 이후 OCI fault로 중단됐다. Latest locator fa06db656ccd9f7f는
+같은 verified image catalogue의 /usr/lib/os-release다. 그러나 earliest4finding이 먼저
+존재하므로 후속 fault만 원인으로 취급하거나 그 파일을 먼저 허용하지 않는다.
+Target1/CPU2.150317s/Create/Register/Close1·zero selection/모든 원본·Host/Docker 동일/
+helperwait0·부재를 확인했고 raw actual-v13/v13-observer/before-first-outside를 보존했다.
+
+기존 normal finding 전송·counts와 latest fault 진단은 IMPLEMENTED/WIRED=YES지만
+최초 outside의 compact 위치/역할/flag 진단은 NO/NO/NO/NO다. MISSING은 native profile의
+첫 kOutside만 metadata로 저장하고 이후 기존 classification fault와 함께 한 번 전송하는
+optional compact diagnostic이다. 기존 FaultOpenDiagnostic type을 재사용하되 image/role/
+provenance/fixed subject/mount/flags/FNV locator만 보낸다. 파일명/값/argv/comm/PID는
+출력하지 않는다. Snapshot은 판정 전에 authority로 읽지 않고 후속 finding이 덮지 않는다.
+ClassifyFilesystemOpen/기존 generic switch/finding semantics와 primary fault는 유지한다.
+기존 wire1024B/trace budgets는 유지하며 optional 진단이 맞지 않으면 primary record를
+바꾸지 않고 생략한다. Native worst-envelope positive·wrong kind/extra unbounded fields/
+malformed diagnostic negatives와 first-wins/후속 fault 보존을 검사한다. Go6(session3+
+collector/parser/진단 test3)를 새 binary에 바인딩한다. /usr/lib/os-release는 그대로
+불허하여 같은 판정의 실제 실행에서 첫 outside 경계를 확인한 뒤에만 read 변경을 한다.
+
+First-outside Go v9 format1.633s/Quick102.037s/관련3package Race29.173s/tag vet1.154s/
+build7.613s/docs0.305s/security14.716s는 PASS다. Go6 pre/post hash를 명시한 fresh tagged
+build v9b1.244s의 binaryda662a20은 앞 canonical tagged binary와 byte-identical이다.
+원래 검사·binary와 fresh binding을 구분해 보존했다. ClassifyFilesystemOpen/
+IsPipxNativeABIRead 전체와 generic OpenResult switch가 retained v13 source와 같다는
+v14-diagnostic-only-proof를 확인했다. Wire1024B와 primary fault는 그대로다.
+CPP full production parser first-wins/후속 fault·wire bound와 실제 최초 finding 전송은
+다음 검증이며, 새로운 read 허용은 아직 하지 않았다.
+
+First-outside CPP v14 canonical263.874s/128PASS와 same-permission actual-v14 11.135s는
+최초 finding을 PYTHON/ARTIFACT/CLONE_CHILD/workspace/32768/locatorff47ab3dea512dd3로
+보존했다. 이 locator는 현재 exact venv /haa-site/pipx/venvs/userpath/pyvenv.cfg와
+대응한다. 예상했던 directory624640이 최초라고 가정하지 않고 실제 cfg32768을
+우선 조사한다. 후속 /usr/lib/os-release fault와 outside4/expected34는 그대로이며
+CPU2.098122s/typed3회1/zero selection·source/원본/Host/Docker 동일/helperwait0·부재다.
+Full producer→typed Go→TraceDiagnostic의 first-wins 전달만 qualified이며 native 성공은 NO다.
+
+공통 envelope의 기존 ZIP actual은 same Go9b/CPP14에서44.065s에 complete-before가
+INCOMPLETE/M5_PYPI_DYNAMIC_SETUP_FAILED·CPU13.112164s/last13.107184s·authorization
+exhausted로 중단됐다. Observer fault는 없고 partial imports 이후 remaining coverage를
+완료로 취급하지 않는다. Helperwait0/Host·Docker·원본 동일과 final Close는 확인했다.
+기존B의13s active threshold 경계 실패/old·new controls 이력을 유지하고 새 진단 원인으로
+단정하지 않는다. Same Go9b/ZIP/input과 retained B CPP893a0966만 바꾼 counterpart1회를
+비교한다. Original13s/30s·17s reserve/coverage는 변경하지 않고 PASS까지 반복하지 않는다.
+Raw legacy-envelope-v14가 현재 실패의 source·counter·범위를 소유한다.
+
+### C-a 최초 진단을 기존 fault object로 한정 — source 전 감사
+
+Same Go9b/ZIP/입력·한도의 retained B helper893a control1회는89.246s PASS다. 정상
+CPU12.781611/12.754892s·20units/5commands와 회계 주입 INCOMPLETE0.652631s, final
+Close/helperwait0/모든 원본·Host/Docker 동일을 확인했다. CPP14의13.112164s 거부와
+대조되지만 순차1쌍이고 현재13s 경계에 가까우므로 새 진단의 CPU 인과/고정 비용을
+확정하지 않는다. 원본 두 실행과 qualified B 증거는 유지한다. CPP14 common/legacy
+qualification은 완료로 표시하지 않는다.
+
+기존 generic Send는 IMPLEMENTED/WIRED/QUALIFIED=YES이며 재구현하지 않는다.
+새 flat first-field 진단은 native actual 전달만 qualified이고 전체 소비자 검증은 NO다.
+MISSING은 generic Send의 기존 byte-identical 구현을 복원·재사용하고 optional compact
+first 진단을 기존 fault_open object 내부에만 넣는 좁은 확장이다. 일반 envelope와
+normal producer/consumer 경로는 원래 shape를 재사용한다. Flat 실험 format은 미출시·
+미push이며 raw v14/Go9b cohort로만 보존하고 새 cohort와 섞지 않는다.
+
+Classifier/ABI 허용/generic finding switch·primary fault는 그대로 둔다. Nested first는
+7개 fixed scalar만 가진 별도 compact view이며 recursive payload를 받지 않는다.
+Classification fault의 fixed envelope header<256B를 감안해 fault object≤768B에서만
+추가하여 원래1024B record를 유지한다. 맞지 않으면 추가 context만 생략한다.
+Go typed nested validation·old nil shape/primary failure와 full CPP first-wins/finding/
+later fault·max envelope를 확인하고 native unchanged-decision actual과 기존 ZIP
+소비자를 새 cohort로 각각 한 번 검증한다. 한도/17s reserve/coverage와 cfg32768·
+os-release 권한은 변경하지 않는다. Before-nested-first/control 원본을 보존했다.
+
+Nested-only Go v10 format1.667s/Quick99.531s/관련3package Race30.337s/tag vet1.154s/
+build7.204s/docs0.297s/security12.634s는 모두 PASS다. 이후 operator의 Path 첨자 표기
+오타가 identity 저장에서 TypeError였다. 실제 실행 source와7개 결과를 보존하고
+별도 finalizer에서 pre/post Go6 hash와 binarybf7e08a9를 대조했다. 검사/제품 실패로
+오인하거나 profile을 반복하지 않았다. SourceSend는 git65a의 body와 byte-identical이다.
+
+CPP v15 canonical253.918s/128PASS 뒤 matched Go10 actual-v15 11.143s는 똑같은
+first cfg32768/ff47ab3dea512dd3·outside4/expected34와 후속 os-release fault를 보존했다.
+CPU2.088923s/typed3회1/zero selection/모든 원본·Host/Docker 동일/helperwait0·부재다.
+Nested diagnostic 전달만 qualified이며 normal legacy consumer와 native metadata
+전체 성공은 별도다. 같은 cohort 기존 ZIP 실제 소비자는 순차 검증 중이다.
+
+Restored sender matched Go10/CPP15 legacy actual95.923s는 complete-before20units/
+5commands·CPU12.572241s와 accounting-failure의 INCOMPLETE0.656547s를 통과했으나
+complete-after는13.057189s/last13.051617s·authorization exhausted로 실패했다. Primary
+M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE와 cleanup join을 보존했다. Observer fault는
+없고 original/Host/Docker 동일·typed final Close/helperwait0·부재다. 이 mixed parent를
+PASS나 전체 legacy qualification으로 쓰지 않는다. Same source 안의 두 정상값 차이와
+B control12.781611/12.754892를 기록하되 고정 overhead/인과를 주장하지 않는다.
+Budget/coverage는 유지하고 같은 후보를 통과까지 반복하지 않는다. CPU경계의 전체
+ZIP qualification은 OPEN이며 별도 native cfg32768 gap 작업을 계속한다.
+
+### C-a cfg read32768 및 negative fixture 정밀화 — source 전 감사
+
+현재 cfg 경로는 선언된 query 환경의 exact pyvenv.cfg read557056만 구현/연결돼 있다.
+실제 v14/v15 first finding의 동일path/32768은 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED 모두 NO다. MISSING은 기존 live query parent·역할·canonical env·
+exact site mount/path에서 kOpenLargefile32768 read 하나다. 다른 config/path/directory
+flags·쓰기·hooks·module/다른 env·기존 UV profile에는 허용을 추가하지 않는다.
+두 closed query 형태의 production Open→Result positive와 flag0/쓰기·다른 cfg 부정을
+확장하고 remaining outside/latest fault는 기존 진단으로 다시 확인한다.
+
+별도 test-only overlay는 extra-field mutation 전에 원본 map roundtrip 자체가 이미
+ATTRIBUTION_FAILURE임을 직접 확인했다. uint64 최대값을 map[string]any의float64로
+바꾸어 precision이 사라진 fixture 오류다. 생산 nested decoder는 변경하지 않고 test
+map에 UseNumber와 mutation 전 positive decode를 넣어 의도한 unknown/recursive
+field 거부를 확인한다. Fixture 검증의 IMPLEMENTED/WIRED는 부분 YES이나 이 baseline
+assertion/정밀도 보존은 NO/NO/NO/NO다. Full canonical Quick와 해당 focused Race/
+tag build/docs/security로 검증하며 기존 production3package Race는 Go10 범위로 재사용한다.
+Original false-positive fixture·RED overlay는 raw extra-field-roundtrip/before-cfg-largefile로
+보존했다. Product CPU/budget/coverage나 새 parser 허용은 바꾸지 않는다.
+
+### C-a exact cfg/first-finding checkpoint — 2026-10-28
+
+Fixture correction Go v11 format0.670s/Quick47.859s/focused Race10.116s/tag vet0.987s/
+build7.112s/docs0.247s/security9.499s PASS이며 다른5Go 파일은 Go10과 byte-identical이며 생산3Go에는 변경이 없다.
+수정한 한 파일은 negative test fixture뿐이다. Go6/binaryeea7a02b를 명시 pre/post bind했다.
+CPP v16 canonical248.128s/128PASS 뒤 actual-v16 10.999s는 cfg32768 finding이 사라지고
+outside4→3·expected34/CPU2.034085s/Create/Register/Close1·zero selection을 확인했다.
+새 최초 finding은 same declared venv site-packages directory624640/locator9f6f5b57da59c77b다.
+후속 os-release557056 fault는 그대로이며 original/source/Host/Docker 동일/helperwait0·부재다.
+Native 전체와 mixed legacy parent를 COMPLETE로 쓰지 않는다. 이 독립 ABI/diagnostic/
+trusted-cleanup scope를 중간 commit으로 보존하고 exact next directory gap을 계속한다.
+[Query diagnostics checkpoint](./p4o4c3c3b3c1-native-query-diagnostics-checkpoint-20261028.json)가
+소스·한정 검증·실패/복구·남은 acceptance를 소유한다. CPU 원인이나 budget 해법은 OPEN이다.
