@@ -86,6 +86,29 @@ func (r *PipxResolver) Close() error {
 // ResolveToolInstall freezes independent original bytes before any native pipx
 // query. The reader session must finish cleanup before artifact execution starts.
 func (r *PipxResolver) ResolveToolInstall(ctx context.Context, requirement artifactpypi.UpgradeRequirement) (PipxToolSelection, error) {
+	return r.resolveToolSelection(ctx, requirement, nil, nil, nil)
+}
+
+// ResolveToolUpgrade uses a copied, metadata-only original. Its old constraint
+// remains provenance; pipx's new public upgrade request is the bare project.
+func (r *PipxResolver) ResolveToolUpgrade(ctx context.Context, original artifactpypi.PipxToolUpgradeInput, controls []artifactpypi.UVInstalledWheelControls) (PipxToolSelection, error) {
+	checked, wheels, err := preparePipxNativeOriginal(ctx, original, controls)
+	if err != nil {
+		return PipxToolSelection{}, err
+	}
+	originalControl, err := checked.Control()
+	if err != nil {
+		return PipxToolSelection{}, err
+	}
+	runtime := PinnedPythonRuntime()
+	wheelControl, err := checked.ReplayWheelsControl(wheels, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	if err != nil {
+		return PipxToolSelection{}, err
+	}
+	return r.resolveToolSelection(ctx, checked.Request(), &checked, wheels, []domain.ProjectControlFile{originalControl, wheelControl})
+}
+
+func (r *PipxResolver) resolveToolSelection(ctx context.Context, requirement artifactpypi.UpgradeRequirement, original *artifactpypi.PipxToolUpgradeInput, wheels []artifactpypi.UVInstalledWheelControls, originalControls []domain.ProjectControlFile) (PipxToolSelection, error) {
 	if r == nil || r.native == nil || r.native.reader == nil || r.resources == nil || ctx == nil || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return PipxToolSelection{}, errors.New("pipx requires one supported public tool requirement")
 	}
@@ -96,13 +119,27 @@ func (r *PipxResolver) ResolveToolInstall(ctx context.Context, requirement artif
 	if err != nil || canonical.Requirement() != requirement.Requirement() {
 		return PipxToolSelection{}, errors.New("pipx requirement is not canonical")
 	}
+	if original != nil && (!requirement.SameConstraints(original.Request()) || len(originalControls) != 2) || original == nil && (len(wheels) != 0 || len(originalControls) != 0) {
+		return PipxToolSelection{}, errors.New("pipx original request differs")
+	}
 	// Missing or changed installed supply fails before DNS, Docker or selection.
 	tool, err := preparePipxTool(ctx)
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
 	reference := requirement.Reference()
-	native, err := r.native.resolveNativeSelection(ctx, reference, requirement.Requirement())
+	var native uvNativeOutput
+	var proposal *uvInstalledSelection
+	if original == nil {
+		native, err = r.native.resolveNativeSelection(ctx, reference, requirement.Requirement())
+	} else {
+		bareInput, inputErr := artifactpypi.NewUpgradeInput(requirement, original.Original().MetadataFiles(), PinnedPythonRuntime().PythonVersion)
+		if inputErr != nil {
+			return PipxToolSelection{}, inputErr
+		}
+		proposal = &uvInstalledSelection{input: bareInput, intent: artifactpypi.UVUpgradeSelection}
+		native, err = r.native.resolveNativeSelectionWithInput(ctx, reference, requirement.Requirement(), proposal)
+	}
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
@@ -125,15 +162,38 @@ func (r *PipxResolver) ResolveToolInstall(ctx context.Context, requirement artif
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
+	if frozen == nil {
+		return PipxToolSelection{}, errPipxNativeInput
+	}
+	if proposal != nil {
+		if err := proposal.proposal.ValidateGraph(frozen.graph); err != nil {
+			return PipxToolSelection{}, err
+		}
+	}
 	reader := r.native.reader
-	output, err := runPipxNativeInstall(ctx, reader.runner, reader.observer, r.resources, tool, frozen, requirement)
+	var output pipxNativeOutput
+	if original == nil {
+		output, err = runPipxNativeInstall(ctx, reader.runner, reader.observer, r.resources, tool, frozen, requirement)
+	} else {
+		output, err = runPipxNativeUpgrade(ctx, reader.runner, reader.observer, r.resources, tool, frozen, *original, wheels)
+	}
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
 	if err := ctx.Err(); err != nil {
 		return PipxToolSelection{}, err
 	}
-	selection, err := pipxSelectionForOutput(requirement, native.lock, frozen, output)
+	operation := pipxNativeInstall
+	provenance := append([]domain.ProjectControlFile(nil), originalControls...)
+	if proposal != nil {
+		operation = pipxNativeUpgrade
+		delta, deltaErr := domain.NewProjectControlFile("pipx-tool-selection-delta.json", proposal.proposal.Delta(), true)
+		if deltaErr != nil {
+			return PipxToolSelection{}, deltaErr
+		}
+		provenance = append(provenance, delta)
+	}
+	selection, err := pipxSelectionForOutputForOperation(requirement, native.lock, frozen, output, operation, provenance)
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
@@ -144,6 +204,26 @@ func (r *PipxResolver) ResolveToolInstall(ctx context.Context, requirement artif
 }
 
 func pipxSelectionForOutput(requirement artifactpypi.UpgradeRequirement, lockBody []byte, frozen *pipxNativeInput, output pipxNativeOutput) (PipxToolSelection, error) {
+	return pipxSelectionForOutputForOperation(requirement, lockBody, frozen, output, pipxNativeInstall, nil)
+}
+
+func pipxSelectionForOutputForOperation(requirement artifactpypi.UpgradeRequirement, lockBody []byte, frozen *pipxNativeInput, output pipxNativeOutput, operation pipxNativeOperation, extras []domain.ProjectControlFile) (PipxToolSelection, error) {
+	operationName, intentName := "install", "fresh-install"
+	if operation == pipxNativeUpgrade {
+		operationName, intentName = "upgrade", "original-upgrade"
+		names := []string{artifactpypi.PipxToolUpgradeInputControlName, artifactpypi.PipxToolUpgradeWheelsControlName, "pipx-tool-selection-delta.json"}
+		if len(extras) != len(names) {
+			return PipxToolSelection{}, errors.New("pipx original provenance missing")
+		}
+		for i, control := range extras {
+			if control.Name() != names[i] || !control.Present() || len(control.Body()) == 0 {
+				return PipxToolSelection{}, errors.New("pipx original provenance differs")
+			}
+		}
+	} else if operation != pipxNativeInstall || len(extras) != 0 {
+		return PipxToolSelection{}, errors.New("pipx selection operation differs")
+	}
+
 	if !pipxNativeRequirementMatches(requirement, frozen) || !output.receipt.Valid() || !output.receipt.Requirement().SameConstraints(requirement) {
 		return PipxToolSelection{}, errors.New("pipx native selection differs from frozen request")
 	}
@@ -155,11 +235,11 @@ func pipxSelectionForOutput(requirement artifactpypi.UpgradeRequirement, lockBod
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
-	runtime := "pipx-tool-install:" + PipxResolverRuntimeIdentity()
+	runtime := "pipx-tool-" + operationName + ":" + PipxResolverRuntimeIdentity()
 	intent, err := json.Marshal(struct {
 		Version                                             int
 		Intent, Requirement, Runtime, RuntimeLock, FrozenID string
-	}{1, "fresh-install", requirement.Requirement(), runtime, runtimeidentity.RuntimeLockSHA256, frozen.id})
+	}{1, intentName, requirement.Requirement(), runtime, runtimeidentity.RuntimeLockSHA256, frozen.id})
 	if err != nil {
 		return PipxToolSelection{}, err
 	}
@@ -187,6 +267,10 @@ func pipxSelectionForOutput(requirement artifactpypi.UpgradeRequirement, lockBod
 		if err != nil {
 			return PipxToolSelection{}, err
 		}
+		controls = append(controls, control)
+		digests = append(digests, control.Name()+":"+control.Digest().String())
+	}
+	for _, control := range extras {
 		controls = append(controls, control)
 		digests = append(digests, control.Name()+":"+control.Digest().String())
 	}

@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 // Embed only the Output port so the underlying test runner's RunBounded is
@@ -87,7 +88,8 @@ func TestPipxPublicResolverRefusesInvalidRequestAndCancellationBeforeIO(t *testi
 	}
 }
 
-func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing.T) {
+func pipxSelectionFixture(t *testing.T, request string) (*pipxNativeInput, pipxNativeOutput, []byte, artifactpypi.UpgradeRequirement) {
+	t.Helper()
 	frozen, entries := pipxNativeOutputFixture(t)
 	// This fixture originally requests probe<2,>=1. Match the exact request
 	// under test without changing the shared original/layout fixture.
@@ -97,7 +99,7 @@ func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing
 	if err := json.Unmarshal(entry.body, &wire); err != nil {
 		t.Fatal(err)
 	}
-	wire["main_package"].(map[string]any)["package_or_url"] = "probe==1.0"
+	wire["main_package"].(map[string]any)["package_or_url"] = request
 	var marshalErr error
 	entry.body, marshalErr = json.Marshal(wire)
 	if marshalErr != nil {
@@ -111,7 +113,7 @@ func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing
 	}
 	file := frozen.files[0]
 	lock := []byte(fmt.Sprintf("lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=%s'\n[[packages]]\nname='probe'\nversion='1.0'\nwheels=[{url=%q,size=%d,hashes={sha256=%q}}]\n", PinnedPythonRuntime().PythonVersion, file.url, len(file.body), file.digest))
-	requirement, _ := artifactpypi.ParseUpgradeRequirement("probe==1.0")
+	requirement, _ := artifactpypi.ParseUpgradeRequirement(request)
 	// Production uses the source-only Reference and retains constraints in the
 	// typed requirement. Refreeze this shared exact-reference fixture likewise.
 	parsed, err := artifactpypi.ParseUVLock(requirement.Reference(), lock, PinnedPythonRuntime().PythonVersion)
@@ -126,6 +128,11 @@ func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
+	return frozen, output, lock, requirement
+}
+
+func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing.T) {
+	frozen, output, lock, requirement := pipxSelectionFixture(t, "probe==1.0")
 	selection, err := pipxSelectionForOutput(requirement, lock, frozen, output)
 	if err != nil {
 		t.Fatal(err)
@@ -174,6 +181,98 @@ func TestPipxSelectionBindsFrozenSourceNativeReceiptAndCopiedControls(t *testing
 			refused, err := pipxSelectionForOutput(request, candidateLock, candidateFrozen, candidate)
 			if err == nil || len(refused.Controls()) != 0 || len(refused.Resolution().Graph().Nodes()) != 0 {
 				t.Fatal("substituted provenance retained native selection", err)
+			}
+		})
+	}
+}
+
+func TestPipxPublicUpgradeRefusesOriginalBeforeInfrastructure(t *testing.T) {
+	for _, scenario := range []string{"empty", "missing-wheel", "changed-metadata", "collision", "cancelled"} {
+		t.Run(scenario, func(t *testing.T) {
+			original, controls := pipxReplayFixture(t, scenario == "collision")
+			count := &pipxNativeNoCommands{}
+			endpoints := &uvCountingEndpoints{}
+			resolver, err := NewPipxResolver(&pipxNativeDiscardCommands{count}, endpoints, pipxNativeUnusedObserver{}, availablePythonProbe, &recordingResolverPolicyService{}, pipxNativeUnusedResources{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			switch scenario {
+			case "empty":
+				original = artifactpypi.PipxToolUpgradeInput{}
+			case "missing-wheel":
+				controls[0].Wheel = nil
+			case "changed-metadata":
+				controls[0].Metadata = append(append([]byte(nil), controls[0].Metadata...), []byte("Summary: changed\n")...)
+			case "cancelled":
+				cancel()
+			}
+			selection, err := resolver.ResolveToolUpgrade(ctx, original, controls)
+			wanted := errPipxNativeOriginal
+			if scenario == "cancelled" {
+				wanted = context.Canceled
+			}
+			if !errors.Is(err, wanted) || count.calls != 0 || endpoints.calls != 0 || len(selection.Controls()) != 0 || len(selection.Resolution().Graph().Nodes()) != 0 {
+				t.Fatal("original refusal reached infrastructure or lost cause", err)
+			}
+		})
+	}
+}
+
+func TestPipxUpgradeProvenanceBindsOriginalAndNativeDelta(t *testing.T) {
+	frozen, output, lock, requirement := pipxSelectionFixture(t, "probe")
+	original, wheels := pipxReplayFixture(t, false)
+	originalControl, err := original.Control()
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := PinnedPythonRuntime()
+	wheelControl, err := original.ReplayWheelsControl(wheels, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bare, err := artifactpypi.NewUpgradeInput(requirement, original.Original().MetadataFiles(), runtime.PythonVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	proposal, err := bare.ParseUVSelection([]byte(`{"schema":{"version":"preview"},"changes":[],"dry_run":true}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := proposal.ValidateGraph(frozen.graph); err != nil {
+		t.Fatal(err)
+	}
+	delta, err := domain.NewProjectControlFile("pipx-tool-selection-delta.json", proposal.Delta(), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	extras := []domain.ProjectControlFile{originalControl, wheelControl, delta}
+	selection, err := pipxSelectionForOutputForOperation(requirement, lock, frozen, output, pipxNativeUpgrade, extras)
+	if err != nil || len(selection.Controls()) != 7 || selection.Resolution().RuntimeIdentity() != "pipx-tool-upgrade:"+PipxResolverRuntimeIdentity() {
+		t.Fatal("original upgrade provenance missing", err)
+	}
+	var intent struct{ Intent, Requirement string }
+	if err := json.Unmarshal(selection.Controls()[0].Body(), &intent); err != nil || intent.Intent != "original-upgrade" || intent.Requirement != "probe" {
+		t.Fatal("old constraint substituted for new request", err)
+	}
+	for _, scenario := range []string{"missing", "swapped", "install-extra", "unknown-operation"} {
+		t.Run(scenario, func(t *testing.T) {
+			controls := append([]domain.ProjectControlFile(nil), extras...)
+			operation := pipxNativeUpgrade
+			switch scenario {
+			case "missing":
+				controls = controls[:2]
+			case "swapped":
+				controls[0], controls[1] = controls[1], controls[0]
+			case "install-extra":
+				operation = pipxNativeInstall
+			case "unknown-operation":
+				operation = pipxNativeOperation(99)
+			}
+			refused, err := pipxSelectionForOutputForOperation(requirement, lock, frozen, output, operation, controls)
+			if err == nil || len(refused.Controls()) != 0 || len(refused.Resolution().Graph().Nodes()) != 0 {
+				t.Fatal("incomplete/wrong operation provenance accepted")
 			}
 		})
 	}

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -17,24 +18,80 @@ import (
 
 type pipxNativeSessionActualRunner struct {
 	CommandRunner
-	targets atomic.Int64
+	targets         atomic.Int64
+	outputMu        sync.Mutex
+	failureOutput   []byte
+	nativeContainer string
+	nativeTar       []byte
 }
 
 func (*pipxNativeSessionActualRunner) RequiresDirectExecAdmission() {}
 func (r *pipxNativeSessionActualRunner) RunInput(ctx context.Context, input io.Reader, name string, args ...string) error {
 	return r.CommandRunner.(inputCommandRunner).RunInput(ctx, input, name, args...)
 }
+
+type pipxNativeTarCapture struct {
+	target io.Writer
+	owner  *pipxNativeSessionActualRunner
+}
+
+func (w pipxNativeTarCapture) Write(body []byte) (int, error) {
+	w.owner.outputMu.Lock()
+	left := (1 << 20) - len(w.owner.nativeTar)
+	if left > 0 {
+		w.owner.nativeTar = append(w.owner.nativeTar, body[:min(left, len(body))]...)
+	}
+	w.owner.outputMu.Unlock()
+	return w.target.Write(body)
+}
 func (r *pipxNativeSessionActualRunner) RunOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
+	r.outputMu.Lock()
+	container := r.nativeContainer
+	r.outputMu.Unlock()
+	if name == "docker" && container != "" && len(args) == 3 && args[0] == "cp" && args[1] == container+":/haa-site/." && args[2] == "-" {
+		output = pipxNativeTarCapture{target: output, owner: r}
+	}
 	return r.CommandRunner.(streamingDockerOutput).RunOutput(ctx, output, name, args...)
+}
+func (r *pipxNativeSessionActualRunner) nativeLayoutPrefix() []byte {
+	r.outputMu.Lock()
+	defer r.outputMu.Unlock()
+	return append([]byte(nil), r.nativeTar...)
 }
 func (r *pipxNativeSessionActualRunner) RunDiscard(ctx context.Context, name string, args ...string) error {
 	return r.CommandRunner.(discardCommandRunner).RunDiscard(ctx, name, args...)
 }
+func (r *pipxNativeSessionActualRunner) LookPath(name string) (string, error) {
+	return r.CommandRunner.(Executor).LookPath(name)
+}
 func (r *pipxNativeSessionActualRunner) RunBounded(ctx context.Context, name string, args ...string) ([]byte, error) {
-	if _, mode, _, ok := directExecOrigin(args, name); ok && mode == boundaryPythonHandoffMode {
+	container, mode, _, ok := directExecOrigin(args, name)
+	native := ok && mode == boundaryPythonHandoffMode
+	if native {
 		r.targets.Add(1)
+		r.outputMu.Lock()
+		r.nativeContainer = container
+		r.nativeTar = nil
+		r.outputMu.Unlock()
 	}
-	return r.CommandRunner.(boundedCommandRunner).RunBounded(ctx, name, args...)
+	body, err := r.CommandRunner.(boundedCommandRunner).RunBounded(ctx, name, args...)
+	if native && err != nil {
+		r.outputMu.Lock()
+		if r.failureOutput == nil {
+			r.failureOutput = append([]byte(nil), body...)
+		}
+		r.outputMu.Unlock()
+	}
+	return body, err
+}
+func (r *pipxNativeSessionActualRunner) nativeFailureOutput() []byte {
+	r.outputMu.Lock()
+	defer r.outputMu.Unlock()
+	body := r.failureOutput
+	if len(body) > 4096 {
+		body = body[len(body)-4096:]
+	}
+	return append([]byte(nil), body...)
 }
 
 type pipxNativeSessionActualResources struct {

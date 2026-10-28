@@ -15,15 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-b3a inert original replay/port named local; C-b2 fresh public actual PASS; CI421/sourcee859487 Required10SUCCESS is prior hosted scope
-Next action: M13-004/P4-O4-C3c3b3c C-b3b observed original-aware upgrade/session and public factory; C-b3a inert archive/port locally verified; current Policy/CLI/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
-Current substep: M13-004/P4-O4-C3c3b3c C-b3b IN_PROGRESS; C-a/b1/b2/b3a named local; original observed upgrade/current Policy/CLI/hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-b3b original-aware native upgrade/no-op named local actual91.332s PASS; CI421/sourcee859487 Required10SUCCESS is prior hosted scope
+Next action: M13-004/P4-O4-C3c3b3c C-c current complete inspection/Evidence/Policy/cache baseline and wiring; guarded Host transaction/CLI/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
+Current substep: M13-004/P4-O4-C3c3b3c C-c IN_PROGRESS; C-a/b1/b2/b3a/b3b named local closed; current inspection/Policy/transaction/CLI/hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-b3b original-aware native upgrade/no-op 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-b3b-original-upgrade-local-20261028.json)의
+Quick95.439s/전체 sandbox Race25.087s/tag/docs/security·CPP128 및 actual91.332s가 PASS다.
+Fresh6.0→upgrade6.1→same6.1 no-op의 whole source/control4·7·7과 typed 세션3개/정리·Host
+불변을 확인했다. 최초 output scaffold 거부는 보존하고 기존 pinned UV venv owner를 재사용했다.
+Selection은 승인 전 상태이며 같은 M13-004/C-c에서 current 검사·Policy/cache를 연결한다.
+Guarded Host transaction/CLI·hosted/final·독립 legacy ZIP CPU gap은 남는다.
 
 ### 2026-10-28 C-b3a inert original replay/port 한정 검증
 

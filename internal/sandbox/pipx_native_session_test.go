@@ -303,3 +303,39 @@ func TestPipxInstalledNativeEntryRejectsInvalidRequestsBeforeCommands(t *testing
 		})
 	}
 }
+
+func TestPipxNativeUpgradeRejectsOriginalBeforeCommands(t *testing.T) {
+	for _, scenario := range []string{"empty", "missing-wheel", "changed-metadata", "collision", "cancelled", "frozen"} {
+		t.Run(scenario, func(t *testing.T) {
+			original, controls := pipxReplayFixture(t, scenario == "collision")
+			frozen, _, _, _, _ := pipxFrozenInputFixture(t, nil)
+			count := &pipxNativeNoCommands{}
+			runner := &pipxNativeDiscardCommands{count}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			switch scenario {
+			case "empty":
+				original = artifactpypi.PipxToolUpgradeInput{}
+			case "missing-wheel":
+				controls[0].Wheel = nil
+			case "changed-metadata":
+				controls[0].Metadata = append(append([]byte(nil), controls[0].Metadata...), []byte("Summary: changed\n")...)
+			case "cancelled":
+				cancel()
+			case "frozen":
+				frozen = nil
+			}
+			output, err := runPipxNativeUpgrade(ctx, runner, pipxNativeUnusedObserver{}, pipxNativeUnusedResources{}, &pipxPreparedTool{body: []byte("wrong ZIP must not mask original refusal")}, frozen, original, controls)
+			wanted := errPipxNativeOriginal
+			if scenario == "cancelled" {
+				wanted = context.Canceled
+			}
+			if scenario == "frozen" {
+				wanted = errPipxNativeInput
+			}
+			if !errors.Is(err, wanted) || count.calls != 0 || len(output.controls) != 0 || output.receipt.Valid() {
+				t.Fatal("original refusal lost, reached commands or retained metadata", err, count.calls)
+			}
+		})
+	}
+}

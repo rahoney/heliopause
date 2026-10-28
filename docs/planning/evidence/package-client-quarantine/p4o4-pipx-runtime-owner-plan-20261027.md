@@ -2135,3 +2135,98 @@ C-b3a IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 YES(archive/port fixture 
 interpreter/RECORD나 가짜 native log를 복사하지 않는다. 같은 C-b3b에서 기존 session을
 operation-aware로 좁게 연결하고 native version delta/no-op/정리를 실제 확인한다.
 Current 검사/Policy·cache·guarded transaction·CLI와 hosted/final/legacy CPU gap은 남는다.
+
+## C-b3b — original-aware observed upgrade/source 전 감사
+
+기준2121fa2/treec2614709/2856파일이며 관련 Read/lessons와 기존 session·public factory,
+UV installed-aware dry-run/constraints/ValidateGraph, C-b3a archive·Pipx typed original을 읽었다.
+
+| 기존 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| C-a fresh session/typed resource/watch/trace/cleanup·CPP18 upgrade grammar | YES | YES (fresh/grammar) | YES (fresh actual/CPP) | YES (그 scopes) | operation-aware 호출과 metadata-only original 투입 |
+| C-b3a inert original archive/fixed stdin transport | YES | YES (archive/port) | YES (fixture) | YES (그 scope) | 검증한 original의 actual native upgrade 소비 |
+| UV installed-aware native dry-run/constraints/strict lock/proposal.ValidateGraph | YES | YES (기존 UV) | YES (기존 scopes) | YES (UV) | pipx bare request와 old inert METADATA의 backend 선택에 결합 |
+| Pipx public fresh factory/source control binder | YES | YES | YES (actual B2) | YES (fresh scope) | original upgrade method/7control provenance·actual delta/no-op |
+| current complete inspection/Policy/cache/Host transaction/CLI | NO | NO | NO | NO | 이 metadata 결과와 별도의 후속 |
+
+기존 runPipxNativeInstall의 lifecycle body를 하나의 private operation-aware 함수로 재사용한다.
+Install wrapper의 동작/전체 cleanup·회계·budget은 유지하고 upgrade wrapper는 original.Control의
+재parse/Replay deep copy·archive 사전검사와 bare Request를 검증한다. Original 오류는 그
+단계의 inspectable marker로 구분해 잘못된 ZIP의 후속 거부가 negative를 대신하지 않게 한다.
+등록/준비 뒤 target 전에만 기존 fixed metadata transport를 쓰며 원본 code/interpreter/RECORD/
+stored argv를 실행하지 않는다. 실제 syscall/profile grant는 관찰된 deny 전에 추가하지 않는다.
+
+Public ResolveToolUpgrade는 original claims를 authority로 보지 않는다. 기존 NewUpgradeInput에
+bare pipx request와 copied old METADATA를 결합해 기존 UV installed-aware selection을 호출하고
+strict proposal.ValidateGraph를 whole frozen source에 적용한다. Fresh helper를 upgrade로
+위장하거나 old 제약을 새 요청에 유지하지 않는다. Reader cleanup 뒤 operation-aware native
+upgrade를 실행하고 실제 receipt/new controls를 frozen source에 재bind한다. Fresh4controls는
+그대로 유지하며 original-upgrade intent/runtime와 기존 original-input/wheels controls·고정
+pipx-tool-selection-delta.json을 더한7control digest를 별도로 만든다. 이는 ownership/Policy
+승인이 아닌 unapproved provenance다. 어떠한 단계의 실패/cleanup/cancel도 zero selection이다.
+
+Default는 invalid/changed/collision/cancel original이 command0이며 정확한 original marker를
+확인하고 fresh source/control 계약을 보존한다. Canonical Quick/전체 sandbox Race/tag/docs/
+security 뒤 같은 CPP18/private installed fixture에서 public fresh6.0→actual original-aware
+upgrade6.1 및 same6.1 no-op를 검증한다. Test의 original METADATA/WHEEL은 같은 locked URL/
+SHA의 independent whole archive reader에서만 추출하며 Host package를 import하지 않는다.
+Raw source/control/CPU·원본/Host 불변·trace/정리를 보존한다. 미관찰 original/native gap은
+그대로 남기고 budget·coverage·Core invariant를 바꾸지 않는다.
+
+C-b3b v1 canonical format2.409s/Quick222.455s/전체 sandbox Race25.792s/tag vet1.068s/
+build7.131s/docs0.290s/security12.978s가 PASS다. Tag-only 단계별 source/control snapshot
+v1b는 다른11source를 유지하고 format0.705s/tag vet1.093s/build7.267s/docs0.341s/
+security10.033s가 PASS이며 binaryb5a650ff/Go12·CPP18에 bind됐다. Operation selector/
+original copy/error label 세 차이를 역으로 돌리면 기존 install lifecycle 전체 본문과 같다.
+첫 actual-v1 59.692s는 fresh cowsay6.0/원본 SHA77b07c50·graph1/control4/CPU2.026166s와
+original independent reader/UV installed-aware proposal을 지났다. Native upgrade command는
+정상 종료했으나 complete output collection에서 기존 layout sentinel로 거부됐다. 구체 member/
+reason은 미보존이며 native upgrade QUALIFIED/ACCEPTANCE_CLOSED는 NO다. No-op는 미도달이다.
+Go12/CPP6·고정42/ZIP·Host5/Docker 동일/noSKIP/helperwait0/정리·부재와 원본을 보존했다.
+검사/권한/예산을 완화하지 않고 tag-only bounded tar-prefix capture로 최초 거부 member를
+식별한다. Raw prefix는 task /tmp에만 두고 실행·추출하지 않으며 metadata census/hash만
+보존한다. 같은 실패를 green까지 반복하거나 generated view를 completed native output으로
+표시하지 않는다. 실제 data/code 원인이 확인된 뒤 해당 MISSING만 수정한다.
+
+### C-b3b 최초 layout 원인 및 upgrade runtime 준비의 source 전 감사
+
+Tag-only v2 format1.622s/tag vet1.604s/build7.299s/docs0.318s/security10.450s는 다른
+10source/생산 판정을 유지했다. Actual-v2 58.551s는 native target2/Create/Register/Close각2,
+last CPU1.760006s·no observer fault/Go12·CPP6/고정42·ZIP·Host5/Docker 동일/helperwait0·
+부재다. Bounded prefix135168B/SHAc0586eb7의 data-only census48entries·tar parse error0와
+동일조건 offline overlay0.007s가 first refusal=기존216행/필수 activate.nu 부재를 확인했다.
+고정 activation auxiliaries10개가 모두 없으며 native command의 실제 새 receipt는6.1/bare
+cowsay다. Receipt나 exit0을 accepted selection으로 바꾸지 않는다. No-op는 미도달이다.
+
+기존 고정 UV `venv --python /usr/local/bin/python --allow-existing --quiet <env>` owner는
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES(새 install 범위)다.
+Original metadata-only view의 runtime scaffolding 초기화만 NO/NO/NO/NO다. MISSING은
+기존 ARTIFACT Python root 안에서 upgrade CLI 전에 같은 pinned UV child로 venv scaffold를
+생성하는 일이다. DATA keepers를 executable CONTROL로 넓히거나 원래/가짜 activation code를
+복사·재현하지 않는다. 기존 metadata/WHEEL·receipt 원본 view를 유지하며 UV owner 자체가
+같은 immutable Python의 runtime 보조 파일을 만들게 한다. Go fixed program과 CPP exact
+program suffix를 함께 갱신하고 기존 IsExactPipxNativeUVChild의 같은 venv argv를 live
+upgrade parent에도 한정한다. Generic creator/CONTROL/network/syscall/budget/coverage와
+full output validator는 변경하지 않는다. Fresh/upgrade venv의 exact/negative normalized
+latches와 Go canonical/전체 sandbox Race·CPP128 후 actual delta/no-op를 다시 검증한다.
+Source edit 뒤 단지 발생했다는 이유로 다른 native 오류를 이 원인의 탓으로 합치지 않는다.
+
+### C-b3b original-aware upgrade/no-op 한정 완료
+
+[로컬 receipt](./p4o4c3c3b3c-b3b-original-upgrade-local-20261028.json)는 최종 Go13의
+format0.706s/Quick95.439s/전체 sandbox Race25.087s/tag vet1.041s/build7.452s/docs0.238s/
+security13.364s와 CPP264.371s/128PASS·0FAIL을 결합한다. Exact Go/CPP program과 venv
+grammar만 함께 변경했고 full output validator는 기존 전체 bytes와 같다. 기존 lifecycle
+재사용·six guards/두 reviewed common 예외는 보존한다. Raw v1/v2의 최초 실패와 bounded
+metadata-only 원인 증거는 유지하며 가짜 auxiliary나 검사 완화로 해결하지 않았다.
+
+같은 Go e1aeb749/CPP04400976의 actual-v3 91.332s가 noSKIP PASS다. Genuine installed
+fixture에서 fresh cowsay6.0(SHA77b07c50)→original-aware6.1(SHA274b1e6f)→same6.1
+no-op를 독립 원본 archive reader·frozen graph와 결합했다. Controls는4/7/7이고 각 native
+세션 CPU2.075083/2.082914/2.044665s, 누적 Create/Register/Close각3이다. 모든 새 receipt/
+pylock/census와 original-input/wheels/delta를 검증했다. Host5/Docker·고정42/ZIP·Go/CPP
+불변/helperwait0/final CONFIRMED_STOPPED·부재이며 artifact/network 권한·13s active budget은
+유지한다. C-b3b IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 로컬 metadata
+선택 범위만 뜻한다. Current complete inspection/Evidence·Policy/cache·guarded Host transaction/
+CLI와 hosted/final/signed-native 및 독립 legacy ZIP CPU 경계는 OPEN이다. 같은 M13-004에서
+C-c의 기존 UV tool 준비/전체 검사·승인 owner 재사용을 먼저 감사하고 실제 missing만 연결한다.

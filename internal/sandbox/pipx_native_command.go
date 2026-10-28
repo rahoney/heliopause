@@ -99,6 +99,9 @@ if entry is None or entry.origin != root + '/pipx/__main__.py':
     raise RuntimeError('pipx native entry is outside original ZIP')
 sys.path.append(root)
 sys.argv = ['pipx', *sys.argv[1:]]
+if len(sys.argv) > 2 and sys.argv[1] == 'upgrade':
+    import subprocess
+    subprocess.run(['/haa-runtime/uv', 'venv', '--python', '/usr/local/bin/python', '--allow-existing', '--quiet', '/haa-site/pipx/venvs/' + sys.argv[2]], check=True)
 from pipx.__main__ import cli
 raise SystemExit(cli())
 `

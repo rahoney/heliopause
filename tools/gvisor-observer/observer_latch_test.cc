@@ -8395,9 +8395,9 @@ bool VerifyPipxNativeCloneAndQueryBoundary() {
     return true;
   };
   for(const char* operation:{"version","venv","install","query"})ok=run(operation,false,false,true,"")&&ok;
-  ok=run("install",true,false,true,"")&&run("query",false,false,false,"")&&run("version",false,true,true,"")&&ok;
+  ok=run("venv",true,false,true,"")&&run("install",true,false,true,"")&&run("query",false,false,false,"")&&run("version",false,true,true,"")&&ok;
   for(const char* fault:{"binary","execfn","argv0","argv","extra","origin","wrong-parent","child-start","child-network","child-eligible","child-pending","child-expected","missing-clone","parent-role","parent-start","parent-network","parent-image","root-start"}){
-    ok=run("install",false,false,true,fault)&&run("query",false,false,true,fault)&&run("version",false,true,true,fault)&&ok;
+    ok=run("venv",true,false,true,fault)&&run("install",false,false,true,fault)&&run("query",false,false,true,fault)&&run("version",false,true,true,fault)&&ok;
   }
   close(output[0]);close(output[1]);return ok;
 }

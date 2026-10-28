@@ -285,11 +285,32 @@ func runInstalledPipxNativeInstall(ctx context.Context, runner CommandRunner, ob
 // runPipxNativeInstall consumes a previously prepared fixed ZIP and a complete
 // frozen selection. Installed-source composition and upgrades are separate.
 func runPipxNativeInstall(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, tool *pipxPreparedTool, frozen *pipxNativeInput, requirement artifactpypi.UpgradeRequirement) (result pipxNativeOutput, resultErr error) {
+	return runPipxNativeOperation(ctx, runner, observer, resources, tool, frozen, requirement, pipxNativeInstall, nil, nil)
+}
+
+func runPipxNativeUpgrade(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, tool *pipxPreparedTool, frozen *pipxNativeInput, original artifactpypi.PipxToolUpgradeInput, controls []artifactpypi.UVInstalledWheelControls) (pipxNativeOutput, error) {
+	checked, wheels, err := preparePipxNativeOriginal(ctx, original, controls)
+	if err != nil {
+		return pipxNativeOutput{}, err
+	}
+	if !pipxNativeRequirementMatches(checked.Request(), frozen) {
+		return pipxNativeOutput{}, errPipxNativeInput
+	}
+	return runPipxNativeOperation(ctx, runner, observer, resources, tool, frozen, checked.Request(), pipxNativeUpgrade, &checked, wheels)
+}
+
+// Both operations reuse the same admission, accounting, trace and cleanup owner.
+func runPipxNativeOperation(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, tool *pipxPreparedTool, frozen *pipxNativeInput, requirement artifactpypi.UpgradeRequirement, operation pipxNativeOperation, original *artifactpypi.PipxToolUpgradeInput, controls []artifactpypi.UVInstalledWheelControls) (result pipxNativeOutput, resultErr error) {
 	if ctx == nil || runner == nil || observer == nil || resources == nil || tool == nil || !pipxNativeRequirementMatches(requirement, frozen) {
 		return result, errors.New("pipx native session input unavailable")
 	}
 	if err := ctx.Err(); err != nil {
 		return result, err
+	}
+	if operation != pipxNativeInstall && operation != pipxNativeUpgrade ||
+		operation == pipxNativeInstall && (original != nil || len(controls) != 0) ||
+		operation == pipxNativeUpgrade && (original == nil || !original.Request().SameConstraints(requirement)) {
+		return result, errors.New("pipx native operation input differs")
 	}
 	if _, ok := observer.(profiledTraceObserver); !ok {
 		return result, errors.New("pipx native profile observer unavailable")
@@ -318,7 +339,7 @@ func runPipxNativeInstall(ctx context.Context, runner CommandRunner, observer Tr
 	if !ok || int64(len(tool.body)) != spec.size || hex.EncodeToString(digest[:]) != spec.sha256 {
 		return result, errPipxToolSupply
 	}
-	command, err := pipxNativeArguments(pipxNativeInstall, requirement)
+	command, err := pipxNativeArguments(operation, requirement)
 	if err != nil {
 		return result, err
 	}
@@ -377,10 +398,19 @@ func runPipxNativeInstall(ctx context.Context, runner CommandRunner, observer Tr
 	if err = s.runtime.verifyTarget(runCtx, preparedRunner, s.reader.id); err != nil {
 		return result, err
 	}
+	if original != nil {
+		if err = introducePipxToolUpgradeInput(runCtx, preparedRunner.(inputCommandRunner), s.reader.id, *original, controls); err != nil {
+			return result, uvReaderFailure{"pipx native original preparation failed", err}
+		}
+	}
 	// Successful external admission and target exit are necessary, but the
 	// complete trace/accounting/cleanup reconciliation in defer is mandatory.
 	if _, err = preparedRunner.(boundedCommandRunner).RunBounded(runCtx, "docker", boundaryExecArguments(s.reader.id, boundaryPythonHandoffMode, command...)...); err != nil {
-		return result, uvReaderFailure{"pipx native install failed", err}
+		operationName := "install"
+		if operation == pipxNativeUpgrade {
+			operationName = "upgrade"
+		}
+		return result, uvReaderFailure{"pipx native " + operationName + " failed", err}
 	}
 	if err = s.data.verifyReader(runCtx, preparedRunner, s.reader.id); err != nil {
 		return result, err

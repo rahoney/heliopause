@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 // introducePipxToolUpgradeInput transports controller-generated inert metadata
@@ -128,4 +129,37 @@ func pipxToolUpgradeReplayArchive(input artifactpypi.PipxToolUpgradeInput, contr
 	}
 	directories := map[string]bool{"pipx": true, "pipx/.cache": true, "pipx/py": true, "pipx/logs": true, "pipx/venvs": true, env: true, env + "/bin": true, env + "/lib": true, env + "/lib/python3.14": true, site: true, "tool-bin": true, "tool-man": true}
 	return serializeToolReplayArchive(files, directories)
+}
+
+var errPipxNativeOriginal = errors.New("pipx native original input unavailable")
+
+// Reparse the immutable control and own the complete wheel metadata before any
+// native/network commands. The original receipt remains unapproved data.
+func preparePipxNativeOriginal(ctx context.Context, input artifactpypi.PipxToolUpgradeInput, controls []artifactpypi.UVInstalledWheelControls) (artifactpypi.PipxToolUpgradeInput, []artifactpypi.UVInstalledWheelControls, error) {
+	if ctx == nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, errPipxNativeOriginal
+	}
+	if err := ctx.Err(); err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, err
+	}
+	control, err := input.Control()
+	if err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, errors.Join(errPipxNativeOriginal, err)
+	}
+	runtime := PinnedPythonRuntime()
+	checked, err := artifactpypi.ParsePipxToolUpgradeInput([]domain.ProjectControlFile{control}, runtime.PythonVersion)
+	if err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, errors.Join(errPipxNativeOriginal, err)
+	}
+	wheels, err := checked.ReplayWheelControls(controls, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	if err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, errors.Join(errPipxNativeOriginal, err)
+	}
+	if _, err := pipxToolUpgradeReplayArchive(checked, wheels); err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, errors.Join(errPipxNativeOriginal, err)
+	}
+	if err := ctx.Err(); err != nil {
+		return artifactpypi.PipxToolUpgradeInput{}, nil, err
+	}
+	return checked, wheels, nil
 }
