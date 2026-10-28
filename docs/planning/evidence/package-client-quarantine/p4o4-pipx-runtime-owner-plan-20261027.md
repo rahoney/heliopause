@@ -2023,3 +2023,67 @@ fixture 범위)이며 publisher authenticity·release activation·public selecti
 아니다. 같은 M13-004/C-b2에서 기존 UV-backend compile·independent whole archive reader/
 freeze·installed entry를 결합하는 production factory의 baseline을 확인한다. Original
 upgrade/current 전체 검사·CLI/hosted/final profiles와 mixed legacy CPU parent는 남는다.
+
+## C-b2 — public UV backend/whole frozen input/native selection source 전 감사
+
+기준9c49d57/tree17a038e3/2849파일이며 C-b1 commit 뒤 source 변경은 없다.
+Queue/관련 Read·INDEX 상세 sandbox/artifact/evidence와 기존 UV resolver/independent reader,
+ToolReceipt/complete binder 및 constructor/ordinary integration을 대조했다.
+
+| 기존 책임 / symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `UVResolver.resolveNativeSelection`/compile/sync/strict UVLock | YES | YES (UV public) | YES (기존 named scopes) | YES (UV scope) | pipx 고정 UV backend entry와 결합 |
+| `withUVArchiveInputs`/metadata URL-size-SHA/readers | YES | YES | YES (기존 UV) | YES (그 scope) | callback에서 whole source/startup frozen snapshot만 만들고 reader 정리 후 native 실행 |
+| `preparePipxTool`/C-a session/whole output binder | YES | YES | YES (C-a/C-b1 actual) | YES (그 scope) | public 선택의 same frozen graph/native receipt와 unapproved selection provenance |
+| pipx production resolver/factory | NO | NO | NO | NO | required resources·transport/profile 사전검사, fixed installed supply preflight, 기존 owners 연결·actual public 양성/무command 거부 |
+| original upgrade/current Evidence/Policy/Host transaction/CLI | NO | NO | NO | NO | 별도 후속; 이번 selection에서 완료·approval을 발급하지 않음 |
+
+새 `pipx_resolver.go`는 기존 UV reader를 조합하는 adapter다. Required typed resources와
+input/stream/discard/bounded·profile/mount observer를 constructor에서 확인하고 Linux
+factory는 기존 injected trusted executor/typed policy ports만 사용한다. ResolveToolInstall은
+canonical public requirement/cancel을 거부한 뒤 fixed installed ZIP를 command/네트워크 전에
+읽는다. 기존 UV backend의 native compile/strict output과 independent archive reader로
+whole source/graph/startup freeze를 수행한다. Reader cleanup이 성공한 뒤에만 기존 offline
+ARTIFACT session에 held ZIP/same frozen bytes를 전달한다. 어느 단계든 오류/cleanup/cancel은
+zero selection을 반환한다. UV resolver/기존 consumers/observer/runtime/한도는 바꾸지 않는다.
+
+반환은 `PipxToolSelection`의 기존 domain DependencyResolution과 copied control files이며
+inspection/Policy/Host ownership authority가 없다. Runtime identity는 고정 pipx/UV/Python/target/
+source pin을 결합한다. 현재 source provenance controls는 고정4개 `pipx-tool-intent.json`,
+`pipx-tool-receipt.json`, `pipx-tool-pylock.toml`, `pipx-tool-census.json`이다. Intent의 canonical
+요청/runtime/runtime-lock/frozen-ID, actual receipt, 동일 parsed pylock와 actual METADATA/WHEEL
+SHA·exposed links를 existing ProjectControlFile digest와 ordered control digest에 결합한다.
+이는 current fresh-selection metadata이며 원본 upgrade input/target authority와 혼동하지 않는다.
+기존 UV result/control schema는 유지한다. Default invalid collaborator/request/cancel 및 copied
+control/provenance 변조를 검사하고 canonical Quick/전체 sandbox Race/tag build/docs/security 뒤
+ordinary actual public cowsay6.1과 command 없는 idna3.11 거부를 검증한다. 설치 경로는 C-b1의
+격리 fixture/CPP18을 재사용하며 실제 metadata/whole graph/source digest·정리 범위를 기록한다.
+
+C-b2 첫 Quick203.647s의 유일한 default 실패는 새 provenance fixture의 요청 불일치다.
+Shared receipt는 probe<2,>=1인데 새 test는 probe==1.0을 기대했다. 새 fixture에만 exact
+package_or_url을 맞춘 focused는 다음 exact probe@1.0 UVLock과 source-only Reference의
+구분도 드러냈다. 기존 UpgradeRequirement.Reference는 의도적으로 제약을 보관하지 않는다.
+같은 새 fixture를 production처럼 typed 요청과 별도로 source-only lock로 refreeze한
+focused0.012s가 PASS이며 생산 source는 first-check manifest와 같았다. 기존 guard나
+shared fixtures를 완화하지 않는다. Raw v1-before source/Quick·focused exec result/green·
+fixture-correction-assessment가 실제 단계와 범위를 소유한다. 최종 후보는 provenance
+생성 뒤 ctx를 다시 확인하고 capability negative의 bounded port만 없도록 fixture를
+정밀화하며 actual source URL/integrity/control digest와 두 reconciled native Close를 기록한다.
+
+### C-b2 public production selection 한정 검증
+
+[로컬 receipt](./p4o4c3c3b3c-b2-public-native-selection-local-20261028.json)의 최종
+format0.704s/Quick86.100s/전체 sandbox Race27.758s/tag vet1.111s/build7.841s/docs0.258s/
+security13.444s 및 actual51.055s가 PASS다. Go9/binary7139ab48·CPP18 source6/관찰기와
+고정 ZIP·Host5/Docker 동일·Host installed root 전후 부재/noSKIP/helperwait0/final0·부재다.
+실제 public cowsay6.1 원본 wheel SHA274b1e6f/URL를 whole independent reader/freeze 후
+native graph1/command1/control4·ordered digest51362db8에 결합했다. Idna3.11은 native
+transaction에 도달한 뒤 zero selection으로 거부됐고 observer fault 없이 combined typed
+Create/Register/Close각2·last Close CPU2.184769s다. 마지막 CPU를 첫 case의 CPU로
+전용하거나 sanitized install failure만으로 더 세부 native stderr 원인을 확정하지 않는다.
+네 provenance hash와 원본 URL/SHA는 raw actual log와 receipt에 보존했다. Reader가 정리된
+뒤 offline native ARTIFACT session만 실행하고 네트워크 권한/observer/body·budget은 유지했다.
+C-b2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 YES(이 fresh public selection
+범위)다. 검사/Policy/Host 승인이나 signed/hosted 지원은 아니다. 같은 M13-004/C-b3의
+원본 upgrade baseline을 확인하며 current 전체 검사·cache·transaction·CLI/최종 profiles 및
+legacy mixed CPU parent는 MISSING이다. 새 push/원격 CI/타이머는 시작하지 않았다.

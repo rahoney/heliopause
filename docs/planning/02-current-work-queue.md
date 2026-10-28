@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI421/sourcee859487 Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3c C-b2 public selection/frozen production factory baseline; C-b1 installed actual fresh/accounting-refusal PASS; legacy ZIP mixed CPU boundary OPEN; CI421 consumed/no active timer
+Next action: M13-004/P4-O4-C3c3b3c C-b3 original upgrade baseline; C-b2 public selection/frozen/native factory actual PASS; current Policy/CLI/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
 Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,15 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-b2 public pipx selection/factory 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-b2-public-native-selection-local-20261028.json)의
+Quick86.100s/전체 sandbox Race27.758s/tag/docs/security와 actual51.055s가 PASS다. Cowsay6.1
+public 원본 URL/SHA와 native graph1/command1/control4를 결합했고 idna3.11은 native transaction
+뒤 zero selection으로 거부했다. Typed Create/Register/Close각2·no observer fault/Host·원본·source
+불변/helperwait0/final0다. Fresh selection만 qualified이며 같은 M13-004/C-b3 original upgrade,
+current 검사/Policy·cache·Host transaction/CLI·최종 profiles와 legacy CPU gap은 남는다.
 
 ### 2026-10-28 C-b1 고정 설치 공급물 entry 한정 완료
 
