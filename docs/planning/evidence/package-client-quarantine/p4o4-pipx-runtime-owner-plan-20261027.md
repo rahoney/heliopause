@@ -2777,3 +2777,148 @@ C-d2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 local exact CI wir
 독립 legacy ZIP CPU gap도 OPEN이다. 같은 M13-004/C-e1에서 남은 P4 acceptance/qualification
 matrix를 actual owner와 대조하고, 반복 실패한 legacy ZIP CPU는 구체 원인/가설이 확인된 뒤만
 다시 실행한다. 이 local commit은 새 public push·main merge·release 승인이 아니다.
+
+## C-e1 — 남은 acceptance와 legacy ZIP CPU의 진단 전 baseline
+
+기준b5caa45/tree6f5666c5/2879files, clean tracked Git과 실제 고정42/원본 ZIP2455948B의
+현재 SHA를 확인했다. INDEX와 artifact L01/L02/L15·sandbox L03/L08/L12/L18·evidence L16,
+Queue/plan20/client09와 기존 acquired input/transaction/CPU watch·typed resource port·actual
+resource wrapper 및 old v14/B-control/v15 원본을 대조한다. M13-004/C-e1 하나가 active다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Pipx native/current/CLI/fixed native original·기존 CI 두 소비자 | YES | YES | YES(named local; source52/CI13 actual7) | YES(그 scopes) | same whole-source hosted/UID1001·final profiles |
+| ZIP20unit plan/required inspector/current graph·Policy/staging | YES | YES | YES(named earlier local/CI421 scope) | YES(각 scopes) | 새 whole cohort의 hosted/final·mixed normal→failure→normal |
+| Total30/reserve17/active13 CPU·typed Read/Close fail-closed | YES | YES | YES(정상/회계 거부의 기존 scope) | YES(fail-closed) | 정상20unit의13s 근방 소비 원인/현재 tuple qualification |
+| pipxActualResources creates/registers/readCount/lastCPU/CloseCPU | YES | YES(existing real test) | YES(기존 raw) | YES(aggregate scope) | registration/role와 시간·CPU window의 대응 |
+| P4/전체 package-client final CPU·CUDA/signed/release matrix | YES(existing owners) | PARTIAL | NO(current whole cohort) | NO | exact-source remote4profiles·signed complete set 및 명시 미지원 범위 최종 대조 |
+
+Old14의13.112164, retained B control12.781611/12.754892, restored sender15의 normal-before
+12.572241/after13.057189는 각각 그 source/execution만 소유한다. Native7 PASS나 changed
+sender 이후 발생했다는 이유로 CPU 원인/해결을 추론하지 않는다. Current CPP는 C1-v5/128이며
+이전15와 동일 전체 source가 아니다. 이번 입력의 current 결과도 controlled old-v15 comparison이 아니다.
+
+### 계측 범위·두 번째 검토 — product 수정 전
+
+현재 Read는 aggregate 마지막 CPU와 총 count만 남긴다. 가설은 'setup/registration 사이의 CPU
+window가 우세한지, 일부 import가 포함된 window에 소비가 집중되는지'이며 아직 원인 주장이 아니다.
+Product source/observer/runtime·허용·단위20/required coverage·30/17/13 한도는 바꾸지 않는다.
+Source test-only overlay에서 기존 resource wrapper에 bounded CPU sample만 추가한다. Create/
+Register/Read/Close의 실제 typed lease usage·error, role/등록 ordinal, RPC 전후 ordinal과 elapsed를
+보관하고 기존 assertions/normal→실제 Read 뒤 오류 주입→normal 순서 및 failfast를 유지한다.
+동시 Read/등록이 겹치면 두 ordinal을 모두 기록해 모호함을 남긴다. Register는 docker start 뒤라
+window에는 앞 단계 정리와 다음 startup이 함께 들 수 있으며 특정 함수/모듈의 독점 CPU로 단정하지 않는다.
+
+Plan의 고정20 unit ID/candidate/coverage를 별도로 기록하되 artifact stdout를 완료 authority나
+CPU 측정으로 쓰지 않는다. 최대1024개 sample/instance와 truncation flag로 bound하고 raw를 한 번
+보존한다. Host caller의 계측이며 새 artifact syscall·Root query/API·control stream은 없다.
+Pinned Go의 tagged overlay build 후 기존 final observer/원본 ZIP로 진단 actual1회를 실행한다.
+Whole tracked runtime source와 overlay delta·Go/CPP binary/고정42·ZIP·Host5/Docker/helper lifecycle를
+연결한다. Partial/overlay 성공은 final release/원인 수리가 아니며 결과를 본 뒤에만 다음 실제
+missing을 정한다. 동일 실패를 green까지 재시도하거나 budget·coverage를 완화하지 않는다.
+
+### E1 CPU window 실제 결과와 다음 입력 가설
+
+Test-only metric binary b6d08273/observer ae301892의 actual-v1은42.703s/product exit1이다.
+원래 failfast의 첫 complete-before에서 마지막 userpath.cli unit이 active CPU 한도를 넘어
+Close13.012223s/lastRead13.007341s·register22/read146/commands0으로 INCOMPLETE다.
+Observer fault는 없고 뒤 두 case는 NOT_RUN이다. Sample170개는 truncation/registration 중첩0이며
+1280개 tracked runtime inputs·overlay/CPP6/고정42/ZIP·Host5/Docker 불변, owning helper
+wait0/CONFIRMED_STOPPED/부재다. 원본 e1-cpu-window-actual-v1/result·cpu-window-reports와
+별도 e1-window-analysis가 이 진단만 소유하며 production 수정/qualification은 아니다.
+
+첫 observation 등록 CPU0.568682s이고 비용은 여러 window에 분산된다. _pytest.config1.047494s,
+pipx.__main__1.016243s, platformdirs.pytest_plugin1.515747s, pytest1.426804s가 상대적으로 크다.
+Register는 docker start 뒤이므로 다음 register/close까지의 차이는 import 독점 비용이 아닌
+정리/다음 startup을 포함한 혼합 window다. 준비 하나나 특정 sender가 원인이라는 증거는 없다.
+
+다음 가설은 동일 원본 member의 ZIP encoding 변경이 반복 import의 압축 해제 소비에 영향을
+주는지다. 현재657member/589Python·원문8,560,611B로 full Store는 기존8MiB bound를 넘는다.
+파일 이름별 예외 없이 작은 member Store/큰 member Deflate의 한 generic threshold 후보를
+기존 PipxSupplyClosure.ZIP와 materialize-pipx-candidate로 만든다. 먼저 size census로 기존
+bound에 맞는 고정 threshold를 정하며 실행 결과에 맞춰 threshold를 반복 조정하지 않는다.
+
+기존 assembler·authenticated wheel closure·parser(Store/Deflate 허용)는 IMPLEMENTED/WIRED=YES,
+후보 encoding의 runtime CPU 영향과 current 전체 소비자는 QUALIFIED/ACCEPTANCE_CLOSED=NO다.
+제품 assembler/parser/runtime lock은 재작성하지 않는다. Test-only Go overlay의 정확한 delta는
+assembler Method 선택 한 곳과 generated expected SHA/size 두 상수 및 기존 metric overlay다.
+Canonical candidate 명령에 -overlay를 적용해 external DATA를 생성하며 pinned canonical 출력
+검증을 우회하지 않는다. 이 후보는 새 ZIP identity이며 원래 ZIP와 같은 input qualification이 아니다.
+모든657 payload/path/order/mode/time/comment·11wheel/42input·20unit plan과 coverage의 동일성을
+독립 비교하고 bound/guard를 확인한 뒤 현재 동일 CPP/예산/fixture로 한 diagnostic actual을 한다.
+Source/runtime·20unit/required coverage·30/17/13 CPU·memory/wall·권한/의존성/version·raw RECORD는
+변경하지 않는다. Production adoption 여부는 해당 결과 뒤 canonical pin/전체 영향 검증과 별도
+범위 재검토로 판단하며 candidate PASS를 곧바로 제품 수리로 기록하지 않는다.
+
+Encoding diagnostic는 runtime 결과를 보기 전64KiB threshold로 고정했다. 637Store/20Deflate,
+7,155,471B/SHA00eab980으로 >1MiB 여유이며 원본657payload/path/order/CRC/size/mode/time/
+comment/extra가 모두 같다. Canonical materialize-pipx-candidate의 runtime_qualified=false를
+유지한다. Test-only expected SHA/size와 기존 metric overlay의 binary88926f3c만 달라졌고,
+제품1280runtime source는 불변이다. Artifact subject digest가 바뀌므로 unit ID는 달라져야 하며
+동일성을 요구하는 것은 ordinal/candidate/kind/coverage다. 기존 CPP ae301892/Host mount binding/
+ordinary UID·동일3case/assertions/failfast를 유지한 e1-encoding-actual-v1을 실행한다. 새source/
+asset pin 채택이나 이전 실패와 동일-input qualification이 아니다.
+
+E1 encoding actual-v1은45.627s/product exit1이다. 첫 complete-before의 마지막 userpath.cli에서
+Close13.127181s/lastRead13.121694s, register22/read150/commands0으로 INCOMPLETE였다.
+Sample174/truncation0, observer fault 없음이며 원래 assertions/failfast로 뒤2case는 NOT_RUN이다.
+CPP/1280source/42input/원래 ZIP/후보·Host/Docker 불변, helperwait0/confirmed stopped/부재다.
+20candidate/coverage/ordinal은 원래 metric과 동일하며 subject 변경에 따라 unitID는 달라졌다.
+ZIP encoding 후보는 정상 완료를 얻지 못해 수리 방법으로 채택하지 않는다. 작은 CPU 차이의
+인과/성능 저하율은 단발 실행끼리 추정하지 않는다. 후보 encoding/expected pin overlay는 진단
+전용으로 남기고 제품에 채택하지 않는다. 전체 payload가 같은 입력 차이이며 기존 canonical
+source는 변경하지 않았다. 같은 시험 재실행/threshold 사후 조정 없이 실제 회계 대상 process/
+CPU 내역과 기존 Create/Register/Read/Close owner를 대조해 다음 구체 관측점을 정한다.
+
+### E1 두 번째 계측 지도 — startup/retirement와 실행 window 분리
+
+기존 helper는 transaction 전용 systemd slice/고정 sleep keeper와 검증한 Docker scopes의
+cpu.stat usage_usec를 읽는다. 외부 Root observer/typed helper 자체는 그 slice의 직접 등록
+대상이 아니다. 최초 metric의 CPUAuthorizationSeconds 필드는 잘못 붙인 진단 이름이며
+lease.CPU는 한도 초가 아닌 firstAvailableCPU의 affinity index다. Raw는 고치지 않고 후속
+진단만 CPUIndex로 바꾼다. 실제30/17/13 한도는 기존 policy/ledger가 소유하고 바꾸지 않는다.
+
+Create/Register/Read/Close owner는 IMPLEMENTED/WIRED/기존 scope QUALIFIED=YES다.
+원래 wrapper가 inherited Terminate를 계측하지 않아 직전 mixed window만 남았다. MISSING은
+실제 Terminate RPC 전후 usage와 기존 register 사이의 startup/retirement 구분이다. Product
+interface/helper를 변경하지 않고 같은 test-only wrapper에 Terminate의 call 전/후 sample만
+넣는다. 기존 call/반환/오류/계약·failfast·3case와 원본 ZIP/CPP/source1280은 유지한다.
+
+성공한 typed lease의 exact haaobs<24hex>.slice에 한해 일반 사용자로 kernel cgroup cpu.stat의
+usage/user/system과 direct child scope의 동일 통계를 bounded read한다. 최대32scope/64PID,
+파일4096B와 기존1024sample bound를 유지하며 read errors/부재는 명시한다. 선택 PID comm/exe
+조회는 운영 진단이고 artifact stdout/완료·권한 authority가 아니다. 이 read는 controller 쪽에서
+수행하고 parent 회계/표본 deadline을 완화하거나 sample을 버리지 않는다. 추가 helper RPC나
+runtime argv/권한·새 profile은 없다. 미해결 정상 실패의 반복 통과 목적이 아닌 비용 구간을
+구분하기 위한 원본 ZIP의 새 계측1회다. 결과 전 source 최적화나 shared owner 재작성은 없다.
+
+### E1 진단 한정 결과와 남은 acceptance
+
+[진단 assessment](./p4o4c3c3b3c-e1-cpu-diagnostic-assessment-20261028.json)는 원본/encoding 거부와
+원본 phase diagnostic88.730s/product exit0를 구분한다. 후자의 원래 정상→실제 Read 뒤 test-only
+오류→정상은20unit/5commands·zero commands·20unit/5commands로 PASS이며 CPU는
+12.815358/0.630527/12.873832s다. Source1280/CPP/42input/원본 ZIP·Host/Docker 불변과 owning
+helperwait0/CONFIRMED_STOPPED/부재를 모두 확인했다. 원래 assertion·coverage·예산은 그대로다.
+
+두 정상의 observation mixed windows 합10.372961/10.376741s, anchor를 뺀 종료 windows 합은
+0.101256/0.099849s다. 마지막 kernel user/system은8.396825/4.418258s와8.184130/4.689447s다.
+Anchor scope의 마지막 CPU는0.203757/0.223132s이며 transaction 전체 busy anchor가 우세하다는
+증거는 없다. Kernel user/system은 Python/함수별 독점 profile이 아니며 source 원인/수리를
+확정하지 않는다. 일반 사용자의 process exe EACCES와 Close 뒤 cgroup ENOENT를 원본에
+남겼다. 진단 query는 partial이므로 실제 helper cleanup의 독립 증거를 대신하지 않는다.
+
+계측 자체는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(진단 한정)다.
+Product source/ZIP pin을 바꾸지 않았고 기존 CPU 경계의 재현성·원인 수리는 OPEN이다. 이미
+동일 제품 source의 정상과 경계 거부를 모두 보존했으므로 새 가설 없이 green까지 반복하지 않는다.
+다음 C-e2에서 아래 current cohort의 acceptance를 묶어 준비한다. M13-004 하나만 active이며
+milestone/next work item은 바뀌지 않는다. 기존 e859/CI421 원격 성공을 현재25local commit에
+전용하지 않는다. 10:39:50UTC GitHub 재조회도 remote e859/CI421success이고 새 CI/timer는 없다.
+
+| 남은 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 다음 확인 |
+| --- | --- | --- | --- | --- | --- |
+| Current pipx fixed install/managed/native original·CI7 | YES | YES | YES(named local) | YES(local scopes) | same-source hosted/ordinary UID1001·native macOS job |
+| Original ZIP20unit transaction·release set inspector/current Evidence | YES | YES | PARTIAL(current phase diagnostic PASS and earlier refusals) | NO(current cohort) | existing hosted actual parent와 production complete-set evidence, bounded CPU 거부 보존 |
+| Whole DATA release15assets/19bundle·보호 경로 복구/installer | YES | YES | YES(named unsigned/local owners) | NO(signed/current whole) | final signed complete set/current graph를 기존 build·update 경로로 검증 |
+| Common CPP/runtime 영향 profile | YES | YES | YES(named per-owner local) | NO(whole final) | exact-source CPU/cu126/cu130/cu132와 기존 client/profile evidence를 최종 묶음에서 연결 |
+| Ordinary native default/다른 recipe | NO(current supported lane) | NO | NO | NO | 지원 확대 전 별도 source 의미·독립 proof/actual; fixed recipe PASS로 일반화 금지 |
+| npx/uvx/bunx/pipx run/pnpm dlx | 기존 acquisition/inspection/promotion owners only | NO(run lane) | NO | NO | P5/P6 baseline 후 explicit 실행 계약과 현재 owner 재사용; 설치 성공을 실행 성공으로 표시하지 않음 |

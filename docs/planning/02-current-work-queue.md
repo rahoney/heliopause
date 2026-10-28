@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-d2 exact CI tools-native 154.349s/3parents and tools-bootstrap 573.679s/4parents local PASS; hosted pending
-Next action: M13-004/P4-O4-C3c3b3c C-e1 remaining P4 acceptance/matrix and legacy ZIP CPU owner audit; grouped hosted candidate remains local; no active CI/timer
-Current substep: M13-004/P4-O4-C3c3b3c C-e1 IN_PROGRESS; native/CLI/existing CI wiring locally closed; hosted/final/legacy CPU remain
+Last completed substep: P4-O4-C3c3b3c C-e1 diagnostic audit; original phase88.730s/normal-failure-normal PASS, earlier CPU refusals preserved; no repair/final claim
+Next action: M13-004/P4-O4-C3c3b3c C-e2 current-cohort acceptance/matrix and grouped hosted candidate preparation; remote remains e859/CI421success; no active CI/timer
+Current substep: M13-004/P4-O4-C3c3b3c C-e2 IN_PROGRESS; native/CLI/existing CI wiring locally closed; hosted/final/production legacy CPU remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-e1 CPU 진단 audit 한정 종료
+
+[진단 assessment](./evidence/package-client-quarantine/p4o4c3c3b3c-e1-cpu-diagnostic-assessment-20261028.json)의
+원본42.703s/13.012223s와 동일657payload ZIP encoding45.627s/13.127181s는 CPU 거부다.
+Encoding 후보는 채택하지 않았다. 원본 ZIP의 별도 phase 계측88.730s는 기존20unit 정상→실제
+Read 뒤 오류 주입/zero commands→20unit 정상으로 PASS이며 CPU12.815358/12.873832s다.
+관측/종료 구간과 kernel user/system을 얻었고 원인 수리·일정 성능 보장은 하지 않는다.
+Source1280/CPP/42input/원본 ZIP·Host/Docker 불변/helperwait0·부재다. Product 변경·예산 완화는
+없으며 legacy production/current whole qualification은 OPEN이다. [Owner matrix](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)에 따라
+C-e2의 grouped hosted/current whole acceptance 준비를 계속한다. 새 push/CI/timer는 없다.
 
 ### 2026-10-28 C-d2 existing hosted tools wiring 한정 완료
 
