@@ -8423,6 +8423,13 @@ bool VerifyPipxNativeReadAndReexecBoundary() {
     for(const std::string& path:{env+"/pyvenv.cfg",env,env+"/lib",env+"/lib/python3.14",env+"/lib/python3.14/site-packages"}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kHelperOnly)ok=false;}
     if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/pyvenv.cfg",6,kOpenLargefile,false))ok=false;
     for(uint64_t flags:{uint64_t{0},kOpenLargefile|kOpenWriteOnly,kOpenLargefile|kOpenReadWrite,kOpenLargefile|kOpenCreate,kOpenLargefile|kOpenAppend,kOpenLargefile|kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
+    if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14/site-packages",6,624640,false))ok=false;
+    for(const std::string& path:{env,env+"/lib",env+"/lib/python3.14",env+"/pyvenv.cfg",env+"/lib/python3.14/site-packages/evil.pth",env+"/lib/python3.14/site-packages/sitecustomize.py",env+"/lib/python3.14/site-packages/fixture/__init__.py",std::string("/haa-site/pipx/venvs/other/lib/python3.14/site-packages")}){
+      if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],path,6,624640,true))ok=false;
+    }
+    for(uint64_t flags:{uint64_t{624640}|kOpenWriteOnly,uint64_t{624640}|kOpenReadWrite,uint64_t{624640}|kOpenCreate,uint64_t{624640}|kOpenAppend,uint64_t{624640}|kOpenTruncate}){
+      if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14/site-packages",6,flags,true))ok=false;
+    }
     open.set_flags(557056);
     for(const std::string& path:{env+"/lib/python3.14/site-packages/evil.pth",env+"/lib/python3.14/site-packages/sitecustomize.py",env+"/lib/python3.14/site-packages/fixture/__init__.py",env+"/lib/python3.14/site-packages/foreign.so",env+"/lib/python3.14/site-packages/fixture-1.0.dist-info/METADATA",std::string("/haa-site/pipx/venvs/other/pyvenv.cfg"),std::string("/tmp/../haa-site/pipx/venvs/fixture/pyvenv.cfg"),std::string("/tmp/output-alias/pyvenv.cfg")}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
     for(uint64_t flags:{kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;
@@ -8468,7 +8475,7 @@ bool VerifyPipxNativeFirstOutsideDiagnostic() {
  const std::string saved=first.first_outside_open_diagnostic;
  if(saved.empty()||saved.find(env)!=std::string::npos||saved.find("\"flags\":624640")==std::string::npos)ok=false;
  if(!VerifyRestrictedWorkspaceOpen(query,first,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14",6,624640,true,false,&second)||second.first_outside_open_diagnostic!=saved)ok=false;
- if(VerifyRestrictedWorkspaceOpen(uv,second,topology,kProfilePipxNativeResolver,output[0],output[1],"/usr/lib/os-release",1,557056,false,false,&later)||
+ if(VerifyRestrictedWorkspaceOpen(uv,second,topology,kProfilePipxNativeResolver,output[0],output[1],"/usr/local/bin/pip",1,557056,false,false,&later)||
     later.first_outside_open_diagnostic!=saved||later.fault_open_diagnostic.empty())ok=false;
  auto emit=[&](const std::string& first_open){
   ProcessState diagnostic=later;diagnostic.first_outside_open_diagnostic=first_open;
@@ -8553,7 +8560,8 @@ bool VerifyPipxNativeUVProcReadBoundary() {
   {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
   {"/sys/fs/cgroup/cpu/cpu.cfs_period_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
   {"/dev/null",MountAnchor{9,"/dev","system"}},
-  {"/usr/local/bin/python3.14",MountAnchor{1,"/","oci-root"}}};
+  {"/usr/local/bin/python3.14",MountAnchor{1,"/","oci-root"}},
+  {"/usr/lib/os-release",MountAnchor{1,"/","oci-root"}}};
  for(const auto& read:reads){
   if(!permitted(child,kProfilePipxNativeResolver,read.first,557056,read.second)||
      !VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],read.first,read.second.mount_id,557056,false))ok=false;
@@ -8567,6 +8575,8 @@ bool VerifyPipxNativeUVProcReadBoundary() {
  MountAnchor image{1,"/","oci-root"};
  for(const char* target:{"/usr/local/bin/python","/usr/local/bin/python3.13","/usr/bin/python3.14","/usr/local/bin/python3.14/extra"})if(permitted(child,kProfilePipxNativeResolver,target,557056,image))ok=false;
  for(const auto& mount:std::vector<MountAnchor>{{1,"/usr/local/bin","oci-root"},{1,"/","workspace"}})if(permitted(child,kProfilePipxNativeResolver,"/usr/local/bin/python3.14",557056,mount))ok=false;
+ for(const char* target:{"/etc/os-release","/usr/lib/os-release/extra","/usr/lib/../lib/os-release","/etc/lsb-release"})if(permitted(child,kProfilePipxNativeResolver,target,557056,image))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/usr/lib","oci-root"},{1,"/","workspace"}})if(permitted(child,kProfilePipxNativeResolver,"/usr/lib/os-release",557056,mount))ok=false;
  MountAnchor device{9,"/dev","system"};
  for(const char* target:{"/dev/zero","/dev/random","/dev/tty","/dev/../dev/null"})if(permitted(child,kProfilePipxNativeResolver,target,557056,device))ok=false;
  for(const auto& mount:std::vector<MountAnchor>{{9,"/dev/other","system"},{9,"/dev","workspace"},{9,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/dev/null",557056,mount))ok=false;

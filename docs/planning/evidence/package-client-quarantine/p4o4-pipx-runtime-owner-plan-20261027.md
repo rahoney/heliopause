@@ -1925,3 +1925,55 @@ Native 전체와 mixed legacy parent를 COMPLETE로 쓰지 않는다. 이 독립
 trusted-cleanup scope를 중간 commit으로 보존하고 exact next directory gap을 계속한다.
 [Query diagnostics checkpoint](./p4o4c3c3b3c1-native-query-diagnostics-checkpoint-20261028.json)가
 소스·한정 검증·실패/복구·남은 acceptance를 소유한다. CPU 원인이나 budget 해법은 OPEN이다.
+
+### C-a declared site-packages624640 — source 전 감사
+
+기준8276a33/tree2cccce1d/2847파일에서 기존 query parent/role/start/anchor 검증과
+config32768/557056·directory557056/622592는 IMPLEMENTED=YES/WIRED=YES이며
+해당 CPP128/actual cfg scope는 QUALIFIED=YES/ACCEPTANCE_CLOSED=YES다. v16의
+최초 outside는 exact declared venv `/lib/python3.14/site-packages`/624640이며 이
+한 tuple만 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+MISSING은 기존 ClassifyFilesystemOpen native-only query branch에 같은 live parent/
+workspace mount/canonical env 조건으로 이 exact directory flag를 연결하는 일이다.
+다른 세 디렉터리의624640·다른 env·alias·hook/module/metadata·쓰기·다른 profile에는
+전용하지 않는다. 두 closed query의 normalized Open→OpenResult positive와 다른
+세 디렉터리/하위 code/write negatives를 기존 latch에 추가한다. Generic Send/switch/
+six guards는 유지하고 canonical CPP128 후 같은 Go11 binary/6source·fixed42/ZIP로
+actual을 한 번 확인한다. Go source는 바꾸지 않으므로 이미 통과한 Quick/Race를
+반복하지 않는다. 후속 os-release fault와 legacy CPU 경계 전체 qualification은 OPEN이다.
+
+### C-a directory actual v17 및 os-release — source 전 감사
+
+CPP v17 canonical250.405s/128PASS0FAIL와 same Go11 actual11.049s에서 기존 outside3가
+모두 사라지고 expected34만 남았다. CPU2.080557s/Create·Register·Close각1/zero selection,
+source6·CPP6·fixed42/ZIP·Host5/Docker 불변/helperwait0/부재다. Native 전체는 후속
+os-release557056/fault로 미완료다. ProcessClassName은 kUV를 wire OTHER로 고정 출력하며,
+DiagnosticImage도 해당 helper를 UNKNOWN으로 표현한다. 이를 unclassified executable의
+증명으로 오해하지 않는다. Exact executable locator7fd94847cbee0d11은 /haa-runtime/uv와
+대응하고 closed ARTIFACT chain/expected34 및 classifier source를 함께 해석한다.
+Locator 자체는 인증이 아니며 role/creator/start 검증을 대체하지 않는다.
+
+기존 active UV의 exact immutable interpreter/ELF read는 구현/연결/한정 검증 YES다.
+그러나 같은 active UV/root creator의 `/usr/lib/os-release`/OCI-root/557056 tuple은
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은 그
+단일 read를 기존 IsPipxNativeABIRead active UV branch에 더하고 양성 normalized
+OpenResult·부모/역할/flag/profile/mount·다른 distribution file 부정을 검증하는 일이다.
+기존 CONTROL helper predicate는 변경하지 않는다. Generic Send/switch·six guards와
+Go6/binary11는 유지한다. First-finding diagnostic fixture의 후속 fault 경로는 새 합법
+read 대신 영구 금지 `/usr/local/bin/pip`로 바꿔 동일한 최초 기록 보존 의미를 유지한다.
+Canonical CPP128 뒤 실제 실행을 확인하며 새 query/CONTROL/network/쓰기 권한은 없다.
+
+### C-a fresh observed metadata/회계·정리 한정 완료 — 2026-10-28
+
+[로컬 qualification](./p4o4c3c3b3c1-native-session-local-20261028.json)의 CPP18
+canonical247.792s/128PASS0FAIL와 same Go11 actual17.003s가 PASS다. Fresh9.71s는
+controls2/graph2·target1/Create/Register/Close1·CPU2.128257s/last2.127970s이며
+accounting-refusal5.43s는 genuine Read 뒤 오류 주입·target0/zero selection·Close1을
+확인했다. 두 case/noSKIP/helperwait0/final0/부재, Host5/Docker·Go6/CPP6·fixed42/ZIP는
+동일하다. Directory624640와 immutable os-release557056 두 좁은 조건을 되돌리면 전체
+observer가8276a33과 byte-identical이다. Go canonical/생산 Race와 기존 독립 owners는
+해당 receipts 범위로 재사용했다. C-a IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는
+YES(이 named offline fixture 범위)다. Unapproved metadata이지 inspection/Policy/Host
+승인이 아니다. Public live resolution·installed protected supply와 production caller·
+original upgrade/current 검사·CLI/hosted/final profiles, legacy mixed CPU parent는
+MISSING이다. 같은 M13-004의 C-b에서 source 전 owner audit 후 실제 남은 연결만 진행한다.

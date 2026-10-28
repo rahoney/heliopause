@@ -2993,7 +2993,7 @@ bool IsPipxNativeABIRead(const gvisor::common::ContextData& context, const Proce
   if (root != nullptr && group->pipx_native_image == ProcessState::PipxNativeImage::kUV &&
       group->current_image_class == ProcessClass::kUV && flags == 557056 &&
       anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
-      (IsExactPinnedLibraryRead(path) || path == "/usr/local/bin/python3.14")) return true;
+      (IsExactPinnedLibraryRead(path) || path == "/usr/local/bin/python3.14" || path == "/usr/lib/os-release")) return true;
   if (PipxNativeQueryParent(context,state,*group) == nullptr || group->pipx_native_image != ProcessState::PipxNativeImage::kUVQuery) return false;
   if (anchor->mountpoint == "/proc" && anchor->mount_class == "system") {
     return flags == 557056 && path == "/proc/"+std::to_string(context.thread_group_id())+"/maps";
@@ -3802,7 +3802,9 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       const bool config = !env.empty() && path == env+"/pyvenv.cfg";
       const bool allowed = PipxNativeQueryParent(message.context_data(),state,*tracked) != nullptr && anchor != nullptr &&
           anchor->mountpoint == "/haa-site" && anchor->mount_class == "workspace" && !IsWriteCapableOpen(message.flags()) &&
-          ((config && (message.flags() == 557056 || message.flags() == kOpenLargefile)) || (directory && (message.flags() == 557056 || message.flags() == 622592)));
+          ((config && (message.flags() == 557056 || message.flags() == kOpenLargefile)) ||
+           (directory && (message.flags() == 557056 || message.flags() == 622592 ||
+            (message.flags() == 624640 && path == env+"/lib/python3.14/site-packages"))));
       return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
     }
   }

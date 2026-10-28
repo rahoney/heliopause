@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI421/sourcee859487 Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3c C-a exact declared venv site-packages624640 after cfg32768 actual v16; scoped diagnostic checkpoint; legacy ZIP mixed CPU boundary OPEN; parent comm verified; CI421 Required10SUCCESS consumed/no active timer; CI415 cause OPEN
+Next action: M13-004/P4-O4-C3c3b3c C-b installed protected supply/frozen production caller baseline; C-a actual v18 fresh/accounting-refusal PASS; legacy ZIP mixed CPU boundary OPEN; CI421 consumed/no active timer
 Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,15 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-a 실제 native metadata 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c1-native-session-local-20261028.json)의
+CPP128/actual17.003s는 fresh controls2/graph2·CPU2.128257s와 genuine accounting-refusal의
+target0/zero selection을 검증했다. Source·고정42/ZIP·Host5/Docker 불변, helperwait0/final0·
+부재다. C-a named offline scope만 qualified이며 C-b installed supply/public caller·original
+upgrade/current Policy/CLI/final profiles와 기존 ZIP mixed CPU parent는 OPEN이다. 같은
+M13-004에서 다음 missing audit/연결을 계속하며 새 push/CI/timer는 없다.
 
 ### 2026-10-28 C-a query/diagnostic 중간 검증
 
