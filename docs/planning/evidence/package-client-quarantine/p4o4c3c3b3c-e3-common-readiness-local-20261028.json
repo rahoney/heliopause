@@ -1,0 +1,401 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-e3 same production source/CPP: existing UV4, exact Bun4/PNPM7 recipes; no source, SDK, policy, budget or workflow changes",
+  "baseline": {
+    "commit": "a20ce1fb6b974f7ff02d1269c46a49b47922eb53",
+    "tree": "7cf295495e1ed3a69e3b22d108bebce9104d66af",
+    "files": 2882
+  },
+  "implemented": true,
+  "wired": true,
+  "qualified": true,
+  "acceptance_closed": "YES only15 named local consumer parents; whole hosted/signed/final acceptance open",
+  "runtime_source": {
+    "count": 1281,
+    "both_checkouts_match_e2_verified_source": true,
+    "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e2-v2-source-before.json"
+  },
+  "actual": [
+    {
+      "client": "uv",
+      "seconds": 152.771,
+      "passed_parents": [
+        "TestUVPublicNativeResolverIntegration",
+        "TestUVPublicToolInstallResolverIntegration",
+        "TestUVPublicToolUpgradeResolverIntegration",
+        "TestUVPublicNativeUpdateResolverIntegration"
+      ],
+      "source_input_host_helper_restore_invariants_pass": true,
+      "scope": "current common readiness existing UV four native/update/tool parents, live public selection under localUID1000; original gVisor inode retained/private protected client swaps; not frozen public selection nor hosted qualification",
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--result.json"
+    },
+    {
+      "client": "bun",
+      "seconds": 165.549,
+      "passed_parents": [
+        "TestBunPublicNativeResolverIntegration",
+        "TestBunActualNativeProjectSelectionBoundary",
+        "TestBunPublicProjectQuarantineIntegration",
+        "TestBunActualArtifactExecutionBoundary"
+      ],
+      "source_input_host_helper_restore_invariants_pass": true,
+      "scope": "current common readiness exact existing bun sandbox CI recipe, disposable private installed prefix/localUID1000; live acquisition/unsigned named fixture scopes only; original gVisor inode retained/private protected client swaps; not frozen public selection nor hosted qualification",
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--result.json"
+    },
+    {
+      "client": "pnpm",
+      "seconds": 201.445,
+      "passed_parents": [
+        "TestPNPMActualIsolatedNativeStartup",
+        "TestPNPMActualIsolatedEmptyLock",
+        "TestPNPMActualIsolatedNodeQuery",
+        "TestPNPMActualReleaseArtifactProbe",
+        "TestPNPMActualProductionProjectInspection",
+        "TestPNPMActualProductionInstanceExecution",
+        "TestPNPMPublicNativeResolverIntegration"
+      ],
+      "source_input_host_helper_restore_invariants_pass": true,
+      "scope": "current common readiness exact existing pnpm sandbox CI recipe, disposable private installed prefix/localUID1000; live acquisition, PNPM first four isolated probes not full production qualification; original gVisor inode retained/private protected client swaps; not frozen public selection nor hosted qualification",
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--result.json"
+    }
+  ],
+  "CI_test_build": {
+    "scope": "exact existing workflow Sandbox test build, no trimpath; source unchanged, debug source location needed by versioned test fixtures",
+    "command": [
+      "go",
+      "test",
+      "-c",
+      "-tags=realcorpus",
+      "-o",
+      "/tmp/haa-p4o4c3c3b3c-e3-ci-sandbox.test",
+      "./internal/sandbox"
+    ],
+    "binary": {
+      "role": "sandbox",
+      "path": "/tmp/haa-p4o4c3c3b3c-e3-ci-sandbox.test",
+      "sha256": "d0a123c9cb2828fa1e2629982c0128d57fe1e75a42a7493415aefae673e668d1"
+    },
+    "source_count": 1281,
+    "source_after_build_unchanged": true
+  },
+  "fixture_only_failures": {
+    "bun_v1": {
+      "seconds": 0.495,
+      "exit": 127,
+      "product_reached": false,
+      "cause": "task overlay upper0700 inherited by /usr/lib root; ordinary loader libc EACCES",
+      "root_view_owner_mode_confirmation": "p4o4c3c3b3c-e3-overlay-mode-confirmation.json"
+    },
+    "bun_v2": {
+      "seconds": 97.843,
+      "passed_parents": 2,
+      "cause": "trimpath test binary made runtime.Caller fixture path module-relative; quarantine fixture not found",
+      "artifact_boundary_parent": "NOT_RUN"
+    },
+    "corrections": [
+      "Task upper root0:0/0755 and mount-work0700; verify mounted /usr/lib owner/mode; Host lower untouched.",
+      "Use existing workflow go test -c -tags=realcorpus flags and separate binary identity; no fixture code changes/fake paths."
+    ],
+    "source_and_CPP_unchanged": true
+  },
+  "interpretation": [
+    "UV4 covers existing public native pip/update/tool selectors and real pypi-wheel observation; no-console idna refusal expected.",
+    "Bun4 covers native9cases/boundary5cases, transitive+peer exact project quarantine/current Evidence+Policy and Artifact normal/exit37.",
+    "PNPM7 includes first4 isolated native probes, production exact transitive/peer project inspection, controlled success/exit37/long-name execution and8public resolver selections; representative selected graphs get current quarantine/Evidence/Policy.",
+    "Live public resolution is not frozen replay. Artifact boundary alone does not run Policy or Host installation. No signed/native complete release claim.",
+    "Both corrected recipes use ordinaryUID1000, disposable private installed prefix, original gVisor inode, protected client/helper rebind and restore; Host prefix absent afterward."
+  ],
+  "remaining": [
+    "Current whole-source hosted/UID1001/macOS/Required beyond e859.",
+    "Whole affected npm/PyPI/Go/Cargo/Terraform/GitHub and final CPU/cu126/cu130/cu132 matrix.",
+    "Final signed15asset/19bundle release/update/activation; ordinary native defaults and unsupported recipes.",
+    "P5/P6 execution foundations remain NOT_STARTED."
+  ],
+  "raw_originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--namespace.py",
+      "sha256": "4efb7c6495346b4b63ad1dd562e98ac0be9872df432c4ed0dbe7a8e11afb48db",
+      "bytes": 2704
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--source.json",
+      "sha256": "bf8836b7a5720e55b29b2b7c06a275e09bcf34d2a8e07e29705ac927063e1736",
+      "bytes": 217927
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--namespace-result.json",
+      "sha256": "16ab1d890e76063749bfade9177b1922e6366f39138ace786d28200f694713c6",
+      "bytes": 369
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--actual.log",
+      "sha256": "bcd98807e9ca482a8e7af37eead17f0ca14ba4df34670148447df96a5cbb2b31",
+      "bytes": 8391
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--result.json",
+      "sha256": "19b13cb91fc05c13d93b6d06b242afda0782bf733d032de73bb97bac2b51dba8",
+      "bytes": 915
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--binaries.json",
+      "sha256": "8f29272ae27d2e4cee2fea89b048231aee08533514b15d88eef9613147c4a64d",
+      "bytes": 561
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--actual.sh",
+      "sha256": "a2a058d2f1e67c83160a1c0a7d7ca56ff89cdb4a9816f40096860ccfc05d8bf3",
+      "bytes": 681
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1--runner--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--namespace.py",
+      "sha256": "49e48e798df79e424a9fb947f07ed69fccdd0f34cd8469f03dc593df4c5ca3d3",
+      "bytes": 3153
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--source.json",
+      "sha256": "bf8836b7a5720e55b29b2b7c06a275e09bcf34d2a8e07e29705ac927063e1736",
+      "bytes": 217927
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--namespace-result.json",
+      "sha256": "6b6dff26139ac12feba9d3f9142e85eb918338057830a77fbd757c96b9d75eff",
+      "bytes": 369
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--actual.log",
+      "sha256": "ffd321b9bd2fe57e68ff9aff4f404bb2255f9215565d7768caed36b282d0522d",
+      "bytes": 10625
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--result.json",
+      "sha256": "393eea4290bf90db82efdd64627beefbabea4c68fc0acf9c844ed2cb026b58fb",
+      "bytes": 1005
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--binaries.json",
+      "sha256": "6f141fda30bba84435cbb7b74597bb5fd1495c4088f0da3e1e7062c6591fd17d",
+      "bytes": 561
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--actual.sh",
+      "sha256": "4da767584f8a0da0aebb10037ab4fbef9128b74bf4e6a02250e7ee32963f60b8",
+      "bytes": 355
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3--runner--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--namespace.py",
+      "sha256": "e6e20bd2302259fa70f1c01b329681e0859aef35671e1bff92c2666209f396a2",
+      "bytes": 3154
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--source.json",
+      "sha256": "bf8836b7a5720e55b29b2b7c06a275e09bcf34d2a8e07e29705ac927063e1736",
+      "bytes": 217927
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--namespace-result.json",
+      "sha256": "85ef89fd32f2c94d041b323b2e9b2a4c4837e46c921b3f0dcbaa0f98b818bcb8",
+      "bytes": 369
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--actual.log",
+      "sha256": "114572783595279067e1e67aa385dd9033f3a6bde67253a6c51ac99928119160",
+      "bytes": 15141
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--result.json",
+      "sha256": "521070d38129f58dab3101e4fb20a5d310e2ea6ce5f995047121738954eacade",
+      "bytes": 1154
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--binaries.json",
+      "sha256": "6f141fda30bba84435cbb7b74597bb5fd1495c4088f0da3e1e7062c6591fd17d",
+      "bytes": 561
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--actual.sh",
+      "sha256": "958aec3feea8c7f1a164d5f06567ecc5ffad104012bb23e9f7ed4815292644bb",
+      "bytes": 357
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3--runner--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-prepare.py",
+      "sha256": "328f06d70f6704dc577ae9c583ebbc5b159a820d6ba846d6055b5eadfdf24b9e",
+      "bytes": 3425
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v2.py",
+      "sha256": "d7ebd77f68cdb5b45e1fd15ec90781c97d96c2505c1134793f085fa63892b116",
+      "bytes": 10993
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-operator-binding.json",
+      "sha256": "af992008dd9a56247d48c415389d3be8073a1f146e6096c1ae446fd55ad80e69",
+      "bytes": 355
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-uv-actual-v1.py",
+      "sha256": "a1b6290e4900e9e3117b937f3095bcdb3e96148216359ab4503abf4c1ba37f5f",
+      "bytes": 10622
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v3.py",
+      "sha256": "1bdfc1d158f3cafa2271bb2de017cbf2b37bea89acba79dbcd377977fb0e4652",
+      "bytes": 11100
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v1.py",
+      "sha256": "567daf42ecb7c23bbdf80a8247b8994d14f2c72dcd654bdadfe01562b54be37a",
+      "bytes": 10881
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-ci-sandbox-build-identity.json",
+      "sha256": "b5e2e0f8a3952017b9ee190064627e892b8dd6929f49a9b67ccce9612a70ed8a",
+      "bytes": 548
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-ci-sandbox-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-operator-binding.json",
+      "sha256": "f90c56c746a16c310abbb6756cd8be301a161fe4b81357659e3a89c363bc9f0f",
+      "bytes": 590
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-bun-actual-v3.py",
+      "sha256": "47a9e1e023c18b18be2b343141e3f665c568f2db4433a74661daa01aa531a451",
+      "bytes": 10961
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v1.py",
+      "sha256": "c8722e2973c9570db55630097aae0e086533164c945ac06eeed9f0b7f15c533f",
+      "bytes": 10988
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-actual-v2.py",
+      "sha256": "a0f329fda79fb0b0976d12cb1c0902d3567031d388ad239770c1d0c3b576c533",
+      "bytes": 11100
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-client-prepare.py",
+      "sha256": "8515553eede0acc890dc830e8fbcb3a9bf74a48a6f510f3b4a4635168fd9a28a",
+      "bytes": 3251
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-pnpm-operator-binding.json",
+      "sha256": "9a561822025b87848522bef5a09a6b5f989e003067eb2875a3072edf7cf183d6",
+      "bytes": 708
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e3-overlay-mode-confirmation.json",
+      "sha256": "8b2b131f11bbcf7c90e15613f1aa9f56f9e72bb552959a7fdc1df90c29b924a9",
+      "bytes": 454
+    }
+  ]
+}

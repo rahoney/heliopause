@@ -3080,3 +3080,81 @@ owned native fixture workspace 부재를 확인한 뒤 명시3source만 Root에 
 같은 M13-004/C-e3에서 공통 readiness의 기존 UV/Python/PNPM/Bun 소비자와 grouped hosted
 후보 검토를 계속한다. 새 milestone/next work item은 아니며 PD/README 상태를 바꾸지 않는다.
 현재 candidate는 local이며 새로운 push/merge/tag/release/CI/timer는 없다.
+
+## C-e3 — 공통 readiness의 기존 소비자 확인 baseline
+
+기준a20ce1f/tree7cf29549/2882files이며 Root tracked clean과 같은1281runtime source의 양쪽
+실제 SHA를 확인했다. INDEX와 sandbox L18/L12·artifact L02·evidence L16을 다시 대조했다.
+Code/SDK/runtime pin/CPP·예산을 변경하지 않고 기존 actual consumer만 실행한다.
+
+| 기존 owner/consumer | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | C-e3 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Original ZIP required/mixed/current graph·native3 | YES | YES | YES(a20ce1f named local) | YES(그 scopes) | 전체 다른 profile로 전용 금지 |
+| Existing UV public pip/native update·tool install/upgrade four | YES | YES | YES(prior source) | NO(current common change) | 같은 source/CPP의 기존4parent actual |
+| UV approved tool/native/CLI existing five | YES | YES | YES(prior named local/hosted) | NO(current common change) | 변화 영향에 맞춘 실제 current 소비자 대조 |
+| PNPM/Bun native/project/artifact profiles | YES | YES | YES(prior named scopes) | NO(current common change) | 기존 pinned 공급/recipe와 현재 ordinary actual |
+| npm/PyPI/Go/Cargo/Terraform/GitHub·CPU/CUDA final | YES | YES | YES(prior source scopes) | NO(current whole) | current common 영향 matrix의 local 대표·기존 full hosted와 final4profiles |
+
+첫 current UV4는 이전 affected operator의 protected /usr/libexec private overlay·원래 gVisor
+inode 유지·ordinary UID1000·parent helper install/rebind/restore를 그대로 재사용한다. 이미 완료한
+mixed와 다른 bootstrap5를 그 operator에서 제거하고4named parent만 expected count로 둔다.
+Whole1281 source/새 binary·CPP/기존42inputs/ZIP·Host/Docker 불변과 helperwait0/부재·생산 client
+복원을 확인한다. Live public 선택을 frozen replay로 부르지 않는다. 새 workflow/job/RPC·artifact
+read grant·임시 runtime provisioning은 없다. PNPM/Bun의 기존 CI 공급을 확인할 경우 private
+namespace의 disposable prefix와 owning parent cleanup을 사용하고 Host 설치는 하지 않는다.
+
+Current UV4 actual-v1 152.771s는 네 named parent/noSKIP가 PASS다. Public native pip/update와
+tool install/upgrade의 기존 public metadata·pypi-wheel 관찰을 검증했고 console 없는 idna는
+기존 의도대로 native exit2/selection 없음으로 거부했다. 새 regression 오류가 아니다. Same1281
+source/CPP/42input/ZIP·Host/Docker 불변, helper3wait0/confirmed stopped·부재와 원래 client 복원이다.
+Live public 선택을 frozen replay/새 hosted qualification으로 확대하지 않는다.
+
+Bun/PNPM은 기존 unchanged sandbox CI recipe를 각각 실행한다. Root의 private namespace에서
+/usr/lib overlay의 Root-owned upper/work만 task 안에 만들고 기존 recipe의 명시 prefix 생성/
+정리를 사용한다. Host prefix는 앞뒤 부재이며 lower/원래 gVisor inode·protected client와 전체
+Host/Docker snapshot/Source1281를 유지한다. Actual 중 product source는 바꾸지 않는다.
+Bun4parent와 PNPM7parent(첫4개 isolated probe/후속 protected-client3)를 독립적으로 세고
+SKIP/empty/child-only를 성공으로 처리하지 않는다. 이 Root mount fixture는 런타임 코드가 아니며
+새 workflow/job이나 Host 설치를 추가하지 않는다. 새 script file/base/신원은 실행 전에 대조했다.
+
+Bun actual-v1은0.495s/exit127로 일반 사용자 /usr/bin/env loader가 libc Permission denied여서
+helper/product에 미도달했다. Upper Root0:0/mode0700을 /usr/lib의 overlay root가 상속한 것이
+책임 fixture다. Host/source1281/input42/ZIP/Docker는 불변이고 helper0·Host prefix 부재다.
+새 product regression이나 cleanup 성공으로 표시하지 않는다. Original producer/namespace/
+log/result를 Root raw로 보존했다. V2는 task upper만 Root0:0/0755, mount-work는0700으로 만들고
+mount 뒤 /usr/lib의 owner/mode를 확인한다. 기존 CI fixture의 Root0755와 같으며 Host lower/
+Go/CPP/recipe·권한과 입력은 바꾸지 않는다. PNPM의 미실행 v1도 보존한 채 새v2로 준비했다.
+
+Bun v2 97.843s는 native selection9case와 boundary5case의 두 parent PASS 뒤 project quarantine
+fixture를 열 때 github.com/.../testdata 경로 부재로 FAIL다. Artifact boundary parent는 NOT_RUN이다.
+기존 bunPublicInspectionInputsWithRoot/PNPM fixture helper는 runtime.Caller의 source path를 쓰는데
+E2의 -trimpath binary가 module path를 남겼다. Workflow의 기존 Sandbox test build는
+`go test -c -tags=realcorpus`이며 -trimpath가 없다. Product/fixture reader·CI source를 바꾸거나
+가짜 경로를 만들지 않고 canonical CI build flags로 Sandbox만 새로 compile한다.
+이전 두 PASS는 그 binary/source scope이며 새 full recipe qualification과 합치지 않는다.
+Host/source1281/42input/ZIP/Docker 불변/helper2wait0/confirmed stopped·부재/production client 복원과
+Host prefix 부재를 확인했다. 새 binary identity를 연결해 Bun4/PNPM7 exact recipe를 다시 판정한다.
+
+Canonical CI test binary d0a123c9로 Bun exact recipe actual-v3 165.549s/4parent/noSKIP가 PASS다.
+Native9case/boundary5case와 transitive·peer project quarantine의 exact instance/facts·현재 Evidence/
+entry/set Policy ALLOW, native Bun Artifact 정상 COMPLETED/exit37 INCOMPLETE를 확인했다.
+Artifact boundary 단독은 Policy/Host install NOT_RUN이며 전체 signed/release 검증이 아니다.
+Source1281/CPP/42input/ZIP·Host/Docker 불변/helper3wait0·confirmed stopped·부재, production client
+복원/Host prefix 부재다. Fixture mode/trimpath의 앞 실패를 이 성공으로 덮지 않는다.
+같은 CI binary/Root0755 fixture의 PNPM existing7parent를 이어서 검증한다. Source는 그대로다.
+
+### C-e3 common readiness named local 완료
+
+[한정 receipt](./p4o4c3c3b3c-e3-common-readiness-local-20261028.json)의 current UV4 152.771s,
+Bun exact4 165.549s, PNPM exact7 201.445s가 noSKIP/각 parent1회로 PASS다. PNPM의 첫4개는
+isolated probe이고 후속3개는 protected production client다. Transitive/peer exact facts·현재
+Evidence/Policy, controlled success/exit37/long-name와8public selections를 확인했다. 각 scope를
+다른 binary/hosted/Host 설치·signed release로 전용하지 않는다. Fixture0700/trimpath의 최초
+두 실패와 그 partial2PASS를 보존하고 current canonical build의 full recipe와 합치지 않는다.
+
+Source1281/CPP/42input/ZIP·Host/Docker 불변, helper 각각3wait0/confirmed stopped·부재,
+production client 복원과 Host prefix 부재를 확인했다. Go/CPP·runtime pin·CI/workflow·예산 변경은
+없다. Common readiness local matrix는 이15named parent와 앞 E2의6named parent로 한정
+QUALIFIED이며 final4profiles·Go/Cargo/Terraform/GitHub whole hosted/signed는 계속 OPEN이다.
+다음 C-e4는 이 누적 whole-source grouped candidate의 검토·원격 qualification 준비다.
+마일스톤/next work item은 여전히 M13-004이며 새 public push/CI/timer는 시작하지 않았다.
