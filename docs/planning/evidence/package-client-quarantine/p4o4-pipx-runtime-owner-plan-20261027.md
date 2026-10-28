@@ -3276,3 +3276,24 @@ Linux 진행을 확인했다. Consumed receipt를 별도 보존했고 다음 due
 세 번째 timer는14:53:31.000621UTC 발화 뒤14:53:43UTC 실제 조회에서 same6dd/8SUCCESS·
 Linux 진행을 확인했다. 다음 due15:13:43UTC/session51968을 등록했고 현재 source를 새 push로
 취소하지 않는다. Whole Linux/Required와 P5 새 source는 아직 해당 qualification 밖이다.
+
+### CI423 네 번째20min 소비와 named hosted qualification
+
+Timer4는15:13:43.000397UTC에 발화했고15:14:14UTC fresh run/jobs에서 source6dd3136의
+Required 포함10SUCCESS를 확인했다. [Qualification](./ci423-pipx-current-hosted-qualification-20261029.json)은
+all10checkoutb571e02/tree feab8ef9/2891 동일과 decoded10logs1,221,192B의 매 chunk readback/
+SHA를 연결한다. 전체 final update까지79m02이며 Linux log span과 구분한다. 네 번의 실제20min
+소비를 보존했고 timer4 script는 종료됐다. 추가 timer/CI watcher나 새 push는 없다.
+
+Linux92 top-level/noSKIP/noFAIL, CPP 두 job 각128, PyTorch canonical resolver25.39s/full CPU
+251.33s와 current common/UV·Bun·PNPM·pipx named 부모가 PASS다. Acquired ZIP required32.83s,
+public original native60.60s·installed fixture10.62s, full13subject graph56.26s와 install/managed/native
+CLI73.39/80.81/144.05s를 확인했다. Native fixture는 Host/guest UID1001과 private roots0700이며
+helper14wait0/final original0·CONFIRMED_STOPPED/client restore NOT_REQUIRED다.
+
+이번 C-e4 ordinary checkpoint는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(named
+hosted scope)다. Graph의 native6fixture/promoter spy와 unsigned-set authenticity 거부, installed
+synthetic lock·public metadata와 실제 CLI를 구분한다. Signed15asset/19bundle native full update와
+final CPU/세CUDA·지원표/전체 P4는 아직NO다. CI422의 원래 report 버전/bytes 미수집 한계도
+유지하며 current green을 과거 직접 인과 해결로 바꾸지 않는다. 후속 local B1/B2 source는 이
+CI에 없고 같은 M13-004의 P5 current whole execution inspection/application을 계속한다.
