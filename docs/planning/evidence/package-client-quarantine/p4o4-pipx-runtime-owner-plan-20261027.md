@@ -2230,3 +2230,104 @@ pylock/census와 original-input/wheels/delta를 검증했다. Host5/Docker·고�
 선택 범위만 뜻한다. Current complete inspection/Evidence·Policy/cache·guarded Host transaction/
 CLI와 hosted/final/signed-native 및 독립 legacy ZIP CPU 경계는 OPEN이다. 같은 M13-004에서
 C-c의 기존 UV tool 준비/전체 검사·승인 owner 재사용을 먼저 감사하고 실제 missing만 연결한다.
+
+## C-c1 — current fresh install 준비/공통 publication의 source 전 감사
+
+기준e1c11a4/tree83e385b7/2857files다. Read는 Queue/plan20 §4·5/client09 §1·2·4,
+Contract003 invariants·maintenance owner 및 artifact L01/L02/L15·sandbox L03/L08/L18·
+evidence L16·ci L06이다. 기존 전체 source를 대체하지 않고 아래 missing만 연결한다.
+
+| 책임 / 실제 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| PipxResolver fresh/original selection | YES | YES(public factory) | YES(local actual) | YES(metadata scope) | current install session 소비 |
+| PreparedInstallService / Python installer·whole inspection/Evidence/Policy/cache | YES | YES(UV/Python) | YES(existing scopes) | YES(existing scopes) | pipx current selection을 동일 service에 연결·actual |
+| toolFreshTarget / snapshotToolInterpreter / 양쪽 lock·freezeCommands | YES | YES(UV) | YES(existing scopes) | YES(UV) | closed pipx fresh receipt/path/client 구분 |
+| promoteToolSelection / tool workspace / commitTool / whole venv rollback | YES | YES(UV) | YES(existing scopes) | YES(UV) | 같은 엔진의 pipx receipt codec/control/path 소비 |
+| UVToolInstallPreparation/session | YES | YES(UV) | YES(existing scopes) | YES(UV) | 같은 session의 별도 Pipx native selector/controls·layout |
+| pipx current fresh preparation / current actual | NO | NO | NO | NO | C-c1 새 adapter·거부/rollback/current 검사 actual |
+| pipx managed/native original guard/upgrade·CLI | NO | NO | NO | NO | 후속; fresh로 우회하지 않음 |
+
+공통 target/session/publication을 복제하거나 재작성하지 않는다. Private closed client 값의
+기본값은 UV이며 기존 exported UV constructors/UV receipt·control·runtime의 bytes를 유지한다.
+Pipx fresh 준비는 별도 typed selector를 받아 같은 install session과 whole Python pipeline을
+소비한다. 기존 tool target guard는 client에 맞는 native receipt/control/parser와 pinned final
+interpreter projection만 선택하며 임의 path/parser callback은 받지 않는다. 양 client의 기존
+receipt가 있으면 fresh 진입을 거부하고 pipx original/native adoption은 이 component에서 열지 않는다.
+Pipx metadata의 opaque pip_args는 실행하지 않고 current whole wheel materializer/승인 cache/
+Policy·원자 wheel/receipt/exposed links transaction을 그대로 사용한다. Runtime/observer/CPU,
+required coverage·Core domain/ports·source identity는 변경하지 않는다.
+
+검증은 canonical Quick·영향 promotion/bootstrap/application full Race·tag compile/docs/security,
+fresh 둘 다의 same guards/foreign receipt·codec/control 거부/동시 진입/native failure 보존과
+receipt·links·ownership의 rollback negative다. Actual은 기존 whole inspection fixture와
+새 installed pipx factory를 결합해 current Evidence/Policy/cache·manifest와 installed receipt/
+links의 동일성 및 Host 미실행을 검증한다. Actual 전 C-c1 QUALIFIED/ACCEPTANCE_CLOSED는 NO다.
+
+C-c1 v1 format0.663s·vet/Staticcheck 성공 뒤 Quick169.578s의 새 pipx publication 정상/
+후반 fault negatives가 `file exists`로 실패했다. UV·기존 suite와 native failure/target 거부는
+통과했다. Pipx ToolReceipt.Commands.Path는 venv 내부 script이고 UV는 외부 노출 경로다.
+같은 g.commands로 두 경로를 합쳐 외부 link를 이미 반영한 internal script 위에 만들려 한
+새 adapter가 원인이다. Raw receipt/layout parser를 완화하지 않고 기존 잠근 bin root에서
+pipx 외부 link 목적지만 별도로 계산해 freeze/commit 양쪽에 같은 정규화를 적용한다.
+Native app_paths/receipt는 unchanged다. 새 정상 test의 ownership 기대도 transaction의
+원본 current snapshot 대신 기존 readState()와 동일한 최종 disk readback을 사용한다.
+첫 source6/check/raw를 보존하며 후속 focused와 actual 전에는 해결 검증을 주장하지 않는다.
+
+C-c1 focused9.182s(실제 test2.091s)와 tag vet4.516s가 PASS다. 이후 v3 Quick34.617s는
+새 production bootstrap factory가 아직 CLI에 연결되지 않아 Staticcheck U1000으로 거부됐다.
+이를 억제/공개 API로 위장하지 않고 C-c1의 실제 소비자인 tagged qualification composition으로
+한정한다. Exported PipxToolInstallPreparation과 공통 guarded engine은 production 구현이며
+production CLI/factory wiring은 다음 acceptance다. Source/첫 Quick를 보존하며 v4에서 canonical
+전체와 같은 actual-only composition을 검증한다. 정책/검사 coverage나 기존 UV wiring은 그대로다.
+
+### C-c1 actual-v2 실패 및 pinned requirement shape 감사
+
+같은 Go21/CPP6의 actual-v2 116.399s는 기존 UV plain/space55.76s와 새 pipx plain34.79s의
+current 검사/Policy ALLOW/control6/receipt·links·재진입 거부를 확인했다. Pipx 동등 제약식
+`cowsay>=6.1,<=6.1`에서는 native UV child process-exec-unexpected 뒤 executable UNKNOWN의
+VM_OVERCOMMIT_MEMORY/557056으로 observation STREAM_FAULT다. 원본 child argv는
+미보존이므로 native source canonicalization이라는 인과를 실제 argv 관측으로 위장하지 않는다.
+Source/입력·Host 불변/helperwait0/final stopped·부재이며 C-c1 전체는 아직 NO다.
+
+고정 ZIP을 실행/추출하지 않고 다섯 member의 full hash와 소스 책임을 대조했다. Pinned pipx
+Venv→parse_specifier→str(Requirement)→packaging SpecifierSet._canonical_specs는 clause를
+문자열 정렬/중복 제거하고 UVBackend.install은 이 normalized requirement를 fixed flags 뒤에
+전달한다. 위 요청의 결정적 native 표기는 `cowsay<=6.1,>=6.1`이며 기존
+IsExactPipxNativeUVChild의 마지막 raw equality가 이를 거부한다. 이는 direct source 및
+normalized reproduction으로 검증할 gap이고 이번 actual child의 값은 아직 추론이다.
+
+기존 closed native child classifier는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES
+(기존 literal request 범위)다. MISSING은 같은 root project/동일 literal clause conjunction의
+순서·반복만 정규화한 pinned 표기다. 기존 SameConstraints 의미처럼 clause의 내용/비교자/
+version·project·flags·creator/role/start/network/expected group는 바꾸지 않는다. 새로운 일반
+PEP parser/경로·network grant를 만들지 않고 bounded4096B/empty clause 거부의 exact token
+set 비교만 마지막 인자에 사용한다. Root에는 canonical Go request가 계속 binding된다.
+Normalized production dispatch latches는 순서/반복 positive와 project·한 clause·추가/누락/
+empty clause·flags/creator mutation negative를 확인한다. CPP canonical128 뒤 같은 Go21의
+UV와 pipx plain/space actual를 재검증한다. Whole metadata/Policy/CLI 완료로 선취하지 않는다.
+
+### C-c1 fresh current whole inspection/승인 반영 한정 완료
+
+[로컬 receipt](./p4o4c3c3b3c-c1-fresh-approved-backend-local-20261028.json)의 최종 v4는
+Quick147.053s/영향 promotion·bootstrap·application 전체 Race225.525s/tag vet1.924s/
+build3.519s/docs0.244s/security11.220s PASS다. 기존 workspace/materializer/promotion/
+transaction 네 owner 전체와 Core/domain/ports/Policy는 unchanged다. Closed client codec이
+pipx JSON receipt·control만 구분하고 UV 기본값·기존 whole engine을 재사용한다. Pipx
+internal app_paths와 외부 목적지는 분리하며 raw receipt와 opaque pip_args를 실행하지 않는다.
+
+첫 actual-v1 1.871s는 operator WORK placeholder가 GOWORK까지 치환해 helper 이후 제품
+미도달이었다. Host·고정 입력·source 동일/helperwait0·정리와 원본을 보존했다. Path-only
+WORK/ 치환·GOWORK 토큰/bash syntax 사전검증 뒤 같은 Go 바이너리06d78302/Go21·새 CPPae301892의
+actual-v3 128.572s가 두 named parent/noSKIP PASS다. 기존 UV와 새 pipx 각각
+plain cowsay==6.1 및 spaces/동등 제약 설치를 확인했다. 네 건 모두 current required 검사/
+Evidence readback/Policy ALLOW·control6/inspection1·동일 Manifest/SBOM·receipt/links/
+interpreter-bound script/ownership·user data 보존과 기존 fresh 재진입 무변경 거부다.
+새 CPP canonical257.158s/128PASS·0FAIL와 whole observer 역변환 동일성을 확인했다.
+동일 project/literal clause의 순서·반복만 허용하며 다른 clause/옵션·creator는 거부한다.
+Actual-v2의 child raw argv 미보존 한계와 partial 성공은 유지하고 actual-v3의 행동 검증과 구분한다.
+Host5/Docker·42input/ZIP·Go21/새 CPP6 동일/helperwait0/final stopped·부재다. Source-binding과
+원본을 보존한다. 이는 C-c1 fresh backend IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES
+범위이며 production CLI나 original guard는 아니다. Composition은 actual-only fixture이고
+미사용 미래 API/Staticcheck 억제를 추가하지 않았다. 같은 M13-004/C-c2에서 기존 managed
+original guard/ownership·current upgrade/승인 무결성 거부를 pipx에 연결한다. Native adoption,
+production CLI/hosted/final/signed 및 독립 legacy ZIP CPU 경계는 남는다.

@@ -991,6 +991,29 @@ const ProcessState::GroupState* PipxNativeCreator(const gvisor::common::ContextD
       state.expected_groups.find(parent.clone_creator_group_id) == state.expected_groups.end() ? &parent : nullptr;
 }
 
+// The pinned pipx/packaging producer sorts and deduplicates conjunctions.
+// Compare only the same literal atoms bound to the live controller root. This
+// never interprets a new version expression or admits a different project.
+bool IsSamePipxNativeRequirement(const std::string& expected, const std::string& actual,
+                                 const std::string& project) {
+  if (expected == actual) return true;
+  if (!IsPipxNativeProject(project) || expected.size() > 4096 || actual.size() > 4096) return false;
+  auto atoms = [&](const std::string& text, std::set<std::string>* result) {
+    if (text.size() <= project.size() || text.compare(0,project.size(),project) != 0) return false;
+    size_t start = project.size();
+    for (;;) {
+      const size_t comma = text.find(',',start);
+      const size_t end = comma == std::string::npos ? text.size() : comma;
+      if (start == end) return false;
+      result->insert(text.substr(start,end-start));
+      if (comma == std::string::npos) return true;
+      start = comma+1;
+    }
+  };
+  std::set<std::string> left,right;
+  return atoms(expected,&left) && atoms(actual,&right) && left == right;
+}
+
 bool IsExactPipxNativeUVChild(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,
                             const ProcessState::GroupState& parent) {
   if (!IsPipxNativeTopology(topology) || !IsUVToolImage(topology,message.binary_path()) ||
@@ -1009,7 +1032,7 @@ bool IsExactPipxNativeUVChild(const gvisor::sentry::ExecveInfo& message, const T
   if (upgrade && message.argv(at++) != "--upgrade") return false;
   for (const char* value : {"--no-build", "--no-sources", "--no-config", "--no-cache", "--no-python-downloads",
       "--no-managed-python", "--link-mode=copy", "--index-url=https://pypi.org/simple/"}) if (message.argv(at++) != value) return false;
-  return message.argv(at) == parent.pipx_native_requirement;
+  return IsSamePipxNativeRequirement(parent.pipx_native_requirement,message.argv(at),parent.pipx_native_project);
 }
 
 bool IsExactPipxNativePythonQuery(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,

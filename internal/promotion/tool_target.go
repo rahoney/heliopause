@@ -21,6 +21,7 @@ const uvToolHostReceipt = "uv-receipt.toml"
 // Tool targets retain both roots before native selection. Original targets use
 // a separate managed-state proof; neither path executes the Host interpreter.
 type toolFreshTarget struct {
+	client      toolClient
 	work        *toolPythonWorkspace
 	original    *toolOriginalState
 	tx          *pypiVenvTransaction
@@ -133,6 +134,13 @@ func beginToolTarget(ctx context.Context, install domain.InstallContext, require
 }
 
 func beginToolTargetWithNative(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool, native *pypiNativeEnrollment) (result *toolFreshTarget, resultErr error) {
+	return beginToolTargetForClient(ctx, install, requirement, binRoot, trustedRoots, original, native, toolClientUV)
+}
+
+func beginToolTargetForClient(ctx context.Context, install domain.InstallContext, requirement artifactpypi.UpgradeRequirement, binRoot string, trustedRoots []string, original bool, native *pypiNativeEnrollment, client toolClient) (result *toolFreshTarget, resultErr error) {
+	if !client.valid() || client == toolClientPipx && (original || native != nil) {
+		return nil, errors.New("tool client or original mode is unavailable")
+	}
 	if ctx == nil || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || !install.Valid() || install.Mode() != domain.InstallPythonVenv || requirement.Project() == "" || requirement.Reference().Source() != artifactpypi.PublicPyPIProfile().Source() || len(trustedRoots) == 0 {
 		return nil, errors.New("tool target requires explicit Linux amd64 venv, requirement and trusted storage")
 	}
@@ -174,7 +182,7 @@ func beginToolTargetWithNative(ctx context.Context, install domain.InstallContex
 	if err != nil {
 		return nil, err
 	}
-	result = &toolFreshTarget{tx: tx, binRoot: binRoot, requirement: requirement}
+	result = &toolFreshTarget{client: client, tx: tx, binRoot: binRoot, requirement: requirement}
 	accepted := false
 	guarded := result
 	defer func() {
@@ -191,7 +199,7 @@ func beginToolTargetWithNative(ctx context.Context, install domain.InstallContex
 	if err := tx.freezeParents(binRoot); err != nil {
 		return nil, err
 	}
-	receipt := filepath.Join(root, uvToolHostReceipt)
+	receipt := filepath.Join(root, client.receiptName())
 	if original {
 		if native != nil && result.tx.metadata == nil {
 			result.original, err = captureUVToolNativeOriginal(ctx, result, receipt, install, native)
@@ -202,10 +210,13 @@ func beginToolTargetWithNative(ctx context.Context, install domain.InstallContex
 			return nil, err
 		}
 	} else {
-		if _, err := os.Lstat(receipt); !errors.Is(err, os.ErrNotExist) {
-			return nil, errors.New("fresh tool target already has native receipt or uncertain data")
+		for _, name := range []string{uvToolHostReceipt, pipxToolHostReceipt} {
+			path := filepath.Join(root, name)
+			if _, err := os.Lstat(path); !errors.Is(err, os.ErrNotExist) {
+				return nil, errors.New("fresh tool target already has native receipt or uncertain data")
+			}
+			tx.before[path] = nil
 		}
-		tx.before[receipt] = nil
 	}
 	result.interpreter, err = snapshotToolInterpreter(filepath.Join(root, "bin", "python"))
 	if err != nil {
@@ -268,14 +279,14 @@ func (g *toolFreshTarget) freezeCommands(ctx context.Context, receipt artifactpy
 	if g.original != nil {
 		return g.freezeOriginalCommands(ctx, receipt)
 	}
-	if len(g.commands) != 0 || receipt.Client() != "uv" || !receipt.Requirement().SameConstraints(g.requirement) {
+	if len(g.commands) != 0 || receipt.Client() != g.client.name() || !receipt.Requirement().SameConstraints(g.requirement) {
 		return errors.New("tool command selection is repeated or differs from request")
 	}
 	root := g.tx.plan.root
 	if err := receipt.ValidateLayout(root, g.binRoot, filepath.Join(root, "bin", "python")); err != nil {
 		return err
 	}
-	commands := receipt.Commands()
+	commands := g.client.exposedCommands(receipt, g.binRoot)
 	wanted := map[string]bool{}
 	for _, command := range commands {
 		if command.Name == toolBinTransactionLock {

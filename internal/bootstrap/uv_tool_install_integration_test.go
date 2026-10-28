@@ -40,7 +40,25 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 	if os.Getenv("HELOX_UV_TOOL_INSTALL_INTEGRATION") != "1" || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user UV tool installation qualification")
 	}
-	ctx, bindings, root, interpreter := uvToolApprovedIntegrationFixture(t)
+	runPublicToolApprovedInstallationIntegration(t, false)
+}
+
+func TestPipxPublicToolApprovedInstallationIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PIPX_TOOL_INSTALL_INTEGRATION") != "1" || os.Geteuid() == 0 {
+		t.Fatal("declare ordinary-user pipx tool installation qualification")
+	}
+	runPublicToolApprovedInstallationIntegration(t, true)
+}
+
+func runPublicToolApprovedInstallationIntegration(t *testing.T, pipx bool) {
+	t.Helper()
+	ctx, bindings, root, interpreter, nativePipx := toolApprovedIntegrationFixture(t, pipx)
+	receiptName, receiptControl := "uv-receipt.toml", "uv-tool-host-receipt.toml"
+	parseReceipt := artifactpypi.ParseUVToolReceipt
+	if pipx {
+		receiptName, receiptControl = "pipx_metadata.json", "pipx-tool-host-receipt.json"
+		parseReceipt = artifactpypi.ParsePipxToolReceipt
+	}
 	store, stagingRoot := bindings.evidence, bindings.stagingRoot
 	seen := map[string]bool{}
 	for _, step := range []struct{ name, requirement string }{{"plain", "cowsay==6.1"}, {"env with spaces", "cowsay>=6.1,<=6.1"}} {
@@ -52,7 +70,13 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 			if err := os.WriteFile(user, []byte("keep user data"), 0600); err != nil {
 				t.Fatal(err)
 			}
-			service, err := newUVToolInstallService(bindings, bin)
+			var service *application.PreparedInstallService
+			var err error
+			if pipx {
+				service, err = newPipxToolInstallService(bindings, nativePipx, bin)
+			} else {
+				service, err = newUVToolInstallService(bindings, bin)
+			}
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -115,11 +139,11 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 			if err := json.Unmarshal(manifest, &doc); err != nil || len(doc.Controls) != 6 {
 				t.Fatal("native and Host tool controls missing")
 			}
-			published, err := os.ReadFile(filepath.Join(venv, "uv-receipt.toml"))
+			published, err := os.ReadFile(filepath.Join(venv, receiptName))
 			if err != nil {
 				t.Fatal(err)
 			}
-			bound, err := artifactpypi.ParseUVToolReceipt(published)
+			bound, err := parseReceipt(published)
 			if err != nil || !bound.Requirement().SameConstraints(requirement) {
 				t.Fatal("published native requirement differs", err)
 			}
@@ -128,7 +152,7 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 			}
 			matched := false
 			for _, control := range doc.Controls {
-				if control.Name == "uv-tool-host-receipt.toml" {
+				if control.Name == receiptControl {
 					matched = bytes.Equal(control.Content, published)
 				}
 			}
@@ -170,11 +194,18 @@ func TestUVPublicToolApprovedInstallationIntegration(t *testing.T) {
 			if !reflect.DeepEqual(before, uvToolTargetState(t, venv, bin)) {
 				t.Fatal("fresh refusal changed existing tool")
 			}
+			t.Logf("current_tool_approved pipx=%t request=%q controls=%d inspections=%d manifest=%s decision=ALLOW published_receipt=%s repeat_refused_unchanged=true", pipx, step.requirement, len(doc.Controls), len(bundle.Set().Inspected().Inspections()), bundle.ManifestID().String(), receiptName)
 		})
 	}
 }
 
 func uvToolApprovedIntegrationFixture(t *testing.T) (context.Context, pythonClientBindings, string, []byte) {
+	t.Helper()
+	ctx, bindings, root, interpreter, _ := toolApprovedIntegrationFixture(t, false)
+	return ctx, bindings, root, interpreter
+}
+
+func toolApprovedIntegrationFixture(t *testing.T, pipx bool) (context.Context, pythonClientBindings, string, []byte, *sandbox.PipxResolver) {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -219,6 +250,18 @@ func uvToolApprovedIntegrationFixture(t *testing.T) (context.Context, pythonClie
 			t.Error(err)
 		}
 	})
+	var nativePipx *sandbox.PipxResolver
+	if pipx {
+		nativePipx, err = sandbox.NewLinuxPipxResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy, newObservationResourceAdapter())
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			if err := nativePipx.Close(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
 	intakeRoot, evidenceRoot, stagingRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging")
 	intake, err := artifactpypi.NewPublicIntake(intakeRoot)
 	if err != nil {
@@ -263,7 +306,7 @@ func uvToolApprovedIntegrationFixture(t *testing.T) (context.Context, pythonClie
 	}
 	bindings := pythonClientBindings{installer: base, promoter: promoter, resolver: native, nativeLookup: native, intake: intake, intakeRoot: intakeRoot, evidenceRoot: evidenceRoot, stagingRoot: stagingRoot, inspector: inspector, evidence: store}
 	interpreter := uvToolTargetInterpreterFixture(t)
-	return ctx, bindings, root, interpreter
+	return ctx, bindings, root, interpreter, nativePipx
 }
 
 func uvToolTargetInterpreterFixture(t *testing.T) []byte {

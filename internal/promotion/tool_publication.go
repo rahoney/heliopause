@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 
-	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -49,10 +48,10 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	if err := g.verify(ctx); err != nil {
 		return err
 	}
-	if g.tx.tool != nil || g.tx.project != nil || len(g.commands) == 0 || !receipt.Present() || receipt.Name() != uvToolHostReceiptControl {
+	if g.tx.tool != nil || g.tx.project != nil || len(g.commands) == 0 || !receipt.Present() || receipt.Name() != g.client.receiptControl() {
 		return errors.New("tool publication requires one frozen controller receipt")
 	}
-	parsed, err := artifactpypi.ParseUVToolReceipt(receipt.Body())
+	parsed, err := g.client.parseReceipt(receipt.Body())
 	nativeRequirement := g.requirement
 	if g.original != nil {
 		nativeRequirement = g.original.input.Receipt().Requirement()
@@ -60,7 +59,7 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 			return errors.New("original tool receipt differs from frozen selection")
 		}
 	}
-	if err != nil || !reflect.DeepEqual(parsed.Commands(), g.commands) || !parsed.Requirement().SameConstraints(nativeRequirement) {
+	if err != nil || !reflect.DeepEqual(g.client.exposedCommands(parsed, g.binRoot), g.commands) || !parsed.Requirement().SameConstraints(nativeRequirement) {
 		return errors.New("tool publication receipt differs from frozen native selection")
 	}
 	if err := parsed.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin", "python")); err != nil {
@@ -112,7 +111,7 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	if p.receiptSnapshot.Digest != receipt.Digest().String() {
 		return errors.New("private tool receipt copy differs")
 	}
-	p.receipt = pypiDestination{Scheme: "tool-control", Relative: uvToolHostReceipt, Final: filepath.Join(g.tx.plan.root, uvToolHostReceipt), Source: file.Name(), Digest: receipt.Digest().String(), Size: int64(len(receipt.Body()))}
+	p.receipt = pypiDestination{Scheme: "tool-control", Relative: g.client.receiptName(), Final: filepath.Join(g.tx.plan.root, g.client.receiptName()), Source: file.Name(), Digest: receipt.Digest().String(), Size: int64(len(receipt.Body()))}
 	p.private, err = os.MkdirTemp(g.binRoot, ".haa-tool-links-")
 	if err != nil {
 		return err

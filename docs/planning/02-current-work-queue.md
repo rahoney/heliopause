@@ -15,15 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-b3b original-aware native upgrade/no-op named local actual91.332s PASS; CI421/sourcee859487 Required10SUCCESS is prior hosted scope
-Next action: M13-004/P4-O4-C3c3b3c C-c current complete inspection/Evidence/Policy/cache baseline and wiring; guarded Host transaction/CLI/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
-Current substep: M13-004/P4-O4-C3c3b3c C-c IN_PROGRESS; C-a/b1/b2/b3a/b3b named local closed; current inspection/Policy/transaction/CLI/hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-c1 fresh approved backend named local UV/pipx actual128.572s PASS; C-b3b original metadata upgrade/no-op PASS; CI421 prior hosted scope
+Next action: M13-004/P4-O4-C3c3b3c C-c2 held managed original/current upgrade and approval-integrity negatives; production CLI/native adoption/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
+Current substep: M13-004/P4-O4-C3c3b3c C-c2 IN_PROGRESS; fresh current backend named local; managed/native original/CLI/hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-c1 fresh approved pipx backend 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-c1-fresh-approved-backend-local-20261028.json)의
+Quick147.053s/영향3package 전체 Race225.525s/tag/docs/security와 actual128.572s가 PASS다.
+기존 UV·새 pipx의 plain/space 네 설치는 current whole 검사/Evidence·Policy ALLOW/control6와
+동일 승인 반영·user data/Host 보존 및 fresh 재진입 무변경 거부를 확인했다. 기존 공통 엔진을
+재사용하고 internal app path와 외부 link 목적지를 분리했다. 실제 composition은 test fixture이며
+production CLI/managed·native original/hosted/final은 별도다. 같은 M13-004/C-c2를 계속한다.
 
 ### 2026-10-28 C-b3b original-aware native upgrade/no-op 한정 완료
 

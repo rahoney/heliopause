@@ -140,6 +140,12 @@ func captureUVToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]art
 }
 
 func (s *uvToolInstallSession) validateSelection(resolution domain.DependencyResolution, controls []domain.ProjectControlFile) error {
+	if s.owner.pipx != nil {
+		if s.guard.original != nil || s.guard.client != toolClientPipx {
+			return errors.New("pipx fresh selection cannot consume an original tool")
+		}
+		return validateUVToolNativeSelection(resolution, controls, s.guard.requirement, "pipx-tool-install:"+sandbox.PipxResolverRuntimeIdentity(), []string{"pipx-tool-intent.json", "pipx-tool-receipt.json", "pipx-tool-pylock.toml", "pipx-tool-census.json"})
+	}
 	if s.guard.original == nil {
 		return validateUVToolSelection(resolution, controls, s.guard.requirement)
 	}

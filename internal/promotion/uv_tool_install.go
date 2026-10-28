@@ -21,6 +21,7 @@ type uvToolNativeSelector interface {
 type UVToolInstallPreparation struct {
 	promoter     *PyPIPromotion
 	resolver     uvToolNativeSelector
+	pipx         pipxToolNativeSelector
 	upgrade      uvToolUpgradeNativeSelector
 	native       *pypiNativeEnrollment
 	binRoot      string
@@ -28,7 +29,11 @@ type UVToolInstallPreparation struct {
 }
 
 func NewUVToolInstallPreparation(promoter *PyPIPromotion, resolver uvToolNativeSelector, binRoot string, trustedRoots []string) (*UVToolInstallPreparation, error) {
-	if promoter == nil || promoter.runner == nil || resolver == nil || promoter.goos != "linux" || promoter.goarch != "amd64" || len(trustedRoots) == 0 {
+	return newToolInstallPreparation(promoter, resolver, nil, binRoot, trustedRoots)
+}
+
+func newToolInstallPreparation(promoter *PyPIPromotion, resolver uvToolNativeSelector, pipx pipxToolNativeSelector, binRoot string, trustedRoots []string) (*UVToolInstallPreparation, error) {
+	if promoter == nil || promoter.runner == nil || (resolver == nil) == (pipx == nil) || promoter.goos != "linux" || promoter.goarch != "amd64" || len(trustedRoots) == 0 {
 		return nil, errors.New("UV tool installation requires supported existing promotion, native selection and actual storage")
 	}
 	stagingBound := false
@@ -40,7 +45,7 @@ func NewUVToolInstallPreparation(promoter *PyPIPromotion, resolver uvToolNativeS
 	if !stagingBound {
 		return nil, errors.New("UV tool guard omits actual trusted staging")
 	}
-	return &UVToolInstallPreparation{promoter: promoter, resolver: resolver, binRoot: binRoot, trustedRoots: append([]string(nil), trustedRoots...)}, nil
+	return &UVToolInstallPreparation{promoter: promoter, resolver: resolver, pipx: pipx, binRoot: binRoot, trustedRoots: append([]string(nil), trustedRoots...)}, nil
 }
 
 type uvToolInstallSession struct {
@@ -63,7 +68,7 @@ func (p *UVToolInstallPreparation) BeginInstall(ctx context.Context, reference d
 	if err != nil || requirement.Requirement() != reference.Locator() {
 		return nil, errors.New("UV tool request is not canonical")
 	}
-	guard, err := beginToolFreshTarget(ctx, install, requirement, p.binRoot, p.trustedRoots)
+	guard, err := beginToolTargetForClient(ctx, install, requirement, p.binRoot, p.trustedRoots, false, nil, p.client())
 	if err != nil {
 		return nil, err
 	}
@@ -78,40 +83,30 @@ func (s *uvToolInstallSession) ResolveDependencies(ctx context.Context, referenc
 		return domain.DependencyResolution{}, err
 	}
 	s.attempted = true
-	var selected sandbox.UVToolSelection
-	var err error
-	if s.guard.original != nil {
-		if s.owner.upgrade == nil {
-			return domain.DependencyResolution{}, errors.New("UV tool original selector is unavailable")
-		}
-		selected, err = s.owner.upgrade.ResolveToolUpgrade(ctx, s.guard.original.input, s.originalWheels)
-	} else {
-		selected, err = s.owner.resolver.ResolveToolInstall(ctx, s.guard.requirement)
-	}
+	resolution, controls, err := s.resolveNativeSelection(ctx)
 	if err = errors.Join(err, s.guard.verify(ctx)); err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	resolution, controls := selected.Resolution(), selected.Controls()
 	if err := s.validateSelection(resolution, controls); err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	var native artifactpypi.ToolReceipt
 	for _, control := range controls {
-		if control.Name() == "uv-tool-receipt.toml" {
-			native, err = artifactpypi.ParseUVToolReceipt(control.Body())
+		if control.Name() == s.owner.client().nativeReceiptControl() {
+			native, err = s.owner.client().parseReceipt(control.Body())
 			if err != nil {
 				return domain.DependencyResolution{}, err
 			}
 		}
 	}
-	projected, err := native.WithUVLayout(install.Target().String(), s.owner.binRoot)
+	projected, err := s.owner.client().projectReceipt(native, install.Target().String(), s.owner.binRoot)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	if err := s.guard.freezeCommands(ctx, projected); err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	receipt, err := domain.NewProjectControlFile(uvToolHostReceiptControl, projected.Body(), true)
+	receipt, err := domain.NewProjectControlFile(s.owner.client().receiptControl(), projected.Body(), true)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
@@ -229,7 +224,7 @@ func uvToolTargetControl(g *toolFreshTarget, nativeLock domain.ContentDigest) (d
 	if err != nil {
 		return domain.ProjectControlFile{}, err
 	}
-	return domain.NewProjectControlFile("uv-tool-target.json", body, true)
+	return domain.NewProjectControlFile(g.client.targetControl(), body, true)
 }
 
 func (s *uvToolInstallSession) Promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, install domain.InstallContext) (domain.PromotedInstall, error) {

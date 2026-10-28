@@ -8359,10 +8359,26 @@ bool VerifyPipxNativeCloneAndQueryBoundary() {
   bool ok=true;const auto topology=PipxNativeTestTopology();
   auto run=[&](const char* operation,bool upgrade,bool metadata,bool alias,const std::string& fault){
     DrainDatagram(output[1]);ProcessState state;auto root=PipxNativeTestRoot(upgrade?"upgrade":"install");
+    const bool clauses=fault.compare(0,8,"clauses-")==0;
+    if(clauses)root.set_argv(7,"fixture>=1.0,<=1.0");
     if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state))return false;
     gvisor::common::ContextData child;
     if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child))return false;
     auto image=PipxNativeTestUV(child,operation,upgrade);ProfileRegistration registration;
+    if(clauses){
+      std::string requirement="fixture<=1.0,>=1.0";
+      if(fault=="clauses-repeat")requirement="fixture<=1.0,>=1.0,>=1.0";
+      if(fault=="clauses-project")requirement="foreign<=1.0,>=1.0";
+      if(fault=="clauses-version")requirement="fixture<=2.0,>=1.0";
+      if(fault=="clauses-operator")requirement="fixture<1.0,>=1.0";
+      if(fault=="clauses-missing")requirement="fixture>=1.0";
+      if(fault=="clauses-extra")requirement="fixture<=1.0,>=1.0,!=1.0";
+      if(fault=="clauses-empty")requirement="fixture<=1.0,,>=1.0";
+      if(fault=="clauses-trailing")requirement="fixture<=1.0,>=1.0,";
+      if(fault=="clauses-bare")requirement="fixture";
+      image.set_argv(image.argv_size()-1,requirement);
+      if(fault=="clauses-flags")image.set_argv(6,"--no-deps");
+    }
     if(metadata||std::string(operation)=="query"){
       if(!metadata){if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology))return false;
         auto uv_context=image.context_data();if(!PipxNativeTestClone(uv_context,101,1010,&state,&child))return false;}
@@ -8387,7 +8403,7 @@ bool VerifyPipxNativeCloneAndQueryBoundary() {
     if(fault=="parent-network")state.groups[parent].trusted_control_network_active=true;
     if(fault=="parent-image")state.groups[parent].pipx_native_image=ProcessState::PipxNativeImage::kNone;
     if(fault=="root-start")state.groups[99].start_time_ns++;
-    const bool normal=fault.empty();
+    const bool normal=fault.empty()||fault=="clauses-reorder"||fault=="clauses-repeat";
     if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology,normal))return false;
     const auto expected=normal?(metadata?ProcessState::PipxNativeImage::kMetadataQuery:(std::string(operation)=="query"?ProcessState::PipxNativeImage::kUVQuery:ProcessState::PipxNativeImage::kUV)):ProcessState::PipxNativeImage::kNone;
     if(state.groups[id].pipx_native_image!=expected||IsTrustedControlNetwork(image.context_data(),state))return false;
@@ -8399,6 +8415,7 @@ bool VerifyPipxNativeCloneAndQueryBoundary() {
   for(const char* fault:{"binary","execfn","argv0","argv","extra","origin","wrong-parent","child-start","child-network","child-eligible","child-pending","child-expected","missing-clone","parent-role","parent-start","parent-network","parent-image","root-start"}){
     ok=run("venv",true,false,true,fault)&&run("install",false,false,true,fault)&&run("query",false,false,true,fault)&&run("version",false,true,true,fault)&&ok;
   }
+  for(const char* shape:{"clauses-reorder","clauses-repeat","clauses-project","clauses-version","clauses-operator","clauses-missing","clauses-extra","clauses-empty","clauses-trailing","clauses-bare","clauses-flags"})ok=run("install",false,false,true,shape)&&ok;
   close(output[0]);close(output[1]);return ok;
 }
 
