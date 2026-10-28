@@ -68,7 +68,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
@@ -76,6 +76,9 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	}
 	if len(project) == 1 && project[0].destination == pipxNativeWheels && capacity != pipxWheelInputCapacity {
 		return closureVolume{}, errors.New("pipx whole-wheel volume requires the fixed capacity")
+	}
+	if len(project) == 1 && project[0].destination == nodeExecutionRoot && capacity != nodeExecutionWorkspaceLimit {
+		return closureVolume{}, errors.New("node materialization volume requires the fixed capacity")
 	}
 	name, err := closureVolumeName(transaction)
 	if err != nil {
@@ -101,10 +104,13 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		if volume.destination() == pipxRuntimeRoot {
 			return volume, errors.New("pipx DATA volume creation outcome is unavailable")
 		}
+		if volume.destination() == nodeExecutionRoot {
+			return volume, errors.Join(errors.New("node materialization volume creation outcome is unavailable"), err)
+		}
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
 	if err := volume.verify(ctx, runner); err != nil {
-		if volume.destination() == pipxRuntimeRoot {
+		if volume.destination() == pipxRuntimeRoot || volume.destination() == nodeExecutionRoot {
 			return volume, err
 		}
 		// Never adopt a volume whose post-create identity is uncertain. The caller

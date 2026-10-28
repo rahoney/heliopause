@@ -651,3 +651,137 @@ set의 동일 whole graph/local SHA/SRI controls와 회귀다. InstallTarget/가
 cause를 확인했다. 첫 SA1012는 직접 nil negative fixture 형식이며 최초 source/log를 보존하고
 기존 table 형식으로 교정했다. 후속 missing-integrity fixture는 Core의 기존 필수 선행조건에서
 거부돼 원본을 보존하고 도달 가능한 non-npm 사례로 교정했다. 기존 integrity guard는 그대로다. Actual materialization/user-run/CLI/전체 P5는 계속 missing이다.
+
+
+## P5-C3b — offline 전체 materialization 구현 전 감사/지도/두 번째 검토
+
+기준d68485a/tree179e01a9/2931tracked·1307source다. CI425 source418a는 별도이고 native
+실패 원인은 기존 관측대로 OPEN이다. Timer03의18:48:15UTC/session23795를 유지한다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| BuildNPMExecutionControls/generatedNPMProjectSet | YES | YES(API/shared body) | YES(local) | YES(renderer) | actual offline input producer 연결 |
+| DockerArtifactIntroducer.freezeNPMProjectArchives/ReadPNPMIntakeArchive | YES | YES(PNPM/Bun) | YES(named) | YES(existing) | 현재 execution set 전체 exact source freeze |
+| Backend createArguments/cleanup/startTrace/awaitBoundaryHelper/awaitMountAnchors | YES | YES(NPM inspection) | YES(named) | YES(existing) | 별도 data materialization lifecycle의 재사용 |
+| trusted boundary launch의 fixed Node controller / admission | YES | YES(existing trusted tools) | YES(existing scope) | YES(existing scope) | immutable npm CLI script의 fixed offline ci 소비자 actual 검증 |
+| ParsePNPMLayoutArchive/BindNodeExecutionLayout | YES | YES(API) | YES(local DATA) | YES(API) | actual native node_modules readback과 fixed generated metadata 제외 |
+| 전체 materialization/실제 Node 프로그램 실행 | NO(P5) | NO | NO | NO | 이번 materializer; user program은 다음 별도 lifecycle |
+
+[pinned npm source](./p5c3b-npm-materialization-source-20261029.json)는 never-started/network-none/
+readonly image에서 ci/reify 원문만 읽은 DATA 증거다. ci는 packageLock=true/save=false이며
+ignoreScripts로 root/dependency lifecycle을 막는다. Hidden node_modules/.package-lock.json은
+별도 생성된다. flag로 암묵 회피하지 않고 bounded regular native metadata만 실행 tree에서
+제외하고 새 controlled tar를 기존 parser/strict C2 binder에 넘긴다. 다른 추가 파일/link/bytes는
+그대로 거부하며 metadata를 cache/승인 authority로 사용하거나 Node에 전달하지 않는다.
+
+수정 지도: artifact/npm/execution_materialization.go와 회귀는 같은 bounded parser/regular-file
+reader/tar writer를 재사용해 위 한 파일만 제외한다. Sandbox의 별도 materializer는 current Node
+pin/whole set/control files/source intake를 preflight·freeze하고 fresh network-none/readonly Node
+container에서 고정 /usr/local/bin/node와 immutable npm CLI script만 trusted controller로 실행한다.
+Program argv나 selected artifact entry는 실행하지 않는다. NPM ci는 offline/ignore-scripts/bin-links
+비활성화·fixed prefix/config flags이며 output은 버리는 infrastructure diagnostic이다. 기존
+CONTROL launch/admission을 재사용하고 임의 Node/Artifact를 CONTROL로 인정하는 규칙은 없다.
+
+실제 producer·observer·filesystem 동작은 same source/binary actual에서 확인한다. 기존 role/FS/
+network predicate를 확대하지 않으며, 기존 방식으로 불가능하면 정확한 첫 거부를 보존한 뒤 해당
+owner만 다시 검토한다. Artifact user-run의 새 role/exit/output semantics는 이번에 위장하지 않는다.
+Native tree는 bounded readback→원래 모든 inventory/member/Node proof→종료/trace 완결·정리 뒤에만
+반환한다. Backend/Bootstrap 조립과 기존 tagged production preparation parent를 이어 실제2회
+materialization과 current records를 검증한다. Source 변화/unknown resources/partial source/trace/
+cleanup·provider/cancel cause는 complete layout을 만들지 않는다.
+
+두 번째 검토: 새 parser/lock generator/InstallTarget/가짜 SandboxResult·runtime pin/job은 없다.
+기존 CPU30s/memory512MiB/tmp256MiB/wall45s·trace와 profile·Read-only check 계약을 유지한다.
+Control/Archive payload는 유한 source128MiB·tree200MiB와 기존 file/entry 한도를 따른다. Actual
+시작 전 canonical format/quick/영향 Race와 source/binary identity를 고정하며 종료 전에는
+생산 source를 수정하거나 다른 heavy check/build를 겹치지 않는다. 실제 OCI/Node/observer reuse의
+한정 성공만 기록하고 전체 P5/CLI/final4profiles·signed 또는 미완료 CI425를 닫지 않는다.
+
+C3b 첫 current-source actual v1은20.604s/parent18.63s에 실패했다.이전 production preparation/current checks를 지나 materialization provider의 exit1을 받았지만,
+정확한 I/O 단계는 미확정이다.
+Source1313/CPP/원래42/ZIP와 Host/Docker가 같고 helperwait0/final original1을 보존했으며 Node workspace 부재를 확인했다.부분 실행을 성공으로 쓰지 않고 원본 result/log/source identity를 기존 raw에 보존했다.
+다음은 fixed stage를 error chain에 더하는 bounded 진단이며 role/FS/budget/command는 유지한다.
+
+
+### C3b v2 입력 전송 실패와 기존 workspace owner 재사용 전 감사
+
+v2는20.640s/parent18.68s FAIL이며 fixed stage는 `copy frozen node materialization input`이다.
+Npm controller와 native tree readback은 미도달이다. Source1313/binary ae113dff/CPP/원래42/ZIP,
+Host/Docker 보존·helperwait0/원래 오류1·Node workspace 부재를 확인했다. 원본은 기존 raw의
+p5-c3b-actual-v2-*이며 이전 v1과 합쳐 성공으로 해석하지 않는다.
+Docker 공식 cp 문서의 [corner cases](https://docs.docker.com/reference/cli/docker/container/cp/#corner-cases)는
+container tmpfs 복사 제약을 명시한다. 현재 `/tmp` 직접 전달의 exit1만으로 모든 engine 내부 인과를
+확정하지 않으며, 동일 repository의 qualified PNPM/Bun은 별도 attested workspace volume으로
+cp/readback한다. 그 owner를 재사용하는 좁은 후보를 실제로 검증한다.
+
+| 실제 owner / 변경 전 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| createInputVolume/closureVolume.verify/mountArgument/verifyAttachments | YES | YES(existing PNPM/Bun) | YES(named) | YES(existing) | 실제 Node 고정 destination·128MiB/UID1000/noexec workspace 연결 |
+| closeWritableOutputVolume | YES | YES(existing consumers) | YES(named) | YES(existing) | Node destination exact cleanup와 unknown create identity 보존 |
+| SharedObserver.startProfile/npm-lifecycle topology | YES | YES(existing PNPM/Bun) | YES(named) | YES(existing) | 별도 Node materialization fixed workspace expectation만 추가 |
+| MaterializeNodeExecution current whole-set producer/binder | YES | YES(tagged local parent) | NO(actual v2 FAIL) | NO | tmpfs 직접 copy를 기존 attested workspace transport로 연결하고 fresh2 actual 검증 |
+
+수정 지도: 기존 pypi_closure_volume.go에는 고정 Node destination 허용과128MiB 검증,
+그 destination의 불명확한 create/post-verify 결과를 caller에 보존하는 분기만 추가한다.
+기존 pipx 분기/그 밖의 consumer 동작은 유지한다. uv_runtime.go는 Node cleanup destination만
+추가한다. 새 Node 파일에서 volume 소유·fixed create mount·attachment 검증·별도 observer
+entry와 exact topology를 조립한다. Payload는 그 mount 아래 project만 담으며 기존 cp/stdin/
+bounded tar readback과 parser/binder를 유지한다. 가짜 PNPM kind/InstallTarget·별도 parser나
+CONTROL/FS predicate 변경은 없다.
+
+두 번째 검토: unknown create는 미리 부재 증명 후 얻은 candidate identity를 보존하지만
+verify가 실패한 volume은 삭제하지 않는다. Container exact owner cleanup 뒤 trace와 volume
+cleanup 실패를 원래 오류에 join하고 완성 layout을 비운다. Noexec/UID1000/고정128MiB와
+기존 CPU30/memory512/tmp256/wall45·network none/root readonly를 유지한다. 공용 owner
+변경은 해당 기존 PNPM/Bun/UV/Python/pipx tests를 포함한 canonical Quick/전체 sandbox Race로
+검증하며 별도 Node source/binary의 actual 성공 전 QUALIFIED=NO를 유지한다.
+
+V2 보존 한계: actual/log/source/binary/check metadata11개는 별도 원본으로 보존했다. 다음 후보 검사 전 scratch check의 개별 로그를 전부 복사하지 않아 일부는 덮였으며, checks.json의 exit/시간을 전체 check log 보관으로 표시하지 않는다. 새 attempt는 개별 log까지 먼저 보존한다.
+
+
+C3b workspace 후보 actual v3는23.855s/parent21.88s FAIL다. 고정 workspace 생성/attach·input cp/
+null network 검사를 통과해 controller direct exec에 도달했지만 observer stream incomplete /
+direct-exec authority ambiguous로 거부됐다. Source1313/binary08b5a082/원래 CPP·42·ZIP와 Host/
+Docker 보존, helperwait0/final original1/Node workspace 부재를 확인했다. 이 부분 성공을
+materializer qualification이나 전체 tmpfs 원인 해결로 확대하지 않는다. 최초 direct-exec 내부
+거부 이유는 수집한 진단을 오류에 전달하지 않아 아직 미확정이다. 기존 bounded payload-free
+TraceDiagnostic.String을 실패 오류에 연결하는 v4 진단만 추가하며 command/role/FS/CPP/
+예산/성공 판정은 그대로다. 새 actual은 v3와 구분한 source/binary/로그로 보존한다.
+
+
+### C3b v4 직접 원인 확인과 기존 controller-child 호출 모델 재사용 검토
+
+v4 source1313/binary0a75bcac의22.992s/parent21.32s FAIL은 기존 CPP의
+OPEN_RESULT_CLASSIFICATION_PROC / NODE / CONTROL / DIRECT_EXEC_ROOT / PROC_SELF_MAPS /
+flags557056이다. Pinned image=true이며14 expected exec 뒤 실패했다. 원래 role/FS guard가
+맞게 작동했다. 앞 direct Node를 기존 runtime-read 허용과 동일시한 재사용 가정은 반증됐다.
+Source/CPP/42/ZIP/Host/Docker 보존·helperwait0/final original1/Node workspace 부재는 유지된다.
+V4 진단만으로 오류가 해결됐다고 쓰지 않는다. 원본은 raw p5-c3b-actual-v4-*다.
+
+기존 owner IsExpectedProcess/IsTrustedShellChild/RegisterGroup의 CONTROL clone-child와
+runtime read predicate는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(existing
+npm/PNPM/Bun scopes)다. 이번 고정 controller 호출 연결은 IMPLEMENTED=YES(v4 direct-root),
+WIRED=YES(tagged parent), QUALIFIED=NO/ACCEPTANCE_CLOSED=NO이며 MISSING은 기존
+controller child 모델의 정확한 호출과 actual fresh2/whole-tree·cleanup 검증이다.
+
+수정 지도/두 번째 검토: nodeMaterializationArguments만 fixed `/bin/sh -ceu` controller에
+같은 immutable Node와 npm CLI·같은 closed offline argv literal을 호출하도록 연결한다.
+마지막 fixed `:`는 shell의 Node exec 대체를 막아 controller가 실제 자식을 wait하게 한다.
+`-e`가 Node 실패에서 먼저 종료하므로 후속 `:`가 오류를 성공으로 바꾸지 않는다. 사용자 argv,
+package string, source bytes는 shell source에 삽입하지 않는다. Npm shebang transition은 여전히
+없다. 기존 admission은 고정 controller root에만 적용하고 자식은 실제 clone/creator를 통해
+분류한다. Artifact 실행은 없으며 CPP/FS/runtime-read/role/network predicate·예산은 변경하지
+않는다. 이 모델의 actual 성공 전 qualified로 쓰지 않으며 앞 v3/v4와 결과를 합치지 않는다.
+
+
+C3b의 최종 [named local receipt](./p5c3b-offline-node-materialization-local-20261029.json)는
+같은 source1313/binary0c4bfe0e·기존 CPPd834의 actual v5 45.343s/parent43.57s PASS다.
+Fresh2 production preparation/current whole checks·Policy ALLOW·storage-only와 offline whole-set
+materialization/같은 layout2cca6ea0/선택 entry 원본을 확인했다. Source/CPP/42/ZIP/Host/Docker
+보존, helperwait0/final original0/Node workspace 부재가 PASS다. Format/focused/Quick77.668s/
+관련3package fullRace29.883s/tagged build/docs/security13.325s 및 개별7logs를 보존했다.
+기존 generic controller-child 모델과 attested volume 재사용의 이 named local 범위만 qualified다.
+앞 v1-v4를 성공으로 고치거나 새 FS/role/예산 완화 없이 통과했다. 전체 P5/user program/CLI,
+최종 four profiles·signed와 이 source의 hosted/native Required qualification은 미완료다.
+다음은 같은 M13-004의 C3c 실제 Artifact Node admission/isolated lifecycle/guest exit-output
+owner audit이며 source 작성 전에 별도 책임 지도와 두 번째 검토를 남긴다.

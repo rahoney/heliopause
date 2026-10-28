@@ -1,0 +1,216 @@
+{
+  "scope": "P5-C3b current whole-set offline materialization DATA only; real TypeScript5.9.3/current production preparation fresh2; no artifact user program/Host install",
+  "source_base": "d68485ae0883db7022094a0c2fa4a096e415825f",
+  "source_inputs": 1313,
+  "prior1304_source_inputs_unchanged": true,
+  "changed_sources": [
+    {
+      "path": "internal/artifact/npm/execution_materialization.go",
+      "sha256": "bcd0f1b291ae0a9039bd8ba40b990c57ed51e175aacc4c493a69b7470880de6c",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/execution_materialization_test.go",
+      "sha256": "ff84d9c015e1bad91a9ff66159883634ccc9fb3ab5148e982bb006f869284a51",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/node_execution_materialize.go",
+      "sha256": "ede9ddcc1ac3faeeb30db2e701ae004787f6de6715d6b6a755b21192b4bdd6de",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/node_execution_materialize_test.go",
+      "sha256": "72ada3db1c394ddedc65038bbb9229e0fba227664835e16fc62cea85a12d8c21",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_materialize.go",
+      "sha256": "1ca26997bc260d603e74e86ba31c495bb9e0f2836714d7008a129ba583e313f9",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare_integration_test.go",
+      "sha256": "359f49594213c4d169338c4d30228804da333830402a94b232481d6434237a89",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_materialize_test.go",
+      "sha256": "4065cd62b8a73bf61b52391c7d3995e01ac16f20afb825728255b899867bdb80",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "414abd41f3b49a19bff63cfb8e542a0f686939d91df3b9c6d0fae66e45fa8251",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "fb2fad344f76dd224036241442ae8bc81cf8f8d90a6c33fdfee8d859d3934825",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (complete offline materializer)",
+    "WIRED": "YES (real bootstrap tagged production preparation parent); NO (application user-run/CLI)",
+    "QUALIFIED": "YES (named local current whole-set materialization/fresh2 and API/old consumer tests); NO (new hosted source)",
+    "ACCEPTANCE_CLOSED": "YES (C3b named local DATA materialization); NO (P5 actual program/CLI/final profiles/signed)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.656
+    },
+    {
+      "step": "materialization-focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "./internal/bootstrap",
+        "-run",
+        "^(TestMaterializedNodeLayout|TestNodeMaterialization)"
+      ],
+      "exit_code": 0,
+      "seconds": 9.441
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 77.668
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 29.883
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3b-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.942
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.297
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.325
+    }
+  ],
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 45.343,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "c4ca8fc37caf185d3b4b42e0479cd42c1990ad80ed0b1d7ba0a14f58d2303ccb",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-c3b-actual-v5/protected-client",
+        "sha256": "0c4bfe0ea594d451dd1c88d646045be79b9b902a7487f52d6e2ef33c5e01cc05"
+      },
+      {
+        "path": "/tmp/haa-p5-c3b-actual-v5/observer",
+        "sha256": "d834ca86cd366f30c35a4a635e173300ed103f9c983b7469391aba95b85d1bf2"
+      },
+      {
+        "path": "/tmp/haa-p5-c3-20261029-source/internal/bootstrap/node_execution_prepare.go",
+        "sha256": "b9b393af973bea4d7effe03c6d3aa97a8a397e0e07cfd93e7ace938eaa99aa5e"
+      },
+      {
+        "path": "/tmp/haa-p5-c3-20261029-source/internal/bootstrap/node_execution_prepare_integration_test.go",
+        "sha256": "359f49594213c4d169338c4d30228804da333830402a94b232481d6434237a89"
+      }
+    ],
+    "scope": "CURRENT production Node preparation and offline full-set materialization; exact TypeScript5.9.3/SRI/fresh2; no user program or Host install",
+    "passed_named_tests": [
+      "TestLinuxNodeExecutionPreparationIntegration"
+    ],
+    "production_guard_unchanged": true,
+    "fixture_version": "typescript@5.9.3",
+    "user_program_run": false,
+    "owned_node_workspaces_absent": true,
+    "materialization_passes": 2,
+    "named_pass": true
+  },
+  "layout_census_digest_fresh2": "2cca6ea03a9f03ce7cb08b24627fd9dad0450186cca94dd2bb9963debf800e3c",
+  "binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3b-bootstrap.test",
+      "size": 50901980,
+      "sha256": "0c4bfe0ea594d451dd1c88d646045be79b9b902a7487f52d6e2ef33c5e01cc05"
+    }
+  ],
+  "source_census_sha256": "948b6c011605969429c98a388f85f3f2c618fe7423df59aecbd571e0b2c35ad7",
+  "pinned_observer_sha256": "d834ca86cd366f30c35a4a635e173300ed103f9c983b7469391aba95b85d1bf2",
+  "CPP_role_FS_network_predicates_unchanged": true,
+  "workspace_contract": "existing attested local-driver tmpfs DATA volume; fixed Node destination; UID/GID1000; 128MiB/noexec; network none/read-only root; existing CPU30/mem512/tmp256/wall45",
+  "controller": "fixed waiting shell controller invokes immutable Node + npm CLI with closed offline/ignore-scripts/bin-links=false argv; no artifact argv in shell source; real CONTROL clone lineage",
+  "source_binding": "existing whole archive freeze/static inventories + bounded native tar parser + strict C2 full file/entry/layout binder; only bounded generated root node_modules/.package-lock.json omitted as DATA",
+  "first_failures": {
+    "v1": "20.604s generic provider exit1; exact stage unknown then",
+    "v2": "20.640s fixed input docker cp exit1 before controller",
+    "v3": "23.855s attested workspace input succeeded; controller observer authority ambiguity",
+    "v4": "22.992s exact NODE CONTROL DIRECT_EXEC_ROOT PROC_SELF_MAPS read rejected; direct Node reuse assumption refuted",
+    "scope": "all immutable separate raw attempts; failures never reclassified as successful qualification"
+  },
+  "check_log_preservation": "v5 all7 individual logs/source/build/check identity preserved before next build; v2 individual scratch check logs incomplete, metadata and actual preserved",
+  "evidence_owner": "docs/github-logs/package-client-quarantine-20261021/p5-c3b-*",
+  "next": "C3c exact artifact Node admission/isolated lifecycle and guest exit/output; current code never runs selected user artifact; grouped hosted candidate must pass macOS and Required."
+}

@@ -15,15 +15,41 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4 C-e4 ordinary hosted CI423/source6dd QUALIFIED; Required10SUCCESS/Linux92/noSKIP/CPP128/helper14wait0; P5-B2b local composition/records qualified/unwired
-Next action: CI425 poll01 18:08:03UTC 7SUCCESS/macOS FAILURE at platform default-test6min deadline/Linux in progress; next18:28:03UTC/session56538; preserve Linux and investigate exact deadline owner; C3a local qualified; P5-C2 complete npm layout DATA binding local qualified; next offline full-set materialization/admission/lifecycle; B2f hosted step pending
-Current substep: M13-004/P5-C3b offline whole-set materialization owner audit IN_PROGRESS; CI425 native deadline cause OPEN/Required gate retained; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
-Acceptance audit: CI424/source4ec Required10SUCCESS; all10 checkout2823b654/tree d88cd820/2909 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; later B2e/B2f/C1/C2 hosted pending. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
-Independent local next: P5 fresh whole execution inspection/application; final support/profile matrix open
+Last completed substep: P5-C3b offline whole-set materialization named local QUALIFIED; fresh2/current source1313/binary0c4bfe0e actual45.343s/cleanup PASS; no artifact user program
+Next action: C3b current exact source grouped hosted/native Required qualification preparation; C3c actual Artifact Node admission/lifecycle/guest exit-output owner audit; CI425 consumed8SUCCESS/macOS+Required FAILURE, native direct cause OPEN; no active timer
+Current substep: M13-004/P5-C3c actual Artifact Node lifecycle owner audit IN_PROGRESS; C3b local complete, new hosted scope OPEN; final four profiles/signed/whole P4/P5 remain OPEN
+Acceptance audit: CI424/source4ec Required10SUCCESS; all10 checkout2823b654/tree d88cd820/2909 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; CI425/source418a included B2e/B2f/C1/C2 and Linux93/preparation fresh2 PASS; macOS+Required FAILURE with native direct cause OPEN; later C3a/C3b excluded. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
+Independent local next: P5-C3c runtime/admission/guest outcome and bounded stream contracts; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-C3b offline whole-set materialization 로컬 검증
+
+[최종 receipt](./evidence/package-client-quarantine/p5c3b-offline-node-materialization-local-20261029.json)는
+source1313/binary0c4bfe0e·기존 CPP128의 actual45.343s/parent43.57s/fresh2 PASS다. Current
+whole checks·Policy ALLOW/storage-only 뒤 fixed no-script/offline materialization의 모든 파일과
+entry를 strict C2 binder로 검증했다. 같은 layout digest와 Source/CPP/42/ZIP/Host/Docker 보존,
+helperwait0/final0/Node workspace 부재를 확인했다. Canonical Quick77.668s/영향3package
+fullRace29.883s/기타5checks와 개별 원본이 대응한다. 실제 artifact user program은 실행하지
+않았으며 CLI/guest exit-output/final4profiles·signed/전체P5는 OPEN이다. 앞 v1-v4는 실패로
+보존하며 일반 FS/role/CPU 예산을 바꾸지 않았다. 다음 C3c owner audit와 의미 있는 grouped
+hosted/native Required qualification을 계속한다.
+
+
+### 2026-10-29 CI425 완료 소비 — Linux preparation PASS / macOS·Required FAIL
+
+[최종 결과](./evidence/package-client-quarantine/ci425-production-preparation-hosted-result-20261029.json)는
+source418a/tree016df83d/2926·all10checkout3cc28f9e/decoded1,346,740B의 동일성을 확인했다.
+실제 timer05 발화19:32:09UTC 뒤19:32:16UTC에8SUCCESS/macOS+Required FAILURE를 직접
+소비했다. Final update까지89m03이며 Linux93parents/noSKIP/noFAIL/CPP128/CPU277.18s,
+helper15wait0/final original0·복원과 새 production preparation19.28s/fresh2/current whole checks·
+Policy ALLOW/storage-only가 PASS다. Later C3a/C3b·user program/CLI/final4profiles·signed는 밖이다.
+Native default6m 직접 원인은 기존 observation대로 OPEN이며 Required 실패를 성공으로 바꾸지
+않는다. Timer05는 종료됐고 새 timer/재실행은 없다. 같은 M13-004의 독립 C3b 진단을 계속하며
+다음 의미 있는 grouped source에 native/Required qualification을 연결한다.
+
 
 ### 2026-10-29 P5-B2f production preparation 실제 local 검증
 

@@ -144,6 +144,20 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 		if previous.Valid() && (previous.Inspection().OperationID() == inspected.OperationID() || previous.Inspection().Set().Inspected().Inspections()[0].RunID() == entry.RunID() || previous.Bundle().ManifestID() == prepared.Bundle().ManifestID()) {
 			t.Fatal("repeated production request reused approval/records")
 		}
+		materialized, err := materializeNodeExecution(ctx, backend, static, execution)
+		if err != nil || !materialized.MatchesExecution(execution) || materialized.EntryPath() != "node_modules/typescript/bin/tsc" {
+			t.Fatal("actual offline materialization did not retain current source/entry", err)
+		}
+		body, err := materialized.ReadFile(materialized.EntryPath())
+		if err != nil || uint64(len(body)) != execution.EntrySize() {
+			t.Fatal("materialized Node entry unavailable", err)
+		}
+		for _, file := range materialized.Entries() {
+			if file.Name == "node_modules/.package-lock.json" {
+				t.Fatal("native metadata entered executable source tree")
+			}
+		}
+		t.Logf("production_node_materialization attempt=%d layout=%s entry=%s source_sha256=%s offline=true lifecycle_scripts=false user_program_run=false", attempt, materialized.Digest().String(), materialized.EntryPath(), subject.Digest().String())
 		t.Logf("production_node_preparation attempt=%d subjects=%d checks=%d Evidence=%d entry=%s source_sha256=%s manifest=%s current_policy=ALLOW storage_only=true user_program_run=false", attempt, len(entries), len(entry.Checks()), len(entry.Evidence()), execution.EntryPath(), subject.Digest().String(), prepared.Bundle().ManifestID().String())
 		previous = prepared
 	}
