@@ -263,3 +263,43 @@ func TestPipxNativeTrustedCleanupDoesNotTruncateLegitimateStop(t *testing.T) {
 		}
 	})
 }
+
+func TestPipxInstalledNativeEntryRejectsInvalidRequestsBeforeCommands(t *testing.T) {
+	for _, scenario := range []string{"nil-runner", "nil-observer", "nil-resources", "nil-input", "changed-input", "foreign-root", "wrong-version", "cancelled"} {
+		t.Run(scenario, func(t *testing.T) {
+			frozen, _, _, _, _ := pipxFrozenInputFixture(t, nil)
+			requirement, _ := artifactpypi.ParseUpgradeRequirement("probe==1.0")
+			runner := &pipxNativeNoCommands{}
+			var selected CommandRunner = &pipxNativeDiscardCommands{runner}
+			var observer TraceObserver = pipxNativeUnusedObserver{}
+			var resources ObservationResourceClient = pipxNativeUnusedResources{}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			switch scenario {
+			case "nil-runner":
+				selected = nil
+			case "nil-observer":
+				observer = nil
+			case "nil-resources":
+				resources = nil
+			case "nil-input":
+				frozen = nil
+			case "changed-input":
+				frozen.files[0].body[0] ^= 1
+			case "foreign-root":
+				requirement, _ = artifactpypi.ParseUpgradeRequirement("other==1.0")
+			case "wrong-version":
+				requirement, _ = artifactpypi.ParseUpgradeRequirement("probe==2.0")
+			case "cancelled":
+				cancel()
+			}
+			result, err := runInstalledPipxNativeInstall(ctx, selected, observer, resources, frozen, requirement)
+			if err == nil || runner.calls != 0 || len(result.controls) != 0 || result.receipt.Client() != "" {
+				t.Fatal("invalid installed request reached commands or returned metadata", err, runner.calls)
+			}
+			if scenario == "cancelled" && !errors.Is(err, context.Canceled) {
+				t.Fatal("original cancellation lost", err)
+			}
+		})
+	}
+}

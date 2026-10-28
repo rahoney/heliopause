@@ -1977,3 +1977,49 @@ YES(이 named offline fixture 범위)다. Unapproved metadata이지 inspection/P
 승인이 아니다. Public live resolution·installed protected supply와 production caller·
 original upgrade/current 검사·CLI/hosted/final profiles, legacy mixed CPU parent는
 MISSING이다. 같은 M13-004의 C-b에서 source 전 owner audit 후 실제 남은 연결만 진행한다.
+
+## C-b1 — installed protected ZIP와 frozen entry 연결의 source 전 감사
+
+기준111f71f/tree63dcb531/2848파일에서 INDEX/관련 lessons와 Queue/plan20§5·client09·
+M10 supply/기존 native installed owner를 확인했다. 같은 M13-004/C-b의 첫 연결만 진행한다.
+
+| 책임 / 기존 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| `preparePipxTool`/`readInstalledNativeTool` | YES | YES (공급 owner/tests) | YES (기존 named supply) | YES (그 scope) | fixed protected current의 ZIP를 실제 native session에 전달 |
+| `freezePipxNativeInput`/`runPipxNativeInstall` | YES | YES (C-a) | YES (offline actual18) | YES (C-a) | 이미 freeze한 same-ID 입력과 protected supply의 entry 연결 |
+| installed-only native entry | NO | NO | NO | NO | caller path/ZIP/hash 입력 없이 기존 protected reader→기존 session 연결, invalid/cancel command0·actual ordinary user |
+| live public selection/factory·original upgrade/current 검사/Policy·CLI | NO | NO | NO | NO | C-b 후속; 이 supply 연결을 전체 지원으로 쓰지 않음 |
+
+기존 session/reader를 대체하지 않는다. 같은 sandbox owner의 좁은 installed entry는
+ctx/runner/observer/resource/frozen root constraint를 먼저 확인하고 `preparePipxTool`의
+고정 `/usr/lib/heliopause/current`를 읽은 뒤 기존 runPipxNativeInstall을 호출한다.
+ZIP bytes/path/hash나 runtime override를 받지 않는다. 기존 prepared-input primitive와
+그 tests는 유지한다. Default invalid/cancel/changed frozen/foreign request command0를
+검증하고 tagged 실제 fixture에 installed mode를 추가해 같은 fresh/accounting-refusal을
+검증한다. Root-owned0755 tree/versions/v*/current와 selected ZIP0444의 isolated read-only
+mount fixture만 사용한다. Compiled selected identity/소유권/held-root read 검증이지 signed
+release activation·publisher authenticity의 새 검증이 아니다. Canonical format/Quick·전체
+sandbox Race/tag vet/build/docs/security 뒤 같은 CPP18을 재사용한다. Observer source·
+권한·budget/coverage는 바꾸지 않는다. Public 원본 취득/전체 Policy·CLI는 후속 MISSING이다.
+
+C-b1 Go canonical format0.689s/Quick104.819s/전체 sandbox Race24.782s/tag vet1.257s/
+build8.811s/docs0.268s/security14.677s가 PASS다. 첫 actual-v1은 private overlay upper의
+0700이 merged `/usr/lib` root에 적용되어 ordinary `/usr/bin/env`의 libc 로딩이 permission
+으로 거부됐다. Go/helper/product는 NOT_REACHED이며 Host5/Docker 동일/helper0이다.
+원본 namespace/launcher/error와 upper mode를 보존하고 task-owned upper root만0755로
+바꿔 mounted-root guard를 확인한다. Work0700/selected ZIP0444/제품 source·한도는 유지한다.
+
+### C-b1 installed entry 실제 한정 검증
+
+[설치 공급물 로컬 receipt](./p4o4c3c3b3c-b1-installed-native-local-20261028.json)의
+same Go v1/CPP18 actual-v2 16.823s가 fresh9.60s/controls2/graph2·CPU2.080678s와
+accounting-refusal5.45s/target0/zero selection·CPU0.113146s를 확인했다. 각 typed
+Create/Register/Close1·noSKIP/helperwait0/final0·부재, Host5/Docker·원본42/ZIP·Go6/CPP6
+동일이며 Host installed root는 전후 부재다. Mounted `/usr/lib` root0755 guard 뒤 ordinary
+launch가 성공해 v1 fixture 권한 교정만 검증했다. Work0700·ZIP0444/고정 identity는
+유지한다. Original session body와 모든 CPP source는 byte-identical이다.
+C-b1 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 YES(이 installed namespace
+fixture 범위)이며 publisher authenticity·release activation·public selection/Policy 성공은
+아니다. 같은 M13-004/C-b2에서 기존 UV-backend compile·independent whole archive reader/
+freeze·installed entry를 결합하는 production factory의 baseline을 확인한다. Original
+upgrade/current 전체 검사·CLI/hosted/final profiles와 mixed legacy CPU parent는 남는다.

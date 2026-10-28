@@ -100,7 +100,15 @@ func TestLinuxPipxObservedNativeInstallIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			resources := &pipxNativeSessionActualResources{pipxActualResources: &pipxActualResources{ObservationResourceClient: integrationObservationResources{client: client}}, fail: failure}
-			result, runErr := runPipxNativeInstall(ctx, runner, supervisor.Observer(), resources, &pipxPreparedTool{body: body}, frozen, requirement)
+			var result pipxNativeOutput
+			var runErr error
+			installedSupply := os.Getenv("HELOX_PIPX_NATIVE_INSTALLED_SUPPLY") == "1"
+			if installedSupply {
+				result, runErr = runInstalledPipxNativeInstall(ctx, runner, supervisor.Observer(), resources, frozen, requirement)
+			} else {
+				result, runErr = runPipxNativeInstall(ctx, runner, supervisor.Observer(), resources, &pipxPreparedTool{body: body}, frozen, requirement)
+			}
+			t.Logf("installed_supply=%t", installedSupply)
 			resources.mu.Lock()
 			creates, registers, closes, cpu, last, reads := resources.creates, resources.registers, resources.closes, resources.cpu, resources.lastReadCPU, resources.readCount
 			resources.mu.Unlock()
@@ -120,7 +128,7 @@ func TestLinuxPipxObservedNativeInstallIntegration(t *testing.T) {
 			if runner.targets.Load() != 1 || registers != 1 || cpu == 0 || cpu >= 13_000_000 || result.receipt.Client() != "pipx" || len(result.controls) != 2 || len(result.graph.Nodes()) != 2 || !result.receipt.Requirement().SameConstraints(requirement) {
 				t.Fatal("native lifecycle/complete original selection differs")
 			}
-			t.Log("actual original42 fixture with synthetic lock binding only; no live native public resolution, installed supply authentication, Policy or Host publication")
+			t.Log("actual original42 fixture with synthetic lock binding only; installed mode checks fixed compiled supply/ownership only, not live public resolution, publisher authentication, Policy or Host publication")
 		}) {
 			return
 		}

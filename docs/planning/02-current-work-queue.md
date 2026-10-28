@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3b CPP128/production workspace dispatch and named10legacy consumers locally qualified; latest hosted CI421/sourcee859487 Required10SUCCESS
-Next action: M13-004/P4-O4-C3c3b3c C-b installed protected supply/frozen production caller baseline; C-a actual v18 fresh/accounting-refusal PASS; legacy ZIP mixed CPU boundary OPEN; CI421 consumed/no active timer
+Next action: M13-004/P4-O4-C3c3b3c C-b2 public selection/frozen production factory baseline; C-b1 installed actual fresh/accounting-refusal PASS; legacy ZIP mixed CPU boundary OPEN; CI421 consumed/no active timer
 Current substep: M13-004/P4-O4-C3c3b3c IN_PROGRESS; B3a/b/c/d named local qualified; hostedUID1001/pipx native/signed-native/final profiles remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,15 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-b1 고정 설치 공급물 entry 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-b1-installed-native-local-20261028.json)의
+Quick104.819s/전체 sandbox Race24.782s/tag/docs/security 및 same CPP18 actual16.823s가
+PASS다. Root-owned0444/고정 current ZIP를 ordinary caller가 읽어 fresh controls2/graph2와
+회계 거부 target0을 확인했다. 첫 overlay0700 launcher 오류는 제품 미도달로 보존했고
+fixture0755 guard 뒤 정상이다. Host·원본·source 불변/helperwait0/final0이며 C-b2 public
+selection/factory·original upgrade/current Policy/CLI/final profiles·legacy CPU gap은 OPEN이다.
 
 ### 2026-10-28 C-a 실제 native metadata 한정 완료
 

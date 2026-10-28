@@ -265,6 +265,23 @@ func (s *pipxNativeSession) abortRuntime(ctx context.Context, id string) error {
 	return nil
 }
 
+// runInstalledPipxNativeInstall binds the fixed protected current supply to
+// already frozen original bytes. It returns unapproved metadata only and accepts
+// no caller-selected supply path, digest, ZIP bytes or runtime override.
+func runInstalledPipxNativeInstall(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, frozen *pipxNativeInput, requirement artifactpypi.UpgradeRequirement) (pipxNativeOutput, error) {
+	if ctx == nil || runner == nil || observer == nil || resources == nil || !pipxNativeRequirementMatches(requirement, frozen) {
+		return pipxNativeOutput{}, errors.New("pipx installed native input unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return pipxNativeOutput{}, err
+	}
+	tool, err := preparePipxTool(ctx)
+	if err != nil {
+		return pipxNativeOutput{}, err
+	}
+	return runPipxNativeInstall(ctx, runner, observer, resources, tool, frozen, requirement)
+}
+
 // runPipxNativeInstall consumes a previously prepared fixed ZIP and a complete
 // frozen selection. Installed-source composition and upgrades are separate.
 func runPipxNativeInstall(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, tool *pipxPreparedTool, frozen *pipxNativeInput, requirement artifactpypi.UpgradeRequirement) (result pipxNativeOutput, resultErr error) {
