@@ -105,7 +105,11 @@ func (p *UVToolInstallPreparation) client() toolClient {
 func (s *uvToolInstallSession) resolveNativeSelection(ctx context.Context) (domain.DependencyResolution, []domain.ProjectControlFile, error) {
 	if s.owner.pipx != nil {
 		if s.guard.original != nil {
-			return domain.DependencyResolution{}, nil, errors.New("pipx original install is unavailable")
+			if s.guard.original.pipx == nil || s.owner.pipxUpgrade == nil {
+				return domain.DependencyResolution{}, nil, errors.New("pipx original selector unavailable")
+			}
+			selected, err := s.owner.pipxUpgrade.ResolveToolUpgrade(ctx, *s.guard.original.pipx, s.originalWheels)
+			return selected.Resolution(), selected.Controls(), err
 		}
 		selected, err := s.owner.pipx.ResolveToolInstall(ctx, s.guard.requirement)
 		return selected.Resolution(), selected.Controls(), err

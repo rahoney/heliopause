@@ -95,6 +95,10 @@ func (p *UVToolUpdatePreparation) BeginInstallUpdate(ctx context.Context, source
 func (s *uvToolInstallSession) Reference() domain.ArtifactReference { return s.reference }
 
 func captureUVToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]artifactpypi.UVInstalledWheelControls, error) {
+	return captureToolOriginalWheels(ctx, g)
+}
+
+func captureToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]artifactpypi.UVInstalledWheelControls, error) {
 	if g == nil || g.original == nil {
 		return nil, errors.New("UV tool original guard is unavailable")
 	}
@@ -102,8 +106,8 @@ func captureUVToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]art
 		return nil, err
 	}
 	var wheels []artifactpypi.UVInstalledWheelControls
-	total := len(g.original.input.Receipt().Body())
-	for _, metadata := range g.original.input.Original().MetadataFiles() {
+	total := len(g.original.receipt().Body())
+	for _, metadata := range g.original.metadataFiles() {
 		key := "site/" + metadata.Directory + "/"
 		main, ok := g.tx.current.Files[key+"METADATA"]
 		wheel, present := g.tx.current.Files[key+"WHEEL"]
@@ -129,7 +133,7 @@ func captureUVToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]art
 		wheels = append(wheels, artifactpypi.UVInstalledWheelControls{DistInfo: metadata.Directory, Metadata: metadata.Body, Wheel: body})
 	}
 	runtime := sandbox.PinnedPythonRuntime()
-	checked, err := g.original.input.ReplayWheelControls(wheels, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	checked, err := g.original.replayWheelControls(wheels, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
 	if err != nil {
 		return nil, err
 	}
@@ -141,10 +145,7 @@ func captureUVToolOriginalWheels(ctx context.Context, g *toolFreshTarget) ([]art
 
 func (s *uvToolInstallSession) validateSelection(resolution domain.DependencyResolution, controls []domain.ProjectControlFile) error {
 	if s.owner.pipx != nil {
-		if s.guard.original != nil || s.guard.client != toolClientPipx {
-			return errors.New("pipx fresh selection cannot consume an original tool")
-		}
-		return validateUVToolNativeSelection(resolution, controls, s.guard.requirement, "pipx-tool-install:"+sandbox.PipxResolverRuntimeIdentity(), []string{"pipx-tool-intent.json", "pipx-tool-receipt.json", "pipx-tool-pylock.toml", "pipx-tool-census.json"})
+		return s.validatePipxSelection(resolution, controls)
 	}
 	if s.guard.original == nil {
 		return validateUVToolSelection(resolution, controls, s.guard.requirement)

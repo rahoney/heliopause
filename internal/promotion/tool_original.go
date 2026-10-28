@@ -19,6 +19,7 @@ import (
 // is not transported or executed; current approval/publication stay separate.
 type toolOriginalState struct {
 	input     artifactpypi.UVToolUpgradeInput
+	pipx      *artifactpypi.PipxToolUpgradeInput
 	metadata  pypiInstalledSnapshot
 	links     []toolPublishedLink
 	selected  artifactpypi.ToolReceipt
@@ -35,6 +36,10 @@ func captureToolOriginal(ctx context.Context, g *toolFreshTarget, receiptPath st
 }
 
 func readToolOriginalReceipt(receiptPath string) (artifactpypi.ToolReceipt, pypiFileSnapshot, error) {
+	return readToolOriginalReceiptForClient(receiptPath, toolClientUV)
+}
+
+func readToolOriginalReceiptForClient(receiptPath string, client toolClient) (artifactpypi.ToolReceipt, pypiFileSnapshot, error) {
 	before, err := snapshotBoundedPromotionFile(receiptPath, 4<<20)
 	if err != nil || before.Mode.Perm()&0022 != 0 {
 		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, errors.New("original tool requires a regular private native receipt")
@@ -43,7 +48,7 @@ func readToolOriginalReceipt(receiptPath string) (artifactpypi.ToolReceipt, pypi
 	if err != nil || !before.matches(receiptPath) {
 		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, errors.New("original tool receipt changed")
 	}
-	receipt, err := artifactpypi.ParseUVToolReceipt(body)
+	receipt, err := client.parseReceipt(body)
 	if err != nil {
 		return artifactpypi.ToolReceipt{}, pypiFileSnapshot{}, err
 	}
@@ -51,11 +56,14 @@ func readToolOriginalReceipt(receiptPath string) (artifactpypi.ToolReceipt, pypi
 }
 
 func captureToolOriginalWithProjection(ctx context.Context, g *toolFreshTarget, receiptPath string, projection *artifactpypi.ToolReceipt) (*toolOriginalState, error) {
-	receipt, before, err := readToolOriginalReceipt(receiptPath)
+	receipt, before, err := readToolOriginalReceiptForClient(receiptPath, g.client)
 	if err != nil {
 		return nil, err
 	}
 	if projection != nil {
+		if g.client != toolClientUV {
+			return nil, errors.New("pipx native enrollment is unavailable")
+		}
 		expected, err := receipt.WithUVLayout(g.tx.plan.root, g.binRoot)
 		if err != nil || !bytes.Equal(expected.Body(), projection.Body()) {
 			return nil, errors.New("native tool original projection changed its raw receipt semantics")
@@ -74,11 +82,23 @@ func captureToolOriginalWithProjection(ctx context.Context, g *toolFreshTarget, 
 	if err != nil || len(managed) == 0 || len(managed) != len(metadata.files) {
 		return nil, errors.New("original tool requires complete existing HAA ownership; native adoption is unavailable")
 	}
-	input, err := artifactpypi.NewUVToolUpgradeInput(receipt, g.requirement, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
-	if err != nil {
-		return nil, err
+	state := &toolOriginalState{metadata: metadata}
+	if g.client == toolClientPipx {
+		input, err := artifactpypi.NewPipxToolUpgradeInput(receipt, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
+		if err != nil {
+			return nil, err
+		}
+		if !input.Request().SameConstraints(g.requirement) {
+			return nil, errors.New("pipx upgrade requires the held original bare project")
+		}
+		state.pipx = &input
+	} else {
+		input, err := artifactpypi.NewUVToolUpgradeInput(receipt, g.requirement, metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
+		if err != nil {
+			return nil, err
+		}
+		state.input = input
 	}
-	state := &toolOriginalState{input: input, metadata: metadata}
 	root := receipt.Requirement().Project()
 	var main pypiDestination
 	ok := false
@@ -92,7 +112,7 @@ func captureToolOriginalWithProjection(ctx context.Context, g *toolFreshTarget, 
 		return nil, errors.New("original tool main metadata is not singly owned")
 	}
 	commands := map[string]bool{}
-	for _, command := range receipt.Commands() {
+	for _, command := range g.client.exposedCommands(receipt, g.binRoot) {
 		if command.Name == toolBinTransactionLock {
 			return nil, errors.New("original tool command collides with its guard")
 		}
@@ -182,14 +202,18 @@ func (s *toolOriginalState) verify(ctx context.Context, g *toolFreshTarget) erro
 }
 
 func (g *toolFreshTarget) freezeOriginalCommands(ctx context.Context, receipt artifactpypi.ToolReceipt) error {
-	if g.original == nil || len(g.commands) != 0 || g.original.selected.Valid() || !receipt.Requirement().SameConstraints(g.original.input.Receipt().Requirement()) {
+	if g.original == nil || len(g.commands) != 0 || g.original.selected.Valid() || !receipt.Requirement().SameConstraints(g.original.selectionRequirement(g.requirement)) {
 		return errors.New("original tool command selection is repeated or changed its original requirement")
 	}
 	if err := receipt.ValidateLayout(g.tx.plan.root, g.binRoot, filepath.Join(g.tx.plan.root, "bin/python")); err != nil {
 		return err
 	}
-	if _, err := artifactpypi.NewUVToolUpgradeInput(receipt, g.requirement, g.original.metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion); err != nil {
-		return err
+	if g.client == toolClientUV {
+		if _, err := artifactpypi.NewUVToolUpgradeInput(receipt, g.requirement, g.original.metadata.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion); err != nil {
+			return err
+		}
+	} else if g.original.pipx == nil || receipt.Client() != "pipx" {
+		return errors.New("pipx selected receipt has no held original")
 	}
 	old := map[string]toolPublishedLink{}
 	for _, link := range g.original.links {
@@ -204,7 +228,7 @@ func (g *toolFreshTarget) freezeOriginalCommands(ctx context.Context, receipt ar
 	if errors.Join(readErr, closeErr) != nil || len(entries) > 100000 {
 		return errors.New("tool command directory is unavailable or exceeds bounds")
 	}
-	for _, command := range receipt.Commands() {
+	for _, command := range g.client.exposedCommands(receipt, g.binRoot) {
 		if command.Name == toolBinTransactionLock {
 			return errors.New("new tool command collides with controller guard")
 		}
@@ -229,7 +253,7 @@ func (g *toolFreshTarget) freezeOriginalCommands(ctx context.Context, receipt ar
 			g.tx.before[internal] = nil
 		}
 	}
-	g.commands = receipt.Commands()
+	g.commands = g.client.exposedCommands(receipt, g.binRoot)
 	g.original.selected = receipt
 	return g.verify(ctx)
 }

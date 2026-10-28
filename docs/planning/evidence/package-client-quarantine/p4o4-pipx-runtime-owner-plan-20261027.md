@@ -2331,3 +2331,74 @@ Host5/Docker·42input/ZIP·Go21/새 CPP6 동일/helperwait0/final stopped·부�
 미사용 미래 API/Staticcheck 억제를 추가하지 않았다. 같은 M13-004/C-c2에서 기존 managed
 original guard/ownership·current upgrade/승인 무결성 거부를 pipx에 연결한다. Native adoption,
 production CLI/hosted/final/signed 및 독립 legacy ZIP CPU 경계는 남는다.
+
+## C-c2 — managed original/현재 승인 업그레이드의 source 전 감사
+
+기준de9c65c/tree8ee914ce/2861files다. INDEX 및 artifact L01/L02/L15, sandbox L03/L08/L18,
+evidence L16/ci L06을 다시 읽고 실제 Git/index/현재 Queue와 Read의 client09 §1·2·4,
+plan20 §4·5/Contract003 및 C-b3b/C-c1 receipt를 대조했다. 같은 M13-004의 다음 gap이다.
+
+| 기존 owner / 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| PipxResolver.ResolveToolUpgrade / inert original·7control | YES | YES(native public metadata) | YES(B3b actual) | YES(metadata scope) | held Host original의 소비 |
+| toolOriginalState / captureToolOriginalWithProjection·metadata/links ownership | YES | YES(UV) | YES(UV scopes) | YES(UV) | pipx JSON/typed original와 별도 internal/external command 경로 |
+| captureUVToolOriginalWheels / snapshot·owner·hash·Replay guard | YES | YES(UV) | YES(UV scopes) | YES(UV) | 같은 file read body의 pipx typed Replay 소비 |
+| UVToolUpdatePreparation / shared install session/current 전체 검사·Policy·승인 cache | YES | YES(UV) | YES(existing scopes) | YES(UV) | pipx bare upgrade와 original provenance/현재 metadata 소비 |
+| toolOriginalPublication / retire·rollback·foreign 보존 | YES | YES(UV) | YES(existing scopes) | YES(UV) | 같은 엔진에 managed pipx old/new external link 인계 |
+| current pipx managed upgrade preparation/actual integrity failure | NO | NO | NO | NO | C-c2 typed adapter/default·실제 delta/no-op·현재 Evidence 거부 |
+| native pipx adoption / production CLI / final profiles | NO | NO | NO | NO | 후속; 이번 managed scope로 확대하지 않음 |
+
+UV 원본/typed input과 native enrollment는 그대로 유지하고 같은 toolOriginalState에 별도
+PipxToolUpgradeInput을 보유한다. Closed client의 receipt parser/path와 기존 held metadata/전체
+HAA distribution ownership·내부 script 및 외부 symlink identity를 같은 guard로 검증한다.
+원본 receipt만으로 ownership을 만들지 않으며 원본 package/interpreter/argv를 실행하지 않는다.
+이미 구현한 WHEEL read/owner/hash body는 공통 private helper로 그대로 재사용하고 마지막
+Replay만 해당 typed input에 위임한다. Pipx 요청은 bare project이고 old receipt 제약과 새 요청을
+분리한다. 따라서 UV의 old constraint 유지 규칙을 pipx 새 receipt에 적용하지 않는다. 새 pipx
+receipt의 version은 current frozen graph primary와 대조하며 old metadata를 새 version의 증거로
+사용하지 않는다. New control7+host receipt/target2를 현재 검사·Policy·승인 Manifest에 묶는다.
+
+공통 lifecycle/whole 검사·Policy/materializer/원자 publication·원복을 대체하지 않는다. UV의
+기본 분기는 기존 typed behavior를 유지하며 pipx native/unowned original/adoption은 이 단계에서
+명시 거부한다. Old code/Host Python을 실행하지 않는다. Runtime/observer/권한·예산·required
+coverage·Core/domain/ports는 변경하지 않는다. 재사용하지 못하는 구현을 새로 대체하지 않는다.
+
+Canonical Quick/전체 영향 promotion·bootstrap·application Race/tag compile/docs/security,
+default 원본 변조/ownership·WHEEL·foreign receipt/command0·동시 locks/native primary 실패,
+기존 UV original/원복과 새 pipx 원복을 확인한다. Actual은 genuine current approved6.0 설치에서
+bare upgrade6.1와 same-version current approval·기존 current Evidence readback/controls9를
+확인하고 required Evidence 기록 실패 거부 시 기존 파일/receipt/links 불변을 확인한다. Actual 전에는
+C-c2 QUALIFIED/ACCEPTANCE_CLOSED=NO다. 다음 CLI/native adoption/hosted/final은 별도다.
+
+C-c2 첫 v1 format0.675s 뒤 Quick20.796s는 새 test fixture가 없는 destination.Mode 필드를
+참조해 test-build에서 거부됐다. 기존 plan.bind와 실제 file mode snapshot을 쓰게 교정했다.
+V2 format0.634s/focused14.288s(실제 package7.173s)는 managed 정상/거부·retirement는
+통과했지만 원복 후 새 test가 pre-publication metadata.verify/checkBefore를 호출해
+UPDATE_SOURCE_CHANGED였다. 기존 UV post-transaction helper는 retired temporary inventory가
+아닌 원본 파일·metadata ledger·link inode/mode/hash를 직접 검증한다. 같은 기존
+requireOriginalToolRestored를 재사용하고 pipx receipt body의 별도 exact readback을 유지한다.
+제품 guard/원복을 완화하지 않는다. Source8/두 최초 raw를 보존하며 다음 회귀로 범위를 확인한다.
+
+### C-c2 managed current upgrade/승인 거부 한정 완료
+
+[로컬 receipt](./p4o4c3c3b3c-c2-managed-approved-backend-local-20261028.json)의 최종 v4는
+format0.636s/Quick181.693s/영향 promotion·bootstrap·application 전체 Race170.689s/
+tag vet1.941s/build3.558s/docs0.240s/security11.429s PASS다. 기존 workspace/materializer/
+transaction·observer 여섯 owner는 전체 unchanged이며 WHEEL read/owner/hash/bounds 본문은
+typed input 접근자3개를 역으로 바꾸면 전체 동일하다. 기존 UV typed behavior를 유지한다.
+새 테스트만의 compile/잘못된 post-transaction verify와 교정 focused13.636s(실제6.506s)는
+앞선 원본으로 보존하며 제품 원복을 완화하지 않았다.
+
+Go25/binary3fa08d49와 동일 CPP6/ae301892의 actual-v1 311.132s는 세 named parent/
+noSKIP PASS다. Pipx 원본은 실제 current 승인 설치한6.0/정확한 cowsay==6.0이며 수정하지
+않았다. Bare upgrade가6.1을 선택하고 original7+Host2/control9를 현재 Manifest에 묶어
+receipt/metadata·exposed command를 원자로 반영했다. 다음 same6.1도 새 required 검사/
+Evidence readback·Policy ALLOW/current run을 확인했다. Old constraint와 새 bare 요청의
+분리는 두 원본 control에서 exact 검증했다. 실제 native no-op 후 current Evidence write가
+실패하면 prior ALLOW/cache로 우회하지 않고 zero bundle/promotion으로 거부하며 기존
+inode/bytes/mode/links가 동일하다. User file/Host5·Docker·42input/ZIP·Go25/CPP6 불변/
+helperwait0/final stopped·부재다. 기존 UV managed/현재 Evidence 거부도 함께 PASS이며 그
+UV 과거 unversioned requirement의 synthetic 범위는 유지한다. Native adoption을 새로
+검증한 것이 아니다. C-c2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 managed
+backend 범위다. 같은 M13-004/C-c3에서 production pipx install/upgrade CLI와 factory를
+연결하며 native adoption/hosted/final/signed·독립 legacy ZIP CPU 경계는 후속으로 남긴다.

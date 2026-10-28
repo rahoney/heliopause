@@ -22,6 +22,7 @@ type UVToolInstallPreparation struct {
 	promoter     *PyPIPromotion
 	resolver     uvToolNativeSelector
 	pipx         pipxToolNativeSelector
+	pipxUpgrade  pipxToolUpgradeNativeSelector
 	upgrade      uvToolUpgradeNativeSelector
 	native       *pypiNativeEnrollment
 	binRoot      string
@@ -97,6 +98,17 @@ func (s *uvToolInstallSession) ResolveDependencies(ctx context.Context, referenc
 			if err != nil {
 				return domain.DependencyResolution{}, err
 			}
+		}
+	}
+	if s.owner.client() == toolClientPipx {
+		matched := false
+		for _, node := range resolution.Graph().Nodes() {
+			if node.Node() == resolution.Graph().Primary() {
+				matched = node.Artifact().Identity().Version() == native.Version()
+			}
+		}
+		if !matched {
+			return domain.DependencyResolution{}, errors.New("pipx receipt version differs from current frozen primary")
 		}
 	}
 	projected, err := s.owner.client().projectReceipt(native, install.Target().String(), s.owner.binRoot)

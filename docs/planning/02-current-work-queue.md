@@ -15,15 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-c1 fresh approved backend named local UV/pipx actual128.572s PASS; C-b3b original metadata upgrade/no-op PASS; CI421 prior hosted scope
-Next action: M13-004/P4-O4-C3c3b3c C-c2 held managed original/current upgrade and approval-integrity negatives; production CLI/native adoption/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
-Current substep: M13-004/P4-O4-C3c3b3c C-c2 IN_PROGRESS; fresh current backend named local; managed/native original/CLI/hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-c2 managed approved backend/current Evidence refusal named local actual311.132s PASS; fresh C-c1 PASS; CI421 prior hosted scope
+Next action: M13-004/P4-O4-C3c3b3c C-c3 production pipx install/upgrade CLI and factory baseline/wiring; native adoption/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
+Current substep: M13-004/P4-O4-C3c3b3c C-c3 IN_PROGRESS; fresh/managed current backend named local closed; CLI/native adoption/hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-c2 managed approved pipx backend 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-c2-managed-approved-backend-local-20261028.json)의
+Quick181.693s/영향3package 전체 Race170.689s/tag/docs/security와 actual311.132s가 PASS다.
+실제 승인한6.0 원본에서 bare upgrade6.1 및 same-version의 current 검사/Evidence·Policy/control9를
+확인했다. Current Evidence write 실패는 prior ALLOW를 우회하지 못하고 기존 inode/bytes/links를
+보존했다. 기존 UV managed·Evidence 거부도 PASS이며 여섯 공통 owner는 unchanged다. Production
+CLI/native adoption/hosted/final은 별도이고 같은 M13-004/C-c3의 CLI/factory를 계속한다.
 
 ### 2026-10-28 C-c1 fresh approved pipx backend 한정 완료
 

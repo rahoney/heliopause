@@ -54,7 +54,7 @@ func (g *toolFreshTarget) commitTool(ctx context.Context, destinations []pypiDes
 	parsed, err := g.client.parseReceipt(receipt.Body())
 	nativeRequirement := g.requirement
 	if g.original != nil {
-		nativeRequirement = g.original.input.Receipt().Requirement()
+		nativeRequirement = g.original.selectionRequirement(g.requirement)
 		if !g.original.selected.Valid() || !bytes.Equal(g.original.selected.Body(), receipt.Body()) {
 			return errors.New("original tool receipt differs from frozen selection")
 		}
