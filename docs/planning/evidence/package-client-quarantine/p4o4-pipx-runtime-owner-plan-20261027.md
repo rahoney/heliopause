@@ -3248,3 +3248,23 @@ live이며 full frozen replay가 아니다. Bare latest2.15의 missing wheel has
 입력 연결은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(named local)이며 전체
 hosted/final/signed는NO다. 다음은 누적 source candidate의 전체 검토·정확한 public push 범위와
 기존 CI 재qualification이다. CI422 자체의 실패/hosted raw report 미수집 한계는 보존한다.
+
+### 승인된4commit source6dd3136 CI423 등록
+
+사용자의 exact4commit/18file 공개 push·CI 승인 뒤 현재2891index/양쪽 disk blob·mode와
+commit tree feab8ef9를 대조했다. Read-only index=commit tree 방식이며 첫 write-tree 시도는
+sandbox index.lock 거부로 push 전에 중단됐다. Git 입력·권한을 바꾸지 않고 읽기 전용 대조를
+완료했으며 사용자 승인된 참조만 정상 FF push했다. Source1203445→6dd3136이고 이후 local
+변경은 이 payload 밖이다. Raw ci423-approved-candidate가 정확한 scope와 점검을 소유한다.
+
+[CI423](https://github.com/rahoney/heliopause/actions/runs/40700511803)는13:52:50UTC 등록됐다.
+Initial run/jobs query는 서로 다른 시각이므로 queued run과 progressing jobs를 구분한다.
+정규화 초안의 guessed13:53:16 표기는 폐기하지 않고 별도 draft로 보존했으며 실제 post-tool
+clock sample13:52:58/13:53:32로 정정했다. Server run start/20min due에는 영향이 없다.
+Timer31554의 첫 due14:12:50UTC에 직접 조회하고 계속 중이면 다음20min을 등록한다.
+Current whole/Linux/pipx/UID1001/final/signed는 결과 전 OPEN이다. 대기 중 독립 P5를 계속한다.
+
+첫 timer는14:12:50.000193UTC에 발화했고14:13:07UTC fresh run/jobs에서 source6dd와
+8SUCCESS/Linux IN_PROGRESS를 조회했다. 완료8 decoded logs442775B의 매 chunk readback과
+all8checkoutb571e02/tree feab8ef9/2891 source 동일을 확인했다. Required/current Linux는
+미확정이고 다음20min due14:33:07UTC/session84800을 등록했다. P5-B1 새 source는 이 CI 밖이다.

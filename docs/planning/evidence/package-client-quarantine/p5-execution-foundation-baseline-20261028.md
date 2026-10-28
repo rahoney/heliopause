@@ -110,6 +110,49 @@ Race49.102s/docs0.267s/security14.043s가 PASS다. 기존1281source와 parser는
 manifest·target 및 다른 member digest/size/mode 치환·zero value를 검증했다. 첫 Quick265.854s는
 새 test의 noncanonical base32 RunID로 inventory fixture 생성에서 실패했으며 기존 canonical
 생성자로 고쳤다. 최초 실패 원본을 보존했고 production 검증을 완화하지 않았다.
-P5-A 구조적 선택은 IMPLEMENTED/WIRED=YES(기존 parser에 연결)/QUALIFIED=YES(local)/
+P5-A 구조적 선택은 IMPLEMENTED=YES/WIRED=NO(실제 P5 run 흐름)/QUALIFIED=YES(local)/
 ACCEPTANCE_CLOSED=YES(선택 범위)다. P5 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는NO이며
 실행/CLI/현재 whole 검사·runtime/입출력·취소는 다음 missing이다. CI422에는 이 source가 없다.
+
+## P5-B1 — selected bytes / Node runtime, source 전 audit·map·두 번째 검토
+
+Source6dd3136/tree feab8ef9/2891files이며 Root/private runtime1283은 동일하다. CI423이 이 source를
+검증 중이고 다음 변경은 그 payload 밖이다. Existing `ExecutionEntry`/`ArchiveInventory`와
+`pnpmNodeBinTarget`는 기존 layout 범위의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES다.
+ExecutionEntry API는 IMPLEMENTED/QUALIFIED=YES(local)이나 P5 run 연결은 WIRED=NO다.
+P5 selected bytes와 Node runtime binding은 네 상태 모두NO이며 이 missing만 수행한다.
+
+기존 npm package의 새 `node_execution_entry.go`와 회귀에서 `ExecutionEntry.BindNodeTarget`
+을 추가한다. 기존 parser/Node validator를 재작성하지 않는다. ArchiveFileLimit20MiB 안의
+size를 먼저 확인하고 caller bytes를 복사한 다음 원본 target digest와 기존 closed shebang/
+JS-extension 규칙을 검증한다. 빈 JS도 original size/digest가 맞으면 구조적으로 유효하다.
+결과는 immutable bytes·exact entry와 기존 `runtimeidentity.NodeImageReference`를 함께
+보유한다. Generic runtime override/Host PATH/interpreter 추론·새 port/package/job은 없다.
+
+두 번째 검토: metadata facts의 digest와 실제 bytes 일치는 필요하지만 source authentication,
+현재 whole graph·검사/Evidence·Policy·실행 허가는 별도다. 이 value를 approval token으로
+쓰지 않는다. Caller/returned slice 변경과 같은 크기의 다른 bytes·truncated/extra/oversize,
+wrong interpreter/options·zero value와 fixed runtime·전체 inventory binding을 회귀로 검증한다.
+기존20MiB와 Node pin은 유지하고 canonical format/quick/npm fullRace를 수행한다. 실행·CLI와
+whole frozen graph/argv/policy context는 다음 P5 gap이며 이 API 성공으로 닫지 않는다.
+
+### B1 첫 architecture 실패와 범위 교정
+
+첫 Quick43.383s는 새 artifact/npm의 runtimeidentity import를 architecture gate에서 거부했다.
+PyPI의 기존 특수 의존을 npm에도 허용된다고 일반화한 새 후보의 책임이며 기존 production
+실패가 아니다. 첫 두 source/log를 raw에 보존했고 import allowlist를 넓히지 않는다.
+B1은 bytes/closed Node entrypoint 형식의 immutable value만 담당한다. Type 자체가 Node를
+요구하며 정확한 canonical runtime pin은 다음 조립 계층의 full execution context에서 결합한다.
+즉 위 초기 B1 지도 중 exact pin 연결은 B2의 MISSING으로 정정한다. 기존 formatter/parser/
+Node validator·byte/hash bound는 유지하고 교정 후보의 canonical 검증을 수행한다.
+
+### P5-B1 named local 결과와 실제 연결 상태
+
+[로컬 receipt](./p5b1-node-entry-bytes-local-20261028.json)의 corrected Quick256.332s/npm fullRace
+49.546s/docs0.379s/security13.967s가 PASS다. Source1283과 기존 validator는 그대로이고 새2file만
+추가했다. Bytes size/SHA·closed Node 선언·전체 원본 binding·복사 불변과 wrong bytes/length/
+interpreter/options/oversize/zero·빈 JS를 검증했다. Architecture 실패 후보와 원본을 보존했다.
+B1은 IMPLEMENTED/QUALIFIED=YES(value local), WIRED=NO(P5 run/CLI), ACCEPTANCE_CLOSED=YES
+(value 한정)다. A의 parser 내부 재사용도 실제 P5 flow 연결을 뜻하지 않으므로 WIRED=NO로
+명확히 기록한다. Exact runtime pin/whole graph·argv/source-policy는 B2에 남고 전체 P5는
+WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. CI423은 이전6dd source이며 이 변경을 포함하지 않는다.

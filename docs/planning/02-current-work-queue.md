@@ -16,14 +16,41 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: CI422 canonical CPU positive input repair locally qualified (Quick/affectedRace/no-overlay actual45.715s); review accumulated exact-source grouped hosted candidate; no active CI/timer
-Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source1203445 CI422 Linux/Required FAILURE; 8SUCCESS; current whole hosted/final/signed remain
+Next action: CI423 poll01 14:13:07UTC 8SUCCESS/Linux running; next20min14:33:07UTC/session84800; P5-B1 Node bytes API locally qualified/unwired, continue B2 full context
+Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source6dd3136 CI423 registered after approved4commit push; current whole hosted/final/signed remain
 Acceptance audit: CI422/source1203445 Linux+Required FAILURE; all10 checkout403e7ce/tree d4b0e921/2883 matches; 8SUCCESS/Linux24PASS/noSKIP/helper6wait0/restore; first torch report candidate refusal unresolved. Previous full success CI421/e859; current whole/final/signed OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS exact bin selection only; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 CI423 첫20min 소비와 P5-B1 로컬 검증
+
+14:12:50.000193UTC timer1 발화 뒤14:13:07UTC same6dd/8SUCCESS/Linux 진행을 직접 조회했다.
+완료8logs442775B/매 chunk readback·checkoutb571e02 전체tree feab8ef9/2891files가 source와
+같다. Required/전체 Linux는OPEN이며 다음 due14:33:07UTC/session84800을 등록했다.
+[P5-B1 receipt](./evidence/package-client-quarantine/p5b1-node-entry-bytes-local-20261028.json)의
+Quick256.332s/npm fullRace49.546s/docs/security가 PASS다. 기존1283source와 validator는
+불변이고 새2file의 bytes/Node 선언 value만 검증했다. Runtime 모듈 import 실패 후보를 보존하고
+기존 Architecture를 유지했다. A/B1은 실제 P5 run 연결이 없어 WIRED=NO다. 다음 B2의 whole
+graph/argv/runtime/source-policy와 전체 실행·CLI는 미완료다. CI423 source는6dd로 고정한다.
+
+### 2026-10-28 P5-B1 selected bytes / Node runtime 착수
+
+[P5-B1 audit/map/두 번째 검토](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)에
+따라 기존 inventory/bin/Node validator를 재사용하고 선택 파일 bytes의 size/digest·closed
+interpreter와 기존 runtime identity를 묶는다. 전체 검역·실행 authority/CLI는 다음 gap이다.
+CI423 source6dd3136과 실제20min timer31554/due14:12:50UTC를 유지하고 새 push는 없다.
+
+### 2026-10-28 승인된4commit CI423 시작
+
+사용자가 exact4commit/18file 후보6dd3136의 기존 공개 milestone branch push·CI를 승인했다.
+전체2891index/두 사본/commit tree feab8ef9와 원격1203445의 FF ancestry를 확인하고 해당
+참조만 push했다. [CI423/run40700511803](https://github.com/rahoney/heliopause/actions/runs/40700511803)가
+13:52:50UTC 시작돼9jobs 등록/Docs SUCCESS를 확인했다. 실제20min timer session31554의
+첫 due14:12:50UTC(23:12:50KST)에 직접 상태를 조회한다. Source6dd3136 이후 local 변경은
+포함하지 않았고 같은 M13-004/P5의 독립 다음 작업을 계속한다. Whole qualification은 결과 전 OPEN이다.
 
 ### 2026-10-28 CI422 canonical qualification 입력 연결 교정
 
