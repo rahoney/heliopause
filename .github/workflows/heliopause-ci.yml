@@ -481,6 +481,10 @@ jobs:
           haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
           haa_start_policy_helper
           bash scripts/ci-pipx-runtime.sh inspect
+          bash scripts/ci-pipx-runtime.sh tools-bootstrap
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          bash scripts/ci-pipx-runtime.sh tools-native
           go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pipx-graph-test" ./internal/artifact/githubrelease
           haa_install_ci_client "$RUNNER_TEMP/helox-pipx-graph-test"
           haa_start_policy_helper

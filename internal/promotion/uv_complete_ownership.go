@@ -24,7 +24,7 @@ func prepareUVCompleteOwnership(ctx context.Context, tx *pypiVenvTransaction, or
 		if native == nil {
 			return domain.ProjectControlFile{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("UV sync original enrollment collaborators are unavailable"))
 		}
-		inventory, err := capturePyPINativeInventoryFromMetadata(ctx, tx, metadata)
+		inventory, err := capturePyPINativeInventoryWithToolScripts(ctx, tx, metadata, native.toolScripts)
 		if err != nil {
 			return domain.ProjectControlFile{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
 		}

@@ -9,8 +9,8 @@ import (
 )
 
 const pipxCIHarnessGo = "#!/bin/bash\nset -euo pipefail\nprintf 'go:%s\\n' \"$*\" >> \"$CALLS\"\nstage=$3\nif [[ \"$stage\" == -check ]]; then exit 0; fi\nif [[ \"$stage\" == fetch-pipx-supply && \"${FAIL_STAGE-}\" == fetch ]]; then exit 23; fi\noutput=''; notices=''\nwhile (($#)); do\n case \"$1\" in\n  --output) output=$2; shift 2 ;;\n  --notices-output) notices=$2; shift 2 ;;\n  *) shift ;;\n esac\ndone\nif [[ \"$stage\" == fetch-pipx-supply ]]; then\n mkdir -m 0700 -- \"$output\"\nelse\n printf 'synthetic DATA for shell dispatch only\\n' > \"$output\"\n printf 'synthetic notices for shell dispatch only\\n' > \"$notices\"\nfi\n"
-const pipxCIHarnessClient = "#!/bin/bash\nset -euo pipefail\nprintf 'probe:%s\\n' \"$PWD\" >> \"$CALLS\"\nif [[ \"${HELOX_PIPX_GRAPH_INTEGRATION-}\" == 1 ]]; then\n names=TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging\nelse\n names=TestPipxAcquiredRuntimeRequiredInspectionIntegration\nfi\nif [[ \"${ROOT_PROBE-}\" == bootstrap ]]; then names='TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace TestInitialNativeFilesInDisposableNamespace TestProtectedStageInDisposableNamespace'; fi\nif [[ \"${ROOT_PROBE-}\" == pending ]]; then names=TestInterruptedSystemCopyInDisposableNamespace; fi\nfor name in $names; do\n case \"${REPORT_KIND-pass}\" in\n  empty) printf 'testing: warning: no tests to run\\n' ;;\n  skip) printf '%s\\n' \"--- SKIP: $name (0.00s)\" ;;\n  child) printf '    %s\\n' \"--- PASS: $name/child (0.00s)\" ;;\n  duplicate) printf '%s\\n' \"--- PASS: $name (0.00s)\" \"--- PASS: $name (0.00s)\" ;;\n  *) printf '%s\\n' \"--- PASS: $name (0.00s)\" ;;\n esac\ndone\nif [[ \"${REPORT_KIND-pass}\" == failure ]]; then exit 37; fi\n"
-const pipxCIHarnessSudo = "#!/bin/bash\nset -euo pipefail\nprintf 'sudo:%s\\n' \"$*\" >> \"$CALLS\"\nif [[ \"$*\" == *helox-releaseinstall-test* ]]; then export ROOT_PROBE=pending; else export ROOT_PROBE=bootstrap; fi\nexec \"$CLIENT_STUB\"\n"
+const pipxCIHarnessClient = "#!/bin/bash\nset -euo pipefail\nprintf 'probe:%s\\n' \"$PWD\" >> \"$CALLS\"\nif [[ \"${HELOX_PIPX_GRAPH_INTEGRATION-}\" == 1 ]]; then\n names=TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging\nelse\n names=TestPipxAcquiredRuntimeRequiredInspectionIntegration\nfi\nif [[ \"${ROOT_PROBE-}\" == bootstrap ]]; then names='TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace TestInitialNativeFilesInDisposableNamespace TestProtectedStageInDisposableNamespace'; fi\nif [[ \"${ROOT_PROBE-}\" == pending ]]; then names=TestInterruptedSystemCopyInDisposableNamespace; fi\nif [[ \"${ROOT_PROBE-}\" == tools-native ]]; then names=\"TestLinuxPipxObservedNativeInstallIntegration TestLinuxPipxPublicInstallResolverIntegration TestLinuxPipxPublicOriginalUpgradeIntegration\"; fi\nif [[ \"${ROOT_PROBE-}\" == tools-bootstrap ]]; then names=\"TestLinuxPipxToolInstallCLIIntegration TestLinuxPipxToolUpgradeCLIIntegration TestLinuxPipxToolNativeAdoptionCLIIntegration TestPipxPublicToolApprovedUpgradeIntegration\"; fi\nfor name in $names; do\n case \"${REPORT_KIND-pass}\" in\n  empty) printf 'testing: warning: no tests to run\\n' ;;\n  skip) printf '%s\\n' \"--- SKIP: $name (0.00s)\" ;;\n  child) printf '    %s\\n' \"--- PASS: $name/child (0.00s)\" ;;\n  duplicate) printf '%s\\n' \"--- PASS: $name (0.00s)\" \"--- PASS: $name (0.00s)\" ;;\n  *) printf '%s\\n' \"--- PASS: $name (0.00s)\" ;;\n esac\ndone\nif [[ \"${REPORT_KIND-pass}\" == failure ]]; then exit 37; fi\n"
+const pipxCIHarnessSudo = "#!/bin/bash\nset -euo pipefail\nprintf 'sudo:%s\\n' \"$*\" >> \"$CALLS\"\nif [[ \"$*\" == *helox-releaseinstall-test* ]]; then export ROOT_PROBE=pending; else export ROOT_PROBE=bootstrap; fi\nif [[ \"$*\" == *tools-native* ]]; then export ROOT_PROBE=tools-native; fi\nif [[ \"$*\" == *tools-bootstrap* ]]; then export ROOT_PROBE=tools-bootstrap; fi\nexec \"$CLIENT_STUB\"\n"
 
 // Only the shell dispatch/cleanup boundary is under test. Frozen wheel/proof
 // validation and actual Go clients use the separate explicit real-corpus runs.
@@ -21,7 +21,7 @@ func runPipxCIDriverHarness(t *testing.T, mode, report, failStage string, cleanu
 	bin := filepath.Join(base, "bin")
 	runner := filepath.Join(base, "runner")
 	calls := filepath.Join(base, "calls")
-	for _, name := range []string{bin, runner, filepath.Join(repo, "internal/bootstrap"), filepath.Join(repo, "internal/artifact/githubrelease"), filepath.Join(repo, "internal/releaseactivation"), filepath.Join(repo, "internal/releaseinstall"), filepath.Join(repo, "docs/planning/evidence/m13-003-release-build/v0.1.0")} {
+	for _, name := range []string{bin, runner, filepath.Join(repo, "internal/bootstrap"), filepath.Join(repo, "internal/sandbox"), filepath.Join(repo, "internal/artifact/githubrelease"), filepath.Join(repo, "internal/releaseactivation"), filepath.Join(repo, "internal/releaseinstall"), filepath.Join(repo, "docs/planning/evidence/m13-003-release-build/v0.1.0")} {
 		if err := os.MkdirAll(name, 0700); err != nil {
 			t.Fatal(err)
 		}
@@ -70,7 +70,7 @@ func runPipxCIDriverHarness(t *testing.T, mode, report, failStage string, cleanu
 }
 
 func TestPipxCIDriverDispatchRequiresExactFrameworkCompletion(t *testing.T) {
-	for _, mode := range []string{"inspect", "graph", "namespace"} {
+	for _, mode := range []string{"inspect", "graph", "namespace", "tools-native", "tools-bootstrap"} {
 		for _, report := range []string{"pass", "empty", "skip", "child", "duplicate", "failure"} {
 			t.Run(mode+"/"+report, func(t *testing.T) {
 				status, out, calls, remaining := runPipxCIDriverHarness(t, mode, report, "", false)
@@ -95,6 +95,9 @@ func TestPipxCIDriverDispatchRequiresExactFrameworkCompletion(t *testing.T) {
 					t.Fatal("wrong number of test dispatches", calls)
 				}
 				packageName := "internal/bootstrap"
+				if mode == "tools-native" {
+					packageName = "internal/sandbox"
+				}
 				if mode == "graph" {
 					packageName = "internal/artifact/githubrelease"
 				}

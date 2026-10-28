@@ -96,6 +96,12 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		} else {
 			findings = append(findings, validatePipxRuntimeScript(string(script))...)
 		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-pipx-tools.sh"))
+		if err != nil {
+			findings = append(findings, "pipx installed tools fixture script is unavailable")
+		} else {
+			findings = append(findings, validatePipxInstalledToolsScript(string(script))...)
+		}
 		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-uv-tools.sh"))
 		if err != nil {
 			findings = append(findings, "UV tools qualification script is unavailable")

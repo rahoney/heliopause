@@ -8,6 +8,9 @@ const pipxBootstrapNamespaceCommand = "pipx_ci_run internal/releaseactivation Te
 const pipxPendingNamespaceCommand = "pipx_ci_run internal/releaseinstall TestInterruptedSystemCopyInDisposableNamespace pending sudo -n env HELOX_COPY_INTERRUPTION_NAMESPACE=1 unshare --mount --net --fork \"$RUNNER_TEMP/helox-releaseinstall-test\" -test.v -test.failfast -test.timeout=3m -test.run '^TestInterruptedSystemCopyInDisposableNamespace$'"
 const pipxGraphSBOMFixtureCommand = "cp -- \"$pipx_root/docs/planning/evidence/m13-003-release-build/v0.1.0/helox-release-sbom.cdx.json\" \"$pipx_work/helox-release-sbom.cdx.json\""
 
+const pipxToolsNativeCommand = `pipx_ci_run internal/sandbox TestLinuxPipxObservedNativeInstallIntegration,TestLinuxPipxPublicInstallResolverIntegration,TestLinuxPipxPublicOriginalUpgradeIntegration tools-native sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"`
+const pipxToolsBootstrapCommand = `pipx_ci_run internal/bootstrap TestLinuxPipxToolInstallCLIIntegration,TestLinuxPipxToolUpgradeCLIIntegration,TestLinuxPipxToolNativeAdoptionCLIIntegration,TestPipxPublicToolApprovedUpgradeIntegration tools-bootstrap sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"`
+
 // Concrete fixed CI convention only; executed dispatch and cleanup are separate.
 func validatePipxRuntimeScript(contents string) []string {
 	counts := map[string]int{}
@@ -23,7 +26,7 @@ func validatePipxRuntimeScript(contents string) []string {
 	for _, command := range []string{
 		"set -euo pipefail",
 		"case \"$#:${1-}\" in",
-		"1:inspect|1:graph|1:namespace) ;;",
+		"1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap) ;;",
 		"*) echo 'unsupported pipx CI profile' >&2; exit 2 ;;",
 		"pipx_profile=$1",
 		"test \"$(id -u)\" != 0",
@@ -47,13 +50,13 @@ func validatePipxRuntimeScript(contents string) []string {
 		"/^--- PASS: / { if($3 in expected) seen[$3]++ }",
 		"/--- SKIP:/ { bad=1 }",
 		"END { if(bad) exit 1; for(name in expected) if(seen[name]!=1) exit 1 }",
-		pipxRequiredInspectionCommand, pipxCurrentGraphCommand, pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, pipxGraphSBOMFixtureCommand,
+		pipxRequiredInspectionCommand, pipxCurrentGraphCommand, pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, pipxGraphSBOMFixtureCommand, pipxToolsNativeCommand, pipxToolsBootstrapCommand,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "pipx CI requires one exact active command: "+command)
 		}
 	}
-	dispatch := strings.Join([]string{"case \"$pipx_profile\" in", "inspect)", pipxRequiredInspectionCommand, ";;", "graph)", pipxGraphSBOMFixtureCommand, pipxCurrentGraphCommand, ";;", "namespace)", pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, ";;", "esac"}, "\n")
+	dispatch := strings.Join([]string{"case \"$pipx_profile\" in", "tools-native)", pipxToolsNativeCommand, ";;", "tools-bootstrap)", pipxToolsBootstrapCommand, ";;", "inspect)", pipxRequiredInspectionCommand, ";;", "graph)", pipxGraphSBOMFixtureCommand, pipxCurrentGraphCommand, ";;", "namespace)", pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, ";;", "esac"}, "\n")
 	if strings.Count(strings.Join(active, "\n"), dispatch) != 1 {
 		findings = append(findings, "pipx CI requires exact exclusive mode/cwd/consumer dispatch")
 	}
@@ -70,6 +73,10 @@ func validatePipxInspectionClientOrder(contents string) []string {
 		"haa_install_ci_client \"$RUNNER_TEMP/helox-pnpm-project-test\"",
 		"haa_start_policy_helper",
 		"bash scripts/ci-pipx-runtime.sh inspect",
+		"bash scripts/ci-pipx-runtime.sh tools-bootstrap",
+		`haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`,
+		"haa_start_policy_helper",
+		"bash scripts/ci-pipx-runtime.sh tools-native",
 		"go test -c -tags=realcorpus -o \"$RUNNER_TEMP/helox-pipx-graph-test\" ./internal/artifact/githubrelease",
 		"haa_install_ci_client \"$RUNNER_TEMP/helox-pipx-graph-test\"",
 		"haa_start_policy_helper",
@@ -96,7 +103,7 @@ func validatePipxInspectionClientOrder(contents string) []string {
 	if matched != 1 {
 		findings = append(findings, "pipx actual requires current tagged clients, owning helper, namespaces and production restore in order")
 	}
-	for _, command := range []string{"bash scripts/ci-pipx-runtime.sh inspect", "bash scripts/ci-pipx-runtime.sh graph", "bash scripts/ci-pipx-runtime.sh namespace", expected[4], expected[8], expected[9]} {
+	for _, command := range []string{"bash scripts/ci-pipx-runtime.sh inspect", "bash scripts/ci-pipx-runtime.sh graph", "bash scripts/ci-pipx-runtime.sh namespace", "bash scripts/ci-pipx-runtime.sh tools-bootstrap", "bash scripts/ci-pipx-runtime.sh tools-native", expected[8], expected[12], expected[13]} {
 		if counts[command] != 1 {
 			findings = append(findings, "pipx actual requires one lifecycle command: "+command)
 		}

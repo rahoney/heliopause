@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-d1 explicit native pipx original/current approval named local actual366.291s two parent PASS; C-c3 public CLI PASS; prior CI421 consumed
-Next action: M13-004/P4-O4-C3c3b3c C-d2 existing hosted consumer/input/helper owner baseline and grouped wiring; final/legacy ZIP CPU boundary OPEN; no active CI/timer
-Current substep: M13-004/P4-O4-C3c3b3c C-d2 IN_PROGRESS; fixed native original and public CLI locally closed; hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-d2 exact CI tools-native 154.349s/3parents and tools-bootstrap 573.679s/4parents local PASS; hosted pending
+Next action: M13-004/P4-O4-C3c3b3c C-e1 remaining P4 acceptance/matrix and legacy ZIP CPU owner audit; grouped hosted candidate remains local; no active CI/timer
+Current substep: M13-004/P4-O4-C3c3b3c C-e1 IN_PROGRESS; native/CLI/existing CI wiring locally closed; hosted/final/legacy CPU remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-d2 existing hosted tools wiring 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-d2-hosted-tools-wiring-local-20261028.json)의
+v3 Quick280.009s/영향4package Race188.792s/tag/docs/security와 unchanged checker Race39.590s와 exact CI tools-native 154.349s/
+세 parent, tools-bootstrap 573.679s/네 parent/noSKIP가 PASS다. Existing job의 두
+client/helper owner에 fixed namespace ZIP·ordinary UID·pinned interpreter DATA를 연결했다.
+Short native의 -E/원래 RECORD를 독립 wheel·EP로 증명했다. 첫 frozen supply 누락/overlay
+cleanup NO와 short 원본 거부·진단/복구는 보존하며 최종 Host/입력/source 불변과
+helperwait0·workspace 부재를 확인했다. Hosted/UID1001·final/signed/legacy CPU gap은 별도다.
+같은 M13-004/C-e1에서 남은 acceptance/matrix와 CPU owner audit를 계속한다. 새 push/CI는 없다.
 
 ### 2026-10-28 C-d1 fixed native pipx original 한정 완료
 

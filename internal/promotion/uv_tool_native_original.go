@@ -76,7 +76,7 @@ func beginToolNativeOriginalTargetForClient(ctx context.Context, install domain.
 }
 
 func (p *uvToolNativeOriginalProof) verify(ctx context.Context, g *toolFreshTarget) error {
-	if p == nil || g == nil || p.scripts == nil || p.scripts.tx != g.tx ||
+	if p == nil || g == nil || p.scripts == nil || p.scripts.tx != g.tx || p.scripts.client != g.client ||
 		!p.rawReceipt.Present() || p.rawReceipt.Name() != g.client.originalNativeReceiptControl() {
 		return errors.New("native UV tool original proof is unavailable or changed its target")
 	}
@@ -138,7 +138,12 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 		}
 		candidate.input = input
 	}
-	scripts, err := newUVNativeToolScriptProof(ctx, g.tx)
+	var scripts *uvNativeToolScriptProof
+	if g.client == toolClientPipx {
+		scripts, err = newUVNativeToolScriptProofForClient(ctx, g.tx, g.client, raw.Commands())
+	} else {
+		scripts, err = newUVNativeToolScriptProof(ctx, g.tx)
+	}
 	if err != nil {
 		return nil, err
 	}

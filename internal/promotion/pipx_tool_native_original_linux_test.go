@@ -3,10 +3,14 @@ package promotion
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -59,6 +63,23 @@ func makeNativePipxOriginalFixture(t *testing.T, mode string) nativeToolOriginal
 	if err := os.WriteFile(filepath.Join(f.root, pipxToolHostReceipt), body, 0600); err != nil {
 		t.Fatal(err)
 	}
+	for _, command := range uv.Commands() {
+		path := filepath.Join(f.root, "bin", command.Name)
+		script, err := os.ReadFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		} // pinned exposure skips an absent/non-file app
+		if err != nil {
+			t.Fatal(err)
+		}
+		first, rest, ok := bytes.Cut(script, []byte("\n"))
+		if ok && bytes.HasPrefix(first, []byte("#!")) && bytes.Contains(bytes.ToLower(first[2:]), []byte("python")) && !bytes.ContainsAny(first[2:], " \t") && len(first)+1+3 <= 127 {
+			changed := append(append(append([]byte{}, first...), []byte(" -E\n")...), rest...)
+			if err := os.WriteFile(path, changed, 0600); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
 	f.raw = body
 	f.request, err = artifactpypi.ParseUpgradeRequirement("haa-tool-fixture")
 	if err != nil {
@@ -69,6 +90,144 @@ func makeNativePipxOriginalFixture(t *testing.T, mode string) nativeToolOriginal
 
 func beginNativePipxFixture(ctx context.Context, f nativeToolOriginalFixture) (*toolFreshTarget, error) {
 	return beginToolNativeOriginalTargetForClient(ctx, f.install, f.request, f.bin, []string{f.intake, f.staging}, f.native, toolClientPipx)
+}
+
+func TestPipxNativeE(t *testing.T) {
+	f := makeNativePipxOriginalFixture(t, "valid")
+	// The conversion fixture independently reproduces observed pipx exposure
+	// and retains UV's original RECORD; product code must prove both states.
+	for _, name := range []string{"haa-demo", "haa-alt"} {
+		body, err := os.ReadFile(filepath.Join(f.root, "bin", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		first, _, _ := bytes.Cut(body, []byte("\n"))
+		if !bytes.HasSuffix(first, []byte(" -E")) {
+			t.Fatal("fixture did not preserve actual short pipx shape")
+		}
+	}
+	g, err := beginNativePipxFixture(context.Background(), f)
+	if err != nil {
+		t.Fatal("actual pinned pipx short script must receive independent original source proof", err)
+	}
+	defer func() {
+		if err := g.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+	if g.original == nil || g.original.native == nil || len(f.ports.resolves) != 1 || len(f.ports.acquires) != 1 {
+		t.Fatal("native derivation bypassed authentic original wheel")
+	}
+	if !bytes.Contains(g.original.native.ownership.Body(), []byte("pinned-pipx-uv-console-script")) {
+		t.Fatal("derived actual script lacks its explicit proof role")
+	}
+	g.original.native.scripts.client = toolClientUV
+	err = g.verify(context.Background())
+	g.original.native.scripts.client = toolClientPipx
+	if err == nil {
+		t.Fatal("native proof lost its held client binding")
+	}
+
+}
+
+func TestPipxNativeERefusesChangedOrLaunderedClaims(t *testing.T) {
+	for _, mode := range []string{"wrong-flag", "extra-code", "laundered-code", "laundered-record"} {
+		t.Run(mode, func(t *testing.T) {
+			f := makeNativePipxOriginalFixture(t, "valid")
+			scriptPath := filepath.Join(f.root, "bin/haa-demo")
+			body, err := os.ReadFile(scriptPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if mode == "wrong-flag" {
+				body = bytes.Replace(body, []byte(" -E\n"), []byte(" -I\n"), 1)
+			}
+			if mode == "extra-code" || mode == "laundered-code" {
+				body = append(body, []byte("print('not authentic')\n")...)
+			}
+			if err := os.WriteFile(scriptPath, body, 0600); err != nil {
+				t.Fatal(err)
+			}
+			if mode == "laundered-code" || mode == "laundered-record" {
+				recordPath := filepath.Join(f.root, "lib/python3.14/site-packages/haa_tool_fixture-1.0.0.dist-info/RECORD")
+				record, err := os.ReadFile(recordPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				rows, err := csv.NewReader(bytes.NewReader(record)).ReadAll()
+				if err != nil {
+					t.Fatal(err)
+				}
+				claimed := body
+				if mode == "laundered-code" {
+					claimed = bytes.Replace(body, []byte(" -E\n"), []byte("\n"), 1)
+				}
+				sum := sha256.Sum256(claimed)
+				found := false
+				for _, row := range rows {
+					if row[0] == "../../../bin/haa-demo" {
+						row[1] = "sha256=" + base64.RawURLEncoding.EncodeToString(sum[:])
+						row[2] = strconv.Itoa(len(claimed))
+						found = true
+					}
+				}
+				if !found {
+					t.Fatal("synthetic script row absent")
+				}
+				var encoded bytes.Buffer
+				writer := csv.NewWriter(&encoded)
+				writer.WriteAll(rows)
+				if err := writer.Error(); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(recordPath, encoded.Bytes(), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			g, err := beginNativePipxFixture(context.Background(), f)
+			if err == nil || g != nil {
+				if g != nil {
+					_ = g.Close()
+				}
+				t.Fatal("changed or mutually laundered script/RECORD accepted")
+			}
+			if mode == "laundered-code" && len(f.ports.resolves) != 1 {
+				t.Fatal("laundered candidate did not reach independent authentic wheel proof")
+			}
+			if mode != "laundered-code" && len(f.ports.resolves) != 0 {
+				t.Fatal("static record mutation reached old source lookup")
+			}
+			if after, err := os.ReadFile(scriptPath); err != nil || !bytes.Equal(after, body) {
+				t.Fatal("refused original rewritten", err)
+			}
+			if _, err := os.Lstat(filepath.Join(f.root, pypiVenvMetadata)); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("refused original enrolled ownership", err)
+			}
+		})
+	}
+}
+
+func TestUVNativeOriginalDoesNotAcceptPipxESuffix(t *testing.T) {
+	f := makeNativeToolOriginalFixture(t, "valid")
+	path := filepath.Join(f.root, "bin/haa-demo")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = bytes.Replace(body, []byte("\n"), []byte(" -E\n"), 1)
+	if err := os.WriteFile(path, body, 0600); err != nil {
+		t.Fatal(err)
+	}
+	g, err := beginToolNativeOriginalTarget(context.Background(), f.install, f.request, f.bin, []string{f.intake, f.staging}, f.native)
+	if err == nil || g != nil {
+		if g != nil {
+			_ = g.Close()
+		}
+		t.Fatal("UV native path inherited pipx RECORD mutation capability")
+	}
+	if len(f.ports.resolves) != 0 {
+		t.Fatal("UV mismatch reached source query")
+	}
 }
 
 func TestNativePipxOriginalUsesIndependentWholeBackendProofBeforeGuard(t *testing.T) {

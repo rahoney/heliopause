@@ -1,8 +1,8 @@
 #!/bin/bash
-# Hosted-CI-only acquired DATA probes. No installed runtime is created here.
+# Hosted-CI-only acquired DATA probes and disposable installed DATA fixtures.
 set -euo pipefail
 case "$#:${1-}" in
-  1:inspect|1:graph|1:namespace) ;;
+  1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap) ;;
   *) echo 'unsupported pipx CI profile' >&2; exit 2 ;;
 esac
 pipx_profile=$1
@@ -46,6 +46,12 @@ pipx_ci_run() {
 }
 
 case "$pipx_profile" in
+  tools-native)
+    pipx_ci_run internal/sandbox TestLinuxPipxObservedNativeInstallIntegration,TestLinuxPipxPublicInstallResolverIntegration,TestLinuxPipxPublicOriginalUpgradeIntegration tools-native sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"
+    ;;
+  tools-bootstrap)
+    pipx_ci_run internal/bootstrap TestLinuxPipxToolInstallCLIIntegration,TestLinuxPipxToolUpgradeCLIIntegration,TestLinuxPipxToolNativeAdoptionCLIIntegration,TestPipxPublicToolApprovedUpgradeIntegration tools-bootstrap sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"
+    ;;
   inspect)
     pipx_ci_run internal/bootstrap TestPipxAcquiredRuntimeRequiredInspectionIntegration inspect env HELOX_PIPX_INSPECTION_INTEGRATION=1 HELOX_PIPX_RUNTIME_ZIP="$pipx_work/pipx-runtime-linux-amd64.zip" /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=6m -test.run '^TestPipxAcquiredRuntimeRequiredInspectionIntegration$'
     ;;

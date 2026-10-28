@@ -18,10 +18,24 @@ import (
 type uvNativeToolScriptProof struct {
 	tx          *pypiVenvTransaction
 	interpreter []toolInterpreterMember
+	client      toolClient
+	exposed     map[string]bool
+	records     map[string]nativeToolRecordClaim
+}
+
+type nativeToolRecordClaim struct {
+	digest       string
+	size         int64
+	actualDigest string
+	actualSize   int64
 }
 
 func newUVNativeToolScriptProof(ctx context.Context, tx *pypiVenvTransaction) (*uvNativeToolScriptProof, error) {
-	if ctx == nil || tx == nil {
+	return newUVNativeToolScriptProofForClient(ctx, tx, toolClientUV, nil)
+}
+
+func newUVNativeToolScriptProofForClient(ctx context.Context, tx *pypiVenvTransaction, client toolClient, commands []artifactpypi.ToolCommand) (*uvNativeToolScriptProof, error) {
+	if ctx == nil || tx == nil || !client.valid() {
 		return nil, errors.New("native UV script proof requires a held target")
 	}
 	if err := ctx.Err(); err != nil {
@@ -49,7 +63,19 @@ func newUVNativeToolScriptProof(ctx context.Context, tx *pypiVenvTransaction) (*
 	if err != nil {
 		return nil, err
 	}
-	p := &uvNativeToolScriptProof{tx: tx, interpreter: interpreter}
+	p := &uvNativeToolScriptProof{tx: tx, interpreter: interpreter, client: client}
+	if client == toolClientPipx {
+		if len(commands) == 0 {
+			return nil, errors.New("native pipx exposed command input is absent")
+		}
+		p.exposed = map[string]bool{}
+		for _, command := range commands {
+			if command.Name == "" || command.Name == "." || command.Name == ".." || filepath.Base(command.Name) != command.Name || command.Path != filepath.Join(tx.plan.root, "bin", command.Name) || p.exposed[command.Name] {
+				return nil, errors.New("native pipx exposed command input is invalid")
+			}
+			p.exposed[command.Name] = true
+		}
+	}
 	if err := p.verify(ctx); err != nil {
 		return nil, err
 	}
@@ -94,6 +120,15 @@ func (p *uvNativeToolScriptProof) scriptClaim(project *pypiNativeDistribution, e
 		!claim.original.matches(claim.destination.Final) {
 		return "", errors.New("native UV console script bytes changed")
 	}
+	if p.client == toolClientPipx && p.exposed[entry.Name] {
+		original, err := artifactpypi.PipxNativeUVScriptRecordBody(p.interpreter[0].path, body)
+		record, found := p.records[key]
+		sum := sha256.Sum256(original)
+		if err != nil || !found || record.actualDigest != claim.original.Digest || record.actualSize != claim.original.Size || record.digest != hex.EncodeToString(sum[:]) || record.size != int64(len(original)) {
+			return "", errors.New("native pipx script lacks its exact held pre-exposure RECORD binding")
+		}
+		body = original
+	}
 	if err := artifactpypi.ValidateUVNativeConsoleScript(entry, p.interpreter[0].path, body); err != nil {
 		return "", err
 	}
@@ -121,4 +156,40 @@ func (p *uvNativeToolScriptProof) prove(ctx context.Context, project *pypiNative
 		return nil, nil, err
 	}
 	return destinations, files, nil
+}
+
+// This freezes an unapproved claim only. The authentic old wheel entrypoint and
+// complete UV recipe must still be matched by scriptClaim before enrollment.
+func (p *uvNativeToolScriptProof) capturePipxRecord(ctx context.Context, destination pypiDestination, snapshot pypiFileSnapshot, digest string, size int64) error {
+	if p == nil || p.tx == nil || p.client != toolClientPipx || destination.Scheme != "scripts" || !p.exposed[destination.Relative] || destination.Final != filepath.Join(p.tx.plan.root, "bin", destination.Relative) {
+		return errors.New("native pipx script RECORD lacks its held exposed destination")
+	}
+	if err := p.verify(ctx); err != nil {
+		return err
+	}
+	body, err := readBoundedPromotionFile(destination.Final, 32<<10)
+	if err != nil {
+		return err
+	}
+	actual := sha256.Sum256(body)
+	if int64(len(body)) != snapshot.Size || hex.EncodeToString(actual[:]) != snapshot.Digest || !snapshot.matches(destination.Final) {
+		return errors.New("native pipx script snapshot changed before RECORD binding")
+	}
+	original, err := artifactpypi.PipxNativeUVScriptRecordBody(p.interpreter[0].path, body)
+	if err != nil {
+		return err
+	}
+	sum := sha256.Sum256(original)
+	if int64(len(original)) != size || hex.EncodeToString(sum[:]) != digest {
+		return errors.New("native pipx RECORD differs from exact pre-exposure UV bytes")
+	}
+	if p.records == nil {
+		p.records = map[string]nativeToolRecordClaim{}
+	}
+	key := destination.key()
+	if _, present := p.records[key]; present {
+		return errors.New("native pipx script RECORD binding is duplicated")
+	}
+	p.records[key] = nativeToolRecordClaim{digest, size, snapshot.Digest, snapshot.Size}
+	return p.verify(ctx)
 }

@@ -2579,3 +2579,201 @@ C-d1 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 fixed recipe의 �
 final/signed·독립 legacy ZIP CPU gap은 남는다. 같은 M13-004/C-d2에서 existing hosted job과
 보유 input/helper owner에 C-b/C-c/C-d named consumers를 연결하기 전 baseline/정확한 수정
 지도를 작성한다. 작은 helper별 새 job/push나 새 public publication을 추가하지 않는다.
+
+## C-d2 — 기존 hosted 소비자 연결의 source 전 baseline
+
+기준5dfab51/tree245f82cc/2873files이며 tracked Git은 clean이다. Queue/plan20 §4·5,
+client09, INDEX와 artifact L01/L02/L15·sandbox L03/L08·evidence L16·ci L06/L17,
+예방 규칙§4·5/운영v0.5 §15를 대조했다. CI421 sourcee859 이후 local 후보를 그 hosted
+결과로 인정하지 않는다. 현재 active는 같은 M13-004/C-d2 하나다.
+
+| 기존 책임 / 실제 owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Pipx public native install/original upgrade/session | YES | YES(product/default + explicit actual) | YES(C-a/b named local) | YES(local scopes) | existing hosted sandbox client의 명시 env/filter·installed ZIP |
+| Pipx current backend·public CLI·fixed native original | YES | YES(product) | YES(C-c/d1 named local) | YES(local scopes) | existing hosted bootstrap client의 실제 소비자 |
+| ci-pipx-runtime acquisition·pipx_ci_run/noSKIP·exact top PASS | YES | YES(3 existing modes) | YES(B3d local/CI421 scope) | YES(existing) | tools-native/tools-bootstrap 두 concrete mode |
+| ci-uv-tools pinned never-started Python DATA·Docker owner/cleanup | YES | YES(existing UV) | YES(existing UV) | YES(existing scope) | pipx-bootstrap 모드의 같은 data fixture와 명시 4parent |
+| installed ZIP source reader·local root namespace | YES | YES(product + task operator) | YES(C-b1..d1) | YES(local) | repo-owned CI-only disposable mount namespace/ordinary child glue |
+| current workflow helper/client stop·install·start·restore | YES | YES(existing owners) | YES(prior hosted scope) | YES(existing) | two existing job calls의 정확한 위치/consumer·skip/failure negatives |
+| workflow/checker/future-runtime fixture | YES | YES(existing files) | YES(existing) | YES(existing) | 새 owned script·exclusive dispatch·readonly prefix·UID/cleanup의 회귀 |
+
+### 재사용·정확한 수정 지도와 두 번째 검토
+
+기존 ci-pipx-runtime.sh의 acquisition/42input materialization·pipx_ci_run 본문은 유지하고
+두 tools mode만 더한다. 기존3mode/consumer는 그대로다. Native mode는 installed supply의
+실제 native session·public install·original upgrade 세 parent, bootstrap mode는 public
+install/managed upgrade/native adoption CLI와 managed backend의 실제 Evidence 거부를
+포함하는 네 parent다. 기존5m/12m test timeout과 product13active CPU 등 budget은 유지한다.
+
+고정 ZIP를 임의 cache/env production input으로 바꾸지 않는다. 새 scripts/ci-pipx-tools.sh는
+현재 local operator의 고정 root-owned0444 prefix/readonly mount·private /usr/lib overlay와
+명시 ordinary UID/GID child만 concrete CI로 옮긴다. Host mount namespace와 같으면 거부하고
+network namespace는 기존 owning helper/Docker와 같게 유지한다. Root는 DATA copy/mount만
+소유하며 원본 ZIP/Host interpreter를 실행하지 않는다. 새로운 system installation/service/
+runtime activation은 없다. Child exit와 별개로 readonly prefix/overlay unmount 후 task-owned
+root workspace를 정리하고 cleanup 실패가 primary를 덮지 않으며 UNKNOWN은 삭제하지 않는다.
+
+Bootstrap child는 ci-uv-tools.sh의 새 pipx-bootstrap 모드로 같은 pinned image interpreter DATA
+owner를 재사용한다. UV 기존 bootstrap/native dispatch·fixture와 assertion을 재작성하지 않는다.
+현재 workflow의 sandbox client/helper scope에서 tools-native, 기존 bootstrap client/helper scope에서
+tools-bootstrap을 순서대로 호출한다. 기존 job/Required/timeout을 늘리거나 새 job·P5/P6 placeholder를
+만들지 않는다. Actual product source/CPP는 D1/C1-v5 그대로이며 whole final/legacy ZIP CPU gap은 별도다.
+
+scripts/check의 기존 runtime/workflow owner에 script/두 mode의 active exact command·env/filter/cwd,
+client/helper/order·readonly prefix/UID/cleanup을 연결한다. 주석/echo/ignored-failure·중복/empty selection/
+SKIP·잘못된 client와 root-only 실행을 거부하는 source gate 및 기존 shell harness의 실제 dispatch
+negatives를 추가한다. Future-runtime fixture에도 새 owned script를 복사해 같은 cohort로 검사한다.
+Canonical Quick/workflow/docs/security와 check package Race를 먼저 실행하고, 필요 tagged client를
+한 번만 빌드한 뒤 같은 실제 CI script의 두 mode를 owning helper/private namespace에서 순차 검증한다.
+Go/CPP/고정42·ZIP/Host5·Docker before/after/cleanup을 연결하며 소스 mutation/check/actual은 겹치지 않는다.
+새 push는 이 작업으로 승인하지 않으며 원격 qualification은 실제 같은 후보의 결과를 본 뒤만 닫는다.
+
+### C-d2 첫 실제 CI fixture 실패와 수정 전 경계
+
+V1 format2.333s/focused2.635s/workflow2.228s/Quick80.879s/checker Race39.540s/
+sandbox build7.225s/docs0.332s/security9.738s는 PASS다. CI source13/runtime45는 unchanged이며
+native actual-v1 5.177s는 source acquisition42·고정 ZIP 재현 뒤 첫 test의 explicit frozen
+supply guard에서 FAIL이다. HELOX_PIPX_QUERY_SUPPLY_ROOT 누락으로 product는 NOT_REACHED다.
+Host5/Docker/input42/ZIP/Go·CPP 동일/helperwait0/confirmed stop·부재는 확인했지만 root
+workspace는 overlay umount busy 때문에 보존됐으므로 전체 cleanup/qualification은 NO다.
+
+별도 artifact 없는 동일 overlay의 동적 /usr/bin/umount -i -n은 exit32/busy, 고정 Go의
+정적 동일 Unmount syscall은0이었다. 새 product 오류나 legacy CPU 인과로 합치지 않는다.
+동적 umount가 해제 대상 /usr/lib의 library를 소비하는 fixture lifecycle 결합을 제거한다.
+CI handler의 기존 namespace 소유 책임을 outer Root shell로 두고 unshare child의 종료 뒤
+기록된 mount namespace를 참조하는 live PID/query error0과 work inode를 확인한 경우만
+parent가 자기 workspace를 정리한다. Lazy/forced unmount·새 정적 runtime tool을 배포하지 않는다.
+Native child에는 materialize가 이미 소유한 sibling supply를 명시 전달하고 같은 compiled
+frozen reader의 전체42hash 검증을 유지한다. Outer typed helper/lifetime owner는 그대로다.
+
+첫 operator의 RunnerTemp empty 기대도 canonical helper log를 잘못 포함했다. 원본 false는
+유지하고 후속에는 새 fixture 세 workspace prefix의 부재만 확인한다. Helper의 retained log는
+그 owning lifecycle evidence이며 임의 삭제하지 않는다. 실패 workspace의 원래9entry inode/
+owner/mode/ZIP hash와 전체 /proc cwd/exe/FD/maps/mount 참조0/query errors0을 재확인한 뒤
+그 exact payload와 diagnostic 빈 overlay dirs만 제거했다. Recovery는 최초 FAIL/cleanup NO를
+성공으로 바꾸지 않는다. Raw d2-v1-residue-inventory/recovery와 d2-unmount-diagnostic가 근거다.
+
+C-d2 v2 format1.934s/focused2.439s/workflow2.036s/Quick67.534s/checker Race39.590s/
+docs0.341s/security10.014s는 PASS다. Product runtime45와 sandbox14f2853c/Bootstrapd066b76f,
+CPPae301892는 unchanged/reused다. Exact CI tools-native actual-v2 151.813s는 세 parent/noSKIP
+PASS다. 원래 source42/same ZIP를 materialize하고 installed-source native/accounting 거부,
+public install/no-console 거부 및 original6.0→6.1/no-op를 확인했다. Handler의 namespace child
+종료 뒤 참조 query와 workspace 제거·Host5/Docker/고정42/ZIP/source 동일/helperwait0/final0,
+세 소유 workspace prefix 부재도 확인했다. First actual-v1과 외부 정적 진단/복구의 범위는
+그대로 보존한다. 같은 CI source13/runtime45의 tools-bootstrap 네 parent actual-v2는 실행 중이며
+완료 전 C-d2 whole local/hosted qualification은 열어 둔다.
+
+### C-d2 bootstrap actual-v2의 별도 native original 거부
+
+Exact tools-bootstrap364.231s는 managed approved backend139.76s·public install CLI104.76s·
+public upgrade CLI 세 parent PASS 뒤 native adoption5.49s에서 UPDATE_ORIGINAL_STATE_UNSUPPORTED
+였다. Intended current Evidence permission failure까지 못 가서 whole parent/묶음은 FAIL이다.
+Namespace/workspace/helper 정리와 Host/input/Go/CPP 불변은 모두 PASS이며 앞선 umount 실패와
+합치지 않는다. D1 native 실제366.291s의 성공 scope를 새 경로에 일반화하지 않는다.
+
+Raw inventory의 native 파일 집합/모드는 앞 D1과 동일하고 차이는 producer log 이름뿐이다.
+D1 original interpreter path133bytes는 POSIX exec wrapper를 생성했고 새94bytes 원본은
+직접 shebang 길이다. D1 script SHA는 canonical UV wrapper/cowsay.__main__:cli 원문으로
+재생성한447bytes와 일치하지만 새376bytes는 canonical expected373bytes와 불일치다.
+원본 script bytes/내부 cause는 당시 미보존이라 정확한 원인은 아직 미확정이다. 경로 변경이
+원인이라고 단정하거나 recipe·script proof·ownership gate를 낮추지 않는다.
+
+다음은 product source를 바꾸지 않는 test-only Go overlay의 좁은 진단이다. 기존 native test의
+실패 분기에서만 bounded script/RECORD DATA와 error unwrap chain을 기록하고 short /tmp 원본
+한 parent를 선택한다. 원본/cause가 확인되기 전 구현은 하지 않는다. Overlay source/원래
+source·binary hash/정확한 selector를 연결하고 hosted/full qualification으로 쓰지 않는다.
+앞 세 PASS를 다시 돌리지 않으며 Source/C++·runtime/coverage/budget은 유지한다.
+
+### Native short script의 확정 cause와 수정 전 재사용 지도
+
+Test-only overlay의 첫2.573s는 task copy가 기존 bootstrap 분기를 선택해 test에 미도달했다.
+Exit0를 성공으로 쓰지 않았고 원본을 보존했다. 같은 overlay ae52e907의 native-only v2는7.872s/
+expected product FAIL로 bounded script/RECORD·unwrap cause를 캡처했다. Source/Host/입력/CPP
+동일/helperwait0/final stopped다. Actual -E script377bytes와 RECORD374bytes/hash가 다르며,
+첫 shebang의 정확한 ` -E`3bytes만 제거한 원본 SHA01837c6e/size374가 RECORD와 일치한다.
+
+Fixed42의 SHA 대조된 pipx wheel/pipx/commands/common.py:216..237은 app 노출 시 POSIX
+단일 shebang의 Python 경로이고 공백/tab이 없으며 newline 포함 새길이<=127인 경우만
+` -E`를 붙인다(:66..69/:131..139). RECORD를 다시 쓰지 않는다. Long POSIX exec wrapper는
+그 조건이 아니어서 D1 원본447bytes/SHA25aeab5b의 기존 UV template 그대로다. 기존 native
+inventory의 frozen-file/RECORD mismatch 거부는 올바르며 전역 완화하거나 원본 RECORD/script를
+수정할 문제가 아니다. Exact source/역변환 proof는 pinned-native-script-source 및
+native-short-record-derivation JSON, overlay source/binary와 diagnostic-v2 raw가 소유한다.
+
+| 기존 owner / 추가 경계 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| UV native console exact template/EP/held interpreter | YES | YES(UV·pipx unchanged long wrapper) | YES(existing UV/D1 long path) | YES(그 scopes) | fixed pipx의 short shebang -E 파생형 |
+| Native inventory의 actual frozen SHA/RECORD equality·whole old wheel proof | YES | YES(all current) | YES(existing; correct refusal observed) | YES(기존 형식) | explicit pipx tool proof에 한정한 원래 UV RECORD→실제 -E bytes 독립 파생 증명 |
+| Pipx app postprocess source | YES(upstream fixed wheel) | YES(actual fixture) | YES(static exact bytes/short original) | NO(제품 인계) | old authenticated EP/UV template와 actual delta의 결합 |
+| C-d2 CI caller/helper/Root namespace | YES | YES | YES(native3/기존bootstrap3·cleanup) | NO(whole) | short native 인계 정상/부정 후 exact native consumer |
+
+기존 inventory/whole ownership engine이나 UV contract를 대체하지 않는다. UV template 본문을
+같은 private pure 생성 helper로 재사용하고 ValidateUV의 기존 predicate/bytes는 유지한다.
+그 template와 pinned pipx 조건의 정확한 3byte derivation만 별도 pure format helper로 검증한다.
+원본 interpreter/program은 여전히 Host에서 실행하지 않으며 raw RECORD/receipt/script는 유지한다.
+
+Inventory는 기존 strict nil/default 경로를 유지하고 constructor-local closed pipx tool-script proof가
+있는 scripts destination에만 unapproved declared RECORD claim을 별도 보관한다. Actual snapshot
+inode/mode/hash는 그대로다. Malformed hash/size·non-script·다른 client·범위를 벗어난 수정은
+기존대로 거부한다. 파생 전 UV bytes의 hash/size가 RECORD와 같아야 하며, 이 candidate 자체는
+ownership/실행/승인이 아니다. 이후 authentic old wheel의 EP를 소비하는 기존 script proof가
+같은 held interpreter/path와 complete UV template→정확한 pipx -E 조건/actual bytes 및 원래
+RECORD claim을 다시 결합해야만 ownership에 등록한다. Other files/cache/link·whole footprint와
+current Policy/Manifest/반영은 그대로다. Proof 역할만 concrete pipx-UV generated script로 구분한다.
+
+기존 UV synthetic fixture는 바꾸지 않고 pipx conversion fixture의 짧은 shebang만 실제 pinned
+postprocess처럼 만들며 RECORD는 남긴다. Source 전 focused RED를 먼저 확보한다. Boundary
+길이/space·long wrapper/short형과 hash·size·다른 flag/추가 코드/명령·EP·interpreter·client 혼동을
+거부하는 정상/negative를 검증한다. Canonical Quick/관련 PyPI·Promotion·Bootstrap Race/tag build,
+UV native/default 보존과 real short-path pipx native current 승인·Evidence failure를 확인한다.
+이미 PASS한 native3와 bootstrap3를 원인 없이 전부 반복하지 않으며 최종 source binding과 실제
+남은 native parent로 qualification을 이어간다. 새로운 recipe/coverage/권한·예산은 추가하지 않는다.
+
+세부 재검토에서 기존 ValidateUVNativeConsoleScript를 그대로 호출하면 되므로 template 생성
+helper 추출은 불필요하다. 그 source/UV fixture는 byte-identical하게 유지한다. 새 pure helper는
+pinned pipx -E의 RECORD 후보 원문 역변환만 소유하고 독립 old EP/template verifier와 반드시
+결합한다. 또한 pipx는 노출 app만 후처리하므로 constructor-local raw exposed command 집합에
+한정하고 노출하지 않는 dependency script는 기존 strict UV/RECORD 검사를 유지한다. Raw 이름은
+후속 authentic main-owner/command census 전에는 authority가 아니다. Shared pypiNativeFile/JSON
+schema는 바꾸지 않고 tool proof 안에 별도 declared/actual record binding을 보관한다.
+Production 수정 전 TestPipxNativeE는 실제 -E3bytes/원래 RECORD의 독립 fixture로0.039s RED이며
+UPDATE_ORIGINAL_STATE_UNSUPPORTED를 확인했다. 원본 short-red log를 보존하고 구현을 진행한다.
+
+첫 short-green focused는 PyPI0.029s PASS 후 새 synthetic pipx conversion이 존재하지 않는
+foreign app을 읽어 기존 unowned-receipt negative fixture에서 실패했다. Fixed helper처럼 absent
+app을 건너뛰도록 test fixture만 맞췄으며 guard를 변경하지 않았다. Short-green2의 PyPI0.032s/
+Promotion3.469s는 PASS다. Positive exact-E/원래 RECORD와 source query/acquire1, 다른 flags·코드/
+mutually laundered RECORD 거부 및 UV client strict refusal를 확인했다. UV validator/UV fixture,
+common native file 구조/JSON schema·current managed engine은 그대로다. Final canonical/Race/
+actual short native 전에는 whole 수정 검증은 NO다. Native proof의 held client도 명시 대조한다.
+
+Short derivation 후보 v3의 format0.733s/Quick280.009s/Promotion·PyPI·Bootstrap·CLI 전체
+Race188.792s/tag vet2.875s/Bootstrap build4.022s/Sandbox build7.670s/docs0.292s/security15.225s는
+PASS다. Go52/CI13 source identity와 Bootstrap7c1d573e를 보존했다. CI source13은 v2와 같아
+checker Race39.590s를 그 source 범위로 재사용하며 product 영향 Race는 새로 수행했다.
+기존 UV validator/fixtures와 publication/current selector owner8은5dfab51과 byte-identical다.
+최종 source의 exact CI tools-bootstrap actual-v3 네 parent가 실행 중이며 완료 전 qualification은
+계속 OPEN이다. V2 partial3PASS/nativeFAIL과 overlay 진단을 새 전체 성공으로 합치지 않는다.
+
+### C-d2 existing hosted wiring/exact scripts 한정 완료
+
+[한정 receipt](./p4o4c3c3b3c-d2-hosted-tools-wiring-local-20261028.json)는 v3의 canonical/product 영향 Race와 unchanged CI의 checker
+검사와 CI source13/Go52 불변을 연결한다. Exact CI tools-native 154.349s 세 parent와
+tools-bootstrap 573.679s 네 parent/noSKIP가 PASS다. Bootstrap에서는 genuine managed
+업그레이드/같은 버전 current 승인·real Evidence 실패 보존과 public install/upgrade JSON/한국어
+human·spaces/무변경 거부, fixed native original의 whole source proof/인계·반복·bounded no-op를
+검증했다. 기존 fixed inputs42 materialize·compiled ZIP/never-started Python DATA 및 current
+inspection/Evidence/Policy/publication을 same-source caller가 소비했다. Product의 기존 UV template/fixture와 publication/selector는 유지하고, 노출 pipx script의
+정확한 -E/원래 RECORD 파생 proof만 추가했다. CPP·예산·required coverage는 바꾸지 않았다. 기존 UV dispatch/data owner는 유지했고 새 job은 없다.
+
+Outer owning helper 각각 wait0/confirmed stopped·부재와 Host5/Docker·원본42/ZIP/Go·CPP 불변,
+세 owned workspace prefix 부재를 확인했다. Root fixture의 readonly prefix는 private namespace
+안에서만 존재하며 child 종료·namespace 참조 query·work identity 확인 후 parent가 정리했다.
+첫 native5.177s의 frozen env 누락/cleanup NO와 diagnostic·exact 복구는 보존하고 최종 성공으로
+덮지 않는다. Helper log는 owning evidence로 유지한다. New static runtime tool/lazy unmount는 없다.
+
+C-d2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 local exact CI wiring/shell
+범위다. Hosted/UID1001은 미실행이며 CI421은 이전e859 source만 소유한다. Full final/signed와
+독립 legacy ZIP CPU gap도 OPEN이다. 같은 M13-004/C-e1에서 남은 P4 acceptance/qualification
+matrix를 actual owner와 대조하고, 반복 실패한 legacy ZIP CPU는 구체 원인/가설이 확인된 뒤만
+다시 실행한다. 이 local commit은 새 public push·main merge·release 승인이 아니다.

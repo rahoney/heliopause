@@ -19,6 +19,9 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"skip pipx native":     strings.Replace(original, "HELOX_PIPX_TOOL_NATIVE_ADOPTION_INTEGRATION=1", "HELOX_PIPX_TOOL_NATIVE_ADOPTION_INTEGRATION=0", 1),
+		"omit pipx native":     strings.Replace(original, "TestLinuxPipxTool(Install|Upgrade|NativeAdoption)CLIIntegration", "TestLinuxPipxTool(Install|Upgrade)CLIIntegration", 1),
+		"ignore pipx":          strings.Replace(original, pipxToolBootstrapCommand, pipxToolBootstrapCommand+" || true", 1),
 		"skip native":          strings.Replace(original, "HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1", "HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=0", 1),
 		"skip current failure": strings.Replace(original, "HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=1", "HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=0", 1),
 		"skip native adoption": strings.Replace(original, "HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=1", "HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=0", 1),

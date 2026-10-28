@@ -45,6 +45,10 @@ func TestPipxCIConcreteSupplyAndDispatch(t *testing.T) {
 		"missing-root-namespace": func(s string) string {
 			return strings.Replace(s, "unshare --mount --net --fork", "unshare --mount --fork", 1)
 		},
+		"missing-tools-native": func(s string) string { return strings.Replace(s, pipxToolsNativeCommand, "echo skipped", 1) },
+		"ignored-tools-bootstrap": func(s string) string {
+			return strings.Replace(s, pipxToolsBootstrapCommand, pipxToolsBootstrapCommand+" || true", 1)
+		},
 		"missing-pending":       func(s string) string { return strings.Replace(s, pipxPendingNamespaceCommand, "echo skipped", 1) },
 		"missing-skip-guard":    func(s string) string { return strings.Replace(s, "/--- SKIP:/ { bad=1 }", "", 1) },
 		"substring-parent-pass": func(s string) string { return strings.Replace(s, "if(seen[name]!=1)", "if(seen[name]>1)", 1) },

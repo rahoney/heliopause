@@ -298,6 +298,9 @@ func proveNativePythonWheelFootprintWithUVToolScripts(client pypiNativeClient, p
 				return nil, nil, errors.New("native UV console-script ownership is ambiguous")
 			}
 			scriptClaims[key] = "pinned-uv-console-script"
+			if scripts.client == toolClientPipx && scripts.exposed[entry.Name] {
+				scriptClaims[key] = "pinned-pipx-uv-console-script"
+			}
 		}
 	}
 	matched := map[string]string{}

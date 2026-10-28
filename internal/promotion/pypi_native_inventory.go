@@ -111,6 +111,10 @@ func capturePyPINativeInventory(ctx context.Context, transaction *pypiVenvTransa
 }
 
 func capturePyPINativeInventoryFromMetadata(ctx context.Context, transaction *pypiVenvTransaction, metadataFiles []artifactpypi.InstalledMetadataFile) (pypiNativeInventory, error) {
+	return capturePyPINativeInventoryWithToolScripts(ctx, transaction, metadataFiles, nil)
+}
+
+func capturePyPINativeInventoryWithToolScripts(ctx context.Context, transaction *pypiVenvTransaction, metadataFiles []artifactpypi.InstalledMetadataFile, scripts *uvNativeToolScriptProof) (pypiNativeInventory, error) {
 	inventory := pypiNativeInventory{projects: map[string]*pypiNativeDistribution{}}
 	managed, err := managedPyPIInventoryFromMetadata(transaction, metadataFiles)
 	if err != nil {
@@ -215,7 +219,14 @@ func capturePyPINativeInventoryFromMetadata(ctx context.Context, transaction *py
 				}
 				digest, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(row[1], "sha256="))
 				size, sizeErr := strconv.ParseInt(row[2], 10, 64)
-				if err != nil || len(digest) != sha256.Size || sizeErr != nil || strconv.FormatInt(size, 10) != row[2] || size != snapshot.Size || hex.EncodeToString(digest) != snapshot.Digest {
+				if err != nil || len(digest) != sha256.Size || sizeErr != nil || strconv.FormatInt(size, 10) != row[2] {
+					return pypiNativeInventory{}, errors.New("native RECORD claim differs from the frozen file")
+				}
+				if scripts != nil && scripts.client == toolClientPipx && destination.Scheme == "scripts" && scripts.exposed[destination.Relative] {
+					if err := scripts.capturePipxRecord(ctx, destination, snapshot, hex.EncodeToString(digest), size); err != nil {
+						return pypiNativeInventory{}, err
+					}
+				} else if size != snapshot.Size || hex.EncodeToString(digest) != snapshot.Digest {
 					return pypiNativeInventory{}, errors.New("native RECORD claim differs from the frozen file")
 				}
 			}

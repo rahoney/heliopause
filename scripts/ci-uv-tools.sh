@@ -3,11 +3,11 @@
 # Interpreter fixture bytes are exported from a pinned, never-started image.
 set -euo pipefail
 case "$#:${1-}" in
-  0:|1:bootstrap) ;;
+  0:|1:bootstrap|1:pipx-bootstrap) ;;
   *) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;
 esac
 test "$(id -u)" != 0
-if [[ ${1-} != bootstrap ]]; then
+if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap ]]; then
   (
     cd internal/sandbox
     HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'
@@ -73,7 +73,14 @@ chmod 0400 "$uv_tools_work/python3.14"
 uv_tools_sha=$(sha256sum "$uv_tools_work/python3.14" | cut -d ' ' -f 1)
 uv_tools_owned
 uv_tools_remove
+if [[ ${1-} == pipx-bootstrap ]]; then
+  (
+    cd internal/bootstrap
+    HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PIPX_TOOL_INSTALL_CLI_INTEGRATION=1 HELOX_PIPX_TOOL_UPDATE_CLI_INTEGRATION=1 HELOX_PIPX_TOOL_NATIVE_ADOPTION_INTEGRATION=1 HELOX_PIPX_TOOL_UPDATE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^(TestLinuxPipxTool(Install|Upgrade|NativeAdoption)CLIIntegration|TestPipxPublicToolApprovedUpgradeIntegration)$'
+  )
+else
 (
   cd internal/bootstrap
   HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_UV_TOOL_INSTALL_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=1 HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^(TestLinuxUVTool(Install|Upgrade|NativeAdoption)CLIIntegration|TestUVPublicTool(ApprovedUpgrade|UpgradeEvidenceFailure)Integration)$'
 )
+fi
