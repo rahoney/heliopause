@@ -1010,6 +1010,9 @@ func exchangeDirectExecAdmission(ctx context.Context, operation string, admissio
 				(semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
 		case "complete":
 			return acknowledgement["status"] == "completed" && (semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
+		case "outcome":
+			_, err := parseDirectExecOutcome(acknowledgement["status"])
+			return err == nil && (semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
 		default:
 			return false
 		}

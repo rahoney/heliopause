@@ -6929,7 +6929,7 @@ bool VerifyStrictControlParser() {
 // production SENTRY parser above proves the only PENDING->CONSUMED transition;
 // this latch verifies that control cleanup observes that state rather than
 // treating an already-consumed nonce as ambiguous cancellation.
-bool VerifyAdmissionTerminalControlProtocol() {
+bool VerifyAdmissionTerminalControlProtocol(bool retain_kernel = false, int32_t wait_status = 0) {
   const std::string id = "aabbccddeeff0202";
   const std::string generation(64, 'd');
   const std::string nonce = TestAdmissionNonce(1300, 13000);
@@ -6964,6 +6964,7 @@ bool VerifyAdmissionTerminalControlProtocol() {
       parse(request("arm", nonce), ack("arm", "armed", nonce)) &&
       parse(request("status", nonce), ack("status", "pending", nonce)) &&
       parse(request("complete", nonce), ack("complete", "rejected", nonce));
+  if (retain_kernel) ok = ok && parse(request("outcome", nonce), ack("outcome", "pending", nonce));
   auto registration = profiles.find(id);
   if (!ok || registration == profiles.end() || registration->second.pending_admissions.size() != 1) {
     close(sockets[0]); close(sockets[1]); return false;
@@ -7001,6 +7002,57 @@ bool VerifyAdmissionTerminalControlProtocol() {
     close(sockets[0]); close(sockets[1]); return false;
   }
   close(output[0]); close(output[1]);
+  if (retain_kernel) {
+    auto& exact = registration->second;
+    ok = ok && parse(request("outcome", nonce), ack("outcome", "running", nonce));
+    gvisor::sentry::ExitNotifyParentInfo terminal;
+    *terminal.mutable_context_data() = context;
+    terminal.set_exit_status(wait_status);
+    auto parse_exit = [&](const gvisor::sentry::ExitNotifyParentInfo& event, ProcessState* state,
+                          ProfileRegistration* owner) {
+      std::string bytes, container = id;
+      const char* reason = nullptr;
+      return event.SerializeToString(&bytes) && ParseSentryExitNotifyParent(
+          bytes.data(), bytes.size(), &container, state, &reason, owner);
+    };
+    auto wrong_start = terminal;
+    wrong_start.mutable_context_data()->set_thread_group_start_time_ns(13001);
+    auto wrong_container = terminal;
+    wrong_container.mutable_context_data()->set_container_id(kFirstID);
+    ok = ok && !parse_exit(wrong_start, &consumed_state, &exact) &&
+        !parse_exit(wrong_container, &consumed_state, &exact) &&
+        !exact.pending_admissions.front().terminal_seen;
+    // A real tracked descendant exit cannot complete the admitted root.
+    auto child = context;
+    child.set_thread_group_id(1301);
+    child.set_thread_group_start_time_ns(13010);
+    child.set_parent_thread_group_id(1300);
+    child.set_is_exec_session(false);
+    auto child_exit = terminal;
+    *child_exit.mutable_context_data() = child;
+    ok = ok && RegisterGroup(&consumed_state, child, ProcessState::Role::kArtifact,
+        ProcessState::Provenance::kCloneChild, false, true, CommandPhase::kOther) &&
+        parse_exit(child_exit, &consumed_state, &exact) &&
+        !exact.pending_admissions.front().terminal_seen;
+    for (int32_t invalid : {-1, 65, 127, 128, 257, 65535, 65536}) {
+      auto copied_state = consumed_state;
+      auto copied_owner = exact;
+      auto bad = terminal;
+      bad.set_exit_status(invalid);
+      ok = ok && !parse_exit(bad, &copied_state, &copied_owner) &&
+          !copied_owner.pending_admissions.front().terminal_seen;
+    }
+    ok = ok && parse_exit(terminal, &consumed_state, &exact) && consumed_state.groups.empty();
+    const std::string status = "exited:" + std::to_string(wait_status);
+    ok = ok && parse(request("outcome", nonce), ack("outcome", status.c_str(), nonce)) &&
+        !parse_exit(terminal, &consumed_state, &exact) &&
+        parse(request("status", nonce), ack("status", "consumed", nonce)) &&
+        parse(request("complete", nonce), ack("complete", "completed", nonce)) &&
+        exact.pending_admissions.empty() &&
+        parse(request("outcome", nonce), ack("outcome", "rejected", nonce));
+    close(sockets[0]); close(sockets[1]);
+    return ok;
+  }
   ok = parse(request("cancel", nonce), ack("cancel", "consumed", nonce)) &&
       registration->second.pending_admissions.size() == 1 &&
       parse(request("status", nonce), ack("status", "consumed", nonce)) &&
@@ -7056,6 +7108,13 @@ bool VerifyAdmissionTerminalControlProtocol() {
   close(sockets[0]);
   close(sockets[1]);
   return ok;
+}
+
+bool VerifyKernelTerminalOutcomes() {
+  for (int32_t wait_status : {0, 37 << 8, 125 << 8, 126 << 8, 127 << 8, 255 << 8, 9, 15 | 128, 64}) {
+    if (!VerifyAdmissionTerminalControlProtocol(true, wait_status)) return false;
+  }
+  return true;
 }
 
 bool VerifySessionAwareControl(const std::string& control) {
@@ -8797,7 +8856,7 @@ int main(int argc, char** argv) {
         VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() &&
         VerifyResolverLockGenerationProductionPath(true) &&
         VerifyAuthoritativeProcessGroupLifecycle() && VerifyDirectExecAdmission() &&
-        VerifyAdmissionTerminalControlProtocol() && VerifyStrictControlParser() ? 0 : 1;
+        VerifyAdmissionTerminalControlProtocol() && VerifyKernelTerminalOutcomes() && VerifyStrictControlParser() ? 0 : 1;
   }
   if (argc != 1) return 2;
   char entry_name[] = "haa_gvisor_observer";
@@ -8984,6 +9043,7 @@ int main(int argc, char** argv) {
   fprintf(stderr, "STARTING direct_exec_admission\n");
   const bool direct_exec_admission = VerifyDirectExecAdmission();
 	const bool admission_terminal_protocol = VerifyAdmissionTerminalControlProtocol();
+  const bool kernel_terminal_outcomes = VerifyKernelTerminalOutcomes();
   fprintf(stderr, "STARTING direct_exec_admission_bound\n");
   const bool direct_exec_admission_bound = running && VerifyDirectExecAdmissionBound(output, remote, control);
   fprintf(stderr, "STARTING session_aware_control\n");
@@ -9018,7 +9078,7 @@ int main(int argc, char** argv) {
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
-		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
+		admission_terminal_protocol && kernel_terminal_outcomes && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
       {"Pipx native fixed root and six-mount boundary",pipx_native_root},
       {"Pipx native ARTIFACT clone and query boundary",pipx_native_clone},
@@ -9132,6 +9192,7 @@ int main(int argc, char** argv) {
       {"authoritative process-group lifecycle", process_group_lifecycle},
       {"direct-exec one-shot admission", direct_exec_admission},
 		{"direct-exec terminal admission protocol", admission_terminal_protocol},
+      {"kernel direct-exec terminal outcomes", kernel_terminal_outcomes},
       {"direct-exec admission bound", direct_exec_admission_bound},
 		{"session-aware control", session_aware_control},
 		{"exact control peer binding", exact_control_peer},

@@ -728,6 +728,10 @@ struct ProfileRegistration {
     std::string mode;
     std::string nonce;
     AdmissionState state = AdmissionState::kPending;
+    int32_t root_group_id = 0;
+    int64_t root_start_time_ns = 0;
+    bool terminal_seen = false;
+    uint32_t terminal_wait_status = 0;
   };
   std::vector<PendingAdmission> pending_admissions;
 };
@@ -1441,6 +1445,51 @@ bool ConsumeDirectExecAdmission(ProfileRegistration* registration, BoundaryMode 
     }
   }
   return false;
+}
+
+// Only the consumed, host-owned admission can bind a root. Neither an argv
+// marker nor a descendant exit can supply its external terminal outcome.
+bool BindDirectExecAdmissionRoot(ProfileRegistration* registration, BoundaryMode mode,
+                                const std::string& nonce, const gvisor::common::ContextData& context) {
+  const char* expected_mode = BoundaryModeName(mode);
+  if (registration == nullptr || expected_mode == nullptr || !ValidProcessIdentity(context) ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  for (auto& pending : registration->pending_admissions) {
+    if (pending.session_generation == registration->session_generation && pending.mode == expected_mode &&
+        pending.nonce == nonce && pending.state == ProfileRegistration::AdmissionState::kConsumed &&
+        pending.root_group_id == 0 && pending.root_start_time_ns == 0) {
+      pending.root_group_id = context.thread_group_id();
+      pending.root_start_time_ns = context.thread_group_start_time_ns();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ValidTerminalWaitStatus(int32_t status) {
+  if (status < 0 || status > 65535) return false;
+  const uint32_t low = static_cast<uint32_t>(status) & 255;
+  if (low == 0) return true;
+  const uint32_t signal = low & 127;
+  return (status & ~255) == 0 && signal >= 1 && signal <= 64;
+}
+
+bool RetainDirectExecTerminal(ProfileRegistration* registration,
+                              const gvisor::common::ContextData& context, int32_t status) {
+  // Ordinary callers may already have completed and released their slot.
+  // Their process reclamation does not create new completion authority.
+  if (registration == nullptr) return true;
+  for (auto& pending : registration->pending_admissions) {
+    if (pending.session_generation != registration->session_generation ||
+        pending.state != ProfileRegistration::AdmissionState::kConsumed ||
+        pending.root_group_id != context.thread_group_id() ||
+        pending.root_start_time_ns != context.thread_group_start_time_ns()) continue;
+    if (pending.terminal_seen || !ValidTerminalWaitStatus(status)) return false;
+    pending.terminal_seen = true;
+    pending.terminal_wait_status = static_cast<uint32_t>(status);
+    return true;
+  }
+  return true;
 }
 
 // These are the exact pinned npm launcher and Node interpreter argv tuples
@@ -4129,7 +4178,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     }
     return SendInvalidateAck(peer->fd, id, generation, status);
   }
-  if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete") return false;
+  if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete" && op->second != "outcome") return false;
   if (!ExactControlFields(fields, {"op", "container_id", "session_generation", "mode", "nonce"})) return false;
   const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
   const std::string& mode = fields["mode"]; const std::string& nonce = fields["nonce"];
@@ -4137,6 +4186,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
       (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
   peer->request_seen = true;
   auto profile = profiles->find(id); const char* status = "rejected";
+  std::string outcome_status;
   if (peer->registered && !peer->terminal && peer->container_id == id &&
       peer->session_generation == generation && profile != profiles->end() &&
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
@@ -4152,6 +4202,10 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     } else if (pending != profile->second.pending_admissions.end()) {
       if (op->second == "status") {
         status = pending->state == ProfileRegistration::AdmissionState::kPending ? "pending" : "consumed";
+      } else if (op->second == "outcome") {
+        outcome_status = pending->state == ProfileRegistration::AdmissionState::kPending ? "pending" :
+            (pending->terminal_seen ? "exited:" + std::to_string(pending->terminal_wait_status) : "running");
+        status = outcome_status.c_str();
       } else if (op->second == "cancel") {
         if (pending->state == ProfileRegistration::AdmissionState::kPending) {
           profile->second.pending_admissions.erase(pending);
@@ -4278,7 +4332,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
 
 bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
                                  std::string* container_id, ProcessState* state,
-                                 const char** reason) {
+                                 const char** reason, ProfileRegistration* registration = nullptr) {
   if (state == nullptr) return false;
   gvisor::sentry::ExitNotifyParentInfo message;
   if (!message.ParseFromArray(payload, payload_size) ||
@@ -4347,6 +4401,11 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
     state->bootstrap_group_set = false;
     state->bootstrap_group_id = 0;
     state->bootstrap_group_start_time_ns = 0;
+  }
+  if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      !RetainDirectExecTerminal(registration, context, message.exit_status())) {
+    *reason = "PROCESS_EXIT_INVALID";
+    return false;
   }
   state->groups.erase(group);
   return true;
@@ -4619,6 +4678,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return false;
     }
     group = candidate.groups.find(group_id);
+    if (!BindDirectExecAdmissionRoot(registration, boundary_mode, admission_nonce, message.context_data())) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
     if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology) || IsExactBunTargetLifecycleBoundary(message, profile, topology))
       group->second.pnpm_target_lifecycle = message.argv(7);
     new_direct_root = true;
@@ -5884,7 +5947,7 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
       }
       return true;
     case gvisor::common::MESSAGE_SENTRY_EXIT_NOTIFY_PARENT:
-      if (!ParseSentryExitNotifyParent(payload, payload_size, container_id, process_state, reason)) {
+      if (!ParseSentryExitNotifyParent(payload, payload_size, container_id, process_state, reason, registration)) {
         set_fault_site(FaultSite::kSentryExitNotifyParent);
         return false;
       }

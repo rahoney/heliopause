@@ -785,3 +785,63 @@ materialization/같은 layout2cca6ea0/선택 entry 원본을 확인했다. Sourc
 최종 four profiles·signed와 이 source의 hosted/native Required qualification은 미완료다.
 다음은 같은 M13-004의 C3c 실제 Artifact Node admission/isolated lifecycle/guest exit-output
 owner audit이며 source 작성 전에 별도 책임 지도와 두 번째 검토를 남긴다.
+
+
+## P5-C3c1 — 기존 admission에 외부 kernel 종료 사실을 보존하는 구현 전 감사
+
+기준4db0111/treee8ad4e1d/2940tracked·1313source다. 이 source의 CI426/run40758148899는
+19:52:10UTC 시작했으며 actual20min timer01은20:12:10UTC/session80043다. 새 C3c1 후보는
+그 run에 포함하지 않고 실행 중 source를 취소하지 않는다. INDEX와 sandbox L03/L12/L18,
+artifact L02/evidence L16, client09 §3/Architecture-005/Contract-002를 대조했다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| gVisor pinned ExitNotifyParentInfo.exit_status / task_exit.go | YES | YES(kernel event) | YES(existing lifecycle) | YES(existing) | 현재 HAA가 버리는 외부 wait status 보존 |
+| ParseSentryExitNotifyParent/SameGroup/expected_groups 정리 | YES | YES(CPP stream) | YES(CPP128/old consumers) | YES(existing) | 정확한 admission root group+start에 terminal fact 연결 |
+| PendingAdmission/ConsumeDirectExecAdmission/control peer ACK | YES | YES(host-owned UDS) | YES(existing) | YES(existing) | 같은 slot의 별도 outcome query; ordinary status와 authority 유지 |
+| exchangeDirectExecAdmission/strict ACK/ordered session lease | YES | YES(all direct exec) | YES(existing) | YES(existing) | bounded typed kernel terminal reader |
+| RunCaptured separate stdout/stderr | YES | YES(Host trusted process API) | YES(local+CI425 source) | YES(Host scope) | guest terminal 연결은 후속; 현재 Host exit를 guest signal로 위장 금지 |
+| Artifact Node handoff/lifecycle/application result/CLI | NO(P5) | NO | NO | NO | 이후 C3c2; 이번 foundation을 실제 user-run으로 표시하지 않음 |
+
+Local upstream source7c619980의 sentry.proto:130..136은 exit_status를 wait 형식 int32로
+정의하며 task_exit.go:getExitNotifyParentSeccheckInfo가 실제 ThreadGroup.exitStatus를 제공한다.
+HAA는 event의 container/group/start를 검증하고 group만 제거한다. 새 Docker API/독자 observer/
+artifact token을 만들기 전에 이 기존 kernel authority를 재사용한다.
+
+수정 지도: CPP PendingAdmission에 bounded root group/start와 terminal status facts를 추가한다.
+실제 consumed admission의 root 등록 때만 연결하고 matching root의 kernel exit 때만 보존한다.
+Clone exit/다른 start·container·generation/중복 exit는 root terminal로 쓰지 않는다. Slot이 기존
+complete로 이미 제거됐으면 기존 consumer의 정리를 보존하고 새 완료 사실을 만들어내지 않는다.
+기존 ARM/STATUS/CANCEL/COMPLETE 요청·ACK의 fields/state는 유지하며 같은 owner의 `outcome`
+조회만 별도 추가한다. ACK는 기존 fixed scalar string 필드에 pending/running/exited:canonical
+wait-status를 담는다. 미등록/foreign peer/nonce·generation/오류는 성공으로 해석하지 않는다.
+
+Go의 새 direct_exec_outcome.go는 같은 strict ACK/ordered peer/session authority를 통해 조회한다.
+실제 terminal이면 POSIX wait 종료0..255 또는 signal1..64/core flag만 해석하며 stopped/continued,
+음수/overflow/비정규 숫자를 거부한다. Raw output/argv/Artifact marker는 입력이 아니다.
+기존 exchange switch에 새 operation의 exact semantic 검사만 연결하고 옛 상태를 완화하지 않는다.
+
+두 번째 검토: 새 daemon/transport/role·FS/network grant/Core 승인 타입은 없다. 현재 CPU/trace/
+wall/cleanup 예산과 old admission lifetime를 유지한다. 구현은 하나의 기존 slot당 작은 fixed facts이며
+max64 slot 한도 그대로다. Unit/CPP latch에 zero/37/125/255/signal·core/unknown/reused identity와
+old lifecycle 회귀를 연결한다. Canonical Quick/전체 sandbox Race·기존 CPP128+새latch와 실제
+trusted-controller terminal 시험 전 QUALIFIED=NO다. 이후 guest 실행·출력과 actual Artifact Node
+admission은 별도 MISSING이며 이번 작은 API 테스트를 user-run 완료로 쓰지 않는다.
+
+C3c1 source provenance: 첫 whole-proto==upstream assertion은 기존 HAA mount-topology messages 때문에 실패했다. ExitNotifyParentInfo 정의와 kernel 생산 함수의 exact block은 upstream7c619980과 같으며 원본 file/block SHA·first notice를 p5-c3c1-kernel-source-provenance.json에 보존했다. Prepared patched source 전체를 pristine upstream으로 표시하지 않는다.
+
+
+C3c1의 [named local 결과](./p5c3c1-kernel-terminal-local-20261029.json)는 source1316/Go b5166b73/
+observer4df80d98의 실제8fresh controller root9.014s/parent6.96s PASS다. Exit0/37/125/126/127/255와
+TERM15/KILL9를 실제 kernel wait status로 구분했고 각 stdout/stderr3B를 별도로 대조했다.
+같은 source/binaries의 기존 npm/Python wheel/ELF 검사3parents11.163s도 PASS다. 두 실행 모두
+Source/CPP/원래42/ZIP/Host/Docker 보존·helperwait0/final0/owned client·workspace 부재를 확인했다.
+CPP build278.929s/129latches(기존128+새1), canonical Quick·focused/default source fresh Race29.21s와
+최종 tagged build·docs/security가 대응한다. 추가 tagged fixture 뒤 v2 Race0.669s는 cache 재사용이며
+새 fresh Race라고 표시하지 않는다. 이전1315 default source SHA는 최종1316과 같고 새 tagged
+fixture만 추가했다. 첫 census writer의 CPP 수정 경로 누락은 기존 census에 CPP/scripts가 포함됨을
+유지해 pre-audited3owner/기존1310동일/새Go3로 교정했으며 제품 검사 실패가 아니다.
+C3c1 foundation의 local acceptance만 닫는다. Root terminal은 selected Artifact image 시작·출력
+완전성·descendant 정리나 Policy 승인 증거가 아니다. C3c2의 실제 Node handoff/admission/profile·
+현재 layout/entry/argv·user result/cleanup과 CLI, new hosted/whole common/final profiles/signed는
+계속 missing이다. CI426은 앞4db0111source이므로 이번 source의 qualification으로 전용하지 않는다.

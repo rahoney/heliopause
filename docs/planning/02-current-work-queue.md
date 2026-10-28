@@ -15,15 +15,27 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3b offline whole-set materialization named local QUALIFIED; fresh2/current source1313/binary0c4bfe0e actual45.343s/cleanup PASS; no artifact user program
-Next action: C3b current exact source grouped hosted/native Required qualification preparation; C3c actual Artifact Node admission/lifecycle/guest exit-output owner audit; CI425 consumed8SUCCESS/macOS+Required FAILURE, native direct cause OPEN; no active timer
-Current substep: M13-004/P5-C3c actual Artifact Node lifecycle owner audit IN_PROGRESS; C3b local complete, new hosted scope OPEN; final four profiles/signed/whole P4/P5 remain OPEN
+Last completed substep: P5-C3c1 kernel root terminal named local QUALIFIED; actual8fresh9.014s/existing npm-Python-ELF3parents11.163s/CPP129; no P5 Artifact user-run
+Next action: CI426/source4db0111 running; poll01 20:12:32UTC 8SUCCESS including macOS/Linux running; actual20min timer02 due20:32:32UTC/session6851; preserve active hosted run; independent C3c2 exact Artifact Node admission/profile/lifecycle owner audit; CI425 native cause OPEN
+Current substep: M13-004/P5-C3c2 exact Artifact Node admission/profile/lifecycle owner audit IN_PROGRESS; C3c1 local complete/CI426 older source active; actual user-run/output/CLI/final profiles/signed OPEN
 Acceptance audit: CI424/source4ec Required10SUCCESS; all10 checkout2823b654/tree d88cd820/2909 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; CI425/source418a included B2e/B2f/C1/C2 and Linux93/preparation fresh2 PASS; macOS+Required FAILURE with native direct cause OPEN; later C3a/C3b excluded. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
 Independent local next: P5-C3c runtime/admission/guest outcome and bounded stream contracts; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-C3c1 외부 kernel root terminal 로컬 검증
+
+[결과](./evidence/package-client-quarantine/p5c3c1-kernel-terminal-local-20261029.json)는 source1316/
+Go b5166b73/CPP4df80d98의8fresh trusted controller roots9.014s와 기존 npm/Python/ELF3parents
+11.163s PASS다. Kernel의 exit0/37/125/126/127/255·TERM/KILL과 별도3B stdout/stderr를 대조했다.
+CPP129/canonical checks·원본과 Source/Host/42/ZIP/Docker 보존·helperwait0/final0정리가 대응한다.
+Host client exit/stdout marker를 guest signal이나 coverage로 쓰지 않는다. Root 종료만으로 actual
+Artifact Node image 로드·출력 완전성·descendant drain을 증명하지 않으며 C3c2가 다음이다.
+일반 role/FS/network/예산은 유지했고 new hosted/whole common/CLI/final은 OPEN이다. 실행 중인
+CI426은 이전 source4db0111이며 다음 timer02 20:32:32UTC/session6851을 유지한다.
+
 
 ### 2026-10-29 P5-C3b offline whole-set materialization 로컬 검증
 
