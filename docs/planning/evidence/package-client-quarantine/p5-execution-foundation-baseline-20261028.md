@@ -845,3 +845,91 @@ C3c1 foundation의 local acceptance만 닫는다. Root terminal은 selected Arti
 완전성·descendant 정리나 Policy 승인 증거가 아니다. C3c2의 실제 Node handoff/admission/profile·
 현재 layout/entry/argv·user result/cleanup과 CLI, new hosted/whole common/final profiles/signed는
 계속 missing이다. CI426은 앞4db0111source이므로 이번 source의 qualification으로 전용하지 않는다.
+
+
+## P5-C3c2a — current whole tree의 읽기 전용 입력 view 구현 전 감사
+
+기준1f6fce4/tree44563852/2945tracked·1316source다. CI426은 이전4db source이며 poll02
+20:32:49UTC 8SUCCESS/Linux 진행·timer03 20:52:49UTC/session63200을 유지한다.
+Read: client09 §3, Architecture-005/Contract-002, C2/C3b/C3c1 owner·범위와 INDEX의
+sandbox L03/L08/L12/L18·artifact L02/evidence L16이다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| NodeExecutionLayout.Entries/ReadFile/MatchesExecution | YES | YES(current full-set DATA) | YES(local) | YES(C2) | current layout만 relative DATA tar로 렌더링/반입 뒤 전체 census 재대조 |
+| ParsePNPMLayoutArchive/entry SHA·mode·UID/GID | YES | YES(Node binder) | YES(local) | YES(existing) | 같은 parser/metadata로 새 view의 exact equality 검사 |
+| createNodeMaterializationVolume/closureVolume.mountArgument/verifyAttachments | YES | YES(RW materializer) | YES(local) | YES(C3b) | 준비 writer 종료 뒤 별도 reader의 readonly mount·단일 attachment |
+| nodeMaterializationCreateArguments/expected topology/cleanup owner | YES | YES(existing DATA lifecycle) | YES(local) | YES(existing) | 기존 false default를 유지하며 readonly variant만 재사용 |
+| 실제 Artifact Node handoff/result/output | NO(P5) | NO | NO | NO | C3c2b 이후; 이번 DATA view로 실행 승인을 위장하지 않음 |
+
+기존 MaterializeNodeExecution은 검증된 immutable layout bytes를 반환하고 모든 runtime 자원을
+닫는다. 그 구현을 교체하거나 raw native cache/controls/source archives가 남은 volume을 실제
+프로그램에 넘기지 않는다. 기존 Layout의 원본 파일/dir만 새 clean DATA tree에 전달한다.
+
+수정 지도: artifact/npm의 execution_input_archive.go와 회귀는 기존 bounded tar writer/Entries/
+ReadFile을 재사용해 fixed relative project/node_modules를 렌더링하고 기존 parser의 readback
+metadata 전체를 current Layout과 비교한다. Runtime/guest path·InstallTarget·새 parser는 없다.
+Sandbox의 node_execution_inputs.go와 회귀는 기존 128MiB/noexec/UID1000 volume owner와
+network-none/readonly-root 표준 Node controller를 재사용한다. Writer cp→전체 readback→writer
+cleanup/trace 완결→성공한 detached inventory→새 readonly reader attach→동일 readback을
+검증한다. Unknown/extra/missing attachment/identity/copy/trace/cleanup은 reader view를 만들지 않는다.
+기존 create-args와 topology 함수는 false wrapper를 유지하고 작은 readonly variant 본체만
+공유한다. 공개 ValidateNodeExecutionInputs는 current DATA view를 만들고 완전히 정리하는
+실제 scoped 검증이며 private resource owner는 후속 실행도 재사용한다. Bootstrap의 기존 fresh2
+production preparation parent에서 실제 returned layout의 readonly 입력 재대조를 연결한다.
+
+두 번째 검토: stage/reader는 별도 ephemeral session이며 Artifact code를 CONTROL로 실행하지
+않는다. 기존 Node DATA owner label·strict image/session cleanup와 trace/parser·Host tool을
+재사용한다. Source/entry/argv는 shell source에 보간하지 않으며 raw argv나 cache를 저장하지 않는다.
+기존 CPU30/memory512/tmp256/wall45·volume128MiB·trace/cleanup 예산은 유지한다. CPP/role/FS/
+network predicate·Core/CLI·새 CI job 변경은 없다. Canonical/영향 Race와 같은 source/binary의
+actual fresh2 및 cleanup·Host/입력 보존 전 QUALIFIED=NO다. 실제 Artifact Node admission과
+image-start/kernel terminal/capture/result/descendant reconciliation은 계속 별도 missing이다.
+
+
+C3c2a 첫 source1320의 canonical7은 PASS였지만 추가 public API preflight 취소 회귀가
+0.008s FAIL이었다. Nil/unavailable backend와 취소된 caller에서 원래 validation error만 남고
+caller의 custom cancellation cause가 빠졌다. 첫source/7logs 및 red test/source/log를 보존했다.
+ValidateNodeExecutionInputs의 모든 반환을 named deferred join으로 감싸 validation/cleanup
+최초 오류와 ctx.Err/context.Cause를 함께 유지한다. 새 권한·Source/parser/volume 동작 변경은 없다.
+같은 추가회귀의 PASS와 corrected canonical Quick88.471s/영향3package freshRace30.53s/
+tagged build/docs/security12.687s가 대응한다. 이것은 public preflight cause 보존의 local 교정이며
+전체 readonly view actual은 아직 미검증이다. Raw p5-c3c2a-cancel-red/v1/v2-*가 원본을 소유한다.
+
+
+### C3c2a 실제 실패와 tmpfs volume 수명 경계의 재검토
+
+Actual v1 source1320/Go32cd90a7/CPP4df는29.214s/parent27.22s FAIL이며 readonly input API의
+provider exit1이다. 정확한 내부 I/O 단계는 당시 오류문에 없었다. Source/CPP/42/ZIP/Host/Docker
+보존·helperwait0/final original1/Node workspace 부재를 확인했고 원본은 actual-v1-*에 보존했다.
+
+Canonical local-driver tmpfs128MiB/UID1000/noexec/pinned OCI sleep controller와20B DATA marker만
+사용한 lifetime probe는 마지막 writer attachment를 제거한 뒤 reader를 만들면 file 없음/exit1,
+readonly reader를 먼저 연결한 뒤 writer를 제거하면 같은 marker/exit0임을 확인했다. 두 경우
+Docker 전후 inventory가 같고 Artifact/Node/npm code는 실행하지 않았다. 이 DATA driver 사실은
+확정이며 원래 actual의 상세 I/O 위치 미수집과 구분한다. Docker tmpfs 일반 문서는 참고일 뿐
+named local-driver의 정확한 A/B 근거는 raw p5-c3c2a-volume-lifetime-*다.
+
+기존 qualified Python owner(pypi_trusted_transaction.go:startPhase phaseAnchor→두 exact
+attachments 검증→terminatePhase preparation→sole readonly anchor)가 이미 이 수명을 보존한다.
+초기 C3c2a의 writer 종료→zero attachment→reader 생성 순서는 반증됐으므로 권장하지 않는다.
+
+수정 지도/두 번째 검토: 새 node_execution_inputs.go의 전환만 기존 owner 순서로 고친다.
+기존 trusted writer와 새 readonly reader의 정확한 두 container ID/mount를 검증한 뒤 writer를
+정리하고 trace를 완결한다. 이후 attachment는 reader 하나만 허용하며 전체 source census를
+다시 대조한 후 view를 반환한다. Overlap 중 Artifact program은 실행하지 않는다. 임의 RW/추가
+attachment를 허용하거나 새로운 keeper/권한/CPP/예산을 추가하지 않는다. 주요 I/O 오류에
+fixed phase를 연결한다. 새 actual fresh2와 전체정리 전에는 readonly view QUALIFIED=NO다.
+
+### C3c2a 수정 후보의 named local 실제 검증
+
+[최종 receipt](./p5c3c2a-readonly-node-inputs-local-20261029.json)는 source1320/Go31836d82와
+C3c1의 unchanged CPP4df80d98/129의 actual54.439s/parent52.41s/fresh2 PASS다. 기존 production
+whole 검사·current Policy ALLOW/storage-only와 offline materialization 뒤 clean tree 전체를
+readonly 입력으로 재대조했다. Source/42/ZIP/Host/Docker 보존·helperwait0/final0/Node workspace
+부재도 대응한다. 최종 canonical7/Quick103.303s/영향3package freshRace30.352s와 개별 원본은
+v3-*에 보존했고 original 실패·cancel RED·DATA probe와 혼합하지 않았다. 위 최초 detached
+순서는 이 후보에서 폐기했고 exact reader 선연결→writer 정리→sole RO→전체 census를 채택했다.
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 C3c2a named local DATA 범위에서 YES다.
+실제 Artifact Node admission/image-start·kernel terminal/출력·descendant drain/result/CLI와
+새 hosted·final4profiles/signed/전체 P5 acceptance는 NO이며 다음 C3c2b에서 감사한다.

@@ -38,11 +38,15 @@ func (o *SharedObserver) StartNodeMaterializationProfile(ctx context.Context, co
 }
 
 func nodeMaterializationExpectedTopology() ([]observerMountExpectation, bool) {
+	return nodeExecutionInputExpectedTopology(false)
+}
+
+func nodeExecutionInputExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
 	topology, ok := observerExpectedTopology("npm-lifecycle")
 	if !ok {
 		return nil, false
 	}
-	return append(topology, observerMountExpectation{nodeExecutionRoot, "workspace", "/tmp", "9p", false, false, false, false}), true
+	return append(topology, observerMountExpectation{nodeExecutionRoot, "workspace", "/tmp", "9p", readOnly, false, false, false}), true
 }
 
 func createNodeMaterializationVolume(ctx context.Context, runner CommandRunner, owner, source string) (closureVolume, error) {
@@ -50,10 +54,14 @@ func createNodeMaterializationVolume(ctx context.Context, runner CommandRunner, 
 }
 
 func nodeMaterializationCreateArguments(session domain.SandboxSessionID, volume closureVolume) ([]string, error) {
+	return nodeExecutionInputCreateArguments(session, volume, false)
+}
+
+func nodeExecutionInputCreateArguments(session domain.SandboxSessionID, volume closureVolume, readOnly bool) ([]string, error) {
 	if volume.destination() != nodeExecutionRoot || volume.projectBuildExecutable || volume.capacity != nodeExecutionWorkspaceLimit {
 		return nil, errNodeMaterialization
 	}
-	mount, err := volume.mountArgument(false)
+	mount, err := volume.mountArgument(readOnly)
 	if err != nil {
 		return nil, err
 	}

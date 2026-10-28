@@ -157,6 +157,10 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 				t.Fatal("native metadata entered executable source tree")
 			}
 		}
+		if err := backend.ValidateNodeExecutionInputs(ctx, execution, materialized); err != nil {
+			t.Fatal("actual readonly Node input view failed", err)
+		}
+		t.Logf("production_node_inputs attempt=%d layout=%s readonly=true user_program_run=false", attempt, materialized.Digest().String())
 		t.Logf("production_node_materialization attempt=%d layout=%s entry=%s source_sha256=%s offline=true lifecycle_scripts=false user_program_run=false", attempt, materialized.Digest().String(), materialized.EntryPath(), subject.Digest().String())
 		t.Logf("production_node_preparation attempt=%d subjects=%d checks=%d Evidence=%d entry=%s source_sha256=%s manifest=%s current_policy=ALLOW storage_only=true user_program_run=false", attempt, len(entries), len(entry.Checks()), len(entry.Evidence()), execution.EntryPath(), subject.Digest().String(), prepared.Bundle().ManifestID().String())
 		previous = prepared
