@@ -3183,3 +3183,20 @@ push나 실행 중 후보 취소는 하지 않는다. 새 source/전체 acceptan
 첫 timer는12:53:12.000315UTC에 발화했고12:53:42UTC fresh run/jobs에서 같은 source와
 8SUCCESS/Linux IN_PROGRESS를 조회했다. Required 미생성/전체 qualification OPEN이다. 실제
 소비 receipt를 timer 원본과 구분하고 다음 due13:13:42UTC/session29688을 등록했다.
+
+### CI422 두 번째20min 조회 — 최초 PyTorch report 거부
+
+[실패 receipt](./ci422-p4-current-cohort-failure-20261028.json)의 같은 source1203445와 all10
+checkout403e7ce/tree d4b0e921·2883files가 같으며8SUCCESS/Linux·Required FAILURE다.
+24top-level/noSKIP/CPP128 뒤 PyTorch CPU resolver6.52s가 pip report candidate를 거부했다.
+뒤 full CPU·pipx cohort는 failfast로 NOT_RUN이다. Helper6wait0/final original1·confirmed stop/
+client 복원은 PASS이며 최초 오류를 유지했다. 이 결과는 새 pipx hosted qualification이 아니다.
+Timer2가13:13:42.000186UTC에 발화한 뒤13:13:49UTC 실제 완료/실패를 조회했다. 두 번의20min
+조회와 decoded10logs936954B/매 chunk readback·whole checkout/source를 보존한다. 새 watcher/
+재실행/push는 없으며 실패 전8jobs만 한정 성공이다. 최종 workflow40m36은 추정 시간이 아니다.
+
+Parser/simple.go와 pypi_resolver.go는 CI421 이후 byte-identical이다. 첫 guard는 direct flag,
+missing identity/SHA256와 optional legacy hash 일치를 검증하지만 raw report는 미수집이므로
+정확한 operand/외부 입력 drift·readiness 인과를 확정하지 않는다. 다음은 같은 CI source의
+별도 사본에서 원래 argv/거부 조건을 유지한 bounded test-only report DATA capture다. 동일
+전체 CI를 blind 재실행하거나 hash/source 검증을 완화하지 않는다. 독립 P5-A local은 이 CI에 없다.

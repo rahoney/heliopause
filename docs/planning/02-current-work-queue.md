@@ -18,12 +18,21 @@ Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
 Next action: CI422 Linux PyTorch report candidate refusal first-cause diagnostic; P5-A structural entry locally qualified; no active timer/run
 Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source1203445 CI422 Linux/Required FAILURE; 8SUCCESS; current whole hosted/final/signed remain
-Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
+Acceptance audit: CI422/source1203445 Linux+Required FAILURE; all10 checkout403e7ce/tree d4b0e921/2883 matches; 8SUCCESS/Linux24PASS/noSKIP/helper6wait0/restore; first torch report candidate refusal unresolved. Previous full success CI421/e859; current whole/final/signed OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS exact bin selection only; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 CI422 실패 원본·소스 대조
+
+[실패 receipt](./evidence/package-client-quarantine/ci422-p4-current-cohort-failure-20261028.json)의
+8SUCCESS/Linux·Required FAILURE와 all10 checkout/source whole tree 동일성을 확인했다.
+Linux24PASS/noSKIP/CPP128 뒤 torch report candidate가 거부됐고 raw report/정확한 조건은 아직
+미확정이다. Helper6wait0/최종 오류1 보존·원본 client 복원은 성공이다. Full CPU와 뒤 pipx는
+미도달이며 whole qualification을 닫지 않는다. 실제20min timer2를13:13:49UTC 소비했고 현재
+active timer/CI는 없다. 재실행 없이 same-source bounded DATA 진단을 계속한다.
 
 ### 2026-10-28 P5-A 구조적 진입점 선택 로컬 검증
 
