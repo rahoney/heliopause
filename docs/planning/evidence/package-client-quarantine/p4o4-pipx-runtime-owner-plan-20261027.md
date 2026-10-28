@@ -2922,3 +2922,161 @@ milestone/next work item은 바뀌지 않는다. 기존 e859/CI421 원격 성공
 | Common CPP/runtime 영향 profile | YES | YES | YES(named per-owner local) | NO(whole final) | exact-source CPU/cu126/cu130/cu132와 기존 client/profile evidence를 최종 묶음에서 연결 |
 | Ordinary native default/다른 recipe | NO(current supported lane) | NO | NO | NO | 지원 확대 전 별도 source 의미·독립 proof/actual; fixed recipe PASS로 일반화 금지 |
 | npx/uvx/bunx/pipx run/pnpm dlx | 기존 acquisition/inspection/promotion owners only | NO(run lane) | NO | NO | P5/P6 baseline 후 explicit 실행 계약과 현재 owner 재사용; 설치 성공을 실행 성공으로 표시하지 않음 |
+
+## C-e2 — current source의 기존 production 소비자와 grouped qualification 준비
+
+기준fb05fee/tree8691f55f/2880files, product source는b5caa와 동일하다. 기존 required inspector
+`TestPipxAcquiredRuntimeRequiredInspectionIntegration`/기존 graph parent
+`TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging`는 IMPLEMENTED/WIRED=YES이며
+이전 B3 scope는 QUALIFIED=YES다. 현재 Go52/CPP128 whole cohort의 해당 소비자 actual은
+QUALIFIED/ACCEPTANCE_CLOSED=NO다. MISSING은 새 구현이 아니라 원본 ZIP20unit의 required
+Evidence6/변조 거부와 actual complete graph→Evidence/Policy/staging/실패 보존의 현재 소스 확인이다.
+D2의 기존 native3/CLI4가 이 release runtime 검사 역할을 대신하지 않는다.
+
+기존 bootstrap binary7c1d573e와 CPPae301892를 그대로 쓰며 graph tagged binary만 현재1280
+runtime source로 compile한다. Test overlay/ZIP 후보/pin 변경은 없다. Ordinary UID1000과
+private mount의 exact protected client/observer binding, pinned images와 helper 수명·전체
+source/42input/ZIP·Host/Docker 전후 대조를 재사용한다. Existing test/선택 filter/assertions와
+failfast/CPU30-reserve17/20unit coverage는 그대로다. 이 actual은 현재 역할이 다른 production
+consumer 검증이며 mixed CPU parent를 green까지 반복하는 시험이 아니다. 이전 unsigned
+historical SBOM fixture의 scope는 그대로 명시하고 signed authenticity/hosted UID1001은 별도다.
+Current graph/required가 새 tuple에서 거부되면 최초 오류를 보존하고 같은 입력을 반복하지 않는다.
+P4/P2/P3 final profile/signed와 ordinary native default·미구현 P5/P6는 닫지 않는다. Grouped
+candidate는 canonical D2 current Quick/영향 Race·workflow와 문서-only E1 docs/security를
+각 source binding 범위로 재사용하며 근거 없이 같은 전체 검사를 반복하지 않는다.
+
+### E2 최초 production 거부와 readiness 비용 가설 — 수정 전 지도
+
+현재 원본 binary7c1d573e/CPPae301892의 required inspector actual42.235s는 마지막 userpath.cli
+unit-termination의 CPU authorization exhausted로 FAIL다. Required Evidence6/정상 완료는
+미도달이며 graph actual은 이 필수 검사에 의존하므로 NOT_RUN이다. Observer fault·deadline
+초과가 아닌 CPU 거부를 보존했고1280source/42input/ZIP·Host/Docker 불변, helperwait0/
+CONFIRMED_STOPPED/부재는 PASS다. E2 inspect-actual-v1 원본을 green으로 덮지 않는다.
+
+새 구체 가설은 기존 boundaryReadinessScript의 child process 비용이다. 성공한 호출도 id2개와
+parent/self 각 grep8개로 외부 명령18개를 실행한다. ZIP의22phase에서 이 readiness를 호출한다.
+이 count는 source로 확인한 구조이며 실제 일정 CPU 절감/앞 실패의 단독 원인은 아직 미확정이다.
+이미 같은 파일의 boundaryAlreadyDemotedValidation은 shell builtin read/set/test로 kernel
+self status의 Uid/Gid 네 값, supplementary groups 없음, CapInh/Prm/Eff/Bnd/Amb0를 확인한다.
+
+| 현재 구현/수정 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| boundaryAlreadyDemotedValidation / immutable helper·OCI init | YES | YES | YES(existing) | YES(existing) | 없음, bytes 보존 |
+| boundaryReadinessScript / awaitBoundaryHelper / wrapped exec | YES | YES | YES(existing semantics) | YES(existing semantics) | 동일 kernel 상태 검사를 반복 외부 명령 없이 조립하는 비용 후보 |
+| C++ IsExactPipxReadiness와 실제 boundary→setpriv→dash admission | YES | YES | YES(CPP128/actual) | YES(named scopes) | 새 exact fixed script literal의 동기화·동일 guard/negative 보존 |
+| Production required/graph·mixed ZIP/current clients | YES | YES | PARTIAL(current required FAIL) | NO(current whole) | 새 비용 가설 후보의 canonical/영향 소비자 actual과 회계 거부 보존 |
+
+기존 owner를 대체하거나 새 validator를 작성하지 않는다. 동일 builtin validation 원문을
+self용으로 그대로 쓰고 function 이름/고정 path만 compile-time source 조립으로 /proc/1 용을
+함께 만든다. 두 function을 -ceu 아래 순서대로 호출한다. 기존 id -u/-g는 kernel self의 네
+Uid/Gid 값이 모두1000인 검증에 포함되므로 새 권한이 아니다. 실제 읽는 self는 readiness
+shell 자신이며 이전 grep의 상속 identity 검사보다 약화하지 않는다. Runtime path 입력/함수
+호출 인자·새 helper/RPC·새 FS grant는 추가하지 않는다. Boundary helper/OCI command와
+already-demoted validator의 원문 bytes·demotion/nonces/creator/role/start/network 및 generic
+C++ 분기는 보존한다. C++은 kBoundaryReadinessScript literal 한 곳만 같은 exact bytes로 바꾼다.
+기존128latch의 실제 admission/demotion/target·13mutation 검증을 재사용한다.
+
+먼저 Linux test에서 별도 kernel-status DATA 두 파일과 PATH 비운 실제 /bin/sh를 사용해
+원래 readiness의 외부 명령 의존 RED를 보존한다. 동일 검증 후보는 parent/self 각각 Uid/Gid
+네 slot·groups·다섯 cap의 변조/누락·읽기 실패를 거부해야 한다. Test의 fixed path 치환은
+fixture만 소유하며 production은 두 kernel path뿐이다. 기존 formatter/Quick/관련 full Race와
+canonical C++128, original no-overlay required/graph·mixed 정상→오류→정상, 영향 common
+readiness의 기존 UV/PNPM/Bun/Python 소비자를 새 source에 연결한다. 메모리/CPU30/17/13,
+20units/trace/wall·runtime/source/input pin은 바꾸지 않는다. 실제 결과 전 수리 완료를 선언하지 않는다.
+
+Readiness 회귀 RED0.010s는 PATH를 비운 유효 status DATA에서도 원래 id: not found로 거부됐다.
+동일 기존 validator 원문을 parent/self에 조립한 후보의 focused0.177s는 PASS다. 두 경로의
+Uid/Gid 각4slot·groups·5cap/필수 필드 누락·빈 파일과 parent 파일 부재를 실제 -ceu shell로
+거부한다. Test subtest의 helper t 전달만 명확히 한 뒤 canonical format0.665s를 수행했다.
+새 fixed script는1896B이며 existing helper/OCI/validator 원문과 CPP의 literal 외 모든 bytes가
+그대로다. No overlay의 Quick/영향 full Race·tagged build와 새 canonical CPP/actual은 미완료다.
+따라서 현재는 좁은 회귀 PASS/비용 가설 후보이며 전체 CPU 수리·새 native 권한이 아니다.
+
+### E2 v1 반증과 기존 grep reader를 유지하는 v2 지도
+
+V1은 Quick280.078s/영향3package full Race31.476s/tag vet8.575s/세 tagged builds/docs/security와
+canonical CPP263.203s/128PASS0FAIL를 통과했다. 하지만 no-overlay required actual-v2 6.708s는
+준비 중 STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_PROC로 FAIL다. SHELL/CONTROL/
+DIRECT_EXEC_ROOT·flags32768/first frozen path의 FNVc86af5438b051ce1은 /proc/1/status와
+대응한다. FNV는 진단 locator이며 admission이나 권한 근거로 쓰지 않는다. Source/input/Host/
+Docker 불변/helperwait0/부재는 PASS이고 graph/mixed는 NOT_RUN이다. 따라서 builtin 직접
+reader의 채택/CPU 해결은 반증됐으며 canonical128만으로 product 성공을 표시하지 않는다.
+
+기존 IsPinnedNpmRuntimeRead는 exact clone creator의 CONTROL grep child에 두 status 읽기를
+허용하고 direct shell read에는 그 권한을 주지 않는다. 이 classifier/프로세스 guard는 유지한다.
+V2는 기존 grep reader를 parent/self 각각1개로 유지하고8개 필드만 DATA로 모아 기존 builtin
+validator의 here-document 입력으로 준다. Validator body와 immutable helper/OCI source는
+그대로며 readiness 조립의 fixed redirection만 바꾼다. 외부 명령은 성공18개에서2개로 줄이는
+가설이다. 고정 grep은 기존 CONTROL child이고 새 artifact stdout/완료 authority가 아니다.
+없음/실패/잘못된 필드는 기존 validator의 unset/불일치로 거부하며 source/argv/path 입력은 없다.
+Shell의 직접 proc read를 새로 허용하거나 범용 FS/phase/role guard를 넓히지 않는다.
+
+Test는 PATH에 기록용 grep wrapper 한 개만 두고 실제 /usr/bin/grep로 두 fixed status DATA를
+읽게 한다. 유효 parent/self에서 정확히2reader, 각 잘못된 필드/누락/빈 상태/읽기 실패에서
+거부와 최대2reader를 확인한다. V1의 무외부명령 목표는 미채택으로 남기고 원본 RED/GREEN/
+CPP와 실패 actual을 보존한다. 같은3source path의 수정이며 기존 validator/template나 Core를
+재작성하지 않는다. 새 canonical/CPP와 no-overlay actual이 완료될 때까지 수정 검증은 NO다.
+
+V2 focused0.276s는 두 reader와 기존 validator의 실제 shell 정상/parent·self별 모든 ID slot,
+5cap·groups·누락·빈 DATA 및 두 파일의 각 읽기 실패를 검증했다. PATH에는 grep wrapper만
+있으며 정상 reader2개/각 거부 최대2개다. 이 동일 새 회귀를 Root의 원래 readiness만 test-only
+source overlay해 reader0/기대한2 불일치 RED0.012s를 보존한다. Overlay는 비교 시험에만 쓰며 actual은
+순수 production binary다. V2의 새 fixed script2074B/SHA99a7e674와 기존 validator dfd745ad,
+원래 helper/OCI·FS classifier/CPP latches bytes를 보존한다. 이후9개 canonical/tagged 검사와
+C++128 및 현재 actual로만 qualification을 판정한다. V1의 CPU와 stream 실패를 덮지 않는다.
+
+V2 source의 format0.849s/Quick232.928s/영향3package fullRace31.342s/tag vet7.610s,
+세 tagged builds/docs0.256s/security13.073s는 PASS다. CPP의 같은128latch를 검증 중이며
+actual은 아직 미실행이다. V3 actual 준비에서 새 base/신원은v3인데 mutable standalone
+출력 파일명만v2.py로 남은 operator 생성 오류를 실행 전 발견했다. 기존 standalone v2 파일은
+덮어썼지만 이전 actual directory의 원본 namespace/actual.sh·logs/result/source/binary binding과
+Root raw의 원래 generator는 보존됐다. 잘못 생성한 미실행 text는 별도 이름으로 보존·이동했고
+v2 경로를 없애 재사용을 막았다. 새 v3.py의 file/base/source1281·새 Go/CPP 신원을 직접 대조했다.
+해당 오류로 Root 실제 실행·product source/원본 evidence 변경은 없으며 과거 standalone은
+원본으로 주장하지 않는다. operator-output-correction이 이 준비 오류/한계를 소유한다.
+
+V2 canonical CPP256.108s/128PASS0FAIL와 같은 Go1281의 no-overlay required actual-v3
+42.618s는 PASS다. 원본20unit으로 COMPLETED/findings0/Evidence6/commands5를 얻고 그 뒤
+바뀐 intake bytes를 거부했다. Host/CPP/source/42input/ZIP 불변/helperwait0/CONFIRMED_STOPPED/
+부재다. 실제 observer는d834ca86, Bootstrap524a56b1이다. 성공한 한 소비자의 wall 시간으로
+일정 CPU 절감률이나 전체 수리를 주장하지 않으며 mixed parent/current graph·공통 소비자를
+계속 검증한다. Original CPU 거부와 v1 direct-reader stream fault의 원본은 유지한다.
+
+V2 no-overlay mixed actual-v3 90.645s는 기존 정상→실제 Read 뒤 test-only 오류→정상 parent가
+PASS다. 정상20unit/5commands 각각CPU11.758667/12.028750s, 주입된 실패0.450356s/commands0,
+observer fault 없음이다. Budget/17s reserve와 assertions/coverage는 그대로다. 원래 source의
+첫 required CPU 거부42.235s와 이 후보의 required PASS42.618s/같은 영향 fullRace를 함께
+보존하며 정해진 CPU 절감률이나 모든 환경의 정상 완료를 보장하지 않는다.
+
+Graph actual-v3 82.159s도 PASS다. 기존 unsigned source/staging fixture의 subjects13/checks32/
+Evidence37(ZIPchecks1/ZIPEvidence7), required runner 누락의 promoter0, production authenticity의
+unsigned set 승격 거부/promoter0를 확인했다. Native6은 fixture calls이며 promoter는 spy다.
+실제 signed15asset/19bundle나 Host 설치 성공으로 확대하지 않는다. 세 actual 모두 동일
+1281source/CPPd834ca86/42input/원본ZIP·Host/Docker 불변/helperwait0/confirmed stopped·부재다.
+현재는 기존 exact CI tools-native의3parent를 같은 source로 검증 중이며 공통 readiness의
+다른 client/최종 profile qualification은 후속으로 남는다.
+
+### C-e2 original ZIP/current graph/native readiness 한정 완료
+
+[한정 receipt](./p4o4c3c3b3c-e2-readiness-original-local-20261028.json)는 기존 credential validator와
+CONTROL grep 두 reader를 조합한3source path만 연결한다. Immutable helper/OCI·validator 원문과
+CPP exact readiness literal 이외 모든 bytes, FS/nonce/role guards 및 CPU30/17/13·20unit은
+그대로다. Pure shell field 변조/누락/reader-count와 canonical Quick232.928s/영향 fullRace31.342s,
+tag/builds/docs/security·CPP256.108s/128PASS0FAIL를 검증했다.
+
+No-overlay original required42.618s/mixed90.645s/current unsigned graph82.159s와 existing exact
+CI tools-native163.064s/3parents가 PASS다. Mixed의 정상CPU11.758667/12.028750s와 실제 Read 뒤
+오류 주입/zero commands를 확인했다. Graph는13subject fixture/current Evidence·Policy/staging과
+required 누락·unsigned production authenticity 거부의 범위다. Native3는 fresh/public/original-aware
+upgrade/no-op selection이며 Host publication/새 CLI 전체 재검증으로 확대하지 않는다.
+
+동일1281runtime source/CPP/원본42·ZIP/Host/Docker 불변과 helperwait0/confirmed stopped·부재,
+owned native fixture workspace 부재를 확인한 뒤 명시3source만 Root에 복사해 전체1281sha를
+대조했다. E2 QUALIFIED/ACCEPTANCE_CLOSED=YES는 이6named local parent와 pure 회귀뿐이다.
+전체 current common client/hosted/final/signed는 OPEN이다. 현재 source의 production 원본 ZIP CPU
+한정 gap은 실제 required+mixed/current graph로 검증했지만 일정 절감률이나 모든 환경의 성공을
+주장하지 않는다. 최초 CPU 거부/encoding 미채택과 direct builtin reader의 stream 실패도 보존한다.
+
+같은 M13-004/C-e3에서 공통 readiness의 기존 UV/Python/PNPM/Bun 소비자와 grouped hosted
+후보 검토를 계속한다. 새 milestone/next work item은 아니며 PD/README 상태를 바꾸지 않는다.
+현재 candidate는 local이며 새로운 push/merge/tag/release/CI/timer는 없다.

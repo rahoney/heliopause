@@ -1375,7 +1375,46 @@ bool ExtractBoundaryAdmissionNonce(const gvisor::sentry::ExecveInfo& message,
 }
 
 // Exact controller-owned readiness tuple; diagnostic command shapes grant no authority.
-constexpr char kBoundaryReadinessScript[] = R"HAA(test "$(id -u)" = 1000; test "$(id -g)" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq "^${field}:[[:space:]]+0000000000000000$" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq "^${field}:[[:space:]]+0000000000000000$" /proc/self/status; done)HAA";
+constexpr char kBoundaryReadinessScript[] = R"HAA(init_demoted() {
+  uid= gid= groups= cap_inh= cap_prm= cap_eff= cap_bnd= cap_amb=
+  while IFS=: read -r key value; do
+    set -- $value
+    case "$key" in
+      Uid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && uid=1 ;;
+      Gid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && gid=1 ;;
+      Groups) [ "$#" -eq 0 ] && groups=1 ;;
+      CapInh) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_inh=1 ;;
+      CapPrm) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_prm=1 ;;
+      CapEff) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_eff=1 ;;
+      CapBnd) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_bnd=1 ;;
+      CapAmb) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_amb=1 ;;
+    esac
+  done <<HAA_STATUS
+$(grep -E '^(Uid|Gid|Groups|CapInh|CapPrm|CapEff|CapBnd|CapAmb):' /proc/1/status)
+HAA_STATUS
+  [ "$uid:$gid:$groups:$cap_inh:$cap_prm:$cap_eff:$cap_bnd:$cap_amb" = 1:1:1:1:1:1:1:1 ]
+}
+already_demoted() {
+  uid= gid= groups= cap_inh= cap_prm= cap_eff= cap_bnd= cap_amb=
+  while IFS=: read -r key value; do
+    set -- $value
+    case "$key" in
+      Uid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && uid=1 ;;
+      Gid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && gid=1 ;;
+      Groups) [ "$#" -eq 0 ] && groups=1 ;;
+      CapInh) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_inh=1 ;;
+      CapPrm) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_prm=1 ;;
+      CapEff) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_eff=1 ;;
+      CapBnd) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_bnd=1 ;;
+      CapAmb) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_amb=1 ;;
+    esac
+  done <<HAA_STATUS
+$(grep -E '^(Uid|Gid|Groups|CapInh|CapPrm|CapEff|CapBnd|CapAmb):' /proc/self/status)
+HAA_STATUS
+  [ "$uid:$gid:$groups:$cap_inh:$cap_prm:$cap_eff:$cap_bnd:$cap_amb" = 1:1:1:1:1:1:1:1 ]
+}
+init_demoted
+already_demoted)HAA";
 
 bool IsExactPipxReadiness(const gvisor::sentry::ExecveInfo& message, bool boundary) {
   const int offset = boundary ? 3 : 0;

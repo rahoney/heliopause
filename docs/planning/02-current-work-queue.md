@@ -15,15 +15,28 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-e1 diagnostic audit; original phase88.730s/normal-failure-normal PASS, earlier CPU refusals preserved; no repair/final claim
-Next action: M13-004/P4-O4-C3c3b3c C-e2 current-cohort acceptance/matrix and grouped hosted candidate preparation; remote remains e859/CI421success; no active CI/timer
-Current substep: M13-004/P4-O4-C3c3b3c C-e2 IN_PROGRESS; native/CLI/existing CI wiring locally closed; hosted/final/production legacy CPU remain
+Last completed substep: P4-O4-C3c3b3c C-e2 original required/mixed/current graph/exact native3 local PASS; existing two-reader readiness preserves guards and CPU30/17/13
+Next action: M13-004/P4-O4-C3c3b3c C-e3 common readiness UV/Python/PNPM/Bun consumers and grouped hosted candidate review; remote remains e859/CI421success; no active CI/timer
+Current substep: M13-004/P4-O4-C3c3b3c C-e3 IN_PROGRESS; original ZIP/current graph/native readiness locally qualified; common clients/hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-e2 original ZIP/current graph/native readiness 한정 완료
+
+[한정 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-e2-readiness-original-local-20261028.json)의
+기존 validator/grep2reader 후보는 Quick232.928s/영향3package fullRace31.342s/tagged checks와
+CPP256.108s/128latches, original required42.618s/mixed90.645s/current graph82.159s 및 exact
+native3의163.064s가 PASS다. Mixed 정상20unit/5commands의 CPU11.758667/12.028750s와 실제
+Read 뒤 오류 주입 거부를 확인했다. Helper/OCI·전체 FS/nonce/role guards/원본 pin·30/17/13
+예산은 불변이며 Source1281/CPP/input42/ZIP·Host/Docker 동일/helperwait0·부재다. Graph는
+unsigned13subject source/staging fixture와 production authenticity 거부이며 signed/native 전체가 아니다.
+첫 CPU 거부와 직접 builtin reader의 stream fault/미채택, 실행 전 operator filename 교정도 보존했다.
+같은 M13-004/C-e3에서 기존 common UV/Python/PNPM/Bun 영향과 grouped 후보를 계속 검증한다.
+Current whole hosted/UID1001/final/signed·다른 native recipe/run은 미완료이며 새 push/CI는 없다.
 
 ### 2026-10-28 C-e1 CPU 진단 audit 한정 종료
 

@@ -60,7 +60,15 @@ func boundaryContainerCommand() string {
 		boundaryHelperPath + "; exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
 }
 
-const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"
+// Reuse the credential validator and the existing CONTROL grep readers.
+// Capture both fixed statuses once, then validate their fields with builtins.
+var boundaryReadinessScript = func() string {
+	reader := "done <<HAA_STATUS\n$(grep -E '^(Uid|Gid|Groups|CapInh|CapPrm|CapEff|CapBnd|CapAmb):' /proc/self/status)\nHAA_STATUS"
+	self := strings.Replace(boundaryAlreadyDemotedValidation, "done < /proc/self/status", reader, 1)
+	init := strings.Replace(self, "already_demoted()", "init_demoted()", 1)
+	init = strings.Replace(init, "/proc/self/status", "/proc/1/status", 1)
+	return init + "\n" + self + "\ninit_demoted\nalready_demoted"
+}()
 
 func boundaryOriginMode(mode string) string {
 	switch mode {
