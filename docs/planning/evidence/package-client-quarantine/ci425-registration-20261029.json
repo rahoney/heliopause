@@ -1,0 +1,81 @@
+{
+  "source": "418a2768b0da76a70ce2a2f637f7c6b74ac16e0e",
+  "tree": "016df83d57e1224c07637e4c8282c3f0d4cb29f3",
+  "tracked_files": 2926,
+  "source_inputs": 1305,
+  "run_id": 40739100696,
+  "number": 425,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40739100696",
+  "run_started_at": "2026-10-28T17:47:51Z",
+  "push_completed": true,
+  "remote_ref_verified_after_push": true,
+  "scope": "B2e/B2f production preparation/new hosted parent, C1 Host output, C2 whole npm layout DATA binding and CI424 receipt",
+  "whole_hosted_qualification": "PENDING",
+  "status": "IN_PROGRESS",
+  "last_actual_query_at": "2026-10-28T18:08:03Z",
+  "jobs": [
+    {
+      "id": 122995522622,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995522871,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995522918,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995522986,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995523017,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995523081,
+      "name": "gVisor Linux Integration",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 122995523113,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 122995523146,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122995523183,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "timer_session": 56538,
+  "next_due_at": "2026-10-28T18:28:03Z",
+  "completed20min_polls": 1,
+  "later_C3_source_excluded": true,
+  "known_failed_job": "macOS",
+  "known_failure": "canonical platform default-test6min context deadline; no individual FAIL; cause OPEN",
+  "completed8_same_checkout": "3cc28f9e0094cd17956bf9d14a2916f8139d754a",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 535093
+}

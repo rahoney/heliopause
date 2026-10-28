@@ -263,7 +263,11 @@ func preparePromotionProject(project, stagedRoot string, bundle domain.VerifiedB
 }
 
 func generatedNPMProject(bundle domain.VerifiedBundle) ([]byte, []byte, error) {
-	graph := bundle.Set().Inspected().Graph()
+	return generatedNPMProjectSet(bundle.Set())
+}
+
+func generatedNPMProjectSet(set domain.VerifiedSet) ([]byte, []byte, error) {
+	graph := set.Inspected().Graph()
 	nodes := graph.Nodes()
 	byID := make(map[domain.DependencyNodeID]domain.LockedDependency, len(nodes))
 	inspections := make(map[domain.DependencyNodeID]domain.DependencyInspection, len(nodes))
@@ -273,7 +277,7 @@ func generatedNPMProject(bundle domain.VerifiedBundle) ([]byte, []byte, error) {
 		}
 		byID[node.Node()] = node
 	}
-	for _, inspection := range bundle.Set().Inspected().Inspections() {
+	for _, inspection := range set.Inspected().Inspections() {
 		inspections[inspection.Node()] = inspection
 	}
 	children := make(map[domain.DependencyNodeID][]domain.DependencyNodeID)

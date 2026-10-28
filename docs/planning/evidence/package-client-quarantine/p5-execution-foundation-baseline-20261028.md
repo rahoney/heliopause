@@ -605,3 +605,49 @@ pipx/UV/Bun/PNPM named consumers, UID1001/helper14wait0/final0이 PASS다. Decod
 종료 시각으로 확대하지 않는다. Timer05는 소비/종료됐고 추가 CI424 timer는 없다.
 이 source의 B1/B2a-B2d API는 ordinary code checks에 포함되지만 B2e/B2f/C1/C2와 실제 사용자
 프로그램/CLI·signed/final4profiles는 밖이다. 같은 M13-004의 reviewed grouped 후보를 계속한다.
+
+
+## P5-C3a — 기존 npm controller controls의 비설치 재사용 감사/지도/두 번째 검토
+
+기준418a276/tree016df83d/2926tracked·1305source다. CI425는 이 source를 검사 중이고
+18:07:51UTC/session67825 timer를 유지한다. 새 private clone은 같은418a/index에서 시작한다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| promotion.generatedNPMProject | YES | YES(existing install) | YES(existing npm/full checks) | YES(existing) | current ExecutionContext의 같은 본체 재사용 entry |
+| Domain.ExecutionContext/VerifiedSet/ProjectControlFile | YES | YES(existing APIs) | YES(named) | YES(value) | 새 controller renderer의 현재 set/유한 copied output 연결 |
+| NodeExecutionLayout full tree/entry binding | YES | NO(actual flow) | YES(local DATA/API) | YES(API) | 후속 offline materializer의 readback 소비 |
+| full-set sandbox materialization/Node run/admission | NO(P5) | NO | NO | NO | 이 작은 renderer 이후 실제 runtime/observer/cleanup 연결 |
+
+수정 지도: 기존 npm_promotion.go의 generator 본체를 같은 파일의 generatedNPMProjectSet으로
+추출한다. 기존 generatedNPMProject(bundle)는 bundle.Set()을 전달하는 wrapper로 남긴다.
+본체의 두 bundle.Set() access만 set access로 바꾸며 generation 규칙/출력/old caller는 그대로다.
+기존 구현을 다른 generator로 대체하거나 재작성하지 않는다. Source diff로 동일 본체를 대조한다.
+새 npm_execution_controls.go는 current ExecutionContext.Set()을 같은 helper에 전달하고 고정
+package.json/package-lock.json 두 ProjectControlFile을 만든다. InstallTarget/가짜 bundle,
+Host filesystem/command·network·runtime provisioning/새 port 또는 parser를 만들지 않는다.
+
+두 번째 검토: controls는 실행 권한·캐시 승인이 아닌 generated DATA다. Raw argv를 저장하거나
+해시하지 않고 기존 root JSON fields/local digest tarball paths/whole graph/SRI·ambiguous child
+거부를 유지한다. Nil/zero/canceled/cause·non-npm/missing integrity·determinism/copy/argv 변경을
+검증하고 기존 npm promotion 정상/실패 소비자와 전체 promotion Race를 확인한다. Canonical
+format/quick/docs/security도 같은 후보에 연결한다. 실제 source freeze/materialization/guest pin/
+immutable mount/admission/user-run/CLI는 아직 missing이다.
+
+C3a 두 번째 Quick206.123s의 최초 실패는 새 missing-integrity fixture가 기존
+Domain.NewLockedDependencyWithRecordPath의 필수 declared integrity에서 거부된 것이다.
+VerifiedSet도 exact declared integrity 일치를 요구하므로 이 경우 renderer까지 도달하지 않는다.
+원본 second source/log를 보존하고 valid non-npm current set 반례로 교정했다. 기존 generator/
+Core의 SRI guard는 유지하며 missing integrity의 새 API 회귀를 실행했다고 기록하지 않는다.
+
+
+### C3a named local controller DATA 결과
+
+[Receipt](./p5c3a-npm-execution-controls-local-20261029.json)은 corrected canonical Quick/전체
+promotion Race/docs/security를 연결한다. 기존1304source는 그대로이고 같은 generator의 두
+set access만 바꾼 본체와 기존 bundle wrapper를 byte-compare했다. 새2file은 current execution
+set의 동일 whole graph/local SHA/SRI controls와 회귀다. InstallTarget/가짜 bundle·Host I/O나
+프로그램 실행은 없다. Argv-independent output/copy·non-npm·nil/zero/cancel/
+cause를 확인했다. 첫 SA1012는 직접 nil negative fixture 형식이며 최초 source/log를 보존하고
+기존 table 형식으로 교정했다. 후속 missing-integrity fixture는 Core의 기존 필수 선행조건에서
+거부돼 원본을 보존하고 도달 가능한 non-npm 사례로 교정했다. 기존 integrity guard는 그대로다. Actual materialization/user-run/CLI/전체 P5는 계속 missing이다.
