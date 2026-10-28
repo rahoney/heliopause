@@ -125,6 +125,9 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = command.ParseFlags(remaining); err != nil {
 		return "", err
 	}
+	if !packageClient && relativeCommandPath(command) == "pipx" && len(command.Flags().Args()) != 0 {
+		return "", errors.New("pipx supports install and managed upgrade only")
+	}
 	// Preflight and Execute parse the same argv. Slice flags must not accumulate
 	// one accepted occurrence twice; explicit repeats were validated before reset.
 	if command.CommandPath() == "helox cargo update" {

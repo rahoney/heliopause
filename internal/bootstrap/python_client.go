@@ -20,6 +20,7 @@ type pythonPackageClient struct {
 	derivation bool
 	platform   func(string, string) error
 	bind       func(*cobra.Command, pythonClientBindings) error
+	close      func(ports.DependencyResolver) error
 }
 
 type pythonClientBindings struct {
@@ -38,6 +39,7 @@ func pythonPackageClientFor(id cli.PackageClientID) (pythonPackageClient, error)
 		id = cli.PipPackageClient
 	}
 	clients := map[cli.PackageClientID]pythonPackageClient{
+		cli.PipxPackageClient:   {id: cli.PipxPackageClient, resolver: pipxInstallDependencyResolver, platform: pipxToolClientPlatform, bind: bindPipxToolClient, close: closePipxDependencyResolver},
 		cli.UVToolPackageClient: {id: cli.UVToolPackageClient, resolver: uvInstallDependencyResolver, platform: uvToolClientPlatform, bind: bindUVToolClient},
 		cli.PipPackageClient:    {id: cli.PipPackageClient, resolver: pypiInstallDependencyResolver, derivation: true, bind: bindPipPackageClient},
 		cli.UVPipPackageClient:  {id: cli.UVPipPackageClient, resolver: uvInstallDependencyResolver, platform: uvPackageClientPlatform, bind: bindUVPipPackageClient},

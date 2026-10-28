@@ -53,6 +53,8 @@ const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존�
 
 func packageClientDescriptors() []packageClientDescriptor {
 	return []packageClientDescriptor{
+		pipxInstallDescriptor(),
+		pipxUpgradeDescriptor(),
 		uvToolInstallDescriptor(),
 		uvToolUpgradeDescriptor(),
 		{id: UVProjectPackageClient, path: []string{"uv", "lock"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}}, route: "pypi", use: "lock --upgrade", shortEN: "Quarantine the selected project before upgrading only its lock file", shortKO: "선택된 프로젝트 전체를 검역한 뒤 잠금파일만 갱신합니다", longEN: uvProjectLockEnglish, longKO: uvProjectLockKorean, validate: validateUVProjectLockArgs, validateRaw: validateUVProjectLockRawArgs, flags: configureUVProjectLockFlags, flagText: uvProjectLockFlagText, examples: []string{"helox uv lock --upgrade", "helox uv lock --upgrade --project /absolute/path/project"}},
@@ -130,6 +132,13 @@ func initializePackageClientCommands(root *cobra.Command) {
 		command.Example = strings.Join(descriptor.examples, "\n")
 		if descriptor.flags != nil {
 			descriptor.flags(command)
+		}
+		if descriptor.id == PipxPackageClient {
+			for name, text := range descriptor.flagText {
+				if flag := command.Flags().Lookup(name); flag != nil {
+					flag.Usage = text.en
+				}
+			}
 		}
 		parent.AddCommand(command)
 	}

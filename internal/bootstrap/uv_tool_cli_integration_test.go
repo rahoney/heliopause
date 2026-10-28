@@ -21,6 +21,30 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 	if os.Getenv("HELOX_UV_TOOL_INSTALL_CLI_INTEGRATION") != "1" || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user public UV tool CLI qualification")
 	}
+	runPublicToolInstallCLIIntegration(t, false)
+}
+
+func TestLinuxPipxToolInstallCLIIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PIPX_TOOL_INSTALL_CLI_INTEGRATION") != "1" || os.Geteuid() == 0 {
+		t.Fatal("declare ordinary-user public pipx CLI qualification")
+	}
+	runPublicToolInstallCLIIntegration(t, true)
+}
+
+func runPublicToolInstallCLIIntegration(t *testing.T, pipx bool) {
+	t.Helper()
+	clientArgs := []string{"uv", "tool", "install"}
+	runtimePrefix, receiptName, receiptControl := "uv-tool-install:", "uv-receipt.toml", "uv-tool-host-receipt.toml"
+	parseReceipt := artifactpypi.ParseUVToolReceipt
+	if pipx {
+		clientArgs = []string{"pipx", "install"}
+		runtimePrefix, receiptName, receiptControl = "pipx-tool-install:", "pipx_metadata.json", "pipx-tool-host-receipt.json"
+		parseReceipt = artifactpypi.ParsePipxToolReceipt
+	}
+	arguments := func(requirement, format, target, bin string) []string {
+		args := append([]string{"--lang", "ko", "--output", format}, clientArgs...)
+		return append(args, requirement, "--target", target, "--bin-dir", bin)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
 	root, err := filepath.EvalSymlinks(t.TempDir())
@@ -40,7 +64,7 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			before := uvToolStagedIDs(t, staging)
-			args := []string{"--lang", "ko", "--output", step.output, "uv", "tool", "install", step.requirement, "--target", venv, "--bin-dir", bin}
+			args := arguments(step.requirement, step.output, venv, bin)
 			var out, diagnostic bytes.Buffer
 			if err := Run(ctx, args, &out, &diagnostic); err != nil {
 				t.Fatal("actual public tool CLI", err, out.String(), diagnostic.String())
@@ -96,14 +120,14 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 					Content []byte
 				} `json:"project_controls"`
 			}
-			if json.Unmarshal(manifest, &doc) != nil || !strings.HasPrefix(doc.Resolver.Runtime, "uv-tool-install:") || len(doc.Controls) != 6 {
+			if json.Unmarshal(manifest, &doc) != nil || !strings.HasPrefix(doc.Resolver.Runtime, runtimePrefix) || len(doc.Controls) != 6 {
 				t.Fatal("public tool used another client or lacks current controls")
 			}
-			receipt, err := os.ReadFile(filepath.Join(venv, "uv-receipt.toml"))
+			receipt, err := os.ReadFile(filepath.Join(venv, receiptName))
 			if err != nil {
 				t.Fatal(err)
 			}
-			parsed, err := artifactpypi.ParseUVToolReceipt(receipt)
+			parsed, err := parseReceipt(receipt)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -113,7 +137,7 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 			}
 			matched := false
 			for _, control := range doc.Controls {
-				if control.Name == "uv-tool-host-receipt.toml" {
+				if control.Name == receiptControl {
 					matched = bytes.Equal(control.Content, receipt)
 				}
 			}
@@ -142,10 +166,11 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 				}
 			}
 			state := uvToolTargetState(t, venv, bin)
-			uvToolCLIRefusal(t, ctx, []string{"--output", "json", "uv", "tool", "install", "cowsay==6.1", "--target", venv, "--bin-dir", bin}, staging)
+			uvToolCLIRefusal(t, ctx, arguments("cowsay==6.1", "json", venv, bin), staging)
 			if !reflect.DeepEqual(state, uvToolTargetState(t, venv, bin)) {
 				t.Fatal("fresh tool refusal changed existing target")
 			}
+			t.Logf("public_tool_install_cli pipx=%t output=%s controls=6 current_manifest=%s repeat_refused_unchanged=true", pipx, step.output, added[0])
 		})
 	}
 	for _, kind := range []string{"unowned-site", "occupied-command"} {
@@ -160,7 +185,7 @@ func TestLinuxUVToolInstallCLIIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			before := uvToolTargetState(t, venv, bin)
-			uvToolCLIRefusal(t, ctx, []string{"--output", "json", "uv", "tool", "install", "cowsay==6.1", "--target", venv, "--bin-dir", bin}, staging)
+			uvToolCLIRefusal(t, ctx, arguments("cowsay==6.1", "json", venv, bin), staging)
 			if !reflect.DeepEqual(before, uvToolTargetState(t, venv, bin)) {
 				t.Fatal("foreign tool refusal changed data")
 			}

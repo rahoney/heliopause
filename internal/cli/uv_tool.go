@@ -43,13 +43,17 @@ func parseUVToolInstallReference(input string, source domain.SourceID) (domain.A
 }
 
 func validateUVToolInstallRawArgs(args []string) error {
+	return validateToolPathRawArgs(args, "UV tool install")
+}
+
+func validateToolPathRawArgs(args []string, label string) error {
 	counts := map[string]int{}
 	for _, arg := range args {
 		name, _, _ := strings.Cut(arg, "=")
 		if name == "--target" || name == "--bin-dir" {
 			counts[name]++
 			if counts[name] > 1 {
-				return errors.New("UV tool install paths must not repeat")
+				return errors.New(label + " paths must not repeat")
 			}
 		}
 	}
@@ -63,6 +67,10 @@ func validateUVToolInstallArgs(command *cobra.Command, args []string) error {
 }
 
 func validateUVToolArgs(command *cobra.Command, args []string, operation string) error {
+	return validateToolPathArgs(command, args, "UV tool "+operation)
+}
+
+func validateToolPathArgs(command *cobra.Command, args []string, label string) error {
 	if err := cobra.ExactArgs(1)(command, args); err != nil {
 		return err
 	}
@@ -83,26 +91,26 @@ func validateUVToolArgs(command *cobra.Command, args []string, operation string)
 		return err
 	}
 	if !command.Flags().Changed("target") || !command.Flags().Changed("bin-dir") || target == "" || bin == "" {
-		return errors.New("UV tool " + operation + " requires explicit --target and --bin-dir")
+		return errors.New(label + " requires explicit --target and --bin-dir")
 	}
 	for _, value := range []string{target, bin} {
 		if _, err := domain.NewInstallTarget(value); err != nil || strings.ContainsAny(value, ",:\\\x00\r\n") {
-			return errors.New("UV tool " + operation + " paths must be supported absolute directories")
+			return errors.New(label + " paths must be supported absolute directories")
 		}
 		resolved, err := filepath.EvalSymlinks(value)
 		if err != nil || resolved != value {
-			return errors.New("UV tool " + operation + " paths or parents are unavailable or symlinked")
+			return errors.New(label + " paths or parents are unavailable or symlinked")
 		}
 		info, err := os.Lstat(value)
 		if err != nil || !info.IsDir() {
-			return errors.New("UV tool " + operation + " paths must be existing directories")
+			return errors.New(label + " paths must be existing directories")
 		}
 	}
 	if filepath.Base(target) != requirement.Project() {
-		return errors.New("UV tool " + operation + " target directory must match the normalized package name")
+		return errors.New(label + " target directory must match the normalized package name")
 	}
 	if target == bin || strings.HasPrefix(target+"/", bin+"/") || strings.HasPrefix(bin+"/", target+"/") {
-		return errors.New("UV tool " + operation + " target and command directories must be separate")
+		return errors.New(label + " target and command directories must be separate")
 	}
 	return nil
 }

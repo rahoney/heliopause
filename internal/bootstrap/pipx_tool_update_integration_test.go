@@ -24,15 +24,7 @@ import (
 
 // Actual-only composition; the production CLI remains a separate work item.
 func pipxToolActualUpdateService(b pythonClientBindings, native *sandbox.PipxResolver, bin string) (*application.InstallUpdateService, error) {
-	promoter, ok := b.promoter.(*promotion.PyPIPromotion)
-	if !ok || promoter == nil || b.installer == nil || native == nil {
-		return nil, errors.New("pipx actual update pipeline unavailable")
-	}
-	preparation, err := promotion.NewPipxToolUpdatePreparation(promoter, native, bin, []string{b.intakeRoot, b.evidenceRoot, b.stagingRoot})
-	if err != nil {
-		return nil, err
-	}
-	return application.NewInstallUpdateService(b.installer, preparation)
+	return newPipxToolUpdateService(b, native, bin)
 }
 
 func TestPipxPublicToolApprovedUpgradeIntegration(t *testing.T) {

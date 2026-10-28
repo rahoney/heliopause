@@ -422,6 +422,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
+		if pythonClient.close != nil {
+			ownedResolver := resolver
+			defer func() {
+				cleanupErr := pythonClient.close(ownedResolver)
+				cli.PresentFinalizationError(command, cleanupErr)
+				resultErr = errors.Join(resultErr, cleanupErr)
+			}()
+		}
 		installCommand, err := cli.PackageClientInstallCommand(command, pythonClient.id)
 		if err != nil {
 			return err

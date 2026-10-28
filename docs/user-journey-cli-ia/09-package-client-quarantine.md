@@ -311,3 +311,22 @@ old wheel과 독립 대조하고 raw receipt/source proof를 현재 Manifest에 
 보존하면서 현재 전체를 새로 검사·승인하며, 이전 ALLOW나 소유권 proof만으로 반입하지 않는다.
 실제 exact6.0·bounded6.1→6.0과 managed 반복 인계, 현재 Evidence 실패/변조 거부의 원본 보존을
 [CI417](../planning/evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)의 source518800c에서 named hosted로 확인했다. Runtime 준비·Host 툴 실행·pipx와 최종 profile qualification은 별도다.
+
+## 현재 pipx install/managed upgrade lane
+
+C-c3에서 아래 명령을 기존 descriptor/whole 검사·현재 Policy/원자 반영에 연결하고 named local CLI를 검증했다.
+현재 qualification 상태는 [Queue](../planning/02-current-work-queue.md)와
+[owner/receipt](../planning/evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md)가
+소유하며 이 구문을 전체 pipx/native adoption/run/final profile 지원으로 확대하지 않는다.
+
+| 명령 | 허용 입력·필수 경로 | 현재 경계 |
+| --- | --- | --- |
+| `helox pipx install <requirement>` | public PyPI bare/exact `name==version` 또는 `name@version`/bounded numeric 조건, 명시 `--target`·`--bin-dir` | Linux amd64, 고정 Python의 기존 빈 venv/별도 기존 bin, target basename=정규화 project |
+| `helox pipx upgrade <name>` | 정규화된 bare project 하나, 명시 `--target`·`--bin-dir` | HAA가 관리하는 원본 전체 필요, 원래 설치 조건과 새 bare upgrade 분리, same version도 current 검사·승인 |
+
+Backend/runtime은 현재 owner의 pipx·UV·Python을 고정한다. Ambient PIPX_HOME/PIPX_BIN_DIR/
+VIRTUAL_ENV로 대상·backend를 추측하지 않는다. `--adopt`/`run`/`inject`/`ensurepath`, 다른 index·
+임의 Python/backend/pip arguments·global/runtime provisioning은 이 lane에 포함하지 않는다.
+Unknown option/operation과 빠진·중복·상대·alias·겹친 경로는 runtime 준비 전에 거부한다.
+현재 target ownership·변조·명령 충돌은 기존 held session과 현재 native 선택에서 별도로 검증한다.
+한국어/영어 help와 JSON/human 결과는 같은 descriptor·기존 operation renderer를 사용한다.

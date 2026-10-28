@@ -2402,3 +2402,85 @@ UV 과거 unversioned requirement의 synthetic 범위는 유지한다. Native ad
 검증한 것이 아니다. C-c2 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 managed
 backend 범위다. 같은 M13-004/C-c3에서 production pipx install/upgrade CLI와 factory를
 연결하며 native adoption/hosted/final/signed·독립 legacy ZIP CPU 경계는 후속으로 남긴다.
+
+## C-c3 — production pipx install/upgrade CLI의 source 전 감사
+
+기준7e4a74f/tree20314b68/2865files다. INDEX·관련 artifact L02/L15/sandbox L03/L08/
+evidence L16/ci L06과 실제 Git/Queue, client09 §1·2·4·5/plan20 §4·5를 읽었다.
+이전 current backend/metadata/supply 구현을 대체하지 않으며 새 CLI wiring gap만 다룬다.
+
+| 기존 owner / 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| PipxResolver / fresh·managed current preparations | YES | YES(backend/actual fixture) | YES(C1/C2 actual) | YES(backend scopes) | production composition·public 명령 |
+| packageClientDescriptor / preflight·route·한국어 help·JSON/human renderer | YES | YES(existing clients) | YES(existing scopes) | YES(existing) | distinct pipx install/upgrade descriptors |
+| validateUVToolArgs / explicit target+bin/alias·overlap·canonical source gates | YES | YES(UV) | YES(existing) | YES(UV) | 본문 그대로 shared path validator/label 재사용 |
+| pythonPackageClient registry / bootstrap Python whole pipeline | YES | YES(existing) | YES(existing) | YES(existing) | distinct pipx selector owner와 현재 typed service 연결 |
+| pipx native resolver production lifetime | NO | NO | NO | NO | existing UV base/새 Pipx selector의 bounded composition + close |
+| pipx actual public CLI/negative/help·pre-runtime refusal | NO | NO | NO | NO | 아래 named CLI qualification |
+| pipx native original adoption / run / final matrix | NO | NO | NO | NO | 이 install/managed upgrade lane에서 열지 않음 |
+
+`helox pipx install <requirement>`와 `upgrade <canonical-bare-name>`만 기존 descriptor에
+등록한다. Registry source는 public PyPI이며 별도 client identity를 쓴다. Install의 기존
+bare/exact/numeric constraint를 지원하고 upgrade에는 새 version 조건을 추가하지 않는다.
+두 명령 모두 명시적 기존 --target venv와 별도 기존 --bin-dir를 요구한다. Target basename,
+symlink/alias·overlap·중복 flags 검사는 기존 본문을 private 공통 함수로 추출해 재사용하고
+UV label/descriptor 동작은 유지한다. Ambient PIPX_HOME/bin/interpreter·runtime/backend/index
+override, inject/run/adopt/global/unsupported 옵션은 runtime 준비·mutation 전에 거부한다.
+
+기존 pythonPackageClient resolver port에는 pipx 전용 bounded composition을 넣는다. Public
+intake/현재 검사/inspection prerequisite의 기존 UV DependencyResolver와 실제 PipxResolver를
+명시 보유하고, typed preparations는 반드시 후자를 사용한다. UV tool alias나 일반 pip fallback은
+아니다. 같은 executor/observer/system policy/typed resource를 사용하며 constructor 부분 실패와
+종료를 errors.Join으로 정리한다. Registry에 이 client만 사용하는 optional close owner를 추가해
+bootstrap의 기존 finalization 패턴으로 해제한다. 기존 다른 client는 nil close로 동작 그대로다.
+Core/domain/ports·runtime/observer/권한·예산·현재 whole Policy/반영 엔진을 바꾸지 않는다.
+
+C1/C2 actual-only factory를 실제 사용되는 production factory로 이동하며 tagged fixture는
+같은 production factory를 소비한다. CLI supported help/examples와 current missing은 canonical
+client09 한 곳에 갱신하고 전체 pipx/P4/final 지원을 완료로 표시하지 않는다. Negative preflight,
+별도 client/operation/current request/출력·platform/close·runtime factory를 default로 검증한다.
+Canonical Quick·전체 CLI/bootstrap Race/tag build/docs/security 뒤 실제 Run()으로 JSON/human/
+spaces fresh6.0→managed6.1→same-version과 기존 원본·user data·Host/입력·정리를 확인한다.
+Native adoption/run/hosted/final은 별도이며 C-c3 actual 전 QUALIFIED/ACCEPTANCE_CLOSED=NO다.
+
+C-c3 v1 format1.581s/Quick63.436s는 새 미구현 pipx run/inject/ensurepath negative에서
+부모 도움말 exit0을 검출했다. Runtime/cache는 준비되지 않았으나 명시 거부 계약은 NO였다.
+Cobra Find가 parent를 반환하면 leaf descriptor가 없어 Args preflight를 건너뛰는 기존 구조에
+새 pipx parent가 들어간 경우다. Pipx parent의 nonempty remaining args만 ParseFlags 직후
+거부하고 parent help/noargs 및 기존 모든 다른 family는 유지한다. Source10/처음 Quick를
+보존하며 일반 command fallback이나 미래 leaf를 만들지 않는다. 다음 focused에서 닫는다.
+
+C-c3 v3 format0.676s/tag vet2.518s/Quick42.392s/전체 CLI·bootstrap Race27.752s/
+build3.470s/docs0.302s/security10.649s와 Go36/fbb1d7dc·같은 CPP6/ae301892의 actual-v1
+384.322s 네 named CLI parent가 PASS다. UV/Pipx JSON·한국어 human/space fresh 및 managed
+upgrade/current no-op·원본/foreign command 무변경 거부와 Host/입력/소스·정리를 확인했다.
+마지막 help source 대조에서 새 pipx target의 generic English flag Usage가 optional/never
+overwritten이었고, descriptor의 정확한 target 안내는 한국어 localize에서만 적용됨을 확인했다.
+Long help와 preflight의 필수 계약은 이미 맞지만 영문 flag 안내가 불일치했다. 새 pipx client만
+기존 descriptor.flagText의 English Usage를 등록 시 적용하고 다른 family/flags의 name/value/
+parse·validator·runtime/Policy/반영 본문은 유지한다. 첫 실제4 PASS 원본을 보존하고 최종
+source qualification 전에 help 교정을 반영한 named cohort를 확인한다.
+
+### C-c3 public production CLI 한정 완료
+
+[로컬 receipt](./p4o4c3c3b3c-c3-public-cli-local-20261028.json)의 최종 v4는 format1.675s/
+Quick63.237s/tag vet1.969s/build3.794s/docs0.357s/security10.484s PASS다. 전체 CLI/bootstrap
+Race27.752s는 v3 범위이며 이후 차이는 새 pipx의 descriptor English Usage 적용 한 곳뿐이다.
+V4 binding에 그 차이와 source36을 명시했다. 실제 English install/upgrade help도 올바른
+target 계약/exit0/runtime cache 미생성을 확인했다. 기존 path validator 본문은 signature/
+label을 역으로 바꾸면 동일하며 current backend/observer 일곱 owner는 unchanged다.
+
+최종 Go36과 동일 CPP6의 actual-v2 374.394s는 네 named parent/noSKIP PASS다.
+Public Run()에서 UV·pipx install 및 managed upgrade 각각 JSON/한국어 human을 검증했다.
+Pipx fresh는 exact alias·동등 제약/space/control6와 현재 승인 receipt·metadata/노출 link를
+확인했다. Genuine HAA6.0/수정 없는 exact 원본에서 bare upgrade6.1와 same-version/control9/
+새 current Manifest를 확인했고 user data를 보존했다. Unsupported flag는 runtime/승인 없이,
+unowned original·occupied command·fresh 재진입은 target/승인 staging 무변경으로 거부했다.
+기존 UV는 같은 assertion body와 production registry에서 검증했고 역사적 synthetic bare
+requirement의 기존 범위를 유지한다. Explicit pipx lifecycle close owner는 다른 client에
+전용되지 않는다. Host5/Docker·고정42/ZIP·Go36/CPP6 동일/helperwait0/final stopped·부재다.
+First unsupported-parent help0와 v3 실제 PASS/English 안내 교정의 원본을 보존한다.
+C-c3 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 이 public install/managed upgrade
+lane만 뜻한다. Native adoption/run/hosted/final/signed 및 독립 legacy ZIP CPU gap은 남는다.
+같은 M13-004/C-d1에서 기존 whole native wheel/source·script·interpreter proof를 재사용하는
+native pipx original의 baseline을 감사하고 실제 missing만 구현한다.

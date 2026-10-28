@@ -15,15 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-O4-C3c3b3c C-c2 managed approved backend/current Evidence refusal named local actual311.132s PASS; fresh C-c1 PASS; CI421 prior hosted scope
-Next action: M13-004/P4-O4-C3c3b3c C-c3 production pipx install/upgrade CLI and factory baseline/wiring; native adoption/final and legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
-Current substep: M13-004/P4-O4-C3c3b3c C-c3 IN_PROGRESS; fresh/managed current backend named local closed; CLI/native adoption/hosted/final remain
+Last completed substep: P4-O4-C3c3b3c C-c3 public production CLI named local actual374.394s four parent PASS; C-c1/C-c2 current backend PASS; CI421 prior hosted scope
+Next action: M13-004/P4-O4-C3c3b3c C-d1 native pipx original independent source/script/interpreter proof baseline; public install/managed upgrade CLI locally verified; final/legacy ZIP CPU boundary OPEN; CI421 consumed/no active timer
+Current substep: M13-004/P4-O4-C3c3b3c C-d1 IN_PROGRESS; public install/managed upgrade locally closed; native adoption/hosted/final remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 C-c3 public production pipx CLI 한정 완료
+
+[로컬 receipt](./evidence/package-client-quarantine/p4o4c3c3b3c-c3-public-cli-local-20261028.json)의
+최종 Quick63.237s/tag/docs/security·기존 전체 CLI/bootstrap Race27.752s 및 source36 actual374.394s
+네 parent가 PASS다. 실제 UV·pipx JSON/한국어 human·spaces fresh/control6와 managed/control8·9,
+현재 승인 Manifest·receipt/link/user data 및 무변경 거부를 확인했다. Distinct pipx factory와
+명시 lifetime owner를 연결하고 English help도 descriptor와 대조했다. Native adoption/run/hosted/
+final은 별도이며 같은 M13-004/C-d1의 독립 원본 source/script/interpreter proof를 계속한다.
 
 ### 2026-10-28 C-c2 managed approved pipx backend 한정 완료
 
