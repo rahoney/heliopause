@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: CI423 poll03 14:53:43UTC 8SUCCESS/Linux running; next20min15:13:43UTC/session51968; P5-B2a context API locally qualified/unwired; next canonical Node runtime composition/current whole inspection
+Next action: CI423 poll04 15:14:14UTC Required10SUCCESS; final decoded logs/source/qualification record next; P5-B2b local qualified/unwired; then current whole execution inspection/application
 Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source6dd3136 CI423 registered after approved4commit push; current whole hosted/final/signed remain
 Acceptance audit: CI422/source1203445 Linux+Required FAILURE; all10 checkout403e7ce/tree d4b0e921/2883 matches; 8SUCCESS/Linux24PASS/noSKIP/helper6wait0/restore; first torch report candidate refusal unresolved. Previous full success CI421/e859; current whole/final/signed OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,15 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-B2b Node composition / execution records 로컬 검증
+
+[B2b receipt](./evidence/package-client-quarantine/p5b2b-node-composition-records-local-20261029.json)의
+Quick220.145s/bootstrap·evidence fullRace26.899s/docs/security가 PASS다. 기존1287source는
+불변이며 새4file은 exact Node pin 조립과 target 없는 records만 담당한다. Raw argv/hash는
+저장하지 않고 whole Evidence/Policy/SBOM binding을 유지한다. Actual flow WIRED=NO이며
+다음은 fresh whole inspection/application과 staging/backend/CLI다. 같은 단일 item을 계속한다.
+CI423의 마지막 timer는 실제15:14:14UTC Required10SUCCESS로 소비했고 추가 timer는 없다.
 
 ### 2026-10-28 P5-B2a metadata context 로컬 검증
 

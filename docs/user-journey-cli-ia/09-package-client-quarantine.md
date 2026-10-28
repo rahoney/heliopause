@@ -102,6 +102,11 @@ CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유�
 - 일반 실행 argv의 `--` 경계와 HAA global flags를 구분한다. Shell 문자열 eval,
   `npx -c`, 임의 interpreter override는 초기 scope에서 거부한다. stdin/TTY 전달은
   명시 capability이며 interactive 지원 전에는 필요한 tool을 조용히 headless로 실행하지 않는다.
+- 실행 보관 기록은 `helox.verified-execution-manifest/v1`으로 operation·resolver/lock·전체 graph와
+  현재 Evidence/Policy, exact command/member digest/size·required runtime·source/Policy fingerprint를
+  연결한다. InstallTarget은 없으며 기존 VerifiedBundle/SBOM과 보관 전용 staging을 재사용한다.
+  Raw argv나 그 hash·프로그램 출력은 기록하지 않는다. Manifest ID를 실제 실행 요청이나
+  argv의 승인 token으로 사용하지 않는다. 실제 실행 전 fresh 검사와 private 요청 결합이 필요하다.
 - 초기 execution context의 프로그램 인자는 최대128개/합계32KiB UTF-8 bytes다. HAA flags와
   선택 command는 이 count에 포함하지 않는다. 빈 인자·공백·줄바꿈은 vector의 데이터로
   보존하며 NUL/invalid UTF-8과 한도 초과는 거부한다. CLI는 네트워크·획득 전에 검사한다.

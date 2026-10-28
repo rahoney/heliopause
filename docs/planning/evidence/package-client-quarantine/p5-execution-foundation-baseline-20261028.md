@@ -225,3 +225,47 @@ B2a final record 뒤 첫 security6.576s는 sandbox의 shared Go cache read-only�
 같은 환경의 go list가 정확한 cache file write 거부를 확인했으며 scanner의 cascading type
 오류를 source 결함으로 단정하지 않는다. 최초 결과/진단을 보존하고 같은 pinned tool/cache를
 사용 가능한 기존 권한에서 canonical docs/security를 다시 확인한다.
+
+## P5-B2b — Node composition와 execution records, source 전 audit/map/재검토
+
+기준49e3245/tree3f5d8a4c/2897files이며 양쪽 runtime1287이 같다. B2a final docs0.287s/
+security10.961s는 기존 cache 사용 권한에서 PASS다. CI423 source6dd는 고정돼 있다.
+
+| 책임 / 기존 owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| npm NodeExecutionEntry와 domain ExecutionContext | YES | NO(P5 flow) | YES(value local) | YES(value scopes) | exact Node pin을 조립 책임에서 결합 |
+| runtimeidentity.NodeImageReference / bootstrap composition | YES(existing pin/consumers) | YES(existing consumers) | YES(existing) | YES(existing) | Node proof→generic context 변환 |
+| evidence manifestEntries/canonicalManifestObject/buildSBOM | YES | YES(install/project) | YES(existing) | YES(existing) | target 없는 execution schema/records 생성 |
+| LocalStaging.Stage/VerifiedBundle | YES | YES(existing) | YES(existing) | YES(existing) | execution records handoff actual 검증은 다음 |
+| Node context composition / execution manifest | NO(P5) | NO | NO | NO | 아래 작은 구현 및 회귀 |
+
+수정 지도는 bootstrap/node_execution_context.go와 회귀, evidence/execution_manifest.go와 회귀다.
+Bootstrap은 NodeExecutionEntry의 immutable facts를 domain 생성자로 전달하며 기존 canonical
+NodeImageReference를 항상 사용한다. Runtime override 인자는 없다. Core/npm adapter import
+allowlist·검사/Policy·staging·supervisor는 바꾸지 않는다. Proof가 같은 approved primary인지
+검증하는 업무 invariant는 기존 domain 생성자가 담당한다. 함수는 wiring 변환만 담당한다.
+
+Evidence의 BuildExecution은 기존 VerifiedBundle/entries/edges/canonical JSON/SBOM을 재사용한다.
+새 helox.verified-execution-manifest/v1은 operation·resolver/lock·primary·전체 entry/Evidence/Policy,
+exact command/member/digest/size/runtime와 source/Policy fingerprints를 기록한다. InstallTarget을
+만들거나 install schema의 target을 채우지 않는다. Raw argv·argv hash와 program output을
+기록하지 않으며 Manifest ID는 프로그램 인자의 identity가 아니다. 실제 argv 결합은 private
+request와 기존 trusted admission 책임이다. 새 port/interface/package/job은 필요하지 않다.
+
+두 번째 검토: 두 함수는 byte proof/whole set 생성자를 재사용한다. Cached/external ALLOW를
+재구성하거나 runtime 문자열을 권한으로 해석하지 않는다. Node zero/다른 intake/graph와 argv
+치환·canonical pin, record determinism/전체 graph·Evidence/SBOM/zero/cancel 및 argv 비저장을
+검증한다. Canonical format/quick와 bootstrap/evidence 전체 Race를 수행한다. 실제 fresh whole
+검사 application/Manifest→staging/Backend/CLI는 여전히 MISSING이며 value 시험으로 닫지 않는다.
+
+### B2b named local composition / records 결과
+
+[로컬 receipt](./p5b2b-node-composition-records-local-20261029.json)의 corrected Quick220.145s/
+bootstrap·evidence fullRace26.899s/docs0.328s/security11.739s가 PASS다. 기존1287source는
+양쪽에서 불변이고 새4file만 추가했다. Canonical Node pin·byte proof/다른 intake 거부,
+whole set/current Evidence와 SBOM·canonical record digest·entry/source/policy 변화와
+argv/hash 비저장·nil/zero/cancel 거부를 검증했다. 첫 Quick44.490s의 ST1005/SA1012는
+새 오류 대문자와 nil negative test 표현을 교정했다. 최초 source/결과는 raw에 보존했다.
+B2b는 IMPLEMENTED/QUALIFIED=YES(local composition/records), 실제 P5 flow WIRED=NO다.
+Metadata helper와 record 생성 범위만 acceptance를 닫고 fresh whole application/실제 staging
+handoff·backend/CLI는 남긴다. CI423 성공은 이전6dd source이며 이 source를 포함하지 않는다.
