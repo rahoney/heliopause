@@ -252,7 +252,9 @@ func TestLinuxPyTorchResolverIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reference, err := artifactpypi.ParseReferenceForSource("torch", profile.Source())
+	// Keep this positive resolver probe on the same qualified input as the full
+	// CPU integration. Bare latest may name a newly published unhashable wheel.
+	reference, err := artifactpypi.ParseReferenceForSource("torch@"+runtimeidentity.PyTorchCPUVersion, profile.Source())
 	if err != nil {
 		t.Fatal(err)
 	}

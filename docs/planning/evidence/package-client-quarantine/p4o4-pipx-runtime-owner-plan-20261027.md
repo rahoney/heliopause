@@ -3200,3 +3200,51 @@ missing identity/SHA256와 optional legacy hash 일치를 검증하지만 raw re
 정확한 operand/외부 입력 drift·readiness 인과를 확정하지 않는다. 다음은 같은 CI source의
 별도 사본에서 원래 argv/거부 조건을 유지한 bounded test-only report DATA capture다. 동일
 전체 CI를 blind 재실행하거나 hash/source 검증을 완화하지 않는다. 독립 P5-A local은 이 CI에 없다.
+
+### Same-source bounded report 진단 — local cause 한정 확정
+
+[진단 receipt](./ci422-pytorch-report-diagnostic-20261028.json)의 exact CI source1281/test-only
+capture overlay actual12.244s는 동일 parser 거부를 재현했다. 고정 pip26.2.1/Python3.14.7이
+선택한 torch2.15.0+cpu의37,300B report는 is_direct=false/requested=true/name정상이나
+archive_info={}다. Official CPU Simple의 같은 URL에도 wheel hash fragment가 없고 두
+metadata 속성의 SHA256만 있다. 이는 sidecar hash이며 wheel digest로 대체할 수 없다.
+Host/Docker·입력42/원본 ZIP/source/CPP 불변·helperwait0/confirmedstop/부재를 확인했다.
+원래 CI report는 미수집이므로 hosted가 같은 version/bytes였다고 단정하지 않는다. 로컬에서
+정확한 missing-wheel-hash guard만 확인했고 검사 완화·임의 digest 생성·CI 재실행은 없다.
+다음은 기존 qualification의 exact fixture/version owner와 positive/negative 범위를 감사해
+재현 가능한 입력 고정 방법을 검토하는 것이다. P5-A/current whole/final/signed는 별도다.
+
+### Qualification 입력 연결 교정 — source 전 audit/map/두 번째 검토
+
+기준60113e4/tree a639fd00/2889files와 P5-A source1283이다. `TestLinuxPyTorchResolverIntegration`
+은 IMPLEMENTED/WIRED=YES, QUALIFIED/ACCEPTANCE_CLOSED=NO(current cohort)다. Production의
+report SHA guard와 Simple의 hashless link 제외는 모두 기존 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED=YES(검증 계약)이며 교체하지 않는다. `TestLinuxPyTorchFullIntegration`은
+이미 canonical `runtimeidentity.PyTorchCPUVersion=2.14.0+cpu`와 세 CUDA version을 소비한다.
+실제 MISSING은 앞의 작은 resolver positive가 이 owner 대신 bare torch/latest를 사용한 입력 연결이다.
+
+수정은 `internal/sandbox/linux_integration_test.go`의 해당 positive reference 한 곳을 기존
+CPUVersion으로 연결하고 `internal/artifact/pypi/source_profile_test.go`의 기존 selected-wheel-hash
+회귀에 metadata-only hash 거부를 추가하는 두 test 파일뿐이다. 새 pin/환경 override/helper/
+production parser/resolver·workflow/job/timeout/coverage/예산 변경은 없다. 독립 proof/public
+전체 graph·거부 조건은 그대로다. 두 번째 검토에서 latest 선택 제품 요청은 여전히 지원된
+입력일 때만 통과하며 wheel hash 부재는 그대로 거부한다. 실제 CI report 버전 미수집 한계를
+유지한다. 새 선택 버전 도입이나 과거 결과를 새 release qualification으로 전용하지 않는다.
+
+Canonical format/quick와 관련 pypi+sandbox fullRace·기존 hashless negatives를 확인한 뒤
+no-overlay current binary로 같은 resolver parent를 actual 검증한다. Full CPU는 기존 canonical
+pin을 이미 소비하므로 이 한 테스트 수정의 근거로 CUDA/전체 P4 성공을 주장하지 않는다.
+작은 source-only 변경을 즉시 push/재CI하지 않고 기존 grouped 후보 검토 후 진행한다.
+
+### Qualification 입력 연결 교정 — named local 완료
+
+[로컬 receipt](./ci422-qualification-input-fix-local-20261028.json)의 Quick124.549s/영향 pypi+sandbox
+fullRace28.622s/CI flags tagged build7.921s/docs0.332s/security10.549s가 PASS다. 기존 canonical
+CPUVersion만 사용하도록 positive reference를 연결하고 metadata-only hash negative를 추가했다.
+No-overlay actual45.715s에서 같은 resolver parent43.64s/전체 graph source guard·public
+resolution이 PASS다. Source1283/CPP/입력42/원본 ZIP·Host/Docker 불변과 helperwait0/부재다.
+Production parser/resolver·canonical pin·workflow/job/timeout/예산은 그대로다. Public dependencies는
+live이며 full frozen replay가 아니다. Bare latest2.15의 missing wheel hash를 허용하지 않는다.
+입력 연결은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(named local)이며 전체
+hosted/final/signed는NO다. 다음은 누적 source candidate의 전체 검토·정확한 public push 범위와
+기존 CI 재qualification이다. CI422 자체의 실패/hosted raw report 미수집 한계는 보존한다.

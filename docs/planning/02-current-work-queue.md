@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: CI422 Linux PyTorch report candidate refusal first-cause diagnostic; P5-A structural entry locally qualified; no active timer/run
+Next action: CI422 canonical CPU positive input repair locally qualified (Quick/affectedRace/no-overlay actual45.715s); review accumulated exact-source grouped hosted candidate; no active CI/timer
 Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; source1203445 CI422 Linux/Required FAILURE; 8SUCCESS; current whole hosted/final/signed remain
 Acceptance audit: CI422/source1203445 Linux+Required FAILURE; all10 checkout403e7ce/tree d4b0e921/2883 matches; 8SUCCESS/Linux24PASS/noSKIP/helper6wait0/restore; first torch report candidate refusal unresolved. Previous full success CI421/e859; current whole/final/signed OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
@@ -24,6 +24,23 @@ P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 CI422 canonical qualification 입력 연결 교정
+
+[로컬 receipt](./evidence/package-client-quarantine/ci422-qualification-input-fix-local-20261028.json)의
+Quick124.549s/영향 fullRace28.622s/tag/docs/security·no-overlay resolver actual45.715s가 PASS다.
+기존 full CPU와 같은 canonical pin만 positive에 연결했고 metadata hash를 wheel로 전용하는
+negative를 추가했다. Production guard/SDK/CPP/CI job·예산은 그대로다. Source/Host/입력·helper
+정리를 확인했으며 whole hosted/final/signed는 미완료다. 누적 source의 검토 후 기존 CI의
+정확한 후보 재qualification을 준비한다. 새 public push/timer/재실행은 아직 없다.
+
+### 2026-10-28 CI422 same-source report DATA 진단
+
+[진단 receipt](./evidence/package-client-quarantine/ci422-pytorch-report-diagnostic-20261028.json)의
+local12.244s는 pip report archive_info={}와 공식 Simple의 같은 wheel hash 부재를 확인했다.
+Sidecar metadata SHA는 wheel hash가 아니다. 원래 CI report는 없으므로 같은 후보라는 주장은
+추론으로 남긴다. Source/Host/입력 불변과 helper 정리를 확인했으며 기존 거부를 유지한다.
+다음은 기존 qualified exact fixture·CI 입력 owner 감사이며 새 runtime pin/검증 완화·재CI는 없다.
 
 ### 2026-10-28 CI422 실패 원본·소스 대조
 
