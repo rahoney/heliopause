@@ -593,3 +593,15 @@ link/mode·foreign inventory/intake/command/member·Node lookup 불일치와 취
 Argv-independent identity·copy/private formatting/JSON 경계도 확인했다. Fixture DATA/API 검증이며
 actual M3/materialization/immutable mount/admission/사용자 실행이나 전체 P5 qualification은 아니다.
 다음은 기존 controller lock/source freeze와 연결한 offline full-set materialization이다.
+
+
+### CI424/source4ec ordinary hosted checkpoint
+
+[Qualification](./ci424-execution-foundation-hosted-qualification-20261029.json)은 다섯 번째 실제20min
+조회17:41:10UTC의 Required10SUCCESS와 all10checkout2823b654/tree d88cd820/2909 동일을
+연결한다. Source4ec의 ordinary Linux92/noSKIP/noFAIL·CPP 두job 각128·CPU285.40s와 current
+pipx/UV/Bun/PNPM named consumers, UID1001/helper14wait0/final0이 PASS다. Decoded10logs
+1,263,604B는 각 chunk readback/SHA를 대조했다. Final update까지92m00이며 정확한 개별
+종료 시각으로 확대하지 않는다. Timer05는 소비/종료됐고 추가 CI424 timer는 없다.
+이 source의 B1/B2a-B2d API는 ordinary code checks에 포함되지만 B2e/B2f/C1/C2와 실제 사용자
+프로그램/CLI·signed/final4profiles는 밖이다. 같은 M13-004의 reviewed grouped 후보를 계속한다.

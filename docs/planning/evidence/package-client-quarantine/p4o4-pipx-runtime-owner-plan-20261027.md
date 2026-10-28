@@ -3321,3 +3321,11 @@ Local B2e와 B2f production preparation/새 workflow step은 이 source 밖이�
 CI424 세 번째 timer는17:00:43.000146UTC에 발화했고17:00:56UTC same4ec/8SUCCESS·Linux
 진행을 직접 조회했다. 다음20min17:20:56UTC/session95772를 등록했다. Whole Required/Linux와
 후속 source의 hosted acceptance는 아직 미확정이다. 현재 cohort를 새 push로 취소하지 않는다.
+
+
+### CI424/source4ec 후속 ordinary hosted checkpoint
+
+[CI424 qualification](./ci424-execution-foundation-hosted-qualification-20261029.json)에서 Required10/
+Linux92/noSKIP/CPP128와 current named P4 consumers·UID1001/helper14wait0/final0을 확인했다.
+Source4ec/whole tree d88cd820/2909만의92m00 checkpoint다. Signed/final4profiles/전체 P4와
+후속 B2e/B2f/C1/C2·P5 user-run은 닫지 않는다. 자세한 raw·소스·timer 범위는 qualification이 소유한다.
