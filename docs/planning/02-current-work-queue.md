@@ -16,14 +16,24 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4 C-e4 ordinary hosted CI423/source6dd QUALIFIED; Required10SUCCESS/Linux92/noSKIP/CPP128/helper14wait0; P5-B2b local composition/records qualified/unwired
-Next action: CI424 poll01 16:20:03UTC 8SUCCESS/Linux in progress; next actual20min16:40:03UTC/session40231; P5-C runtime/output/lifecycle owner audit and production preparation qualification; backend/CLI remain
-Current substep: M13-004/P5-C runtime/output/lifecycle owner audit IN_PROGRESS after B2e local preparation; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
+Next action: CI424 poll03 17:00:56UTC 8SUCCESS/Linux in progress; next actual20min17:20:56UTC/session95772; P5-C user-run output/exit/lifecycle owner audit; local production preparation B2f qualified, hosted new step pending
+Current substep: M13-004/P5-C user-run runtime/output/lifecycle baseline IN_PROGRESS after B2f local production preparation; P4 C-e4 ordinary named hosted COMPLETE; final four profiles/signed/whole P4 remain OPEN
 Acceptance audit: CI423/source6dd Required10SUCCESS; all10 checkoutb571e02/tree feab8ef9/2891 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; canonical resolver positive qualified. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
 Independent local next: P5 fresh whole execution inspection/application; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P5-B2f production preparation 실제 local 검증
+
+[B2f receipt](./evidence/package-client-quarantine/p5b2f-production-preparation-local-20261029.json)의
+no-overlay30.930s/parent28.93s는 실제 factory/M3·exact TypeScript5.9.3/source SHA·required3/
+Evidence4/Policy/fresh2회·staging PASS다. Source1301/CPP/원래42/ZIP·Host/Docker 불변과
+helperwait0·Node workspace 부재를 확인했다. User program은 실행하지 않았다. 기존 Linux
+job에 tagged parent와 exactPASS1/noSKIP guard를 연결했고 workflow·post-wiring Quick81.733s/
+Bash8case가 PASS다. 새 hosted step/actual user-run/CLI는 별도다. CI424 두 번째 실제 조회
+16:40:43UTC는8SUCCESS/Linux 진행이며 다음17:00:43UTC/session2975를 계속 소비한다.
 
 ### 2026-10-29 P5-B2e preparation 로컬 검증
 

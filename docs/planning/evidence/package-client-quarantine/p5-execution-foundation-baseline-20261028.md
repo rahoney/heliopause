@@ -435,3 +435,72 @@ live resolver·사용자 프로그램 실행으로 확대하지 않는다. 실�
 dynamic Composite를 조립하며 준비 workflow 내부 WIRED=YES, actual command/backend/CLI는NO다.
 첫 SA9005 source/log를 보존했고 raw argv/hash/output은 records에 없다. 다음은 실제 준비
 qualification과 user-run transport/lifecycle이며 full P5·CLI/final은 계속 MISSING이다.
+
+## P5-B2f — production preparation 실제 qualification 전 감사/지도/두 번째 검토
+
+기준a6cc420/tree d4db9063/2916files와 runtime1300을 Root/현재 private에서 확인했다.
+CI424 source4ec는 고정돼 있고 timer2의16:40:03UTC/session40231을 실제 소비한다.
+
+| 책임 / actual owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| ExecutionPreparationService/Node binder/Generator/LocalStaging | YES | YES(preparation) | YES(local API/DATA) | YES(narrow local) | production actual source/M3 dynamic preparation |
+| newNPMExecutionPreparationService의 actual Backend→static+dynamic 조립 | YES | YES(code) | NO(actual positive) | NO(actual) | 기존 native helpers로 full positive qualification |
+| NPMResolver·Backend·ObserverSupervisor·M3/M4·staging | YES | YES(existing) | YES(named existing/CI423) | YES(existing) | 새 prepared context/Node proof/storage 소비자 연결 actual |
+| 사용자 프로그램 backend/CLI | NO(P5) | NO | NO | NO | 이번 시험 범위 밖; 그대로 missing |
+
+[fixture provenance](./p5b2f-npm-fixture-source-20261029.json)는 공식 npm의 TypeScript5.9.3
+metadata3,904B/SHA80f0d5d2와 bin tsc/tsserver·runtime dependency 부재·dist SRI를 확인한다.
+Host에서 metadata DATA만 읽었고 artifact를 실행하지 않았다. 새 SDK/runtime pin이 아닌
+기존 public npm source의 고정 시험 subject다. Actual resolver는 live지만 exact version/SRI를
+대조한다. 원래42input/ZIP과 같은 frozen graph replay라고 표시하지 않는다.
+
+수정 지도는 bootstrap/node_execution_prepare_integration_test.go의 새 realcorpus parent 한 개다.
+Production 구현을 다시 쓰지 않는다. 기존 hosttool/System·ObserverSupervisor·typed NPM resolver/
+Backend와 실제 factory/M3/M4/Evidence/staging을 직접 조립한다. Explicit tsc command와 private
+argv를 준비하고 exact1subject/현재 required checks·Policy·Node entry/runtime·records/staging과
+반복 요청의 fresh operation/Run/manifest를 확인한다. 사용자 프로그램 실행/Host install은 없다.
+
+두 번째 검토: test marker/exit0는 안전성 authority가 아니다. Trusted Go assertions가 current
+set/check/Evidence/동일 bytes를 검사하고 Canonical cleanup/helper·Host/Docker·source/CPP·원래
+42/ZIP 전후 보존을 독립 확인한다. Existing4m context/5m test bound 안에서 준비만 수행한다.
+Canonical format/quick와 exact CI flags의 tagged bootstrap binary build 뒤 같은 no-overlay binary로
+actual parent를 수행한다. 최초 실패를 보존하고 production guard/예산/source pin을 완화하지 않는다.
+실제 통과 전 production preparation QUALIFIED/ACCEPTANCE_CLOSED는NO이며 runtime/output/
+exit/cancel/CLI와 full final profiles는 계속 MISSING이다.
+
+### B2f actual 성공 뒤 CI 연결 전 재감사
+
+No-overlay actual30.930s/동일 parent28.93s는 production factory/M3 dynamic/현재 Evidence4·
+required3/Policy와 bin/tsc·같은 public SRI/SHA10e108c9의 fresh 준비2회/staging이 PASS다.
+Helperwait0/confirmed stop·원래42/ZIP·source1301/CPP·Host/Docker 전후 불변을 확인했다.
+첫 euid preflight는 namespace/제품 진입 전이며 기존 sudo 경로로 준비했다. User program은
+실행하지 않았다. Local production preparation 범위만 검증했고 hosted 연결은 아직NO다.
+
+CI existing gvisor-integration job과 Required·tagged bootstrap compile/client/cleanup은
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(existing scopes)다. 새 preparation parent는
+IMPLEMENTED/QUALIFIED=YES(local actual), WIRED/ACCEPTANCE_CLOSED=NO(hosted)다. MISSING은
+기존 job에서 정확한 tagged parent를 호출하고 noSKIP/empty/duplicate/failure를 거부하는 연결이다.
+
+추가 수정 지도는 .github/workflows/heliopause-ci.yml의 같은 Linux job 안의 새 qualification step
+한 개다. 기존 compiled tagged bootstrap client를 설치하고 기존 initialize/helper/EXIT cleanup을
+재사용한다. Job/Required/timeout/SDK/CPP/coverage를 새로 만들거나 바꾸지 않는다. Callback/stdout은
+프로그램 안전성 authority가 아니며 trusted Go framework의 parent PASS1/noSKIP만 dispatch
+완료 증거로 검사한다. 명령 오류/로그 출력 오류는 최초 exit를 보존한다. Canonical workflow와
+실제 Bash dispatch harness의 empty/skip/child/duplicate/exit negative를 확인한 뒤 grouped 후보에
+넣는다. 진행 중 CI424는4ec 그대로 두고 이후 user-approved autonomous push에서 qualification한다.
+
+### B2f named local production preparation / hosted dispatch 연결 결과
+
+[로컬 receipt](./p5b2f-production-preparation-local-20261029.json)의 no-overlay actual30.930s는
+같은 tagged Go binary/CPP128/source1301로 parent28.93s PASS/noSKIP다. TypeScript5.9.3의
+exact SRI/SHA10e108c9·명시 tsc/bin/tsc·현재 M3 required3/Evidence4/Policy와 fresh 준비2회/
+새 operation/Run/manifest·staging을 확인했다. User program/Host install은 없다. Host/Docker·
+원래42/ZIP·source/CPP 불변과 helperwait0/confirmedstop/부재를 확인했고 Node user-tmp
+실제 빈 상태도 별도 readback했다. 원래 operator의 다른 fixture prefix 검사를 Node 증거로
+전용하지 않았다. 첫 non-root preflight는 제품 미도달이며 sudo actual의 원본을 보존했다.
+
+Workflow 기존 Linux job 안의 새 preparation step은 같은 tagged client/cleanup을 재사용한다.
+Canonical workflow·post-wiring Quick81.733s와 actual YAML Bash harness8case가 PASS다.
+Empty/skip/child/duplicate/failure와 로그 실패·최초 exit 보존을 검증했다. Local production
+preparation만 QUALIFIED이며 새 hosted step/UID1001과 user-run/output/exit/CLI는 미완료다.
+진행 중 CI424 source4ec를 새 push로 취소하지 않고 이후 grouped source로 hosted 검증한다.
