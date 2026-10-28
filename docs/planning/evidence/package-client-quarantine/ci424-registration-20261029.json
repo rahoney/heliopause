@@ -8,12 +8,12 @@
   "run_id": 40721538953,
   "number": 424,
   "run_started_at": "2026-10-28T15:59:44Z",
-  "timer_session": 95772,
+  "timer_session": 96151,
   "first_due_at": "2026-10-28T16:19:44Z",
   "later_B2e_source_excluded": true,
   "whole_hosted_qualification": "PENDING",
   "status": "IN_PROGRESS",
-  "last_actual_query_at": "2026-10-28T17:00:56Z",
+  "last_actual_query_at": "2026-10-28T17:21:04Z",
   "jobs": [
     {
       "id": 122933477133,
@@ -73,7 +73,7 @@
   "completed8_same_checkout": "2823b654150df44f353c79bbd9617e2208dd394b",
   "whole_checkout_tree_matches": true,
   "decoded_partial_log_bytes": 443254,
-  "next_due_at": "2026-10-28T17:20:56Z",
+  "next_due_at": "2026-10-28T17:41:04Z",
   "user_authorized_further_important_CI_and_milestone_push_without_reconfirmation": true,
-  "completed20min_polls": 3
+  "completed20min_polls": 4
 }

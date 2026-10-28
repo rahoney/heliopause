@@ -99,6 +99,9 @@ CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유�
   방어하고, HAA 요약·JSON과 혼합하지 않는다. Structured result에는 quarantine
   status, policy, execution status/exit, output promotion, cleanup을 따로 기록한다.
   Artifact의 exit0/stdout marker는 검사 완료 authority가 아니다.
+- 초기 실행 transport는 stdout/stderr 각각1MiB의 독립 prefix를 private memory에 보유한다.
+  초과는 실행 incomplete/명시 오류이며 Host client를 취소한다. Pipe drain의2초 한도는
+  container/child/helper 정리를 대신하지 않는다. Raw capture는 일반 formatter/JSON에 노출하지 않는다.
 - 일반 실행 argv의 `--` 경계와 HAA global flags를 구분한다. Shell 문자열 eval,
   `npx -c`, 임의 interpreter override는 초기 scope에서 거부한다. stdin/TTY 전달은
   명시 capability이며 interactive 지원 전에는 필요한 tool을 조용히 headless로 실행하지 않는다.

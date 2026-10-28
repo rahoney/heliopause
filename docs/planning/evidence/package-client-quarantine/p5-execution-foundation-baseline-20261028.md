@@ -504,3 +504,48 @@ Canonical workflow·post-wiring Quick81.733s와 actual YAML Bash harness8case가
 Empty/skip/child/duplicate/failure와 로그 실패·최초 exit 보존을 검증했다. Local production
 preparation만 QUALIFIED이며 새 hosted step/UID1001과 user-run/output/exit/CLI는 미완료다.
 진행 중 CI424 source4ec를 새 push로 취소하지 않고 이후 grouped source로 hosted 검증한다.
+
+
+## P5-C1 — 분리된 유한 Host transport의 구현 전 감사/지도/두 번째 검토
+
+기준98047df/tree2dbcd352/2919tracked·1301runtime이다. 단일 M13-004에서 실제 user-run의
+첫 missing transport만 진행한다. CI424는 source4ec/별도 Host이며 진행 중 push하지 않는다.
+
+| 실제 owner / 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| hosttool.Executor.command/tool/minimalEnvironment | YES | YES(existing) | YES(existing) | YES(existing) | 없음; 새 transport도 동일 검증을 호출 |
+| RunOutput/RunInput/RunDiscard/RunBounded | YES | YES(existing) | YES(existing) | YES(existing scopes) | 기존 의미를 유지; 별도 stdout/stderr 유한 capture 없음 |
+| admissionAwareCommandRunner/observedDirectExecExit | YES | YES(inspection) | YES(named) | YES(existing) | 새 user-run 소비자는 별도 연결; Host exit를 guest signal로 해석 금지 |
+| PNPMInspectionPreparer/executeNPMInstanceWithBunRuntime/cleanup | YES | YES(inspection) | YES(named) | YES(existing) | execution context의 fresh full graph/runtime/별도 lifecycle 연결 |
+| 분리된 bounded capture | NO | NO | NO | NO | 아래 concrete Host-process transport와 영향 회귀 |
+| 실제 Node user-run/backend/CLI/output rendering | NO | NO | NO | NO | 이 좁은 transport 완료 뒤 계속 수행 |
+
+수정 지도는 internal/hosttool의 새 execution_output.go와 test 두 파일이다. Executor에
+RunCaptured를 추가하고 기존 command 검증·minimal environment·closed stdin을 재사용한다.
+각 stdout/stderr는 최대1MiB의 독립 prefix만 private memory에 보유한다. 초과 즉시 private
+command context를 취소하고 명시 overflow 오류를 보존한다. 정확히 한도인 정상 출력은 허용한다.
+Host client exit/wait의 원본 error와 caller cancellation cause를 함께 보존하며 pipe drain은
+WaitDelay2s로 유한하게 한다. 이는 guest/container/descendant 정리 완료 증명이 아니다.
+
+Capture 값은 private bytes와 stream별 overflow만 노출하며 getter는 copy다. 일반 formatter는
+내용을 표시하지 않고 JSON 직렬화를 거부한다. Raw bytes를 로그/Evidence에 저장하지 않는다.
+Terminal sanitization·guest exit/signal·admission·observer·container/child/helper cleanup은
+기존 관련 owner에 다음 단계에서 연결한다. 기존16KiB merged diagnostic 소비자는 불변이다.
+
+두 번째 검토: 새 production tool 등록이나 PATH/shell fallback을 만들지 않는다. 회귀의 shell은
+verifyExecutable로 실제 root-owned fixture 신원을 검증한 test-only registry에서만 사용한다.
+분리된 binary stdout/stderr·exact limit/overflow·nonzero original ExitError·deadline/custom cause·
+closed stdin/minimal environment·unavailable/changed identity·private formatting/copy를 확인한다.
+Inherited pipe의 유한 wait도 실제 controlled child로 검사하고 test-owned child를 회수한다.
+Canonical format/quick와 hosttool full Race, docs/security로 검증한다. 성공 범위는 Host transport이며
+artifact 프로그램 실행 또는 전체 P5 qualification으로 기록하지 않는다.
+
+
+### C1 named local transport 검증
+
+[Receipt](./p5c1-bounded-host-output-local-20261029.json)은 canonical checks와 전체 Hosttool Race를
+연결한다. 기존1301runtime source는 그대로이며 새2file만 추가했다. 분리된 binary output,
+각 exact1MiB/overflow·원래 nonzero/signal·deadline/custom cause·inherited pipe2s bound와
+독립 child의 명시 test cleanup, private copy/formatter/JSON 및 기존 trusted identity/env/stdin
+경계를 확인했다. 실제 P5 user-run/admission/guest completion/terminal rendering/전체 lifecycle은
+아직 미완료이며 same M13-004의 다음 missing으로 계속한다. CI424 source4ec에는 이 소스가 없다.
