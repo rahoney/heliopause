@@ -16,14 +16,34 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-O4-C3c3b3c C-e3 current common readiness UV4/Bun4/PNPM7 named local PASS; original/current graph/native6 already qualified
-Next action: M13-004/P4-O4-C3c3b3c C-e4 whole-source grouped candidate review and hosted qualification preparation; remote remains e859/CI421success; no active CI/timer
-Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; original/common readiness named local qualified; current whole hosted/final/signed remain
+Next action: M13-004/P4-O4-C3c3b3c C-e4 CI422/run40688745132 head1203445; poll01 12:53:42UTC 8SUCCESS/Linux running; next20min13:13:42UTC/session29688; independent P5 baseline while waiting
+Current substep: M13-004/P4-O4-C3c3b3c C-e4 IN_PROGRESS; approved28commit source1203445 pushed/CI422 running; current whole hosted/final/signed remain
 Acceptance audit: CI42140598317489 Required10SUCCESS; all10 checkout57a5633/tree6753df83/2789 equals sourcee859487. Hosted79/noSKIP/helper11wait0; new ZIP actual/B3/C3/native/final remain named local/open; CI415 FD cause OPEN.
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-28 CI 대기 중 P5 baseline 독립 감사
+
+[P5 baseline](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)은
+기존 bin/layout parser·inspection/staging·sandbox/Host output·terminal renderer의 실제 owner를
+분리했다. Pinned never-started image에서 exact npm source DATA를 읽고 lookup/bin inference를
+확인했다. Source/SDK·runtime pin을 바꾸지 않았으며 P5 production은 NOT_STARTED다.
+Root README/PROJECT-DECISIONS의 낡은 e859 승인 대기/CPP 다음 단계 표기도 current CI422로
+정정한다. 현재 단일 active item은 M13-004, 승인된 CI source는1203445로 유지한다.
+
+### 2026-10-28 승인된28commit source1203445 CI422 시작
+
+사용자의 필수 test 진행 지시로 검토한 exact28commit/163files를 기존 공개 repository의 같은
+milestone branch에 정상 push했다. Remote e859→1203445이며 후속 local 변경은 포함하지 않았다.
+[CI422/run40688745132](https://github.com/rahoney/heliopause/actions/runs/40688745132)가
+12:33:12UTC 시작돼 initial9jobs 중 corpus/vulnerability/docs SUCCESS와 나머지 진행을 확인했다.
+첫 timer가12:53:12UTC에 발화했고12:53:42UTC fresh run/jobs의 같은 head·8SUCCESS/Linux 진행을
+직접 조회했다. Consumed receipt를 별도로 보존하고 다음 due13:13:42UTC/session29688을 등록했다.
+Current source와 Required/원본 logs/checkout 일치 전 qualification은 OPEN이며 기존120min
+Linux timeout과 coverage는 그대로다. 같은 M13-004의 독립 P5 baseline 감사를 이어간다.
 
 ### 2026-10-28 C-e3 common readiness named local 완료
 

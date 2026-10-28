@@ -26,6 +26,8 @@ Heliopause 구현 milestone, 의존 순서와 현재 실행 작업을 기록한�
 | [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Complete / qualified | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
 | [20-package-client-quarantine-plan.md](./20-package-client-quarantine-plan.md) | Client expansion | 설계 / 구현 전 | baseline·수정 지도·최신 버전 후보·단계별 검증·두 번째 검토 |
 
+P5 일회성 실행기 착수 전에는 [기존 구현·exact npm source baseline](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)을 확인한다.
+
 ## Rule
 
 - 이 README는 navigation 전용이다.

@@ -3158,3 +3158,28 @@ production client 복원과 Host prefix 부재를 확인했다. Go/CPP·runtime 
 QUALIFIED이며 final4profiles·Go/Cargo/Terraform/GitHub whole hosted/signed는 계속 OPEN이다.
 다음 C-e4는 이 누적 whole-source grouped candidate의 검토·원격 qualification 준비다.
 마일스톤/next work item은 여전히 M13-004이며 새 public push/CI/timer는 시작하지 않았다.
+
+## C-e4 — 승인된 grouped candidate CI422 실행
+
+사용자의 '중요한 test라면 진행' 지시를 현재 검토한 payload의 승인으로 소비했다. 목적지는
+기존 공개 rahoney/heliopause의 milestone/m13-release-build-packages이고 e859487 다음부터
+12034457a69eabed0429d05d96dbf79bbef3409a까지28commit/163files다. Fresh remote e859와 clean
+local1203445/tree d4b0e921/2883files 및 FF ancestry를 확인하고 이 exact ref만 정상 push했다.
+후속 local 변경을 payload에 포함하지 않는다. 원본 logs/lessons는 새 공개 경로에 없다.
+
+[CI422](https://github.com/rahoney/heliopause/actions/runs/40688745132)는 같은 head1203445로
+2026-10-28 12:33:12UTC 시작됐다. Initial9jobs 중 corpus/vulnerability/docs는SUCCESS,
+나머지는IN_PROGRESS이며 Required는 아직 미생성이다. 결과/checkout tree·원본 logs와
+current hosted/UID1001/macOS 범위는 확인 전 OPEN이다. 기존 CI421은64m47이고 새 named
+consumers/complete DATA 경로가 추가돼 같은 소요를 보장하지 않는다. Linux job 기존120min
+및 모든 Required/timeout/coverage는 바꾸지 않았다.
+
+실제 timer session34272는 run start 기준 첫20min인12:53:12UTC(21:53:12KST)에 DUE로
+발화한다. 등록시각12:36:13UTC를 run start로 바꾸지 않았고 작업 경과를 포함했다. DUE만으로
+조회 완료라고 하지 않고 실제 run/jobs를 조회한 뒤 다음20min timer를 연결한다. 기다리는 동안
+동일 M13-004의 독립 P5 baseline/read-only 감사를 진행하며 승인된 CI source를 덮어쓰는 새
+push나 실행 중 후보 취소는 하지 않는다. 새 source/전체 acceptance는 결과 전 COMPLETE가 아니다.
+
+첫 timer는12:53:12.000315UTC에 발화했고12:53:42UTC fresh run/jobs에서 같은 source와
+8SUCCESS/Linux IN_PROGRESS를 조회했다. Required 미생성/전체 qualification OPEN이다. 실제
+소비 receipt를 timer 원본과 구분하고 다음 due13:13:42UTC/session29688을 등록했다.
