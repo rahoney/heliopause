@@ -1,0 +1,285 @@
+{
+  "scope": "CI427 grouped sourcee0dc: kernel terminal/accepted target image/clean readonly inputs/current whole preparation/offline materialization and existing consumers; no Artifact user-run",
+  "status": "SUCCESS",
+  "states": {
+    "IMPLEMENTED": "YES (included named source)",
+    "WIRED": "YES (existing production preparation and kernel actual parents)",
+    "QUALIFIED": "YES (ordinary hosted/native named scope)",
+    "ACCEPTANCE_CLOSED": "NO (whole P4/P5-P7/final4profiles/signed)"
+  },
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40776007178",
+  "run_id": 40776007178,
+  "source_commit": "e0dc39a9e7d3bc92bfa343390243f40708f8b370",
+  "checkout_commit": "0e7036573ab02e2392f10abff0d32ee70c8c79c6",
+  "whole_tree": "fff27985906bb29c6026e48ad274239913b3ded3",
+  "tracked_files": 2959,
+  "runtime_inputs": 1324,
+  "all10_checkouts_and_whole_tree_match": true,
+  "run_started_at": "2026-10-28T21:56:16Z",
+  "workflow_final_update_at": "2026-10-28T23:15:01Z",
+  "elapsed_to_final_update_seconds": 4725,
+  "jobs": [
+    {
+      "id": 123125377859,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378061,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378100,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378227,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378253,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378303,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378346,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378380,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378583,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123159009165,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_pass": 94,
+    "failures": 0,
+    "skips": 0,
+    "helper_reaped_wait_zero": 16,
+    "cleanups": [
+      "2026-10-28T23:13:44.5208627Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=654876",
+      "2026-10-28T23:14:20.6891531Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=655571",
+      "2026-10-28T23:14:27.7295853Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=659261"
+    ],
+    "CPP_latches_each_job": 130,
+    "CPU_full_parent_seconds": 238.05,
+    "production_parent_seconds": 34.71,
+    "kernel_parent_seconds": 5.62,
+    "kernel_exact_cases": [
+      [
+        "zero",
+        "true",
+        "0",
+        "0"
+      ],
+      [
+        "nonzero",
+        "true",
+        "37",
+        "0"
+      ],
+      [
+        "reserved125",
+        "true",
+        "125",
+        "0"
+      ],
+      [
+        "reserved126",
+        "true",
+        "126",
+        "0"
+      ],
+      [
+        "reserved127",
+        "true",
+        "127",
+        "0"
+      ],
+      [
+        "exit255",
+        "true",
+        "255",
+        "0"
+      ],
+      [
+        "signalTERM",
+        "false",
+        "0",
+        "15"
+      ],
+      [
+        "signalKILL",
+        "false",
+        "0",
+        "9"
+      ]
+    ],
+    "production_preparation_records": [
+      "2026-10-28T23:14:20.6482273Z     node_execution_prepare_integration_test.go:165: production_node_preparation attempt=1 subjects=1 checks=3 Evidence=4 entry=bin/tsc source_sha256=10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3 manifest=09c7931157c1ad2c2fe33a1bc3e31a264dcd8a6b34ace90465d28dbe50a2da44 current_policy=ALLOW storage_only=true user_program_run=false",
+      "2026-10-28T23:14:20.6489013Z     node_execution_prepare_integration_test.go:165: production_node_preparation attempt=2 subjects=1 checks=3 Evidence=4 entry=bin/tsc source_sha256=10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3 manifest=e7dae0eeb78e0fbb0f09cc1c33ce1fc41578a42e81a7a722392d19c68be3f3f1 current_policy=ALLOW storage_only=true user_program_run=false"
+    ],
+    "production_materialization_records": [
+      "2026-10-28T23:14:20.6480129Z     node_execution_prepare_integration_test.go:164: production_node_materialization attempt=1 layout=2cca6ea03a9f03ce7cb08b24627fd9dad0450186cca94dd2bb9963debf800e3c entry=node_modules/typescript/bin/tsc source_sha256=10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3 offline=true lifecycle_scripts=false user_program_run=false",
+      "2026-10-28T23:14:20.6486903Z     node_execution_prepare_integration_test.go:164: production_node_materialization attempt=2 layout=2cca6ea03a9f03ce7cb08b24627fd9dad0450186cca94dd2bb9963debf800e3c entry=node_modules/typescript/bin/tsc source_sha256=10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3 offline=true lifecycle_scripts=false user_program_run=false"
+    ],
+    "readonly_input_records": [
+      "2026-10-28T23:14:20.6478132Z     node_execution_prepare_integration_test.go:163: production_node_inputs attempt=1 layout=2cca6ea03a9f03ce7cb08b24627fd9dad0450186cca94dd2bb9963debf800e3c readonly=true user_program_run=false",
+      "2026-10-28T23:14:20.6485027Z     node_execution_prepare_integration_test.go:163: production_node_inputs attempt=2 layout=2cca6ea03a9f03ce7cb08b24627fd9dad0450186cca94dd2bb9963debf800e3c readonly=true user_program_run=false"
+    ],
+    "named_parents_seconds": {
+      "TestLinuxTrustedHostExecutorIntegration": 3.23,
+      "TestUVActualIsolatedNativeStartup": 4.16,
+      "TestUVActualIsolatedEmptyTargetQuery": 2.77,
+      "TestUVActualIsolatedNativeLockCollection": 2.98,
+      "TestPublicTerraformProviderSourceIntegration": 1.26,
+      "TestPNPMActualIsolatedNativeStartup": 4.0,
+      "TestPNPMActualIsolatedEmptyLock": 2.57,
+      "TestPNPMActualIsolatedNodeQuery": 2.79,
+      "TestPNPMActualReleaseArtifactProbe": 4.1,
+      "TestPNPMActualProductionProjectInspection": 32.5,
+      "TestPNPMActualProductionInstanceExecution": 11.78,
+      "TestPNPMPublicNativeResolverIntegration": 77.76,
+      "TestPNPMPublicApprovedCacheIntegration": 29.2,
+      "TestPNPMPublicProjectTransactionIntegration": 102.46,
+      "TestPNPMProjectCLIIntegration": 126.78,
+      "TestPNPMNativeOriginalIntegration": 92.63,
+      "TestBunPublicNativeResolverIntegration": 37.13,
+      "TestBunActualNativeProjectSelectionBoundary": 20.21,
+      "TestBunPublicProjectQuarantineIntegration": 35.76,
+      "TestBunActualArtifactExecutionBoundary": 10.21,
+      "TestBunPublicApprovedCacheIntegration": 31.96,
+      "TestBunPublicProjectTransactionIntegration": 110.7,
+      "TestBunProjectCLIIntegration": 135.06,
+      "TestBunNativeOriginalIntegration": 96.33,
+      "TestLinuxPyTorchResolverIntegration": 25.54,
+      "TestUVPublicNativeResolverIntegration": 45.32,
+      "TestUVPublicToolInstallResolverIntegration": 8.77,
+      "TestUVPublicToolUpgradeResolverIntegration": 13.5,
+      "TestUVPublicNativeUpdateResolverIntegration": 20.99,
+      "TestLinuxUVToolInstallCLIIntegration": 57.04,
+      "TestUVPublicToolUpgradeEvidenceFailureIntegration": 38.18,
+      "TestUVPublicToolApprovedUpgradeIntegration": 81.09,
+      "TestLinuxUVToolUpgradeCLIIntegration": 67.69,
+      "TestLinuxUVToolNativeAdoptionCLIIntegration": 119.46,
+      "TestLinuxGoIsolatedResolverIntegration": 5.03,
+      "TestLinuxGoIsolatedProjectResolverIntegration": 2.69,
+      "TestLinuxGoSourceProjectSnapshotIntegration": 2.38,
+      "TestLinuxGoDependencyFreeProjectSnapshotIntegration": 2.22,
+      "TestLinuxCargoSourceProjectSnapshotIntegration": 1.22,
+      "TestLinuxTerraformProviderProbeIntegration": 2.37,
+      "TestLinuxTerraformProviderSecurityIntegration": 1.82,
+      "TestLinuxNPMInspectCLIIntegration": 5.3,
+      "TestLinuxUVInstallCLIIntegration": 176.93,
+      "TestLinuxUVSyncCompleteCLIIntegration": 117.7,
+      "TestLinuxUVSyncClosureCLIIntegration": 52.19,
+      "TestLinuxGoDependencyFreeDownloadIntegration": 14.09,
+      "TestLinuxGoGetDownloadIntegration": 20.9,
+      "TestLinuxGoTransitiveGetDownloadIntegration": 82.46,
+      "TestLinuxGoDependencyFreeBuildCLIIntegration": 34.23,
+      "TestLinuxGoPublicBuildCLIIntegration": 42.14,
+      "TestLinuxGoTransitiveBuildCLIIntegration": 141.28,
+      "TestLinuxGoInvalidTestdataBuildCLIIntegration": 11.83,
+      "TestLinuxGoCgoBuildCLIIntegration": 25.4,
+      "TestLinuxGoLibraryBuildCLIIntegration": 12.51,
+      "TestLinuxGoMixedPackagesBuildCLIIntegration": 20.51,
+      "TestLinuxGoMixedInvalidPackageBuildCLIIntegration": 19.28,
+      "TestLinuxGoBuildSecurityCLIIntegration": 38.49,
+      "TestLinuxCargoAddIntegration": 14.81,
+      "TestLinuxCargoTransitiveAddIntegration": 17.13,
+      "TestLinuxCargoDependencyFreeBuildCLIIntegration": 8.78,
+      "TestLinuxCargoPublicBuildCLIIntegration": 26.27,
+      "TestLinuxCargoTransitiveBuildCLIIntegration": 33.35,
+      "TestLinuxCargoLibraryBuildCLIIntegration": 16.39,
+      "TestLinuxCargoWorkspaceBuildCLIIntegration": 17.3,
+      "TestLinuxCargoBuildScriptBuildCLIIntegration": 17.42,
+      "TestLinuxCargoProcMacroBuildCLIIntegration": 17.28,
+      "TestLinuxCargoBuildFilesystemSecurityCLIIntegration": 8.11,
+      "TestLinuxCargoBuildNetworkSecurityCLIIntegration": 8.79,
+      "TestLinuxCargoBuildConfigurationSecurityCLIIntegration": 17.38,
+      "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration": 8.8,
+      "TestLinuxCargoInvalidSourceBuildCLIIntegration": 8.08,
+      "TestLinuxCargoProcMacroSecurityCLIIntegration": 18.09,
+      "TestLinuxTerraformInitIntegration": 43.67,
+      "TestLinuxTerraformInitNegativeIntegration": 5.52,
+      "TestLinuxPyTorchFullIntegration": 238.05,
+      "TestLinuxPyPISdistBuildIntegration": 7.01,
+      "TestLinuxPyPIWheelDynamicIntegration": 3.86,
+      "TestPipxAcquiredRuntimeRequiredInspectionIntegration": 28.71,
+      "TestPipxPublicToolApprovedUpgradeIntegration": 103.0,
+      "TestLinuxPipxToolInstallCLIIntegration": 75.36,
+      "TestLinuxPipxToolUpgradeCLIIntegration": 86.17,
+      "TestLinuxPipxToolNativeAdoptionCLIIntegration": 152.88,
+      "TestLinuxPipxObservedNativeInstallIntegration": 11.52,
+      "TestLinuxPipxPublicInstallResolverIntegration": 34.04,
+      "TestLinuxPipxPublicOriginalUpgradeIntegration": 62.38,
+      "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging": 63.26,
+      "TestInitialNativeFilesInDisposableNamespace": 0.11,
+      "TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace": 0.12,
+      "TestProtectedStageInDisposableNamespace": 0.01,
+      "TestInterruptedSystemCopyInDisposableNamespace": 0.04,
+      "TestLinuxNPMPromotionIntegration": 3.79,
+      "TestLinuxPyPIPromotionIntegration": 2.84,
+      "TestLinuxNodeExecutionPreparationIntegration": 34.71,
+      "TestLinuxDirectExecKernelTerminalIntegration": 5.62
+    }
+  },
+  "macos": {
+    "conclusion": "success",
+    "CI425_native_deadline_cause": "OPEN; later success is not causal repair"
+  },
+  "logs": {
+    "decoded_utf8_bytes": 1229906,
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci427-decoded-final-log-inventory.json",
+    "all_chunks_readback_equal": true
+  },
+  "timer": {
+    "last_number": 4,
+    "consumed_at": "2026-10-28T23:18:15Z",
+    "due_at": "2026-10-28T23:18:00Z",
+    "fired_at": "2026-10-28T23:18:00.000145+00:00",
+    "active_timer": null,
+    "next_timer": null
+  },
+  "included_P5": [
+    "C3c1 kernel terminal",
+    "C3c2a readonly whole tree",
+    "C3c2b accepted target image DATA",
+    "existing Linux actual8root wiring"
+  ],
+  "excluded": [
+    "later Node execution profile/mode/backend/current1330 inputs/CPP131",
+    "Artifact Node user-run/result/CLI",
+    "final CPU/cu126/cu130/cu132/signed support acceptance"
+  ],
+  "next": "Continue same M13-004 Node runtime read gap; source1330/CPP131 actual remains unqualified."
+}

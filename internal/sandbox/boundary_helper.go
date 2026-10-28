@@ -14,9 +14,11 @@ const (
 	boundaryLaunchMode              = "--launch"
 	boundaryPythonHandoffMode       = "--handoff-python"
 	boundaryELFHandoffMode          = "--handoff-elf"
+	boundaryNodeHandoffMode         = "--handoff-node"
 	boundaryOriginLaunchMode        = "--origin-launch"
 	boundaryOriginPythonHandoffMode = "--origin-handoff-python"
 	boundaryOriginELFHandoffMode    = "--origin-handoff-elf"
+	boundaryOriginNodeHandoffMode   = "--origin-handoff-node"
 	// Docker exec starts only this fixed, root-owned HAA helper as root. The
 	// helper immediately uses setpriv before it execs every root-entry target.
 	// No artifact-selected executable is a Docker exec entrypoint.
@@ -48,7 +50,7 @@ const boundaryAlreadyDemotedValidation = `already_demoted() {
 // operations: launch establishes the Sentry boundary for a direct exec, while
 // handoff only removes trust before artifact execution. The helper never
 // interprets artifact input.
-const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\nadmission() { [ \"${#1}\" -eq 64 ] || exit 125; case \"$1\" in *[!0123456789abcdef]*|'') exit 125 ;; esac; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --launch \"$token\" \"$@\" ;;\n  --origin-handoff-python) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-python \"$token\" \"$@\" ;;\n  --origin-handoff-elf) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-elf \"$token\" \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; admission \"${1-}\"; shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
+const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\nadmission() { [ \"${#1}\" -eq 64 ] || exit 125; case \"$1\" in *[!0123456789abcdef]*|'') exit 125 ;; esac; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --launch \"$token\" \"$@\" ;;\n  --origin-handoff-python) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-python \"$token\" \"$@\" ;;\n  --origin-handoff-elf) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-elf \"$token\" \"$@\" ;;\n  --origin-handoff-node) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-node \"$token\" \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf|--handoff-node) shift; admission \"${1-}\"; shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
 // boundaryContainerCommand runs as the OCI init root solely long enough to
 // install the fixed controller helper into its root-owned tmpfs. The helper is
@@ -78,6 +80,8 @@ func boundaryOriginMode(mode string) string {
 		return boundaryOriginPythonHandoffMode
 	case boundaryELFHandoffMode:
 		return boundaryOriginELFHandoffMode
+	case boundaryNodeHandoffMode:
+		return boundaryOriginNodeHandoffMode
 	default:
 		panic("invalid Docker boundary mode")
 	}

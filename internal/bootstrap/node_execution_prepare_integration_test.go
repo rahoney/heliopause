@@ -5,9 +5,12 @@ package bootstrap
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -99,6 +102,12 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 	}
 	var previous application.PreparedExecution
 	for attempt := 1; attempt <= 2; attempt++ {
+		if attempt == 2 {
+			request, err = application.NewExecutionPreparationRequest(reference, "tsc", []string{"--haa-invalid-option"})
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 		prepared, err := service.Prepare(ctx, request)
 		if err != nil || !prepared.Valid() {
 			t.Fatalf("production preparation attempt=%d boundary=%s: %v", attempt, prepared.FailureCode(), err)
@@ -163,6 +172,28 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 		t.Logf("production_node_inputs attempt=%d layout=%s readonly=true user_program_run=false", attempt, materialized.Digest().String())
 		t.Logf("production_node_materialization attempt=%d layout=%s entry=%s source_sha256=%s offline=true lifecycle_scripts=false user_program_run=false", attempt, materialized.Digest().String(), materialized.EntryPath(), subject.Digest().String())
 		t.Logf("production_node_preparation attempt=%d subjects=%d checks=%d Evidence=%d entry=%s source_sha256=%s manifest=%s current_policy=ALLOW storage_only=true user_program_run=false", attempt, len(entries), len(entry.Checks()), len(entry.Evidence()), execution.EntryPath(), subject.Digest().String(), prepared.Bundle().ManifestID().String())
+		executed, runErr := backend.ExecuteNodeExecution(ctx, execution, materialized)
+		code, exited := executed.ExitCode()
+		if !executed.Complete() || !exited || len(executed.Stderr()) != 0 {
+			// This fixed public fixture preserves the bounded original driver
+			// diagnostic; production runtime output remains private.
+			var driver *exec.ExitError
+			if errors.As(runErr, &driver) {
+				t.Logf("node_execution_driver_failure exit_code=%d stderr=%q", driver.ExitCode(), driver.Stderr[:min(len(driver.Stderr), 4096)])
+			}
+			t.Fatal("actual Artifact Node execution is incomplete", runErr)
+		}
+		if attempt == 1 {
+			if runErr != nil || code != 0 || !strings.Contains(string(executed.Stdout()), "Version 5.9.3") {
+				t.Fatal("approved Node help execution failed", runErr)
+			}
+		} else {
+			var program *sandbox.NodeProgramError
+			if code != 1 || !errors.As(runErr, &program) || !strings.Contains(string(executed.Stdout()), "Unknown compiler option") {
+				t.Fatal("guest nonzero differs from runtime failure", runErr)
+			}
+		}
+		t.Logf("production_node_execution attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", attempt, code, len(executed.Stdout()), len(executed.Stderr()))
 		previous = prepared
 	}
 }

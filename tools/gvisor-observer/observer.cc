@@ -81,6 +81,7 @@ constexpr char kSetprivPath[] = "/usr/bin/setpriv";
 constexpr char kLaunchMode[] = "--launch";
 constexpr char kPythonHandoffMode[] = "--handoff-python";
 constexpr char kELFHandoffMode[] = "--handoff-elf";
+constexpr char kNodeHandoffMode[] = "--handoff-node";
 // These sizes match the pinned gVisor ABI structures used by the socket
 // providers. They bound only address-shape validation; the observer never
 // retains address bytes.
@@ -96,6 +97,7 @@ constexpr size_t kMaxTopologyMountpointBytes = 512;
 constexpr size_t kMaxTopologyFilesystemTypeBytes = 32;
 constexpr size_t kMaxTopologySnapshotBytes = 64 << 10;
 constexpr char kProfileNPM[] = "npm-lifecycle";
+constexpr char kProfileNodeExecution[] = "node-execution";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfileUVResolver[] = "uv-pip-resolver";
 constexpr char kUVToolPath[] = "/haa-runtime/uv";
@@ -512,6 +514,10 @@ struct ProcessState {
     bool pipx_native_query_restricted = false;
     std::string pipx_native_operation, pipx_native_project, pipx_native_requirement;
     std::string pipx_native_environment;
+    // Exact current Node handoff; private argv never enter diagnostics.
+    std::vector<std::string> node_execution_target;
+    bool node_execution_active = false;
+    bool node_execution_demoting = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -746,7 +752,7 @@ struct ControlPeer {
   std::string session_generation;
 };
 
-enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff };
+enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff, kNodeHandoff };
 
 bool SameGroup(const ProcessState::GroupState& group, const gvisor::common::ContextData& context);
 bool ValidProcessIdentity(const gvisor::common::ContextData& context);
@@ -1339,6 +1345,7 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   if (mode == kLaunchMode) return BoundaryMode::kLaunch;
   if (mode == kPythonHandoffMode) return BoundaryMode::kPythonHandoff;
   if (mode == kELFHandoffMode) return BoundaryMode::kELFHandoff;
+  if (mode == kNodeHandoffMode) return BoundaryMode::kNodeHandoff;
   // npm invokes script-shell as <path> -c <script>; the fixed helper path is
   // the only trust-removal marker, while the script remains opaque.
   if (mode == "-c") return BoundaryMode::kHandoff;
@@ -1350,6 +1357,7 @@ const char* BoundaryModeName(BoundaryMode mode) {
     case BoundaryMode::kLaunch: return kLaunchMode;
     case BoundaryMode::kPythonHandoff: return kPythonHandoffMode;
     case BoundaryMode::kELFHandoff: return kELFHandoffMode;
+    case BoundaryMode::kNodeHandoff: return kNodeHandoffMode;
     default: return nullptr;
   }
 }
@@ -1612,7 +1620,8 @@ case "${1-}" in
   --origin-launch) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --launch "$token" "$@" ;;
   --origin-handoff-python) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-python "$token" "$@" ;;
   --origin-handoff-elf) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-elf "$token" "$@" ;;
-  --launch|--handoff-python|--handoff-elf) shift; admission "${1-}"; shift; demote "$@" ;;
+  --origin-handoff-node) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-node "$token" "$@" ;;
+  --launch|--handoff-python|--handoff-elf|--handoff-node) shift; admission "${1-}"; shift; demote "$@" ;;
   -c) shift; already_demoted; exec /bin/sh -c "$@" ;;
   *) exit 125 ;;
 esac
@@ -2193,6 +2202,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/go/pkg/tool/linux_amd64/link") return ProcessClass::kGoBuildLink;
     if (path == "/usr/local/go/pkg/tool/linux_amd64/cgo") return ProcessClass::kGoBuildCgo;
   }
+  if (strcmp(profile, kProfileNodeExecution) == 0 && path == "/usr/local/bin/node") return ProcessClass::kNode;
   if (strcmp(profile, kProfileNPM) == 0) {
     if (path == kBunToolPath) return ProcessClass::kBun;
     if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
@@ -2935,6 +2945,72 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
+// Host-attested readonly clean input, independently bound to current source
+// by the existing complete DATA reader. No path string grants CONTROL.
+bool IsNodeExecutionInputPath(const TopologyState* topology, const std::string& path) {
+  constexpr const char* input = "/tmp/haa-node-execution";
+  std::string normalized;
+  if (path.size() > 4096 || !NormalizeAbsolutePath(path,&normalized) || normalized != path || !HasPrefix(path, "/tmp/haa-node-execution/project/node_modules/") ||
+      !IsPinnedReadOnlyRootPath(topology, kNodePath)) return false;
+  size_t declared = 0, anchors = 0;
+  for (const auto& mount : topology->expected) if (mount.mountpoint == input) {
+    if (mount.mount_class != "workspace" || mount.parent != "/tmp" || mount.filesystem_type != "9p" ||
+        !mount.read_only || mount.noexec || mount.nosuid || mount.nodev) return false;
+    ++declared;
+  }
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == input) { if (mount.mount_class != "workspace") return false; ++anchors; }
+    else if (IsAtOrBelowMountpoint(mount.mountpoint,input) && IsAtOrBelowMountpoint(path,mount.mountpoint)) return false;
+  }
+  return declared == 1 && anchors == 1;
+}
+
+bool BindNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const TopologyState* topology,
+                             ProcessState::GroupState* group) {
+  if (group == nullptr || !group->node_execution_target.empty() || message.argv_size() < 6 || message.argv_size() > 134 ||
+      message.argv(3) != kNodePath || message.argv(4) != "--" || !IsNodeExecutionInputPath(topology,message.argv(5))) return false;
+  size_t bytes = 0;
+  for (int i=6;i<message.argv_size();++i) { bytes += message.argv(i).size(); if (bytes > 32768 || message.argv(i).find('\0') != std::string::npos) return false; }
+  for (int i=3;i<message.argv_size();++i) group->node_execution_target.push_back(message.argv(i));
+  return true;
+}
+
+bool SameNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const ProcessState::GroupState& group, int offset) {
+  if (group.node_execution_target.empty() || message.argv_size() != offset+static_cast<int>(group.node_execution_target.size())) return false;
+  for (size_t i=0;i<group.node_execution_target.size();++i) if (message.argv(offset+static_cast<int>(i)) != group.node_execution_target[i]) return false;
+  return true;
+}
+
+bool IsPinnedNodeExecutionRead(const gvisor::common::ContextData& context, const ProcessState& state,
+                                const std::string& path, uint64_t flags, const char* profile,
+                                const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile,kProfileNodeExecution) != 0 || anchor == nullptr || IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context,state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact || group->provenance != ProcessState::Provenance::kDirectExecRoot ||
+      group->root_eligible || !group->root_consumed || group->trusted_control_network_active || group->demotion_pending ||
+      group->launch_target_pending || state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end() ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const bool node = group->node_execution_active && group->current_image_class == ProcessClass::kNode && !group->handoff_target_pending;
+  const bool demoting = group->node_execution_demoting && group->handoff_target_pending;
+  if (!node && !demoting) return false;
+  if (anchor->mountpoint == "/" && anchor->mount_class == "oci-root") {
+    if (demoting) return IsExactPinnedLibraryRead(path) || path == "/etc/nsswitch.conf" || path == "/etc/passwd" || path == "/etc/group";
+    return flags == 557056 && (IsExactPinnedLibraryRead(path) || path == kNodePath || path == "/etc/ssl/openssl.cnf" || path == "/usr/share/zoneinfo/Etc/UTC");
+  }
+  if (node && anchor->mountpoint == "/sys/fs/cgroup/memory" && anchor->mount_class == "system" && flags == 557056)
+    return path == "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes" || path == "/sys/fs/cgroup/memory/memory.limit_in_bytes";
+  if (node && anchor->mountpoint == "/dev" && anchor->mount_class == "system" && flags == 557056)
+    return path == "/dev/null";
+  if (node && anchor->mountpoint == "/sys" && anchor->mount_class == "system" && flags == 557056)
+    return path == "/sys/devices/system/cpu/online";
+  if (anchor->mountpoint != "/proc" || anchor->mount_class != "system") return false;
+  const std::string self = "/proc/"+std::to_string(context.thread_group_id());
+  return (node && flags == 557056 && (path == "/proc/self/maps" || path == self+"/maps" || path == self+"/cgroup" ||
+      path == "/proc/meminfo" || path == "/proc/version_signature" || path == "/proc/sys/vm/overcommit_memory")) ||
+      (demoting && (path == "/proc/self/status" || path == self+"/status" || path == "/proc/sys/kernel/cap_last_cap"));
+}
+
 // The exact version-only Node child remains ARTIFACT. Reuse only the
 // canonical immutable native-loader ABI, not npm scripts/configuration or
 // another process's authority. The first actual read was ld.so.cache/557056.
@@ -3496,7 +3572,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -3975,6 +4051,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status";
   if (exact_self_status) return FilesystemClass::kHelperOnly;
   const bool exact_handoff_validation = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
+      (profile == nullptr || strcmp(profile,kProfileNodeExecution) != 0 || tracked->handoff_target_pending) &&
       tracked->role == ProcessState::Role::kArtifact &&
       (tracked->provenance == ProcessState::Provenance::kCloneChild ||
        tracked->provenance == ProcessState::Provenance::kDirectExecRoot) &&
@@ -3987,6 +4064,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
        path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status");
   if (exact_handoff_validation) return FilesystemClass::kHelperOnly;
   const bool exact_artifact_shell_loader = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
+      (profile == nullptr || strcmp(profile,kProfileNodeExecution) != 0) &&
       tracked->role == ProcessState::Role::kArtifact &&
       tracked->provenance == ProcessState::Provenance::kCloneChild &&
       !tracked->root_eligible && tracked->root_consumed &&
@@ -4013,7 +4091,8 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   }
   if (IsGitHubArtifactRuntimeRead(message.context_data(), state, path,
                                   message.flags(), profile, anchor) ||
-      IsPinnedPNPMNodeQueryRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
+      IsPinnedPNPMNodeQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedNodeExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
@@ -4169,7 +4248,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfileNodeExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfilePipxNativeResolver && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -4204,14 +4283,16 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
   const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
   const std::string& mode = fields["mode"]; const std::string& nonce = fields["nonce"];
   if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-      (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
+      (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode && mode != kNodeHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
   peer->request_seen = true;
   auto profile = profiles->find(id); const char* status = "rejected";
   std::string outcome_status;
   if (peer->registered && !peer->terminal && peer->container_id == id &&
       peer->session_generation == generation && profile != profiles->end() &&
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
-      (!(IsPipxRuntimeProfile(profile->second.profile.c_str()) || IsPipxNativeProfile(profile->second.profile.c_str())) || mode == kPythonHandoffMode || mode == kLaunchMode)) {
+      (!(IsPipxRuntimeProfile(profile->second.profile.c_str()) || IsPipxNativeProfile(profile->second.profile.c_str())) || mode == kPythonHandoffMode || mode == kLaunchMode) &&
+      (mode != kNodeHandoffMode || profile->second.profile == kProfileNodeExecution) &&
+      (profile->second.profile != kProfileNodeExecution || mode == kNodeHandoffMode || mode == kLaunchMode)) {
     auto pending = profile->second.pending_admissions.end();
     for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
       if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
@@ -4691,6 +4772,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     std::string admission_nonce;
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
+        (boundary_mode == BoundaryMode::kNodeHandoff && strcmp(profile,kProfileNodeExecution) != 0) ||
+        (strcmp(profile,kProfileNodeExecution) == 0 && boundary_mode != BoundaryMode::kNodeHandoff &&
+         !(boundary_mode == BoundaryMode::kLaunch && IsExactPipxReadiness(message,true))) ||
         ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && boundary_mode != BoundaryMode::kPythonHandoff &&
          !(boundary_mode == BoundaryMode::kLaunch && IsExactPipxReadiness(message, true))) ||
         !ExtractBoundaryAdmissionNonce(message, boundary_mode, &admission_nonce) ||
@@ -4708,8 +4792,13 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
     if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology) || IsExactBunTargetLifecycleBoundary(message, profile, topology))
       group->second.pnpm_target_lifecycle = message.argv(7);
+    if (boundary_mode == BoundaryMode::kNodeHandoff && !BindNodeExecutionTarget(message,topology,&group->second)) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+    }
     new_direct_root = true;
   }
+  group->second.node_execution_active = false;
+  group->second.node_execution_demoting = false;
   const bool pipx_native_candidate = group->second.pipx_native_candidate;
   group->second.pipx_native_candidate = false;
   group->second.pipx_native_image = ProcessState::PipxNativeImage::kNone;
@@ -4981,7 +5070,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (boundary_mode == BoundaryMode::kHandoff || boundary_mode == BoundaryMode::kPythonHandoff ||
-      boundary_mode == BoundaryMode::kELFHandoff) {
+      boundary_mode == BoundaryMode::kELFHandoff || boundary_mode == BoundaryMode::kNodeHandoff) {
     if (group->second.role == ProcessState::Role::kControl) {
       if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
         if (new_direct_root) {
@@ -5000,7 +5089,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.trusted_control_network_active = false;
       group->second.demotion_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
-      group->second.handoff_target_class = boundary_mode == BoundaryMode::kPythonHandoff
+      group->second.handoff_target_class = boundary_mode == BoundaryMode::kNodeHandoff ? ProcessClass::kNode : boundary_mode == BoundaryMode::kPythonHandoff
           ? ProcessClass::kPython : (strcmp(profile, kProfileGoBuild) == 0
               ? ProcessClass::kGo : (strcmp(profile, kProfileCargoBuild) == 0
                   ? ProcessClass::kCargo : ProcessClass::kArtifact));
@@ -5014,6 +5103,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (!IsExactSetprivDemotion(message) || IsExactOCIBootstrapDemotion(message)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
+    }
+    if (strcmp(profile,kProfileNodeExecution) == 0 && group->second.role == ProcessState::Role::kArtifact) {
+      if (!IsPinnedReadOnlyRootPath(topology,kSetprivPath) || !SameNodeExecutionTarget(message,group->second,9)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+      }
+      group->second.node_execution_demoting = true;
     }
     group->second.demotion_pending = false;
     if (group->second.role == ProcessState::Role::kControl) {
@@ -5208,14 +5303,23 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     if (group->second.handoff_target_pending && process_class == group->second.handoff_target_class) {
+      if (strcmp(profile,kProfileNodeExecution) == 0) {
+        if (process_class != ProcessClass::kNode || message.binary_path() != kNodePath || message.execfn() != kNodePath ||
+            !SameNodeExecutionTarget(message,group->second,0) || !IsNodeExecutionInputPath(topology,message.argv(2))) {
+          *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+        }
+        group->second.node_execution_active = true;
+        group->second.node_execution_target.clear();
+      }
       if (IsPipxNativeProfile(profile) && !ParsePipxNativeRoot(message,topology,&group->second)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }
       if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
           !RetainDirectExecTarget(registration, message.context_data(),
-              group->second.handoff_target_class == ProcessClass::kPython ?
-                  BoundaryMode::kPythonHandoff : BoundaryMode::kELFHandoff)) {
+              group->second.handoff_target_class == ProcessClass::kNode ? BoundaryMode::kNodeHandoff :
+                  (group->second.handoff_target_class == ProcessClass::kPython ?
+                      BoundaryMode::kPythonHandoff : BoundaryMode::kELFHandoff))) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }

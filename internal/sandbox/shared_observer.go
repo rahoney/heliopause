@@ -63,6 +63,8 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case nodeExecutionProfile:
+		return nodeExecutionInputExpectedTopology(true)
 	case pipxObserverProfile:
 		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
 		return []observerMountExpectation{root, tmp, runtime, data}, true

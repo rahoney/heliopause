@@ -15,15 +15,58 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3c hosted kernel actual-parent wiring locally qualified; source1324/checkerRace47.748s/Bash7cases; same CPP0c09 + production readonly fresh2 actual56.226s; hosted pending
-Next action: final whole candidate check/commit and authorized grouped milestone push; register new CI run/head and actual20min timer; preserve any active run; then dedicated Artifact Node profile/mode and result lifecycle owner audit. CI426 Required10SUCCESS consumed/no active timer.
-Current substep: M13-004/P5-C3c grouped hosted checkpoint IN_PROGRESS; local wiring/current readonly combo qualified; dedicated Artifact Node profile/mode/user-run/output/CLI/final OPEN
+Last completed substep: P5-C3c2b normal/nonzero Artifact Node backend local qualified; current1330/Go-v6 checks8/CPP131; actual69.401s/fresh2 exit0+1/whole cleanup; same helper8root9.678s and existing3consumers12.050s PASS; new hosted pending
+Next action: Freeze/review normal-nonzero Node foundation unit and current metadata; canonical docs/security then Korean intermediate commit/important grouped CI with20min actual timers. CI427 Required10SUCCESS fully reviewed and timer04 retired. Continue same M13-004 P5-C3d actual cancel/overflow/child/hostile runtime qualification; application/CLI/final OPEN.
+Current substep: M13-004/P5-C3d runtime failure/hostile actual qualification next; C3c2b normal/nonzero backend named local PASS/hosted pending; baseline/map before next source; public application/CLI/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P5-C3c runtime/admission/guest outcome and bounded stream contracts; final support/profile matrix open
+Independent local next: P5-C3d actual cancellation/overflow/child lifecycle and hostile boundaries; then application/CLI; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 실제 Artifact Node normal/nonzero backend local 완료
+
+[최종 local receipt](./evidence/package-client-quarantine/p5c3c2b-artifact-node-local-20261029.json)는
+current1330/Go-v6 checks8·CPP131/canonical289.119s와 actual69.401s/fresh2의 guest0·guest1,
+기존8roots9.678s/세 consumers12.050s PASS를 연결한다. Current whole Policy·readonly inputs,
+accepted target/external kernel terminal/independent bounded streams와 complete trace/disposal,
+Source/Host/42/ZIP/Docker 보존·helperwait0/owned resources/endpoints0을 확인했다. 앞 cwd/
+runtime ABI 실패 원본을 보존했고 일반 FS/CONTROL/network/한도는 유지했다. Qualification은
+이 named normal/nonzero foundation뿐이다. 다음은 같은 M13-004의 C3d 실제 취소/overflow/
+child·악성 경계이며 먼저 current unit을 검토/중간 commit/중요 grouped CI로 전달한다.
+New hosted/public application·CLI/wholeP5와 final profiles/signed는 OPEN이다.
+
+### 2026-10-29 CI427 공통 후보 hosted qualification 완료
+
+[최종 qualification](./evidence/package-client-quarantine/ci427-kernel-readonly-hosted-qualification-20261029.json)은
+sourcee0dc/treefff27985/2959·1324입력과 all10checkout0e703657 일치·Required10SUCCESS다.
+Timer04는23:18:00UTC 발화/23:18:15UTC query로 완료를 소비했고 final update까지78m45s다.
+All10 decoded1,229,906B/chunk readback과 Linux94/noFAIL/noSKIP/CPP130·CPU238.05s,
+production readonly fresh2 34.71s/kernel8cases5.62s·helper16wait0/세 cleanup original0/복원을
+확인했다. 추가 timer는 없으며 이후 Node source1330/profile/backend·CPP131와 user-run/CLI/
+wholeP4/P5-P7/final4profiles/signed는 이 run 밖이다. 같은 M13-004의 Node actual startup
+self-cgroup read gap을 계속한다. Cwd 교정 후보는 reader 시작을 통과했지만 전체 Node 실행은
+실패로 유지하며 새 CPP build/실제 검증 전 qualification으로 표시하지 않는다.
+
+### 2026-10-29 Artifact Node 첫 actual 실패와 제한 진단
+
+[현재 수정 지도](./evidence/package-client-quarantine/p5c3c2b-node-execution-plan-20261029.md)의
+새 Node CPP131/canonical은 PASS지만 actual-v1은33.158s·readonly reader start 단계에서
+실패했다. Artifact 실행은 미도달이며 첫 원본/Host·입력 보존·정리를 별도로 확인했다.
+Default runtime DATA 세 cwd 조합 PASS를 gVisor 원인으로 일반화하지 않는다. 기존
+ExitError.Stderr를 고정 공개 integration fixture에서만 제한 수집하는 test-only 변경으로
+상세 원인을 확인한다. Node actual/전체 qualification은 NO이며 CI427 source는 불변이다.
+
+### 2026-10-29 승인된 공통4commit CI427 등록
+
+[CI427](./evidence/package-client-quarantine/ci427-registration-20261029.json)은 sourcee0dc39a/tree
+fff27985/2959·1324입력의 누적4commit을 기존 milestone branch에 정상 FF push한 결과다.
+Kernel target/terminal8roots와 clean readonly production fresh2·canonical/CPP130/whole 후보
+일치를 확인한 구체 후보이며 main merge/tag/release는 없다. 21:56:16UTC 등록 뒤 실제20min
+timer01/session20366의 첫 due22:16:16UTC(한국07:16:16)를 설정했다. New hosted는 PENDING이고
+실행 중 source를 새 push로 취소하지 않는다. 같은 M13-004의 독립 Node mode/profile/lifecycle
+감사를 계속하며 이후 소스와 user-run/CLI/final qualification을 이 run에 전용하지 않는다.
 
 ### 2026-10-29 기존 Linux CI kernel parent 연결 로컬 검증
 

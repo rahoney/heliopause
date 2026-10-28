@@ -1,0 +1,260 @@
+{
+  "scope": "P5-C3c2b Linux/WSL2 amd64 current whole TypeScript5.9.3 approved readonly Artifact Node backend normal help0/nonzero1; public CLI and hostile/final acceptance remain OPEN",
+  "status": "PASS (named local foundation)",
+  "baseline_commit": "e0dc39a9e7d3bc92bfa343390243f40708f8b370",
+  "runtime_source_inputs": 1330,
+  "states": {
+    "normal_nonzero_backend": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES (production preparation integration parent and actual same backend)",
+      "QUALIFIED": "YES (named local fresh2 only)",
+      "ACCEPTANCE_CLOSED": "YES (normal/nonzero backend foundation only)"
+    },
+    "whole_P5": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO (public CLI/application run)",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    }
+  },
+  "implementation": [
+    "existing current whole ExecutionPreparationService/Policy/materializer/readonly DATA owners reused",
+    "closed Node profile/origin/mode; irreversible ARTIFACT target binding to current readonly absolute entry and private argv",
+    "existing host-owned admission lease/target-loaded/kernel terminal facts plus protected Host bounded capture",
+    "complete trace/unchanged readonly whole tree/disposal required before Complete",
+    "Core neutral captured-output contract and Hosttool delegation preserve existing RunCaptured implementation",
+    "typed completed guest nonzero preserves original Host error; cancel/overflow/WaitDelay/unknown trace/cleanup incomplete"
+  ],
+  "checks": {
+    "Go": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 0.769
+      },
+      {
+        "step": "focused",
+        "command": [
+          "go",
+          "test",
+          "-count=1",
+          "-v",
+          "./internal/sandbox",
+          "-run",
+          "^(TestNodeExecution|TestBoundary|TestDirectExecOrigin)"
+        ],
+        "exit_code": 0,
+        "seconds": 7.192
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 138.664
+      },
+      {
+        "step": "affected-race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "./internal/hosttool",
+          "./internal/sandbox",
+          "./internal/bootstrap"
+        ],
+        "exit_code": 0,
+        "seconds": 33.898
+      },
+      {
+        "step": "tagged-bootstrap-build",
+        "command": [
+          "go",
+          "test",
+          "-c",
+          "-tags=realcorpus",
+          "-o",
+          "/tmp/haa-p5-c3c-node-v6-bootstrap.test",
+          "./internal/bootstrap"
+        ],
+        "exit_code": 0,
+        "seconds": 3.827
+      },
+      {
+        "step": "tagged-sandbox-build",
+        "command": [
+          "go",
+          "test",
+          "-c",
+          "-tags=realcorpus",
+          "-o",
+          "/tmp/haa-p5-c3c-node-v6-sandbox.test",
+          "./internal/sandbox"
+        ],
+        "exit_code": 0,
+        "seconds": 8.004
+      },
+      {
+        "step": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.366
+      },
+      {
+        "step": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 13.702
+      }
+    ],
+    "Go_binary_reuse": {
+      "prior_identity": "/tmp/haa-p5-c3c-node-v6-build-identity.json",
+      "all_Go_compiler_and_test_inputs_byte_identical": true,
+      "only_runtime_source_changes": [
+        {
+          "path": "tools/gvisor-observer/observer.cc",
+          "prior_sha256": "58a9b43bcf74fa3046e67a64dbf6a62b8d296cac099ff22d8dff7a039bf8cb69",
+          "current_sha256": "c7597e37401ae4db7dd60e636b6e434a6b66f930637288e2627b5e81ac637d01"
+        },
+        {
+          "path": "tools/gvisor-observer/observer_latch_test.cc",
+          "prior_sha256": "8cf447c91e20b3210551d20ca4743581ffe5b3d586a688ac26b736b56e83f4f1",
+          "current_sha256": "3bb72b71ecc824b99623f608bc05d40663b820348341787eeaf2ec25404a3096"
+        }
+      ],
+      "CPP_is_not_a_Go_compiler_input": true,
+      "CPP_qualification_owner": "/tmp/haa-p5-c3c-node-v5-observer-build.json"
+    },
+    "CPP": {
+      "canonical_seconds": 289.119,
+      "latches": 131,
+      "failures": 0,
+      "source_identity": [
+        {
+          "path": "tools/gvisor-observer/observer.cc",
+          "sha256": "c7597e37401ae4db7dd60e636b6e434a6b66f930637288e2627b5e81ac637d01"
+        },
+        {
+          "path": "tools/gvisor-observer/observer_latch_test.cc",
+          "sha256": "3bb72b71ecc824b99623f608bc05d40663b820348341787eeaf2ec25404a3096"
+        },
+        {
+          "path": "tools/gvisor-observer/BUILD",
+          "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+        },
+        {
+          "path": "scripts/runtimes.lock.json",
+          "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+        },
+        {
+          "path": "scripts/prepare-gvisor-build-source.sh",
+          "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+        },
+        {
+          "path": "scripts/build-gvisor-observer-release.sh",
+          "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+        }
+      ],
+      "observer": {
+        "bytes": 3216320,
+        "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77"
+      }
+    }
+  },
+  "binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3c-node-v6-bootstrap.test",
+      "bytes": 51025175,
+      "sha256": "5044bd93a8453bb1dc3705b6bb050dec394252a51d570574882770a1375df25c"
+    },
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p5-c3c-node-v6-sandbox.test",
+      "bytes": 27659678,
+      "sha256": "6c77fa3151d53ac4f149ea3b00c4c5b994ec2cacef54fa6e55599f8e4ec99b2a"
+    }
+  ],
+  "actual": {
+    "Node": {
+      "seconds": 69.401,
+      "parent_seconds": 67.48,
+      "fresh_requests": 2,
+      "exit_codes": [
+        0,
+        1
+      ],
+      "stdout_bytes": [
+        4980,
+        62
+      ],
+      "stderr_bytes": [
+        0,
+        0
+      ],
+      "independent_accepted_target_kernel_terminal_bounded_capture_and_complete_disposal": true,
+      "current_whole_inspection_policy_readonly_materialization": true
+    },
+    "kernel_existing": {
+      "seconds": 9.678,
+      "cases": 8,
+      "scope": "trusted controller roots; exit0/37/125/126/127/255 and TERM/KILL; not Artifact Node signal qualification"
+    },
+    "common_existing": {
+      "seconds": 12.05,
+      "parents": [
+        "TestLinuxGVisorLifecycleIntegration",
+        "TestLinuxGitHubReleaseELFDynamicIntegration",
+        "TestLinuxPyPIWheelDynamicIntegration"
+      ]
+    },
+    "all_no_skip": true,
+    "all_source_CPP_fixed42_ZIP_Host_Docker_preserved": true,
+    "all_policy_helper_wait0_confirmedstop": true,
+    "all_owned_resources_and_observer_endpoints_absent": true
+  },
+  "failed_candidates": {
+    "v1": "initial gVisor private cwd denied before Node start; stale control socket/lock recovery separately verified",
+    "v2_diagnostic": "retained observer lock preflight; original Node cause not reached",
+    "v3_diagnostic": "original Docker stderr confirms initial cwd permission denied",
+    "v4": "current pinned Node self-cgroup read missing",
+    "v5": "next SYS read; FNV matches fixed memory-limit ABI candidate only",
+    "v6": "next PROC read; FNV matches fixed meminfo ABI candidate only",
+    "v7": "current Node DEV_NULL read missing",
+    "rule": "each original preserved; later success does not replace failed evidence; fingerprints never authorize access"
+  },
+  "source_and_raw_evidence": {
+    "runtime_source_and_Go_reuse": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-node-v10-build-identity.json",
+    "CPP": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-node-v5-observer-build.json",
+    "normal_nonzero": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-node-actual-v8-result.json",
+    "kernel": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-node-kernel-actual-v6-result.json",
+    "common": "docs/github-logs/package-client-quarantine-20261021/p5-c3c-node-common-actual-v6-result.json"
+  },
+  "MISSING": [
+    "actual cancellation/custom cause/timeout/overflow/child-held pipes/descendant drainage and hostile FS/network/runtime/argv substitution qualification",
+    "application/CLI and safe output rendering",
+    "new exact-source ordinary hosted/native qualification",
+    "whole P4/P5-P7/final CPU/cu126/cu130/cu132/signed15assets19bundle acceptance"
+  ],
+  "next": "Commit qualified normal/nonzero unit and important grouped CI with20min actual status timers; continue single M13-004 P5 runtime hostile/cancel/overflow qualification."
+}

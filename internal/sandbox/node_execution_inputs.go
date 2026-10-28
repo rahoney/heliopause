@@ -34,6 +34,7 @@ type nodeExecutionInputs struct {
 	volume         closureVolume
 	writer, reader *nodeInputContainer
 	cancel         context.CancelFunc
+	run            context.Context
 }
 
 // ValidateNodeExecutionInputs exercises only the complete DATA introduction
@@ -51,7 +52,11 @@ func (b *Backend) ValidateNodeExecutionInputs(ctx context.Context, execution dom
 	return inputs.close()
 }
 
-func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout) (_ *nodeExecutionInputs, resultErr error) {
+func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout) (*nodeExecutionInputs, error) {
+	return b.prepareNodeExecutionInputView(ctx, execution, layout, false)
+}
+
+func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout, execute bool) (_ *nodeExecutionInputs, resultErr error) {
 	if b == nil || ctx == nil || !layout.MatchesExecution(execution) || execution.RuntimeIdentity() != nodeImageReference || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
 		return nil, errNodeMaterialization
 	}
@@ -60,6 +65,11 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 	observer, observerOK := b.observer.(nodeInputObserver)
 	if !inputOK || !streamOK || !observerOK {
 		return nil, errNodeMaterialization
+	}
+	if execute {
+		if _, ok := b.observer.(nodeExecutionObserver); !ok {
+			return nil, errNodeMaterialization
+		}
 	}
 	payload, err := artifactnpm.RenderNodeExecutionInputs(ctx, execution, layout)
 	if err != nil {
@@ -74,7 +84,7 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 		return nil, errors.Join(errNodeMaterialization, err)
 	}
 	run, cancel := context.WithTimeout(ctx, b.wallTimeout)
-	inputs := &nodeExecutionInputs{backend: b, cancel: cancel}
+	inputs := &nodeExecutionInputs{backend: b, cancel: cancel, run: run}
 	ready := false
 	defer func() {
 		if !ready {
@@ -85,7 +95,7 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 	if err != nil {
 		return nil, errors.Join(errNodeMaterialization, err)
 	}
-	inputs.writer, err = b.startNodeInputContainer(run, inputs.volume, observer, false, nil)
+	inputs.writer, err = b.startNodeInputContainer(run, inputs.volume, observer, false, nil, false)
 	if err != nil {
 		return nil, fmt.Errorf("start node input writer: %w", err)
 	}
@@ -98,7 +108,7 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 	// A named local-driver tmpfs loses its contents at the last unmount. Keep
 	// the exact trusted writer until the RO reader is mounted and attested.
 	// No Artifact program may run during this preparation-only overlap.
-	inputs.reader, err = b.startNodeInputContainer(run, inputs.volume, observer, true, inputs.writer)
+	inputs.reader, err = b.startNodeInputContainer(run, inputs.volume, observer, true, inputs.writer, execute)
 	if err != nil {
 		return nil, fmt.Errorf("start readonly node input reader: %w", err)
 	}
@@ -122,7 +132,7 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 	return inputs, nil
 }
 
-func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVolume, observer nodeInputObserver, readOnly bool, writer *nodeInputContainer) (*nodeInputContainer, error) {
+func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVolume, observer nodeInputObserver, readOnly bool, writer *nodeInputContainer, execute bool) (*nodeInputContainer, error) {
 	session, err := b.newSessionID()
 	if err != nil || session.String() == "" {
 		return nil, errors.Join(errNodeMaterialization, err)
@@ -132,6 +142,12 @@ func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVol
 	if err != nil {
 		return container, err
 	}
+	if execute {
+		args, err = nodeExecutionWorkingDirectory(args)
+		if err != nil {
+			return container, err
+		}
+	}
 	args = append(args[:1], append([]string{"--label", nodeMaterializationOwnerLabel + "=" + session.String()}, args[1:]...)...)
 	body, err := b.runner.Output(ctx, "docker", args...)
 	if exactObservationContainerID(strings.TrimSpace(string(body))) {
@@ -140,7 +156,12 @@ func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVol
 	if err != nil || container.id == "" {
 		return container, errors.Join(errNodeMaterialization, err)
 	}
-	if readOnly {
+	if execute {
+		if !readOnly {
+			return container, errNodeMaterialization
+		}
+		container.trace, err = observer.(nodeExecutionObserver).StartNodeExecutionProfile(ctx, container.id)
+	} else if readOnly {
 		container.trace, err = observer.StartNodeExecutionInputProfile(ctx, container.id)
 	} else {
 		container.trace, err = observer.StartNodeMaterializationProfile(ctx, container.id)
