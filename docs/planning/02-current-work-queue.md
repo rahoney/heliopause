@@ -15,15 +15,27 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3c2a clean readonly whole-tree input named local QUALIFIED; actual54.439s/fresh2/Quick103.303s/affectedRace30.352s; no Artifact user-run
-Next action: CI426/source4db0111 running; poll04 21:13:21UTC 8SUCCESS including macOS/Linux running; actual20min timer05 due21:33:21UTC/session10323; preserve active run; independent C3c2b exact Artifact Node admission/profile/image-start/terminal/output/cleanup audit; CI425 native cause OPEN
-Current substep: M13-004/P5-C3c2b exact Artifact Node admission lifecycle baseline audit IN_PROGRESS; C3c2a DATA view locally complete; no Node user-run/output/CLI/final acceptance
-Acceptance audit: CI424/source4ec Required10SUCCESS; all10 checkout2823b654/tree d88cd820/2909 matches; Linux92/noSKIP/CPP128/helper14wait0/final0; CI425/source418a included B2e/B2f/C1/C2 and Linux93/preparation fresh2 PASS; macOS+Required FAILURE with native direct cause OPEN; later C3a/C3b excluded. CI422 hosted raw report remains uncollected. Final four profiles/signed/whole P4/P5-P7 OPEN.
+Last completed substep: P5-C3c2b target-image DATA dependency named local QUALIFIED; source1322/Go c79f6942/CPP0c09f44f130; actual8roots9.827s/existing3parents12.296s; no Artifact Node user-run
+Next action: CI426/source4db0111 Required10SUCCESS consumed at21:33:27UTC; no active timer; wire existing Linux8root target/terminal parent then meaningful grouped common-observer push; independent exact Artifact Node mode/profile/lifecycle missing; CI425 native cause OPEN
+Current substep: M13-004/P5-C3c2b IN_PROGRESS; target-image dependency local complete; hosted actual-parent wiring next; dedicated Artifact Node profile/mode/user-run/output/CLI/final OPEN
+Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P5-C3c runtime/admission/guest outcome and bounded stream contracts; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI426 종료와 target-image dependency 검증
+
+[CI426](./evidence/package-client-quarantine/ci426-offline-materialization-hosted-qualification-20261029.json)은
+source4db/tree e8ad4e1d/2940·all10checkoutc106c554/decoded1,274,315B 일치와 Required10SUCCESS다.
+실제 timer05 21:33:21UTC 발화 뒤21:33:27UTC에 완료를 소비했다. 전체95m30/Linux93/noSKIP/
+CPP128/CPU303.82s/helper15wait0/final0와 production31.97s/fresh2·offline materialization이 PASS다.
+추가 timer는 없으며 CI425 native 원인 미확정과 later C3c/new user-run/final 미완료는 유지한다.
+[새 target fact local](./evidence/package-client-quarantine/p5c3c2b-target-image-local-20261029.json)은
+CPP130/8root9.827s·기존3소비자12.296s/Host·입력 보존·정리를 확인했다. 같은 root의 helper
+종료와 실제 accepted target load를 구분하며 Node user-run 성공으로 확대하지 않는다.
+이8root parent를 기존 Linux CI에 연결한 뒤 누적된 공통 변경을 한 번 push하고 같은 item을 계속한다.
 
 ### 2026-10-29 P5-C3c2a 읽기 전용 whole-tree 입력 로컬 검증
 
@@ -34,7 +46,7 @@ Canonical7/영향3package freshRace30.352s와 Source/Host/42/ZIP/Docker 보존·
 workspace 부재가 대응한다. 첫 actual 실패와 별도 DATA lifetime probe를 보존하고 기존 Python
 owner의 reader 선연결→writer 종료→sole RO 순서를 재사용했다. Artifact user program은
 미실행이며 같은 M13-004의 C3c2b admission/image-start/terminal/output/cleanup을 계속한다.
-CI426은 이전4db source이며 latest poll04/실제 timer05를 유지한다.
+CI426은 이전4db source로 완료됐고 최종 결과는 상단 receipt를 따른다.
 
 ### 2026-10-29 P5-C3c1 외부 kernel root terminal 로컬 검증
 

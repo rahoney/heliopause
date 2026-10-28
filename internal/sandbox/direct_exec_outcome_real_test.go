@@ -145,6 +145,10 @@ func TestLinuxDirectExecKernelTerminalIntegration(t *testing.T) {
 			if terminal.exited != (test.signal == 0) || terminal.exitCode != test.code || terminal.signal != test.signal || terminal.coreDump {
 				t.Fatal("kernel terminal outcome did not match actual controller", terminal)
 			}
+			target, err := directExecTargetLoaded(ctx, admission)
+			if err != nil || !target.loaded || target.missed {
+				t.Fatal("accepted target image was not independently observed", err)
+			}
 			if err := completeDirectExecAdmission(ctx, admission); err != nil {
 				t.Fatal("kernel terminal slot completion failed", err)
 			}

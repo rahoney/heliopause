@@ -730,6 +730,7 @@ struct ProfileRegistration {
     AdmissionState state = AdmissionState::kPending;
     int32_t root_group_id = 0;
     int64_t root_start_time_ns = 0;
+    bool target_loaded = false;
     bool terminal_seen = false;
     uint32_t terminal_wait_status = 0;
   };
@@ -1464,6 +1465,26 @@ bool BindDirectExecAdmissionRoot(ProfileRegistration* registration, BoundaryMode
     }
   }
   return false;
+}
+
+// Called only after the existing profile accepted the direct root target's
+// SENTRY_EXEC image. Attempt telemetry and descendants never supply this fact.
+bool RetainDirectExecTarget(ProfileRegistration* registration,
+                            const gvisor::common::ContextData& context, BoundaryMode mode) {
+  const char* expected_mode = BoundaryModeName(mode);
+  if (registration == nullptr || expected_mode == nullptr || !ValidProcessIdentity(context)) return false;
+  for (auto& pending : registration->pending_admissions) {
+    if (pending.session_generation != registration->session_generation ||
+        pending.mode != expected_mode ||
+        pending.state != ProfileRegistration::AdmissionState::kConsumed ||
+        pending.root_group_id != context.thread_group_id() ||
+        pending.root_start_time_ns != context.thread_group_start_time_ns()) continue;
+    if (pending.target_loaded || pending.terminal_seen) return false;
+    pending.target_loaded = true;
+    return true;
+  }
+  // Existing callers may release their slot before the target event arrives.
+  return true;
 }
 
 bool ValidTerminalWaitStatus(int32_t status) {
@@ -4178,7 +4199,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     }
     return SendInvalidateAck(peer->fd, id, generation, status);
   }
-  if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete" && op->second != "outcome") return false;
+  if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete" && op->second != "outcome" && op->second != "target") return false;
   if (!ExactControlFields(fields, {"op", "container_id", "session_generation", "mode", "nonce"})) return false;
   const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
   const std::string& mode = fields["mode"]; const std::string& nonce = fields["nonce"];
@@ -4206,6 +4227,9 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
         outcome_status = pending->state == ProfileRegistration::AdmissionState::kPending ? "pending" :
             (pending->terminal_seen ? "exited:" + std::to_string(pending->terminal_wait_status) : "running");
         status = outcome_status.c_str();
+      } else if (op->second == "target") {
+        status = pending->state == ProfileRegistration::AdmissionState::kPending ? "pending" :
+            (pending->target_loaded ? "loaded" : (pending->terminal_seen ? "missed" : "waiting"));
       } else if (op->second == "cancel") {
         if (pending->state == ProfileRegistration::AdmissionState::kPending) {
           profile->second.pending_admissions.erase(pending);
@@ -5016,6 +5040,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       *reason = TrackFailureReason(tracked_result);
       return false;
     }
+    if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+        !RetainDirectExecTarget(registration, message.context_data(), BoundaryMode::kLaunch)) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
     group->second.launch_target_pending = false;
     group->second.trusted_control_network_active = true;
     group->second.npm_version_node_transition_pending =
@@ -5180,6 +5209,13 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
     if (group->second.handoff_target_pending && process_class == group->second.handoff_target_class) {
       if (IsPipxNativeProfile(profile) && !ParsePipxNativeRoot(message,topology,&group->second)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN";
+        return false;
+      }
+      if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+          !RetainDirectExecTarget(registration, message.context_data(),
+              group->second.handoff_target_class == ProcessClass::kPython ?
+                  BoundaryMode::kPythonHandoff : BoundaryMode::kELFHandoff)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }
