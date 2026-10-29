@@ -15,15 +15,33 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: C7 post-Policy CLI refusal2 local qualified33.886s/canonical6; existing1343 unchanged; CI429 source9eb excludes new extra test
-Next action: CI429 source9eb854f poll01 at02:17:12UTC:8SUCCESS incl macOS/Linux running; completed8 same checkoutb2eb8b6e/tree51a9a25c/decoded448735B/CPP131. Actual20min timer02 due02:37:12UTC/KST11:37:12/session61181; preserve active run/no push. Independent P5 bounded/P6 baseline.
-Current substep: M13-004/P6 baseline/source DATA audit IN_PROGRESS; local5a45a6f/1344 owner map confirms existing generic context/workflow/records reuse; pinned UV0.13.4 source7456b60b/5files verified; selector equivalence/Python entry/runtime unimplemented; CI429 active/final OPEN
+Last completed substep: P6-A1 console DATA API local qualified/focused+Quick309.386s/full PyPI Race11.740s; existing1344 unchanged/new2; Python runtime/CLI unwired
+Next action: CI429 poll03 at02:57:34UTC:8SUCCESS/Linux running; timer04 due03:17:34UTC/KST12:17:34/session48576; preserve active source9eb/no push. Commit P6-A1 DATA API then controlled source reader baseline.
+Current substep: M13-004/P6-A1 internal DATA selection locally qualified; final docs/security/local commit then actual controlled intake reader map; native selection/runtime/CLI remain unimplemented; CI429 frozen
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: finish pinned UV native run/install selection comparison and Python entry metadata/member proof edit map; reuse current generic owners; no placeholders or new permissions; CI429 preserved
-P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
+Independent local next: P6-A2 controlled original intake reader baseline/map before code; reuse canonical ReaderAt/parser and current acquisition; native UV selector equivalence/Python runtime/CLI remain OPEN
+P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — application/CLI actual and CI429 grouped qualification pending; P6 — IN_PROGRESS internal console DATA API local qualified/runtime-CLI unwired; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P6-A1 exact console DATA local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6a1-console-entry-local-20261029.json)는 기존1344 불변/new2의 focused·
+Quick309.386s/전체 PyPI Race11.740s와 canonical checks를 연결한다. 실제 canonical wheel
+reader에서만 opaque inventory를 만들고 command/module/attr·원본 metadata/whole inspection/
+acquisition을 결합하며 multi/alias/extras/invalid/source/RECORD 치환 거부를 확인했다.
+현재 DATA API만 local qualified이고 Python preparation/runtime/CLI는 WIRED=NO다.
+CI429는 poll03 8SUCCESS/Linux 진행이며 timer04 due03:17:34UTC/session48576로 유지한다.
+
+### 2026-10-29 P6-A1 console entry DATA 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p6a1-console-entry-plan-20261029.md)는
+실제 canonical wheel reader에서만 생성한 opaque inventory와 exact console selection gap을
+새 DATA API로 추가한다. 기존 parser/Model C/context/workflow/records/runtime/CPP는 유지한다.
+명령·module/attr·원본 metadata member와 전체 inventory/acquisition을 결합하며 selection은
+Policy나 실행 권한이 아니다. Actual Python/user-run/native selector/CLI는 후속이고
+CI429/source9eb/timer03 due02:57:27UTC/session39633를 보존한다.
 
 ### 2026-10-29 P6 existing owners/pinned UV source 착수 감사
 

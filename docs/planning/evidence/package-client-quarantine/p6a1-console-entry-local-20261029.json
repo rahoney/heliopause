@@ -1,0 +1,116 @@
+{
+  "scope": "P6-A1 internal console declaration DATA selection from actual canonical wheel reader; no runtime/Policy/verification authority",
+  "status": "PASS (named local API scope)",
+  "baseline_commit": "3f961985a9025301b4a37591a4fd08f90eaab541",
+  "runtime_inputs": 1346,
+  "existing1344_sources_unchanged": true,
+  "new_paths": [
+    "internal/artifact/pypi/execution_entry.go",
+    "internal/artifact/pypi/execution_entry_test.go"
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (internal value API)",
+    "WIRED": "NO (Python preparation/runtime/CLI)",
+    "QUALIFIED": "YES (internal canonical ZIP/RECORD API)",
+    "ACCEPTANCE_CLOSED": "YES (named DATA API only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.618
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/artifact/pypi",
+        "-run",
+        "^TestConsoleExecution"
+      ],
+      "exit_code": 0,
+      "seconds": 3.02
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 309.386
+    },
+    {
+      "step": "pypi-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 11.74
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.4
+    }
+  ],
+  "test_scope": [
+    "canonical real in-memory ZIP/RECORD/parser; controlled fixture only, not public supply authentication",
+    "single/multi/explicit/different name/alias exact console selection",
+    "GUI/plugin/no callable/extras/unsafe/overlong commands refused",
+    "original archive digest/RECORD/project/version/source/variant/limits/missing metadata/nil reader refusal",
+    "different acquisition handle or another archive member invalidates matches; private getter isolation"
+  ],
+  "binding": "only canonical ReaderAt parser result builds private inventory; complete normalized inspection fingerprint and original acquired identity/handle; RECORD-bound entry_points.txt member digest/size and exact module/attr",
+  "not_authority": [
+    "current whole approval",
+    "Python runtime/interpreter admission",
+    "module/callable code executed or safe",
+    "installation/Host writes or output promotion"
+  ],
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p6-a1-v1-source-identity.json",
+    "focused": "docs/github-logs/package-client-quarantine-20261021/p6-a1-v1-focused.log",
+    "quick": "docs/github-logs/package-client-quarantine-20261021/p6-a1-v1-quick.log",
+    "whole_PyPI_Race": "docs/github-logs/package-client-quarantine-20261021/p6-a1-v1-pypi-race.log"
+  },
+  "active_hosted": "CI429 source9eb/1343 excludes this source; no new push",
+  "MISSING": [
+    "controlled actual intake byte-reader/composition using this DATA API",
+    "native UVx selector equivalence or distinct safe native selection",
+    "current Python whole inspection/preparation/readonly layout/user runtime and CLI",
+    "whole P5/P6/P7/final profiles/signed qualification"
+  ]
+}
