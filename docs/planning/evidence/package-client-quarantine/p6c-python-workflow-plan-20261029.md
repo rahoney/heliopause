@@ -66,3 +66,12 @@ Manifest/SBOM·fresh current Evidence/readback·source/Host5/42/ZIP/Docker·help
 
 현재 단계의 완료 기준은 internal workflow3 named qualification이다. Native UVx/golden/
 aliases/CLI/final profiles/signed와 earlier fork-only/CPU/drop 원인은 이후에도 OPEN이다.
+
+## Named local 결과
+
+기존1365 불변/new3·현재1368의 canonical9/Quick323.823s/Bootstrap·Application 전체 Race22.892s가 PASS다.
+Actual public3/95.89s(operator98.513s)는 fresh current ALLOW 뒤 normal0/typed guest2와 missing-console
+PREPARATION_FAILED/no attempt/no staging change를 확인했다. Native selector는 uv-tool-install이며
+UVx equivalence가 아니다. Host5/42/ZIP/Docker/source 불변·helperwait0/전체 정리와 원본 readback을
+확인했다. Root85proc/ref0/errors0 뒤 완료 ELF 사본2개54905002B만 제거해 누적209/~7.12GiB다.
+다음은 기존 current CI step에 boundary8/hostile5/workflow3를 묶는 P6-C2 감사다.

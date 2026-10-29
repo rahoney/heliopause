@@ -15,15 +15,19 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: D2 named standard-library hostile5 local PASS81.36s/source1365/old1361 unchanged/CPP132; D1 same-input eight153.86s retained; CI432 source9198 all10SUCCESS. Cleanup207/~7.07GiB; raw fork-only cause remains UNCONFIRMED.
-Next action: add only private Python concrete ExecutionRuntime/factory using existing generic workflow/current preparation/binder/backend; caller-cause/no-I/O regression and public cowsay normal0/nonzero2/missing-console3 actual; keep uv-tool-install identity honest. No new CLI alias/Core branch/CPP grants; grouped workflow checkpoint after local qualification.
-Current substep: M13-004/P6-C current Python application runtime adapter IN_PROGRESS; baseline516d/runtime1365/source-new3 expected1368 exact map/second review before source. D2 named local5 COMPLETE, CI432 source9198 named hosted QUALIFIED; native/golden/aliases/CLI/final and fork-only/CPU/drop causes OPEN.
+Last completed substep: P6-C named current Python application public3 PASS95.89s/runtime1368/old1365 unchanged/CPP132; D1 eight and D2 five local qualified. Cleanup209/~7.12GiB; CI432 source9198 all10SUCCESS.
+Next action: audit existing ci-uv-tools closed profiles/current workflow step/checker/guards; add only missing boundary8/hostile5/workflow3 wiring, keep existing consumers/120min/permissions/jobs unchanged; qualify locally then meaningful grouped push and actual20min monitoring.
+Current substep: M13-004/P6-C named local COMPLETE; P6-C2 existing current cohort hosted wiring baseline next, before source. No active CI/timer; native/golden/aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P6-C current Python application workflow named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6c-python-workflow-local-20261029.json)는 기존1365 불변/new3·현재1368의 canonical9/Quick323.823s/전체 Bootstrap·Application Race22.892s와 actual public3/95.89s를 연결한다. Fresh current ALLOW 뒤 normal0/typed guest2는 complete이고 missing console은 PREPARATION_FAILED/no runtime/no staging change다. Selector는 uv-tool-install 그대로다. Host/source/42/ZIP/Docker·helperwait0/전체 정리, root85proc/ref0/errors0 뒤 완료 사본2개54905002B 제거를 확인했다. 누적209/~7.12GiB Linux 논리 용량이며 원본은 보존한다. 다음 기존 current CI cohort에 boundary8/hostile5/workflow3를 연결하기 전 P6-C2 baseline을 감사한다. Native UVx/golden/aliases/CLI/final과 prior fork-only/CPU/drop 원인은 OPEN이다.
 
 ### 2026-10-29 P6-C current Python application runtime 착수
 
