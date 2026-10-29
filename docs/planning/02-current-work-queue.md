@@ -15,15 +15,33 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-B1 named local readonly Python inputs4/73.90s and same-source existing pipx consumer39.40s; canonical10 PASS; first cancel corrected; earlier pipx CPU guard failure retained/unresolved; metadata checks/commit pending
-Next action: CI430 poll02 at04:56:05UTC confirms8SUCCESS/Linux running; timer03/session81287 due05:16:05UTC/KST14:16:05; no push. Completed8/source logs reused; P6-B1 v2 actual current readonly inputs and existing pipx consumer running.
-Current substep: M13-004/P6-B1 final source/receipt checks IN_PROGRESS; source1355/modified2/new4; current consumers separately qualified; CI430 frozen/timer03 due05:16:05UTC
+Last completed substep: P6-B1 local commit14487b8/source1355/canonical10+final docs/security PASS; completed-test cleanup173 files/6.199GiB Linux /tmp reclaimed with85proc/query errors0/references0 and latest baselines preserved
+Next action: CI430 completed FAILURE/8SUCCESS+Linux/Required FAILURE; all10 original logs966355B/whole-tree checked/timer03 retired. Completed test cleanup173 files6.199GiB done; audit Go resolver DROPPED_COUNT producer/guard and continue meaningful next grouped source; no blind rerun.
+Current substep: M13-004/CI430 existing Go transitive CLI STREAM_FAULT/DROPPED_COUNT failure diagnosis IN_PROGRESS; wholeCI failure recorded; new C7/Python preparation hosted step not reached; current B1 remains named local only
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI430 관찰 손실 실패 확인
+
+[Failure record](./evidence/package-client-quarantine/ci430-observation-loss-failure-20261029.json)는 source3c85/
+tree82c9/all10 checkouta84ae·decoded966355B readback와8SUCCESS/Linux+Required FAILURE를
+연결한다. Linux56PASS/1FAIL/noSKIP의 첫 실패는 기존 grpc1.76.0 transitive Go CLI resolver의
+STREAM_FAULT/DROPPED_COUNT다. 관찰 손실을 거부한 guard를 유지하며 손실 발생 조건은 미확정이다.
+Helper9wait0/최종 original1·정리/복원을 확인했다. 후속 Node/current C7/Python·kernel 단계는
+SKIPPED이며 통과로 쓰지 않는다. Timer03 실제 발화 뒤05:16:30UTC 결과를 소비·종료했다.
+B1/source14487/1355와 whole final은 이 source 밖이며 동일 입력 blind rerun 없이 진단을 계속한다.
+
+### 2026-10-29 완료 시험 산출물 정리
+
+[Cleanup receipt](./evidence/package-client-quarantine/completed-test-artifact-cleanup-20261029.json)는
+보존된 identity와 일치하는 완료 ELF 사본173개6.199GiB를 제거했다. Root85proc의 cwd/exe/FD/
+maps/mount/argv 참조0·query errors0와 exact inode/owner/single-link/hash를 확인했고 최신
+B1/A3 기준·CPP·고정 공급·source/raw logs/cache/SDK/Git을 보존했다. Linux /tmp 파일시스템의
+공간 회수이며 C: 물리 여유 증가나 VHD 축소로 전용하지 않는다. 사용자 요청대로 작업을 계속한다.
 
 ### 2026-10-29 CI429 grouped Node/CLI hosted 완료
 
