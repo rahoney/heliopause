@@ -816,8 +816,51 @@ bool HasExactPNPMQueryCreator(const gvisor::common::ContextData& context,
 // This grammar is the pinned UV's launcher, not arbitrary Python code. The
 // module producer is the authenticated UV in a private, no-build namespace;
 // neither these random names nor a diagnostic hash authenticate code on their own.
+constexpr char kUVExportedCacheRoot[] = "/haa-site/uv-run-cache";
+
+bool HasUVExportedCacheTopology(const TopologyState* topology, const std::string& path) {
+  if (topology == nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id == 0 ||
+      !IsAtOrBelowMountpoint(path, kUVExportedCacheRoot)) return false;
+  size_t site_expected = 0, site_actual = 0, tmp_expected = 0, tmp_actual = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint == "/haa-site") {
+      if (mount.mount_class != "workspace" || mount.parent != "/" || mount.filesystem_type != "9p" || mount.read_only) return false;
+      site_expected++;
+    }
+    if (mount.mountpoint == "/tmp") {
+      if (mount.mount_class != "workspace" || mount.parent != "/" || mount.filesystem_type != "tmpfs" ||
+          mount.read_only || !mount.noexec || !mount.nosuid) return false;
+      tmp_expected++;
+    }
+  }
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == "/haa-site") {
+      if (mount.mount_class != "workspace") return false;
+      site_actual++;
+    } else if (mount.mountpoint == "/tmp") {
+      if (mount.mount_class != "workspace") return false;
+      tmp_actual++;
+    } else if (mount.mountpoint != "/" &&
+        (IsAtOrBelowMountpoint(path, mount.mountpoint) || IsAtOrBelowMountpoint(mount.mountpoint, kUVExportedCacheRoot))) return false;
+  }
+  return site_expected == 1 && site_actual == 1 && tmp_expected == 1 && tmp_actual == 1;
+}
+
 std::string UVToolQueryEnvironment(const std::string& execfn, const TopologyState* topology) {
   if (topology == nullptr) return "";
+  const std::string exported_prefix = std::string(kUVExportedCacheRoot) + "/archive-v0/";
+  if (execfn.compare(0, exported_prefix.size(), exported_prefix) == 0) {
+    constexpr size_t kIDBytes = 16;
+    if (execfn.size() != exported_prefix.size() + kIDBytes + 11 ||
+        execfn.compare(exported_prefix.size() + kIDBytes, 11, "/bin/python") != 0) return "";
+    for (size_t i = exported_prefix.size(); i < exported_prefix.size() + kIDBytes; ++i) {
+      const char c = execfn[i];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-')) return "";
+    }
+    const std::string environment = execfn.substr(0, exported_prefix.size() + kIDBytes);
+    return HasUVExportedCacheTopology(topology, environment) ? environment : "";
+  }
   if (execfn.compare(0, 5, "/tmp/") == 0) {
     // Fresh UV0.13.4 Cache::persist uses a tempfile root and secure ID16.
     // These names confer no identity without the pinned image/creator below.
@@ -873,6 +916,21 @@ bool IsExactUVPythonQueryProgram(const gvisor::sentry::ExecveInfo& message,
   const std::string prefix = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"";
   const std::string suffix = "\")] + sys.path; from python.get_interpreter_info import main; main()";
   const std::string& code = message.argv(4);
+  const std::string exported_prefix = std::string(kUVExportedCacheRoot) + "/.tmp";
+  const size_t exported_bytes = exported_prefix.size() + 6;
+  if (code.size() == prefix.size() + exported_bytes + suffix.size() &&
+      code.compare(0, prefix.size(), prefix) == 0 &&
+      code.compare(prefix.size() + exported_bytes, suffix.size(), suffix) == 0) {
+    const std::string root = code.substr(prefix.size(), exported_bytes);
+    if (root.compare(0, exported_prefix.size(), exported_prefix) != 0) return false;
+    for (size_t i = exported_prefix.size(); i < root.size(); ++i) {
+      const char c = root[i];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))) return false;
+    }
+    if (!HasUVExportedCacheTopology(topology, root)) return false;
+    if (helper_root != nullptr) *helper_root = root;
+    return true;
+  }
   constexpr size_t kRootBytes = 26;  // /tmp/.tmpXXXXXX/.tmpXXXXXX
   if (code.size() != prefix.size() + kRootBytes + suffix.size() ||
       code.compare(0, prefix.size(), prefix) != 0 ||
@@ -914,6 +972,10 @@ bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
       (!tool_alias && !IsPinnedReadOnlyRootPath(topology, message.execfn())) || !IsUVToolImage(topology, kUVToolPath)) return false;
   std::string root;
   if (!IsExactUVPythonQueryProgram(message, topology, &root)) return false;
+  const bool exported_helper = IsAtOrBelowMountpoint(root, kUVExportedCacheRoot);
+  const bool exported_environment = IsAtOrBelowMountpoint(environment, kUVExportedCacheRoot);
+  if ((exported_environment && !exported_helper) ||
+      (exported_helper && !environment.empty() && !exported_environment)) return false;
   if (environment.compare(0, 5, "/tmp/") == 0) {
     for (const auto& entry : topology->anchors) {
       const auto& mount = entry.second;
@@ -4094,20 +4156,24 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   // A fresh cached query's package environment shares TMP with UV's private
   // query modules. Only the exact parsed module root and inert environment
   // directories/config remain readable; no package/startup body or TMP write.
+  const bool exported_query = IsAtOrBelowMountpoint(tracked->uv_python_query_helper_root, kUVExportedCacheRoot);
   std::string cached_query_path;
   if (profile != nullptr && strcmp(profile, kProfileUVResolver) == 0 &&
       tracked->uv_python_query_restricted &&
-      tracked->uv_python_query_environment.compare(0, 5, "/tmp/") == 0 &&
+      (tracked->uv_python_query_environment.compare(0, 5, "/tmp/") == 0 || exported_query) &&
       ((anchor != nullptr && IsAtOrBelowMountpoint(anchor->mountpoint, "/tmp")) ||
        IsAtOrBelowMountpoint(path, "/tmp") ||
-       (NormalizeAbsolutePath(path, &cached_query_path) && IsAtOrBelowMountpoint(cached_query_path, "/tmp")))) {
+       (NormalizeAbsolutePath(path, &cached_query_path) && IsAtOrBelowMountpoint(cached_query_path, "/tmp")) ||
+       (exported_query && ((anchor != nullptr && IsAtOrBelowMountpoint(anchor->mountpoint, "/haa-site")) ||
+        IsAtOrBelowMountpoint(path, "/haa-site") ||
+        (NormalizeAbsolutePath(path, &cached_query_path) && IsAtOrBelowMountpoint(cached_query_path, "/haa-site")))))) {
     const std::string& env = tracked->uv_python_query_environment;
     const std::string& helper = tracked->uv_python_query_helper_root;
     const bool canonical = NormalizeAbsolutePath(path, &cached_query_path) && path == cached_query_path;
     const bool module = !helper.empty() && IsAtOrBelowMountpoint(path, helper);
-    const bool directory = path == env || path == env + "/lib" ||
-        path == env + "/lib/python3.14" || path == env + "/lib/python3.14/site-packages";
-    const bool config = path == env + "/pyvenv.cfg";
+    const bool directory = !env.empty() && (path == env || path == env + "/lib" ||
+        path == env + "/lib/python3.14" || path == env + "/lib/python3.14/site-packages");
+    const bool config = !env.empty() && path == env + "/pyvenv.cfg";
     const bool readonly_flags = message.flags() == 557056 || message.flags() == 622592;
     // Pinned CPython's opendir uses O_NONBLOCK in addition to directory/RO.
     // Bind only the four directories observed in the exact native query ABI.
@@ -4116,7 +4182,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     const bool allowed = tracked->uv_python_query_active &&
         tracked->current_image_class == ProcessClass::kPython &&
         HasExactUVQueryCreator(message.context_data(), *tracked, state) && canonical &&
-        anchor != nullptr && anchor->mountpoint == "/tmp" && anchor->mount_class == "workspace" &&
+        anchor != nullptr && anchor->mountpoint == (exported_query ? "/haa-site" : "/tmp") && anchor->mount_class == "workspace" &&
         !IsWriteCapableOpen(message.flags()) &&
         (((module || directory) && readonly_flags) ||
          (scanned_directory && message.flags() == 624640) ||

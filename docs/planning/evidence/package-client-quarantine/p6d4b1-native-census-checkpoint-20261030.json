@@ -256,5 +256,11 @@
       "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
     }
   ],
-  "next": "D4B2 baseline audit exact native query ABI for existing exportable private volume; no implementation rewrite, no general tar exec/observer bypass, no new CI for this failed diagnostic"
+  "next": "D4B2 baseline audit exact native query ABI for existing exportable private volume; no implementation rewrite, no general tar exec/observer bypass, no new CI for this failed diagnostic",
+  "followup": {
+    "receipt": "p6d4b2-exported-cache-query-local-20261030.json",
+    "alternative": "fixed exportable volume + exact query ABI/native84 DATA census named local qualified",
+    "unsupported_tmpfs_cp_route_still_rejected": true,
+    "native_selection_equivalence_still_open": true
+  }
 }

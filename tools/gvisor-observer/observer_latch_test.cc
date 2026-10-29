@@ -7716,8 +7716,10 @@ bool VerifyUVPythonQueryBoundary() {
   if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
   auto run = [&](const std::string& scenario) {
     DrainDatagram(output[1]);
-    const bool cached = scenario.compare(0, 6, "cache-") == 0;
-    const std::string variation = cached ? scenario.substr(6) : scenario;
+    const bool exported = scenario.compare(0, 7, "export-") == 0;
+    const bool base_query = exported && scenario == "export-canonical";
+    const bool cached = exported || scenario.compare(0, 6, "cache-") == 0;
+    const std::string variation = exported ? scenario.substr(7) : (cached ? scenario.substr(6) : scenario);
     ProcessState state;
     gvisor::common::ContextData parent;
     parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
@@ -7758,12 +7760,17 @@ bool VerifyUVPythonQueryBoundary() {
     if (variation == "tool-case") image.set_execfn("/haa-site/tools/Cowsay/bin/python");
     if (variation == "tool-other-alias") image.set_execfn("/haa-site/tools/cowsay/bin/python3");
     if (variation == "tool-underscore") image.set_execfn("/haa-site/tools/cow_say/bin/python");
-    const std::string cache_env = variation == "id-alphabet" ?
+    const std::string cache_root = exported ? "/haa-site/uv-run-cache" : "/tmp/.tmpzw5M7c";
+    const std::string cache_env = exported ? cache_root + "/archive-v0/" +
+        (variation == "id-alphabet" ? "_-0123456789abcd" : "aCTj1Rn4JBKu2JYF") : (variation == "id-alphabet" ?
         "/tmp/.tmpA1b2C3/archive-v0/_-0123456789abcd" :
-        "/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYF";
-    const std::string helper_root = variation == "helper-other" ?
-        "/tmp/.tmpQ1w2E3/.tmpA1s2D3" : "/tmp/.tmp3l9KcP/.tmpADARLv";
-    if (cached) image.set_execfn(cache_env + "/bin/python");
+        "/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYF");
+    const std::string helper_root = exported ?
+        (variation == "helper-other" ? "/haa-site/other-cache/.tmpA1s2D3" :
+         (variation == "helper-short" ? "/haa-site/uv-run-cache/.tmpA1s2D" :
+          (variation == "helper-punct" ? "/haa-site/uv-run-cache/.tmpA1s2D_" : "/haa-site/uv-run-cache/.tmpA1s2D3"))) : (variation == "helper-other" ?
+        "/tmp/.tmpQ1w2E3/.tmpA1s2D3" : "/tmp/.tmp3l9KcP/.tmpADARLv");
+    if (cached && !base_query) image.set_execfn(cache_env + "/bin/python");
     if (cached && variation == "tmp-length") image.set_execfn("/tmp/.tmpzw5M7/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
     if (cached && variation == "tmp-punct") image.set_execfn("/tmp/.tmpzw5M7_/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
     if (cached && variation == "bucket") image.set_execfn("/tmp/.tmpzw5M7c/archive-v1/aCTj1Rn4JBKu2JYF/bin/python");
@@ -7776,18 +7783,24 @@ bool VerifyUVPythonQueryBoundary() {
     image.add_argv(image.execfn()); image.add_argv("-I"); image.add_argv("-B"); image.add_argv("-c");
     const std::string launcher = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()";
     image.add_argv(launcher);
-    if (cached && variation == "helper-other") {
+    if (exported || (cached && variation == "helper-other")) {
       auto code = launcher;
       code.replace(code.find("/tmp/.tmp3l9KcP/.tmpADARLv"), 26, helper_root);
       image.set_argv(4, code);
     }
-    if (cached && variation == "cache-shadow") topology.anchors.emplace(7, MountAnchor{7, "/tmp/.tmpzw5M7c", "workspace"});
+    if (cached && variation == "cache-shadow") topology.anchors.emplace(7, MountAnchor{7, cache_root, "workspace"});
     if (cached && variation == "lib-shadow") topology.anchors.emplace(7, MountAnchor{7, cache_env + "/lib", "workspace"});
     if (cached && variation == "helper-shadow") topology.anchors.emplace(7, MountAnchor{7, helper_root + "/python", "workspace"});
     if (cached && variation == "tmp-nosuid") topology.expected[1].nosuid = false;
     if (cached && variation == "tmp-readonly") topology.expected[1].read_only = true;
     if (cached && variation == "tmp-duplicate") topology.anchors.emplace(7, MountAnchor{7, "/tmp", "workspace"});
     if (cached && variation == "tmp-class") topology.anchors[2].mount_class = "system";
+    if (exported && variation == "output-missing") topology.anchors.erase(6);
+    if (exported && variation == "output-kind") topology.expected[3].filesystem_type = "tmpfs";
+    if (exported && variation == "output-readonly") topology.expected[3].read_only = true;
+    if (exported && variation == "output-duplicate") topology.anchors.emplace(7, MountAnchor{7, "/haa-site", "workspace"});
+    if (exported && variation == "output-class") topology.anchors[6].mount_class = "system";
+    if (exported && variation == "cache-root") image.set_execfn("/haa-site/uv-run-cache-other/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
     if (variation == "binary") image.set_binary_path("/tmp/python3.14");
     if (variation == "execfn") image.set_execfn("/usr/local/bin/python3");
     if (variation == "argv0") image.set_argv(0, "python");
@@ -7825,7 +7838,7 @@ bool VerifyUVPythonQueryBoundary() {
     if (variation == "writable-root") topology.expected[0].read_only = false;
     if (variation == "image-shadow") topology.anchors.emplace(4, MountAnchor{4, "/usr/local", "workspace"});
     if (variation == "runtime-shadow") topology.anchors.emplace(4, MountAnchor{4, "/haa-runtime/uv", "helper"});
-    if (variation == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, "/tmp/.tmp3l9KcP", "workspace"});
+    if (variation == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, exported ? helper_root : "/tmp/.tmp3l9KcP", "workspace"});
     if (variation == "tmp-bind") topology.expected[1].filesystem_type = "9p";
     if (variation == "tmp-exec") topology.expected[1].noexec = false;
     if (variation == "missing-tmp") topology.anchors.erase(2);
@@ -7843,7 +7856,7 @@ bool VerifyUVPythonQueryBoundary() {
     const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
         payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
     const bool normal = variation == "normal" || variation == "canonical" || variation == "tool-normal" ||
-        (cached && (variation == "id-alphabet" || variation == "helper-other"));
+        (cached && (variation == "id-alphabet" || (!exported && variation == "helper-other")));
     if (normal && (!parsed || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected"))) return false;
     if (!normal) DrainDatagram(output[1]);
     if (state.groups[100].uv_python_query_active != normal) return false;
@@ -7861,8 +7874,12 @@ bool VerifyUVPythonQueryBoundary() {
     if (readable() != normal) return false;
     if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
     if (!normal) return true;
+    const MountAnchor cache_anchor{exported ? 6u : 2u, exported ? "/haa-site" : "/tmp", "workspace"};
     if (cached) {
-      const MountAnchor tmp{2, "/tmp", "workspace"};
+      const MountAnchor tmp = cache_anchor;
+      auto expected_cache_read = [&](const std::string& path) {
+        return base_query && !IsAtOrBelowMountpoint(path, helper_root) ? FilesystemClass::kOutside : FilesystemClass::kHelperOnly;
+      };
       auto check = [&](const std::string& path, uint64_t flags, FilesystemClass expected) {
         auto candidate = open; candidate.set_pathname(path); candidate.set_flags(flags);
         return ClassifyFilesystemOpen(candidate, state, profile, &tmp) == expected;
@@ -7870,14 +7887,14 @@ bool VerifyUVPythonQueryBoundary() {
       for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/__init__.py",
           helper_root + "/python/get_interpreter_info.py", cache_env, cache_env + "/lib",
           cache_env + "/lib/python3.14", cache_env + "/lib/python3.14/site-packages"}) {
-        if (!check(path, 557056, FilesystemClass::kHelperOnly) ||
-            !check(path, 622592, FilesystemClass::kHelperOnly)) return false;
+        if (!check(path, 557056, expected_cache_read(path)) ||
+            !check(path, 622592, expected_cache_read(path))) return false;
       }
-      if (!check(cache_env + "/pyvenv.cfg", 557056, FilesystemClass::kHelperOnly)) return false;
-      if (!check(cache_env + "/pyvenv.cfg", kOpenLargefile, FilesystemClass::kHelperOnly)) return false;
+      if (!check(cache_env + "/pyvenv.cfg", 557056, expected_cache_read(cache_env + "/pyvenv.cfg"))) return false;
+      if (!check(cache_env + "/pyvenv.cfg", kOpenLargefile, expected_cache_read(cache_env + "/pyvenv.cfg"))) return false;
       for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/packaging",
           cache_env + "/lib/python3.14/site-packages"}) {
-        if (!check(path, 624640, FilesystemClass::kHelperOnly)) return false;
+        if (!check(path, 624640, expected_cache_read(path))) return false;
       }
       for (const std::string& path : {helper_root + "/python/__init__.py",
           helper_root + "/python/get_interpreter_info.py", helper_root + "/python/packaging/__init__.py",
@@ -7924,7 +7941,7 @@ bool VerifyUVPythonQueryBoundary() {
         }
       }
       auto candidate = open; candidate.set_pathname(cache_env + "/pyvenv.cfg"); candidate.set_flags(557056);
-      for (const auto& wrong : {MountAnchor{4, "/tmp", "system"}, MountAnchor{4, cache_env, "workspace"}, MountAnchor{1, "/", "oci-root"}}) {
+      for (const auto& wrong : {MountAnchor{4, exported ? "/haa-site" : "/tmp", "system"}, MountAnchor{4, cache_env, "workspace"}, MountAnchor{1, "/", "oci-root"}}) {
         if (ClassifyFilesystemOpen(candidate, state, profile, &wrong) != FilesystemClass::kOutside) return false;
       }
       const auto accepted_query = state;
@@ -8088,7 +8105,7 @@ bool VerifyUVPythonQueryBoundary() {
         !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable()) return false;
     if (cached) {
       open.set_pathname(helper_root + "/python/__init__.py");
-      MountAnchor tmp{2, "/tmp", "workspace"};
+      MountAnchor tmp = cache_anchor;
       if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
       auto read_mode = open;
       read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
@@ -8102,7 +8119,7 @@ bool VerifyUVPythonQueryBoundary() {
         !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable() || IsTrustedControlNetwork(*child, state)) return false;
     if (cached) {
       open.set_pathname(cache_env + "/pyvenv.cfg");
-      MountAnchor tmp{2, "/tmp", "workspace"};
+      MountAnchor tmp = cache_anchor;
       if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
       auto read_mode = open;
       read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
@@ -8133,7 +8150,8 @@ bool VerifyUVPythonQueryBoundary() {
       "cache-parent-expected-class", "cache-parent-network", "cache-parent-eligible", "cache-parent-unconsumed", "cache-parent-pending", "cache-parent-clone",
       "cache-oci-origin", "cache-wrong-parent", "cache-direct-root", "cache-artifact-child", "cache-missing-clone", "cache-child-network",
       "cache-child-pending", "cache-unsealed", "cache-missing-snapshot", "cache-writable-root", "cache-image-shadow", "cache-runtime-shadow",
-      "cache-query-shadow", "cache-tmp-bind", "cache-tmp-exec", "cache-missing-tmp", "cache-no-topology", "cache-other-profile"}) {
+      "cache-query-shadow", "cache-tmp-bind", "cache-tmp-exec", "cache-missing-tmp", "cache-no-topology", "cache-other-profile",
+      "export-normal", "export-id-alphabet", "export-helper-other", "export-tmp-length", "export-tmp-punct", "export-bucket", "export-id-short", "export-id-long", "export-id-dot", "export-alias", "export-path-traversal", "export-double-slash", "export-cache-shadow", "export-lib-shadow", "export-helper-shadow", "export-tmp-nosuid", "export-tmp-readonly", "export-tmp-duplicate", "export-tmp-class", "export-profile-cpu", "export-profile-cu126", "export-profile-cu130", "export-profile-cu132", "export-binary", "export-execfn", "export-argv0", "export-no-isolation", "export-bytecode", "export-module", "export-arbitrary-code", "export-extra-code", "export-embedded-nul", "export-traversal", "export-escaped-path", "export-wrong-module", "export-extra-arg", "export-short-argv", "export-parent-class", "export-parent-role", "export-parent-start", "export-parent-expected", "export-parent-generation", "export-parent-expected-class", "export-parent-network", "export-parent-eligible", "export-parent-unconsumed", "export-parent-pending", "export-parent-clone", "export-oci-origin", "export-wrong-parent", "export-direct-root", "export-artifact-child", "export-missing-clone", "export-child-network", "export-child-pending", "export-unsealed", "export-missing-snapshot", "export-writable-root", "export-image-shadow", "export-runtime-shadow", "export-query-shadow", "export-tmp-bind", "export-tmp-exec", "export-missing-tmp", "export-no-topology", "export-other-profile", "export-canonical", "export-output-missing", "export-output-kind", "export-output-readonly", "export-output-duplicate", "export-output-class", "export-cache-root", "export-helper-short", "export-helper-punct"}) {
     const bool result = run(scenario);
     if (!result) fprintf(stderr, "UV query boundary failed: %s\n", scenario);
     passed = result && passed;
