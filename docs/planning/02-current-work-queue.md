@@ -15,15 +15,40 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: C5 npx/npm exec actual CLI4 local qualified113.529s; local6521e76/current1343; preceding CI428 source558 all10SUCCESS/timer retired
-Next action: final docs/security and meaningful C6 commit; normal milestone push of local C3d/C4/C5/C6; register exact new CI run/source immediately and20min timer. CI428 is completed/retired.
-Current substep: M13-004/P5-C6 hosted wiring local qualified; canonical3/Bash/guard24+primary6; final metadata/local commit then authorized grouped push/run/timer; Go/CPP1343 unchanged; remote/final OPEN
+Last completed substep: C7 post-Policy CLI refusal2 local qualified33.886s/canonical6; existing1343 unchanged; CI429 source9eb excludes new extra test
+Next action: CI429/source9eb854f/tree51a9a25c/2996·1343 started01:57:02UTC; initial9running; actual20min timer01 due02:17:02UTC/KST11:17:02/session84875. Consume timer/fresh status; preserve active run/no push; independent bounded P5 acceptance/P6 owner baseline next.
+Current substep: M13-004/P5-C7 named local refusal acceptance complete; final metadata/local commit then bounded P5 acceptance/P6 owner audit; CI429 active source fixed/timer01 due02:17:02UTC; no push
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: grouped hosted current runtime/workflow/CLI wiring and qualification; whole P5/final support4profiles/signed/P6/P7 open
+Independent local next: bounded P5 acceptance and P6 existing owner/input audit; C7 refusal2 locally qualified; active CI429 preserved and final support matrix OPEN
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C7 real post-Policy CLI refusal local 완료
+
+[Receipt](./evidence/package-client-quarantine/p5c7-cli-refusal-local-20261029.json)는 existing1343 불변/test-only1의
+canonical6와 actual refusal2/33.886s를 연결한다. 실제 public TypeScript의 fresh Evidence2/
+원본 SHA/current Policy ALLOW 뒤 ambiguous/missing bin을 거부하고 준비·실행·exit·출력·
+manifest 부재를 확인했다. Production/CPP/권한·예산은 그대로이며 Host/source/42/ZIP/Docker
+보존과 helperwait0/resources/endpoints0다. 새 테스트는 CI429 source9eb에 없고 active run을
+취소하지 않는다. Next는 local commit 뒤 bounded acceptance/P6 owner baseline이다.
+
+### 2026-10-29 C7 post-Policy CLI refusal 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c7-cli-refusal-plan-20261029.md)는
+기존 entry 선택 거부/actual검사/CLI를 유지하고 real Policy ALLOW 뒤 ambiguous/missing bin의
+보관·실행 NOT_STARTED 두 actual gap을 새 test parent 하나로 검증한다. Production/CPP/권한·
+예산은 유지하며 fake approval/target/result는 없다. CI429 source9eb854f와 timer01
+due02:17:02UTC/session84875를 보존하고 새 push하지 않는다.
+
+### 2026-10-29 current grouped CI429 등록
+
+[등록](./evidence/package-client-quarantine/ci429-registration-20261029.json)은 검증된9eb854f/tree51a9a25c/2996·1343의 normal FF push와 remote ref를 확인했다.
+CI429/run40803448693은01:57:02UTC 시작/initial9running이며 준비·kernel과 current
+boundary12/workflow2/CLI4를 포함한다. 실제20min timer01/session84875는
+02:17:02UTC(한국11:17:02)가 due다. 새 hosted PASS로 표시하지 않고 실행 중 push를
+보류한다. 같은 M13-004의 독립 P5 bounded acceptance/P6 owner baseline을 계속한다.
 
 ### 2026-10-29 C6 hosted wiring local 완료
 
