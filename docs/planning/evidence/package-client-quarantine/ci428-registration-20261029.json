@@ -7,7 +7,7 @@
   "tracked_files": 2969,
   "source_inputs": 1330,
   "run_started_at": "2026-10-28T23:57:29Z",
-  "last_actual_query_at": "2026-10-29T00:39:39Z",
+  "last_actual_query_at": "2026-10-29T01:02:15Z",
   "status": "in_progress",
   "conclusion": null,
   "jobs": [
@@ -66,9 +66,9 @@
       "conclusion": "success"
     }
   ],
-  "timer_session": 51588,
-  "next_due_at": "2026-10-29T00:59:39Z",
-  "completed20min_polls": 2,
+  "timer_session": 34757,
+  "next_due_at": "2026-10-29T01:22:15Z",
+  "completed20min_polls": 3,
   "scope": "qualified normal/nonzero Artifact Node backend with current readonly whole flow/CPP131 and prior common consumers; new actual hostile/cancel/overflow/child/CLI/final not included",
   "authorization": "user-authorized important CI and normal milestone push during sleep; direct timer status checks every20min",
   "recent_observed_elapsed_to_final_update_seconds": [

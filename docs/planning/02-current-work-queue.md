@@ -15,15 +15,33 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3d1 actual6 cases local qualified/commit a6e7ee6 (not pushed);1332inputs/existing1330 CPP unchanged; actual92.871s/literal argv/kernel TERM-KILL/body cancel/independent1MiB overflow/whole cleanup PASS; CI428 excludes it
-Next action: CI428/source558d75a/treef5e4d9f9/2969·1330 poll02 at00:39:39UTC:8SUCCESS including macOS/Linux running; actual20min timer03 due00:59:39UTC/KST09:59:39/session51588. Preserve active run/no new push; consume timer/fresh status. C3d1 local commit a6e7ee6 retained (no push); current C3d2 ten-case hostile actual qualification continues; application/CLI/final OPEN.
-Current substep: M13-004/P5-C3d2 current same-source10 locally qualified154.558s incl child ARTIFACT role and complete cleanup; final docs/local commit next, then C3d3 deadline/readonly self-write baseline; CI428/source558d75a frozen; public application/CLI/final OPEN
+Last completed substep: P5-C3d3 same-source12 local qualified202.496s/actual caller DeadlineExceeded and readonly self-write denial; production/CPP unchanged; child held-pipe unproven
+Next action: CI428 poll03 at01:02:15UTC:8SUCCESS/Linux running; timer04 due01:22:15UTC/KST10:22:15/session34757; preserve active source/no push. Local C3d3 commit then application/CLI owner audit.
+Current substep: M13-004/P5-C3d3 local12 qualified; final metadata checks/local commit then application/CLI baseline; CI428/source558d75a frozen; final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P5-C3d actual cancellation/overflow/child lifecycle and hostile boundaries; then application/CLI; final support/profile matrix open
+Independent local next: P5 application/composition and safe output/CLI; controlled runtime boundary12 qualified; public end-to-end/final support matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C3d3 same-source12 actual local 완료
+
+[Local receipt](./evidence/package-client-quarantine/p5c3d3-node-deadline-readonly-local-20261029.json)는 actual202.496s/12cases와
+canonical/tagged6checks를 연결한다. Caller30s deadline은 body ready 뒤 원래 cause/incomplete,
+readonly self-write는 kernel 거부를 처리한 program0과 원본 전체 bytes 보존이다. 기존10과
+source/Host/42/ZIP/Docker 보존·helperwait0/resources/endpoints0/noSKIP도 PASS다.
+Production/CPP/권한·예산은 그대로이며 public application/CLI/final은 다음이다. CI428은
+01:02:15UTC 8SUCCESS/Linux 진행이고 timer04 due01:22:15UTC/session34757로 유지한다.
+
+### 2026-10-29 C3d3 actual deadline/readonly self-write 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c3d3-node-deadline-readonly-plan-20261029.md)는
+local951f73e/기존1332의 current runtime/검사/Policy를 재사용하고 actual ordinary caller
+WithTimeout 뒤 body DeadlineExceeded와 readonly 자기 파일 쓰기 거부 두 gap만 추가한다.
+기존10까지 same-source12cases로 검증하며 production/CPP/45s/stream1MiB/caller4min은
+유지한다. 쓰기 거부를 처리한 program completion과 파일 쓰기 성공을 구분한다. CI428은
+source558d75a/timer03 due00:59:39UTC로 유지하고 새 push하지 않는다.
 
 ### 2026-10-29 C3d2 current10 hostile actual local 완료
 

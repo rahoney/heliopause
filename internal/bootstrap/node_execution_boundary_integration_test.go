@@ -52,7 +52,7 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 		}
 	}()
 	var previous string
-	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof"} {
+	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof", "readonly", "deadline"} {
 		if !t.Run(mode, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
@@ -60,6 +60,11 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 			}
 			run, cancel := context.WithCancelCause(ctx)
 			defer cancel(nil)
+			if mode == "deadline" {
+				var finish context.CancelFunc
+				run, finish = context.WithTimeout(ctx, 30*time.Second)
+				defer finish()
+			}
 			cause := errors.New("controlled Node caller cancellation")
 			runner := &nodeBoundaryCapture{Executor: executor}
 			if mode == "cancel" {
@@ -103,6 +108,15 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 				code, exited := result.ExitCode()
 				if executeErr != nil || !result.Complete() || !exited || code != 0 || json.Unmarshal(result.Stdout(), &actual) != nil || !slices.Equal(actual, literals) || len(result.Stderr()) != 0 {
 					t.Fatal("literal argv boundary incomplete", executeErr)
+				}
+			case "readonly":
+				code, exited := result.ExitCode()
+				if executeErr != nil || !result.Complete() || !exited || code != 0 || string(result.Stdout()) != "readonly-denied\n" || len(result.Stderr()) != 0 {
+					t.Fatal("readonly self-write was not denied with whole source retained", executeErr)
+				}
+			case "deadline":
+				if result.Complete() || !errors.Is(executeErr, context.DeadlineExceeded) || errors.As(executeErr, &program) || !bytes.HasPrefix(result.Stdout(), []byte("ready\n")) {
+					t.Fatal("actual caller deadline lost body readiness/cause or became complete", executeErr)
 				}
 			case "term", "kill":
 				want := uint8(15)
