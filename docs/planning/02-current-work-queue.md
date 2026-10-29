@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: B2-C local qualified source9198a57/tree98eccd3e/3046·1361 normal FF pushed0d96→9198; actual CI432/run40846289893 confirmed09:00:39UTC. New shared/CPP132/Python2 hosted pending; cleanup191/~6.66GiB preserved.
-Next action: read actual20min monitor /tmp/haa-ci432-autopoll/state.json (session91578/PID2946324), first due09:20:39UTC/KST18:20:39; preserve originals/result and no new push while active. Independently baseline/exact-map current Python hostile-boundary actual gap; native UVx/application adapter/CLI/final and CPU cause remain OPEN.
-Current substep: M13-004/P6-B2-C hosted qualification IN_PROGRESS; CI432/source9198 frozen. Local1361/CPP132/initial Python2 qualified; next independent same-item Python hostile-boundary audit; no whole runtime/final completion claim.
+Next action: implement D1 controlled raw-wheel/current real inspection+Policy fixture and actual argv/37/TERM/KILL/cancel/independent overflows/deadline8, keeping existing1361/CPP132 bytes unchanged. Read CI432 auto state (next09:40:39.996251UTC/KST18:40:39) and consume originals; no push while active. D2 hostile/native/adapter/CLI/final/CPU cause remain OPEN.
+Current substep: M13-004/P6-B2-D1 current Python actual boundary8 IN_PROGRESS; source1361 baseline/exact test-only2 map/second review before source. CI432/source9198 frozen/PENDING, actual20min monitor91578 continues; no new push.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D1 current Python 실제 boundary 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b2d1-python-boundary-plan-20261029.md)는 이미 구현한
+backend/CPP132를 그대로 소비하고 controlled raw fixture/current actual inspection·Policy 뒤
+argv/exit37/두 신호/취소/두 overflow/real deadline8의 실제 missing 검증만 추가한다. Source 전
+1361을 고정하고 test-only2/예상1363을 기록했다. Native/public auth와 fake approval를 구분한다.
+CI432 poll01의8SUCCESS/원본444070B/all checkout5458/tree98ecc/CPP132를 확인했고 다음
+09:40:39UTC/KST18:40:39 감시를 유지한다. 새 source push·완료 선언 없이 같은 item으로 계속한다.
 
 ### 2026-10-29 grouped CI432 등록·실제20min 감시
 

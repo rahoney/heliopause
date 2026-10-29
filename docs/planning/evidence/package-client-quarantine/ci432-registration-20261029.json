@@ -86,5 +86,9 @@
   "estimate": "recent CI43199m03 plus initial selected Python2; about100-130min excluding queue is an estimate only; actual status checked every20min",
   "qualification": "PENDING; no new source push while active",
   "scope": "new shared Node capture/CPP132 and initial internal selected Python2 alongside existing current2/3/4 and ordinary common consumers; hostile Python/native UVx/aliases/application runtime adapter/CLI/final open",
-  "prior_failures": "first Python exact ABI corrected named local; first Pipx CPU authorization cause UNCONFIRMED, measured current pass kept separate"
+  "prior_failures": "first Python exact ABI corrected named local; first Pipx CPU authorization cause UNCONFIRMED, measured current pass kept separate",
+  "last_query_at": "2026-10-29T09:20:39.996234+00:00",
+  "next_due_at": "2026-10-29T09:40:39.996251+00:00",
+  "completed20min_polls": 1,
+  "last_jobs": "8SUCCESS/Linux running; actual automated public GET poll01 completed09:20:39.996234UTC"
 }
