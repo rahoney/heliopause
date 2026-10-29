@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: D1 named local source1363/old1361 unchanged/new test2; canonical composed7/Quick419.151s, actual8/191.36s/operator198.221s PASS; CPP132 unchanged; completed2 copies54849309B removed/root98proc/ref0/errors0; cumulative193/~6.71GiB.
-Next action: audit D2 exact existing fixture/Host/backend owner map and hostile filesystem/network/clone/comm-spoof/readonly actual gaps before source; no production rewrite. CI432 next2026-10-29T10:20:42.001000+00:00; preserve frozen9198, no push while active. Native/adapter/CLI/final/CPU cause remain OPEN.
-Current substep: M13-004/P6-B2-D1 named local COMPLETE; next D2 baseline before source. CI432/source9198 PENDING with actual20min monitor91578; new boundary tests are local only.
+Next action: implement D2 controlled hostile5 via existing raw wheel/current approval helpers, retain D1 original wheel bytes, add only bounded existing trace diagnostic to Python refusal; canonical checks/affected Race then same binary actual5+D1 actual8. CI432 next10:20:42UTC/KST19:20:42; no push while active.
+Current substep: M13-004/P6-B2-D2 hostile Python actual5 IN_PROGRESS; source1363 baseline/modified2-new2-expected1365 exact map and second review before source. D1 named local COMPLETE; CI432/source9198 frozen/PENDING; native/adapter/CLI/final/CPU cause OPEN.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D2 Python hostile 실제 경계 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b2d2-python-hostile-plan-20261029.md)는 현재1363/D1 actual8/CPP132를
+재사용하고 실제 outside/network/clone/comm-spoof/readonly5와 bounded existing trace 진단만
+missing으로 기록했다. 기존 D1 wheel bytes·판정과 M5/Pipx default·권한·한도를 보존한다.
+Python readonly write는 현재 restricted profile의 outside/incomplete로 검증하며 Node의 다른
+positive 판정을 전용하지 않는다. CI432 actual poll03/next10:20:42UTC 감시를 유지하고 새 push
+없이 같은 item의 canonical/affected Race와 실제5+기존8을 계속한다. Native/CLI/final은 OPEN이다.
 
 ### 2026-10-29 D1 current Python 실제 boundary8 named local 완료
 
