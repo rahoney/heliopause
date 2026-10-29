@@ -16,14 +16,45 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P5-C3c2b normal/nonzero Artifact Node backend local qualified; current1330/Go-v6 checks8/CPP131; actual69.401s/fresh2 exit0+1/whole cleanup; same helper8root9.678s and existing3consumers12.050s PASS; new hosted pending
-Next action: Freeze/review normal-nonzero Node foundation unit and current metadata; canonical docs/security then Korean intermediate commit/important grouped CI with20min actual timers. CI427 Required10SUCCESS fully reviewed and timer04 retired. Continue same M13-004 P5-C3d actual cancel/overflow/child/hostile runtime qualification; application/CLI/final OPEN.
-Current substep: M13-004/P5-C3d runtime failure/hostile actual qualification next; C3c2b normal/nonzero backend named local PASS/hosted pending; baseline/map before next source; public application/CLI/final OPEN
+Next action: CI428/source558d75a/treef5e4d9f9/2969·1330 poll01 at00:18:26UTC:8SUCCESS including macOS/Linux running; actual20min timer02 due00:38:26UTC/KST09:38:26/session57473. Preserve active run/no new push; consume timer/fresh status. Finish local C3d1 commit then C3d2 FS/network/child hostile baseline; application/CLI/final OPEN.
+Current substep: M13-004/P5-C3d1 six controlled fixture actual cases locally qualified92.871s; only test2 files added/production CPP unchanged; final docs and local commit next. Then C3d2 FS/network/child hostile baseline before source; CI428/source558d75a frozen; public application/CLI/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P5-C3d actual cancellation/overflow/child lifecycle and hostile boundaries; then application/CLI; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C3d1 selected Node 신호·취소·독립 overflow actual 완료
+
+[Local receipt](./evidence/package-client-quarantine/p5c3d1-node-boundary-local-20261029.json)의
+1332inputs/newtests2·기존1330/CPP 불변·canonical6checks와 actual92.871s/6fresh cases가 PASS다.
+실제 current verifier/static/dynamic/Evidence/Policy 뒤 literal argv·kernel TERM15/KILL9,
+body 준비 뒤 custom cause 취소/incomplete와 stream별1MiB overflow/incomplete·원래 cause를
+확인했다. Host/source/42/ZIP/Docker 보존·helperwait0/owned resources/endpoints0/noSKIP다.
+공급망/native solver는 controlled fixture/NOT_RUN이며 production/CPP/한도 변경은 없다.
+현재 CI428에는 이 test source가 없고 새 push 없이 한글 local commit을 보존한 뒤 같은
+M13-004 C3d2의 FS/network/child hostile baseline을 계속한다. CLI/final/wholeP5는 OPEN이다.
+
+### 2026-10-29 C3d1 actual Node failure 경계 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c3d1-node-boundary-qualification-plan-20261029.md)는
+source558d75a/1330의 기존 backend/Host capture/kernel/cleanup·실제 검사/Policy를 재사용하고
+selected Node TERM/KILL·중간 caller cause 취소·stdout/stderr overflow·literal argv의6fresh
+actual만 missing으로 잡았다. 두 Linux realcorpus test 파일만 추가하며 production/CPP/권한/
+예산/기존 parent는 유지한다. Local controlled registry fixture는 공급망/native solver 성공이
+아니며 actual current integrity/static/dynamic/Evidence·Policy와 runtime을 구분한다. CI428
+source와 timer는 그대로이며 새 push 없이 같은 단일 M13-004에서 계속한다.
+
+### 2026-10-29 승인된 Artifact Node foundation CI428 등록
+
+[CI428 등록](./evidence/package-client-quarantine/ci428-registration-20261029.json)은 normal/nonzero
+backend·CPP131/실제2requests·기존8roots/3consumers와 final docs/security를 확인한21경로의
+한글 commit558d75a/treef5e4d9f9/2969·1330입력을 기존 milestone branch에 정상 FF push한 결과다.
+Remote ref/source를 대조했고23:57:29UTC 시작 뒤 first20min timer01/session55237의 due는
+2026-10-29 00:17:29UTC(한국09:17:29)다. 초기 Docs SUCCESS/나머지 진행이며 whole hosted는
+PENDING이다. 실행 중 새 push로 취소하지 않는다. 같은 M13-004의 독립 C3d actual failure/
+악성 qualification을 baseline audit부터 이어가며 그 이후 source와 public CLI/final은 밖이다.
 
 ### 2026-10-29 실제 Artifact Node normal/nonzero backend local 완료
 
