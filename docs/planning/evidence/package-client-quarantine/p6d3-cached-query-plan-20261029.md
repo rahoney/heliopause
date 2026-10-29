@@ -150,3 +150,76 @@ ELF·새 active canonical build/shared cache/SDK/고정42/ZIP/Git은 유지했�
 ## V4 actual checkpoint와 남은7findings
 
 Fresh canonical315.655s/exit0/132·UV120과 동일 Go 입력의 canonical9 및 v3 affected sandbox Race22.668s가 PASS다. Native DATA parent4.66s/Go0은 expected /dev/null EACCES와 complete23events/2689B·정리를 확인했지만 outside7의 실제 대상/분류는 미확정이다. 이를 clean public Policy 성공으로 쓰지 않고 D3 acceptance는 OPEN으로 유지한다. 같은 후보의 canonical public Python2/73.35s는 fresh whole ALLOW·complete0/2와 정리가 PASS다. 모든 원본 보존 뒤 root83proc/ref0/errors0/정확한6zombie 검증으로 완료 사본4개85924576B를 제거했다. 다음 test-only observer 진단은 outside7의 actor/path/flags를 DATA로만 수집하며 승인/wire/권한을 바꾸지 않는다.
+
+
+## E1 outside7 DATA 귀속 진단 전 baseline·exact map·두 번째 검토
+
+Baseline9948b2a/tree9e5fdad8/3075tracked·runtime1370이며 CI434는 d81c444를 고정한다.
+단일 item M13-004/D3는 IN_PROGRESS이고7findings 귀속 전 acceptance는 OPEN이다.
+Read: 본 plan/checkpoint·native actual original/source binding/counts와 observer.cc의
+ClassifyFilesystemOpen→ParseOpenResultAndSend→FaultOpenDiagnostic/Send, collector.go의
+complete/KindCounts·FaultOpen fields, hosttool/observer.go의 startObserverProcess를 대조했다.
+기존 launcher의 child stderr는 연결되지 않았고 정상 Outside record는 경로를 노출하지 않는다.
+현재 protocol을 변경하거나 complete를 fault로 바꾸지 않고 테스트 전용 private 기록을 쓴다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Cached exact query/kernel role·TMP read bounds | YES | YES | PARTIAL (CPP132/native complete) | NO | outside7 귀속/positive 경계 |
+| 기존 FaultOpenDiagnostic의 kernel actor·mount·flags·locator DATA | YES | YES (fault diagnostics) | YES (기존 scope) | YES (기존) | 내용을 재사용 |
+| 정상 Outside7의 path/actor/flags 관측 | NO | NO | NO | NO | 현재 test-only bounded 수집 |
+| 기존 Python public2 | YES | YES | YES (73.35s) | YES (named old scope) | 수정하지 않음 |
+
+Private source 한 곳의 observer.cc만 진단 overlay한다. ProcessState에 private count32를 두고,
+기존 ParseOpenResultAndSend의 ClassifyFilesystemOpen 직후 UVprofile/Outside에 한해 기존
+FaultOpenDiagnostic JSON과 최대256byte pathname의 hex를 root-owned0755 전용 부모 아래
+ordinary-user-owned0600/single-link 실제 log file에 최대32회/회2048B로 추가한다. O_NOFOLLOW/
+O_CLOEXEC·fstat UID/regular/mode/nlink를 검사하고 파일을 생성하거나 path를 guest에서 받지 않는다.
+해당 file은 Host operator가 사전에 생성하고 dev/inode/bytes를 전후 검증한다. Guest/Artifact는
+Host path를 mount하지 않는다. 원래 Send/classification/return·trace/session·한도·wire는 그대로다.
+이 output은 controlled raw fixture의 private DATA이며 승인/Policy/일반 출력으로 내보내지 않는다.
+
+Go source/원래 Go ELF·Root production/고정 pins·Host5/42/ZIP/Docker를 보존한다. 성공한 현재
+canonical CPP315.655s/132 baseline은 그대로 두고 exact pinned source-preparation/Docker/Bazel
+명령의 supplemental diagnostic build를 만든다. 모든132 latch를 요구하되 production qualification으로
+전용하지 않는다. 전용 build cache는 이 조사 동안 재사용하고 완료 뒤에만 같은 root 참조 검사를
+통해 정리한다. 같은 native DATA probe에서 unchanged7Outside/complete와 private diagnostic7개가
+대응해야 실제 귀속으로 해석한다. 원본을 먼저 보존하며 추측으로 readonly/path/flags를 늘리지 않는다.
+
+
+## E1 실제 귀속과 E2 exact readonly ABI 전 감사
+
+E1 첫 진단은 fcntl.h/sys/stat.h 누락으로 compile 미도달/named0였고 source/log/receipt를
+동결했다. 헤더만 보완한 같은 고정 cache replay47.099s/132는 PASS다. V2 receipt started_at은
+잘못 붙인 완료 시각이며 exact start authority로 쓰지 않는다. Duration47.099s와 실제 실행
+로그·별도 recorded clock을 사용하고 원본을 편집하지 않는다. Native4.64s/Go0 complete23events/
+2689B·정규 Outside7과 private JSON7개가 정확히 대응했고 private file dev/inode/mode/nlink 및
+각 path hex↔FNV를 대조했다. FNV는 진단 DATA이며 admission identity가 아니다.7개 모두
+PYTHON/ARTIFACT/CLONE_CHILD/workspace였다. Exact env pyvenv.cfg의 flags32768이1개,
+flags624640의 exact site-packages dir3개와 bound helper root/python/packaging 각1개였다.
+Source/Host5/42/ZIP/Docker·helperwait0/전체 정리가 동일했다. 이는 test-only 귀속이며
+production clean/Policy/public native 성공은 아니다.
+
+E2 baseline은 Root9948b2a/source d81의 production observer f5d6881a·latch3fb5d565/runtime1370,
+CPP132/기존Python2가 보존된다. Read: E1 raw7 records/정규 trace/source binding·current cached
+block/기존 Pipx exact readonly32768·624640 경계/UV latch의 모든 creator mutations·clone/reexec를
+대조했다. 역할/grammar/topology/private root/taint와 기존 shared execution owner는 IMPLEMENTED/
+WIRED=YES이고 재구현하지 않는다. Exact cached cfg32768 및 네 dir624640은 IMPLEMENTED=NO,
+WIRED=NO, QUALIFIED=NO, ACCEPTANCE_CLOSED=NO이며 이 gap만 보완한다.
+
+먼저 private diagnostic source/ELF·실제 원본을 동결하고 private observer.cc를 Root f5d6881a로
+되돌려 test-only file I/O/headers/count를 전부 제거한다. 같은 기존 cached named latch에서
+pyvenv.cfg32768과 actual 네 directory624640 positive 및 file/다른 env·normalization·write/
+role/image/start/creator/pending·clone/reexec negatives를 추가해 source-only readonly ABI RED를
+고정된 retained cache에서 확인한다. 이후 cached block만 config의 32768 read와 exact helper
+root, helper/python, helper/python/packaging, env/site-packages의624640을 허용한다. 기존 flags와
+base/tool-home/다른 profiles는 그대로이며 module body/.pth/customization/metadata·다른TMP·쓰기
+권한을 추가하지 않는다. Actual ABI 밖의624640 dir나32768 module read를 일반 허용하지 않는다.
+
+같은 corrected latch SHA의 pinned RED→GREEN132 뒤 새 canonical release132·영향 sandbox
+Race/메타데이터와 native complete/Outside0·기존 public Python2를 요구한다. Controlled fixture의
+clean observation도 public startup/source binding/golden/aliases/CLI/final을 닫지 않는다. CI434는
+source d81에서 계속되며 첫14:41:47UTC actual GET을 소비하고 실행 중 새 push하지 않는다.
+
+## E2 named local 완료
+
+같은 latch SHA의 pinned RED49.763s/131·cached3 FAIL→GREEN47.254s/132와 fresh canonical276.430s/132·UV120, affected sandbox Race23.172s/현재 또는 정확한 입력 재사용 canonical9를 확인했다. Native4.56s는 complete16events/1842B·Outside/Network/Honeytoken/UnexpectedExec0과 원래 native2/EACCES·정리가 PASS다. 기존 canonical current public Python2/68.28s는 fresh whole ALLOW·complete0/2가 PASS다. Host/source/42/ZIP/Docker·원본을 보존하고 완료 E1/E2 ELF6개만 root 참조0/errors0 뒤 제거해 누적227개+전용cache6의 약10.51GiB 논리 용량이다. Active reusable build cache는 다음 native 조사에 재사용한다. Named D3만 닫으며 public native startup/source binding/golden/aliases/CLI/final은 OPEN이다. CI434는 old source d81이며 macOS build2m 실패의 원인은 미확정이고 Linux 진행·20분 실제 GET을 유지한다.

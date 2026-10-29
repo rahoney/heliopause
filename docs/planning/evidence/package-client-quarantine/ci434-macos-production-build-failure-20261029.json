@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004",
+  "run_id": 40890702427,
+  "run_number": 434,
+  "source": "d81c444a34afa385053ff139fbb44c276dee7153",
+  "whole_tree": "4497e3c7300a614c89fcd7f4e56a0ab8e2e22b77",
+  "actual_checkout": "2e20d2bb30411d15700650e26dbfc4d609910b01",
+  "job_id": 123506399992,
+  "job_conclusion": "failure",
+  "stage": "production build",
+  "stage_start": "2026-10-29T14:26:00.7031670Z",
+  "timeout_message_at": "2026-10-29T14:28:00.7943910Z",
+  "stage_wall_seconds": 120.091224,
+  "fixed_build_budget_seconds": 120,
+  "command_terminal": {
+    "available": true,
+    "exited": false,
+    "success": false,
+    "exit_code": -1,
+    "user_ms": 237232,
+    "system_ms": 83030
+  },
+  "default_tests": "NOT_REACHED",
+  "reason": "existing production build command timed out; exact underlying scheduler/compiler/cache/SDK cause UNCONFIRMED",
+  "not_attributed_to_current_CPP_or_D2_without_causal_evidence": true,
+  "previous_same_workflow_CI433": "macOS SUCCESS; source87c8 differs from d81",
+  "all8_completed_originals": "docs/github-logs/package-client-quarantine-20261021/ci434-completed8-log-inventory.json",
+  "log": "docs/github-logs/package-client-quarantine-20261021/ci434-job-123506399992.log",
+  "whole_run": "STILL_IN_PROGRESS/Linux and Required pending",
+  "next_actual20min_query": "2026-10-29T15:01:47.914056+00:00",
+  "action": "retain frozen run; do not cancel or repeat same hypothesis; continue independent local D3 exact ABI qualification; keep120s/coverage unchanged"
+}

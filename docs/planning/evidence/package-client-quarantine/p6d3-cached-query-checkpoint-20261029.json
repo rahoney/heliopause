@@ -268,7 +268,7 @@
     "QUALIFIED": "PARTIAL (CPP132/UV120 and complete native DATA trace plus old public Python2; native outside7 unclassified)",
     "ACCEPTANCE_CLOSED": "NO",
     "MISSING": [
-      "Attribute native DATA trace filesystem-outside-workspace7 before positive public native approval; no guessed grants",
+      "Qualify E2 exact readonly cfg32768/four dirs624640; same latch RED3→GREEN132 and Go checks PASS, fresh canonical/clean actual/old consumers pending",
       "Public native whole startup/source binding/golden/aliases/CLI and final support",
       "New grouped hosted qualification for later D1/D2/D3 source; CI433 source87c8 excludes them"
     ]
@@ -373,5 +373,21 @@
       "sha256": "ca510cb88676c11e7d3595ea7734720b04cdff8664c8c851d6dbe867a562ba02"
     }
   ],
-  "CI433": "source87c8 all10SUCCESS/checkout980e3509/tree238aa647/104parents; owned timer stopped/session143; no pending timer"
+  "CI433": "source87c8 all10SUCCESS/checkout980e3509/tree238aa647/104parents; owned timer stopped/session143; no pending timer",
+  "followup_E1": {
+    "raw_originals": "docs/github-logs/package-client-quarantine-20261021/p6-d3e1-outside-attribution-original-inventory.json",
+    "same_normalized_outside7_and_private_records7": true,
+    "actors": "PYTHON/ARTIFACT/CLONE_CHILD/workspace",
+    "attribution": "exact environment pyvenv.cfg flags32768 once; exact site-packages dir flags624640 three times; bound helper root/python/packaging flags624640 once each",
+    "production_qualification": false
+  },
+  "followup_E2": {
+    "receipt": "p6d3-cached-query-local-20261029.json",
+    "same_latch_RED3_GREEN132": true,
+    "fresh_canonical132": true,
+    "native_clean_outside0": true,
+    "old_public_Python2": true,
+    "named_local_scope_closed": true,
+    "public_native_golden_aliases_final_still_open": true
+  }
 }

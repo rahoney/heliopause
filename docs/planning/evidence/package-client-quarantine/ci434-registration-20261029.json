@@ -47,7 +47,7 @@
   },
   "estimated_total_minutes": 106,
   "estimate_basis": "prior same workflow CI433 server6368s, current ordinary hosted coverage remains104 parents/CPP132; runner/queue variation excluded, Linux120min unchanged",
-  "qualification": "PENDING actual all10/Required source/checkout/tree/logs",
+  "qualification": "PENDING Linux/Required; macOS FAIL preserved; cannot declare whole source qualified",
   "scope": "D1 tagged DATA probe source, D2 four-method original command error preservation, D3 cached query CPP120/132 and existing ordinary hosted consumers. New D1 native DATA parent is local only and not added to hosted run filter.",
   "open": [
     "native DATA outside7 actor/path/flags attribution; D3 acceptance remains OPEN",
@@ -116,5 +116,10 @@
       "bytes": 515,
       "sha256": "be97ee815f571146ee7f38899b402ccfe7e55a731369277f99cfda1ba990522a"
     }
-  ]
+  ],
+  "last_timed_poll": 2,
+  "last_timed_query_at": "2026-10-29T15:01:49.475514+00:00",
+  "next_due_at": "2026-10-29T15:21:49.475532+00:00",
+  "last_jobs": "7SUCCESS/macOS production-build2mFAIL/Linux integration in_progress/Required pending",
+  "failure_receipt": "ci434-macos-production-build-failure-20261029.json"
 }

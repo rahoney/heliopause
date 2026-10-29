@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D2 named four-method first-error preservation local qualified; same-test RED4→GREEN10/canonical10/Quick333.493s/sandbox Race34.713s/current Python2 actual79.40s. D1 observer FAIL preserved; cleanup217/~7.26GiB.
-Next action: consume CI434 actual20min GET worker state, first14:41:47UTC/KST23:41:47; no push while source frozen. Continue test-only bounded observer path/flags/actor diagnostic for actual native outside7 with no grants/wire/Policy change. Cleanup221 ELF +6 private caches/~10.40GiB logical; all original sources/logs retained.
-Current substep: M13-004/P6-D3 outside7 attribution IN_PROGRESS after local CPP132/UV120/native complete/old Python2 checkpoint d81c444. Common source d81c444/tree4497e3c7/3074·1370 pushed; CI434/run40890702427 started14:21:47UTC; actual20min worker12754/PID3270701 first14:41:47UTC. Acceptance/public native/aliases/final OPEN.
+Last completed substep: P6-D3 named cached UV query local qualified; E1 actual7 attributed to E2 same-latch RED3/GREEN132/fresh276.430s; native4.56s complete/Outside0 and old public Python2/68.28s PASS; cleanup227 ELF +6 caches/~10.51GiB logical.
+Next action: baseline audit existing whole-wheel startup gate/UV selector/private raw mirror/native preparation receipt before public native golden. Keep CI434 actual20min GET; preserve Mac first timeout/cause unconfirmed and fixed budgets; no push while running. New E2 CPP9037/f7 source is outside frozen CI434.
+Current substep: M13-004/P6-D3 named local COMPLETE; next D4 public native whole startup/source binding/golden baseline before code. CI434/source d81 frozen: macOS production-build2mFAIL, Linux in progress/Required pending; actual20min worker12754/PID3270701 poll2/next2026-10-29T15:21:49.475532+00:00. Whole public native/aliases/CLI/final OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-29 D3 exact readonly ABI named local 완료
+
+[Qualification](./evidence/package-client-quarantine/p6d3-cached-query-local-20261029.json)은 E1 실제7건을 cfg32768/네 dir624640의 PYTHON·ARTIFACT 읽기로 귀속하고, 같은 새 latch의 RED3→GREEN132·fresh276.430s/132·UV120 및 affected sandbox Race23.172s를 확인했다. Native4.56s는 complete/Outside0, 기존 public Python2/68.28s는 fresh ALLOW·complete0/2와 모든 정리가 PASS다. Test-only log overlay는 제거했다. 완료 ELF227개와 전용 cache6의 누적 논리 약10.51GiB를 정리하고 원본·현재 재사용 cache/고정 입력/CI434 monitor를 유지했다. Named D3만 닫으며 다음 D4의 public pre-query whole startup/source binding/golden은 감사 전이다. CI434는 old source d81의 Mac build2mFAIL 원본을 보존했고 Linux 진행·20분 GET을 계속한다.
 
 ### 2026-10-29 D3 cached query 부분 checkpoint·정리
 

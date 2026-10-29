@@ -4109,12 +4109,18 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
         path == env + "/lib/python3.14" || path == env + "/lib/python3.14/site-packages";
     const bool config = path == env + "/pyvenv.cfg";
     const bool readonly_flags = message.flags() == 557056 || message.flags() == 622592;
+    // Pinned CPython's opendir uses O_NONBLOCK in addition to directory/RO.
+    // Bind only the four directories observed in the exact native query ABI.
+    const bool scanned_directory = path == helper || path == helper + "/python" ||
+        path == helper + "/python/packaging" || path == env + "/lib/python3.14/site-packages";
     const bool allowed = tracked->uv_python_query_active &&
         tracked->current_image_class == ProcessClass::kPython &&
         HasExactUVQueryCreator(message.context_data(), *tracked, state) && canonical &&
         anchor != nullptr && anchor->mountpoint == "/tmp" && anchor->mount_class == "workspace" &&
         !IsWriteCapableOpen(message.flags()) &&
-        (((module || directory) && readonly_flags) || (config && message.flags() == 557056));
+        (((module || directory) && readonly_flags) ||
+         (scanned_directory && message.flags() == 624640) ||
+         (config && (message.flags() == 557056 || message.flags() == kOpenLargefile)));
     return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
   }
   std::string query_path;

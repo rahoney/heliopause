@@ -7874,6 +7874,36 @@ bool VerifyUVPythonQueryBoundary() {
             !check(path, 622592, FilesystemClass::kHelperOnly)) return false;
       }
       if (!check(cache_env + "/pyvenv.cfg", 557056, FilesystemClass::kHelperOnly)) return false;
+      if (!check(cache_env + "/pyvenv.cfg", kOpenLargefile, FilesystemClass::kHelperOnly)) return false;
+      for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/packaging",
+          cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, 624640, FilesystemClass::kHelperOnly)) return false;
+      }
+      for (const std::string& path : {helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", helper_root + "/python/packaging/__init__.py",
+          helper_root + "/python/packaging/tags.py", cache_env, cache_env + "/lib",
+          cache_env + "/lib/python3.14", cache_env + "/pyvenv.cfg"}) {
+        if (!check(path, 624640, FilesystemClass::kOutside)) return false;
+      }
+      for (const std::string& path : {helper_root, helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, kOpenLargefile, FilesystemClass::kOutside)) return false;
+      }
+      for (const std::string& path : {cache_env + "/lib/python3.14/site-packages/evil.pth",
+          cache_env + "/lib/python3.14/site-packages/sitecustomize.py",
+          cache_env + "/lib/python3.14/site-packages/usercustomize.py",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe/__init__.py",
+          cache_env + "/lib/python3.14/site-packages/evil.so",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe-1.0.dist-info/METADATA",
+          cache_env + "/../" + cache_env.substr(cache_env.rfind('/') + 1) + "/pyvenv.cfg",
+          helper_root + "/../" + helper_root.substr(helper_root.rfind('/') + 1),
+          std::string("/tmp/.tmpQ1w2E3/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          std::string("/tmp/unrelated.py")}) {
+        for (uint64_t flags : {kOpenLargefile, uint64_t{624640}}) {
+          if (!check(path, flags, FilesystemClass::kOutside)) return false;
+        }
+      }
+
       for (const std::string& path : {cache_env + "/lib/python3.14/site-packages/evil.pth",
           cache_env + "/lib/python3.14/site-packages/sitecustomize.py",
           cache_env + "/lib/python3.14/site-packages/usercustomize.py",
@@ -7919,7 +7949,10 @@ bool VerifyUVPythonQueryBoundary() {
         // classifier's UNKNOWN result rather than inventing an ARTIFACT role.
         const auto rejected = mutation == 2 ? FilesystemClass::kUnknown : FilesystemClass::kOutside;
         if (!check(cache_env + "/pyvenv.cfg", 557056, rejected) ||
-            !check(helper_root + "/python/__init__.py", 557056, rejected)) return false;
+            !check(helper_root + "/python/__init__.py", 557056, rejected) ||
+            !check(cache_env + "/pyvenv.cfg", kOpenLargefile, rejected) ||
+            !check(helper_root, 624640, rejected) ||
+            !check(cache_env + "/lib/python3.14/site-packages", 624640, rejected)) return false;
       }
       state = accepted_query;
     }
@@ -8057,6 +8090,11 @@ bool VerifyUVPythonQueryBoundary() {
       open.set_pathname(helper_root + "/python/__init__.py");
       MountAnchor tmp{2, "/tmp", "workspace"};
       if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      auto read_mode = open;
+      read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      read_mode.set_pathname(cache_env + "/pyvenv.cfg"); read_mode.set_flags(kOpenLargefile);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
     }
     // A second exact exec in the original child cannot renew the role.
     *open.mutable_context_data() = *child;
@@ -8066,6 +8104,11 @@ bool VerifyUVPythonQueryBoundary() {
       open.set_pathname(cache_env + "/pyvenv.cfg");
       MountAnchor tmp{2, "/tmp", "workspace"};
       if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      auto read_mode = open;
+      read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      read_mode.set_pathname(cache_env + "/pyvenv.cfg"); read_mode.set_flags(kOpenLargefile);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
     }
     return true;
   };
