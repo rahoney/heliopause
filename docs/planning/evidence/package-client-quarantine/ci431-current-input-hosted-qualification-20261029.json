@@ -1,0 +1,73 @@
+{
+  "work_item": "M13-004",
+  "scope": "CI431/source0d96 named current execution preparation/refusal/readonly DATA and existing ordinary consumers",
+  "status": "QUALIFIED",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES (named hosted)",
+  "ACCEPTANCE_CLOSED": "YES (named hosted scope only)",
+  "run_id": 40826938443,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40826938443",
+  "source": "0d96e23e665da91ab1954b27441c6547fb3f0186",
+  "tree": "20b74161951407827e675c41e74669af3a19b410",
+  "tracked_files": 3032,
+  "runtime_inputs": 1355,
+  "all10_checkout_source_proof": {
+    "sha": "f4d753ff7f112b036196c5c1f645788ae1751f36",
+    "tree": "20b74161951407827e675c41e74669af3a19b410",
+    "parents": [
+      "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+      "0d96e23e665da91ab1954b27441c6547fb3f0186"
+    ]
+  },
+  "Required_and_jobs": "10SUCCESS",
+  "started_at": "2026-10-29T06:03:34Z",
+  "updated_at": "2026-10-29T07:42:37Z",
+  "elapsed_seconds": 5943,
+  "automatic_final_query_started_at": "2026-10-29T07:47:10.790259+00:00",
+  "automatic_final_query_ended_at": "2026-10-29T07:47:11.998224+00:00",
+  "monitor_session61457_exit": 0,
+  "monitor_completed_no_next_timer": true,
+  "full_decoded_original_log_bytes": 1294511,
+  "chunk_readbacks": 72,
+  "completed8_reused_originals": true,
+  "temporary_reassembled_chunks_removed": 44,
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/ci431-final-decoded-log-inventory.json",
+  "Linux": {
+    "top_level_passes": 100,
+    "failures": 0,
+    "skips": 0,
+    "CPP_latches": 131,
+    "current_Node_refusal_cases": 2,
+    "current_Python_preparation_cases": 3,
+    "current_Python_readonly_DATA_cases": 4,
+    "selected_passes": {
+      "TestPNPMActualProductionInstanceExecution": "13.97s",
+      "TestBunActualArtifactExecutionBoundary": "12.13s",
+      "TestLinuxGoTransitiveBuildCLIIntegration": "167.98s",
+      "TestLinuxPyTorchFullIntegration": "283.54s",
+      "TestLinuxNodeExecutionPreparationIntegration": "47.50s",
+      "TestLinuxNodeExecutionBoundaryIntegration": "165.74s",
+      "TestLinuxNodeExecutionWorkflowIntegration": "39.13s",
+      "TestLinuxNPMExecutionCLIIntegration": "81.46s",
+      "TestLinuxNPMExecutionCLIRefusalIntegration": "22.27s",
+      "TestLinuxPythonExecutionPreparationIntegration": "62.54s",
+      "TestLinuxPythonExecutionInputsIntegration": "56.09s",
+      "TestLinuxDirectExecKernelTerminalIntegration": "5.18s"
+    },
+    "helper_wait0_count": 17,
+    "final_cleanup_records": [
+      "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=654774",
+      "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=655476",
+      "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=688221",
+      "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=705802"
+    ]
+  },
+  "limits": [
+    "Shared helper5c853a1/1356 and later B2-B Python user-runtime/profile1361 are outside this hosted source.",
+    "Readonly DATA/preparation does not prove a selected Python program/callable or native UVx/alias/CLI.",
+    "Child body/held-pipe drain remain NOT_PROVEN; Node child proves clone fault/ARTIFACT/incomplete/cleanup only.",
+    "CI430 original Go DROPPED_COUNT cause remains UNCONFIRMED; a new hosted fresh Go PASS167.98s is not a loss-guard repair.",
+    "Whole P4-P7/final CPU/three CUDA/signed support remain OPEN."
+  ]
+}

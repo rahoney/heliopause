@@ -15,15 +15,26 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-B2-A shared existing captured program owner named local QUALIFIED; canonical9/Quick304.561s/affected Race35.809s; controlled Node12/195.49s and actual CLI4/110.08s PASS; source1356/old1354 unchanged/CPP131; cleanup179 copies/~6.35GiB.
-Next action: automatic public GET monitor/session61457/pid2781030 queried07:27:09→07:27:10.790120UTC, 8SUCCESS/Linux running; next07:47:10.790138UTC/KST16:47:10. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Continue B2-B Python execution baseline/exact map; native alias/CLI/final remain OPEN.
-Current substep: M13-004/P6-B2-B Python selected-program profile/backend IN_PROGRESS; source1356 baseline and exact map/second review recorded before source. CI431/source0d96 excludes this helper and remains PENDING; no push while active.
-Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
+Last completed substep: CI431/source0d96/3032·1355 named hosted QUALIFIED; Required10SUCCESS/all checkoutf4d7/tree20b; Linux100/noFAIL/noSKIP/CPP131; preparation3/refusal2/readonly4; helper17wait0/final4 original0; automatic monitor completed07:47:11UTC, run elapsed99m03. B2-A local5c/1356 remains separately qualified; cleanup179/~6.35GiB.
+Next action: finish B2-B exact Python ABI correction in /tmp/haa-p6-b2b-20261029-source; v1 canonical9/CPP132 PASS but first actual40.25s failed VM_OVERCOMMIT_MEMORY/flags32768; original/source/cleanup preserved. v2 CPP-only checks active (Go81781/CPP47762), same Go binary f70 reused with explicit source scopes; actual2 and old consumers pending. No active CI431 timer; next meaningful grouped push after qualification.
+Current substep: M13-004/P6-B2-B Python selected-program profile/backend IN_PROGRESS; source1356 baseline and exact map/second review recorded before source. CI431/source0d96 COMPLETE and excludes this backend/helper; source1361 v2 local qualification pending.
+Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
-P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
+P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI431 current inputs hosted 완료
+
+[Qualification](./evidence/package-client-quarantine/ci431-current-input-hosted-qualification-20261029.json)은 source0d96/tree20b/3032·1355와
+all10 checkoutf4d7/Required10SUCCESS·decoded1,294,511B/72chunk readback을 확인했다. Actual
+20min poll05가07:47:10.790259→07:47:11.998224UTC에 완료를 직접 조회했고 monitor는 exit0로
+종료했다. Server 전체99m03이며 Linux100/noFAIL/noSKIP/CPP131·CPU283.54s/current refusal2·
+preparation3/readonly4와 helper17wait0/final4 original0·복원을 확인했다. B2-A 공유 구현과 새
+Python user-runtime/native aliases/CLI/final은 이 source 밖이다. CI430 loss 원인 미확정은 유지한다.
+완료8 원본을 재사용하고 두 로그의 임시 재조립44chunks를 full readback 뒤 제거했다. 같은
+M13-004의 B2-B exact ABI 보완/새 actual을 계속하며 작은 helper별 push는 하지 않는다.
 
 ### 2026-10-29 B2-B Python selected-program backend 착수
 
