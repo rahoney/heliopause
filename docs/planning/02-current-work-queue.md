@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-A4 grouped hosted wiring locally qualified; canonical7/workflow/Quick299.996s/checker Race55.890s/inert Bash DATA21 PASS; production Go/CPP unchanged
-Next action: Commit locally verified A4 source1351/production unchanged after final docs-security; normal FF grouped push from remote9eb after exact head/source check; register actual CI run and20min timer; continue Python readonly runtime baseline.
-Current substep: M13-004/P6-A4 final docs/security/local commit then authorized grouped push/run/20min timer; hosted qualification pending; native UVx/user Python runtime/CLI OPEN
+Last completed substep: A4 current hosted wiring committed/pushed3c85d82/tree82c911ab/3019·1351; final workflow/docs/security PASS; actual CI430 source/head confirmed
+Next action: CI430/run40816740622 started04:15:37UTC; initial1DocsSUCCESS/8running; timer01/session1333 due04:35:37UTC/KST13:35:37. Do not cancel with new push; continue existing closure/volume/selected Python user-run owner audit.
+Current substep: M13-004/P6-B readonly Python runtime baseline audit; existing closure/stream/census/anchor/CPU owners reused; B1 exact edit map before source; CI430 frozen/timer01 due04:35:37UTC
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
@@ -33,6 +33,22 @@ noSKIP/CPP131·CPU300.35s/Node prep48.40s/controlled12 166.71s/application2 38.9
 81.39s/kernel8 5.26s/helper16wait0/세 final0·복원이다. Child는 clone-startup 거부·정리만
 입증했으며 body/held-pipe는 미입증이다. 전체100m21s이며 timer05 due03:37:40 뒤
 03:37:45UTC 결과 소비·종료했다. Later C7/P6/whole final은 이 source 밖이며 계속 진행한다.
+
+### 2026-10-29 P6-B Python runtime 기존 owner 감사
+
+[Baseline](./evidence/package-client-quarantine/p6b-python-runtime-baseline-20261029.md)는 이미 구현된
+whole closure manifest/실제 consumed stream 인증/full installed census/RO anchor·CPU·cleanup을
+확인했다. 실제 source가 허용하는 zero-unit accounting은 준비 DATA만의 경계이며 fake inspection
+또는 user-run completion으로 쓰지 않는다. 다음 B1 exact 지도 뒤 current readonly input gap만
+진행한다. Production source/CPP 변경 없이 CI430의20min timer를 유지한다.
+
+### 2026-10-29 grouped CI430 등록
+
+[등록](./evidence/package-client-quarantine/ci430-registration-20261029.json)은 검증된3c85d82/
+tree82c911ab/3019·1351의 정상 FF push·원격 ref와 actual run40816740622/04:15:37UTC를
+확인했다. Initial DocsSUCCESS/8running이며 timer01/session1333은04:35:37UTC(한국13:35:37)
+due다. Source를 새 push로 취소하지 않고 실제20min 결과를 확인하며 독립 Python runtime
+기존 owner 감사를 계속한다. Hosted/final/Python user-run·UVx/CLI는 미완료다.
 
 ### 2026-10-29 P6-A4 current hosted wiring local 완료
 
