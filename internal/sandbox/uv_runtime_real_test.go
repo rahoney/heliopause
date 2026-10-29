@@ -187,19 +187,10 @@ func withActualUVNativeRuntimeInput(t *testing.T, frozen *pipxNativeInput, opera
 		t.Fatal(err)
 	}
 	if mirror != nil {
-		runtimeMount, err := volume.mountArgument()
+		baseArguments, err = uvFrozenRunCreateArguments(volume, output, mirror.volume)
 		if err != nil {
 			t.Fatal(err)
 		}
-		outputMount, err := output.mountArgument(false)
-		if err != nil {
-			t.Fatal(err)
-		}
-		wheelMount, err := mirror.volume.readerMount()
-		if err != nil {
-			t.Fatal(err)
-		}
-		baseArguments = pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount})
 	}
 	arguments := append([]string{"create", "--name", name, "--label", "io.heliopause.uv-native=" + session.String()}, baseArguments[1:]...)
 	created, err := runner.Output(ctx, "docker", arguments...)
@@ -226,16 +217,7 @@ func withActualUVNativeRuntimeInput(t *testing.T, frozen *pipxNativeInput, opera
 	if mirror == nil {
 		trace, err = startTrace(ctx, supervisor.Observer(), id, uvResolverProfile)
 	} else {
-		topology, ok := observerExpectedTopology(uvResolverProfile)
-		if !ok {
-			t.Fatal("UV base topology unavailable")
-		}
-		topology = append(topology, observerMountExpectation{pipxNativeWheels, "workspace", "/", "9p", true, false, false, false})
-		shared, ok := supervisor.Observer().(*SharedObserver)
-		if !ok {
-			t.Fatal("shared UV observer required")
-		}
-		trace, err = shared.startProfile(ctx, id, uvResolverProfile, topology)
+		trace, err = startUVFrozenRunTrace(ctx, supervisor.Observer(), id)
 	}
 	if err != nil {
 		t.Fatal(err)

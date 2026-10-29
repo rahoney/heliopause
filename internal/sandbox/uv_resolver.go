@@ -107,9 +107,22 @@ func (r *UVResolver) withUVNativeSession(ctx context.Context, operation func(con
 	return r.withUVNativeSessionForToolInstall(ctx, operation, false)
 }
 
-func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, operation func(context.Context, uvNativeSession) (uvNativeOutput, error), toolInstall bool) (result uvNativeOutput, resultErr error) {
+func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, operation func(context.Context, uvNativeSession) (uvNativeOutput, error), toolInstall bool, frozenInputs ...*pipxNativeInput) (result uvNativeOutput, resultErr error) {
 	if r == nil || r.reader == nil || ctx == nil || operation == nil {
 		return uvNativeOutput{}, errors.New("uv native session is unavailable")
+	}
+	var frozen *pipxNativeInput
+	if len(frozenInputs) > 1 || toolInstall && len(frozenInputs) != 0 {
+		return uvNativeOutput{}, errPipxNativeInput
+	}
+	if len(frozenInputs) == 1 {
+		frozen = frozenInputs[0]
+		if !frozen.valid() {
+			return uvNativeOutput{}, errPipxNativeInput
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return uvNativeOutput{}, err
 	}
 	reader := r.reader
 	capability, err := reader.probe(ctx)
@@ -127,22 +140,29 @@ func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, oper
 	if err != nil {
 		return uvNativeOutput{}, err
 	}
-	addressesByName, err := reader.endpoints.Resolve(ctx, pypiResolverEndpoints)
-	if err != nil {
-		return uvNativeOutput{}, errors.New("uv resolver endpoint preflight failed")
+	network := "none"
+	var hosts []string
+	var policy *ResolverNetworkPolicy
+	if frozen == nil {
+		addressesByName, resolveErr := reader.endpoints.Resolve(ctx, pypiResolverEndpoints)
+		if resolveErr != nil {
+			return uvNativeOutput{}, errors.New("uv resolver endpoint preflight failed")
+		}
+		addresses, hostArguments, networkErr := resolverNetworkArguments(artifactpypi.PublicPyPIProfile(), addressesByName)
+		if networkErr != nil {
+			return uvNativeOutput{}, errors.New("uv resolver endpoint preflight is unsafe")
+		}
+		hosts = hostArguments
+		policy, err = NewResolverNetworkPolicy(reader.runner, reader.policy)
+		if err != nil {
+			return uvNativeOutput{}, err
+		}
+		network, err = policy.Prepare(ctx, addresses)
+		if err != nil {
+			return uvNativeOutput{}, err
+		}
 	}
-	addresses, hosts, err := resolverNetworkArguments(artifactpypi.PublicPyPIProfile(), addressesByName)
-	if err != nil {
-		return uvNativeOutput{}, errors.New("uv resolver endpoint preflight is unsafe")
-	}
-	policy, err := NewResolverNetworkPolicy(reader.runner, reader.policy)
-	if err != nil {
-		return uvNativeOutput{}, err
-	}
-	network, err := policy.Prepare(ctx, addresses)
-	if err != nil {
-		return uvNativeOutput{}, err
-	}
+	var mirror *uvPublicRawMirror
 	var runtimeVolume uvRuntimeVolume
 	var output closureVolume
 	var trace TraceReader
@@ -177,9 +197,14 @@ func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, oper
 			cleanupErr = errors.Join(cleanupErr, runtimeVolume.close(cleanup, reader.runner))
 			cancel()
 		}
-		cleanup, cancel := resolverCleanupContext()
-		cleanupErr = errors.Join(cleanupErr, policy.Close(cleanup))
-		cancel()
+		if mirror != nil {
+			cleanupErr = errors.Join(cleanupErr, mirror.close())
+		}
+		if policy != nil {
+			cleanup, cancel := resolverCleanupContext()
+			cleanupErr = errors.Join(cleanupErr, policy.Close(cleanup))
+			cancel()
+		}
 		if cleanupErr != nil {
 			result = uvNativeOutput{}
 			resultErr = errors.Join(resultErr, cleanupErr)
@@ -195,11 +220,24 @@ func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, oper
 	}
 	owner = session.String()
 	name = "haa-uv-resolver-" + owner
-	output, err = createClosureVolume(ctx, reader.runner, session.String()+"-uv-output", runtimeidentity.UVToolSHA256, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
+	manifest := runtimeidentity.UVToolSHA256
+	if frozen != nil {
+		manifest = frozen.id
+	}
+	output, err = createClosureVolume(ctx, reader.runner, session.String()+"-uv-output", manifest, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
 	if err != nil {
 		return uvNativeOutput{}, err
 	}
+	if frozen != nil {
+		mirror = &uvPublicRawMirror{session: pipxNativeSession{runner: reader.runner}}
+		if err := mirror.prepare(ctx, frozen); err != nil {
+			return uvNativeOutput{}, err
+		}
+	}
 	arguments, err := uvCreateArguments(network, hosts, runtimeVolume, output)
+	if mirror != nil && err == nil {
+		arguments, err = uvFrozenRunCreateArguments(runtimeVolume, output, mirror.volume)
+	}
 	if toolInstall && err == nil {
 		arguments, err = uvToolCreateArguments(arguments)
 	}
@@ -220,7 +258,11 @@ func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, oper
 	if err := verifyOwnedUVResolverContainer(ctx, reader.runner, name, owner, container); err != nil {
 		return uvNativeOutput{}, err
 	}
-	trace, err = startTrace(ctx, reader.observer, container, uvResolverProfile)
+	if mirror == nil {
+		trace, err = startTrace(ctx, reader.observer, container, uvResolverProfile)
+	} else {
+		trace, err = startUVFrozenRunTrace(ctx, reader.observer, container)
+	}
 	if err != nil {
 		return uvNativeOutput{}, errors.New("start uv resolver observer failed")
 	}
@@ -248,9 +290,25 @@ func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, oper
 	if err := runtimeVolume.verifyTarget(ctx, reader.runner, container); err != nil {
 		return uvNativeOutput{}, err
 	}
+	if mirror != nil {
+		if err := mirror.volume.verifyReader(ctx, reader.runner, container); err != nil {
+			return uvNativeOutput{}, err
+		}
+	}
 	selection, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 	defer cancel()
-	return operation(selection, uvNativeSession{container, capability.Runtime, platform, output})
+	result, resultErr = operation(selection, uvNativeSession{container, capability.Runtime, platform, output})
+	if mirror != nil {
+		resultErr = errors.Join(resultErr, mirror.volume.verifyReader(ctx, reader.runner, container))
+		if !frozen.valid() {
+			resultErr = errors.Join(resultErr, errPipxNativeInput)
+		}
+		resultErr = errors.Join(resultErr, ctx.Err(), context.Cause(ctx))
+		if resultErr != nil {
+			result = uvNativeOutput{}
+		}
+	}
+	return result, resultErr
 }
 
 func (r *UVResolver) materializeUVSelection(selection context.Context, reference domain.ArtifactReference, request string, selected *uvInstalledSelection, session uvNativeSession) (result uvNativeOutput, resultErr error) {

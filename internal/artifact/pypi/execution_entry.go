@@ -89,6 +89,15 @@ type ConsoleExecutionEntry struct {
 	entry     EntryPoint
 }
 
+// ValidateConsoleExecutionCommand shares the canonical PyPI console-name
+// grammar before source acquisition. It grants no entry or execution authority.
+func ValidateConsoleExecutionCommand(command string) error {
+	if !validToolCommand(command) || domain.ValidateExecutionCommand(command) != nil {
+		return errConsoleExecutionEntry
+	}
+	return nil
+}
+
 func SelectConsoleExecutionEntry(inventory ConsoleExecutionInventory, command string) (ConsoleExecutionEntry, error) {
 	if !inventory.Valid() {
 		return ConsoleExecutionEntry{}, errConsoleExecutionEntry
@@ -105,7 +114,7 @@ func SelectConsoleExecutionEntry(inventory ConsoleExecutionInventory, command st
 		}
 		command = candidates[0].Name
 	}
-	if !validToolCommand(command) || domain.ValidateExecutionCommand(command) != nil {
+	if ValidateConsoleExecutionCommand(command) != nil {
 		return ConsoleExecutionEntry{}, errConsoleExecutionEntry
 	}
 	var chosen EntryPoint

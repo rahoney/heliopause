@@ -13,9 +13,6 @@ import (
 	"testing"
 )
 
-// This cache exists only in the fresh owned native output volume.
-const uvRunCensusCache = "/haa-site/uv-run-cache"
-
 func uvRunNativeCensus(t *testing.T, ctx context.Context, runner CommandRunner, id string) []uvRunCensusFact {
 	t.Helper()
 	var facts []uvRunCensusFact

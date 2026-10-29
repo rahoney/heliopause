@@ -12,68 +12,11 @@ import (
 	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 // The shared pipx-named helpers below hold only authenticated wheel DATA.
 // No pipx ZIP, interpreter query, receipt or runtime identity is introduced.
-type uvPublicRawMirror struct {
-	session pipxNativeSession
-	volume  *pipxWheelVolume
-}
-
-func (m *uvPublicRawMirror) prepare(ctx context.Context, input *pipxNativeInput) error {
-	id, err := domain.NewSandboxSessionID()
-	if err != nil {
-		return err
-	}
-	m.session.transaction = id.String()
-	m.volume, err = createPipxWheelVolume(ctx, m.session.runner, id.String(), input)
-	if err != nil {
-		return err
-	}
-	rw, err := m.volume.preparationMount()
-	if err != nil {
-		return err
-	}
-	writer, err := m.session.dataKeeper(ctx, "0:0", "--mount", rw)
-	if err != nil {
-		return err
-	}
-	if err := m.volume.seed(ctx, m.session.runner, writer.id); err != nil {
-		return err
-	}
-	ro, err := m.volume.readerMount()
-	if err != nil {
-		return err
-	}
-	anchor, err := m.session.dataKeeper(ctx, "1000:1000", "--mount", ro)
-	if err != nil {
-		return err
-	}
-	if err := m.volume.bindAnchor(ctx, m.session.runner, anchor.id); err != nil {
-		return err
-	}
-	if err := m.session.removeKeeper(ctx, writer); err != nil {
-		return err
-	}
-	return m.volume.seal(ctx, m.session.runner)
-}
-
-func (m *uvPublicRawMirror) close() error {
-	ctx, cancel := resolverCleanupContext()
-	defer cancel()
-	var result error
-	for i := len(m.session.keepers) - 1; i >= 0; i-- {
-		result = errors.Join(result, m.session.removeKeeper(ctx, m.session.keepers[i]))
-	}
-	if m.volume != nil {
-		result = errors.Join(result, m.volume.close(ctx, m.session.runner))
-	}
-	return result
-}
-
 func publicUVToolRunInput(t *testing.T) *pipxNativeInput {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
