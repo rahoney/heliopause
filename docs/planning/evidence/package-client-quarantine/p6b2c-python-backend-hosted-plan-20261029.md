@@ -56,3 +56,9 @@ native/hosted 성공이 아니다. Source/hash·exact 후보·현재 named local
 후보를 정상 FF push한 뒤 actual run/head/start와20min public GET worker를 등록한다. 완료까지
 새 push로 취소하지 않으며 독립 Python hostile-boundary/adapter 감사를 같은 M13-004에서 계속한다.
 완료 불필요한 test copies/data는 원본/재사용 input을 보존하고 참조 확인 뒤 정리한다.
+
+## Named local wiring 검증
+
+[Receipt](./p6b2c-python-backend-hosted-local-20261029.json)가 canonical7/whole checker Race·
+DATA43과 source1361/기존1358 unchanged를 연결한다. 새 hosted 결과는 아직 없으며 exact 후보
+검사 뒤 필요한 grouped push/실제 run/20min 자동 GET 감시를 수행한다.

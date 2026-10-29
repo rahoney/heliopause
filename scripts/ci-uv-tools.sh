@@ -3,11 +3,11 @@
 # Interpreter fixture bytes are exported from a pinned, never-started image.
 set -euo pipefail
 case "$#:${1-}" in
-  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs) ;;
+  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution) ;;
   *) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;
 esac
 test "$(id -u)" != 0
-if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs ]]; then
+if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution ]]; then
   (
     cd internal/sandbox
     HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'
@@ -84,6 +84,13 @@ if [[ ${1-} == python-execution-inputs ]]; then
   (
     cd internal/bootstrap
     HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PYTHON_EXECUTION_INPUT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxPythonExecutionInputsIntegration$'
+  )
+  exit 0
+fi
+if [[ ${1-} == python-execution ]]; then
+  (
+    cd internal/bootstrap
+    HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PYTHON_EXECUTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxPythonExecutionIntegration$'
   )
   exit 0
 fi

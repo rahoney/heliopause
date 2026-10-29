@@ -15,15 +15,25 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: B2-B initial internal Python selected-console backend named local QUALIFIED; source1361/old1352 unchanged; composed canonical9/CPP132; actual Python2 71.28s and Node12 205.66s, separate current Pipx counter42.14s PASS. First Python ABI and Pipx CPU failures preserved; CPU cause remains UNCONFIRMED. Cleanup191/~6.66GiB. CI431/source0d96 hosted COMPLETE and excludes this backend.
-Next action: implement B2-C closed python-execution profile and fourth exact parent in existing current step, preserving three existing parents; canonical7/whole checker Race and inert DATA guards, then one meaningful grouped normal FF push and actual20min GET monitor. Continue independent Python hostile-boundary/adapter work while hosted runs.
-Current substep: M13-004/P6-B2-C initial selected Python hosted wiring IN_PROGRESS; baseline3d8b59d/tree3c5c/3044·1361 and exact map/second review before source; B2-B named local only. CPU-envelope cause unresolved; native/hostile/application/CLI/final OPEN.
+Last completed substep: B2-C initial selected Python2 hosted wiring LOCAL QUALIFIED; canonical7/Quick321.486s/checker Race60.2s and inert DATA43 PASS. Runtime1361 membership/old1358 unchanged/internal-cmd/CPP132 preserved. B2-B source3d8 named local and cleanup191/~6.66GiB retained; first Pipx CPU cause UNCONFIRMED.
+Next action: final exact candidate docs/security and meaningful grouped commit/push, verify fresh remote branch/ref and active CI absence, then actual new run/head/start and20min public GET monitor. Continue independent Python hostile-boundary/adapter work while hosted runs; no new push cancels active source.
+Current substep: M13-004/P6-B2-C hosted wiring IN_PROGRESS (local complete, remote qualification pending); source1361 with existing backend f70/CPP f69 unchanged plus script/checker3 and workflow recipe; no hosted/global completion claim.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-C selected Python hosted wiring local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b2c-python-backend-hosted-local-20261029.json)는 기존 current step/owned image DATA
+exporter의 closed python-execution profile과 fourth exact parent를 연결한다. Canonical7/
+Quick321.486s/checker 전체 Race60.2s·Bash syntax와 inert DATA43이 PASS다. 기존 refusal2/
+preparation3/readonly4·1361 membership/기존1358 bytes/internal-cmd/CPP132·권한·한도를 유지했다.
+새 native/hosted 성공은 아니며 실제 current normal0/nonzero2는 B2-B의 독립 원본을 재사용한다.
+최종 후보 검사 뒤 의미 있는 공용 capture/CPP/backend cohort를 한 번 정상 FF push하고 실제
+new run/head/start와20min GET 감시를 등록한다. CPU 미확정·native/hostile/adapter/CLI/final은 OPEN이다.
 
 ### 2026-10-29 B2-C selected Python hosted 착수
 

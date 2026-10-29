@@ -23,6 +23,10 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		"ignore current readonly inputs":    strings.Replace(original, pythonExecutionInputsCommand, pythonExecutionInputsCommand+" || true", 1),
 		"wrong current readonly parent":     strings.Replace(original, "^TestLinuxPythonExecutionInputsIntegration$", "^TestLinuxNodeExecutionInputsIntegration$", 1),
 		"readonly enters native":            strings.Replace(original, " && ${1-} != python-execution-inputs", "", 1),
+		"skip selected Python runtime":      strings.Replace(original, "HELOX_PYTHON_EXECUTION_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_INTEGRATION=0", 1),
+		"wrong selected Python parent":      strings.Replace(original, "^TestLinuxPythonExecutionIntegration$", "^TestLinuxPythonExecutionInputsIntegration$", 1),
+		"runtime enters native":             strings.Replace(original, " && ${1-} != python-execution ]]; then", " ]]; then", 1),
+		"ignore selected Python runtime":    strings.Replace(original, pythonConsoleExecutionCommand, pythonConsoleExecutionCommand+" || true", 1),
 		"skip current Python preparation":   strings.Replace(original, "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=0", 1),
 		"ignore current Python preparation": strings.Replace(original, pythonExecutionPreparationCommand, pythonExecutionPreparationCommand+" || true", 1),
 		"wrong current Python parent":       strings.Replace(original, "^TestLinuxPythonExecutionPreparationIntegration$", "^TestLinuxNodeExecutionPreparationIntegration$", 1),
@@ -116,6 +120,34 @@ func TestCurrentExecutionPreparationQualificationRejectsMissingOrWeakenedScope(t
 				t.Fatal("weakened execution qualification admitted")
 			}
 		})
+	}
+	runtimeStart := strings.Index(owned, "          python_runtime_log=")
+	if runtimeStart < 0 {
+		t.Fatal("selected runtime scope absent")
+	}
+	runtimeOwned := owned[runtimeStart:]
+	for name, changed := range map[string]string{
+		"ignored runtime command error": strings.Replace(runtimeOwned, "if ((python_runtime_status)); then exit", "if ((0)); then exit", 1),
+		"ignored runtime cat error":     strings.Replace(runtimeOwned, "if ((python_runtime_log_status)); then exit", "if ((0)); then exit", 1),
+		"wrong runtime profile":         strings.Replace(runtimeOwned, "ci-uv-tools.sh python-execution >", "ci-uv-tools.sh python-execution-inputs >", 1),
+		"wrong runtime count":           strings.Replace(runtimeOwned, "cases != 2", "cases != 1", 1),
+		"duplicate runtime IDs":         strings.Replace(runtimeOwned, "1 2", "1 1", 1),
+		"missing runtime noSkip":        strings.Replace(runtimeOwned, "/--- SKIP:/ { bad=1 }", "", 1),
+		"missing runtime uniqueness":    strings.Replace(runtimeOwned, " || accepted[case_name]++", "", 1),
+		"wrong runtime parent":          strings.Replace(runtimeOwned, "TestLinuxPythonExecutionIntegration", "TestLinuxPythonExecutionInputsIntegration", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if changed == runtimeOwned {
+				t.Fatal("runtime negative mutation missed its source")
+			}
+			candidate := original[:start] + owned[:runtimeStart] + changed + original[end:]
+			if len(validateCurrentExecutionPreparationQualification(candidate)) == 0 {
+				t.Fatal("weakened selected runtime qualification admitted")
+			}
+		})
+	}
+	if len(validateCurrentExecutionPreparationQualification(original[:start]+owned[:runtimeStart]+original[end:])) == 0 {
+		t.Fatal("missing selected runtime parent admitted")
 	}
 	if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
 		t.Fatal("absent current qualification admitted")
