@@ -186,6 +186,7 @@ type pythonTransactionExecutor struct {
 	resources         ObservationResourceClient
 	volume            closureVolume
 	pipxVolume        *pipxDataVolume
+	execution         bool // selected user-run only; default M5/Pipx remains false
 	manifest          closureManifest
 	installed         closureInstallation
 	transaction       string
@@ -580,6 +581,12 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	if err != nil {
 		return nil, err
 	}
+	if t.execution && phase == phaseObservation {
+		args, err = pythonExecutionWorkingDirectory(args)
+		if err != nil {
+			return nil, err
+		}
+	}
 	created, err := t.backend.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -600,7 +607,13 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 		observerPhase = pythonClosureAnchor
 	}
 	var trace TraceReader
-	if t.pipxVolume != nil {
+	if t.execution && phase == phaseObservation {
+		observer, ok := t.backend.observer.(pythonExecutionObserver)
+		if !ok || t.pipxVolume != nil {
+			return nil, errPythonExecution
+		}
+		trace, err = observer.StartPythonExecutionProfileWithBudget(ctx, id, t.traceLedger)
+	} else if t.pipxVolume != nil {
 		observer, ok := t.backend.observer.(pipxRuntimeObserver)
 		if !ok {
 			return nil, errors.New("pipx transaction observer unavailable")
@@ -678,6 +691,9 @@ func (t *pythonTransactionExecutor) terminatePhase(id string) (resultErr error) 
 	if err != nil || trace.limitation != "" || !trace.diagnostic.SessionComplete || lease.CgroupParent != t.lease.CgroupParent {
 		return errors.Join(resultErr, t.diagnostic("phase-termination", fmt.Errorf("phase=%s container=%s helper=%s parent_match=%t cumulative_cpu_us=%d limitation=%s trace={%s}",
 			runtime.phase, id, pythonResourceErrorReason(err), lease.CgroupParent == t.lease.CgroupParent, lease.UsageUsec, trace.limitation, trace.diagnostic.String())))
+	}
+	if t.execution && runtime.phase == phaseObservation && len(retainedSuspiciousTraceFacts(trace.diagnostic.KindCounts)) != 0 {
+		resultErr = errors.Join(resultErr, errPythonExecution, errors.New("python program observation contains a forbidden runtime action"))
 	}
 	t.mu.Lock()
 	runtime.collected = true

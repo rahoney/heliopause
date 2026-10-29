@@ -63,6 +63,8 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case pythonExecutionProfile:
+		return pythonClosureExpectedTopology("pypi-wheel", pythonClosureObservation)
 	case nodeExecutionProfile:
 		return nodeExecutionInputExpectedTopology(true)
 	case pipxObserverProfile:

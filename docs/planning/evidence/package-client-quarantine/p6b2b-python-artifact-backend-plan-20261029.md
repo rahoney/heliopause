@@ -96,3 +96,34 @@ Docker/source identity/helperwait0/observer endpoints/owned workspace 정리를 
 
 새 backend의 actual 정상·비정상 범위만 닫는다. Python signals/cancellation/overflow/hostile boundary,
 native golden/aliases/CLI, 새 grouped hosted와 final CPU·세CUDA/signed support는 OPEN이다.
+
+## Source 작성 중 검토 보완 — 검사 시작 전
+
+기존 terminatePhase는 raw suspicious observations를 Inspector에 전달하며, 일반 DATA cleanup
+성공만으로 user-run 금지 행위 거부를 대신할 수 없다. 새 execution/observation 분기에만 기존
+retainedSuspiciousTraceFacts predicate를 소비해 operational error를 보존한다. 기존 M5/Pipx
+관찰 수집·정리 본문과 의미는 유지한다. verifyAnchorAndVolume은 기존 map[id]readonly API를
+그대로 사용한다. 새 profile의 불필요한 demoting bit는 추가하지 않고 기존 pending/role을 쓴다.
+
+## 첫 actual 뒤 ABI 한정 보완
+
+Canonical9/CPP132의 v1 첫 current cowsay user-run40.25s는 OPEN_RESULT_CLASSIFICATION_PROC/
+VM_OVERCOMMIT_MEMORY/system/flags32768에서 거부됐다. 원래 source/입력/Host와 cleanup은
+보존했고 원본 actual·CPP/Go identity를 고정했다. 기존 pinned Python ABI owner의 정확한
+/proc/sys/vm/overcommit_memory 읽기만 새 profile에 연결한다. System /proc mount, exact flags32768,
+현재 Python image·ARTIFACT/direct root/start/active/pending guards와 negative 회귀를 유지한다.
+일반 proc·Node/M5/Pipx 권한·한도는 넓히지 않는다. v2의 source delta는 CPP2뿐이므로 동일한 Go
+build inputs/binary의 focused/Race/vet/Staticcheck/build 증거와 새 Quick/docs/security·CPP release
+결과를 출처별로 결합한다. 같은 실패의 blind rerun이나 v1 PASS 재분류는 하지 않는다.
+
+## 기존 Pipx CPU 한도 재발 — 제한된 비교 계획
+
+V2는 Python normal0/nonzero2 actual71.28s와 기존 Node12 actual205.66s가 각각 PASS지만
+별도 Pipx parent45.08s는 DIRECT_IMPORT CPU authorization exhausted였다. 최초 원본과
+Host/고정 입력/source/helperwait0/전체 정리는 보존했고 whole candidate qualified로 표시하지
+않는다. B1에서도 같은 한도 사건이 있었으며 과거 원인은 미확정이다. 정책/한도/코드를 바꾸지
+않고 (1) 보존된 pre-B2 Go c380 + current CPP f69, (2) current Go f70 + current CPP f69를
+각 한 번의 readonly Host cgroup CPU counter 비교로 관찰한다. 전자는 새 Go 변경이 실패의
+필요조건인지, 후자는 실제 누적 CPU/uncertainty 경계에 대한 새 계측이다. 혼합 baseline은
+진단일 뿐 current backend qualification으로 쓰지 않는다. 이후 PASS도 최초 CPU 인과 해결로
+쓰지 않고, 반증/새 계측 근거 없이 같은 variant를 다시 실행하지 않는다.

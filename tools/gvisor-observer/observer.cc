@@ -97,6 +97,9 @@ constexpr size_t kMaxTopologyMountpointBytes = 512;
 constexpr size_t kMaxTopologyFilesystemTypeBytes = 32;
 constexpr size_t kMaxTopologySnapshotBytes = 64 << 10;
 constexpr char kProfileNPM[] = "npm-lifecycle";
+constexpr char kProfilePythonExecution[] = "python-execution";
+constexpr char kPythonExecutionPath[] = "/usr/local/bin/python3.14";
+constexpr char kPythonExecutionProgram[] = "import importlib\nimport sys\nexpected = ['/usr/local/lib/python314.zip', '/usr/local/lib/python3.14', '/usr/local/lib/python3.14/lib-dynload']\nif not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode) or 'site' in sys.modules or sys.path != expected:\n    raise RuntimeError('console interpreter startup differs from pinned isolated runtime')\nmodule, attr, command = sys.argv[1:4]\nsys.path.append('/haa-site')\nsys.argv = [command, *sys.argv[4:]]\ntarget = importlib.import_module(module)\nfor part in attr.split('.'):\n    target = getattr(target, part)\nraise SystemExit(target())\n";
 constexpr char kProfileNodeExecution[] = "node-execution";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfileUVResolver[] = "uv-pip-resolver";
@@ -145,7 +148,8 @@ bool IsPipxNativeProfile(const char* profile) {
 }
 
 bool IsPythonRuntimeProfile(const char* profile) {
-  return IsPythonProfile(profile) || IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile);
+  return IsPythonProfile(profile) || IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile) ||
+      (profile != nullptr && strcmp(profile,kProfilePythonExecution) == 0);
 }
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
@@ -518,6 +522,8 @@ struct ProcessState {
     std::vector<std::string> node_execution_target;
     bool node_execution_active = false;
     bool node_execution_demoting = false;
+    std::vector<std::string> python_execution_target;
+    bool python_execution_active = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -2202,6 +2208,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/go/pkg/tool/linux_amd64/link") return ProcessClass::kGoBuildLink;
     if (path == "/usr/local/go/pkg/tool/linux_amd64/cgo") return ProcessClass::kGoBuildCgo;
   }
+  if (strcmp(profile,kProfilePythonExecution) == 0 && path == kPythonExecutionPath) return ProcessClass::kPython;
   if (strcmp(profile, kProfileNodeExecution) == 0 && path == "/usr/local/bin/node") return ProcessClass::kNode;
   if (strcmp(profile, kProfileNPM) == 0) {
     if (path == kBunToolPath) return ProcessClass::kBun;
@@ -2482,7 +2489,7 @@ bool IsWorkspacePath(const std::string& path, const char* profile) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-pipx" || path == "/haa-pipx/pipx-runtime.zip";
   }
-  if (IsPythonProfile(profile) || strcmp(profile, kProfileUVResolver) == 0) {
+  if ((profile != nullptr && strcmp(profile,kProfilePythonExecution) == 0) || IsPythonProfile(profile) || strcmp(profile, kProfileUVResolver) == 0) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-site" || HasPrefix(path, "/haa-site/");
   }
@@ -2857,7 +2864,7 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
                              const ProcessState& state,
                              const std::string& path, uint64_t flags,
                              const char* profile) {
-  if (profile == nullptr) return false;
+  if (profile == nullptr || strcmp(profile,kProfilePythonExecution) == 0) return false;
   std::string normalized;
   if (!NormalizeAbsolutePath(path, &normalized)) return false;
   if (IsWriteCapableOpen(flags) && normalized != "/dev/null") return false;
@@ -2976,10 +2983,13 @@ bool BindNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const To
   return true;
 }
 
-bool SameNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const ProcessState::GroupState& group, int offset) {
-  if (group.node_execution_target.empty() || message.argv_size() != offset+static_cast<int>(group.node_execution_target.size())) return false;
-  for (size_t i=0;i<group.node_execution_target.size();++i) if (message.argv(offset+static_cast<int>(i)) != group.node_execution_target[i]) return false;
+bool SameCapturedExecutionTarget(const gvisor::sentry::ExecveInfo& message, const std::vector<std::string>& target, int offset) {
+  if (target.empty() || message.argv_size() != offset+static_cast<int>(target.size())) return false;
+  for (size_t i=0;i<target.size();++i) if (message.argv(offset+static_cast<int>(i)) != target[i]) return false;
   return true;
+}
+bool SameNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const ProcessState::GroupState& group, int offset) {
+  return SameCapturedExecutionTarget(message,group.node_execution_target,offset);
 }
 
 bool IsPinnedNodeExecutionRead(const gvisor::common::ContextData& context, const ProcessState& state,
@@ -3009,6 +3019,70 @@ bool IsPinnedNodeExecutionRead(const gvisor::common::ContextData& context, const
   return (node && flags == 557056 && (path == "/proc/self/maps" || path == self+"/maps" || path == self+"/cgroup" ||
       path == "/proc/meminfo" || path == "/proc/version_signature" || path == "/proc/sys/vm/overcommit_memory")) ||
       (demoting && (path == "/proc/self/status" || path == self+"/status" || path == "/proc/sys/kernel/cap_last_cap"));
+}
+
+// The selected console owns no CONTROL or ambient Python/Pipx authority.
+bool IsPythonExecutionTopology(const TopologyState* topology) {
+  if (!IsPinnedReadOnlyRootPath(topology,kPythonExecutionPath)) return false;
+  size_t declared=0,anchors=0;
+  for (const auto& mount:topology->expected) if (mount.mountpoint=="/haa-site") {
+    if (mount.mount_class!="workspace" || mount.parent!="/" || mount.filesystem_type!="9p" ||
+        !mount.read_only || mount.noexec || mount.nosuid || mount.nodev) return false;
+    ++declared;
+  }
+  for (const auto& entry:topology->anchors) {
+    const auto& mount=entry.second;
+    if (mount.mountpoint=="/haa-site") { if(mount.mount_class!="workspace")return false; ++anchors; }
+    else if (IsAtOrBelowMountpoint(mount.mountpoint,"/haa-site")) return false;
+  }
+  return declared==1 && anchors==1;
+}
+bool IsConsoleQualifiedName(const std::string& name) {
+  if(name.empty() || name.size()>512)return false;
+  bool first=true;
+  for(unsigned char c:name) {
+    if(c=='.') { if(first)return false; first=true; continue; }
+    if(!((c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_' || (!first && c>='0' && c<='9')))return false;
+    first=false;
+  }
+  return !first;
+}
+bool BindPythonExecutionTarget(const gvisor::sentry::ExecveInfo& message,const TopologyState* topology,ProcessState::GroupState* group) {
+  if(group==nullptr || !group->python_execution_target.empty() || !IsPythonExecutionTopology(topology) ||
+      message.argv_size()<12 || message.argv_size()>140 || message.argv(3)!=kPythonExecutionPath ||
+      message.argv(4)!="-I" || message.argv(5)!="-S" || message.argv(6)!="-B" || message.argv(7)!="-c" ||
+      message.argv(8)!=kPythonExecutionProgram || !IsConsoleQualifiedName(message.argv(9)) || !IsConsoleQualifiedName(message.argv(10)) ||
+      message.argv(11).empty() || message.argv(11).size()>128)return false;
+  for(unsigned char c:message.argv(11))if(c<=32 || c>=127 || c=='/' || c=='\\')return false;
+  size_t bytes=0;
+  for(int i=12;i<message.argv_size();++i) { bytes+=message.argv(i).size(); if(bytes>32768 || message.argv(i).find('\0')!=std::string::npos)return false; }
+  for(int i=3;i<message.argv_size();++i)group->python_execution_target.push_back(message.argv(i));
+  return true;
+}
+bool IsActivePythonExecutionGroup(const gvisor::common::ContextData& context,const ProcessState::GroupState* group) {
+  return group!=nullptr && group->role==ProcessState::Role::kArtifact && group->provenance==ProcessState::Provenance::kDirectExecRoot &&
+      !group->root_eligible && group->root_consumed && !group->trusted_control_network_active && !group->demotion_pending &&
+      !group->launch_target_pending && !group->handoff_target_pending && group->python_execution_active &&
+      group->current_image_class==ProcessClass::kPython && context.is_exec_session() && context.parent_thread_group_id()==0;
+}
+bool IsPinnedPythonExecutionRead(const gvisor::common::ContextData& context,const ProcessState& state,
+    const std::string& path,uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || strcmp(profile,kProfilePythonExecution)!=0 || anchor==nullptr || IsWriteCapableOpen(flags))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(!IsActivePythonExecutionGroup(context,group))return false;
+  std::string normalized;
+  if(!NormalizeAbsolutePath(path,&normalized) || (path!=normalized && !IsExactPinnedPythonLoaderCandidate(path)))return false;
+  if(anchor->mountpoint=="/" && anchor->mount_class=="oci-root") {
+    if(normalized=="/usr/local/lib/python3.14/site-packages" || HasPrefix(normalized,"/usr/local/lib/python3.14/site-packages/"))return false;
+    return IsExactPinnedPythonLoaderCandidate(path) || IsExactPinnedPythonSystemLibrary(normalized) ||
+        IsExactPinnedLibraryRead(normalized) || normalized==kPythonExecutionPath || normalized=="/usr/local/lib/libpython3.14.so.1.0" ||
+        normalized=="/usr/local/lib/python314.zip" || normalized=="/usr/local/lib/python3.14" || HasPrefix(normalized,"/usr/local/lib/python3.14/") ||
+        normalized=="/usr/share/zoneinfo/Etc/UTC" || normalized=="/etc/localtime";
+  }
+  if(anchor->mount_class!="system")return false;
+  if(anchor->mountpoint=="/proc" && path=="/proc/sys/vm/overcommit_memory")return flags==32768;
+  return (anchor->mountpoint=="/dev" && (path=="/dev/null" || path=="/dev/urandom")) ||
+      (anchor->mountpoint=="/proc" && (path=="/proc/self/maps" || path=="/proc/"+std::to_string(context.thread_group_id())+"/maps"));
 }
 
 // The exact version-only Node child remains ARTIFACT. Reuse only the
@@ -3572,7 +3646,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile,kProfilePythonExecution) == 0 || strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -4051,7 +4125,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status";
   if (exact_self_status) return FilesystemClass::kHelperOnly;
   const bool exact_handoff_validation = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
-      (profile == nullptr || strcmp(profile,kProfileNodeExecution) != 0 || tracked->handoff_target_pending) &&
+      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfilePythonExecution) != 0) || tracked->handoff_target_pending) &&
       tracked->role == ProcessState::Role::kArtifact &&
       (tracked->provenance == ProcessState::Provenance::kCloneChild ||
        tracked->provenance == ProcessState::Provenance::kDirectExecRoot) &&
@@ -4064,7 +4138,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
        path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status");
   if (exact_handoff_validation) return FilesystemClass::kHelperOnly;
   const bool exact_artifact_shell_loader = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
-      (profile == nullptr || strcmp(profile,kProfileNodeExecution) != 0) &&
+      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfilePythonExecution) != 0)) &&
       tracked->role == ProcessState::Role::kArtifact &&
       tracked->provenance == ProcessState::Provenance::kCloneChild &&
       !tracked->root_eligible && tracked->root_consumed &&
@@ -4083,6 +4157,10 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   if (IsPipxRuntimeProfile(profile) &&
       (path == "/haa-pipx" || HasPrefix(path, "/haa-pipx/")) &&
       (!IsWorkspacePath(path, profile) || IsWriteCapableOpen(message.flags()))) return FilesystemClass::kOutside;
+  if (profile != nullptr && strcmp(profile,kProfilePythonExecution)==0 && (path=="/haa-site" || HasPrefix(path,"/haa-site/"))) {
+    return !IsWriteCapableOpen(message.flags()) && anchor != nullptr && anchor->mountpoint=="/haa-site" && anchor->mount_class=="workspace" &&
+        IsActivePythonExecutionGroup(message.context_data(),tracked) ? FilesystemClass::kWorkspace : FilesystemClass::kOutside;
+  }
   if (IsWorkspacePath(path, profile)) return FilesystemClass::kWorkspace;
   if (IsClearlyOutsideWorkspace(path) ||
       (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
@@ -4092,7 +4170,8 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   if (IsGitHubArtifactRuntimeRead(message.context_data(), state, path,
                                   message.flags(), profile, anchor) ||
       IsPinnedPNPMNodeQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
-      IsPinnedNodeExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
+      IsPinnedNodeExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedPythonExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
@@ -4248,7 +4327,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfileNodeExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfilePythonExecution && profile != kProfileNodeExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfilePipxNativeResolver && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -4292,7 +4371,8 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
       (!(IsPipxRuntimeProfile(profile->second.profile.c_str()) || IsPipxNativeProfile(profile->second.profile.c_str())) || mode == kPythonHandoffMode || mode == kLaunchMode) &&
       (mode != kNodeHandoffMode || profile->second.profile == kProfileNodeExecution) &&
-      (profile->second.profile != kProfileNodeExecution || mode == kNodeHandoffMode || mode == kLaunchMode)) {
+      (profile->second.profile != kProfileNodeExecution || mode == kNodeHandoffMode || mode == kLaunchMode) &&
+      (profile->second.profile != kProfilePythonExecution || mode == kPythonHandoffMode || mode == kLaunchMode)) {
     auto pending = profile->second.pending_admissions.end();
     for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
       if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
@@ -4773,6 +4853,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
         (boundary_mode == BoundaryMode::kNodeHandoff && strcmp(profile,kProfileNodeExecution) != 0) ||
+        (strcmp(profile,kProfilePythonExecution)==0 && boundary_mode!=BoundaryMode::kPythonHandoff &&
+         !(boundary_mode==BoundaryMode::kLaunch && IsExactPipxReadiness(message,true))) ||
         (strcmp(profile,kProfileNodeExecution) == 0 && boundary_mode != BoundaryMode::kNodeHandoff &&
          !(boundary_mode == BoundaryMode::kLaunch && IsExactPipxReadiness(message,true))) ||
         ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && boundary_mode != BoundaryMode::kPythonHandoff &&
@@ -4795,8 +4877,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (boundary_mode == BoundaryMode::kNodeHandoff && !BindNodeExecutionTarget(message,topology,&group->second)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
     }
+    if(strcmp(profile,kProfilePythonExecution)==0 && boundary_mode==BoundaryMode::kPythonHandoff && !BindPythonExecutionTarget(message,topology,&group->second)) {
+      *reason="PROCESS_PROVENANCE_UNKNOWN"; return false;
+    }
     new_direct_root = true;
   }
+  group->second.python_execution_active = false;
   group->second.node_execution_active = false;
   group->second.node_execution_demoting = false;
   const bool pipx_native_candidate = group->second.pipx_native_candidate;
@@ -5110,6 +5196,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       }
       group->second.node_execution_demoting = true;
     }
+    if(strcmp(profile,kProfilePythonExecution)==0 && group->second.role==ProcessState::Role::kArtifact) {
+      if(!IsPinnedReadOnlyRootPath(topology,kSetprivPath) || !SameCapturedExecutionTarget(message,group->second.python_execution_target,9)) {
+        *reason="PROCESS_PROVENANCE_UNKNOWN"; return false;
+      }
+    }
     group->second.demotion_pending = false;
     if (group->second.role == ProcessState::Role::kControl) {
       group->second.launch_target_pending = true;
@@ -5125,7 +5216,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   }
   if (group->second.role == ProcessState::Role::kControl &&
       group->second.launch_target_pending) {
-    if ((IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && !IsExactPipxReadiness(message, false)) {
+    if ((strcmp(profile,kProfilePythonExecution)==0 || IsPipxRuntimeProfile(profile) || IsPipxNativeProfile(profile)) && !IsExactPipxReadiness(message, false)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
@@ -5310,6 +5401,14 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
         }
         group->second.node_execution_active = true;
         group->second.node_execution_target.clear();
+      }
+      if(strcmp(profile,kProfilePythonExecution)==0) {
+        if(process_class!=ProcessClass::kPython || message.binary_path()!=kPythonExecutionPath || message.execfn()!=kPythonExecutionPath ||
+            !IsPythonExecutionTopology(topology) || !SameCapturedExecutionTarget(message,group->second.python_execution_target,0)) {
+          *reason="PROCESS_PROVENANCE_UNKNOWN"; return false;
+        }
+        group->second.python_execution_active=true;
+        group->second.python_execution_target.clear();
       }
       if (IsPipxNativeProfile(profile) && !ParsePipxNativeRoot(message,topology,&group->second)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
@@ -5551,7 +5650,7 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   // contract. Dispatch restricted queries and the native profile through the
   // same predicate used for non-workspace opens, after all resolved-path and
   // mount/correlation checks above. Other profiles retain their fast path.
-  const bool restricted_workspace = IsPipxNativeProfile(profile) ||
+  const bool restricted_workspace = strcmp(profile,kProfilePythonExecution)==0 || IsPipxNativeProfile(profile) ||
       (strcmp(profile, kProfileUVResolver) == 0 && group != state->groups.end() &&
        group->second.uv_python_query_restricted);
   if (anchor->second.mount_class == "workspace" && !restricted_workspace) {

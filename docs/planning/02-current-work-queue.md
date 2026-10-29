@@ -15,15 +15,30 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: CI431/source0d96/3032·1355 named hosted QUALIFIED; Required10SUCCESS/all checkoutf4d7/tree20b; Linux100/noFAIL/noSKIP/CPP131; preparation3/refusal2/readonly4; helper17wait0/final4 original0; automatic monitor completed07:47:11UTC, run elapsed99m03. B2-A local5c/1356 remains separately qualified; cleanup179/~6.35GiB.
-Next action: finish B2-B exact Python ABI correction in /tmp/haa-p6-b2b-20261029-source; v1 canonical9/CPP132 PASS but first actual40.25s failed VM_OVERCOMMIT_MEMORY/flags32768; original/source/cleanup preserved. v2 CPP-only checks active (Go81781/CPP47762), same Go binary f70 reused with explicit source scopes; actual2 and old consumers pending. No active CI431 timer; next meaningful grouped push after qualification.
-Current substep: M13-004/P6-B2-B Python selected-program profile/backend IN_PROGRESS; source1356 baseline and exact map/second review recorded before source. CI431/source0d96 COMPLETE and excludes this backend/helper; source1361 v2 local qualification pending.
+Last completed substep: B2-B initial internal Python selected-console backend named local QUALIFIED; source1361/old1352 unchanged; composed canonical9/CPP132; actual Python2 71.28s and Node12 205.66s, separate current Pipx counter42.14s PASS. First Python ABI and Pipx CPU failures preserved; CPU cause remains UNCONFIRMED. Cleanup191/~6.66GiB. CI431/source0d96 hosted COMPLETE and excludes this backend.
+Next action: baseline/exact-map/second-review for B2-C initial selected Python parent hosted wiring, then canonical current-step guard/closed-profile checks and one meaningful grouped push. Python hostile-boundary matrix, native UVx/golden/application runtime adapter/aliases/CLI and final remain OPEN. No active CI431 timer; next new run receives actual20min GET monitor.
+Current substep: M13-004/P6-B2-B initial backend named local complete; final metadata/candidate commit then B2-C hosted wiring. Root/current candidate1361 with Go f70 and CPP f69; CPU-envelope cause unresolved; no whole runtime/final completion claim.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
+Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-B initial Python backend named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b2b-python-artifact-backend-local-20261029.json)는 source1361/기존1352 불변과
+기존 readonly input·공유 capture를 소비하는 closed Python ARTIFACT profile/backend를 연결한다.
+Go9 검사 중 독립 동일 Go 증거와 v2 Quick56.6s/docs/security·CPP132/305.01s를 출처별로 구분했다.
+Same f70/f69의 current Python normal0/nonzero2 71.28s와 기존 Node12 205.66s가 PASS다. 첫
+missing exact Python ABI40.25s는 원본 보존 뒤 system/proc/exact flags32768 읽기만 한정 교정했다.
+기존 Pipx45.08s CPU guard FAIL과 old-Go/new-CPP counter43.32s·current counter42.14s PASS는
+따로 기록하고 원인 미확정/한도 불변을 유지한다. Current379samples/peak11713906us는 진단이지
+완료 authority나 인과 해결이 아니다. Host/source/42/ZIP/Docker 보존/helperwait0/전체 정리를
+확인했고 완료 사본12개328456846B를 root85proc/참조0·query errors0 뒤 제거했다. 누적191개
+약6.66GiB이며 original baselines/CPP/source/raw/inputs/cache는 보존한다. Initial internal API만의
+범위이고 Python hostile actual/hosted/native UVx/aliases/application adapter/CLI/final은 미완료다.
+같은 M13-004에서 필요한 hosted wiring/backend 묶음 push와20min 감시를 계속한다.
 
 ### 2026-10-29 CI431 current inputs hosted 완료
 
