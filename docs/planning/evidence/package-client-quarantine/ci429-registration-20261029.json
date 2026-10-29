@@ -7,15 +7,15 @@
   "tracked_files": 2996,
   "runtime_inputs": 1343,
   "run_started_at": "2026-10-29T01:57:02Z",
-  "last_query_at": "2026-10-29T01:57:32Z",
+  "last_query_at": "2026-10-29T02:17:12Z",
   "status": "in_progress",
   "conclusion": null,
   "jobs": [
     {
       "id": 123216705735,
       "name": "Representative Wheel Corpus",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216705836,
@@ -26,52 +26,52 @@
     {
       "id": 123216705866,
       "name": "gVisor Observer Helper",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216705885,
       "name": "Vulnerability",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216705914,
       "name": "Quick",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216706019,
       "name": "Security",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216706036,
       "name": "Docs",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216706100,
       "name": "macOS",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216706758,
       "name": "Minimum Go",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
   "scope": "current prior consumers and preparation/kernel plus new controlled boundary12/application2/npx CLI4; Go/CPP unchanged from C5; full ordinary CI with native macOS",
   "qualification": "PENDING; initial running is not hosted PASS",
-  "timer_session": 84875,
-  "next_due_at": "2026-10-29T02:17:02Z",
+  "timer_session": 61181,
+  "next_due_at": "2026-10-29T02:37:12Z",
   "timer_interval_minutes": 20,
-  "completed20min_polls": 0,
+  "completed20min_polls": 1,
   "estimated_elapsed_to_final": "recent ordinary CI42894m51/CI42778m45; new three parents add several minutes; roughly90-115min, not a completion promise",
   "push": "normal FF558d75a->9eb854f on existing milestone branch; exact remote ref confirmed",
   "authorization": "explicit user during sleep; important CI/push without asking",
@@ -79,5 +79,9 @@
     "new hosted actual results/source+checkout+decoded logs",
     "whole final support4profiles/signed/P5-P7 acceptance"
   ],
-  "no_new_push_while_active": true
+  "no_new_push_while_active": true,
+  "completed8_same_checkout": "b2eb8b6e5a773101199f37deb21a4f383ec5c6ba",
+  "completed8_checkout_tree_matches_source": true,
+  "decoded_partial_log_bytes": 448735,
+  "completed_helper_latches": 131
 }

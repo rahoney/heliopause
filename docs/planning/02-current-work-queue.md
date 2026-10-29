@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: C7 post-Policy CLI refusal2 local qualified33.886s/canonical6; existing1343 unchanged; CI429 source9eb excludes new extra test
-Next action: CI429/source9eb854f/tree51a9a25c/2996·1343 started01:57:02UTC; initial9running; actual20min timer01 due02:17:02UTC/KST11:17:02/session84875. Consume timer/fresh status; preserve active run/no push; independent bounded P5 acceptance/P6 owner baseline next.
-Current substep: M13-004/P5-C7 named local refusal acceptance complete; final metadata/local commit then bounded P5 acceptance/P6 owner audit; CI429 active source fixed/timer01 due02:17:02UTC; no push
+Next action: CI429 source9eb854f poll01 at02:17:12UTC:8SUCCESS incl macOS/Linux running; completed8 same checkoutb2eb8b6e/tree51a9a25c/decoded448735B/CPP131. Actual20min timer02 due02:37:12UTC/KST11:37:12/session61181; preserve active run/no push. Independent P5 bounded/P6 baseline.
+Current substep: M13-004/P6 baseline/source DATA audit IN_PROGRESS; local5a45a6f/1344 owner map confirms existing generic context/workflow/records reuse; pinned UV0.13.4 source7456b60b/5files verified; selector equivalence/Python entry/runtime unimplemented; CI429 active/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: bounded P5 acceptance and P6 existing owner/input audit; C7 refusal2 locally qualified; active CI429 preserved and final support matrix OPEN
+Independent local next: finish pinned UV native run/install selection comparison and Python entry metadata/member proof edit map; reuse current generic owners; no placeholders or new permissions; CI429 preserved
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P6 existing owners/pinned UV source 착수 감사
+
+[Baseline](./evidence/package-client-quarantine/p6-execution-adapter-baseline-20261029.md)는
+Core context/Application/records/capture의 기존 구현을 그대로 재사용하고 actual native selection/
+Python console binding/readonly runtime/CLI gap을 구분한다. [고정 UV source discovery](./evidence/package-client-quarantine/p6-uv0134-source-discovery-20261029.json)는
+원본 commit7456b60b의5file Git blob/SHA256/readback을 확인했다. Tool install과 tool run의
+의미 동일성은 아직 UNPROVEN이며 cache/PATH/env/stdin 기본값을 HAA 권한으로 수입하지 않는다.
+새 HAA source/placeholder/패키지·설정·CI job·버전/권한 변화는 없고 CI429는 계속 감시한다.
 
 ### 2026-10-29 C7 real post-Policy CLI refusal local 완료
 
