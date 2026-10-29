@@ -179,6 +179,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validatePipxInspectionClientOrder(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV tools", []string{"bash scripts/ci-uv-tools.sh", "bash scripts/ci-uv-tools.sh bootstrap"})...)
 	findings = append(findings, validateUVToolsClientOrder(contents)...)
+	findings = append(findings, validateCurrentExecutionPreparationQualification(contents)...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{

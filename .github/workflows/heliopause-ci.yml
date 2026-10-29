@@ -598,6 +598,61 @@ jobs:
           ' "$npm_execution_cli_log"
           rm -- "$npm_execution_cli_log"
 
+      - name: Qualify current execution preparation and refusals
+        run: |
+          set -euo pipefail
+          source scripts/ci-integration-cleanup.sh
+          haa_ci_initialize
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          umask 077
+          node_refusal_log="$RUNNER_TEMP/haa-node-refusal.log"
+          node_refusal_status=0
+          (
+            cd internal/bootstrap
+            HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxNPMExecutionCLIRefusalIntegration$'
+          ) >"$node_refusal_log" 2>&1 || node_refusal_status=$?
+          node_refusal_log_status=0
+          cat -- "$node_refusal_log" || node_refusal_log_status=$?
+          if ((node_refusal_status)); then exit "$node_refusal_status"; fi
+          if ((node_refusal_log_status)); then exit "$node_refusal_log_status"; fi
+          awk '
+          BEGIN { n=split("1 2", names, " "); for (i=1; i<=n; i++) expected[names[i]]=1 }
+          /--- SKIP:/ { bad=1 }
+          /^--- PASS: TestLinuxNPMExecutionCLIRefusalIntegration \(/ { seen++ }
+          /^[[:space:]]+npm_execution_refusal_integration_test\.go:[0-9]+: production_npm_execution_refusal case=/ {
+            case_name=$0
+            sub(/^.* production_npm_execution_refusal case=/, "", case_name)
+            sub(/ .*/, "", case_name)
+            if (!(case_name in expected) || accepted[case_name]++) bad=1
+            cases++
+          }
+          END { exit (bad || seen != 1 || cases != 2) }
+          ' "$node_refusal_log"
+          rm -- "$node_refusal_log"
+
+          python_preparation_log="$RUNNER_TEMP/haa-python-preparation.log"
+          python_preparation_status=0
+          bash scripts/ci-uv-tools.sh python-execution-preparation >"$python_preparation_log" 2>&1 || python_preparation_status=$?
+          python_preparation_log_status=0
+          cat -- "$python_preparation_log" || python_preparation_log_status=$?
+          if ((python_preparation_status)); then exit "$python_preparation_status"; fi
+          if ((python_preparation_log_status)); then exit "$python_preparation_log_status"; fi
+          awk '
+          BEGIN { n=split("1 2 3", names, " "); for (i=1; i<=n; i++) expected[names[i]]=1 }
+          /--- SKIP:/ { bad=1 }
+          /^--- PASS: TestLinuxPythonExecutionPreparationIntegration \(/ { seen++ }
+          /^[[:space:]]+python_execution_prepare_integration_test\.go:[0-9]+: python_execution_preparation case=/ {
+            case_name=$0
+            sub(/^.* python_execution_preparation case=/, "", case_name)
+            sub(/ .*/, "", case_name)
+            if (!(case_name in expected) || accepted[case_name]++) bad=1
+            cases++
+          }
+          END { exit (bad || seen != 1 || cases != 3) }
+          ' "$python_preparation_log"
+          rm -- "$python_preparation_log"
+
       - name: Qualify kernel direct-exec image and terminal facts
         run: |
           set -euo pipefail

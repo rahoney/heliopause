@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-A3 current Python storage preparation locally qualified; canonical9/Quick249.346s/Bootstrap Race23.628s/actual3 84.364s; existing1348 unchanged/new3; CI429 Required10SUCCESS recorded
-Next action: CI429 source9eb all10 source/log qualification complete/timer05 retired. Commit qualified P6-A3 then baseline/wire meaningful existing hosted checkpoint for current Python preparation3 and Node post-Policy refusal2; authorized normal push/timer after checks.
-Current substep: M13-004/P6-A3 final docs/security/local commit then grouped hosted current Python preparation3/C7 refusal2; native UVx/user Python runtime/CLI OPEN
+Last completed substep: P6-A4 grouped hosted wiring locally qualified; canonical7/workflow/Quick299.996s/checker Race55.890s/inert Bash DATA21 PASS; production Go/CPP unchanged
+Next action: Commit locally verified A4 source1351/production unchanged after final docs-security; normal FF grouped push from remote9eb after exact head/source check; register actual CI run and20min timer; continue Python readonly runtime baseline.
+Current substep: M13-004/P6-A4 final docs/security/local commit then authorized grouped push/run/20min timer; hosted qualification pending; native UVx/user Python runtime/CLI OPEN
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
@@ -33,6 +33,21 @@ noSKIP/CPP131·CPU300.35s/Node prep48.40s/controlled12 166.71s/application2 38.9
 81.39s/kernel8 5.26s/helper16wait0/세 final0·복원이다. Child는 clone-startup 거부·정리만
 입증했으며 body/held-pipe는 미입증이다. 전체100m21s이며 timer05 due03:37:40 뒤
 03:37:45UTC 결과 소비·종료했다. Later C7/P6/whole final은 이 source 밖이며 계속 진행한다.
+
+### 2026-10-29 P6-A4 current hosted wiring local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6a4-grouped-hosted-local-20261029.json)는 기존 image DATA helper/current
+Python profile·protected lifecycle과 C7 refusal2/A3 preparation3의 unconditional 연결이다.
+Canonical7/Quick299.996s/전체 checker Race55.890s·Bash syntax와 DATA21cases가 PASS다.
+기존 production Go/CPP·cohort/권한/한도는 유지했고 remote PASS나 새 실제 runtime을 만들지
+않았다. 최종 docs/security 뒤 승인된 정상 grouped push와 실제20min timer를 등록한다.
+
+### 2026-10-29 P6-A4 grouped current execution hosted 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p6a4-grouped-hosted-plan-20261029.md)는
+실제 local qualified Python 준비3/Node refusal2를 기존 helper/고정 fixture/profile로
+hosted 연결한다. Production Go/CPP와 기존 Node/kernel/Required·권한/한도는 유지한다.
+로컬 wiring/guard 검증 뒤 승인된 정상 push·실제20min timer를 등록하고 후속 runtime 감사를 계속한다.
 
 ### 2026-10-29 P6-A3 current Python preparation actual local 완료
 
