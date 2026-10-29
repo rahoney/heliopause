@@ -104,6 +104,14 @@ func TestUVActualIsolatedNativeLockCollection(t *testing.T) {
 
 func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, CommandRunner, string)) {
 	t.Helper()
+	withActualUVNativeRuntimeInput(t, nil, operation)
+}
+
+func withActualUVNativeRuntimeInput(t *testing.T, frozen *pipxNativeInput, operation func(context.Context, CommandRunner, string)) {
+	t.Helper()
+	if frozen != nil && !frozen.valid() {
+		t.Fatal("public UV query requires frozen whole startup-safe source")
+	}
 	if os.Geteuid() == 0 || os.Getenv("HELOX_UV_NATIVE_RUNTIME") != "1" {
 		t.Fatal("requires declared ordinary-user isolated UV runtime qualification")
 	}
@@ -146,7 +154,11 @@ func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, Com
 		t.Fatal(err)
 	}
 	name := "haa-uv-native-" + session.String()
-	output, err := createClosureVolume(ctx, runner, session.String()+"-uv-output", runtimeidentity.UVToolSHA256, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
+	outputManifest := runtimeidentity.UVToolSHA256
+	if frozen != nil {
+		outputManifest = frozen.id
+	}
+	output, err := createClosureVolume(ctx, runner, session.String()+"-uv-output", outputManifest, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,9 +170,36 @@ func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, Com
 			t.Error(err)
 		}
 	}()
+	var mirror *uvPublicRawMirror
+	if frozen != nil {
+		mirror = &uvPublicRawMirror{session: pipxNativeSession{runner: runner}}
+		defer func() {
+			if err := mirror.close(); err != nil {
+				t.Error(err)
+			}
+		}()
+		if err := mirror.prepare(ctx, frozen); err != nil {
+			t.Fatal(err)
+		}
+	}
 	baseArguments, err := uvCreateArguments("none", nil, volume, output)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if mirror != nil {
+		runtimeMount, err := volume.mountArgument()
+		if err != nil {
+			t.Fatal(err)
+		}
+		outputMount, err := output.mountArgument(false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wheelMount, err := mirror.volume.readerMount()
+		if err != nil {
+			t.Fatal(err)
+		}
+		baseArguments = pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount})
 	}
 	arguments := append([]string{"create", "--name", name, "--label", "io.heliopause.uv-native=" + session.String()}, baseArguments[1:]...)
 	created, err := runner.Output(ctx, "docker", arguments...)
@@ -184,7 +223,20 @@ func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, Com
 			}
 		}
 	}()
-	trace, err = startTrace(ctx, supervisor.Observer(), id, uvResolverProfile)
+	if mirror == nil {
+		trace, err = startTrace(ctx, supervisor.Observer(), id, uvResolverProfile)
+	} else {
+		topology, ok := observerExpectedTopology(uvResolverProfile)
+		if !ok {
+			t.Fatal("UV base topology unavailable")
+		}
+		topology = append(topology, observerMountExpectation{pipxNativeWheels, "workspace", "/", "9p", true, false, false, false})
+		shared, ok := supervisor.Observer().(*SharedObserver)
+		if !ok {
+			t.Fatal("shared UV observer required")
+		}
+		trace, err = shared.startProfile(ctx, id, uvResolverProfile, topology)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,5 +264,15 @@ func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, Com
 	if err := volume.verifyTarget(ctx, runner, id); err != nil {
 		t.Fatal(err)
 	}
+	if mirror != nil {
+		if err := mirror.volume.verifyReader(ctx, runner, id); err != nil {
+			t.Fatal(err)
+		}
+	}
 	operation(ctx, runner, id)
+	if mirror != nil {
+		if err := mirror.volume.verifyReader(ctx, runner, id); err != nil {
+			t.Error(err)
+		}
+	}
 }

@@ -42,8 +42,8 @@
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
     "first_preflight_rejected_without_deletion": "sandbox inventory showed unmapped root65534:65534; root execution view0:0; exact inode/mode/bytes/hash unchanged; refreshed root-context inventory and retained every guard"
   },
-  "cumulative_removed_files": 227,
-  "cumulative_removed_logical_bytes": 7993747320,
+  "cumulative_removed_files": 231,
+  "cumulative_removed_logical_bytes": 8055789762,
   "followup_completed_B2A": {
     "removed_files": 4,
     "removed_logical_bytes": 109400066,
@@ -164,7 +164,7 @@
     ]
   },
   "cumulative_removed_private_cache_directories": 6,
-  "combined_removed_logical_bytes_including_private_caches": 11282115160,
+  "combined_removed_logical_bytes_including_private_caches": 11344157602,
   "followup_completed_D3_actual_copies": {
     "removed_files": 4,
     "removed_logical_bytes": 85924576,
@@ -194,5 +194,16 @@
     "resource_empty_zombies_proved": 6,
     "all_originals_and_current_CI434_monitor_preserved": true,
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3e2-completed-result.json"
+  },
+  "followup_completed_d4a": {
+    "date": "2026-10-30",
+    "removed_files": 4,
+    "removed_logical_bytes": 62042442,
+    "root_processes": 118,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_current_CI434_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-result.json"
   }
 }
