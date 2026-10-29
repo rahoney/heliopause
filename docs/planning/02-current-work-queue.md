@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D4B2 exported-cache exact query/native DATA census named local qualified; same-latch RED3→GREEN132/UV195, fresh274.556s/replay byte-identical, current checks9/affected Race24.106s, native public2/49.948s and old Python2/72.84s PASS. Cleanup239ELF+6cache/~10.70GiB logical.
-Next action: audit fixed UV relocatable wrapper producer and existing canonical wheel/installed controls/native proof owners against actual84 census; implement only missing source/selection binding without fake tool receipt or relabeling runtime. Reuse unchanged CPP/Go results, group important CI, clean only completed duplicates with originals preserved.
-Current substep: M13-004/P6-D4B3 native original/RECORD/relocatable console binding baseline audit IN_PROGRESS. B2 query/census named local only; current native cfg/wrapper is relocatable, existing nonrelocatable matcher must not be reused as proof. CI434 completedFAIL/monitor natural0/next none; batch next important hosted boundary.
+Last completed substep: P6-D4B3 native source/relocatable console DATA binding named local qualified; current1379/checks8/Quick240.797s/affected Race32.458s, actual24.07s complete/Outside0, CPP132/UV195 exact reuse. Cleanup241ELF+6cache/~10.73GiB logical.
+Next action: audit existing protected sandbox client/helper and closed UV CI dispatch/guards, connect two current native public source/census parents without repeating native/CPP actuals, then one grouped qualification CI with actual20min GET timer. Continue production resolver/runtime adapter work while waiting.
+Current substep: M13-004/P6-D4B4 current native public source/console hosted wiring baseline audit IN_PROGRESS; B2/B3 local qualification complete. Existing workflow/profile/guards will be reused; no new CI until this meaningful bundle is ready. CI434 wholeFAIL/monitor natural0/next none.
 Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
-Independent local next: D4B native complete census/selection equivalence; D4A public original/startup/RO native preparation is named local qualified. Existing current Python boundary/hostile/application hosted owners are already qualified by CI433.
+Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 D4B3 native source/console DATA named local 완료
+
+[Qualification](./evidence/package-client-quarantine/p6d4b3-native-source-console-local-20261030.json)은 current1379/기존1371 불변과 canonical8/Quick240.797s·영향 Race32.458s 및 실제 공개 원본 binding24.07s를 확인한다. Native controls/payload SHA/relocatable wrapper는 source와 일치했고 trace complete/Outside0·원본/Host 보존/helperwait0/정리도 PASS다. Native RECORD는 unapproved DATA이며 Policy/selected program/generic native equivalence/CLI는 미완료다. CPP132/UV195는 재사용했고 종료 사본2개31244251B를 제거해 누적241ELF+6cache/약10.73GiB 논리 용량이다. 다음 current hosted wiring까지 묶어 한 번 CI를 진행하며 새 push는 아직 하지 않았다.
 
 ### 2026-10-30 D4B2 exported-cache query/census named local 완료
 
