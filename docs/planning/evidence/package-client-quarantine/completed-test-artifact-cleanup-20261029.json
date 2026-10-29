@@ -30,5 +30,18 @@
     "/tmp/haa-p5-c3c-node-v5-observer",
     "/tmp/haa-p4o4b1d-candidate-20261027/supply",
     "/tmp/haa-p4o4b1d3-selected-assets/pipx-runtime-linux-amd64.zip"
-  ]
+  ],
+  "followup_completed_Go_diagnostic": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54695129,
+    "removed_allocated_bytes": 54702080,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "latest_baselines_unchanged": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
+    "first_preflight_rejected_without_deletion": "sandbox inventory showed unmapped root65534:65534; root execution view0:0; exact inode/mode/bytes/hash unchanged; refreshed root-context inventory and retained every guard"
+  },
+  "cumulative_removed_files": 175,
+  "cumulative_removed_logical_bytes": 6711335957
 }

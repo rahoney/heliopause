@@ -1,0 +1,145 @@
+{
+  "scope": "single fresh current Go grpc1.76.0 build CLI local diagnostic; same Go owner/CPP guard, current source1355 differs from hosted source1351",
+  "current_commit": "acf3fd3acb005ac40b5d2e6d161bf1b5976b182e",
+  "runtime_binary": "c38087e735bc26e3b34f4339eb3c73cdfe1955343b9c642f3707135d1343f8d3",
+  "CPP": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77",
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 288.757,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "d5dbd6be141bba8754cd486c4e0aae1071140a45208a6f2f37084b4416db194c",
+    "sources": [
+      {
+        "path": "/tmp/haa-ci430-go-local-v1/protected-client",
+        "sha256": "c38087e735bc26e3b34f4339eb3c73cdfe1955343b9c642f3707135d1343f8d3"
+      },
+      {
+        "path": "/tmp/haa-ci430-go-local-v1/observer",
+        "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77"
+      },
+      {
+        "path": "/tmp/haa-p6-b1-20261029-source/internal/bootstrap/go_build_cli_integration_test.go",
+        "sha256": "323925347fa442cc9bb89095d0417af035b5baa466e02bdefd5019c4efe67c22"
+      }
+    ],
+    "scope": "CI430 diagnostic: existing grpc1.76.0 transitive Go CLI on current1355/B1c380 with unchanged Go owners/CPP131; no loss-guard/config change; local outcome does not resolve hosted loss cause",
+    "passed_named_tests": [
+      "TestLinuxGoTransitiveBuildCLIIntegration"
+    ],
+    "owned_go_workspaces_absent": true,
+    "named_pass": true,
+    "actual_retained_build": true,
+    "observer_directory_entries_after": [],
+    "observer_directory_empty_after": true
+  },
+  "originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-haa-ci430-go-local-v1.py",
+      "sha256": "aff0721439099b8cbb2fec36d3e570952e29d4628db6acf89217542acf69c5ee",
+      "bytes": 11016
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-actual.log",
+      "sha256": "d5dbd6be141bba8754cd486c4e0aae1071140a45208a6f2f37084b4416db194c",
+      "bytes": 861
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-actual.sh",
+      "sha256": "cfaf304867f4a259bed14511386265e4519b22ed15d1a2fc3c49b4fb368d223d",
+      "bytes": 619
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-host-after.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-host-before.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-namespace-result.json",
+      "sha256": "26e2229eb23a40ceda87fba99f5d2e1ad94afb28954d1f1e478f264af5418625",
+      "bytes": 216
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-namespace.py",
+      "sha256": "97c712ed0f8b1cfdf03b66ff1a67a142395c6bd31f48cb37a3b212c83001e882",
+      "bytes": 1580
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-result.json",
+      "sha256": "fe6ba595355c5c59fae988b0b2f8684782adf1a4efc9c2f61d0f18e0e115690a",
+      "bytes": 1418
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-runtime-source-binding.json",
+      "sha256": "72fa3efc0ad75bbf58ddb3810f3509752d50d927f98a10b6c6dd642ba6193f57",
+      "bytes": 245289
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-unchanged-go-owners-vs-ci430.json",
+      "sha256": "04dc561414353d95c6bfc65b86df75a2782e19261d55e5a3ae629510598105d8",
+      "bytes": 10858
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci430-go-local-v1-haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "upstream_audit": "docs/github-logs/package-client-quarantine-20261021/ci430-exact-remote-write-audit.json",
+  "limits": [
+    "local parent PASS286.56s/outer288.757s does not resolve hosted event-loss cause",
+    "fresh requested grpc1.76.0 graph23e30244 verified locally; failed hosted resolver did not produce a completed graph, so same acquired graph is UNPROVEN",
+    "no loss guard/retries/pod config/CPP/Go owner or budgets changed",
+    "CI430 wholeFAIL/skipped current Node/Python hosted cohort remains; no blind rerun"
+  ],
+  "next": "wire already local-qualified B1 readonly4 into existing current hosted cohort; validate new source and push for missing qualification; retain CI430 failure separately",
+  "post_completion_disposal": {
+    "duplicate_protected_client_and_observer_removed": true,
+    "retained_canonical_binary_and_CPP": "/tmp/haa-p6-b1-v2-bootstrap.test and /tmp/haa-p5-c3c-node-v5-observer",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
+    "recorded_actual_paths_are_historical": "actual facts/source hashes were frozen before exact duplicate disposal"
+  }
+}

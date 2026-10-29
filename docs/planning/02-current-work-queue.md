@@ -15,15 +15,33 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-B1 local commit14487b8/source1355/canonical10+final docs/security PASS; completed-test cleanup173 files/6.199GiB Linux /tmp reclaimed with85proc/query errors0/references0 and latest baselines preserved
-Next action: CI430 completed FAILURE/8SUCCESS+Linux/Required FAILURE; all10 original logs966355B/whole-tree checked/timer03 retired. Completed test cleanup173 files6.199GiB done; audit Go resolver DROPPED_COUNT producer/guard and continue meaningful next grouped source; no blind rerun.
-Current substep: M13-004/CI430 existing Go transitive CLI STREAM_FAULT/DROPPED_COUNT failure diagnosis IN_PROGRESS; wholeCI failure recorded; new C7/Python preparation hosted step not reached; current B1 remains named local only
+Last completed substep: P6-B1 hosted readonly4 wiring local canonical7/Quick257.065s/checkerRace54.527s/DATA32 PASS; source1355/old1352 unchanged. Completed copies175/~6.25GiB reclaimed; latest baselines/source/supplies/originals retained.
+Next action: final exact candidate docs/security and Korean commit; normal authorized FF push/new actual run confirmation then20min timer. Continue Python ARTIFACT runtime baseline while pending; retain CI430 failure and do not broaden named DATA/wiring results.
+Current substep: M13-004/P6-B1 meaningful grouped readonly4 hosted candidate final exact docs/security IN_PROGRESS; internal/cmd/CPP131 and loss guard/config unchanged; Go CI430 loss cause remains UNCONFIRMED.
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
+Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B1 readonly4 hosted 연결 local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b1-hosted-readonly-input-local-20261029.json)는 기존
+current step/never-started image DATA owner에 readonly4 closed profile을 추가했다. Canonical7/
+Quick257.065s/전체 checker Race54.527s·Bash DATA32가 PASS이며 source1355 membership와
+기존1352/internal·cmd/CPP131·권한·한도/관찰 손실 guard는 유지한다. Final 후보 검증 뒤 승인된
+정상 push/실제 새 run/20min timer를 등록한다. 새 hosted·user-runtime/UVx/CLI/final은 미완료다.
+
+### 2026-10-29 CI430 Go local 진단·B1 hosted gap 착수
+
+[Diagnostic](./evidence/package-client-quarantine/ci430-go-local-diagnostic-20261029.json)는 같은 Go
+owner/CPP·기존 guard의 current1355 단일 grpc1.76.0 parent286.56s PASS와 전체 정리를 확인했다.
+원래 CI의 완료 graph는 없으므로 같은 frozen graph 또는 관찰 손실 원인 해결로 쓰지 않는다.
+Native write body의 exact upstream 동일성과 오류·retry 의미만 확인했고 config/guard는 유지한다.
+[B1 hosted 지도·두 번째 검토](./evidence/package-client-quarantine/p6b1-hosted-readonly-input-plan-20261029.md)
+뒤 기존 current cohort에 새 readonly4 gap만 연결한다. 새 의미 있는 source의 qualification을
+위해 정상 push하며 timer를 다시 등록하고 완료된 불필요한 test 사본 정리도 이어간다.
 
 ### 2026-10-29 CI430 관찰 손실 실패 확인
 

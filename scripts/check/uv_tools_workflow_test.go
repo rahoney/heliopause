@@ -19,6 +19,10 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"skip current readonly inputs":      strings.Replace(original, "HELOX_PYTHON_EXECUTION_INPUT_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_INPUT_INTEGRATION=0", 1),
+		"ignore current readonly inputs":    strings.Replace(original, pythonExecutionInputsCommand, pythonExecutionInputsCommand+" || true", 1),
+		"wrong current readonly parent":     strings.Replace(original, "^TestLinuxPythonExecutionInputsIntegration$", "^TestLinuxNodeExecutionInputsIntegration$", 1),
+		"readonly enters native":            strings.Replace(original, " && ${1-} != python-execution-inputs", "", 1),
 		"skip current Python preparation":   strings.Replace(original, "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=0", 1),
 		"ignore current Python preparation": strings.Replace(original, pythonExecutionPreparationCommand, pythonExecutionPreparationCommand+" || true", 1),
 		"wrong current Python parent":       strings.Replace(original, "^TestLinuxPythonExecutionPreparationIntegration$", "^TestLinuxNodeExecutionPreparationIntegration$", 1),
@@ -88,6 +92,10 @@ func TestCurrentExecutionPreparationQualificationRejectsMissingOrWeakenedScope(t
 	end := start + 1 + tail
 	owned := original[start:end]
 	for name, changed := range map[string]string{
+		"ignored readonly error": strings.Replace(owned, "if ((python_inputs_status)); then exit", "if ((0)); then exit", 1),
+		"wrong readonly profile": strings.Replace(owned, "ci-uv-tools.sh python-execution-inputs", "ci-uv-tools.sh bootstrap", 1),
+		"wrong readonly count":   strings.Replace(owned, "cases != 4", "cases != 3", 1),
+		"wrong readonly IDs":     strings.Replace(owned, "1 2 3 4", "1 2 3 3", 1),
 		"conditional":            strings.Replace(owned, "        run: |", "        if: false\n        run: |", 1),
 		"wrong protected client": strings.Replace(owned, "helox-pnpm-project-test", "helox-bootstrap-test", 1),
 		"missing helper":         strings.Replace(owned, "          haa_start_policy_helper\n", "", 1),
