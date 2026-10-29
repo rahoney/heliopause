@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-D8 grouped native selector/current app/CLI hosted wiring local qualified; existing4 runtime paths only/current1392, canonical8/whole checker Race and saved actual-log DATA33 PASS, no repeated native/CPP actual. CI435 completed Required10SUCCESS/sourceb0/Linux106.
-Next action: push the important complete D5/D6/D7/D8 end-to-end bundle once, verify source/tree/expected109 and actual Required10, register real20min GET monitor; continue independent missing P6 work while CI runs. No helper/doc-only CI or unchanged native/CPP rerun.
-Current substep: M13-004/P6-D8 grouped native-run hosted qualification IN_PROGRESS; local wiring qualified, next important grouped push pending. CI435 finished all10SUCCESS and monitor natural exit0/next none; production selector/app/CLI are outside that frozen source.
+Next action: consume CI436 actual20min GET originals; audit pinned pipx run/native selection/cache/interpreter and existing current whole Python execution owners before any missing implementation. Reuse immutable source inputs and keep native DATA/current Policy distinct. No repeated helper CI/native/CPP build.
+Current substep: M13-004/P6-D8 hosted qualification PENDING in frozen CI436/source775c19c/treebcc64338/3120·1392 since20:00:39UTC. Actual20min GET worker52419/PID3546388 first20:20:39UTC/KST05:20:39; no new push while running. Independent P6-E pipx run baseline/semantics audit next.
 Acceptance audit: newest whole-green frozen baseline CI435/sourceb0 Required10SUCCESS/whole tree eebd72a1/all10 checkout334e96e3; Linux106/CPP132/fullCPU298.02s and native DATA2 PASS. Later D5/D6/D7 are named local only; D8 hosted/generic/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 grouped CI436 등록·실제20분 조회
+
+[Registration](./evidence/package-client-quarantine/ci436-registration-20261030.json)은 D5/D6/D7/D8를 모은 source775c19c/treebcc64338/3120·1392의 normal FFb0→775와 원격 ref·actual run40945168003/start20:00:39UTC를 확인했다. 워커52419/PID3546388는 첫20:20:39UTC(한국05:20:39)부터20분마다 실제 public run/jobs GET/원본/다음 due를 저장하고 즉시 공개 HTTP200·initial9jobs도 확인했다. 기존106+새3=109/CPP132·UV195/Required10/Linux120min은 불변이며 약115분은 추정이다. 실행 중 새 push 없이 P6-E pipx run 기존 owner/고정 source와 gap을 감사한다. Native DATA/current Policy·선택 program은 분리하고 generic equivalence/final은 OPEN이다.
 
 ### 2026-10-30 D8 native-run hosted wiring local 완료
 
