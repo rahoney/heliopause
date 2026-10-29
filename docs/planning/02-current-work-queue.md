@@ -17,8 +17,8 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-D4A public native pre-query binding named local qualified; canonical6/exact default membership reuse, old native4 and public1/30.04s PASS; whole original/startup bound before native query/RO sealed/clean complete trace/Host preserved. Cleanup231ELF+6cache/~10.57GiB logical.
 Next action: audit existing attested private volume and exact UV cache/query ABI before B2 implementation. Do not retry unsupported tmpfs Docker cp or same failed CI input. Batch important hosted checkpoints; reuse unchanged checks; clean terminated duplicate artifacts with original evidence retained.
-Current substep: M13-004/P6-D4B2 exportable native cache/query ABI baseline audit IN_PROGRESS. B1 direct tmpfs DATA route rejected/unqualified; failed private test removed after original freeze, Root/private runtime1371 unchanged. CI434 actual20min GET/no push while active.
-Acceptance audit: latest CI433/source87c8 Required10SUCCESS/whole tree238aa647/runtime1368/current Python boundary8/hostile5/application3. D3 later CPP9037/f7 named local only. CI434/source d81 macOS2mFAIL cause unknown/Linux pending. Whole P4/P5-P7/final4profiles/signed/native aliases OPEN.
+Current substep: M13-004/P6-D4B2 exportable native cache/query ABI baseline audit IN_PROGRESS. B1 direct tmpfs route rejected/unqualified; runtime1371 unchanged. CI434 completed8SUCCESS/macOS+RequiredFAIL; natural monitor exit0/next none. Batch next important source boundary; no identical-input rerun or docs-only CI.
+Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
 Independent local next: D4B native complete census/selection equivalence; D4A public original/startup/RO native preparation is named local qualified. Existing current Python boundary/hostile/application hosted owners are already qualified by CI433.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 CI434 완료 / whole 실패·Linux named 성공
+
+[Result](./evidence/package-client-quarantine/ci434-common-boundary-hosted-result-20261030.json)은 frozen d81/전체tree4497/모든10checkout2e20과 8SUCCESS·macOS/RequiredFAIL을 확인했다. Linux104/CPP132/fullCPU291.43s·current Python boundary8/140.11s/hostile5/72.51s/public앱3/78.83s 및 helper17wait0/final4original0·원복은 PASS다. Mac production build120s timeout/default 미도달의 직접 원인은 미확정이며 whole qualification은 NO다. 실제20분 GET6회/서버107m18 뒤 자연 워커 exit0·다음 타이머 없음과 full decoded1357090B/62chunks를 보존했다. Completed8은 재조회하지 않고 새2만 받아 대조했다. 문서/작은 helper별 CI와 동일 실패 입력 재실행 없이 D4B local을 계속하고 다음 중요한 묶음에서 hosted gap을 검증한다. D3-E2/D4A는 source 밖이며 main/release는 진행하지 않았다.
 
 ### 2026-10-30 D4B1 unsupported DATA export 경로 종료·정리
 

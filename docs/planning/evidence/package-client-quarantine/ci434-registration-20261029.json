@@ -17,12 +17,12 @@
     "requested": 0,
     "pending": 0
   },
-  "status": "in_progress",
-  "conclusion": null,
+  "status": "completed",
+  "conclusion": "failure",
   "started_at": "2026-10-29T14:21:47Z",
   "monitor_session": 12754,
   "monitor_pid": 3270701,
-  "monitor_state": "/tmp/haa-ci434-autopoll/state.json",
+  "monitor_state": "COMPLETED_RESULT_RECORDED; natural session12754 exit0",
   "first_due_at": "2026-10-29T14:41:47+00:00",
   "first_due_KST": "2026-10-29 23:41:47 KST",
   "poll_interval_minutes": 20,
@@ -47,7 +47,7 @@
   },
   "estimated_total_minutes": 106,
   "estimate_basis": "prior same workflow CI433 server6368s, current ordinary hosted coverage remains104 parents/CPP132; runner/queue variation excluded, Linux120min unchanged",
-  "qualification": "PENDING Linux/Required; macOS FAIL preserved; cannot declare whole source qualified",
+  "qualification": "Whole run NOT_QUALIFIED; named Linux104/CPP132 SUCCESS only",
   "scope": "D1 tagged DATA probe source, D2 four-method original command error preservation, D3 cached query CPP120/132 and existing ordinary hosted consumers. New D1 native DATA parent is local only and not added to hosted run filter.",
   "open": [
     "native DATA outside7 actor/path/flags attribution; D3 acceptance remains OPEN",
@@ -119,7 +119,10 @@
   ],
   "last_timed_poll": 2,
   "last_timed_query_at": "2026-10-29T15:01:49.475514+00:00",
-  "next_due_at": "2026-10-29T15:21:49.475532+00:00",
-  "last_jobs": "7SUCCESS/macOS production-build2mFAIL/Linux integration in_progress/Required pending",
-  "failure_receipt": "ci434-macos-production-build-failure-20261029.json"
+  "next_due_at": null,
+  "last_jobs": "8SUCCESS/macOSFAIL/RequiredFAIL",
+  "failure_receipt": "ci434-macos-production-build-failure-20261029.json",
+  "last_query_at": "2026-10-29T16:21:54.500146+00:00",
+  "completed20min_polls": 6,
+  "completion_receipt": "ci434-common-boundary-hosted-result-20261030.json"
 }
