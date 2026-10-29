@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: B2-B initial internal Python selected-console backend named local QUALIFIED; source1361/old1352 unchanged; composed canonical9/CPP132; actual Python2 71.28s and Node12 205.66s, separate current Pipx counter42.14s PASS. First Python ABI and Pipx CPU failures preserved; CPU cause remains UNCONFIRMED. Cleanup191/~6.66GiB. CI431/source0d96 hosted COMPLETE and excludes this backend.
-Next action: baseline/exact-map/second-review for B2-C initial selected Python parent hosted wiring, then canonical current-step guard/closed-profile checks and one meaningful grouped push. Python hostile-boundary matrix, native UVx/golden/application runtime adapter/aliases/CLI and final remain OPEN. No active CI431 timer; next new run receives actual20min GET monitor.
-Current substep: M13-004/P6-B2-B initial backend named local complete; final metadata/candidate commit then B2-C hosted wiring. Root/current candidate1361 with Go f70 and CPP f69; CPU-envelope cause unresolved; no whole runtime/final completion claim.
+Next action: implement B2-C closed python-execution profile and fourth exact parent in existing current step, preserving three existing parents; canonical7/whole checker Race and inert DATA guards, then one meaningful grouped normal FF push and actual20min GET monitor. Continue independent Python hostile-boundary/adapter work while hosted runs.
+Current substep: M13-004/P6-B2-C initial selected Python hosted wiring IN_PROGRESS; baseline3d8b59d/tree3c5c/3044·1361 and exact map/second review before source; B2-B named local only. CPU-envelope cause unresolved; native/hostile/application/CLI/final OPEN.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-C selected Python hosted 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b2c-python-backend-hosted-plan-20261029.md)는
+현재 실제 Python normal0/nonzero2 parent를 기존 created-never-started image DATA와 같은
+protected current cohort에 연결한다. Backend/CPP132/권한·한도는 유지하고 source 전
+3d8b59d/3044·1361을 고정했다. Existing Node refusal2/Python 준비3/readonly4와 새 exact parent/
+uniqueIDs/noSKIP/error 우선순위를 검증한 뒤 의미 있는 grouped push와20min 감시를 수행한다.
+새 hosted·Python hostile/native UVx/application adapter/CLI/final은 미완료다.
 
 ### 2026-10-29 B2-B initial Python backend named local 완료
 
