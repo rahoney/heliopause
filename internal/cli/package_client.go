@@ -22,6 +22,7 @@ const (
 	UVProjectPackageClient PackageClientID = "uv-project"
 	PNPMPackageClient      PackageClientID = "pnpm"
 	BunPackageClient       PackageClientID = "bun"
+	NPXPackageClient       PackageClientID = "npx"
 )
 
 type packageUpgradeMode uint8
@@ -39,6 +40,7 @@ type packageClientDescriptor struct {
 	parents                                      []packageClientParent
 	route, use, shortEN, shortKO, longEN, longKO string
 	namedSources                                 bool
+	execution                                    bool
 	validate                                     func(*cobra.Command, []string) error
 	validateRaw                                  func([]string) error
 	parse                                        func(string, domain.SourceID) (domain.ArtifactReference, error)
@@ -53,6 +55,8 @@ const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존�
 
 func packageClientDescriptors() []packageClientDescriptor {
 	return []packageClientDescriptor{
+		npxExecutionDescriptor(false),
+		npxExecutionDescriptor(true),
 		pipxInstallDescriptor(),
 		pipxUpgradeDescriptor(),
 		uvToolInstallDescriptor(),
@@ -127,7 +131,7 @@ func initializePackageClientCommands(root *cobra.Command) {
 			}
 			parent = child
 		}
-		command := newStaticLeaf(descriptor.use, descriptor.shortEN, true)
+		command := newStaticLeaf(descriptor.use, descriptor.shortEN, !descriptor.execution)
 		command.Long, command.Args = descriptor.longEN, descriptor.validate
 		command.Example = strings.Join(descriptor.examples, "\n")
 		if descriptor.flags != nil {

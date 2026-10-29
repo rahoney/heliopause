@@ -186,6 +186,11 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 			}
 		}
 	}
+	if packageClient && descriptor.execution {
+		if help, _ := command.Flags().GetBool("help"); help {
+			return "", nil
+		}
+	}
 	return source, nil
 }
 
@@ -443,7 +448,7 @@ func (p *presentation) stage(stage string) string {
 	case "activate":
 		return p.text("Activating release and checking runtime health", "릴리스 전환·실행 환경 정상 확인")
 	}
-	names := map[string][2]string{"prepare": {"Preparing operation", "작업 준비"}, "resolve": {"Resolving exact dependencies", "정확한 버전·의존성 확인"}, "download": {"Downloading artifact", "패키지 다운로드"}, "verify": {"Verifying integrity", "출처·무결성 검증"}, "inspect": {"Static / sandbox inspection", "정적·격리 환경 검사"}, "policy": {"Evaluating policy", "정책 판정"}, "manifest": {"Recording manifest / SBOM", "검증 목록·SBOM 생성"}, "stage": {"Staging verified files", "검증 파일 반입 준비"}, "install": {"Installing verified files", "검증 파일 설치"}, "build": {"Building in sandbox", "격리 환경 빌드"}, "evidence": {"Recording evidence", "검사 근거 기록"}}
+	names := map[string][2]string{"prepare": {"Preparing operation", "작업 준비"}, "resolve": {"Resolving exact dependencies", "정확한 버전·의존성 확인"}, "download": {"Downloading artifact", "패키지 다운로드"}, "verify": {"Verifying integrity", "출처·무결성 검증"}, "inspect": {"Static / sandbox inspection", "정적·격리 환경 검사"}, "policy": {"Evaluating policy", "정책 판정"}, "manifest": {"Recording manifest / SBOM", "검증 목록·SBOM 생성"}, "stage": {"Staging verified files", "검증 파일 반입 준비"}, "install": {"Installing verified files", "검증 파일 설치"}, "execute": {"Running the approved entry in sandbox", "승인된 entry 격리 실행"}, "build": {"Building in sandbox", "격리 환경 빌드"}, "evidence": {"Recording evidence", "검사 근거 기록"}}
 	value, ok := names[stage]
 	if !ok {
 		return safeTerminal(stage)

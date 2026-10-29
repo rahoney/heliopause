@@ -60,7 +60,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
-	if helpRequested(args) {
+	if helpRequested(args) && cli.SelectedPackageClient(command) != cli.NPXPackageClient {
 		return command.ExecuteContext(ctx)
 	}
 	if source == "" {
@@ -94,6 +94,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := selfUpdatePlatform(); err != nil {
 			return err
 		}
+	}
+	if cli.SelectedPackageClient(command) == cli.NPXPackageClient && (source != "npm" || runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
+		return errors.New("npx execution requires the public npm source and Linux amd64")
 	}
 	var pythonClient pythonPackageClient
 	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient {
@@ -289,6 +292,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		return command.ExecuteContext(ctx)
 	}
 	if source != "" && source == "npm" {
+		if cli.SelectedPackageClient(command) == cli.NPXPackageClient {
+			return runNPMExecution(ctx, command, trustedExecutor, processObserver)
+		}
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err

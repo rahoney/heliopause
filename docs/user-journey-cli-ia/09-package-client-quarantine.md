@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption CI417 named hosted 검증, pipx·최종 support/profile matrix 미완료; P5 exact bin 구조 선택 named local 검증, 일회성 실행/CLI·P6/P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption CI417 named hosted 검증, pipx·최종 support/profile matrix 미완료; P5 bounded npx/npm exec·private/escaped output named local CLI 검증, grouped hosted/final 미완료; P6/P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -348,3 +348,20 @@ VIRTUAL_ENV로 대상·backend를 추측하지 않는다. `run`/`inject`/`ensure
 Unknown option/operation과 빠진·중복·상대·alias·겹친 경로는 runtime 준비 전에 거부한다.
 현재 target ownership·변조·명령 충돌은 기존 held session과 현재 native 선택에서 별도로 검증한다.
 한국어/영어 help와 JSON/human 결과는 같은 descriptor·기존 operation renderer를 사용한다.
+
+
+## 현재 npx / npm exec 초기 lane
+
+개발 branch의 named local CLI qualification이다. Hosted/final support matrix와 공개 배포는 별도다.
+
+| 항목 | 현재 범위 |
+| --- | --- |
+| 명령 | `helox npx [--command <bin>] [--show-output] <package> [--] [args...]`; `helox npm exec`도 같은 문법 |
+| 선택 | public npm 단일 package/version/range와 전체 graph를 fresh 검사·Policy; bin 이름 차이/다중 bin은 명시 command 필수 |
+| 인자 | 모든 HAA/global 옵션은 package 앞; 뒤는 literal argv. 직후 `--` 하나는 구분자이며 literal `--`는 하나 더 쓴다. 최대128개/32KiB와 기존 command214bytes 규칙 |
+| 실행 | Linux amd64의 고정 Node; 별도 whole readonly sandbox. Host project/HOME/env/credentials·network·runtime download·shell/stdin/TTY·파일 반출 없음 |
+| 출력 | 기본 stream별 byte count. 명시 show-output은 최대1MiB/stream의 untrusted bytes를 ASCII quoted text로 별도 표시. Secret 자동 탐지 보장은 없으며 raw argv/output은 일반 records/log에 저장하지 않음 |
+| 결과 | quarantine/Policy·storage preparation·execution exit/signal·output promotion NOT_REQUESTED·execution guest cleanup 분리. 전체 process finalization은 기존 composition error/exit가 소유 |
+
+예: `helox --output json npx --command tsc --show-output typescript@5.9.3 -- --help`.
+초기 lane의 범위와 실제 검증은 [C5 receipt](../planning/evidence/package-client-quarantine/p5c5-npx-cli-local-20261029.json)를 따른다.

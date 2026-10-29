@@ -31,12 +31,16 @@ type ExecutionResult struct {
 	code, signal   uint8
 	exited         bool
 	complete       bool
+	attempted      bool
 	failure        string
 }
 
 func (r ExecutionResult) Preparation() PreparedExecution { return r.preparation }
 func (r ExecutionResult) Complete() bool                 { return r.complete }
 func (r ExecutionResult) FailureCode() string            { return r.failure }
+
+// RuntimeAttempted reports invocation of the runtime adapter, not guest body entry.
+func (r ExecutionResult) RuntimeAttempted() bool { return r.attempted }
 func (r ExecutionResult) ExitCode() (uint8, bool) {
 	if !r.complete || !r.exited {
 		return 0, false
@@ -99,6 +103,7 @@ func (s *ExecutionService) Run(ctx context.Context, request ExecutionPreparation
 		return result, ctx.Err()
 	}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "execute"})
+	result.attempted = true
 	outcome, runErr := s.runtime.Execute(ctx, result.preparation.ExecutionContext())
 	resultErr = runErr
 	result.failure = "RUNTIME_INCOMPLETE"

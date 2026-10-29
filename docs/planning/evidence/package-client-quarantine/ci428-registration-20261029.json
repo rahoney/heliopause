@@ -7,9 +7,9 @@
   "tracked_files": 2969,
   "source_inputs": 1330,
   "run_started_at": "2026-10-28T23:57:29Z",
-  "last_actual_query_at": "2026-10-29T01:02:15Z",
-  "status": "in_progress",
-  "conclusion": null,
+  "last_actual_query_at": "2026-10-29T01:42:43Z",
+  "status": "completed",
+  "conclusion": "success",
   "jobs": [
     {
       "id": 123175399238,
@@ -50,8 +50,8 @@
     {
       "id": 123175399619,
       "name": "gVisor Linux Integration",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123175399648,
@@ -64,11 +64,17 @@
       "name": "macOS",
       "status": "completed",
       "conclusion": "success"
+    },
+    {
+      "id": 123208725781,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
-  "timer_session": 34757,
-  "next_due_at": "2026-10-29T01:22:15Z",
-  "completed20min_polls": 3,
+  "timer_session": null,
+  "next_due_at": null,
+  "completed20min_polls": 5,
   "scope": "qualified normal/nonzero Artifact Node backend with current readonly whole flow/CPP131 and prior common consumers; new actual hostile/cancel/overflow/child/CLI/final not included",
   "authorization": "user-authorized important CI and normal milestone push during sleep; direct timer status checks every20min",
   "recent_observed_elapsed_to_final_update_seconds": [
@@ -77,11 +83,12 @@
     5343
   ],
   "estimated_completion": "roughly80-105min if ordinary pipeline completes;20min checks also catch early errors; no promise",
-  "whole_hosted_qualification": "PENDING",
+  "whole_hosted_qualification": "PASS (source558 normal/nonzero backend and prior consumers only)",
   "later_C3d_source_excluded": true,
   "push": "normal fast-forward e0dc39a ->558d75a on existing milestone branch; remote ref confirmed; no merge/tag/release",
   "completed8_same_checkout": "d965d5bf297d334647cff6dc67f4cb5110f79922",
   "whole_checkout_tree_matches": true,
   "decoded_partial_log_bytes": 446321,
-  "completed_helper_latches": 131
+  "completed_helper_latches": 131,
+  "qualification_receipt": "ci428-node-backend-hosted-qualification-20261029.json"
 }

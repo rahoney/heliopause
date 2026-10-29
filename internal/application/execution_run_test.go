@@ -48,7 +48,7 @@ func TestExecutionWorkflowUsesOnlyFreshCurrentPreparation(t *testing.T) {
 	var previous domain.OperationID
 	for range 2 {
 		result, err := service.Run(context.Background(), request)
-		if err != nil || !result.Complete() || result.FailureCode() != "" || !result.Preparation().Valid() {
+		if err != nil || !result.RuntimeAttempted() || !result.Complete() || result.FailureCode() != "" || !result.Preparation().Valid() {
 			t.Fatal("fresh workflow did not complete", err)
 		}
 		bound := runtime.requests[len(runtime.requests)-1]
@@ -90,7 +90,7 @@ func TestExecutionWorkflowDoesNotRunFailedPreparation(t *testing.T) {
 				t.Fatal(err)
 			}
 			result, err := service.Run(context.Background(), request)
-			if !errors.Is(err, p.err) || result.Complete() || result.FailureCode() != "PREPARATION_FAILED" || len(runtime.requests) != 0 {
+			if !errors.Is(err, p.err) || result.Complete() || result.FailureCode() != "PREPARATION_FAILED" || result.RuntimeAttempted() || len(runtime.requests) != 0 {
 				t.Fatal("failed preparation reached runtime or lost cause", err)
 			}
 		})

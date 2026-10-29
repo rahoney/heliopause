@@ -15,15 +15,43 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C4 application/concrete factory local qualified public2/58.861s + canonical9/affected Race; existing1332/CPP/old actual tests unchanged
-Next action: CI428 poll03 at01:02:15UTC:8SUCCESS/Linux running; timer04 due01:22:15UTC/KST10:22:15/session34757; preserve active source/no push. Local C3d3 commit then application/CLI owner audit.
-Current substep: M13-004/P5-C4 named local workflow qualified; final metadata/local commit then safe output and npx/npm exec CLI baseline; CI428/source558d75a frozen; final OPEN
+Last completed substep: P5-C5 safe output/npx/npm exec actual CLI4 local qualified113.529s; canonical9/full affected Race; current runtime1343/backend CPP unchanged
+Next action: CI428 source558d75a all10SUCCESS/final source+decoded10 logs verified; timer05 retired/no active timer. Commit C5 current1343 then baseline grouped hosted wiring; normal authorized push after local qualification.
+Current substep: M13-004/P5-C5 initial public CLI locally qualified; final metadata/local commit then grouped hosted wiring baseline; CI428 source558d75a frozen; final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: safe separate program output and npx/npm exec descriptor/grammar/composition/actual; final support matrix open
+Independent local next: grouped hosted current runtime/workflow/CLI wiring and qualification; whole P5/final support4profiles/signed/P6/P7 open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI428 source558 backend hosted 완료
+
+[Final qualification](./evidence/package-client-quarantine/ci428-node-backend-hosted-qualification-20261029.json)은 Required10SUCCESS와
+all10 same checkoutd965d5bf/treef5e4d9f9/2969·1330 및 decoded1,278,395B readback을
+연결한다. Linux94/noFAIL/noSKIP/CPP131·CPU296.32s/current public Node fresh2 48.93s의
+정상0·typed guest1과 whole readonly/current Policy·kernel8cases5.41s/helper16wait0/
+세 final original0·복원을 확인했다. 전체94m51s이며 timer05는01:42:43UTC 결과 소비 후
+종료했다. Later local C3d/C4/C5는 이 source에 없고 grouped hosted가 다음이며
+과거 native deadline 직접 원인·whole final/P5-P7/signed는 여전히 OPEN이다.
+
+### 2026-10-29 C5 npx/npm exec actual CLI local 완료
+
+[Receipt](./evidence/package-client-quarantine/p5c5-npx-cli-local-20261029.json)는 canonical9/전체 영향 Race와
+actual public CLI4/113.529s를 연결한다. Program --help·literal argv는 실제 entry로
+전달됐고 두 alias·human/JSON·en/ko·private/explicit output·정상0/typed guest1 및 fresh
+records4가 PASS다. Backend/CPP/권한·한도는 유지하며 Host/source/42/ZIP/Docker 보존과
+helperwait0/resources/endpoints0다. 마지막 stale1332 producer assertion은9checks PASS 뒤
+기록 오류이며 독립 current1343 validator0로 확인하고 제품 검사를 반복하지 않았다.
+다음 grouped hosted wiring은 먼저 baseline을 기록하며 CI428 진행 중 push하지 않는다.
+
+### 2026-10-29 C5 safe output/npx CLI 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c5-npx-cli-plan-20261029.md)는
+기존 C4/current backend를 재사용하고 bounded npx/npm exec grammar와 분리된 안전한
+출력·실제 CLI 연결 gap을 구현한다. 기본 output은 bytes count이며 명시 show-output은
+ASCII escaped untrusted data다. Parsed HAA help와 program --help를 구분하고 input bounds를
+I/O 전에 검사한다. CI428 source558d75a는 timer05 due01:42:24UTC로 보존한다.
 
 ### 2026-10-29 C4 application workflow actual local 완료
 
