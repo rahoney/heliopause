@@ -15,15 +15,27 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: B1 readonly4 hosted wiring committed0d96e23/tree20b74161/3032·1355 and normal FF pushed3c85→0d96; actual CI431/run40826938443 confirmed; timer01/session73616 due06:23:34UTC/KST15:23:34; cleanup175 copies/~6.25GiB done.
-Next action: automatic public GET monitor/session61457/pid2781030 queried06:47:07.000154→06:47:07.967981UTC, 8SUCCESS/Linux running; next07:07:07.967999UTC/KST16:07:07. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Complete B2-A Node implementation sharing/checks/actual existing consumers.
-Current substep: M13-004/P6-B2-A shared captured-program owner reuse IN_PROGRESS; baseline/source0d96 runtime1355 before source; exact2-source map/second review recorded; CI431/source0d96 frozen and remains PENDING.
+Last completed substep: P6-B2-A shared existing captured program owner named local QUALIFIED; canonical9/Quick304.561s/affected Race35.809s; controlled Node12/195.49s and actual CLI4/110.08s PASS; source1356/old1354 unchanged/CPP131; cleanup179 copies/~6.35GiB.
+Next action: automatic public GET monitor/session61457/pid2781030 queried07:07:07.968669→07:07:09.252419UTC, 8SUCCESS/Linux running; next07:27:09.252436UTC/KST16:27:09. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Continue B2-B Python execution baseline/exact map; native alias/CLI/final remain OPEN.
+Current substep: M13-004/P6-B2-A named local complete; next B2-B Python selected-program profile/backend baseline and exact map. CI431/source0d96 excludes this helper and remains PENDING; no push while active.
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-A 공유 captured program named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b2a-shared-program-capture-local-20261029.json)는 기존 Node
+본문/mapper를 private helper 한 곳으로 옮긴 source1356/기존1354 불변·canonical9/Quick304.561s/
+전체 sandbox·Bootstrap Race35.809s와 같은4f9d binary의 controlled12/195.49s·public CLI4/110.08s
+PASS를 연결한다. 공개 결과·privacy·typed error/preflight/input 정리와 CPP131/권한·한도는
+유지했다. Host/42/ZIP/Docker/source 보존/helperwait0/전체 정리다. Child body/held-pipe는
+미입증이며 Python runtime/native UVx/aliases/CLI·새 shared-source hosted/final은 미완료다.
+완료 사본4개109400066B는 원본 보존/root86proc/참조0·query errors0 뒤 삭제했다.
+누적179개 약6.35GiB의 Linux 공간 회수이며 C: VHD 축소로 전용하지 않는다. CI431을
+새 push로 취소하지 않고 같은 M13-004에서 B2-B baseline/정확한 missing 경계를 계속한다.
 
 ### 2026-10-29 B2-A 기존 captured program 본문 공유 착수
 

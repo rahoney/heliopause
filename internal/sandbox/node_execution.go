@@ -3,18 +3,12 @@ package sandbox
 import (
 	"context"
 	"errors"
-	"os/exec"
-	"time"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 var errNodeExecution = errors.New("node execution lacks complete bound runtime evidence")
-
-type nodeCapturedRunner interface {
-	CaptureExecutionOutput(context.Context, string, ...string) (domain.CapturedProcessOutput, error)
-}
 
 // NodeExecutionOutcome is private-memory runtime DATA. It grants neither
 // inspection coverage nor Policy approval or generated-file promotion.
@@ -79,7 +73,7 @@ func (b *Backend) ExecuteNodeExecution(ctx context.Context, execution domain.Exe
 	if !ok || wrapped == nil {
 		return outcome, errNodeExecution
 	}
-	capture, ok := wrapped.runner.(nodeCapturedRunner)
+	capture, ok := wrapped.runner.(programCapturedRunner)
 	if !ok {
 		return outcome, errNodeExecution
 	}
@@ -93,98 +87,19 @@ func (b *Backend) ExecuteNodeExecution(ctx context.Context, execution domain.Exe
 			resultErr = errors.Join(resultErr, closeErr)
 		}
 	}()
-	run := inputs.run
-	session := activeObserverSession(inputs.reader.id)
-	if session == nil {
-		return outcome, errNodeExecution
-	}
-	lease, err := acquireDirectExecLifecycle(run, session)
-	if err != nil {
-		return outcome, errors.Join(errNodeExecution, err)
-	}
-	defer lease.release()
-	nonce, err := newDirectExecAdmissionNonce()
-	if err != nil {
-		return outcome, errors.Join(errNodeExecution, err)
-	}
-	admission := directExecAdmission{containerID: inputs.reader.id, generation: session.generation, mode: boundaryNodeHandoffMode, nonce: nonce, session: session, lifecycle: lease}
-	if err := controlDirectExecAdmission(run, "arm", admission); err != nil {
-		return outcome, errors.Join(errNodeExecution, err)
-	}
-	completed := false
-	defer func() {
-		if !completed {
-			finish, done := context.WithTimeout(context.Background(), directExecAdmissionCompletionTimeout)
-			defer done()
-			resultErr = errors.Join(resultErr, finalizeDirectExecAdmission(finish, admission, false))
+	verify := func() error {
+		if err := verifyNodeExecutionInputTree(inputs.run, b.runner.(streamingDockerOutput), inputs.reader.id, execution, layout); err != nil {
+			return err
 		}
-	}()
-	args := boundaryExecArguments(inputs.reader.id, boundaryNodeHandoffMode, nodeExecutionCommand(layout.EntryPath(), execution.Arguments())...)
-	_, mode, index, valid := directExecOrigin(args, "docker")
-	if !valid || mode != boundaryNodeHandoffMode {
-		return outcome, errNodeExecution
+		return inputs.volume.verifyAttachments(inputs.run, b.runner, map[string]bool{inputs.reader.id: true})
 	}
-	prepared := append(append(append([]string{}, args[:index]...), nonce), args[index:]...)
-	var commandErr error
-	outcome.output, commandErr = capture.CaptureExecutionOutput(run, "docker", prepared...)
-	if outcome.output == nil || run.Err() != nil || outcome.output.StdoutOverflow() || outcome.output.StderrOverflow() || errors.Is(commandErr, exec.ErrWaitDelay) {
-		return outcome, errors.Join(errNodeExecution, commandErr, run.Err(), context.Cause(run))
-	}
-	wait, stop := directExecAdmissionCompletionContext(run)
-	defer stop()
-	for !outcome.terminal.observed {
-		outcome.terminal, err = directExecOutcome(wait, admission)
-		if err != nil {
-			return outcome, errors.Join(errNodeExecution, commandErr, err)
-		}
-		if !outcome.terminal.observed {
-			select {
-			case <-wait.Done():
-				return outcome, errors.Join(errNodeExecution, commandErr, wait.Err(), context.Cause(wait))
-			case <-time.After(directExecAdmissionPollInterval):
-			}
-		}
-	}
-	target, err := directExecTargetLoaded(wait, admission)
-	if err != nil || !target.loaded || target.missed {
-		return outcome, errors.Join(errNodeExecution, commandErr, err)
-	}
-	terminalErr := nodeExecutionClientResult(outcome.terminal, commandErr, true)
-	var programErr *NodeProgramError
-	if terminalErr != nil && !errors.As(terminalErr, &programErr) {
-		return outcome, terminalErr
-	}
-	if err := verifyNodeExecutionInputTree(run, b.runner.(streamingDockerOutput), inputs.reader.id, execution, layout); err != nil {
-		return outcome, errors.Join(terminalErr, errNodeExecution, err)
-	}
-	if err := inputs.volume.verifyAttachments(run, b.runner, map[string]bool{inputs.reader.id: true}); err != nil {
-		return outcome, errors.Join(terminalErr, errNodeExecution, err)
-	}
-	if err := completeDirectExecAdmission(run, admission); err != nil {
-		return outcome, errors.Join(terminalErr, errNodeExecution, err)
-	}
-	completed = true
-	outcome.complete = true
-	return outcome, terminalErr
+	captured, runErr := captureAdmittedProgram(inputs.run, capture, inputs.reader.id, boundaryNodeHandoffMode, nodeExecutionCommand(layout.EntryPath(), execution.Arguments()), errNodeExecution, nodeProgramError, verify)
+	outcome.complete, outcome.terminal, outcome.output = captured.complete, captured.terminal, captured.output
+	return outcome, runErr
 }
 
 func nodeExecutionClientResult(terminal directExecTerminal, commandErr error, captureComplete bool) error {
-	if !terminal.observed || !captureComplete {
-		return errors.Join(errNodeExecution, commandErr)
-	}
-	expected := int(terminal.exitCode)
-	if !terminal.exited {
-		expected = 128 + int(terminal.signal)
-	}
-	if commandErr == nil {
-		if expected == 0 {
-			return nil
-		}
-		return errNodeExecution
-	}
-	var exited *exec.ExitError
-	if !errors.As(commandErr, &exited) || expected == 0 || exited.ExitCode() != expected || errors.Is(commandErr, exec.ErrWaitDelay) {
-		return errors.Join(errNodeExecution, commandErr)
-	}
-	return &NodeProgramError{cause: commandErr}
+	return programExecutionClientResult(terminal, commandErr, captureComplete, errNodeExecution, nodeProgramError)
 }
+
+func nodeProgramError(cause error) error { return &NodeProgramError{cause: cause} }
