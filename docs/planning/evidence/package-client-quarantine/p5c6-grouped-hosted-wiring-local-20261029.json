@@ -1,0 +1,67 @@
+{
+  "scope": "P5-C6 existing Node hosted step extended with current controlled12/workflow2/CLI4; no new job",
+  "status": "LOCAL_WIRING_PASS_REMOTE_PENDING",
+  "baseline_commit": "6521e76182a6908d4f5f077e9c61a3f35b7d9a0a",
+  "runtime_inputs": 1343,
+  "all_Go_CPP_runtime_sources_unchanged": true,
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (existing unconditional step)",
+    "QUALIFIED": "YES (local workflow/guard scope); NO (new hosted execution)",
+    "ACCEPTANCE_CLOSED": "NO (hosted pending)"
+  },
+  "workflow_sha256": "fc09b03c67c001c757a95d854043234f9ae50df6739734d5d02d2453af35cbff",
+  "checks": [
+    {
+      "profile": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit": 0,
+      "seconds": 2.219
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.315
+    },
+    {
+      "profile": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 29.234
+    }
+  ],
+  "guard_checks": {
+    "bash_syntax_exit": 0,
+    "saved_actual_log_DATA_cases": 24,
+    "shell_original_exit_cases": 6,
+    "runtime_executed": false
+  },
+  "actual_scope_reuse": "C3d3 named controlled12, C4 actual public2, C5 actual public CLI4 and unchanged CPP131 remain their exact source/local scopes; no synthetic guard success is runtime qualification",
+  "per_parent_bounds": "existing separate failfast5min commands and Go caller4min/runtime45s/streams1MiB preserved; existing preparation/kernel/Required/job bounds unchanged",
+  "raw": {
+    "input_binding": "docs/github-logs/package-client-quarantine-20261021/p5-c6-input-binding.json",
+    "guard_checks": "docs/github-logs/package-client-quarantine-20261021/p5-c6-guard-checks.json",
+    "producer_first": "docs/github-logs/package-client-quarantine-20261021/p5-c6-check-first-notice.json"
+  },
+  "next": "final metadata/local commit/authorized normal branch push; link new run/source and actual20min timer immediately; no main merge/tag/release",
+  "MISSING": [
+    "new whole-source hosted results and checkout evidence",
+    "whole P4/P5-P7/final support4profiles/signed qualification"
+  ]
+}

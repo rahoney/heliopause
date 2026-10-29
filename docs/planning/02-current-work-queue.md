@@ -15,15 +15,32 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C5 safe output/npx/npm exec actual CLI4 local qualified113.529s; canonical9/full affected Race; current runtime1343/backend CPP unchanged
-Next action: CI428 source558d75a all10SUCCESS/final source+decoded10 logs verified; timer05 retired/no active timer. Commit C5 current1343 then baseline grouped hosted wiring; normal authorized push after local qualification.
-Current substep: M13-004/P5-C5 initial public CLI locally qualified; final metadata/local commit then grouped hosted wiring baseline; CI428 source558d75a frozen; final OPEN
+Last completed substep: C5 npx/npm exec actual CLI4 local qualified113.529s; local6521e76/current1343; preceding CI428 source558 all10SUCCESS/timer retired
+Next action: final docs/security and meaningful C6 commit; normal milestone push of local C3d/C4/C5/C6; register exact new CI run/source immediately and20min timer. CI428 is completed/retired.
+Current substep: M13-004/P5-C6 hosted wiring local qualified; canonical3/Bash/guard24+primary6; final metadata/local commit then authorized grouped push/run/timer; Go/CPP1343 unchanged; remote/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: grouped hosted current runtime/workflow/CLI wiring and qualification; whole P5/final support4profiles/signed/P6/P7 open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C6 hosted wiring local 완료
+
+[Local receipt](./evidence/package-client-quarantine/p5c6-grouped-hosted-wiring-local-20261029.json)는 기존 Node hosted step에
+boundary12/workflow2/CLI4를 개별5min command와 noSKIP/unique cases/original exit guard로
+연결한 canonical3·Bash syntax·guard24/primary6 결과다. Go/CPP/runtime1343과 기존
+preparation/kernel/Required·권한·예산은 불변이다. 로그 guard는 DATA 시험이며 actual
+qualification을 새로 만들지 않는다. 다음 승인된 정상 grouped push/run/timer 등록 전
+최종 문서·보안을 확인하고 hosted/whole final acceptance는 OPEN으로 유지한다.
+
+### 2026-10-29 C6 grouped hosted wiring 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c6-grouped-hosted-plan-20261029.md)는
+기존 unconditional Node hosted 단계에 현재 boundary12/workflow2/CLI4를 개별5min invocation으로
+연결한다. Go/CPP/권한·예산/Required와 기존 preparation/kernel 소비자는 유지한다.
+Canonical workflow·Bash/로그 guard를 확인한 의미 있는 후보만 승인된 정상 push로 전달하고
+시작 직후20min 타이머를 등록한다. Hosted/whole P5/final은 결과 전까지 OPEN이다.
 
 ### 2026-10-29 CI428 source558 backend hosted 완료
 
