@@ -7,9 +7,9 @@
   "tracked_files": 2996,
   "runtime_inputs": 1343,
   "run_started_at": "2026-10-29T01:57:02Z",
-  "last_query_at": "2026-10-29T03:17:40Z",
-  "status": "in_progress",
-  "conclusion": null,
+  "last_query_at": "2026-10-29T03:37:45Z",
+  "status": "completed",
+  "conclusion": "success",
   "jobs": [
     {
       "id": 123216705735,
@@ -20,8 +20,8 @@
     {
       "id": 123216705836,
       "name": "gVisor Linux Integration",
-      "status": "in_progress",
-      "conclusion": null
+      "status": "completed",
+      "conclusion": "success"
     },
     {
       "id": 123216705866,
@@ -64,14 +64,20 @@
       "name": "Minimum Go",
       "status": "completed",
       "conclusion": "success"
+    },
+    {
+      "id": 123247816237,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
   "scope": "current prior consumers and preparation/kernel plus new controlled boundary12/application2/npx CLI4; Go/CPP unchanged from C5; full ordinary CI with native macOS",
   "qualification": "PENDING; initial running is not hosted PASS",
-  "timer_session": 41398,
-  "next_due_at": "2026-10-29T03:37:40Z",
+  "timer_session": null,
+  "next_due_at": null,
   "timer_interval_minutes": 20,
-  "completed20min_polls": 4,
+  "completed20min_polls": 5,
   "estimated_elapsed_to_final": "recent ordinary CI42894m51/CI42778m45; new three parents add several minutes; roughly90-115min, not a completion promise",
   "push": "normal FF558d75a->9eb854f on existing milestone branch; exact remote ref confirmed",
   "authorization": "explicit user during sleep; important CI/push without asking",
@@ -83,5 +89,7 @@
   "completed8_same_checkout": "b2eb8b6e5a773101199f37deb21a4f383ec5c6ba",
   "completed8_checkout_tree_matches_source": true,
   "decoded_partial_log_bytes": 448735,
-  "completed_helper_latches": 131
+  "completed_helper_latches": 131,
+  "whole_hosted_qualification": "PASS (source9eb production Node/controlled12/application2/CLI4/common only)",
+  "qualification_receipt": "ci429-node-cli-hosted-qualification-20261029.json"
 }

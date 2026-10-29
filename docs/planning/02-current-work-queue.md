@@ -15,15 +15,40 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-A2 controlled snapshot reader/replay ordering correction locally qualified; Quick287.612s/two PyPI Race14.051s;1343 unchanged/modified3/new2; no push
-Next action: CI429 poll04 at03:17:40UTC:8SUCCESS/Linux running; timer05 due03:37:40UTC/KST12:37:40/session41398; no push. Commit A2 and map current PyPI execution preparation using existing generic owners and honest native tool-install identity.
-Current substep: M13-004/P6-A2 final docs/security/local commit then Python current preparation baseline; native UVx golden equivalence/user runtime/CLI OPEN; CI429 frozen
-Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P6-A2 controlled original intake reader baseline/map before code; reuse canonical ReaderAt/parser and current acquisition; native UV selector equivalence/Python runtime/CLI remain OPEN
-P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — application/CLI actual and CI429 grouped qualification pending; P6 — IN_PROGRESS internal console DATA API local qualified/runtime-CLI unwired; P7 — NOT_STARTED
+Last completed substep: P6-A3 current Python storage preparation locally qualified; canonical9/Quick249.346s/Bootstrap Race23.628s/actual3 84.364s; existing1348 unchanged/new3; CI429 Required10SUCCESS recorded
+Next action: CI429 source9eb all10 source/log qualification complete/timer05 retired. Commit qualified P6-A3 then baseline/wire meaningful existing hosted checkpoint for current Python preparation3 and Node post-Policy refusal2; authorized normal push/timer after checks.
+Current substep: M13-004/P6-A3 final docs/security/local commit then grouped hosted current Python preparation3/C7 refusal2; native UVx/user Python runtime/CLI OPEN
+Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
+Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
+P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI429 grouped Node/CLI hosted 완료
+
+[Qualification](./evidence/package-client-quarantine/ci429-node-cli-hosted-qualification-20261029.json)은 source9eb/tree51a9/2996·1343과
+all10 checkoutb2eb/Required10SUCCESS·decoded1,308,207B readback을 확인했다. Linux97/noFAIL/
+noSKIP/CPP131·CPU300.35s/Node prep48.40s/controlled12 166.71s/application2 38.97s/CLI4
+81.39s/kernel8 5.26s/helper16wait0/세 final0·복원이다. Child는 clone-startup 거부·정리만
+입증했으며 body/held-pipe는 미입증이다. 전체100m21s이며 timer05 due03:37:40 뒤
+03:37:45UTC 결과 소비·종료했다. Later C7/P6/whole final은 이 source 밖이며 계속 진행한다.
+
+### 2026-10-29 P6-A3 current Python preparation actual local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6a3-python-preparation-local-20261029.json)는 canonical9/Quick249.346s/Bootstrap
+전체 Race23.628s/tagged build와 public cowsay actual3/84.364s를 연결한다. 기존 generic
+whole 검사·Policy/records/staging을 재사용해 console 준비2·missing 거부1/fresh Evidence3/
+Manifest2를 확인했다. Metadata member는 console declaration 출처이며 user-run 성공이 아니다.
+기존1348·CPP/Host/42/ZIP/Docker 불변/helperwait0/workspaces/endpoints0다. Native tool-install
+identity는 유지하고 UVx equivalence/Python runtime/CLI·전체 final은 OPEN이다.
+
+### 2026-10-29 P6-A3 current Python preparation 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p6a3-python-preparation-plan-20261029.md)는
+기존 native tool-install identity와 current whole PyPI 검사·Policy, A2 console DATA를
+generic 준비/보관 서비스에 연결한다. 실제 module user-run/native UVx equivalence·CLI는
+별도 후속이며 CI429/source9eb/timer05를 유지한다.
 
 ### 2026-10-29 P6-A2 reader와 replay 교정 local 완료
 
