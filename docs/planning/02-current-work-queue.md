@@ -15,15 +15,28 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: D1 named local source1363/old1361 unchanged/new test2; canonical composed7/Quick419.151s, actual8/191.36s/operator198.221s PASS; CPP132 unchanged; completed2 copies54849309B removed/root98proc/ref0/errors0; cumulative193/~6.71GiB.
-Next action: finish test-only readonly nil error branch and verify positive denial, then resolve clone PID/provenance diagnostic mismatch (controlled parent8/child9, external root fault) without permission widening. D2 whole remains OPEN; CI432 source9198 all10 SUCCESS/monitor stopped; no pending timer. Cleanup195/~6.76GiB.
-Current substep: M13-004/P6-B2-D2 hostile Python actual5 IN_PROGRESS; source1363 baseline/modified2-new2-expected1365 exact map and second review before source. D1 named local COMPLETE; CI432/source9198 named hosted QUALIFIED; native/adapter/CLI/final/CPU cause OPEN.
+Last completed substep: D2 named standard-library hostile5 local PASS81.36s/source1365/old1361 unchanged/CPP132; D1 same-input eight153.86s retained; CI432 source9198 all10SUCCESS. Cleanup207/~7.07GiB; raw fork-only cause remains UNCONFIRMED.
+Next action: audit existing application.ExecutionService/Runtime and Python current preparation/entry/backend before a thin concrete Python adapter; reuse generic workflow/context/private outcome and preserve honest uv-tool-install selection identity. Native UVx/golden/aliases/CLI/final remain separate. No new push for this metadata/local checkpoint.
+Current substep: M13-004/P6-B2-D2 named local COMPLETE; next P6-C application runtime adapter baseline before source. CI432 source9198 named hosted QUALIFIED; no active timer/CI. Raw fork-only/general child/native/golden/aliases/CLI/final/CPU cause remain OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D2 standard-library hostile5 named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b2d2-python-hostile-local-20261029.json)는 source1365/old1361 불변과 기존 refusal의 bounded
+trace 진단 한 곳·tagged tests만 연결한다. Composed8/Quick396.34s/전체 sandbox·Bootstrap
+Race38.254s 및 current actual5/81.36s가 PASS다. Outside/network·builtin comm-name 거부와
+clone-exec의 실제 body/unexpected exec/CLONE_CHILD/ARTIFACT, readonly denied/complete0·
+원본 보존을 확인했다. 같은 production/D1/CPP의 earlier8/153.86s는 별도로 재사용한다.
+이전 raw fork-only/ctypes fault 원인과 general child/orphan/held-pipe는 OPEN이며 새 입력의
+PASS를 인과 해결로 쓰지 않는다. Host/42/ZIP/Docker/source·helperwait0/전체 정리, root97proc/
+ref0/errors0 뒤 완료 사본12개329229478B 제거를 확인했다. 누적207/~7.07GiB Linux 논리
+용량이며 Windows VHD 축소는 아니다. 다음 기존 application execution interface에 Python
+runtime adapter를 연결할 missing baseline을 감사하고 native/golden/aliases/CLI/final은 유지한다.
 
 ### 2026-10-29 D2 readonly positive·PID 관측
 

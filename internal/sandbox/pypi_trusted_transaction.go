@@ -693,7 +693,7 @@ func (t *pythonTransactionExecutor) terminatePhase(id string) (resultErr error) 
 			runtime.phase, id, pythonResourceErrorReason(err), lease.CgroupParent == t.lease.CgroupParent, lease.UsageUsec, trace.limitation, trace.diagnostic.String())))
 	}
 	if t.execution && runtime.phase == phaseObservation && len(retainedSuspiciousTraceFacts(trace.diagnostic.KindCounts)) != 0 {
-		resultErr = errors.Join(resultErr, errPythonExecution, errors.New("python program observation contains a forbidden runtime action"))
+		resultErr = errors.Join(resultErr, errPythonExecution, fmt.Errorf("python program observation contains a forbidden runtime action: trace={%s}", trace.diagnostic.String()))
 	}
 	t.mu.Lock()
 	runtime.collected = true

@@ -132,3 +132,14 @@ comm mutation에 이 builtin을 사용하고 clone-exec에는 subprocess의 고�
 Python argv를 사용해 ctypes 준비를 통과 조건으로 만들지 않는다. 기존 raw os.fork/
 libc-fork의 첫 실패·정확한 fork-only 경계는 OPEN으로 보존하며 원인 해결/지원으로
 표시하지 않는다. 이 입력 교정에 CPP·proc grant·runtime budget 변화는 없다.
+
+## Named standard-library5 결과
+
+V5 tagged six + unchanged default Quick396.34s/affected Race38.254s를 compose했고 v7 actual
+five81.36s/operator83.255s가 모두 PASS다. Clone-exec는 실제 child body·unexpected exec·
+CLONE_CHILD·ARTIFACT를 함께 관측했다. Builtin-name 후 immutable identity/incomplete,
+readonly denied/complete0/whole source 보존도 확인했다. CPP132/production semantics/권한은
+유지했다. Earlier D1 eight153.86s는 동일 production/D1/CPP 입력으로 별도 재사용했다.
+Raw fork-only 및 ctypes first-fault 원인은 미확정이며 이 입력 교정을 해결로 표시하지 않는다.
+완료 사본12개329229478B를 root97proc/ref0/errors0 뒤 정리해 누적207/~7.07GiB다.
+D2 named five만 닫고 다음 existing application runtime interface adapter 감사로 이어간다.

@@ -112,9 +112,14 @@ func (f *pythonBoundaryAcquirer) Acquire(ctx context.Context, run domain.RunID, 
 
 func pythonBoundarySource(t *testing.T, root string) (*pythonBoundaryAcquirer, domain.DependencyResolution) {
 	t.Helper()
+	return pythonBoundarySourceWithModule(t, root, pythonBoundaryModule)
+}
+
+func pythonBoundarySourceWithModule(t *testing.T, root, module string) (*pythonBoundaryAcquirer, domain.DependencyResolution) {
+	t.Helper()
 	const info = "haa_python_runtime_fixture-1.0.0.dist-info/"
 	files := []struct{ name, body string }{
-		{"haa_python_runtime_fixture.py", pythonBoundaryModule},
+		{"haa_python_runtime_fixture.py", module},
 		{info + "METADATA", "Metadata-Version: 2.3\nName: " + pythonBoundaryName + "\nVersion: 1.0.0\nRequires-Python: >=3.14\n\nControlled boundary fixture.\n"},
 		{info + "WHEEL", "Wheel-Version: 1.0\nGenerator: haa-controlled-boundary-fixture\nRoot-Is-Purelib: true\nTag: py3-none-any\n"},
 		{info + "entry_points.txt", "[console_scripts]\nhaa-runtime-probe = haa_python_runtime_fixture:main\n"},
