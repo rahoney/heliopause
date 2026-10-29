@@ -43,6 +43,10 @@ func validateNPMExecutionRawArgs(args []string) error {
 			break
 		}
 	}
+	return validateExecutionRawOptions(args, start, "--command")
+}
+
+func validateExecutionRawOptions(args []string, start int, valueOption string) error {
 	counts := map[string]int{}
 	for i := start; i >= 0 && i < len(args); i++ {
 		arg := args[i]
@@ -50,13 +54,13 @@ func validateNPMExecutionRawArgs(args []string) error {
 			break
 		}
 		name, _, equals := strings.Cut(arg, "=")
-		if name == "--command" || name == "--show-output" {
+		if name == valueOption || name == "--show-output" {
 			counts[name]++
 			if counts[name] > 1 {
 				return errors.New("execution selection and output options must not repeat before the package")
 			}
 		}
-		if !equals && (name == "--command" || name == "--lang" || name == "--output" || name == "--color" || name == "--progress") {
+		if !equals && (name == valueOption || name == "--lang" || name == "--output" || name == "--color" || name == "--progress") {
 			i++
 		}
 	}
@@ -113,22 +117,26 @@ func AddNPMExecution(root *cobra.Command, runner ExecutionRunner) error {
 			if err != nil {
 				return err
 			}
-			ctx, finish := beginProgress(command.Context(), command.OutOrStdout(), machineOutput(command))
-			defer func() { _ = finish() }()
-			result, cause := runner.Run(ctx, request)
-			progressErr := finish()
-			show, _ := command.Flags().GetBool("show-output")
-			report := newExecutionReport(result, cause, show)
-			reportErr := writeExecutionReport(command.OutOrStdout(), report, machineOutput(command))
-			code := executionProcessCode(result, cause)
-			if reportErr != nil || progressErr != nil {
-				code = 1
-			}
-			if code != 0 || cause != nil || reportErr != nil || progressErr != nil {
-				return executionCommandError{code, errors.Join(cause, reportErr, progressErr)}
-			}
-			return nil
+			return runExecutionRequest(command, runner, request)
 		}
+	}
+	return nil
+}
+
+func runExecutionRequest(command *cobra.Command, runner ExecutionRunner, request application.ExecutionPreparationRequest) error {
+	ctx, finish := beginProgress(command.Context(), command.OutOrStdout(), machineOutput(command))
+	defer func() { _ = finish() }()
+	result, cause := runner.Run(ctx, request)
+	progressErr := finish()
+	show, _ := command.Flags().GetBool("show-output")
+	report := newExecutionReport(result, cause, show)
+	reportErr := writeExecutionReport(command.OutOrStdout(), report, machineOutput(command))
+	code := executionProcessCode(result, cause)
+	if reportErr != nil || progressErr != nil {
+		code = 1
+	}
+	if code != 0 || cause != nil || reportErr != nil || progressErr != nil {
+		return executionCommandError{code, errors.Join(cause, reportErr, progressErr)}
 	}
 	return nil
 }

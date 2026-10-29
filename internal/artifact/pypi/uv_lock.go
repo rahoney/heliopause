@@ -299,6 +299,17 @@ func validateUVCandidateConstraints(candidates []Candidate, python string) error
 	}
 	for _, candidate := range candidates {
 		for _, constraint := range candidate.requirements {
+			// The authenticated metadata reader accepts the legacy single
+			// parenthesized specifier form. Remove only that wrapper before
+			// applying the same bounded numeric semantics; retain the original
+			// requirement in the candidate and reject empty/nested forms.
+			if open := strings.IndexByte(constraint, '('); open >= 0 && strings.HasSuffix(constraint, ")") {
+				specifier := strings.TrimSpace(constraint[open+1 : len(constraint)-1])
+				if specifier == "" || strings.ContainsAny(specifier, "()") {
+					return errors.New("uv selected dependency constraint is unsupported or unsatisfied")
+				}
+				constraint = strings.TrimSpace(constraint[:open]) + specifier
+			}
 			requirement, err := ParseBoundedRequirement(constraint)
 			if err != nil || !requirement.Satisfies(versions[requirement.Project()]) {
 				return errors.New("uv selected dependency constraint is unsupported or unsatisfied")

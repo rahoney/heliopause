@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D6 current native-run application named local qualified; existing1384 unchanged/new3/current1387, canonical9/Quick72.206s/Bootstrap·Application Race8.09s, actual current3/115.44s fresh ALLOW·normal0/typed guest2/configured mismatch refusal. Cleanup245ELF+6cache/~10.81GiB logical.
-Next action: audit existing npx CLI/descriptor/bootstrap and fixed native tool-run semantics, connect uvx/uv tool run bounded aliases with explicit --from, and group their actual preflight/current program/output/exit checks including an independent package/console-name case. Consume CI435 actual20min GET without new push.
-Current substep: M13-004/P6-D7 native-run CLI/alias baseline audit IN_PROGRESS. Existing descriptor/preflight/report/privacy/Python bootstrap owners will be reused. CI435/sourceb0 frozen; actual20min poll02=8SUCCESS/Linux integration ongoing/next18:51:44UTC; no push.
+Last completed substep: P6-D7 uvx/uv tool run CLI named local qualified; runtime1392, canonical10/Quick273.554s/affected five-package Race58.681s, actual UV5 parent191.58s all PASS; unchanged NPM4 earlier actual reused. Cleanup251ELF+6cache/~10.97GiB logical.
+Next action: P6-D8 grouped hosted native selector/current app/CLI wiring audit; reuse existing protected clients/helper/data exporter and exact guards. Consume CI435 20min GET and push only important complete end-to-end bundle after that run finishes.
+Current substep: M13-004/P6-D8 native-run grouped hosted wiring IN_PROGRESS; D7 named local CLI qualified. Existing implementation reused, missing hosted connections only; p6d8-native-run-hosted-plan-20261030.md owns audit/map. CI435/sourceb0 remains frozen with actual20min monitor; no new push.
 Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 D7 native UV CLI named local 완료
+
+[D7 receipt](./evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json)은 aliases/현재 whole approval·별도 package-console graph2·normal0/typed guest2/literal help/privacy·준비 거부5개191.58s와 canonical10·Quick273.554s/영향 Race58.681s를 연결한다. First --from 실패는 authenticated metadata의 괄호형 숫자 조건 연결 gap이며 whole binding RED4→GREEN과 좁은 UV adapter 수정으로 확인했다. 기존 npm4와 CPP132는 unchanged 입력으로 재사용했다. 완료 사본6개165480990B를 root ref0/errors0로 정리해 누적251ELF+6cache/약10.97GiB logical이다. 다음 D8 native/current/CLI hosted 묶음을 계속하며 CI435/sourceb0 결과 밖인 named local 범위를 whole completion으로 쓰지 않는다.
 
 ### 2026-10-30 D6 current native-run application named local 완료
 

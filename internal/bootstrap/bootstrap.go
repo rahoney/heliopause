@@ -60,7 +60,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
-	if helpRequested(args) && cli.SelectedPackageClient(command) != cli.NPXPackageClient {
+	if helpRequested(args) && !cli.SelectedPackageClientIsExecution(command) {
 		return command.ExecuteContext(ctx)
 	}
 	if source == "" {
@@ -98,8 +98,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if cli.SelectedPackageClient(command) == cli.NPXPackageClient && (source != "npm" || runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
 		return errors.New("npx execution requires the public npm source and Linux amd64")
 	}
+	if cli.SelectedPackageClient(command) == cli.UVRunPackageClient {
+		if source != "pypi" {
+			return errors.New("native UV execution requires public PyPI")
+		}
+		if err := uvRunExecutionPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+			return err
+		}
+	}
 	var pythonClient pythonPackageClient
-	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient {
+	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient && cli.SelectedPackageClient(command) != cli.UVRunPackageClient {
 		pythonClient, err = pythonPackageClientFor(cli.SelectedPackageClient(command))
 		if err != nil {
 			return err
@@ -278,6 +286,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 		return command.ExecuteContext(ctx)
+	}
+	if source == "pypi" && cli.SelectedPackageClient(command) == cli.UVRunPackageClient {
+		return runUVRunExecution(ctx, command, trustedExecutor, processObserver)
 	}
 	if source == "pypi" && cli.SelectedPackageClient(command) == cli.UVProjectPackageClient {
 		closeClient, err := bindUVProjectClient(command, trustedExecutor, processObserver)

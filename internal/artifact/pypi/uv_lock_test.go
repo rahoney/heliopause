@@ -230,3 +230,26 @@ func FuzzParseUVLockNoPanic(f *testing.F) {
 		_, _ = ParseUVSyncInput(UVSyncPylock, input, true, "3.14.7")
 	})
 }
+
+// The fixed python-slugify8.0.4 wheel declares text-unidecode (>=1.3).
+// Exercise the same complete authenticated-wheel path with inert local bytes.
+func TestUVWheelBindingParenthesizedMetadataConstraints(t *testing.T) {
+	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
+	for _, requirement := range []string{"child (>=1.0)", "child(>=1,<2)", "child ( ==1.0 )", "child (>=1.0); python_version >= '3.10'"} {
+		t.Run(requirement, func(t *testing.T) {
+			lock, inputs, pages := uvTestSelection(t, requirement)
+			graph, err := lock.BindWheels(inputs, pages, target, DefaultWheelLimits())
+			if err != nil || len(graph.Nodes()) != 2 || len(graph.Edges()) != 1 {
+				t.Fatal("parenthesized authenticated requirement rejected", err)
+			}
+		})
+	}
+	for _, requirement := range []string{"child (>=2.0)", "missing (>=1.0)", "child ()", "child ( )", "child ((>=1.0))", "child (>=1.0)junk", "child (>=1.0)(<2)", "child (>==1.0)", "child (>=1.0,,<2)", "child (>=1.0) or missing", "child (>=1.0); unsupported_name == 'x'"} {
+		t.Run(requirement, func(t *testing.T) {
+			lock, inputs, pages := uvTestSelection(t, requirement)
+			if _, err := lock.BindWheels(inputs, pages, target, DefaultWheelLimits()); err == nil {
+				t.Fatal("accepted invalid, unsatisfied or incomplete graph", requirement)
+			}
+		})
+	}
+}

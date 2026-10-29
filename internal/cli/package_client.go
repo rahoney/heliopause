@@ -23,6 +23,7 @@ const (
 	PNPMPackageClient      PackageClientID = "pnpm"
 	BunPackageClient       PackageClientID = "bun"
 	NPXPackageClient       PackageClientID = "npx"
+	UVRunPackageClient     PackageClientID = "uv-run"
 )
 
 type packageUpgradeMode uint8
@@ -73,6 +74,8 @@ func packageClientDescriptors() []packageClientDescriptor {
 		{id: PipPackageClient, path: []string{"pip", "install"}, parents: []packageClientParent{{"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"}}, route: "pip", use: "install <project>[@<version>]", shortEN: "Install a PyPI distribution into the active virtual environment", shortKO: "Python 배포 파일과 의존성을 검사한 뒤 설치·업데이트(--upgrade/-U)합니다", longEN: pypiUpgradeDescriptionEnglish, longKO: pypiUpgradeDescriptionKorean, namedSources: true, validate: validatePyPIInstallArgs, parse: artifactpypi.ParseReferenceForSource, flags: configurePipInstallFlags, upgrade: pipPackageUpgradeMode},
 		{id: UVPipPackageClient, path: []string{"uv", "pip", "install"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "install <project>[==<version>]", shortEN: "Quarantine and install a public PyPI wheel set selected by UV", shortKO: "UV가 선택한 공개 PyPI wheel과 의존성을 검역한 뒤 설치합니다", longEN: uvPipInstallEnglish, longKO: uvPipInstallKorean, validate: validateUVPipInstallArgs, validateRaw: validateUVPipRawArgs, parse: parseUVPipInstallReference, flags: configureUVPipInstallFlags, upgrade: uvPackageUpgradeMode, flagText: uvPipUpgradeFlagText},
 		{id: UVPipPackageClient, path: []string{"uv", "pip", "sync"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "sync <source-file>", shortEN: "Quarantine a complete wheel set before synchronizing a virtual environment", shortKO: "전체 wheel 목록을 검역한 뒤 가상환경을 동기화합니다", longEN: uvPipSyncEnglish, longKO: uvPipSyncKorean, validate: validateUVPipSyncArgs, validateRaw: validateUVPipSyncRawArgs, flags: configureUVPipSyncFlags, flagText: uvPipSyncFlagText, examples: []string{"helox uv pip sync requirements.txt --target /absolute/path/venv", "helox uv pip sync pylock.toml --target /absolute/path/venv", "helox uv pip sync empty.txt --target /absolute/path/venv --allow-empty-requirements"}},
+		uvRunExecutionDescriptor(false),
+		uvRunExecutionDescriptor(true),
 	}
 }
 
@@ -128,6 +131,8 @@ func initializePackageClientCommands(root *cobra.Command) {
 			if child == nil {
 				child = &cobra.Command{Use: segment, Short: descriptor.parents[index].en}
 				parent.AddCommand(child)
+			} else if descriptor.id == UVRunPackageClient {
+				child.Short = descriptor.parents[index].en
 			}
 			parent = child
 		}
@@ -328,4 +333,11 @@ func AddUVPipInstallAndUpdates(root *cobra.Command, installer, closureUpdater, r
 		return errors.New("UV pip install requires a prepared use case")
 	}
 	return addPackageClientInstall(root, UVPipPackageClient, map[string]Installer{"pypi": installer}, map[packageUpgradeMode]map[string]Installer{packageUpgradeClosure: {"pypi": closureUpdater}, packageUpgradeRoot: {"pypi": rootUpdater}})
+}
+
+// SelectedPackageClientIsExecution uses the same descriptor as preflight and
+// binding, including the literal guest --help boundary.
+func SelectedPackageClientIsExecution(root *cobra.Command) bool {
+	descriptor, ok := packageClientByOperation(SelectedPackageClient(root), SelectedPackageClientOperation(root))
+	return ok && descriptor.execution
 }
