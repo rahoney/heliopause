@@ -15,15 +15,32 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3d3 same-source12 local qualified202.496s/actual caller DeadlineExceeded and readonly self-write denial; production/CPP unchanged; child held-pipe unproven
+Last completed substep: P5-C4 application/concrete factory local qualified public2/58.861s + canonical9/affected Race; existing1332/CPP/old actual tests unchanged
 Next action: CI428 poll03 at01:02:15UTC:8SUCCESS/Linux running; timer04 due01:22:15UTC/KST10:22:15/session34757; preserve active source/no push. Local C3d3 commit then application/CLI owner audit.
-Current substep: M13-004/P5-C3d3 local12 qualified; final metadata checks/local commit then application/CLI baseline; CI428/source558d75a frozen; final OPEN
+Current substep: M13-004/P5-C4 named local workflow qualified; final metadata/local commit then safe output and npx/npm exec CLI baseline; CI428/source558d75a frozen; final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
-Independent local next: P5 application/composition and safe output/CLI; controlled runtime boundary12 qualified; public end-to-end/final support matrix open
+Independent local next: safe separate program output and npx/npm exec descriptor/grammar/composition/actual; final support matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C4 application workflow actual local 완료
+
+[Local receipt](./evidence/package-client-quarantine/p5c4-execution-workflow-local-20261029.json)는 canonical9/전체 영향 Race와
+actual public TypeScript2/58.861s를 연결한다. 기존 준비·materialize·Node backend를
+Application interface와 concrete Bootstrap adapter로 연결했고 fresh current 검사/Policy/records/
+private argv 및 정상0/비정상1 원래 cause를 확인했다. 결과의 terminal/output은 복사·비공개이며
+준비 실패·모순 terminal·late caller 취소는 완료로 표시하지 않는다. 기존1332/CPP/old actual
+parents·권한/예산은 그대로이고 Host/source/42/ZIP/Docker·helperwait0/resources/endpoints0다.
+다음은 안전한 출력과 public CLI이며 CI428 진행 중 새 push는 하지 않는다.
+
+### 2026-10-29 C4 application workflow 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p5c4-execution-workflow-plan-20261029.md)는
+기존 준비/검사·Policy/materialize/Node backend를 재사용하고 application의 동일 요청 연결과
+private 결과·원래 오류 유지 gap만 구현한다. 기존 actual parent와 controlled12는 유지하고
+새 public2 parent로 실제 연결을 검증한다. CLI/renderer/final은 후속이며 CI428은 보존한다.
 
 ### 2026-10-29 C3d3 same-source12 actual local 완료
 
