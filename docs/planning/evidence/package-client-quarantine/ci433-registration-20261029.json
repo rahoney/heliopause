@@ -17,12 +17,12 @@
     "requested": 0,
     "pending": 0
   },
-  "status": "in_progress",
-  "conclusion": null,
+  "status": "completed",
+  "conclusion": "success",
   "started_at": "2026-10-29T12:02:09Z",
   "monitor_session": 71198,
   "monitor_pid": 3172981,
-  "monitor_state": "/tmp/haa-ci433-autopoll/state.json",
+  "monitor_state": "COMPLETED_CONFIRMED; owned SIGTERM/session exit143 after final observation",
   "first_due_at": "2026-10-29T12:22:09+00:00",
   "first_due_KST": "2026-10-29 21:22:09 KST",
   "poll_interval_minutes": 20,
@@ -120,5 +120,10 @@
       "bytes": 2261,
       "sha256": "0b42d25d82df2bf4933df461f832ae9513c6f5791649f2c14476477247a5c5d2"
     }
-  ]
+  ],
+  "last_query_at": "2026-10-29 13:48:40 UTC",
+  "next_due_at": null,
+  "completed20min_polls": 5,
+  "last_jobs": "Required/all10 SUCCESS",
+  "completion_receipt": "ci433-python-current-workflows-hosted-qualification-20261029.json"
 }
