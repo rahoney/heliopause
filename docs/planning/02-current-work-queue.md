@@ -15,15 +15,19 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-C2 grouped current wiring canonical7/whole checker Race/inert actual-log DATA78 PASS; production internal/cmd/CPP132 unchanged/runtime1368. C actual3/D1 eight/D2 five retained; cleanup209/~7.12GiB.
-Next action: preserve exact locally qualified current cohort candidate; confirm remote ref and active runs0, normal FF push, register actual new head/run/start and20min public GET monitor; continue independent bounded native UVx/golden audit while CI runs.
-Current substep: M13-004/P6-C2 grouped hosted qualification IN_PROGRESS; local wiring PASS, normal push/new-source CI/actual20min worker pending. No current active CI/timer; native/golden/aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
+Last completed substep: C2 canonical7/Quick348.386s/checker Race62.629s/inert DATA78 PASS; source87c817d/tree238aa647/3063·1368 normal FF pushed9198→87c8. Actual CI433/run40869995094 started12:02:09UTC; immediate public GET known.
+Next action: consume actual20min GET results from /tmp/haa-ci433-autopoll/state.json, first12:22:09UTC/KST21:22:09; preserve full originals/source proof and no push while active. Continue independent same-item bounded native UVx/run golden owner audit before new source.
+Current substep: M13-004/P6-C2 hosted qualification IN_PROGRESS; CI433/source87c817d frozen, worker/session71198/PID3172981 first20min due12:22:09UTC. Independent next native UVx/golden baseline audit; aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 grouped CI433 등록·실제20min 감시
+
+[Registration](./evidence/package-client-quarantine/ci433-registration-20261029.json)은 source87c817d/tree238aa647/3063·1368의 normal FF9198→87c8/remote ref와 actual run40869995094/start12:02:09UTC를 대조한다. 공개 무인증 run/jobs GET HTTP200을 확인했고 worker/session71198/PID3172981의 첫 due12:22:09UTC(한국21:22:09) 뒤20분마다 실제 원본과 다음 due를 저장한다. CI432100m29s와 새16 local368.61s의 약107분은 추정이며 Linux120min은 유지한다. Boundary8/standard-library hostile5/workflow3의 새 hosted 결과는 PENDING이다. 실행 중 새 push 없이 독립 native UVx/golden baseline을 계속하며 aliases/CLI/final·prior fork-only/CPU/drop 원인 미확정은 유지한다.
 
 ### 2026-10-29 P6-C2 grouped hosted wiring local 완료
 
