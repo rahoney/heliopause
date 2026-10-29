@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D5 production native-run resolver named local qualified; current1384/old1374 unchanged, canonical9/Quick89.765s/affected PyPI·Sandbox·Bootstrap Race32.605s, actual normal+incomplete refusal49.68s/complete6 traces. Cleanup243ELF+6cache/~10.76GiB logical.
-Next action: bind the qualified ResolveToolRun selector to existing current preparation/runtime with an explicit command guard, verify fresh current approval/normal0/guest2/mismatch refusal as one cohort, and consume CI435 actual20min GET. Do not relabel tool-install identity or repeat CPP/native baseline actuals.
-Current substep: M13-004/P6-D6 current native-run application factory baseline audit IN_PROGRESS. Existing whole inspection/Evidence/Policy/Python runtime owners will be reused. CI435/sourceb0f4cbc frozen; actual20min worker13791/PID3398839 poll01=8SUCCESS/macOS success/Linux in progress; next18:31:42UTC; no push.
+Last completed substep: P6-D6 current native-run application named local qualified; existing1384 unchanged/new3/current1387, canonical9/Quick72.206s/Bootstrap·Application Race8.09s, actual current3/115.44s fresh ALLOW·normal0/typed guest2/configured mismatch refusal. Cleanup245ELF+6cache/~10.81GiB logical.
+Next action: audit existing npx CLI/descriptor/bootstrap and fixed native tool-run semantics, connect uvx/uv tool run bounded aliases with explicit --from, and group their actual preflight/current program/output/exit checks including an independent package/console-name case. Consume CI435 actual20min GET without new push.
+Current substep: M13-004/P6-D7 native-run CLI/alias baseline audit IN_PROGRESS. Existing descriptor/preflight/report/privacy/Python bootstrap owners will be reused. CI435/sourceb0 frozen; actual20min poll02=8SUCCESS/Linux integration ongoing/next18:51:44UTC; no push.
 Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 D6 current native-run application named local 완료
+
+[Qualification](./evidence/package-client-quarantine/p6d6-native-run-application-local-20261030.json)은 existing1384 불변/new3/current1387·canonical9/Quick72.206s/Bootstrap·Application Race8.09s와 실제 current3/115.44s를 결합한다. 각각 fresh whole Evidence/M3/M5 ALLOW 뒤 normal0/typed guest2는 complete이며 configured command 불일치는 runtime/새 기록 없이 거부됐다. 기존 binder/runtime/records와 old tool-install factory를 보존했다. Host/source/42/ZIP/Docker 동일/helperwait0/전체 정리 후 종료 사본2개55089722B를 제거해 누적245ELF+6cache/약10.81GiB 논리 용량이다. CI435/sourceb0는8SUCCESS/Linux 진행·next18:51:44UTC로 frozen이며 D5/D6는 그 밖이다. 다음 native-run CLI/alias baseline을 감사한다.
 
 ### 2026-10-30 D5 production native-run resolver named local 완료
 
