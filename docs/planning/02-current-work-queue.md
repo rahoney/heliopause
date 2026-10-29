@@ -15,15 +15,35 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P5-C3c2b normal/nonzero Artifact Node backend local qualified; current1330/Go-v6 checks8/CPP131; actual69.401s/fresh2 exit0+1/whole cleanup; same helper8root9.678s and existing3consumers12.050s PASS; new hosted pending
-Next action: CI428/source558d75a/treef5e4d9f9/2969·1330 poll01 at00:18:26UTC:8SUCCESS including macOS/Linux running; actual20min timer02 due00:38:26UTC/KST09:38:26/session57473. Preserve active run/no new push; consume timer/fresh status. Finish local C3d1 commit then C3d2 FS/network/child hostile baseline; application/CLI/final OPEN.
-Current substep: M13-004/P5-C3d1 six controlled fixture actual cases locally qualified92.871s; only test2 files added/production CPP unchanged; final docs and local commit next. Then C3d2 FS/network/child hostile baseline before source; CI428/source558d75a frozen; public application/CLI/final OPEN
+Last completed substep: P5-C3d1 actual6 cases local qualified/commit a6e7ee6 (not pushed);1332inputs/existing1330 CPP unchanged; actual92.871s/literal argv/kernel TERM-KILL/body cancel/independent1MiB overflow/whole cleanup PASS; CI428 excludes it
+Next action: CI428/source558d75a/treef5e4d9f9/2969·1330 poll02 at00:39:39UTC:8SUCCESS including macOS/Linux running; actual20min timer03 due00:59:39UTC/KST09:59:39/session51588. Preserve active run/no new push; consume timer/fresh status. C3d1 local commit a6e7ee6 retained (no push); current C3d2 ten-case hostile actual qualification continues; application/CLI/final OPEN.
+Current substep: M13-004/P5-C3d2 current same-source10 locally qualified154.558s incl child ARTIFACT role and complete cleanup; final docs/local commit next, then C3d3 deadline/readonly self-write baseline; CI428/source558d75a frozen; public application/CLI/final OPEN
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P5-C3d actual cancellation/overflow/child lifecycle and hostile boundaries; then application/CLI; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — IN_PROGRESS bin/Node bytes/context/composition/records local qualified; actual flow unwired; P6/P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 C3d2 current10 hostile actual local 완료
+
+[Local receipt](./evidence/package-client-quarantine/p5c3d2-node-hostile-boundary-local-20261029.json)의
+same1332/production·CPP 불변·canonical/tagged6checks와 actual154.558s/10cases가 PASS다.
+Outside path/network의 실제 fact와 comm spoof의 kernel NODE/ARTIFACT를 확인했고 child는
+clone fault/ARTIFACT/incomplete/cleanup이다. Child WaitDelay=false·JS 시작 미입증을 명시했다.
+V1 role 관측 한계와 v2의 actual0 후 tuple/list operator 오류를 각각 보존하고 독립 readback
+검증으로 기록만 바로잡았으며 actual을 재실행하지 않았다. Source/Host/42/ZIP/Docker 보존·
+helperwait0/resources/endpoints0/noSKIP다. Next C3d3은 body 뒤 actual deadline/readonly self-write이며
+먼저 local unit commit만 보존한다. CI428/source558d75a/timer03 due00:59:39UTC는 유지한다.
+
+### 2026-10-29 C3d2 actual hostile 경계 착수
+
+[C3d2 baseline·지도·두 번째 검토](./evidence/package-client-quarantine/p5c3d2-node-hostile-boundary-plan-20261029.md)는
+local a6e7ee6의 기존1332·current검사/Policy/runtime을 재사용해 outside path/guest-loopback
+network/Artifact child/comm spoof 네 actual gap만 잡았다. 두 test만 수정하고 fixture bytes가
+바뀌므로 기존6case까지 same source10case로 검증한다. Production/CPP/일반FS·network·role/
+한도는 유지하며 child startup 거부를 성공한 child·pipe drain 증거로 표시하지 않는다.
+CI428은558d75a/8SUCCESS/Linux 진행과 timer02 due00:38:26UTC를 유지하고 새 push하지 않는다.
 
 ### 2026-10-29 C3d1 selected Node 신호·취소·독립 overflow actual 완료
 

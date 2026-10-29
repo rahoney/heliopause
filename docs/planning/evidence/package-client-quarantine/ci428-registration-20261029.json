@@ -7,7 +7,7 @@
   "tracked_files": 2969,
   "source_inputs": 1330,
   "run_started_at": "2026-10-28T23:57:29Z",
-  "last_actual_query_at": "2026-10-29T00:18:26Z",
+  "last_actual_query_at": "2026-10-29T00:39:39Z",
   "status": "in_progress",
   "conclusion": null,
   "jobs": [
@@ -66,9 +66,9 @@
       "conclusion": "success"
     }
   ],
-  "timer_session": 57473,
-  "next_due_at": "2026-10-29T00:38:26Z",
-  "completed20min_polls": 1,
+  "timer_session": 51588,
+  "next_due_at": "2026-10-29T00:59:39Z",
+  "completed20min_polls": 2,
   "scope": "qualified normal/nonzero Artifact Node backend with current readonly whole flow/CPP131 and prior common consumers; new actual hostile/cancel/overflow/child/CLI/final not included",
   "authorization": "user-authorized important CI and normal milestone push during sleep; direct timer status checks every20min",
   "recent_observed_elapsed_to_final_update_seconds": [
@@ -79,5 +79,9 @@
   "estimated_completion": "roughly80-105min if ordinary pipeline completes;20min checks also catch early errors; no promise",
   "whole_hosted_qualification": "PENDING",
   "later_C3d_source_excluded": true,
-  "push": "normal fast-forward e0dc39a ->558d75a on existing milestone branch; remote ref confirmed; no merge/tag/release"
+  "push": "normal fast-forward e0dc39a ->558d75a on existing milestone branch; remote ref confirmed; no merge/tag/release",
+  "completed8_same_checkout": "d965d5bf297d334647cff6dc67f4cb5110f79922",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 446321,
+  "completed_helper_latches": 131
 }

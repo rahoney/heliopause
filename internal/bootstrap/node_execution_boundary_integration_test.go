@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -50,7 +52,7 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 		}
 	}()
 	var previous string
-	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow"} {
+	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof"} {
 		if !t.Run(mode, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
@@ -125,6 +127,34 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 				out, diagnostic := len(result.Stdout()), len(result.Stderr())
 				if mode == "stdout-overflow" && (out != 1<<20 || diagnostic != 0) || mode == "stderr-overflow" && (diagnostic != 1<<20 || out != 0) {
 					t.Fatal("independent stream bounds differ", out, diagnostic)
+				}
+			case "outside-read", "network", "child", "comm-spoof":
+				prefix := map[string]string{"outside-read": "fs-ready\n", "network": "network-ready\n", "child": "child-ready\n", "comm-spoof": "spoof-ready\n"}[mode]
+				if result.Complete() || executeErr == nil || !bytes.HasPrefix(result.Stdout(), []byte(prefix)) {
+					t.Fatal("hostile body became complete or was not reached", executeErr)
+				}
+				detail := executeErr.Error()
+				switch mode {
+				case "outside-read":
+					if !strings.Contains(detail, "filesystem-outside-workspace") {
+						t.Fatal("outside open lacks actual forbidden-path fact", executeErr)
+					}
+				case "network":
+					if !strings.Contains(detail, "network-attempt") {
+						t.Fatal("guest loopback connection lacks untrusted network fact", executeErr)
+					}
+				case "child":
+					unexpected := strings.Contains(detail, "process-exec-unexpected")
+					clone := strings.Contains(detail, "open_provenance=CLONE_CHILD")
+					artifact := strings.Contains(detail, "open_role=ARTIFACT")
+					if !unexpected && (!clone || !artifact) {
+						t.Fatal("child failure lacks untrusted exec or clone fact", executeErr)
+					}
+					t.Logf("node_boundary_child wait_delay=%t unexpected_exec=%t clone_fault=%t artifact_role=%t", errors.Is(executeErr, exec.ErrWaitDelay), unexpected, clone, artifact)
+				case "comm-spoof":
+					if !strings.Contains(detail, "open_role=ARTIFACT") || !strings.Contains(detail, "open_kernel_image=NODE") {
+						t.Fatal("helper name spoof lacks retained kernel Node Artifact identity", executeErr)
+					}
 				}
 			}
 			t.Logf("node_boundary case=%s current_policy=ALLOW fixture_registry=CONTROLLED_TEST native_solver=NOT_RUN complete=%t stdout_bytes=%d stderr_bytes=%d", mode, result.Complete(), len(result.Stdout()), len(result.Stderr()))

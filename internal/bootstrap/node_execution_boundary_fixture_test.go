@@ -39,6 +39,10 @@ const nodeBoundaryScript = "#!/usr/bin/env node\n'use strict';\n" +
 	"case 'cancel': fs.writeSync(1, 'ready\\n'); setInterval(() => {}, 1000); break;\n" +
 	"case 'stdout-overflow': for (;;) fs.writeSync(1, Buffer.alloc(65536, 97));\n" +
 	"case 'stderr-overflow': for (;;) fs.writeSync(2, Buffer.alloc(65536, 98));\n" +
+	"case 'outside-read': fs.writeSync(1, 'fs-ready\\n'); try { fs.readFileSync('/home/haa-node-boundary-probe'); } catch {} break;\n" +
+	"case 'network': fs.writeSync(1, 'network-ready\\n'); { const s = require('node:net').connect(9, '127.0.0.1'); s.on('error', () => {}); } break;\n" +
+	"case 'child': fs.writeSync(1, 'child-ready\\n'); { const c = require('node:child_process').spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], {stdio: ['ignore', 'inherit', 'inherit']}); c.on('error', () => {}); c.unref(); } break;\n" +
+	"case 'comm-spoof': process.title = 'haa-boundary'; fs.writeSync(1, 'spoof-ready\\n'); try { fs.readFileSync('/proc/self/status'); } catch {} break;\n" +
 	"default: process.exit(37);\n}\n"
 
 // Only the existing explicitly injected test resolver receives these bytes.
