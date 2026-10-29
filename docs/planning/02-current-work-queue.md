@@ -15,15 +15,32 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-B1 hosted readonly4 wiring local canonical7/Quick257.065s/checkerRace54.527s/DATA32 PASS; source1355/old1352 unchanged. Completed copies175/~6.25GiB reclaimed; latest baselines/source/supplies/originals retained.
-Next action: final exact candidate docs/security and Korean commit; normal authorized FF push/new actual run confirmation then20min timer. Continue Python ARTIFACT runtime baseline while pending; retain CI430 failure and do not broaden named DATA/wiring results.
-Current substep: M13-004/P6-B1 meaningful grouped readonly4 hosted candidate final exact docs/security IN_PROGRESS; internal/cmd/CPP131 and loss guard/config unchanged; Go CI430 loss cause remains UNCONFIRMED.
+Last completed substep: B1 readonly4 hosted wiring committed0d96e23/tree20b74161/3032·1355 and normal FF pushed3c85→0d96; actual CI431/run40826938443 confirmed; timer01/session73616 due06:23:34UTC/KST15:23:34; cleanup175 copies/~6.25GiB done.
+Next action: automatic public GET monitor/session61457/pid2781030 queried06:47:07.000154→06:47:07.967981UTC, 8SUCCESS/Linux running; next07:07:07.967999UTC/KST16:07:07. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Complete B2-A Node implementation sharing/checks/actual existing consumers.
+Current substep: M13-004/P6-B2-A shared captured-program owner reuse IN_PROGRESS; baseline/source0d96 runtime1355 before source; exact2-source map/second review recorded; CI431/source0d96 frozen and remains PENDING.
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-A 기존 captured program 본문 공유 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b2a-shared-program-capture-plan-20261029.md)는
+기존 Node captured admission/terminal/target/source-verify 구현을 private helper로 옮겨 같은
+Node caller가 사용하도록 한다. 공개 Node API/typed error/input lifecycle·CPP/권한/한도는
+유지하고 Python fake Node layout 또는 별도 workflow 복제를 피한다. Source 전 runtime1355
+감사를 기록했으며 새 source의 local 검증은 미완료다. CI431 자동 조회는06:47:07에 실제로
+완료됐고 다음07:07:07을 등록했다. Completed8/444981B/checkoutf4d7/tree20b/CPP131은 부분 증거다.
+
+### 2026-10-29 CI431 등록·실제20min 감시
+
+[Registration](./evidence/package-client-quarantine/ci431-registration-20261029.json)은 source0d96/
+tree20b74161/3032·1355의 정상 FF push와 원격 ref·실제run40826938443/start06:03:34UTC를
+확인했다. Initial6SUCCESS/Linux·macOS·Quick running이며 timer01/session73616은06:23:34UTC
+(한국15:23:34)에 실제 발화한다. 새 source를 push로 취소하지 않고 다음 조회 뒤20분을 갱신한다.
+Python ARTIFACT runtime owner baseline을 독립 수행하며 새 hosted·user-run/UVx/CLI/final은 미완료다.
 
 ### 2026-10-29 B1 readonly4 hosted 연결 local 완료
 
