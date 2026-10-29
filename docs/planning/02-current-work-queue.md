@@ -15,10 +15,10 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D7 uvx/uv tool run CLI named local qualified; runtime1392, canonical10/Quick273.554s/affected five-package Race58.681s, actual UV5 parent191.58s all PASS; unchanged NPM4 earlier actual reused. Cleanup251ELF+6cache/~10.97GiB logical.
-Next action: P6-D8 grouped hosted native selector/current app/CLI wiring audit; reuse existing protected clients/helper/data exporter and exact guards. Consume CI435 20min GET and push only important complete end-to-end bundle after that run finishes.
-Current substep: M13-004/P6-D8 native-run grouped hosted wiring IN_PROGRESS; D7 named local CLI qualified. Existing implementation reused, missing hosted connections only; p6d8-native-run-hosted-plan-20261030.md owns audit/map. CI435/sourceb0 remains frozen with actual20min monitor; no new push.
-Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
+Last completed substep: P6-D8 grouped native selector/current app/CLI hosted wiring local qualified; existing4 runtime paths only/current1392, canonical8/whole checker Race and saved actual-log DATA33 PASS, no repeated native/CPP actual. CI435 completed Required10SUCCESS/sourceb0/Linux106.
+Next action: push the important complete D5/D6/D7/D8 end-to-end bundle once, verify source/tree/expected109 and actual Required10, register real20min GET monitor; continue independent missing P6 work while CI runs. No helper/doc-only CI or unchanged native/CPP rerun.
+Current substep: M13-004/P6-D8 grouped native-run hosted qualification IN_PROGRESS; local wiring qualified, next important grouped push pending. CI435 finished all10SUCCESS and monitor natural exit0/next none; production selector/app/CLI are outside that frozen source.
+Acceptance audit: newest whole-green frozen baseline CI435/sourceb0 Required10SUCCESS/whole tree eebd72a1/all10 checkout334e96e3; Linux106/CPP132/fullCPU298.02s and native DATA2 PASS. Later D5/D6/D7 are named local only; D8 hosted/generic/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -32,6 +32,14 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 D8 native-run hosted wiring local 완료
+
+[D8 receipt](./evidence/package-client-quarantine/p6d8-native-run-hosted-local-20261030.json)은 기존 current execution step/protected Bootstrap와 Sandbox rebind/helper에 production selector 정상·불완전1/current app3/UV CLI5를 연결한다. 기존 source/census2·106parents를 보존해 새 top109를 기대하며 Required10/CPP132·UV195/Linux120min/권한은 불변이다. Canonical8/전체 checker Race·실제 저장 로그 DATA33cases가 PASS이고 product/CPP actual은 반복하지 않았다. D5/D6/D7와 중요한 end-to-end source 한 번만 push해 hosted gap을 확인한다. Generic/final은 OPEN이다.
+
+### 2026-10-30 CI435 native DATA hosted 완료
+
+[Qualification](./evidence/package-client-quarantine/ci435-native-source-hosted-qualification-20261030.json)은 frozen b0/전체treeeebd72a1/all10checkout334e96e3·Required10SUCCESS와 Linux106/CPP132/UV195/CPU298.02s를 확인했다. Native source/census2 및 exact DATA3markers, helper18wait0/final4original0·복원이 PASS다. Mac production89.115s marker interval/default 통과는 과거 timeout 인과 해결이 아니다. 실제20분 GET6회 후 worker13791 자연0/next none이며 1358654B/62parts를 보존했고 기존8logs는 다시 받지 않았다. D5/D6/D7는 이 source 밖이므로 D8에 한 묶음으로 연결한다. Server108분31초이며 작은 helper별 CI나 같은 입력 재시도는 없다.
 
 ### 2026-10-30 D7 native UV CLI named local 완료
 

@@ -249,12 +249,12 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		"disabled native": strings.Replace(script, "HELOX_UV_NATIVE_RUNTIME=1", "HELOX_UV_NATIVE_RUNTIME=0", 1),
 		"disabled source": strings.Replace(script, "HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1", "HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=0", 1),
 		"disabled census": strings.Replace(script, "HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1", "HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=0", 1),
-		"wrong parent":    strings.Replace(script, "^TestUVActualPublicToolRun(SourceBinding|NativeCensus)$", "^TestUVActualPublicToolRunSourceBinding$", 1),
+		"wrong parent":    strings.Replace(script, "^(TestUVActualPublicToolRun(SourceBinding|NativeCensus)|TestUVPublicToolRunResolverIntegration)$", "^TestUVActualPublicToolRunSourceBinding$", 1),
 		"wrong package":   strings.Replace(script, "cd internal/sandbox", "cd internal/bootstrap", 1),
 		"ignored error":   strings.Replace(script, uvRunSourceCommand, uvRunSourceCommand+" || true", 1),
 		"missing branch":  strings.Replace(script, "if [[ ${1-} == uv-run-source ]]; then", "if false; then", 1),
 		"native fallback": strings.Replace(script, " && ${1-} != uv-run-source", "", 1),
-		"unknown profile": strings.Replace(script, "|1:uv-run-source) ;;", "|1:anything) ;;", 1),
+		"unknown profile": strings.Replace(script, "|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli) ;;", "|1:anything) ;;", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == script {
@@ -287,7 +287,7 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		"wrong profile":         strings.Replace(owned, "ci-uv-tools.sh uv-run-source", "ci-uv-tools.sh bootstrap", 1),
 		"missing source parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunSourceBinding\"]=1; ", "", 1),
 		"missing census parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunNativeCensus\"]=1", "", 1),
-		"wrong count":           strings.Replace(owned, "parents != 2", "parents != 1", 1),
+		"wrong count":           strings.Replace(owned, "parents != 3", "parents != 1", 1),
 		"duplicate parent":      strings.Replace(owned, " || accepted[$3]++", "", 1),
 		"skip accepted":         strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
 		"source missing":        strings.Replace(owned, "source != 1", "source != 0", 1),
@@ -318,5 +318,72 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		if len(validateCurrentExecutionPreparationQualification(changed)) == 0 {
 			t.Fatal("wrong native client/helper admitted")
 		}
+	}
+}
+
+func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-uv-tools.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for name, changed := range map[string]string{
+		"disabled selector":         strings.Replace(original, "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1", "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=0", 1),
+		"selector parent absent":    strings.Replace(original, "|TestUVPublicToolRunResolverIntegration)", ")", 1),
+		"disabled current app":      strings.Replace(original, "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
+		"disabled CLI":              strings.Replace(original, "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1", "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=0", 1),
+		"CLI error ignored":         strings.Replace(original, uvRunCLICommand, uvRunCLICommand+" || true", 1),
+		"current app error ignored": strings.Replace(original, uvRunWorkflowCommand, uvRunWorkflowCommand+" || true", 1),
+		"CLI branch absent":         strings.Replace(original, "if [[ ${1-} == uv-run-cli ]]; then", "if false; then", 1),
+		"current app branch absent": strings.Replace(original, "if [[ ${1-} == uv-run-workflow ]]; then", "if false; then", 1),
+		"app enters native":         strings.Replace(original, " && ${1-} != uv-run-workflow", "", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if changed == original {
+				t.Fatal("mutation missed source")
+			}
+			if len(validateUVToolsScript(changed)) == 0 {
+				t.Fatal("weakened native current dispatch admitted")
+			}
+		})
+	}
+	body, err = os.ReadFile(filepath.Join("..", "..", ".github", "workflows", "heliopause-ci.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original = string(body)
+	for _, key := range []string{"uv_run_workflow", "uv_run_cli"} {
+		t.Run(key, func(t *testing.T) {
+			start := strings.Index(original, "          "+key+"_log=")
+			if start < 0 {
+				t.Fatal("cohort absent")
+			}
+			closeLine := "          rm -- \"$" + key + "_log\"\n"
+			length := strings.Index(original[start:], closeLine)
+			if length < 0 {
+				t.Fatal("cohort end absent")
+			}
+			end := start + length + len(closeLine)
+			owned := original[start:end]
+			mutations := map[string]string{
+				"command failure ignored":  strings.Replace(owned, "if (("+key+"_status)); then exit", "if ((0)); then exit", 1),
+				"log read failure ignored": strings.Replace(owned, "if (("+key+"_log_status)); then exit", "if ((0)); then exit", 1),
+				"SKIP admitted":            strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
+				"wrong parent":             strings.Replace(owned, "/^--- PASS:/", "/^--- FAKE:/", 1),
+			}
+			for name, changed := range mutations {
+				t.Run(name, func(t *testing.T) {
+					if changed == owned {
+						t.Fatal("mutation missed source")
+					}
+					if len(validateCurrentExecutionPreparationQualification(original[:start]+changed+original[end:])) == 0 {
+						t.Fatal("weakened native current cohort admitted")
+					}
+				})
+			}
+			if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
+				t.Fatal("missing native current cohort admitted")
+			}
+		})
 	}
 }
