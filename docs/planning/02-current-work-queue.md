@@ -15,15 +15,23 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: C2 canonical7/Quick348.386s/checker Race62.629s/inert DATA78 PASS; source87c817d/tree238aa647/3063·1368 normal FF pushed9198→87c8. Actual CI433/run40869995094 started12:02:09UTC; immediate public GET known.
-Next action: baseline existing direct_exec_admission Output/RunInput/RunBounded/RunOutput against already-correct RunDiscard; add meaningful dual-error regression before a bounded join fix. Preserve D1 observer FAIL/cache-query missing and CI433 actual20min GET/no push.
-Current substep: M13-004/P6-D1 diagnostic checkpoint recorded, native observation qualification remains NO; next P6-D2 existing admission four-method first-error baseline before source. CI433/source87c817d frozen/actual20min worker71198/PID3172981 next12:42:09UTC; cached-query/public golden/aliases/CLI/final OPEN.
+Last completed substep: P6-D2 named four-method first-error preservation local qualified; same-test RED4→GREEN10/canonical10/Quick333.493s/sandbox Race34.713s/current Python2 actual79.40s. D1 observer FAIL preserved; cleanup217/~7.26GiB.
+Next action: audit existing UVToolQueryEnvironment/IsExactUVPythonQuery/restricted workspace and new fixed UV cache source DATA before any cached-query permission change; require exact ARTIFACT creator/topology/private helper/env bounds and negative latches/actual. Keep CI433 actual20min GET/no push while active.
+Current substep: M13-004/P6-D2 named local COMPLETE; next P6-D3 cached native query identity/topology/readonly baseline before source. CI433/source87c817d remains frozen; actual poll02 8SUCCESS/Linux progress, worker71198/PID3172981 next13:02:10UTC; native/public golden/aliases/CLI/final OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D2 네 admission 최초 오류 보존 named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6d2-admission-first-error-local-20261029.json)는 기존1368 불변/current1370·네 반환 join/기존 RunDiscard 보존과 same-test RED4/control6→GREEN10·canonical10/Quick333.493s/전체 sandbox Race34.713s를 연결한다. Actual native negative는 ExitError2/EACCES를 보존하면서 observer 미완료로 Go parent5.01s/exit1/FAIL을 유지했고(operator contract0), 같은 CPP132의 canonical Python actual2/79.40s는 fresh current ALLOW·complete0/2가 PASS다. Native query/golden/aliases/CLI/final은 여전히 OPEN이다. Root87proc/ref0/errors0/정확한6 zombie 재검증 뒤 완료 사본4개85908816B를 제거해 누적217/~7.26GiB Linux 논리 용량이며 원본/CI433 monitor를 보존했다. 다음 cached query의 기존 UV identity/topology/readonly/role 경계를 감사한다.
+
+### 2026-10-29 P6-D2 기존 admission 최초 오류 보존 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6d2-admission-first-error-plan-20261029.md)는 기존 RunDiscard의 join을 재사용해 나머지 Output/RunInput/RunBounded/RunOutput 네 반환만 교정한다. Same-test RED4/GREEN와 consumed/unconsumed·실제 OS ExitError/원래 incomplete를 검증하고 nonce/lease/session/fail-stop·CPP/권한·한도는 유지한다. D1 cached-query observer FAIL/native public golden·aliases/CLI/final은 별도이며 CI433 frozen/actual20min GET을 계속한다.
 
 ### 2026-10-29 D1 native 원본 오류 관측·완료 사본 정리
 
