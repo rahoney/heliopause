@@ -3,10 +3,17 @@
 # Interpreter fixture bytes are exported from a pinned, never-started image.
 set -euo pipefail
 case "$#:${1-}" in
-  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow) ;;
+  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source) ;;
   *) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;
 esac
 test "$(id -u)" != 0
+if [[ ${1-} == uv-run-source ]]; then
+  (
+    cd internal/sandbox
+    HELOX_UV_NATIVE_RUNTIME=1 HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1 HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVActualPublicToolRun(SourceBinding|NativeCensus)$'
+  )
+  exit 0
+fi
 if [[ ${1-} == python-execution-boundary ]]; then
   (
     cd internal/bootstrap
@@ -21,7 +28,7 @@ if [[ ${1-} == python-execution-hostile ]]; then
   )
   exit 0
 fi
-if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow ]]; then
+if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source ]]; then
   (
     cd internal/sandbox
     HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'

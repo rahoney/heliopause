@@ -2,6 +2,8 @@ package main
 
 import "strings"
 
+const uvRunSourceCommand = `HELOX_UV_NATIVE_RUNTIME=1 HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1 HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVActualPublicToolRun(SourceBinding|NativeCensus)$'`
+
 const uvToolNativeCommand = `HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'`
 const uvToolBootstrapCommand = `HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_UV_TOOL_INSTALL_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=1 HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^(TestLinuxUVTool(Install|Upgrade|NativeAdoption)CLIIntegration|TestUVPublicTool(ApprovedUpgrade|UpgradeEvidenceFailure)Integration)$'`
 
@@ -31,20 +33,20 @@ func validateUVToolsScript(contents string) []string {
 	}
 	var findings []string
 	for _, command := range []string{
-		"set -euo pipefail", `0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow) ;;`, `if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow ]]; then`, `*) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;`,
+		"set -euo pipefail", `0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source) ;;`, `if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source ]]; then`, `*) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;`,
 		`test "$(id -u)" != 0`, "trap uv_tools_cleanup EXIT", "go run ./scripts/generate-runtime-lock.go -check",
 		`uv_tools_image=$(jq -er '.python_image.reference' scripts/runtimes.lock.json)`,
 		`uv_tools_container=$(docker create --pull never --network none --read-only --cap-drop ALL --label "io.heliopause.ci.uv-tools-data=$uv_tools_owner" --entrypoint /bin/false "$uv_tools_image")`,
 		`docker cp "$uv_tools_container:/usr/local/bin/python3.14" "$uv_tools_work/python3.14"`,
 		`chmod 0400 "$uv_tools_work/python3.14"`, `uv_tools_sha=$(sha256sum "$uv_tools_work/python3.14" | cut -d ' ' -f 1)`,
-		uvToolNativeCommand, uvToolBootstrapCommand, pipxToolBootstrapCommand, pythonExecutionPreparationCommand, pythonExecutionInputsCommand, pythonConsoleExecutionCommand, pythonExecutionBoundaryCommand, pythonExecutionHostileCommand, pythonExecutionWorkflowCommand,
+		uvRunSourceCommand, uvToolNativeCommand, uvToolBootstrapCommand, pipxToolBootstrapCommand, pythonExecutionPreparationCommand, pythonExecutionInputsCommand, pythonConsoleExecutionCommand, pythonExecutionBoundaryCommand, pythonExecutionHostileCommand, pythonExecutionWorkflowCommand,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "UV tools helper requires one command: "+command)
 		}
 	}
 	joined := strings.Join(active, "\n")
-	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
+	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
 		if strings.Count(joined, strings.Join(scope, "\n")) != 1 {
 			findings = append(findings, "UV tools consumer requires its package and owned data cleanup scope")
 		}
@@ -232,6 +234,35 @@ BEGIN { n=split("1 2 3", names, " "); for (i=1; i<=n; i++) expected[names[i]]=1 
 END { exit (bad || seen != 1 || cases != 3) }
 ' "$python_workflow_log"
 rm -- "$python_workflow_log"
+
+haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+haa_start_policy_helper
+uv_run_source_log="$RUNNER_TEMP/haa-uv-run-source.log"
+uv_run_source_status=0
+bash scripts/ci-uv-tools.sh uv-run-source >"$uv_run_source_log" 2>&1 || uv_run_source_status=$?
+uv_run_source_log_status=0
+cat -- "$uv_run_source_log" || uv_run_source_log_status=$?
+if ((uv_run_source_status)); then exit "$uv_run_source_status"; fi
+if ((uv_run_source_log_status)); then exit "$uv_run_source_log_status"; fi
+awk '
+BEGIN { expected["TestUVActualPublicToolRunSourceBinding"]=1; expected["TestUVActualPublicToolRunNativeCensus"]=1 }
+/--- SKIP:/ { bad=1 }
+/^--- PASS:/ {
+  if (!($3 in expected) || accepted[$3]++) bad=1
+  parents++
+}
+/uv_public_query_binding phase=/ {
+  if ($0 !~ /^[[:space:]]+uv_tool_run_public_real_test\.go:[0-9]+: uv_public_query_binding phase=prepared source=ACTUAL_PUBLIC_INDEPENDENT whole_original_startup=BOUND nodes=1 wheels=1 readonly_source=SEALED selected_program=NOT_RUN Evidence=NOT_RUN Policy=NOT_RUN native_terminal=EACCES wheel_sha256=274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a$/ || source++) bad=1
+}
+/uv_native_source_console phase=/ {
+  if ($0 !~ /^[[:space:]]+uv_tool_run_census_real_test\.go:[0-9]+: uv_native_source_console phase=bound original=WHOLE source=INDEPENDENT command=cowsay metadata_sha256=780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c native_record=UNAPPROVED_DATA Policy=NOT_RUN program=NOT_RUN$/ || console++) bad=1
+}
+/uv_public_native_census phase=/ {
+  if ($0 !~ /^[[:space:]]+uv_tool_run_census_real_test\.go:[0-9]+: uv_public_native_census phase=collected source=ACTUAL_PUBLIC_INDEPENDENT whole_original_startup=BOUND readonly_source=SEALED environments=1 facts=84 selected_program=NOT_RUN Evidence=NOT_RUN Policy=NOT_RUN selection_equivalence=NOT_QUALIFIED native_terminal=EACCES$/ || census++) bad=1
+}
+END { exit (bad || parents != 2 || source != 1 || console != 1 || census != 1) }
+' "$uv_run_source_log"
+rm -- "$uv_run_source_log"
 `
 
 func validateCurrentExecutionPreparationQualification(contents string) []string {
@@ -242,5 +273,5 @@ func validateCurrentExecutionPreparationQualification(contents string) []string 
 	if len(blocks) == 1 && kernelQualificationLines(strings.Join(blocks[0], "\n")) == kernelQualificationLines(currentExecutionPreparationRun) {
 		return nil
 	}
-	return []string{"current execution preparation/refusal qualification requires one unconditional protected-client lifecycle, exact parents/readonly4/console2/boundary8/hostile5/workflow3/unique cases/no-SKIP and original-error guards"}
+	return []string{"current execution preparation/refusal qualification requires one unconditional protected-client lifecycle, exact parents/readonly4/console2/boundary8/hostile5/workflow3/native-source2+markers3/unique cases/no-SKIP and original-error guards"}
 }

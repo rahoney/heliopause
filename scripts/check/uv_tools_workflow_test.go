@@ -238,3 +238,85 @@ func TestCurrentExecutionPythonCohortRejectsWeakenedLogs(t *testing.T) {
 		})
 	}
 }
+
+func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-uv-tools.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	script := string(body)
+	for name, changed := range map[string]string{
+		"disabled native": strings.Replace(script, "HELOX_UV_NATIVE_RUNTIME=1", "HELOX_UV_NATIVE_RUNTIME=0", 1),
+		"disabled source": strings.Replace(script, "HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1", "HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=0", 1),
+		"disabled census": strings.Replace(script, "HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1", "HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=0", 1),
+		"wrong parent":    strings.Replace(script, "^TestUVActualPublicToolRun(SourceBinding|NativeCensus)$", "^TestUVActualPublicToolRunSourceBinding$", 1),
+		"wrong package":   strings.Replace(script, "cd internal/sandbox", "cd internal/bootstrap", 1),
+		"ignored error":   strings.Replace(script, uvRunSourceCommand, uvRunSourceCommand+" || true", 1),
+		"missing branch":  strings.Replace(script, "if [[ ${1-} == uv-run-source ]]; then", "if false; then", 1),
+		"native fallback": strings.Replace(script, " && ${1-} != uv-run-source", "", 1),
+		"unknown profile": strings.Replace(script, "|1:uv-run-source) ;;", "|1:anything) ;;", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if changed == script {
+				t.Fatal("mutation missed source")
+			}
+			if len(validateUVToolsScript(changed)) == 0 {
+				t.Fatal("weakened native dispatch admitted")
+			}
+		})
+	}
+	body, err = os.ReadFile(filepath.Join("..", "..", ".github", "workflows", "heliopause-ci.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	start := strings.Index(original, "          uv_run_source_log=")
+	closeLine := "          rm -- \"$uv_run_source_log\"\n"
+	if start < 0 {
+		t.Fatal("native scope absent")
+	}
+	length := strings.Index(original[start:], closeLine)
+	if length < 0 {
+		t.Fatal("native scope end absent")
+	}
+	end := start + length + len(closeLine)
+	owned := original[start:end]
+	for name, changed := range map[string]string{
+		"command error":         strings.Replace(owned, "if ((uv_run_source_status)); then exit", "if ((0)); then exit", 1),
+		"cat error":             strings.Replace(owned, "if ((uv_run_source_log_status)); then exit", "if ((0)); then exit", 1),
+		"wrong profile":         strings.Replace(owned, "ci-uv-tools.sh uv-run-source", "ci-uv-tools.sh bootstrap", 1),
+		"missing source parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunSourceBinding\"]=1; ", "", 1),
+		"missing census parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunNativeCensus\"]=1", "", 1),
+		"wrong count":           strings.Replace(owned, "parents != 2", "parents != 1", 1),
+		"duplicate parent":      strings.Replace(owned, " || accepted[$3]++", "", 1),
+		"skip accepted":         strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
+		"source missing":        strings.Replace(owned, "source != 1", "source != 0", 1),
+		"console missing":       strings.Replace(owned, "console != 1", "console != 0", 1),
+		"census missing":        strings.Replace(owned, "census != 1", "census != 0", 1),
+		"source hash":           strings.Replace(owned, "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a", "foreign", 1),
+		"console hash":          strings.Replace(owned, "780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c", "foreign", 1),
+		"wrong census":          strings.Replace(owned, "environments=1 facts=84", "environments=0 facts=0", 1),
+		"promoted record":       strings.Replace(owned, "native_record=UNAPPROVED_DATA", "native_record=APPROVED", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if changed == owned {
+				t.Fatal("mutation missed source")
+			}
+			if len(validateCurrentExecutionPreparationQualification(original[:start]+changed+original[end:])) == 0 {
+				t.Fatal("weakened native qualification admitted")
+			}
+		})
+	}
+	if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
+		t.Fatal("missing native consumer admitted")
+	}
+	rebind := "haa_install_ci_client \"$RUNNER_TEMP/helox-sandbox-test\"\n          haa_start_policy_helper\n          uv_run_source_log="
+	for _, changed := range []string{strings.Replace(original, rebind, strings.Replace(rebind, "helox-sandbox-test", "helox-pnpm-project-test", 1), 1), strings.Replace(original, rebind, strings.Replace(rebind, "          haa_start_policy_helper\n", "", 1), 1)} {
+		if changed == original {
+			t.Fatal("rebind mutation missed source")
+		}
+		if len(validateCurrentExecutionPreparationQualification(changed)) == 0 {
+			t.Fatal("wrong native client/helper admitted")
+		}
+	}
+}

@@ -763,6 +763,35 @@ jobs:
           ' "$python_workflow_log"
           rm -- "$python_workflow_log"
 
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
+          uv_run_source_log="$RUNNER_TEMP/haa-uv-run-source.log"
+          uv_run_source_status=0
+          bash scripts/ci-uv-tools.sh uv-run-source >"$uv_run_source_log" 2>&1 || uv_run_source_status=$?
+          uv_run_source_log_status=0
+          cat -- "$uv_run_source_log" || uv_run_source_log_status=$?
+          if ((uv_run_source_status)); then exit "$uv_run_source_status"; fi
+          if ((uv_run_source_log_status)); then exit "$uv_run_source_log_status"; fi
+          awk '
+          BEGIN { expected["TestUVActualPublicToolRunSourceBinding"]=1; expected["TestUVActualPublicToolRunNativeCensus"]=1 }
+          /--- SKIP:/ { bad=1 }
+          /^--- PASS:/ {
+            if (!($3 in expected) || accepted[$3]++) bad=1
+            parents++
+          }
+          /uv_public_query_binding phase=/ {
+            if ($0 !~ /^[[:space:]]+uv_tool_run_public_real_test\.go:[0-9]+: uv_public_query_binding phase=prepared source=ACTUAL_PUBLIC_INDEPENDENT whole_original_startup=BOUND nodes=1 wheels=1 readonly_source=SEALED selected_program=NOT_RUN Evidence=NOT_RUN Policy=NOT_RUN native_terminal=EACCES wheel_sha256=274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a$/ || source++) bad=1
+          }
+          /uv_native_source_console phase=/ {
+            if ($0 !~ /^[[:space:]]+uv_tool_run_census_real_test\.go:[0-9]+: uv_native_source_console phase=bound original=WHOLE source=INDEPENDENT command=cowsay metadata_sha256=780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c native_record=UNAPPROVED_DATA Policy=NOT_RUN program=NOT_RUN$/ || console++) bad=1
+          }
+          /uv_public_native_census phase=/ {
+            if ($0 !~ /^[[:space:]]+uv_tool_run_census_real_test\.go:[0-9]+: uv_public_native_census phase=collected source=ACTUAL_PUBLIC_INDEPENDENT whole_original_startup=BOUND readonly_source=SEALED environments=1 facts=84 selected_program=NOT_RUN Evidence=NOT_RUN Policy=NOT_RUN selection_equivalence=NOT_QUALIFIED native_terminal=EACCES$/ || census++) bad=1
+          }
+          END { exit (bad || parents != 2 || source != 1 || console != 1 || census != 1) }
+          ' "$uv_run_source_log"
+          rm -- "$uv_run_source_log"
+
       - name: Qualify kernel direct-exec image and terminal facts
         run: |
           set -euo pipefail
