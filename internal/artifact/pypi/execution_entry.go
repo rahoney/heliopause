@@ -1,10 +1,12 @@
 package pypi
 
 import (
+	"cmp"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"io"
+	"slices"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -55,6 +57,18 @@ func InspectConsoleExecutionWheel(artifact domain.AcquiredArtifact, reader io.Re
 		entry.Extras = append([]string(nil), entry.Extras...)
 		entries[i] = entry
 	}
+	// RECORD uses a map internally. Preserve all measured facts, but do not
+	// make its iteration order part of this consumer's whole-source identity.
+	slices.SortFunc(info.Files, func(a, b WheelFile) int { return cmp.Compare(a.Path, b.Path) })
+	slices.SortFunc(info.Surface.InstalledFiles, func(a, b InstalledFile) int {
+		return cmp.Compare(a.ArchivePath, b.ArchivePath)
+	})
+	slices.SortFunc(info.Surface.SiteHookLines, func(a, b SiteHookLine) int {
+		if order := cmp.Compare(a.File, b.File); order != 0 {
+			return order
+		}
+		return cmp.Compare(a.Line, b.Line)
+	})
 	body, err := json.Marshal(info)
 	if err != nil {
 		return ConsoleExecutionInventory{}, errConsoleExecutionEntry

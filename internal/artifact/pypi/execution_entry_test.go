@@ -119,6 +119,44 @@ func TestConsoleExecutionEntryRejectsOtherAcquisitionAndWholeSource(t *testing.T
 	}
 }
 
+func TestConsoleExecutionEntryMatchesRepeatedOriginalMeasurement(t *testing.T) {
+	body, artifact, first := consoleExecutionWheel(t, "[console_scripts]\nexample = example:main\n", "same original resource")
+	entry, err := SelectConsoleExecutionEntry(first, "example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for attempt := 0; attempt < 64; attempt++ {
+		measured, err := InspectConsoleExecutionWheel(artifact, bytes.NewReader(body), "example-1.0.0-cp314-cp314-manylinux_2_36_x86_64.whl", WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+		if err != nil || !entry.Matches(measured) {
+			t.Fatalf("identical acquired bytes diverged at measurement %d: %v", attempt, err)
+		}
+	}
+}
+
+func TestConsoleExecutionEntryMatchesRepeatedHookSource(t *testing.T) {
+	body := validWheelArchive(t, "example", "1.0.0", "example/__init__.py", "example-1.0.0.dist-info",
+		wheelTestEntry{name: "example-1.0.0.dist-info/entry_points.txt", body: []byte("[console_scripts]\nexample = example:main\n")},
+		wheelTestEntry{name: "alpha.pth", body: []byte("import alpha_hook\nimport other_hook\n")},
+		wheelTestEntry{name: "beta.pth", body: []byte("import beta_hook\n")})
+	artifact := consoleExecutionArtifact(t, body, "example", "1.0.0", "wheel", PublicPyPIProfile().Source())
+	var entry ConsoleExecutionEntry
+	for attempt := 0; attempt < 64; attempt++ {
+		inventory, err := InspectConsoleExecutionWheel(artifact, bytes.NewReader(body), "example-1.0.0-cp314-cp314-manylinux_2_36_x86_64.whl", WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if attempt == 0 {
+			entry, err = SelectConsoleExecutionEntry(inventory, "example")
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if !entry.Matches(inventory) {
+			t.Fatal("same hook source diverged across canonical parser reads")
+		}
+	}
+}
+
 func TestConsoleExecutionInventoryRejectsUnboundAndCorruptInputs(t *testing.T) {
 	body, artifact, _ := consoleExecutionWheel(t, "[console_scripts]\nexample = example:main\n", "")
 	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}

@@ -112,5 +112,11 @@
     "native UVx selector equivalence or distinct safe native selection",
     "current Python whole inspection/preparation/readonly layout/user runtime and CLI",
     "whole P5/P6/P7/final profiles/signed qualification"
-  ]
+  ],
+  "followup_counterevidence": {
+    "original_local_checks": "historical named PASS only; repeated source-measurement stability was not covered",
+    "discovered_by": "P6-A2 Quick299.785s and actual identical-source replay RED3.013s",
+    "corrected_by": "p6a2-controlled-reader-local-20261029.json",
+    "scope": "A1 private fingerprint normalization only; canonical parser/Model C unchanged"
+  }
 }

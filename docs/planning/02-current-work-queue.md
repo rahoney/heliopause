@@ -15,15 +15,29 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-A1 console DATA API local qualified/focused+Quick309.386s/full PyPI Race11.740s; existing1344 unchanged/new2; Python runtime/CLI unwired
-Next action: CI429 poll03 at02:57:34UTC:8SUCCESS/Linux running; timer04 due03:17:34UTC/KST12:17:34/session48576; preserve active source9eb/no push. Commit P6-A1 DATA API then controlled source reader baseline.
-Current substep: M13-004/P6-A1 internal DATA selection locally qualified; final docs/security/local commit then actual controlled intake reader map; native selection/runtime/CLI remain unimplemented; CI429 frozen
+Last completed substep: P6-A2 controlled snapshot reader/replay ordering correction locally qualified; Quick287.612s/two PyPI Race14.051s;1343 unchanged/modified3/new2; no push
+Next action: CI429 poll04 at03:17:40UTC:8SUCCESS/Linux running; timer05 due03:37:40UTC/KST12:37:40/session41398; no push. Commit A2 and map current PyPI execution preparation using existing generic owners and honest native tool-install identity.
+Current substep: M13-004/P6-A2 final docs/security/local commit then Python current preparation baseline; native UVx golden equivalence/user runtime/CLI OPEN; CI429 frozen
 Acceptance audit: CI426/source4db0111 all10SUCCESS/checkoutc106c554/tree e8ad4e1d/2940; Linux93/noSKIP/CPP128/helper15wait0/final0; production preparation+offline materialization fresh2 PASS; later C3c source excluded. CI425 native deadline cause OPEN; CI422 original hosted report uncollected. Whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6-A2 controlled original intake reader baseline/map before code; reuse canonical ReaderAt/parser and current acquisition; native UV selector equivalence/Python runtime/CLI remain OPEN
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5 — application/CLI actual and CI429 grouped qualification pending; P6 — IN_PROGRESS internal console DATA API local qualified/runtime-CLI unwired; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P6-A2 reader와 replay 교정 local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6a2-controlled-reader-local-20261029.json)는 held intake/Run root·한정된 owned
+snapshot·실제 canonical parser와 symlink/변조/취소 거부를 연결한다. A1 지문의 map 순서
+오류를 실제 RED3.013s 뒤 private 정렬만으로 교정했고 Quick287.612s/전체 두 PyPI Race
+14.051s와 canonical6가 PASS다. 기존 parser/Model C/CPP/권한·한도는 유지한다.
+Python preparation/runtime/CLI·native equivalence는 미완료이며 CI429/source9eb는 보존한다.
+
+### 2026-10-29 P6-A2 controlled intake reader 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p6a2-controlled-reader-plan-20261029.md)는
+기존 handle routing과 A1 parser를 재사용하고 held intake root/한정된 owned snapshot을 연결한다.
+Python runtime/CLI/native selection은 별도이며 CI429/source9eb를 보존한다.
 
 ### 2026-10-29 P6-A1 exact console DATA local 완료
 
