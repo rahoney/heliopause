@@ -16,14 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-B2-A shared existing captured program owner named local QUALIFIED; canonical9/Quick304.561s/affected Race35.809s; controlled Node12/195.49s and actual CLI4/110.08s PASS; source1356/old1354 unchanged/CPP131; cleanup179 copies/~6.35GiB.
-Next action: automatic public GET monitor/session61457/pid2781030 queried07:07:07.968669→07:07:09.252419UTC, 8SUCCESS/Linux running; next07:27:09.252436UTC/KST16:27:09. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Continue B2-B Python execution baseline/exact map; native alias/CLI/final remain OPEN.
-Current substep: M13-004/P6-B2-A named local complete; next B2-B Python selected-program profile/backend baseline and exact map. CI431/source0d96 excludes this helper and remains PENDING; no push while active.
+Next action: automatic public GET monitor/session61457/pid2781030 queried07:27:09→07:27:10.790120UTC, 8SUCCESS/Linux running; next07:47:10.790138UTC/KST16:47:10. Read /tmp/haa-ci431-autopoll/state.json and consume new originals; no push. Continue B2-B Python execution baseline/exact map; native alias/CLI/final remain OPEN.
+Current substep: M13-004/P6-B2-B Python selected-program profile/backend IN_PROGRESS; source1356 baseline and exact map/second review recorded before source. CI431/source0d96 excludes this helper and remains PENDING; no push while active.
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 Python ARTIFACT user-run/admission baseline reusing qualified whole readonly inputs/current context/console source; native UVx golden equivalence/CLI remain OPEN.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 B2-B Python selected-program backend 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b2b-python-artifact-backend-plan-20261029.md)는
+기존 whole readonly input/CPU 원장과 shared captured program/Python irreversible handoff를
+재사용하고 새 selected-console profile/backend gap만 구현한다. Source 전1356/commit5c853a1을
+고정했고 canonical fixed controller·전체 argv/readonly binding·operational finalization과 program
+nonzero 분리를 검토했다. 새 runtime/hosted/UVx equivalence·CLI/final은 미완료다. CI431 poll04는
+07:27:10UTC8SUCCESS/Linux running이고 next07:47:10UTC/KST16:47:10을 등록했다. 새 push는 없다.
 
 ### 2026-10-29 B2-A 공유 captured program named local 완료
 
