@@ -85,19 +85,29 @@ func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpyp
 	if err := validateUVRunRequest(requirement, command); err != nil {
 		return UVRunSelection{}, err
 	}
-	native, err := r.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
+	frozen, err := r.prepareUVRunOriginal(ctx, requirement, command)
 	if err != nil {
 		return UVRunSelection{}, err
+	}
+	return r.resolveFrozenUVToolRun(ctx, requirement, frozen, command)
+}
+
+// The validated caller retains the context/error boundary. Frozen originals
+// own their bytes independently of the native sessions and archive readers.
+func (r *UVResolver) prepareUVRunOriginal(ctx context.Context, requirement artifactpypi.UpgradeRequirement, command string) (*pipxNativeInput, error) {
+	native, err := r.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
+	if err != nil {
+		return nil, err
 	}
 	runtime := PinnedPythonRuntime()
 	lock, err := artifactpypi.ParseUVLock(requirement.Reference(), native.lock, runtime.PythonVersion)
 	if err != nil {
-		return UVRunSelection{}, err
+		return nil, err
 	}
 	target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
 	selected, err := lock.SelectInstalledWheelControls(native.controls, target)
 	if err != nil {
-		return UVRunSelection{}, err
+		return nil, err
 	}
 	var frozen *pipxNativeInput
 	if err := r.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
@@ -105,16 +115,20 @@ func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpyp
 		frozen, freezeErr = freezePipxNativeInput(ctx, lock, inputs, pages)
 		return freezeErr
 	}); err != nil {
-		return UVRunSelection{}, err
+		return nil, err
 	}
 	if !pipxNativeRequirementMatches(requirement, frozen) {
-		return UVRunSelection{}, errPipxNativeInput
+		return nil, errPipxNativeInput
 	}
 	if _, _, err := uvRunConsoleOriginal(frozen, command); err != nil {
-		return UVRunSelection{}, err
+		return nil, err
 	}
+	return frozen, nil
+}
+
+func (r *UVResolver) resolveFrozenUVToolRun(ctx context.Context, requirement artifactpypi.UpgradeRequirement, frozen *pipxNativeInput, command string) (UVRunSelection, error) {
 	var facts []uvRunCensusFact
-	_, err = r.withUVNativeSessionForToolInstall(ctx, func(selection context.Context, session uvNativeSession) (uvNativeOutput, error) {
+	_, err := r.withUVNativeSessionForToolInstall(ctx, func(selection context.Context, session uvNativeSession) (uvNativeOutput, error) {
 		args, err := uvRunPreparationArguments(requirement, command)
 		if err != nil {
 			return uvNativeOutput{}, err

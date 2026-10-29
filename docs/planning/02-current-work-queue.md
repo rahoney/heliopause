@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-D8 grouped native selector/current app/CLI hosted wiring local qualified; existing4 runtime paths only/current1392, canonical8/whole checker Race and saved actual-log DATA33 PASS, no repeated native/CPP actual. CI435 completed Required10SUCCESS/sourceb0/Linux106.
-Next action: consume CI436 actual20min GET originals; audit pinned pipx run/native selection/cache/interpreter and existing current whole Python execution owners before any missing implementation. Reuse immutable source inputs and keep native DATA/current Policy distinct. No repeated helper CI/native/CPP build.
-Current substep: M13-004/P6-D8 hosted qualification PENDING in frozen CI436/source775c19c/treebcc64338/3120·1392 since20:00:39UTC. Actual20min GET worker52419/PID3546388 first20:20:39UTC/KST05:20:39; no new push while running. Independent P6-E pipx run baseline/semantics audit next.
+Last completed substep: P6-E1 existing UV original/native body sharing locally verified; same1392/only uv_run_resolver.go, exact inverse fragments/public context semantics preserved, canonical8/Quick131.983s/Sandbox Race27.14s. Pipx native run/app/CLI still NO; no new native/CPP actual/ELF/CI.
+Next action: consume CI436 timed run/jobs originals and source/whole-tree/named109/Required result; E2 must reuse the owned originals/existing pipx DATA session without install identity or fake ToolReceipt, prove inert-query entry absence and pipx.run precedence, then bind complete temporary cache before current app/CLI. No helper/doc-only CI or unchanged actual/CPP replay.
+Current substep: M13-004/P6-D8 hosted qualification PENDING in frozen CI436/source775c19c/treebcc64338/3120·1392. Worker52419/PID3546388 actual20min GET first20:20:39UTC/KST05:20:39. Independent E1 local source reuse complete; E2 native pipx run/cache/ABI audit next; no new push.
 Acceptance audit: newest whole-green frozen baseline CI435/sourceb0 Required10SUCCESS/whole tree eebd72a1/all10 checkout334e96e3; Linux106/CPP132/fullCPU298.02s and native DATA2 PASS. Later D5/D6/D7 are named local only; D8 hosted/generic/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 E1 frozen original 공유 local 검증
+
+[E1 receipt](./evidence/package-client-quarantine/p6e1-original-sharing-local-20261030.json)은 기존 UV 원본/native body를 즉시 기존 public caller가 쓰는 두 private 함수로 분리한 source1/current1392의 canonical8/Quick131.983s/Sandbox Race27.14s를 확인한다. 역변환된 두 body는 기존 bytes와 동일하고 validation/context/defer 의미를 유지한다. Native/CPP actual·ELF·CI를 반복하지 않았다. [Pipx baseline](./evidence/package-client-quarantine/p6e-pipx-run-baseline-20261030.md)은 고정 ZIP source의 UV 위임/임시 venv 분기·pipx.run 우선순위·exportable home/.cache를 분리하며 native pipx run/현재 app/CLI는 아직 미구현이다. Frozen CI436은 변경하지 않고 E2의 whole temporary binding/필요한 scoped ABI를 계속 감사한다.
 
 ### 2026-10-30 grouped CI436 등록·실제20분 조회
 
