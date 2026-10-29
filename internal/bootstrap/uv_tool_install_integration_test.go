@@ -206,6 +206,11 @@ func uvToolApprovedIntegrationFixture(t *testing.T) (context.Context, pythonClie
 }
 
 func toolApprovedIntegrationFixture(t *testing.T, pipx bool) (context.Context, pythonClientBindings, string, []byte, *sandbox.PipxResolver) {
+	ctx, bindings, root, interpreter, nativePipx, _ := toolApprovedIntegrationFixtureWithPythonBackend(t, pipx)
+	return ctx, bindings, root, interpreter, nativePipx
+}
+
+func toolApprovedIntegrationFixtureWithPythonBackend(t *testing.T, pipx bool) (context.Context, pythonClientBindings, string, []byte, *sandbox.PipxResolver, *sandbox.PythonDynamicBackend) {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -306,7 +311,7 @@ func toolApprovedIntegrationFixture(t *testing.T, pipx bool) (context.Context, p
 	}
 	bindings := pythonClientBindings{installer: base, promoter: promoter, resolver: native, nativeLookup: native, intake: intake, intakeRoot: intakeRoot, evidenceRoot: evidenceRoot, stagingRoot: stagingRoot, inspector: inspector, evidence: store}
 	interpreter := uvToolTargetInterpreterFixture(t)
-	return ctx, bindings, root, interpreter, nativePipx
+	return ctx, bindings, root, interpreter, nativePipx, backend
 }
 
 func uvToolTargetInterpreterFixture(t *testing.T) []byte {

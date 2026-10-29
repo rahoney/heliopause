@@ -415,59 +415,13 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 			return pythonClosureFailure(sessionID, "seed acquired pipx DATA", err)
 		}
 	} else {
-		validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
-		if err != nil {
-			return pythonClosureFailure(sessionID, "validate wheel destinations", err)
-		}
-		wheelPaths := make([]string, 0, len(validated))
-		for _, item := range validated {
-			if err := b.introducer.introduceWheelAt(runCtx, preparation.id, item.artifact, item.destination); err != nil {
-				return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
-			}
-			wheelPaths = append(wheelPaths, item.destination)
-		}
-		install := append(boundaryExecArguments(preparation.id, boundaryLaunchMode, "python", "-I", "-B", "-m", "pip", "install",
-			"--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir", "--target", pythonSitePath), wheelPaths...)
-		if err := discardCommand(runCtx, b.runner, "docker", install...); err != nil {
-			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
-			return failed, errors.Join(failureErr, transaction.diagnostic("install", errors.New(pythonCommandErrorReason(err))))
-		}
-		installed, err := verifyClosureInstallation(runCtx, b.runner, preparation.id, manifest, policy.RuntimeTmpfs())
-		if err != nil {
-			return pythonClosureFailure(sessionID, "verify prepared installation", err)
-		}
-		transaction.installed = installed
-	}
-	anchor, err := transaction.startPhase(runCtx, phaseAnchor, 1)
-	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ANCHOR_FAILED")
-	}
-	transaction.anchor = anchor.id
-	if spec.pipx != nil {
-		if err := transaction.pipxVolume.bindAnchor(runCtx, b.runner, anchor.id); err != nil {
-			return pythonClosureFailure(sessionID, "bind pipx DATA anchor", err)
-		}
-	} else {
-		if err := transaction.volume.verifyAttachments(runCtx, b.runner, map[string]bool{preparation.id: false, anchor.id: true}); err != nil {
-			return pythonClosureFailure(sessionID, "verify closure attachments", err)
+		if failure := transaction.prepareWheelClosure(runCtx, preparation.id, artifact, closure); failure != nil {
+			return failure.inspectionResult(sessionID)
 		}
 	}
-	if err := transaction.terminatePhase(preparation.id); err != nil {
-		failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
-		return failed, errors.Join(failureErr, err)
+	if failure := transaction.sealPreparedClosure(runCtx, preparation.id); failure != nil {
+		return failure.inspectionResult(sessionID)
 	}
-	if spec.pipx != nil {
-		if err := transaction.pipxVolume.seal(runCtx, b.runner); err != nil {
-			return pythonClosureFailure(sessionID, "seal acquired pipx DATA", err)
-		}
-	} else {
-		if after, err := verifyClosureInstallation(runCtx, b.runner, anchor.id, manifest, policy.RuntimeTmpfs()); err != nil || after.identity != transaction.installed.identity {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
-		}
-	}
-	ledger.mu.Lock()
-	ledger.preparationOK, ledger.anchorAlive = true, true
-	ledger.mu.Unlock()
 	for index, unit := range units {
 		transaction.activeUnit = unit.id
 		transaction.activeInputDigest = unit.ownerDigest

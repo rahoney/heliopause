@@ -12,14 +12,16 @@
   "status": "in_progress",
   "conclusion": null,
   "started_at": "2026-10-29T04:15:37Z",
-  "last_query_at": "2026-10-29T04:16:20Z",
+  "last_query_at": "2026-10-29T04:56:05Z",
   "initial_jobs": "1DocsSUCCESS/8running; Required not created",
-  "timer_session": 1333,
-  "next_due_at": "2026-10-29T04:35:37Z",
-  "next_due_KST": "2026-10-29 13:35:37 KST",
+  "timer_session": 81287,
+  "next_due_at": "2026-10-29T05:16:05Z",
+  "next_due_KST": "2026-10-29 14:16:05 KST",
   "poll_interval_minutes": 20,
   "estimate": "recent same ordinary CI429100m21 plus current preparation/refusal parents and margin; roughly100-120min is an estimate, not a deadline; actual status every20min",
   "qualification": "PENDING; source frozen/no new push while active",
   "scope": "existing Node/common plus current public Python preparation3 and Node post-Policy refusal2; no Python user-run/UVx native equivalence/CLI qualification",
-  "raw": "docs/github-logs/package-client-quarantine-20261021/ci430-initial-decoded.json"
+  "raw": "docs/github-logs/package-client-quarantine-20261021/ci430-initial-decoded.json",
+  "last_jobs": "8SUCCESS/Linux IN_PROGRESS; Required not created",
+  "completed20min_polls": 2
 }

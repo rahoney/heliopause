@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: A4 current hosted wiring committed/pushed3c85d82/tree82c911ab/3019·1351; final workflow/docs/security PASS; actual CI430 source/head confirmed
-Next action: CI430/run40816740622 started04:15:37UTC; initial1DocsSUCCESS/8running; timer01/session1333 due04:35:37UTC/KST13:35:37. Do not cancel with new push; continue existing closure/volume/selected Python user-run owner audit.
-Current substep: M13-004/P6-B readonly Python runtime baseline audit; existing closure/stream/census/anchor/CPU owners reused; B1 exact edit map before source; CI430 frozen/timer01 due04:35:37UTC
+Last completed substep: P6-B1 named local readonly Python inputs4/73.90s and same-source existing pipx consumer39.40s; canonical10 PASS; first cancel corrected; earlier pipx CPU guard failure retained/unresolved; metadata checks/commit pending
+Next action: CI430 poll02 at04:56:05UTC confirms8SUCCESS/Linux running; timer03/session81287 due05:16:05UTC/KST14:16:05; no push. Completed8/source logs reused; P6-B1 v2 actual current readonly inputs and existing pipx consumer running.
+Current substep: M13-004/P6-B1 final source/receipt checks IN_PROGRESS; source1355/modified2/new4; current consumers separately qualified; CI430 frozen/timer03 due05:16:05UTC
 Acceptance audit: CI429/source9eb all10SUCCESS/checkoutb2eb/tree51a9/2996·1343; Linux97/noSKIP/CPP131/controlled12/application2/CLI4/helper16wait0/final0; later C7/P6 outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: P6 readonly Python whole layout/user-run baseline after qualified current preparation; preserve exact console declaration/whole approval/runtime/argv; native UVx golden equivalence/CLI remain OPEN
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 local QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
@@ -33,6 +33,22 @@ noSKIP/CPP131·CPU300.35s/Node prep48.40s/controlled12 166.71s/application2 38.9
 81.39s/kernel8 5.26s/helper16wait0/세 final0·복원이다. Child는 clone-startup 거부·정리만
 입증했으며 body/held-pipe는 미입증이다. 전체100m21s이며 timer05 due03:37:40 뒤
 03:37:45UTC 결과 소비·종료했다. Later C7/P6/whole final은 이 source 밖이며 계속 진행한다.
+
+### 2026-10-29 P6-B1 named local readonly DATA 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b1-python-readonly-input-local-20261029.json)는 canonical10과
+같은1355source/c380binary의 Python readonly4 PASS73.90s·별도 기존 pipx PASS39.40s를 연결한다.
+원본·Host/고정42/ZIP/Docker·CPP 보존과 helperwait0/전체 정리를 확인했다. 첫 normal-stop 취소
+오인은 한정 교정됐고 이전 pipx CPU guard 실패의 원인은 미확정으로 유지한다. Whole v2 attempt
+PASS나 user-run/UVx/CLI 성공으로 바꾸지 않는다. CI430은 B1 source를 포함하지 않으며
+현재20분 감시를 유지한다. 다음은 기존 owner를 재사용한 Python ARTIFACT runtime/admission 감사다.
+
+### 2026-10-29 P6-B1 readonly Python inputs 착수
+
+[Exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6b1-python-readonly-input-plan-20261029.md)는
+기존 M5 preparation/RO anchor 본문과 actual CPU/observer/cleanup을 공유하고 current
+whole context/console source의 DATA 검증 gap만 구현한다. Required unit/Policy·CPP/user-run
+완료 의미는 유지하며 source 전 baseline을 기록했다. CI430 timer01을 우선 소비한다.
 
 ### 2026-10-29 P6-B Python runtime 기존 owner 감사
 
