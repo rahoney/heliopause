@@ -1,0 +1,260 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D4B1",
+  "baseline": "88adeabacb464dbb13e25803492eb817f19510a8",
+  "status": "UNQUALIFIED_ROUTE_REJECTED",
+  "Root_runtime_inputs": 1371,
+  "all_Root_runtime_unchanged": true,
+  "candidate_runtime": 1372,
+  "private_candidate_removed_after_exact_source_freeze": true,
+  "actuals": {
+    "v1": {
+      "cpp_source_unchanged": true,
+      "source_unchanged": true,
+      "fixed42_and_zip_unchanged": true,
+      "exit": 1,
+      "seconds": 26.954,
+      "host_before_after_identical": true,
+      "input_unchanged": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "no_helpers_after": true,
+      "owned_fixture_workspaces_absent": true,
+      "log_sha256": "d401810956e277c689a1b4c367e542273f3025bb3c34889ea760c775364e34ff",
+      "sources": [
+        {
+          "path": "/tmp/haa-p6-d4b1-native-census-actual-v1/protected-client",
+          "sha256": "dc5d3b400cd2e0c93f42bbc2e03f57687ce55ea9912d0ca826e7394e29c3af57"
+        },
+        {
+          "path": "/tmp/haa-p6-d4b1-native-census-actual-v1/observer",
+          "sha256": "72a1c4b4e30c75c660d4a615405d0ad05f63c9196d3faa325841074d9ae67551"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_census_real_test.go",
+          "sha256": "3db39102b53c86700fe6145170fc34ee53604142e2f81fd86ff501625893e4f2"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_public_real_test.go",
+          "sha256": "0465beb5ed88ed97e1f54234a3132ae4311517434e944e06f2b2525d229a47e4"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_runtime_real_test.go",
+          "sha256": "06c220c17e1cf9273c764b378b37028b3b4b275d107af077022f50ebea9aa0fe"
+        }
+      ],
+      "scope": "Native complete private cache census DATA only; source/startup/RO binding ACTUAL; program/Evidence/Policy/selection equivalence/CLI NOT_RUN",
+      "passed_named_tests": [],
+      "fixture_source": "ACTUAL_PUBLIC_COWSAY_6_1",
+      "native_solver": "ACTUAL UV pip compile proposal and offline UV tool run preparation; not yet native result census equivalence",
+      "public_authentication": "ACTUAL independent release/archive binding",
+      "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+      "owned_native_workspaces_absent": true,
+      "named_pass": false,
+      "observer_directory_entries_after": [],
+      "observer_directory_empty_after": true,
+      "expected_terminal_diagnostic": false,
+      "complete_DATA_census_present": false,
+      "healthy_trace": true,
+      "clean_normalized_trace": true
+    },
+    "v2": {
+      "cpp_source_unchanged": true,
+      "source_unchanged": true,
+      "fixed42_and_zip_unchanged": true,
+      "exit": 1,
+      "seconds": 27.807,
+      "host_before_after_identical": true,
+      "input_unchanged": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "no_helpers_after": true,
+      "owned_fixture_workspaces_absent": true,
+      "log_sha256": "2bbaa3132cadfc820eed7e214989f806867273b1bc70ff5e9d50f8b0b7ca66c5",
+      "sources": [
+        {
+          "path": "/tmp/haa-p6-d4b1-native-census-actual-v2/protected-client",
+          "sha256": "555c84ed624600aef773f38b6cb75a7a131ba96226a00ea9ecac4329b774fd82"
+        },
+        {
+          "path": "/tmp/haa-p6-d4b1-native-census-actual-v2/observer",
+          "sha256": "72a1c4b4e30c75c660d4a615405d0ad05f63c9196d3faa325841074d9ae67551"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_census_real_test.go",
+          "sha256": "62e5b610fd0b01e2133102c770022caeb1b629e1e9639a7186d0097469ffb9a0"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_tool_run_public_real_test.go",
+          "sha256": "0465beb5ed88ed97e1f54234a3132ae4311517434e944e06f2b2525d229a47e4"
+        },
+        {
+          "path": "/tmp/haa-p6-d3-20261029-source/internal/sandbox/uv_runtime_real_test.go",
+          "sha256": "06c220c17e1cf9273c764b378b37028b3b4b275d107af077022f50ebea9aa0fe"
+        }
+      ],
+      "scope": "Native complete private cache census DATA only; source/startup/RO binding ACTUAL; program/Evidence/Policy/selection equivalence/CLI NOT_RUN",
+      "passed_named_tests": [],
+      "fixture_source": "ACTUAL_PUBLIC_COWSAY_6_1",
+      "native_solver": "ACTUAL UV pip compile proposal and offline UV tool run preparation; not yet native result census equivalence",
+      "public_authentication": "ACTUAL independent release/archive binding",
+      "current_verification_inspection_Evidence_Policy": "NOT_RUN",
+      "owned_native_workspaces_absent": true,
+      "named_pass": false,
+      "observer_directory_entries_after": [],
+      "observer_directory_empty_after": true,
+      "expected_terminal_diagnostic": false,
+      "complete_DATA_census_present": false,
+      "healthy_trace": true,
+      "clean_normalized_trace": true
+    }
+  },
+  "audit": {
+    "IMPLEMENTED": "NO (supported native complete census route)",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "native complete census using an attested exportable volume and exact query ABI",
+      "source/script selection equivalence/current adapter/aliases/CLI/final qualification"
+    ]
+  },
+  "confirmed": [
+    "native EACCES preparation and complete clean trace reached; Docker cp DATA transport exit1 before census",
+    "first v1 24.74s and v2 25.68s remain FAIL; exact daemon stderr not captured",
+    "v2 pythonCommandErrorReason returns only EXIT_STATUS_1, and HostExecutor.RunOutput uses command.Run without stderr capture",
+    "separate inert no-observer diagnostic failed at container start before shell/marker/transport and removed only its owned container",
+    "Docker official cp corner-case contract excludes tmpfs transfer; this route is rejected without more identical test/CI retries"
+  ],
+  "not_claimed": [
+    "exact original daemon error cause",
+    "tmpfs transport repair or native census/selection equivalence",
+    "program/Evidence/Policy/CLI success"
+  ],
+  "source_documentation": {
+    "url": "https://docs.docker.com/reference/cli/docker/container/cp/#corner-cases",
+    "read_at": "2026-10-30 KST",
+    "relation": "known unsupported transfer contract; not exact captured daemon stderr for either failed actual"
+  },
+  "original_inventories": [
+    "docs/github-logs/package-client-quarantine-20261021/p6-d4b1-native-census-actual-v1-original-inventory.json",
+    "docs/github-logs/package-client-quarantine-20261021/p6-d4b1-native-census-actual-v2-original-inventory.json"
+  ],
+  "cleanup": {
+    "terminated_duplicate_ELFs": 4,
+    "logical_bytes": 62082310,
+    "root_processes": 102,
+    "references": 0,
+    "query_errors": 0,
+    "cumulative_ELF_files": 235,
+    "private_completed_cache_dirs": 6,
+    "combined_logical_bytes": 11406239912,
+    "Windows_VHD_physical_shrink_claimed": false,
+    "all_originals_active_CI434_monitor_active_cache_fixed_inputs_SDK_Git_preserved": true
+  },
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-freeze-failures.py",
+      "bytes": 2488,
+      "sha256": "ac927b83c40964eed08d7f32fd6129f056b66c7f746775c0703dbe5f66e8347b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-cleanup-producer.py",
+      "bytes": 2718,
+      "sha256": "eb2dedb7f35d95baaf40b89a8ec15b24de0069f8577c2cf88741c84c6760ceda"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-inventory.py",
+      "bytes": 3738,
+      "sha256": "8fa8d66bf81903cd7cdf9a71347c7f758b03fd94b5c826f5b4197608926c9a5a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-cleanup.py",
+      "bytes": 6131,
+      "sha256": "801983e2301324d90620bb28538a4eb0a5f5351da52120a31477937c02d4d870"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-candidate.json",
+      "bytes": 3473,
+      "sha256": "a9b1c45fe355a03fdbc400db26fc9ed304bd4c6dd60937c840e23550623c3252"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-preflight.json",
+      "bytes": 4006,
+      "sha256": "0127e0c61a829a50fa77d7c1c78b9f9674096cfc9d4d45e0a8031f4bbdbcd9d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-result.json",
+      "bytes": 4191,
+      "sha256": "5a23471a5c0322919635c23ba45c614a864870ad6ba3438bf5bc54bd7ba7bacc"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-sandbox-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-v2-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "next": "D4B2 baseline audit exact native query ABI for existing exportable private volume; no implementation rewrite, no general tar exec/observer bypass, no new CI for this failed diagnostic"
+}

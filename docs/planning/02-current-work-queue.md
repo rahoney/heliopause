@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-D4A public native pre-query binding named local qualified; canonical6/exact default membership reuse, old native4 and public1/30.04s PASS; whole original/startup bound before native query/RO sealed/clean complete trace/Host preserved. Cleanup231ELF+6cache/~10.57GiB logical.
-Next action: audit fixed UV tool-run cache/environment/script selection and existing bounded native DATA exporter before D4B code; reuse whole source/startup gate and exact readonly mirror. Keep selection equivalence/runtime adapter/aliases/CLI OPEN until qualified. Continue CI434 timer/no push while active.
-Current substep: M13-004/P6-D4B native complete census/selection equivalence baseline audit IN_PROGRESS. D4A named local only; existing production/CPP/roles/budgets unchanged. CI434/source d81 frozen/macOS2mFAIL/Linux pending/actual20min GET; no push while active.
+Next action: audit existing attested private volume and exact UV cache/query ABI before B2 implementation. Do not retry unsupported tmpfs Docker cp or same failed CI input. Batch important hosted checkpoints; reuse unchanged checks; clean terminated duplicate artifacts with original evidence retained.
+Current substep: M13-004/P6-D4B2 exportable native cache/query ABI baseline audit IN_PROGRESS. B1 direct tmpfs DATA route rejected/unqualified; failed private test removed after original freeze, Root/private runtime1371 unchanged. CI434 actual20min GET/no push while active.
 Acceptance audit: latest CI433/source87c8 Required10SUCCESS/whole tree238aa647/runtime1368/current Python boundary8/hostile5/application3. D3 later CPP9037/f7 named local only. CI434/source d81 macOS2mFAIL cause unknown/Linux pending. Whole P4/P5-P7/final4profiles/signed/native aliases OPEN.
 Independent local next: D4B native complete census/selection equivalence; D4A public original/startup/RO native preparation is named local qualified. Existing current Python boundary/hostile/application hosted owners are already qualified by CI433.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 D4B1 unsupported DATA export 경로 종료·정리
+
+[Checkpoint](./evidence/package-client-quarantine/p6d4b1-native-census-checkpoint-20261030.json)은 actual-v1/v2의 native 준비·complete clean trace 뒤 DATA tar exit1/미완료를 보존한다. 실제 daemon stderr 원인은 미수집이며 status-only 진단을 원인 확정으로 쓰지 않는다. 공식 Docker tmpfs cp 제약과 기존 교훈에 따라 이 경로를 거부하고 추가 동일 CI/테스트 재시도 없이 B2의 exportable volume 감사를 계속한다. 미검증 private candidate는 원본 freeze 후 제거해 qualified Root/private1371을 보존했다. 종료 사본4개62082310B만 root102proc/ref0/errors0 뒤 제거해 누적235ELF+cache6/약10.62GiB 논리 용량이다. CI434는 별도 frozen source d81이며 실제20min GET/실행 중 push 금지를 유지한다.
 
 ### 2026-10-30 D4A public pre-query binding named local 완료
 
