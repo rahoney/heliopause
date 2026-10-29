@@ -25,7 +25,7 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		"readonly enters native":            strings.Replace(original, " && ${1-} != python-execution-inputs", "", 1),
 		"skip selected Python runtime":      strings.Replace(original, "HELOX_PYTHON_EXECUTION_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_INTEGRATION=0", 1),
 		"wrong selected Python parent":      strings.Replace(original, "^TestLinuxPythonExecutionIntegration$", "^TestLinuxPythonExecutionInputsIntegration$", 1),
-		"runtime enters native":             strings.Replace(original, " && ${1-} != python-execution ]]; then", " ]]; then", 1),
+		"runtime enters native":             strings.Replace(original, " && ${1-} != python-execution &&", " &&", 1),
 		"ignore selected Python runtime":    strings.Replace(original, pythonConsoleExecutionCommand, pythonConsoleExecutionCommand+" || true", 1),
 		"skip current Python preparation":   strings.Replace(original, "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_PREPARATION_INTEGRATION=0", 1),
 		"ignore current Python preparation": strings.Replace(original, pythonExecutionPreparationCommand, pythonExecutionPreparationCommand+" || true", 1),
@@ -43,6 +43,9 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		"omit data removal":                 strings.Replace(original, "uv_tools_owned\nuv_tools_remove", "uv_tools_owned\necho kept", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if candidate == original {
+				t.Fatal("negative mutation missed its source")
+			}
 			if len(validateUVToolsScript(candidate)) == 0 {
 				t.Fatal("invalid script admitted")
 			}
@@ -151,5 +154,87 @@ func TestCurrentExecutionPreparationQualificationRejectsMissingOrWeakenedScope(t
 	}
 	if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
 		t.Fatal("absent current qualification admitted")
+	}
+}
+
+func TestUVToolsCurrentPythonCohortDispatch(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-uv-tools.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for _, profile := range []struct{ name, flag, parent, command string }{
+		{"boundary", "HELOX_PYTHON_EXECUTION_BOUNDARY_INTEGRATION=1", "^TestLinuxPythonExecutionBoundaryIntegration$", pythonExecutionBoundaryCommand},
+		{"hostile", "HELOX_PYTHON_EXECUTION_HOSTILE_INTEGRATION=1", "^TestLinuxPythonExecutionHostileIntegration$", pythonExecutionHostileCommand},
+		{"workflow", "HELOX_PYTHON_EXECUTION_WORKFLOW_INTEGRATION=1", "^TestLinuxPythonExecutionWorkflowIntegration$", pythonExecutionWorkflowCommand},
+	} {
+		t.Run(profile.name, func(t *testing.T) {
+			for name, candidate := range map[string]string{
+				"disabled":        strings.Replace(original, profile.flag, strings.TrimSuffix(profile.flag, "1")+"0", 1),
+				"wrong parent":    strings.Replace(original, profile.parent, "^TestLinuxPythonExecutionIntegration$", 1),
+				"ignored error":   strings.Replace(original, profile.command, profile.command+" || true", 1),
+				"missing branch":  strings.Replace(original, "if [[ ${1-} == python-execution-"+profile.name+" ]]; then", "if false; then", 1),
+				"native fallback": strings.Replace(original, " && ${1-} != python-execution-"+profile.name, "", 1),
+			} {
+				t.Run(name, func(t *testing.T) {
+					if candidate == original {
+						t.Fatal("mutation missed source")
+					}
+					if len(validateUVToolsScript(candidate)) == 0 {
+						t.Fatal("invalid cohort dispatch admitted")
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestCurrentExecutionPythonCohortRejectsWeakenedLogs(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", ".github", "workflows", "heliopause-ci.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for _, profile := range []struct{ name, parent, ids, count string }{
+		{"boundary", "TestLinuxPythonExecutionBoundaryIntegration", "argv exit37 term kill cancel stdout-overflow stderr-overflow deadline", "8"},
+		{"hostile", "TestLinuxPythonExecutionHostileIntegration", "outside-read network clone-exec comm-spoof readonly", "5"},
+		{"workflow", "TestLinuxPythonExecutionWorkflowIntegration", "1 2 3", "3"},
+	} {
+		t.Run(profile.name, func(t *testing.T) {
+			variable := "python_" + profile.name
+			start := strings.Index(original, "          "+variable+"_log=")
+			if start < 0 {
+				t.Fatal("log scope absent")
+			}
+			closeLine := "          rm -- \"$" + variable + "_log\"\n"
+			length := strings.Index(original[start:], closeLine)
+			if length < 0 {
+				t.Fatal("log end absent")
+			}
+			end := start + length + len(closeLine)
+			owned := original[start:end]
+			for name, changed := range map[string]string{
+				"command error":      strings.Replace(owned, "if (("+variable+"_status)); then exit", "if ((0)); then exit", 1),
+				"cat error":          strings.Replace(owned, "if (("+variable+"_log_status)); then exit", "if ((0)); then exit", 1),
+				"wrong profile":      strings.Replace(owned, "ci-uv-tools.sh python-execution-"+profile.name, "ci-uv-tools.sh bootstrap", 1),
+				"wrong count":        strings.Replace(owned, "cases != "+profile.count, "cases != 0", 1),
+				"wrong IDs":          strings.Replace(owned, profile.ids, "foreign", 1),
+				"SKIP accepted":      strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
+				"duplicate accepted": strings.Replace(owned, " || accepted[case_name]++", "", 1),
+				"child parent":       strings.Replace(owned, profile.parent+" ", profile.parent+"/child ", 1),
+			} {
+				t.Run(name, func(t *testing.T) {
+					if changed == owned {
+						t.Fatal("mutation missed source")
+					}
+					if len(validateCurrentExecutionPreparationQualification(original[:start]+changed+original[end:])) == 0 {
+						t.Fatal("weakened cohort log admitted")
+					}
+				})
+			}
+			if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
+				t.Fatal("missing cohort admitted")
+			}
+		})
 	}
 }

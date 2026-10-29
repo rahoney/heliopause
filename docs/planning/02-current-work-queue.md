@@ -15,15 +15,23 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-C named current Python application public3 PASS95.89s/runtime1368/old1365 unchanged/CPP132; D1 eight and D2 five local qualified. Cleanup209/~7.12GiB; CI432 source9198 all10SUCCESS.
-Next action: audit existing ci-uv-tools closed profiles/current workflow step/checker/guards; add only missing boundary8/hostile5/workflow3 wiring, keep existing consumers/120min/permissions/jobs unchanged; qualify locally then meaningful grouped push and actual20min monitoring.
-Current substep: M13-004/P6-C named local COMPLETE; P6-C2 existing current cohort hosted wiring baseline next, before source. No active CI/timer; native/golden/aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
+Last completed substep: P6-C2 grouped current wiring canonical7/whole checker Race/inert actual-log DATA78 PASS; production internal/cmd/CPP132 unchanged/runtime1368. C actual3/D1 eight/D2 five retained; cleanup209/~7.12GiB.
+Next action: preserve exact locally qualified current cohort candidate; confirm remote ref and active runs0, normal FF push, register actual new head/run/start and20min public GET monitor; continue independent bounded native UVx/golden audit while CI runs.
+Current substep: M13-004/P6-C2 grouped hosted qualification IN_PROGRESS; local wiring PASS, normal push/new-source CI/actual20min worker pending. No current active CI/timer; native/golden/aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 P6-C2 grouped hosted wiring local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6c2-grouped-hosted-local-20261029.json)는 existing current step에 controlled boundary8/hostile5/public workflow3를 추가하고 기존 refusal2/preparation3/readonly4/runtime2를 보존한다. Runtime1368 중 script/checker3만 변경했고 internal/cmd·CPP132/120min/Required10/permissions는 불변이다. Canonical7·전체 checker Race/Bash syntax와 saved actual logs DATA78cases가 PASS다. 새 native/artifact actual은 반복하지 않았다. 다음 normal grouped FF push 후 actual head/run/start와 새20min GET worker를 등록하며 hosted 결과는 PENDING이다. Native/golden/aliases/CLI/final·prior 원인 미확정은 OPEN이다.
+
+### 2026-10-29 P6-C2 기존 current CI cohort 연결 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6c2-grouped-hosted-plan-20261029.md)는 runtime1368/production·CPP132를 보존하고 기존 closed dispatch/checker/current step에 boundary8/hostile5/workflow3만 연결한다. 기존 네 소비자와 Linux120min/Required10/permissions는 유지한다. Local canonical/전체 checker Race·저장된 actual 로그 DATA 거부를 확인한 뒤 grouped push와 새 actual20min GET 감시를 진행한다. Native UVx/golden/aliases/CLI/final은 별도다.
 
 ### 2026-10-29 P6-C current Python application workflow named local 완료
 
