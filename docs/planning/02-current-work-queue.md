@@ -16,14 +16,26 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: C2 canonical7/Quick348.386s/checker Race62.629s/inert DATA78 PASS; source87c817d/tree238aa647/3063·1368 normal FF pushed9198→87c8. Actual CI433/run40869995094 started12:02:09UTC; immediate public GET known.
-Next action: consume actual20min GET results from /tmp/haa-ci433-autopoll/state.json, first12:22:09UTC/KST21:22:09; preserve full originals/source proof and no push while active. Continue independent same-item bounded native UVx/run golden owner audit before new source.
-Current substep: M13-004/P6-C2 hosted qualification IN_PROGRESS; CI433/source87c817d frozen, worker/session71198/PID3172981 first20min due12:22:09UTC. Independent next native UVx/golden baseline audit; aliases/CLI/final and prior fork-only/CPU/drop causes OPEN.
+Next action: baseline existing direct_exec_admission Output/RunInput/RunBounded/RunOutput against already-correct RunDiscard; add meaningful dual-error regression before a bounded join fix. Preserve D1 observer FAIL/cache-query missing and CI433 actual20min GET/no push.
+Current substep: M13-004/P6-D1 diagnostic checkpoint recorded, native observation qualification remains NO; next P6-D2 existing admission four-method first-error baseline before source. CI433/source87c817d frozen/actual20min worker71198/PID3172981 next12:42:09UTC; cached-query/public golden/aliases/CLI/final OPEN.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D1 native 원본 오류 관측·완료 사본 정리
+
+[Checkpoint](./evidence/package-client-quarantine/p6d1-native-tool-run-probe-local-20261029.json)는 existing1368 불변/tagged1/runtime1369·canonical6/default 재사용과 두 실제 observer FAIL을 보존한다. V2 native exit2/stderr4683B는 cached archive-v0 query 뒤 /dev/null EACCES에 도달했지만 outer admission finishErr가 원래 오류를 가렸다. 기존 RunDiscard는 이미 join하므로 다음 네 wrapper만 교정할 baseline을 감사한다. Cache-query 권한/공개 golden/alias는 미완료다. Source/Host/42/ZIP/Docker·helperwait0/전체 정리는 유지했다. 첫 cleanup2회 삭제0 뒤 exact6 resource-empty zombie를 재검증한 root83proc/ref0/errors0에서 완료 사본4개61940507B를 정리해 누적213/~7.18GiB Linux 논리 용량이며 원본과 CI433 감시는 보존했다.
+
+### 2026-10-29 CI433 actual poll01·독립 D1 첫 거부
+
+21:22:09KST 실제 GET은8SUCCESS/Linux 진행을 기록했고 next12:42:09UTC다. 완료8 logs447248 UTF8B/21chunks와 모두 checkout980e3509/tree238aa647 일치·parent source87c8를 대조해 원본을 보존했다. [독립 D1 v1](./evidence/package-client-quarantine/p6d1-native-tool-run-probe-v1-20261029.json)은 canonical6/default 동일성 뒤 actual5.32s에서 IMAGE classification/OTHER·CONTROL·CLONE_CHILD로 실패했다. 원본과 Host/source/입력 불변·helperwait0/전체 정리는 유지했다. 실제 query/execfn 원인은 미확정이며 같은 tagged test의 underlying native stderr/verbose 관측만 보완한다. CPP/권한은 유지하고 native golden/alias 완료로 쓰지 않는다.
+
+### 2026-10-29 P6-D1 native tool-run DATA 진단 착수
+
+[Baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p6d1-native-tool-run-probe-plan-20261029.md)는 기존 network-none UV actual fixture에 tagged test1만 추가해 local raw wheel의 isolated 준비를 진단한다. 선택 프로그램은 실행 불가능한 상수 /dev/null이며 Artifact body·Policy/public golden/alias 완료로 쓰지 않는다. 기존1368/production·CPP132·권한·한도는 유지하고 첫 query/observer 실패는 그대로 보존한다. CI433/source87c817d는 frozen이며 실제20min worker를 계속 소비한다.
 
 ### 2026-10-29 grouped CI433 등록·실제20min 감시
 
