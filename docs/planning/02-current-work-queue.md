@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-D4B4 current native public source/console hosted wiring LOCAL QUALIFIED; canonical8/Quick80.247s/checker Race61.829s/saved actual DATA26 PASS. Runtime1379; old1376 bytes retained. Native/CPP actuals reused; cleanup241ELF+6cache/~10.73GiB logical.
-Next action: final exact candidate docs/security then one normal FF grouped push; bind remote HEAD/new CI actual source/run/start and 20min actual GET worker. While hosted runs, audit production UVx request/closure resolver/current adapter; no helper-by-helper CI.
-Current substep: M13-004 grouped B2+B3+native-source hosted checkpoint READY_FOR_PUSH; existing104+new2 parents/CPP132·UV195/Required10/Linux120min preserved. No active CI/timer until actual new run/start registration.
+Next action: consume CI435 actual20min GET worker originals; audit existing UV session/whole original freeze/RO DATA mirror/source-console binder and preparation/runtime owners before implementing missing production resolver. Keep current native DATA and program/Policy authority separate; no repeated helper CI or CPP build.
+Current substep: M13-004/P6-D5 production UVx native-run resolver baseline audit IN_PROGRESS. Grouped source b0f4cbc/treeeebd72a1/3097·1379 frozen in CI435/run40925338534 since17:51:42UTC. Actual20min GET worker13791/PID3398839 first18:11:42UTC/KST03:11:42; no new push while running.
 Acceptance audit: latest whole-green baseline CI433/source87c8 Required10SUCCESS. CI434/source d81 Linux104/CPP132/fullCPU291.43s SUCCESS, macOS120s build FAIL/default NOT_REACHED/RequiredFAIL/cause unknown. D3-E2/D4A later named local only; whole native/golden/aliases/CLI/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 grouped CI435 등록·실제20분 조회
+
+[Registration](./evidence/package-client-quarantine/ci435-registration-20261030.json)은 sourceb0f4cbc/treeeebd72a1/3097·1379의 normal FFd81→b0와 remote ref·actual run40925338534/start17:51:42UTC를 대조했다. Public run/jobs HTTP200을 확인했고 worker13791/PID3398839는 첫18:11:42UTC(한국03:11:42)부터20분마다 실제 GET/원본/다음 due를 저장한다. 직전107m18s에 native 두 부모의 약55s를 더한 약108분은 추정이며 Linux120min/Required10은 그대로다. 기존104+새2/CPP132·UV195와 새 macOS 결과는 PENDING이다. 실행 중 새 push 없이 production resolver/current adapter의 기존 owner와 실제 gap을 감사한다. Native DATA 테스트의 Policy/selected program은 NOT_RUN이며 generic equivalence/aliases/CLI/final과 과거 원인은 OPEN이다.
 
 ### 2026-10-30 D4B4 current native hosted wiring local 완료
 
