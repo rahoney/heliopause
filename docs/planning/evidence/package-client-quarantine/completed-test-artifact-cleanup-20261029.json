@@ -42,8 +42,8 @@
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
     "first_preflight_rejected_without_deletion": "sandbox inventory showed unmapped root65534:65534; root execution view0:0; exact inode/mode/bytes/hash unchanged; refreshed root-context inventory and retained every guard"
   },
-  "cumulative_removed_files": 193,
-  "cumulative_removed_logical_bytes": 7204042178,
+  "cumulative_removed_files": 195,
+  "cumulative_removed_logical_bytes": 7258911159,
   "followup_completed_B2A": {
     "removed_files": 4,
     "removed_logical_bytes": 109400066,
@@ -70,5 +70,14 @@
     "query_errors": 0,
     "original_baselines_CPP_monitor_retained": true,
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d1-cleanup-result.json"
+  },
+  "followup_completed_D2_v1": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54868981,
+    "root_processes": 95,
+    "references": 0,
+    "query_errors": 0,
+    "first_actual_failure_originals_and_baselines_CPP_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d2-cleanup-result.json"
   }
 }

@@ -71,3 +71,64 @@ production 진단의 정상 소비자로 D1 actual8도 같은 새 binary에서 �
 
 이 named 검증은 native UVx equivalence/aliases/application runtime/CLI·final profiles나 전체
 child/orphan/held-pipe 지원 완료가 아니다. 위 gap과 CPU 원인 미확정은 계속 OPEN이다.
+
+## First actual 원본 보존 후 v2 입력 교정 검토
+
+V1 canonical8/Quick396.34s/affected Race38.254s와 unchanged CPP132의 actual은 기존 D1
+8/153.86s 및 outside/network2를 통과했으나 clone의 기대 provenance와 달라 FAIL203.9s다.
+최초 actual/source/checks·전체 Host/입력 보존/helperwait0/resources/endpoints0 원본을 고정했다.
+관찰된 최초 fault는 root PYTHON/ARTIFACT/DIRECT_EXEC_ROOT의 proc read이고 child가 아니다.
+고정 CPython3.14.7 posixmodule.c의 os_fork_impl/get_number_of_os_threads는 parent에서
+/proc/self/stat을 읽는다. Locator의 통제 후보 /proc/8/stat 일치와 source는 이 해석을
+뒷받침하지만 비암호 locator를 path/admission authority로 쓰지 않는다. 실제 child scope는 OPEN이다.
+
+일반 os.fork compatibility를 선언하거나 proc guard를 넓히지 않는다. Test-only clone 입력은
+고정 libc.fork를 ctypes로 호출해 CPython parent의 추가 proc 조회 없이 실제 clone child의
+명시 proc read/ARTIFACT provenance를 시험한다. Parent/child body 관측은 별도로 기록한다.
+또 CPP의 DiagnosticImage에는 Python enum이 없어서 open_kernel_image=PYTHON 기대도
+성립하지 않는다. Comm 시험은 기존 kernel-resolved current class인 open_image=PYTHON,
+open_executable_pinned=true·ARTIFACT를 요구하며 CPP/decoder/권한은 바꾸지 않는다.
+
+V2 delta는 두 새 linux&&realcorpus hostile test 파일뿐이며 production·기존 D1 bytes는 V1과
+동일하다. Canonical format/tagged vet/pinned Staticcheck/build/docs/security를 다시 검사하고
+동일 default 입력의 V1 Quick/Race와 동일 production/D1 입력의 V1 actual8을 범위별로 재사용한다.
+새 native fork 입력의 hostile5만 새 binary/current CPP132에서 실행하며 첫 실패를 PASS로
+덮지 않는다. Source assessment/CPython decoded 원문과 v1 actual inventory가 근거다.
+
+## V2/remaining 원본과 추가 test oracle 교정
+
+V2 actual51.241s는 outside/network가 PASS이고 libc-fork child-body=true까지 도달했지만
+최초 proc fault는 여전히 PYTHON/ARTIFACT/DIRECT_EXEC_ROOT다. Locator 통제 후보는
+/proc/8/status이며 clone provenance 차이 원인은 UNCONFIRMED다. 앞 parent-stat 해석을
+이 후속 오류의 원인으로 확대하거나 clone helper/ABI/권한을 바꾸지 않는다. 원본/source/
+Host/입력 보존/helperwait0/전체 정리를 확인했다. V1 첫 실패 사본2개54868981B는 원본과
+root95proc/ref0/errors0 대조 후 삭제했고 누적195개/~6.76GiB다.
+
+동일 v2 binary의 미도달 comm-spoof/readonly 선택 actual40.709s에서 comm-spoof는
+current image PYTHON/ARTIFACT/pinned 신원과 incomplete로 PASS다. Readonly는 실제 complete/
+error nil로 첫 oracle과 달랐다. CPP ParseOpenAndSend는 workspace write를 early finding으로
+만들지 않고 ParseOpenResultAndSend는 EROFS 등 failed open에서 classification 전에 정상
+return한다. 따라서 successful-open의 outside 분류를 failed readonly write에 전용한 초기
+계획은 잘못이었다. 변경할 것은 test oracle이며 새 grant가 아니다. Readonly는 실제 denied
+prefix·complete exit0/whole source 보존을 요구한다. 기존 native 보호/CPP 의미는 유지한다.
+
+다음은 test-only bounded PID oracle로 controlled parent/child PID 관계를 로그에 남기고
+외부 분류의 차이를 조사하는 진단이다. Artifact 숫자/marker를 admission authority로 쓰지
+않고 clone scope는 실제 대응 사실 전까지 OPEN이다. Source/control/limits는 그대로 두고
+새 관측 가설 없는 clone blind retry는 하지 않는다.
+
+## Readonly positive 검증과 다음 관측 입력
+
+V4 readonly actual23.355s는 test-only success 경로에서 executeErr.Error()를 nil에 호출해
+panic했고 원본/정리는 보존했다. V4 build의 한 test 분기만 nil-safe로 바꾼 v6 actual은
+22.82s/operator25.058s PASS다. 실제 readonly-denied/exit0/complete·원본/Host/42/ZIP/
+Docker·helperwait0/resources/endpoints0를 확인했다. Production/CPP/권한 변경은 없다.
+
+별도 v5 PID 관측은 parent8/returned9/child9/parent8·child-body=true와 first fault의
+root PYTHON/ARTIFACT·proc 후보8/status를 함께 남겼다. Child의 actor mapping 또는
+그 앞 ctypes 준비 중 fault인지 아직 UNCONFIRMED다. 고정 ctypes/threading 원문을
+추가 대조했고 Python3.14.7은 builtin _thread.set_name을 제공한다. 다음 시험은
+comm mutation에 이 builtin을 사용하고 clone-exec에는 subprocess의 고정 absolute
+Python argv를 사용해 ctypes 준비를 통과 조건으로 만들지 않는다. 기존 raw os.fork/
+libc-fork의 첫 실패·정확한 fork-only 경계는 OPEN으로 보존하며 원인 해결/지원으로
+표시하지 않는다. 이 입력 교정에 CPP·proc grant·runtime budget 변화는 없다.

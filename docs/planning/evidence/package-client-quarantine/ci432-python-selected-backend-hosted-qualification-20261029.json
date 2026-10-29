@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004 named shared capture/initial Python backend hosted qualification",
+  "run_id": 40846289893,
+  "run_number": 432,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40846289893",
+  "source": "9198a57b1b2cd40065ba6e10a1718ba08bac8a13",
+  "whole_tree": "98eccd3ed90fe73fc1e2b737323fef2f1745f137",
+  "tracked_files": 3046,
+  "runtime_inputs": 1361,
+  "all10_checkout": "545822ac4ec1e9457e34a82471ab9a9f6c3660df",
+  "checkout_parents": [
+    "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "9198a57b1b2cd40065ba6e10a1718ba08bac8a13"
+  ],
+  "required_and_all10": "SUCCESS",
+  "run_started_at": "2026-10-29T09:00:39Z",
+  "last_server_updated_at": "2026-10-29T10:41:08Z",
+  "server_elapsed_seconds": 6029,
+  "elapsed_note": "server final update interval; Linux actual parent timings are separate",
+  "decoded10_log_bytes": 1300284,
+  "existing8_originals_reused": true,
+  "log_chunk_exact_readback": {
+    "existing8_chunks": 28,
+    "new2_chunks": 72,
+    "total_chunks": 100
+  },
+  "linux": {
+    "top_level_PASS": 101,
+    "FAIL": 0,
+    "SKIP": 0,
+    "anchored_CPP_latches": 132,
+    "full_CPU_seconds": 288.55,
+    "Node_controlled12_seconds": 166.0,
+    "Node_workflow2_seconds": 38.85,
+    "Node_CLI4_seconds": 80.82,
+    "Node_refusal2_seconds": 21.89,
+    "Python_preparation3_seconds": 62.09,
+    "Python_readonly_input4_seconds": 55.93,
+    "new_Python_selected_runtime2_seconds": 55.77,
+    "new_Python_exit_codes": [
+      0,
+      2
+    ],
+    "new_Python_current_whole_Policy_source_trace_CPU_cleanup": true,
+    "new_Python_source_SHA256": "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a",
+    "helpers_wait0": 17,
+    "final_cleanup_original0_and_confirmed": 4,
+    "restoration_results": [
+      "NOT_REQUIRED",
+      "RESTORED",
+      "RESTORED",
+      "RESTORED"
+    ]
+  },
+  "timer": {
+    "actual20min_polls": 5,
+    "last_timed_query_at": "2026-10-29T10:40:44.871468+00:00",
+    "last_timed_result": "nine SUCCESS/Required in_progress",
+    "manual_immediate_final_MCP_query": "completed SUCCESS/all10 SUCCESS",
+    "completion_observation": {
+      "recorded_after_final_query": "2026-10-29T10:44:00.889Z",
+      "run_id": 40846289893,
+      "source": "9198a57b1b2cd40065ba6e10a1718ba08bac8a13",
+      "status": "completed",
+      "conclusion": "success",
+      "all10_success": true,
+      "method": "MCP run/jobs read immediately after timed poll05 saw nine SUCCESS and Required in_progress"
+    },
+    "owned_worker_stopped": true,
+    "monitor_session_exit": 143,
+    "stop_reason": "explicit own SIGTERM after completion, not worker failure or CI cancellation",
+    "next_due": null
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (source9198 named hosted)",
+    "ACCEPTANCE_CLOSED": "YES (initial shared/selected-runtime2 named scope)",
+    "MISSING": [
+      "later local D1/D2 source outside this CI",
+      "native UVx/golden/aliases/application runtime adapter/CLI",
+      "whole final CPU/three CUDA/signed support",
+      "prior CPU-envelope/CI430 drop causes remain unconfirmed"
+    ]
+  },
+  "originals": {
+    "log_inventory": "docs/github-logs/package-client-quarantine-20261021/ci432-final-log-inventory.json",
+    "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci432-final-source-proof.json",
+    "final_run": "docs/github-logs/package-client-quarantine-20261021/ci432-final-run.json",
+    "final_jobs": "docs/github-logs/package-client-quarantine-20261021/ci432-final-jobs.json",
+    "monitor_stop": "docs/github-logs/package-client-quarantine-20261021/ci432-monitor-completion-stop-request.json"
+  },
+  "scope_limit": "source9198 shared Node capture/CPP132/initial current Python normal0/nonzero2 and ordinary common consumers only; no later D1/D2/fork/readonly-test correction/aliases/CLI/final qualification; later pass does not establish a causal fix for prior failures"
+}

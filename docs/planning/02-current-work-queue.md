@@ -16,14 +16,56 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: D1 named local source1363/old1361 unchanged/new test2; canonical composed7/Quick419.151s, actual8/191.36s/operator198.221s PASS; CPP132 unchanged; completed2 copies54849309B removed/root98proc/ref0/errors0; cumulative193/~6.71GiB.
-Next action: implement D2 controlled hostile5 via existing raw wheel/current approval helpers, retain D1 original wheel bytes, add only bounded existing trace diagnostic to Python refusal; canonical checks/affected Race then same binary actual5+D1 actual8. CI432 next10:20:42UTC/KST19:20:42; no push while active.
-Current substep: M13-004/P6-B2-D2 hostile Python actual5 IN_PROGRESS; source1363 baseline/modified2-new2-expected1365 exact map and second review before source. D1 named local COMPLETE; CI432/source9198 frozen/PENDING; native/adapter/CLI/final/CPU cause OPEN.
-Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
+Next action: finish test-only readonly nil error branch and verify positive denial, then resolve clone PID/provenance diagnostic mismatch (controlled parent8/child9, external root fault) without permission widening. D2 whole remains OPEN; CI432 source9198 all10 SUCCESS/monitor stopped; no pending timer. Cleanup195/~6.76GiB.
+Current substep: M13-004/P6-B2-D2 hostile Python actual5 IN_PROGRESS; source1363 baseline/modified2-new2-expected1365 exact map and second review before source. D1 named local COMPLETE; CI432/source9198 named hosted QUALIFIED; native/adapter/CLI/final/CPU cause OPEN.
+Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D2 readonly positive·PID 관측
+
+Readonly test success 경로의 nil error 호출 원본을 보존하고 한 분기만 교정한 actual
+22.82s/operator25.058s가 denied prefix/exit0/complete·원본 보존/정리를 확인했다. 별도
+clone PID 관측은 parent8/child9 body를 확인했으나 root proc fault와의 actor 대응은
+미확정이다. [Plan의 다음 입력](./evidence/package-client-quarantine/p6b2d2-python-hostile-plan-20261029.md)은 builtin thread-name과 fixed subprocess
+clone-exec로 ctypes 준비와 actual action을 분리한다. Native fork-only 원본/OPEN과
+CPP/권한/한도는 유지하며 전체 hostile5/final 완료로 쓰지 않는다. CI432는 별도 녹색이다.
+
+### 2026-10-29 CI432 current selected Python backend hosted 완료
+
+[Qualification](./evidence/package-client-quarantine/ci432-python-selected-backend-hosted-qualification-20261029.json)은 source9198/tree98ecc/3046·1361과
+all10 checkout5458/전체 tree·Required10SUCCESS, decoded1300284B/100chunks를 대조했다.
+Actual20min poll05는10:40:44UTC9SUCCESS/Required 진행을 조회했고 바로 후속 MCP read가
+완료를 확인했다. Server 전체100m29s, Linux101/noFAIL/noSKIP/CPP132·CPU288.55s/current
+Python normal0/nonzero2 55.77s·기존 준비3/readonly4/Node12/CLI4와 helper17wait0/final4
+original0·복원이다. 소유 monitor는 완료 확인 뒤 정확한 PID/script/config 신원으로 SIGTERM,
+세션exit143을 확인해 종료했고 다음 timer는 없다. 이는 CI 취소나 worker 정상0 종료가 아니다.
+D1/D2의 이후 source·fork/readonly test 교정/앱/CLI/final·원인 미확정 CPU/loss는 밖이다.
+같은 item에서 readonly test nil 분기와 bounded parent8/child9 진단의 external provenance
+차이를 계속하며 source/CPP/권한을 넓히지 않는다. 새 push는 하지 않았다.
+
+### 2026-10-29 D2 v2 partial·readonly oracle 반증
+
+동일 production/CPP132의 v2 actual51.241s는 outside/network PASS와 clone child-body=true를
+확인했으나 external provenance가 DIRECT_EXEC_ROOT여서 clone 검증은 미확정이다. 별도
+미도달2 선택 actual40.709s에서는 comm-spoof가 PASS이고 readonly는 complete/nil로 기존
+oracle을 반증했다. [Plan의 후속 검토](./evidence/package-client-quarantine/p6b2d2-python-hostile-plan-20261029.md)는 failed open을 successful
+open의 outside 분류와 혼동한 test-only 기대를 교정한다. 전체 원본/정리는 보존했고 native
+CPP/권한은 유지한다. 다음 bounded parent/child PID 진단과 readonly positive만 진행하며
+clone 및 D2 전체는 OPEN이다. 완료 첫 사본2를 정리해 누적195/~6.76GiB다.
+
+### 2026-10-29 D2 first actual과 test-only v2 교정
+
+Canonical8/Quick396.34s/affected Race38.254s 뒤 같은 CPP132의 D1 actual8/153.86s와 outside/
+network2는 PASS다. Clone은 root의 별도 proc read에서 거부돼 기대 child provenance를
+입증하지 못했고 전체 actual203.9s는 FAIL로 보존했다. Host/source/42/ZIP/Docker·helperwait0/
+resources/endpoints0는 확인했다. [Plan의 v2 검토](./evidence/package-client-quarantine/p6b2d2-python-hostile-plan-20261029.md)에 따라
+parent post-fork proc 조회를 건너뛰는 test-only libc.fork 입력과 기존 정확한 image/pinned
+diagnostic 필드만 교정하며 production/CPP/한도는 유지한다. V1 Quick/Race/D1 actual의 동일
+입력을 구분해 재사용하고 새 hostile5를 검증한다. 원래 failure와 child/held-pipe OPEN은 유지한다.
 
 ### 2026-10-29 D2 Python hostile 실제 경계 착수
 
