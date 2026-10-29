@@ -15,15 +15,28 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: B2-C local qualified source9198a57/tree98eccd3e/3046·1361 normal FF pushed0d96→9198; actual CI432/run40846289893 confirmed09:00:39UTC. New shared/CPP132/Python2 hosted pending; cleanup191/~6.66GiB preserved.
-Next action: implement D1 controlled raw-wheel/current real inspection+Policy fixture and actual argv/37/TERM/KILL/cancel/independent overflows/deadline8, keeping existing1361/CPP132 bytes unchanged. Read CI432 auto state (next09:40:39.996251UTC/KST18:40:39) and consume originals; no push while active. D2 hostile/native/adapter/CLI/final/CPU cause remain OPEN.
-Current substep: M13-004/P6-B2-D1 current Python actual boundary8 IN_PROGRESS; source1361 baseline/exact test-only2 map/second review before source. CI432/source9198 frozen/PENDING, actual20min monitor91578 continues; no new push.
+Last completed substep: D1 named local source1363/old1361 unchanged/new test2; canonical composed7/Quick419.151s, actual8/191.36s/operator198.221s PASS; CPP132 unchanged; completed2 copies54849309B removed/root98proc/ref0/errors0; cumulative193/~6.71GiB.
+Next action: audit D2 exact existing fixture/Host/backend owner map and hostile filesystem/network/clone/comm-spoof/readonly actual gaps before source; no production rewrite. CI432 next2026-10-29T10:20:42.001000+00:00; preserve frozen9198, no push while active. Native/adapter/CLI/final/CPU cause remain OPEN.
+Current substep: M13-004/P6-B2-D1 named local COMPLETE; next D2 baseline before source. CI432/source9198 PENDING with actual20min monitor91578; new boundary tests are local only.
 Acceptance audit: CI431/source0d96 all10SUCCESS/checkoutf4d/tree20b/3032·1355, Linux100/CPP131/current preparation3/refusal2/readonly4/helper17wait0/final4 original0. Later5c/edc/B2-B are outside. CI425 macOS deadline cause OPEN; whole P4/P5-P7/final4profiles/signed OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 D1 current Python 실제 boundary8 named local 완료
+
+[Receipt](./evidence/package-client-quarantine/p6b2d1-python-boundary-local-20261029.json)는 기존1361/CPP132 불변과
+새 tagged test2/current1363의 composed7·Quick419.151s 및 actual8/191.36s PASS를 연결한다.
+Raw fixture만 통제했고 current 실제 integrity/static/dynamic/Evidence/M3/M5·fresh approval 뒤
+argv/guest37/TERM15/KILL9/원래 취소/각 stream1MiB/실제30s deadline을 확인했다. 신호는
+외부 kernel/typed guest error, 취소·overflow·deadline은 incomplete로 보존한다. 첫 tagged
+adapter port 누락은 원본 보존 뒤 test-only 거부 Resolve로 보완했고 production은 유지했다.
+Host/source/42/ZIP/Docker·helperwait0/전체 정리와 root98proc/ref0/errors0 뒤 완료 사본2개
+54849309B를 제거했다. 누적193/~6.71GiB Linux 논리 용량이며 Windows VHD 회수는 아니다.
+CI432/source9198은 새 테스트 밖이고 실제20min 감시를 유지한다. 다음 D2 hostile5의 기존
+owner 감사/actual gap을 계속하며 native UVx/adapter/CLI/final/미확정 CPU는 OPEN이다.
 
 ### 2026-10-29 D1 current Python 실제 boundary 착수
 
