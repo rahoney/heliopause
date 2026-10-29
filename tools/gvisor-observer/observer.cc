@@ -489,6 +489,7 @@ struct ProcessState {
     // Query descendants retain this restriction, never the active admission.
     bool uv_python_query_restricted = false;
     std::string uv_python_query_environment;
+    std::string uv_python_query_helper_root;
     bool cargo_build_rustc_active = false;
     bool cargo_lld_launcher_candidate = false;
     bool cargo_lld_launcher_active = false;
@@ -816,6 +817,33 @@ bool HasExactPNPMQueryCreator(const gvisor::common::ContextData& context,
 // module producer is the authenticated UV in a private, no-build namespace;
 // neither these random names nor a diagnostic hash authenticate code on their own.
 std::string UVToolQueryEnvironment(const std::string& execfn, const TopologyState* topology) {
+  if (topology == nullptr) return "";
+  if (execfn.compare(0, 5, "/tmp/") == 0) {
+    // Fresh UV0.13.4 Cache::persist uses a tempfile root and secure ID16.
+    // These names confer no identity without the pinned image/creator below.
+    if (execfn.size() != 54 || execfn.compare(0, 9, "/tmp/.tmp") != 0 ||
+        execfn.compare(15, 12, "/archive-v0/") != 0 ||
+        execfn.compare(43, 11, "/bin/python") != 0) return "";
+    auto alnum = [](char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'); };
+    for (size_t i = 9; i < 15; ++i) if (!alnum(execfn[i])) return "";
+    for (size_t i = 27; i < 43; ++i) if (!alnum(execfn[i]) && execfn[i] != '_' && execfn[i] != '-') return "";
+    const std::string environment = execfn.substr(0, 43);
+    size_t expected = 0, actual = 0;
+    for (const auto& mount : topology->expected) {
+      if (mount.mountpoint != "/tmp") continue;
+      if (mount.mount_class != "workspace" || mount.parent != "/" ||
+          mount.filesystem_type != "tmpfs" || mount.read_only || !mount.noexec || !mount.nosuid) return "";
+      expected++;
+    }
+    for (const auto& entry : topology->anchors) {
+      const auto& mount = entry.second;
+      if (mount.mountpoint == "/tmp" && mount.mount_class == "workspace") actual++;
+      else if (mount.mountpoint != "/" &&
+          (IsAtOrBelowMountpoint(execfn, mount.mountpoint) ||
+           IsAtOrBelowMountpoint(mount.mountpoint, environment))) return "";
+    }
+    return expected == 1 && actual == 1 ? environment : "";
+  }
   const std::string prefix = "/haa-site/tools/", suffix = "/bin/python";
   if (topology == nullptr || execfn.size() <= prefix.size() + suffix.size() ||
       execfn.compare(0, prefix.size(), prefix) != 0 ||
@@ -840,7 +868,7 @@ std::string UVToolQueryEnvironment(const std::string& execfn, const TopologyStat
 }
 
 bool IsExactUVPythonQueryProgram(const gvisor::sentry::ExecveInfo& message,
-                                   const TopologyState* topology) {
+                                   const TopologyState* topology, std::string* helper_root = nullptr) {
   if (topology == nullptr || message.argv_size() != 5) return false;
   const std::string prefix = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"";
   const std::string suffix = "\")] + sys.path; from python.get_interpreter_info import main; main()";
@@ -869,19 +897,33 @@ bool IsExactUVPythonQueryProgram(const gvisor::sentry::ExecveInfo& message,
     if (mount.mountpoint == "/tmp" && mount.mount_class == "workspace") actual_tmp++;
     else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(root, mount.mountpoint)) return false;
   }
-  return expected_tmp == 1 && actual_tmp == 1;
+  const bool valid = expected_tmp == 1 && actual_tmp == 1;
+  if (valid && helper_root != nullptr) *helper_root = root;
+  return valid;
 }
 
 bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
-                          const TopologyState* topology) {
-  const bool tool_alias = !UVToolQueryEnvironment(message.execfn(), topology).empty();
+                          const TopologyState* topology, std::string* helper_root = nullptr) {
+  const std::string environment = UVToolQueryEnvironment(message.execfn(), topology);
+  const bool tool_alias = !environment.empty();
   if (message.binary_path() != "/usr/local/bin/python3.14" ||
       (!tool_alias && message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
       message.argv_size() != 5 || message.argv(0) != message.execfn() ||
       message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
       !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
       (!tool_alias && !IsPinnedReadOnlyRootPath(topology, message.execfn())) || !IsUVToolImage(topology, kUVToolPath)) return false;
-  return IsExactUVPythonQueryProgram(message, topology);
+  std::string root;
+  if (!IsExactUVPythonQueryProgram(message, topology, &root)) return false;
+  if (environment.compare(0, 5, "/tmp/") == 0) {
+    for (const auto& entry : topology->anchors) {
+      const auto& mount = entry.second;
+      if (mount.mountpoint != "/" && mount.mountpoint != "/tmp" &&
+          (IsAtOrBelowMountpoint(root, mount.mountpoint) ||
+           IsAtOrBelowMountpoint(mount.mountpoint, root))) return false;
+    }
+  }
+  if (helper_root != nullptr) *helper_root = root;
+  return true;
 }
 
 bool IsPipxNativeTopology(const TopologyState* topology) {
@@ -4049,6 +4091,32 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   // Interpreter discovery is never installed-code admission. This precedes
   // the general workspace rule, also after clone/reexec; startup/package files,
   // other environments and writes remain actionable ARTIFACT accesses.
+  // A fresh cached query's package environment shares TMP with UV's private
+  // query modules. Only the exact parsed module root and inert environment
+  // directories/config remain readable; no package/startup body or TMP write.
+  std::string cached_query_path;
+  if (profile != nullptr && strcmp(profile, kProfileUVResolver) == 0 &&
+      tracked->uv_python_query_restricted &&
+      tracked->uv_python_query_environment.compare(0, 5, "/tmp/") == 0 &&
+      ((anchor != nullptr && IsAtOrBelowMountpoint(anchor->mountpoint, "/tmp")) ||
+       IsAtOrBelowMountpoint(path, "/tmp") ||
+       (NormalizeAbsolutePath(path, &cached_query_path) && IsAtOrBelowMountpoint(cached_query_path, "/tmp")))) {
+    const std::string& env = tracked->uv_python_query_environment;
+    const std::string& helper = tracked->uv_python_query_helper_root;
+    const bool canonical = NormalizeAbsolutePath(path, &cached_query_path) && path == cached_query_path;
+    const bool module = !helper.empty() && IsAtOrBelowMountpoint(path, helper);
+    const bool directory = path == env || path == env + "/lib" ||
+        path == env + "/lib/python3.14" || path == env + "/lib/python3.14/site-packages";
+    const bool config = path == env + "/pyvenv.cfg";
+    const bool readonly_flags = message.flags() == 557056 || message.flags() == 622592;
+    const bool allowed = tracked->uv_python_query_active &&
+        tracked->current_image_class == ProcessClass::kPython &&
+        HasExactUVQueryCreator(message.context_data(), *tracked, state) && canonical &&
+        anchor != nullptr && anchor->mountpoint == "/tmp" && anchor->mount_class == "workspace" &&
+        !IsWriteCapableOpen(message.flags()) &&
+        (((module || directory) && readonly_flags) || (config && message.flags() == 557056));
+    return allowed ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+  }
   std::string query_path;
   if (profile != nullptr && strcmp(profile, kProfileUVResolver) == 0 &&
       tracked->uv_python_query_restricted &&
@@ -4473,6 +4541,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
   state->groups.find(child_group)->second.uv_python_query_restricted = creator->second.uv_python_query_restricted;
   state->groups.find(child_group)->second.uv_python_query_environment = creator->second.uv_python_query_environment;
+  state->groups.find(child_group)->second.uv_python_query_helper_root = creator->second.uv_python_query_helper_root;
   auto& native_child = state->groups.find(child_group)->second;
   native_child.pipx_native_query_restricted = creator->second.pipx_native_query_restricted;
   native_child.pipx_native_environment = creator->second.pipx_native_environment;
@@ -5073,10 +5142,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
     }
   }
+  std::string uv_query_helper_root;
   if (strcmp(profile, kProfileUVResolver) == 0 && uv_query_candidate &&
       group->second.role == ProcessState::Role::kControl &&
       candidate.expected_groups.find(group_id) == candidate.expected_groups.end() &&
-      IsExactUVPythonQuery(message, topology)) {
+      IsExactUVPythonQuery(message, topology, &uv_query_helper_root)) {
     auto query_group = group->second;
     query_group.role = ProcessState::Role::kArtifact;
     if (HasExactUVQueryCreator(message.context_data(), query_group, candidate)) {
@@ -5085,6 +5155,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.uv_python_query_active = true;
       group->second.uv_python_query_restricted = true;
       group->second.uv_python_query_environment = UVToolQueryEnvironment(message.execfn(), topology);
+      group->second.uv_python_query_helper_root = uv_query_helper_root;
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
       process_state->fd_states = candidate.fd_states;

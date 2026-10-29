@@ -16,14 +16,26 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-D2 named four-method first-error preservation local qualified; same-test RED4→GREEN10/canonical10/Quick333.493s/sandbox Race34.713s/current Python2 actual79.40s. D1 observer FAIL preserved; cleanup217/~7.26GiB.
-Next action: audit existing UVToolQueryEnvironment/IsExactUVPythonQuery/restricted workspace and new fixed UV cache source DATA before any cached-query permission change; require exact ARTIFACT creator/topology/private helper/env bounds and negative latches/actual. Keep CI433 actual20min GET/no push while active.
-Current substep: M13-004/P6-D2 named local COMPLETE; next P6-D3 cached native query identity/topology/readonly baseline before source. CI433/source87c817d remains frozen; actual poll02 8SUCCESS/Linux progress, worker71198/PID3172981 next13:02:10UTC; native/public golden/aliases/CLI/final OPEN.
+Next action: test-only bounded observer DATA attribution for actual native outside7 (actor/path/flags), preserve original trace/source/Host/42/ZIP; no guessed grant/Policy success. Then exact remaining query ABI/source binding/meaningful grouped hosted checkpoint. Cleanup221 ELF copies +6 private caches/~10.40GiB logical; source/raw/shared caches retained.
+Current substep: M13-004/P6-D3 cached native UV query IN_PROGRESS; CPP132/UV120/fresh315.655s and canonical9/affected sandbox Race22.668s PASS, native DATA4.66s complete trace and old public Python2/73.35s PASS. Native trace outside7 remains unclassified; acceptance OPEN. CI433/source87c8 all10SUCCESS/monitor stopped, no timer.
 Acceptance audit: CI432/source9198 all10SUCCESS/checkout5458/tree98ecc/3046·1361, Linux101/CPP132/CPU288.55s/current Python2+prep3+readonly4 and helper17wait0/final4 original0. Later local D1/D2 outside; whole final profiles/signed/native/CLI and prior CPU/drop causes OPEN.
 Independent local next: Python hostile-boundary actual matrix and runtime application adapter/native UVx golden/CLI after initial hosted wiring; reuse current context/readonly inputs/capture; no native tool-install→UVx relabel.
 P3 Bun: CI413 named hosted/whole acceptance OPEN; P4 — named current pipx/UV hosted, final OPEN; P5 — current Node/CLI grouped CI429 QUALIFIED, whole final OPEN; P6 — console DATA/reader/current preparation3 and readonly4 named hosted CI431 QUALIFIED, user runtime/CLI OPEN; P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-29 CI433 current Python 경계·앱 hosted 완료
+
+[Qualification](./evidence/package-client-quarantine/ci433-python-current-workflows-hosted-qualification-20261029.json)은 frozen source87c8/전체tree238aa647/runtime1368과 all10 checkout980e3509·Required10SUCCESS를 확인했다. Linux104/CPP132/fullCPU290.07s, 새 controlled8/137.63s·hostile5/70.94s·public 앱3/77.49s 및 helper17wait0/final4 original0이다. 실제20분조회5회 뒤 완료를 직접 확인해 전체decoded1317349B/59chunks를 보존했고 exact 소유 워커만 SIGTERM/session143으로 종료했다. 다음 타이머는 없다. 이후 D1/D2/D3 native/오류 보존/캐시 경계는 이 source 밖이며 native public golden/aliases/CLI/final과 과거 CPU/drop 인과는 OPEN이다.
+
+### 2026-10-29 D3 cached query 부분 checkpoint·정리
+
+[Checkpoint](./evidence/package-client-quarantine/p6d3-cached-query-checkpoint-20261029.json)는 CPP2/runtime1370·fresh315.655s/132/UV120과 canonical9·affected sandbox Race22.668s, native DATA4.66s complete/Go0·current public Python2/73.35s를 연결한다. Native outside7은 대상/분류 미확정이므로 QUALIFIED=PARTIAL/ACCEPTANCE_CLOSED=NO를 유지한다. Failed inputs/ELFs와 모든 실제 로그를 동결했고 source25452개를 보존한 완료 캐시6개 및 root83proc/ref0/errors0 뒤 완료 ELF4개를 삭제했다. 누적221개+cache6/~10.40GiB Linux 논리 용량이다. 다음 동일 D3의 bounded test-only outside 진단을 진행한다.
+
+### 2026-10-29 P6-D3 고정 cached UV query 경계 착수
+
+[Baseline·exact 지도·두 번째 검토](./evidence/package-client-quarantine/p6d3-cached-query-plan-20261029.md)는 기존 UV owner와 named CPP latch를 재사용해 fresh TMP/archive-v0 ID16 query만 고정 image·exact creator·sealed topology·ARTIFACT/readonly helper/env 범위로 다룬다. 기존1370 membership/Go/Core/CLI/wire/pins/한도는 유지하고 CPP2만 변경한다. Canonical CPP RED→GREEN와 전체132/Go checks/새 native DATA·기존 public Python2 actual을 요구한다. Public startup/source binding·golden/aliases/final은 별도다. CI433 poll03은8SUCCESS/Linux 진행이며 next13:22:11UTC/worker71198을 계속 소비한다.
 
 ### 2026-10-29 D2 네 admission 최초 오류 보존 named local 완료
 

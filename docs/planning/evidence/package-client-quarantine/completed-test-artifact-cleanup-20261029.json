@@ -42,8 +42,8 @@
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
     "first_preflight_rejected_without_deletion": "sandbox inventory showed unmapped root65534:65534; root execution view0:0; exact inode/mode/bytes/hash unchanged; refreshed root-context inventory and retained every guard"
   },
-  "cumulative_removed_files": 217,
-  "cumulative_removed_logical_bytes": 7790894962,
+  "cumulative_removed_files": 221,
+  "cumulative_removed_logical_bytes": 7876819538,
   "followup_completed_B2A": {
     "removed_files": 4,
     "removed_logical_bytes": 109400066,
@@ -119,5 +119,60 @@
     "resource_empty_zombies_proved_and_revalidated": 6,
     "originals_and_CI433_monitor_preserved": true,
     "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d2-completed-result.json"
+  },
+  "followup_completed_D3_private_build_caches": {
+    "removed_cache_directories": 6,
+    "removed_generated_entries": 205013,
+    "removed_logical_regular_bytes": 3288367840,
+    "observed_tmp_free_delta_during_concurrent_fresh_build": 3860549632,
+    "root_processes": 101,
+    "containers_checked": 1,
+    "references": 0,
+    "query_errors": 0,
+    "proved_resource_empty_zombies": 6,
+    "retained_failed_input_source_files": 25452,
+    "retained_all_sources_before_after_identical": true,
+    "raw_failure_sources_logs_ELFs_and_active_new_build_preserved": true,
+    "shared_caches_SDK_fixed_supply_Git_untouched": true,
+    "Windows_C_or_VHD_physical_shrink_claimed": false,
+    "originals": [
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-inventory.py",
+        "bytes": 3637,
+        "sha256": "012cccd868ca1440ad47d3dc230e9c8eac11d8fc142a74eed41e0469e9aaad4f"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-cleanup.py",
+        "bytes": 6577,
+        "sha256": "34a3b599f3578e9dbd84f69b01598acd834c112f8b23b3c1557d6819a12af739"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-candidate.json",
+        "bytes": 6058,
+        "sha256": "c8422bb8ecd4a3f5b6a49d10b5d01d10f13a0adebe56b3d6c18a6040ab8a3743"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-preflight.json",
+        "bytes": 867,
+        "sha256": "34bc53026cad3d5344f8e94e6b430eee02100633b3779b05df97af6529d31153"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-result.json",
+        "bytes": 2043,
+        "sha256": "e0b84dc76e7de72c8cc1285d131d42b48f6e0f6f656a0716c2c6772129528872"
+      }
+    ]
+  },
+  "cumulative_removed_private_cache_directories": 6,
+  "combined_removed_logical_bytes_including_private_caches": 11165187378,
+  "followup_completed_D3_actual_copies": {
+    "removed_files": 4,
+    "removed_logical_bytes": 85924576,
+    "root_processes": 83,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "original_Go_CPP_sources_actual_logs_inputs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-result.json"
   }
 }

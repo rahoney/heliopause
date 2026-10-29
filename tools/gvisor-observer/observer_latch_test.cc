@@ -7716,6 +7716,8 @@ bool VerifyUVPythonQueryBoundary() {
   if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
   auto run = [&](const std::string& scenario) {
     DrainDatagram(output[1]);
+    const bool cached = scenario.compare(0, 6, "cache-") == 0;
+    const std::string variation = cached ? scenario.substr(6) : scenario;
     ProcessState state;
     gvisor::common::ContextData parent;
     parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
@@ -7750,66 +7752,98 @@ bool VerifyUVPythonQueryBoundary() {
     child->set_parent_thread_group_id(99); child->set_is_exec_session(true);
     child->set_process_name("arbitrary-name");
     image.set_binary_path("/usr/local/bin/python3.14");
-    image.set_execfn(scenario == "canonical" ? "/usr/local/bin/python3.14" : "/usr/local/bin/python");
+    image.set_execfn(variation == "canonical" ? "/usr/local/bin/python3.14" : "/usr/local/bin/python");
     if (scenario.compare(0, 5, "tool-") == 0) image.set_execfn("/haa-site/tools/cowsay/bin/python");
-    if (scenario == "tool-traversal") image.set_execfn("/haa-site/tools/../cowsay/bin/python");
-    if (scenario == "tool-case") image.set_execfn("/haa-site/tools/Cowsay/bin/python");
-    if (scenario == "tool-other-alias") image.set_execfn("/haa-site/tools/cowsay/bin/python3");
-    if (scenario == "tool-underscore") image.set_execfn("/haa-site/tools/cow_say/bin/python");
+    if (variation == "tool-traversal") image.set_execfn("/haa-site/tools/../cowsay/bin/python");
+    if (variation == "tool-case") image.set_execfn("/haa-site/tools/Cowsay/bin/python");
+    if (variation == "tool-other-alias") image.set_execfn("/haa-site/tools/cowsay/bin/python3");
+    if (variation == "tool-underscore") image.set_execfn("/haa-site/tools/cow_say/bin/python");
+    const std::string cache_env = variation == "id-alphabet" ?
+        "/tmp/.tmpA1b2C3/archive-v0/_-0123456789abcd" :
+        "/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYF";
+    const std::string helper_root = variation == "helper-other" ?
+        "/tmp/.tmpQ1w2E3/.tmpA1s2D3" : "/tmp/.tmp3l9KcP/.tmpADARLv";
+    if (cached) image.set_execfn(cache_env + "/bin/python");
+    if (cached && variation == "tmp-length") image.set_execfn("/tmp/.tmpzw5M7/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "tmp-punct") image.set_execfn("/tmp/.tmpzw5M7_/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "bucket") image.set_execfn("/tmp/.tmpzw5M7c/archive-v1/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "id-short") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JY/bin/python");
+    if (cached && variation == "id-long") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYFQ/bin/python");
+    if (cached && variation == "id-dot") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/.CTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "alias") image.set_execfn(cache_env + "/bin/python3");
+    if (cached && variation == "path-traversal") image.set_execfn(cache_env + "/bin/../bin/python");
+    if (cached && variation == "double-slash") image.set_execfn("/tmp/.tmpzw5M7c//archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
     image.add_argv(image.execfn()); image.add_argv("-I"); image.add_argv("-B"); image.add_argv("-c");
     const std::string launcher = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()";
     image.add_argv(launcher);
-    if (scenario == "binary") image.set_binary_path("/tmp/python3.14");
-    if (scenario == "execfn") image.set_execfn("/usr/local/bin/python3");
-    if (scenario == "argv0") image.set_argv(0, "python");
-    if (scenario == "no-isolation") image.set_argv(1, "-E");
-    if (scenario == "bytecode") image.set_argv(2, "-s");
-    if (scenario == "module") image.set_argv(3, "-m");
-    if (scenario == "arbitrary-code") image.set_argv(4, "print('query')");
-    if (scenario == "extra-code") image.set_argv(4, launcher + "; print('extra')");
-    if (scenario == "embedded-nul") image.set_argv(4, launcher + std::string(1, '\0'));
-    if (scenario == "traversal") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "../foo"); image.set_argv(4, code); }
-    if (scenario == "escaped-path") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "abc\\de"); image.set_argv(4, code); }
-    if (scenario == "wrong-module") { auto code = launcher; code.replace(code.find("get_interpreter_info"), 20, "get_interpreter_evil"); image.set_argv(4, code); }
-    if (scenario == "extra-arg") image.add_argv("/tmp/artifact.py");
-    if (scenario == "short-argv") image.mutable_argv()->RemoveLast();
-    if (scenario == "parent-class") state.groups[99].current_image_class = ProcessClass::kPython;
-    if (scenario == "parent-role") state.groups[99].role = ProcessState::Role::kArtifact;
-    if (scenario == "parent-start") state.groups[99].start_time_ns++;
-    if (scenario == "parent-expected") state.expected_groups.erase(99);
-    if (scenario == "parent-generation") state.expected_groups[99].start_time_ns++;
-    if (scenario == "parent-expected-class") state.expected_groups[99].process_class = ProcessClass::kUnknown;
-    if (scenario == "parent-network") state.groups[99].trusted_control_network_active = false;
-    if (scenario == "parent-eligible") state.groups[99].root_eligible = true;
-    if (scenario == "parent-unconsumed") state.groups[99].root_consumed = false;
-    if (scenario == "parent-pending") state.groups[99].handoff_target_pending = true;
-    if (scenario == "parent-clone") state.groups[99].provenance = ProcessState::Provenance::kCloneChild;
-    if (scenario == "oci-origin") child->set_is_exec_session(false);
-    if (scenario == "wrong-parent") child->set_parent_thread_group_id(98);
-    if (scenario == "direct-root") { child->set_parent_thread_group_id(0); child->set_is_exec_session(true); state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot; }
-    if (scenario == "artifact-child") state.groups[100].role = ProcessState::Role::kArtifact;
-    if (scenario == "missing-clone") state.groups[100].uv_python_query_candidate = false;
-    if (scenario == "child-network") state.groups[100].trusted_control_network_active = true;
-    if (scenario == "child-pending") state.groups[100].launch_target_pending = true;
-    if (scenario == "unsealed") topology.sealed = false;
-    if (scenario == "missing-snapshot") topology.snapshot_seen = false;
-    if (scenario == "writable-root") topology.expected[0].read_only = false;
-    if (scenario == "image-shadow") topology.anchors.emplace(4, MountAnchor{4, "/usr/local", "workspace"});
-    if (scenario == "runtime-shadow") topology.anchors.emplace(4, MountAnchor{4, "/haa-runtime/uv", "helper"});
-    if (scenario == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, "/tmp/.tmp3l9KcP", "workspace"});
-    if (scenario == "tmp-bind") topology.expected[1].filesystem_type = "9p";
-    if (scenario == "tmp-exec") topology.expected[1].noexec = false;
-    if (scenario == "missing-tmp") topology.anchors.erase(2);
-    if (scenario == "tool-missing-output") topology.anchors.erase(6);
-    if (scenario == "tool-output-kind") topology.expected[3].filesystem_type = "tmpfs";
-    if (scenario == "tool-output-readonly") topology.expected[3].read_only = true;
-    if (scenario == "tool-output-shadow") topology.anchors.emplace(5, MountAnchor{5, "/haa-site/tools/cowsay", "workspace"});
-    const auto* selected = scenario == "no-topology" ? nullptr : &topology;
-    const char* profile = scenario == "other-profile" ? kProfilePyPI : kProfileUVResolver;
+    if (cached && variation == "helper-other") {
+      auto code = launcher;
+      code.replace(code.find("/tmp/.tmp3l9KcP/.tmpADARLv"), 26, helper_root);
+      image.set_argv(4, code);
+    }
+    if (cached && variation == "cache-shadow") topology.anchors.emplace(7, MountAnchor{7, "/tmp/.tmpzw5M7c", "workspace"});
+    if (cached && variation == "lib-shadow") topology.anchors.emplace(7, MountAnchor{7, cache_env + "/lib", "workspace"});
+    if (cached && variation == "helper-shadow") topology.anchors.emplace(7, MountAnchor{7, helper_root + "/python", "workspace"});
+    if (cached && variation == "tmp-nosuid") topology.expected[1].nosuid = false;
+    if (cached && variation == "tmp-readonly") topology.expected[1].read_only = true;
+    if (cached && variation == "tmp-duplicate") topology.anchors.emplace(7, MountAnchor{7, "/tmp", "workspace"});
+    if (cached && variation == "tmp-class") topology.anchors[2].mount_class = "system";
+    if (variation == "binary") image.set_binary_path("/tmp/python3.14");
+    if (variation == "execfn") image.set_execfn("/usr/local/bin/python3");
+    if (variation == "argv0") image.set_argv(0, "python");
+    if (variation == "no-isolation") image.set_argv(1, "-E");
+    if (variation == "bytecode") image.set_argv(2, "-s");
+    if (variation == "module") image.set_argv(3, "-m");
+    if (variation == "arbitrary-code") image.set_argv(4, "print('query')");
+    if (variation == "extra-code") image.set_argv(4, launcher + "; print('extra')");
+    if (variation == "embedded-nul") image.set_argv(4, launcher + std::string(1, '\0'));
+    if (variation == "traversal") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "../foo"); image.set_argv(4, code); }
+    if (variation == "escaped-path") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "abc\\de"); image.set_argv(4, code); }
+    if (variation == "wrong-module") { auto code = launcher; code.replace(code.find("get_interpreter_info"), 20, "get_interpreter_evil"); image.set_argv(4, code); }
+    if (variation == "extra-arg") image.add_argv("/tmp/artifact.py");
+    if (variation == "short-argv") image.mutable_argv()->RemoveLast();
+    if (variation == "parent-class") state.groups[99].current_image_class = ProcessClass::kPython;
+    if (variation == "parent-role") state.groups[99].role = ProcessState::Role::kArtifact;
+    if (variation == "parent-start") state.groups[99].start_time_ns++;
+    if (variation == "parent-expected") state.expected_groups.erase(99);
+    if (variation == "parent-generation") state.expected_groups[99].start_time_ns++;
+    if (variation == "parent-expected-class") state.expected_groups[99].process_class = ProcessClass::kUnknown;
+    if (variation == "parent-network") state.groups[99].trusted_control_network_active = false;
+    if (variation == "parent-eligible") state.groups[99].root_eligible = true;
+    if (variation == "parent-unconsumed") state.groups[99].root_consumed = false;
+    if (variation == "parent-pending") state.groups[99].handoff_target_pending = true;
+    if (variation == "parent-clone") state.groups[99].provenance = ProcessState::Provenance::kCloneChild;
+    if (variation == "oci-origin") child->set_is_exec_session(false);
+    if (variation == "wrong-parent") child->set_parent_thread_group_id(98);
+    if (variation == "direct-root") { child->set_parent_thread_group_id(0); child->set_is_exec_session(true); state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot; }
+    if (variation == "artifact-child") state.groups[100].role = ProcessState::Role::kArtifact;
+    if (variation == "missing-clone") state.groups[100].uv_python_query_candidate = false;
+    if (variation == "child-network") state.groups[100].trusted_control_network_active = true;
+    if (variation == "child-pending") state.groups[100].launch_target_pending = true;
+    if (variation == "unsealed") topology.sealed = false;
+    if (variation == "missing-snapshot") topology.snapshot_seen = false;
+    if (variation == "writable-root") topology.expected[0].read_only = false;
+    if (variation == "image-shadow") topology.anchors.emplace(4, MountAnchor{4, "/usr/local", "workspace"});
+    if (variation == "runtime-shadow") topology.anchors.emplace(4, MountAnchor{4, "/haa-runtime/uv", "helper"});
+    if (variation == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, "/tmp/.tmp3l9KcP", "workspace"});
+    if (variation == "tmp-bind") topology.expected[1].filesystem_type = "9p";
+    if (variation == "tmp-exec") topology.expected[1].noexec = false;
+    if (variation == "missing-tmp") topology.anchors.erase(2);
+    if (variation == "tool-missing-output") topology.anchors.erase(6);
+    if (variation == "tool-output-kind") topology.expected[3].filesystem_type = "tmpfs";
+    if (variation == "tool-output-readonly") topology.expected[3].read_only = true;
+    if (variation == "tool-output-shadow") topology.anchors.emplace(5, MountAnchor{5, "/haa-site/tools/cowsay", "workspace"});
+    const auto* selected = variation == "no-topology" ? nullptr : &topology;
+    const char* profile = variation == "other-profile" ? kProfilePyPI : kProfileUVResolver;
+    if (variation == "profile-cpu") profile = kProfilePyTorchCPU;
+    if (variation == "profile-cu126") profile = kProfilePyTorchCU126;
+    if (variation == "profile-cu130") profile = kProfilePyTorchCU130;
+    if (variation == "profile-cu132") profile = kProfilePyTorchCU132;
     ProfileRegistration registration;
     const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
         payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
-    const bool normal = scenario == "normal" || scenario == "canonical" || scenario == "tool-normal";
+    const bool normal = variation == "normal" || variation == "canonical" || variation == "tool-normal" ||
+        (cached && (variation == "id-alphabet" || variation == "helper-other"));
     if (normal && (!parsed || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected"))) return false;
     if (!normal) DrainDatagram(output[1]);
     if (state.groups[100].uv_python_query_active != normal) return false;
@@ -7827,16 +7861,78 @@ bool VerifyUVPythonQueryBoundary() {
     if (readable() != normal) return false;
     if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
     if (!normal) return true;
+    if (cached) {
+      const MountAnchor tmp{2, "/tmp", "workspace"};
+      auto check = [&](const std::string& path, uint64_t flags, FilesystemClass expected) {
+        auto candidate = open; candidate.set_pathname(path); candidate.set_flags(flags);
+        return ClassifyFilesystemOpen(candidate, state, profile, &tmp) == expected;
+      };
+      for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", cache_env, cache_env + "/lib",
+          cache_env + "/lib/python3.14", cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, 557056, FilesystemClass::kHelperOnly) ||
+            !check(path, 622592, FilesystemClass::kHelperOnly)) return false;
+      }
+      if (!check(cache_env + "/pyvenv.cfg", 557056, FilesystemClass::kHelperOnly)) return false;
+      for (const std::string& path : {cache_env + "/lib/python3.14/site-packages/evil.pth",
+          cache_env + "/lib/python3.14/site-packages/sitecustomize.py",
+          cache_env + "/lib/python3.14/site-packages/usercustomize.py",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe/__init__.py",
+          cache_env + "/lib/python3.14/site-packages/evil.so", cache_env + "/bin/python",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe-1.0.dist-info/METADATA",
+          std::string("/tmp/unrelated.py"), std::string("/tmp/.tmpOther1/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          std::string("/tmp/.tmpzw5M7c/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          helper_root + "/../" + helper_root.substr(helper_root.rfind('/') + 1) + "/python/__init__.py"}) {
+        if (!check(path, 557056, FilesystemClass::kOutside)) return false;
+      }
+      const std::string foreign_helper = variation == "helper-other" ?
+          "/tmp/.tmp3l9KcP/.tmpADARLv/python/__init__.py" : "/tmp/.tmpQ1w2E3/.tmpA1s2D3/python/__init__.py";
+      if (!check(foreign_helper, 557056, FilesystemClass::kOutside)) return false;
+      for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenAppend, kOpenTruncate}) {
+        for (const std::string& path : {helper_root + "/python/__init__.py", cache_env + "/pyvenv.cfg", std::string("/tmp/query-write")}) {
+          if (!check(path, flags, FilesystemClass::kOutside)) return false;
+        }
+      }
+      auto candidate = open; candidate.set_pathname(cache_env + "/pyvenv.cfg"); candidate.set_flags(557056);
+      for (const auto& wrong : {MountAnchor{4, "/tmp", "system"}, MountAnchor{4, cache_env, "workspace"}, MountAnchor{1, "/", "oci-root"}}) {
+        if (ClassifyFilesystemOpen(candidate, state, profile, &wrong) != FilesystemClass::kOutside) return false;
+      }
+      const auto accepted_query = state;
+      for (int mutation = 0; mutation < 13; ++mutation) {
+        state = accepted_query; auto& query = state.groups[100];
+        switch (mutation) {
+          case 0: query.role = ProcessState::Role::kControl; break;
+          case 1: query.uv_python_query_active = false; break;
+          case 2: query.start_time_ns++; break;
+          case 3: query.provenance = ProcessState::Provenance::kDirectExecRoot; break;
+          case 4: query.trusted_control_network_active = true; break;
+          case 5: query.current_image_class = ProcessClass::kUnknown; break;
+          case 6: query.root_eligible = true; break;
+          case 7: query.root_consumed = false; break;
+          case 8: query.demotion_pending = true; break;
+          case 9: query.launch_target_pending = true; break;
+          case 10: query.handoff_target_pending = true; break;
+          case 11: state.groups[99].start_time_ns++; break;
+          case 12: state.expected_groups.erase(99); break;
+        }
+        // A stale generation has no authoritative filesystem group. Keep the
+        // classifier's UNKNOWN result rather than inventing an ARTIFACT role.
+        const auto rejected = mutation == 2 ? FilesystemClass::kUnknown : FilesystemClass::kOutside;
+        if (!check(cache_env + "/pyvenv.cfg", 557056, rejected) ||
+            !check(helper_root + "/python/__init__.py", 557056, rejected)) return false;
+      }
+      state = accepted_query;
+    }
     const std::string env = "/haa-site/tools/cowsay";
     if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/lib/python3.14/site-packages/evil.pth",6,557056,true))return false;
     if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/pyvenv.cfg",6,kOpenWriteOnly,true))return false;
-    if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],"/tmp/query-write",2,kOpenWriteOnly,false,true))return false;
+    if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],"/tmp/query-write",2,kOpenWriteOnly,cached,!cached))return false;
     if(scenario=="tool-normal"&&!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/pyvenv.cfg",6,557056,false))return false;
 
     anchor = MountAnchor{4, "/haa-site", "workspace"};
     for (const std::string& path : {env + "/pyvenv.cfg", env, env + "/lib", env + "/lib/python3.14", env + "/lib/python3.14/site-packages"}) {
       open.set_pathname(path); open.set_flags(557056);
-      const auto expected = scenario == "tool-normal" ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+      const auto expected = variation == "tool-normal" ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
       if (ClassifyFilesystemOpen(open, state, profile, &anchor) != expected) return false;
     }
     for (const std::string& path : {env + "/lib/python3.14/site-packages/evil.pth", env + "/lib/python3.14/site-packages/sitecustomize.py",
@@ -7957,19 +8053,44 @@ bool VerifyUVPythonQueryBoundary() {
     open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
     if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
         !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable()) return false;
+    if (cached) {
+      open.set_pathname(helper_root + "/python/__init__.py");
+      MountAnchor tmp{2, "/tmp", "workspace"};
+      if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+    }
     // A second exact exec in the original child cannot renew the role.
     *open.mutable_context_data() = *child;
     if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
         !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable() || IsTrustedControlNetwork(*child, state)) return false;
+    if (cached) {
+      open.set_pathname(cache_env + "/pyvenv.cfg");
+      MountAnchor tmp{2, "/tmp", "workspace"};
+      if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+    }
     return true;
   };
   bool passed = true;
-  for (const char* scenario : {"normal", "canonical", "tool-normal", "tool-traversal", "tool-case", "tool-underscore", "tool-other-alias",
-      "tool-missing-output", "tool-output-kind", "tool-output-readonly", "tool-output-shadow", "binary", "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
-      "extra-code", "embedded-nul", "traversal", "escaped-path", "wrong-module", "extra-arg", "short-argv", "parent-class", "parent-role",
-      "parent-start", "parent-expected", "parent-generation", "parent-expected-class", "parent-network", "parent-eligible", "parent-unconsumed",
-      "parent-pending", "parent-clone", "oci-origin", "wrong-parent", "direct-root", "artifact-child", "missing-clone", "child-network", "child-pending",
-      "unsealed", "missing-snapshot", "writable-root", "image-shadow", "runtime-shadow", "query-shadow", "tmp-bind", "tmp-exec", "missing-tmp", "no-topology", "other-profile"}) {
+  for (const char* scenario : {
+      "normal", "canonical", "tool-normal", "tool-traversal", "tool-case", "tool-underscore",
+      "tool-other-alias", "tool-missing-output", "tool-output-kind", "tool-output-readonly", "tool-output-shadow", "binary",
+      "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
+      "extra-code", "embedded-nul", "traversal", "escaped-path", "wrong-module", "extra-arg",
+      "short-argv", "parent-class", "parent-role", "parent-start", "parent-expected", "parent-generation",
+      "parent-expected-class", "parent-network", "parent-eligible", "parent-unconsumed", "parent-pending", "parent-clone",
+      "oci-origin", "wrong-parent", "direct-root", "artifact-child", "missing-clone", "child-network",
+      "child-pending", "unsealed", "missing-snapshot", "writable-root", "image-shadow", "runtime-shadow",
+      "query-shadow", "tmp-bind", "tmp-exec", "missing-tmp", "no-topology", "other-profile",
+      "cache-normal", "cache-id-alphabet", "cache-helper-other", "cache-tmp-length", "cache-tmp-punct", "cache-bucket",
+      "cache-id-short", "cache-id-long", "cache-id-dot", "cache-alias", "cache-path-traversal", "cache-double-slash",
+      "cache-cache-shadow", "cache-lib-shadow", "cache-helper-shadow", "cache-tmp-nosuid", "cache-tmp-readonly", "cache-tmp-duplicate",
+      "cache-tmp-class", "cache-profile-cpu", "cache-profile-cu126", "cache-profile-cu130", "cache-profile-cu132", "cache-binary",
+      "cache-execfn", "cache-argv0", "cache-no-isolation", "cache-bytecode", "cache-module", "cache-arbitrary-code",
+      "cache-extra-code", "cache-embedded-nul", "cache-traversal", "cache-escaped-path", "cache-wrong-module", "cache-extra-arg",
+      "cache-short-argv", "cache-parent-class", "cache-parent-role", "cache-parent-start", "cache-parent-expected", "cache-parent-generation",
+      "cache-parent-expected-class", "cache-parent-network", "cache-parent-eligible", "cache-parent-unconsumed", "cache-parent-pending", "cache-parent-clone",
+      "cache-oci-origin", "cache-wrong-parent", "cache-direct-root", "cache-artifact-child", "cache-missing-clone", "cache-child-network",
+      "cache-child-pending", "cache-unsealed", "cache-missing-snapshot", "cache-writable-root", "cache-image-shadow", "cache-runtime-shadow",
+      "cache-query-shadow", "cache-tmp-bind", "cache-tmp-exec", "cache-missing-tmp", "cache-no-topology", "cache-other-profile"}) {
     const bool result = run(scenario);
     if (!result) fprintf(stderr, "UV query boundary failed: %s\n", scenario);
     passed = result && passed;

@@ -1,0 +1,377 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-D3",
+  "status": "IN_PROGRESS_CHECKPOINT",
+  "baseline_commit": "a2213dd2a01e090489e1dc77dadaeb2e732476a3",
+  "metadata_only_current_head": "1c9f4debb4e8ddd48cd3e9ca04666f0e4e61aa60",
+  "runtime_inputs": 1370,
+  "modified_paths": [
+    "tools/gvisor-observer/observer.cc",
+    "tools/gvisor-observer/observer_latch_test.cc"
+  ],
+  "existing_other1368_unchanged": true,
+  "source_identity": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "f5d6881a738c984a61f3ca83b95017f67f0383ed5304c467c8ab41d165e27999",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "3fb5d5655fd14300fab876661fc1c099efbd7c0901cf5ee5e72a3dd6a5d67915",
+      "mode": "100644"
+    }
+  ],
+  "production_scope": "Only exact fresh UV cache alias topology + existing query helper root binding + same current Python ARTIFACT creator/readonly TMP bounds. Clone/reexec taint preserved. Base/tool-home and all other profiles unchanged.",
+  "CPP": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p6-d3-v4-observer"
+    ],
+    "exit_code": 0,
+    "started_at": "2026-10-29T14:02:27.757998+00:00",
+    "seconds": 315.655,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "f5d6881a738c984a61f3ca83b95017f67f0383ed5304c467c8ab41d165e27999"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "3fb5d5655fd14300fab876661fc1c099efbd7c0901cf5ee5e72a3dd6a5d67915"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "qualified_latch_sha256": "3fb5d5655fd14300fab876661fc1c099efbd7c0901cf5ee5e72a3dd6a5d67915",
+    "named_latches": 132,
+    "UV_scenarios": 120,
+    "log_sha256": "38969963585a341ca5e17ac39b5f027b170ae17642f52ec11841d5b7ae310c3a",
+    "retained_failed_work_root": [],
+    "observer": {
+      "path": "/tmp/haa-p6-d3-v4-observer",
+      "sha256": "ca18058e4a137434656a2db14a6a59b08cb7a30669fe3bb5d85b48565659a374",
+      "bytes": 3229472
+    }
+  },
+  "checks_current_or_exact_input_reuse": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 2.973,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 324.179,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.523,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 15.363,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d3-v1-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 2.071,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d3-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.573,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "sandbox-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 22.668,
+      "reused_from": "/tmp/haa-p6-d3-v3-build-identity.json",
+      "reuse_reason": "Only CPP latch test rejected-workspace count oracle changed; all Go/observer.cc/lock/checker/scripts inputs byte-identical; CPP independently rebuilt132/120"
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.365
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.638
+    }
+  ],
+  "Go_binary_reuse": {
+    "v1_originals_unchanged": true,
+    "only_changed_v1_input": [
+      "tools/gvisor-observer/observer_latch_test.cc"
+    ],
+    "reason": "CPP test is an independent external build input, not a Go compiler or existing default test DATA input; observer.cc consumed by existing Go source guards remains byte-identical"
+  },
+  "native_DATA_actual": {
+    "exit": 0,
+    "parent_seconds": 4.66,
+    "operator_seconds": 7.081,
+    "expected_native_ExitError": 2,
+    "expected_terminal": "/dev/null EACCES; selected program NOT_RUN",
+    "trace": {
+      "parent_seconds": 4.66,
+      "trace_complete": true,
+      "trace_record_events": 23,
+      "trace_bytes": 2689,
+      "kind_counts": {
+        "process-exec-expected": 15,
+        "filesystem-workspace-access": 113,
+        "filesystem-outside-workspace": 7
+      },
+      "outside_finding_attribution": "UNRESOLVED; completed DATA probe is not clean public native Policy qualification",
+      "native_selected_program": "NOT_RUN; /dev/null EACCES"
+    },
+    "no_STREAM_FAULT": true,
+    "fixture_public_authentication_Evidence_Policy": "NOT_RUN; network-none controlled raw wheel",
+    "source_Host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "all_owned_resources_absent": true,
+    "log_sha256": "b0169e37ad36c5b648d4226669d0cdcb258f56f7269ef53e1b8fecd1a68a91a1",
+    "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d3-native-actual-v4-original-inventory.json"
+  },
+  "existing_Python_actual": {
+    "exit": 0,
+    "parent_seconds": 73.35,
+    "operator_seconds": 75.828,
+    "cases": [
+      [
+        "1",
+        "0",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "2",
+        "2",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ]
+    ],
+    "fresh_current_whole_integrity_static_dynamic_Evidence_Policy": "ACTUAL",
+    "complete_exit_codes": [
+      0,
+      2
+    ],
+    "canonical_ci_profile_bytes_identical": true,
+    "source_Host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "all_owned_resources_absent": true,
+    "log_sha256": "5a303662b431a77445b86803e0dd6ec9a1f9905de540e130352aef245d2328ae",
+    "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d3-python-positive-actual-v4-original-inventory.json"
+  },
+  "failures_preserved": [
+    "RED old production rejects3 new cached positives",
+    "First candidate lacks current-Python image guard in cached reads; actual diagnostic captured incorrect helper classification",
+    "New stale-generation Outside oracle wrong: existing classifier returns UNKNOWN",
+    "New cached outside dispatch workspace1 oracle wrong: actual findings1/workspace0",
+    "First diagnostic had out-of-scope variable compile error; no latch execution",
+    "Supplemental pinned replay132 is separate from fresh canonical315.655s/132"
+  ],
+  "audit": {
+    "IMPLEMENTED": "YES (cached query predicate/private root/taint)",
+    "WIRED": "YES (existing UV kernel path and local native DATA consumer)",
+    "QUALIFIED": "PARTIAL (CPP132/UV120 and complete native DATA trace plus old public Python2; native outside7 unclassified)",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "Attribute native DATA trace filesystem-outside-workspace7 before positive public native approval; no guessed grants",
+      "Public native whole startup/source binding/golden/aliases/CLI and final support",
+      "New grouped hosted qualification for later D1/D2/D3 source; CI433 source87c8 excludes them"
+    ]
+  },
+  "cleanup": {
+    "completed_ELF_copies_removed": 4,
+    "logical_bytes": 85924576,
+    "completed_private_cache_directories_removed": 6,
+    "cumulative_ELF_files": 221,
+    "combined_logical_bytes": 11165187378,
+    "Windows_VHD_physical_shrink_claimed": false
+  },
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-observer-build.json",
+      "bytes": 1553,
+      "sha256": "8cb140435cf2839c7910dae7d543bef6a882f6aeb3725ad1a8667cea39d5b989"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-observer-build.log",
+      "bytes": 206827,
+      "sha256": "38969963585a341ca5e17ac39b5f027b170ae17642f52ec11841d5b7ae310c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-cpp-v4-build.py",
+      "bytes": 2600,
+      "sha256": "25f1e1c05419569ed6997041021d9207203c4c12a5c6dd1eab2ae76c95eb4fc8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-build-identity.json",
+      "bytes": 252303,
+      "sha256": "c480c2c0cebfe54d3397b46617d14edc667db34d7465afaa302a5b145a273b27"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-check.py",
+      "bytes": 2767,
+      "sha256": "454635fe6df53cc288c192f9a641b90ba888c396afad8df4c21824ed48bcf65d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-native-counts.json",
+      "bytes": 417,
+      "sha256": "130f0f3c0bf9b6b0c4d622f1fca8043ee33dd8d7260abd32febd8ccf7e7f8025"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-pinned-replay.json",
+      "bytes": 863,
+      "sha256": "df62bad500556bb1f414cbfdeef54669dea8720b0c82c336bcf95873359d7bfb"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-pinned-replay.log",
+      "bytes": 11860,
+      "sha256": "6e634520b83930a1f0208e3cd87809c48f1c02f334a95b64c2d1804a0de94adc"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-replay.py",
+      "bytes": 4256,
+      "sha256": "a25b56c2b5771a3a120946a0cd58796ffe4a5e9f8493fff0ee99ecb63922098a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-native-actual-v4.py",
+      "bytes": 10841,
+      "sha256": "399152096cbfd14dde821a4b16c1f1597932a5d27400e32e60490f7d4e469d41"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-python-positive-actual-v4.py",
+      "bytes": 11053,
+      "sha256": "4583236a15226b28520169ead77c6cad61c7186ec4c4b10ac495a5fd72c7138a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-freeze-actual.py",
+      "bytes": 1073,
+      "sha256": "c91e3181409cc2069dc0af330921284ad7ccd01a0762809063f1d608277cf436"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-inventory.py",
+      "bytes": 3647,
+      "sha256": "bae69af396c0993d3d885581665e5c183480de01f4e4d63c7f05b8b7a17c2945"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-cleanup.py",
+      "bytes": 6135,
+      "sha256": "6c86fc2671c6dc5bcc1c792be1e7ed1ba3b31eda6f8adf206a987984c6e4b52d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-candidate.json",
+      "bytes": 3231,
+      "sha256": "5587824c17ead462bfc18a0c400c854aac7c48f3a83170885184863d1422505a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-preflight.json",
+      "bytes": 3578,
+      "sha256": "d9ce83737cf8e3ef6b228b6e27af5f042e338364943db49c13b8195cdbb11de2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-result.json",
+      "bytes": 3925,
+      "sha256": "ca510cb88676c11e7d3595ea7734720b04cdff8664c8c851d6dbe867a562ba02"
+    }
+  ],
+  "CI433": "source87c8 all10SUCCESS/checkout980e3509/tree238aa647/104parents; owned timer stopped/session143; no pending timer"
+}
