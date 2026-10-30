@@ -387,5 +387,19 @@
     "go run ./scripts/check security",
     "bash scripts/ci-uv-tools.sh uv-run-cli (canonical protected client/helper environment; whole8 hosted still pending)"
   ],
-  "raw_storage": "Named raw paths are preserved in the local workspace; untracked raw logs and ignored AGENTS.md are not claimed as GitHub-delivered."
+  "raw_storage": "Named raw paths are preserved in the local workspace; untracked raw logs and ignored AGENTS.md are not claimed as GitHub-delivered.",
+  "completed_copy_cleanup": {
+    "deleted_names": 17,
+    "deleted_inodes": 17,
+    "deleted_logical_bytes": 500814759,
+    "references": [],
+    "query_errors": [],
+    "protected_clients_helpers": [],
+    "containers": [],
+    "kept_current_qualified_ELF": "/tmp/haa-p6h-root-extras-legacy-fixed-v13/bootstrap.test",
+    "kept_current_observer": "/tmp/haa-p6g3-cpp/observer-root",
+    "source_and_logs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-h1-cleanup-result-20261031.json",
+    "exact_failed_v6_source_archived_and_hash_verified": true
+  }
 }
