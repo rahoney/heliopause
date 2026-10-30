@@ -374,6 +374,10 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 				"SKIP admitted":            strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
 				"wrong parent":             strings.Replace(owned, "/^--- PASS:/", "/^--- FAKE:/", 1),
 			}
+			if key == "uv_run_cli" {
+				mutations["root extra case absent"] = strings.Replace(owned, `expected["6"]=`, `expected["9"]=`, 1)
+				mutations["root extra closure shortened"] = strings.Replace(owned, "sources!=11", "sources!=9", 1)
+			}
 			for name, changed := range mutations {
 				t.Run(name, func(t *testing.T) {
 					if changed == owned {

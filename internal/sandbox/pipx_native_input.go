@@ -26,14 +26,19 @@ type pipxNativeInputFile struct {
 // These owned bytes have passed whole original/source/graph and startup checks.
 // They confer neither execution admission nor Policy or Host ownership.
 type pipxNativeInput struct {
-	files []pipxNativeInputFile
-	graph domain.LockedDependencyGraph
-	id    string
-	lock  artifactpypi.UVLock
-	pages []artifactpypi.SimpleProject
+	files        []pipxNativeInputFile
+	graph        domain.LockedDependencyGraph
+	id           string
+	lock         artifactpypi.UVLock
+	pages        []artifactpypi.SimpleProject
+	uvRunRequest string
 }
 
 func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) (*pipxNativeInput, error) {
+	return freezePythonRunNativeInput(ctx, lock, inputs, pages, artifactpypi.UVRunRequirement{})
+}
+
+func freezePythonRunNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject, request artifactpypi.UVRunRequirement) (*pipxNativeInput, error) {
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
 	if ctx == nil || len(inputs) == 0 || len(inputs) > policy.MaxGraphArtifacts() || len(inputs) != len(lock.Packages()) {
 		return nil, errPipxNativeInput
@@ -76,7 +81,18 @@ func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs
 		frozen = append(frozen, artifactpypi.UVWheelInput{URL: file.url, Reader: bytes.NewReader(file.body), Size: int64(len(file.body))})
 	}
 	runtime := PinnedPythonRuntime()
-	graph, err := lock.BindPipxQueryWheels(frozen, pages, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}, policy.WheelLimits())
+	target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
+	var graph domain.LockedDependencyGraph
+	var err error
+	if request.Requirement() != "" {
+		if !request.Valid() || len(request.Extras()) == 0 {
+			return nil, errPipxNativeInput
+		}
+		graph, err = lock.BindUVRunWheels(request, frozen, pages, target, policy.WheelLimits())
+		result.uvRunRequest = request.Requirement()
+	} else {
+		graph, err = lock.BindPipxQueryWheels(frozen, pages, target, policy.WheelLimits())
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +136,16 @@ func (p *pipxNativeInput) manifestID() (string, error) {
 		facts = append(facts, fact{file.name, file.url, file.digest, int64(len(file.body))})
 	}
 	body, err := json.Marshal(facts)
+	if p.uvRunRequest != "" {
+		request, requestErr := artifactpypi.ParseUVRunRequirement(p.uvRunRequest)
+		if requestErr != nil || request.Requirement() != p.uvRunRequest || len(request.Extras()) == 0 {
+			return "", errPipxNativeInput
+		}
+		body, err = json.Marshal(struct {
+			Schema, Request string
+			Files           []fact
+		}{"helox.uv-run-originals/v1", p.uvRunRequest, facts})
+	}
 	if err != nil {
 		return "", err
 	}

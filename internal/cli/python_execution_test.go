@@ -75,6 +75,10 @@ func TestUVRunCLIRejectsUnsupportedBeforeRunner(t *testing.T) {
 	testPythonRunCLIRejectsUnsupportedBeforeRunner(t, false)
 }
 func testPythonRunCLIRejectsUnsupportedBeforeRunner(t *testing.T, pipx bool) {
+	unsupportedExtra := "cowsay[]"
+	if pipx {
+		unsupportedExtra = "cowsay[extra]"
+	}
 	add := AddUVRunExecution
 	if pipx {
 		add = AddPipxRunExecution
@@ -89,7 +93,7 @@ func testPythonRunCLIRejectsUnsupportedBeforeRunner(t *testing.T, pipx bool) {
 			{"--show-output", "--show-output=false", "cowsay"}, {"--with", "other", "cowsay"},
 			{"--python", "3.14", "cowsay"}, {"--index-url", "https://example.invalid", "cowsay"},
 			{"--isolated", "cowsay"}, {"--command", "cowsay", "cowsay"}, {"--stdin", "cowsay"},
-			{"cowsay[extra]"}, {"cowsay>=1"}, {"cowsay==6.1,>=6"}, {"cowsay@latest"}, {"cowsay@6.2rc1"},
+			{unsupportedExtra}, {"cowsay>=1"}, {"cowsay==6.1,>=6"}, {"cowsay@latest"}, {"cowsay@6.2rc1"},
 			{"./local"}, {"git+https://example.invalid/tool"}, {"https://example.invalid/tool.whl"},
 			{"python"}, {"python3.14"}, {"python-3.14"}, {"pythonw"}, {"pypy@3.11"}, {"graalpy"},
 			{"--from", "python-slugify@8.0.4", "../slugify"}, {"--from", "python-slugify@8.0.4", "sh -c slugify"},

@@ -21,6 +21,7 @@ import (
 type freshPythonUVRunExecutionResolver struct {
 	native  *sandbox.UVResolver
 	command string
+	request artifactpypi.UVRunRequirement
 }
 
 func (r freshPythonUVRunExecutionResolver) ResolveExecutionDependencies(ctx context.Context, reference domain.ArtifactReference) (resolution domain.DependencyResolution, resultErr error) {
@@ -44,7 +45,15 @@ func (r freshPythonUVRunExecutionResolver) ResolveExecutionDependencies(ctx cont
 	if err != nil {
 		return resolution, err
 	}
-	selected, err := r.native.ResolveToolRun(ctx, requirement, r.command)
+	var selected sandbox.UVRunSelection
+	if r.request.Requirement() != "" {
+		if !r.request.Valid() || len(r.request.Extras()) == 0 || r.request.Reference() != reference || r.request.Base().Requirement() != requirement.Requirement() {
+			return resolution, errors.New("native extra request differs from the current execution reference")
+		}
+		selected, err = r.native.ResolveToolRunWithExtras(ctx, r.request, r.command)
+	} else {
+		selected, err = r.native.ResolveToolRun(ctx, requirement, r.command)
+	}
 	if err != nil {
 		return resolution, err
 	}
@@ -89,10 +98,17 @@ func (b pythonUVRunExecutionBinder) BindExecutionEntry(ctx context.Context, insp
 // are used with the real native-run selector. The old tool-install factory
 // remains a separate consumer with its original resolver identity.
 func newUVRunExecutionService(native *sandbox.UVResolver, command string, intake *artifactpypi.Intake, inspector *inspectionpypi.CompositeInspector, static *inspectionpypi.StaticInspector, backend *sandbox.PythonDynamicBackend, store *local.Store, staging *promotion.LocalStaging) (*application.ExecutionService, error) {
+	return newUVRunExecutionServiceWithExtras(native, command, artifactpypi.UVRunRequirement{}, intake, inspector, static, backend, store, staging)
+}
+
+func newUVRunExecutionServiceWithExtras(native *sandbox.UVResolver, command string, request artifactpypi.UVRunRequirement, intake *artifactpypi.Intake, inspector *inspectionpypi.CompositeInspector, static *inspectionpypi.StaticInspector, backend *sandbox.PythonDynamicBackend, store *local.Store, staging *promotion.LocalStaging) (*application.ExecutionService, error) {
+	if request.Requirement() != "" && (!request.Valid() || len(request.Extras()) == 0) {
+		return nil, errors.New("native extra execution requires a canonical root-extra request")
+	}
 	if native == nil || intake == nil || inspector == nil || static == nil || backend == nil || store == nil || staging == nil || artifactpypi.ValidateConsoleExecutionCommand(command) != nil {
 		return nil, errors.New("native run execution requires actual adapters and an explicit canonical console")
 	}
-	return newPythonNativeRunExecutionService(freshPythonUVRunExecutionResolver{native, command}, pythonUVRunExecutionBinder{static, command}, intake, inspector, static, backend, store, staging)
+	return newPythonNativeRunExecutionService(freshPythonUVRunExecutionResolver{native: native, command: command, request: request}, pythonUVRunExecutionBinder{static, command}, intake, inspector, static, backend, store, staging)
 }
 
 func newPythonNativeRunExecutionService(resolver application.ExecutionResolver, binder application.ExecutionEntryBinder, intake *artifactpypi.Intake, inspector *inspectionpypi.CompositeInspector, static *inspectionpypi.StaticInspector, backend *sandbox.PythonDynamicBackend, store *local.Store, staging *promotion.LocalStaging) (*application.ExecutionService, error) {

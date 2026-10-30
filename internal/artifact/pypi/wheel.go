@@ -94,6 +94,10 @@ type WheelInspection struct {
 	Files                             []WheelFile
 	RequiresPython                    string
 	RequiresDist, ImportNames         []string
+	// Retained only for UV run's requested-root-extra binding. It is not
+	// serialized inspection authority or an installed tool receipt.
+	providesExtra []string
+	distInfo      string
 	// NoImportSurface identifies no automatic Python import/startup role under the pinned
 	// surface (such as a metadata-only wheel or native/data-only wheel).
 	NoImportSurface      bool
@@ -139,7 +143,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	var uncompressed int64
 	var metadataFiles = map[string][]byte{}
 	var regularFiles []string
-	primaryDistInfo := wheelDistInfo(project, version)
+	primaryDistInfo := ""
 	hash := sha256.New()
 	if err := hashReaderAt(reader, size, hash); err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationDigest)
@@ -161,7 +165,12 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 		if !directory {
 			regularFiles = append(regularFiles, name)
 		}
-		if isPrimaryWheelMetadata(name, primaryDistInfo) {
+		metadataDirectory := strings.SplitN(name, "/", 2)[0]
+		if wheelDistInfoMatches(metadataDirectory, project, version) && isPrimaryWheelMetadata(name, metadataDirectory) {
+			if primaryDistInfo != "" && primaryDistInfo != metadataDirectory {
+				return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
+			}
+			primaryDistInfo = metadataDirectory
 			if entry.UncompressedSize64 > uint64(limits.MaxMetadata) {
 				return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 			}
@@ -175,7 +184,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	if len(metadataFiles) != 3 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	info, err := parseWheelMetadata(project, version, filename, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
+	info, err := parseWheelMetadata(project, version, filename, primaryDistInfo, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
 	if err != nil {
 		return WheelInspection{}, err
 	}
@@ -188,7 +197,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	return info, nil
 }
 
-func parseWheelMetadata(project, version, filename string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits) (WheelInspection, error) {
+func parseWheelMetadata(project, version, filename, distInfo string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits) (WheelInspection, error) {
 	if len(metadata) == 0 || len(wheel) == 0 || len(record) == 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
@@ -213,7 +222,9 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if !hasWheelVer || wheelVer == "" || !supportedWheelVersion(wheelVer) {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	distInfo := wheelDistInfo(project, version)
+	if !wheelDistInfoMatches(distInfo, project, version) {
+		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
+	}
 	for _, name := range []string{distInfo + "/METADATA", distInfo + "/WHEEL", distInfo + "/RECORD"} {
 		entry, ok := entries[name]
 		if !ok {
@@ -288,6 +299,8 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 		Files:            files,
 		RequiresPython:   reqPy,
 		RequiresDist:     metaHeaders.all("requires-dist"),
+		providesExtra:    metaHeaders.all("provides-extra"),
+		distInfo:         distInfo,
 		ImportNames:      imports,
 		NoImportSurface:  noImportSurface,
 		EntryPoints:      entryPoints,
@@ -1155,6 +1168,17 @@ func streamRecordFile(file *zip.File) (int64, string, error) {
 
 func wheelDistInfo(project, version string) string {
 	return strings.ReplaceAll(project, "-", "_") + "-" + strings.ReplaceAll(version, "-", "_") + ".dist-info"
+}
+
+// Older wheels may retain uppercase letters or dots in their distribution
+// component. Normalize identity only; callers retain the exact measured path.
+func wheelDistInfoMatches(directory, project, version string) bool {
+	if path.Base(directory) != directory || !strings.HasSuffix(directory, ".dist-info") {
+		return false
+	}
+	distribution, foundVersion, ok := strings.Cut(strings.TrimSuffix(directory, ".dist-info"), "-")
+	normalized, err := NormalizeProjectName(distribution)
+	return ok && err == nil && normalized == project && version != "" && foundVersion == strings.ReplaceAll(version, "-", "_")
 }
 
 func isPrimaryWheelMetadata(name, distInfo string) bool {

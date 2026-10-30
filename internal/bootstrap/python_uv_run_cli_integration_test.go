@@ -47,13 +47,14 @@ func runPythonNativeExecutionCLICases(t *testing.T, pipx bool) {
 		return result
 	}
 	seenOperations, seenRuns := map[string]bool{}, map[string]bool{}
-	rows := []struct {
+	type nativeRunCLICase struct {
 		path, tail                []string
 		language, output, command string
 		show                      bool
 		code, nodes               int
 		refused                   bool
-	}{
+	}
+	rows := []nativeRunCLICase{
 		{[]string{"uvx"}, []string{"cowsay@6.1", "--", "-t", "private-native-cli-body"}, "en", "json", "cowsay", false, 0, 1, false},
 		{[]string{"uv", "tool", "run"}, []string{"cowsay==6.1", "--", "--haa-invalid-option"}, "ko", "json", "cowsay", true, 2, 1, false},
 		{[]string{"uvx"}, []string{"cowsay@6.1", "--", "--help"}, "ko", "human", "cowsay", true, 0, 1, false},
@@ -74,6 +75,17 @@ func runPythonNativeExecutionCLICases(t *testing.T, pipx bool) {
 		sole := rows[3]
 		sole.tail = []string{"python-slugify==8.0.4", "--", "taking", "input", "from", "the", "command", "line"}
 		rows = append(rows, sole)
+	}
+	if !pipx {
+		rows = append(rows,
+			nativeRunCLICase{[]string{"uvx"}, []string{"--from", "python-slugify[unidecode]==8.0.4", "slugify", "--", "taking", "input", "from", "the", "command", "line"}, "en", "json", "slugify", true, 0, 3, false},
+		)
+		nonzero := rows[len(rows)-1]
+		nonzero.path, nonzero.tail, nonzero.code, nonzero.language = []string{"uv", "tool", "run"}, []string{"--from", "python-slugify[unidecode]@8.0.4", "slugify", "--", "--haa-invalid-option"}, 2, "ko"
+		rows = append(rows, nonzero)
+		unknown := nonzero
+		unknown.path, unknown.tail, unknown.code, unknown.nodes, unknown.refused, unknown.show, unknown.language = []string{"uvx"}, []string{"--from", "python-slugify[haa-unknown-extra]==8.0.4", "slugify"}, 1, 0, true, false, "en"
+		rows = append(rows, unknown)
 	}
 	expectedOperations, expectedRuns := 0, 0
 	for i, row := range rows {
@@ -135,7 +147,7 @@ func runPythonNativeExecutionCLICases(t *testing.T, pipx bool) {
 				if row.show != (report.Output.Encoding == "ASCII_QUOTED") || !row.show && (report.Output.Stdout != "" || report.Output.Stderr != "") {
 					t.Fatal("private output or explicit ASCII choice lost")
 				}
-				if i == 3 && !strings.Contains(report.Output.Stdout, "taking-input-from-the-command-line") {
+				if (i == 3 || !pipx && i == 5) && !strings.Contains(report.Output.Stdout, "taking-input-from-the-command-line") {
 					t.Fatal("different package/console public program result missing")
 				}
 			} else if json.Valid(out.Bytes()) || !strings.Contains(out.String(), "CONFIRMED") || !strings.Contains(out.String(), "NOT_REQUESTED") || !strings.Contains(out.String(), "검역") || !strings.Contains(out.String(), "ASCII_QUOTED") || !strings.Contains(out.String(), "usage:") {
@@ -189,6 +201,9 @@ func runPythonNativeExecutionCLICases(t *testing.T, pipx bool) {
 					seenRuns[entry.Run] = true
 					names[entry.Name] = true
 					t.Logf(sourceMarker+" case=%d name=%s version=%s sha256=%s evidence=%d", i+1, entry.Name, entry.Version, entry.SHA256, len(entry.Evidence))
+				}
+				if !pipx && (i == 5 || i == 6) && (!names["python-slugify"] || !names["text-unidecode"] || !names["unidecode"]) {
+					t.Fatal("requested root extra did not receive whole three-wheel approval")
 				}
 				if (i == 3 || pipx && i == 5) && (!names["python-slugify"] || !names["text-unidecode"]) {
 					t.Fatal("independent different package/console closure missing")

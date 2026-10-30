@@ -38,7 +38,7 @@ func InspectConsoleExecutionWheel(artifact domain.AcquiredArtifact, reader io.Re
 	if info.Project != id.Name() || info.Version != id.Version() || info.ObservedSHA256 != artifact.Digest().String() || info.DeclaredSHA256 != artifact.Digest().String() {
 		return ConsoleExecutionInventory{}, errConsoleExecutionEntry
 	}
-	metadataPath := wheelDistInfo(info.Project, info.Version) + "/entry_points.txt"
+	metadataPath := info.distInfo + "/entry_points.txt"
 	var metadata WheelFile
 	matches := 0
 	for _, file := range info.Files {

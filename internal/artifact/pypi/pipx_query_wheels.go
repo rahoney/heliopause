@@ -15,7 +15,7 @@ func (l UVLock) BindPipxQueryWheels(inputs []UVWheelInput, pages []SimpleProject
 	if err != nil || root == "" || len(l.packages) == 0 {
 		return domain.LockedDependencyGraph{}, errors.New("pipx pre-query input requires a complete single-root selection")
 	}
-	checked, err := bindUVSelectedWheelsWithSurface(l.packages, l.python, root, inputs, pages, target, limits, validatePipxMetadataSurface)
+	checked, err := bindUVSelectedWheelsWithSurface(l.packages, l.python, root, nil, inputs, pages, target, limits, validatePipxMetadataSurface)
 	if err != nil {
 		return domain.LockedDependencyGraph{}, err
 	}

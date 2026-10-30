@@ -503,6 +503,12 @@ func isFinalVersionForProfile(value string, profile SourceProfile) bool {
 }
 
 func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython string, activeExtras []string) (Candidate, error) {
+	return parseReportCandidateWithDependencies(item, profile, activeExtras, func(value string) (string, bool, error) {
+		return parseDeclaredDependencyForProfileWithExtras(value, profile, expectedPython, activeExtras)
+	})
+}
+
+func parseReportCandidateWithDependencies(item pipInstall, profile SourceProfile, activeExtras []string, dependencyFor func(string) (string, bool, error)) (Candidate, error) {
 	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
 	// pip's stable installation-report schema requires archive_info.hashes.
 	// Older pip versions also emitted the legacy singular hash field; when it
@@ -538,7 +544,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, active, err := parseDeclaredDependencyForProfileWithExtras(requirement, profile, expectedPython, activeExtras)
+		dependency, active, err := dependencyFor(requirement)
 		if err != nil {
 			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata: %w", unsupportedRequirementDiagnostic(project, requirement, err))
 		}

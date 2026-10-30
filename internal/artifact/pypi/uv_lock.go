@@ -186,14 +186,14 @@ func (l UVLock) BindWheels(inputs []UVWheelInput, pages []SimpleProject, target 
 }
 
 func bindUVSelectedWheels(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
-	return bindUVSelectedWheelsWithSurface(packages, python, root, inputs, pages, target, limits, nil)
+	return bindUVSelectedWheelsWithSurface(packages, python, root, nil, inputs, pages, target, limits, nil)
 }
 
-func bindUVSelectedWheelsWithSurface(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits, surface func(WheelInspection) error) ([]Candidate, error) {
+func bindUVSelectedWheelsWithSurface(packages []UVLockedPackage, python, root string, rootExtras []string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits, surface func(WheelInspection) error) ([]Candidate, error) {
 	if len(pages) != len(packages) {
 		return nil, errors.New("uv selected wheel set is incomplete")
 	}
-	candidates, err := inspectUVArchiveCandidates(packages, python, root, inputs, target, limits, surface)
+	candidates, err := inspectUVArchiveCandidates(packages, python, root, rootExtras, inputs, target, limits, surface)
 	if err != nil {
 		return nil, err
 	}
@@ -211,10 +211,10 @@ func bindUVSelectedWheelsWithSurface(packages []UVLockedPackage, python, root st
 }
 
 func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
-	return inspectUVArchiveCandidates(packages, python, root, inputs, target, limits, nil)
+	return inspectUVArchiveCandidates(packages, python, root, nil, inputs, target, limits, nil)
 }
 
-func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits, collect func(WheelInspection) error) ([]Candidate, error) {
+func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string, rootExtras []string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits, collect func(WheelInspection) error) ([]Candidate, error) {
 	if len(inputs) != len(packages) {
 		return nil, errors.New("uv selected wheel set is incomplete")
 	}
@@ -268,7 +268,11 @@ func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string,
 			}
 			// Reuse metadata/marker normalization, not pip resolution or a fake pip
 			// report. These fields come only from the digest-validated wheel above.
-			candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
+			if item.Name == root && len(rootExtras) != 0 {
+				candidate, err = candidateFromUVRunWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, rootExtras)
+			} else {
+				candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -387,10 +391,14 @@ func selectUVInstalledWheels(packages []UVLockedPackage, python string, body []b
 
 // Both native selection and complete-project static preparation normalize real wheel metadata here.
 func candidateFromWheelMetadata(inspection WheelInspection, distributionURL, declaredSHA, python string, requested bool) (Candidate, error) {
+	return parseReportCandidate(wheelCandidateMetadata(inspection, distributionURL, declaredSHA, requested), PublicPyPIProfile(), python, nil)
+}
+
+func wheelCandidateMetadata(inspection WheelInspection, distributionURL, declaredSHA string, requested bool) pipInstall {
 	metadata := pipInstall{Requested: requested}
 	metadata.DownloadInfo.URL = distributionURL
 	metadata.DownloadInfo.ArchiveInfo.Hashes = map[string]string{"sha256": declaredSHA}
 	metadata.Metadata.Name, metadata.Metadata.Version = inspection.Project, inspection.Version
 	metadata.Metadata.RequiresPython, metadata.Metadata.RequiresDist = inspection.RequiresPython, inspection.RequiresDist
-	return parseReportCandidate(metadata, PublicPyPIProfile(), python, nil)
+	return metadata
 }

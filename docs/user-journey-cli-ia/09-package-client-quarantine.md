@@ -369,21 +369,27 @@ Unknown option/operation과 빠진·중복·상대·alias·겹친 경로는 runt
 ### P6 UVx와 native tool run 초기 실행 lane
 
 `helox uvx [--from <package>] <tool-or-command> [--] [args...]`와
-`helox uv tool run`은 같은 public PyPI package-only 실행 요청을 사용한다. Bare 또는
+`helox uv tool run`은 같은 public PyPI single-primary 실행 요청을 사용한다. Bare 또는
 정확한 `name@version`/`name==version`을 사용하며 package와 console 이름이 다르면
-`--from`을 command 앞에 둔다. HAA/global 옵션은 package·command 앞, 뒤는 literal argv다.
+`--from`을 command 앞에 둔다. `name[extra]==version`/`name[extra]@version`은 primary
+wheel이 선언한 root extras를 선택한다. 각 extra의 실제 metadata edge/조건과 선택된 원본
+전체를 함께 검증하며 없는 extra·불완전 set·지원하지 않는 marker는 거부한다.
+HAA/global 옵션은 package·command 앞, 뒤는 literal argv다.
 바로 뒤 `--` 하나만 구분자로 소비하며 guest `--help`도 program 인자다.
 
 매번 native UV의 새 isolated 선택을 whole 원본·startup gate와 결합하고 기존 current
 검사·Evidence·Policy 승인 뒤 approved 원본 console을 고정 Python의 readonly guest에서
 실행한다. Native cache/RECORD는 승인·소유권이 아니다. Linux amd64만 지원하며 interpreter
-요청·runtime 변경/다운로드·extras/추가 package·local/VCS/URL/custom index는 거부한다.
+요청·runtime 변경/다운로드·독립 추가 package(`--with`)·전이 dependency extras·local/VCS/URL/custom index는 거부한다.
 Host project/HOME/credential·network·stdin/TTY·generated-file export는 제공하지 않는다.
 기본 출력은 byte count이며 `--show-output`은 stream별 최대1MiB를 untrusted ASCII quoted
 text로 표시한다. Argv128/32KiB·기존 실행/cleanup 한도와 별도 결과 축을 재사용한다.
 
 예: `helox --output json uv tool run --show-output --from python-slugify==8.0.4 slugify -- hello world`.
-현재 local qualification과 hosted·일반 동등성의 남은 범위는 [D7 receipt](../planning/evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json)가 소유한다.
+기본 lane은 [D7 receipt](../planning/evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json),
+root extras의 실제 3-wheel·두 alias와 remaining hosted/일반 동등성 범위는
+[H1 receipt](../planning/evidence/package-client-quarantine/p6h1-uvx-root-extras-local-20261030.json)가 소유한다.
+예: `helox uvx --from python-slugify[unidecode]==8.0.4 slugify -- hello world`.
 
 ### P6 pipx run 초기 실행 lane
 

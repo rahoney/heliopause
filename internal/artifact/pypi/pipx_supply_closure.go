@@ -97,7 +97,7 @@ func bindPipxSupplyClosure(packages []UVLockedPackage, inputs []UVWheelInput, pa
 	}
 	var expanded int64
 	target := WheelTarget{runtimeidentity.PythonInterpreterTag, runtimeidentity.PythonABITag, runtimeidentity.PythonPlatformTag}
-	candidates, err := inspectUVArchiveCandidates(packages, runtimeidentity.PythonVersion, "pipx", inputs, target, policy.WheelLimits(), func(w WheelInspection) error {
+	candidates, err := inspectUVArchiveCandidates(packages, runtimeidentity.PythonVersion, "pipx", nil, inputs, target, policy.WheelLimits(), func(w WheelInspection) error {
 		if err := validatePipxMetadataSurface(w); err != nil {
 			return err
 		}

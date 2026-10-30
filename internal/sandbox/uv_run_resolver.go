@@ -69,7 +69,20 @@ func uvRunPreparedTerminal(output []byte, err error) bool {
 // ResolveToolRun independently binds original archives before native Python
 // queries. Native installed files stay DATA; later inspection and execution
 // must consume the same original graph through their existing current owners.
-func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpypi.UpgradeRequirement, command string) (result UVRunSelection, resultErr error) {
+func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpypi.UpgradeRequirement, command string) (UVRunSelection, error) {
+	return r.resolveToolRun(ctx, requirement, artifactpypi.UVRunRequirement{}, command)
+}
+
+// ResolveToolRunWithExtras selects the same connected primary graph with its
+// explicitly requested root extras. It does not approve native selection DATA.
+func (r *UVResolver) ResolveToolRunWithExtras(ctx context.Context, request artifactpypi.UVRunRequirement, command string) (UVRunSelection, error) {
+	if !request.Valid() || len(request.Extras()) == 0 {
+		return UVRunSelection{}, errors.New("UV extra selection requires a canonical root-extra request")
+	}
+	return r.resolveToolRun(ctx, request.Base(), request, command)
+}
+
+func (r *UVResolver) resolveToolRun(ctx context.Context, requirement artifactpypi.UpgradeRequirement, request artifactpypi.UVRunRequirement, command string) (result UVRunSelection, resultErr error) {
 	if ctx == nil || r == nil || r.reader == nil {
 		return UVRunSelection{}, errors.New("UV isolated run resolver is unavailable")
 	}
@@ -85,7 +98,16 @@ func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpyp
 	if err := validateUVRunRequest(requirement, command); err != nil {
 		return UVRunSelection{}, err
 	}
-	frozen, err := r.prepareUVRunOriginal(ctx, requirement, command)
+	var frozen *pipxNativeInput
+	var err error
+	if len(request.Extras()) != 0 {
+		frozen, err = r.preparePythonRunOriginalWithExtras(ctx, requirement, request)
+		if err == nil {
+			_, _, err = uvRunConsoleOriginal(frozen, command)
+		}
+	} else {
+		frozen, err = r.prepareUVRunOriginal(ctx, requirement, command)
+	}
 	if err != nil {
 		return UVRunSelection{}, err
 	}
@@ -106,12 +128,23 @@ func (r *UVResolver) prepareUVRunOriginal(ctx context.Context, requirement artif
 }
 
 func (r *UVResolver) preparePythonRunOriginal(ctx context.Context, requirement artifactpypi.UpgradeRequirement) (*pipxNativeInput, error) {
-	native, err := r.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
+	return r.preparePythonRunOriginalWithExtras(ctx, requirement, artifactpypi.UVRunRequirement{})
+}
+
+func (r *UVResolver) preparePythonRunOriginalWithExtras(ctx context.Context, requirement artifactpypi.UpgradeRequirement, request artifactpypi.UVRunRequirement) (*pipxNativeInput, error) {
+	reference, text := requirement.Reference(), requirement.Requirement()
+	if len(request.Extras()) != 0 {
+		if !request.Valid() || request.Base().Requirement() != requirement.Requirement() {
+			return nil, errPipxNativeInput
+		}
+		reference, text = request.Reference(), request.Requirement()
+	}
+	native, err := r.resolveNativeSelection(ctx, reference, text)
 	if err != nil {
 		return nil, err
 	}
 	runtime := PinnedPythonRuntime()
-	lock, err := artifactpypi.ParseUVLock(requirement.Reference(), native.lock, runtime.PythonVersion)
+	lock, err := artifactpypi.ParseUVLock(reference, native.lock, runtime.PythonVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +156,7 @@ func (r *UVResolver) preparePythonRunOriginal(ctx context.Context, requirement a
 	var frozen *pipxNativeInput
 	if err := r.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var freezeErr error
-		frozen, freezeErr = freezePipxNativeInput(ctx, lock, inputs, pages)
+		frozen, freezeErr = freezePythonRunNativeInput(ctx, lock, inputs, pages, request)
 		return freezeErr
 	}); err != nil {
 		return nil, err
@@ -140,6 +173,13 @@ func (r *UVResolver) resolveFrozenUVToolRun(ctx context.Context, requirement art
 		args, err := uvRunPreparationArguments(requirement, command)
 		if err != nil {
 			return uvNativeOutput{}, err
+		}
+		if frozen.uvRunRequest != "" {
+			request, err := artifactpypi.ParseUVRunRequirement(frozen.uvRunRequest)
+			if err != nil || !frozen.valid() || request.Base().Requirement() != requirement.Requirement() {
+				return uvNativeOutput{}, errPipxNativeInput
+			}
+			args[5] = request.Requirement()
 		}
 		output, runErr := r.reader.runner.Output(selection, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, args...)...)
 		if !uvRunPreparedTerminal(output, runErr) {
@@ -194,12 +234,20 @@ func pythonRunSelectionResolution(ctx context.Context, requirement artifactpypi.
 	if pipx {
 		schema, runtime = "helox.pipx-isolated-run-selection/v1", "pipx-run-isolated:"+PipxResolverRuntimeIdentity()
 	}
+	requestText := requirement.Requirement()
+	if frozen.uvRunRequest != "" {
+		request, err := artifactpypi.ParseUVRunRequirement(frozen.uvRunRequest)
+		if err != nil || pipx || request.Base().Requirement() != requestText || !frozen.valid() {
+			return domain.DependencyResolution{}, errPipxNativeInput
+		}
+		schema, requestText = "helox.uv-isolated-run-selection/v2", request.Requirement()
+	}
 	census := sha256.Sum256(data)
 	descriptor := struct {
 		Schema, Request, Original, Command, NativeUnapprovedDataSHA256 string
 		Packages                                                       []artifactpypi.UVLockedPackage
 		Console                                                        artifactpypi.WheelFile
-	}{schema, requirement.Requirement(), frozen.id, entry.Command(), hex.EncodeToString(census[:]), frozen.lock.Packages(), entry.Metadata()}
+	}{schema, requestText, frozen.id, entry.Command(), hex.EncodeToString(census[:]), frozen.lock.Packages(), entry.Metadata()}
 	body, err := json.Marshal(descriptor)
 	if err != nil {
 		return domain.DependencyResolution{}, err

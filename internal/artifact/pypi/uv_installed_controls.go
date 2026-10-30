@@ -61,7 +61,7 @@ func readUVInstalledWheelControl(control UVInstalledWheelControls) (uvInstalledW
 	rawName, _ := metadata.first("name")
 	name, err := NormalizeProjectName(rawName)
 	version, _ := metadata.first("version")
-	if err != nil || control.DistInfo != wheelDistInfo(name, version) {
+	if err != nil || !wheelDistInfoMatches(control.DistInfo, name, version) {
 		return uvInstalledWheelSnapshot{}, errors.New("uv installed dist-info identity differs from metadata")
 	}
 	wheel, err := parseRFC822Metadata(control.Wheel, defaultWheelMaxMetadata)

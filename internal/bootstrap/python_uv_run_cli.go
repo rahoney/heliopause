@@ -27,7 +27,18 @@ type pythonUVRunCLI struct {
 	staging   *promotion.LocalStaging
 }
 
-func (r pythonUVRunCLI) Run(ctx context.Context, request application.ExecutionPreparationRequest) (result application.ExecutionResult, resultErr error) {
+func (r pythonUVRunCLI) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
+	return r.run(ctx, request, artifactpypi.UVRunRequirement{})
+}
+
+func (r pythonUVRunCLI) RunUVWithExtras(ctx context.Context, request application.ExecutionPreparationRequest, selection artifactpypi.UVRunRequirement) (application.ExecutionResult, error) {
+	if !selection.Valid() || len(selection.Extras()) == 0 || selection.Reference() != request.Reference() {
+		return application.ExecutionResult{}, errors.New("native CLI extra selection differs from its execution request")
+	}
+	return r.run(ctx, request, selection)
+}
+
+func (r pythonUVRunCLI) run(ctx context.Context, request application.ExecutionPreparationRequest, selection artifactpypi.UVRunRequirement) (result application.ExecutionResult, resultErr error) {
 	if ctx == nil {
 		return result, errors.New("native CLI execution requires context")
 	}
@@ -35,7 +46,7 @@ func (r pythonUVRunCLI) Run(ctx context.Context, request application.ExecutionPr
 	if ctx.Err() != nil {
 		return result, ctx.Err()
 	}
-	service, err := newUVRunExecutionService(r.native, request.Command(), r.intake, r.inspector, r.static, r.backend, r.store, r.staging)
+	service, err := newUVRunExecutionServiceWithExtras(r.native, request.Command(), selection, r.intake, r.inspector, r.static, r.backend, r.store, r.staging)
 	if err != nil {
 		return result, err
 	}

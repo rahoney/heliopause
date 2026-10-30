@@ -16,7 +16,7 @@ func (r ToolReceipt) BindWheels(lock UVLock, inputs []UVWheelInput, pages []Simp
 		return domain.LockedDependencyGraph{}, errors.New("tool receipt differs from the frozen native root")
 	}
 	rootSeen := false
-	candidates, err := inspectUVArchiveCandidates(lock.packages, lock.python, root, inputs, target, limits, func(wheel WheelInspection) error {
+	candidates, err := inspectUVArchiveCandidates(lock.packages, lock.python, root, nil, inputs, target, limits, func(wheel WheelInspection) error {
 		if r.client == "pipx" {
 			if err := validatePipxMetadataSurface(wheel); err != nil {
 				return err

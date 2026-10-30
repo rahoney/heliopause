@@ -58,6 +58,15 @@ type pipxInputTransport struct {
 	fail  error
 }
 
+func TestUVRunExtrasCannotBeAddedAfterOriginalFreeze(t *testing.T) {
+	frozen, _, _, _, _ := pipxFrozenInputFixture(t, nil)
+	frozen.uvRunRequest = "probe[feature]==1.0"
+	transport := &pipxInputTransport{}
+	if err := frozen.introduce(context.Background(), transport, strings.Repeat("a", 64)); err == nil || transport.calls != 0 {
+		t.Fatal("request substitution reached native transport without original-extra binding")
+	}
+}
+
 func (f *pipxInputTransport) Output(context.Context, string, ...string) ([]byte, error) {
 	return nil, errors.New("process execution forbidden")
 }
