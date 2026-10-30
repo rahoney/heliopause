@@ -40,12 +40,12 @@
   "independent_local_next": "P6-E2 existing pipx run owner/safe native terminal/whole original entry collision review; no push that cancels frozen CI437",
   "authorization": "After exact public payload approval request and initial automatic rejection, user explicitly instructed CI at an important validation boundary; common observer change meets that condition. Same normal push was approved/executed; no workaround.",
   "last_consumed_poll": {
-    "number": 3,
-    "actual_query_started_at": "2026-10-30T03:34:17.177251+00:00",
-    "actual_query_ended_at": "2026-10-30T03:34:18.089729+00:00",
+    "number": 5,
+    "actual_query_started_at": "2026-10-30T04:14:19.587907+00:00",
+    "actual_query_ended_at": "2026-10-30T04:14:20.730664+00:00",
     "result": "8SUCCESS/LinuxIN_PROGRESS; Required not yet created",
-    "next_due_at": "2026-10-30T03:54:18.089744+00:00",
-    "original": "docs/github-logs/package-client-quarantine-20261021/ci437-poll03-summary.json"
+    "next_due_at": "2026-10-30T04:34:20.730680+00:00",
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci437-poll05-summary.json"
   },
   "completed8_source_proof": {
     "checkout": "e5a153efd6be3dbecc7ddb9e4aca938aaa88a188",

@@ -33,7 +33,7 @@ func (o *uvRunActualObserver) wrap(reader TraceReader, phase string, err error) 
 	if err != nil {
 		return nil, err
 	}
-	trace := &uvRunActualTrace{TraceReader: reader, phase: phase, reject: o.rejectFrozen && phase == "frozen-offline", kinds: map[string]uint64{}}
+	trace := &uvRunActualTrace{TraceReader: reader, phase: phase, reject: o.rejectFrozen && (phase == "frozen-offline" || phase == pipxNativeResolverProfile), kinds: map[string]uint64{}}
 	o.traces = append(o.traces, trace)
 	return trace, nil
 }

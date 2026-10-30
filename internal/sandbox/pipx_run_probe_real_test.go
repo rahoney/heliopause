@@ -4,87 +4,14 @@ package sandbox
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"io"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/hosttool"
 	"os"
-	"os/exec"
-	"path"
-	"strings"
 	"testing"
 	"time"
-
-	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 )
-
-const pipxRunProbeCommand = "helox-pipx-inert-query"
-
-// Diagnostic-only argv. The original reader and actual session remain the
-// existing production owners; this neither selects a program nor grants Policy.
-func pipxRunProbeArguments(frozen *pipxNativeInput, requirement artifactpypi.UpgradeRequirement, command string) ([]string, error) {
-	if validateUVRunRequest(requirement, command) != nil || !pipxNativeRequirementMatches(requirement, frozen) || requirement.Project() == pipxRunProbeCommand {
-		return nil, errPipxNativeInput
-	}
-	_, inspections, err := uvRunConsoleOriginal(frozen, command)
-	if err != nil {
-		return nil, err
-	}
-	for _, info := range inspections {
-		for _, ep := range info.Surface.EntryPointDetails {
-			if ep.Name == pipxRunProbeCommand && (ep.Group == "pipx.run" || ep.Group == "console_scripts" || ep.Group == "gui_scripts") {
-				return nil, errors.New("pipx inert query collides with an original entry point")
-			}
-		}
-		for _, script := range info.Surface.Scripts {
-			if path.Base(script) == pipxRunProbeCommand {
-				return nil, errors.New("pipx inert query collides with an original script")
-			}
-		}
-	}
-	installed, err := pipxNativeArguments(pipxNativeInstall, requirement)
-	if err != nil {
-		return nil, err
-	}
-	// Keep the existing isolated original-ZIP interpreter and fixed offline UV
-	// flags. Different app/spec names take the native Venv preparation branch.
-	args := append([]string(nil), installed[:6]...)
-	return append(args, "run", "--backend", "uv", "--python", "/usr/local/bin/python", "--no-cache", "--no-path-check", "--spec", requirement.Requirement(), installed[len(installed)-1], pipxRunProbeCommand), nil
-}
-
-func TestPipxRunPreparationSafety(t *testing.T) {
-	requirement, err := artifactpypi.ParseUpgradeRequirement("probe@1.0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, group := range []string{"", "pipx.run", "console_scripts", "gui_scripts", "other.group", "raw-script"} {
-		t.Run(group, func(t *testing.T) {
-			entries := "[console_scripts]\nprobe=probe:main\n"
-			extra := map[string][]byte{}
-			if group == "raw-script" {
-				extra["probe-1.0.data/scripts/"+pipxRunProbeCommand] = []byte("#!/usr/local/bin/python\nraise RuntimeError('must not execute')\n")
-			} else if group != "" {
-				if group != "console_scripts" {
-					entries += "[" + group + "]\n"
-				}
-				entries += pipxRunProbeCommand + "=probe:main\n"
-			}
-			extra["probe-1.0.dist-info/entry_points.txt"] = []byte(entries)
-			frozen, _, _, _, _ := pipxFrozenInputFixture(t, extra)
-			args, err := pipxRunProbeArguments(frozen, requirement, "probe")
-			allowed := group == "" || group == "other.group"
-			if allowed != (err == nil) || !allowed && len(args) != 0 {
-				t.Fatal("inert query role guard differs", group, err)
-			}
-			if allowed && (len(args) < 7 || args[5] != pipxNativeProgram || args[6] != "run" || args[len(args)-1] != pipxRunProbeCommand || strings.Contains(strings.Join(args[6:], " "), "/dev/null")) {
-				t.Fatal("query did not retain the fixed native frontend/terminal")
-			}
-		})
-	}
-}
 
 func TestLinuxPipxFrozenRunPreparationProbe(t *testing.T) {
 	if os.Getenv("HELOX_PIPX_RUN_PREPARATION_PROBE") != "1" {
@@ -104,18 +31,9 @@ func TestLinuxPipxFrozenRunPreparationProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	command, err := pipxRunProbeArguments(frozen, requirement, "userpath")
-	if err != nil {
-		t.Fatal(err)
-	}
 	body, err := os.ReadFile(os.Getenv("HELOX_PIPX_RUNTIME_ZIP"))
 	if err != nil {
 		t.Fatal(err)
-	}
-	spec, ok := nativeRuntimeToolIdentity(nativeRuntimePipx)
-	digest := sha256.Sum256(body)
-	if !ok || int64(len(body)) != spec.size || hex.EncodeToString(digest[:]) != spec.sha256 {
-		t.Fatal("native probe ZIP differs from the fixed supply")
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
@@ -138,90 +56,129 @@ func TestLinuxPipxFrozenRunPreparationProbe(t *testing.T) {
 	}
 	resources := &pipxActualResources{ObservationResourceClient: integrationObservationResources{client: client}}
 	runner := admissionAwareRunner(&pipxNativeSessionActualRunner{CommandRunner: executor})
-	runErr := func() (resultErr error) {
-		now := time.Now()
-		policy, err := observationPolicyForPython(artifactpypi.PublicPyPIProfile().ResourcePolicy(), pipxNativeResolverProfile, 0, now)
-		if err != nil {
-			return err
-		}
-		ledger, err := newObservationTransaction(policy, nil, now)
-		if err != nil {
-			return err
-		}
-		run, stop := context.WithDeadline(ctx, policy.wallDeadline)
-		defer stop()
-		uv, err := prepareUVTool(run, runner)
-		if err != nil {
-			return err
-		}
-		identity, err := domain.NewSandboxSessionID()
-		if err != nil {
-			return err
-		}
-		s := &pipxNativeSession{runner: runner, observer: supervisor.Observer(), resources: resources, transaction: identity.String(), ledger: ledger}
-		var nativeErr error
-		defer func() {
-			resultErr = errors.Join(resultErr, s.cleanup(), ctx.Err(), context.Cause(ctx))
-			if resultErr != nil {
-				resultErr = errors.Join(nativeErr, resultErr)
-			}
-		}()
-		s.lease, err = resources.Create(run, s.transaction, "pypi")
-		if err != nil {
-			return err
-		}
-		s.resourceCreated = true
-		if s.lease.CgroupParent == "" || s.lease.CPU < 0 {
-			return errors.New("invalid native probe resource lease")
-		}
-		if err = s.prepare(run, &pipxPreparedTool{body: body}, frozen); err != nil {
-			return err
-		}
-		if err = s.start(run, stop); err != nil {
-			return err
-		}
-		if !s.registered || s.watch == nil {
-			return errors.New("native probe lacks resource admission")
-		}
-		if err = uv.introduce(run, runner, s.reader.id); err != nil {
-			return err
-		}
-		if err = s.runtime.verifyTarget(run, runner, s.reader.id); err != nil {
-			return err
-		}
-		var output []byte
-		output, nativeErr = runner.(boundedCommandRunner).RunBounded(run, "docker", boundaryExecArguments(s.reader.id, boundaryPythonHandoffMode, command...)...)
-		t.Logf("pipx_run_preparation_output=%q", output[max(0, len(output)-4096):])
-		var terminal *exec.ExitError
-		expected := "'" + pipxRunProbeCommand + "' executable script not found in package '" + requirement.Project() + "'."
-		if !errors.As(nativeErr, &terminal) || !terminal.Exited() || terminal.ExitCode() <= 0 || !strings.Contains(string(output), expected) {
-			return errors.Join(errors.New("native pipx run did not reach the fixed missing-app terminal"), nativeErr)
-		}
-		_, err = readUVNativeTar(run, runner, s.reader.id, pythonSitePath+"/.", func(input io.Reader) (uvNativeOutput, error) {
-			facts, err := scanUVRunCensus(input, "userpath")
-			if err != nil {
-				return uvNativeOutput{}, err
-			}
-			body, err := json.Marshal(facts)
-			if err != nil {
-				return uvNativeOutput{}, err
-			}
-			t.Logf("pipx_run_preparation_census=%s", body)
-			return uvNativeOutput{}, nil
-		})
-		if err != nil {
-			return err
-		}
-		if err = s.data.verifyReader(run, runner, s.reader.id); err != nil {
-			return err
-		}
-		return s.wheels.verifyReader(run, runner, s.reader.id)
-	}()
+	selected, runErr := runPipxFrozenToolRun(ctx, runner, supervisor.Observer(), resources, &pipxPreparedTool{body: body}, frozen, requirement, "userpath")
+	entry := selected.Entry()
+	if runErr == nil && (!entry.Valid() || entry.Command() != "userpath" || len(selected.Resolution().Graph().Nodes()) != 2 || selected.Resolution().RuntimeIdentity() != "pipx-run-isolated:"+PipxResolverRuntimeIdentity() || len(selected.Resolution().ProjectControls()) != 0) {
+		t.Fatal("native DATA is not bound to the original console")
+	}
 	resources.mu.Lock()
 	creates, registers, closes, cpu := resources.creates, resources.registers, resources.closes, resources.cpu
 	resources.mu.Unlock()
-	t.Logf("pipx_run_probe original_graph=%d synthetic_lock=true creates=%d registers=%d closes=%d cpu_usec=%d observer_reason=%s selection=NOT_RETURNED Policy=NOT_RUN error=%v", len(frozen.graph.Nodes()), creates, registers, closes, cpu, integrationObserverFaultReason(supervisor), runErr)
+	t.Logf("pipx_run_probe original_graph=%d synthetic_lock=true creates=%d registers=%d closes=%d cpu_usec=%d observer_reason=%s selection=BOUND_DATA Policy=NOT_RUN error=%v", len(frozen.graph.Nodes()), creates, registers, closes, cpu, integrationObserverFaultReason(supervisor), runErr)
 	if runErr != nil || creates != 1 || registers != 1 || closes != 1 || cpu == 0 || cpu >= 13_000_000 || integrationObserverFaultReason(supervisor) != "" {
 		t.Fatal("native pipx run DATA preparation incomplete", runErr)
+	}
+}
+
+func TestPipxRunPreparationCensusBinding(t *testing.T) {
+	filename := os.Getenv("HELOX_PIPX_RUN_PREPARATION_CENSUS")
+	if filename == "" {
+		t.Skip("requires the recorded fixed-original preparation DATA census")
+	}
+	input := pipxDiagnosticFrozenInput(t)
+	frozen, err := freezePipxNativeInput(context.Background(), input.lock, input.inputs, input.pages)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var facts []uvRunCensusFact
+	if err := json.Unmarshal(body, &facts); err != nil {
+		t.Fatal(err)
+	}
+	entry, err := bindPipxRunConsoleData(frozen, "userpath", facts)
+	if err != nil || !entry.Valid() || entry.Command() != "userpath" {
+		t.Fatal("recorded native preparation differs from whole frozen original", err)
+	}
+}
+
+func TestPipxPublicToolRunResolverIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PIPX_TOOL_RUN_RESOLVER_INTEGRATION") != "1" || os.Geteuid() == 0 {
+		t.Fatal("declare ordinary-user production pipx run resolver qualification")
+	}
+	for _, mode := range []string{"normal", "incomplete-refused"} {
+		if !t.Run(mode, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+			supervisor := integrationObserverSupervisor(t)
+			defer func() {
+				if err := supervisor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
+			executor, err := hosttool.NewSystem(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := executor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
+			client, err := hosttool.NewSystemObservationResourceClient()
+			if err != nil {
+				t.Fatal(err)
+			}
+			resources := &pipxActualResources{ObservationResourceClient: integrationObservationResources{client: client}}
+			// Reuse the existing actual trace recorder and its bounded EOF fault.
+			observed := &uvRunActualObserver{TraceObserver: supervisor.Observer(), rejectFrozen: mode == "incomplete-refused"}
+			resolver, err := NewLinuxPipxResolverWithExecutorAndPolicy(executor, observed, integrationResolverPolicyService(t), resources)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := resolver.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
+			requirement, err := artifactpypi.ParseUpgradeRequirement("cowsay@6.1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			selected, resolveErr := resolver.ResolveToolRun(ctx, requirement, "cowsay")
+			entry, resolution := selected.Entry(), selected.Resolution()
+			if mode == "normal" {
+				if resolveErr != nil || !entry.Valid() || entry.Command() != "cowsay" || entry.Artifact().Digest().String() != "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a" || len(resolution.Graph().Nodes()) != 1 || len(resolution.ProjectControls()) != 0 || resolution.RuntimeIdentity() != "pipx-run-isolated:"+PipxResolverRuntimeIdentity() || resolution.LockfileDigest().String() == "" {
+					t.Fatal("production pipx selection/source/console differs", resolveErr)
+				}
+			} else if resolveErr == nil || entry.Valid() || len(resolution.Graph().Nodes()) != 0 {
+				t.Fatal("incomplete observation published pipx selection", resolveErr)
+			}
+			if len(observed.traces) < 3 {
+				t.Fatal("public source/native observation missing")
+			}
+			frozen, injected := 0, 0
+			for _, trace := range observed.traces {
+				if !trace.rawComplete || !trace.deliveredComplete && !trace.injected {
+					t.Fatal("unexpected actual incomplete trace", trace.phase)
+				}
+				if trace.phase == pipxNativeResolverProfile {
+					frozen++
+					for _, kind := range []string{"filesystem-outside-workspace", "network-attempt", "honeytoken-access", "process-exec-unexpected"} {
+						if trace.kinds[kind] != 0 {
+							t.Fatal("pipx offline boundary crossed", kind)
+						}
+					}
+				}
+				if trace.injected {
+					injected++
+				}
+				t.Logf("pipx_run_resolver_trace case=%s phase=%s raw_complete=%t delivered_complete=%t injected=%t events=%d bytes=%d kinds=%v", mode, trace.phase, trace.rawComplete, trace.deliveredComplete, trace.injected, trace.events, trace.bytes, trace.kinds)
+			}
+			if frozen != 1 || mode == "normal" && injected != 0 || mode == "incomplete-refused" && injected != 1 {
+				t.Fatal("native trace fault coverage differs")
+			}
+			resources.mu.Lock()
+			creates, registers, closes, cpu := resources.creates, resources.registers, resources.closes, resources.cpu
+			resources.mu.Unlock()
+			if creates != 1 || registers != 1 || closes != 1 || cpu == 0 || cpu >= 13_000_000 {
+				t.Fatal("native pipx accounting differs")
+			}
+			t.Logf("pipx_run_public case=%s graph=%d creates=%d registers=%d closes=%d cpu_usec=%d error=%v", mode, len(resolution.Graph().Nodes()), creates, registers, closes, cpu, errors.Join(resolveErr, ctx.Err()))
+		}) {
+			return
+		}
 	}
 }

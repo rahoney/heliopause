@@ -312,6 +312,55 @@ func runPipxNativeOperation(ctx context.Context, runner CommandRunner, observer 
 		operation == pipxNativeUpgrade && (original == nil || !original.Request().SameConstraints(requirement)) {
 		return result, errors.New("pipx native operation input differs")
 	}
+	command, err := pipxNativeArguments(operation, requirement)
+	if err != nil {
+		return result, err
+	}
+	return withPipxNativeSession(ctx, runner, observer, resources, tool, frozen, func(runCtx context.Context, s *pipxNativeSession) (result pipxNativeOutput, resultErr error) {
+		preparedRunner := s.runner
+		var err error
+		if original != nil {
+			if err = introducePipxToolUpgradeInput(runCtx, preparedRunner.(inputCommandRunner), s.reader.id, *original, controls); err != nil {
+				return result, uvReaderFailure{"pipx native original preparation failed", err}
+			}
+		}
+		// Successful external admission and target exit are necessary, but the
+		// complete trace/accounting/cleanup reconciliation in defer is mandatory.
+		if _, err = preparedRunner.(boundedCommandRunner).RunBounded(runCtx, "docker", boundaryExecArguments(s.reader.id, boundaryPythonHandoffMode, command...)...); err != nil {
+			operationName := "install"
+			if operation == pipxNativeUpgrade {
+				operationName = "upgrade"
+			}
+			return result, uvReaderFailure{"pipx native " + operationName + " failed", err}
+		}
+		if err = s.data.verifyReader(runCtx, preparedRunner, s.reader.id); err != nil {
+			return result, err
+		}
+		if err = s.wheels.verifyReader(runCtx, preparedRunner, s.reader.id); err != nil {
+			return result, err
+		}
+		if err = s.output.verifyAttachments(runCtx, preparedRunner, map[string]bool{s.reader.id: false}); err != nil {
+			return result, err
+		}
+		result, err = readPipxNativeOutput(runCtx, preparedRunner, s.reader.id, requirement.Project(), frozen)
+		if err != nil {
+			return pipxNativeOutput{}, err
+		}
+		if !result.receipt.Requirement().SameConstraints(requirement) {
+			return pipxNativeOutput{}, errors.New("pipx native request changed")
+		}
+		return result, nil
+	})
+}
+
+// Install, upgrade and isolated preparation share this existing lifecycle owner.
+func withPipxNativeSession(ctx context.Context, runner CommandRunner, observer TraceObserver, resources ObservationResourceClient, tool *pipxPreparedTool, frozen *pipxNativeInput, execute func(context.Context, *pipxNativeSession) (pipxNativeOutput, error)) (result pipxNativeOutput, resultErr error) {
+	if ctx == nil || runner == nil || observer == nil || resources == nil || tool == nil || frozen == nil || !frozen.valid() || execute == nil {
+		return result, errors.New("pipx native session input unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return result, err
+	}
 	if _, ok := observer.(profiledTraceObserver); !ok {
 		return result, errors.New("pipx native profile observer unavailable")
 	}
@@ -338,10 +387,6 @@ func runPipxNativeOperation(ctx context.Context, runner CommandRunner, observer 
 	digest := sha256.Sum256(tool.body)
 	if !ok || int64(len(tool.body)) != spec.size || hex.EncodeToString(digest[:]) != spec.sha256 {
 		return result, errPipxToolSupply
-	}
-	command, err := pipxNativeArguments(operation, requirement)
-	if err != nil {
-		return result, err
 	}
 	now := time.Now()
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
@@ -398,37 +443,7 @@ func runPipxNativeOperation(ctx context.Context, runner CommandRunner, observer 
 	if err = s.runtime.verifyTarget(runCtx, preparedRunner, s.reader.id); err != nil {
 		return result, err
 	}
-	if original != nil {
-		if err = introducePipxToolUpgradeInput(runCtx, preparedRunner.(inputCommandRunner), s.reader.id, *original, controls); err != nil {
-			return result, uvReaderFailure{"pipx native original preparation failed", err}
-		}
-	}
-	// Successful external admission and target exit are necessary, but the
-	// complete trace/accounting/cleanup reconciliation in defer is mandatory.
-	if _, err = preparedRunner.(boundedCommandRunner).RunBounded(runCtx, "docker", boundaryExecArguments(s.reader.id, boundaryPythonHandoffMode, command...)...); err != nil {
-		operationName := "install"
-		if operation == pipxNativeUpgrade {
-			operationName = "upgrade"
-		}
-		return result, uvReaderFailure{"pipx native " + operationName + " failed", err}
-	}
-	if err = s.data.verifyReader(runCtx, preparedRunner, s.reader.id); err != nil {
-		return result, err
-	}
-	if err = s.wheels.verifyReader(runCtx, preparedRunner, s.reader.id); err != nil {
-		return result, err
-	}
-	if err = s.output.verifyAttachments(runCtx, preparedRunner, map[string]bool{s.reader.id: false}); err != nil {
-		return result, err
-	}
-	result, err = readPipxNativeOutput(runCtx, preparedRunner, s.reader.id, requirement.Project(), frozen)
-	if err != nil {
-		return pipxNativeOutput{}, err
-	}
-	if !result.receipt.Requirement().SameConstraints(requirement) {
-		return pipxNativeOutput{}, errors.New("pipx native request changed")
-	}
-	return result, nil
+	return execute(runCtx, s)
 }
 
 func (s *pipxNativeSession) collectTrace(ctx context.Context) error {

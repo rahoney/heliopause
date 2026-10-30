@@ -103,3 +103,51 @@ Census83의 cache c3dc012f54be29e는 nonrelocatable wrapper·일반 UV pyvenv.cf
 pipx_metadata.json을 가진 unapproved DATA다. Native metadata를 가짜 ToolReceipt로
 승격하지 않으며 E2-B의 전체 원본·control·console 결합, production resolver·현재 앱/CLI는
 여전히 MISSING이다. 실행 중인 CI437에는 이 새 source가 없고 새 push/CI는 하지 않았다.
+
+## E2-B 변경 전 audit — 임시 결과와 기존 세션의 실제 소비
+
+Baseline a9bfc3a의 E2-A 준비 진단을 재사용한다. 기존 bindUVRunConsoleData의 whole
+frozen wheel/control·payload·별칭·선택 wrapper 결합은 IMPLEMENTED/WIRED=YES,
+QUALIFIED/ACCEPTANCE_CLOSED는 UV named 범위만 YES다. Pipx cache15의 일반 cfg와
+nonrelocatable wrapper 연결은 WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. 기존
+ValidateUVNativeConsoleScript가 이 wrapper를 이미 구현하므로 새 matcher를 만들지 않는다.
+UV와 pipx 두 소비자가 같은 기존 결합 body를 사용하고 환경 형상·cfg·scaffold·wrapper
+recipe의 실제 차이만 분기한다. Native pipx_metadata는 bounded DATA이며 ToolReceipt나
+선택 authority로 해석하지 않는다.
+
+기존 runPipxNativeOperation의 resource/admission/start/trace/cleanup은 모두 구현·연결된
+owner다. Run용 복사 세션을 만들지 않고 같은 body를 callback 경계로 공유해 기존 install/
+upgrade가 즉시 소비한다. E2-A의 test 전용 argv/collision guard를 실제 run 소비자로 옮긴다.
+MISSING은 whole temporary binding, 같은 frozen 원본을 재획득하지 않는 production run
+entry와 기존 세션 연결, 영향 회귀·새 production actual이다. 현재 app/CLI·sole-app/default
+선택과 native 위임 의미/새-source hosted는 별도 미완료로 유지한다. 먼저 cheap original/
+layout/recipe negatives를 모으고 최종 Quick/영향 Race/native를 의미 있는 변경 묶음으로
+검증한다. CI437은 sourcef4 그대로이며 새 push하지 않는다.
+
+### E2-B named local 결과
+
+[검증 영수증](./p6e2b-pipx-run-resolver-local-20261030.json)은 실제 PipxResolver.ResolveToolRun,
+원본을 재획득하지 않는 frozen replay와 기존 lifecycle/binder/fingerprint 공유를 확인한다.
+원래 session의 transport/supply 검사와 lifecycle/defer bytes는 동일하고 기존 install/upgrade
+callback은 들여쓰기만 바뀌었다. UV descriptor body도 pipx 분기를 역변환하면 byte 동일하다.
+기존 API·보안 경계를 대체하지 않았다. Bare 요청은 같은 frozen graph의 exact primary로만
+native 준비하며 요청 자체는 fingerprint에 남긴다. 선택 command의 pipx.run 우선순위는
+명시적으로 거부하고 sole-app/default·CLI 지원은 다음 current 연결 범위에서 다룬다.
+
+첫 fixture compile 실패, 실제 빈 .lock0666 거부와 기본 U1000을 보존했다. 기존 wrapper/
+install reader의 좁은 빈 lock 조건을 재사용하고 실제 public 소비자를 완성했다. 최종
+Quick282.759s/전체 Sandbox Race65.573s·tagged vet/Staticcheck와 저장 census 결합이 PASS다.
+기존 native install·accounting 거부/new frozen run의3사례가 PASS이고, 이후 첫 public actual은
+recorder가 실제 pipx-native-resolver 대신 UV phase를 기대해 FAIL이었다. 그 원본53.08s와
+미도달 negative를 보존하고 test-only 두 조건만 고쳐 public 두 사례만 재실행했다.
+
+최종 public pipx52.425s는 실제 source/원본·console 결합 정상과 관측 불완전 거부를 확인했다.
+정상 graph1/거부 graph0이며 trace6 raw complete·주입된 native1만 delivered incomplete다.
+영향받은 기존 UV 두 actual도 같은 ELF의50.264s로 PASS다. 각 native offline의 Outside/
+network/unexpected/honeytoken은0이다. Host 보호5/Docker 전후 동일·helperwait0·설정 원상
+복원을 확인했다. CPP source는 E2-A와 같아 반복하지 않았다. Public ZIP 공급은 private
+namespace의 compiled pin fixture이며 release/publisher 활성화 증거가 아니다.
+
+이 named source/native slice만 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES다.
+Current whole inspection/승인·approved console 실행/app·CLI/aliases·일반 동등성/새-source
+hosted와 whole final은 OPEN이다. 실행 중인 CI437/f4에는 E2 source가 없고 새 push하지 않았다.

@@ -166,35 +166,47 @@ func uvRunSelectionFromCensus(ctx context.Context, requirement artifactpypi.Upgr
 	if err != nil {
 		return UVRunSelection{}, err
 	}
+	resolution, err := pythonRunSelectionResolution(ctx, requirement, frozen, entry, facts, false)
+	if err != nil {
+		return UVRunSelection{}, err
+	}
+	return UVRunSelection{resolution, entry}, nil
+}
+
+func pythonRunSelectionResolution(ctx context.Context, requirement artifactpypi.UpgradeRequirement, frozen *pipxNativeInput, entry artifactpypi.ConsoleExecutionEntry, facts []uvRunCensusFact, pipx bool) (domain.DependencyResolution, error) {
 	// Hash the complete observed census as unapproved DATA, including native
 	// RECORD/scaffold. This does not authenticate it as original ownership.
 	canonical := append([]uvRunCensusFact(nil), facts...)
 	sort.Slice(canonical, func(i, j int) bool { return canonical[i].Name < canonical[j].Name })
 	data, err := json.Marshal(canonical)
 	if err != nil {
-		return UVRunSelection{}, err
+		return domain.DependencyResolution{}, err
+	}
+	schema, runtime := "helox.uv-isolated-run-selection/v1", "uv-tool-run-isolated:"+UVResolverRuntimeIdentity()
+	if pipx {
+		schema, runtime = "helox.pipx-isolated-run-selection/v1", "pipx-run-isolated:"+PipxResolverRuntimeIdentity()
 	}
 	census := sha256.Sum256(data)
 	descriptor := struct {
 		Schema, Request, Original, Command, NativeUnapprovedDataSHA256 string
 		Packages                                                       []artifactpypi.UVLockedPackage
 		Console                                                        artifactpypi.WheelFile
-	}{"helox.uv-isolated-run-selection/v1", requirement.Requirement(), frozen.id, entry.Command(), hex.EncodeToString(census[:]), frozen.lock.Packages(), entry.Metadata()}
+	}{schema, requirement.Requirement(), frozen.id, entry.Command(), hex.EncodeToString(census[:]), frozen.lock.Packages(), entry.Metadata()}
 	body, err := json.Marshal(descriptor)
 	if err != nil {
-		return UVRunSelection{}, err
+		return domain.DependencyResolution{}, err
 	}
 	digest := sha256.Sum256(body)
 	measured, err := domain.NewSHA256Digest(hex.EncodeToString(digest[:]))
 	if err != nil {
-		return UVRunSelection{}, err
+		return domain.DependencyResolution{}, err
 	}
-	resolution, err := domain.NewDependencyResolution(frozen.graph, "uv-tool-run-isolated:"+UVResolverRuntimeIdentity(), measured)
+	resolution, err := domain.NewDependencyResolution(frozen.graph, runtime, measured)
 	if err != nil {
-		return UVRunSelection{}, err
+		return domain.DependencyResolution{}, err
 	}
 	if err := ctx.Err(); err != nil {
-		return UVRunSelection{}, errors.Join(err, context.Cause(ctx))
+		return domain.DependencyResolution{}, errors.Join(err, context.Cause(ctx))
 	}
-	return UVRunSelection{resolution, entry}, nil
+	return resolution, nil
 }

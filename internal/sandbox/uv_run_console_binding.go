@@ -71,6 +71,16 @@ func uvRunConsoleOriginal(frozen *pipxNativeInput, command string) (artifactpypi
 // installed RECORD, cache metadata and activation scripts confer no ownership
 // and are never copied into the later current approved execution closure.
 func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRunCensusFact) (artifactpypi.ConsoleExecutionEntry, error) {
+	return bindPythonRunConsoleData(frozen, command, facts, false)
+}
+
+func bindPipxRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRunCensusFact) (artifactpypi.ConsoleExecutionEntry, error) {
+	return bindPythonRunConsoleData(frozen, command, facts, true)
+}
+
+// Both pinned native frontends use the same UV installer. Share the complete
+// original/control/payload checks; only their measured environment recipes differ.
+func bindPythonRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRunCensusFact, pipx bool) (artifactpypi.ConsoleExecutionEntry, error) {
 	entry, inspections, err := uvRunConsoleOriginal(frozen, command)
 	if err != nil {
 		return artifactpypi.ConsoleExecutionEntry{}, err
@@ -103,7 +113,13 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 	var env string
 	for _, f := range facts {
 		parts := strings.Split(f.Name, "/")
-		if len(parts) != 4 || parts[0] != "uv-run-cache" || parts[1] != "archive-v0" || parts[3] != "pyvenv.cfg" {
+		prefix, digits := "uv-run-cache/archive-v0", 16
+		configuration := uvToolVenvConfiguration() + "relocatable = true\n"
+		if pipx {
+			prefix, digits = "pipx/.cache", 15
+			configuration = uvToolVenvConfiguration()
+		}
+		if len(parts) != 4 || strings.Join(parts[:2], "/") != prefix || parts[3] != "pyvenv.cfg" {
 			continue
 		}
 		root := strings.TrimSuffix(f.Name, "/pyvenv.cfg")
@@ -111,10 +127,13 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 		if !ok || alias.Kind != tar.TypeSymlink {
 			continue
 		}
-		if env != "" || len(parts[2]) != 16 || !regular(f) || string(f.Body) != uvToolVenvConfiguration()+"relocatable = true\n" {
+		if env != "" || len(parts[2]) != digits || !regular(f) || string(f.Body) != configuration {
 			return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
 		}
 		for _, c := range parts[2] {
+			if pipx && !(c >= 'a' && c <= 'f' || c >= '0' && c <= '9') {
+				return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
+			}
 			if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '-') {
 				return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
 			}
@@ -123,6 +142,25 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 	}
 	if env == "" {
 		return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
+	}
+	if pipx {
+		metadata, ok := byName[env+"/pipx_metadata.json"]
+		if !ok || !regular(metadata) || metadata.Mode != 0600 || metadata.Size < 1 || metadata.Size > 64<<10 {
+			return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
+		}
+		for _, f := range facts {
+			if f.Name == env || strings.HasPrefix(f.Name, env+"/") {
+				continue
+			}
+			directory := f.Name == "" || f.Name == "." || f.Name == "pipx" || f.Name == "pipx/.cache" || f.Name == "pipx/py" || f.Name == "pipx/venvs" || f.Name == "pipx/logs" || f.Name == "tool-bin" || f.Name == "tool-man"
+			if directory && f.Kind == tar.TypeDir && f.UID == 1000 && f.GID == 1000 && f.Size == 0 && f.Link == "" && f.Mode&^int64(0777) == 0 && f.Mode&0022 == 0 {
+				continue
+			}
+			auxiliary := f.Name == "pipx/.cache/CACHEDIR.TAG" || f.Name == "pipx/py/CACHEDIR.TAG" || path.Dir(f.Name) == "pipx/logs" && pipxNativeLogName.MatchString(path.Base(f.Name))
+			if !regular(f) || !auxiliary && !(f.Name == "pipx/.cache/."+path.Base(env)+".lock" && f.Size == 0) {
+				return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
+			}
+		}
 	}
 	aliases := map[string]string{"bin/python": "/usr/local/bin/python", "bin/python3": "python", "bin/python3.14": "python", "lib64": "lib"}
 	for name, target := range aliases {
@@ -153,6 +191,12 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 			if _, ok := aliases[strings.TrimPrefix(f.Name, env+"/")]; !ok {
 				return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
 			}
+			continue
+		}
+		// Same empty UV lock DATA exception as the existing pipx install reader.
+		// It is never an executable payload or installed ownership evidence.
+		if pipx && f.Name == env+"/.lock" && f.Kind == tar.TypeReg && f.UID == 1000 && f.GID == 1000 &&
+			f.Mode == 0666 && f.Size == 0 && f.Link == "" && f.SHA256 == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" && len(f.Body) == 0 {
 			continue
 		}
 		if !regular(f) {
@@ -256,11 +300,17 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 		}
 	}
 	scaffold := map[string]bool{"activate": true, "activate.bat": true, "activate.fish": true, "activate.nu": true, "activate.ps1": true, "activate.xsh": true, "activate_this.py": true, "deactivate.bat": true, "pydoc.bat": true}
+	if pipx {
+		scaffold["activate.csh"] = true
+	}
 	for _, f := range facts {
 		if !strings.HasPrefix(f.Name, env+"/") || f.Kind == tar.TypeDir || f.Kind == tar.TypeSymlink || strings.HasPrefix(f.Name, site) {
 			continue
 		}
 		relative := strings.TrimPrefix(f.Name, env+"/")
+		if pipx && (relative == "pipx_metadata.json" || relative == ".lock" && f.Size == 0) {
+			continue
+		}
 		if relative == "pyvenv.cfg" || relative == ".gitignore" || relative == "CACHEDIR.TAG" {
 			continue
 		}
@@ -272,7 +322,12 @@ func bindUVRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRun
 	if !ok || !regular(script) || script.Mode != 0755 || len(script.Body) == 0 || int64(len(script.Body)) != script.Size {
 		return artifactpypi.ConsoleExecutionEntry{}, errUVRunConsoleData
 	}
-	if err := artifactpypi.ValidateUVRelocatableConsoleScript(entry.EntryPoint(), script.Body); err != nil {
+	if pipx {
+		err = artifactpypi.ValidateUVNativeConsoleScript(entry.EntryPoint(), pythonSitePath+"/"+env+"/bin/python", script.Body)
+	} else {
+		err = artifactpypi.ValidateUVRelocatableConsoleScript(entry.EntryPoint(), script.Body)
+	}
+	if err != nil {
 		return artifactpypi.ConsoleExecutionEntry{}, err
 	}
 	return entry, nil
