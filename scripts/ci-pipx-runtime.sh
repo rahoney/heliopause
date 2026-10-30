@@ -2,7 +2,7 @@
 # Hosted-CI-only acquired DATA probes and disposable installed DATA fixtures.
 set -euo pipefail
 case "$#:${1-}" in
-  1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap) ;;
+  1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap|1:run) ;;
   *) echo 'unsupported pipx CI profile' >&2; exit 2 ;;
 esac
 pipx_profile=$1
@@ -46,6 +46,9 @@ pipx_ci_run() {
 }
 
 case "$pipx_profile" in
+  run)
+    pipx_ci_run internal/bootstrap TestLinuxPythonPipxRunExecutionWorkflowIntegration,TestLinuxPipxRunExecutionCLIIntegration run sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"
+    ;;
   tools-native)
     pipx_ci_run internal/sandbox TestLinuxPipxObservedNativeInstallIntegration,TestLinuxPipxPublicInstallResolverIntegration,TestLinuxPipxPublicOriginalUpgradeIntegration tools-native sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"
     ;;

@@ -105,7 +105,7 @@ func TestPipxClientRefusesUnsafeImplicitAndNativeOptionsBeforeBinding(t *testing
 			t.Fatal("non-bare/canonical upgrade accepted", input)
 		}
 	}
-	for _, op := range []string{"run", "inject", "ensurepath"} {
+	for _, op := range []string{"inject", "ensurepath"} {
 		root, _ := New(io.Discard, io.Discard)
 		if _, err := PreparePresentation(root, []string{"pipx", op, "demo-package"}); err == nil {
 			t.Fatal("unimplemented operation accepted", op)

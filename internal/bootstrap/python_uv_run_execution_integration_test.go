@@ -27,7 +27,11 @@ func TestLinuxPythonUVRunExecutionWorkflowIntegration(t *testing.T) {
 	if os.Getenv("HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION") != "1" || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user current Python application workflow qualification")
 	}
-	ctx, bindings, _, _, _, backend := toolApprovedIntegrationFixtureWithPythonBackend(t, false)
+	runPythonNativeExecutionWorkflowCases(t, false)
+}
+
+func runPythonNativeExecutionWorkflowCases(t *testing.T, pipx bool) {
+	ctx, bindings, _, _, nativePipx, backend := toolApprovedIntegrationFixtureWithPythonBackend(t, pipx)
 	native := bindings.nativeLookup.(*sandbox.UVResolver)
 	intake := bindings.intake.(*artifactpypi.Intake)
 	inspector := bindings.inspector.(*inspectionpypi.CompositeInspector)
@@ -41,7 +45,16 @@ func TestLinuxPythonUVRunExecutionWorkflowIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	service, err := newUVRunExecutionService(native, "cowsay", intake, inspector, static, backend, store, staging)
+	var service *application.ExecutionService
+	runtimeIdentity := "uv-tool-run-isolated:" + sandbox.UVResolverRuntimeIdentity()
+	marker := "python_uv_run_application"
+	if pipx {
+		service, err = newPipxRunExecutionService(nativePipx, "cowsay", intake, inspector, static, backend, store, staging)
+		runtimeIdentity = "pipx-run-isolated:" + sandbox.PipxResolverRuntimeIdentity()
+		marker = "python_pipx_run_application"
+	} else {
+		service, err = newUVRunExecutionService(native, "cowsay", intake, inspector, static, backend, store, staging)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +85,7 @@ func TestLinuxPythonUVRunExecutionWorkflowIntegration(t *testing.T) {
 		executed, runErr := service.Run(ctx, request)
 		prepared := executed.Preparation()
 		inspection := prepared.Inspection()
-		if !inspection.Valid() || inspection.Set().Decision().Decision() != domain.DecisionAllow || inspection.Set().Decision().PolicyID() != "m5-pypi-pip" || inspection.Resolution().RuntimeIdentity() != "uv-tool-run-isolated:"+sandbox.UVResolverRuntimeIdentity() {
+		if !inspection.Valid() || inspection.Set().Decision().Decision() != domain.DecisionAllow || inspection.Set().Decision().PolicyID() != "m5-pypi-pip" || inspection.Resolution().RuntimeIdentity() != runtimeIdentity {
 			t.Fatal("current public preparation/whole Policy or honest native identity missing", runErr)
 		}
 		entries := inspection.Set().Inspected().Inspections()
@@ -152,6 +165,6 @@ func TestLinuxPythonUVRunExecutionWorkflowIntegration(t *testing.T) {
 		if _, err := json.Marshal(executed); err == nil || strings.Contains(fmt.Sprintf("%#v", executed), "private-native-run-workflow-body") {
 			t.Fatal("private Python workflow output exposed")
 		}
-		t.Logf("python_uv_run_application case=%d current_policy=ALLOW selector=uv-tool-run-isolated runtime_attempted=%t complete=%t source_sha256=%s", i+1, executed.RuntimeAttempted(), executed.Complete(), subject.Digest().String())
+		t.Logf(marker+" case=%d current_policy=ALLOW selector=%s runtime_attempted=%t complete=%t source_sha256=%s", i+1, strings.SplitN(runtimeIdentity, ":", 2)[0], executed.RuntimeAttempted(), executed.Complete(), subject.Digest().String())
 	}
 }

@@ -95,6 +95,17 @@ func (r *UVResolver) ResolveToolRun(ctx context.Context, requirement artifactpyp
 // The validated caller retains the context/error boundary. Frozen originals
 // own their bytes independently of the native sessions and archive readers.
 func (r *UVResolver) prepareUVRunOriginal(ctx context.Context, requirement artifactpypi.UpgradeRequirement, command string) (*pipxNativeInput, error) {
+	frozen, err := r.preparePythonRunOriginal(ctx, requirement)
+	if err != nil {
+		return nil, err
+	}
+	if _, _, err := uvRunConsoleOriginal(frozen, command); err != nil {
+		return nil, err
+	}
+	return frozen, nil
+}
+
+func (r *UVResolver) preparePythonRunOriginal(ctx context.Context, requirement artifactpypi.UpgradeRequirement) (*pipxNativeInput, error) {
 	native, err := r.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
 	if err != nil {
 		return nil, err
@@ -119,9 +130,6 @@ func (r *UVResolver) prepareUVRunOriginal(ctx context.Context, requirement artif
 	}
 	if !pipxNativeRequirementMatches(requirement, frozen) {
 		return nil, errPipxNativeInput
-	}
-	if _, _, err := uvRunConsoleOriginal(frozen, command); err != nil {
-		return nil, err
 	}
 	return frozen, nil
 }

@@ -24,6 +24,7 @@ const (
 	BunPackageClient       PackageClientID = "bun"
 	NPXPackageClient       PackageClientID = "npx"
 	UVRunPackageClient     PackageClientID = "uv-run"
+	PipxRunPackageClient   PackageClientID = "pipx-run"
 )
 
 type packageUpgradeMode uint8
@@ -60,6 +61,7 @@ func packageClientDescriptors() []packageClientDescriptor {
 		npxExecutionDescriptor(true),
 		pipxInstallDescriptor(),
 		pipxUpgradeDescriptor(),
+		pipxRunExecutionDescriptor(),
 		uvToolInstallDescriptor(),
 		uvToolUpgradeDescriptor(),
 		{id: UVProjectPackageClient, path: []string{"uv", "lock"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}}, route: "pypi", use: "lock --upgrade", shortEN: "Quarantine the selected project before upgrading only its lock file", shortKO: "선택된 프로젝트 전체를 검역한 뒤 잠금파일만 갱신합니다", longEN: uvProjectLockEnglish, longKO: uvProjectLockKorean, validate: validateUVProjectLockArgs, validateRaw: validateUVProjectLockRawArgs, flags: configureUVProjectLockFlags, flagText: uvProjectLockFlagText, examples: []string{"helox uv lock --upgrade", "helox uv lock --upgrade --project /absolute/path/project"}},

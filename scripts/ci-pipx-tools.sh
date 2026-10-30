@@ -4,7 +4,7 @@
 set -euo pipefail
 case "$#" in 5|6) ;; *) exit 2 ;; esac
 umask 077
-case "$1" in tools-native|tools-bootstrap) ;; *) exit 2 ;; esac
+case "$1" in tools-native|tools-bootstrap|run) ;; *) exit 2 ;; esac
 profile=$1
 input=$2
 user_id=$3
@@ -80,6 +80,10 @@ mount -o remount,bind,ro,noexec,nosuid,nodev /usr/lib/heliopause
 cd -- "$repo"
 ordinary=(/usr/bin/setpriv --reuid="$user_id" --regid="$group_id" --init-groups /usr/bin/env -i "PATH=$PATH" "HOME=$user_home" LANG=C.UTF-8 "RUNNER_TEMP=$RUNNER_TEMP" "GOCACHE=${GOCACHE:-}" "GOMODCACHE=${GOMODCACHE:-}" "HELOX_TOOL_CACHE=${HELOX_TOOL_CACHE:-}" GOTOOLCHAIN=local GOENV=off GOWORK=off GOFLAGS= "GOMAXPROCS=${GOMAXPROCS:-2}" "GOPROXY=${GOPROXY:-https://proxy.golang.org,direct}")
 case "$profile" in
+  run)
+    "${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-workflow
+    "${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-cli
+    ;;
   tools-native)
     cd internal/sandbox
     "${ordinary[@]}" HELOX_PIPX_NATIVE_SESSION_INTEGRATION=1 HELOX_PIPX_NATIVE_INSTALLED_SUPPLY=1 HELOX_PIPX_QUERY_SUPPLY_ROOT="$(dirname -- "$input")/supply" HELOX_PIPX_RUNTIME_ZIP=/usr/lib/heliopause/current/pipx-runtime-linux-amd64.zip HELOX_PIPX_PUBLIC_RESOLVER_INTEGRATION=1 HELOX_PIPX_PUBLIC_UPGRADE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^(TestLinuxPipxObservedNativeInstallIntegration|TestLinuxPipxPublicInstallResolverIntegration|TestLinuxPipxPublicOriginalUpgradeIntegration)$'

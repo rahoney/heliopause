@@ -98,16 +98,22 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if cli.SelectedPackageClient(command) == cli.NPXPackageClient && (source != "npm" || runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
 		return errors.New("npx execution requires the public npm source and Linux amd64")
 	}
-	if cli.SelectedPackageClient(command) == cli.UVRunPackageClient {
+	if cli.SelectedPackageClient(command) == cli.UVRunPackageClient || cli.SelectedPackageClient(command) == cli.PipxRunPackageClient {
 		if source != "pypi" {
-			return errors.New("native UV execution requires public PyPI")
+			return errors.New("native Python execution requires public PyPI")
 		}
-		if err := uvRunExecutionPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
-			return err
+		if cli.SelectedPackageClient(command) == cli.PipxRunPackageClient {
+			if err := pipxRunExecutionPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+				return err
+			}
+		} else {
+			if err := uvRunExecutionPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+				return err
+			}
 		}
 	}
 	var pythonClient pythonPackageClient
-	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient && cli.SelectedPackageClient(command) != cli.UVRunPackageClient {
+	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient && cli.SelectedPackageClient(command) != cli.UVRunPackageClient && cli.SelectedPackageClient(command) != cli.PipxRunPackageClient {
 		pythonClient, err = pythonPackageClientFor(cli.SelectedPackageClient(command))
 		if err != nil {
 			return err
@@ -290,6 +296,10 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if source == "pypi" && cli.SelectedPackageClient(command) == cli.UVRunPackageClient {
 		return runUVRunExecution(ctx, command, trustedExecutor, processObserver)
 	}
+	if source == "pypi" && cli.SelectedPackageClient(command) == cli.PipxRunPackageClient {
+		return runPipxRunExecution(ctx, command, trustedExecutor, processObserver)
+	}
+
 	if source == "pypi" && cli.SelectedPackageClient(command) == cli.UVProjectPackageClient {
 		closeClient, err := bindUVProjectClient(command, trustedExecutor, processObserver)
 		if err != nil {

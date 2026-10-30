@@ -10,6 +10,7 @@ const pipxGraphSBOMFixtureCommand = "cp -- \"$pipx_root/docs/planning/evidence/m
 
 const pipxToolsNativeCommand = `pipx_ci_run internal/sandbox TestLinuxPipxObservedNativeInstallIntegration,TestLinuxPipxPublicInstallResolverIntegration,TestLinuxPipxPublicOriginalUpgradeIntegration tools-native sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"`
 const pipxToolsBootstrapCommand = `pipx_ci_run internal/bootstrap TestLinuxPipxToolInstallCLIIntegration,TestLinuxPipxToolUpgradeCLIIntegration,TestLinuxPipxToolNativeAdoptionCLIIntegration,TestPipxPublicToolApprovedUpgradeIntegration tools-bootstrap sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"`
+const pipxRunCommand = `pipx_ci_run internal/bootstrap TestLinuxPythonPipxRunExecutionWorkflowIntegration,TestLinuxPipxRunExecutionCLIIntegration run sudo -n env PATH="$PATH" RUNNER_TEMP="$RUNNER_TEMP" GOCACHE="${GOCACHE:-}" GOMODCACHE="${GOMODCACHE:-}" HELOX_TOOL_CACHE="${HELOX_TOOL_CACHE:-}" GOMAXPROCS="${GOMAXPROCS:-2}" GOPROXY="${GOPROXY:-https://proxy.golang.org,direct}" /bin/bash "$pipx_root/scripts/ci-pipx-tools.sh" "$pipx_profile" "$pipx_work/pipx-runtime-linux-amd64.zip" "$(id -u)" "$(id -g)" "$HOME"`
 
 // Concrete fixed CI convention only; executed dispatch and cleanup are separate.
 func validatePipxRuntimeScript(contents string) []string {
@@ -26,7 +27,7 @@ func validatePipxRuntimeScript(contents string) []string {
 	for _, command := range []string{
 		"set -euo pipefail",
 		"case \"$#:${1-}\" in",
-		"1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap) ;;",
+		"1:inspect|1:graph|1:namespace|1:tools-native|1:tools-bootstrap|1:run) ;;",
 		"*) echo 'unsupported pipx CI profile' >&2; exit 2 ;;",
 		"pipx_profile=$1",
 		"test \"$(id -u)\" != 0",
@@ -50,13 +51,13 @@ func validatePipxRuntimeScript(contents string) []string {
 		"/^--- PASS: / { if($3 in expected) seen[$3]++ }",
 		"/--- SKIP:/ { bad=1 }",
 		"END { if(bad) exit 1; for(name in expected) if(seen[name]!=1) exit 1 }",
-		pipxRequiredInspectionCommand, pipxCurrentGraphCommand, pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, pipxGraphSBOMFixtureCommand, pipxToolsNativeCommand, pipxToolsBootstrapCommand,
+		pipxRequiredInspectionCommand, pipxCurrentGraphCommand, pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, pipxGraphSBOMFixtureCommand, pipxToolsNativeCommand, pipxToolsBootstrapCommand, pipxRunCommand,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "pipx CI requires one exact active command: "+command)
 		}
 	}
-	dispatch := strings.Join([]string{"case \"$pipx_profile\" in", "tools-native)", pipxToolsNativeCommand, ";;", "tools-bootstrap)", pipxToolsBootstrapCommand, ";;", "inspect)", pipxRequiredInspectionCommand, ";;", "graph)", pipxGraphSBOMFixtureCommand, pipxCurrentGraphCommand, ";;", "namespace)", pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, ";;", "esac"}, "\n")
+	dispatch := strings.Join([]string{"case \"$pipx_profile\" in", "run)", pipxRunCommand, ";;", "tools-native)", pipxToolsNativeCommand, ";;", "tools-bootstrap)", pipxToolsBootstrapCommand, ";;", "inspect)", pipxRequiredInspectionCommand, ";;", "graph)", pipxGraphSBOMFixtureCommand, pipxCurrentGraphCommand, ";;", "namespace)", pipxBootstrapNamespaceCommand, pipxPendingNamespaceCommand, ";;", "esac"}, "\n")
 	if strings.Count(strings.Join(active, "\n"), dispatch) != 1 {
 		findings = append(findings, "pipx CI requires exact exclusive mode/cwd/consumer dispatch")
 	}

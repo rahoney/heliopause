@@ -54,16 +54,7 @@ type pythonConsoleExecutionBinder struct {
 }
 
 func (b pythonConsoleExecutionBinder) BindExecutionEntry(ctx context.Context, inspection application.ExecutionInspection, command string) (domain.ExecutionContext, error) {
-	if ctx == nil || b.static == nil || !inspection.Valid() {
-		return domain.ExecutionContext{}, errors.New("python console binding requires current whole approval and controlled intake")
-	}
-	var primary domain.AcquiredArtifact
-	for _, entry := range inspection.Set().Inspected().Inspections() {
-		if entry.Node() == inspection.Resolution().Graph().Primary() {
-			primary = entry.Artifact()
-		}
-	}
-	inventory, err := b.static.ReadConsoleExecutionInventory(ctx, primary)
+	inventory, err := readPythonConsoleExecutionInventory(ctx, inspection, b.static)
 	if err != nil {
 		return domain.ExecutionContext{}, err
 	}
@@ -101,4 +92,21 @@ func newPythonExecutionPreparationService(native *sandbox.UVResolver, intake *ar
 		return nil, err
 	}
 	return application.NewExecutionPreparationService(freshPythonToolExecutionResolver{native}, fresh, pythonConsoleExecutionBinder{static}, evidence.Generator{}, staging)
+}
+
+func readPythonConsoleExecutionInventory(ctx context.Context, inspection application.ExecutionInspection, static *inspectionpypi.StaticInspector) (artifactpypi.ConsoleExecutionInventory, error) {
+	if ctx == nil || static == nil || !inspection.Valid() {
+		return artifactpypi.ConsoleExecutionInventory{}, errors.New("python console binding requires current whole approval and controlled intake")
+	}
+	var primary domain.AcquiredArtifact
+	for _, entry := range inspection.Set().Inspected().Inspections() {
+		if entry.Node() == inspection.Resolution().Graph().Primary() {
+			primary = entry.Artifact()
+		}
+	}
+	inventory, err := static.ReadConsoleExecutionInventory(ctx, primary)
+	if err != nil {
+		return artifactpypi.ConsoleExecutionInventory{}, err
+	}
+	return inventory, nil
 }

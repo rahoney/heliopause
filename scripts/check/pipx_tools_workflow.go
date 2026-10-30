@@ -18,7 +18,7 @@ func validatePipxInstalledToolsScript(contents string) []string {
 	}
 	var findings []string
 	for _, command := range []string{
-		`set -euo pipefail`, `case "$#" in 5|6) ;; *) exit 2 ;; esac`, `case "$1" in tools-native|tools-bootstrap) ;; *) exit 2 ;; esac`,
+		`set -euo pipefail`, `case "$#" in 5|6) ;; *) exit 2 ;; esac`, `case "$1" in tools-native|tools-bootstrap|run) ;; *) exit 2 ;; esac`,
 		`test "$(id -u)" = 0`, `[[ "$user_id" =~ ^[0-9]+$ && "$group_id" =~ ^[0-9]+$ ]]`, `test "$user_id" != 0`,
 		`test "$(readlink /proc/self/ns/mnt)" != "$(readlink /proc/1/ns/mnt)"`,
 		`test "$(readlink /proc/self/ns/net)" = "$(readlink /proc/1/ns/net)"`,
@@ -51,6 +51,8 @@ func validatePipxInstalledToolsScript(contents string) []string {
 		`mount -o remount,bind,ro,noexec,nosuid,nodev /usr/lib/heliopause`,
 		pipxInstalledNativeCommand,
 		`"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-bootstrap`,
+		`"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-workflow`,
+		`"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-cli`,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "pipx installed tools CI requires one exact command: "+command)
@@ -60,7 +62,7 @@ func validatePipxInstalledToolsScript(contents string) []string {
 		findings = append(findings, "pipx DATA input requires before/after digest verification")
 	}
 	joined := strings.Join(active, "\n")
-	for _, scope := range []string{strings.Join([]string{`case "$profile" in`, `tools-native)`, `cd internal/sandbox`, pipxInstalledNativeCommand, `;;`, `tools-bootstrap)`, `"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-bootstrap`, `;;`, `esac`}, "\n")} {
+	for _, scope := range []string{strings.Join([]string{`case "$profile" in`, `run)`, `"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-workflow`, `"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-run-cli`, `;;`, `tools-native)`, `cd internal/sandbox`, pipxInstalledNativeCommand, `;;`, `tools-bootstrap)`, `"${ordinary[@]}" /bin/bash scripts/ci-uv-tools.sh pipx-bootstrap`, `;;`, `esac`}, "\n")} {
 		if strings.Count(joined, scope) != 1 {
 			findings = append(findings, "pipx installed tools requires exact exclusive package dispatch")
 		}

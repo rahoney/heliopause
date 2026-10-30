@@ -254,7 +254,7 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		"ignored error":   strings.Replace(script, uvRunSourceCommand, uvRunSourceCommand+" || true", 1),
 		"missing branch":  strings.Replace(script, "if [[ ${1-} == uv-run-source ]]; then", "if false; then", 1),
 		"native fallback": strings.Replace(script, " && ${1-} != uv-run-source", "", 1),
-		"unknown profile": strings.Replace(script, "|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli) ;;", "|1:anything) ;;", 1),
+		"unknown profile": strings.Replace(script, "|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli) ;;", "|1:anything) ;;", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == script {
@@ -334,9 +334,12 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 		"disabled CLI":              strings.Replace(original, "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1", "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=0", 1),
 		"CLI error ignored":         strings.Replace(original, uvRunCLICommand, uvRunCLICommand+" || true", 1),
 		"current app error ignored": strings.Replace(original, uvRunWorkflowCommand, uvRunWorkflowCommand+" || true", 1),
-		"CLI branch absent":         strings.Replace(original, "if [[ ${1-} == uv-run-cli ]]; then", "if false; then", 1),
-		"current app branch absent": strings.Replace(original, "if [[ ${1-} == uv-run-workflow ]]; then", "if false; then", 1),
+		"CLI branch absent":         strings.Replace(original, "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "if false; then", 1),
+		"current app branch absent": strings.Replace(original, "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "if false; then", 1),
 		"app enters native":         strings.Replace(original, " && ${1-} != uv-run-workflow", "", 1),
+		"pipx app enters native":    strings.Replace(original, " && ${1-} != pipx-run-workflow", "", 1),
+		"pipx CLI ignored":          strings.Replace(original, pipxRunCLICommand, pipxRunCLICommand+" || true", 1),
+		"pipx app disabled":         strings.Replace(original, "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == original {
@@ -352,7 +355,7 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 		t.Fatal(err)
 	}
 	original = string(body)
-	for _, key := range []string{"uv_run_workflow", "uv_run_cli"} {
+	for _, key := range []string{"uv_run_workflow", "uv_run_cli", "pipx_run"} {
 		t.Run(key, func(t *testing.T) {
 			start := strings.Index(original, "          "+key+"_log=")
 			if start < 0 {

@@ -28,7 +28,7 @@ func TestPipxRunPreparationSafety(t *testing.T) {
 			}
 			extra["probe-1.0.dist-info/entry_points.txt"] = []byte(entries)
 			frozen, _, _, _, _ := pipxFrozenInputFixture(t, extra)
-			args, err := pipxRunPreparationArguments(frozen, requirement, "probe")
+			args, _, err := pipxRunPreparationArguments(frozen, requirement, "probe")
 			allowed := group == "" || group == "other.group"
 			if allowed != (err == nil) || !allowed && len(args) != 0 {
 				t.Fatal("inert query role guard differs", group, err)
@@ -46,7 +46,7 @@ func TestPipxRunBareRequestReplaysOnlyItsOwnedResolvedVersion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	args, err := pipxRunPreparationArguments(frozen, requirement, "probe")
+	args, _, err := pipxRunPreparationArguments(frozen, requirement, "probe")
 	if err != nil || len(args) != 17 || args[14] != "probe==1.0" {
 		t.Fatal("bare request escaped the same frozen version", args, err)
 	}
@@ -92,5 +92,24 @@ func TestPipxRunSelectionBindsItsNativeIdentityRequestAndWholeDATA(t *testing.T)
 	refused, err = pipxRunSelectionFromCensus(context.Background(), request, frozen, "probe", nil)
 	if err == nil || refused.Entry().Valid() || len(refused.Resolution().Graph().Nodes()) != 0 {
 		t.Fatal("missing native DATA returned selection")
+	}
+}
+
+func TestPipxRunDefaultUsesTheOriginalSoleConsoleWithoutNativeProgramArgs(t *testing.T) {
+	requirement, _ := artifactpypi.ParseUpgradeRequirement("probe@1.0")
+	frozen, _, _, _, _ := pipxFrozenInputFixture(t, map[string][]byte{"probe-1.0.dist-info/entry_points.txt": []byte("[console_scripts]\nother=probe:main\n")})
+	for _, command := range []string{"", "probe", "other"} {
+		args, entry, err := pipxRunPreparationArguments(frozen, requirement, command)
+		if err != nil || !entry.Valid() || entry.Command() != "other" || len(args) != 17 || args[16] != pipxRunPreparationCommand {
+			t.Fatal("default did not bind its declared original console", err)
+		}
+		for _, arg := range args[6:] {
+			if arg == "other" {
+				t.Fatal("selected program escaped into native preparation")
+			}
+		}
+	}
+	if args, entry, err := pipxRunPreparationArguments(frozen, requirement, "missing"); err == nil || len(args) != 0 || entry.Valid() {
+		t.Fatal("missing explicit command inherited sole-app fallback")
 	}
 }

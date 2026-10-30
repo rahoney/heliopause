@@ -92,11 +92,18 @@ func newUVRunExecutionService(native *sandbox.UVResolver, command string, intake
 	if native == nil || intake == nil || inspector == nil || static == nil || backend == nil || store == nil || staging == nil || artifactpypi.ValidateConsoleExecutionCommand(command) != nil {
 		return nil, errors.New("native run execution requires actual adapters and an explicit canonical console")
 	}
+	return newPythonNativeRunExecutionService(freshPythonUVRunExecutionResolver{native, command}, pythonUVRunExecutionBinder{static, command}, intake, inspector, static, backend, store, staging)
+}
+
+func newPythonNativeRunExecutionService(resolver application.ExecutionResolver, binder application.ExecutionEntryBinder, intake *artifactpypi.Intake, inspector *inspectionpypi.CompositeInspector, static *inspectionpypi.StaticInspector, backend *sandbox.PythonDynamicBackend, store *local.Store, staging *promotion.LocalStaging) (*application.ExecutionService, error) {
+	if resolver == nil || binder == nil || intake == nil || inspector == nil || static == nil || backend == nil || store == nil || staging == nil {
+		return nil, errors.New("native run execution requires actual current adapters")
+	}
 	fresh, err := application.NewExecutionInspectService(intake, verificationpypi.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, err
 	}
-	preparation, err := application.NewExecutionPreparationService(freshPythonUVRunExecutionResolver{native, command}, fresh, pythonUVRunExecutionBinder{static, command}, evidence.Generator{}, staging)
+	preparation, err := application.NewExecutionPreparationService(resolver, fresh, binder, evidence.Generator{}, staging)
 	if err != nil {
 		return nil, err
 	}

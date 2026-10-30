@@ -18,6 +18,12 @@ var errUVRunConsoleData = errors.New("native UV console DATA differs from the co
 // uvRunConsoleOriginal measures current owned original bytes. The acquired
 // subject and returned console entry are DATA, not inspection/Policy authority.
 func uvRunConsoleOriginal(frozen *pipxNativeInput, command string) (artifactpypi.ConsoleExecutionEntry, []artifactpypi.WheelInspection, error) {
+	return pythonRunConsoleOriginal(frozen, command, false)
+}
+func pipxRunConsoleOriginal(frozen *pipxNativeInput, command string) (artifactpypi.ConsoleExecutionEntry, []artifactpypi.WheelInspection, error) {
+	return pythonRunConsoleOriginal(frozen, command, true)
+}
+func pythonRunConsoleOriginal(frozen *pipxNativeInput, command string, pipx bool) (artifactpypi.ConsoleExecutionEntry, []artifactpypi.WheelInspection, error) {
 	if !frozen.valid() {
 		return artifactpypi.ConsoleExecutionEntry{}, nil, errPipxNativeInput
 	}
@@ -56,7 +62,11 @@ func uvRunConsoleOriginal(frozen *pipxNativeInput, command string) (artifactpypi
 		if err != nil {
 			return artifactpypi.ConsoleExecutionEntry{}, nil, err
 		}
-		entry, err = artifactpypi.SelectConsoleExecutionEntry(inventory, command)
+		if pipx {
+			entry, err = artifactpypi.SelectPipxConsoleExecutionEntry(inventory, command)
+		} else {
+			entry, err = artifactpypi.SelectConsoleExecutionEntry(inventory, command)
+		}
 		if err != nil {
 			return artifactpypi.ConsoleExecutionEntry{}, nil, err
 		}
@@ -81,7 +91,7 @@ func bindPipxRunConsoleData(frozen *pipxNativeInput, command string, facts []uvR
 // Both pinned native frontends use the same UV installer. Share the complete
 // original/control/payload checks; only their measured environment recipes differ.
 func bindPythonRunConsoleData(frozen *pipxNativeInput, command string, facts []uvRunCensusFact, pipx bool) (artifactpypi.ConsoleExecutionEntry, error) {
-	entry, inspections, err := uvRunConsoleOriginal(frozen, command)
+	entry, inspections, err := pythonRunConsoleOriginal(frozen, command, pipx)
 	if err != nil {
 		return artifactpypi.ConsoleExecutionEntry{}, err
 	}

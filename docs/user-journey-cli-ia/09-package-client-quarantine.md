@@ -384,3 +384,21 @@ text로 표시한다. Argv128/32KiB·기존 실행/cleanup 한도와 별도 결�
 
 예: `helox --output json uv tool run --show-output --from python-slugify==8.0.4 slugify -- hello world`.
 현재 local qualification과 hosted·일반 동등성의 남은 범위는 [D7 receipt](../planning/evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json)가 소유한다.
+
+### P6 pipx run 초기 실행 lane
+
+`helox pipx run [--spec <package>] <package-or-command> [--] [args...]`는 고정 pipx와
+UV backend로 공개 PyPI의 전체 wheel 원본을 선택한다. Bare 또는 정확한
+`name@version`/`name==version`을 사용한다. `--spec`을 생략하면 primary 이름의 console을
+우선하고, 그 이름이 없을 때 유일한 console만 선택한다. 여러 후보를 임의로 고르지 않는다.
+명시적인 다른 console은 `--spec <package>` 뒤에 지정한다. `pipx.run` module entry group,
+runtime/backend 지정·provisioning·extra package·local/VCS/URL/custom index는 지원하지 않는다.
+
+Native 임시 cache·metadata·wrapper는 선택 검증용 DATA이며 승인·소유권이 아니다. 기존
+current whole 검사·Evidence·Policy를 통과한 원본에서 같은 console을 다시 측정하고
+readonly Python runtime으로 실행한다. 기존 generic Python 기본 선택 규칙은 바꾸지 않는다.
+HAA 옵션은 package·command 앞에 두며 뒤는 literal program argv다. 출력 privacy/ASCII
+opt-in,128args/32KiB와 stream별1MiB 한도·별도 검역/실행/cleanup 축은 UV 초기 lane과 같다.
+
+예: `helox pipx run --show-output --spec python-slugify==8.0.4 slugify -- hello world`.
+Named local 앱3/CLI6 검증과 새-source hosted·일반 동등성의 남은 범위는 [E3 결과](../planning/evidence/package-client-quarantine/p6e3-pipx-current-cli-local-20261030.json)와 [Queue](../planning/02-current-work-queue.md)가 소유한다.

@@ -48,6 +48,12 @@ func uvRunExecutionPlatform(goos, arch string) error {
 	return nil
 }
 func runUVRunExecution(ctx context.Context, command *cobra.Command, executor *hosttool.Executor, observer sandbox.TraceObserver) (resultErr error) {
+	return runPythonNativeExecution(ctx, command, executor, observer, false)
+}
+func runPipxRunExecution(ctx context.Context, command *cobra.Command, executor *hosttool.Executor, observer sandbox.TraceObserver) error {
+	return runPythonNativeExecution(ctx, command, executor, observer, true)
+}
+func runPythonNativeExecution(ctx context.Context, command *cobra.Command, executor *hosttool.Executor, observer sandbox.TraceObserver, pipx bool) (resultErr error) {
 	cache, err := os.UserCacheDir()
 	if err != nil {
 		return err
@@ -87,13 +93,24 @@ func runUVRunExecution(ctx context.Context, command *cobra.Command, executor *ho
 	if err != nil {
 		return err
 	}
-	native, err := sandbox.NewLinuxUVResolverWithExecutorAndPolicy(executor, observer, policy)
-	if err != nil {
-		return err
-	}
-	defer func() { resultErr = errors.Join(resultErr, native.Close()) }()
-	if err := cli.AddUVRunExecution(command, pythonUVRunCLI{native, intake, inspector, static, backend, store, staging}); err != nil {
-		return err
+	if pipx {
+		native, err := sandbox.NewLinuxPipxResolverWithExecutorAndPolicy(executor, observer, policy, newObservationResourceAdapter())
+		if err != nil {
+			return err
+		}
+		defer func() { resultErr = errors.Join(resultErr, native.Close()) }()
+		if err := cli.AddPipxRunExecution(command, pythonPipxRunCLI{native, intake, inspector, static, backend, store, staging}); err != nil {
+			return err
+		}
+	} else {
+		native, err := sandbox.NewLinuxUVResolverWithExecutorAndPolicy(executor, observer, policy)
+		if err != nil {
+			return err
+		}
+		defer func() { resultErr = errors.Join(resultErr, native.Close()) }()
+		if err := cli.AddUVRunExecution(command, pythonUVRunCLI{native, intake, inspector, static, backend, store, staging}); err != nil {
+			return err
+		}
 	}
 	return command.ExecuteContext(ctx)
 }
