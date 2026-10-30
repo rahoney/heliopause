@@ -1,0 +1,326 @@
+{
+  "work_item": "M13-004/P7 ordinary frozen candidate",
+  "status": "COMPLETED_SUCCESS_ORDINARY_CPU_QUALIFIED",
+  "source_commit": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "source_tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "checkout_proof": {
+    "status": "ALL10_SOURCE_LOGS_VERIFIED",
+    "checkout": "581dc94f378e21d13c0847356824c5d1db508755",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "matches_expected": true,
+    "decoded_log_bytes": 1422924
+  },
+  "push": {
+    "at": "2026-10-30T16:56:48.665157+00:00",
+    "verified_at": "2026-10-30T16:56:55.011016+00:00",
+    "branch": "milestone/m13-release-build-packages",
+    "before": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "after": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "source51_committed_bytes_match_qualification": true,
+    "normal_fast_forward": true,
+    "main_changed": false,
+    "exit_code": 0
+  },
+  "new_local_checkpoints": [
+    {
+      "unit": "H1 completed copies cleanup evidence",
+      "commit": "9289e1b147655fd5b2433864860b7038ebd7dab9",
+      "tree": "bac3b01a4e27984422dc1b9dc49b2012a6ab83d7",
+      "paths": 1
+    },
+    {
+      "unit": "H2 full supplemental roots source and named local qualification",
+      "commit": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+      "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+      "paths": 58
+    }
+  ],
+  "grouped_scope": [
+    "CI441 closure/success-baseline comparison d26af2c",
+    "H1 root extras/legacy dist-info identity 0434612",
+    "explicitly approved Linux whole-job120-to150 e8e13a3",
+    "H1 completed copies cleanup 9289e1b",
+    "H2 independent supplemental roots/current whole approval/records/readonly runtime/CLI ec1c260"
+  ],
+  "local_qualification": "p6h2-uvx-supplemental-roots-local-20261031.json",
+  "run": {
+    "id": 41094467995,
+    "number": 442,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41094467995",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "start": "2026-10-30T16:57:01Z",
+    "status": "completed",
+    "conclusion": "success",
+    "updated_at": "2026-10-30T19:16:24Z"
+  },
+  "initial_jobs": [
+    {
+      "id": 124196516246,
+      "name": "Quick",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516473,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124196516556,
+      "name": "Vulnerability",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516573,
+      "name": "Representative Wheel Corpus",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516576,
+      "name": "Security",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516696,
+      "name": "macOS",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516738,
+      "name": "gVisor Observer Helper",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516760,
+      "name": "Minimum Go",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124196516891,
+      "name": "gVisor Linux Integration",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "timer": {
+    "run_id": 41094467995,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 799301,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci442-autopoll-config.json",
+    "process_start_ticks": "5510701",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 7,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 75370,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "registered_at": "2026-10-30T17:00:04.909508+00:00",
+    "first_due_kst": "2026-10-31 02:17:01 +09:00",
+    "owner_identity_validation": {
+      "status": "VERIFIED",
+      "uid": 1000,
+      "start_ticks": "5510701",
+      "exact_script_and_config": true
+    },
+    "last_timed_query_at": "2026-10-30T18:57:07.835739+00:00",
+    "host_process": "ORIGINAL_PROCESS_ABSENT",
+    "signal_sent": false,
+    "session_readback": "Unknown process id 75370; session already closed",
+    "exact_session_exit_code": null,
+    "limitation": "bridge printed worker output but did not retain the terminal exec metadata; do not claim a witnessed exit0",
+    "source_control_flow": "worker completion branch breaks after terminal GET, no next query scheduled",
+    "at": "2026-10-30T19:24:40.540573+00:00"
+  },
+  "required_contract": {
+    "jobs": 10,
+    "linux_whole_job_minutes": 150,
+    "ordinary_expected_parents": 124,
+    "cpp_tests": 133,
+    "new_jobs": 0,
+    "new_profiles": 0,
+    "individual_timeouts_and_security_boundaries_unchanged": true
+  },
+  "result_scope": {
+    "H1_H2_named_local": true,
+    "new_hosted": "PASS all10 current source /124parents /H1single8/H2single3/CPUfull",
+    "same_source_final_four_profiles": "CPU PASS, CUDA3 NOT_STARTED",
+    "whole_acceptance": false,
+    "main_merge_or_publication": false
+  },
+  "next": "actual20min GET; preserve frozen source and inspect final-profile prerequisites independently; do not start sequential manual CUDA3 before ordinary completion",
+  "first_timed_result": {
+    "number": 1,
+    "due_at": "2026-10-30T17:17:01+00:00",
+    "query_started_at": "2026-10-30T17:17:01.000145+00:00",
+    "api_get_only": true,
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "id": 124196516246,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516473,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516556,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516573,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516576,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516696,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516738,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516760,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516891,
+        "name": "gVisor Linux Integration",
+        "status": "in_progress",
+        "conclusion": null,
+        "current_step": "Install pinned runtime and run lifecycle integration"
+      }
+    ],
+    "query_ended_at": "2026-10-30T17:17:01.902712+00:00",
+    "next_due_at": "2026-10-30T17:37:01.902712+00:00"
+  },
+  "first_timed_failure_disposition": "macOS and Corpus SUCCESS on current source; historical CI441 lower causes remain UNKNOWN",
+  "last_timed_result": {
+    "number": 6,
+    "due_at": "2026-10-30T18:57:06.900529+00:00",
+    "query_started_at": "2026-10-30T18:57:06.900697+00:00",
+    "api_get_only": true,
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "id": 124196516246,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516473,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516556,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516573,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516576,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516696,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516738,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516760,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124196516891,
+        "name": "gVisor Linux Integration",
+        "status": "in_progress",
+        "conclusion": null,
+        "current_step": "Qualify production Node execution preparation"
+      }
+    ],
+    "query_ended_at": "2026-10-30T18:57:07.835739+00:00",
+    "next_due_at": "2026-10-30T19:17:07.835739+00:00"
+  },
+  "metadata_limit_history": [
+    "poll03 Linux steps list was empty; no phase/terminal inference",
+    "poll04 Linux step list returned, Install pinned runtime and run lifecycle integration is IN_PROGRESS"
+  ],
+  "linux_completed_steps": [
+    {
+      "name": "Install pinned runtime and run lifecycle integration",
+      "conclusion": "success",
+      "completed_at": "2026-10-30T18:41:24Z"
+    }
+  ],
+  "qualification": "ci442-ordinary-cpu-qualification-20261031.json",
+  "remaining_current_profile_checkpoint": [],
+  "final_handoff": "p7-final-qualification-20261031.json"
+}

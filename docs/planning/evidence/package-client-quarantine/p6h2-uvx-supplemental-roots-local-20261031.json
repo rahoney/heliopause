@@ -1,6 +1,6 @@
 {
   "work_item": "M13-004/P6-H2",
-  "status": "NAMED_LOCAL_QUALIFIED_HOSTED_PENDING",
+  "status": "NAMED_LOCAL_CURRENT_HOSTED_AND_SAME_SOURCE_FINAL_PROFILES_QUALIFIED",
   "base_commit": "e8e13a3b5108bd762607be091d9c9762b46ac538",
   "approval": "Linux whole CI job150min explicitly approved separately; product/individual test limits unchanged",
   "updated_utc": "2026-10-30T16:43:28.616290+00:00",
@@ -417,7 +417,7 @@
     }
   ],
   "hosted": {
-    "status": "NOT_STARTED",
+    "status": "QUALIFIED CI442 same source",
     "ordinary_expected_top_parents": 124,
     "new_jobs": 0,
     "new_profiles": 0,
@@ -426,13 +426,18 @@
     "command_timeouts_minutes": {
       "new_native_parent": 5,
       "new_cli_parent": 8
-    }
+    },
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "run_id": 41094467995,
+    "checkout": "581dc94f378e21d13c0847356824c5d1db508755",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "proof": "ci442-ordinary-cpu-qualification-20261031.json"
   },
   "acceptance_closed": false,
   "missing": [
-    "new frozen source ordinary hosted qualification",
-    "same-source final CPU/cu126/cu130/cu132 and support matrix",
-    "whole P2/P3/P4/P5/P6/P7 acceptance; no main merge/publication"
+    "same-source cu126/cu130/cu132 actual qualification",
+    "final support/whole P2..P7 acceptance",
+    "main merge/publication remain separate"
   ],
   "source_freeze": {
     "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-final-source-v14-final-source-freeze.json",
@@ -442,5 +447,7 @@
   "raw_delivery": "LOCAL_ONLY_UNTRACKED; source/structured receipt planned for Git, raw logs not claimed delivered to GitHub",
   "implemented": true,
   "wired": true,
-  "qualified_scope": "NAMED_LOCAL_PUBLIC_ROOT_SELECTION_CURRENT_CLI"
+  "qualified_scope": "NAMED_LOCAL_PUBLIC_ROOT_SELECTION_CURRENT_CLI",
+  "current_final_profile_handoff": "p7-final-qualification-20261031.json",
+  "acceptance_scope_note": "current H2 root/whole selection/CLI behavior and exact-source profiles qualified; false whole acceptance does not claim generic capability/M13 channel completion"
 }

@@ -193,23 +193,19 @@ deployment를 수행한다.
 | 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Defined | 구현 진행 상태는 Current Work Queue가 소유 |
 
-2026-10-21 추가 요청의 [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
-[실행 계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역 엔진을 재사용한다.
-UV pip managed 설치·업데이트와 bounded native 인계에 이어 complete sync의 원본 전체 proof·
-held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를 연결했다.
-[CI391](./docs/planning/evidence/package-client-quarantine/p1f-uv-sync-cli-ci391-20261023.json)은 같은
-전체 tree의 실제 complete/closure·기존 Linux/CPU/macOS와 Required10SUCCESS를 확인했다.
-같은 후보의 cu126/CI392·cu130/CI393·cu132/CI394도 각각 Required10SUCCESS다.
-[누적 qualification](./docs/planning/evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)을
-확인해 P1은 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 그 뒤 Go1.27.3의
-[최종 로컬 검증·source 반영](./docs/planning/evidence/package-client-quarantine/go1273-local-qualification-20261023.json)을
-완료했고 [G127 누적 acceptance](./docs/planning/evidence/package-client-quarantine/go1273-acceptance-20261024.json)로
-동일 후보 네 CI·native platform과 coherent Host SDK/tools/runtime1.27.3 전환·readback·정리를
-확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. 이후 P2 pnpm/P3 Bun/P4 UV
-project·persistent tools는 named local/hosted 검증을 누적했다. [CI417 qualification](./docs/planning/evidence/package-client-quarantine/ci417-uv-tools-hosted-qualification-20261027.json)은
-supported fresh/managed/native UV tool과 UID1001 current 승인, Required10SUCCESS를 확인한다.
-P4-O4와 P5/P6는 기존 owner를 재사용한 named 검증을 누적했다. 이전 공통 hosted 기준선인 [CI433](./docs/planning/evidence/package-client-quarantine/ci433-python-current-workflows-hosted-qualification-20261029.json)의 source87c8 Required10SUCCESS를 확인했고 current Python boundary/hostile/application 범위가 포함된다. 이후 [D3 cached UV 조회](./docs/planning/evidence/package-client-quarantine/p6d3-cached-query-local-20261029.json)는 named local 검증을 완료했다. [CI434](./docs/planning/evidence/package-client-quarantine/ci434-registration-20261029.json)는 old source d81의 Linux104 성공과 macOS production build2m·Required 실패로 완료됐으며 원인은 미확정이다. 공개 native whole startup/source binding은 [D4A named local](./docs/planning/evidence/package-client-quarantine/p6d4a-public-native-binding-local-20261030.json)로 검증했고 [D4B2 cache/query census](./docs/planning/evidence/package-client-quarantine/p6d4b2-exported-cache-query-local-20261030.json)도 named local 완료다. [D4B3 source/console DATA](./docs/planning/evidence/package-client-quarantine/p6d4b3-native-source-console-local-20261030.json)도 named local 검증을 완료했다. [D4B4 hosted wiring](./docs/planning/evidence/package-client-quarantine/p6d4b4-native-hosted-local-20261030.json)의 로컬 검증을 마쳤고 [grouped CI435](./docs/planning/evidence/package-client-quarantine/ci435-registration-20261030.json)/sourceb0f4cbc는 Required10SUCCESS로 완료됐다. [D5 production native-run resolver](./docs/planning/evidence/package-client-quarantine/p6d5-native-run-resolver-local-20261030.json)의 named local 정상·관측 불완전 거부도 확인했다. [D6 current native-run application](./docs/planning/evidence/package-client-quarantine/p6d6-native-run-application-local-20261030.json)의 fresh ALLOW/normal0/guest2/command 불일치 거부도 named local로 확인했다. [D7 uvx/uv tool run CLI](./docs/planning/evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json)의 aliases·다른 package/console 전체 원본·출력/typed exit·준비 거부도 named local로 확인했다. [CI435](./docs/planning/evidence/package-client-quarantine/ci435-native-source-hosted-qualification-20261030.json)의 sourceb0/Required10SUCCESS·native DATA2도 확인했다. [D8](./docs/planning/evidence/package-client-quarantine/p6d8-native-run-hosted-local-20261030.json)가 현재 native selector/app/CLI를 기존 hosted owner에 묶었고 [grouped CI436](./docs/planning/evidence/package-client-quarantine/ci436-registration-20261030.json)/source775c19c는 [기존 Bun peer 관측 실패](./docs/planning/evidence/package-client-quarantine/ci436-bun-peer-hosted-failure-20261030.json)로 종료됐고 새 UV hosted 사례는 미도달이다. 재개 입력 복구와 [최소 수정·C++132 검증](./docs/planning/evidence/package-client-quarantine/ci436-bun-peer-hosted-failure-20261030.json)을 마쳤고 [CI437](./docs/planning/evidence/package-client-quarantine/ci437-close-entry-uv-hosted-qualification-20261030.json)은 frozen f4f7abc의 Required10SUCCESS/Linux109/CPP132로 공통 FD 수정과 새 UV source/current/CLI를 named hosted 검증했다. 실제20분 조회5회 뒤 완료를 확인해 GET worker를 종료했으며 다음 타이머는 없다. CI436의 과거 이벤트 순서는 미확정이고 후속 E2 native selector와 [E3 pipx current app/CLI](./docs/planning/evidence/package-client-quarantine/p6e3-pipx-current-cli-local-20261030.json)는 named local 검증을 마쳤다. 새 source31acbfe의 [grouped CI438](./docs/planning/evidence/package-client-quarantine/ci438-registration-20261030.json)은 [Required10SUCCESS](./docs/planning/evidence/package-client-quarantine/ci438-pipx-current-hosted-qualification-20261030.json)로 E2/E3를 named hosted 검증했다. 실제 GET6 뒤 worker는 자연0 종료했고 다음 타이머는 없다. [F1 PNPM cold 선택 DATA](./docs/planning/evidence/package-client-quarantine/p6f1-pnpm-cold-selection-local-20261030.json)는 기존 observer/공용 reader로 named local 검증을 마쳤으며 [F2/F3 현재 PNPM 실행·CLI](./docs/planning/evidence/package-client-quarantine/p6f2f3-pnpm-current-cli-local-20261030.json)의 named local 실제 검증과 Go/workflow/Race 검사를 마쳤다. 이후 [Bun G3](./docs/planning/evidence/package-client-quarantine/p6g3-bun-readonly-program-local-20261030.json)의 명시 JS 실행과 [P7 profile 실행 경계](./docs/planning/evidence/package-client-quarantine/p7-cuda-profile-routing-local-20261030.json)는 named local 검증을 마쳤다. [CI440 실패](./docs/planning/evidence/package-client-quarantine/ci440-go-proxy-first-failure-20261030.json)는 후속 Go proxy 오류와 현재 local Go41 성공을 구분하며 하위 원인은 미확정이다. 다음은 같은 최종 source의 ordinary·세 CUDA 실제 검증과 지원표 인계다. Generic equivalence와 whole P4/P5–P7/final4profiles/signed15assets19bundle acceptance는 OPEN이다. 상세 범위·원본·다음 순서는 Queue와 각 canonical receipt를 따른다. 과거 CPU/deadline/drop/fork-only의 미확정 인과는 유지한다. CLI 강조 대상은 제품 풀네임이고 helox는 실행 명령이다.
-현재 단일 active item은 M13-004이며 구체 순서·상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
+2026-10-21 추가 요청의 [client/runner 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
+[계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역/Policy/transaction을 재사용한다.
+P1 scoped acceptance와 Go1.27.3 전환은 완료했고, 현재 frozen sourceec1c260/tree84e70a9e는
+[CI442 ordinary/CPU](./docs/planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json),
+[cu126](./docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json),
+[cu130](./docs/planning/evidence/package-client-quarantine/p7-cu130-final-qualification-20261031.json),
+[cu132](./docs/planning/evidence/package-client-quarantine/p7-cu132-final-qualification-20261031.json)의 Required10SUCCESS로 qualification을 확인했다.
+H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
+[최종 지원표](./docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)를 따른다.
+미구현 native/entry/TTY/export capability나 새 서명 배포·채널·publication acceptance로 확대하지 않는다.
+첫 Read/build/job deadline의 하위 원인은 UNKNOWN이며 성공한 재검증을 원인 수리로 기록하지 않는다.
+공식 채널 이름은 구체 선택안을 전달하고 답변 대기다. 채널 코드/등록/게시를 시작하지 않았다.
+현재 단일 active item은 M13-004이며 상세 상태·남은 순서는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 ## Open Decisions
 

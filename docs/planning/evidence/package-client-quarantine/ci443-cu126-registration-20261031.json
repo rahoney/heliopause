@@ -1,0 +1,610 @@
+{
+  "work_item": "M13-004/P7 final profile cu126",
+  "profile": "cu126",
+  "status": "ATTEMPT2_COMPLETED_SUCCESS_ALL10_CU126_QUALIFIED",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "expected_tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "ordinary_prerequisite": "ci442-ordinary-cpu-qualification-20261031.json",
+  "dispatch": {
+    "profile": "cu126",
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "submitted_at": "2026-10-30T19:28:11.398078+00:00",
+    "request": {
+      "ref": "milestone/m13-release-build-packages",
+      "inputs": {
+        "pytorch_cu126_qualification": true,
+        "pytorch_cu130_qualification": false,
+        "pytorch_cu132_qualification": false
+      },
+      "return_run_details": true
+    },
+    "api_version": "2026-03-10",
+    "auth_provider": "existing repository Git credential helper",
+    "credentials_logged_or_saved": false,
+    "POST_attempts": 1,
+    "official_contract": "https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event",
+    "http_status": 200,
+    "response": {
+      "workflow_run_id": 41115499227,
+      "run_url": "https://api.github.com/repos/rahoney/heliopause/actions/runs/41115499227",
+      "html_url": "https://github.com/rahoney/heliopause/actions/runs/41115499227"
+    },
+    "status": "DISPATCH_ACKNOWLEDGED_RUN_ID_RETURNED"
+  },
+  "run": {
+    "id": 41115499227,
+    "number": 443,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41115499227",
+    "start": "2026-10-30T19:28:12Z",
+    "event": "workflow_dispatch",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "status": "completed",
+    "conclusion": "success",
+    "attempt": 2,
+    "attempt2_start": "2026-10-30T20:11:55Z"
+  },
+  "initial_job_count": 9,
+  "timer": {
+    "run_id": 41115499227,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 826163,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci443-attempt2-autopoll-config.json",
+    "process_start_ticks": "6673835",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 3,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 99194,
+    "owner_identity_verified": true,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "last_result": {
+      "number": 3,
+      "due_at": "2026-10-30T21:11:58.513658+00:00",
+      "query_started_at": "2026-10-30T21:11:58.513789+00:00",
+      "api_get_only": true,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 124287875329,
+          "name": "gVisor Linux Integration",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124287875595,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124289937277,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290017776,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290068480,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290259472,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290369887,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290410551,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290780014,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124309438776,
+          "name": "Required",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T21:12:00.263502+00:00",
+      "next_due_at": null
+    },
+    "last_timed_query_at": "2026-10-30T21:12:00.263502+00:00",
+    "start_ticks": "6673835",
+    "observed_exit_code": 0,
+    "exec_chunk_id": "25ee4b",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "required_contract": {
+    "all_jobs": 10,
+    "max_selected_cuda_profiles": 1,
+    "cpu_full_timeout_minutes": 15,
+    "selected_cuda_timeout_minutes": 40,
+    "whole_linux_timeout_minutes": 150,
+    "qualification_plan": "cuda-bindings-numpy",
+    "not_attested_module": "triton.profiler.viewer",
+    "source_runtime_and_qualification_inputs_unchanged": true,
+    "ordinary_clients_are_qualified_separately": true
+  },
+  "remaining": [],
+  "acceptance_closed": false,
+  "first_timed_result": {
+    "number": 1,
+    "due_at": "2026-10-30T19:48:12+00:00",
+    "query_started_at": "2026-10-30T19:48:12.000175+00:00",
+    "api_get_only": true,
+    "status": "in_progress",
+    "conclusion": null,
+    "jobs": [
+      {
+        "id": 124268546826,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547266,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547269,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547280,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547315,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547546,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547594,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547727,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      },
+      {
+        "id": 124268547817,
+        "name": "gVisor Linux Integration",
+        "status": "in_progress",
+        "conclusion": null,
+        "current_step": "Install pinned runtime and run lifecycle integration"
+      }
+    ],
+    "query_ended_at": "2026-10-30T19:48:12.793394+00:00",
+    "next_due_at": "2026-10-30T20:08:12.793394+00:00"
+  },
+  "first_failure_comparison": "ci443-macos-first-failure-comparison-20261031.json",
+  "completed8_source_proof": "docs/github-logs/package-client-quarantine-20261021/ci443-first8-source-log-proof.json",
+  "first_failure_disposition": "production build120.114s deadline; default tests NOT_REACHED; same tree/image/cachefalse CI442 build77.614s/default PASS; lower cause UNKNOWN; no source/limit change",
+  "terminal_result": {
+    "number": 2,
+    "due_at": "2026-10-30T20:08:12.793394+00:00",
+    "query_started_at": "2026-10-30T20:08:12.793530+00:00",
+    "api_get_only": true,
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "id": 124268546826,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547266,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547269,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547280,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547315,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547546,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547594,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
+      },
+      {
+        "id": 124268547727,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      },
+      {
+        "id": 124268547817,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      },
+      {
+        "id": 124285590404,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
+      }
+    ],
+    "query_ended_at": "2026-10-30T20:08:13.654091+00:00",
+    "next_due_at": null
+  },
+  "full_source_log_proof": "docs/github-logs/package-client-quarantine-20261021/ci443-full-source-log-proof.json",
+  "cu126_first_failure": "ci443-cu126-first-failure-20261031.json",
+  "attempt1_run": {
+    "id": 41115499227,
+    "number": 443,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41115499227",
+    "start": "2026-10-30T19:28:12Z",
+    "event": "workflow_dispatch",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "status": "completed",
+    "conclusion": "failure",
+    "attempt": 1
+  },
+  "attempt1_timer": {
+    "run_id": 41115499227,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 823479,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci443-autopoll-config.json",
+    "process_start_ticks": "6417470",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 2,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 36432,
+    "owner_identity_verified": true,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "registered_at": "2026-10-30T19:31:02.526460+00:00",
+    "first_due_kst": "2026-10-31 04:48:12 +09:00",
+    "last_timed_query_at": "2026-10-30T20:08:13.654091+00:00",
+    "observed_exit_code": 0,
+    "signal_sent": false
+  },
+  "attempt2": {
+    "intent": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-failed-only-intent.json",
+    "response": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-failed-only-response.json",
+    "initial_jobs": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-initial-jobs.json",
+    "retain_successful_attempt1_jobs": 7,
+    "same_failure_retry_again": false,
+    "qualification": "PENDING; attempt2 jobs must be reconciled with retained7 by exact source and raw logs",
+    "first_timed_result": {
+      "number": 1,
+      "due_at": "2026-10-30T20:31:55+00:00",
+      "query_started_at": "2026-10-30T20:31:55.000133+00:00",
+      "api_get_only": true,
+      "status": "in_progress",
+      "conclusion": null,
+      "jobs": [
+        {
+          "id": 124287875329,
+          "name": "gVisor Linux Integration",
+          "status": "in_progress",
+          "conclusion": null,
+          "current_step": "Install pinned runtime and run lifecycle integration"
+        },
+        {
+          "id": 124287875595,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124289937277,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290017776,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290068480,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290259472,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290369887,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290410551,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290780014,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T20:31:56.833226+00:00",
+      "next_due_at": "2026-10-30T20:51:56.833226+00:00"
+    },
+    "retained7_mapping": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-retained7-mapping.json",
+    "macos": {
+      "job": 124287875595,
+      "conclusion": "success",
+      "production_build_seconds": 83.851358,
+      "raw_log": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-job124287875595.log",
+      "historical_lower_cause": "UNKNOWN"
+    },
+    "last_timed_result": {
+      "number": 2,
+      "due_at": "2026-10-30T20:51:56.833226+00:00",
+      "query_started_at": "2026-10-30T20:51:56.833430+00:00",
+      "api_get_only": true,
+      "status": "in_progress",
+      "conclusion": null,
+      "jobs": [
+        {
+          "id": 124287875329,
+          "name": "gVisor Linux Integration",
+          "status": "in_progress",
+          "conclusion": null,
+          "current_step": "Install pinned runtime and run lifecycle integration"
+        },
+        {
+          "id": 124287875595,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124289937277,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290017776,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290068480,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290259472,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290369887,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290410551,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290780014,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T20:51:58.513658+00:00",
+      "next_due_at": "2026-10-30T21:11:58.513658+00:00"
+    },
+    "terminal_result": {
+      "number": 3,
+      "due_at": "2026-10-30T21:11:58.513658+00:00",
+      "query_started_at": "2026-10-30T21:11:58.513789+00:00",
+      "api_get_only": true,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 124287875329,
+          "name": "gVisor Linux Integration",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124287875595,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124289937277,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290017776,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290068480,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290259472,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290369887,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290410551,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124290780014,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124309438776,
+          "name": "Required",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T21:12:00.263502+00:00",
+      "next_due_at": null
+    }
+  },
+  "qualification": "docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json",
+  "remaining_current_profile_checkpoint": [],
+  "final_handoff": "p7-final-qualification-20261031.json"
+}

@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, fresh uv tool install·managed upgrade 및 fixed recipe의 명시 native tool adoption CI417 named hosted 검증, pipx·최종 support/profile matrix 미완료; P5 bounded npx/npm exec·private/escaped output named local CLI 검증, grouped CI429 named hosted 검증/final 미완료; P6 console declaration DATA/controlled intake reader named local 검증, current Python preparation actual3·readonly DATA4 named local 검증/새 hosted·user runtime·alias 지원 미완료, P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip scoped COMPLETE; P2–P6의 구현·named local/hosted 근거와 현재 지원 한계는 아래 각 lane 및 [Queue](../planning/02-current-work-queue.md)를 따른다. H1 root extras/H2 독립 추가 root와 current ordinary/CPU는 CI442, 같은 source의 cu126/cu130/cu132는 CI443/444/445에서 검증됐다. [현재 지원·미구현 대조표](../planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)와 [최종 qualification](../planning/evidence/package-client-quarantine/p7-final-qualification-20261031.json)을 따른다. 일반 native 동등성/미구현 capability와 서명 배포·채널 acceptance는 별도 미완료**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -377,28 +377,35 @@ Unknown option/operation과 빠진·중복·상대·alias·겹친 경로는 runt
 
 ### P6 UVx와 native tool run 초기 실행 lane
 
-`helox uvx [--from <package>] <tool-or-command> [--] [args...]`와
-`helox uv tool run`은 같은 public PyPI single-primary 실행 요청을 사용한다. Bare 또는
+`helox uvx [--from <package>] [--with <package>] <tool-or-command> [--] [args...]`와
+`helox uv tool run`은 같은 public PyPI console-primary 실행 요청을 사용한다. Bare 또는
 정확한 `name@version`/`name==version`을 사용하며 package와 console 이름이 다르면
 `--from`을 command 앞에 둔다. `name[extra]==version`/`name[extra]@version`은 primary
 wheel이 선언한 root extras를 선택한다. 각 extra의 실제 metadata edge/조건과 선택된 원본
 전체를 함께 검증하며 없는 extra·불완전 set·지원하지 않는 marker는 거부한다.
+명령 앞의 반복 `--with`는 같은 bare/exact/root-extra 문법의 추가 공개 root를 선택한다.
+각 root의 실제 reachable graph와 전체 union을 검증하고 공유 node는 한 번 새로 검사한다.
+독립 root를 가짜 metadata edge로 잇지 않으며 전체 승인·records·readonly 실행에 보존한다.
 HAA/global 옵션은 package·command 앞, 뒤는 literal argv다.
 바로 뒤 `--` 하나만 구분자로 소비하며 guest `--help`도 program 인자다.
 
 매번 native UV의 새 isolated 선택을 whole 원본·startup gate와 결합하고 기존 current
 검사·Evidence·Policy 승인 뒤 approved 원본 console을 고정 Python의 readonly guest에서
 실행한다. Native cache/RECORD는 승인·소유권이 아니다. Linux amd64만 지원하며 interpreter
-요청·runtime 변경/다운로드·독립 추가 package(`--with`)·전이 dependency extras·local/VCS/URL/custom index는 거부한다.
+요청·runtime 변경/다운로드·metadata의 전이 dependency extras·local/VCS/URL/custom index는 거부한다.
 Host project/HOME/credential·network·stdin/TTY·generated-file export는 제공하지 않는다.
 기본 출력은 byte count이며 `--show-output`은 stream별 최대1MiB를 untrusted ASCII quoted
 text로 표시한다. Argv128/32KiB·기존 실행/cleanup 한도와 별도 결과 축을 재사용한다.
 
 예: `helox --output json uv tool run --show-output --from python-slugify==8.0.4 slugify -- hello world`.
 기본 lane은 [D7 receipt](../planning/evidence/package-client-quarantine/p6d7-uvx-cli-local-20261030.json),
-root extras의 실제 3-wheel·두 alias와 remaining hosted/일반 동등성 범위는
+root extras의 기존 local 3-wheel·두 alias 및 일반 동등성 범위는
 [H1 receipt](../planning/evidence/package-client-quarantine/p6h1-uvx-root-extras-local-20261030.json)가 소유한다.
 예: `helox uvx --from python-slugify[unidecode]==8.0.4 slugify -- hello world`.
+독립 추가 root의 native/current CLI와 final 범위는
+[H2 receipt](../planning/evidence/package-client-quarantine/p6h2-uvx-supplemental-roots-local-20261031.json)가 소유한다.
+예: `helox uvx --with Unidecode==1.4.0 --from python-slugify==8.0.4 slugify -- hello world`.
+현재 source의 H1 single full8·H2 CLI3/native2는 [CI442 ordinary/CPU](../planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json)가 검증했다. 같은 source의 CUDA3도 CI443/444/445에서 검증됐다. 지원 범위와 남은 미구현은 위 최종 대조표를 따른다.
 
 ### P6 pipx run 초기 실행 lane
 

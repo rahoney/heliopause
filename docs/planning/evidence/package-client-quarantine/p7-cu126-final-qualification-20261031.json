@@ -1,0 +1,95 @@
+{
+  "work_item": "M13-004/P7 final profile cu126",
+  "profile": "cu126",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "qualified": true,
+  "all10_success": true,
+  "status": "QUALIFIED_EXACT_SOURCE_FAILED_ONLY_REQUALIFICATION",
+  "run_id": 41115499227,
+  "run_number": 443,
+  "run_attempt": 2,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41115499227",
+  "run_started_at": "2026-10-30T20:11:55Z",
+  "run_updated_at": "2026-10-30T20:59:13Z",
+  "ordinary_cpu_prerequisite": "ci442-ordinary-cpu-qualification-20261031.json",
+  "execution_composition": {
+    "retained_successful_attempt1_jobs": 7,
+    "requalified_jobs": [
+      "macOS",
+      "gVisor Linux Integration",
+      "Required"
+    ],
+    "latest_api_aliases_do_not_mean_reexecution": true,
+    "all10_source_proof": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-full-source-log-proof.json",
+    "decoded_log_bytes": 1842515
+  },
+  "linux": {
+    "top_parent_occurrences": 6,
+    "unique_top_parents": 5,
+    "no_fail_or_skip": true,
+    "CPU_full_seconds": 264.94,
+    "cu126_full_seconds": 1208.54,
+    "explicit_qualification_input": {
+      "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+      "explicit_input": {
+        "target_sha256": "bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+        "source": "pypi",
+        "project": "numpy",
+        "version": "2.4.6",
+        "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+        "reason": "BROADER_MODULE_PROBES"
+      },
+      "plan": "cuda-bindings-numpy",
+      "profile": "cu126",
+      "resolution_sha256": "75353dde8fbf2eb86c92a611d0a8168a102072da01f951275e0dc72cea19e165",
+      "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu126",
+      "schema_version": 1,
+      "target_declared_integrity": "sha256:bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+      "target_project": "cuda-bindings",
+      "target_source": "pypi",
+      "target_url": "https://files.pythonhosted.org/packages/2f/96/d392d861477c866a7dce3a0647a8e1582c2d2e166dcb07c83480157b8457/cuda_bindings-12.9.10-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "target_version": "12.9.10",
+      "torch_version": "2.14.0+cu126"
+    },
+    "bounded_command_module": "triton.profiler.viewer",
+    "bounded_command_disposition": "NOT_ATTESTED",
+    "asserted_by_full_test": [
+      "installed torch/current source manifest exists",
+      "bounded not-attested evidence referenced in result/promotion",
+      "qualification-only NumPy not promoted as a requested dependency"
+    ],
+    "helper_waits": [
+      "0",
+      "0"
+    ],
+    "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=169894"
+  },
+  "macos": {
+    "job": 124287875595,
+    "status": "success",
+    "production_build_seconds": 83.851358,
+    "default_tests": "PASS",
+    "limits_unchanged": true
+  },
+  "timer": {
+    "session_id": 99194,
+    "pid": 826163,
+    "uid": 1000,
+    "start_ticks": "6673835",
+    "actual_queries": 3,
+    "next_due_at": null,
+    "observed_exit_code": 0,
+    "exec_chunk_id": "25ee4b",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "first_failures_retained": [
+    "ci443-cu126-first-failure-20261031.json",
+    "ci443-macos-first-failure-comparison-20261031.json"
+  ],
+  "historical_read_and_build_lower_causes": "UNKNOWN; this successful execution is not proof of a source/pressure/root-cause fix",
+  "next": "same-source cu130 then cu132, final support/whole acceptance",
+  "whole_acceptance_closed": false
+}
