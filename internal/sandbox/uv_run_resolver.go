@@ -168,19 +168,27 @@ func (r *UVResolver) preparePythonRunOriginalWithExtras(ctx context.Context, req
 }
 
 func (r *UVResolver) resolveFrozenUVToolRun(ctx context.Context, requirement artifactpypi.UpgradeRequirement, frozen *pipxNativeInput, command string) (UVRunSelection, error) {
+	args, err := uvRunPreparationArguments(requirement, command)
+	if err != nil {
+		return UVRunSelection{}, err
+	}
+	if frozen.uvRunRequest != "" {
+		request, err := artifactpypi.ParseUVRunRequirement(frozen.uvRunRequest)
+		if err != nil || !frozen.valid() || request.Base().Requirement() != requirement.Requirement() {
+			return UVRunSelection{}, errPipxNativeInput
+		}
+		args[5] = request.Requirement()
+	}
+	facts, err := r.collectUVRunCensus(ctx, frozen, command, args)
+	if err != nil {
+		return UVRunSelection{}, err
+	}
+	return uvRunSelectionFromCensus(ctx, requirement, frozen, command, facts)
+}
+
+func (r *UVResolver) collectUVRunCensus(ctx context.Context, frozen *pipxNativeInput, command string, args []string) ([]uvRunCensusFact, error) {
 	var facts []uvRunCensusFact
 	_, err := r.withUVNativeSessionForToolInstall(ctx, func(selection context.Context, session uvNativeSession) (uvNativeOutput, error) {
-		args, err := uvRunPreparationArguments(requirement, command)
-		if err != nil {
-			return uvNativeOutput{}, err
-		}
-		if frozen.uvRunRequest != "" {
-			request, err := artifactpypi.ParseUVRunRequirement(frozen.uvRunRequest)
-			if err != nil || !frozen.valid() || request.Base().Requirement() != requirement.Requirement() {
-				return uvNativeOutput{}, errPipxNativeInput
-			}
-			args[5] = request.Requirement()
-		}
 		output, runErr := r.reader.runner.Output(selection, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, args...)...)
 		if !uvRunPreparedTerminal(output, runErr) {
 			return uvNativeOutput{}, errors.Join(errors.New("UV isolated preparation did not reach its fixed inert terminal"), runErr)
@@ -191,10 +199,7 @@ func (r *UVResolver) resolveFrozenUVToolRun(ctx context.Context, requirement art
 			return uvNativeOutput{}, scanErr
 		})
 	}, false, frozen)
-	if err != nil {
-		return UVRunSelection{}, err
-	}
-	return uvRunSelectionFromCensus(ctx, requirement, frozen, command, facts)
+	return facts, err
 }
 
 func uvRunSelectionFromCensus(ctx context.Context, requirement artifactpypi.UpgradeRequirement, frozen *pipxNativeInput, command string, facts []uvRunCensusFact) (UVRunSelection, error) {

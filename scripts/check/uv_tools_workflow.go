@@ -4,6 +4,10 @@ import "strings"
 
 const uvRunSourceCommand = `HELOX_UV_NATIVE_RUNTIME=1 HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1 HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^(TestUVActualPublicToolRun(SourceBinding|NativeCensus)|TestUVPublicToolRunResolverIntegration)$'`
 
+const uvRunSupplementalSourceCommand = `HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicToolRunSupplementalResolverIntegration$'`
+
+const uvRunSupplementalCLICommand = `HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxUVRunSupplementalExecutionCLIIntegration$'`
+
 const uvRunWorkflowCommand = `HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxPythonUVRunExecutionWorkflowIntegration$'`
 
 const pipxRunWorkflowCommand = `HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxPythonPipxRunExecutionWorkflowIntegration$'`
@@ -47,14 +51,14 @@ func validateUVToolsScript(contents string) []string {
 		`uv_tools_container=$(docker create --pull never --network none --read-only --cap-drop ALL --label "io.heliopause.ci.uv-tools-data=$uv_tools_owner" --entrypoint /bin/false "$uv_tools_image")`,
 		`docker cp "$uv_tools_container:/usr/local/bin/python3.14" "$uv_tools_work/python3.14"`,
 		`chmod 0400 "$uv_tools_work/python3.14"`, `uv_tools_sha=$(sha256sum "$uv_tools_work/python3.14" | cut -d ' ' -f 1)`,
-		uvRunSourceCommand, uvRunWorkflowCommand, uvRunCLICommand, pipxRunWorkflowCommand, pipxRunCLICommand, uvToolNativeCommand, uvToolBootstrapCommand, pipxToolBootstrapCommand, pythonExecutionPreparationCommand, pythonExecutionInputsCommand, pythonConsoleExecutionCommand, pythonExecutionBoundaryCommand, pythonExecutionHostileCommand, pythonExecutionWorkflowCommand,
+		uvRunSourceCommand, uvRunSupplementalSourceCommand, uvRunWorkflowCommand, uvRunCLICommand, uvRunSupplementalCLICommand, pipxRunWorkflowCommand, pipxRunCLICommand, uvToolNativeCommand, uvToolBootstrapCommand, pipxToolBootstrapCommand, pythonExecutionPreparationCommand, pythonExecutionInputsCommand, pythonConsoleExecutionCommand, pythonExecutionBoundaryCommand, pythonExecutionHostileCommand, pythonExecutionWorkflowCommand,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "UV tools helper requires one command: "+command)
 		}
 	}
 	joined := strings.Join(active, "\n")
-	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-cli ]]; then", pipxRunCLICommand, "else", uvRunCLICommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-workflow ]]; then", pipxRunWorkflowCommand, "else", uvRunWorkflowCommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
+	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, uvRunSupplementalSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-cli ]]; then", pipxRunCLICommand, "else", uvRunCLICommand, uvRunSupplementalCLICommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-workflow ]]; then", pipxRunWorkflowCommand, "else", uvRunWorkflowCommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
 		if strings.Count(joined, strings.Join(scope, "\n")) != 1 {
 			findings = append(findings, "UV tools consumer requires its package and owned data cleanup scope")
 		}
@@ -272,6 +276,13 @@ if ((uv_run_cli_status)); then exit "$uv_run_cli_status"; fi
 if ((uv_run_cli_log_status)); then exit "$uv_run_cli_log_status"; fi
 awk '
 BEGIN {
+  supplemental_expected["1"]="alias=uvx format=json language=en show_output=true exit_code=0 current_policy=ALLOW nodes=3 guest_cleanup=CONFIRMED"
+  supplemental_expected["2"]="alias=run format=json language=ko show_output=true exit_code=2 current_policy=ALLOW nodes=3 guest_cleanup=CONFIRMED"
+  supplemental_expected["3"]="alias=uvx format=json language=en show_output=false exit_code=1 current_policy=NOT_AVAILABLE runtime_attempted=false stored_manifest=0"
+  supplemental_hash["python-slugify"]="276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8"
+  supplemental_hash["text-unidecode"]="1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8"
+  supplemental_hash["unidecode"]="c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021"
+  supplemental_version["python-slugify"]="8.0.4"; supplemental_version["text-unidecode"]="1.3"; supplemental_version["unidecode"]="1.4.0"
   expected["1"]="alias=uvx format=json language=en show_output=false exit_code=0 current_policy=ALLOW nodes=1 guest_cleanup=CONFIRMED"
   expected["2"]="alias=run format=json language=ko show_output=true exit_code=2 current_policy=ALLOW nodes=1 guest_cleanup=CONFIRMED"
   expected["3"]="alias=uvx format=human language=ko show_output=true exit_code=0 current_policy=ALLOW nodes=1 guest_cleanup=CONFIRMED"
@@ -282,7 +293,7 @@ BEGIN {
   expected["8"]="alias=uvx format=json language=en show_output=false exit_code=1 current_policy=NOT_AVAILABLE runtime_attempted=false stored_manifest=0"
 }
 /--- SKIP:/ { bad=1 }
-/^--- PASS:/ { if ($3 != "TestLinuxUVRunExecutionCLIIntegration" || parent++) bad=1 }
+/^--- PASS:/ { if ($3 == "TestLinuxUVRunExecutionCLIIntegration") { if (parent++) bad=1 } else if ($3 == "TestLinuxUVRunSupplementalExecutionCLIIntegration") { if (supplemental_parent++) bad=1 } else bad=1 }
 /production_uv_run_cli case=/ {
   id=$3; sub(/^case=/,"",id)
   if (!(id in expected) || seen[id]++ || $0 !~ ("^[[:space:]]+python_uv_run_cli_integration_test\\.go:[0-9]+: production_uv_run_cli case=" id " " expected[id] "$")) bad=1
@@ -297,7 +308,18 @@ BEGIN {
   else bad=1
   sources++
 }
-END { exit (bad || parent!=1 || cases!=8 || sources!=11 || !source["1 cowsay"] || !source["2 cowsay"] || !source["3 cowsay"] || !source["4 python-slugify"] || !source["4 text-unidecode"] || !source["6 python-slugify"] || !source["6 text-unidecode"] || !source["6 unidecode"] || !source["7 python-slugify"] || !source["7 text-unidecode"] || !source["7 unidecode"]) }
+/production_uv_run_supplemental_cli case=/ {
+  id=$3; sub(/^case=/,"",id)
+  if (!(id in supplemental_expected) || supplemental_seen[id]++ || $0 !~ ("^[[:space:]]+python_uv_run_cli_integration_test\\.go:[0-9]+: production_uv_run_supplemental_cli case=" id " " supplemental_expected[id] "$")) bad=1
+  supplemental_cases++
+}
+/production_uv_run_supplemental_cli_source case=/ {
+  if ($0 !~ /^[[:space:]]+python_uv_run_cli_integration_test\.go:[0-9]+: production_uv_run_supplemental_cli_source case=[12] name=[a-z0-9-]+ version=[0-9.]+ sha256=[0-9a-f]+ evidence=[0-9]+$/) bad=1
+  id=$3; sub(/^case=/,"",id); name=$4; sub(/^name=/,"",name); version=$5; sub(/^version=/,"",version); hash=$6; sub(/^sha256=/,"",hash); evidence=$7; sub(/^evidence=/,"",evidence)
+  if (!(name in supplemental_hash) || version!=supplemental_version[name] || hash!=supplemental_hash[name] || evidence+0<3 || supplemental_source[id " " name]++) bad=1
+  supplemental_sources++
+}
+END { exit (bad || parent!=1 || cases!=8 || sources!=11 || !source["1 cowsay"] || !source["2 cowsay"] || !source["3 cowsay"] || !source["4 python-slugify"] || !source["4 text-unidecode"] || !source["6 python-slugify"] || !source["6 text-unidecode"] || !source["6 unidecode"] || !source["7 python-slugify"] || !source["7 text-unidecode"] || !source["7 unidecode"] || supplemental_parent!=1 || supplemental_cases!=3 || supplemental_sources!=6 || !supplemental_source["1 python-slugify"] || !supplemental_source["1 text-unidecode"] || !supplemental_source["1 unidecode"] || !supplemental_source["2 python-slugify"] || !supplemental_source["2 text-unidecode"] || !supplemental_source["2 unidecode"]) }
 ' "$uv_run_cli_log"
 rm -- "$uv_run_cli_log"
 
@@ -361,7 +383,7 @@ cat -- "$uv_run_source_log" || uv_run_source_log_status=$?
 if ((uv_run_source_status)); then exit "$uv_run_source_status"; fi
 if ((uv_run_source_log_status)); then exit "$uv_run_source_log_status"; fi
 awk '
-BEGIN { expected["TestUVActualPublicToolRunSourceBinding"]=1; expected["TestUVActualPublicToolRunNativeCensus"]=1; expected["TestUVPublicToolRunResolverIntegration"]=1 }
+BEGIN { expected["TestUVActualPublicToolRunSourceBinding"]=1; expected["TestUVActualPublicToolRunNativeCensus"]=1; expected["TestUVPublicToolRunResolverIntegration"]=1; expected["TestUVPublicToolRunSupplementalResolverIntegration"]=1 }
 /--- SKIP:/ { bad=1 }
 /^--- PASS:/ {
   if (!($3 in expected) || accepted[$3]++) bad=1
@@ -390,7 +412,21 @@ BEGIN { expected["TestUVActualPublicToolRunSourceBinding"]=1; expected["TestUVAc
   if (resolver[id]++ || $13 != "selection_returned=" (id=="normal" ? "true" : "false")) bad=1
   resolver_count++
 }
-END { exit (bad || parents != 3 || source != 1 || console != 1 || census != 1 || trace_count != 6 || resolver_count != 2) }
+/uv_run_supplemental_resolver_trace case=/ {
+  if ($0 !~ /^[[:space:]]+uv_run_resolver_real_test\.go:[0-9]+: uv_run_supplemental_resolver_trace case=(normal|incomplete-refused) phase=(uv-pip-resolver|pypi-wheel|frozen-offline) raw_complete=true delivered_complete=(true|false) injected_incomplete=(true|false) events=[0-9]+ bytes=[0-9]+ kinds=map\[.*\]$/) bad=1
+  id=$3; sub(/^case=/,"",id); phase=$4; sub(/^phase=/,"",phase)
+  if (supplemental_traces[id " " phase]++) bad=1
+  rejected=(id=="incomplete-refused" && phase=="frozen-offline")
+  if ($6 != "delivered_complete=" (rejected ? "false" : "true") || $7 != "injected_incomplete=" (rejected ? "true" : "false")) bad=1
+  supplemental_trace_count++
+}
+/uv_run_supplemental_resolver case=/ {
+  if ($0 !~ /^[[:space:]]+uv_run_resolver_real_test\.go:[0-9]+: uv_run_supplemental_resolver case=(normal|incomplete-refused) source=ACTUAL_PUBLIC_INDEPENDENT original=WHOLE readonly_source=SEALED native=ISOLATED_OFFLINE source_console=BOUND record=UNAPPROVED_DATA native_terminal=EACCES Policy=NOT_RUN program=NOT_RUN selection_returned=(true|false)$/) bad=1
+  id=$3; sub(/^case=/,"",id)
+  if (supplemental_resolver[id]++ || $13 != "selection_returned=" (id=="normal" ? "true" : "false")) bad=1
+  supplemental_resolver_count++
+}
+END { exit (bad || parents != 4 || source != 1 || console != 1 || census != 1 || trace_count != 6 || resolver_count != 2 || supplemental_trace_count != 6 || supplemental_resolver_count != 2) }
 ' "$uv_run_source_log"
 rm -- "$uv_run_source_log"
 `
@@ -403,5 +439,5 @@ func validateCurrentExecutionPreparationQualification(contents string) []string 
 	if len(blocks) == 1 && kernelQualificationLines(strings.Join(blocks[0], "\n")) == kernelQualificationLines(currentExecutionPreparationRun) {
 		return nil
 	}
-	return []string{"current execution preparation/refusal qualification requires one unconditional protected-client lifecycle, exact parents/readonly4/console2/boundary8/hostile5/workflow3/native-app3/native-cli8/pipx-app3/pipx-cli6/source3+markers3+resolver2+trace6/unique cases/no-SKIP and original-error guards"}
+	return []string{"current execution preparation/refusal qualification requires one unconditional protected-client lifecycle, exact parents/readonly4/console2/boundary8/hostile5/workflow3/native-app3/native-cli8+supplemental-cli3/pipx-app3/pipx-cli6/source4+markers3+resolver4+trace12/unique cases/no-SKIP and original-error guards"}
 }

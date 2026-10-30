@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"sort"
 )
 
@@ -39,19 +40,32 @@ func NewInspectedProjectSet(snapshot ProjectDependencySnapshot, inspections []De
 		}
 		locked[node] = artifact
 	}
+	owned, err := validateCurrentInspectionCoverage(locked, inspections)
+	if err != nil {
+		return InspectedProjectSet{}, fmt.Errorf("project %w", err)
+	}
+	return InspectedProjectSet{snapshot: snapshot, inspections: owned}, nil
+}
+
+// Both project and explicit execution-root sets require exact current intake,
+// unique runs and the recorded verification/inspection checks for every node.
+func validateCurrentInspectionCoverage(locked map[DependencyNodeID]ResolvedArtifact, inspections []DependencyInspection) ([]DependencyInspection, error) {
+	if len(locked) != len(inspections) || len(locked) > maxDependencyNodes {
+		return nil, errors.New("inspection requires complete bounded coverage")
+	}
 	seen := map[DependencyNodeID]bool{}
 	runs := map[RunID]bool{}
 	owned := append([]DependencyInspection(nil), inspections...)
 	for _, inspection := range owned {
 		artifact, known := locked[inspection.node]
 		if !known || seen[inspection.node] || runs[inspection.runID] || inspection.runID.value == "" || inspection.decision.policyID == "" || inspection.artifact.identity != artifact.identity || inspection.artifact.digest.value == "" || artifact.declaredIntegrity == "" || inspection.artifact.declaredIntegrity != artifact.declaredIntegrity || inspection.artifact.handle != "intake:"+inspection.runID.value+":"+artifact.identity.variant || len(inspection.evidence) == 0 {
-			return InspectedProjectSet{}, errors.New("project inspection subject, integrity or coverage is invalid")
+			return nil, errors.New("inspection subject, integrity or coverage is invalid")
 		}
 		verification, inspectionCheck := false, false
 		checks := map[CheckID]bool{}
 		for _, check := range inspection.checks {
 			if check.id.value == "" || checks[check.id] {
-				return InspectedProjectSet{}, errors.New("project entry checks are invalid or duplicate")
+				return nil, errors.New("entry checks are invalid or duplicate")
 			}
 			checks[check.id] = true
 			if check.required && check.kind == CheckVerification {
@@ -62,13 +76,13 @@ func NewInspectedProjectSet(snapshot ProjectDependencySnapshot, inspections []De
 			}
 		}
 		if !verification || !inspectionCheck {
-			return InspectedProjectSet{}, errors.New("project entry requires verification and inspection checks")
+			return nil, errors.New("entry requires verification and inspection checks")
 		}
 		seen[inspection.node] = true
 		runs[inspection.runID] = true
 	}
 	sort.Slice(owned, func(i, j int) bool { return owned[i].node.value < owned[j].node.value })
-	return InspectedProjectSet{snapshot: snapshot, inspections: owned}, nil
+	return owned, nil
 }
 
 func (s InspectedProjectSet) Valid() bool {

@@ -11,21 +11,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const uvRunExecutionEnglish = "Freshly quarantine one public PyPI package and its complete selected wheel set, then run its exact console entry with the pinned Python in a disposable read-only sandbox on Linux amd64. No Host project, HOME, credentials, stdin, TTY, network or generated-file export is supplied.\n\nUse a bare package or exact name@version/name==version, optionally with declared root extras such as name[extra]==version. When package and command names differ, put --from <package> before the command. Put all HAA options before the package or command; everything following is literal program data, with one immediately following -- treated as a separator. Selection is always fresh and isolated. Interpreter commands, runtime overrides/downloads, extra packages, local/VCS/URL input and custom indexes are unsupported. Arguments are limited to 128 and 32KiB. Output is private by default: only byte counts are reported. --show-output explicitly displays independent ASCII-escaped untrusted streams, each captured up to 1MiB. Quarantine approval, execution outcome and guest cleanup are reported separately."
-const uvRunExecutionKorean = "공개 PyPI 패키지 하나와 선택된 wheel·의존성 전체를 새로 검역한 뒤 Linux amd64의 일회성 읽기 전용 sandbox에서 고정 Python으로 정확한 console entry를 실행합니다. Host 프로젝트·HOME·credential·stdin·TTY·네트워크·생성 파일 반출은 제공하지 않습니다.\n\n패키지명 또는 정확한 name@version/name==version을 사용하며 name[extra]==version으로 root extras를 선택할 수 있습니다. 패키지와 명령 이름이 다르면 명령 앞 --from <package>로 지정하세요. HAA 옵션은 모두 패키지·명령 앞에 두며 뒤는 프로그램의 literal 인자입니다. 바로 뒤 -- 하나는 구분자입니다. 매번 새로 격리 선택합니다. Interpreter 명령·runtime 지정/다운로드·추가 패키지·local/VCS/URL·임의 index는 지원하지 않습니다. 프로그램 인자는 최대128개/합계32KiB입니다. 기본 출력은 바이트 수만 보고하며 --show-output을 명시하면 stream별 최대1MiB의 신뢰하지 않는 출력을 각각 ASCII escape로 표시합니다. 검역 승인·실행 결과·guest 정리를 구분합니다."
+const uvRunExecutionEnglish = "Freshly quarantine one public PyPI package and its complete selected wheel set, then run its exact console entry with the pinned Python in a disposable read-only sandbox on Linux amd64. No Host project, HOME, credentials, stdin, TTY, network or generated-file export is supplied.\n\nUse a bare package or exact name@version/name==version, optionally with declared root extras such as name[extra]==version. When package and command names differ, put --from <package> before the command. Put all HAA options before the package or command; everything following is literal program data, with one immediately following -- treated as a separator. Repeat --with <package> before the command to select additional public bare/exact packages, optionally with declared extras; their whole union is freshly quarantined together. Selection is always fresh and isolated. Interpreter commands, runtime overrides/downloads, local/VCS/URL input and custom indexes are unsupported. Arguments are limited to 128 and 32KiB. Output is private by default: only byte counts are reported. --show-output explicitly displays independent ASCII-escaped untrusted streams, each captured up to 1MiB. Quarantine approval, execution outcome and guest cleanup are reported separately."
+const uvRunExecutionKorean = "공개 PyPI 패키지 하나와 선택된 wheel·의존성 전체를 새로 검역한 뒤 Linux amd64의 일회성 읽기 전용 sandbox에서 고정 Python으로 정확한 console entry를 실행합니다. Host 프로젝트·HOME·credential·stdin·TTY·네트워크·생성 파일 반출은 제공하지 않습니다.\n\n패키지명 또는 정확한 name@version/name==version을 사용하며 name[extra]==version으로 root extras를 선택할 수 있습니다. 패키지와 명령 이름이 다르면 명령 앞 --from <package>로 지정하세요. HAA 옵션은 모두 패키지·명령 앞에 두며 뒤는 프로그램의 literal 인자입니다. 바로 뒤 -- 하나는 구분자입니다. 명령 앞 --with <package>를 반복하면 추가 공개 패키지와 선언된 extras를 함께 선택해 전체를 새로 검역합니다. 매번 새로 격리 선택합니다. Interpreter 명령·runtime 지정/다운로드·local/VCS/URL·임의 index는 지원하지 않습니다. 프로그램 인자는 최대128개/합계32KiB입니다. 기본 출력은 바이트 수만 보고하며 --show-output을 명시하면 stream별 최대1MiB의 신뢰하지 않는 출력을 각각 ASCII escape로 표시합니다. 검역 승인·실행 결과·guest 정리를 구분합니다."
 
 func uvRunExecutionDescriptor(tool bool) packageClientDescriptor {
-	path, use := []string{"uvx"}, "uvx [--from <package>] <tool-or-command> [--] [args...]"
+	path, use := []string{"uvx"}, "uvx [--from <package>] [--with <package>] <tool-or-command> [--] [args...]"
 	var parents []packageClientParent
 	if tool {
 		path = []string{"uv", "tool", "run"}
-		use = "run [--from <package>] <tool-or-command> [--] [args...]"
+		use = "run [--from <package>] [--with <package>] <tool-or-command> [--] [args...]"
 		parents = []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Quarantine Python tools", "Python 툴을 검역합니다"}}
 	}
-	return packageClientDescriptor{id: UVRunPackageClient, path: path, parents: parents, route: "pypi", use: use, shortEN: "Quarantine and run an exact public Python console", shortKO: "공개 Python console을 검역한 뒤 격리 실행합니다", longEN: uvRunExecutionEnglish, longKO: uvRunExecutionKorean, execution: true, validate: validateUVRunExecutionArgs, validateRaw: validateUVRunExecutionRawArgs, flags: configureUVRunExecutionFlags, examples: []string{"helox uvx --show-output cowsay@6.1 -- -t hello", "helox --output json uv tool run --from python-slugify==8.0.4 slugify -- hello world"}, flagText: map[string]packageClientParent{"from": {"Public package when its console command differs", "console 명령 이름이 다를 때 선택할 공개 패키지"}, "show-output": {"Display private untrusted streams as ASCII-escaped data", "비공개 프로그램 출력을 ASCII escape 데이터로 명시 표시"}}}
+	return packageClientDescriptor{id: UVRunPackageClient, path: path, parents: parents, route: "pypi", use: use, shortEN: "Quarantine and run an exact public Python console", shortKO: "공개 Python console을 검역한 뒤 격리 실행합니다", longEN: uvRunExecutionEnglish, longKO: uvRunExecutionKorean, execution: true, validate: validateUVRunExecutionArgs, validateRaw: validateUVRunExecutionRawArgs, flags: configureUVRunExecutionFlags, examples: []string{"helox uvx --show-output cowsay@6.1 -- -t hello", "helox --output json uv tool run --from python-slugify==8.0.4 slugify -- hello world"}, flagText: map[string]packageClientParent{"from": {"Public package when its console command differs", "console 명령 이름이 다를 때 선택할 공개 패키지"}, "with": {"Additional public package to quarantine with the primary console", "primary console과 함께 검역할 추가 공개 패키지"}, "show-output": {"Display private untrusted streams as ASCII-escaped data", "비공개 프로그램 출력을 ASCII escape 데이터로 명시 표시"}}}
 }
 func configureUVRunExecutionFlags(command *cobra.Command) {
 	configureRunExecutionFlags(command, "from")
+	command.Flags().StringArray("with", nil, "Additional public package to quarantine with the primary console")
 }
 func configureRunExecutionFlags(command *cobra.Command, selectionFlag string) {
 	command.Flags().String(selectionFlag, "", "Public package when command differs")
@@ -51,7 +52,7 @@ func validateUVRunExecutionRawArgs(args []string) error {
 			break
 		}
 	}
-	return validateExecutionRawOptions(args, start, "--from")
+	return validateExecutionRawOptions(args, start, "--from", "--with")
 }
 
 // The initial package-console lane excludes interpreter-looking requests.
@@ -69,11 +70,45 @@ func uvRunInterpreterReference(project string) bool {
 	return false
 }
 func readUVRunExecutionRequest(command *cobra.Command, args []string) (application.ExecutionPreparationRequest, error) {
-	return readPythonRunExecutionRequestWithParser(command, args, "from", func(input string) (domain.ArtifactReference, error) {
-		request, err := artifactpypi.ParseUVRunRequirement(input)
-		return request.Reference(), err
+	request, err := readPythonRunExecutionRequestWithParser(command, args, "from", func(input string) (domain.ArtifactReference, error) {
+		selection, err := artifactpypi.ParseUVRunRequirement(input)
+		return selection.Reference(), err
 	})
+	if err != nil {
+		return application.ExecutionPreparationRequest{}, err
+	}
+	input, _, err := pythonRunSelectionInput(command, args, "from")
+	if err != nil {
+		return application.ExecutionPreparationRequest{}, err
+	}
+	primary, err := artifactpypi.ParseUVRunRequirement(input)
+	if err != nil {
+		return application.ExecutionPreparationRequest{}, err
+	}
+	if _, err := readUVSupplementalRequirements(command, primary); err != nil {
+		return application.ExecutionPreparationRequest{}, err
+	}
+	return request, nil
 }
+func readUVSupplementalRequirements(command *cobra.Command, primary artifactpypi.UVRunRequirement) (artifactpypi.UVRunRequirements, error) {
+	values := command.Flags().Lookup("with").Value.(interface{ GetSlice() []string }).GetSlice()
+	if len(values) == 0 {
+		return artifactpypi.UVRunRequirements{}, nil
+	}
+	if len(values) >= domain.MaximumExecutionArguments {
+		return artifactpypi.UVRunRequirements{}, errors.New("additional public requirements exceed the bounded root count")
+	}
+	requests := make([]artifactpypi.UVRunRequirement, 0, len(values))
+	for _, value := range values {
+		request, err := artifactpypi.ParseUVRunRequirement(value)
+		if err != nil || uvRunInterpreterReference(request.Base().Project()) {
+			return artifactpypi.UVRunRequirements{}, errors.New("additional execution requirements must be bounded public package inputs")
+		}
+		requests = append(requests, request)
+	}
+	return artifactpypi.NewUVRunRequirements(primary, requests)
+}
+
 func readPythonRunExecutionRequest(command *cobra.Command, args []string, selectionFlag string) (application.ExecutionPreparationRequest, error) {
 	return readPythonRunExecutionRequestWithParser(command, args, selectionFlag, func(input string) (domain.ArtifactReference, error) {
 		return parseUVPipInstallReference(input, artifactpypi.PublicPyPIProfile().Source())
@@ -145,8 +180,18 @@ func AddUVRunExecution(root *cobra.Command, runner ExecutionRunner) error {
 			if err != nil {
 				return err
 			}
+			roots, err := readUVSupplementalRequirements(command, selection)
+			if err != nil {
+				return err
+			}
 			selected := runner
-			if len(selection.Extras()) != 0 {
+			if roots.Valid() {
+				capability, ok := runner.(uvRequirementsExecutionRunner)
+				if !ok {
+					return errors.New("UV supplemental roots require their current whole-selection consumer")
+				}
+				selected = uvRequirementsRunner{capability, roots}
+			} else if len(selection.Extras()) != 0 {
 				capability, ok := runner.(uvExtraExecutionRunner)
 				if !ok {
 					return errors.New("UV root extras require their current whole-selection consumer")
@@ -170,4 +215,16 @@ type uvExtraRunner struct {
 
 func (r uvExtraRunner) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
 	return r.current.RunUVWithExtras(ctx, request, r.selection)
+}
+
+type uvRequirementsExecutionRunner interface {
+	RunUVWithRequirements(context.Context, application.ExecutionPreparationRequest, artifactpypi.UVRunRequirements) (application.ExecutionResult, error)
+}
+type uvRequirementsRunner struct {
+	current   uvRequirementsExecutionRunner
+	selection artifactpypi.UVRunRequirements
+}
+
+func (r uvRequirementsRunner) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
+	return r.current.RunUVWithRequirements(ctx, request, r.selection)
 }

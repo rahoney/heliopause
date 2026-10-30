@@ -121,13 +121,16 @@ func validExecutionMemberPath(value string) bool {
 // This fingerprint contains normalized Policy identities only. Program argv
 // never becomes part of an artifact, policy or cache identity.
 func executionPolicyFingerprint(set VerifiedSet) (ContentDigest, error) {
+	return currentExecutionPolicyFingerprint(set.Decision(), set.Inspected().Inspections())
+}
+
+func currentExecutionPolicyFingerprint(decision PolicyDecision, inspections []DependencyInspection) (ContentDigest, error) {
 	type policyVersion struct {
 		Node, ID string
 		Version  uint64
 	}
-	decision := set.Decision()
 	identities := []policyVersion{{ID: decision.PolicyID(), Version: decision.Version()}}
-	for _, inspection := range set.Inspected().Inspections() {
+	for _, inspection := range inspections {
 		entry := inspection.PolicyDecision()
 		identities = append(identities, policyVersion{inspection.Node().String(), entry.PolicyID(), entry.Version()})
 	}

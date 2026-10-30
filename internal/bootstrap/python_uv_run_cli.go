@@ -38,6 +38,21 @@ func (r pythonUVRunCLI) RunUVWithExtras(ctx context.Context, request application
 	return r.run(ctx, request, selection)
 }
 
+func (r pythonUVRunCLI) RunUVWithRequirements(ctx context.Context, request application.ExecutionPreparationRequest, selection artifactpypi.UVRunRequirements) (result application.ExecutionResult, resultErr error) {
+	if ctx == nil || !selection.Valid() || selection.Primary().Reference() != request.Reference() {
+		return result, errors.New("native CLI supplemental selection differs from its execution request")
+	}
+	defer func() { resultErr = errors.Join(resultErr, ctx.Err(), context.Cause(ctx)) }()
+	if err := ctx.Err(); err != nil {
+		return result, err
+	}
+	service, err := newUVRunSelectionService(r.native, request.Command(), selection, r.intake, r.inspector, r.static, r.backend, r.store, r.staging)
+	if err != nil {
+		return result, err
+	}
+	return service.Run(ctx, request)
+}
+
 func (r pythonUVRunCLI) run(ctx context.Context, request application.ExecutionPreparationRequest, selection artifactpypi.UVRunRequirement) (result application.ExecutionResult, resultErr error) {
 	if ctx == nil {
 		return result, errors.New("native CLI execution requires context")

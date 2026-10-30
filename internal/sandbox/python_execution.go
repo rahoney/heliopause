@@ -68,7 +68,21 @@ func pythonExecutionCommand(entry artifactpypi.ConsoleExecutionEntry, arguments 
 
 // ExecutePythonExecution consumes the existing current whole readonly input
 // lifecycle. A valid guest nonzero never bypasses final CPU/trace/cleanup.
-func (b *PythonDynamicBackend) ExecutePythonExecution(ctx context.Context, execution domain.ExecutionContext, entry artifactpypi.ConsoleExecutionEntry) (outcome PythonExecutionOutcome, resultErr error) {
+func (b *PythonDynamicBackend) ExecutePythonExecution(ctx context.Context, execution domain.ExecutionContext, entry artifactpypi.ConsoleExecutionEntry) (PythonExecutionOutcome, error) {
+	return b.executePythonExecution(ctx, entry, execution.Arguments(), func(consume func(*pythonTransactionExecutor) error) error {
+		return b.withPythonExecutionInputs(ctx, execution, entry, consume)
+	})
+}
+
+// ExecutePythonExecutionSelection materializes every approved explicit root in
+// the same sealed readonly runtime used by connected execution closures.
+func (b *PythonDynamicBackend) ExecutePythonExecutionSelection(ctx context.Context, execution domain.ExecutionSelectionContext, entry artifactpypi.ConsoleExecutionEntry) (PythonExecutionOutcome, error) {
+	return b.executePythonExecution(ctx, entry, execution.Arguments(), func(consume func(*pythonTransactionExecutor) error) error {
+		return b.withPythonExecutionSelectionInputs(ctx, execution, entry, consume)
+	})
+}
+
+func (b *PythonDynamicBackend) executePythonExecution(ctx context.Context, entry artifactpypi.ConsoleExecutionEntry, arguments []string, prepare func(func(*pythonTransactionExecutor) error) error) (outcome PythonExecutionOutcome, resultErr error) {
 	defer func() {
 		if ctx != nil && ctx.Err() != nil {
 			outcome.captured.complete = false
@@ -90,7 +104,7 @@ func (b *PythonDynamicBackend) ExecutePythonExecution(ctx context.Context, execu
 		return outcome, errPythonExecution
 	}
 	var programErr error
-	operationalErr := b.withPythonExecutionInputs(ctx, execution, entry, func(t *pythonTransactionExecutor) error {
+	operationalErr := prepare(func(t *pythonTransactionExecutor) error {
 		for _, wheel := range t.manifest.inspections {
 			if err := artifactpypi.ValidatePythonExecutionStartup(wheel); err != nil {
 				return err
@@ -111,7 +125,7 @@ func (b *PythonDynamicBackend) ExecutePythonExecution(ctx context.Context, execu
 			}
 			return t.verifyAnchorAndVolume(t.requestCtx, map[string]bool{reader.id: true})
 		}
-		captured, err := captureAdmittedProgram(t.requestCtx, capture, reader.id, boundaryPythonHandoffMode, pythonExecutionCommand(entry, execution.Arguments()), errPythonExecution, func(cause error) error { return &PythonProgramError{cause: cause} }, verify)
+		captured, err := captureAdmittedProgram(t.requestCtx, capture, reader.id, boundaryPythonHandoffMode, pythonExecutionCommand(entry, arguments), errPythonExecution, func(cause error) error { return &PythonProgramError{cause: cause} }, verify)
 		outcome.captured = captured
 		var failed *PythonProgramError
 		if err != nil && (!captured.complete || !errors.As(err, &failed)) {

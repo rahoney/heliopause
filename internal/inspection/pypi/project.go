@@ -39,7 +39,7 @@ func (i *CompositeInspector) InspectProject(ctx context.Context, snapshot domain
 		}
 		return map[domain.DependencyNodeID]domain.InspectionReport{}, nil
 	}
-	return i.inspectDependencySet(ctx, nodes, acquired, func(states map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
+	return i.inspectDependencySet(ctx, nodes, acquired, false, func(states map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
 		wheels := make([]artifactpypi.WheelInspection, 0, len(nodes))
 		for _, node := range nodes {
 			wheels = append(wheels, states[node.Node()].wheel)

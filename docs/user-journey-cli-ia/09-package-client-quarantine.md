@@ -110,6 +110,15 @@ CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유�
   연결한다. InstallTarget은 없으며 기존 VerifiedBundle/SBOM과 보관 전용 staging을 재사용한다.
   Raw argv나 그 hash·프로그램 출력은 기록하지 않는다. Manifest ID를 실제 실행 요청이나
   argv의 승인 token으로 사용하지 않는다. 실제 실행 전 fresh 검사와 private 요청 결합이 필요하다.
+- UV의 반복 `--with <package>`는 명령 앞에서만 추가 공개 bare/exact root를 선택한다.
+  각 root의 선언된 extras도 전체 원본/선택에 포함한다. 서로 다른 명시 project 최대128개와
+  canonical requirements 합계32KiB를 I/O 전에 제한하고 중복 project·URL/VCS/local/index/
+  interpreter provisioning 입력은 거부한다. 프로그램명 뒤의 --with는 literal argv다.
+  명시 root들과 실제 edge를 보존하는 [별도 typed selection](../domain-model/05-dependency-verified-set.md#명시된-추가-root를-가진-일회성-실행)을
+  현재 whole 승인/console/runtime까지 전달한다. 보관은
+  `helox.verified-execution-selection-manifest/v1`과 같은 전체 SBOM을 사용하며 roots를 명시한다.
+  별도 target이나 fake edge·과거 ALLOW를 만들지 않고 기존 staging의 재해시/봉인/게시와
+  실행 lifecycle을 재사용한다. 단일 root 기록과 private argv·출력의 비보관 계약은 유지한다.
 - 초기 실행의 명시 command는 기존 selected-command 규칙(최대214 UTF-8 bytes, 비어 있지 않은
   단일 이름, path/colon/control 금지)을 I/O 전 검증한다. 생략한 command는 기존 bin 선택의
   ambiguity 규칙으로만 결정한다. 준비 request의 일반 formatter는 raw 인자를 표시하지 않고 JSON 직렬화는 거부한다.

@@ -14,11 +14,11 @@ CI441이며 결과는 PENDING이다. canonical 목표/현재 lane과 기존 증�
 | UV tool install/upgrade/adopt | [CI417](./ci417-uv-tools-hosted-qualification-20261027.json); fresh/managed/명시 fixed native recipe named 검증 | 현재 source·최종 matrix; 다른 native recipe·일반 기본값 미지원과 구분 |
 | pipx install/upgrade/adopt | [CI423](./ci423-pipx-current-hosted-qualification-20261029.json); 고정 UV backend/whole original·script ownership·관리형 upgrade | 현재 source·최종 matrix; inject/ensurepath 등 별도 operation을 완료로 쓰지 않음 |
 | npx/npm exec | [CI429](./ci429-node-cli-hosted-qualification-20261029.json); public whole set·선택 Node entry·CLI4/controlled12/거부2 named 검증 | 현재 source·최종 matrix; stdin/TTY·생성 파일 반출·arbitrary child 지원으로 확대하지 않음 |
-| uvx/uv tool run | [CI437](./ci437-close-entry-uv-hosted-qualification-20261030.json), [D7](./p6d7-uvx-cli-local-20261030.json); native 선택/whole original·현재 승인·console/CLI named 검증 | H1 root extras가 기존 whole 경로에 연결됐고 실제3-wheel/두 alias/거부를 확인함; Quick/영향 Race/checker Race/docs/security PASS. 독립 --with의 H2는 미구현; 이후 현재 source/final |
+| uvx/uv tool run | [CI437](./ci437-close-entry-uv-hosted-qualification-20261030.json), [D7](./p6d7-uvx-cli-local-20261030.json); native 선택/whole original·현재 승인·console/CLI named 검증 | H1 root extras가 기존 whole 경로에 연결됐고 실제3-wheel/두 alias/거부를 확인함; Quick/영향 Race/checker Race/docs/security PASS. 독립 --with H2 source 연결 및 actual native2/CLI3 PASS; grouped Quick/영향10 Race/checker Race/docs/security PASS; hosted와 현재 source/final은 OPEN |
 | pipx run | [CI438](./ci438-pipx-current-hosted-qualification-20261030.json), [E3](./p6e3-pipx-current-cli-local-20261030.json); 기본/명시 console·고정 UV backend·앱3/CLI6 | 현재 source·최종 matrix; 다른 backend/module entry는 현재 지원 아님 |
 | pnpm dlx/pnx/pnpx | [CI439](./ci439-pnpm-current-hosted-qualification-20261030.json); fresh native graph·원본/Node·앱2/CLI3/refusal2 | 현재 source·최종 matrix; pnpm pnx를 별도 subcommand로 만들지 않음 |
 | bunx/bun x 기본 Node | [G2](./p6g2-bun-current-cli-local-20261030.json), [CI440 named 성공/whole 실패](./ci440-go-proxy-first-failure-20261030.json); cold·whole graph·Node/CLI/refusal | 현재 source ordinary·최종 matrix. CI440 뒤 Go 취득 실패를 whole 성공으로 쓰지 않음 |
-| bunx/bun x 명시 --bun | [G3 local](./p6g3-bun-readonly-program-local-20261030.json); 별도 Bun identity·고정 JS recipe·앱2/CLI3/controlled12종 | CI441 single full12 parent 포함 새 hosted·최종 matrix; Bun-only shebang/TS entry 자동 선택·일반 native 동등성은 구현 완료가 아님 |
+| bunx/bun x 명시 --bun | [G3 local](./p6g3-bun-readonly-program-local-20261030.json); 별도 Bun identity·고정 JS recipe·앱2/CLI3/controlled12종 | CI441 single full12 parent177.40s named hosted PASS; 이후 현재 source·최종 matrix; Bun-only shebang/TS entry 자동 선택·일반 native 동등성은 구현 완료가 아님 |
 
 ## 목표 gap과 현재 구현 상태
 
@@ -30,16 +30,18 @@ root extras를 연결했지만 독립 추가 package는 H2의 별도 typed 실�
 
 Root extras H1은 `IMPLEMENTED=YES / WIRED=YES`, named actual/Go local qualification PASS이며
 [H1 receipt](./p6h1-uvx-root-extras-local-20261030.json)가 범위를 소유한다. 독립 --with H2는
-`IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
-`MISSING`: 기존 requirement/UV native 선택/독립 wheel·whole graph/현재 승인/console/runtime
-owner가 extras와 명시 추가 dependency를 보존하는지 먼저 감사하고 부족한 연결만 구현한다.
-새 Core/실행 engine·placeholder나 cache/이전 ALLOW를 통한 우회는 만들지 않는다.
-구체 source 지도·읽을 문서·재검토와 첫 표적/실제 검증은 다음 scoped baseline이 소유한다.
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES (named local) / ACCEPTANCE_CLOSED=NO`다.
+[H2 baseline](./p6h2-uvx-supplemental-roots-baseline-20261031.md)은 기존 owner 재사용과
+실제 native normal/incomplete refusal58.29s·현재 CLI0/typed2/conflict refusal137.75s를 연결한다.
+`MISSING`: [H2 named local 영수증](./p6h2-uvx-supplemental-roots-local-20261031.json)의 모인 Go/records 검증을 재실행하지 않고 새-source hosted,
+그 뒤 같은 frozen source의 ordinary/CPU·세 CUDA 및 최종 support matrix.
+Named actual을 일반 native 동등성이나 전체 profile 성공으로 확대하지 않는다.
 
 ## 최종 profile 실행 순서
 
-CI441은 새 G3 공통 실행 경계의 중요한 hosted checkpoint로 끝까지 소비한다. 새 push로
-취소하지 않는다. 알려진 목표 gap의 필요한 source 수정이 남았으므로 최종 CUDA3를 지금
+CI441은 Linux113PASS 뒤 전체120분 job timeout으로 종료됐다. 새 G3 single full12는
+named hosted PASS지만 Required·Mac·Corpus 실패로 whole qualification은 NO다. 사용자 승인
+Linux150분 조정과 H1/H2를 모은 다음 중요한 후보에서 새 ordinary CI를 실행한다. 알려진 목표 gap의 필요한 source 수정이 남았으므로 최종 CUDA3를 지금
 시작해 후속 코드 뒤 반복하지 않는다. 해당 구현과 의미 있는 로컬 검사들을 모은 뒤
 최종 frozen source에서 ordinary/CPU·cu126·cu130·cu132를 각각 실제 판정한다.
 기존 [profile baseline](./p7-final-profile-baseline-20261030.md)의 한도/Required/정리와

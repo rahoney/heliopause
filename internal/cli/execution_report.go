@@ -50,11 +50,13 @@ func newExecutionReport(result application.ExecutionResult, cause error, show bo
 	if inspected := prepared.Inspection(); inspected.Valid() {
 		r.Quarantine, r.Policy = "COMPLETED", string(inspected.Set().Decision().Decision())
 	}
-	var denied *application.ExecutionPolicyFailure
-	if errors.As(cause, &denied) {
-		r.Quarantine, r.Policy = "COMPLETED", string(denied.Decision().Decision())
+	if inspected := result.SelectionPreparation().Inspection(); inspected.Valid() {
+		r.Quarantine, r.Policy = "COMPLETED", string(inspected.Set().Decision().Decision())
 	}
-	if prepared.Valid() {
+	if decision, ok := executionDenialDecision(cause); ok {
+		r.Quarantine, r.Policy = "COMPLETED", string(decision.Decision())
+	}
+	if prepared.Valid() || result.SelectionPreparation().Valid() {
 		r.Preparation = "COMPLETED"
 	}
 	if result.RuntimeAttempted() {
@@ -84,16 +86,27 @@ func executionProcessCode(result application.ExecutionResult, cause error) int {
 			return 128 + int(signal)
 		}
 	}
-	var denied *application.ExecutionPolicyFailure
-	if errors.As(cause, &denied) {
-		if denied.Decision().Decision() == domain.DecisionManualReview {
+	if decision, ok := executionDenialDecision(cause); ok {
+		if decision.Decision() == domain.DecisionManualReview {
 			return 10
 		}
-		if denied.Decision().Decision() == domain.DecisionBlock {
+		if decision.Decision() == domain.DecisionBlock {
 			return 20
 		}
 	}
 	return 1
+}
+
+func executionDenialDecision(cause error) (domain.PolicyDecision, bool) {
+	var connected *application.ExecutionPolicyFailure
+	if errors.As(cause, &connected) {
+		return connected.Decision(), true
+	}
+	var roots *application.ExecutionSelectionPolicyFailure
+	if errors.As(cause, &roots) {
+		return roots.Decision(), true
+	}
+	return domain.PolicyDecision{}, false
 }
 
 func writeExecutionReport(output io.Writer, r executionReport, machine bool) error {

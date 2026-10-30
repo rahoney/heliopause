@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/application"
@@ -46,7 +47,7 @@ func validateNPMExecutionRawArgs(args []string) error {
 	return validateExecutionRawOptions(args, start, "--command")
 }
 
-func validateExecutionRawOptions(args []string, start int, valueOption string) error {
+func validateExecutionRawOptions(args []string, start int, valueOption string, repeatedValueOptions ...string) error {
 	counts := map[string]int{}
 	for i := start; i >= 0 && i < len(args); i++ {
 		arg := args[i]
@@ -60,7 +61,7 @@ func validateExecutionRawOptions(args []string, start int, valueOption string) e
 				return errors.New("execution selection and output options must not repeat before the package")
 			}
 		}
-		if !equals && (name == valueOption || name == "--lang" || name == "--output" || name == "--color" || name == "--progress") {
+		if !equals && (name == valueOption || slices.Contains(repeatedValueOptions, name) || name == "--lang" || name == "--output" || name == "--color" || name == "--progress") {
 			i++
 		}
 	}

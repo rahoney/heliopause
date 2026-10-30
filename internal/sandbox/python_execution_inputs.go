@@ -24,7 +24,27 @@ func (b *PythonDynamicBackend) ValidatePythonExecutionInputs(ctx context.Context
 	})
 }
 
-func (b *PythonDynamicBackend) withPythonExecutionInputs(ctx context.Context, execution domain.ExecutionContext, entry artifactpypi.ConsoleExecutionEntry, consume func(*pythonTransactionExecutor) error) (resultErr error) {
+func (b *PythonDynamicBackend) withPythonExecutionInputs(ctx context.Context, execution domain.ExecutionContext, entry artifactpypi.ConsoleExecutionEntry, consume func(*pythonTransactionExecutor) error) error {
+	return b.withPythonExecutionSource(ctx, execution, execution.Set().Inspected().Inspections(), entry, consume)
+}
+
+func (b *PythonDynamicBackend) withPythonExecutionSelectionInputs(ctx context.Context, execution domain.ExecutionSelectionContext, entry artifactpypi.ConsoleExecutionEntry, consume func(*pythonTransactionExecutor) error) error {
+	return b.withPythonExecutionSource(ctx, execution, execution.Set().Inspected().Inspections(), entry, consume)
+}
+
+// Only the two immutable current execution contexts implement this private
+// boundary. Complete inspected entries come from their own typed approved set.
+type pythonExecutionSource interface {
+	Valid() bool
+	RuntimeIdentity() string
+	EntryArtifact() domain.AcquiredArtifact
+	Command() string
+	EntryPath() string
+	EntryDigest() domain.ContentDigest
+	EntrySize() uint64
+}
+
+func (b *PythonDynamicBackend) withPythonExecutionSource(ctx context.Context, execution pythonExecutionSource, inspections []domain.DependencyInspection, entry artifactpypi.ConsoleExecutionEntry, consume func(*pythonTransactionExecutor) error) (resultErr error) {
 	if ctx == nil {
 		return errors.New("python execution inputs require a context")
 	}
@@ -37,7 +57,7 @@ func (b *PythonDynamicBackend) withPythonExecutionInputs(ctx context.Context, ex
 		return errors.New("python execution input declaration or runtime differs from its request")
 	}
 	var closure []domain.AcquiredArtifact
-	for _, inspected := range execution.Set().Inspected().Inspections() {
+	for _, inspected := range inspections {
 		artifact := inspected.Artifact()
 		declared, ok := artifact.DeclaredIntegrity()
 		if artifact.Identity().Source() != artifactpypi.PublicPyPIProfile().Source() || artifact.Identity().Variant() != "wheel" || !ok || declared != "sha256:"+artifact.Digest().String() {

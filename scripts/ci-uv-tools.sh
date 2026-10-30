@@ -11,6 +11,7 @@ if [[ ${1-} == uv-run-source ]]; then
   (
     cd internal/sandbox
     HELOX_UV_NATIVE_RUNTIME=1 HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_RUN_PUBLIC_BINDING_INTEGRATION=1 HELOX_UV_TOOL_RUN_NATIVE_CENSUS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^(TestUVActualPublicToolRun(SourceBinding|NativeCensus)|TestUVPublicToolRunResolverIntegration)$'
+    HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicToolRunSupplementalResolverIntegration$'
   )
   exit 0
 fi
@@ -21,6 +22,7 @@ if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then
       HELOX_PIPX_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxPipxRunExecutionCLIIntegration$'
     else
       HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxUVRunExecutionCLIIntegration$'
+      HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxUVRunSupplementalExecutionCLIIntegration$'
     fi
   )
   exit 0

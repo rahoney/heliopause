@@ -17,7 +17,7 @@ func (l UVLock) BindUVRunWheels(request UVRunRequirement, inputs []UVWheelInput,
 	if len(request.extras) == 0 {
 		return l.BindPipxQueryWheels(inputs, pages, target, limits)
 	}
-	checked, err := bindUVSelectedWheelsWithSurface(l.packages, l.python, request.base.Project(), request.extras, inputs, pages, target, limits, validatePipxMetadataSurface)
+	checked, err := bindUVSelectedWheelsWithSurface(l.packages, l.python, request.base.Project(), map[string][]string{request.base.Project(): request.extras}, inputs, pages, target, limits, validatePipxMetadataSurface)
 	if err != nil {
 		return domain.LockedDependencyGraph{}, err
 	}

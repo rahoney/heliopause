@@ -28,7 +28,7 @@ func pythonRunConsoleOriginal(frozen *pipxNativeInput, command string, pipx bool
 		return artifactpypi.ConsoleExecutionEntry{}, nil, errPipxNativeInput
 	}
 	var primary domain.ResolvedArtifactIdentity
-	for _, node := range frozen.graph.Nodes() {
+	for _, node := range frozen.nodes() {
 		if node.Role() == domain.DependencyPrimary {
 			primary = node.Artifact().Identity()
 		}

@@ -287,7 +287,7 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		"wrong profile":         strings.Replace(owned, "ci-uv-tools.sh uv-run-source", "ci-uv-tools.sh bootstrap", 1),
 		"missing source parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunSourceBinding\"]=1; ", "", 1),
 		"missing census parent": strings.Replace(owned, "expected[\"TestUVActualPublicToolRunNativeCensus\"]=1", "", 1),
-		"wrong count":           strings.Replace(owned, "parents != 3", "parents != 1", 1),
+		"wrong count":           strings.Replace(owned, "parents != 4", "parents != 1", 1),
 		"duplicate parent":      strings.Replace(owned, " || accepted[$3]++", "", 1),
 		"skip accepted":         strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
 		"source missing":        strings.Replace(owned, "source != 1", "source != 0", 1),
@@ -328,18 +328,22 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 	}
 	original := string(body)
 	for name, changed := range map[string]string{
-		"disabled selector":         strings.Replace(original, "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1", "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=0", 1),
-		"selector parent absent":    strings.Replace(original, "|TestUVPublicToolRunResolverIntegration)", ")", 1),
-		"disabled current app":      strings.Replace(original, "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
-		"disabled CLI":              strings.Replace(original, "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1", "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=0", 1),
-		"CLI error ignored":         strings.Replace(original, uvRunCLICommand, uvRunCLICommand+" || true", 1),
-		"current app error ignored": strings.Replace(original, uvRunWorkflowCommand, uvRunWorkflowCommand+" || true", 1),
-		"CLI branch absent":         strings.Replace(original, "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "if false; then", 1),
-		"current app branch absent": strings.Replace(original, "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "if false; then", 1),
-		"app enters native":         strings.Replace(original, " && ${1-} != uv-run-workflow", "", 1),
-		"pipx app enters native":    strings.Replace(original, " && ${1-} != pipx-run-workflow", "", 1),
-		"pipx CLI ignored":          strings.Replace(original, pipxRunCLICommand, pipxRunCLICommand+" || true", 1),
-		"pipx app disabled":         strings.Replace(original, "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
+		"supplemental selector absent":  strings.Replace(original, uvRunSupplementalSourceCommand, "", 1),
+		"supplemental selector ignored": strings.Replace(original, uvRunSupplementalSourceCommand, uvRunSupplementalSourceCommand+" || true", 1),
+		"supplemental CLI absent":       strings.Replace(original, uvRunSupplementalCLICommand, "", 1),
+		"supplemental CLI ignored":      strings.Replace(original, uvRunSupplementalCLICommand, uvRunSupplementalCLICommand+" || true", 1),
+		"disabled selector":             strings.Replace(original, "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=1", "HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION=0", 1),
+		"selector parent absent":        strings.Replace(original, "|TestUVPublicToolRunResolverIntegration)", ")", 1),
+		"disabled current app":          strings.Replace(original, "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_UV_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
+		"disabled CLI":                  strings.Replace(original, "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=1", "HELOX_UV_RUN_EXECUTION_CLI_INTEGRATION=0", 1),
+		"CLI error ignored":             strings.Replace(original, uvRunCLICommand, uvRunCLICommand+" || true", 1),
+		"current app error ignored":     strings.Replace(original, uvRunWorkflowCommand, uvRunWorkflowCommand+" || true", 1),
+		"CLI branch absent":             strings.Replace(original, "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "if false; then", 1),
+		"current app branch absent":     strings.Replace(original, "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "if false; then", 1),
+		"app enters native":             strings.Replace(original, " && ${1-} != uv-run-workflow", "", 1),
+		"pipx app enters native":        strings.Replace(original, " && ${1-} != pipx-run-workflow", "", 1),
+		"pipx CLI ignored":              strings.Replace(original, pipxRunCLICommand, pipxRunCLICommand+" || true", 1),
+		"pipx app disabled":             strings.Replace(original, "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_PYTHON_PIPX_RUN_EXECUTION_WORKFLOW_INTEGRATION=0", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == original {
@@ -355,7 +359,7 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 		t.Fatal(err)
 	}
 	original = string(body)
-	for _, key := range []string{"uv_run_workflow", "uv_run_cli", "pipx_run"} {
+	for _, key := range []string{"uv_run_workflow", "uv_run_cli", "pipx_run", "uv_run_source"} {
 		t.Run(key, func(t *testing.T) {
 			start := strings.Index(original, "          "+key+"_log=")
 			if start < 0 {
@@ -375,6 +379,8 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 				"wrong parent":             strings.Replace(owned, "/^--- PASS:/", "/^--- FAKE:/", 1),
 			}
 			if key == "uv_run_cli" {
+				mutations["supplemental cases shortened"] = strings.Replace(owned, "supplemental_cases!=3", "supplemental_cases!=2", 1)
+				mutations["supplemental whole sources shortened"] = strings.Replace(owned, "supplemental_sources!=6", "supplemental_sources!=3", 1)
 				mutations["root extra case absent"] = strings.Replace(owned, `expected["6"]=`, `expected["9"]=`, 1)
 				mutations["root extra closure shortened"] = strings.Replace(owned, "sources!=11", "sources!=9", 1)
 			}

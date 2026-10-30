@@ -32,6 +32,8 @@ type pipxNativeInput struct {
 	lock         artifactpypi.UVLock
 	pages        []artifactpypi.SimpleProject
 	uvRunRequest string
+	selection    domain.ExecutionDependencySelection
+	requests     artifactpypi.UVRunRequirements
 }
 
 func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) (*pipxNativeInput, error) {
@@ -39,6 +41,17 @@ func freezePipxNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs
 }
 
 func freezePythonRunNativeInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject, request artifactpypi.UVRunRequirement) (*pipxNativeInput, error) {
+	return freezePythonRunInputs(ctx, lock, inputs, pages, request, artifactpypi.UVRunRequirements{})
+}
+
+func freezeUVRunSelectionInput(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject, requests artifactpypi.UVRunRequirements) (*pipxNativeInput, error) {
+	if !requests.Valid() {
+		return nil, errPipxNativeInput
+	}
+	return freezePythonRunInputs(ctx, lock, inputs, pages, artifactpypi.UVRunRequirement{}, requests)
+}
+
+func freezePythonRunInputs(ctx context.Context, lock artifactpypi.UVLock, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject, request artifactpypi.UVRunRequirement, requests artifactpypi.UVRunRequirements) (*pipxNativeInput, error) {
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
 	if ctx == nil || len(inputs) == 0 || len(inputs) > policy.MaxGraphArtifacts() || len(inputs) != len(lock.Packages()) {
 		return nil, errPipxNativeInput
@@ -84,7 +97,10 @@ func freezePythonRunNativeInput(ctx context.Context, lock artifactpypi.UVLock, i
 	target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
 	var graph domain.LockedDependencyGraph
 	var err error
-	if request.Requirement() != "" {
+	if requests.Valid() {
+		result.selection, err = lock.BindUVRunSelection(requests, frozen, pages, target, policy.WheelLimits())
+		result.requests = requests
+	} else if request.Requirement() != "" {
 		if !request.Valid() || len(request.Extras()) == 0 {
 			return nil, errPipxNativeInput
 		}
@@ -136,7 +152,16 @@ func (p *pipxNativeInput) manifestID() (string, error) {
 		facts = append(facts, fact{file.name, file.url, file.digest, int64(len(file.body))})
 	}
 	body, err := json.Marshal(facts)
-	if p.uvRunRequest != "" {
+	if p.requests.Valid() {
+		if p.uvRunRequest != "" {
+			return "", errPipxNativeInput
+		}
+		body, err = json.Marshal(struct {
+			Schema   string
+			Requests []string
+			Files    []fact
+		}{"helox.uv-run-original-selection/v1", p.requests.Requirements(), facts})
+	} else if p.uvRunRequest != "" {
 		request, requestErr := artifactpypi.ParseUVRunRequirement(p.uvRunRequest)
 		if requestErr != nil || request.Requirement() != p.uvRunRequest || len(request.Extras()) == 0 {
 			return "", errPipxNativeInput
@@ -155,7 +180,20 @@ func (p *pipxNativeInput) manifestID() (string, error) {
 
 func (p *pipxNativeInput) valid() bool {
 	id, err := p.manifestID()
-	return err == nil && id == p.id && len(p.graph.Nodes()) == len(p.files)
+	if err != nil || id != p.id {
+		return false
+	}
+	if p.requests.Valid() {
+		return p.selection.Valid() && len(p.graph.Nodes()) == 0 && len(p.selection.Nodes()) == len(p.files)
+	}
+	return !p.selection.Valid() && len(p.graph.Nodes()) == len(p.files)
+}
+
+func (p *pipxNativeInput) nodes() []domain.LockedDependency {
+	if p.selection.Valid() {
+		return p.selection.Nodes()
+	}
+	return p.graph.Nodes()
 }
 
 func (p *pipxNativeInput) introduce(ctx context.Context, runner CommandRunner, container string) error {

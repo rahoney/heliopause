@@ -70,7 +70,7 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 // phases for one already acquired exact dependency graph. Application owns the
 // Inspection Runs, Evidence recording, and Policy decisions.
 func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.LockedDependencyGraph, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
-	return i.inspectDependencySet(ctx, graph.Nodes(), acquired, func(states map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
+	return i.inspectDependencySet(ctx, graph.Nodes(), acquired, false, func(states map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
 		prerequisites, err := i.preparePrerequisites(ctx, graph, states, acquired)
 		return graph.Edges(), prerequisites, err
 	})
@@ -78,7 +78,7 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 
 // Static-all readiness and per-target dynamic observation are shared by the
 // existing requested graph and complete primary-free project consumers.
-func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []domain.LockedDependency, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, prepare func(map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error)) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []domain.LockedDependency, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, wholeEnvironment bool, prepare func(map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error)) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
 	if i == nil || i.static == nil {
 		return nil, errors.New("PyPI static inspector is unavailable")
 	}
@@ -117,9 +117,19 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 	}
 	for _, dependency := range nodes {
 		artifact := acquired[dependency.Node()]
-		closure, err := graphClosureNodes(nodes, edges, dependency.Node(), acquired)
-		if err != nil {
-			return nil, err
+		var closure []domain.AcquiredArtifact
+		if wholeEnvironment {
+			// An explicit supplemental root can change optional imports even
+			// without a metadata edge. Observe the same complete environment.
+			for _, selected := range nodes {
+				closure = append(closure, acquired[selected.Node()])
+			}
+		} else {
+			var err error
+			closure, err = graphClosureNodes(nodes, edges, dependency.Node(), acquired)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if err := validateRuntimeClosureNodes(ctx, closure, nodes, states); err != nil {
 			return nil, err

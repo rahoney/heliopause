@@ -90,7 +90,7 @@ func testPythonRunCLIRejectsUnsupportedBeforeRunner(t *testing.T, pipx bool) {
 	for _, path := range paths {
 		for _, tail := range [][]string{
 			{}, {"--from=", "cowsay"}, {"--from", "cowsay", "--from", "other", "cowsay"},
-			{"--show-output", "--show-output=false", "cowsay"}, {"--with", "other", "cowsay"},
+			{"--show-output", "--show-output=false", "cowsay"}, {"--with", "./local", "cowsay"},
 			{"--python", "3.14", "cowsay"}, {"--index-url", "https://example.invalid", "cowsay"},
 			{"--isolated", "cowsay"}, {"--command", "cowsay", "cowsay"}, {"--stdin", "cowsay"},
 			{unsupportedExtra}, {"cowsay>=1"}, {"cowsay==6.1,>=6"}, {"cowsay@latest"}, {"cowsay@6.2rc1"},

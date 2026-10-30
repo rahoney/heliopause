@@ -81,7 +81,12 @@ func (r *uvRunActualTrace) Next(ctx context.Context) (TraceRecord, error) {
 	return record, err
 }
 
-func TestUVPublicToolRunResolverIntegration(t *testing.T) {
+func TestUVPublicToolRunResolverIntegration(t *testing.T) { runUVPublicToolRunResolverCases(t, false) }
+func TestUVPublicToolRunSupplementalResolverIntegration(t *testing.T) {
+	runUVPublicToolRunResolverCases(t, true)
+}
+
+func runUVPublicToolRunResolverCases(t *testing.T, supplemental bool) {
 	if os.Getenv("HELOX_UV_TOOL_RUN_RESOLVER_INTEGRATION") != "1" || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user production UV run resolver qualification")
 	}
@@ -104,24 +109,54 @@ func TestUVPublicToolRunResolverIntegration(t *testing.T) {
 			cancel()
 			t.Fatal(err)
 		}
-		selected, resolveErr := resolver.ResolveToolRun(ctx, requirement, "cowsay")
+		var entry artifactpypi.ConsoleExecutionEntry
+		var resolveErr error
+		nodes, roots, edges := 0, 0, 0
+		runtime, digest := "", ""
+		command, expectedNodes, expectedSHA, expectedMetadata := "cowsay", 1, "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a", "780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c"
+		marker := "uv_run_resolver"
+		if supplemental {
+			primary, e := artifactpypi.ParseUVRunRequirement("python-slugify==8.0.4")
+			if e != nil {
+				t.Fatal(e)
+			}
+			with, e := artifactpypi.ParseUVRunRequirement("Unidecode==1.4.0")
+			if e != nil {
+				t.Fatal(e)
+			}
+			request, e := artifactpypi.NewUVRunRequirements(primary, []artifactpypi.UVRunRequirement{with})
+			if e != nil {
+				t.Fatal(e)
+			}
+			selected, e := resolver.ResolveToolRunWithRequirements(ctx, request, "slugify")
+			resolveErr, entry = e, selected.Entry()
+			resolution := selected.Resolution()
+			nodes, roots, edges = len(resolution.Selection().Nodes()), len(resolution.Selection().RootGraphs()), len(resolution.Selection().Edges())
+			runtime, digest = resolution.RuntimeIdentity(), resolution.LockfileDigest().String()
+			command, expectedNodes, expectedSHA, expectedMetadata = "slugify", 3, "276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8", ""
+			marker = "uv_run_supplemental_resolver"
+		} else {
+			selected, e := resolver.ResolveToolRun(ctx, requirement, "cowsay")
+			resolveErr, entry = e, selected.Entry()
+			resolution := selected.Resolution()
+			nodes, runtime, digest = len(resolution.Graph().Nodes()), resolution.RuntimeIdentity(), resolution.LockfileDigest().String()
+		}
 		closeErr := errors.Join(resolver.Close(), executor.Close(), supervisor.Close())
 		cancel()
 		if closeErr != nil {
 			t.Fatal("actual production resolver cleanup", closeErr)
 		}
-		resolution := selected.Resolution()
-		entry := selected.Entry()
 		if mode == "normal" {
 			if resolveErr != nil {
 				t.Fatal("actual production native run resolver", resolveErr)
 			}
-			if resolution.RuntimeIdentity() != "uv-tool-run-isolated:"+UVResolverRuntimeIdentity() || len(resolution.Graph().Nodes()) != 1 || !entry.Valid() || entry.Command() != "cowsay" || entry.Artifact().Digest().String() != "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a" || entry.Metadata().SHA256 != "780e250c9ff0a37fe32ec832874a5ebb6c9692915baf899a94e549b4c195262c" || resolution.LockfileDigest().String() == "" || strings.Contains(resolution.RuntimeIdentity(), "uv-tool-install:") {
-				t.Fatal("native run identity/source/console differs")
+			if runtime != "uv-tool-run-isolated:"+UVResolverRuntimeIdentity() || nodes != expectedNodes || !entry.Valid() || entry.Command() != command || entry.Artifact().Digest().String() != expectedSHA || len(entry.Metadata().SHA256) != 64 || expectedMetadata != "" && entry.Metadata().SHA256 != expectedMetadata || digest == "" || strings.Contains(runtime, "uv-tool-install:") || supplemental && (roots != 2 || edges != 1) {
+				t.Fatal("native run identity/source/console or real root graphs differ")
 			}
-		} else if resolveErr == nil || entry.Valid() || len(resolution.Graph().Nodes()) != 0 || !strings.Contains(resolveErr.Error(), "observation is incomplete") {
+		} else if resolveErr == nil || entry.Valid() || nodes != 0 || roots != 0 || digest != "" || !strings.Contains(resolveErr.Error(), "observation is incomplete") {
 			t.Fatal("incomplete observation published selection or lost refusal", resolveErr)
 		}
+
 		if len(observed.traces) < 3 {
 			t.Fatal("production source/native trace coverage missing", len(observed.traces))
 		}
@@ -141,11 +176,11 @@ func TestUVPublicToolRunResolverIntegration(t *testing.T) {
 			if trace.injected {
 				injected++
 			}
-			t.Logf("uv_run_resolver_trace case=%s phase=%s raw_complete=%t delivered_complete=%t injected_incomplete=%t events=%d bytes=%d kinds=%v", mode, trace.phase, trace.rawComplete, trace.deliveredComplete, trace.injected, trace.events, trace.bytes, trace.kinds)
+			t.Logf(marker+"_trace case=%s phase=%s raw_complete=%t delivered_complete=%t injected_incomplete=%t events=%d bytes=%d kinds=%v", mode, trace.phase, trace.rawComplete, trace.deliveredComplete, trace.injected, trace.events, trace.bytes, trace.kinds)
 		}
 		if frozen != 1 || mode == "normal" && injected != 0 || mode == "incomplete-refused" && injected != 1 {
 			t.Fatal("wrong native observation refusal coverage", frozen, injected)
 		}
-		t.Logf("uv_run_resolver case=%s source=ACTUAL_PUBLIC_INDEPENDENT original=WHOLE readonly_source=SEALED native=ISOLATED_OFFLINE source_console=BOUND record=UNAPPROVED_DATA native_terminal=EACCES Policy=NOT_RUN program=NOT_RUN selection_returned=%t", mode, entry.Valid())
+		t.Logf(marker+" case=%s source=ACTUAL_PUBLIC_INDEPENDENT original=WHOLE readonly_source=SEALED native=ISOLATED_OFFLINE source_console=BOUND record=UNAPPROVED_DATA native_terminal=EACCES Policy=NOT_RUN program=NOT_RUN selection_returned=%t", mode, entry.Valid())
 	}
 }

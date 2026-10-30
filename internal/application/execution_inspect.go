@@ -71,22 +71,15 @@ func (s *ExecutionInspectService) InspectResolved(ctx context.Context, resolutio
 	if err := ctx.Err(); err != nil {
 		return partial, err
 	}
-	var inspections []domain.DependencyInspection
+	var batch func(map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error)
 	if inspector, ok := s.entry.inspection.(dependencyAwareInspection); ok && len(graph.Edges()) != 0 {
-		inspections, _, _, err = s.entry.inspectDependencyBatch(ctx, operation, graph.Nodes(), func(artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+		batch = func(artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
 			return inspector.InspectGraph(ctx, graph, artifacts)
-		})
-		if err != nil {
-			return partial, fmt.Errorf("inspect complete execution graph: %w", err)
 		}
-	} else {
-		for _, dependency := range graph.Nodes() {
-			inspection, _, err := s.entry.inspectDependency(ctx, operation, dependency)
-			if err != nil {
-				return partial, fmt.Errorf("inspect execution dependency: %w", err)
-			}
-			inspections = append(inspections, inspection)
-		}
+	}
+	inspections, err := s.inspectExecutionEntries(ctx, operation, graph.Nodes(), batch)
+	if err != nil {
+		return partial, err
 	}
 	if err := ctx.Err(); err != nil {
 		return partial, err
@@ -111,4 +104,25 @@ func (s *ExecutionInspectService) InspectResolved(ctx context.Context, resolutio
 		return partial, fmt.Errorf("construct approved execution set: %w", err)
 	}
 	return ExecutionInspection{operation, resolution, approved}, nil
+}
+
+// The existing current acquire/verify/inspect/Evidence lifecycle is shared by
+// ordinary connected graphs and explicit execution-root selections.
+func (s *ExecutionInspectService) inspectExecutionEntries(ctx context.Context, operation domain.OperationID, nodes []domain.LockedDependency, batch func(map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error)) ([]domain.DependencyInspection, error) {
+	if batch != nil {
+		inspections, _, _, err := s.entry.inspectDependencyBatch(ctx, operation, nodes, batch)
+		if err != nil {
+			return nil, fmt.Errorf("inspect complete execution graph: %w", err)
+		}
+		return inspections, nil
+	}
+	var inspections []domain.DependencyInspection
+	for _, dependency := range nodes {
+		inspection, _, err := s.entry.inspectDependency(ctx, operation, dependency)
+		if err != nil {
+			return nil, fmt.Errorf("inspect execution dependency: %w", err)
+		}
+		inspections = append(inspections, inspection)
+	}
+	return inspections, nil
 }

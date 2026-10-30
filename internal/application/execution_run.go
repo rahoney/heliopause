@@ -27,6 +27,7 @@ type ExecutionRuntime interface {
 // program's completed execution. Private request/output data is not persisted.
 type ExecutionResult struct {
 	preparation    PreparedExecution
+	selection      PreparedExecutionSelection
 	stdout, stderr []byte
 	code, signal   uint8
 	exited         bool
@@ -35,9 +36,10 @@ type ExecutionResult struct {
 	failure        string
 }
 
-func (r ExecutionResult) Preparation() PreparedExecution { return r.preparation }
-func (r ExecutionResult) Complete() bool                 { return r.complete }
-func (r ExecutionResult) FailureCode() string            { return r.failure }
+func (r ExecutionResult) Preparation() PreparedExecution                   { return r.preparation }
+func (r ExecutionResult) SelectionPreparation() PreparedExecutionSelection { return r.selection }
+func (r ExecutionResult) Complete() bool                                   { return r.complete }
+func (r ExecutionResult) FailureCode() string                              { return r.failure }
 
 // RuntimeAttempted reports invocation of the runtime adapter, not guest body entry.
 func (r ExecutionResult) RuntimeAttempted() bool { return r.attempted }
@@ -99,13 +101,20 @@ func (s *ExecutionService) Run(ctx context.Context, request ExecutionPreparation
 		result.failure = "PREPARATION_FAILED"
 		return result, errors.Join(errors.New("execution preparation did not complete"), err)
 	}
+	return executePreparedExecution(ctx, result, func() (ExecutionRuntimeOutcome, error) {
+		return s.runtime.Execute(ctx, result.preparation.ExecutionContext())
+	})
+}
+
+// The runtime evidence, output capture and terminal rules are identical for
+// connected and explicit-root preparations.
+func executePreparedExecution(ctx context.Context, result ExecutionResult, execute func() (ExecutionRuntimeOutcome, error)) (ExecutionResult, error) {
 	if ctx.Err() != nil {
 		return result, ctx.Err()
 	}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "execute"})
 	result.attempted = true
-	outcome, runErr := s.runtime.Execute(ctx, result.preparation.ExecutionContext())
-	resultErr = runErr
+	outcome, resultErr := execute()
 	result.failure = "RUNTIME_INCOMPLETE"
 	if outcome == nil {
 		return result, errors.Join(errors.New("execution runtime did not complete"), resultErr)
