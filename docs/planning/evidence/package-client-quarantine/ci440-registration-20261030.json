@@ -28,9 +28,11 @@
     "first_due_at": "2026-10-30T11:53:38+00:00",
     "first_due_KST": "2026-10-30 20:53:38 KST",
     "actual_queries_at_registration": 0,
-    "actual_queries": 2,
+    "actual_queries": 3,
     "future_execution_not_claimed": true,
-    "next_due_at": "2026-10-30T12:33:39.860491+00:00"
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "natural_session_exit_code": 0
   },
   "expected_qualification": {
     "new_exact_Bun_cold_parent": 1,
@@ -56,17 +58,17 @@
     "arithmetic_seconds": 6565.95,
     "estimate_only": true
   },
-  "result": "PENDING",
+  "result": "FAILURE; Linux first failure analysis pending",
   "scope": "Frozen G1 exact cold and G2 whole current Bun→Node app/CLI/refusal; G1 bare Semver remains named local; explicit Bun program/general/final not qualified by this run",
   "independent_local_next": "G3 explicit readonly Bun program audit/binding/runtime; reuse existing Bun supply, whole source/Policy and readonly input/capture owners; no push cancelling CI440",
   "authorization": "User authorized important grouped CI after completing independent local work; qualified G1/G2 current end-to-end group and scoped shared observer change. Normal milestone branch push only; no main merge/release.",
   "latest_actual_poll": {
-    "number": 2,
-    "due_at": "2026-10-30T12:13:38.968733+00:00",
-    "query_started_at": "2026-10-30T12:13:38.968865+00:00",
+    "number": 3,
+    "due_at": "2026-10-30T12:33:39.860491+00:00",
+    "query_started_at": "2026-10-30T12:33:39.861476+00:00",
     "api_get_only": true,
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "jobs": [
       {
         "id": 124039906683,
@@ -120,9 +122,9 @@
       {
         "id": 124039907249,
         "name": "gVisor Linux Integration",
-        "status": "in_progress",
-        "conclusion": null,
-        "current_step": "Install pinned runtime and run lifecycle integration"
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
       },
       {
         "id": 124039907495,
@@ -130,10 +132,17 @@
         "status": "completed",
         "conclusion": "success",
         "current_step": null
+      },
+      {
+        "id": 124057923190,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "failure",
+        "current_step": null
       }
     ],
-    "query_ended_at": "2026-10-30T12:13:39.860491+00:00",
-    "next_due_at": "2026-10-30T12:33:39.860491+00:00"
+    "query_ended_at": "2026-10-30T12:33:41.113962+00:00",
+    "next_due_at": null
   },
   "completed8_source_proof": {
     "receipt": "docs/github-logs/package-client-quarantine-20261021/ci440-completed8-proof.json",
