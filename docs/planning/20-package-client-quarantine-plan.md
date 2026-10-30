@@ -119,6 +119,12 @@ push를 묶으며, 최종 candidate에는 canonical Quick/security/docs/workflow
 필수 실제 소비자 검증을 수행한다. 문서만 바뀌면 docs/security를 적용하고 실행 코드 검사를
 근거 없이 반복하지 않는다. Workflow 자체·Required·timeout·coverage·보안 거부 조건은 유지한다.
 
+2026-10-31 사용자가 승인한 예외로 `gvisor-integration`의 **전체 job** 한도만120분에서
+150분으로 조정한다. [CI441 비교와 검토안](./evidence/package-client-quarantine/ci441-job-budget-proposal-20261031.md)이
+113개 통과 뒤 실제2h 한도 소진·남은 workload·승인 근거를 소유한다. 제품·개별 test 한도,
+필수 검사/전체 coverage·Required aggregate와20분 실제 조회는 그대로 적용한다.
+
+
 공통 observer/runtime/회계 변경, 로컬에서 확인할 수 없는 새 native 동작, 재현된 공통 회귀가
 다음 구현의 신뢰 전제를 막으면 해당 경계에서 원격 검증을 앞당긴다. 원인 미확정 실패에 같은
 입력 재실행을 반복하지 않고 최초 로그·source·환경을 고정한 뒤 가설과 수정 위치를 재검토한다.

@@ -242,7 +242,7 @@ jobs:
   gvisor-integration:
     name: gVisor Linux Integration
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 150
     env:
       GOTOOLCHAIN: local
       HELOX_CI_CUDA_ONLY: ${{ github.event_name == 'workflow_dispatch' && (inputs.pytorch_cu126_qualification || inputs.pytorch_cu130_qualification || inputs.pytorch_cu132_qualification) }}
