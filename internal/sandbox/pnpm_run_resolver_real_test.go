@@ -17,16 +17,16 @@ import (
 	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
-type pnpmRunCaptureExecutor struct {
+type nativeRunCaptureExecutor struct {
 	*hosttool.Executor
-	directory string
+	directory, cacheRoot, archiveName string
 }
 
-func (r pnpmRunCaptureExecutor) RunOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
-	if name != "docker" || len(args) != 3 || args[0] != "cp" || !strings.HasSuffix(args[1], ":"+pnpmRunCacheBase+"/dlx") || args[2] != "-" {
+func (r nativeRunCaptureExecutor) RunOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
+	if name != "docker" || len(args) != 3 || args[0] != "cp" || !strings.HasSuffix(args[1], ":"+r.cacheRoot) || args[2] != "-" {
 		return r.Executor.RunOutput(ctx, output, name, args...)
 	}
-	file, err := os.OpenFile(filepath.Join(r.directory, "pnpm-cold-cache.tar"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	file, err := os.OpenFile(filepath.Join(r.directory, r.archiveName), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func TestPNPMPublicColdToolRunSelectionIntegration(t *testing.T) {
 	}()
 	var observed TrustedExecutor = executor
 	if directory := os.Getenv("HELOX_PNPM_RUN_CAPTURE_DIR"); directory != "" {
-		observed = pnpmRunCaptureExecutor{executor, directory}
+		observed = nativeRunCaptureExecutor{Executor: executor, directory: directory, cacheRoot: pnpmRunCacheBase + "/dlx", archiveName: "pnpm-cold-cache.tar"}
 	}
 	resolver, err := NewLinuxPNPMResolverWithExecutorAndPolicy(observed, supervisor.Observer(), integrationResolverPolicyService(t))
 	if err != nil {

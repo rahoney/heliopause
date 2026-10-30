@@ -535,6 +535,95 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	}
 }
 
+func TestSharedObserverBunInstallerNetworkRequiresBoundProfile(t *testing.T) {
+	for _, profile := range []string{bunProjectResolverProfile, "default", bunResolverProfile, pnpmResolverProfile, uvResolverProfile} {
+		t.Run(profile, func(t *testing.T) {
+			endpoint := observerEndpoint(t)
+			observer, err := NewSharedObserver(endpoint)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer observer.Close()
+			const container = "0123456789abcdef"
+			reader, err := observer.Start(context.Background(), container)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var diagnostic bytes.Buffer
+			observer.mu.Lock()
+			observer.streams[container].profile = profile
+			observer.diagnostic = &diagnostic
+			observer.mu.Unlock()
+			writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer writer.Close()
+			record := helperRecord{ContainerID: container, Kind: "trusted-bun-install-network", EventSource: "CONNECT", Family: "INET", ProcessRelation: "ARTIFACT_GROUP", ProcessClass: "OTHER"}
+			items := []helperRecord{record}
+			if profile == bunProjectResolverProfile {
+				items = append(items, helperRecord{ContainerID: container, Kind: "stream-end"})
+			}
+			for _, item := range items {
+				body, err := json.Marshal(item)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := writer.Write(body); err != nil {
+					t.Fatal(err)
+				}
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			_, err = reader.Next(ctx)
+			if profile == bunProjectResolverProfile {
+				if err != io.EOF || !strings.Contains(diagnostic.String(), "NETWORK/TRUSTED_BUN_INSTALL/CONNECT/INET/ARTIFACT_GROUP/OTHER:1") {
+					t.Fatal("native attribution was not consumed by its exact profile", err, diagnostic.String())
+				}
+			} else {
+				var fault observerFault
+				if !errors.As(err, &fault) || fault.reason != "ATTRIBUTION_FAILURE" {
+					t.Fatal("foreign profile accepted native network", err)
+				}
+			}
+		})
+	}
+}
+
+func TestDecodeBunInstallerNetworkPreservesControlBoundary(t *testing.T) {
+	base := helperRecord{ContainerID: "0123456789abcdef", Kind: "trusted-bun-install-network", EventSource: "CONNECT", Family: "INET", ProcessRelation: "ARTIFACT_GROUP", ProcessClass: "OTHER"}
+	for _, scenario := range []string{"normal", "control-kind", "socket", "packet", "direct-root", "class", "count", "reason", "parent"} {
+		record := base
+		switch scenario {
+		case "control-kind":
+			record.Kind = "trusted-control-network"
+		case "socket":
+			record.EventSource = "SOCKET"
+		case "packet":
+			record.Family = "PACKET"
+		case "direct-root":
+			record.ProcessRelation = "DIRECT_EXEC_SESSION"
+		case "class":
+			record.ProcessClass = "PYTHON"
+		case "count":
+			count := uint64(1)
+			record.Count = &count
+		case "reason":
+			record.ClassificationReason = "OTHER"
+		case "parent":
+			record.ParentRelation = "ARTIFACT_GROUP"
+		}
+		body, err := json.Marshal(record)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = decodeHelperRecord(body)
+		if (err == nil) != (scenario == "normal") {
+			t.Fatalf("%s: decoder result=%v", scenario, err)
+		}
+	}
+}
+
 func TestSharedObserverFailsClosedForUnknownContainer(t *testing.T) {
 	endpoint := observerEndpoint(t)
 	observer, err := NewSharedObserver(endpoint)

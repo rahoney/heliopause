@@ -30,15 +30,22 @@ func (c PNPMRunCache) Controls() []domain.ProjectControlFile {
 // ValidatePNPMRunReference excludes provisioning and non-package inputs before
 // the native resolver touches tools, DNS or resources.
 func ValidatePNPMRunReference(reference domain.ArtifactReference) error {
-	parsed, err := parseLocator(reference.Locator())
-	if err != nil || reference.Source().String() != "npm" || !parsed.exact && parsed.locator != parsed.name {
-		return errPNPMRunCache
-	}
-	switch parsed.name {
-	case "node", "deno", "bun", "pnpm", "npm", "yarn", "rust":
+	if !validNativeNodeRunReference(reference) {
 		return errPNPMRunCache
 	}
 	return nil
+}
+
+func validNativeNodeRunReference(reference domain.ArtifactReference) bool {
+	parsed, err := parseLocator(reference.Locator())
+	if err != nil || reference.Source().String() != "npm" || !parsed.exact && parsed.locator != parsed.name {
+		return false
+	}
+	switch parsed.name {
+	case "node", "deno", "bun", "pnpm", "npm", "yarn", "rust":
+		return false
+	}
+	return true
 }
 
 // ParsePNPMRunCache reuses the bounded tar reader without following Host links.

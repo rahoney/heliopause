@@ -612,12 +612,12 @@ bool ExpectNetworkRecord(int output, const char* container_id, const char* sourc
 }
 
 bool ExpectTrustedNetworkRecord(int output, const char* container_id, const char* source, const char* family,
-                               const char* relation = "DIRECT_EXEC_SESSION", const char* process_class = "PYTHON") {
+                               const char* relation = "DIRECT_EXEC_SESSION", const char* process_class = "PYTHON", const char* kind = "trusted-control-network") {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
   const std::string expected = std::string("{\"container_id\":\"") + container_id +
-      "\",\"kind\":\"trusted-control-network\",\"event_source\":\"" + source +
+      "\",\"kind\":\"" + kind + "\",\"event_source\":\"" + source +
       "\",\"family\":\"" + family + "\",\"process_relation\":\"" + relation +
       "\",\"process_class\":\"" + process_class + "\"}";
   return std::string(buffer, size) == expected;
@@ -8575,7 +8575,7 @@ bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolv
   MountAnchor anchor{10, exact_mount, exact_class};
   auto allowed = [&]() { return IsPinnedBunRuntimeRead(*context, state, open.pathname(), open.flags(), selected_profile, &anchor); };
   if (!allowed() || ClassifyFilesystemOpen(open, state, selected_profile, &anchor) != FilesystemClass::kHelperOnly) return false;
-  if ((strcmp(exact_path,"/sys/devices/system/cpu/online")==0 || strcmp(exact_path,"/proc/99/cgroup")==0 || strcmp(exact_path,"/usr/share/zoneinfo/Etc/UTC")==0 || strcmp(exact_path,"/etc/host.conf")==0 || strcmp(exact_path,"/etc/nsswitch.conf")==0 || strcmp(exact_path,"/etc/gai.conf")==0 || strcmp(exact_path,"/etc/resolv.conf")==0 || strcmp(exact_path,"/etc/hosts")==0) && IsPinnedBunRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileBunResolver,&anchor)) return false;
+  if ((strcmp(exact_path,"/")==0 || strcmp(exact_path,"/sys/devices/system/cpu/online")==0 || strcmp(exact_path,"/proc/99/cgroup")==0 || strcmp(exact_path,"/usr/share/zoneinfo/Etc/UTC")==0 || strcmp(exact_path,"/etc/host.conf")==0 || strcmp(exact_path,"/etc/nsswitch.conf")==0 || strcmp(exact_path,"/etc/gai.conf")==0 || strcmp(exact_path,"/etc/resolv.conf")==0 || strcmp(exact_path,"/etc/hosts")==0) && IsPinnedBunRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileBunResolver,&anchor)) return false;
   context->set_parent_thread_group_id(1); if (allowed()) return false;
   context->set_parent_thread_group_id(0); context->set_is_exec_session(false); if (allowed()) return false;
   context->set_is_exec_session(true);
@@ -8613,6 +8613,7 @@ bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolv
   };
   std::vector<ReadCase> reads = {{"/proc/sys/vm/overcommit_memory", "/proc", "system", 32768}, {"/proc/99/maps", "/proc", "system", 557056}};
   if (strcmp(selected_profile,kProfileBunProjectResolver)==0) { reads.push_back({"/sys/devices/system/cpu/online", "/sys", "system", 557056}); reads.push_back({"/proc/99/cgroup", "/proc", "system", 557056}); reads.push_back({"/usr/share/zoneinfo/Etc/UTC", "/", "oci-root", 557056}); reads.push_back({"/etc/host.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/nsswitch.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/gai.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/resolv.conf", "/etc/resolv.conf", "system", 557056}); reads.push_back({"/etc/hosts", "/etc/hosts", "system", 557056}); }
+  if (strcmp(selected_profile,kProfileBunProjectResolver)==0) reads.push_back({"/", "/", "oci-root", 622592});
   for (const auto& read : reads) if (!run(read)) return false;
   return true;
 }
@@ -8762,6 +8763,150 @@ bool VerifyBunProjectLockInstallShapeBoundary() {
     for (int i=0;i<14;++i) { auto changed=selected; changed.set_argv(i,"foreign"); if (IsExactBunProjectLockInstall(changed)) return false; }
     auto extra=selected; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
   }
+  auto run=message; run.clear_argv();
+  for(const char* arg : {kBunToolPath,"--cwd=/tmp/haa-bun-input","x","--ignore-scripts","--registry=https://registry.npmjs.org/","--package=typescript@5.9.3","/haa-runtime/helox-bunx-inert-query"}) run.add_argv(arg);
+  if(!IsExactBunRunSelection(run) || IsExactBunProjectLockInstall(run)) return false;
+  for(int i=0;i<run.argv_size();++i) { auto changed=run; changed.set_argv(i,"foreign"); if(IsExactBunRunSelection(changed)) return false; }
+  for(const char* bad : {"--package=", "--package=file:pkg", "--package=../pkg", "--package=https://evil.test/pkg", "--package=pkg\nnext"}) {
+    auto changed=run; changed.set_argv(5,bad); if(IsExactBunRunSelection(changed)) return false;
+  }
+  for(const char* image : {"bun","/tmp/bun","/haa-runtime/./bun"}) {
+    auto changed=run; changed.set_binary_path(image); if(IsExactBunRunSelection(changed)) return false;
+    changed=run; changed.set_execfn(image); if(IsExactBunRunSelection(changed)) return false;
+  }
+  auto run_extra=run; run_extra.add_argv("--trust"); if(IsExactBunRunSelection(run_extra)) return false;
+  auto run_missing=run; run_missing.mutable_argv()->RemoveLast(); if(IsExactBunRunSelection(run_missing)) return false;
+  return true;
+}
+
+bool VerifyBunRunPathHandleBoundary(const gvisor::common::ContextData& context, const ProcessState& baseline,
+    const TopologyState& base_topology, int output) {
+  for(const char* scenario : {"normal","legacy-syscall","read-flags","write-flags","failed","errno","relative","outside-cache",
+      "traversal","missing-mount","wrong-mount","shadow","unsealed","profile","root","inactive","role","image",
+      "creator-start","creator-gone","missing-expected","pending-mismatch"}) {
+    auto state=baseline; auto topology=base_topology;
+    topology.anchors.emplace(3,MountAnchor{3,kBunTargetProjectMount,"workspace"});
+    topology.expected.push_back(ExpectedMount{kBunTargetProjectMount,"workspace","/","9p",false,true,true,false});
+    gvisor::syscall::OpenResult result;
+    *result.mutable_context_data()=context;
+    auto* c=result.mutable_context_data(); c->set_thread_id(100);c->set_thread_start_time_ns(1000);
+    result.set_sysno(437);result.set_flags(2654208);result.set_success(true);result.set_mount_id(3);
+    result.set_resolved_pathname("/tmp/haa-bun-input/cache/.bunx-1000/typescript@5.9.3/node_modules/typescript/bin");
+    const char* profile=kProfileBunProjectResolver;
+    if(strcmp(scenario,"legacy-syscall")==0) result.set_sysno(257);
+    else if(strcmp(scenario,"read-flags")==0) result.set_flags(557056);
+    else if(strcmp(scenario,"write-flags")==0) result.set_flags(2654208|kOpenWriteOnly);
+    else if(strcmp(scenario,"failed")==0) result.set_success(false);
+    else if(strcmp(scenario,"errno")==0) result.set_errorno(1);
+    else if(strcmp(scenario,"relative")==0) result.set_resolved_pathname("node_modules/pkg/bin");
+    else if(strcmp(scenario,"outside-cache")==0) result.set_resolved_pathname("/tmp/haa-bun-input/cache/typescript/bin");
+    else if(strcmp(scenario,"traversal")==0) result.set_resolved_pathname("/tmp/haa-bun-input/cache/.bunx-1000/../escape");
+    else if(strcmp(scenario,"missing-mount")==0) result.set_mount_id(99);
+    else if(strcmp(scenario,"wrong-mount")==0) topology.anchors[3].mount_class="system";
+    else if(strcmp(scenario,"shadow")==0) topology.anchors.emplace(4,MountAnchor{4,"/tmp/haa-bun-input/cache","workspace"});
+    else if(strcmp(scenario,"unsealed")==0) topology.sealed=false;
+    else if(strcmp(scenario,"profile")==0) profile=kProfileNPM;
+    else if(strcmp(scenario,"root")==0) {c->set_thread_group_id(99);c->set_thread_group_start_time_ns(990);c->set_parent_thread_group_id(0);}
+    else if(strcmp(scenario,"inactive")==0) state.groups[100].bun_run_install_active=false;
+    else if(strcmp(scenario,"role")==0) state.groups[100].role=ProcessState::Role::kControl;
+    else if(strcmp(scenario,"image")==0) state.groups[100].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"creator-start")==0) state.groups[99].start_time_ns++;
+    else if(strcmp(scenario,"creator-gone")==0) state.groups.erase(99);
+    else if(strcmp(scenario,"missing-expected")==0) state.expected_groups.erase(100);
+    else if(strcmp(scenario,"pending-mismatch")==0) state.pending_opens.emplace(std::make_pair(100,1000),ProcessState::PendingOpen{100,1000,257,2654208,false});
+    NormalizedCounts counts; std::string payload,id;const char* reason=nullptr;
+    const bool parsed=result.SerializeToString(&payload) && ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+    const bool normal=strcmp(scenario,"normal")==0;
+    if(parsed!=normal || counts.workspace_access!=(normal?1:0) || (!normal && strcmp(scenario,"pending-mismatch")==0 && state.pending_opens.empty())) {
+      fprintf(stderr,"Bun openat2 path-handle scenario failed: %s\n",scenario);return false;
+    }
+  }
+  return true;
+}
+
+bool VerifyBunRunInstallChildBoundary(const gvisor::common::ContextData& root, const ProcessState& baseline,
+    const TopologyState& baseline_topology, const ProfileRegistration& baseline_registration, int output, int reader) {
+  for (const char* scenario : {"normal", "argv0", "argv1", "argv2", "argv3", "argv4", "argv5", "argv6", "argv7", "cache-mode",
+      "extra", "missing", "execfn", "image", "parent", "creator-start", "creator-image", "creator-package",
+      "role", "candidate", "profile", "shadow", "reexec", "descendant", "descendant-foreign"}) {
+    ProcessState state=baseline;
+    TopologyState topology=baseline_topology;
+    auto registration=baseline_registration;
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data()=root;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload,id; const char* reason=nullptr;
+    if(!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)) return false;
+    gvisor::sentry::ExecveInfo event;
+    *event.mutable_context_data()=root;
+    auto* context=event.mutable_context_data();
+    context->set_thread_group_id(100); context->set_thread_group_start_time_ns(1000); context->set_parent_thread_group_id(99);
+    event.set_binary_path(kBunToolPath); event.set_execfn(kBunToolPath);
+    const auto& package=baseline.groups.at(99).bun_run_package;
+    for(const char* arg : {kBunToolPath,"add",package.c_str(),"--no-summary"}) event.add_argv(arg);
+    const bool bare=package.rfind('@')==std::string::npos || package.rfind('@')==0;
+    if(bare) event.add_argv("--no-cache");
+    for(const char* arg : {"--force","--ignore-scripts","--registry=https://registry.npmjs.org/"}) event.add_argv(arg);
+    const char* profile=kProfileBunProjectResolver;
+    if(strncmp(scenario,"argv",4)==0) {
+      const int index=scenario[4]-'0'; if(index>=event.argv_size()) continue;
+      event.set_argv(index,"foreign");
+    }
+    else if(strcmp(scenario,"cache-mode")==0) { if(bare) event.mutable_argv()->DeleteSubrange(4,1); else event.add_argv("--no-cache"); }
+    else if(strcmp(scenario,"extra")==0) event.add_argv("--trust");
+    else if(strcmp(scenario,"missing")==0) event.mutable_argv()->RemoveLast();
+    else if(strcmp(scenario,"execfn")==0) event.set_execfn("bun");
+    else if(strcmp(scenario,"image")==0) event.set_binary_path("/tmp/bun");
+    else if(strcmp(scenario,"parent")==0) context->set_parent_thread_group_id(98);
+    else if(strcmp(scenario,"creator-start")==0) state.groups[99].start_time_ns++;
+    else if(strcmp(scenario,"creator-image")==0) state.groups[99].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"creator-package")==0) state.groups[99].bun_run_package="other@1.0.0";
+    else if(strcmp(scenario,"role")==0) state.groups[100].role=ProcessState::Role::kControl;
+    else if(strcmp(scenario,"candidate")==0) state.groups[100].bun_run_install_candidate=false;
+    else if(strcmp(scenario,"profile")==0) profile=kProfileBunResolver;
+    else if(strcmp(scenario,"shadow")==0) topology.anchors.emplace(3,MountAnchor{3,kBunToolPath,"workspace"});
+    auto parse=[&]() { return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(),payload.size(),output,&id,profile,&registration,&state,&reason,&topology); };
+    const bool positive=strcmp(scenario,"normal")==0 || strcmp(scenario,"reexec")==0 || strncmp(scenario,"descendant",10)==0;
+    const bool parsed=parse();
+    if(!positive) {
+      if(parsed || (strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0)) { fprintf(stderr,"Bun child negative failed: %s\n",scenario); return false; }
+      continue;
+    }
+    if(!parsed || !ExpectRecordExact(reader,kFirstID,"process-exec-expected") ||
+        IsTrustedControlNetwork(*context,state) || !(strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0) ||
+        state.groups[100].role!=ProcessState::Role::kArtifact || !state.groups[100].bun_run_package.empty() || state.groups[100].bun_run_install_candidate) return false;
+    for(const char* other : {kProfileBunResolver,kProfileNPM,kProfilePNPMResolver,kProfileUVResolver})
+      if((strcmp(ResolverNetworkKind(*context,state,other),"trusted-bun-install-network")==0)) return false;
+    gvisor::syscall::Connect connect;
+    *connect.mutable_context_data()=*context;
+    sockaddr_in address{}; address.sin_family=AF_INET; address.sin_port=htons(443);
+    connect.set_address(std::string(reinterpret_cast<const char*>(&address),sizeof(address)));
+    if(!connect.SerializeToString(&payload) || !ParseConnectAndSend(payload.data(),payload.size(),output,&id,profile,state,&reason) ||
+        !ExpectTrustedNetworkRecord(reader,kFirstID,"CONNECT","INET","ARTIFACT_GROUP","OTHER","trusted-bun-install-network")) return false;
+    const MountAnchor image_root{8,"/","oci-root"};
+    if(!IsPinnedBunRuntimeRead(*context,state,"/etc/ld.so.cache",557056,profile,&image_root) ||
+        IsPinnedBunRuntimeRead(*context,state,"/etc/ld.so.cache",kOpenWriteOnly,profile,&image_root) ||
+        IsPinnedBunRuntimeRead(*context,state,"/tmp/libc.so.6",557056,profile,&image_root)) return false;
+    const MountAnchor proc{7,"/proc","system"};
+    if(!IsPinnedBunRuntimeRead(*context,state,"/proc/100/maps",557056,profile,&proc) ||
+        IsPinnedBunRuntimeRead(*context,state,"/proc/99/maps",557056,profile,&proc) ||
+        IsPinnedBunRuntimeRead(*context,state,"/proc/100/maps",kOpenWriteOnly,profile,&proc)) return false;
+    if(strcmp(scenario,"normal")==0 && !VerifyBunRunPathHandleBoundary(*context,state,topology,output)) return false;
+    if(strcmp(scenario,"reexec")==0 && parse()) return false;
+    if(strncmp(scenario,"descendant",10)==0) {
+      *clone.mutable_context_data()=*context;
+      clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+      if(!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)) return false;
+      context->set_thread_group_id(101); context->set_thread_group_start_time_ns(1010); context->set_parent_thread_group_id(100);
+      if((strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0) || state.groups[101].bun_run_install_candidate) return false;
+      if(strcmp(scenario,"descendant-foreign")==0) {
+        event.set_binary_path("/tmp/package-program"); event.set_execfn("/tmp/package-program");
+        if(!parse() || !ExpectUnexpectedProcessRecord(reader,kFirstID,"SENTRY_EXEC","OTHER","ARTIFACT_ROLE","ARTIFACT_GROUP") ||
+            (strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0)) return false;
+      } else if(parse()) return false;
+    }
+  }
   return true;
 }
 
@@ -8842,6 +8987,11 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bo
           event.set_argv(1,"--cwd=/tmp/haa-bun-input/seed"); event.add_argv("--offline");
         } else if (strcmp(bun_preparation,"offline")==0) {
           event.set_argv(3,"--offline"); event.add_argv("--frozen-lockfile");
+        } else if (strncmp(bun_preparation,"run",3)==0) {
+          event.clear_argv();
+          for (const char* arg : {kBunToolPath, "--cwd=/tmp/haa-bun-input", "x", "--ignore-scripts",
+              "--registry=https://registry.npmjs.org/", "--package=typescript@5.9.3", "/haa-runtime/helox-bunx-inert-query"}) event.add_argv(arg);
+          if(strcmp(bun_preparation,"run-bare")==0) event.set_argv(5,"--package=typescript");
         } else return false;
       }
       if (frozen) event.add_argv("--frozen-lockfile");
@@ -8854,15 +9004,19 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bo
     if (strcmp(scenario, "extra-arg") == 0) event.add_argv("file.js");
     const bool allowed_image = strcmp(scenario, "normal") == 0 || artifact;
     if (!allowed_image) return !parse();
+    if (artifact && bun_preparation != nullptr && strncmp(bun_preparation,"run",3)==0) return !parse();
     if (!parse()) return false;
     if (artifact) {
       return ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") &&
           state.groups.at(99).role == ProcessState::Role::kArtifact && !IsTrustedControlNetwork(*context, state);
     }
-    return ExpectRecordExact(output[1], kFirstID, "process-exec-expected") &&
+    const bool root_allowed = ExpectRecordExact(output[1], kFirstID, "process-exec-expected") &&
         state.groups.at(99).current_image_class == tool_class &&
         IsTrustedControlNetwork(*context, state) &&
         registration.pending_admissions.front().state == ProfileRegistration::AdmissionState::kConsumed;
+    if(!root_allowed) return false;
+    return bun_preparation == nullptr || strncmp(bun_preparation,"run",3)!=0 ||
+        VerifyBunRunInstallChildBoundary(*context,state,topology,registration,output[0],output[1]);
   };
   bool passed = true;
   for (const char* scenario : {"normal", "artifact", "clone", "no-nonce", "unsealed", "missing-snapshot",
@@ -9682,7 +9836,9 @@ int main(int argc, char** argv) {
       VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,false) &&
       VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,true) &&
       VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"seed") &&
-      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"offline");
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"offline") &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"run") &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"run-bare");
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();

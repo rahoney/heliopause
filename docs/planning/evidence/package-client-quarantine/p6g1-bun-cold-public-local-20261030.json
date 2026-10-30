@@ -1,0 +1,237 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-G1",
+  "base_source": "0eeefcacd6000edafc9c3a2a552ac4a475de747b",
+  "status": "NAMED_LOCAL_QUALIFIED_G1_ONLY",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_run_cache.go",
+      "sha256": "4d69cb989fc97ecc702785eb6931fdce6226f606278f3a765e1f09ae95122690"
+    },
+    {
+      "path": "internal/artifact/npm/bun_run_cache.go",
+      "sha256": "085f654b90788a696b83cf75e3c8259e1cf618cc9aac3279faf128ce137d87e4"
+    },
+    {
+      "path": "internal/artifact/npm/bun_run_cache_test.go",
+      "sha256": "b3e28feb02d9c96326df3f6541fb9a3cf81a70d24c5976561efded069ee99558"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-run-cache/exact.package.json",
+      "sha256": "c273d998134048a64d300c35899f220724e84405dab64235797afe9690f84906"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-run-cache/exact.bun.lock",
+      "sha256": "9736af2ca2a459e746d3314b4925cfddbdd54f92d47962dbc53a5ce4e36befdd"
+    },
+    {
+      "path": "internal/sandbox/bun_run_resolver.go",
+      "sha256": "040b122c60639aea085073a0f5813d5d59615eb80b19495acb1ffb8241066e10"
+    },
+    {
+      "path": "internal/sandbox/bun_run_resolver_test.go",
+      "sha256": "888f1033d1932db51f2a917990822212b4f073550a1c5d258070408006d4fb1a"
+    },
+    {
+      "path": "internal/sandbox/pnpm_run_resolver_real_test.go",
+      "sha256": "7b2057a5c6061d5115cec36d71b624045df8a743b44aa3d83e7882bae3ad262a"
+    },
+    {
+      "path": "internal/sandbox/bun_run_resolver_real_test.go",
+      "sha256": "e1c354cd2baae162db6cd5f7743c97112b25c5afd3ba99d85b3843242c6f8ab0"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "5e4fb226801512310ab3992c3264660b376b1d2ae5bcb1674abc3b51a424a359"
+    },
+    {
+      "path": "internal/sandbox/shared_observer_test.go",
+      "sha256": "738ac0c7d1c10bb4f826fb04fe64c9e325268c57fbdc58228d6a985d970406a3"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "b4c55db1d463ddc992e2de7b0755742a27fe52ed8ace07f7a86a96654fef4677"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "6060f64a21eb571575e64d3f4220754cc7277c116ebd8e9661bb23a79f5aa56a"
+    }
+  ],
+  "baseline": "p6g-bunx-native-baseline-20261030.md",
+  "reuse": [
+    "existing Bun native resource/typed endpoint/observation/cleanup",
+    "bounded tar/Bun lock/independent metadata-SRI owners",
+    "same pinned Bun startup read body byte-identical in two consumers",
+    "native request validator shared with PNPM; previous PNPM semantics retained",
+    "shared native capture preserves concrete Executor RunBounded"
+  ],
+  "native_primitive": {
+    "exact_seconds": 9.52,
+    "existing_Bun_project_source_cases": 9,
+    "existing_Bun_project_seconds": 54.49,
+    "bare_typescript_seconds": 10.43,
+    "bare_typescript_DATA": "7.0.2/platform optional lock; not independently source-bound, current runtime or generic support qualification",
+    "no_unchanged_primitive_or_old_project_native_repeat": true
+  },
+  "public_selector_source_binding": {
+    "exact_request": "typescript@5.9.3",
+    "exact_seconds": 10.07,
+    "exact_cache_entries": 157,
+    "bare_request": "semver",
+    "bare_selected_version": "7.8.5",
+    "bare_seconds": 7.98,
+    "bare_cache_entries": 67,
+    "source_artifacts_each": 1,
+    "operator_seconds": 20.123,
+    "native_cache": "UNAPPROVED_DATA",
+    "independent_metadata_SRI_binding": true,
+    "original_archive_intake_quarantine_Policy_program": "NOT_RUN",
+    "Host5_Docker_unchanged": true,
+    "helper_wait": 0,
+    "helper_stopped_and_profile_same_inode_restored": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-g1-public-native-v14"
+  },
+  "CPP": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--pull=never",
+      "--platform",
+      "linux/amd64",
+      "--user",
+      "1000:1000",
+      "--env",
+      "HOME=/tmp/helox-release-observer.W911Qq",
+      "--env",
+      "USER=builder",
+      "--env",
+      "EXPECTED_BAZEL_VERSION=8.3.1",
+      "--env",
+      "EXPECTED_BAZEL_SHA512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",
+      "--mount",
+      "type=bind,src=/tmp/helox-release-observer.W911Qq,dst=/tmp/helox-release-observer.W911Qq",
+      "--workdir",
+      "/tmp/helox-release-observer.W911Qq/gvisor",
+      "--entrypoint",
+      "/bin/sh",
+      "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64@sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+      "-c",
+      "set -eu\ntest \"$(/usr/local/bin/bazel --version)\" = \"bazel $EXPECTED_BAZEL_VERSION\"\ntest \"$(sha512sum /usr/local/bin/bazel | awk '{print $1}')\" = \"$EXPECTED_BAZEL_SHA512\"\n/usr/local/bin/bazel build -c opt --jobs=4 --local_ram_resources=8192 //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test\nbazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test\n"
+    ],
+    "exit_code": 0,
+    "seconds": 47.404,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "b4c55db1d463ddc992e2de7b0755742a27fe52ed8ace07f7a86a96654fef4677"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "6060f64a21eb571575e64d3f4220754cc7277c116ebd8e9661bb23a79f5aa56a"
+      },
+      {
+        "path": "tools/gvisor-observer/pod-init.json",
+        "sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc"
+      }
+    ],
+    "canonical_builder_and_commands_reused": true,
+    "temporary_diagnostic_or_runner_in_final_source": false,
+    "latches_pass": 132,
+    "latches_fail": 0,
+    "observer_sha256": "59b2d92e9ad69187bdd1a6484b6e1c777a268c43e40de482094f1f0150ed3349"
+  },
+  "cheap_Go": {
+    "focused_reference_cache_sandbox_seconds": 9.692,
+    "tagged_vet_seconds": 1.369,
+    "saved_native_subtree_DATA_replay_seconds": 2.558,
+    "DATA_replay_not_native_execution": true,
+    "temporary_replay_test_removed": true,
+    "public_tagged_vet_seconds": 1.352,
+    "public_test_build_seconds": 9.05
+  },
+  "security_boundary": {
+    "root": "exact fixed bun x/missing sealed command only; typed nonprovisioning bare/exact request",
+    "installer": "one kernel clone, exact current root/start/package/tool/7-or-8 argv, ARTIFACT role retained, no reexec or descendants",
+    "network": "old direct-root CONTROL predicate and wire unchanged; dedicated fixed Bun installer record only in bound Bun project profile; existing firewall endpoint isolation retained",
+    "openat2": "successful exact-native private-cache O_PATH|CLOEXEC kernel result only; no synthetic pending or generic correlation removal;21 denial cases, resolved mount/shadow checks and normal workspace accounting",
+    "budgets_runtime_locks_Core_Policy_unchanged": true,
+    "diagnostic_hooks_in_final_source": false
+  },
+  "acceptance": {
+    "native_DATA_named_actual": true,
+    "public_selector_and_metadata_binding_named_actual": true,
+    "whole_CPP132": true,
+    "grouped_Go_checks": "PASS",
+    "current_whole_quarantine_runtime_CLI": false,
+    "Bun_unknown_lock_optional_platform_format_support": false,
+    "general_peer_equivalence_hostile": false,
+    "new_source_hosted": false,
+    "whole_final": false,
+    "G1_native_public_binding_only": true
+  },
+  "active_CI439": "frozen0ee source outside this delta; public actual20min GET4/8SUCCESS Linux in_progress next10:42:00UTC; no push cancelling run",
+  "grouped_Go": [
+    {
+      "name": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 372.878
+    },
+    {
+      "name": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 55.672
+    },
+    {
+      "name": "tagged-staticcheck",
+      "command": [
+        "$HELOX_TOOL_CACHE/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/artifact/npm",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 8.247
+    }
+  ],
+  "source_freeze_matches_private": true,
+  "documentation_security": [
+    {
+      "name": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.355
+    },
+    {
+      "name": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 15.619
+    }
+  ],
+  "post_check_edits": "Status-only receipt/Queue/plan bookkeeping; frozen13 product/test inputs and Markdown links unchanged; no repeated Go/native/CPP/CI."
+}

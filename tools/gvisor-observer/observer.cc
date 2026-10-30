@@ -465,6 +465,9 @@ struct ProcessState {
     uint64_t executable_locator = 0;
     // Current exact runtime query only; neither role nor inheritable authority.
     bool runtime_cache_query = false;
+    std::string bun_run_package;
+    bool bun_run_install_candidate = false;
+    bool bun_run_install_active = false;
     bool diagnostic_image_pinned = false;
     bool diagnostic_rustc_version = false;
     bool diagnostic_rustc_metadata = false;
@@ -730,6 +733,18 @@ bool IsExactBunProjectLockInstall(const gvisor::sentry::ExecveInfo& message) {
       IsBunPublicSelector(message.argv(fixed_count+1), intent == "add");
 }
 
+// Script-free native selection requests only a missing command in the sealed
+// helper mount. The typed caller and independent source binding own the package
+// semantics; this closed shape cannot pass a program or caller argv.
+bool IsExactBunRunSelection(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kBunToolPath && message.execfn() == kBunToolPath &&
+      message.argv_size() == 7 && message.argv(0) == kBunToolPath &&
+      message.argv(1) == "--cwd=/tmp/haa-bun-input" && message.argv(2) == "x" &&
+      message.argv(3) == "--ignore-scripts" && message.argv(4) == "--registry=https://registry.npmjs.org/" &&
+      message.argv(5).rfind("--package=", 0) == 0 && IsBunPublicSelector(message.argv(5).substr(10), true) &&
+      message.argv(6) == "/haa-runtime/helox-bunx-inert-query";
+}
+
 struct ProfileRegistration {
   std::string profile;
   std::vector<ExpectedMount> expected;
@@ -777,6 +792,44 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+// Only the kernel clone of a currently admitted bun x selector can run its
+// fixed script-free cold installer. Neither marker is copied to descendants.
+const ProcessState::GroupState* BunRunInstallCreator(const gvisor::common::ContextData& context,
+    const ProcessState::GroupState& group, const ProcessState& state) {
+  if (!context.is_exec_session() || group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild || group.root_eligible || !group.root_consumed ||
+      group.trusted_control_network_active || group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      context.parent_thread_group_id() != group.clone_creator_group_id || !HasExactCloneCreator(group,state)) return nullptr;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  const auto expected = state.expected_groups.find(group.clone_creator_group_id);
+  return parent.role == ProcessState::Role::kControl && parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      !parent.root_eligible && parent.root_consumed && parent.trusted_control_network_active &&
+      !parent.demotion_pending && !parent.launch_target_pending && !parent.handoff_target_pending &&
+      parent.current_image_class == ProcessClass::kBun && !parent.bun_run_package.empty() &&
+      expected != state.expected_groups.end() && expected->second.start_time_ns == parent.start_time_ns &&
+      expected->second.process_class == ProcessClass::kBun ? &parent : nullptr;
+}
+
+bool IsBunRunInstallGroup(const gvisor::common::ContextData& context, const ProcessState& state) {
+  const auto group = state.groups.find(context.thread_group_id());
+  const auto expected = state.expected_groups.find(context.thread_group_id());
+  return group != state.groups.end() && SameGroup(group->second,context) && group->second.bun_run_install_active &&
+      group->second.current_image_class == ProcessClass::kBun && expected != state.expected_groups.end() &&
+      expected->second.start_time_ns == group->second.start_time_ns && expected->second.process_class == ProcessClass::kBun &&
+      BunRunInstallCreator(context,group->second,state) != nullptr;
+}
+
+bool IsExactBunRunInstall(const gvisor::sentry::ExecveInfo& message, const ProcessState::GroupState& parent) {
+  const auto version = parent.bun_run_package.rfind('@');
+  const bool bare = version == std::string::npos || version == 0;
+  const int force = bare ? 5 : 4;
+  return message.binary_path() == kBunToolPath && message.execfn() == kBunToolPath &&
+      message.argv_size() == force + 3 && message.argv(0) == kBunToolPath && message.argv(1) == "add" &&
+      message.argv(2) == parent.bun_run_package && message.argv(3) == "--no-summary" &&
+      (!bare || message.argv(4) == "--no-cache") && message.argv(force) == "--force" &&
+      message.argv(force+1) == "--ignore-scripts" && message.argv(force+2) == "--registry=https://registry.npmjs.org/";
 }
 
 bool HasExactNativeQueryCreator(const gvisor::common::ContextData& context,
@@ -2573,6 +2626,13 @@ bool IsTrustedControlNetwork(const gvisor::common::ContextData& context,
       group->second.trusted_control_network_active;
 }
 
+const char* ResolverNetworkKind(const gvisor::common::ContextData& context, const ProcessState& state, const char* profile) {
+  if (IsTrustedControlNetwork(context,state)) return "trusted-control-network";
+  if (profile != nullptr && strcmp(profile,kProfileBunProjectResolver)==0 && IsBunRunInstallGroup(context,state))
+    return "trusted-bun-install-network";
+  return "network-attempt";
+}
+
 SocketClassification ClassifySocketFamily(int family) {
   if (family == AF_UNIX) return SocketClassification::kLocal;
   if (family == kLinuxAFNetlink) return SocketClassification::kSpecialKernelLocal;
@@ -3269,18 +3329,8 @@ bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
 
 // Observed Bun1.4.4 startup reads for the admitted query or lock-only root.
 // Project-only data grants do not apply to the version/revision query profile.
-bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
-                                  const ProcessState& state, const std::string& path,
-                                  uint64_t flags, const char* profile, const MountAnchor* anchor) {
-  if (profile == nullptr || strcmp(profile, kProfileNPM) != 0 || anchor == nullptr) return false;
-  const auto* group = FindFilesystemGroup(context, state);
-  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
-      group->provenance != ProcessState::Provenance::kCloneChild ||
-      group->current_image_class != ProcessClass::kBun || FilesystemProcessClass(context, state) != ProcessClass::kBun ||
-      group->root_eligible || !group->root_consumed || group->trusted_control_network_active ||
-      group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
-      context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
-      state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
+bool IsBunImageStartupRead(const gvisor::common::ContextData& context, const std::string& path,
+                           uint64_t flags, const MountAnchor* anchor) {
   // Fixed GNU loader inputs and exact self-startup reads already measured for
   // this same native image. No resolver files, general proc/sys tree or writes.
   if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && path == "/" && flags == 622592) return true;
@@ -3300,12 +3350,29 @@ bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
       path == "/sys/devices/system/cpu/online" && flags == 557056;
 }
 
+bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
+                                  const ProcessState& state, const std::string& path,
+                                  uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileNPM) != 0 || anchor == nullptr) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
+      group->provenance != ProcessState::Provenance::kCloneChild ||
+      group->current_image_class != ProcessClass::kBun || FilesystemProcessClass(context, state) != ProcessClass::kBun ||
+      group->root_eligible || !group->root_consumed || group->trusted_control_network_active ||
+      group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
+      context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
+      state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
+  return IsBunImageStartupRead(context,path,flags,anchor);
+}
+
 bool IsPinnedBunRuntimeRead(const gvisor::common::ContextData& context,
                           const ProcessState& state, const std::string& path,
                           uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  const bool native_install = profile != nullptr && strcmp(profile,kProfileBunProjectResolver)==0 && IsBunRunInstallGroup(context,state);
   if (profile == nullptr || (strcmp(profile, kProfileBunResolver) != 0 && strcmp(profile, kProfileBunProjectResolver) != 0) ||
       anchor == nullptr ||
-      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+      !context.is_exec_session() || (!native_install && context.parent_thread_group_id() != 0)) return false;
+  if (native_install && IsBunImageStartupRead(context,path,flags,anchor)) return true;
   const bool overcommit = anchor->mount_class == "system" && anchor->mountpoint == "/proc" && path == "/proc/sys/vm/overcommit_memory" && flags == 32768;
   const bool own_maps = anchor->mount_class == "system" && anchor->mountpoint == "/proc" && path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" && flags == 557056;
   const bool online_cpus = strcmp(profile, kProfileBunProjectResolver) == 0 && anchor->mount_class == "system" && anchor->mountpoint == "/sys" && path == "/sys/devices/system/cpu/online" && flags == 557056;
@@ -3313,7 +3380,9 @@ bool IsPinnedBunRuntimeRead(const gvisor::common::ContextData& context,
   const bool utc_zone = strcmp(profile, kProfileBunProjectResolver) == 0 && anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && path == "/usr/share/zoneinfo/Etc/UTC" && flags == 557056;
   const bool host_configuration = strcmp(profile, kProfileBunProjectResolver) == 0 && anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && (path == "/etc/host.conf" || path == "/etc/nsswitch.conf" || path == "/etc/gai.conf") && flags == 557056;
   const bool resolver_configuration = strcmp(profile, kProfileBunProjectResolver) == 0 && anchor->mount_class == "system" && (anchor->mountpoint == "/etc/resolv.conf" || anchor->mountpoint == "/etc/hosts") && path == anchor->mountpoint && flags == 557056;
-  if (!overcommit && !own_maps && !online_cpus && !own_cgroup && !utc_zone && !host_configuration && !resolver_configuration) return false;
+  const bool root_directory = strcmp(profile, kProfileBunProjectResolver) == 0 && anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && path == "/" && flags == 622592;
+  if (!overcommit && !own_maps && !online_cpus && !own_cgroup && !utc_zone && !host_configuration && !resolver_configuration && !root_directory) return false;
+  if (native_install) return FilesystemProcessClass(context,state) == ProcessClass::kBun;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&
@@ -4644,6 +4713,10 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.find(child_group)->second.uv_python_query_environment = creator->second.uv_python_query_environment;
   state->groups.find(child_group)->second.uv_python_query_helper_root = creator->second.uv_python_query_helper_root;
   auto& native_child = state->groups.find(child_group)->second;
+  native_child.bun_run_install_candidate = creator->second.role == ProcessState::Role::kControl &&
+      creator->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      creator->second.current_image_class == ProcessClass::kBun && !creator->second.bun_run_package.empty();
+  if (native_child.bun_run_install_candidate) native_child.role=ProcessState::Role::kArtifact;
   native_child.pipx_native_query_restricted = creator->second.pipx_native_query_restricted;
   native_child.pipx_native_environment = creator->second.pipx_native_environment;
   native_child.pipx_native_candidate = IsPipxNativeActiveGroup(creator->second) &&
@@ -5055,6 +5128,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   group->second.python_execution_active = false;
   group->second.node_execution_active = false;
   group->second.node_execution_demoting = false;
+  const bool bun_install_candidate = group->second.bun_run_install_candidate;
+  group->second.bun_run_install_candidate = false;
+  group->second.bun_run_install_active = false;
+  group->second.bun_run_package.clear();
   const bool pipx_native_candidate = group->second.pipx_native_candidate;
   group->second.pipx_native_candidate = false;
   group->second.pipx_native_image = ProcessState::PipxNativeImage::kNone;
@@ -5107,6 +5184,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
   group->second.diagnostic_build_target_image = strcmp(profile,kProfileCargoBuild)==0 && IsCargoBuildTargetImage(topology,message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
+  const auto* bun_creator = bun_install_candidate ? BunRunInstallCreator(message.context_data(),group->second,candidate) : nullptr;
+  const bool bun_install = strcmp(profile,kProfileBunProjectResolver)==0 && bun_creator != nullptr &&
+      candidate.expected_groups.find(group_id)==candidate.expected_groups.end() && IsExactBunRunInstall(message,*bun_creator);
+  if (bun_install_candidate && !bun_install) { *reason="PROCESS_PROVENANCE_UNKNOWN"; return false; }
   if (group->second.current_image_class == ProcessClass::kUV &&
       (!IsUVToolImage(topology, message.binary_path()) || message.execfn() != kUVToolPath ||
        message.argv_size() == 0 || message.argv(0) != kUVToolPath)) {
@@ -5122,7 +5203,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   if (group->second.current_image_class == ProcessClass::kBun &&
       (!IsBunToolImage(topology, message.binary_path()) ||
        !((strcmp(profile, kProfileBunResolver) == 0 && IsExactBunQuery(message)) ||
-         (strcmp(profile, kProfileBunProjectResolver) == 0 && IsExactBunProjectLockInstall(message)) ||
+         (strcmp(profile, kProfileBunProjectResolver) == 0 &&
+          (IsExactBunProjectLockInstall(message) ||
+           (IsExactBunRunSelection(message) && group->second.role == ProcessState::Role::kControl &&
+            group->second.provenance == ProcessState::Provenance::kDirectExecRoot && group->second.launch_target_pending) || bun_install)) ||
          (strcmp(profile, kProfileNPM) == 0 && group->second.role == ProcessState::Role::kArtifact &&
           IsBunArtifactRuntimeImage(topology, message.binary_path()) && message.execfn() == kBunToolPath &&
           message.argv_size() > 0 && (message.argv(0) == kBunToolPath || message.argv(0) == "bun"))))) {
@@ -5405,6 +5489,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
     group->second.launch_target_pending = false;
     group->second.trusted_control_network_active = true;
+    if (strcmp(profile,kProfileBunProjectResolver)==0 && IsExactBunRunSelection(message))
+      group->second.bun_run_package = message.argv(5).substr(10);
     group->second.npm_version_node_transition_pending =
         group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
         group->second.command_phase == CommandPhase::kNpmVersion &&
@@ -5415,6 +5501,16 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     process_state->expected_groups = candidate.expected_groups;
     process_state->fd_states = candidate.fd_states;
     return Send(output, *container_id, "process-exec-expected");
+  }
+  if (bun_install) {
+    const auto tracked = TrackExpectedProcessGroup(message.context_data(),ProcessClass::kBun,&candidate);
+    if (tracked != TrackResult::kTracked) { *reason=TrackFailureReason(tracked); return false; }
+    group->second.bun_run_install_active = true;
+    ApplyExecCloexec(&candidate,group_id);
+    process_state->groups=candidate.groups;
+    process_state->expected_groups=candidate.expected_groups;
+    process_state->fd_states=candidate.fd_states;
+    return Send(output,*container_id,"process-exec-expected");
   }
   if (group->second.role == ProcessState::Role::kArtifact) {
     if (IsPipxNativeProfile(profile) && pipx_native_candidate) {
@@ -5782,14 +5878,23 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   }
   const auto key = std::make_pair(result.context_data().thread_id(), result.context_data().thread_start_time_ns());
   const auto pending = state->pending_opens.find(key);
-  if (pending == state->pending_opens.end() || pending->second.thread_group_id != result.context_data().thread_group_id() ||
+  // Pinned gVisor emits a kernel OpenResult for openat2 but has no entry
+  // point for it. Only the exact native installer may account a successful
+  // O_PATH|O_CLOEXEC handle in its private bunx cache from that kernel result.
+  // This grants no file read/write; failed, foreign and other orphan results
+  // still fail correlation. A mismatched existing entry is never bypassed.
+  const bool bun_path_handle = pending == state->pending_opens.end() && result.sysno() == 437 &&
+      result.flags() == 2654208 && result.success() && strcmp(profile,kProfileBunProjectResolver)==0 &&
+      IsBunRunInstallGroup(result.context_data(),*state) &&
+      HasPrefix(result.resolved_pathname(),"/tmp/haa-bun-input/cache/.bunx-1000/");
+  if (!bun_path_handle && (pending == state->pending_opens.end() || pending->second.thread_group_id != result.context_data().thread_group_id() ||
       pending->second.thread_group_start_time_ns != result.context_data().thread_group_start_time_ns() ||
       pending->second.sysno != result.sysno() ||
-      (pending->second.flags | kOpenLargefile) != (result.flags() | kOpenLargefile)) {
+      (pending->second.flags | kOpenLargefile) != (result.flags() | kOpenLargefile))) {
     detail(FaultSite::kOpenResultCorrelation); *reason = "STREAM_FAULT"; return false;
   }
-  const bool early = pending->second.early_finding_emitted;
-  state->pending_opens.erase(pending);
+  const bool early = !bun_path_handle && pending->second.early_finding_emitted;
+  if (!bun_path_handle) state->pending_opens.erase(pending);
   if (!result.success()) {
     if (result.errorno() == 0 || !result.resolved_pathname().empty() || result.mount_id() != 0) {
       detail(FaultSite::kOpenResultFailureFormat); *reason = "STREAM_FAULT"; return false;
@@ -5810,6 +5915,13 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
     }
   }
   if (early) return true;
+  if (bun_path_handle) {
+    if (anchor->second.mount_class != "workspace" || anchor->second.mountpoint != kBunTargetProjectMount) {
+      detail(FaultSite::kOpenResultAnchor); *reason="STREAM_FAULT"; return false;
+    }
+    if (counts->workspace_access < kMaxNormalizedObservationCount) ++counts->workspace_access;
+    return true;
+  }
   if (IsHoneytoken(result.resolved_pathname())) {
     if (!Send(output, *container_id, "honeytoken-access")) return false;
     ++counts->immediate_records; return true;
@@ -6186,8 +6298,7 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
   const char* relation = NetworkProcessRelation(message.context_data(), *state);
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
   const Attribution attribution{source, family, relation, NetworkProcessClassName(process_class), nullptr, nullptr};
-  const bool trusted = IsTrustedControlNetwork(message.context_data(), *state);
-  return Send(output, *container_id, trusted ? "trusted-control-network" : "network-attempt", nullptr, &attribution);
+  return Send(output, *container_id, ResolverNetworkKind(message.context_data(), *state, profile), nullptr, &attribution);
 }
 
 bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const ProcessState& process_state, const char** reason) {
@@ -6214,11 +6325,11 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
     case AF_INET:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET", relation, NetworkProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, ResolverNetworkKind(message.context_data(), process_state, profile), nullptr, &attribution); }
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET6", relation, NetworkProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, ResolverNetworkKind(message.context_data(), process_state, profile), nullptr, &attribution); }
     case kLinuxAFNetlink:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
       return true;

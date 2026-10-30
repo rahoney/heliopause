@@ -351,7 +351,7 @@ func decodeHelperRecord(payload []byte) (helperRecord, error) {
 
 func validRecordCount(record helperRecord) bool {
 	switch record.Kind {
-	case "container-start", "stream-end", "stream-fault", "trusted-control-network":
+	case "container-start", "stream-end", "stream-fault", "trusted-control-network", "trusted-bun-install-network":
 		return record.Count == nil
 	case "mount-anchors-ready":
 		return record.Count == nil
@@ -374,6 +374,9 @@ func validAttribution(record helperRecord) bool {
 	case "trusted-control-network":
 		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
 			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+	case "trusted-bun-install-network":
+		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
+			record.ProcessRelation == "ARTIFACT_GROUP" && record.ProcessClass == "OTHER" && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "process-exec-unexpected":
 		return record.EventSource == "SENTRY_EXEC" && record.Family == "" && record.ProcessRelation == "" &&
 			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
@@ -698,6 +701,11 @@ func (o *SharedObserver) receive() {
 			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
 			return
 		}
+		if record.Kind == "trusted-bun-install-network" && reader.profile != bunProjectResolverProfile {
+			o.mu.Unlock()
+			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
+			return
+		}
 		if reader.transactionBudget != nil {
 			if budgetErr := reader.transactionBudget.charge(record, uint64(size)); budgetErr != nil {
 				o.mu.Unlock()
@@ -770,7 +778,7 @@ func (o *SharedObserver) receive() {
 			o.mu.Unlock()
 			continue
 		}
-		if record.Kind == "trusted-control-network" {
+		if record.Kind == "trusted-control-network" || record.Kind == "trusted-bun-install-network" {
 			if key := attributionKey(record); key != "" {
 				reader.attributionCounts[key]++
 			}
@@ -957,6 +965,8 @@ func attributionKey(record helperRecord) string {
 		return strings.Join([]string{"NETWORK", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
 	case "trusted-control-network":
 		return strings.Join([]string{"NETWORK", "TRUSTED_CONTROL", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
+	case "trusted-bun-install-network":
+		return strings.Join([]string{"NETWORK", "TRUSTED_BUN_INSTALL", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
 	case "process-exec-unexpected":
 		return strings.Join([]string{"PROCESS", record.EventSource, record.ProcessClass, record.ClassificationReason, record.ParentRelation}, "/")
 	default:
