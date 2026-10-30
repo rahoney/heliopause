@@ -26,10 +26,11 @@ func RenderNodeExecutionInputs(ctx context.Context, execution domain.ExecutionCo
 		if ctx.Err() != nil {
 			return nil, errors.Join(errNodeExecutionInputs, ctx.Err(), context.Cause(ctx))
 		}
-		if entry.Kind != tar.TypeDir && entry.Kind != tar.TypeReg || entry.Link != "" {
+		link := layout.nativePNPM && entry.Kind == tar.TypeSymlink
+		if !link && (entry.Kind != tar.TypeDir && entry.Kind != tar.TypeReg || entry.Link != "") {
 			return nil, errNodeExecutionInputs
 		}
-		if err := writer.WriteHeader(&tar.Header{Name: "project/" + entry.Name, Typeflag: entry.Kind, Mode: entry.Mode, Size: entry.Size, Uid: entry.UID, Gid: entry.GID}); err != nil {
+		if err := writer.WriteHeader(&tar.Header{Name: "project/" + entry.Name, Typeflag: entry.Kind, Mode: entry.Mode, Size: entry.Size, Linkname: entry.Link, Uid: entry.UID, Gid: entry.GID}); err != nil {
 			return nil, errors.Join(errNodeExecutionInputs, err)
 		}
 		if entry.Kind == tar.TypeReg {

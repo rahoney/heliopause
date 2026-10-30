@@ -48,16 +48,16 @@
     "arithmetic_seconds": 7110.04,
     "estimate_only_not_completion_guarantee": true
   },
-  "result": "PENDING",
+  "result": "SUCCESS — Required/all10",
   "independent_local_next": "P6-F pinned bunx/pnpm dlx original source/alias/runtime/cache baseline; do not push a new helper/doc change that cancels active CI438",
   "authorization": "User conditionally authorized CI at an important validation boundary. Complete source/current application/CLI E2/E3 group qualifies; normal push only, no main merge/release.",
   "last_consumed_poll": {
-    "number": 4,
-    "actual_query_started_at": "2026-10-30T07:18:55.599367+00:00",
-    "actual_query_ended_at": "2026-10-30T07:18:57.049465+00:00",
-    "result": "8SUCCESS/LinuxIN_PROGRESS; Required not yet created",
-    "next_due_at": "2026-10-30T07:38:57.049465+00:00",
-    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-poll04-summary.json"
+    "number": 6,
+    "actual_query_started_at": "2026-10-30T07:58:59.673868+00:00",
+    "actual_query_ended_at": "2026-10-30T07:59:00.679590+00:00",
+    "result": "Required/all10 SUCCESS",
+    "next_due_at": null,
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-poll06-summary.json"
   },
   "completed8_source_proof": {
     "checkout": "7beb11ba066f532b20380d1e419abb5c5548d3db",
@@ -69,5 +69,11 @@
     "CPP_latches_pass": 132,
     "CPP_latches_fail": 0,
     "whole_qualification": "PENDING_LINUX_AND_REQUIRED"
+  },
+  "qualification": "ci438-pipx-current-hosted-qualification-20261030.json",
+  "worker_completion": {
+    "exit_code": 0,
+    "state": "COMPLETED",
+    "next_timer": null
   }
 }

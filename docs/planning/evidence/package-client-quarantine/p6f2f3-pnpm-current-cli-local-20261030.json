@@ -1,0 +1,380 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-F2-F3",
+  "source_base": "af2edbd",
+  "baseline": "p6f-native-node-alias-baseline-20261030.md",
+  "scope": "PNPM one-off native selection, independent original/instance binding and current whole inspection/Node execution/public CLI; named local only",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES — current public factory, three CLI aliases and existing CI profiles",
+    "QUALIFIED": "YES — named local; hosted remains OPEN",
+    "ACCEPTANCE_CLOSED": "NO — new-source hosted and whole P6/final remain open",
+    "MISSING": [
+      "new-source grouped hosted qualification",
+      "native duplicate-peer/general equivalence and hostile acceptance",
+      "bunx/bun x Node/Bun runtime cases",
+      "P7 and final four-profile/support/signing acceptance"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_run_cache.go",
+      "sha256": "d40d5c3877d0f16adb3045747aaf58119e1f7166664eb646c02bbc74b8cb526a"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_run_resolution.go",
+      "sha256": "bf4ccc86705d5507694b52e687de08c9d5f5afefeb1db2d613685208e1ffc164"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_run_resolution_test.go",
+      "sha256": "df3f093feb6d33a9004c12d3d0341fa96f403350917a46e605413a8d4930bf26"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_entry.go",
+      "sha256": "ab856197372f76b13359f8f3a102afd260a4240df2476492ab2858329a94ec87"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_entry_test.go",
+      "sha256": "069218741c887f3d1209f2b44b10010dd0796e8b194668978708e124b5f85b33"
+    },
+    {
+      "path": "internal/sandbox/pnpm_run_source.go",
+      "sha256": "a69eb1f6eb1deac847a91c38107bff382a86f50e3bed4f225cf00bed29159338"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context.go",
+      "sha256": "3198276a0a4dc4feb9ee25e76a5e711664d0d75f98b8034133b8f6c05ed000f7"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_layout.go",
+      "sha256": "5c819f1721f01a7539b67401d4a68c308b1cad8bf8e36171113c2decec2fcb58"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_binding_data.go",
+      "sha256": "d7ef3e95ee016c0b95f776649a51044e8acfbd4290f79cde1ed39a62ae66c3d3"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_original_layout.go",
+      "sha256": "43f92969e447144fa40e46e0143202f87f2c3c7cb68ceb8be94046a421878242"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_project.go",
+      "sha256": "97583694fa7f5330c10d0323bceb875d4c49d54e3145fd1df49cc1d9d5aac8cd"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_execution.go",
+      "sha256": "2266b0022f9286031dc5427b023e199af81646017e044886c78239a683f1c08f"
+    },
+    {
+      "path": "internal/artifact/npm/execution_layout.go",
+      "sha256": "cde1d58565d169192df99aefcef60258bf7ec8dfb5cee219666b367982fe2504"
+    },
+    {
+      "path": "internal/artifact/npm/execution_input_archive.go",
+      "sha256": "ff7bd066c86f119d5f4ac91c06184c184cdad6c1a130efab4868bbe922d43238"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_layout.go",
+      "sha256": "59476888d22da1ec1a23582fb97e7aab749ebe8082a7ce74b17fc4e3e7318e7b"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_layout_test.go",
+      "sha256": "0d061f74ba6ba143d0cada89f3c738b379b248e66dfcea3a42b8493c448cd49e"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare.go",
+      "sha256": "30019a3171546d34dbba4480cc64da0b01bee64c50646a3bae6beca93c1b71c9"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_run_execution.go",
+      "sha256": "83c9487712d078cf9554ddf7fa9244704f11bb2367d41098b296fb57aca7d37f"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_run_integration_test.go",
+      "sha256": "4c832bb4545cde914f9b354a593a1216124b66bd7dc06065a32b662c5ddcefd6"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_binding_data_test.go",
+      "sha256": "e74d36049137343ef21a24dd424f06b72e62c37dcc04b399cdda06298b670e2d"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_acquired.go",
+      "sha256": "7cd19f1b107f9f03d7fdaec83528a6882766498170027341e36b5e7dfeb290c6"
+    },
+    {
+      "path": "internal/cli/python_execution.go",
+      "sha256": "efe22a55c1a41c954a9cc37219a156b7a0670fbf8b91a4505a1002cc4b09f7c9"
+    },
+    {
+      "path": "internal/cli/pipx_execution.go",
+      "sha256": "180ed6272c650be26cca8764572025ee9a2c664b6b4cffa2c88b7ec6ff110cff"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "eeeca31a21469f9bc1fd23409f082b13d68f2656056189d410428f09eee01d57"
+    },
+    {
+      "path": "internal/cli/pnpm_execution.go",
+      "sha256": "c5940f2017d8fc40c5643d3098c74d42fe5eb2a42f8d535c5a7a681c76bc6d10"
+    },
+    {
+      "path": "internal/cli/pnpm_execution_test.go",
+      "sha256": "5eecf26b7c8eccb9eb9ee0628473b54d241e8141ebb62fcf2c568c56d1b0c3d9"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution.go",
+      "sha256": "8f1535bac78bbc71d2205cdfd60953fa14c4c8a438d7a09599f715f5a0791dff"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "cd4c3c986be7d00dc351e3c27d12e2babcf2edd57c5bdd7009b213c00bd7a7ba"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution_integration_test.go",
+      "sha256": "c9eb1c3201c775305d3184b3da80f4be9103a3a5e4adaf758c4ba3f28fc9cdac"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution_refusal_integration_test.go",
+      "sha256": "6c4aef7fe58de56dc57600ad7d0fd61903b048c20cf65aaeafa56346fdf65196"
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "sha256": "dd6d5691585b778057fc07b13d45347556a487e83d439136442cdcc58ddfbe35"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "sha256": "7c7b3ab213dc74b6814b846ab5d5c20eb4962e8a5baabbd664bf6b87f77cfa69"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "5529eedb121e9475520bff57837b42f32b17311f440d71eba0dd815566475bd2"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "6de963a7212d7045fbb5e060224a17b1e9f7eb510bc69703621535d3ff745847"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "b2fe1cb1e73afd0a84eca265876c65ffebbe94762f23e34abd44f65a2b094694"
+    }
+  ],
+  "pinned_inputs": {
+    "pnpm_version": "12.15.0",
+    "pnpm_source": "91774e72a04d52ce61db06339696a433d383c764",
+    "observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b",
+    "aliases": [
+      "pnpm dlx",
+      "pnx",
+      "pnpx"
+    ],
+    "aliases_not_pnpm_subcommands": true
+  },
+  "existing_owners_reused": [
+    "public npm exact metadata/SRI and archive acquisition",
+    "native PNPM scope/trace/network/resources/cleanup and lock/layout/instance inspection",
+    "PNPMProjectInspector complete static/budget/observation body for project and execution contexts",
+    "source/acquired identity/SRI/intake-run owner with unique-run protection",
+    "current application/Evidence/M3/M4/records/staging and bounded readonly Node runtime",
+    "existing literal argv/ASCII output/typed result CLI owners"
+  ],
+  "first_failure": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-f2-current-first-v1",
+    "whole_seconds": 23.682,
+    "boundary": "INSPECTION_FAILED before Policy/program",
+    "diagnostic_raw": "docs/github-logs/package-client-quarantine-20261021/p6-f2-current-layout-diagnostic-v2",
+    "same_product_diagnostic_seconds": 23.755,
+    "native_layout_bytes": 23764480,
+    "native_layout_entries": 163,
+    "confirmed_owner": "checkPNPMBoundBin assumed every Node-search directory existed. Pinned shims name an absent empty node_modules/.pnpm/node_modules; all four code digests match existing pinned recipe.",
+    "minimum_correction": "Accept only complete-census absence of this exact internal private-hoist path; reject file/link shadow, other absent/foreign paths and code drift.",
+    "counterexample": "/tmp/haa-p6f2-empty-hoist-red/result.json; absent-empty positive RED and unsafe5 denial preserved"
+  },
+  "current_application_actual": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-f2-current-native-v3",
+    "whole_seconds": 69.77,
+    "test_seconds": 67.72,
+    "cases": 2,
+    "normal_exit": 0,
+    "guest_exit": 1,
+    "fresh_whole_Policy_records": true,
+    "result": {
+      "exit_code": 0,
+      "seconds": 69.77,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "F2 actual public PNPM cold selection/independent originals/current whole inspection/Evidence/Policy/records/Node normal and guest nonzero. Existing observer, product budgets unchanged. CLI/general equivalence and whole final remain open",
+      "Go_source_base": "af2edbd",
+      "new_test_source": {
+        "path": "internal/bootstrap/node_execution_run_integration_test.go",
+        "sha256": "4c832bb4545cde914f9b354a593a1216124b66bd7dc06065a32b662c5ddcefd6"
+      },
+      "local_observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b"
+    }
+  },
+  "CLI_actual": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-f3-cli-native-v1",
+    "whole_seconds": 203.439,
+    "CLI_seconds": 151.83,
+    "CLI_cases": 3,
+    "refusal_seconds": 49.6,
+    "refusal_cases": 2,
+    "multi_node_implicit_default": {
+      "primary": "rimraf@3.0.2",
+      "nodes": 12,
+      "edges": 13,
+      "Policy": "ALLOW"
+    },
+    "entry_refusals": [
+      "ambiguous default",
+      "missing explicit bin"
+    ],
+    "refusals_no_runtime_or_new_manifest": true,
+    "helper_wait0_Host5_Docker_unchanged_profile_restored": true,
+    "final_product30_source_hashes_match_actual_ELF": true
+  },
+  "CI_wiring": {
+    "new_jobs": 0,
+    "new_client_rebinds": 0,
+    "expected_Linux_top_parents": 115,
+    "CPP_latches": 132,
+    "Required_jobs": 10,
+    "Linux_job_minutes": 120,
+    "profiles": "existing PNPM sandbox cold1 plus current run app2/CLI3/refusal2; existing supply and active bootstrap helper reused",
+    "source_guard_DATA": [
+      {
+        "scope": "current-app-CLI-refusal",
+        "mode": "stored actual DATA replay only; no native execution",
+        "exit_code": 0,
+        "input_sha256": "4a547158220df104f6b601391f6b141ba225af8a57386aef7c0862407ca21d4e"
+      },
+      {
+        "scope": "cold-selection",
+        "mode": "stored actual DATA replay only; no native execution",
+        "exit_code": 0,
+        "input_sha256": "232c31d8d879dfd6e28181a6d7e3dce4c003143fac00059b37ea12804c081843"
+      }
+    ],
+    "negative_guards": "empty/child-only/missing/duplicate/SKIP/foreign-source/wrong-code and primary-error/log-readback precedence"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.587
+    },
+    {
+      "step": "PNPM-workflow-guards",
+      "command": [
+        "go",
+        "test",
+        "./scripts/check",
+        "-run",
+        "^TestPNPM",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 2.007
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 2.991
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 330.692
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm",
+        "./internal/inspection/npm",
+        "./internal/sandbox",
+        "./internal/bootstrap",
+        "./internal/cli",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 90.77
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./scripts/check",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 78.012
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 17.468
+    }
+  ],
+  "Core_application_Policy_CPP_runtime_lock_product_budgets_unchanged": true,
+  "hosted_scope": "CI438/source31acbfe is qualified E2/E3, outside later F1/F2/F3; no new push yet",
+  "documentation_security_checks": [
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.356
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.432
+    }
+  ],
+  "named_F2_F3_local_slice_closed": true
+}

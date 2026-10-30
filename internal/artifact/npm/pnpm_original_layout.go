@@ -39,7 +39,7 @@ func ParsePNPMOriginalLayout(ctx context.Context, body []byte, uid, gid int) (PN
 // acquired static archives. Its digest records ownership proof only; it is
 // never a current verification, observation, cache or promotion approval.
 func (i PNPMInspectionInput) ProveOriginalLayout(ctx context.Context, inventories []ArchiveInventory, original PNPMOriginalLayout) (domain.ContentDigest, error) {
-	if ctx == nil || !i.Valid() || len(i.artifacts) == 0 || len(original.layout.entries) == 0 {
+	if ctx == nil || !i.Valid() || !i.context.snapshot.Valid() || len(i.artifacts) == 0 || len(original.layout.entries) == 0 {
 		return domain.ContentDigest{}, errPNPMInspectionLayout
 	}
 	if err := ctx.Err(); err != nil {

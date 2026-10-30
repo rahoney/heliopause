@@ -17,7 +17,20 @@ import (
 )
 
 func TestLinuxNPMExecutionCLIIntegration(t *testing.T) {
-	if os.Getenv("HELOX_NPM_EXECUTION_CLI_INTEGRATION") != "1" || os.Geteuid() == 0 {
+	testNodeExecutionCLIIntegration(t, false)
+}
+
+func TestLinuxPNPMRunExecutionCLIIntegration(t *testing.T) {
+	testNodeExecutionCLIIntegration(t, true)
+}
+
+func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
+	t.Helper()
+	declared := os.Getenv("HELOX_NPM_EXECUTION_CLI_INTEGRATION") == "1"
+	if pnpm {
+		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION") == "1"
+	}
+	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user actual npx/npm exec CLI qualification")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
@@ -27,19 +40,35 @@ func TestLinuxNPMExecutionCLIIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("XDG_CACHE_HOME", cache)
-	for i, row := range []struct {
+	type cliCase struct {
 		path             []string
 		language, output string
 		show             bool
 		code             int
-	}{
+	}
+	rows := []cliCase{
 		{[]string{"npx"}, "en", "json", false, 0},
 		{[]string{"npm", "exec"}, "ko", "json", true, 1},
 		{[]string{"npx"}, "ko", "human", true, 0},
 		{[]string{"npm", "exec"}, "en", "human", false, 1},
-	} {
+	}
+	if pnpm {
+		rows = []cliCase{
+			{[]string{"pnpm", "dlx"}, "en", "json", false, 0},
+			{[]string{"pnx"}, "ko", "json", true, 1},
+			{[]string{"pnpx"}, "ko", "human", true, 0},
+		}
+	}
+	for i, row := range rows {
+		implicit := pnpm && row.path[0] == "pnpx"
 		args := append([]string{"--lang", row.language, "--output", row.output, "--progress", "never", "--color", "never"}, row.path...)
-		args = append(args, "--command", "tsc")
+		if pnpm {
+			if !implicit {
+				args = append(args, "--package", "typescript@5.9.3")
+			}
+		} else {
+			args = append(args, "--command", "tsc")
+		}
 		if row.show {
 			args = append(args, "--show-output")
 		}
@@ -47,7 +76,14 @@ func TestLinuxNPMExecutionCLIIntegration(t *testing.T) {
 		if row.code != 0 {
 			arg = "--haa-invalid-option"
 		}
-		args = append(args, "typescript@5.9.3", "--", arg)
+		selector := "typescript@5.9.3"
+		if pnpm {
+			selector = "tsc"
+		}
+		if implicit {
+			selector = "rimraf@3.0.2"
+		}
+		args = append(args, selector, "--", arg)
 		var out, diagnostic bytes.Buffer
 		cause := Run(ctx, args, &out, &diagnostic)
 		if row.code == 0 && cause != nil {
@@ -92,22 +128,45 @@ func TestLinuxNPMExecutionCLIIntegration(t *testing.T) {
 		if row.code != 0 {
 			programText = "Unknown compiler option"
 		}
+		if implicit {
+			programText = "Usage: rimraf"
+		}
 		if row.show != strings.Contains(out.String(), programText) || strings.Contains(diagnostic.String(), programText) {
 			t.Fatal("private output selection or diagnostic separation failed")
 		}
-		t.Logf("production_npm_execution_cli case=%d alias=%s format=%s language=%s show_output=%t exit_code=%d current_policy=ALLOW guest_cleanup=CONFIRMED", i+1, row.path[len(row.path)-1], row.output, row.language, row.show, row.code)
+		marker := "production_npm_execution_cli"
+		if pnpm {
+			marker = "production_pnpm_run_cli"
+		}
+		t.Logf("%s case=%d alias=%s format=%s language=%s show_output=%t exit_code=%d current_policy=ALLOW guest_cleanup=CONFIRMED", marker, i+1, row.path[len(row.path)-1], row.output, row.language, row.show, row.code)
 	}
 	entries, err := os.ReadDir(filepath.Join(cache, "heliopause", "staging"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	count := 0
+	multi := false
 	for _, entry := range entries {
 		if entry.IsDir() {
 			count++
+			if pnpm {
+				body, err := os.ReadFile(filepath.Join(cache, "heliopause", "staging", entry.Name(), "manifest.json"))
+				var manifest struct {
+					Entries   []json.RawMessage
+					Edges     []json.RawMessage
+					Execution struct{ Command string }
+				}
+				if err != nil || json.Unmarshal(body, &manifest) != nil || !strings.Contains(string(body), "pnpm-dlx-isolated:"+sandbox.PNPMResolverRuntimeIdentity()) {
+					t.Fatal("CLI lost its current native whole records", err)
+				}
+				if manifest.Execution.Command == "rimraf" && len(manifest.Entries) > 1 && len(manifest.Edges) > 0 {
+					multi = true
+					t.Logf("production_pnpm_run_cli_graph nodes=%d edges=%d primary=rimraf current_policy=ALLOW", len(manifest.Entries), len(manifest.Edges))
+				}
+			}
 		}
 	}
-	if count != 4 {
+	if count != len(rows) || pnpm && !multi {
 		t.Fatal("CLI requests reused execution storage records", count)
 	}
 }

@@ -2,6 +2,7 @@ package npm
 
 import (
 	"errors"
+	"reflect"
 	"slices"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -16,6 +17,7 @@ type PNPMInspectionContext struct {
 	snapshot  domain.ProjectDependencySnapshot
 	controls  []domain.ProjectControlFile
 	runtime   string
+	execution domain.DependencyResolution
 }
 
 func (s PNPMSelection) InspectionContext(install domain.InstallContext, controls []domain.ProjectControlFile, runtimeIdentity string) (PNPMInspectionContext, error) {
@@ -23,16 +25,21 @@ func (s PNPMSelection) InspectionContext(install domain.InstallContext, controls
 	if err != nil {
 		return PNPMInspectionContext{}, err
 	}
-	return PNPMInspectionContext{s, snapshot, append([]domain.ProjectControlFile(nil), controls...), runtimeIdentity}, nil
+	return PNPMInspectionContext{selection: s, snapshot: snapshot, controls: append([]domain.ProjectControlFile(nil), controls...), runtime: runtimeIdentity}, nil
 }
 
 func (c PNPMInspectionContext) Valid() bool {
-	return c.selection.SourceBound() && c.selection.lock.valid && c.snapshot.Valid() && c.runtime != "" && len(c.controls) == 2
+	if !c.selection.SourceBound() || !c.selection.lock.valid || c.runtime == "" || len(c.controls) != 2 {
+		return false
+	}
+	run := c.execution.Graph().Primary().String() != "" && c.execution.LockfileDigest().String() != ""
+	return c.snapshot.Valid() != run
 }
 
-func (c PNPMInspectionContext) Snapshot() domain.ProjectDependencySnapshot { return c.snapshot }
-func (c PNPMInspectionContext) Lock() PNPMLock                             { return c.selection.Lock() }
-func (c PNPMInspectionContext) RuntimeIdentity() string                    { return c.runtime }
+func (c PNPMInspectionContext) Snapshot() domain.ProjectDependencySnapshot       { return c.snapshot }
+func (c PNPMInspectionContext) Lock() PNPMLock                                   { return c.selection.Lock() }
+func (c PNPMInspectionContext) RuntimeIdentity() string                          { return c.runtime }
+func (c PNPMInspectionContext) ExecutionResolution() domain.DependencyResolution { return c.execution }
 func (c PNPMInspectionContext) Controls() []domain.ProjectControlFile {
 	return append([]domain.ProjectControlFile(nil), c.controls...)
 }
@@ -44,6 +51,54 @@ func (c PNPMInspectionContext) MatchesSnapshot(snapshot domain.ProjectDependency
 		snapshot.DependencyFree() == c.snapshot.DependencyFree() &&
 		slices.Equal(snapshot.ControlDigests(), c.snapshot.ControlDigests()) &&
 		slices.Equal(snapshot.Dependencies(), c.snapshot.Dependencies())
+}
+
+func (c PNPMInspectionContext) MatchesExecutionResolution(resolution domain.DependencyResolution) bool {
+	return c.Valid() && !c.snapshot.Valid() && c.execution.Graph().Primary().String() != "" && reflect.DeepEqual(c.execution, resolution)
+}
+
+func (c PNPMInspectionContext) bindingDigest() domain.ContentDigest {
+	if c.snapshot.Valid() {
+		return c.snapshot.GraphDigest()
+	}
+	return c.execution.LockfileDigest()
+}
+
+// BindExecutionAcquired preserves every graph node while selecting one verified
+// original per unique tarball for the existing complete PNPM inspector.
+func (c PNPMInspectionContext) BindExecutionAcquired(graph domain.LockedDependencyGraph, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (PNPMInspectionInput, error) {
+	if !c.MatchesExecutionResolution(c.execution) || !reflect.DeepEqual(graph, c.execution.Graph()) || len(acquired) != len(graph.Nodes()) {
+		return PNPMInspectionInput{}, errPNPMInspectionContext
+	}
+	byIdentity := map[domain.ResolvedArtifactIdentity]domain.AcquiredArtifact{}
+	runs := map[domain.RunID]domain.ResolvedArtifactIdentity{}
+	for _, node := range graph.Nodes() {
+		subject, present := acquired[node.Node()]
+		run, err := npmAcquiredRun(subject, node.Artifact(), errPNPMInspectionContext)
+		if !present || err != nil {
+			return PNPMInspectionInput{}, errPNPMInspectionContext
+		}
+		if identity, duplicate := runs[run]; duplicate && identity != subject.Identity() {
+			return PNPMInspectionInput{}, errPNPMInspectionContext
+		}
+		runs[run] = subject.Identity()
+		previous, duplicate := byIdentity[subject.Identity()]
+		if duplicate && (previous.Digest() != subject.Digest() || previous.SizeBytes() != subject.SizeBytes()) {
+			return PNPMInspectionInput{}, errPNPMInspectionContext
+		}
+		if !duplicate || node.Node() == graph.Primary() {
+			byIdentity[subject.Identity()] = subject
+		}
+	}
+	var subjects []domain.AcquiredArtifact
+	for _, original := range c.selection.artifacts {
+		subject, present := byIdentity[original.Identity()]
+		if !present {
+			return PNPMInspectionInput{}, errPNPMInspectionContext
+		}
+		subjects = append(subjects, subject)
+	}
+	return PNPMInspectionInput{c, subjects}, nil
 }
 
 // PNPMInspectionInput is structural binding only. Verification, static-all,
@@ -65,7 +120,7 @@ func (c PNPMInspectionContext) BindAcquired(snapshot domain.ProjectDependencySna
 }
 
 func (i PNPMInspectionInput) Valid() bool {
-	return i.context.Valid() && len(i.artifacts) == len(i.context.snapshot.Dependencies())
+	return i.context.Valid() && len(i.artifacts) == len(i.context.selection.artifacts)
 }
 func (i PNPMInspectionInput) Context() PNPMInspectionContext { return i.context }
 func (i PNPMInspectionInput) Artifacts() []domain.AcquiredArtifact {

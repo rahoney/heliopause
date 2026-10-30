@@ -19,7 +19,11 @@ import (
 type nodeExecutionEntryBinder struct{ static *inspectionnpm.Inspector }
 
 func (b nodeExecutionEntryBinder) BindExecutionEntry(ctx context.Context, inspection application.ExecutionInspection, command string) (domain.ExecutionContext, error) {
-	if ctx == nil || b.static == nil || !inspection.Valid() {
+	return bindNodeExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry)
+}
+
+func bindNodeExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error)) (domain.ExecutionContext, error) {
+	if ctx == nil || static == nil || !inspection.Valid() {
 		return domain.ExecutionContext{}, errors.New("node entry binding requires actual static inspection and current whole approval")
 	}
 	var primary domain.AcquiredArtifact
@@ -28,18 +32,18 @@ func (b nodeExecutionEntryBinder) BindExecutionEntry(ctx context.Context, inspec
 			primary = entry.Artifact()
 		}
 	}
-	inventory, report, err := b.static.InspectArchive(ctx, primary)
+	inventory, report, err := static.InspectArchive(ctx, primary)
 	if err != nil {
 		return domain.ExecutionContext{}, err
 	}
 	if !inventory.Valid() || len(report.Findings()) != 0 {
 		return domain.ExecutionContext{}, errors.New("current primary has no complete measured archive inventory")
 	}
-	selected, err := artifactnpm.SelectExecutionEntry(inventory, command)
+	selected, err := selectEntry(inventory, command)
 	if err != nil {
 		return domain.ExecutionContext{}, err
 	}
-	proof, err := b.static.ReadNodeExecutionEntry(ctx, selected)
+	proof, err := static.ReadNodeExecutionEntry(ctx, selected)
 	if err != nil {
 		return domain.ExecutionContext{}, err
 	}

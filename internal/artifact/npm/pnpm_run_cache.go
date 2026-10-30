@@ -87,13 +87,28 @@ func ParsePNPMRunCache(ctx context.Context, body []byte, reference domain.Artifa
 		controls[name] = control
 	}
 	lock, err := ParsePNPMLock(controls["package.json"].Body(), controls["pnpm-lock.yaml"].Body(), clientVersion)
-	if err != nil || len(lock.roots) != 1 {
+	if err != nil {
 		return PNPMRunCache{}, errPNPMRunCache
+	}
+	if _, err := lock.runPrimary(reference); err != nil {
+		return PNPMRunCache{}, err
+	}
+	if ctx.Err() != nil {
+		return PNPMRunCache{}, errors.Join(errPNPMRunCache, ctx.Err(), context.Cause(ctx))
+	}
+	return PNPMRunCache{layout, root, []domain.ProjectControlFile{controls["package.json"], controls["pnpm-lock.yaml"]}, lock}, nil
+}
+
+// Both native cache intake and later independent source binding use the same
+// exact request/root check; neither consumer may infer a different primary.
+func (lock PNPMLock) runPrimary(reference domain.ArtifactReference) (string, error) {
+	if !lock.valid || len(lock.roots) != 1 || ValidatePNPMRunReference(reference) != nil {
+		return "", errPNPMRunCache
 	}
 	parsed, _ := parseLocator(reference.Locator())
 	requested := lock.roots[0]
 	if requested.Group != "dependencies" || requested.Name != parsed.name {
-		return PNPMRunCache{}, errPNPMRunCache
+		return "", errPNPMRunCache
 	}
 	for _, snapshot := range lock.snapshots {
 		if snapshot.Key != requested.Snapshot {
@@ -101,12 +116,9 @@ func ParsePNPMRunCache(ctx context.Context, body []byte, reference domain.Artifa
 		}
 		for _, pkg := range lock.packages {
 			if pkg.Key == snapshot.Package && pkg.Name == parsed.name && (!parsed.exact || pkg.Version == parsed.selector) {
-				if ctx.Err() != nil {
-					return PNPMRunCache{}, errors.Join(errPNPMRunCache, ctx.Err(), context.Cause(ctx))
-				}
-				return PNPMRunCache{layout, root, []domain.ProjectControlFile{controls["package.json"], controls["pnpm-lock.yaml"]}, lock}, nil
+				return requested.Snapshot, nil
 			}
 		}
 	}
-	return PNPMRunCache{}, errPNPMRunCache
+	return "", errPNPMRunCache
 }

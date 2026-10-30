@@ -28,7 +28,7 @@ func TestPNPMProjectProfileBindsActualConsumerAndRejectsInvalidInput(t *testing.
 			}
 		})
 	}
-	for _, candidate := range []string{strings.Replace(original, `test "$#" -le 1`, `test "$#" -le 2`, 1), strings.Replace(original, "sandbox|project) ;;", "*) ;;", 1), strings.Replace(original, "if [[ \"$pnpm_profile\" == project ]]; then", "if true; then", 1), strings.Replace(original, "  exit 0\nfi", "fi", 1)} {
+	for _, candidate := range []string{strings.Replace(original, `test "$#" -le 1`, `test "$#" -le 2`, 1), strings.Replace(original, "sandbox|project|run) ;;", "*) ;;", 1), strings.Replace(original, "if [[ \"$pnpm_profile\" == project ]]; then", "if true; then", 1), strings.Replace(original, pnpmOriginalIntegrationCommand+"\n  exit 0\nfi", pnpmOriginalIntegrationCommand+"\nfi", 1)} {
 		if len(validatePNPMRuntimeScript(candidate)) == 0 {
 			t.Fatal("unbounded or nonexclusive project profile accepted")
 		}
@@ -200,6 +200,81 @@ func TestPNPMOriginalActualCannotLoseAuthenticatedCommandOrCoverage(t *testing.T
 		t.Run(name, func(t *testing.T) {
 			if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmOriginalIntegrationCommand, replacement, 1))) == 0 {
 				t.Fatal("Native original actual missing or untrusted execution accepted")
+			}
+		})
+	}
+}
+
+func TestPNPMRunProfileKeepsExactDispatchAndPrimaryFailure(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-pnpm-runtime.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for _, change := range []string{
+		strings.Replace(pnpmRunIntegrationBlock, pnpmRunIntegrationCommand, "# "+pnpmRunIntegrationCommand, 1),
+		strings.Replace(pnpmRunIntegrationBlock, "WORKFLOW_INTEGRATION=1", "WORKFLOW_INTEGRATION=0", 1),
+		strings.Replace(pnpmRunIntegrationBlock, "Workflow|CLI(Refusal)?", "Missing", 1),
+		strings.Replace(pnpmRunIntegrationBlock, `if ((pnpm_run_status)); then exit "$pnpm_run_status"; fi`, "", 1),
+		strings.Replace(pnpmRunIntegrationBlock, "exit 0\nfi", "fi", 1),
+	} {
+		if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmRunIntegrationBlock, change, 1))) == 0 {
+			t.Fatal("incomplete PNPM run profile accepted")
+		}
+	}
+	start := strings.Index(pnpmRunIntegrationBlock, "  pnpm_run_log_status=0")
+	end := strings.Index(pnpmRunIntegrationBlock, "  awk '")
+	if start < 0 || end <= start {
+		t.Fatal("missing producer/log status boundary")
+	}
+	for _, status := range []string{"0", "42"} {
+		command := exec.Command("bash", "-c", `pnpm_run_status=$1; pnpm_run_log=$2`+"\n"+pnpmRunIntegrationBlock[start:end], "pnpm-primary", status, filepath.Join(t.TempDir(), "missing.log"))
+		err := command.Run()
+		exit, ok := err.(*exec.ExitError)
+		want := 1
+		if status == "42" {
+			want = 42
+		}
+		if !ok || exit.ExitCode() != want {
+			t.Fatal("log readback replaced the original failure", status, err)
+		}
+	}
+}
+
+func TestPNPMRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T) {
+	start := strings.Index(pnpmRunIntegrationBlock, "  awk '\n")
+	end := strings.Index(pnpmRunIntegrationBlock, "\n' \"$pnpm_run_log\"")
+	if start < 0 || end <= start {
+		t.Fatal("missing PNPM run guard")
+	}
+	program := pnpmRunIntegrationBlock[start+len("  awk '\n") : end]
+	fixture := `--- PASS: TestLinuxPNPMRunExecutionWorkflowIntegration (1s)
+--- PASS: TestLinuxPNPMRunExecutionCLIIntegration (1s)
+--- PASS: TestLinuxPNPMRunExecutionCLIRefusalIntegration (1s)
+    node_execution_run_integration_test.go:1: production_pnpm_run_application attempt=1 artifact_role=true target_loaded=true exit_code=0 stdout_bytes=1 stderr_bytes=0 user_program_run=true
+    node_execution_run_integration_test.go:1: production_pnpm_run_application attempt=2 artifact_role=true target_loaded=true exit_code=1 stdout_bytes=1 stderr_bytes=0 user_program_run=true
+    npm_execution_integration_test.go:1: production_pnpm_run_cli case=1 alias=dlx format=json language=en show_output=false exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_pnpm_run_cli case=2 alias=pnx format=json language=ko show_output=true exit_code=1 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_pnpm_run_cli case=3 alias=pnpx format=human language=ko show_output=true exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_pnpm_run_cli_graph nodes=12 edges=13 primary=rimraf current_policy=ALLOW
+    npm_execution_refusal_integration_test.go:1: production_pnpm_run_refusal case=1 reason=ambiguous current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0
+    npm_execution_refusal_integration_test.go:1: production_pnpm_run_refusal case=2 reason=missing current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0
+`
+	for name, input := range map[string]string{
+		"complete": fixture, "empty": "", "child-only": "    --- PASS: TestLinuxPNPMRunExecutionCLIIntegration/case-1 (1s)\n",
+		"missing-parent":   strings.Replace(fixture, "--- PASS: TestLinuxPNPMRunExecutionCLIIntegration (1s)\n", "", 1),
+		"duplicate":        fixture + "    npm_execution_integration_test.go:1: production_pnpm_run_cli_graph nodes=12 edges=13 primary=rimraf current_policy=ALLOW\n",
+		"skip":             fixture + "--- SKIP: TestForeign (0s)\n",
+		"unknown-case":     strings.Replace(fixture, "production_pnpm_run_cli case=3", "production_pnpm_run_cli case=4", 1),
+		"wrong-guest-code": strings.Replace(fixture, "attempt=2 artifact_role=true target_loaded=true exit_code=1", "attempt=2 artifact_role=true target_loaded=true exit_code=0", 1),
+		"foreign-source":   strings.Replace(fixture, "npm_execution_integration_test.go:1: production_pnpm_run_cli case=1", "foreign.go:1: production_pnpm_run_cli case=1", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			command := exec.Command("awk", program)
+			command.Stdin = strings.NewReader(input)
+			output, err := command.CombinedOutput()
+			if (err == nil) != (name == "complete") {
+				t.Fatal("incorrect PNPM cohort acceptance", string(output), err)
 			}
 		})
 	}

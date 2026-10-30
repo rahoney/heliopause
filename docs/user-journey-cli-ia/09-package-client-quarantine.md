@@ -402,3 +402,26 @@ opt-in,128args/32KiB와 stream별1MiB 한도·별도 검역/실행/cleanup 축�
 
 예: `helox pipx run --show-output --spec python-slugify==8.0.4 slugify -- hello world`.
 Named local 앱3/CLI6 검증과 새-source hosted·일반 동등성의 남은 범위는 [E3 결과](../planning/evidence/package-client-quarantine/p6e3-pipx-current-cli-local-20261030.json)와 [Queue](../planning/02-current-work-queue.md)가 소유한다.
+
+
+### P6 PNPM dlx와 standalone alias 초기 실행 lane
+
+`helox pnpm dlx [--package <package>] <package-or-command> [--] [args...]`와
+`helox pnx`, `helox pnpx`는 같은 typed PNPM 실행 경로다. 공개 npm의 bare 이름 또는 정확한
+`name@version` 하나를 고정 PNPM으로 선택한다. `--package`를 생략하면 유일한 bin 또는
+package basename을 고르며, 여러 bin에 basename이 없으면 거부한다. 명령을 직접 고를 때는
+`--package <package> <command>`를 사용한다. `pnpm pnx`는 별도 subcommand가 아니다.
+
+전체 native instance/의존성과 독립 인증 원본을 새로 검사하고 현재 Evidence·Policy ALLOW를
+받은 원본에서 entry를 다시 측정해 readonly Node runtime으로 실행한다. Native cache·lock·
+link는 승인이나 설치 소유권이 아니다. Host target·프로젝트/PATH/전역 cache 검색, runtime
+provisioning, shell·registry/backend 지정, local/VCS/URL/workspace는 이 lane에서 지원하지 않는다.
+PNPM의 실행 의미를 npm solver나 설치 target으로 대체하지 않는다.
+
+HAA 옵션은 첫 package·command 앞에 두고, 뒤는 literal argv다. 기존128args/32KiB,
+stream별1MiB·ASCII 출력 opt-in과 별도 검역/실행/정리 결과를 유지한다. 예:
+`helox pnpm dlx --package typescript@5.9.3 --show-output tsc -- --help`.
+Linux amd64의 named local 앱2/CLI3/refusal2와12-node 기본 bin 사례는
+[F2/F3 결과](../planning/evidence/package-client-quarantine/p6f2f3-pnpm-current-cli-local-20261030.json)를
+따른다. 필수 검사·새-source hosted/일반 peer 동등성/hostile/whole final의 남은 상태는
+[Queue](../planning/02-current-work-queue.md)가 소유한다.

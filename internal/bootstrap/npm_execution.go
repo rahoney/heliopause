@@ -46,6 +46,20 @@ func runNPMExecution(ctx context.Context, command *cobra.Command, executor *host
 	if err != nil {
 		return err
 	}
+	if cli.SelectedPackageClient(command) == cli.PNPMRunPackageClient {
+		native, err := sandbox.NewLinuxPNPMResolverWithExecutorAndPolicy(executor, observer, resolverPolicy)
+		if err != nil {
+			return err
+		}
+		prepare, err := sandbox.NewPNPMInspectionPreparer(native, intake)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddPNPMRunExecution(command, pnpmRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
 	resolver, err := sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer, resolverPolicy)
 	if err != nil {
 		return err

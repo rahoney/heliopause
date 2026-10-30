@@ -313,7 +313,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		return command.ExecuteContext(ctx)
 	}
 	if source != "" && source == "npm" {
-		if cli.SelectedPackageClient(command) == cli.NPXPackageClient {
+		if client := cli.SelectedPackageClient(command); client == cli.NPXPackageClient || client == cli.PNPMRunPackageClient {
 			return runNPMExecution(ctx, command, trustedExecutor, processObserver)
 		}
 		cacheRoot, err := os.UserCacheDir()

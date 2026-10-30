@@ -156,7 +156,7 @@ func pnpmInspectionLayoutDigest(input PNPMInspectionInput, layout PNPMLayoutArch
 		Subjects               []subject
 		Entries                []entryRecord
 		Manifest               json.RawMessage
-	}{"pnpm-inspection-layout/v2", input.context.snapshot.GraphDigest().String(), input.context.runtime, subjects, records, manifest}
+	}{"pnpm-inspection-layout/v2", input.context.bindingDigest().String(), input.context.runtime, subjects, records, manifest}
 	body, err := json.Marshal(document)
 	if err != nil {
 		return domain.ContentDigest{}, err

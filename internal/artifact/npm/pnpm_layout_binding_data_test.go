@@ -104,6 +104,43 @@ func TestPNPMInspectionLayoutRejectsUnrelatedNodeSearchAndUnequalAlias(t *testin
 	}
 }
 
+func TestPNPMBoundBinAcceptsOnlyAbsentEmptyPrivateHoistSearch(t *testing.T) {
+	// The recorded TypeScript native shims include this private search path
+	// even when no transitive package exists and pnpm creates no hoist directory.
+	const root = "node_modules/.pnpm/tool@1.0.0/node_modules/tool"
+	const shim = "node_modules/.bin/tool"
+	const target = root + "/bin/tool"
+	const privateHoist = "node_modules/.pnpm/node_modules"
+	for _, change := range []string{"absent-empty-hoist", "missing-package-directory", "shadow-file", "shadow-link", "foreign-search", "extra-code"} {
+		t.Run(change, func(t *testing.T) {
+			value := "$basedir_abs/../.pnpm/tool@1.0.0/node_modules/tool/node_modules:$basedir_abs/../.pnpm/tool@1.0.0/node_modules:$basedir_abs/../.pnpm/node_modules"
+			if change == "foreign-search" {
+				value = "$basedir_abs/../foreign/node_modules"
+			}
+			block := "if [ -z \"$NODE_PATH\" ]; then\n  export NODE_PATH=\"" + value + "\"\nelse\n  export NODE_PATH=\"" + value + ":$NODE_PATH\"\nfi\n"
+			code := strings.Replace(nodeShimVector(t, "../.pnpm/tool@1.0.0/node_modules/tool/bin/tool"), "if [ -n \"$exe\" ]", block+"if [ -n \"$exe\" ]", 1)
+			if change == "extra-code" {
+				code += "printf attacker\n"
+			}
+			program := "#!/usr/bin/env node\n"
+			layout := PNPMLayoutArchive{body: []byte(program + code), files: map[string]pnpmLayoutFile{target: {0, len(program)}, shim: {len(program), len(program) + len(code)}}}
+			directories := map[string]bool{root + "/node_modules": true, "node_modules/.pnpm/tool@1.0.0/node_modules": true, "node_modules": true}
+			switch change {
+			case "missing-package-directory":
+				delete(directories, root+"/node_modules")
+			case "shadow-file":
+				layout.entries = append(layout.entries, PNPMLayoutEntry{Name: privateHoist, Kind: tar.TypeReg})
+			case "shadow-link":
+				layout.entries = append(layout.entries, PNPMLayoutEntry{Name: privateHoist, Kind: tar.TypeSymlink, Link: "foreign"})
+			}
+			err := checkPNPMBoundBin(layout, shim, target, directories)
+			if (err == nil) != (change == "absent-empty-hoist") {
+				t.Fatal("private empty search or actual shadow classified incorrectly", err)
+			}
+		})
+	}
+}
+
 func TestPNPMPrivateManifestKeepsExactDevGroupWithoutUserMetadata(t *testing.T) {
 	f := fullInspectionLayoutFixture(t, true)
 	lock := f.input.Context().Lock()

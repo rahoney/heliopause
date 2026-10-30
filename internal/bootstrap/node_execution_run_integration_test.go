@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
+	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
@@ -26,7 +28,20 @@ import (
 )
 
 func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
-	if os.Getenv("HELOX_NODE_EXECUTION_WORKFLOW_INTEGRATION") != "1" || os.Geteuid() == 0 {
+	runNodeExecutionWorkflowIntegration(t, false)
+}
+
+func TestLinuxPNPMRunExecutionWorkflowIntegration(t *testing.T) {
+	runNodeExecutionWorkflowIntegration(t, true)
+}
+
+func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
+	t.Helper()
+	declared := os.Getenv("HELOX_NODE_EXECUTION_WORKFLOW_INTEGRATION") == "1"
+	if pnpm {
+		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION") == "1"
+	}
+	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user production Node preparation qualification")
 	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
@@ -63,10 +78,6 @@ func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	native, err := sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
-	if err != nil {
-		t.Fatal(err)
-	}
 	intake, evidenceRoot, stagingRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging")
 	source, err := artifactnpm.NewPublicResolver(intake)
 	if err != nil {
@@ -88,9 +99,30 @@ func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	service, err := newNPMExecutionService(native, source, static, backend, store, staging)
-	if err != nil {
-		t.Fatal(err)
+	var service cli.ExecutionRunner
+	if pnpm {
+		var nativeExecutor sandbox.TrustedExecutor = executor
+		if directory := os.Getenv("HELOX_PNPM_CURRENT_LAYOUT_CAPTURE_DIR"); directory != "" {
+			nativeExecutor = &pnpmCurrentLayoutRecorder{Executor: executor, directory: directory}
+		}
+		native, err := sandbox.NewLinuxPNPMResolverWithExecutorAndPolicy(nativeExecutor, observer.Observer(), resolverPolicy)
+		if err != nil {
+			t.Fatal(err)
+		}
+		prepare, err := sandbox.NewPNPMInspectionPreparer(native, intake)
+		if err != nil {
+			t.Fatal(err)
+		}
+		service = pnpmRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}
+	} else {
+		native, err := sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
+		if err != nil {
+			t.Fatal(err)
+		}
+		service, err = newNPMExecutionService(native, source, static, backend, store, staging)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	reference, err := artifactnpm.ParseReference("typescript@5.9.3")
 	if err != nil {
@@ -133,7 +165,11 @@ func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
 			}
 			checks[check.ID().String()] = true
 		}
-		for _, name := range []string{"npm-declared-integrity", "npm-static-archive", "npm-dynamic-lifecycle"} {
+		dynamicCheck := "npm-dynamic-lifecycle"
+		if pnpm {
+			dynamicCheck = "pnpm-dynamic-lifecycle"
+		}
+		for _, name := range []string{"npm-declared-integrity", "npm-static-archive", dynamicCheck} {
 			if !checks[name] {
 				t.Fatal("actual required check absent", name)
 			}
@@ -174,7 +210,34 @@ func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
 				t.Fatal("guest nonzero differs from runtime failure", runErr)
 			}
 		}
-		t.Logf("production_node_application attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", attempt, code, len(executed.Stdout()), len(executed.Stderr()))
+		marker := "production_node_application"
+		if pnpm {
+			marker = "production_pnpm_run_application"
+			if inspected.Resolution().RuntimeIdentity() != "pnpm-dlx-isolated:"+sandbox.PNPMResolverRuntimeIdentity() {
+				t.Fatal("pnpm native resolver identity lost")
+			}
+		}
+		t.Logf("%s attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", marker, attempt, code, len(executed.Stdout()), len(executed.Stderr()))
 		previous = prepared
 	}
+}
+
+// This diagnostic tee preserves the actual executor's optional capabilities.
+// Only the first fixed layout DATA export is copied; it grants no authority.
+type pnpmCurrentLayoutRecorder struct {
+	*hosttool.Executor
+	directory string
+	captured  bool
+}
+
+func (r *pnpmCurrentLayoutRecorder) RunOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
+	if r.captured || name != "docker" || len(args) != 3 || args[0] != "cp" || !strings.HasSuffix(args[1], ":/tmp/haa-pnpm-input/project/node_modules") || args[2] != "-" {
+		return r.Executor.RunOutput(ctx, output, name, args...)
+	}
+	file, err := os.OpenFile(filepath.Join(r.directory, "pnpm-current-layout.tar"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
+	}
+	r.captured = true
+	return errors.Join(r.Executor.RunOutput(ctx, io.MultiWriter(output, file), name, args...), file.Close())
 }

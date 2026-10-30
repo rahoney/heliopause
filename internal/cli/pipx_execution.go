@@ -13,7 +13,7 @@ func pipxRunExecutionDescriptor() packageClientDescriptor {
 	d.parents = []packageClientParent{{"Quarantine public Python tools with pipx", "pipx로 공개 Python 툴을 검역합니다"}}
 	d.longEN = strings.ReplaceAll(uvRunExecutionEnglish, "--from", "--spec") + "\n\nSelection uses the pinned pipx with its UV backend. A primary-name request can select its sole declared console. The pipx.run entry-point group is unsupported."
 	d.longKO = strings.ReplaceAll(uvRunExecutionKorean, "--from", "--spec") + "\n\n고정 pipx와 UV backend로 선택합니다. 패키지명 요청은 유일한 console을 선택할 수 있습니다. pipx.run entry-point group은 지원하지 않습니다."
-	d.flags = func(command *cobra.Command) { configurePythonRunExecutionFlags(command, "spec") }
+	d.flags = func(command *cobra.Command) { configureRunExecutionFlags(command, "spec") }
 	d.validate = func(command *cobra.Command, args []string) error {
 		_, err := readPythonRunExecutionRequest(command, args, "spec")
 		return err

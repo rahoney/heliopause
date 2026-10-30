@@ -17,7 +17,20 @@ import (
 )
 
 func TestLinuxNPMExecutionCLIRefusalIntegration(t *testing.T) {
-	if os.Getenv("HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION") != "1" || os.Geteuid() == 0 {
+	testNodeExecutionCLIRefusalIntegration(t, false)
+}
+
+func TestLinuxPNPMRunExecutionCLIRefusalIntegration(t *testing.T) {
+	testNodeExecutionCLIRefusalIntegration(t, true)
+}
+
+func testNodeExecutionCLIRefusalIntegration(t *testing.T, pnpm bool) {
+	t.Helper()
+	declared := os.Getenv("HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION") == "1"
+	if pnpm {
+		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION") == "1"
+	}
+	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user post-Policy CLI refusal qualification")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
@@ -34,6 +47,13 @@ func TestLinuxNPMExecutionCLIRefusalIntegration(t *testing.T) {
 		{"ambiguous", []string{"npx", "typescript@5.9.3", "--", "--help", "private-cli-argv"}},
 		{"missing", []string{"npm", "exec", "--command", "haa-nonexistent-bin", "typescript@5.9.3", "--", "--help", "private-cli-argv"}},
 	} {
+		if pnpm {
+			if row.name == "ambiguous" {
+				row.args = []string{"pnx", "typescript@5.9.3", "--", "--help", "private-cli-argv"}
+			} else {
+				row.args = []string{"pnpm", "dlx", "--package", "typescript@5.9.3", "haa-nonexistent-bin", "--", "--help", "private-cli-argv"}
+			}
+		}
 		args := append([]string{"--lang", "en", "--output", "json", "--progress", "never", "--color", "never"}, row.args...)
 		var out, diagnostic bytes.Buffer
 		cause := Run(ctx, args, &out, &diagnostic)
@@ -73,7 +93,11 @@ func TestLinuxNPMExecutionCLIRefusalIntegration(t *testing.T) {
 		if len(staged) != 0 {
 			t.Fatal("entry refusal produced stored execution records")
 		}
-		t.Logf("production_npm_execution_refusal case=%d reason=%s current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0", i+1, row.name)
+		marker := "production_npm_execution_refusal"
+		if pnpm {
+			marker = "production_pnpm_run_refusal"
+		}
+		t.Logf("%s case=%d reason=%s current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0", marker, i+1, row.name)
 	}
 	runs, err := os.ReadDir(filepath.Join(cache, "heliopause", "evidence"))
 	if err != nil || len(runs) != 2 {

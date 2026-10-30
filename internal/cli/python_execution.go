@@ -23,9 +23,9 @@ func uvRunExecutionDescriptor(tool bool) packageClientDescriptor {
 	return packageClientDescriptor{id: UVRunPackageClient, path: path, parents: parents, route: "pypi", use: use, shortEN: "Quarantine and run an exact public Python console", shortKO: "공개 Python console을 검역한 뒤 격리 실행합니다", longEN: uvRunExecutionEnglish, longKO: uvRunExecutionKorean, execution: true, validate: validateUVRunExecutionArgs, validateRaw: validateUVRunExecutionRawArgs, flags: configureUVRunExecutionFlags, examples: []string{"helox uvx --show-output cowsay@6.1 -- -t hello", "helox --output json uv tool run --from python-slugify==8.0.4 slugify -- hello world"}, flagText: map[string]packageClientParent{"from": {"Public package when its console command differs", "console 명령 이름이 다를 때 선택할 공개 패키지"}, "show-output": {"Display private untrusted streams as ASCII-escaped data", "비공개 프로그램 출력을 ASCII escape 데이터로 명시 표시"}}}
 }
 func configureUVRunExecutionFlags(command *cobra.Command) {
-	configurePythonRunExecutionFlags(command, "from")
+	configureRunExecutionFlags(command, "from")
 }
-func configurePythonRunExecutionFlags(command *cobra.Command, selectionFlag string) {
+func configureRunExecutionFlags(command *cobra.Command, selectionFlag string) {
 	command.Flags().String(selectionFlag, "", "Public package when command differs")
 	command.Flags().Bool("show-output", false, "Display untrusted ASCII-escaped program output")
 	command.Flags().SetInterspersed(false)

@@ -112,3 +112,48 @@ F2는 먼저 위 source resolution/entry의 실제 gap을 구현한다. `PNPMIns
 결합하고 unsupported/disconnected graph는 기존 Domain 경계에서 거부한다. 그 다음 실제
 current inspection/layout 소비자를 연결한다. Generic npm selector나 설치 target 계약을
 넓히지 않으며 이 중간 단위로 새 CI를 시작하지 않는다.
+
+F2의 최초 source/entry 표적8.742s는 synthetic 원본 결합과 peer8/archive7을 확인했다.
+현재 연결에서 필요한 추가 gap은 기존 `PNPMInspectionContext`가 project snapshot만 받는
+점이다. 같은 context에 별도의 execution resolution을 결합하고, 기존 project constructor와
+Host ownership proof는 project-only로 유지한다. 기존 PNPM 전체 static/budget/native layout/
+instance 관측 본문을 두 실제 소비자가 공유하며 설치 target을 꾸며 넣거나 검사기를 재구현하지
+않는다. 실행 graph의 여러 node가 공유하는 원본은 인증 identity/SRI·digest·size가 모두 같은
+경우에만 기존 unique-archive 입력으로 결합한다. 새 승인·완료 authority는 추가하지 않는다.
+
+F2 current 후보의 focused14.872s/tagged vet/build는 PASS다. 첫 실제23.682s/test21.57s는
+기존 PNPM native layout 결합에서 실패해 Policy/program 미도달이며 원인은 미확정이다.
+Helperwait0/Host5·Docker 보존/설정 복원을 확인했고 raw p6-f2-current-first-v1을 보존했다.
+Production/입력을 고정한 test-only 첫 layout tee로 누락 DATA만 확보한 뒤 로컬에서 대조한다.
+
+F2 same-product test-only v2는 native layout163 entries/23,764,480B를 확보했다. Root shim
+NODE_PATH의 정확한 `node_modules/.pnpm/node_modules`만 부재였고 hoistedDependencies는
+empty이며 네 shim code digest는 기존64d69cfd와 일치한다. 기존 helper의 같은 반례 RED는
+absent-empty-hoist만 실패했고 다섯 unsafe negative는 거부됐다. 전체 census가 이 정확한
+내부 경로의 부재를 입증하는 조건만 인정한다. 실제 file/link shadow·다른 missing/foreign
+검색과 code drift 거부는 유지한다. 일반 경로/권한 또는 공용 tar reader를 바꾸지 않는다.
+Runtime fingerprint에 native identity도 포함한다. Current actual 후속과 CLI/whole acceptance는
+아직 미검증이며 새 결과 전 완료로 쓰지 않는다.
+
+## F2/F3 named actual과 현재 검증 경계
+
+기존 observer의 current app2/67.72s(whole69.770s)는 fresh 전체 검사·ALLOW·새 records와
+normal0/guest1을 확인했다. Public CLI actual203.439s의 세 alias151.83s와 승인 후 entry
+거부2/49.60s가 PASS다. Implicit default Rimraf3.0.2는 실제12 nodes/13 edges를 전체 승인한
+뒤 실행했다. Helpers wait0/Host5·Docker 보존/같은 inode profile 복원이며 Native cache는
+승인·설치 ownership이 아니다. 원본은 combined F2/F3 receipt와 raw p6-f2-current-native-v3,
+p6-f3-cli-native-v1이 소유한다. Final Quick330.692s/affected5package Race90.770s/checker Race78.012s/workflow2.991s/고정 tagged
+Staticcheck17.468s/docs0.356s/security17.432s가 PASS다.
+
+Pin의 [lib.rs](https://github.com/pnpm/pnpm/blob/91774e72a04d52ce61db06339696a433d383c764/pnpm/crates/cli/src/lib.rs)는
+standalone pnx/pnpx에 dlx를 주입하며 Unix script도 같은 동작임을 명시한다.
+[command enum](https://github.com/pnpm/pnpm/blob/91774e72a04d52ce61db06339696a433d383c764/pnpm/crates/cli/src/cli_args/cli_command/commands.rs)의 dlx와 구분한다.
+HAA의 세 진입점은 `pnpm dlx`, `pnx`, `pnpx`이며 `pnpm pnx`를 새 subcommand로 만들지 않는다.
+`--package <package> <command>`와 bounded literal argv·기존 출력/error owner를 사용한다.
+
+기존 CI PNPM 공급물을 한 번 준비하는 run profile에 앱2/CLI3/refusal2를 묶고, sandbox
+profile에는 cold1을 연결했다. Current lifecycle의 기존 bootstrap helper가 활성인 위치를
+재사용해 추가 client rebind·job을 만들지 않았다. New115 parents/CPP132/Required10/120분은
+기존 계약을 유지한다. 저장 actual logs의 guard DATA와 empty/duplicate/SKIP/primary-error
+negative는 native 재실행이나 hosted 성공이 아니다. 다음 grouped hosted·Bun/일반 peer
+동등성/hostile·whole final은 여전히 OPEN이다.

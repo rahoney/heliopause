@@ -347,6 +347,8 @@ END { exit (bad || parent!=1 || cases!=6 || sources!=7 || !source["1 cowsay"] ||
 ' "$pipx_run_log"
 rm -- "$pipx_run_log"
 
+bash scripts/ci-pnpm-runtime.sh run
+
 haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
 haa_start_policy_helper
 uv_run_source_log="$RUNNER_TEMP/haa-uv-run-source.log"

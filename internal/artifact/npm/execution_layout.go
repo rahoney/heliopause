@@ -32,10 +32,11 @@ func executionLayoutFacts(c domain.ExecutionContext) executionLayoutBinding {
 // NodeExecutionLayout binds a parsed tree to current whole-set source facts.
 // It grants no runtime admission, immutable mount or program completion proof.
 type NodeExecutionLayout struct {
-	binding executionLayoutBinding
-	layout  PNPMLayoutArchive
-	entry   string
-	digest  domain.ContentDigest
+	binding    executionLayoutBinding
+	layout     PNPMLayoutArchive
+	entry      string
+	digest     domain.ContentDigest
+	nativePNPM bool
 }
 
 func (l NodeExecutionLayout) Valid() bool                          { return l.digest.String() != "" }
@@ -167,11 +168,19 @@ func BindNodeExecutionLayout(ctx context.Context, execution domain.ExecutionCont
 	if _, err := selected.BindNodeTarget(body); err != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
 	}
+	return bindNodeExecutionLayoutFacts(ctx, execution, layout, entry, false)
+}
+
+func bindNodeExecutionLayoutFacts(ctx context.Context, execution domain.ExecutionContext, layout PNPMLayoutArchive, entry string, nativePNPM bool) (NodeExecutionLayout, error) {
 	census := sha256.Sum256(layout.body)
+	schema := "helox.node-execution-layout/v1"
+	if nativePNPM {
+		schema = "helox.pnpm-node-execution-layout/v1"
+	}
 	metadata, err := json.Marshal(struct {
 		Schema, Census, Source, Policy, Runtime, Command, Member, MemberSHA string
 		Size                                                                uint64
-	}{"helox.node-execution-layout/v1", hex.EncodeToString(census[:]), execution.SourceFingerprint().String(), execution.PolicyFingerprint().String(), execution.RuntimeIdentity(), execution.Command(), entry, execution.EntryDigest().String(), execution.EntrySize()})
+	}{schema, hex.EncodeToString(census[:]), execution.SourceFingerprint().String(), execution.PolicyFingerprint().String(), execution.RuntimeIdentity(), execution.Command(), entry, execution.EntryDigest().String(), execution.EntrySize()})
 	if err != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
 	}
@@ -183,5 +192,5 @@ func BindNodeExecutionLayout(ctx context.Context, execution domain.ExecutionCont
 	if ctx.Err() != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, ctx.Err(), context.Cause(ctx))
 	}
-	return NodeExecutionLayout{executionLayoutFacts(execution), layout, entry, digest}, nil
+	return NodeExecutionLayout{binding: executionLayoutFacts(execution), layout: layout, entry: entry, digest: digest, nativePNPM: nativePNPM}, nil
 }

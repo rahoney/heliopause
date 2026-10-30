@@ -16,20 +16,28 @@ func bindNPMProjectAcquired(snapshot domain.ProjectDependencySnapshot, acquired 
 			return nil, mismatch
 		}
 		artifact, present := acquired[node]
-		declared, hasDeclared := artifact.DeclaredIntegrity()
-		observed, hasObserved := artifact.ObservedIntegrity()
-		parts := strings.Split(artifact.ContentHandle(), ":")
-		if !present || artifact.Identity() != resolved.Identity() || artifact.Digest().String() == "" || artifact.SizeBytes() == 0 ||
-			!hasDeclared || !hasObserved || declared != resolved.DeclaredIntegrity() || observed != declared ||
-			len(parts) != 3 || parts[0] != "intake" || parts[2] != "tarball" {
-			return nil, mismatch
-		}
-		run, err := domain.ParseRunID(parts[1])
-		if err != nil || runs[run] {
+		run, err := npmAcquiredRun(artifact, resolved, mismatch)
+		if !present || err != nil || runs[run] {
 			return nil, mismatch
 		}
 		runs[run] = true
 		artifacts = append(artifacts, artifact)
 	}
 	return artifacts, nil
+}
+
+func npmAcquiredRun(artifact domain.AcquiredArtifact, resolved domain.ResolvedArtifact, mismatch error) (domain.RunID, error) {
+	declared, hasDeclared := artifact.DeclaredIntegrity()
+	observed, hasObserved := artifact.ObservedIntegrity()
+	parts := strings.Split(artifact.ContentHandle(), ":")
+	if artifact.Identity() != resolved.Identity() || artifact.Digest().String() == "" || artifact.SizeBytes() == 0 ||
+		!hasDeclared || !hasObserved || declared != resolved.DeclaredIntegrity() || observed != declared ||
+		len(parts) != 3 || parts[0] != "intake" || parts[2] != "tarball" {
+		return domain.RunID{}, mismatch
+	}
+	run, err := domain.ParseRunID(parts[1])
+	if err != nil {
+		return domain.RunID{}, mismatch
+	}
+	return run, nil
 }

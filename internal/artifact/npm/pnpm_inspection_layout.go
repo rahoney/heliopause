@@ -334,8 +334,22 @@ func checkPNPMBoundBin(layout PNPMLayoutArchive, shim, target string, directorie
 	}
 	allowed["node_modules"] = true
 	for _, module := range modules {
-		if !directories[module] || !allowed[module] {
+		if !allowed[module] {
 			return errPNPMInspectionLayout
+		}
+		if directories[module] {
+			continue
+		}
+		// The pinned shim names the private hoist directory even when there
+		// are no hoisted packages. Full census above must prove it absent;
+		// a file or symlink there is not an empty internal search path.
+		if module != "node_modules/.pnpm/node_modules" {
+			return errPNPMInspectionLayout
+		}
+		for _, entry := range layout.entries {
+			if entry.Name == module {
+				return errPNPMInspectionLayout
+			}
 		}
 	}
 	return nil
@@ -364,8 +378,12 @@ func (l PNPMInspectionLayout) Target(artifact domain.AcquiredArtifact, instance 
 // MatchesInput binds the whole prepared layout to the exact frozen snapshot,
 // runtime and acquired runs, rather than only checking a target's membership.
 func (l PNPMInspectionLayout) MatchesInput(input PNPMInspectionInput) bool {
+	frozen := l.input.context.MatchesSnapshot(input.context.Snapshot())
+	if l.input.context.execution.Graph().Primary().String() != "" {
+		frozen = l.input.context.MatchesExecutionResolution(input.context.execution)
+	}
 	return l.digest.String() != "" && l.input.Valid() && input.Valid() &&
-		l.input.context.MatchesSnapshot(input.context.Snapshot()) &&
+		frozen &&
 		l.input.context.RuntimeIdentity() == input.context.RuntimeIdentity() &&
 		slices.Equal(l.input.artifacts, input.artifacts)
 }
