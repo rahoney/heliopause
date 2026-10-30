@@ -2,9 +2,6 @@ package npm
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"path"
 
@@ -41,24 +38,7 @@ func (r *Resolver) BindPNPMRunCache(ctx context.Context, cache PNPMRunCache, ref
 	if err != nil {
 		return frozen, err
 	}
-	type controlDigest struct{ Name, SHA256 string }
-	document := struct {
-		Schema, Source, Reference, Runtime string
-		Controls                           []controlDigest
-	}{Schema: "pnpm-dlx-selection/v1", Source: reference.Source().String(), Reference: reference.Locator(), Runtime: runtimeIdentity}
-	for _, control := range cache.controls {
-		document.Controls = append(document.Controls, controlDigest{control.Name(), control.Digest().String()})
-	}
-	body, err := json.Marshal(document)
-	if err != nil {
-		return frozen, err
-	}
-	sum := sha256.Sum256(body)
-	digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	if err != nil {
-		return frozen, err
-	}
-	resolution, err := domain.NewDependencyResolution(graph, "pnpm-dlx-isolated:"+runtimeIdentity, digest)
+	resolution, err := nativeNodeRunResolution(graph, reference, runtimeIdentity, cache.controls, "pnpm-dlx")
 	if err != nil {
 		return frozen, err
 	}

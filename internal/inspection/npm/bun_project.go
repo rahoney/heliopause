@@ -49,6 +49,12 @@ type bunInspectionState struct {
 }
 
 func (i *BunProjectInspector) InspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+	return i.inspectInput(ctx, func() (artifactnpm.BunInspectionInput, error) {
+		return i.frozen.BindAcquired(snapshot, acquired)
+	})
+}
+
+func (i *BunProjectInspector) inspectInput(ctx context.Context, bind func() (artifactnpm.BunInspectionInput, error)) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
 	if i == nil || ctx == nil || i.static == nil || i.prepare == nil || i.execute == nil {
 		return nil, errors.New("bun project inspection is unavailable")
 	}
@@ -61,7 +67,7 @@ func (i *BunProjectInspector) InspectProject(ctx context.Context, snapshot domai
 	i.prepared = artifactnpm.BunInspectionLayout{}
 	i.handoffMu.Unlock()
 	defer func() { i.handoffMu.Lock(); i.active = false; i.handoffMu.Unlock() }()
-	input, err := i.frozen.BindAcquired(snapshot, acquired)
+	input, err := bind()
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +77,7 @@ func (i *BunProjectInspector) InspectProject(ctx context.Context, snapshot domai
 	if len(input.Artifacts()) == 0 {
 		return map[domain.DependencyNodeID]domain.InspectionReport{}, nil
 	}
-	states := make([]bunInspectionState, 0, len(acquired))
+	states := make([]bunInspectionState, 0, len(input.Artifacts()))
 	for _, subject := range input.Artifacts() {
 		instances, err := input.InstancesFor(subject)
 		if err != nil {
@@ -167,6 +173,10 @@ func (i *BunProjectInspector) PreparedLayoutFor(snapshot domain.ProjectDependenc
 	if err != nil {
 		return artifactnpm.BunInspectionLayout{}, err
 	}
+	return i.preparedLayoutFor(input)
+}
+
+func (i *BunProjectInspector) preparedLayoutFor(input artifactnpm.BunInspectionInput) (artifactnpm.BunInspectionLayout, error) {
 	i.handoffMu.Lock()
 	defer i.handoffMu.Unlock()
 	if i.active || !i.prepared.MatchesInput(input) {

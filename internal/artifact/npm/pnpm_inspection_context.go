@@ -70,33 +70,9 @@ func (c PNPMInspectionContext) BindExecutionAcquired(graph domain.LockedDependen
 	if !c.MatchesExecutionResolution(c.execution) || !reflect.DeepEqual(graph, c.execution.Graph()) || len(acquired) != len(graph.Nodes()) {
 		return PNPMInspectionInput{}, errPNPMInspectionContext
 	}
-	byIdentity := map[domain.ResolvedArtifactIdentity]domain.AcquiredArtifact{}
-	runs := map[domain.RunID]domain.ResolvedArtifactIdentity{}
-	for _, node := range graph.Nodes() {
-		subject, present := acquired[node.Node()]
-		run, err := npmAcquiredRun(subject, node.Artifact(), errPNPMInspectionContext)
-		if !present || err != nil {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		if identity, duplicate := runs[run]; duplicate && identity != subject.Identity() {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		runs[run] = subject.Identity()
-		previous, duplicate := byIdentity[subject.Identity()]
-		if duplicate && (previous.Digest() != subject.Digest() || previous.SizeBytes() != subject.SizeBytes()) {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		if !duplicate || node.Node() == graph.Primary() {
-			byIdentity[subject.Identity()] = subject
-		}
-	}
-	var subjects []domain.AcquiredArtifact
-	for _, original := range c.selection.artifacts {
-		subject, present := byIdentity[original.Identity()]
-		if !present {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		subjects = append(subjects, subject)
+	subjects, err := bindNativeExecutionAcquired(graph, acquired, c.selection.artifacts, errPNPMInspectionContext)
+	if err != nil {
+		return PNPMInspectionInput{}, err
 	}
 	return PNPMInspectionInput{c, subjects}, nil
 }

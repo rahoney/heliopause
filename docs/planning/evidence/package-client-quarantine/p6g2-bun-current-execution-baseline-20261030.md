@@ -39,3 +39,19 @@ G1 bare TypeScript7.0.2는 os/cpu/platform optional row를 포함한 unapproved 
 기존 strict Bun parser의 지원 밖을 일반 지원으로 승격하지 않으며 Semver bare/current
 named 검증과 구분한다. 설치 ownership/Host target·Core/Policy·보안 한도·runtime pin·
 최종 profile/support/signing acceptance는 이 baseline으로 바뀌지 않는다.
+
+## G2 첫 현재 앱 실패 — 아직 미해결
+
+G2 context/whole inspector/layout/current Node 연결의 표적4package15.858s·tagged vet3.255s/build2.745s는 PASS다. 실제 첫 현재 앱18.90s(operator22.239s)는 독립 source/cold 선택 뒤 기존 offline inspection 준비에서 `OPEN_RESULT_CORRELATION`/events17로 중단됐다. Policy/프로그램은 미도달이며 current 앱 성공으로 기록하지 않는다. Helperwait0/Host5·Docker 보존/같은 inode profile 복원을 확인했다. Raw `p6-g2-current-first-v1`을 보존하고 kernel syscall/path/flags/pending 진단부터 확인한다. G1·CI439의 이미 검증된 입력을 재실행하거나 일반 correlation 예외를 늘리지 않는다.
+
+V2의 동일 Go ELF/입력과 판정 불변 private observer 진단17.42s(operator19.575s)는 `sysno437/flags2654208/success=true/pending0`, kernel 경로 `/tmp/haa-bun-input/project/node_modules/typescript/bin`·workspace mount36을 확인했다. 기존 G1은 bun x의 한 번 실행되는 ARTIFACT installer/private bunx-cache에만 한정되어 있어 이 CONTROL offline install의 project 경로는 대상 밖이다. 새 성공을 주장하지 않고 exact14argv offline install·current group·project workspace의 성공 O_PATH만 별도로 계상하는 최소 후보와 negative 회귀를 검토한다. Correlation 일반화나 synthetic pending은 만들지 않는다. Raw `p6-g2-open-diagnostic-v2`와 그 observer/Go hash를 따른다.
+
+V3의 최소 수정은 exact14argv offline install에만 current-image marker를 두고 exec에서 지우며 clone에 상속하지 않는다. 같은 CONTROL direct-root/current generation/expected Bun·kernel 성공 O_PATH/정확한 project node_modules·workspace anchor만 계상한다. 표적 semantic RED53.187s→GREEN46.116s 뒤 동일 Go ELF의 앱2가60.97s(operator63.211s) PASS했다. 각 요청은 독립 cold source/원본/whole 검사·현재 Evidence/Policy ALLOW·새 Manifest/SBOM과 readonly Node normal0/typed nonzero1을 확인했다. Host5/Docker/helperwait0/같은 inode profile 복원을 확인했다. Raw `p6-g2-current-fixed-v3`가 원본이며 CPP/Go grouped qualification은 아직 PENDING, 명시 Bun program·CLI/hosted/general/final은 미완료다.
+
+## 같은 로컬 묶음의 현재 CLI 연결 audit — CLI source 전
+
+Bun current workflow는 G2 actual 앱2에서 사용됐지만 default CLI caller는 아직 없어 default source 연결도 acceptance gap이다. 기존 packageClientDescriptor·literal argv/출력·ExecutionRunner·bootstrap runNPMExecution·PNPM native request reader·공용 current CLI/거부 fixture는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES다. Bun 전용 descriptor/두 alias(`bunx`, `bun x`)·current factory 연결만 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. MISSING은 기존 native package/명시 command reader·기존 presentation/런타임 owner를 사용한 두 alias와 거부/영어·한국어·출력 경계 검증이다. Generic npm의 strict 기본 bin 선택을 그대로 쓰며 다중/이름 불일치는 `--package <pkg> <command>`로 명시한다. 명시 `--bun` runtime은 별도 미구현으로 거부하며 이 Node 한정 CLI로 지원 완료를 주장하지 않는다. 새 job/helper/rebind 없이 기존 Bun supply cohort에 모은다.
+
+## Named local qualification 종료
+
+현재 Node 앱2/60.97s와 CLI3/190.91s·entry 거부2/50.00s, Rimraf12nodes/13edges·Host/helper/원복을 확인했다. 같은 observer57c186ea의 전체CPP132/50.004s·canonical Quick351.507s/영향5package Race92.964s/checker Race72.786s·고정 tagged Staticcheck2.874s/docs0.342s/security18.055s는 PASS다. 최종 범위와 source hash는 [G2 결과](./p6g2-bun-current-cli-local-20261030.json)가 소유한다. 새-source hosted/명시 Bun program·일반/final은 OPEN이며 [G3 baseline](./p6g3-bun-readonly-runtime-baseline-20261030.md)의 실제 gap을 이어간다. 검증 뒤의 receipt/status 갱신은 문서 bookkeeping이며 불변 제품/CPP/native를 다시 실행하지 않는다.

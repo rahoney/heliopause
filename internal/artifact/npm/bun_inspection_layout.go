@@ -210,7 +210,7 @@ func (l BunInspectionLayout) Target(artifact domain.AcquiredArtifact, instance s
 
 func (l BunInspectionLayout) MatchesInput(input BunInspectionInput) bool {
 	return l.digest.String() != "" && l.input.Valid() && input.Valid() &&
-		l.input.context.MatchesSnapshot(input.context.Snapshot()) && l.input.context.RuntimeIdentity() == input.context.RuntimeIdentity() && slices.Equal(l.input.artifacts, input.artifacts)
+		l.input.context.matchesContext(input.context) && l.input.context.RuntimeIdentity() == input.context.RuntimeIdentity() && slices.Equal(l.input.artifacts, input.artifacts)
 }
 
 func (l BunInspectionLayout) Digest() domain.ContentDigest { return l.digest }

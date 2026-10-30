@@ -8910,6 +8910,69 @@ bool VerifyBunRunInstallChildBoundary(const gvisor::common::ContextData& root, c
   return true;
 }
 
+// The pinned kernel has no entry point for openat2. This narrow fixture uses
+// the actual offline install's successful project bin handle, never a file read.
+bool VerifyBunOfflinePathHandleBoundary(const gvisor::common::ContextData& context,
+    const ProcessState& baseline, const TopologyState& base_topology, int output) {
+  for (const char* scenario : {"normal", "legacy", "read", "write", "failed", "errno", "outside", "cache",
+      "relative", "traversal", "mount", "mount-class", "shadow", "unsealed", "profile", "role", "clone",
+      "image", "start", "expected", "expected-start", "expected-class", "inactive", "network-inactive",
+      "root-eligible", "root-unconsumed", "handoff", "demotion", "root-pending", "not-exec-session", "parent", "pending-mismatch"}) {
+    auto state=baseline; auto topology=base_topology;
+    topology.anchors.emplace(3,MountAnchor{3,kBunTargetProjectMount,"workspace"});
+    topology.expected.push_back(ExpectedMount{kBunTargetProjectMount,"workspace","/","9p",false,true,true,false});
+    gvisor::syscall::OpenResult result; *result.mutable_context_data()=context;
+    auto* c=result.mutable_context_data(); c->set_thread_id(99);c->set_thread_start_time_ns(990);
+    result.set_sysno(437);result.set_flags(2654208);result.set_success(true);result.set_mount_id(3);
+    result.set_resolved_pathname("/tmp/haa-bun-input/project/node_modules/typescript/bin");
+    const char* profile=kProfileBunProjectResolver;
+    if(strcmp(scenario,"legacy")==0)result.set_sysno(257);
+    else if(strcmp(scenario,"read")==0)result.set_flags(557056);
+    else if(strcmp(scenario,"write")==0)result.set_flags(2654208|kOpenWriteOnly);
+    else if(strcmp(scenario,"failed")==0)result.set_success(false);
+    else if(strcmp(scenario,"errno")==0)result.set_errorno(1);
+    else if(strcmp(scenario,"outside")==0)result.set_resolved_pathname("/etc/passwd");
+    else if(strcmp(scenario,"cache")==0)result.set_resolved_pathname("/tmp/haa-bun-input/cache/typescript/bin");
+    else if(strcmp(scenario,"relative")==0)result.set_resolved_pathname("node_modules/typescript/bin");
+    else if(strcmp(scenario,"traversal")==0)result.set_resolved_pathname("/tmp/haa-bun-input/project/node_modules/../escape");
+    else if(strcmp(scenario,"mount")==0)result.set_mount_id(99);
+    else if(strcmp(scenario,"mount-class")==0)topology.anchors[3].mount_class="system";
+    else if(strcmp(scenario,"shadow")==0)topology.anchors.emplace(4,MountAnchor{4,"/tmp/haa-bun-input/project","workspace"});
+    else if(strcmp(scenario,"unsealed")==0)topology.sealed=false;
+    else if(strcmp(scenario,"profile")==0)profile=kProfileBunResolver;
+    else if(strcmp(scenario,"role")==0)state.groups[99].role=ProcessState::Role::kArtifact;
+    else if(strcmp(scenario,"clone")==0)state.groups[99].provenance=ProcessState::Provenance::kCloneChild;
+    else if(strcmp(scenario,"image")==0)state.groups[99].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"start")==0)c->set_thread_group_start_time_ns(991);
+    else if(strcmp(scenario,"expected")==0)state.expected_groups.clear();
+    else if(strcmp(scenario,"expected-start")==0)state.expected_groups[99].start_time_ns++;
+    else if(strcmp(scenario,"expected-class")==0)state.expected_groups[99].process_class=ProcessClass::kNode;
+    else if(strcmp(scenario,"inactive")==0)state.groups[99].bun_offline_install_active=false;
+    else if(strcmp(scenario,"network-inactive")==0)state.groups[99].trusted_control_network_active=false;
+    else if(strcmp(scenario,"root-eligible")==0)state.groups[99].root_eligible=true;
+    else if(strcmp(scenario,"root-unconsumed")==0)state.groups[99].root_consumed=false;
+    else if(strcmp(scenario,"handoff")==0)state.groups[99].handoff_target_pending=true;
+    else if(strcmp(scenario,"demotion")==0)state.groups[99].demotion_pending=true;
+    else if(strcmp(scenario,"root-pending")==0)state.groups[99].launch_target_pending=true;
+    else if(strcmp(scenario,"not-exec-session")==0)c->set_is_exec_session(false);
+    else if(strcmp(scenario,"parent")==0)c->set_parent_thread_group_id(98);
+    else if(strcmp(scenario,"pending-mismatch")==0)state.pending_opens.emplace(std::make_pair(99,990),ProcessState::PendingOpen{99,990,257,2654208,false});
+    NormalizedCounts counts;std::string payload,id;const char* reason=nullptr;
+    const bool parsed=result.SerializeToString(&payload)&&ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+    const bool normal=strcmp(scenario,"normal")==0;
+    if(parsed!=normal || counts.workspace_access!=(normal?1:0) || (strcmp(scenario,"pending-mismatch")==0 && state.pending_opens.empty())) {
+      fprintf(stderr,"Bun offline path-handle scenario failed: %s\n",scenario);return false;
+    }
+  }
+  auto state=baseline;
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=context;
+  clone.set_created_thread_group_id(100);clone.set_created_thread_start_time_ns(1000);
+  std::string payload,id;const char* reason=nullptr;
+  if(!clone.SerializeToString(&payload)||!ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)||
+      state.groups[100].bun_offline_install_active) return false;
+  return true;
+}
+
 bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bool bun_project = false, const char* bun_intent = "install", bool frozen = false, bool selector = false, const char* bun_preparation = nullptr) {
   const char* profile = bun ? (bun_project ? kProfileBunProjectResolver : kProfileBunResolver) : (pnpm ? kProfilePNPMResolver : kProfileUVResolver);
   const char* tool = bun ? kBunToolPath : (pnpm ? kPNPMToolPath : kUVToolPath);
@@ -9015,6 +9078,10 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bo
         IsTrustedControlNetwork(*context, state) &&
         registration.pending_admissions.front().state == ProfileRegistration::AdmissionState::kConsumed;
     if(!root_allowed) return false;
+    if(bun_project && state.groups[99].bun_offline_install_active !=
+        (bun_preparation!=nullptr && strcmp(bun_preparation,"offline")==0)) return false;
+    if(bun_project && bun_preparation != nullptr && strcmp(bun_preparation,"offline")==0 &&
+        !VerifyBunOfflinePathHandleBoundary(*context,state,topology,output[0])) return false;
     return bun_preparation == nullptr || strncmp(bun_preparation,"run",3)!=0 ||
         VerifyBunRunInstallChildBoundary(*context,state,topology,registration,output[0],output[1]);
   };

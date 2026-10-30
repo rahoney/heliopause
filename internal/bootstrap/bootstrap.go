@@ -95,8 +95,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if cli.SelectedPackageClient(command) == cli.NPXPackageClient && (source != "npm" || runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
-		return errors.New("npx execution requires the public npm source and Linux amd64")
+	if client := cli.SelectedPackageClient(command); (client == cli.NPXPackageClient || client == cli.BunRunPackageClient) && (source != "npm" || runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
+		return errors.New("tool execution requires the public npm source and Linux amd64")
 	}
 	if cli.SelectedPackageClient(command) == cli.UVRunPackageClient || cli.SelectedPackageClient(command) == cli.PipxRunPackageClient {
 		if source != "pypi" {
@@ -313,7 +313,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		return command.ExecuteContext(ctx)
 	}
 	if source != "" && source == "npm" {
-		if client := cli.SelectedPackageClient(command); client == cli.NPXPackageClient || client == cli.PNPMRunPackageClient {
+		if client := cli.SelectedPackageClient(command); client == cli.NPXPackageClient || client == cli.PNPMRunPackageClient || client == cli.BunRunPackageClient {
 			return runNPMExecution(ctx, command, trustedExecutor, processObserver)
 		}
 		cacheRoot, err := os.UserCacheDir()

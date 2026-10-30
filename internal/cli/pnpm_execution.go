@@ -5,6 +5,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
+	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/spf13/cobra"
 )
 
@@ -41,8 +42,12 @@ func validatePNPMRunExecutionRawArgs(args []string) error {
 }
 
 func readPNPMRunExecutionRequest(command *cobra.Command, args []string) (application.ExecutionPreparationRequest, error) {
+	return readNativeNodeRunExecutionRequest(command, args, artifactnpm.ValidatePNPMRunReference, "pnpm")
+}
+
+func readNativeNodeRunExecutionRequest(command *cobra.Command, args []string, validate func(domain.ArtifactReference) error, client string) (application.ExecutionPreparationRequest, error) {
 	if len(args) == 0 {
-		return application.ExecutionPreparationRequest{}, errors.New("pnpm execution requires one public package or explicit command")
+		return application.ExecutionPreparationRequest{}, errors.New(client + " execution requires one public package or explicit command")
 	}
 	from, err := command.Flags().GetString("package")
 	if err != nil || command.Flags().Changed("package") && from == "" {
@@ -53,8 +58,8 @@ func readPNPMRunExecutionRequest(command *cobra.Command, args []string) (applica
 		input, selected = from, args[0]
 	}
 	reference, err := artifactnpm.ParseReference(input)
-	if err != nil || artifactnpm.ValidatePNPMRunReference(reference) != nil {
-		return application.ExecutionPreparationRequest{}, errors.New("pnpm execution requires a bare or exact public package without provisioning")
+	if err != nil || validate(reference) != nil {
+		return application.ExecutionPreparationRequest{}, errors.New(client + " execution requires a bare or exact public package without provisioning")
 	}
 	arguments := args[1:]
 	if len(arguments) > 0 && arguments[0] == "--" {

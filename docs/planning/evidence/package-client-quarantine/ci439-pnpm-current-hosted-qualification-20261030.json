@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-F1-F2-F3-grouped-hosted",
+  "source": "0eeefcacd6000edafc9c3a2a552ac4a475de747b",
+  "whole_tree": "5b7a0a21bacc08793a0713a6c6822d7d62b75f99",
+  "all10_checkout": "63f66bdfd1907e5c5da4f26bcbbbf32e13d95f42",
+  "merge_source_is_parent": true,
+  "run_id": 41030454824,
+  "run_number": 439,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41030454824",
+  "result": "Required and all10 SUCCESS",
+  "run_started_at": "2026-10-30T09:01:54Z",
+  "run_completed_metadata_at": "2026-10-30T10:46:08Z",
+  "server_elapsed_seconds": 6254,
+  "actual20min_GET": {
+    "queries": 6,
+    "last_query_started_at": "2026-10-30T11:02:01.726136+00:00",
+    "last_query_ended_at": "2026-10-30T11:02:02.755517+00:00",
+    "worker_session": 68297,
+    "worker_exit_code": 0,
+    "worker_state": "COMPLETED",
+    "next_timer": null,
+    "CI_not_cancelled": true
+  },
+  "whole_log_readback": {
+    "jobs": 10,
+    "decoded_bytes": 1350712,
+    "completed8_not_refetched": true,
+    "final_logs_new": 2,
+    "final_transfer_parts": 19,
+    "full_source_log_proof": "docs/github-logs/package-client-quarantine-20261021/ci439-full-source-log-proof.json"
+  },
+  "qualified_named": {
+    "Linux_top_level_parents": 115,
+    "actual_FAIL_SKIP": 0,
+    "CPP_latches_PASS": 132,
+    "PNPM_cold_selection_seconds": 6.59,
+    "PNPM_current_application_cases": 2,
+    "PNPM_current_application_seconds": 41.15,
+    "PNPM_current_CLI_cases": 3,
+    "PNPM_current_CLI_seconds": 102.59,
+    "PNPM_current_entry_refusals": 2,
+    "PNPM_current_entry_refusal_seconds": 35.94,
+    "PNPM_multi_node_default": "rimraf 12nodes/13edges; fresh current ALLOW",
+    "existing_Bun_native_seconds": 36.88,
+    "helper_wait0": 18,
+    "final_four_original0_confirmed_stop_restore": true
+  },
+  "source_scope": "Frozen0eeefca PNPM F1/F2/F3 native cold selection, current application/CLI/refusal and existing consumers. Later local339ea36 G1 and working G2 are outside this source.",
+  "still_open": [
+    "later Bun G1/G2 source hosted and current Bun program/CLI",
+    "generic equivalence/hostile and whole P6",
+    "P7 and final four profiles/support/signing acceptance"
+  ],
+  "Required_jobs_product_permissions_budgets_unchanged": true
+}

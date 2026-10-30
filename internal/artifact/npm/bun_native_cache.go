@@ -226,6 +226,6 @@ func (i BunInspectionInput) BindNativeCache(ctx context.Context, inventory Archi
 }
 
 func (e BunNativeCacheEntry) matches(input BunInspectionInput) bool {
-	return e.bound && input.Valid() && e.input.Valid() && e.input.context.MatchesSnapshot(input.context.Snapshot()) &&
+	return e.bound && input.Valid() && e.input.Valid() && e.input.context.matchesContext(input.context) &&
 		e.input.context.RuntimeIdentity() == input.context.RuntimeIdentity() && slices.Equal(e.input.artifacts, input.artifacts)
 }

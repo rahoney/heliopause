@@ -2,6 +2,7 @@ package npm
 
 import (
 	"errors"
+	"reflect"
 	"slices"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -16,6 +17,7 @@ type BunInspectionContext struct {
 	snapshot  domain.ProjectDependencySnapshot
 	controls  []domain.ProjectControlFile
 	runtime   string
+	execution domain.DependencyResolution
 }
 
 func (s BunSelection) InspectionContext(install domain.InstallContext, controls []domain.ProjectControlFile, runtimeIdentity string) (BunInspectionContext, error) {
@@ -23,11 +25,15 @@ func (s BunSelection) InspectionContext(install domain.InstallContext, controls 
 	if err != nil {
 		return BunInspectionContext{}, err
 	}
-	return BunInspectionContext{s, snapshot, append([]domain.ProjectControlFile(nil), controls...), runtimeIdentity}, nil
+	return BunInspectionContext{selection: s, snapshot: snapshot, controls: append([]domain.ProjectControlFile(nil), controls...), runtime: runtimeIdentity}, nil
 }
 
 func (c BunInspectionContext) Valid() bool {
-	return c.selection.SourceBound() && c.selection.lock.valid && c.snapshot.Valid() && c.runtime != "" && len(c.controls) == 2
+	if !c.selection.SourceBound() || !c.selection.lock.valid || c.runtime == "" || len(c.controls) != 2 {
+		return false
+	}
+	run := c.execution.Graph().Primary().String() != "" && c.execution.LockfileDigest().String() != ""
+	return c.snapshot.Valid() != run
 }
 
 func (c BunInspectionContext) Snapshot() domain.ProjectDependencySnapshot { return c.snapshot }
@@ -41,7 +47,7 @@ func (c BunInspectionContext) Controls() []domain.ProjectControlFile {
 
 // A copied opaque digest cannot substitute for the full normalized snapshot.
 func (c BunInspectionContext) MatchesSnapshot(snapshot domain.ProjectDependencySnapshot) bool {
-	return c.Valid() && snapshot.Valid() && snapshot.Context() == c.snapshot.Context() &&
+	return c.Valid() && c.snapshot.Valid() && snapshot.Valid() && snapshot.Context() == c.snapshot.Context() &&
 		snapshot.Source() == c.snapshot.Source() && snapshot.GraphDigest() == c.snapshot.GraphDigest() &&
 		snapshot.DependencyFree() == c.snapshot.DependencyFree() &&
 		slices.Equal(snapshot.ControlDigests(), c.snapshot.ControlDigests()) &&
@@ -67,7 +73,7 @@ func (c BunInspectionContext) BindAcquired(snapshot domain.ProjectDependencySnap
 }
 
 func (i BunInspectionInput) Valid() bool {
-	return i.context.Valid() && len(i.artifacts) == len(i.context.snapshot.Dependencies())
+	return i.context.Valid() && len(i.artifacts) == len(i.context.selection.artifacts)
 }
 func (i BunInspectionInput) Context() BunInspectionContext { return i.context }
 func (i BunInspectionInput) Artifacts() []domain.AcquiredArtifact {
@@ -90,4 +96,31 @@ func (i BunInspectionInput) InstancesFor(artifact domain.AcquiredArtifact) ([]Bu
 		return nil, errBunInspectionContext
 	}
 	return instances, nil
+}
+
+func (c BunInspectionContext) ExecutionResolution() domain.DependencyResolution { return c.execution }
+func (c BunInspectionContext) MatchesExecutionResolution(resolution domain.DependencyResolution) bool {
+	return c.Valid() && !c.snapshot.Valid() && c.execution.Graph().Primary().String() != "" && reflect.DeepEqual(c.execution, resolution)
+}
+func (c BunInspectionContext) bindingDigest() domain.ContentDigest {
+	if c.snapshot.Valid() {
+		return c.snapshot.GraphDigest()
+	}
+	return c.execution.LockfileDigest()
+}
+func (c BunInspectionContext) matchesContext(other BunInspectionContext) bool {
+	if c.snapshot.Valid() {
+		return c.MatchesSnapshot(other.snapshot)
+	}
+	return c.MatchesExecutionResolution(other.execution)
+}
+func (c BunInspectionContext) BindExecutionAcquired(graph domain.LockedDependencyGraph, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (BunInspectionInput, error) {
+	if !c.MatchesExecutionResolution(c.execution) || !reflect.DeepEqual(graph, c.execution.Graph()) || len(acquired) != len(graph.Nodes()) {
+		return BunInspectionInput{}, errBunInspectionContext
+	}
+	subjects, err := bindNativeExecutionAcquired(graph, acquired, c.selection.artifacts, errBunInspectionContext)
+	if err != nil {
+		return BunInspectionInput{}, err
+	}
+	return BunInspectionInput{c, subjects}, nil
 }

@@ -17,18 +17,25 @@ import (
 )
 
 func TestLinuxNPMExecutionCLIRefusalIntegration(t *testing.T) {
-	testNodeExecutionCLIRefusalIntegration(t, false)
+	testNodeExecutionCLIRefusalIntegration(t, "npm")
 }
 
 func TestLinuxPNPMRunExecutionCLIRefusalIntegration(t *testing.T) {
-	testNodeExecutionCLIRefusalIntegration(t, true)
+	testNodeExecutionCLIRefusalIntegration(t, "pnpm")
 }
 
-func testNodeExecutionCLIRefusalIntegration(t *testing.T, pnpm bool) {
+func TestLinuxBunRunExecutionCLIRefusalIntegration(t *testing.T) {
+	testNodeExecutionCLIRefusalIntegration(t, "bun")
+}
+
+func testNodeExecutionCLIRefusalIntegration(t *testing.T, client string) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION") == "1"
-	if pnpm {
+	if client == "pnpm" {
 		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION") == "1"
+	}
+	if client == "bun" {
+		declared = os.Getenv("HELOX_BUN_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION") == "1"
 	}
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user post-Policy CLI refusal qualification")
@@ -47,11 +54,18 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, pnpm bool) {
 		{"ambiguous", []string{"npx", "typescript@5.9.3", "--", "--help", "private-cli-argv"}},
 		{"missing", []string{"npm", "exec", "--command", "haa-nonexistent-bin", "typescript@5.9.3", "--", "--help", "private-cli-argv"}},
 	} {
-		if pnpm {
+		if client == "pnpm" {
 			if row.name == "ambiguous" {
 				row.args = []string{"pnx", "typescript@5.9.3", "--", "--help", "private-cli-argv"}
 			} else {
 				row.args = []string{"pnpm", "dlx", "--package", "typescript@5.9.3", "haa-nonexistent-bin", "--", "--help", "private-cli-argv"}
+			}
+		}
+		if client == "bun" {
+			if row.name == "ambiguous" {
+				row.args = []string{"bunx", "typescript@5.9.3", "--", "--help", "private-cli-argv"}
+			} else {
+				row.args = []string{"bun", "x", "--package", "typescript@5.9.3", "haa-nonexistent-bin", "--", "--help", "private-cli-argv"}
 			}
 		}
 		args := append([]string{"--lang", "en", "--output", "json", "--progress", "never", "--color", "never"}, row.args...)
@@ -94,8 +108,11 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, pnpm bool) {
 			t.Fatal("entry refusal produced stored execution records")
 		}
 		marker := "production_npm_execution_refusal"
-		if pnpm {
+		if client == "pnpm" {
 			marker = "production_pnpm_run_refusal"
+		}
+		if client == "bun" {
+			marker = "production_bun_run_refusal"
 		}
 		t.Logf("%s case=%d reason=%s current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0", marker, i+1, row.name)
 	}

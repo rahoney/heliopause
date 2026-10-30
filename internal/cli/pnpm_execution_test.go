@@ -11,7 +11,22 @@ import (
 )
 
 func TestPNPMRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T) {
-	for _, path := range [][]string{{"pnpm", "dlx"}, {"pnx"}, {"pnpx"}} {
+	testNativeNodeRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t, false)
+}
+
+func TestBunRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T) {
+	testNativeNodeRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t, true)
+}
+
+func testNativeNodeRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T, bun bool) {
+	t.Helper()
+	paths := [][]string{{"pnpm", "dlx"}, {"pnx"}, {"pnpx"}}
+	id, add := PNPMRunPackageClient, AddPNPMRunExecution
+	if bun {
+		paths = [][]string{{"bunx"}, {"bun", "x"}}
+		id, add = BunRunPackageClient, AddBunRunExecution
+	}
+	for _, path := range paths {
 		for _, explicit := range []bool{false, true} {
 			var output bytes.Buffer
 			root, err := New(&output, io.Discard)
@@ -20,7 +35,7 @@ func TestPNPMRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T) {
 			}
 			cause := errors.New("private native provider diagnostic")
 			runner := &executionRequestRecorder{cause: cause}
-			if err := AddPNPMRunExecution(root, runner); err != nil {
+			if err := add(root, runner); err != nil {
 				t.Fatal(err)
 			}
 			args := append([]string{"--lang", "ko", "--output", "json"}, path...)
@@ -34,7 +49,7 @@ func TestPNPMRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T) {
 			literal := []string{"--help", "", "a b", "a\nb", "$(touch forbidden)", "--package", "--show-output"}
 			args = append(args, "--")
 			args = append(args, literal...)
-			if source, err := PreparePresentation(root, args); err != nil || source != "npm" || SelectedPackageClient(root) != PNPMRunPackageClient {
+			if source, err := PreparePresentation(root, args); err != nil || source != "npm" || SelectedPackageClient(root) != id {
 				t.Fatal("native alias route differs", source, err)
 			}
 			root.SetArgs(args)
@@ -54,10 +69,23 @@ func TestPNPMRunCLIUsesNativeAliasesAndLiteralArgumentBoundary(t *testing.T) {
 }
 
 func TestPNPMRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t *testing.T) {
+	testNativeNodeRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t, false)
+}
+
+func TestBunRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t *testing.T) {
+	testNativeNodeRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t, true)
+}
+
+func testNativeNodeRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t *testing.T, bun bool) {
+	t.Helper()
+	paths := [][]string{{"pnpm", "dlx"}, {"pnx"}, {"pnpx"}}
+	if bun {
+		paths = [][]string{{"bunx"}, {"bun", "x"}}
+	}
 	for _, tail := range [][]string{
 		{}, {"--package", "", "tsc"}, {"--package", "typescript", "bad/name"},
 		{"--package", "typescript", "--package=typescript", "tsc"}, {"--show-output", "--show-output", "typescript"},
-		{"--command", "tsc", "typescript"}, {"--target", "/tmp/target", "typescript"}, {"--shell-mode", "typescript"},
+		{"--command", "tsc", "typescript"}, {"--target", "/tmp/target", "typescript"}, {"--shell-mode", "typescript"}, {"--bun", "typescript"},
 		{"--registry", "https://example.invalid", "typescript"}, {"--cache-dir", "/tmp/cache", "typescript"},
 		{"node"}, {"node@22.0.0"}, {"pnpm"}, {"bun"}, {"deno"}, {"rust"}, {"npm"}, {"yarn"},
 		{"typescript@latest"}, {"typescript@^5"}, {"./local"}, {"https://example.invalid/pkg.tgz"},
@@ -67,7 +95,7 @@ func TestPNPMRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t *testi
 		if err != nil {
 			t.Fatal(err)
 		}
-		args := append([]string{"pnpm", "dlx"}, tail...)
+		args := append(paths[0], tail...)
 		if _, err := PreparePresentation(root, args); err == nil {
 			t.Fatal("unsafe PNPM execution reached composition", tail)
 		}
@@ -75,7 +103,20 @@ func TestPNPMRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t *testi
 }
 
 func TestPNPMRunCLIHelpRequiresNoRuntimeOrInstallTarget(t *testing.T) {
-	for _, path := range [][]string{{"pnpm", "dlx"}, {"pnx"}, {"pnpx"}} {
+	testNativeNodeRunCLIHelpRequiresNoRuntimeOrInstallTarget(t, false)
+}
+
+func TestBunRunCLIHelpRequiresNoRuntimeOrInstallTarget(t *testing.T) {
+	testNativeNodeRunCLIHelpRequiresNoRuntimeOrInstallTarget(t, true)
+}
+
+func testNativeNodeRunCLIHelpRequiresNoRuntimeOrInstallTarget(t *testing.T, bun bool) {
+	t.Helper()
+	paths := [][]string{{"pnpm", "dlx"}, {"pnx"}, {"pnpx"}}
+	if bun {
+		paths = [][]string{{"bunx"}, {"bun", "x"}}
+	}
+	for _, path := range paths {
 		var output bytes.Buffer
 		root, err := New(&output, io.Discard)
 		if err != nil {

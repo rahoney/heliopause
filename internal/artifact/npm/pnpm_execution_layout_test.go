@@ -32,7 +32,7 @@ func TestPNPMExecutionArchiveCopiesHardlinksWithoutChangingRelativeTopology(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	archive, err := copyPNPMExecutionArchive(context.Background(), prepared)
+	archive, err := copyNativeNodeExecutionArchive(context.Background(), prepared)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestPNPMExecutionArchiveCopiesHardlinksWithoutChangingRelativeTopology(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	layout := NodeExecutionLayout{binding: executionLayoutFacts(execution), layout: archive, entry: first, digest: prepared.Digest(), nativePNPM: true}
+	layout := NodeExecutionLayout{binding: executionLayoutFacts(execution), layout: archive, entry: first, digest: prepared.Digest(), nativeClient: "pnpm"}
 	body, err := RenderNodeExecutionInputs(context.Background(), execution, layout)
 	if err != nil {
 		t.Fatal("bound PNPM transport rejected its relative links", err)
@@ -67,7 +67,7 @@ func TestPNPMExecutionArchiveCopiesHardlinksWithoutChangingRelativeTopology(t *t
 	if len(body) == 0 {
 		t.Fatal("empty execution input")
 	}
-	layout.nativePNPM = false
+	layout.nativeClient = ""
 	if _, err := RenderNodeExecutionInputs(context.Background(), execution, layout); err == nil {
 		t.Fatal("PNPM transport broadened generic npm link acceptance")
 	}

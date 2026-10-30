@@ -28,18 +28,25 @@ import (
 )
 
 func TestLinuxNodeExecutionWorkflowIntegration(t *testing.T) {
-	runNodeExecutionWorkflowIntegration(t, false)
+	runNodeExecutionWorkflowIntegration(t, "npm")
 }
 
 func TestLinuxPNPMRunExecutionWorkflowIntegration(t *testing.T) {
-	runNodeExecutionWorkflowIntegration(t, true)
+	runNodeExecutionWorkflowIntegration(t, "pnpm")
 }
 
-func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
+func TestLinuxBunRunExecutionWorkflowIntegration(t *testing.T) {
+	runNodeExecutionWorkflowIntegration(t, "bun")
+}
+
+func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NODE_EXECUTION_WORKFLOW_INTEGRATION") == "1"
-	if pnpm {
+	if client == "pnpm" {
 		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION") == "1"
+	}
+	if client == "bun" {
+		declared = os.Getenv("HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION") == "1"
 	}
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user production Node preparation qualification")
@@ -100,7 +107,7 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
 		t.Fatal(err)
 	}
 	var service cli.ExecutionRunner
-	if pnpm {
+	if client == "pnpm" {
 		var nativeExecutor sandbox.TrustedExecutor = executor
 		if directory := os.Getenv("HELOX_PNPM_CURRENT_LAYOUT_CAPTURE_DIR"); directory != "" {
 			nativeExecutor = &pnpmCurrentLayoutRecorder{Executor: executor, directory: directory}
@@ -114,6 +121,16 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
 			t.Fatal(err)
 		}
 		service = pnpmRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}
+	} else if client == "bun" {
+		native, err := sandbox.NewLinuxBunResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
+		if err != nil {
+			t.Fatal(err)
+		}
+		prepare, err := sandbox.NewBunInspectionPreparer(native, intake)
+		if err != nil {
+			t.Fatal(err)
+		}
+		service = bunRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}
 	} else {
 		native, err := sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
 		if err != nil {
@@ -166,8 +183,11 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
 			checks[check.ID().String()] = true
 		}
 		dynamicCheck := "npm-dynamic-lifecycle"
-		if pnpm {
+		if client == "pnpm" {
 			dynamicCheck = "pnpm-dynamic-lifecycle"
+		}
+		if client == "bun" {
+			dynamicCheck = "bun-dynamic-lifecycle"
 		}
 		for _, name := range []string{"npm-declared-integrity", "npm-static-archive", dynamicCheck} {
 			if !checks[name] {
@@ -211,10 +231,16 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, pnpm bool) {
 			}
 		}
 		marker := "production_node_application"
-		if pnpm {
+		if client == "pnpm" {
 			marker = "production_pnpm_run_application"
 			if inspected.Resolution().RuntimeIdentity() != "pnpm-dlx-isolated:"+sandbox.PNPMResolverRuntimeIdentity() {
 				t.Fatal("pnpm native resolver identity lost")
+			}
+		}
+		if client == "bun" {
+			marker = "production_bun_run_application"
+			if inspected.Resolution().RuntimeIdentity() != "bunx-isolated:"+sandbox.BunResolverRuntimeIdentity() {
+				t.Fatal("bun native resolver identity lost")
 			}
 		}
 		t.Logf("%s attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", marker, attempt, code, len(executed.Stdout()), len(executed.Stderr()))

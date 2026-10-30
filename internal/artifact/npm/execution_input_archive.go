@@ -26,7 +26,7 @@ func RenderNodeExecutionInputs(ctx context.Context, execution domain.ExecutionCo
 		if ctx.Err() != nil {
 			return nil, errors.Join(errNodeExecutionInputs, ctx.Err(), context.Cause(ctx))
 		}
-		link := layout.nativePNPM && entry.Kind == tar.TypeSymlink
+		link := (layout.nativeClient == "pnpm" || layout.nativeClient == "bun") && entry.Kind == tar.TypeSymlink
 		if !link && (entry.Kind != tar.TypeDir && entry.Kind != tar.TypeReg || entry.Link != "") {
 			return nil, errNodeExecutionInputs
 		}

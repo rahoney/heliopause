@@ -425,3 +425,26 @@ Linux amd64의 named local 앱2/CLI3/refusal2와12-node 기본 bin 사례는
 [F2/F3 결과](../planning/evidence/package-client-quarantine/p6f2f3-pnpm-current-cli-local-20261030.json)를
 따른다. 필수 검사·새-source hosted/일반 peer 동등성/hostile/whole final의 남은 상태는
 [Queue](../planning/02-current-work-queue.md)가 소유한다.
+
+### P6 Bun one-off의 Node 초기 실행 lane
+
+`helox bunx [--package <package>] <package-or-command> [--] [args...]`와
+`helox bun x`는 고정 Bun으로 공개 npm의 bare 이름 또는 정확한 버전 하나를 선택한다.
+Native cache·lock은 unapproved DATA이며 독립 npm metadata/SRI와 각 원본을 다시 결합한다.
+모든 native placement/peer edge를 유지하고 기존 whole static·native Artifact runtime 검사와
+현재 Evidence/Policy·실행 기록을 거쳐 승인한 동일 tree의 Node entry만 읽기 전용 sandbox에서
+실행한다. 설치 target/ownership snapshot을 만들지 않는다.
+
+명령 생략은 기존 strict npm 선택처럼 package basename과 같은 유일한 bin에 한정한다.
+다중 bin 또는 다른 명령은 `--package <package> <command>`로 명시하며 native의 모호한
+fallback으로 추측하지 않는다. 명시 Bun 프로그램 실행(`--bun`)은 아직 별도 미구현으로
+거부한다. Node 실행이나 project lifecycle의 Bun 사용을 그 지원 완료로 표시하지 않는다.
+Runtime provisioning, tag/range·URL/local/VCS, 다른 registry, shell, 프로젝트/PATH/global
+cache 검색과 생성 파일 반출은 초기 scope 밖이다. 프로그램 argv·private output·guest exit와
+정리 결과는 기존 실행 계약을 그대로 따른다.
+
+예: `helox bunx --package typescript@5.9.3 --show-output tsc -- --help`.
+G1 public cold exact/bare와 G2 현재 앱 normal0/typed nonzero1은 named local actual 검증이며
+[G2 결과](../planning/evidence/package-client-quarantine/p6g2-bun-current-cli-local-20261030.json)는
+CLI3/거부2·12-node 기본 명령과 필수 로컬 검사까지 named local qualified다. 새 source hosted·
+명시 Bun program/일반 동등성/hostile·final은 [Queue](../planning/02-current-work-queue.md)를 따른다.

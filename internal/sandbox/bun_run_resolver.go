@@ -56,3 +56,16 @@ func bunRunMissingTerminal(code int, diagnostic []byte) bool {
 	return code == 1 && len(diagnostic) <= 4096 &&
 		bytes.Contains(diagnostic, []byte("does not provide a binary named "+bunRunQueryPath))
 }
+
+// ResolveToolRun binds the complete native selection to the independent public
+// source. Ephemeral execution has no installation target or project snapshot.
+func (r *BunResolver) ResolveToolRun(ctx context.Context, reference domain.ArtifactReference, source *artifactnpm.Resolver) (artifactnpm.BunInspectionContext, error) {
+	if ctx == nil || source == nil {
+		return artifactnpm.BunInspectionContext{}, errors.New("bun one-off resolution requires context and public source")
+	}
+	cache, err := r.SelectToolRun(ctx, reference)
+	if err != nil {
+		return artifactnpm.BunInspectionContext{}, err
+	}
+	return source.BindBunRunCache(ctx, cache, reference, BunResolverRuntimeIdentity())
+}

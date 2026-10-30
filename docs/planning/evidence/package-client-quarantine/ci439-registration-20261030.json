@@ -29,8 +29,10 @@
     "first_due_KST": "2026-10-30 18:21:54 KST",
     "actual_queries_at_registration": 0,
     "future_execution_not_claimed": true,
-    "actual_queries": 4,
-    "next_due_at": "2026-10-30T10:42:00.656666+00:00"
+    "actual_queries": 6,
+    "next_due_at": null,
+    "worker_state": "COMPLETED",
+    "worker_exit_code": 0
   },
   "expected_qualification": {
     "new_native_cold_parent": 1,
@@ -55,16 +57,16 @@
     "arithmetic_seconds": 6662.82,
     "estimate_only": true
   },
-  "result": "PENDING",
+  "result": "Required and all10 SUCCESS",
   "independent_local_next": "P6-G Bun one-off cold native cache/source/Node-Bun runtime baseline; reuse P3/P5 owners, no speculative permissions or helper/doc push cancelling CI439",
   "authorization": "User conditionally authorized CI at important complete validation boundaries; native/current/CLI group and shared complete input binding qualify. Normal milestone branch push only; no main merge/release.",
   "latest_actual_poll": {
-    "number": 4,
-    "due_at": "2026-10-30T10:21:59.255260+00:00",
-    "query_started_at": "2026-10-30T10:21:59.255432+00:00",
+    "number": 6,
+    "due_at": "2026-10-30T11:02:01.725998+00:00",
+    "query_started_at": "2026-10-30T11:02:01.726136+00:00",
     "api_get_only": true,
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "jobs": [
       {
         "id": 123978679257,
@@ -104,9 +106,9 @@
       {
         "id": 123978679599,
         "name": "gVisor Linux Integration",
-        "status": "in_progress",
-        "conclusion": null,
-        "current_step": "Qualify production Node execution preparation"
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
       },
       {
         "id": 123978679629,
@@ -128,10 +130,17 @@
         "status": "completed",
         "conclusion": "success",
         "current_step": null
+      },
+      {
+        "id": 124020424543,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "success",
+        "current_step": null
       }
     ],
-    "query_ended_at": "2026-10-30T10:22:00.656666+00:00",
-    "next_due_at": "2026-10-30T10:42:00.656666+00:00"
+    "query_ended_at": "2026-10-30T11:02:02.755517+00:00",
+    "next_due_at": null
   },
   "completed8_source_proof": {
     "receipt": "docs/github-logs/package-client-quarantine-20261021/ci439-completed8-proof.json",
@@ -139,5 +148,6 @@
     "checkout": "63f66bdfd1907e5c5da4f26bcbbbf32e13d95f42",
     "whole_tree_matches": true,
     "already_preserved_logs_will_not_be_refetched": true
-  }
+  },
+  "qualification": "docs/planning/evidence/package-client-quarantine/ci439-pnpm-current-hosted-qualification-20261030.json"
 }

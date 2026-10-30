@@ -17,18 +17,25 @@ import (
 )
 
 func TestLinuxNPMExecutionCLIIntegration(t *testing.T) {
-	testNodeExecutionCLIIntegration(t, false)
+	testNodeExecutionCLIIntegration(t, "npm")
 }
 
 func TestLinuxPNPMRunExecutionCLIIntegration(t *testing.T) {
-	testNodeExecutionCLIIntegration(t, true)
+	testNodeExecutionCLIIntegration(t, "pnpm")
 }
 
-func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
+func TestLinuxBunRunExecutionCLIIntegration(t *testing.T) {
+	testNodeExecutionCLIIntegration(t, "bun")
+}
+
+func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NPM_EXECUTION_CLI_INTEGRATION") == "1"
-	if pnpm {
+	if client == "pnpm" {
 		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION") == "1"
+	}
+	if client == "bun" {
+		declared = os.Getenv("HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION") == "1"
 	}
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user actual npx/npm exec CLI qualification")
@@ -52,17 +59,20 @@ func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
 		{[]string{"npx"}, "ko", "human", true, 0},
 		{[]string{"npm", "exec"}, "en", "human", false, 1},
 	}
-	if pnpm {
+	if client == "pnpm" {
 		rows = []cliCase{
 			{[]string{"pnpm", "dlx"}, "en", "json", false, 0},
 			{[]string{"pnx"}, "ko", "json", true, 1},
 			{[]string{"pnpx"}, "ko", "human", true, 0},
 		}
 	}
+	if client == "bun" {
+		rows = []cliCase{{[]string{"bunx"}, "en", "json", false, 0}, {[]string{"bun", "x"}, "ko", "json", true, 1}, {[]string{"bunx"}, "ko", "human", true, 0}}
+	}
 	for i, row := range rows {
-		implicit := pnpm && row.path[0] == "pnpx"
+		implicit := client == "pnpm" && row.path[0] == "pnpx" || client == "bun" && i == 2
 		args := append([]string{"--lang", row.language, "--output", row.output, "--progress", "never", "--color", "never"}, row.path...)
-		if pnpm {
+		if client == "pnpm" || client == "bun" {
 			if !implicit {
 				args = append(args, "--package", "typescript@5.9.3")
 			}
@@ -77,7 +87,7 @@ func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
 			arg = "--haa-invalid-option"
 		}
 		selector := "typescript@5.9.3"
-		if pnpm {
+		if client == "pnpm" || client == "bun" {
 			selector = "tsc"
 		}
 		if implicit {
@@ -135,8 +145,11 @@ func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
 			t.Fatal("private output selection or diagnostic separation failed")
 		}
 		marker := "production_npm_execution_cli"
-		if pnpm {
+		if client == "pnpm" {
 			marker = "production_pnpm_run_cli"
+		}
+		if client == "bun" {
+			marker = "production_bun_run_cli"
 		}
 		t.Logf("%s case=%d alias=%s format=%s language=%s show_output=%t exit_code=%d current_policy=ALLOW guest_cleanup=CONFIRMED", marker, i+1, row.path[len(row.path)-1], row.output, row.language, row.show, row.code)
 	}
@@ -149,24 +162,32 @@ func testNodeExecutionCLIIntegration(t *testing.T, pnpm bool) {
 	for _, entry := range entries {
 		if entry.IsDir() {
 			count++
-			if pnpm {
+			if client == "pnpm" || client == "bun" {
 				body, err := os.ReadFile(filepath.Join(cache, "heliopause", "staging", entry.Name(), "manifest.json"))
 				var manifest struct {
 					Entries   []json.RawMessage
 					Edges     []json.RawMessage
 					Execution struct{ Command string }
 				}
-				if err != nil || json.Unmarshal(body, &manifest) != nil || !strings.Contains(string(body), "pnpm-dlx-isolated:"+sandbox.PNPMResolverRuntimeIdentity()) {
+				identity := "pnpm-dlx-isolated:" + sandbox.PNPMResolverRuntimeIdentity()
+				if client == "bun" {
+					identity = "bunx-isolated:" + sandbox.BunResolverRuntimeIdentity()
+				}
+				if err != nil || json.Unmarshal(body, &manifest) != nil || !strings.Contains(string(body), identity) {
 					t.Fatal("CLI lost its current native whole records", err)
 				}
 				if manifest.Execution.Command == "rimraf" && len(manifest.Entries) > 1 && len(manifest.Edges) > 0 {
 					multi = true
-					t.Logf("production_pnpm_run_cli_graph nodes=%d edges=%d primary=rimraf current_policy=ALLOW", len(manifest.Entries), len(manifest.Edges))
+					marker := "production_pnpm_run_cli_graph"
+					if client == "bun" {
+						marker = "production_bun_run_cli_graph"
+					}
+					t.Logf("%s nodes=%d edges=%d primary=rimraf current_policy=ALLOW", marker, len(manifest.Entries), len(manifest.Edges))
 				}
 			}
 		}
 	}
-	if count != len(rows) || pnpm && !multi {
+	if count != len(rows) || (client == "pnpm" || client == "bun") && !multi {
 		t.Fatal("CLI requests reused execution storage records", count)
 	}
 }

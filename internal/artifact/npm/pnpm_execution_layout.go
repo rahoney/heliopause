@@ -41,16 +41,19 @@ func BindPNPMNodeExecutionLayout(ctx context.Context, execution domain.Execution
 	if _, err := selected.BindNodeTarget(body); err != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
 	}
-	layout, err := copyPNPMExecutionArchive(ctx, prepared)
+	layout, err := copyNativeNodeExecutionArchive(ctx, prepared)
 	if err != nil {
 		return NodeExecutionLayout{}, err
 	}
-	return bindNodeExecutionLayoutFacts(ctx, execution, layout, entry, true)
+	return bindNodeExecutionLayoutFacts(ctx, execution, layout, entry, "pnpm")
 }
 
 // Expand measured hardlinks into separate regular copies before introduction.
 // Relative symlinks retain the exact topology already checked by BindLayout.
-func copyPNPMExecutionArchive(ctx context.Context, prepared PNPMInspectionLayout) (PNPMLayoutArchive, error) {
+func copyNativeNodeExecutionArchive(ctx context.Context, prepared interface {
+	Entries() []PNPMLayoutEntry
+	ReadFile(string) ([]byte, error)
+}) (PNPMLayoutArchive, error) {
 	var output bytes.Buffer
 	writer := tar.NewWriter(&output)
 	for _, entry := range prepared.Entries() {

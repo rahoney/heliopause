@@ -242,12 +242,25 @@ func TestPNPMRunProfileKeepsExactDispatchAndPrimaryFailure(t *testing.T) {
 }
 
 func TestPNPMRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T) {
-	start := strings.Index(pnpmRunIntegrationBlock, "  awk '\n")
-	end := strings.Index(pnpmRunIntegrationBlock, "\n' \"$pnpm_run_log\"")
-	if start < 0 || end <= start {
-		t.Fatal("missing PNPM run guard")
+	testNativeNodeRunGuardRejectsMissingDuplicateAndForeignCases(t, false)
+}
+
+func TestBunRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T) {
+	testNativeNodeRunGuardRejectsMissingDuplicateAndForeignCases(t, true)
+}
+
+func testNativeNodeRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T, bun bool) {
+	t.Helper()
+	block := pnpmRunIntegrationBlock
+	if bun {
+		block = bunRunIntegrationBlock
 	}
-	program := pnpmRunIntegrationBlock[start+len("  awk '\n") : end]
+	start := strings.Index(block, "awk '\n")
+	end := strings.Index(block[start:], "\n' ") + start
+	if start < 0 || end <= start {
+		t.Fatal("missing native run guard")
+	}
+	program := block[start+len("awk '\n") : end]
 	fixture := `--- PASS: TestLinuxPNPMRunExecutionWorkflowIntegration (1s)
 --- PASS: TestLinuxPNPMRunExecutionCLIIntegration (1s)
 --- PASS: TestLinuxPNPMRunExecutionCLIRefusalIntegration (1s)
@@ -269,6 +282,9 @@ func TestPNPMRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T) {
 		"wrong-guest-code": strings.Replace(fixture, "attempt=2 artifact_role=true target_loaded=true exit_code=1", "attempt=2 artifact_role=true target_loaded=true exit_code=0", 1),
 		"foreign-source":   strings.Replace(fixture, "npm_execution_integration_test.go:1: production_pnpm_run_cli case=1", "foreign.go:1: production_pnpm_run_cli case=1", 1),
 	} {
+		if bun {
+			input = strings.NewReplacer("PNPM", "Bun", "pnpm", "bun", "alias=dlx", "alias=bunx", "alias=pnx", "alias=x", "alias=pnpx", "alias=bunx").Replace(input)
+		}
 		t.Run(name, func(t *testing.T) {
 			command := exec.Command("awk", program)
 			command.Stdin = strings.NewReader(input)

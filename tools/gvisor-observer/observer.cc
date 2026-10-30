@@ -468,6 +468,7 @@ struct ProcessState {
     std::string bun_run_package;
     bool bun_run_install_candidate = false;
     bool bun_run_install_active = false;
+    bool bun_offline_install_active = false;
     bool diagnostic_image_pinned = false;
     bool diagnostic_rustc_version = false;
     bool diagnostic_rustc_metadata = false;
@@ -5131,6 +5132,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   const bool bun_install_candidate = group->second.bun_run_install_candidate;
   group->second.bun_run_install_candidate = false;
   group->second.bun_run_install_active = false;
+  group->second.bun_offline_install_active = false;
   group->second.bun_run_package.clear();
   const bool pipx_native_candidate = group->second.pipx_native_candidate;
   group->second.pipx_native_candidate = false;
@@ -5491,6 +5493,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     group->second.trusted_control_network_active = true;
     if (strcmp(profile,kProfileBunProjectResolver)==0 && IsExactBunRunSelection(message))
       group->second.bun_run_package = message.argv(5).substr(10);
+    if (strcmp(profile,kProfileBunProjectResolver)==0 && IsExactBunProjectLockInstall(message) &&
+        message.argv_size()==14 && message.argv(3)=="--offline")
+      group->second.bun_offline_install_active = true;
     group->second.npm_version_node_transition_pending =
         group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
         group->second.command_phase == CommandPhase::kNpmVersion &&
@@ -5879,14 +5884,23 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   const auto key = std::make_pair(result.context_data().thread_id(), result.context_data().thread_start_time_ns());
   const auto pending = state->pending_opens.find(key);
   // Pinned gVisor emits a kernel OpenResult for openat2 but has no entry
-  // point for it. Only the exact native installer may account a successful
-  // O_PATH|O_CLOEXEC handle in its private bunx cache from that kernel result.
+  // point for it. Only an exact native installer may account a successful
+  // O_PATH|O_CLOEXEC handle in its private cache or offline project tree.
   // This grants no file read/write; failed, foreign and other orphan results
   // still fail correlation. A mismatched existing entry is never bypassed.
+  const auto expected = state->expected_groups.find(result.context_data().thread_group_id());
+  const bool bun_offline = group != state->groups.end() && group->second.bun_offline_install_active &&
+      result.context_data().is_exec_session() && result.context_data().parent_thread_group_id()==0 &&
+      IsTrustedControlNetwork(result.context_data(),*state) && group->second.current_image_class==ProcessClass::kBun &&
+      !group->second.root_eligible && group->second.root_consumed && !group->second.launch_target_pending &&
+      !group->second.handoff_target_pending && !group->second.demotion_pending &&
+      expected!=state->expected_groups.end() && expected->second.start_time_ns==group->second.start_time_ns &&
+      expected->second.process_class==ProcessClass::kBun;
   const bool bun_path_handle = pending == state->pending_opens.end() && result.sysno() == 437 &&
       result.flags() == 2654208 && result.success() && strcmp(profile,kProfileBunProjectResolver)==0 &&
-      IsBunRunInstallGroup(result.context_data(),*state) &&
-      HasPrefix(result.resolved_pathname(),"/tmp/haa-bun-input/cache/.bunx-1000/");
+      ((IsBunRunInstallGroup(result.context_data(),*state) &&
+        HasPrefix(result.resolved_pathname(),"/tmp/haa-bun-input/cache/.bunx-1000/")) ||
+       (bun_offline && HasPrefix(result.resolved_pathname(),"/tmp/haa-bun-input/project/node_modules/")));
   if (!bun_path_handle && (pending == state->pending_opens.end() || pending->second.thread_group_id != result.context_data().thread_group_id() ||
       pending->second.thread_group_start_time_ns != result.context_data().thread_group_start_time_ns() ||
       pending->second.sysno != result.sysno() ||

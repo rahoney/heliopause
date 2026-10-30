@@ -66,7 +66,7 @@ func bunInspectionLayoutDigest(input BunInspectionInput, layout BunLayoutArchive
 		Subjects               []subject
 		Entries                []entry
 		Manifest               json.RawMessage
-	}{"bun-inspection-layout/v1", input.context.snapshot.GraphDigest().String(), input.context.runtime, subjects, records, manifest}
+	}{"bun-inspection-layout/v1", input.context.bindingDigest().String(), input.context.runtime, subjects, records, manifest}
 	body, err := json.Marshal(document)
 	if err != nil {
 		return domain.ContentDigest{}, err

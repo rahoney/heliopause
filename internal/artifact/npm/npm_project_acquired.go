@@ -1,8 +1,9 @@
 package npm
 
 import (
-	"github.com/rahoney/heliopause/internal/core/domain"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 // bindNPMProjectAcquired preserves exact unique archive/run coverage. It grants
@@ -40,4 +41,38 @@ func npmAcquiredRun(artifact domain.AcquiredArtifact, resolved domain.ResolvedAr
 		return domain.RunID{}, mismatch
 	}
 	return run, nil
+}
+
+// bindNativeExecutionAcquired preserves all nodes, one original per identity and
+// distinct intake runs for different identities. Primary selection is retained.
+func bindNativeExecutionAcquired(graph domain.LockedDependencyGraph, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, originals []domain.ResolvedArtifact, mismatch error) ([]domain.AcquiredArtifact, error) {
+	byIdentity := map[domain.ResolvedArtifactIdentity]domain.AcquiredArtifact{}
+	runs := map[domain.RunID]domain.ResolvedArtifactIdentity{}
+	for _, node := range graph.Nodes() {
+		subject, present := acquired[node.Node()]
+		run, err := npmAcquiredRun(subject, node.Artifact(), mismatch)
+		if !present || err != nil {
+			return nil, mismatch
+		}
+		if identity, duplicate := runs[run]; duplicate && identity != subject.Identity() {
+			return nil, mismatch
+		}
+		runs[run] = subject.Identity()
+		previous, duplicate := byIdentity[subject.Identity()]
+		if duplicate && (previous.Digest() != subject.Digest() || previous.SizeBytes() != subject.SizeBytes()) {
+			return nil, mismatch
+		}
+		if !duplicate || node.Node() == graph.Primary() {
+			byIdentity[subject.Identity()] = subject
+		}
+	}
+	var subjects []domain.AcquiredArtifact
+	for _, original := range originals {
+		subject, present := byIdentity[original.Identity()]
+		if !present {
+			return nil, mismatch
+		}
+		subjects = append(subjects, subject)
+	}
+	return subjects, nil
 }

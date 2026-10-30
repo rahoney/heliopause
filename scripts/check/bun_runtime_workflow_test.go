@@ -19,6 +19,8 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"missing-current-run-env":    strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 ", "", 1),
+		"case-sensitive-current-env": strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_Bun_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", 1),
 		"missing-Bun-JS-env":         strings.Replace(original, "HELOX_BUN_ARTIFACT_EXECUTION=1 ", "", 1),
 		"commented-Bun-JS":           strings.Replace(original, bunArtifactExecutionCommand, "# "+bunArtifactExecutionCommand, 1),
 		"echoed-Bun-JS":              strings.Replace(original, bunArtifactExecutionCommand, "echo skipped", 1),

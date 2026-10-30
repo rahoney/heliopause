@@ -32,7 +32,7 @@ func ParseBunOriginalLayout(ctx context.Context, body []byte, uid, gid int) (Bun
 // ProveOriginalLayout verifies the complete old source closure. It yields only
 // ownership provenance; current inspection/Evidence/Policy remain mandatory.
 func (i BunInspectionInput) ProveOriginalLayout(ctx context.Context, inventories []ArchiveInventory, original BunOriginalLayout) (domain.ContentDigest, error) {
-	if ctx == nil || !i.Valid() || len(i.artifacts) == 0 || len(original.layout.native.entries) == 0 {
+	if ctx == nil || !i.Valid() || !i.context.snapshot.Valid() || len(i.artifacts) == 0 || len(original.layout.native.entries) == 0 {
 		return domain.ContentDigest{}, errBunInspectionLayout
 	}
 	if _, err := i.bindLayoutForOwner(ctx, inventories, original.layout, original.uid, original.gid); err != nil {
