@@ -74,6 +74,53 @@ refusal_count++
 END { exit (bad || parent_count!=3 || app_count!=2 || case_count!=3 || refusal_count!=2 || graph!=1) }
 ' "$bun_run_log"`
 
+const bunProgramIntegrationBlock = `bun_program_log="$bun_work/program.log"
+bun_program_status=0
+(
+  cd internal/bootstrap
+  HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_PROGRAM_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunProgramExecution(Workflow|CLI|Boundary)Integration$'
+) >"$bun_program_log" 2>&1 || bun_program_status=$?
+bun_program_log_status=0
+cat -- "$bun_program_log" || bun_program_log_status=$?
+if ((bun_program_status)); then exit "$bun_program_status"; fi
+if ((bun_program_log_status)); then exit "$bun_program_log_status"; fi
+awk '
+BEGIN {
+split("argv term kill readonly", complete, " "); for (i in complete) boundary[complete[i]]="true"
+split("cancel stdout-overflow stderr-overflow outside-read network child comm-spoof deadline", incomplete, " "); for (i in incomplete) boundary[incomplete[i]]="false"
+expected["TestLinuxBunProgramExecutionWorkflowIntegration"]=1
+expected["TestLinuxBunProgramExecutionCLIIntegration"]=1
+expected["TestLinuxBunProgramExecutionBoundaryIntegration"]=1
+cli[1]="alias=bunx format=json language=en show_output=false exit_code=0"
+cli[2]="alias=x format=json language=ko show_output=true exit_code=1"
+cli[3]="alias=bunx format=human language=ko show_output=true exit_code=0"
+}
+/--- SKIP:/ { bad=1 }
+/^--- PASS:/ { if (!($3 in expected) || parents[$3]++) bad=1; parent_count++ }
+/production_bun_program_application attempt=/ {
+if ($0 !~ /^[[:space:]]+node_execution_run_integration_test\.go:[0-9]+: production_bun_program_application attempt=[12] artifact_role=true target_loaded=true exit_code=[01] stdout_bytes=[1-9][0-9]* stderr_bytes=0 user_program_run=true$/) bad=1
+id=$3; sub(/^attempt=/,"",id)
+if (apps[id]++ || $6 != "exit_code=" (id-1)) bad=1
+app_count++
+}
+/production_bun_program_cli case=/ {
+id=$3; sub(/^case=/,"",id)
+if (!(id in cli) || cases[id]++ || $0 !~ ("^[[:space:]]+npm_execution_integration_test\\.go:[0-9]+: production_bun_program_cli case=" id " " cli[id] " current_policy=ALLOW guest_cleanup=CONFIRMED$")) bad=1
+case_count++
+}
+/production_bun_program_cli_graph / {
+if ($0 !~ /^[[:space:]]+npm_execution_integration_test\.go:[0-9]+: production_bun_program_cli_graph nodes=[1-9][0-9]* edges=[1-9][0-9]* primary=rimraf current_policy=ALLOW$/ || graph++) bad=1
+nodes=$3; sub(/^nodes=/,"",nodes); if (nodes<=1) bad=1
+}
+/bun_program_boundary case=/ {
+if ($0 !~ /^[[:space:]]+node_execution_boundary_integration_test\.go:[0-9]+: bun_program_boundary case=[a-z-]+ current_policy=ALLOW fixture_registry=CONTROLLED_TEST native_solver=NOT_RUN complete=(true|false) stdout_bytes=[0-9]+ stderr_bytes=[0-9]+$/) bad=1
+id=$3; sub(/^case=/,"",id)
+if (!(id in boundary) || boundaries[id]++ || $7 != "complete=" boundary[id]) bad=1
+boundary_count++
+}
+END { exit (bad || parent_count!=3 || app_count!=2 || case_count!=3 || boundary_count!=12 || graph!=1) }
+' "$bun_program_log"`
+
 // Exact concrete supply/consumer binding; actual Bash execution is separate.
 func validateBunRuntimeScript(contents string) []string {
 	counts := map[string]int{}
@@ -108,11 +155,11 @@ func validateBunRuntimeScript(contents string) []string {
 	if strings.Count(strings.Join(active, "\n"), scope) != 1 {
 		findings = append(findings, "Bun actual consumers require one matching package subshell")
 	}
-	projectScope := strings.Join([]string{`if [[ "$bun_profile" == project ]]; then`, "(", "cd internal/bootstrap", bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand, ")", kernelQualificationLines(bunRunIntegrationBlock), "exit 0", "fi"}, "\n")
+	projectScope := strings.Join([]string{`if [[ "$bun_profile" == project ]]; then`, "(", "cd internal/bootstrap", bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand, ")", kernelQualificationLines(bunRunIntegrationBlock), kernelQualificationLines(bunProgramIntegrationBlock), "exit 0", "fi"}, "\n")
 	if strings.Count(strings.Join(active, "\n"), projectScope) != 1 {
 		findings = append(findings, "Bun project consumers require one guarded bootstrap subshell")
 	}
-	for _, block := range []string{bunColdIntegrationBlock, bunRunIntegrationBlock} {
+	for _, block := range []string{bunColdIntegrationBlock, bunRunIntegrationBlock, bunProgramIntegrationBlock} {
 		if strings.Count(kernelQualificationLines(contents), kernelQualificationLines(block)) != 1 {
 			findings = append(findings, "Bun one-off qualification requires exact scopes, unique complete cohorts, no-SKIP and original-error guards")
 		}

@@ -312,6 +312,7 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 		{boundaryPythonHandoffMode, boundaryOriginPythonHandoffMode},
 		{boundaryELFHandoffMode, boundaryOriginELFHandoffMode},
 		{boundaryNodeHandoffMode, boundaryOriginNodeHandoffMode},
+		{boundaryBunHandoffMode, boundaryOriginBunHandoffMode},
 	} {
 		arguments := boundaryExecArguments("0123456789abcdef", test.mode, "/bin/true")
 		want := []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, test.origin, "/bin/true"}
@@ -334,7 +335,7 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 	for _, required := range []string{
 		`admission "${1-}"`,
 		`token="$1"; shift; exec ` + boundaryHelperPath,
-		`--launch|--handoff-python|--handoff-elf|--handoff-node) shift; admission "${1-}"; shift; demote "$@"`,
+		`--launch|--handoff-python|--handoff-elf|--handoff-node|--handoff-bun) shift; admission "${1-}"; shift; demote "$@"`,
 	} {
 		if !strings.Contains(boundaryHelper, required) {
 			t.Fatalf("boundary helper does not validate then strip admission capability %q: %q", required, boundaryHelper)

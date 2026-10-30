@@ -30,6 +30,7 @@ type nodeInputContainer struct {
 }
 
 type nodeExecutionInputs struct {
+	bun            *bunExecutionSupply
 	backend        *Backend
 	volume         closureVolume
 	writer, reader *nodeInputContainer
@@ -57,7 +58,15 @@ func (b *Backend) prepareNodeExecutionInputs(ctx context.Context, execution doma
 }
 
 func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout, execute bool) (_ *nodeExecutionInputs, resultErr error) {
-	if b == nil || ctx == nil || !layout.MatchesExecution(execution) || execution.RuntimeIdentity() != nodeImageReference || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
+	return b.prepareJavaScriptExecutionInputView(ctx, execution, layout, execute, false)
+}
+
+func (b *Backend) prepareJavaScriptExecutionInputView(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout, execute, bun bool) (_ *nodeExecutionInputs, resultErr error) {
+	runtime := nodeImageReference
+	if bun {
+		runtime = BunExecutionRuntimeIdentity()
+	}
+	if b == nil || ctx == nil || !layout.MatchesExecution(execution) || execution.RuntimeIdentity() != runtime || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
 		return nil, errNodeMaterialization
 	}
 	input, inputOK := b.runner.(inputCommandRunner)
@@ -66,7 +75,14 @@ func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution d
 	if !inputOK || !streamOK || !observerOK {
 		return nil, errNodeMaterialization
 	}
-	if execute {
+	if bun {
+		if !execute {
+			return nil, errNodeMaterialization
+		}
+		if _, ok := b.observer.(bunExecutionObserver); !ok {
+			return nil, errNodeMaterialization
+		}
+	} else if execute {
 		if _, ok := b.observer.(nodeExecutionObserver); !ok {
 			return nil, errNodeMaterialization
 		}
@@ -91,11 +107,22 @@ func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution d
 			resultErr = errors.Join(resultErr, inputs.close())
 		}
 	}()
+	if bun {
+		tool, err := prepareBunTool(run)
+		if err != nil {
+			return nil, err
+		}
+		native, err := createNativeRuntimeVolume(run, b.runner, nativeRuntimeBun)
+		if err != nil {
+			return nil, err
+		}
+		inputs.bun = &bunExecutionSupply{native, tool}
+	}
 	inputs.volume, err = createNodeMaterializationVolume(run, b.runner, owner.String(), execution.SourceFingerprint().String())
 	if err != nil {
 		return nil, errors.Join(errNodeMaterialization, err)
 	}
-	inputs.writer, err = b.startNodeInputContainer(run, inputs.volume, observer, false, nil, false)
+	inputs.writer, err = b.startNodeInputContainer(run, inputs.volume, observer, false, nil, false, nil)
 	if err != nil {
 		return nil, fmt.Errorf("start node input writer: %w", err)
 	}
@@ -108,7 +135,7 @@ func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution d
 	// A named local-driver tmpfs loses its contents at the last unmount. Keep
 	// the exact trusted writer until the RO reader is mounted and attested.
 	// No Artifact program may run during this preparation-only overlap.
-	inputs.reader, err = b.startNodeInputContainer(run, inputs.volume, observer, true, inputs.writer, execute)
+	inputs.reader, err = b.startNodeInputContainer(run, inputs.volume, observer, true, inputs.writer, execute, inputs.bun)
 	if err != nil {
 		return nil, fmt.Errorf("start readonly node input reader: %w", err)
 	}
@@ -132,7 +159,7 @@ func (b *Backend) prepareNodeExecutionInputView(ctx context.Context, execution d
 	return inputs, nil
 }
 
-func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVolume, observer nodeInputObserver, readOnly bool, writer *nodeInputContainer, execute bool) (*nodeInputContainer, error) {
+func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVolume, observer nodeInputObserver, readOnly bool, writer *nodeInputContainer, execute bool, native *bunExecutionSupply) (*nodeInputContainer, error) {
 	session, err := b.newSessionID()
 	if err != nil || session.String() == "" {
 		return nil, errors.Join(errNodeMaterialization, err)
@@ -144,6 +171,15 @@ func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVol
 	}
 	if execute {
 		args, err = nodeExecutionWorkingDirectory(args)
+		if err != nil {
+			return container, err
+		}
+	}
+	if native != nil {
+		if !execute || !readOnly {
+			return container, errNodeMaterialization
+		}
+		args, err = bunArtifactRuntimeCreateArguments(args, native.volume)
 		if err != nil {
 			return container, err
 		}
@@ -160,7 +196,11 @@ func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVol
 		if !readOnly {
 			return container, errNodeMaterialization
 		}
-		container.trace, err = observer.(nodeExecutionObserver).StartNodeExecutionProfile(ctx, container.id)
+		if native != nil {
+			container.trace, err = b.observer.(bunExecutionObserver).StartBunExecutionProfile(ctx, container.id)
+		} else {
+			container.trace, err = observer.(nodeExecutionObserver).StartNodeExecutionProfile(ctx, container.id)
+		}
 	} else if readOnly {
 		container.trace, err = observer.StartNodeExecutionInputProfile(ctx, container.id)
 	} else {
@@ -177,6 +217,17 @@ func (b *Backend) startNodeInputContainer(ctx context.Context, volume closureVol
 	}
 	if err := awaitMountAnchors(ctx, b.observer, container.id); err != nil {
 		return container, err
+	}
+	if native != nil {
+		if err := native.volume.verifyTarget(ctx, b.runner, container.id); err != nil {
+			return container, err
+		}
+		if err := native.tool.introduce(ctx, b.runner, container.id); err != nil {
+			return container, err
+		}
+		if err := native.volume.verifyTarget(ctx, b.runner, container.id); err != nil {
+			return container, err
+		}
 	}
 	authorized := map[string]bool{container.id: readOnly}
 	if writer != nil {
@@ -231,6 +282,11 @@ func (i *nodeExecutionInputs) close() error {
 	if i.volume.name != "" {
 		cleanup, cancel := context.WithTimeout(context.Background(), i.backend.cleanupWait)
 		err = errors.Join(err, closeWritableOutputVolume(cleanup, i.backend.runner, &i.volume, nodeExecutionRoot))
+		cancel()
+	}
+	if i.bun != nil {
+		cleanup, cancel := context.WithTimeout(context.Background(), i.backend.cleanupWait)
+		err = errors.Join(err, i.bun.volume.close(cleanup, i.backend.runner))
 		cancel()
 	}
 	return err

@@ -27,6 +27,14 @@ type bunRunExecutionWorkflow struct {
 }
 
 func (r bunRunExecutionWorkflow) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
+	return r.run(ctx, request, false)
+}
+
+func (r bunRunExecutionWorkflow) RunBun(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
+	return r.run(ctx, request, true)
+}
+
+func (r bunRunExecutionWorkflow) run(ctx context.Context, request application.ExecutionPreparationRequest, bun bool) (application.ExecutionResult, error) {
 	if ctx == nil || r.native == nil || r.source == nil || r.static == nil || r.prepare == nil || r.backend == nil || r.store == nil || r.staging == nil {
 		return application.ExecutionResult{}, errors.New("bun current execution requires its actual source, inspection and runtime consumers")
 	}
@@ -45,11 +53,11 @@ func (r bunRunExecutionWorkflow) Run(ctx context.Context, request application.Ex
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
-	preparation, err := application.NewExecutionPreparationService(bunRunFrozenResolver{request.Reference(), frozen}, fresh, bunRunEntryBinder{r.static, frozen}, evidence.Generator{}, r.staging)
+	preparation, err := application.NewExecutionPreparationService(bunRunFrozenResolver{request.Reference(), frozen}, fresh, bunRunEntryBinder{r.static, frozen, bun}, evidence.Generator{}, r.staging)
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
-	service, err := application.NewExecutionService(preparation, bunRunExecutionRuntime{r.backend, r.static, inspector, frozen})
+	service, err := application.NewExecutionService(preparation, bunRunExecutionRuntime{r.backend, r.static, inspector, frozen, bun})
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
@@ -71,11 +79,15 @@ func (r bunRunFrozenResolver) ResolveExecutionDependencies(ctx context.Context, 
 type bunRunEntryBinder struct {
 	static *inspectionnpm.Inspector
 	frozen artifactnpm.BunInspectionContext
+	bun    bool
 }
 
 func (b bunRunEntryBinder) BindExecutionEntry(ctx context.Context, inspection application.ExecutionInspection, command string) (domain.ExecutionContext, error) {
 	if !b.frozen.MatchesExecutionResolution(inspection.Resolution()) {
 		return domain.ExecutionContext{}, errors.New("bun entry binding differs from current native whole inspection")
+	}
+	if b.bun {
+		return bindJavaScriptExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry, sandbox.BunExecutionRuntimeIdentity())
 	}
 	return bindNodeExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry)
 }
@@ -85,6 +97,7 @@ type bunRunExecutionRuntime struct {
 	static    *inspectionnpm.Inspector
 	inspector *inspectionnpm.BunExecutionInspector
 	frozen    artifactnpm.BunInspectionContext
+	bun       bool
 }
 
 func (r bunRunExecutionRuntime) Execute(ctx context.Context, execution domain.ExecutionContext) (application.ExecutionRuntimeOutcome, error) {
@@ -106,6 +119,9 @@ func (r bunRunExecutionRuntime) Execute(ctx context.Context, execution domain.Ex
 	layout, err := artifactnpm.BindBunNodeExecutionLayout(ctx, execution, prepared, inventory)
 	if err != nil {
 		return nil, err
+	}
+	if r.bun {
+		return r.backend.ExecuteBunExecution(ctx, execution, layout)
 	}
 	return r.backend.ExecuteNodeExecution(ctx, execution, layout)
 }

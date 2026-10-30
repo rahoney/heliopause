@@ -15,15 +15,23 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — CI438 frozen31acbfe Required10SUCCESS; E2 public pipx native selector named local qualified; P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P6-G2 Bun→Node current app2/CLI3/refusal2 and whole graph/records/native layout named local qualified; CPP132/Quick/affected5 Race/checker Race/docs/security PASS. CI439/source0eeefca PNPM Required10SUCCESS; later G1+G2 hosted PENDING.
-Next action: Commit the qualified G2 source and one grouped G1+G2 milestone-branch push/CI with expected Linux119/CPP132/Required10; register actual run/head/start and20min GET. Continue audited G3 explicit readonly Bun program independently while CI runs; no small push or repeated immutable checks.
-Current substep: M13-004/P6-G2 NAMED_LOCAL_QUALIFIED — current Bun→Node app2/CLI3/refusal2 and complete binding PASS; source/hosted checkpoint next. Only M13-004 remains IN_PROGRESS; explicit Bun runtime/G3, general/hostile/P7/final OPEN. CI439 worker68297 natural0/next none.
+Last completed substep: P6-G3 explicit Bun JS app2/CLI3, controlled first9+selected remainder3 and affected Node app2 named local verified; CPP133/59.054s, Quick51.429s/affected3 Race53.679s/checker Race77.532s/tagged fixed Staticcheck2.832s PASS; G1/G2 hosted CI440 PENDING.
+Next action: CI440/source6d9d3bf actual poll2 12:13:39UTC confirms8SUCCESS/Linux IN_PROGRESS; next12:33:39UTC/21:33:39KST worker18946. Freeze hosted source; finish G3 docs/security and intermediate commit, then baseline the remaining P6/P7 acceptance/support/profile gaps.
+Current substep: M13-004/P6-G3 local closing — explicit readonly Bun program reuses existing supply/whole Policy/input/capture owners; current app2/forced CLI3/12 boundary kinds and affected Node2 verified. New G3 hosted/whole P6/P7 final remains OPEN; active CI440 is G1/G2 frozen6d9d3bf only.
 Acceptance audit: CI437/f4 Required10SUCCESS/whole tree99e558c6/all10 checkoute5a153ef remains frozen named hosted YES; E2/E3 later native/current/CLI named local YES and hosted wiring checked locally. CI438 source31acbfe named hosted YES; later F1/F2 source, bunx/pnpm dlx/general equivalence/hostile and final profiles/support/signing OPEN.
-Independent local next: G1 exact/bare native selection and G2 current Node app/CLI remain named local qualified. Reuse existing whole inspection, readonly input/capture and Bun tool-supply owners for G3 from its baseline; exact Bun program recipe/profile/entry/runtime binding is still MISSING. No new structure or grant before a concrete gap; immutable native/CPP/Go inputs are not rerun.
+Independent local next: G3 docs/security/intermediate commit; then compare canonical command/option support and remaining affected profiles from existing P2/P3 final matrix. Do not reimplement completed G1/G2/G3 or repeat immutable native/CPP. New source remains unpushed while CI440 is active.
 P3 Bun: named hosted/whole acceptance OPEN; P4 whole/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 UV native/current/CLI named CI437 hosted qualified and pipx native public selector named locally qualified; pipx current app/CLI named local qualified; new-source hosted, bunx/pnpm dlx and general/final OPEN; P7 NOT_STARTED.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-30 P6-G3 명시 Bun JS 실행 named local 검증
+
+[G3 결과](./evidence/package-client-quarantine/p6g3-bun-readonly-program-local-20261030.json)는 기존 whole 검사/현재 Policy·기록/readonly input/capture와 보호 Bun 공급을 재사용한 앱2/65.68s·forced CLI3/177.83s, controlled first9+selected remainder3/73.39s의 12종 coverage와 기존 Node 앱2/64.11s를 연결한다. 첫 comm-spoof parent FAIL은 ARTIFACT/direct-root UNKNOWN의 안전한 거부를 BUN 신원 유지 oracle로 판정한 test 문제였고 제품 권한을 늘리지 않았다. 단일 full12 parent PASS로 쓰지 않는다. 같은 observer09615d38의 전체CPP133/59.054s와 최종25 source Root/private 동일·Quick51.429s/영향3 Race53.679s/checker Race77.532s/tagged 고정 Staticcheck2.832s가 PASS다. 첫 Quick의 C++ 입력 시점 불일치 원본을 보존하고 최종 입력에서 성공 cache를 재사용했다. 기존 Bun supply/helper/job에 새3parents를 연결해 미래 expected122/CPP133/Required10/Linux120min을 유지한다. 완료 사본120names/118inodes 약6.36GiB 논리 용량은 ref0/query errors0/helper0/container0 뒤 정리했고 원본·현재 observer·logs/cache는 보존했다. 새-source hosted·Bun-only entry 자동 선택/일반 동등성·P7/final은 OPEN이다.
+
+### 2026-10-30 CI440 Bun cold/current 앱·Node CLI 전체 묶음 등록
+
+[등록](./evidence/package-client-quarantine/ci440-registration-20261030.json)은 source6d9d3bf/tree dad13b09·일반 FF2commits/56paths·remote ref와 actual run41048941282/start11:33:38UTC/20:33:38KST·초기9jobs를 확인했다. 기존20분 공개 GET worker18946/PID539348을 실행해 첫11:53:38UTC/20:53:38KST를 등록했으며 actual_queries0으로 미래 조회 완료를 주장하지 않는다. CI4396254s와 새 cold/app/CLI/refusal 실제 합계로 약109m26을 추정하되 완료 보장은 아니다. 기존 helper/job 안에 새 cold1/current3parents를 연결해 expected119/CPP132/Required10/Linux120min을 유지한다. 대기 중 G3의 명시 readonly Bun 프로그램 gap을 계속하며, 이 후보로 bare 전체/general/hostile/final 지원을 선언하지 않는다.
 
 ### 2026-10-30 P6-G2 Bun 현재 앱·Node CLI named local 검증
 

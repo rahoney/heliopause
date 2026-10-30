@@ -82,6 +82,7 @@ constexpr char kLaunchMode[] = "--launch";
 constexpr char kPythonHandoffMode[] = "--handoff-python";
 constexpr char kELFHandoffMode[] = "--handoff-elf";
 constexpr char kNodeHandoffMode[] = "--handoff-node";
+constexpr char kBunHandoffMode[] = "--handoff-bun";
 // These sizes match the pinned gVisor ABI structures used by the socket
 // providers. They bound only address-shape validation; the observer never
 // retains address bytes.
@@ -101,6 +102,7 @@ constexpr char kProfilePythonExecution[] = "python-execution";
 constexpr char kPythonExecutionPath[] = "/usr/local/bin/python3.14";
 constexpr char kPythonExecutionProgram[] = "import importlib\nimport sys\nexpected = ['/usr/local/lib/python314.zip', '/usr/local/lib/python3.14', '/usr/local/lib/python3.14/lib-dynload']\nif not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode) or 'site' in sys.modules or sys.path != expected:\n    raise RuntimeError('console interpreter startup differs from pinned isolated runtime')\nmodule, attr, command = sys.argv[1:4]\nsys.path.append('/haa-site')\nsys.argv = [command, *sys.argv[4:]]\ntarget = importlib.import_module(module)\nfor part in attr.split('.'):\n    target = getattr(target, part)\nraise SystemExit(target())\n";
 constexpr char kProfileNodeExecution[] = "node-execution";
+constexpr char kProfileBunExecution[] = "bun-execution";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfileUVResolver[] = "uv-pip-resolver";
 constexpr char kUVToolPath[] = "/haa-runtime/uv";
@@ -527,6 +529,9 @@ struct ProcessState {
     std::vector<std::string> node_execution_target;
     bool node_execution_active = false;
     bool node_execution_demoting = false;
+    std::vector<std::string> bun_execution_target;
+    bool bun_execution_active = false;
+    bool bun_execution_demoting = false;
     std::vector<std::string> python_execution_target;
     bool python_execution_active = false;
   };
@@ -775,7 +780,7 @@ struct ControlPeer {
   std::string session_generation;
 };
 
-enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff, kNodeHandoff };
+enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff, kNodeHandoff, kBunHandoff };
 
 bool SameGroup(const ProcessState::GroupState& group, const gvisor::common::ContextData& context);
 bool ValidProcessIdentity(const gvisor::common::ContextData& context);
@@ -1540,6 +1545,7 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   if (mode == kPythonHandoffMode) return BoundaryMode::kPythonHandoff;
   if (mode == kELFHandoffMode) return BoundaryMode::kELFHandoff;
   if (mode == kNodeHandoffMode) return BoundaryMode::kNodeHandoff;
+  if (mode == kBunHandoffMode) return BoundaryMode::kBunHandoff;
   // npm invokes script-shell as <path> -c <script>; the fixed helper path is
   // the only trust-removal marker, while the script remains opaque.
   if (mode == "-c") return BoundaryMode::kHandoff;
@@ -1552,6 +1558,7 @@ const char* BoundaryModeName(BoundaryMode mode) {
     case BoundaryMode::kPythonHandoff: return kPythonHandoffMode;
     case BoundaryMode::kELFHandoff: return kELFHandoffMode;
     case BoundaryMode::kNodeHandoff: return kNodeHandoffMode;
+    case BoundaryMode::kBunHandoff: return kBunHandoffMode;
     default: return nullptr;
   }
 }
@@ -1815,7 +1822,8 @@ case "${1-}" in
   --origin-handoff-python) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-python "$token" "$@" ;;
   --origin-handoff-elf) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-elf "$token" "$@" ;;
   --origin-handoff-node) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-node "$token" "$@" ;;
-  --launch|--handoff-python|--handoff-elf|--handoff-node) shift; admission "${1-}"; shift; demote "$@" ;;
+  --origin-handoff-bun) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-bun "$token" "$@" ;;
+  --launch|--handoff-python|--handoff-elf|--handoff-node|--handoff-bun) shift; admission "${1-}"; shift; demote "$@" ;;
   -c) shift; already_demoted; exec /bin/sh -c "$@" ;;
   *) exit 125 ;;
 esac
@@ -2398,6 +2406,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   }
   if (strcmp(profile,kProfilePythonExecution) == 0 && path == kPythonExecutionPath) return ProcessClass::kPython;
   if (strcmp(profile, kProfileNodeExecution) == 0 && path == "/usr/local/bin/node") return ProcessClass::kNode;
+  if (strcmp(profile,kProfileBunExecution)==0 && path==kBunToolPath) return ProcessClass::kBun;
   if (strcmp(profile, kProfileNPM) == 0) {
     if (path == kBunToolPath) return ProcessClass::kBun;
     if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
@@ -3178,6 +3187,18 @@ bool BindNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const To
   return true;
 }
 
+bool BindBunExecutionTarget(const gvisor::sentry::ExecveInfo& message,const TopologyState* topology,
+                            ProcessState::GroupState* group) {
+  if(group==nullptr || !group->bun_execution_target.empty() || message.argv_size()<9 || message.argv_size()>137 ||
+      message.argv(3)!=kBunToolPath || message.argv(4)!="--no-install" || message.argv(5)!="--no-env-file" ||
+      message.argv(6)!="--no-macros" || message.argv(7)!="--" ||
+      !IsBunToolImage(topology,message.argv(3)) || !IsNodeExecutionInputPath(topology,message.argv(8))) return false;
+  size_t bytes=0;
+  for(int i=9;i<message.argv_size();++i) { bytes+=message.argv(i).size();if(bytes>32768 || message.argv(i).find('\0')!=std::string::npos)return false; }
+  for(int i=3;i<message.argv_size();++i)group->bun_execution_target.push_back(message.argv(i));
+  return true;
+}
+
 bool SameCapturedExecutionTarget(const gvisor::sentry::ExecveInfo& message, const std::vector<std::string>& target, int offset) {
   if (target.empty() || message.argv_size() != offset+static_cast<int>(target.size())) return false;
   for (size_t i=0;i<target.size();++i) if (message.argv(offset+static_cast<int>(i)) != target[i]) return false;
@@ -3349,6 +3370,25 @@ bool IsBunImageStartupRead(const gvisor::common::ContextData& context, const std
   }
   return anchor->mount_class == "system" && anchor->mountpoint == "/sys" &&
       path == "/sys/devices/system/cpu/online" && flags == 557056;
+}
+
+bool IsPinnedBunExecutionRead(const gvisor::common::ContextData& context,const ProcessState& state,
+                              const std::string& path,uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || strcmp(profile,kProfileBunExecution)!=0 || anchor==nullptr || IsWriteCapableOpen(flags))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->role!=ProcessState::Role::kArtifact || group->provenance!=ProcessState::Provenance::kDirectExecRoot ||
+      group->root_eligible || !group->root_consumed || group->trusted_control_network_active || group->demotion_pending ||
+      group->launch_target_pending || state.expected_groups.find(context.thread_group_id())!=state.expected_groups.end() ||
+      !context.is_exec_session() || context.parent_thread_group_id()!=0) return false;
+  const bool bun=group->bun_execution_active && group->current_image_class==ProcessClass::kBun && !group->handoff_target_pending;
+  const bool demoting=group->bun_execution_demoting && group->handoff_target_pending;
+  if(!bun && !demoting)return false;
+  if(bun)return IsBunImageStartupRead(context,path,flags,anchor);
+  if(anchor->mountpoint=="/" && anchor->mount_class=="oci-root")
+    return IsExactPinnedLibraryRead(path) || path=="/etc/nsswitch.conf" || path=="/etc/passwd" || path=="/etc/group";
+  const std::string self="/proc/"+std::to_string(context.thread_group_id());
+  return anchor->mountpoint=="/proc" && anchor->mount_class=="system" &&
+      (path=="/proc/self/status" || path==self+"/status" || path=="/proc/sys/kernel/cap_last_cap");
 }
 
 bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
@@ -3849,7 +3889,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile,kProfilePythonExecution) == 0 || strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile,kProfilePythonExecution) == 0 || strcmp(profile,kProfileBunExecution)==0 || strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -4364,7 +4404,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status";
   if (exact_self_status) return FilesystemClass::kHelperOnly;
   const bool exact_handoff_validation = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
-      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfilePythonExecution) != 0) || tracked->handoff_target_pending) &&
+      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfileBunExecution)!=0 && strcmp(profile,kProfilePythonExecution) != 0) || tracked->handoff_target_pending) &&
       tracked->role == ProcessState::Role::kArtifact &&
       (tracked->provenance == ProcessState::Provenance::kCloneChild ||
        tracked->provenance == ProcessState::Provenance::kDirectExecRoot) &&
@@ -4377,7 +4417,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
        path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status");
   if (exact_handoff_validation) return FilesystemClass::kHelperOnly;
   const bool exact_artifact_shell_loader = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
-      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfilePythonExecution) != 0)) &&
+      (profile == nullptr || (strcmp(profile,kProfileNodeExecution) != 0 && strcmp(profile,kProfileBunExecution)!=0 && strcmp(profile,kProfilePythonExecution) != 0)) &&
       tracked->role == ProcessState::Role::kArtifact &&
       tracked->provenance == ProcessState::Provenance::kCloneChild &&
       !tracked->root_eligible && tracked->root_consumed &&
@@ -4410,6 +4450,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
                                   message.flags(), profile, anchor) ||
       IsPinnedPNPMNodeQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedNodeExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedBunExecutionRead(message.context_data(),state,path,message.flags(),profile,anchor) ||
       IsPinnedPythonExecutionRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
     return FilesystemClass::kRuntimeRoot;
   }
@@ -4566,7 +4607,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfilePythonExecution && profile != kProfileNodeExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfilePythonExecution && profile != kProfileNodeExecution && profile != kProfileBunExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfilePipxNativeResolver && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -4601,7 +4642,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
   const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
   const std::string& mode = fields["mode"]; const std::string& nonce = fields["nonce"];
   if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-      (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode && mode != kNodeHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
+      (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode && mode != kNodeHandoffMode && mode != kBunHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
   peer->request_seen = true;
   auto profile = profiles->find(id); const char* status = "rejected";
   std::string outcome_status;
@@ -4610,6 +4651,8 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
       profile->second.session_generation == generation && profile->second.control_fd == peer->fd &&
       (!(IsPipxRuntimeProfile(profile->second.profile.c_str()) || IsPipxNativeProfile(profile->second.profile.c_str())) || mode == kPythonHandoffMode || mode == kLaunchMode) &&
       (mode != kNodeHandoffMode || profile->second.profile == kProfileNodeExecution) &&
+      (mode != kBunHandoffMode || profile->second.profile == kProfileBunExecution) &&
+      (profile->second.profile != kProfileBunExecution || mode == kBunHandoffMode || mode == kLaunchMode) &&
       (profile->second.profile != kProfileNodeExecution || mode == kNodeHandoffMode || mode == kLaunchMode) &&
       (profile->second.profile != kProfilePythonExecution || mode == kPythonHandoffMode || mode == kLaunchMode)) {
     auto pending = profile->second.pending_admissions.end();
@@ -5097,6 +5140,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
         (boundary_mode == BoundaryMode::kNodeHandoff && strcmp(profile,kProfileNodeExecution) != 0) ||
+        (boundary_mode == BoundaryMode::kBunHandoff && strcmp(profile,kProfileBunExecution)!=0) ||
+        (strcmp(profile,kProfileBunExecution)==0 && boundary_mode!=BoundaryMode::kBunHandoff &&
+         !(boundary_mode==BoundaryMode::kLaunch && IsExactPipxReadiness(message,true))) ||
         (strcmp(profile,kProfilePythonExecution)==0 && boundary_mode!=BoundaryMode::kPythonHandoff &&
          !(boundary_mode==BoundaryMode::kLaunch && IsExactPipxReadiness(message,true))) ||
         (strcmp(profile,kProfileNodeExecution) == 0 && boundary_mode != BoundaryMode::kNodeHandoff &&
@@ -5121,6 +5167,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (boundary_mode == BoundaryMode::kNodeHandoff && !BindNodeExecutionTarget(message,topology,&group->second)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
     }
+    if(boundary_mode==BoundaryMode::kBunHandoff && !BindBunExecutionTarget(message,topology,&group->second)) { *reason="PROCESS_PROVENANCE_UNKNOWN";return false; }
     if(strcmp(profile,kProfilePythonExecution)==0 && boundary_mode==BoundaryMode::kPythonHandoff && !BindPythonExecutionTarget(message,topology,&group->second)) {
       *reason="PROCESS_PROVENANCE_UNKNOWN"; return false;
     }
@@ -5129,6 +5176,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   group->second.python_execution_active = false;
   group->second.node_execution_active = false;
   group->second.node_execution_demoting = false;
+  group->second.bun_execution_active=false;
+  group->second.bun_execution_demoting=false;
   const bool bun_install_candidate = group->second.bun_run_install_candidate;
   group->second.bun_run_install_candidate = false;
   group->second.bun_run_install_active = false;
@@ -5204,7 +5253,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   }
   if (group->second.current_image_class == ProcessClass::kBun &&
       (!IsBunToolImage(topology, message.binary_path()) ||
-       !((strcmp(profile, kProfileBunResolver) == 0 && IsExactBunQuery(message)) ||
+       !((strcmp(profile,kProfileBunExecution)==0 && group->second.role==ProcessState::Role::kArtifact &&
+          group->second.provenance==ProcessState::Provenance::kDirectExecRoot && group->second.handoff_target_pending &&
+          message.execfn()==kBunToolPath && SameCapturedExecutionTarget(message,group->second.bun_execution_target,0)) ||
+         (strcmp(profile, kProfileBunResolver) == 0 && IsExactBunQuery(message)) ||
          (strcmp(profile, kProfileBunProjectResolver) == 0 &&
           (IsExactBunProjectLockInstall(message) ||
            (IsExactBunRunSelection(message) && group->second.role == ProcessState::Role::kControl &&
@@ -5414,7 +5466,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (boundary_mode == BoundaryMode::kHandoff || boundary_mode == BoundaryMode::kPythonHandoff ||
-      boundary_mode == BoundaryMode::kELFHandoff || boundary_mode == BoundaryMode::kNodeHandoff) {
+      boundary_mode == BoundaryMode::kELFHandoff || boundary_mode == BoundaryMode::kNodeHandoff || boundary_mode == BoundaryMode::kBunHandoff) {
     if (group->second.role == ProcessState::Role::kControl) {
       if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
         if (new_direct_root) {
@@ -5433,7 +5485,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.trusted_control_network_active = false;
       group->second.demotion_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
-      group->second.handoff_target_class = boundary_mode == BoundaryMode::kNodeHandoff ? ProcessClass::kNode : boundary_mode == BoundaryMode::kPythonHandoff
+      group->second.handoff_target_class = boundary_mode == BoundaryMode::kBunHandoff ? ProcessClass::kBun : boundary_mode == BoundaryMode::kNodeHandoff ? ProcessClass::kNode : boundary_mode == BoundaryMode::kPythonHandoff
           ? ProcessClass::kPython : (strcmp(profile, kProfileGoBuild) == 0
               ? ProcessClass::kGo : (strcmp(profile, kProfileCargoBuild) == 0
                   ? ProcessClass::kCargo : ProcessClass::kArtifact));
@@ -5453,6 +5505,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
         *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
       }
       group->second.node_execution_demoting = true;
+    }
+    if(strcmp(profile,kProfileBunExecution)==0 && group->second.role==ProcessState::Role::kArtifact) {
+      if(!IsPinnedReadOnlyRootPath(topology,kSetprivPath) || !SameCapturedExecutionTarget(message,group->second.bun_execution_target,9)) { *reason="PROCESS_PROVENANCE_UNKNOWN";return false; }
+      group->second.bun_execution_demoting=true;
     }
     if(strcmp(profile,kProfilePythonExecution)==0 && group->second.role==ProcessState::Role::kArtifact) {
       if(!IsPinnedReadOnlyRootPath(topology,kSetprivPath) || !SameCapturedExecutionTarget(message,group->second.python_execution_target,9)) {
@@ -5675,6 +5731,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
         group->second.node_execution_active = true;
         group->second.node_execution_target.clear();
       }
+      if(strcmp(profile,kProfileBunExecution)==0) {
+        if(process_class!=ProcessClass::kBun || message.binary_path()!=kBunToolPath || message.execfn()!=kBunToolPath ||
+            !IsBunToolImage(topology,message.binary_path()) || !SameCapturedExecutionTarget(message,group->second.bun_execution_target,0) ||
+            !IsNodeExecutionInputPath(topology,message.argv(5))) { *reason="PROCESS_PROVENANCE_UNKNOWN";return false; }
+        group->second.bun_execution_active=true;group->second.bun_execution_target.clear();
+      }
       if(strcmp(profile,kProfilePythonExecution)==0) {
         if(process_class!=ProcessClass::kPython || message.binary_path()!=kPythonExecutionPath || message.execfn()!=kPythonExecutionPath ||
             !IsPythonExecutionTopology(topology) || !SameCapturedExecutionTarget(message,group->second.python_execution_target,0)) {
@@ -5689,6 +5751,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       }
       if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
           !RetainDirectExecTarget(registration, message.context_data(),
+              group->second.handoff_target_class == ProcessClass::kBun ? BoundaryMode::kBunHandoff :
               group->second.handoff_target_class == ProcessClass::kNode ? BoundaryMode::kNodeHandoff :
                   (group->second.handoff_target_class == ProcessClass::kPython ?
                       BoundaryMode::kPythonHandoff : BoundaryMode::kELFHandoff))) {

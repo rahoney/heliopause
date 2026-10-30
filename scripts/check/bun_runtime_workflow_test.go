@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,22 +20,24 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
-		"missing-current-run-env":    strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 ", "", 1),
-		"case-sensitive-current-env": strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_Bun_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", 1),
-		"missing-Bun-JS-env":         strings.Replace(original, "HELOX_BUN_ARTIFACT_EXECUTION=1 ", "", 1),
-		"commented-Bun-JS":           strings.Replace(original, bunArtifactExecutionCommand, "# "+bunArtifactExecutionCommand, 1),
-		"echoed-Bun-JS":              strings.Replace(original, bunArtifactExecutionCommand, "echo skipped", 1),
-		"ignored-Bun-JS-failure":     strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+" || true", 1),
-		"duplicate-Bun-JS":           strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+"\n"+bunArtifactExecutionCommand, 1),
-		"missing-native-env":         strings.Replace(original, "HELOX_BUN_NATIVE_RESOLVER_INTEGRATION=1 ", "", 1),
-		"missing-quarantine-env":     strings.Replace(original, "HELOX_BUN_PROJECT_QUARANTINE=1 ", "", 1),
-		"missing-materialize":        strings.Replace(original, "go run ./scripts/update-runtime materialize-bun", "echo skipped", 1),
-		"wrong-native-filter":        strings.Replace(original, "TestBunPublicNativeResolverIntegration|TestBunActualNativeProjectSelectionBoundary", "Missing", 1),
-		"ignored-quarantine-failure": strings.Replace(original, bunProjectQuarantineCommand, bunProjectQuarantineCommand+" || true", 1),
-		"duplicate-native":           strings.Replace(original, bunNativeIntegrationCommand, bunNativeIntegrationCommand+"\n"+bunNativeIntegrationCommand, 1),
-		"commented-quarantine":       strings.Replace(original, bunProjectQuarantineCommand, "# "+bunProjectQuarantineCommand, 1),
-		"wrong-cwd":                  strings.Replace(original, "cd internal/sandbox", "cd internal/bootstrap", 1),
-		"relaxed-absence":            strings.Replace(original, "test ! -e /usr/lib/heliopause", "echo existing-ok", 1),
+		"missing-program-boundary-env": strings.Replace(original, "HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 ", "", 1),
+		"wrong-program-filter":         strings.Replace(original, "Workflow|CLI|Boundary", "Workflow|CLI", 1),
+		"missing-current-run-env":      strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 ", "", 1),
+		"case-sensitive-current-env":   strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_Bun_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", 1),
+		"missing-Bun-JS-env":           strings.Replace(original, "HELOX_BUN_ARTIFACT_EXECUTION=1 ", "", 1),
+		"commented-Bun-JS":             strings.Replace(original, bunArtifactExecutionCommand, "# "+bunArtifactExecutionCommand, 1),
+		"echoed-Bun-JS":                strings.Replace(original, bunArtifactExecutionCommand, "echo skipped", 1),
+		"ignored-Bun-JS-failure":       strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+" || true", 1),
+		"duplicate-Bun-JS":             strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+"\n"+bunArtifactExecutionCommand, 1),
+		"missing-native-env":           strings.Replace(original, "HELOX_BUN_NATIVE_RESOLVER_INTEGRATION=1 ", "", 1),
+		"missing-quarantine-env":       strings.Replace(original, "HELOX_BUN_PROJECT_QUARANTINE=1 ", "", 1),
+		"missing-materialize":          strings.Replace(original, "go run ./scripts/update-runtime materialize-bun", "echo skipped", 1),
+		"wrong-native-filter":          strings.Replace(original, "TestBunPublicNativeResolverIntegration|TestBunActualNativeProjectSelectionBoundary", "Missing", 1),
+		"ignored-quarantine-failure":   strings.Replace(original, bunProjectQuarantineCommand, bunProjectQuarantineCommand+" || true", 1),
+		"duplicate-native":             strings.Replace(original, bunNativeIntegrationCommand, bunNativeIntegrationCommand+"\n"+bunNativeIntegrationCommand, 1),
+		"commented-quarantine":         strings.Replace(original, bunProjectQuarantineCommand, "# "+bunProjectQuarantineCommand, 1),
+		"wrong-cwd":                    strings.Replace(original, "cd internal/sandbox", "cd internal/bootstrap", 1),
+		"relaxed-absence":              strings.Replace(original, "test ! -e /usr/lib/heliopause", "echo existing-ok", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if len(validateBunRuntimeScript(candidate)) == 0 {
@@ -47,6 +50,49 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 	}
 	if err := exec.Command("bash", path, "unexpected").Run(); err == nil {
 		t.Fatal("extra argument reached supply preparation")
+	}
+}
+
+func TestBunProgramGuardRequiresCompleteDistinctActualCohort(t *testing.T) {
+	start := strings.Index(bunProgramIntegrationBlock, "awk '\n")
+	end := strings.Index(bunProgramIntegrationBlock[start:], "\n' ") + start
+	program := bunProgramIntegrationBlock[start+len("awk '\n") : end]
+	fixture := `--- PASS: TestLinuxBunProgramExecutionWorkflowIntegration (1s)
+--- PASS: TestLinuxBunProgramExecutionCLIIntegration (1s)
+--- PASS: TestLinuxBunProgramExecutionBoundaryIntegration (1s)
+    node_execution_run_integration_test.go:1: production_bun_program_application attempt=1 artifact_role=true target_loaded=true exit_code=0 stdout_bytes=1 stderr_bytes=0 user_program_run=true
+    node_execution_run_integration_test.go:1: production_bun_program_application attempt=2 artifact_role=true target_loaded=true exit_code=1 stdout_bytes=1 stderr_bytes=0 user_program_run=true
+    npm_execution_integration_test.go:1: production_bun_program_cli case=1 alias=bunx format=json language=en show_output=false exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_bun_program_cli case=2 alias=x format=json language=ko show_output=true exit_code=1 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_bun_program_cli case=3 alias=bunx format=human language=ko show_output=true exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+    npm_execution_integration_test.go:1: production_bun_program_cli_graph nodes=12 edges=13 primary=rimraf current_policy=ALLOW
+`
+	boundary := func(mode string, complete bool) string {
+		return fmt.Sprintf("    node_execution_boundary_integration_test.go:1: bun_program_boundary case=%s current_policy=ALLOW fixture_registry=CONTROLLED_TEST native_solver=NOT_RUN complete=%t stdout_bytes=0 stderr_bytes=0\n", mode, complete)
+	}
+	for _, mode := range []string{"argv", "term", "kill", "readonly", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof", "deadline"} {
+		fixture += boundary(mode, mode == "argv" || mode == "term" || mode == "kill" || mode == "readonly")
+	}
+	for name, input := range map[string]string{
+		"complete":           fixture,
+		"empty":              "",
+		"missing-parent":     strings.Replace(fixture, "--- PASS: TestLinuxBunProgramExecutionBoundaryIntegration (1s)\n", "", 1),
+		"missing-boundary":   strings.Replace(fixture, boundary("network", false), "", 1),
+		"duplicate-boundary": fixture + boundary("network", false),
+		"unknown-boundary":   strings.Replace(fixture, "case=network", "case=foreign", 1),
+		"hostile-complete":   strings.Replace(fixture, boundary("network", false), boundary("network", true), 1),
+		"wrong-program-exit": strings.Replace(fixture, "attempt=2 artifact_role=true target_loaded=true exit_code=1", "attempt=2 artifact_role=true target_loaded=true exit_code=0", 1),
+		"foreign-source":     strings.Replace(fixture, "node_execution_boundary_integration_test.go:1:", "foreign.go:1:", 1),
+		"skip":               fixture + "--- SKIP: TestForeign (0s)\n",
+	} {
+		t.Run(name, func(t *testing.T) {
+			command := exec.Command("awk", program)
+			command.Stdin = strings.NewReader(input)
+			output, err := command.CombinedOutput()
+			if (err == nil) != (name == "complete") {
+				t.Fatal("incorrect Bun program cohort acceptance", string(output), err)
+			}
+		})
 	}
 }
 

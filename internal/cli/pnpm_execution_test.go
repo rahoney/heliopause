@@ -85,7 +85,7 @@ func testNativeNodeRunCLIRejectsProvisioningAndUnsafeOptionsBeforeComposition(t 
 	for _, tail := range [][]string{
 		{}, {"--package", "", "tsc"}, {"--package", "typescript", "bad/name"},
 		{"--package", "typescript", "--package=typescript", "tsc"}, {"--show-output", "--show-output", "typescript"},
-		{"--command", "tsc", "typescript"}, {"--target", "/tmp/target", "typescript"}, {"--shell-mode", "typescript"}, {"--bun", "typescript"},
+		{"--command", "tsc", "typescript"}, {"--target", "/tmp/target", "typescript"}, {"--shell-mode", "typescript"},
 		{"--registry", "https://example.invalid", "typescript"}, {"--cache-dir", "/tmp/cache", "typescript"},
 		{"node"}, {"node@22.0.0"}, {"pnpm"}, {"bun"}, {"deno"}, {"rust"}, {"npm"}, {"yarn"},
 		{"typescript@latest"}, {"typescript@^5"}, {"./local"}, {"https://example.invalid/pkg.tgz"},

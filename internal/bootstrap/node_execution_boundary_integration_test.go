@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rahoney/heliopause/internal/application"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/sandbox"
@@ -37,10 +38,28 @@ func (r *nodeBoundaryCapture) CaptureExecutionOutput(ctx context.Context, name s
 }
 
 func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
-	if os.Getenv("HELOX_NODE_EXECUTION_BOUNDARY_INTEGRATION") != "1" || os.Geteuid() == 0 {
+	testJavaScriptExecutionBoundaryIntegration(t, false)
+}
+
+func TestLinuxBunProgramExecutionBoundaryIntegration(t *testing.T) {
+	testJavaScriptExecutionBoundaryIntegration(t, true)
+}
+
+func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
+	t.Helper()
+	declared := os.Getenv("HELOX_NODE_EXECUTION_BOUNDARY_INTEGRATION") == "1"
+	if bun {
+		declared = os.Getenv("HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION") == "1"
+	}
+	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user controlled Node boundary qualification")
 	}
-	ctx, stop := context.WithTimeout(context.Background(), 4*time.Minute)
+	budget := 4 * time.Minute
+	if bun {
+		// The twelve Bun fixtures take about four minutes in total.
+		budget = 5 * time.Minute
+	}
+	ctx, stop := context.WithTimeout(context.Background(), budget)
 	defer stop()
 	executor, err := hosttool.NewSystem(ctx)
 	if err != nil {
@@ -100,8 +119,24 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 				t.Fatal("current fixture approval reused")
 			}
 			previous = execution.OperationID().String()
-			result, executeErr := backend.ExecuteNodeExecution(run, execution, layout)
-			var program *sandbox.NodeProgramError
+			if bun {
+				execution, layout = bunBoundaryExecution(t, run, root, execution, layout)
+			}
+			var result application.ExecutionRuntimeOutcome
+			var executeErr error
+			if bun {
+				result, executeErr = backend.ExecuteBunExecution(run, execution, layout)
+			} else {
+				result, executeErr = backend.ExecuteNodeExecution(run, execution, layout)
+			}
+			isProgramError := func(err error) bool {
+				if bun {
+					var program *sandbox.BunProgramError
+					return errors.As(err, &program)
+				}
+				var program *sandbox.NodeProgramError
+				return errors.As(err, &program)
+			}
 			switch mode {
 			case "argv":
 				var actual []string
@@ -115,7 +150,7 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 					t.Fatal("readonly self-write was not denied with whole source retained", executeErr)
 				}
 			case "deadline":
-				if result.Complete() || !errors.Is(executeErr, context.DeadlineExceeded) || errors.As(executeErr, &program) || !bytes.HasPrefix(result.Stdout(), []byte("ready\n")) {
+				if result.Complete() || !errors.Is(executeErr, context.DeadlineExceeded) || isProgramError(executeErr) || !bytes.HasPrefix(result.Stdout(), []byte("ready\n")) {
 					t.Fatal("actual caller deadline lost body readiness/cause or became complete", executeErr)
 				}
 			case "term", "kill":
@@ -124,18 +159,18 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 					want = 9
 				}
 				signal, observed := result.Signal()
-				if !result.Complete() || !observed || signal != want || !errors.As(executeErr, &program) || string(result.Stdout()) != "signal\n" || len(result.Stderr()) != 0 {
+				if !result.Complete() || !observed || signal != want || !isProgramError(executeErr) || string(result.Stdout()) != "signal\n" || len(result.Stderr()) != 0 {
 					t.Fatal("selected Node kernel signal differs", executeErr)
 				}
 				if _, exited := result.ExitCode(); exited {
 					t.Fatal("kernel signal became normal exit")
 				}
 			case "cancel":
-				if result.Complete() || !errors.Is(executeErr, context.Canceled) || !errors.Is(executeErr, cause) || errors.As(executeErr, &program) || !bytes.HasPrefix(result.Stdout(), []byte("ready\n")) {
+				if result.Complete() || !errors.Is(executeErr, context.Canceled) || !errors.Is(executeErr, cause) || isProgramError(executeErr) || !bytes.HasPrefix(result.Stdout(), []byte("ready\n")) {
 					t.Fatal("body cancellation lost cause or became complete", executeErr)
 				}
 			case "stdout-overflow", "stderr-overflow":
-				if result.Complete() || !errors.Is(executeErr, hosttool.ErrExecutionOutputLimit) || errors.As(executeErr, &program) {
+				if result.Complete() || !errors.Is(executeErr, hosttool.ErrExecutionOutputLimit) || isProgramError(executeErr) {
 					t.Fatal("overflow became completed guest result", executeErr)
 				}
 				out, diagnostic := len(result.Stdout()), len(result.Stderr())
@@ -166,12 +201,26 @@ func TestLinuxNodeExecutionBoundaryIntegration(t *testing.T) {
 					}
 					t.Logf("node_boundary_child wait_delay=%t unexpected_exec=%t clone_fault=%t artifact_role=%t", errors.Is(executeErr, exec.ErrWaitDelay), unexpected, clone, artifact)
 				case "comm-spoof":
-					if !strings.Contains(detail, "open_role=ARTIFACT") || !strings.Contains(detail, "open_kernel_image=NODE") {
-						t.Fatal("helper name spoof lacks retained kernel Node Artifact identity", executeErr)
+					image := "NODE"
+					if bun {
+						image = "BUN"
+					}
+					identified := strings.Contains(detail, "open_kernel_image="+image)
+					// Bun's title-spoof case can make the kernel executable
+					// unidentifiable. That must fail closed, without helper authority.
+					unknownDenied := bun && strings.Contains(detail, "fault_site=OPEN_RESULT_CLASSIFICATION_PROC") &&
+						strings.Contains(detail, "open_kernel_image=UNKNOWN") && strings.Contains(detail, "open_executable_pinned=false") &&
+						strings.Contains(detail, "open_provenance=DIRECT_EXEC_ROOT")
+					if !strings.Contains(detail, "open_role=ARTIFACT") || (!identified && !unknownDenied) {
+						t.Fatal("helper name spoof lacks retained Artifact identity or closed unknown-image rejection", executeErr)
 					}
 				}
 			}
-			t.Logf("node_boundary case=%s current_policy=ALLOW fixture_registry=CONTROLLED_TEST native_solver=NOT_RUN complete=%t stdout_bytes=%d stderr_bytes=%d", mode, result.Complete(), len(result.Stdout()), len(result.Stderr()))
+			marker := "node_boundary"
+			if bun {
+				marker = "bun_program_boundary"
+			}
+			t.Logf("%s case=%s current_policy=ALLOW fixture_registry=CONTROLLED_TEST native_solver=NOT_RUN complete=%t stdout_bytes=%d stderr_bytes=%d", marker, mode, result.Complete(), len(result.Stdout()), len(result.Stderr()))
 		}) {
 			return
 		}

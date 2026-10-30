@@ -67,6 +67,8 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 		return pythonClosureExpectedTopology("pypi-wheel", pythonClosureObservation)
 	case nodeExecutionProfile:
 		return nodeExecutionInputExpectedTopology(true)
+	case bunExecutionProfile:
+		return bunExecutionExpectedTopology()
 	case pipxObserverProfile:
 		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
 		return []observerMountExpectation{root, tmp, runtime, data}, true

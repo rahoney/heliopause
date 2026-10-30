@@ -28,14 +28,21 @@ func TestLinuxBunRunExecutionCLIIntegration(t *testing.T) {
 	testNodeExecutionCLIIntegration(t, "bun")
 }
 
+func TestLinuxBunProgramExecutionCLIIntegration(t *testing.T) {
+	testNodeExecutionCLIIntegration(t, "bun-program")
+}
+
 func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NPM_EXECUTION_CLI_INTEGRATION") == "1"
 	if client == "pnpm" {
 		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION") == "1"
 	}
-	if client == "bun" {
+	if client == "bun" || client == "bun-program" {
 		declared = os.Getenv("HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION") == "1"
+	}
+	if client == "bun-program" {
+		declared = os.Getenv("HELOX_BUN_PROGRAM_EXECUTION_CLI_INTEGRATION") == "1"
 	}
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user actual npx/npm exec CLI qualification")
@@ -66,13 +73,16 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 			{[]string{"pnpx"}, "ko", "human", true, 0},
 		}
 	}
-	if client == "bun" {
+	if client == "bun" || client == "bun-program" {
 		rows = []cliCase{{[]string{"bunx"}, "en", "json", false, 0}, {[]string{"bun", "x"}, "ko", "json", true, 1}, {[]string{"bunx"}, "ko", "human", true, 0}}
 	}
 	for i, row := range rows {
-		implicit := client == "pnpm" && row.path[0] == "pnpx" || client == "bun" && i == 2
+		implicit := client == "pnpm" && row.path[0] == "pnpx" || (client == "bun" || client == "bun-program") && i == 2
 		args := append([]string{"--lang", row.language, "--output", row.output, "--progress", "never", "--color", "never"}, row.path...)
-		if client == "pnpm" || client == "bun" {
+		if client == "bun-program" {
+			args = append(args, "--bun")
+		}
+		if client == "pnpm" || (client == "bun" || client == "bun-program") {
 			if !implicit {
 				args = append(args, "--package", "typescript@5.9.3")
 			}
@@ -87,7 +97,7 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 			arg = "--haa-invalid-option"
 		}
 		selector := "typescript@5.9.3"
-		if client == "pnpm" || client == "bun" {
+		if client == "pnpm" || (client == "bun" || client == "bun-program") {
 			selector = "tsc"
 		}
 		if implicit {
@@ -102,7 +112,12 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		if row.code != 0 {
 			var code interface{ ExitCode() int }
 			var program *sandbox.NodeProgramError
-			if !errors.As(cause, &code) || code.ExitCode() != row.code || !errors.As(cause, &program) {
+			typed := errors.As(cause, &program)
+			if client == "bun-program" {
+				var bun *sandbox.BunProgramError
+				typed = errors.As(cause, &bun)
+			}
+			if !errors.As(cause, &code) || code.ExitCode() != row.code || !typed {
 				t.Fatal("actual guest nonzero lost typed cause or process exit", cause)
 			}
 		}
@@ -148,8 +163,11 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		if client == "pnpm" {
 			marker = "production_pnpm_run_cli"
 		}
-		if client == "bun" {
+		if client == "bun" || client == "bun-program" {
 			marker = "production_bun_run_cli"
+		}
+		if client == "bun-program" {
+			marker = "production_bun_program_cli"
 		}
 		t.Logf("%s case=%d alias=%s format=%s language=%s show_output=%t exit_code=%d current_policy=ALLOW guest_cleanup=CONFIRMED", marker, i+1, row.path[len(row.path)-1], row.output, row.language, row.show, row.code)
 	}
@@ -162,7 +180,7 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	for _, entry := range entries {
 		if entry.IsDir() {
 			count++
-			if client == "pnpm" || client == "bun" {
+			if client == "pnpm" || (client == "bun" || client == "bun-program") {
 				body, err := os.ReadFile(filepath.Join(cache, "heliopause", "staging", entry.Name(), "manifest.json"))
 				var manifest struct {
 					Entries   []json.RawMessage
@@ -170,24 +188,30 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 					Execution struct{ Command string }
 				}
 				identity := "pnpm-dlx-isolated:" + sandbox.PNPMResolverRuntimeIdentity()
-				if client == "bun" {
+				if client == "bun" || client == "bun-program" {
 					identity = "bunx-isolated:" + sandbox.BunResolverRuntimeIdentity()
 				}
 				if err != nil || json.Unmarshal(body, &manifest) != nil || !strings.Contains(string(body), identity) {
 					t.Fatal("CLI lost its current native whole records", err)
 				}
+				if client == "bun-program" && !strings.Contains(string(body), sandbox.BunExecutionRuntimeIdentity()) {
+					t.Fatal("forced Bun CLI lost runtime identity in records")
+				}
 				if manifest.Execution.Command == "rimraf" && len(manifest.Entries) > 1 && len(manifest.Edges) > 0 {
 					multi = true
 					marker := "production_pnpm_run_cli_graph"
-					if client == "bun" {
+					if client == "bun" || client == "bun-program" {
 						marker = "production_bun_run_cli_graph"
+					}
+					if client == "bun-program" {
+						marker = "production_bun_program_cli_graph"
 					}
 					t.Logf("%s nodes=%d edges=%d primary=rimraf current_policy=ALLOW", marker, len(manifest.Entries), len(manifest.Edges))
 				}
 			}
 		}
 	}
-	if count != len(rows) || (client == "pnpm" || client == "bun") && !multi {
+	if count != len(rows) || (client == "pnpm" || (client == "bun" || client == "bun-program")) && !multi {
 		t.Fatal("CLI requests reused execution storage records", count)
 	}
 }

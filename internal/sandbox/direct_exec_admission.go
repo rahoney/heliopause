@@ -230,6 +230,8 @@ func directExecOrigin(arguments []string, binary string) (string, string, int, b
 		return arguments[index+2], boundaryELFHandoffMode, index + 5, true
 	case boundaryOriginNodeHandoffMode:
 		return arguments[index+2], boundaryNodeHandoffMode, index + 5, true
+	case boundaryOriginBunHandoffMode:
+		return arguments[index+2], boundaryBunHandoffMode, index + 5, true
 	default:
 		return "", "", 0, false
 	}
@@ -1064,7 +1066,7 @@ func ambiguousDirectExecAdmission(ctx context.Context, admission directExecAdmis
 }
 
 func validBoundaryMode(mode string) bool {
-	return mode == boundaryLaunchMode || mode == boundaryPythonHandoffMode || mode == boundaryELFHandoffMode || mode == boundaryNodeHandoffMode
+	return mode == boundaryLaunchMode || mode == boundaryPythonHandoffMode || mode == boundaryELFHandoffMode || mode == boundaryNodeHandoffMode || mode == boundaryBunHandoffMode
 }
 func validObserverSecurityGeneration(generation string) bool {
 	return validDirectExecAdmissionNonce(generation)

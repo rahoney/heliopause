@@ -15,6 +15,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/application"
@@ -190,4 +191,66 @@ func nodeBoundaryExecution(t *testing.T, ctx context.Context, root string, backe
 		t.Fatal("controlled current whole layout failed", err)
 	}
 	return execution, layout
+}
+
+// Rebind controlled, fully measured DATA to the other pinned interpreter. This
+// is never a native Bun selection or public registry qualification.
+func bunBoundaryExecution(t *testing.T, ctx context.Context, root string, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout) (domain.ExecutionContext, artifactnpm.NodeExecutionLayout) {
+	t.Helper()
+	payload, err := artifactnpm.RenderNodeExecutionInputs(ctx, execution, layout)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var tree bytes.Buffer
+	reader := tar.NewReader(bytes.NewReader(payload))
+	writer := tar.NewWriter(&tree)
+	for {
+		header, err := reader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		if header.Name == "project" {
+			if header.Typeflag != tar.TypeDir {
+				t.Fatal("invalid controlled root")
+			}
+			continue
+		}
+		if !strings.HasPrefix(header.Name, "project/node_modules") {
+			t.Fatal("foreign controlled input")
+		}
+		header.Name = strings.TrimPrefix(header.Name, "project/")
+		if err := writer.WriteHeader(header); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := io.Copy(writer, reader); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	native, err := artifactnpm.ParsePNPMLayoutArchive(ctx, tree.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, err := domain.NewExecutionContext(domain.ExecutionContextData{OperationID: execution.OperationID(), Resolution: execution.Resolution(), Set: execution.Set(), EntryArtifact: execution.EntryArtifact(), Command: execution.Command(), EntryPath: execution.EntryPath(), EntryDigest: execution.EntryDigest(), EntrySize: execution.EntrySize(), RuntimeIdentity: sandbox.BunExecutionRuntimeIdentity(), Arguments: execution.Arguments()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	static, err := inspectionnpm.NewInspector(root + "/intake")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inventory, report, err := static.InspectArchive(ctx, current.EntryArtifact())
+	if err != nil || len(report.Findings()) != 0 {
+		t.Fatal("changed controlled original", err)
+	}
+	bound, err := artifactnpm.BindNodeExecutionLayout(ctx, current, []artifactnpm.ArchiveInventory{inventory}, native)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return current, bound
 }

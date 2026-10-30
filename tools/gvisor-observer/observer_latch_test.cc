@@ -7345,6 +7345,85 @@ bool VerifyPythonExecutionBoundary() {
   close(control_pair[0]);close(control_pair[1]);close(output[0]);close(output[1]);return ok;
 }
 
+bool VerifyBunExecutionBoundary() {
+  const std::string id="aabbccddeeff0304",nonce=TestAdmissionNonce(1930,19300);
+  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+  TopologyState topology;topology.namespace_id=17;topology.snapshot_seen=true;topology.sealed=true;
+  topology.expected={{"/","oci-root","/","",true,false,false,false},{"/tmp","workspace","/","tmpfs",false,true,true,false},
+      {"/haa-runtime","helper","/","9p",false,false,false,false},{"/tmp/haa-node-execution","workspace","/tmp","9p",true,false,false,false}};
+  topology.anchors={{1,{1,"/","oci-root"}},{2,{2,"/tmp","workspace"}},{3,{3,"/haa-runtime","helper"}},
+      {4,{4,"/tmp/haa-node-execution","workspace"}},{5,{5,"/proc","system"}}};
+  const std::string entry="/tmp/haa-node-execution/project/node_modules/fixture/bin/cli.js";
+  gvisor::common::ContextData context;context.set_container_id(id);context.set_thread_group_id(1930);
+  context.set_thread_group_start_time_ns(19300);context.set_parent_thread_group_id(0);context.set_is_exec_session(true);
+  context.set_process_name("mutable-program-name");
+  gvisor::sentry::ExecveInfo boundary;*boundary.mutable_context_data()=context;
+  boundary.set_binary_path("/usr/bin/dash");boundary.set_execfn(kBoundaryHelperPath);
+  const std::vector<std::string> command={kBunToolPath,"--no-install","--no-env-file","--no-macros","--",entry,"a b; literal"};
+  for(const auto& arg:std::vector<std::string>{kBoundaryHelperPath,kBunHandoffMode,nonce})boundary.add_argv(arg);
+  for(const auto& arg:command)boundary.add_argv(arg);
+  auto image=[&](const gvisor::sentry::ExecveInfo& event,ProcessState* state,ProfileRegistration* registration,const TopologyState& mounts,const char* profile){
+    DrainDatagram(output[1]);std::string bytes,container;const char* reason=nullptr;
+    return event.SerializeToString(&bytes)&&ParseSentryProcessAndClassify(bytes.data(),bytes.size(),output[0],&container,profile,registration,state,&reason,&mounts)&&
+        ExpectRecord(output[1],id.c_str(),"process-exec-expected");
+  };
+  bool ok=true;
+  for(const char* failure:{"rw","unsealed","shadow","helper-fs","entry","runtime","profile","mode","install","env","macros","separator","argv-limit"}){
+    auto event=boundary;auto mounts=topology;auto registration=TestProfileWithAdmission(kProfileBunExecution,kBunHandoffMode,nonce);
+    ProcessState state;const char* profile=kProfileBunExecution;
+    if(strcmp(failure,"rw")==0)mounts.expected.back().read_only=false;
+    if(strcmp(failure,"unsealed")==0)mounts.sealed=false;
+    if(strcmp(failure,"shadow")==0)mounts.anchors[6]={6,"/tmp/haa-node-execution/project/node_modules","workspace"};
+    if(strcmp(failure,"helper-fs")==0)mounts.expected[2].filesystem_type="tmpfs";
+    if(strcmp(failure,"entry")==0)event.set_argv(8,"/tmp/elsewhere.js");
+    if(strcmp(failure,"runtime")==0)event.set_argv(3,kNodePath);
+    if(strcmp(failure,"profile")==0){profile=kProfileNodeExecution;registration.profile=profile;}
+    if(strcmp(failure,"mode")==0)event.set_argv(1,kNodeHandoffMode);
+    if(strcmp(failure,"install")==0)event.set_argv(4,"--install=force");
+    if(strcmp(failure,"env")==0)event.set_argv(5,"--env-file=/tmp/secret");
+    if(strcmp(failure,"macros")==0)event.set_argv(6,"--preload=evil");
+    if(strcmp(failure,"separator")==0)event.set_argv(7,"--eval");
+    if(strcmp(failure,"argv-limit")==0)event.set_argv(9,std::string(32769,'x'));
+    if(image(event,&state,&registration,mounts,profile)){fprintf(stderr,"Bun program accepted negative: %s\n",failure);ok=false;}
+  }
+  if(!ok){fprintf(stderr,"Bun program stage failed: negative matrix\n");close(output[0]);close(output[1]);return false;}
+  auto registration=TestProfileWithAdmission(kProfileBunExecution,kBunHandoffMode,nonce);ProcessState state;
+  ok=ok&&image(boundary,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).role==ProcessState::Role::kArtifact&&
+      !IsTrustedControlNetwork(context,state)&&state.expected_groups.empty()&&!registration.pending_admissions.front().target_loaded;
+  if(!ok){fprintf(stderr,"Bun program stage failed: boundary\n");close(output[0]);close(output[1]);return false;}
+  auto demotion=boundary;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+  for(const char* arg:{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--"})demotion.add_argv(arg);
+  for(const auto& arg:command)demotion.add_argv(arg);
+  ok=ok&&image(demotion,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).bun_execution_demoting;
+  if(!ok){fprintf(stderr,"Bun program stage failed: demotion\n");close(output[0]);close(output[1]);return false;}
+  auto target=boundary;target.set_binary_path(kBunToolPath);target.set_execfn(kBunToolPath);target.clear_argv();
+  for(const auto& arg:command)target.add_argv(arg);
+  ok=ok&&image(target,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).bun_execution_active&&
+      state.groups.at(1930).bun_execution_target.empty()&&!IsTrustedControlNetwork(context,state)&&state.expected_groups.empty()&&
+      registration.pending_admissions.front().target_loaded;
+  if(!ok){fprintf(stderr,"Bun program stage failed: target\n");close(output[0]);close(output[1]);return false;}
+  const MountAnchor proc{5,"/proc","system"};const std::string own="/proc/1930/maps";
+  for(const char* failure:{"normal","write","foreign-map","inactive","control","clone","start","profile","image"}){
+    auto caller=context;auto candidate=state;std::string path=own;uint64_t flags=557056;const char* profile=kProfileBunExecution;
+    if(strcmp(failure,"write")==0)flags=557058;
+    if(strcmp(failure,"foreign-map")==0)path="/proc/1/maps";
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).bun_execution_active=false;
+    if(strcmp(failure,"control")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19301);
+    if(strcmp(failure,"profile")==0)profile=kProfileNodeExecution;
+    if(strcmp(failure,"image")==0)candidate.groups.at(1930).current_image_class=ProcessClass::kNode;
+    ok=ok&&(IsPinnedBunExecutionRead(caller,candidate,path,flags,profile,&proc)==(strcmp(failure,"normal")==0));
+  }
+  if(!ok){fprintf(stderr,"Bun program stage failed: runtime reads\n");close(output[0]);close(output[1]);return false;}
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=context;clone.set_created_thread_group_id(1931);clone.set_created_thread_start_time_ns(19310);
+  std::string bytes,container;const char* reason=nullptr;
+  ok=ok&&clone.SerializeToString(&bytes)&&ParseSentryClone(bytes.data(),bytes.size(),output[0],&container,&state,&reason)&&
+      !state.groups.at(1931).bun_execution_active&&!state.groups.at(1931).bun_execution_demoting&&state.groups.at(1931).bun_execution_target.empty();
+  ok=ok&&!image(target,&state,&registration,topology,kProfileBunExecution);
+  close(output[0]);close(output[1]);return ok;
+}
+
 bool VerifyNodeExecutionBoundary() {
   const std::string id="aabbccddeeff0303", generation(64,'c'), nonce=TestAdmissionNonce(1930,19300);
   int control_pair[2], output[2];
@@ -9877,6 +9956,7 @@ int main(int argc, char** argv) {
   const bool kernel_terminal_outcomes = VerifyKernelTerminalOutcomes();
   const bool python_execution_boundary = VerifyPythonExecutionBoundary();
   const bool node_execution_boundary = VerifyNodeExecutionBoundary();
+  const bool bun_execution_boundary = VerifyBunExecutionBoundary();
   const bool kernel_target_load = VerifyAdmissionTerminalControlProtocol(true, 0, true, false) &&
       VerifyAdmissionTerminalControlProtocol(true, 37 << 8, true, true);
   fprintf(stderr, "STARTING direct_exec_admission_bound\n");
@@ -10033,6 +10113,7 @@ int main(int argc, char** argv) {
       {"kernel direct-exec accepted target image", kernel_target_load},
       {"Artifact Python selected console execution boundary", python_execution_boundary},
       {"Artifact Node readonly execution boundary", node_execution_boundary},
+      {"Artifact Bun readonly execution boundary", bun_execution_boundary},
       {"direct-exec admission bound", direct_exec_admission_bound},
 		{"session-aware control", session_aware_control},
 		{"exact control peer binding", exact_control_peer},

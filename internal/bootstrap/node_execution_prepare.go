@@ -23,6 +23,10 @@ func (b nodeExecutionEntryBinder) BindExecutionEntry(ctx context.Context, inspec
 }
 
 func bindNodeExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error)) (domain.ExecutionContext, error) {
+	return bindJavaScriptExecutionEntry(ctx, static, inspection, command, selectEntry, "")
+}
+
+func bindJavaScriptExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error), runtime string) (domain.ExecutionContext, error) {
 	if ctx == nil || static == nil || !inspection.Valid() {
 		return domain.ExecutionContext{}, errors.New("node entry binding requires actual static inspection and current whole approval")
 	}
@@ -46,6 +50,9 @@ func bindNodeExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector
 	proof, err := static.ReadNodeExecutionEntry(ctx, selected)
 	if err != nil {
 		return domain.ExecutionContext{}, err
+	}
+	if runtime != "" {
+		return newJavaScriptExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil, runtime)
 	}
 	return newNodeExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil)
 }

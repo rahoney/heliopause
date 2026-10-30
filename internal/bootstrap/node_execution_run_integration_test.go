@@ -39,14 +39,27 @@ func TestLinuxBunRunExecutionWorkflowIntegration(t *testing.T) {
 	runNodeExecutionWorkflowIntegration(t, "bun")
 }
 
+func TestLinuxBunProgramExecutionWorkflowIntegration(t *testing.T) {
+	runNodeExecutionWorkflowIntegration(t, "bun-program")
+}
+
+type bunProgramWorkflowRunner struct{ bunRunExecutionWorkflow }
+
+func (r bunProgramWorkflowRunner) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
+	return r.RunBun(ctx, request)
+}
+
 func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NODE_EXECUTION_WORKFLOW_INTEGRATION") == "1"
 	if client == "pnpm" {
 		declared = os.Getenv("HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION") == "1"
 	}
-	if client == "bun" {
+	if client == "bun" || client == "bun-program" {
 		declared = os.Getenv("HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION") == "1"
+	}
+	if client == "bun-program" {
+		declared = os.Getenv("HELOX_BUN_PROGRAM_EXECUTION_WORKFLOW_INTEGRATION") == "1"
 	}
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user production Node preparation qualification")
@@ -121,7 +134,7 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal(err)
 		}
 		service = pnpmRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}
-	} else if client == "bun" {
+	} else if client == "bun" || client == "bun-program" {
 		native, err := sandbox.NewLinuxBunResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
 		if err != nil {
 			t.Fatal(err)
@@ -131,6 +144,9 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal(err)
 		}
 		service = bunRunExecutionWorkflow{native, source, static, prepare, backend, store, staging}
+		if client == "bun-program" {
+			service = bunProgramWorkflowRunner{service.(bunRunExecutionWorkflow)}
+		}
 	} else {
 		native, err := sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer.Observer(), resolverPolicy)
 		if err != nil {
@@ -186,7 +202,7 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 		if client == "pnpm" {
 			dynamicCheck = "pnpm-dynamic-lifecycle"
 		}
-		if client == "bun" {
+		if client == "bun" || client == "bun-program" {
 			dynamicCheck = "bun-dynamic-lifecycle"
 		}
 		for _, name := range []string{"npm-declared-integrity", "npm-static-archive", dynamicCheck} {
@@ -198,7 +214,11 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal("current production entry Policy/Evidence missing")
 		}
 		execution := prepared.ExecutionContext()
-		if execution.OperationID() != inspected.OperationID() || execution.EntryArtifact() != subject || execution.Command() != "tsc" || execution.EntryPath() != "bin/tsc" || execution.EntrySize() == 0 || execution.RuntimeIdentity() != runtimeidentity.NodeImageReference || execution.SourceFingerprint() != inspected.Resolution().LockfileDigest() || !slices.Equal(execution.Arguments(), request.Arguments()) {
+		runtime := runtimeidentity.NodeImageReference
+		if client == "bun-program" {
+			runtime = sandbox.BunExecutionRuntimeIdentity()
+		}
+		if execution.OperationID() != inspected.OperationID() || execution.EntryArtifact() != subject || execution.Command() != "tsc" || execution.EntryPath() != "bin/tsc" || execution.EntrySize() == 0 || execution.RuntimeIdentity() != runtime || execution.SourceFingerprint() != inspected.Resolution().LockfileDigest() || !slices.Equal(execution.Arguments(), request.Arguments()) {
 			t.Fatal("Node proof/runtime/current request binding lost")
 		}
 		for name, expected := range map[string][]byte{"manifest.json": prepared.Bundle().ManifestDocument(), "sbom.cdx.json": prepared.Bundle().SBOMDocument()} {
@@ -226,7 +246,12 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			}
 		} else {
 			var program *sandbox.NodeProgramError
-			if code != 1 || !errors.As(runErr, &program) || !strings.Contains(string(executed.Stdout()), "Unknown compiler option") {
+			typed := errors.As(runErr, &program)
+			if client == "bun-program" {
+				var bun *sandbox.BunProgramError
+				typed = errors.As(runErr, &bun)
+			}
+			if code != 1 || !typed || !strings.Contains(string(executed.Stdout()), "Unknown compiler option") {
 				t.Fatal("guest nonzero differs from runtime failure", runErr)
 			}
 		}
@@ -237,11 +262,14 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 				t.Fatal("pnpm native resolver identity lost")
 			}
 		}
-		if client == "bun" {
+		if client == "bun" || client == "bun-program" {
 			marker = "production_bun_run_application"
 			if inspected.Resolution().RuntimeIdentity() != "bunx-isolated:"+sandbox.BunResolverRuntimeIdentity() {
 				t.Fatal("bun native resolver identity lost")
 			}
+		}
+		if client == "bun-program" {
+			marker = "production_bun_program_application"
 		}
 		t.Logf("%s attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", marker, attempt, code, len(executed.Stdout()), len(executed.Stderr()))
 		previous = prepared

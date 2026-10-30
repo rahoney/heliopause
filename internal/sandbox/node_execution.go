@@ -59,27 +59,37 @@ func nodeExecutionCommand(entry string, arguments []string) []string {
 // ExecuteNodeExecution runs the current approved complete readonly tree as
 // ARTIFACT. Success additionally requires independent target/terminal facts,
 // bounded capture, complete observation and disposal of the whole guest.
-func (b *Backend) ExecuteNodeExecution(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout) (outcome NodeExecutionOutcome, resultErr error) {
+func (b *Backend) ExecuteNodeExecution(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout) (NodeExecutionOutcome, error) {
+	return b.executeJavaScriptExecution(ctx, execution, layout, false)
+}
+
+func (b *Backend) executeJavaScriptExecution(ctx context.Context, execution domain.ExecutionContext, layout artifactnpm.NodeExecutionLayout, bun bool) (outcome NodeExecutionOutcome, resultErr error) {
+	failure, runtime, mode, makeProgramError := errNodeExecution, nodeImageReference, boundaryNodeHandoffMode, nodeProgramError
+	command := nodeExecutionCommand(layout.EntryPath(), execution.Arguments())
+	if bun {
+		failure, runtime, mode, makeProgramError = errBunExecution, BunExecutionRuntimeIdentity(), boundaryBunHandoffMode, bunProgramError
+		command = bunExecutionCommand(layout.EntryPath(), execution.Arguments())
+	}
 	defer func() {
 		if ctx != nil && ctx.Err() != nil {
 			outcome.complete = false
 			resultErr = errors.Join(resultErr, ctx.Err(), context.Cause(ctx))
 		}
 	}()
-	if b == nil || ctx == nil || !layout.MatchesExecution(execution) || execution.RuntimeIdentity() != nodeImageReference {
-		return outcome, errNodeExecution
+	if b == nil || ctx == nil || !layout.MatchesExecution(execution) || execution.RuntimeIdentity() != runtime {
+		return outcome, failure
 	}
 	wrapped, ok := b.runner.(*admissionAwareCommandRunner)
 	if !ok || wrapped == nil {
-		return outcome, errNodeExecution
+		return outcome, failure
 	}
 	capture, ok := wrapped.runner.(programCapturedRunner)
 	if !ok {
-		return outcome, errNodeExecution
+		return outcome, failure
 	}
-	inputs, err := b.prepareNodeExecutionInputView(ctx, execution, layout, true)
+	inputs, err := b.prepareJavaScriptExecutionInputView(ctx, execution, layout, true, bun)
 	if err != nil {
-		return outcome, errors.Join(errNodeExecution, err)
+		return outcome, errors.Join(failure, err)
 	}
 	defer func() {
 		if closeErr := inputs.close(); closeErr != nil {
@@ -91,9 +101,14 @@ func (b *Backend) ExecuteNodeExecution(ctx context.Context, execution domain.Exe
 		if err := verifyNodeExecutionInputTree(inputs.run, b.runner.(streamingDockerOutput), inputs.reader.id, execution, layout); err != nil {
 			return err
 		}
+		if inputs.bun != nil {
+			if err := inputs.bun.volume.verifyTarget(inputs.run, b.runner, inputs.reader.id); err != nil {
+				return err
+			}
+		}
 		return inputs.volume.verifyAttachments(inputs.run, b.runner, map[string]bool{inputs.reader.id: true})
 	}
-	captured, runErr := captureAdmittedProgram(inputs.run, capture, inputs.reader.id, boundaryNodeHandoffMode, nodeExecutionCommand(layout.EntryPath(), execution.Arguments()), errNodeExecution, nodeProgramError, verify)
+	captured, runErr := captureAdmittedProgram(inputs.run, capture, inputs.reader.id, mode, command, failure, makeProgramError, verify)
 	outcome.complete, outcome.terminal, outcome.output = captured.complete, captured.terminal, captured.output
 	return outcome, runErr
 }
