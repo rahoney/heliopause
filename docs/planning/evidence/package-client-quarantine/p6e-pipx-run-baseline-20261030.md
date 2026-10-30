@@ -45,3 +45,61 @@ E1의 IMPLEMENTED/원본 재사용 WIRED gap만 변경하며 canonical format/fo
 5. Current whole inspection/Evidence/M3/M5/approved original console·readonly Python runtime·privacy/report는 기존 D6/D7 owner를 재사용한다. Pipx-native identity를 UV로 위장하지 않는다. Bare/--spec·sole-app inference와 pipx.run group의 지원/명시 거부 범위를 actual current command binding에 결합한 뒤 descriptor/preflight를 추가한다. 미래 alias·추가 package·runtime provisioning/Host local cache 검색/TTY/export를 먼저 scaffold하지 않는다.
 
 E2 source 작성 전 남은 판정은 정확한 safe native terminal/whole collision guard·새 cache의 실제 skeleton/control와 scoped query ABI다. Cheap syntax/whole source guards·native argv/입력/layout negatives를 먼저 모으고 큰 native/CPP actual은 완성된 경계에서 수행한다. 새-source hosted109의 current approval/runtime 결과는 CI436 timer/evidence에서 별도로 확인하며 active run 중 작은 helper push는 하지 않는다.
+
+## E2-A 재개 범위 — 고정 원본의 안전한 준비 요청 진단
+
+현재 원격 후보는 [CI437](./ci437-registration-20261030.json)의 f4f7abc로 고정한다.
+이하 로컬 진단은 CI437 qualification이나 public pipx run 구현이 아니다.
+
+| 재사용 owner / 현재 범위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Whole original/startup freeze·console metadata — pipx_native_input.go/uv_run_console_binding.go | YES | YES | 기존 bounded YES | 기존 범위 YES | 준비 명령과 pipx.run/console/gui/raw script 충돌 거부 |
+| Typed resource·DATA/UV/output·observer·cleanup — pipxNativeSession | YES | YES | 기존 install/update YES | 기존 범위 YES | 임시 cache 조회의 실제 첫 경계 |
+| Native run 준비 요청 진단 | NO | NO | NO | NO | 기존 realcorpus fixture/session을 소비하는 tagged probe 하나·고정 argv/진입점 거부 회귀 |
+| Public pipx run/current application/CLI | NO | NO | NO | NO | 전체 임시 결과 binding·native 두 경로 의미·current 승인/실행·CLI |
+
+고정 ZIP의 run.py471..477은 command와 normalized requirement name이 같으면 UV로
+위임한다. 다른 고정 준비용 command는 Venv 경로이며 _prepare_venv530..549의 sole-app
+fallback과 venv.py727..765의 pipx.run 우선 조회를 먼저 차단해야 한다. 준비용 이름은
+고정 상대 basename으로 정하고 whole original의 실제 entry/script 역할과만 대조한다.
+리소스 basename을 실행 권한으로 분류하거나 /dev/null을 그대로 전용하지 않는다.
+
+Production API/새 session engine/권한/CI는 추가하지 않는다. 기존 realcorpus 입력42와
+실제 두 wheel·synthetic lock을 재사용하는 tagged 진단에서 기존 prepare/start/cleanup과
+동일 ledger/lease/admission을 호출한다. Host의 기존 보호 profile을 쓰는 실제 진단은
+그 profile의 DATA 관측일 뿐 f4f7abc의 matching hosted 검증으로 확대하지 않는다.
+먼저 저비용 entry/argv 거부와 tagged compiler/vet/Staticcheck를 확인하고, 실제 첫 거부와
+임시 cache 형상이 확인된 뒤 그 missing만 production owner에 연결한다.
+
+### E2-A 최초 실제 결과 — 준비 출력과 관측 완료를 구분
+
+Tagged 준비 probe 하나의 canonical format/focused/vet/pinned Staticcheck는 PASS다.
+기존 whole input42/userpath1.9.2·click와 synthetic lock의 단일 actual은14.317s/FAIL이다.
+고정 missing-app 출력은 도달했지만 observer는 PROCESS_PROVENANCE_UNKNOWN/SENTRY_EXEC,
+12events/1368B/session_complete=false다. ParsePipxNativeRoot가 install/upgrade/--version만
+인정하는 기존 분기와 실제17argv run 요청이 대응한다. 캐시 query의 다음 오류까지 원인으로
+확대하지 않으며 selection/Policy/current app/CLI는 미도달이다.
+
+Host 기존 close/exit profile과 같은 구형 canonical132 observer의 진단이다. f4f7abc의
+matching profile/native qualification이 아니다. 자원 create/register/close각1·CPU2136963us,
+helperwait0/CONFIRMED_STOPPED·Host/Docker 동일·남은 helper/query errors0을 확인했다.
+원본 source/실행·정리/첫 실패는 raw `p6-e2a-first-preparation-v1/inventory.json`이 소유한다.
+다음 missing은 기존 root argv와 같은 creator/current-image/readonly 경계를 유지한
+run 준비 ABI다. 기존 구현 재작성·일반 cache prefix grant·새 상태 구조는 추가하지 않는다.
+
+### E2-A named local 검증 — 공개 run은 아직 미구현
+
+[한정 영수증](./p6e2a-pipx-run-preparation-local-20261030.json)은 기존 root/clone/creator/UV/
+query 함수에 fixed17argv exact 준비와 임시 cache15의 조회만 추가한 경계를 확인한다.
+첫 후보는 기존 clone-candidate의 operation 연결 누락으로 두 latch가 실패했으며 원본을
+보존했다. 해당 조건 한 곳을 보완한 targeted 회귀와 최종 C++132/48.917s가 PASS다.
+새 상태 구조·네트워크 grant·관찰 이벤트·예산은 추가하지 않았다.
+
+최종 tagged format/compiler/vet/Staticcheck와 실제13.142s/graph2 preparation이 PASS다.
+현재 observer와 canonical close-enter profile을 실제 Host runsc가 함께 소비하게 맞춘 뒤
+정리와 helper/container/query 부재를 확인해 같은 inode의 원래 profile bytes로 복원했다.
+보호5/Docker는 전후 동일하고 자원각1/CPU2572031us/helperwait0을 확인했다.
+Census83의 cache c3dc012f54be29e는 nonrelocatable wrapper·일반 UV pyvenv.cfg와
+pipx_metadata.json을 가진 unapproved DATA다. Native metadata를 가짜 ToolReceipt로
+승격하지 않으며 E2-B의 전체 원본·control·console 결합, production resolver·현재 앱/CLI는
+여전히 MISSING이다. 실행 중인 CI437에는 이 새 source가 없고 새 push/CI는 하지 않았다.

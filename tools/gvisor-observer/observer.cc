@@ -1028,8 +1028,29 @@ bool IsPipxNativeProject(const std::string& project) {
   return true;
 }
 
-std::string PipxNativeEnvironment(const TopologyState* topology, const std::string& project) {
-  return IsPipxNativeTopology(topology) && IsPipxNativeProject(project) ? "/haa-site/pipx/venvs/" + project : "";
+bool IsPipxNativeEnvironment(const std::string& environment, const ProcessState::GroupState& parent) {
+  if (!IsPipxNativeProject(parent.pipx_native_project)) return false;
+  if (parent.pipx_native_operation != "run") {
+    return (parent.pipx_native_operation == "install" || parent.pipx_native_operation == "upgrade") &&
+        environment == "/haa-site/pipx/venvs/" + parent.pipx_native_project;
+  }
+  // Pinned pipx uses the first 15 lowercase SHA256 digits for its temporary
+  // environment. This shape is only an ABI bound; live creator/image/role
+  // checks still authenticate the query, never the native cache name.
+  const std::string prefix = "/haa-site/pipx/.cache/";
+  if (environment.size() != prefix.size() + 15 || environment.compare(0,prefix.size(),prefix) != 0) return false;
+  for (size_t i = prefix.size(); i < environment.size(); ++i) {
+    const char c = environment[i];
+    if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) return false;
+  }
+  return true;
+}
+
+std::string PipxNativePythonEnvironment(const std::string& executable, const ProcessState::GroupState& parent) {
+  const std::string suffix = "/bin/python";
+  if (executable.size() <= suffix.size() || executable.compare(executable.size()-suffix.size(),suffix.size(),suffix) != 0) return "";
+  const std::string environment = executable.substr(0,executable.size()-suffix.size());
+  return IsPipxNativeEnvironment(environment,parent) ? environment : "";
 }
 
 bool IsPipxNativeProgram(const std::string& code) {
@@ -1059,11 +1080,20 @@ bool ParsePipxNativeRoot(const gvisor::sentry::ExecveInfo& message, const Topolo
   if (operation == "--version") {
     if (message.argv_size() != 7) return false;
   } else {
-    if ((operation != "install" && operation != "upgrade") || message.argv_size() != (operation == "install" ? 13 : 11) ||
+    if (operation == "run") {
+      if (message.argv_size() != 17 || message.argv(7) != "--backend" || message.argv(8) != "uv" ||
+          message.argv(9) != "--python" || message.argv(10) != "/usr/local/bin/python" ||
+          message.argv(11) != "--no-cache" || message.argv(12) != "--no-path-check" ||
+          message.argv(13) != "--spec" || message.argv(15) != kPipxNativePipArguments ||
+          message.argv(16) != "helox-pipx-inert-query") return false;
+      requirement = message.argv(14);
+    } else {
+      if ((operation != "install" && operation != "upgrade") || message.argv_size() != (operation == "install" ? 13 : 11) ||
         message.argv(8) != "--backend" || message.argv(9) != "uv" ||
         message.argv(message.argv_size()-1) != kPipxNativePipArguments) return false;
-    if (operation == "install" && (message.argv(10) != "--python" || message.argv(11) != "/usr/local/bin/python")) return false;
-    requirement = message.argv(7);
+      if (operation == "install" && (message.argv(10) != "--python" || message.argv(11) != "/usr/local/bin/python")) return false;
+      requirement = message.argv(7);
+    }
     if (requirement.empty() || requirement.size() > 4096) return false;
     size_t end = 0;
     while (end < requirement.size()) {
@@ -1073,6 +1103,8 @@ bool ParsePipxNativeRoot(const gvisor::sentry::ExecveInfo& message, const Topolo
     }
     project = requirement.substr(0,end);
     if (!IsPipxNativeProject(project) || (operation == "upgrade" && requirement != project)) return false;
+    if (operation == "run" && (project == "helox-pipx-inert-query" || requirement.size() <= end+2 ||
+        requirement.compare(end,2,"==") != 0 || requirement.find_first_of(",[]*",end) != std::string::npos)) return false;
     if (end < requirement.size() && requirement[end] != '<' && requirement[end] != '>' && requirement[end] != '=' &&
         requirement[end] != '!' && requirement[end] != '~' && requirement[end] != '[') return false;
     for (unsigned char c : requirement) if (c <= 32 || c >= 127 || c == '\\' || c == '\'' || c == '"') return false;
@@ -1097,7 +1129,7 @@ const ProcessState::GroupState* PipxNativeCreator(const gvisor::common::ContextD
   const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
   if (!IsPipxNativeActiveGroup(parent) || parent.pipx_native_image != kind ||
       state.expected_groups.find(group.clone_creator_group_id) != state.expected_groups.end() ||
-      (parent.pipx_native_operation != "install" && parent.pipx_native_operation != "upgrade") ||
+      (parent.pipx_native_operation != "install" && parent.pipx_native_operation != "upgrade" && parent.pipx_native_operation != "run") ||
       !IsPipxNativeProject(parent.pipx_native_project)) return nullptr;
   if (kind == ProcessState::PipxNativeImage::kRoot) {
     return parent.provenance == ProcessState::Provenance::kDirectExecRoot && parent.current_image_class == ProcessClass::kPython ? &parent : nullptr;
@@ -1141,14 +1173,12 @@ bool IsExactPipxNativeUVChild(const gvisor::sentry::ExecveInfo& message, const T
       message.binary_path() != kUVToolPath || message.execfn() != kUVToolPath ||
       message.argv_size() < 2 || message.argv(0) != kUVToolPath) return false;
   if (message.argv_size() == 2 && message.argv(1) == "--version") return true;
-  const std::string env = PipxNativeEnvironment(topology,parent.pipx_native_project);
-  if (env.empty()) return false;
-  if (message.argv_size() == 7 && (parent.pipx_native_operation == "install" || parent.pipx_native_operation == "upgrade") && message.argv(1) == "venv" &&
+  if (message.argv_size() == 7 && message.argv(1) == "venv" &&
       message.argv(2) == "--python" && message.argv(3) == "/usr/local/bin/python" &&
-      message.argv(4) == "--allow-existing" && message.argv(5) == "--quiet" && message.argv(6) == env) return true;
+      message.argv(4) == "--allow-existing" && message.argv(5) == "--quiet" && IsPipxNativeEnvironment(message.argv(6),parent)) return true;
   const bool upgrade = parent.pipx_native_operation == "upgrade";
   if (message.argv_size() != (upgrade ? 16 : 15) || message.argv(1) != "pip" || message.argv(2) != "install" ||
-      message.argv(3) != "--python" || message.argv(4) != env+"/bin/python" || message.argv(5) != "--quiet") return false;
+      message.argv(3) != "--python" || PipxNativePythonEnvironment(message.argv(4),parent).empty() || message.argv(5) != "--quiet") return false;
   int at = 6;
   if (upgrade && message.argv(at++) != "--upgrade") return false;
   for (const char* value : {"--no-build", "--no-sources", "--no-config", "--no-cache", "--no-python-downloads",
@@ -1160,9 +1190,9 @@ bool IsExactPipxNativePythonQuery(const gvisor::sentry::ExecveInfo& message, con
     const ProcessState::GroupState& parent, bool metadata, std::string* environment) {
   if (environment == nullptr || !IsPipxNativeTopology(topology) || message.binary_path() != "/usr/local/bin/python3.14" ||
       !IsPinnedReadOnlyRootPath(topology,message.binary_path())) return false;
-  const std::string env = PipxNativeEnvironment(topology,parent.pipx_native_project);
-  const bool alias = message.execfn() == env+"/bin/python";
-  if (env.empty() || (!alias && (metadata || (message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
+  const std::string env = PipxNativePythonEnvironment(message.execfn(),parent);
+  const bool alias = !env.empty();
+  if ((!alias && (metadata || (message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
       !IsPinnedReadOnlyRootPath(topology,message.execfn())))) return false;
   if (message.argv_size() != (metadata ? 3 : 5) || message.argv(0) != message.execfn()) return false;
   if (metadata) {
@@ -3339,9 +3369,8 @@ const ProcessState::GroupState* PipxNativeQueryParent(const gvisor::common::Cont
       ? ProcessState::PipxNativeImage::kUV : ProcessState::PipxNativeImage::kRoot);
   if (parent == nullptr || group.pipx_native_project != parent->pipx_native_project ||
       group.pipx_native_operation != parent->pipx_native_operation || group.pipx_native_requirement != parent->pipx_native_requirement) return nullptr;
-  const std::string env = "/haa-site/pipx/venvs/"+parent->pipx_native_project;
-  if ((!group.pipx_native_environment.empty() && group.pipx_native_environment != env) ||
-      (kind == ProcessState::PipxNativeImage::kMetadataQuery && group.pipx_native_environment != env)) return nullptr;
+  if ((!group.pipx_native_environment.empty() && !IsPipxNativeEnvironment(group.pipx_native_environment,*parent)) ||
+      (kind == ProcessState::PipxNativeImage::kMetadataQuery && group.pipx_native_environment.empty())) return nullptr;
   return parent;
 }
 
@@ -4618,7 +4647,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   native_child.pipx_native_query_restricted = creator->second.pipx_native_query_restricted;
   native_child.pipx_native_environment = creator->second.pipx_native_environment;
   native_child.pipx_native_candidate = IsPipxNativeActiveGroup(creator->second) &&
-      (creator->second.pipx_native_operation == "install" || creator->second.pipx_native_operation == "upgrade") &&
+      (creator->second.pipx_native_operation == "install" || creator->second.pipx_native_operation == "upgrade" || creator->second.pipx_native_operation == "run") &&
       ((creator->second.pipx_native_image == ProcessState::PipxNativeImage::kRoot &&
         creator->second.provenance == ProcessState::Provenance::kDirectExecRoot && creator->second.current_image_class == ProcessClass::kPython) ||
        (creator->second.pipx_native_image == ProcessState::PipxNativeImage::kUV &&
