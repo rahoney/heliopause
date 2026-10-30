@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P6-E1 existing UV original/native body sharing locally verified; same1392/only uv_run_resolver.go, exact inverse fragments/public context semantics preserved, canonical8/Quick131.983s/Sandbox Race27.14s. Pipx native run/app/CLI still NO; no new native/CPP actual/ELF/CI.
-Next action: consume CI436 timed run/jobs originals and source/whole-tree/named109/Required result; E2 must reuse the owned originals/existing pipx DATA session without install identity or fake ToolReceipt, prove inert-query entry absence and pipx.run precedence, then bind complete temporary cache before current app/CLI. No helper/doc-only CI or unchanged actual/CPP replay.
-Current substep: M13-004/P6-D8 hosted qualification PENDING in frozen CI436/source775c19c/treebcc64338/3120·1392. Worker52419/PID3546388 actual20min GET first20:20:39UTC/KST05:20:39. Independent E1 local source reuse complete; E2 native pipx run/cache/ABI audit next; no new push.
+Next action: complete durable F restart checkpoint and offline WSL compaction; on resume verify Git/runtime/fixtures and diagnose frozen CI436 Bun peer FD_STATE_UNKNOWN first (no same-input CI rerun). D5/D6/D7 hosted parents NOT_REACHED; E2 remains next after failure triage.
+Current substep: M13-004 maintenance/restart boundary. CI436 completed8SUCCESS/Linux+RequiredFAIL at Bun peer (40m03s), new UV hosted parents NOT_REACHED; underlying cause UNCONFIRMED. Timed GET stopped after2 queries/host PID absent; no active timer. E1 local source verified/committed, E2 pipx run unimplemented. F:/Heliopause-qualification/restart-20261030 holds the restart checkpoint/compaction handoff.
 Acceptance audit: newest whole-green frozen baseline CI435/sourceb0 Required10SUCCESS/whole tree eebd72a1/all10 checkout334e96e3; Linux106/CPP132/fullCPU298.02s and native DATA2 PASS. Later D5/D6/D7 are named local only; D8 hosted/generic/final OPEN.
 Independent local next: production UVx request/closure resolver/current execution adapter baseline; D4A/B2/B3 source/query/census/console DATA named local qualified. Generic selection equivalence/aliases/CLI/final remain OPEN.
 P3 Bun: named hosted/whole acceptance OPEN; P4 named current pipx/UV hosted/final OPEN; P5 Node/CLI grouped CI429 named qualified; P6 current Python workflow/boundaries CI433 named qualified and D3 cached query local qualified, public native/golden/aliases/CLI OPEN; P7 NOT_STARTED.
@@ -32,6 +32,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ### 2026-10-29 CI434 common observer checkpoint 등록
 
 [Registration](./evidence/package-client-quarantine/ci434-registration-20261029.json)은 d81c444/tree4497e3c7/3074·1370의 정상 FF87c8→d81과 remote ref·actual run40890702427/start14:21:47UTC를 연결한다. Actual20min public GET worker12754/PID3270701은 첫14:41:47UTC(한국23:41:47)를 등록했고 즉시 run/jobs HTTP200 조회를 확인했다. 직전CI4336368s를 따른 약106분은 추정이며 기존104parents/CPP132/Linux120min은 유지한다. D1 native DATA parent는 로컬만 실행했고 hosted filter에 추가하지 않았다. Current first-error/CPP와 기존 소비자 hosted 결과는 PENDING이다. 실행 중 새 push 없이 같은 D3 outside7 test-only 진단을 계속하며 acceptance/public native/aliases/final은 OPEN이다.
+
+### 2026-10-30 재시작 준비·CI436 최초 실패 보존
+
+[CI436 result](./evidence/package-client-quarantine/ci436-bun-peer-hosted-failure-20261030.json)은 source775c19c/whole treebcc64338/all10checkout01e8d632와 8SUCCESS·Linux/RequiredFAIL을 기록한다. Linux22개 뒤 기존 Bun peer의 FD_STATE_UNKNOWN이 최초 실패이며 새 UV hosted 사례는 미도달이다. CPP/Bun source는 이전 green source와 동일하지만 인과는 미확정이다. 타이머는 실제2회 후 중단돼 완료 확인을 놓쳤고 현재 PID는 없다. 실패를 수정하거나 CI를 재실행하지 않고 공간 정리·외부 재시작 checkpoint를 먼저 만든다. 재생성 가능한 Go build cache 약105.54GiB를 pinned Go clean -cache로 회수했고 source/logs/모듈·고정 도구/원본 입력은 보존했다. Windows C 물리 반환은 offline compaction 결과로만 확인한다.
 
 ### 2026-10-30 E1 frozen original 공유 local 검증
 

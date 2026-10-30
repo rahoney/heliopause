@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D8",
+  "run_id": 40945168003,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40945168003",
+  "source": "775c19cd1eb8070515d9a936efad0fa628071f2b",
+  "whole_tree": "bcc643387b45a283ffcb736d1e65b259e7168d54",
+  "all10_checkout": "01e8d632957158132e819294ecbba2e8500e822b",
+  "source_proof": [
+    {
+      "job": 123698527081,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527460,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527574,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527592,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527713,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527744,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527778,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527815,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123698527848,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    },
+    {
+      "job": 123719055832,
+      "checkout": "01e8d632957158132e819294ecbba2e8500e822b"
+    }
+  ],
+  "whole_run": "FAILURE",
+  "jobs": "8SUCCESS/LinuxFAIL/RequiredFAIL",
+  "server_elapsed_seconds": 2403,
+  "started_at": "2026-10-29T20:00:39Z",
+  "updated_at": "2026-10-29T20:40:42Z",
+  "Linux": {
+    "top_level_passes_before_failure": 22,
+    "failed_parent": "TestBunProjectCLIIntegration",
+    "failed_case": "peer",
+    "failed_parent_seconds": 91.94,
+    "failed_case_seconds": 6.46,
+    "primary_error": "FD_STATE_UNKNOWN",
+    "first_observed_diagnostic": "bun observation incomplete: reason=FD_STATE_UNKNOWN events=14 bytes=1596 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:14 fault_site=RAW raw_check=DESCRIPTOR raw_sysno=44 raw_fd=8 raw_kernel_image=UNKNOWN raw_role=CONTROL raw_provenance=DIRECT_EXEC_ROOT raw_executable_fnv1a64=7b96a1ffb2d233eb raw_fd_last=CLOSE raw_fd_last_family=16 raw_fd_previous=SOCKET raw_fd_previous_family=16 stdout={\"schema_version\":\"helox.project-install-result/v1\",\"operation\":\"INSTALL\",\"operation_status\":\"FAILED\",\"promotion_status\":\"NOT_COMPLETED\",\"source_id\":\"npm\",\"dependency_free\":false,\"entries\":[],\"error\":{\"code\":\"PROJECT_INSTALL_NOT_COMPLETED\",\"message\":\"Project installation was not confirmed complete.\"}}",
+    "new_native_UV_current_app_CLI_parents": "NOT_REACHED",
+    "cause": "UNCONFIRMED; first-error capture only; no causal claim against later UV changes",
+    "CPP_and_Bun_sources_vs_CI435": "UNCHANGED (git path diff empty); shared bootstrap changes alone do not establish cause"
+  },
+  "all10_full_log_bytes": 935485,
+  "all10_log_parts": 44,
+  "log_inventory": "docs/github-logs/package-client-quarantine-20261021/ci436-completed10-log-inventory.json",
+  "existing8_not_refetched": true,
+  "timer": {
+    "actual_queries": 2,
+    "last_query_at": "2026-10-29T20:40:40.860631+00:00",
+    "last_stored_due": "2026-10-29T21:00:40.860646+00:00",
+    "observed_now_UTC": "2026-10-30T00:45:40.104963+00:00",
+    "host_PID_absent": true,
+    "completion_natural_exit": "NOT_PROVEN",
+    "status": "MONITOR_STOPPED_BEFORE_FINAL_RESULT; no claim of continuous polling",
+    "next_query": "NONE; CI already complete"
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO (whole hosted run)",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "diagnose first Bun peer FD_STATE_UNKNOWN with frozen source/runtime before retry",
+      "D5/D6/D7 hosted cases were not reached",
+      "E1 later source remains local-only; pipx run E2/current app/CLI unimplemented"
+    ]
+  },
+  "restart_action": "Preserve logs and source checkpoint first, clean derived cache, then Windows offline WSL compaction; no code fix or new CI in this maintenance task"
+}
