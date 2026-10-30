@@ -165,6 +165,7 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validateCUDAQualificationScope(contents)...)
 	findings = append(findings, validateKernelTerminalQualification(contents)...)
 	findings = append(findings, validatePlatformBuildCache(contents)...)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
@@ -705,6 +706,60 @@ func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
 		blocks = append(blocks, lines)
 	}
 	return blocks, nil
+}
+
+const cudaOnlyCIExpression = "${{ github.event_name == 'workflow_dispatch' && (inputs.pytorch_cu126_qualification || inputs.pytorch_cu130_qualification || inputs.pytorch_cu132_qualification) }}"
+const ordinaryCILifecycleGuard = `if [ "$HELOX_CI_CUDA_ONLY" = false ]; then`
+const cudaOnlyExecutionStepGuard = `if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+exit 0
+fi`
+
+// CUDA qualification preserves the common runtime and CPU/selected full probe.
+// Ordinary PR/default runs retain every client/execution cohort separately.
+func validateCUDAQualificationScope(contents string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
+	job := workflowMap(workflowMap(doc["jobs"])["gvisor-integration"])
+	var findings []string
+	if workflowMap(job["env"])["HELOX_CI_CUDA_ONLY"] != cudaOnlyCIExpression {
+		findings = append(findings, "CUDA-only qualification must require explicit manual profile inputs")
+	}
+	steps, _ := job["steps"].([]any)
+	for _, raw := range steps {
+		if workflowMap(workflowMap(raw)["env"])["HELOX_CI_CUDA_ONLY"] != nil {
+			findings = append(findings, "qualification scope must not be overridden by a step")
+		}
+	}
+	blocks, _ := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if len(blocks) != 1 {
+		return append(findings, "CUDA qualification requires the existing unconditional runtime lifecycle")
+	}
+	body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+	if strings.Count(body, ordinaryCILifecycleGuard) != 3 {
+		findings = append(findings, "ordinary lifecycle requires three exact profile scopes")
+	}
+	for _, boundary := range []string{
+		ordinaryCILifecycleGuard + "\n" + `mkdir -p "$RUNNER_TEMP/pypi-target"`,
+		terraformIntegrationCommands[1] + "\nfi\n" + `go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap`,
+		ordinaryCILifecycleGuard + "\n" + `HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`,
+		terraformIntegrationCommands[2] + "\nfi\nselected_cuda_profiles=0",
+		ordinaryCILifecycleGuard + "\n" + `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"` + "\nhaa_start_policy_helper\n" + `HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'`,
+		`HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration` + "\nfi",
+	} {
+		if strings.Count(body, boundary) != 1 {
+			findings = append(findings, "CUDA-only scope must preserve common setup, client binding and full inputs")
+		}
+	}
+	for _, step := range []string{"Qualify production Node execution preparation", currentExecutionPreparationStep, kernelTerminalQualificationStep} {
+		blocks, _ := activeJobRunLines(contents, "gvisor-integration", step)
+		if len(blocks) != 1 || !strings.HasPrefix(kernelQualificationLines(strings.Join(blocks[0], "\n")), "set -euo pipefail\n"+cudaOnlyExecutionStepGuard+"\nsource scripts/ci-integration-cleanup.sh\n") {
+			findings = append(findings, "ordinary execution step requires exact manual-CUDA scope: "+step)
+		}
+	}
+	return findings
 }
 
 // These real consumers read tracked package fixtures. Require the same

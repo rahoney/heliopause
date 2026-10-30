@@ -77,7 +77,7 @@ func TestKernelTerminalQualificationActualBashGuard(t *testing.T) {
 			body := strings.Replace(kernelTerminalQualificationRun, kernelTerminalQualificationCommand, `bash "$HAA_KERNEL_STUB"`, 1)
 			cmd := exec.Command("bash", "-c", body)
 			cmd.Dir = work
-			cmd.Env = append(os.Environ(), "RUNNER_TEMP="+filepath.Join(work, "runner"), "HAA_KERNEL_STUB="+fixture, "HAA_KERNEL_LOG="+tc.log, "HAA_KERNEL_EXIT="+strconv.Itoa(tc.status))
+			cmd.Env = append(os.Environ(), "HELOX_CI_CUDA_ONLY=false", "RUNNER_TEMP="+filepath.Join(work, "runner"), "HAA_KERNEL_STUB="+fixture, "HAA_KERNEL_LOG="+tc.log, "HAA_KERNEL_EXIT="+strconv.Itoa(tc.status))
 			output, err := cmd.CombinedOutput()
 			status := 0
 			if err != nil {

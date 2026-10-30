@@ -245,6 +245,7 @@ jobs:
     timeout-minutes: 120
     env:
       GOTOOLCHAIN: local
+      HELOX_CI_CUDA_ONLY: ${{ github.event_name == 'workflow_dispatch' && (inputs.pytorch_cu126_qualification || inputs.pytorch_cu130_qualification || inputs.pytorch_cu132_qualification) }}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -387,6 +388,7 @@ jobs:
           # offline promotion (exit 0).
           # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
           # proving complete ALLOW inspection and atomic offline promotion (exit 0).
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
           mkdir -p "$RUNNER_TEMP/pypi-target"
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             -v "$RUNNER_TEMP/pypi-target:/target" \
@@ -439,9 +441,11 @@ jobs:
             HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'
           )
           HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'
+          fi
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
           haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
           haa_start_policy_helper
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
           HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'
           HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'
           (
@@ -453,6 +457,7 @@ jobs:
           HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'
           HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'
           HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+          fi
           selected_cuda_profiles=0
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
@@ -475,6 +480,7 @@ jobs:
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then
             HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu132 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
+          if [ "$HELOX_CI_CUDA_ONLY" = false ]; then
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'
@@ -497,10 +503,15 @@ jobs:
           haa_start_policy_helper
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
+          fi
 
       - name: Qualify production Node execution preparation
         run: |
           set -euo pipefail
+          if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+            echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+            exit 0
+          fi
           source scripts/ci-integration-cleanup.sh
           haa_ci_initialize
           haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
@@ -601,6 +612,10 @@ jobs:
       - name: Qualify current execution workflows and boundaries
         run: |
           set -euo pipefail
+          if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+            echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+            exit 0
+          fi
           source scripts/ci-integration-cleanup.sh
           haa_ci_initialize
           haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
@@ -915,6 +930,10 @@ jobs:
       - name: Qualify kernel direct-exec image and terminal facts
         run: |
           set -euo pipefail
+          if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+            echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+            exit 0
+          fi
           source scripts/ci-integration-cleanup.sh
           haa_ci_initialize
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"

@@ -6,8 +6,7 @@ const kernelTerminalQualificationStep = "Qualify kernel direct-exec image and te
 const kernelTerminalQualificationCommand = `HELOX_KERNEL_TERMINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxDirectExecKernelTerminalIntegration$'`
 
 // Fixed repository convention only; actual execution and cleanup are separate.
-const kernelTerminalQualificationRun = `set -euo pipefail
-source scripts/ci-integration-cleanup.sh
+const kernelTerminalQualificationRun = "set -euo pipefail\n" + cudaOnlyExecutionStepGuard + "\n" + `source scripts/ci-integration-cleanup.sh
 haa_ci_initialize
 haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
 haa_start_policy_helper

@@ -80,8 +80,7 @@ func validateUVToolsClientOrder(contents string) []string {
 
 const currentExecutionPreparationStep = "Qualify current execution workflows and boundaries"
 
-const currentExecutionPreparationRun = `set -euo pipefail
-source scripts/ci-integration-cleanup.sh
+const currentExecutionPreparationRun = "set -euo pipefail\n" + cudaOnlyExecutionStepGuard + "\n" + `source scripts/ci-integration-cleanup.sh
 haa_ci_initialize
 haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
 haa_start_policy_helper
