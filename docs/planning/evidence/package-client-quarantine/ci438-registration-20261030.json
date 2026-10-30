@@ -52,12 +52,12 @@
   "independent_local_next": "P6-F pinned bunx/pnpm dlx original source/alias/runtime/cache baseline; do not push a new helper/doc change that cancels active CI438",
   "authorization": "User conditionally authorized CI at an important validation boundary. Complete source/current application/CLI E2/E3 group qualifies; normal push only, no main merge/release.",
   "last_consumed_poll": {
-    "number": 1,
-    "actual_query_started_at": "2026-10-30T06:18:50.613993+00:00",
-    "actual_query_ended_at": "2026-10-30T06:18:51.684442+00:00",
+    "number": 4,
+    "actual_query_started_at": "2026-10-30T07:18:55.599367+00:00",
+    "actual_query_ended_at": "2026-10-30T07:18:57.049465+00:00",
     "result": "8SUCCESS/LinuxIN_PROGRESS; Required not yet created",
-    "next_due_at": "2026-10-30T06:38:51.684442+00:00",
-    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-poll01-summary.json"
+    "next_due_at": "2026-10-30T07:38:57.049465+00:00",
+    "original": "docs/github-logs/package-client-quarantine-20261021/ci438-poll04-summary.json"
   },
   "completed8_source_proof": {
     "checkout": "7beb11ba066f532b20380d1e419abb5c5548d3db",
