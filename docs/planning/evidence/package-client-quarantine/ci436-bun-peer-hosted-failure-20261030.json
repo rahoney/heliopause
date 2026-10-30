@@ -250,5 +250,14 @@
         "CI436 exact historical interleaving remains unproven"
       ]
     }
+  },
+  "matching_correction_hosted_followup": {
+    "status": "FROZEN_F4_NAMED_QUALIFIED",
+    "run": 40992454633,
+    "Required_success": 10,
+    "Bun_peer": "PASS 64.88s",
+    "qualification": "./ci437-close-entry-uv-hosted-qualification-20261030.json",
+    "historical_CI436_interleaving": "UNCONFIRMED",
+    "later_E2_source_in_this_run": false
   }
 }

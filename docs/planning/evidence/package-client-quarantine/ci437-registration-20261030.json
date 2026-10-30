@@ -35,8 +35,8 @@
     "Required_jobs": 10,
     "budgets_and_permissions_unchanged": true
   },
-  "result": "PENDING",
-  "whole_qualification": "OPEN",
+  "result": "SUCCESS",
+  "whole_qualification": "FROZEN_SOURCE_NAMED_HOSTED_QUALIFIED",
   "independent_local_next": "P6-E2 existing pipx run owner/safe native terminal/whole original entry collision review; no push that cancels frozen CI437",
   "authorization": "After exact public payload approval request and initial automatic rejection, user explicitly instructed CI at an important validation boundary; common observer change meets that condition. Same normal push was approved/executed; no workaround.",
   "last_consumed_poll": {
@@ -57,5 +57,13 @@
     "CPP_helper_latches_fail": 0,
     "scope": "8 completed jobs only; Linux/Required PENDING",
     "original": "docs/github-logs/package-client-quarantine-20261021/ci437-completed8-source-proof.json"
+  },
+  "completion": {
+    "run_updated_at": "2026-10-30T04:25:38Z",
+    "required_jobs_success": 10,
+    "qualification_receipt": "./ci437-close-entry-uv-hosted-qualification-20261030.json",
+    "timer_worker_exit_code": 143,
+    "actual_timed_queries": 5,
+    "next_timer": null
   }
 }
