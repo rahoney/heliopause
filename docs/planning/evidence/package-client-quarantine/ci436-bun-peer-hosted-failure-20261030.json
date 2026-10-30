@@ -90,5 +90,165 @@
       "E1 later source remains local-only; pipx run E2/current app/CLI unimplemented"
     ]
   },
-  "restart_action": "Preserve logs and source checkpoint first, clean derived cache, then Windows offline WSL compaction; no code fix or new CI in this maintenance task"
+  "restart_action": "Preserve logs and source checkpoint first, clean derived cache, then Windows offline WSL compaction; no code fix or new CI in this maintenance task",
+  "resumption": {
+    "checked_at": "2026-10-30T01:52:02.480431+00:00",
+    "root_HEAD": "a0787b09c17a376eaa58fa3a3f5c270d1904c11a",
+    "checkpoint": "F:/Heliopause-qualification/restart-20261030/checkpoint.json",
+    "compaction_result": "F:/Heliopause-qualification/restart-20261030/result.json",
+    "VHD_reclaimed_bytes": 112331849728,
+    "input_restore": {
+      "archive_digest_matches": true,
+      "archive_regular_files": 3204,
+      "newly_restored_on_resume": 51,
+      "already_present_equal": 3153,
+      "resume_inputs_checked": 1443,
+      "resume_input_errors": [],
+      "tests_run": false
+    },
+    "protected_runtime_files_matches": 5,
+    "actual_Host_active_helpers": 0,
+    "actual_Host_running_containers": 0,
+    "actual_Host_process_query_errors": 0,
+    "canonical_runtime_directories_restored": [
+      "/run/heliopause-observer:0700:1000:1000",
+      "/run/heliopause-network-policy:0755:0:0"
+    ],
+    "runtime_inputs_match_E1": 1392,
+    "product_source_changed": false,
+    "new_CI_started": false
+  },
+  "investigation": {
+    "IMPLEMENTED": "YES (existing FD authority and bounded diagnostic)",
+    "WIRED": "YES",
+    "QUALIFIED": "NO (current Bun peer failure)",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "actual FD event lifetime/order at first mismatch",
+      "minimal supported correction and affected consumers",
+      "D5/D6/D7 hosted parents remain NOT_REACHED"
+    ],
+    "existing_owner": "tools/gvisor-observer/observer.cc ParseCloseAndTrack/ParseSocketAndTrack/ParseRawAndSend; existing CI415 investigation",
+    "next": "reuse prior bounded scalar diagnostic once for Bun peer, using retained exact D7 Bootstrap binary and current132-latch observer source; no identical full CI rerun",
+    "cause": "UNCONFIRMED; close completion after FD reuse is a source-supported hypothesis, not established CI436 interleaving",
+    "bounded_diagnostic": {
+      "exit_code": 0,
+      "seconds": 92.305,
+      "traces": 12,
+      "trace_faults": 0,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "exact_CI436_interleaving_proven": false,
+      "originals": "docs/github-logs/package-client-quarantine-20261021/ci436-bun-fd-diagnostic-v1"
+    },
+    "confirmed_defect": "Existing close-exit FD erasure loses a newly allocated same-number socket when old close returns late; fixed-kernel source permits this order and targeted original-source regression returns FD_STATE_UNKNOWN.",
+    "minimal_correction": {
+      "paths": [
+        "tools/gvisor-observer/observer.cc",
+        "tools/gvisor-observer/observer_latch_test.cc",
+        "tools/gvisor-observer/pod-init.json"
+      ],
+      "scope": "Replace close/exit with close/enter, revoke in existing tracker, reject incompatible exit phase; no new FD state structures, events, budgets or permission grants",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NAMED LOCAL C++132 and canonical quick/security/docs PASS; matching hosted consumers OPEN",
+      "ACCEPTANCE_CLOSED": "NO",
+      "original_targeted_red": 1,
+      "initial_targeted_green": 0,
+      "later_negative": "Fail-stop incompatible close-exit instead of accepting mixed profile; final C++ suite includes this negative",
+      "local_actual_boundary": "Existing Host Docker uses protected old pod-init; initial diagnostic was old-profile only. New matching observer/profile must be qualified together in fresh hosted environment; no Host configuration replacement.",
+      "checks": {
+        "cpp": {
+          "command": [
+            "docker",
+            "run",
+            "--rm",
+            "--pull=never",
+            "--platform",
+            "linux/amd64",
+            "--user",
+            "1000:1000",
+            "--env",
+            "HOME=/tmp/helox-release-observer.W911Qq",
+            "--env",
+            "USER=builder",
+            "--env",
+            "EXPECTED_BAZEL_VERSION=8.3.1",
+            "--env",
+            "EXPECTED_BAZEL_SHA512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",
+            "--mount",
+            "type=bind,src=/tmp/helox-release-observer.W911Qq,dst=/tmp/helox-release-observer.W911Qq",
+            "--workdir",
+            "/tmp/helox-release-observer.W911Qq/gvisor",
+            "--entrypoint",
+            "/bin/sh",
+            "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64@sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+            "-c",
+            "set -eu\ntest \"$(/usr/local/bin/bazel --version)\" = \"bazel $EXPECTED_BAZEL_VERSION\"\ntest \"$(sha512sum /usr/local/bin/bazel | awk '{print $1}')\" = \"$EXPECTED_BAZEL_SHA512\"\n/usr/local/bin/bazel build -c opt --jobs=4 --local_ram_resources=8192 //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test\nbazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test\n"
+          ],
+          "exit_code": 0,
+          "seconds": 46.973,
+          "source_identity": [
+            {
+              "path": "tools/gvisor-observer/observer.cc",
+              "sha256": "1e79d2c813db6039fb7d2a0981846eecc6f7aa34d43016840d2978efd03a775f"
+            },
+            {
+              "path": "tools/gvisor-observer/observer_latch_test.cc",
+              "sha256": "0595fe06bee978abed89772291b83c3674b6b713195ce811fe20feb740713862"
+            },
+            {
+              "path": "tools/gvisor-observer/pod-init.json",
+              "sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc"
+            }
+          ],
+          "canonical_builder_and_commands_reused": true,
+          "temporary_diagnostic_or_runner_in_final_source": false,
+          "latches_pass": 132,
+          "latches_fail": 0,
+          "observer_sha256": "923c409a168015f6598530755627f4cd52d706ff8ac974e82e2fed69307d2599"
+        },
+        "local": [
+          {
+            "profile": "quick",
+            "command": [
+              "/home/winamp/.local/go/bin/go",
+              "run",
+              "./scripts/check",
+              "quick"
+            ],
+            "exit_code": 0,
+            "seconds": 432.98
+          },
+          {
+            "profile": "security",
+            "command": [
+              "/home/winamp/.local/go/bin/go",
+              "run",
+              "./scripts/check",
+              "security"
+            ],
+            "exit_code": 0,
+            "seconds": 10.843
+          },
+          {
+            "profile": "docs",
+            "command": [
+              "/home/winamp/.local/go/bin/go",
+              "run",
+              "./scripts/check",
+              "docs"
+            ],
+            "exit_code": 0,
+            "seconds": 0.315
+          }
+        ]
+      },
+      "MISSING": [
+        "new matching close-entry observer/profile hosted Bun peer and existing consumers",
+        "D5/D6/D7 hosted parents not reached by CI436; next necessary grouped run",
+        "CI436 exact historical interleaving remains unproven"
+      ]
+    }
+  }
 }

@@ -661,7 +661,8 @@ bool HasPinnedPodInitProfile() {
       profile.find("syscall/socketpair/enter") != std::string::npos &&
       profile.find("syscall/socketpair_result") != std::string::npos &&
       profile.find("syscall/socketpair/exit") != std::string::npos &&
-      profile.find("syscall/close/exit") != std::string::npos &&
+      profile.find("syscall/close/enter") != std::string::npos &&
+      profile.find("syscall/close/exit") == std::string::npos &&
       profile.find("syscall/dup/exit") != std::string::npos &&
       profile.find("syscall/dup2/exit") != std::string::npos &&
       profile.find("syscall/dup3/exit") != std::string::npos &&
@@ -714,8 +715,6 @@ bool VerifyProfileRecordBoundary(int output, const std::string& remote, const st
   context->set_thread_group_id(1);
   context->set_thread_group_start_time_ns(1);
   close_message.set_fd(7);
-  close_message.mutable_exit()->set_errorno(9);
-  close_message.mutable_exit()->set_result(-1);
   // Start and sealed topology each charge one; retain the original accounting.
   const size_t count = overflow ? limit - 1 : limit - 3;
   for (size_t i = 0; i < count; ++i) {
@@ -3282,8 +3281,6 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   gvisor::syscall::Close close_socket;
   *close_socket.mutable_context_data() = socket.context_data();
   close_socket.set_fd(8);
-  close_socket.mutable_exit()->set_result(0);
-  close_socket.mutable_exit()->set_errorno(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CLOSE, close_socket) || !ExpectNoRecord(output)) return false;
   socket.set_domain(AF_INET6);
   if (!SendSocketCreate(output, client, socket, 8, false, kFifthID, "INET6")) return false;
@@ -3449,7 +3446,64 @@ bool VerifySocketPairDiagnosticPreservesFDAuthority() {
   return passed;
 }
 
+bool VerifyCloseEntryPreservesReusedFD() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  const auto finish = [&](bool ok) { close(output[0]); close(output[1]); return ok; };
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID); context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990); context.set_is_exec_session(true);
+  context.set_process_name("untrusted-name");
+  for (const auto family : {AF_UNIX, AF_NETLINK, AF_INET}) {
+    ProcessState state;
+    if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return finish(false);
+    state.fd_states[99][8] = ProcessState::FDEntry{SocketClassification::kNetwork, AF_INET, false};
+    std::string id = kFirstID;
+    const char* reason = nullptr;
+    auto consume = [&](const auto& message, uint32_t kind) {
+      std::string payload; NormalizedCounts counts; TopologyState topology; Header header{};
+      header.message_type = kind;
+      return message.SerializeToString(&payload) && Handle(header, payload.data(), payload.size(), output[0],
+          &id, kProfilePNPMResolver, nullptr, &state, &counts, &topology, &reason);
+    };
+    gvisor::syscall::Close closed;
+    *closed.mutable_context_data() = context; closed.set_fd(8);
+    if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE)) return finish(false);
+    // The kernel frees the old descriptor before OnClose returns. Another
+    // thread can allocate the same number before the old close exit arrives.
+    gvisor::syscall::Socket created;
+    *created.mutable_context_data() = context; created.set_sysno(41);
+    created.set_domain(family); created.set_type(SOCK_DGRAM);
+    if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+    created.mutable_exit()->set_result(8);
+    if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+    gvisor::syscall::Syscall raw;
+    *raw.mutable_context_data() = context; raw.set_sysno(kSyscallSendtoX86); raw.set_arg1(8);
+    if (!consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW)) {
+      fprintf(stderr, "reused FD unavailable: family=%d reason=%s\n", family, reason == nullptr ? "NONE" : reason);
+      return finish(false);
+    }
+    if (family == AF_INET) {
+      if (!ExpectNetworkRecord(output[1], kFirstID, "SENDTO", "INET", "ARTIFACT_GROUP", "OTHER")) return finish(false);
+    } else if (!ExpectNoRecord(output[1])) return finish(false);
+    // An incompatible exit phase fails closed without erasing the new socket.
+    closed.mutable_exit()->set_result(0);
+    if (consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || reason == nullptr ||
+        strcmp(reason, "STREAM_FAULT") != 0 || state.fd_states[99].at(8).raw_family != family) return finish(false);
+    // Entry revokes authority immediately; a failed exit cannot restore it.
+    closed.clear_exit();
+    if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || !state.fd_states[99].empty()) return finish(false);
+    closed.mutable_exit()->set_result(-1); closed.mutable_exit()->set_errorno(9);
+    if (consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || !state.fd_states[99].empty()) return finish(false);
+    if (consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW) || reason == nullptr ||
+        strcmp(reason, "FD_STATE_UNKNOWN") != 0 || !ExpectNoRecord(output[1])) return finish(false);
+  }
+  return finish(true);
+}
+
 bool VerifyFDMutationDiagnosticPreservesAuthority() {
+  if (!VerifyCloseEntryPreservesReusedFD()) return false;
   int output[2];
   if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
   const auto finish = [&](bool ok) { close(output[0]); close(output[1]); return ok; };
@@ -3470,8 +3524,7 @@ bool VerifyFDMutationDiagnosticPreservesAuthority() {
     return message.SerializeToString(&payload) && Handle(header, payload.data(), payload.size(), output[0], &id,
         kProfilePNPMResolver, nullptr, &state, &counts, &topology, &reason);
   };
-  // This fixed event sequence tests the diagnostic, not CI415's unobserved
-  // interleaving: a later close exit erases a newly reported descriptor.
+  // Closing a tracked socket revokes it; diagnostic history grants no authority.
   gvisor::syscall::Socket created;
   *created.mutable_context_data() = context; created.set_sysno(41);
   created.set_domain(AF_NETLINK); created.set_type(SOCK_RAW | SOCK_CLOEXEC);
@@ -3479,7 +3532,7 @@ bool VerifyFDMutationDiagnosticPreservesAuthority() {
   created.mutable_exit()->set_result(14);
   if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
   gvisor::syscall::Close closed;
-  *closed.mutable_context_data() = context; closed.set_fd(14); closed.mutable_exit()->set_result(0);
+  *closed.mutable_context_data() = context; closed.set_fd(14);
   if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE)) return finish(false);
   gvisor::syscall::Syscall raw;
   *raw.mutable_context_data() = context; raw.set_sysno(kSyscallSendtoX86); raw.set_arg1(14);
@@ -3604,7 +3657,7 @@ bool VerifyKernelSocketPairTracking() {
         consume(result, gvisor::common::MESSAGE_SYSCALL_SOCKETPAIR_RESULT, &limited) ||
         limited.fd_states[99].find(5) != limited.fd_states[99].end()) return finish(false);
     gvisor::syscall::Close closed; *closed.mutable_context_data() = context;
-    closed.set_fd(5); closed.mutable_exit()->set_result(0); raw.set_arg1(5);
+    closed.set_fd(5); raw.set_arg1(5);
     if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE, &state) ||
         consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW, &state)) return finish(false);
   }

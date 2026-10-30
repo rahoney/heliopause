@@ -4874,7 +4874,7 @@ void CaptureFDMutationDiagnostic(const Header& header, const char* payload, size
     }
     case gvisor::common::MESSAGE_SYSCALL_CLOSE: {
       gvisor::syscall::Close m;
-      if (m.ParseFromArray(payload, size) && m.has_exit() && m.exit().errorno() == 0 && m.exit().result() >= 0)
+      if (m.ParseFromArray(payload, size) && !m.has_exit())
         record(m.context_data(), m.fd(), "CLOSE", family(m.context_data().thread_group_id(), m.fd()));
       break;
     }
@@ -5911,8 +5911,10 @@ const char* FamilyName(SocketClassification classification, int raw_family) {
 bool ParseCloseAndTrack(const char* payload, size_t payload_size, std::string* container_id, ProcessState* state, const char** reason) {
   gvisor::syscall::Close message;
   if (!message.ParseFromArray(payload, payload_size) || !ValidateContextContainer(message.context_data(), container_id, reason)) return false;
-  if (!message.has_exit()) return true;
-  if (message.exit().errorno() != 0 || message.exit().result() < 0) return true;
+  // Revoke before the kernel releases the descriptor number. A close exit
+  // belongs to an incompatible profile and must not erase a reused socket.
+  // Failed closes leave authority revoked rather than restore uncertain state.
+  if (message.has_exit()) { *reason = "STREAM_FAULT"; return false; }
   auto table = state->fd_states.find(message.context_data().thread_group_id());
   if (table != state->fd_states.end()) table->second.erase(static_cast<int32_t>(message.fd()));
   return true;
