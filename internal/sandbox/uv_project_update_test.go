@@ -7,6 +7,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvEmptyProjectUpdateFixture(t *testing.T) ([]domain.ProjectControlFile, []domain.ProjectControlFile) {
@@ -15,10 +16,14 @@ func uvEmptyProjectUpdateFixture(t *testing.T) ([]domain.ProjectControlFile, []d
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	body, err := os.ReadFile("../artifact/pypi/testdata/uv-0.13.4-empty-project.uv.lock")
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	input, err := artifactpypi.ParseUVProjectInput(manifest, nil, false, artifactpypi.UVProjectSync, "")
 	if err != nil {
 		t.Fatal(err)
@@ -166,10 +171,14 @@ func TestUVProjectOriginalLockMayPrecedeEditedManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	lock, err := os.ReadFile("../artifact/pypi/testdata/uv-0.13.4-empty-project.uv.lock")
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	manifest = bytes.ReplaceAll(manifest, []byte("dependencies = []"), []byte(`dependencies = ["packaging==25.0"]`))
 	input, err := artifactpypi.ParseUVProjectInput(manifest, lock, true, artifactpypi.UVProjectSync, "")
 	if err != nil {

@@ -16,6 +16,7 @@ import (
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func nativeRecordFixture(t *testing.T, plan pypiVenvPlan, extra map[string]string) artifactpypi.UpgradeInput {
@@ -51,7 +52,7 @@ func nativeRecordFixture(t *testing.T, plan pypiVenvPlan, extra map[string]strin
 		t.Fatal(err)
 	}
 	requirement, _ := artifactpypi.ParseUpgradeRequirement("native")
-	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: "native-1.0.dist-info", Body: []byte(metadata)}}, "3.14.7")
+	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: "native-1.0.dist-info", Body: []byte(metadata)}}, runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,7 +220,7 @@ func TestNativePyPIInventoryNeverReinterpretsManagedPrivateRecord(t *testing.T) 
 		t.Fatal(err)
 	}
 	requirement, _ := artifactpypi.ParseUpgradeRequirement("fixture")
-	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: "fixture-1.0.dist-info", Body: metadata}}, "3.14.7")
+	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: "fixture-1.0.dist-info", Body: metadata}}, runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}

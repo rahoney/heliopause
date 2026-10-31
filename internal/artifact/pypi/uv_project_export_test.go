@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvActualProjectExportReplay(t *testing.T) (UVNativeProjectLock, []byte) {
@@ -17,7 +18,8 @@ func uvActualProjectExportReplay(t *testing.T) (UVNativeProjectLock, []byte) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		return body
+		// Reuse native syntax with the current pinned runtime; preserve the capture.
+		return bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	}
 	input, err := ParseUVProjectInput(read("pyproject.toml"), nil, false, UVProjectSync, "")
 	if err != nil {
@@ -32,7 +34,7 @@ func uvActualProjectExportReplay(t *testing.T) (UVNativeProjectLock, []byte) {
 
 func TestUVProjectExportPreservesActualNativeReplayAndStrictP1Reader(t *testing.T) {
 	lock, body := uvActualProjectExportReplay(t)
-	if _, err := ParseUVProjectLock(body, "3.14.7"); err == nil {
+	if _, err := ParseUVProjectLock(body, runtimeidentity.PythonVersion); err == nil {
 		t.Fatal("existing wheel-only reader unexpectedly accepted project metadata")
 	}
 	export, err := lock.ParseTargetExport(body)
@@ -43,7 +45,7 @@ func TestUVProjectExportPreservesActualNativeReplayAndStrictP1Reader(t *testing.
 	if err != nil || len(controls) != 4 || controls[2].Name() != UVProjectExportControl || !bytes.Equal(controls[2].Body(), body) || controls[3].Name() != UVSelectionLockControlName || bytes.Equal(controls[3].Body(), body) {
 		t.Fatal("actual export confused with derived validation view", err)
 	}
-	if _, err := ParseUVProjectLock(controls[3].Body(), "3.14.7"); err != nil {
+	if _, err := ParseUVProjectLock(controls[3].Body(), runtimeidentity.PythonVersion); err != nil {
 		t.Fatal("derived view did not use unchanged strict parser", err)
 	}
 	body[0] = '!'
@@ -70,6 +72,8 @@ func TestUVProjectPublicIndexAcceptsOnlyExistingProfileRepresentations(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	inputBody = bytes.ReplaceAll(inputBody, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	input, err := ParseUVProjectInput(inputBody, nil, false, UVProjectSync, "")
 	if err != nil {
 		t.Fatal(err)
@@ -95,7 +99,7 @@ func uvProjectExportBindingFixture(t *testing.T) (UVProjectExport, []UVWheelInpu
 		t.Fatal(err)
 	}
 	exportBody := uvProjectBody(originalExport.Packages())
-	exportBody = bytes.ReplaceAll(exportBody, []byte("requires-python='>=3.14.7'"), []byte("requires-python='==3.14.7'"))
+	exportBody = bytes.ReplaceAll(exportBody, []byte("requires-python='>=3.14.7'"), []byte("requires-python='=="+runtimeidentity.PythonVersion+"'"))
 	exportBody = bytes.ReplaceAll(exportBody, []byte("[[packages]]\n"), []byte("[[packages]]\nindex='https://pypi.org/simple'\n"))
 	export, err := native.ParseTargetExport(exportBody)
 	if err != nil {
@@ -149,7 +153,7 @@ func TestUVProjectExportRejectsMetadataSourceAndSelectionTampering(t *testing.T)
 	for name, change := range map[string][2]string{
 		"index":         {`index = "https://pypi.org/simple"`, `index = "https://example.org/simple"`},
 		"missing index": {`index = "https://pypi.org/simple"`, ""},
-		"runtime":       {`requires-python = "==3.14.7"`, `requires-python = ">=3.14.7"`},
+		"runtime":       {"requires-python = \"==" + runtimeidentity.PythonVersion + "\"", "requires-python = \">=" + runtimeidentity.PythonVersion + "\""},
 		"creator":       {`created-by = "uv"`, `created-by = "other"`},
 		"schema":        {`lock-version = "1.0"`, `lock-version = "2.0"`},
 		"sdist hash":    {strings.Repeat("a", 64), strings.Repeat("b", 64)},

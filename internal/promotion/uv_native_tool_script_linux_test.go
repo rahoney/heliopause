@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type nativeToolScriptFixture struct {
@@ -70,7 +71,7 @@ func makeNativeToolScriptFixture(t *testing.T, mode string) nativeToolScriptFixt
 			t.Fatal(err)
 		}
 	}
-	write(filepath.Join(root, "pyvenv.cfg"), []byte("implementation = CPython\nversion_info = 3.14.7\nuv = 0.13.4\ninclude-system-site-packages = false\n"), 0600)
+	write(filepath.Join(root, "pyvenv.cfg"), []byte("implementation = CPython\nversion_info = "+runtimeidentity.PythonVersion+"\nuv = 0.13.4\ninclude-system-site-packages = false\n"), 0600)
 	write(filepath.Join(root, "bin/python3.14"), []byte("inert original interpreter DATA; never execute"), 0700)
 	if err := os.Symlink("python3.14", filepath.Join(root, "bin/python")); err != nil {
 		t.Fatal(err)
@@ -280,7 +281,7 @@ func TestNativeUVToolScriptProofRejectsInterpreterAndGuardDrift(t *testing.T) {
 					t.Fatal("replacement alias must have a distinct retained inode", err)
 				}
 			case "config":
-				if err := os.WriteFile(filepath.Join(f.root, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0600); err != nil {
+				if err := os.WriteFile(filepath.Join(f.root, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\n"), 0600); err != nil {
 					t.Fatal(err)
 				}
 			case "closed":

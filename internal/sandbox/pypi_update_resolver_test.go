@@ -12,6 +12,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type pypiUpgradeRecordingRunner struct {
@@ -70,7 +71,7 @@ func pypiUpgradeResponses(t *testing.T) [][]byte {
 	t.Helper()
 	return [][]byte{
 		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil,
-		[]byte("3.14.7\n"), []byte("pip 26.2.1 from pip\n"), []byte("cp314-cp314-manylinux_2_36_x86_64\n"), nil,
+		[]byte(runtimeidentity.PythonVersion + "\n"), []byte("pip " + runtimeidentity.PipVersion + " from pip\n"), []byte("cp314-cp314-manylinux_2_36_x86_64\n"), nil,
 		nil, emptyPyPIUpgradeDelta(t), nil, []byte(pypiResolverReportJSON()),
 		[]byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")),
 		[]byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),

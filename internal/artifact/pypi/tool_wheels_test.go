@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const toolTestEntrypoints = "[console_scripts]\nhaa-alt = haa_tool_fixture:main\nhaa-demo = haa_tool_fixture:main\n"
@@ -74,7 +76,7 @@ func toolTestSelection(t *testing.T, rootWheel, childWheel []byte) (UVLock, []UV
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock, err := ParseUVLock(ref, []byte(body), "3.14.7")
+	lock, err := ParseUVLock(ref, []byte(body), runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}

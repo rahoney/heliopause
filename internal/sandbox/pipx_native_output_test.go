@@ -12,14 +12,13 @@ import (
 	"errors"
 	"fmt"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"io"
 	"os"
 	"path"
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func pipxNativeOutputFixture(t *testing.T, additional ...map[string][]byte) (*pipxNativeInput, map[string]uvToolTarEntry) {
@@ -71,6 +70,7 @@ func pipxNativeOutputFixture(t *testing.T, additional ...map[string][]byte) (*pi
 	if err := json.Unmarshal(body, &wire); err != nil {
 		t.Fatal(err)
 	}
+	wire["python_version"] = "Python " + runtimeidentity.PythonVersion
 	wire["main_package"].(map[string]any)["pip_args"] = []any{}
 	body, err = json.Marshal(wire)
 	if err != nil {

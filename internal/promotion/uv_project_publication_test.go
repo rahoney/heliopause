@@ -1,6 +1,7 @@
 package promotion
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -41,11 +43,13 @@ func (r *uvProjectEmptyResolver) ResolveProjectLockUpdate(_ context.Context, ins
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
+	// Project this test result to the current runtime without changing captured data.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	lock, err := artifactpypi.ParseUVNativeProjectLock(input, body)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
-	export, err := lock.ParseTargetExport([]byte("lock-version='1.0'\ncreated-by='uv'\nrequires-python='==3.14.7'\npackages=[]\n"))
+	export, err := lock.ParseTargetExport([]byte("lock-version='1.0'\ncreated-by='uv'\nrequires-python='==" + runtimeidentity.PythonVersion + "'\npackages=[]\n"))
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
@@ -100,6 +104,8 @@ func newUVProjectPublicationFixture(t *testing.T) uvProjectPublicationFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	if err := os.WriteFile(filepath.Join(root, "pyproject.toml"), manifest, 0o644); err != nil {
 		t.Fatal(err)
 	}

@@ -10,6 +10,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func toolTargetFixture(t *testing.T) (domain.InstallContext, artifactpypi.UpgradeRequirement, string, string) {
@@ -26,7 +27,7 @@ func toolTargetFixture(t *testing.T) (domain.InstallContext, artifactpypi.Upgrad
 			t.Fatal(err)
 		}
 	}
-	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = 3.14.7\ninclude-system-site-packages = false\n"), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\ninclude-system-site-packages = false\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	// An inert executable fixture is fingerprinted as data and never launched.

@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func nativeToolFixture(t *testing.T, name string) []byte {
@@ -14,6 +16,10 @@ func nativeToolFixture(t *testing.T, name string) []byte {
 	body, err := os.ReadFile("testdata/persistent-tool/" + name)
 	if err != nil {
 		t.Fatal(err)
+	}
+	// Only the test projection follows the current runtime; captured bytes stay on disk.
+	if strings.HasPrefix(name, "pipx-") {
+		body = bytes.ReplaceAll(body, []byte("Python 3.14.7"), []byte("Python "+runtimeidentity.PythonVersion))
 	}
 	return body
 }

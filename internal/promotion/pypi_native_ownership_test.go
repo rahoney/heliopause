@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func nativeWheelOwnershipFixture(t *testing.T, mode string) (pypiVenvPlan, *pypiVenvTransaction, *pypiNativeDistribution, artifactpypi.WheelInspection, string, string) {
@@ -151,7 +152,7 @@ func nativeWheelOwnershipFixture(t *testing.T, mode string) (pypiVenvPlan, *pypi
 		t.Fatal(err)
 	}
 	requirement, _ := artifactpypi.ParseUpgradeRequirement("haa-promotion-fixture")
-	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: dist, Body: files[dist+"/METADATA"]}}, "3.14.7")
+	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: dist, Body: files[dist+"/METADATA"]}}, runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}

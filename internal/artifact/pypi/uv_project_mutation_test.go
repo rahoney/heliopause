@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvAddInput(t *testing.T, dependencies, selector string) UVProjectInput {
@@ -36,7 +38,7 @@ func TestUVNativeAddConservesMetadataAndOtherRequirements(t *testing.T) {
 		"wrong added name":             uvVirtualProjectTestInput(`["idna==3.11", "certifi"]`),
 		"project identity":             bytes.ReplaceAll(body, []byte("haa-example"), []byte("foreign-project")),
 		"project version":              bytes.ReplaceAll(body, []byte("0.1.0"), []byte("0.2.0")),
-		"compatible Python mutation":   bytes.ReplaceAll(body, []byte("==3.14.7"), []byte(">=3.14.7")),
+		"compatible Python mutation":   bytes.ReplaceAll(body, []byte("=="+runtimeidentity.PythonVersion), []byte(">="+runtimeidentity.PythonVersion)),
 		"new tool config":              append(append([]byte(nil), body...), []byte("[tool.uv]\npackage=false\n")...),
 	} {
 		t.Run(name, func(t *testing.T) {

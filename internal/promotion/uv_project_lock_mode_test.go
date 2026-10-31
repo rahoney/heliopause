@@ -1,6 +1,7 @@
 package promotion
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -21,6 +23,8 @@ func TestUVProjectControlOnlyCacheKeepsApprovedContextAndDoesNotInstall(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	input, err := artifactpypi.ParseUVProjectInput(manifest, lock, true, artifactpypi.UVProjectLockUpgrade, "")
 	if err != nil {
 		t.Fatal(err)

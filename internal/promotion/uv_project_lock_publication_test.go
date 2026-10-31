@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvLockPublicationFixture(t *testing.T) (*UVProjectLockPromotion, domain.InstallContext, []byte, os.FileInfo) {
@@ -21,6 +22,8 @@ func uvLockPublicationFixture(t *testing.T) (*UVProjectLockPromotion, domain.Ins
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	body = append([]byte("# original lock\n"), body...)
 	path := filepath.Join(f.root, "uv.lock")
 	if err := os.WriteFile(path, body, 0o600); err != nil {

@@ -11,6 +11,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -20,6 +21,8 @@ func pipxTargetReceipt(t *testing.T, install domain.InstallContext, bin string) 
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("Python 3.14.7"), []byte("Python "+runtimeidentity.PythonVersion))
 	receipt, err := artifactpypi.ParsePipxToolReceipt(body)
 	if err != nil {
 		t.Fatal(err)

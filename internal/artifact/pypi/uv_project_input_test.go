@@ -15,10 +15,14 @@ func TestUVProjectInputAcceptsPinnedNativeEmptyVirtualProject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	lock, err := os.ReadFile("testdata/uv-0.13.4-empty-project.uv.lock")
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	input, err := ParseUVProjectInput(body, lock, true, UVProjectLockUpgrade, "")
 	if err != nil || input.Project() != "haa-empty-project" || len(input.Requirements()) != 0 {
 		t.Fatal("pinned native virtual project input rejected", err)

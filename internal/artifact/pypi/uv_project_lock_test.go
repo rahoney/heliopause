@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvProjectBody(packages []UVLockedPackage) []byte {
@@ -60,7 +61,7 @@ func TestUVCompleteProjectBindsDisconnectedRootsWithoutPrimary(t *testing.T) {
 	if _, err := single.BindWheels(inputs, pages, target, DefaultWheelLimits()); err == nil {
 		t.Fatal("single-root connected graph invariant was relaxed")
 	}
-	project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), "3.14.7")
+	project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +84,7 @@ func TestUVCompleteProjectRequiresFullIndependentClosure(t *testing.T) {
 	for _, requirement := range []string{"child>=1.0", "child>=2.0", "missing>=1.0", "parent>=1.0"} {
 		t.Run(requirement, func(t *testing.T) {
 			single, inputs, pages := uvTestSelection(t, requirement)
-			project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), "3.14.7")
+			project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), runtimeidentity.PythonVersion)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -94,7 +95,7 @@ func TestUVCompleteProjectRequiresFullIndependentClosure(t *testing.T) {
 		})
 	}
 	single, inputs, pages := uvTestSelection(t, "child>=1.0")
-	project, _ := ParseUVProjectLock(uvProjectBody(single.Packages()), "3.14.7")
+	project, _ := ParseUVProjectLock(uvProjectBody(single.Packages()), runtimeidentity.PythonVersion)
 	install := uvProjectContext(t, "/tmp/uv-complete-fixture")
 	controls := uvProjectControls(t, project)
 	if _, err := project.BindProject(install, controls, inputs[:1], pages, target, DefaultWheelLimits()); err == nil {
@@ -109,7 +110,7 @@ func TestUVCompleteProjectRequiresFullIndependentClosure(t *testing.T) {
 func TestUVProjectControlContextRetainsIndependentWheelBinding(t *testing.T) {
 	for _, tamper := range []bool{false, true} {
 		single, inputs, pages := uvTestSelection(t, "")
-		project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), "3.14.7")
+		project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), runtimeidentity.PythonVersion)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -139,7 +140,7 @@ func TestUVProjectControlContextRetainsIndependentWheelBinding(t *testing.T) {
 
 func TestUVCompleteEmptyIsExplicitAndDoesNotRelaxSingleRoot(t *testing.T) {
 	body := uvProjectBody(nil)
-	project, err := ParseUVProjectLock(body, "3.14.7")
+	project, err := ParseUVProjectLock(body, runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +161,7 @@ func TestUVCompleteEmptyIsExplicitAndDoesNotRelaxSingleRoot(t *testing.T) {
 		t.Fatal("extra original output became empty success")
 	}
 	reference, _ := ParseReference("parent@1.0")
-	if _, err := ParseUVLock(reference, body, "3.14.7"); err == nil {
+	if _, err := ParseUVLock(reference, body, runtimeidentity.PythonVersion); err == nil {
 		t.Fatal("single-root empty input accepted")
 	}
 	if _, err := (UVLock{}).BindWheels(nil, nil, target, DefaultWheelLimits()); err == nil {
@@ -179,7 +180,7 @@ func TestUVCompleteEmptyIsExplicitAndDoesNotRelaxSingleRoot(t *testing.T) {
 		"empty":            nil,
 	} {
 		t.Run(name, func(t *testing.T) {
-			if _, err := ParseUVProjectLock(input, "3.14.7"); err == nil {
+			if _, err := ParseUVProjectLock(input, runtimeidentity.PythonVersion); err == nil {
 				t.Fatal("ambiguous empty selection accepted")
 			}
 		})
@@ -202,7 +203,7 @@ func TestUVCompleteEmptyIsExplicitAndDoesNotRelaxSingleRoot(t *testing.T) {
 func TestUVCompleteApprovalSubjectBindsControlsTargetAndImmutableBytes(t *testing.T) {
 	single, inputs, pages := uvTestSelection(t, "child>=1.0")
 	body := uvProjectBody(single.Packages())
-	project, err := ParseUVProjectLock(body, "3.14.7")
+	project, err := ParseUVProjectLock(body, runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -277,7 +278,7 @@ func TestUVCompleteSubjectSeparatesExactWheelAlternatives(t *testing.T) {
 			pages[i] = page
 		}
 	}
-	project, err := ParseUVProjectLock(uvProjectBody(packages), "3.14.7")
+	project, err := ParseUVProjectLock(uvProjectBody(packages), runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,7 +313,7 @@ func TestUVCompleteNativeFixtureRejectsUnreviewedSourcesAndBudgets(t *testing.T)
 		"download budget": bytes.Replace(body, []byte("size = 136464"), []byte("size = 67108864"), 1),
 	} {
 		t.Run(name, func(t *testing.T) {
-			if _, err := ParseUVProjectLock(input, "3.14.7"); err == nil {
+			if _, err := ParseUVProjectLock(input, runtimeidentity.PythonVersion); err == nil {
 				t.Fatal("unsafe complete native format accepted")
 			}
 		})

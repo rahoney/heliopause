@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestUVOriginalLockRetainsPublicOldGraphButCannotSelectEditedProject(t *testing.T) {
 	old, body, _ := uvNativeProjectFixture(t)
-	manifest := []byte(fmt.Sprintf("[project]\nname=%q\nversion=%q\nrequires-python='==3.14.7'\ndependencies=[]\n", old.project, old.version))
+	manifest := []byte(fmt.Sprintf("[project]\nname=%q\nversion=%q\nrequires-python='=="+runtimeidentity.PythonVersion+"'\ndependencies=[]\n", old.project, old.version))
 	current, err := ParseUVProjectInput(manifest, body, true, UVProjectSync, "")
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +29,7 @@ func TestUVOriginalLockRetainsPublicOldGraphButCannotSelectEditedProject(t *test
 		{"source", "https://pypi.org/simple", "https://example.org/simple"},
 		{"virtual escape", "source={virtual='.'}", "source={virtual='../escape'}"},
 		{"root identity", "name='haa-example'", "name='other'"},
-		{"Python", "requires-python='==3.14.7'", "requires-python='==3.13.0'"},
+		{"Python", "requires-python='==" + runtimeidentity.PythonVersion + "'", "requires-python='==3.13.0'"},
 		{"old constraint", "specifier='<2,>=1.0'", "specifier='>=9'"},
 		{"missing edge", "dependencies=[{name='child'}]", "dependencies=[{name='missing'}]"},
 	} {

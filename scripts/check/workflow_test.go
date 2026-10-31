@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestRepositoryCIWorkflow(t *testing.T) {
@@ -57,7 +59,7 @@ func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fixture := string(contents) + "\n# node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa\n"
+	fixture := string(contents) + "\n# " + runtimeidentity.NodeImageReference + "\n"
 	if findings := validateRuntimeLockWorkflow(root, fixture); len(findings) == 0 {
 		t.Fatal("hand-copied runtime identity was accepted")
 	}

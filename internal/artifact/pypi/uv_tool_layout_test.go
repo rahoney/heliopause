@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/pelletier/go-toml/v2"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestUVToolLayoutPreservesNativeRecipeAndOriginalBytes(t *testing.T) {
@@ -81,6 +83,8 @@ func TestUVToolLayoutRejectsWrongNamespaceAndOverlappingRoots(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	pipxBody = bytes.ReplaceAll(pipxBody, []byte("Python 3.14.7"), []byte("Python "+runtimeidentity.PythonVersion))
 	pipx, err := ParsePipxToolReceipt(pipxBody)
 	if err != nil {
 		t.Fatal(err)

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -30,10 +31,10 @@ func (r *nativeMetadataRunner) Run(_ context.Context, project string, args []str
 		return r.cause
 	}
 	marker := filepath.Join(project, "runtime.json")
-	body := `{"version":"3.14.7","magic":"2b0e0d0a","cache_tag":"cpython-314"}`
+	body := "{\"version\":\"" + runtimeidentity.PythonVersion + "\",\"magic\":\"2b0e0d0a\",\"cache_tag\":\"cpython-314\"}"
 	switch r.mode {
 	case "version":
-		body = strings.ReplaceAll(body, "3.14.7", "3.13.0")
+		body = strings.ReplaceAll(body, runtimeidentity.PythonVersion, "3.13.0")
 	case "cache-tag":
 		body = strings.ReplaceAll(body, "cpython-314", "cpython-313")
 	case "magic":

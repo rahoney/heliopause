@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvNativeProjectFixture(t *testing.T) (UVProjectInput, []byte, UVProjectLock) {
@@ -17,7 +19,7 @@ func uvNativeProjectFixture(t *testing.T) (UVProjectInput, []byte, UVProjectLock
 func uvNativeProjectFixtureWithArchives(t *testing.T) (UVProjectInput, []byte, UVProjectLock, []UVWheelInput, []SimpleProject) {
 	t.Helper()
 	selected, inputs, pages := uvTestSelection(t, "child>=1.0")
-	export, err := ParseUVProjectLock(uvProjectBody(selected.Packages()), "3.14.7")
+	export, err := ParseUVProjectLock(uvProjectBody(selected.Packages()), runtimeidentity.PythonVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +28,7 @@ func uvNativeProjectFixtureWithArchives(t *testing.T) (UVProjectInput, []byte, U
 		t.Fatal(err)
 	}
 	// Structural source/SRI fixture, not a claim of native public acquisition.
-	body := "version=1\nrevision=5\nrequires-python='==3.14.7'\n"
+	body := "version=1\nrevision=5\nrequires-python='==" + runtimeidentity.PythonVersion + "'\n"
 	for _, item := range selected.Packages() {
 		body += fmt.Sprintf("\n[[package]]\nname=%q\nversion=%q\nsource={registry='https://pypi.org/simple'}\n", item.Name, item.Version)
 		if item.Name == "parent" {
@@ -69,10 +71,14 @@ func TestUVNativeProjectLockAcceptsActualEmptyVirtualRootAndExport(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	native, err := os.ReadFile("testdata/uv-0.13.4-empty-project.uv.lock")
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	native = bytes.ReplaceAll(native, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	input, err := ParseUVProjectInput(body, nil, false, UVProjectSync, "")
 	if err != nil {
 		t.Fatal(err)
@@ -81,11 +87,11 @@ func TestUVNativeProjectLockAcceptsActualEmptyVirtualRootAndExport(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	export, err := ParseUVProjectLock(uvProjectBody(nil), "3.14.7")
+	export, err := ParseUVProjectLock(uvProjectBody(nil), runtimeidentity.PythonVersion)
 	if err != nil || lock.ValidateTargetExport(export) != nil {
 		t.Fatal("explicit empty native root/export combination rejected", err)
 	}
-	if _, err := ParseUVNativeProjectLock(input, []byte("version=1\nrevision=5\nrequires-python='==3.14.7'\npackage=[]\n")); err == nil {
+	if _, err := ParseUVNativeProjectLock(input, []byte("version=1\nrevision=5\nrequires-python='=="+runtimeidentity.PythonVersion+"'\npackage=[]\n")); err == nil {
 		t.Fatal("missing virtual root treated as an empty project")
 	}
 }
@@ -96,7 +102,7 @@ func TestUVNativeProjectLockRefusesSourceSchemaGraphAndManifestSubstitution(t *t
 	for name, change := range map[string][2]string{
 		"future version":          {"version=1\n", "version=2\n"},
 		"past revision":           {"revision=5", "revision=3"},
-		"runtime":                 {"==3.14.7", "==3.15.0"},
+		"runtime":                 {"==" + runtimeidentity.PythonVersion, "==3.15.0"},
 		"root name":               {"name='haa-example'", "name='foreign-root'"},
 		"root version":            {"version='0.1.0'", "version='0.2.0'"},
 		"local root":              {"virtual='.'", "virtual='../other'"},
@@ -164,7 +170,7 @@ func TestUVNativeProjectLockRefusesTargetExportSubstitution(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			changed, err := ParseUVProjectLock(uvProjectBody(mutate(export.Packages())), "3.14.7")
+			changed, err := ParseUVProjectLock(uvProjectBody(mutate(export.Packages())), runtimeidentity.PythonVersion)
 			if err != nil {
 				t.Fatal("negative export must be a valid independent selection", err)
 			}

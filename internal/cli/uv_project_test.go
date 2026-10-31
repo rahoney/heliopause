@@ -13,6 +13,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func uvCLIProjectFixture(t *testing.T) string {
@@ -25,6 +26,8 @@ func uvCLIProjectFixture(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	body = bytes.ReplaceAll(body, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	if err := os.WriteFile(filepath.Join(root, "pyproject.toml"), body, 0o644); err != nil {
 		t.Fatal(err)
 	}

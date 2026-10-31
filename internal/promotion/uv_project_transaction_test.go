@@ -11,6 +11,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type uvProjectTransactionFixture struct {
@@ -41,10 +42,14 @@ func newUVProjectTransactionFixture(t *testing.T, existingLock, empty bool) uvPr
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	lock, err := os.ReadFile("../artifact/pypi/testdata/uv-0.13.4-empty-project.uv.lock")
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Project the historical format onto the current runtime; keep captured testdata unchanged.
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	if err := os.WriteFile(filepath.Join(root, "pyproject.toml"), manifest, 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +88,7 @@ func newUVProjectTransactionFixture(t *testing.T, existingLock, empty bool) uvPr
 	}
 	if !empty {
 		manifest = bytes.ReplaceAll(manifest, []byte("dependencies = []"), []byte(`dependencies = ["packaging==25.0"]`))
-		lock = []byte("version=1\nrevision=5\nrequires-python='==3.14.7'\n[[package]]\nname='packaging'\nversion='25.0'\nsource={registry='https://pypi.org/simple/'}\nwheels=[{url='https://files.pythonhosted.org/packages/packaging-25.0-py3-none-any.whl',hash='sha256:" + strings.Repeat("a", 64) + "',size=1}]\n[[package]]\nname='haa-empty-project'\nversion='0.1.0'\nsource={virtual='.'}\ndependencies=[{name='packaging'}]\n[package.metadata]\nrequires-dist=[{name='packaging',specifier='==25.0'}]\n")
+		lock = []byte("version=1\nrevision=5\nrequires-python='==" + runtimeidentity.PythonVersion + "'\n[[package]]\nname='packaging'\nversion='25.0'\nsource={registry='https://pypi.org/simple/'}\nwheels=[{url='https://files.pythonhosted.org/packages/packaging-25.0-py3-none-any.whl',hash='sha256:" + strings.Repeat("a", 64) + "',size=1}]\n[[package]]\nname='haa-empty-project'\nversion='0.1.0'\nsource={virtual='.'}\ndependencies=[{name='packaging'}]\n[package.metadata]\nrequires-dist=[{name='packaging',specifier='==25.0'}]\n")
 	}
 	controls := []domain.ProjectControlFile{}
 	for name, body := range map[string][]byte{"pyproject.toml": manifest, "uv.lock": lock} {
@@ -303,6 +308,8 @@ func TestUVProjectControlsFreezeRefusesAmbiguousSources(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			// Project the historical format onto the current runtime; keep captured testdata unchanged.
+			manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 			path := filepath.Join(root, "pyproject.toml")
 			if err := os.WriteFile(path, manifest, 0o600); err != nil {
 				t.Fatal(err)

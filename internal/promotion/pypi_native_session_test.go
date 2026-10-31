@@ -11,6 +11,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -122,7 +123,7 @@ func (r *nativeUpdateRunner) Run(ctx context.Context, project string, args []str
 			if !strings.Contains(joined, "--network none --read-only") || !strings.Contains(joined, sandbox.PinnedPythonRuntime().ImageReference+" -I -c ") || strings.Contains(joined, r.target) {
 				r.t.Fatal("native runtime query exposed original packages or lost its fixed scope", joined)
 			}
-			return os.WriteFile(filepath.Join(project, "runtime.json"), []byte(`{"version":"3.14.7","magic":"2b0e0d0a","cache_tag":"cpython-314"}`), 0o600)
+			return os.WriteFile(filepath.Join(project, "runtime.json"), []byte("{\"version\":\""+runtimeidentity.PythonVersion+"\",\"magic\":\"2b0e0d0a\",\"cache_tag\":\"cpython-314\"}"), 0o600)
 		}
 	}
 	return r.fixturePyPIUpgradeRunner.Run(ctx, project, args)
