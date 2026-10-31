@@ -1,0 +1,615 @@
+{
+  "work_item": "M13-004 name-independent completion/readiness review",
+  "status": "LOCAL_REVIEW_QUALIFIED_RELEASE_HOSTED_AND_CHANNEL_ACCEPTANCE_OPEN",
+  "product_source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+  "product_tree": "0cdaeaa206c10aa9b93ac45c2c418aab68948d3d",
+  "baseline": "baseline-20261017.md#2026-10-31-이름과-무관한-남은-책임-재대조",
+  "owner_names": "DEFERRED_BY_OWNER; no repeat question or name placeholder",
+  "existing_owners_not_reimplemented": [
+    "ordinary bootstrap prepare acquisition/export/CLI",
+    "root bootstrap-files/provenance verifier",
+    "register/doctor/same-runtime self-update",
+    "native Go/package/manifest producer"
+  ],
+  "assembly": {
+    "source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+    "review_version": "v1.0.0-review.1",
+    "files": 19,
+    "assets": 15,
+    "total_bytes": 601611160,
+    "Go_executables": 6,
+    "all_Go_version": "go1.27.3",
+    "all_embedded_revision_matches": true,
+    "all_VCS_modified": false,
+    "checks": [
+      {
+        "name": "helox-linux-amd64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-amd64",
+          "./cmd/helox"
+        ],
+        "exit_code": 0,
+        "seconds": 33.494
+      },
+      {
+        "name": "helox-linux-arm64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-arm64",
+          "./cmd/helox"
+        ],
+        "exit_code": 0,
+        "seconds": 62.491
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/helox-darwin-amd64",
+          "./cmd/helox"
+        ],
+        "exit_code": 0,
+        "seconds": 33.065
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/helox-darwin-arm64",
+          "./cmd/helox"
+        ],
+        "exit_code": 0,
+        "seconds": 29.918
+      },
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/haa-network-policy-helper-linux-amd64",
+          "./cmd/haa-network-policy-helper"
+        ],
+        "exit_code": 0,
+        "seconds": 0.816
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-buildvcs=true",
+          "-o",
+          "/tmp/haa-m13-current-release-review/dist/haa-release-installer-linux-amd64",
+          "./cmd/haa-release-installer"
+        ],
+        "exit_code": 0,
+        "seconds": 1.569
+      },
+      {
+        "name": "runtime-images",
+        "command": [
+          "go",
+          "run",
+          "./scripts/runtime-image-manifest",
+          "--runtime-lock",
+          "scripts/runtimes.lock.json",
+          "--output",
+          "/tmp/haa-m13-current-release-review/dist/helox-runtime-images.json"
+        ],
+        "exit_code": 0,
+        "seconds": 0.315
+      },
+      {
+        "name": "release-packages",
+        "command": [
+          "go",
+          "run",
+          "./scripts/release-packages",
+          "--version",
+          "v1.0.0-review.1",
+          "--source-date-epoch",
+          "1793413490",
+          "--assets-dir",
+          "/tmp/haa-m13-current-release-review/dist",
+          "--output-dir",
+          "/tmp/haa-m13-current-release-review/dist",
+          "--runtime-lock",
+          "scripts/runtimes.lock.json",
+          "--license",
+          "LICENSE"
+        ],
+        "exit_code": 0,
+        "seconds": 38.988
+      },
+      {
+        "name": "release-manifest",
+        "command": [
+          "go",
+          "run",
+          "./scripts/release-manifest",
+          "--version",
+          "v1.0.0-review.1",
+          "--commit",
+          "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+          "--workflow-run",
+          "https://github.com/rahoney/heliopause/actions/runs/41159991137",
+          "--runtime-lock",
+          "scripts/runtimes.lock.json",
+          "--sbom-output",
+          "/tmp/haa-m13-current-release-review/dist/helox-release-sbom.cdx.json",
+          "--runtime-images",
+          "/tmp/haa-m13-current-release-review/dist/helox-runtime-images.json",
+          "--output",
+          "/tmp/haa-m13-current-release-review/dist/helox-release-manifest.json",
+          "--checksums-output",
+          "/tmp/haa-m13-current-release-review/dist/helox-release-checksums.txt",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-arm64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-darwin-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-darwin-arm64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/haa_gvisor_observer-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/haa-network-policy-helper-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/haa-release-installer-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/pnpm-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/pnpm-NOTICE.txt",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/bun-linux-amd64",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/bun-NOTICE.txt",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/pipx-runtime-linux-amd64.zip",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/pipx-NOTICE.txt",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-amd64.deb",
+          "--asset",
+          "/tmp/haa-m13-current-release-review/dist/helox-linux-amd64.rpm"
+        ],
+        "exit_code": 0,
+        "seconds": 4.226
+      }
+    ],
+    "inventory": [
+      {
+        "name": "bun-NOTICE.txt",
+        "bytes": 14877,
+        "sha256": "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980"
+      },
+      {
+        "name": "bun-linux-amd64",
+        "bytes": 107308936,
+        "sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235"
+      },
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "bytes": 8382607,
+        "sha256": "3d8a0e7beeb5587a111d201054d361f067085b76911d50816f4f8a7523ba5a1a"
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "bytes": 29285185,
+        "sha256": "794bfdf83602ef6eccac4ed0aa563355b6888c2ef6a098c71ec5187041555d3b"
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "bytes": 3251904,
+        "sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "bytes": 27478320,
+        "sha256": "8b1693879b4a24d7e5e69086a5594e72e4e76708276d4d7b505d868713d43df1"
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "bytes": 25147778,
+        "sha256": "e7ba1aabd8519db38f46f35ec296905f3b1bd7389e6967aff98821c7ac30ff99"
+      },
+      {
+        "name": "helox-linux-amd64",
+        "bytes": 49607425,
+        "sha256": "0c6e2ac531b17c73c17a6b13af9ba3550f3c995267023b37599186e7631797f4"
+      },
+      {
+        "name": "helox-linux-amd64.deb",
+        "bytes": 125758324,
+        "sha256": "c4a239b736fbc76c1eba05268b63a90a173b42a3fc6711a4668a5a84c7e37591"
+      },
+      {
+        "name": "helox-linux-amd64.rpm",
+        "bytes": 125776306,
+        "sha256": "2e7133882c18ad795576969e67fbd3c62650012a08c1a356207a2a1bd39b2886"
+      },
+      {
+        "name": "helox-linux-arm64",
+        "bytes": 39252682,
+        "sha256": "f50fe6dbcbe394a2e141f3f4aaf3474da525039fa624e975adad97282222dc24"
+      },
+      {
+        "name": "helox-release-checksums.txt",
+        "bytes": 1601,
+        "sha256": "485d9f7a0afce629c9d75d4380e1abaf9673a043c1c1e8e09af120c641df0cc8"
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "bytes": 4094,
+        "sha256": "2ee3d855b4950c0fca063c1c142ac3691006499b9fa036af6c72f81b82808d9e"
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "bytes": 11238,
+        "sha256": "afe79e7ccaa12d13be9a9ac20b42609065d2479a938d90c4028b869db1d6a118"
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "bytes": 3424,
+        "sha256": "2fa4e89f873d0dbe93a186f83abaeb2ce8665f430fe08ee9bad28d6147d0188d"
+      },
+      {
+        "name": "pipx-NOTICE.txt",
+        "bytes": 44855,
+        "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0"
+      },
+      {
+        "name": "pipx-runtime-linux-amd64.zip",
+        "bytes": 2455948,
+        "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+      },
+      {
+        "name": "pnpm-NOTICE.txt",
+        "bytes": 3152,
+        "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
+      },
+      {
+        "name": "pnpm-linux-amd64",
+        "bytes": 57822504,
+        "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
+      }
+    ],
+    "pinned_runtime_and_CPP_reused": true,
+    "extra_native_CPP_full_CI_repeats": false,
+    "unsigned_DATA_only": true,
+    "ordinary_CI446_workflow_run_field_is_not_release_build_attestation": true,
+    "bundle_consumer": {
+      "source": "e3b2b7011825c6322e5aa8d031716ff51f752a27",
+      "review_version": "v1.0.0-review.1",
+      "checks": [
+        {
+          "name": "verify-complete-bundle",
+          "exit_code": 0,
+          "expected_exit_code": 0,
+          "seconds": 1.708
+        },
+        {
+          "name": "reject-wrong-source",
+          "exit_code": 1,
+          "expected_exit_code": 1,
+          "seconds": 0.108
+        }
+      ],
+      "scope": "existing byte/membership consumer only; unsigned DATA, no provenance authenticity or installation claim",
+      "complete_files": 19,
+      "negative_fixture_changed_no_files": true
+    }
+  },
+  "confirmed_gap": {
+    "owner": ".github/workflows/heliopause-release-build.yml plus existing checker/test",
+    "manifest_image_names": [
+      "node",
+      "python",
+      "golang",
+      "rust",
+      "uv"
+    ],
+    "old_release_registry_checks": 4,
+    "missing": "UV lock-bound registry inspection and its omission rejection",
+    "red": {
+      "exit_code": 1,
+      "seconds": 2.306,
+      "test": "TestValidateReleaseWorkflowRejectsSecurityRegressions/missing_uv_image_inspection",
+      "error": "validateReleaseWorkflow findings = none, want non-empty"
+    },
+    "minimal_fix": "two workflow lines; reuse validateOrderedNativeReleaseSupply in existing release validator; extend existing rejection-case map",
+    "new_function_job_profile_package": false,
+    "sources": [
+      {
+        "path": ".github/workflows/heliopause-release-build.yml",
+        "sha256": "5e9764606beec4a07d5144ec297d3df02f5e7a9896c9039b4530d8f5e89d9137"
+      },
+      {
+        "path": "scripts/check/workflow.go",
+        "sha256": "b5528db7b86621c6360493156f31764efe7084bc303abc86f876a5b7c9e9d9de"
+      },
+      {
+        "path": "scripts/check/workflow_test.go",
+        "sha256": "fd5a0de6e40928cac5f1fa364b43c3e080d87b6281f5ceba077314b3e44e7f45"
+      }
+    ],
+    "checks": [
+      {
+        "step": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.68,
+        "started_at": "2026-10-31T04:37:39.023125+00:00"
+      },
+      {
+        "step": "workflow",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "workflow"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.703,
+        "started_at": "2026-10-31T04:37:40.766953+00:00"
+      },
+      {
+        "step": "focused",
+        "command": [
+          "go",
+          "test",
+          "-trimpath",
+          "-count=1",
+          "./scripts/check",
+          "-run",
+          "^TestValidateReleaseWorkflowRejectsSecurityRegressions$"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.595,
+        "started_at": "2026-10-31T04:37:42.470347+00:00"
+      },
+      {
+        "step": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 90.498,
+        "started_at": "2026-10-31T04:37:44.065789+00:00"
+      },
+      {
+        "step": "checker-race",
+        "command": [
+          "go",
+          "test",
+          "-trimpath",
+          "-race",
+          "-count=1",
+          "./scripts/check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 94.716,
+        "started_at": "2026-10-31T04:39:14.564002+00:00"
+      }
+    ],
+    "new_cases": [
+      "missing UV inspect",
+      "wrong UV source",
+      "inspect before selection",
+      "commented inspect",
+      "echoed inspect",
+      "duplicate inspect"
+    ]
+  },
+  "registry_checks": {
+    "exact_buildx": {
+      "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+      "command": [
+        "docker",
+        "buildx",
+        "imagetools",
+        "inspect",
+        "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+      ],
+      "exit_code": 1,
+      "seconds": 0.119,
+      "read_only_registry_inspection": true,
+      "pull_run_install_or_CI": false
+    },
+    "exact_buildx_status": "NOT_REACHED: local Docker has no buildx plugin",
+    "legacy_builtin": {
+      "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+      "command": [
+        "docker",
+        "manifest",
+        "inspect",
+        "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+      ],
+      "exit_code": 1,
+      "seconds": 1.437,
+      "scope": "registry metadata availability via existing Docker built-in; not a successful buildx execution",
+      "no_image_pull_or_run": true
+    },
+    "legacy_lower_cause": "UNKNOWN; do not claim missing/changed UV image or a product-caused failure",
+    "independent_original_bytes": {
+      "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+      "status": 200,
+      "content_type": "application/vnd.oci.image.manifest.v1+json",
+      "claimed_digest": "sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+      "body_sha256": "sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+      "bytes": 669,
+      "seconds": 0.538,
+      "matches_lock": true,
+      "anonymous_public_pull_scope_only": true,
+      "auth_token_logged_or_saved": false,
+      "redirects_followed": false,
+      "scope": "independent registry-byte verification, not Docker buildx command success"
+    },
+    "production_command_substituted": false,
+    "pin_or_security_condition_relaxed": false,
+    "new_tool_installed": false
+  },
+  "IMPLEMENTED": "YES (reviewed existing producer and narrow UV guard fix)",
+  "WIRED": "YES (same existing step and validator)",
+  "QUALIFIED": "YES (local assembly/byte consumer/static workflow and checker regressions); actual current Release Build NOT_QUALIFIED",
+  "ACCEPTANCE_CLOSED": "YES (bounded local review); NO (whole M13 channels/signed/clean-Host release acceptance)",
+  "MISSING": [
+    "owner-selected registry names/publisher binding and channel implementation/qualification",
+    "actual protected Release Build including exact Buildx execution/attestation on the authorized release candidate",
+    "signed current-source/clean-Host/publication acceptance in its existing milestone scope"
+  ],
+  "new_CI_tag_publish_Host_install": false,
+  "raw_originals": [
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--input-identity.json",
+      "bytes": 1249,
+      "sha256": "dc3cfa2328bb3d98c0e244cd79d58e0ea64809462a6d509d222cece6ebb00fdc"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--checks.json",
+      "bytes": 4780,
+      "sha256": "281b25043c58b674692e006cbc0121b40150546fea708049505f550be79ec403"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--assembly-result.json",
+      "bytes": 8649,
+      "sha256": "aefd972398d3d948a3de0a3c95e00e750c1f06d5048abc2acba189af493d4458"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--bundle-verification-result.json",
+      "bytes": 558,
+      "sha256": "1e00b3a612c6a6cd1b6a5b6a20c4837810f7355fe404b621fde53a1bb5d4437f"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--verify-complete-bundle.stdout",
+      "bytes": 441,
+      "sha256": "93c44791eec41129926223810014c8d884e167f7805cc57f42502c87609c8ca5"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--verify-complete-bundle.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-current-release-review--reject-wrong-source.stderr",
+      "bytes": 88,
+      "sha256": "79f8c29c27734ebccb1570738d62608501961d19480d84075fd008125933c43c"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--red.log",
+      "bytes": 328,
+      "sha256": "b9ce3c74ad6e2cb5c6a279eaca9b8000b2af3af260217f0cb40b71f1d0f7c3d9"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--red-result.json",
+      "bytes": 103,
+      "sha256": "174f4a6b3b88c3a86d69d653398d702430faec9f56a952f3aecba0b043da69c7"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--source-freeze.json",
+      "bytes": 422,
+      "sha256": "e0402aca1e948af5f6c4374dea90d1c8045b27eb498fee5d03788ccc46547490"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--workflow-result.json",
+      "bytes": 229,
+      "sha256": "b43e3c9c428ec95e84f2f700b0248e89ea592033b963abb65143d09541f86e09"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--focused-result.json",
+      "bytes": 321,
+      "sha256": "eb52995dd7bd60846b0afc33ab72347843fe95060e51ed725ab27a3b8c933a42"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--quick.log",
+      "bytes": 1354,
+      "sha256": "39683338216e736e37150f38e098fe205397ad4ddb6f361c25c22853996c7d99"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--quick-result.json",
+      "bytes": 224,
+      "sha256": "29ff5c2ac771c46ca3154008f13e3f48d2d404ecd0246d4390f11a9765e5a867"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--checker-race.log",
+      "bytes": 57,
+      "sha256": "a266d2f94f0f4b209c4a85c7dbeda9781fa65cfd641a8978e442b03d0d5161ed"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--checker-race-result.json",
+      "bytes": 265,
+      "sha256": "10964ba3a199fc7b99c4ca5d5fbefb61a7ec4478e1d34c13bf8b6c41419d776e"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-inspect-result.json",
+      "bytes": 422,
+      "sha256": "5c3737af07bee8ff9e0b5059c1d22cab0647c5fcf2728e65ca6ea270d3f486f1"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-inspect.stderr",
+      "bytes": 81,
+      "sha256": "e95c9c481ad1108b62436f0c72f4dc191f7a4df50012b51c76577af098068123"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-manifest-result.json",
+      "bytes": 471,
+      "sha256": "ab6dbae57a57be88e6bb6854b7822f8e788ebc5217df2f5d1f34fa19464c9dbb"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-manifest.stderr",
+      "bytes": 112,
+      "sha256": "5f2f6e1661de59039611cc4c13af9c62fe14ba772180e028f73927324d8277dd"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-registry-byte-proof.json",
+      "bytes": 651,
+      "sha256": "06d3c4870e7475a6e70f43658397d8e58658def28fe35d03488cc117c511f1fc"
+    },
+    {
+      "path": "docs/github-logs/m13-004-name-independent-review-20261031/haa-m13-uv-release-inspect-review--uv-registry-manifest-public.json",
+      "bytes": 669,
+      "sha256": "f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+    }
+  ],
+  "raw_storage": "local only; no public upload/remote delivery claim",
+  "closing_checks": {
+    "docs": {
+      "exit_code": 0,
+      "seconds": 0.335
+    },
+    "security": {
+      "exit_code": 0,
+      "seconds": 12.563
+    }
+  }
+}

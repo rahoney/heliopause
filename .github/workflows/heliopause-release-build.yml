@@ -78,10 +78,12 @@ jobs:
           python_image="$(jq -er '.python_image.reference' scripts/runtimes.lock.json)"
           rust_image="$(jq -er '.rust_image.reference' scripts/runtimes.lock.json)"
           go_image="$(jq -er '.go_image.reference' scripts/runtimes.lock.json)"
+          uv_image="$(jq -er '.uv_image.reference' scripts/runtimes.lock.json)"
           docker buildx imagetools inspect "$node_image" >/dev/null
           docker buildx imagetools inspect "$python_image" >/dev/null
           docker buildx imagetools inspect "$rust_image" >/dev/null
           docker buildx imagetools inspect "$go_image" >/dev/null
+          docker buildx imagetools inspect "$uv_image" >/dev/null
           go run ./scripts/release-packages \
             --version "$GITHUB_REF_NAME" \
             --source-date-epoch "$(git show -s --format=%ct "$GITHUB_SHA")" \

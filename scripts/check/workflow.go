@@ -378,6 +378,12 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validatePNPMReleaseSupply(contents)...)
 	findings = append(findings, validateBunReleaseSupply(contents)...)
 	findings = append(findings, validatePipxReleaseSupply(contents)...)
+	findings = append(findings, validateOrderedNativeReleaseSupply(contents, "UV runtime image", []string{
+		`go run ./scripts/runtime-image-manifest \`,
+		`uv_image="$(jq -er '.uv_image.reference' scripts/runtimes.lock.json)"`,
+		`docker buildx imagetools inspect "$uv_image" >/dev/null`,
+		`go run ./scripts/release-packages \`,
+	})...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",
