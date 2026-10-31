@@ -80,7 +80,7 @@ func (s *Server) handle(ctx context.Context, connection *net.UnixConn) {
 		return
 	}
 	reader := bufio.NewReaderSize(connection, maxMessageBytes+1)
-	body, readErr := reader.ReadBytes('\n')
+	body, readErr := reader.ReadSlice('\n')
 	if readErr != nil || len(body) < 2 || len(body) > maxMessageBytes {
 		return
 	}

@@ -625,7 +625,7 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 			if err != nil {
 				return
 			}
-			body, err := bufio.NewReaderSize(connection, maxObservationResourceMessage+1).ReadBytes('\n')
+			body, err := bufio.NewReaderSize(connection, maxObservationResourceMessage+1).ReadSlice('\n')
 			if err != nil || len(body) < 2 || len(body) > maxObservationResourceMessage {
 				return
 			}

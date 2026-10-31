@@ -9788,6 +9788,7 @@ int main(int argc, char** argv) {
   if (output < 0 || pipe(readiness) != 0) return 1;
   const pid_t child = fork();
   if (child == 0) {
+    umask(0000);
     close(readiness[0]);
     char ready_arg[32]; snprintf(ready_arg, sizeof(ready_arg), "--ready-fd=%d", readiness[1]);
     char* arguments[] = {const_cast<char*>("haa_gvisor_observer"), const_cast<char*>(remote.c_str()), const_cast<char*>(output_path.c_str()), const_cast<char*>(control.c_str()), ready_arg, nullptr};
@@ -9795,7 +9796,10 @@ int main(int argc, char** argv) {
   }
   close(readiness[1]);
   char ready = '\0';
-  const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
+  struct stat remote_info{}, control_info{};
+  const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R' &&
+      lstat(remote.c_str(), &remote_info) == 0 && (remote_info.st_mode & 0777) == 0700 &&
+      lstat(control.c_str(), &control_info) == 0 && (control_info.st_mode & 0777) == 0700;
   close(readiness[0]);
   const bool profile = HasPinnedPodInitProfile();
   const bool profile_limits = HasBoundedProfileRecordLimits();

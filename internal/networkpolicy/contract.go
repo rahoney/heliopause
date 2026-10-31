@@ -50,7 +50,7 @@ func NewResolverPolicy(session domain.SandboxSessionID, networkID string, subnet
 	seen := make(map[netip.Addr]struct{}, len(endpoints))
 	canonical := make([]netip.Addr, 0, len(endpoints))
 	for _, endpoint := range endpoints {
-		if !endpoint.IsValid() || !endpoint.Is4() || endpoint.IsPrivate() || endpoint.IsLoopback() || endpoint.IsMulticast() || endpoint.IsUnspecified() {
+		if !endpoint.Is4() || !endpoint.IsGlobalUnicast() || endpoint.IsPrivate() {
 			return ResolverPolicy{}, errors.New("resolver policy endpoint set is invalid")
 		}
 		if _, duplicate := seen[endpoint]; duplicate {

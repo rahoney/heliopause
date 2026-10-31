@@ -316,7 +316,7 @@ func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error 
 	if err != nil {
 		return err
 	}
-	if _, err := command.CombinedOutput(); err != nil {
+	if err := command.Run(); err != nil {
 		return errors.New("trusted Docker command failed")
 	}
 	return nil

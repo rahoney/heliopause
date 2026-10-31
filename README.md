@@ -11,7 +11,7 @@
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 저장소 보호·M13-003 build/package 검증, CLI-UX-001·002 CLI 사용성·OS 언어 감지와 SEC-UPD-001 업데이트 검역 (`COMPLETE`)
 - 최근 완료: CLI-UX-003 대화형 시작 화면 (`COMPLETE`). 소스4cfe29e의 [CI352](https://github.com/rahoney/heliopause/actions/runs/39316007445)에서 macOS·Linux 실제 소비자·Required 포함 열 개 검사가 성공했다. [Qualification](docs/planning/evidence/cli-launcher/qualification-20261020.md)이 소스·복원·정리와 과거 실패의 범위를 연결한다. 기존 보안·파일 한도와 게시 전 전체 동기화를 유지했다. [업데이트 검역](docs/planning/evidence/update-quarantine/final-review-20261019.md)은 기존 여섯 생태계 범위에서 완료 상태다. PR38은 draft이며 main 병합·영구 CLI 활성화·공개 배포는 별도다.
-- 현재 작업: M13-004 IN_PROGRESS. Same-runtime 검역 업데이트·P1 UV·Go1.27.3 전환은 완료했다.
+- 현재 작업: M13-004 IN_PROGRESS. 이름 결정 전에 [전체 코드·보안 감사](docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 진행한다. Same-runtime 검역 업데이트·P1 UV·Go1.27.3 전환은 완료했다.
   현재 client/runner 지원 lane의 source `ec1c260`은 [CI442 ordinary/CPU](docs/planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json)와
   [cu126](docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json)·[cu130](docs/planning/evidence/package-client-quarantine/p7-cu130-final-qualification-20261031.json)·[cu132](docs/planning/evidence/package-client-quarantine/p7-cu132-final-qualification-20261031.json)의 Required10SUCCESS로 검증했다.
   [지원표](docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)는 실제 지원과 미구현 범위를 구분한다.

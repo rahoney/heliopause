@@ -7,6 +7,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -6702,6 +6703,7 @@ int main(int argc, char** argv) {
     if (end == argv[4] + 11 || *end != '\0' || parsed_ready_fd < 0 || parsed_ready_fd > INT32_MAX) errx(2, "invalid readiness file descriptor");
     ready_fd = static_cast<int>(parsed_ready_fd);
   }
+  umask(0077);
   int listener = socket(AF_UNIX, SOCK_SEQPACKET, 0);
   if (listener < 0) err(1, "socket remote");
   sockaddr_un address{}; address.sun_family = AF_UNIX;

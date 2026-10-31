@@ -31,9 +31,6 @@ var goModuleSource = mustSource("go-proxy")
 // Source is the one supported public Go module source identity.
 func Source() domain.SourceID { return goModuleSource }
 
-// Endpoints are fixed by the M12 source contract and are not user input.
-func Endpoints() (string, string) { return proxyEndpoint, sumDBEndpoint }
-
 // ResolverEnvironment is the complete Go resolver policy. Callers must pass
 // this environment explicitly to an isolated `go` process; inheriting the
 // caller's GOPROXY/GOPRIVATE/GOVCS is forbidden.

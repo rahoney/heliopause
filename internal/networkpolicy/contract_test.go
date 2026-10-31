@@ -31,6 +31,8 @@ func TestNewResolverPolicyRejectsUntrustedControlInputs(t *testing.T) {
 		{"not-a-docker-id", netip.MustParsePrefix("172.30.0.0/24"), []netip.Addr{netip.MustParseAddr("1.1.1.1")}},
 		{"0123456789abcdef", netip.MustParsePrefix("8.8.8.0/24"), []netip.Addr{netip.MustParseAddr("1.1.1.1")}},
 		{"0123456789abcdef", netip.MustParsePrefix("172.30.0.0/24"), []netip.Addr{netip.MustParseAddr("10.0.0.1")}},
+		{"0123456789abcdef", netip.MustParsePrefix("172.30.0.0/24"), []netip.Addr{netip.MustParseAddr("169.254.169.254")}},
+		{"0123456789abcdef", netip.MustParsePrefix("172.30.0.0/24"), []netip.Addr{netip.MustParseAddr("255.255.255.255")}},
 		{"0123456789abcdef", netip.MustParsePrefix("172.30.0.0/24"), []netip.Addr{netip.MustParseAddr("1.1.1.1"), netip.MustParseAddr("1.1.1.1")}},
 	} {
 		if _, err := NewResolverPolicy(session, test.id, test.subnet, test.endpoints); err == nil {

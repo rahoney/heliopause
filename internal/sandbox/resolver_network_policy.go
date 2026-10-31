@@ -158,7 +158,7 @@ func validateResolverEndpoints(endpoints []netip.Addr) error {
 	}
 	seen := map[netip.Addr]bool{}
 	for _, endpoint := range endpoints {
-		if !endpoint.IsValid() || !endpoint.Is4() || endpoint.IsPrivate() || endpoint.IsLoopback() || endpoint.IsMulticast() || endpoint.IsUnspecified() || seen[endpoint] {
+		if !endpoint.Is4() || !endpoint.IsGlobalUnicast() || endpoint.IsPrivate() || seen[endpoint] {
 			return errors.New("resolver endpoint set is invalid")
 		}
 		seen[endpoint] = true

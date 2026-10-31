@@ -437,6 +437,10 @@ func newSharedObserver(endpoint string, removeStale bool) (*SharedObserver, erro
 	if err != nil {
 		return nil, err
 	}
+	if err := os.Chmod(endpoint, 0o600); err != nil {
+		_ = listener.Close()
+		return nil, errors.New("protect observer output endpoint")
+	}
 	endpointID, err := os.Lstat(endpoint)
 	if err != nil {
 		_ = listener.Close()
