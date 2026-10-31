@@ -25,7 +25,9 @@ M5-001은 contract/queue만 만든다. Go package, Python/pip image/runtime lock
 
 ### M5-002 runtime identity와 target basis
 
-M5 automatic path의 유일한 runtime은 Linux amd64 Docker Official Image `python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52`이다. 이는 mutable tag가 아닌 OCI index digest다. Python identity는 `3.14.7`, bundled pip identity는 `26.2.1`로 lock한다. CPython 3.14.7은 2026-08-05의 current stable maintenance release이고, pip 26.2.1은 2026-08-04의 latest stable release다. CPython 3.14 maintenance line에는 earlier pip archive-handling security fix를 포함한 pip 26.1 update가 backport되었으므로, M5는 그보다 최신인 26.2.1을 사용한다.
+Automatic path는 Linux amd64의 exact Docker Official Python image/CPython/bundled pip만 사용하며, 현재 세 identity는 `scripts/runtimes.lock.json`이 소유한다. Mutable tag·ambient version으로 대체하지 않는다. 2026-10-31 보안 패치와 같은 cp314 target의 새 검증은 [전체 감사](../planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 따른다.
+
+M5 당시 선택은 `python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52`/Python3.14.7/pip26.2.1이었다. 아래 해당 release·backport 링크는 그 역사적 선택의 근거이며 현재 pin의 별도 owner가 아니다.
 
 - fixed target tag **basis**는 `cp314` interpreter, `cp314` ABI, `manylinux_2_36_x86_64` platform이다. 이 값은 Debian bookworm glibc target을 나타내며 arbitrary Host tag·architecture로 fallback하지 않는다. M5-003 resolver는 locked container 안에서 reported Python/pip version 및 `pip debug --verbose` compatible-tag closure를 다시 확인해 candidate selection input을 만들며, mismatch·unknown tag·unavailable command는 incomplete다.
 - `scripts/runtimes.lock.json`이 image reference, Python/pip version과 target basis의 single runnable lock input이다. `internal/sandbox.PinnedPythonRuntime`과 lock의 mismatch는 test failure다.

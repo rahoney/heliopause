@@ -331,6 +331,9 @@ format/schema/drift
 
 - Python ABI 변경 때는 wheel availability와 supported graph를 먼저 확인해
   대용량 download 뒤에야 불가능한 조합을 발견하지 않도록 한다.
+- Python image의 bundled pip patch가 바뀌면 기존 observer의 exact pip dist-info
+  runtime-root 경로도 함께 대조한다. Site-packages 전체 허용으로 대체하지 않으며,
+  변경된 경로의 정상 read와 old/유사 경로·write 거부를 기존 latch에서 확인한다.
 - Disk·memory·시간·artifact graph 예산과 retained data를 preflight에서 확인한다.
   기존 budget을 올리거나 필수 coverage를 낮춰 성공시키지 않는다.
 - RAM은 시작 시 free 값만 읽지 않고 selected resource policy의 shared tmpfs와

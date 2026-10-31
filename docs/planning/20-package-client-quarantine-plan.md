@@ -35,8 +35,7 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 | pipx | 1.18.4 | 없음 | 후보, exact 버전 backend/metadata 확인 필요 |
 | npm / npx | 12.2.1 | npm11.19.0 / Node24.21.0 | major 변경; npx 작업을 이유로 자동 업그레이드하지 않음 |
 
-Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64와 기존 Python/Node/Rust image는
-유지한다. Baseline 이후 Go repository pin은 reachable 보안 patch1.26.10으로 갱신했고
+2026-10-21 baseline에서는 Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64와 당시 Python/Node/Rust image를 유지했다. 현재 pin은 canonical runtime lock을 따르며, 이후 보안 패치·qualification은 [2026-10-31 전체 감사](./evidence/m13-004-convenience/full-source-audit-20261031.md)를 따른다. Baseline 이후 Go repository pin은 reachable 보안 patch1.26.10으로 갱신했고
 초기 [Go1.26.10 qualification의 실패·부분 성공](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)은 당시 source 범위로 보존한다. 이후 현 P1 후보는 네 profile과 Required를 모두 통과했다. Host activation은 별도다. 첫 버전 관측은 API metadata였고, 후속 signed/native 공급·단일 pin·개발 유지보수·[data transport](./evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)와 production UV pip runtime/admission·CLI actual 검증은 P1 누적 결과를 따른다.
 위 버전 표는2026-10-21 첫 감사 당시 관측이다. 이후 채택한 현재 PNPM/Bun pin은
 `scripts/runtimes.lock.json` 단일 owner와 각 qualification leaf를 따르며 당시의 “없음”을

@@ -1,13 +1,14 @@
 # 이름 결정 전 전체 코드·보안 감사
 
-Status: IN_PROGRESS. Owner: M13-004. 사용자 2026-10-31 요청에 따라 전체 저장소 감사 범위를 명시적으로 확대한다. 이름 결정·등록·게시·main merge는 포함하지 않는다.
+Status: IN_PROGRESS — local configuration/security PASS; CI447 ordinary/CPU FAIL, first macOS/Linux failures under investigation, required CUDA3 NOT_REACHED. Owner: M13-004. 사용자 2026-10-31 요청에 따라 전체 저장소 감사 범위를 명시적으로 확대한다. 이름 결정·등록·게시·main merge는 포함하지 않는다.
 
 ## 기준선과 완료 기준
 
 - Source: `21a0a25214cce425d1204c63a47935170f68ca71`, branch `milestone/m13-release-build-packages`; 원격보다 local 두 commit 앞. 감사 시작 시 tracked 수정은 Queue뿐이며 기존 untracked 자료는 보존한다.
 - 기존 구현: IMPLEMENTED=YES / WIRED=YES는 원래 bounded P2..P7 기능 범위에만 해당한다. 새 감사나 새 signed release의 완료 판정이 아니다.
-- 이번 감사: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-- MISSING: 전체 inventory/자동 검사 범위 매핑, 미사용·중복·복잡도 검토, 신뢰 경계별 사람 검토, 현재 취약점 DB·secret history 검사, 확정 문제의 최소 교정과 회귀, 최종 변경/검증/미검증 경계 대조.
+- 감사 시작 baseline: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+- 현재 교정/감사 연결: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Local configuration7·vulnerability/history·표적은 PASS이며 새 hosted ordinary/CPU·세CUDA가 남는다.
+- 시작 MISSING: 전체 inventory/자동 검사 범위 매핑, 미사용·중복·복잡도 검토, 신뢰 경계별 사람 검토, 현재 취약점 DB·secret history 검사, 확정 문제의 최소 교정과 회귀, 최종 변경/검증/미검증 경계 대조. 현재 MISSING은 새 hosted qualification과 그 결과·정리·최종 상태 대조다.
 - 완료는 모든 maintained owner의 검토/도구 coverage와 finding disposition, 필요한 교정/회귀를 연결했을 때만 판정한다. 알려진 취약점이 발견되지 않거나 테스트가 통과해도 모든 버그 부재를 증명하지 않는다.
 
 ## 범위와 방법
@@ -102,3 +103,23 @@ MISSING: 최종 frozen combined source의 canonical 검증, 새 공통 Python/Do
 `bc96cd9`의 same-version reconciliation plan/apply는 PASS지만 verify는 bootstrap PASS 뒤 Quick FAIL이다. Format/drift/build/architecture/workflow/vet/Staticcheck는 PASS이며 default49 package가 모두 종료했다. 최초 실패는 PyPI pipx receipt의 Python mismatch다. 영향5 package(PyPI/CLI/Sandbox/checker/Promotion)의 current fixture에 old exact Python/pip와 old copied Node image가 남아 있다. Timeout으로 판정하거나 제품의 pinned-version guard를 완화하지 않는다. Edit map: 기존 current test builder의 version literal을 compiled runtime identity로 연결하고, historical native capture를 읽는 기존 test loader에서 해당 runtime field만 명시적으로 projection한다. 원본 testdata/과거 receipt bytes는 보존한다. Checker의 copied-image negative도 현재 compiled image로 구성한다. 일반 parser의 explicit historical-version 검사와 관련 없는 fixture는 수정하지 않는다. Production protocol/한도/CPP/권한은 불변이며 먼저 영향5 package 표적을 모아 검사한다. 원본은 `combined-reconcile/verification-1774467124/verify-quick.log`와 `current-fixture-failures.json`이다.
 
 후속 current fixture 교정은29개 기존 test source에만 적용했다. 역사적 testdata/원본 capture와 production 코드는 바꾸지 않았다. 첫 표적에서 새 Node 상수 이름 오기/공유 lower-bound fixture의 metadata mismatch를 확인했고, 잘못 바뀐 lower bound는 원복해 historical parser 검사를 보존했다. V2에서 CLI/Sandbox/Promotion/checker가 PASS74.438s operator이며 PyPI의 no-op mutation 한 건만 남았다. 그 원래 lower-bound needle을 복구한 PyPI 최종 표적5.487s가PASS다. 전체 저장소의 버전 문자열을 무조건 교체하는 방식 대신 current builder·명시적 runtime field projection·실제 변조 지점을 사용했다. 최종 combined configuration은 새 frozen commit에서 재확인하며 같은 Go/tool lock의 독립 실제 cache 사본을 재사용해 도구 재빌드를 피한다. 앞 실패/후속 표적을 최종 whole Quick 성공으로 확대하지 않는다.
+
+## 최종 local 검증과 CI447 진행
+
+Source `f6c03493a209fdd87ac122439eb6ff8f48bdfa60`/tree `f2cf8435d7afd40a7ebe7ed6729b571dbe30785c`/3258 tracked inputs를 고정했다. 기존 updater same-version plan5.551s/apply12.145s/verify598.969s는 configuration7 profiles 모두PASS다. 실제 독립 checked source는 `combined-final/verification-11566562/source`이며 source/후보 입력은 검사 전후 일치한다. 현재 canonical vulnerability28.434s·새 커밋을 포함한 security-history155.610s도PASS다. 후자는 기존 두 official wheel MD5 exact false positive만 구분하고 모든 scanner rule을 유지했다. 원본·명령·hash는 `/tmp/haa-full-audit-20261031/final-local-qualification.json`이 소유한다.
+
+추가 [OSV batch 조회](https://google.github.io/osv.dev/post-v1-querybatch/)는 lock hash를 확인한 Python 도구 공급 identity와 bundled pip/npm13개에서 등록 vulnerability0을 반환했다. Known vulnerable requests2.19.1 대조군은10건이며 HTTP200/전체14 results/추가 page 없음까지 확인했다. 이는 해당 DB와 명시한13개 package 범위이며 모든 runtime OS package/미공개 취약점 부재를 증명하지 않는다. `supply-osv-query/response/result.json`이 입력·원본·현재 시각·SHA를 보존한다.
+
+정상 FF `e3b2b70→f6c0349`로 한 번 push했고 [CI447/run41180577563](https://github.com/rahoney/heliopause/actions/runs/41180577563)은 ordinary/CPU 검증이다. 실제 시작07:25:57UTC/16:25:57KST, 첫20분 due07:45:57UTC/16:45:57KST다. 기존 읽기 전용 worker `/tmp/haa-ci-20min-get-worker.py`를 재사용했다. 단일 PID1058029/start ticks10720903/session49581/config `/tmp/haa-audit-ci447-autopoll-config.json`은 actual timed queries0으로 등록됐으며 완료 조회를 미리 주장하지 않는다. 최종 status/최초 실패/정리 확인 뒤에만 다음 CUDA profile을 순차 실행한다. 새 CI source 검증/보안 floor Host activation은 아직OPEN이며 기존 성공을 전용하지 않는다.
+
+CI 대기 중 current contract의 version 표기를 대조했다. M3/M4/M5와 P1 baseline의 과거 Node/Python/Docker qualification은 역사적 범위로 명시하고 현재 값의 owner를 기존 runtime lock으로 통일했다. ABI/platform·exact digest·fail-closed 조건은 불변이며 이 문서 정정은 진행 중CI의 frozen source 입력을 바꾸거나 추가 CI를 만들지 않는다. Historical evidence와 testdata는 수정하지 않는다.
+
+최종 local의 원본53개/405796B는 `docs/github-logs/full-source-audit-20261031/`에 보존했다. Temporary source/cache/SDK는 복사하지 않았다. `persistent-local-raw-index.json`은 각 실제 파일 SHA/size를 소유하며 최종 canonical qualification receipt에 연결한다. 현재 raw는 기존 Git 미추적 영역이고 원본 전체가 원격에 보관됐다고 주장하지 않는다.
+
+## CI447 최초20분 결과 — FAIL / 원인 조사
+
+Actual timed GET1은07:45:57.000159UTC 시작/07:45:57.838467UTC 종료에 terminal failure를 확인했다. Worker session49581/PID1058029는 자연exit0, next due null이다. Seven jobs SUCCESS, macOS/Linux/Required FAIL이며 source/실제 checkout4a4a49df의 whole tree는f2cf8435로 같다. Mac 최초 오류는 새 framing test의 긴 t.TempDir socket path가 sun_path 한도를 넘어 bind EINVAL인 것이다. Edit map은 같은 test의 private short temporary directory만 변경하며 macOS skip/guard 완화는 하지 않는다. Linux는 새 Docker29.9.2 설치·CPP133·trusted executor·UV native3/npx install 뒤 첫 packaging25 target tags에서 STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_IMAGE/PYTHON CONTROL/kernel UNKNOWN이다. Source 변경 뒤의 실패만으로 Python patch/umask를 원인으로 단정하지 않는다. Exact fault/source/기존CI446/새 runtime bytes를 먼저 대조하고 existing owner에서 필요한 최소 수정만 한다. 전체 ordinary cohort·CPU full·CUDA3은 NOT_REACHED다. 원본 두 로그와 actual poll metadata는 `docs/github-logs/full-source-audit-20261031/ci447-*`에 보존했고 `ci447-failure-result.json`이 결과 범위를 소유한다.
+
+Linux 원인 대조: fault flags624640은 read-only directory open이다. 고정 old/new image의 data-only catalogue를 조회해 해당 locator의 유일한 실제 path가 새 `/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info`임을 확인했다(old에는 없음). FNV는 lookup 진단에만 사용하며 authentication으로 쓰지 않는다. 기존 `IsPinnedRuntimeRootRead`는 exact old pip-26.2.1 dist-info 두 경로만 허용한다. 현재 source/새 immutable image/실제 fault가 대응하므로 단순한 수정 뒤 발생 추측과 구분한다. Edit map: 기존 C++ 두 exact path를 현재 bundled pip26.2.2로 맞추고 기존 latch의 현재 directory/read 정상과 old/wrong-version·neighbor·write 거부를 확장한다. Site-packages 전체/Artifact/role/lineage·network 권한은 확대하지 않는다. Mac는 같은 regression test의 짧은 private temp directory만 교정한다. 새 구조/helper/config/job 없이 두 실패를 묶고, C++ source가 실제 바뀌므로 새 full133을 한 번 실행한다. `ci447-python-locator-lookup.json`이 immutable ref/실제 path/조회 범위를 소유한다.
+
+CI447 후속 local: 같은53-byte TMPDIR에서 실패 source의 기존 binary exit1 / 짧은 temp directory 수정본 exit0을 확인했다. 새 socket path 최대79byte로 macOS104byte 한도 안이며 test-only 변경이다. 실제 새 C++는 동일 pinned builder/Go/Bazel/자원 한도에서 full133 PASS54.526s다. Source observer2f8dde13/latch8c57dc93·새 helper4ca33a7482d9943a06aa9a134b302862a023bbfbd54bb12c2172131f115e737e를 기록했다. Pod-init/SDK/runtime lock 세 owner는 불변이다. 기존 role/provenance/Artifact 경계를 유지하고 현 bundled pip metadata read·old/neighbor/write negatives를 같은 latch 안에 추가했다. 현재 runtime pin의 source와 전 platform Go production은f6와 같으므로 f6 local configuration/vulnerability/history·OSV의 해당 입력 범위를 재사용하되 새 C++/Mac/whole hosted 성공으로 전용하지 않는다. 다음은 모인 source3개와 관련 docs의 canonical Quick/security/docs 및 새로운 필수 hosted qualification이다. 원본은 `ci447-socket-longtmp-result.json`, `ci447-cpp-followup-source-freeze/log/json`이다.

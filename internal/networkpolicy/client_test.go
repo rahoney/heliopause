@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/netip"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -55,7 +56,17 @@ func TestServerBoundsRequestBeforeNewline(t *testing.T) {
 		{"oversized_without_newline", bytes.Repeat([]byte("x"), maxMessageBytes+1), 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			endpoint := &net.UnixAddr{Name: filepath.Join(t.TempDir(), "server.sock"), Net: "unix"}
+			// Keep the socket path below macOS's sun_path limit.
+			directory, err := os.MkdirTemp("", "np-")
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := os.RemoveAll(directory); err != nil {
+					t.Error(err)
+				}
+			})
+			endpoint := &net.UnixAddr{Name: filepath.Join(directory, "server.sock"), Net: "unix"}
 			listener, err := net.ListenUnix("unix", endpoint)
 			if err != nil {
 				t.Fatal(err)

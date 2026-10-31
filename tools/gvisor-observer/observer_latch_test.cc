@@ -2869,12 +2869,20 @@ bool VerifyFilesystemClassification() {
            "/usr/local/lib/python3.14/__pycache__/os.cpython-314.pyc",
            "/usr/local/lib/python3.14/lib-dynload/_ssl.cpython-314-x86_64-linux-gnu.so",
            "/usr/local/lib/python3.14/site-packages/pip/__init__.py",
-           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info/METADATA",
            "/lib/x86_64-linux-gnu/libssl.so.3"}) {
     python_runtime_open.set_pathname(path);
     if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) !=
         FilesystemClass::kRuntimeRoot) return false;
   }
+  // pip debug reads the bundled distribution directory with these exact flags.
+  python_runtime_open.set_pathname("/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info");
+  python_runtime_open.set_flags(624640);
+  if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kRuntimeRoot) return false;
+  python_runtime_open.set_pathname("/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info/METADATA");
+  python_runtime_open.set_flags(kOpenWriteOnly);
+  if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kOutside) return false;
+  python_runtime_open.set_flags(0);
   // The same immutable read remains filesystem runtime material after role
   // demotion; classification does not restore CONTROL.
   python_runtime_state.groups.find(111)->second.role = ProcessState::Role::kArtifact;
@@ -2921,6 +2929,10 @@ bool VerifyFilesystemClassification() {
   for (const char* path : {
            "/usr/local/lib/python3.15/os.py",
            "/usr/local/lib/python3.14/site-packages/artifact_owned.py",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.20.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info.evil/METADATA",
            "/usr/local/lib/python3.14/site-packages/setuptools/__init__.py",
            "/usr/local/lib/glibc-hwcaps/x86-64-v3/not-libpython.so",
            "/usr/local/lib/../lib/python3.14/os.py",

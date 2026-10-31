@@ -3150,8 +3150,8 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
     // are installed into /haa-site or a /tmp venv and never enter this root.
     return normalized == "/usr/local/lib/python3.14/site-packages/pip" ||
         HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/pip/") ||
-        normalized == "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info" ||
-        HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info/") ||
+        normalized == "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info" ||
+        HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info/") ||
         normalized == "/usr/local/lib/python3.14/site-packages/README.txt";
   }
   return HasPrefix(normalized, kStdlibRoot);
