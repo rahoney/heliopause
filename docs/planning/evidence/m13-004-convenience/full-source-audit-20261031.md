@@ -16,13 +16,13 @@ Tracked inventory: Go production681파일119060줄 / Go test761파일129623줄 /
 
 | 검토 단위 | 자동 검사 / 기존 근거 | 사람 검토와 남은 일 | 상태 |
 | --- | --- | --- | --- |
-| 전체 Go·platform/tag·의존성 | canonical Quick/security 기존21a PASS; 새 vulnerability/history 예정 | package/entry reachability, unused/duplicate, 환경·태그 누락 | OPEN |
-| acquisition·adapter·archive | 기존 bounded functional/CI446 범위만 재사용 | 크기/경로/링크/redirect/인증/graph identity | OPEN |
-| verification·evidence·policy | 기존 계약/회귀 | fail-closed, fresh whole binding, provenance/first trust | OPEN |
-| promotion·ownership·rollback | 기존 계약/회귀 | no-replace, FD/inode, crash/concurrency, root/user 경계 | OPEN |
-| sandbox·observer·helper | CPP133·기존 source/profile scope만 재사용 | argv/env/role/FD/완료 authority·cleanup·권한 | OPEN |
-| bootstrap·release·CLI | 이름독립 review·unsigned19파일 조립은 별도 제한 범위 | privileged caller/provenance/초기 획득·delimiter/output | OPEN |
-| checker·script·workflow·runtime pins | 고정 도구·workflow validators | CI 권한/주입/공급망·추적된 script/patch | OPEN |
+| 전체 Go·platform/tag·의존성 | AST1442/오류0, Linux default/all-tags·Darwin deadcode, canonical vulnerability/history PASS | package/entry reachability·중복/복잡도 검토; 아래 disposition | REVIEWED; final checks pending |
+| acquisition·adapter·archive | 기존 bounded functional/CI446 범위만 재사용 | bounded reader·정규 경로/링크·redirect/인증·complete graph/원본 binding 검토; 새 재현 결함 없음 | REVIEWED |
+| verification·evidence·policy | 기존 계약/회귀 | fresh whole/required Evidence·fail-closed·provenance와 first-trust 분리 검토; 새 재현 결함 없음 | REVIEWED |
+| promotion·ownership·rollback | 보완 G122/G304·기존 회귀 | private staging·held FD/inode·no-replace/journal·root/user 경계 검토; F03 수정 | REVIEWED; final checks pending |
+| sandbox·observer·helper | 새 CPP133 PASS·영향 Race PASS | framing·argv/env·kernel role/FD·완료 authority·cleanup 검토; F01/F02/F06 수정 | REVIEWED; hosted pending |
+| bootstrap·release·CLI | 이름독립 unsigned 조립은 별도 제한 범위 | 기존 privileged/provenance caller·초기 획득·출력 경계 검토; UV inspect 누락은21a 수정, signed deployment 별도 | REVIEWED; hosted pending |
+| checker·script·workflow·runtime pins | 추적된 shell/Python24개 syntax PASS·workflow PASS | CI 권한/고정 argv·공급망 pin/advisory 검토; F04/F05/F07/F08 수정 | REVIEWED; final checks pending |
 
 Canonical high-signal gosec는 G104/G115/G122/G204/G301/G302/G304/G703를 기본 검사하지 않는다. 이번 전체 감사에서는 그 차이를 명시하고 보완 분석/사람 검토를 한다. 임의의 complexity 기준으로 함수/파일을 분할하지 않는다. 변경·새 위험이 없는 expensive native/CPP/CUDA/CI를 반복하지 않는다.
 
@@ -39,6 +39,8 @@ Edit map: 두 기존 reader에서 `ReadSlice`를 사용해 buffer-full을 기존
 ### F02 — resolver의 링크 로컬·broadcast 주소 거부 누락 — 반례 확정
 
 `networkpolicy.NewResolverPolicy`와 `sandbox.validateResolverEndpoints`의 기존 public IPv4 조건은 private/loopback/multicast/unspecified만 검사한다. `169.254.169.254`와 limited broadcast에 대한 반례를 먼저 추가한다. Go/Cargo/PyPI/NPM의 기존 최종 공용 validator 호출을 재사용하고 predicate owner 두 곳만 고친다. DNS/Host 장악이나 실제 metadata 접근까지 입증한 것은 아니다. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO (local PASS; combined hosted 미완료).
+
+후속 [IANA 특별 주소 대조](https://www.iana.org/assignments/iana-ipv4-special-registry)는 GlobalUnicast가 공개 routability와 같지 않음을 확인했다. 새 정확한 입력100.100.100.200(shared space)/0.1.2.3/198.18.0.1/240.0.0.1의 기존 두 validator 반례를 추가했다. Edit map: 추가 IANA 검사는 기존 typed policy constructor 한 곳에 두어 client encode와 privileged decode가 함께 소비한다. Sandbox의 기본 preflight는 유지하고 기존 Bootstrap adapter/Create 경로가 강한 typed 검사를 반드시 거친다. Sandbox→networkpolicy 새 의존성이나 architecture allowlist 확대를 만들지 않는다. Public anycast192.0.0.9/.10은 원래 공개 주소 의미를 유지한다. 새 network service/config/package/helper는 만들지 않는다.
 
 ### F03 — 반환하지 않는 Promotion 출력의 불필요한 무제한 capture
 
@@ -60,6 +62,10 @@ Edit map: Go의 기존 생성 경로에서 owner-only socket mode를 명시하�
 
 현재 minimum/CI Docker29.8.1와 Noble containerd2.3.5 이후 [Docker 공식 보안 수정](https://docs.docker.com/engine/release-notes/29/)이 있다.29.8.2는 malicious DNS의 insecure registry fallback과 OCI index 처리 등을,29.9.1/containerd2.4.2는 registry 입력에 의한 crash/disk exhaustion을,29.9.2는 compromised CA 검증을 수정한다. 정확한 공식 Noble package metadata를 확인한 뒤 기존 lock/generator/support owner에서 minimum·CI package를 함께 고정한다. 새 updater component나 임의 daemon을 만들지 않는다. 로컬 Host daemon의 전역 교체/재시작은 이 source 수정과 별도이며, 기존 Host version을 새 안전 기준의 qualification으로 쓰지 않는다. 새 hosted environment에서 필수 actual 검증을 모은다.
 
+### F08 — 중복된 Docker 버전 비교가 suffix/잘못된 숫자를 허용 — 반례 확정 / local PASS
+
+`internal/hosttool/executor.go:atLeastVersion`과 `internal/sandbox/probe.go:atLeastVersion`은 같은3-part Sscanf 비교를 중복 구현한다. Sscanf의 성공만으로 전체 문자열이 정규 stable version임을 증명하지 않는다. `29.9.2-rc.1`/`30.-1.0` 반례를 먼저 확인한다. Edit map: 기존 비교 로직을 이미 두 caller가 참조하는 `internal/runtimeidentity`의 단일 Docker version owner로 옮기고 numeric round-trip guard를 추가한다. 두 private 중복 구현/별도 minimum alias를 제거하고 기존 caller를 직접 연결한다. 새 package/interface/범용 parser dependency를 도입하거나 runtime capability 검사를 줄이지 않는다. 기존 구현의 이동·수정이며 별도 runtime executor를 대체하지 않는다.
+
 ## 첫 source 교정 checkpoint — 전체 감사 완료 아님
 
 `/tmp/haa-full-audit-20261031`의 원본을 따른다. 기존 source owner14개만 수정했고 새 production 함수·package·interface·dependency는 없다. F01은 실제 Unix stream의 정상 요청/oversized no-newline 반례, F02는 두 기존 validator 반례가 RED였고 교정된 표적8.173s가PASS다. F03은 버리는 capture를 기존 Cmd.Run으로 교체했다. 미사용 분석에서 전 platform/tag의 소비자가 없는 Go `Endpoints` accessor를 제거했고 updater의 유일한 G104 finding인 lock 실패의 Close 오류를 첫 원인과 결합했다(기존 updater 회귀9.648s PASS).
@@ -77,4 +83,16 @@ Edit map: Go의 기존 생성 경로에서 owner-only socket mode를 명시하�
 
 구조 검토에서12줄 이상 정확한 본문 중복은 PNPM/Bun CheckWorkspace 한 쌍뿐이다. 동일한 짧은 흐름이 서로 다른 BeginWorkspace/Add의 회계 의미를 호출하며 공통 engine은 이미 재사용한다. 이를 없애기 위한 새 interface/함수는 만들지 않는다. 긴 composition root는 기존 ecosystem별 concrete wiring을 소유하고, transaction/console binder의 분기는 journal·각 metadata/identity 거부 조건을 소유한다. 줄 수만을 이유로 쪼개거나 future consumer를 연결하지 않는다.
 
-현재 실제 Node image는v24.21.0/Brotli1.2.0/OpenSSL3.5.8, Python image는3.14.7/OpenSSL3.0.20이다. Host mount·network 없는 일회성 read-only probe로 확인했으며 runtime source fix는 아직 미적용이다. Node V1 support input의 npm 추정을 updater가 거부했고 원본을 보존했다. 공식 exact index에 맞춘 V2 plan은Node24.22.1/npm11.19.1 및 `node:24.22.1-slim@sha256:e1582112fb9f152ed38eefcd712efc93fee1becb519fdfa57574d5e07eaa5e7d`를 고정했다. Updater가 읽는 clean e3의 세 pin owner는21a와 같고, 별도 candidate에만 적용한다. 이 준비를 main 최종 적용/검증·Host 활성화로 쓰지 않는다. MISSING은 runtime 패치·잔여 진단 disposition·최종 frozen 전체 검증이다.
+당시 old image는 Node24.21.0/Brotli1.2.0/OpenSSL3.5.8·Python3.14.7/OpenSSL3.0.20이었다. Node V1 support input의 npm 추정을 updater가 source mutation 전에 거부한 원본을 보존했다. V2 plan/apply는 Node24.22.1/npm11.19.1을, 이어진 Python plan/apply는3.14.10/pip26.2.2를 기존 세 pin owner에 적용했다. 두 plan의 before/after hash를 연결해 main에 전달한 receipt는 `runtime-two-plan-transfer.json`이다. Docker29.9.2/정확한 Noble package·containerd2.4.2는 기존 lock/support/generator에서 함께 고정했다. 원래 plan은 APPLIED이며 VERIFIED/ACTIVATED로 확대하지 않는다. 최종 합쳐진 source의 canonical configuration 검증과 원래 CPU/세CUDA qualification을 별도로 남긴다.
+
+## 잔여 진단 disposition과 최종 후보
+
+- F02 추가 특수 주소 RED7.717s 뒤 constructor/wire/기존 preflight 표적은12.262s PASS다. Bootstrap package는 이 selector에서 실행된 테스트가 없고, Create/Verify/Remove가 모두 typed constructor를 거치는 source 연결을 확인했다. 이를 Bootstrap 동작 테스트 통과로 쓰지 않는다. CGNAT·documentation·benchmark·reserved 거부와 공개 anycast/CGNAT 경계 정상 입력을 함께 검사했다.
+- F08 RED7.795s에서 malformed/prerelease의 실제 probe Available을 확인했다. 공용 `runtimeidentity.DockerEngineSupported`로 두 private 비교 구현/alias를 제거하고 numeric canonical round-trip을 추가했다. 기존 caller dependency를 재사용하며 새 package/interface는 없다. 실제 영향을 받는 네 success fixture는 compiled minimum을 사용하고 과거 frozen fixture는 보존했다. 표적13.158s/workflow0.843s PASS다.
+- Supplemental gosec346건은 기본 canonical 제외8규칙의 원본 결과이며 clean scan으로 보고하지 않는다. G115121건은 길이/양수/프로토콜·graph 상한 뒤 cast, G70353/G304112건은 typed/고정 root·regular/bounded file·held descriptor와 identity 검증을 책임 owner에서 대조했다. G1227건은 checker의 신뢰된 source tree 또는 sandbox writer가 종료된 private staging/copy owner다. 같은 UID의 Host 변경 능력을 Artifact 권한으로 가정하지 않는다. G20413건은 고정 실행 registry/argv/minimal env·보호 executable 및 developer-owned Git/tool 호출이다. 선택적 표시용 PowerShell도 고정 명령/2초·4KiB 제한이다. G30117/G30222건은 private parent 아래 cache/data·실행 파일·authenticated Unix socket의 의도된 mode다. G1041건은 lock 실패 Close 오류를 첫 오류와 결합해 수정했다. 새 suppression/allowlist나 보안 경계 완화는 없다.
+- Linux all-tags 미도달3개 중 사용되지 않는 Go Endpoints accessor를 제거했다. 나머지 두 `InspectionRun` accessor는 기존 Domain trace model의 reference/artifact 계약이며 모델 필드까지 지우거나 인위적인 caller를 추가하지 않는다. Production-only94개 및 Darwin의 Linux 전용 helper는 테스트·타 플랫폼 소비가 있어 불용으로 단정하지 않는다. 긴 composition/transaction/console 함수와 PNPM/Bun 짧은 중복은 기존 책임/회계 분기를 유지했다. 실제 중복인 Docker 비교만 통합했다.
+- Bun1.4.4/UV0.13.4의 공식 advisory 수정 버전은 현재 pin에 포함된다. PNPM advisory의 영향10/11계열은 현재12.15.0과 다르다. Rust1.99.1 release의 플랫폼/FFI 수정에서 현 HAA 호출의 추가 보안 결함을 확인하지 못해 관련 없는 runtime 변경을 늘리지 않았다. 이 검토는 외부 upstream 전 source/OS package 전체의 독립 penetration test가 아니다.
+- 새 immutable image를 Host mount·network 없는 read-only/cap-drop/non-root probe로 확인했다: Node24.22.1/OpenSSL3.5.9, Python3.14.10/OpenSSL3.0.22/pip26.2.2 모두 exit0. Node의 Brotli 표시 버전은 여전히1.2.0이며, 공식24.22.1은 version bump 대신 `49dff6f57a` cherry-pick으로 해당 보안 수정을 포함한다. 표시 문자열만으로 미수정/1.2.1로 오기하지 않는다. 원본은 `node-security-image-probe.json`/`python-security-image-probe.json`이다.
+- 현재 Host daemon은 여전히 Docker29.8.1/containerd2.3.5이며 전역 교체·재시작하지 않았다. 새 최소 기준에서 이 Host를 안전한 native qualification으로 사용할 수 없다. 새 고정 package를 설치하는 hosted qualification과 실제 Host activation을 구분한다. 공식 APT metadata의 HTTPS/hash 대조는 local 독립 signature 검증이나 signed APT install 성공으로 확대하지 않는다.
+
+MISSING: 최종 frozen combined source의 canonical 검증, 새 공통 Python/Docker/C++ 입력에 필요한 ordinary/CPU/세CUDA hosted qualification, 결과·최초 실패/정리 분석과 최종 상태 갱신. 기존 CPP source와133 latches는 불변이므로 다시 빌드하지 않는다. 알려진 결함의 수정·검증 완료와 모든 미래 취약점/버그 부재는 다른 주장이다.

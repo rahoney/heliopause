@@ -54,12 +54,12 @@
     }
   },
   "docker": {
-    "minimum_engine": "29.8.1",
-    "ci_engine_version": "29.8.1",
+    "minimum_engine": "29.9.2",
+    "ci_engine_version": "29.9.2",
     "ci_ubuntu_24_04_amd64": {
-      "docker_ce_package": "5:29.8.1-1~ubuntu.24.04~noble",
-      "docker_ce_cli_package": "5:29.8.1-1~ubuntu.24.04~noble",
-      "containerd_package": "2.3.5-1~ubuntu.24.04~noble"
+      "docker_ce_package": "5:29.9.2-1~ubuntu.24.04~noble",
+      "docker_ce_cli_package": "5:29.9.2-1~ubuntu.24.04~noble",
+      "containerd_package": "2.4.2-1~ubuntu.24.04~noble"
     }
   },
   "go_image": {
@@ -74,13 +74,13 @@
     "target": "x86_64-unknown-linux-gnu"
   },
   "node_image": {
-    "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
-    "npm_version": "11.19.0"
+    "reference": "node:24.22.1-slim@sha256:e1582112fb9f152ed38eefcd712efc93fee1becb519fdfa57574d5e07eaa5e7d",
+    "npm_version": "11.19.1"
   },
   "python_image": {
-    "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
-    "python_version": "3.14.7",
-    "pip_version": "26.2.1",
+    "reference": "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86",
+    "python_version": "3.14.10",
+    "pip_version": "26.2.2",
     "target": {
       "interpreter": "cp314",
       "abi": "cp314",

@@ -112,6 +112,7 @@ func TestTypedWireRequestRoundTripRejectsUnknownOrRawInput(t *testing.T) {
 		t.Fatalf("decodeRequest() = %q, %#v, %v", op, decoded, err)
 	}
 	for _, invalid := range [][]byte{
+		[]byte(`{"operation":"create","session":"sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa","network_id":"0123456789abcdef","subnet":"172.30.0.0/24","endpoints":["100.100.100.200"]}`),
 		[]byte(`{"operation":"iptables -F","session":"sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa","network_id":"0123456789abcdef","subnet":"172.30.0.0/24","endpoints":["1.1.1.1"]}`),
 		[]byte(`{"operation":"create","session":"sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa","network_id":"0123456789abcdef","subnet":"172.30.0.0/24","endpoints":["1.1.1.1"],"args":["-F"]}`),
 		[]byte(`{"operation":"create","session":"sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa","network_id":"0123456789abcdef","subnet":"172.30.0.0/24","endpoints":["1.1.1.1"]} trailing`),
