@@ -45,5 +45,10 @@
     "requested_during": "same-source cu132 CI445 wait; current qualification continues",
     "dependent_channel_implementation_started": false,
     "priority_correction": "user2026-10-31: finish functional gaps before naming/distribution; name choice does not block implementation"
+  },
+  "post_functional_owner_question": {
+    "status": "DEFERRED_BY_OWNER",
+    "channel_names_selected": false,
+    "next_priority": "review and complete name-independent incomplete/unreviewed work; no repeated naming question"
   }
 }

@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip scoped COMPLETE; P2–P6의 구현·named local/hosted 근거와 현재 지원 한계는 아래 각 lane 및 [Queue](../planning/02-current-work-queue.md)를 따른다. H1 root extras/H2 독립 추가 root와 current ordinary/CPU는 CI442, 같은 source의 cu126/cu130/cu132는 CI443/444/445에서 검증됐다. [현재 지원·미구현 대조표](../planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)와 [최종 qualification](../planning/evidence/package-client-quarantine/p7-final-qualification-20261031.json)을 따른다. 일반 native 동등성/미구현 capability와 서명 배포·채널 acceptance는 별도 미완료**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip scoped COMPLETE; P2–P6의 구현·named local/hosted 근거와 현재 지원 한계는 아래 각 lane 및 [Queue](../planning/02-current-work-queue.md)를 따른다. H1 root extras/H2 독립 추가 root와 current ordinary/CPU는 CI442, 같은 source의 cu126/cu130/cu132는 CI443/444/445에서 검증됐다. [현재 지원·미구현 대조표](../planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)와 [최종 qualification](../planning/evidence/package-client-quarantine/p7-final-qualification-20261031.json)을 따른다. 원래 bounded 기능 범위는 후속 CI446에서 완료했으며 서명 배포·채널 acceptance는 별도 미완료**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -478,4 +478,4 @@ CLI3/거부2·12-node 기본 명령과 필수 로컬 검사까지 named local qu
 [Queue](../planning/02-current-work-queue.md)를 따른다.
 G4의 [감사·수정 지도](../planning/evidence/package-client-quarantine/p6g4-bun-entry-runtime-baseline-20261031.md)에
 따른 public `bun-install@0.5.0`의 Bun shebang/TS 앱2·CLI3 및 기존 Node 앱2는 실제 로컬 PASS다.
-새 source의 묶음 검사·hosted acceptance는 별도로 닫으며 기존 ec1의 네 profile을 전용하지 않는다.
+후속 [CI446](../planning/evidence/package-client-quarantine/ci446-bun-declared-entry-hosted-qualification-20261031.json)의 sourcee3b2b70/전체tree·Required10SUCCESS/Linux126/새 앱2·CLI3와 정리로 원래 bounded 기능 acceptance를 닫았다. 기존 ec1의 CUDA3를 새e3의 qualification으로 전용하지 않는다.

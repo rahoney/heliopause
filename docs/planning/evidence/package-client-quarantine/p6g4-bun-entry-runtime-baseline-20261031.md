@@ -93,7 +93,9 @@ Quick68.579s·Bootstrap Race15.841s PASS다. 같은 선택 함수·공통 contex
 body와 새 Bun 실행 경로는 불변이며 실제 source snapshot과 최종 후보를 구분한다.
 변경하지 않은 다른3/checker Race·CPP/actual/세 CUDA를 반복하지 않았다.
 
-현재 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES(named local scope), 새 hosted=NO /
-ACCEPTANCE_CLOSED=NO다. 최종 docs0.312s/security15.304s·tagged Bootstrap vet2.946s/Staticcheck2.456s도
-PASS다. 새-source ordinary hosted를 연결한 뒤 기능 acceptance를 닫는다. ec1 네 profile을 새 후보로 전용하지 않는다.
-이름/채널/배포는 그 뒤의 작업이다.
+최종 [CI446 qualification](./ci446-bun-declared-entry-hosted-qualification-20261031.json)은 같은
+최종 sourcee3b2b70/전체tree의Required10SUCCESS·126 unique PASS, 새 앱2/25.34s·CLI3/39.35s,
+기존 소비자·helper18wait0/최종4 정리를 확인했다. 실제20분GET5에서 종료를 소비하고
+워커의 자연exit0/nextnull까지 관측했다. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES(original bounded G4 scope), MISSING=[]다. ec1의 CUDA3를 새e3의
+exact-source qualification으로 전용하지 않는다. 다음은 M13 채널의 공식 이름과 publisher binding이다.

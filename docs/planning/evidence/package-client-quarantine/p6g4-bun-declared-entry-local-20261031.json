@@ -1,14 +1,12 @@
 {
   "work_item": "M13-004/P6-G4",
-  "status": "IMPLEMENTED_WIRED_NAMED_LOCAL_QUALIFIED_HOSTED_PENDING",
+  "status": "LOCAL_QUALIFIED_HOSTED_FOLLOWUP_COMPLETE",
   "source_base": "4d7c6e30a50acc3c34218143ba60793ada4146f5",
   "IMPLEMENTED": "YES",
   "WIRED": "YES",
-  "QUALIFIED": "YES (named local path/checks only); NO (new-source hosted)",
-  "ACCEPTANCE_CLOSED": "NO",
-  "MISSING": [
-    "new-source ordinary hosted current Bun declared entry and affected existing consumers; then functional acceptance/support record"
-  ],
+  "QUALIFIED": "YES (named local); hosted closure in CI446 receipt",
+  "ACCEPTANCE_CLOSED": "YES (G4 bounded functional scope)",
+  "MISSING": [],
   "baseline": "p6g4-bun-entry-runtime-baseline-20261031.md",
   "sources": [
     {
@@ -423,7 +421,7 @@
     }
   ],
   "raw_publication": "local originals retained; not claimed remotely delivered",
-  "hosted": "PENDING; no new CI yet; old ec1 four-profile results remain scoped to ec1",
+  "hosted": "ci446-bun-declared-entry-hosted-qualification-20261031.json",
   "CI_impact_review": {
     "required_new_run": "one grouped ordinary CI with all existing consumers and new2 parents",
     "no_local_CPP_or_actual_repeat": true,

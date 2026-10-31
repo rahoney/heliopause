@@ -204,7 +204,7 @@ H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
 [최종 지원표](./docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)를 따른다.
 이 소스의 결과를 후속 Bun 선언/TS 후보나 별도 TTY/파일 반출·새 서명 배포·채널 acceptance로 확대하지 않는다.
 첫 Read/build/job deadline의 하위 원인은 UNKNOWN이며 성공한 재검증을 원인 수리로 기록하지 않는다.
-2026-10-31 사용자 교정에 따라 기능 구현·acceptance를 채널 이름/배포보다 먼저 진행한다. 후속 G4 Bun 선언/TS entry·runtime 선택은 구현·연결해 실제 앱2/CLI3·기존 Node2를 로컬 검증했다. [최종 묶음 Quick/Race](./docs/planning/evidence/package-client-quarantine/p6g4-bun-declared-entry-local-20261031.json)도 PASS이며 새-source hosted acceptance가 남아 있다. 모든 native 옵션 동등성은 원래 계약의 약속이 아니며 별도 TTY/반출 확장을 필수 누락과 혼합하지 않는다. 이름 선택은 기능 작업의 blocker가 아니며 기존 질문은 현재 작업에 대해 superseded다. 채널 코드/등록/게시를 시작하지 않았다.
+2026-10-31 사용자 교정에 따라 기능 구현·acceptance를 채널 이름/배포보다 먼저 진행한다. 후속 G4 Bun 선언/TS entry·runtime 선택은 구현·연결해 실제 앱2/CLI3·기존 Node2를 로컬 검증했다. [최종 묶음 Quick/Race](./docs/planning/evidence/package-client-quarantine/p6g4-bun-declared-entry-local-20261031.json)도 PASS이며 [CI446](./docs/planning/evidence/package-client-quarantine/ci446-bun-declared-entry-hosted-qualification-20261031.json)의 새e3 ordinary 전체10SUCCESS/126·원본·정리까지 확인해 원래 bounded 기능 acceptance를 닫았다. 사용자가 이름을 검토하는 동안 이름과 무관한 미완료·미검토 책임을 기존 source/검증 근거와 대조한다. M13-004전체/새 서명 배포는 미완료다. 모든 native 옵션 동등성은 원래 계약의 약속이 아니며 별도 TTY/반출 확장을 필수 누락과 혼합하지 않는다. 이름 선택은 기능 작업의 blocker가 아니며 기존 질문은 현재 작업에 대해 superseded다. 채널 코드/등록/게시를 시작하지 않았다.
 현재 단일 active item은 M13-004이며 상세 상태·남은 순서는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 ## Open Decisions

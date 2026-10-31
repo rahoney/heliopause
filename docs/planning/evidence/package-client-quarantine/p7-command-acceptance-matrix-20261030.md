@@ -43,7 +43,7 @@ H1 root extras와 H2 독립 `--with`는 기존 owner·whole 검사/현재 Policy
 위 표는 ec1의 과거 source checkpoint다. 후속 G4는 Bun-only shebang·TypeScript entry와
 선언에 따른 runtime 선택을 구현·연결했고 실제 public 앱2/CLI3·기존 Node2를 로컬 검증했다.
 [G4 지도](./p6g4-bun-entry-runtime-baseline-20261031.md)가 새 후보를 소유하며 새 hosted와
-기능 acceptance는 아직 OPEN이다. 선언 없는 TS는 명시 `--bun`이 필요하다.
+기능 acceptance는 아래 CI446 근거로 닫혔다. 선언 없는 TS는 명시 `--bun`이 필요하다.
 
 모든 native 옵션/recipe의 동등성은 원래 client09의 약속이 아니다. stdin/TTY·생성 파일
 반출은 별도 acceptance이며 현재 stdout/stderr 우선 lane에 포함하지 않는다. Arbitrary
@@ -62,9 +62,9 @@ child/held pipe는 현재 안전한 거부/불완전 처리의 검증 대상이�
 | --- | --- | --- | --- | --- | --- |
 | P2/P3 project add/install/update·peer/ownership/adopt·실패 원복 — 위 P2/P3 matrix·CI413, ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 기존 matrix가 남긴 최종 profile은 ec1에서 확보됨; 새 기능을 다시 구현하지 않음 |
 | P4 project add/sync/lock-only·UV/pipx install/upgrade·고정 native 인계 — 위 K3/CI417/CI423, ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 일반 native 기본값·다른 recipe는 현재 명시 허용 범위가 아님 |
-| P5/P6 기존 npx/uvx/pipx/pnpm/Bun JS·alias·전체 source/현재 승인·출력/오류·악성/불완전 거부 — 위 각 receipt·ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 공유 entry reader가 바뀐 새 G4 후보의 회귀는 아래 새 hosted에서 확인 |
-| P6-G4 선언 Bun/TS byte proof·runtime 선택·실제 current 앱/CLI·기존 Node 회귀 — G4 지도와 local 원본 | YES | YES | local 실제 PASS / hosted NO | NO | 최종 Quick/Race·tagged 분석·docs/security PASS; 새-source ordinary hosted/현재 지원표 연결 |
-| P7 새 후보의 기능 acceptance | YES(기존 qualification owner) | YES | NO(새 후보) | NO | G4 결과와 해당 후보 hosted·최초 오류·정리를 연결; 불변 CPP/세 CUDA를 이유 없이 반복하지 않음 |
+| P5/P6 기존 npx/uvx/pipx/pnpm/Bun JS·alias·전체 source/현재 승인·출력/오류·악성/불완전 거부 — 위 각 receipt·ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 공유 entry reader의 새e3 회귀도 CI446에서 확인 |
+| P6-G4 선언 Bun/TS byte proof·runtime 선택·실제 current 앱/CLI·기존 Node 회귀 — G4 지도와 local 원본 | YES | YES | YES(CI446 current e3) | YES(bounded) | 없음; 새 앱2/CLI3·기존 회귀·정리·전체10 원본 확인 |
+| P7 새 후보의 기능 acceptance | YES(기존 qualification owner) | YES | YES(CI446 ordinary) | YES(original bounded scope) | 없음; 이전 CUDA3는 ec1/불변 소비자 범위로 유지하며 새e3 네 profile 성공을 주장하지 않음 |
 
 생성 파일/TTY 등의 별도 확장을 이번 좁은 실행 계약의 누락으로 소급하지 않는다.
 필요한 새 동작이 실제로 발견되면 exact gap으로 다시 판정한다. 새 후보의 필수 기능
@@ -72,10 +72,11 @@ acceptance가 닫히기 전에는 이름 선택·배포 단계로 넘어가지 �
 
 ## 인계와 남은 작업
 
-이 표는 현재 문서화된 lane의 source/profile qualification을 연결한다. P2–P7 전체 목표의
-일반 native 동등성이나 모든 미구현 capability acceptance를 닫지 않는다. 서명된 새 배포물,
-공식 채널 이름/publisher binding·채널 구현·main merge/publication도 별도의 M13 미완료다.
-현재 동일 소스의 full/native/CPP/ordinary/CUDA를 다시 실행하지 않는다.
+[CI446](./ci446-bun-declared-entry-hosted-qualification-20261031.json)은 sourcee3b2b70/실제checkout
+전체tree동일·Required10SUCCESS/Linux126/noSKIP·새 Bun 앱2/CLI3·기존 소비자·정리와 전체 원본을
+연결한다. 원래 bounded P2–P7 기능 목표는 완료했다. 초기 계약의 명시 제외/별도 확장과
+M13의 새 서명 배포물·공식 채널 이름/publisher binding·채널 구현/검증·main review/publication은
+분리한다. 같은 source의 full/native/CPP/ordinary/CUDA를 다시 실행하지 않는다.
 
 첫 실패는 [CI443 Read](./ci443-cu126-first-failure-20261031.json),
 [CI443 Mac build](./ci443-macos-first-failure-comparison-20261031.json),

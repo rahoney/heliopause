@@ -6,10 +6,9 @@
   "IMPLEMENTED": "YES",
   "WIRED": "YES",
   "QUALIFIED": "YES (exact-source ordinary/CPU and3CUDA/current documented lanes)",
-  "ACCEPTANCE_CLOSED": "NO (whole P2..P7 capability scope and M13 channels/publication remain open)",
+  "ACCEPTANCE_CLOSED": "YES (original bounded P2..P7 functional scope via retained scoped evidence and CI446 followup); NO (M13 channels/publication)",
   "MISSING": [
-    "G4 completed functional bundle requires new-source ordinary hosted/support acceptance; local actual and final grouped checks PASS",
-    "After functional acceptance: official channel names/publisher binding, channel implementation/qualification and new signed distribution remain open"
+    "M13-004 official channel names/publisher binding, channel implementation/qualification and new signed distribution/publication"
   ],
   "profiles": [
     {
@@ -56,13 +55,12 @@
     "CI444 Mac wholejob deadline and unavailable original log"
   ],
   "future_scope_not_closed": [
-    "G4 new-source functional acceptance",
     "stdin/TTY/generated-file export: separate acceptance outside initial stdout/stderr lane",
     "arbitrary child/held pipe support: currently refused or incomplete, no new grant",
     "official signed distribution assets",
     "channel namespace/publisher binding and publication"
   ],
-  "channel_name_choice": "DEFERRED_UNTIL_FUNCTIONAL_ACCEPTANCE; prior async question superseded for current work",
+  "channel_name_choice": "PENDING owner choice after completed functional acceptance",
   "new_profile_runs_required": false,
   "current_checkpoint": {
     "status": "COMPLETE",
@@ -75,8 +73,9 @@
   },
   "documentation_checks": "p7-final-documentation-checks-20261031.json",
   "no_active_CI_or_timer": true,
-  "next_owner_decision": "naming deferred until functional gaps are finished per user2026-10-31; not a functional blocker",
+  "next_owner_decision": "owner considering names; continue name-independent incomplete/unreviewed M13 review meanwhile",
   "checkpoint_delivery": "local documentation-only commit4d7c6e3; not pushed separately to avoid docs-only CI",
-  "functional_followup": "p6g4-bun-declared-entry-local-20261031.json; final19-source implementation/wiring/named local Quick/Race/tagged/docs/security PASS; new ordinary hosted pending; ec1 four-profile receipt remains scoped to ec1",
-  "original_scope_boundary": "client09 does not promise all native option/runtime equivalence; explicit exclusions/separate extensions are not required missing implementation"
+  "functional_followup": "COMPLETE original bounded client/runner scope; CI446 e3b2b70 ordinary all10/126parents/new app2/CLI3 and cleanup; ec1 four-profile receipt remains scoped to ec1",
+  "original_scope_boundary": "client09 does not promise all native option/runtime equivalence; explicit exclusions/separate extensions are not required missing implementation",
+  "functional_followup_receipt": "ci446-bun-declared-entry-hosted-qualification-20261031.json"
 }
