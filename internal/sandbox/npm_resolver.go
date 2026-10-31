@@ -11,6 +11,7 @@ import (
 	"net/netip"
 	"sort"
 	"strings"
+	"time"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -32,8 +33,9 @@ type EndpointResolver interface {
 	Resolve(context.Context, []string) ([]netip.Addr, error)
 }
 
-// NPMResolver is a disposable Docker resolver. It returns only the parsed
-// Domain resolution; package-lock bytes and npm output never leave this adapter.
+// NPMResolver is a disposable Docker resolver. It returns the normalized graph
+// and bounded opaque selection controls for exact publication. Runtime output
+// never becomes Evidence, Policy or Host-execution authority.
 type NPMResolver struct {
 	runner    CommandRunner
 	endpoints EndpointResolver
@@ -110,7 +112,46 @@ func (systemEndpointResolver) Resolve(ctx context.Context, names []string) ([]ne
 
 // ResolveDependencies runs npm only in a policy-protected disposable
 // container, parses its lockfile locally, and always disposes policy resources.
-func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (resolution domain.DependencyResolution, resultErr error) {
+func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
+	return r.resolveDependencies(ctx, reference, nil)
+}
+
+// ResolveExecutionDependencies selects the same isolated complete graph
+// without manufacturing an installation target for an ephemeral execution.
+func (r *NPMResolver) ResolveExecutionDependencies(ctx context.Context, reference domain.ArtifactReference) (domain.DependencyResolution, error) {
+	return r.resolveDependencies(ctx, reference, nil)
+}
+
+// ResolveDependencyUpdate selects once from frozen existing public controls.
+func (r *NPMResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (resolution domain.DependencyResolution, resultErr error) {
+	if ctx == nil || !install.Valid() || install.Mode() != domain.InstallNPMProject || len(controls) != 2 {
+		return domain.DependencyResolution{}, errors.New("npm update requires an existing project and two frozen controls")
+	}
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+	defer func() {
+		if err := ctx.Err(); err != nil {
+			resolution = domain.DependencyResolution{}
+			resultErr = errors.Join(resultErr, err)
+		}
+	}()
+	if err := ctx.Err(); err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	values := map[string][]byte{}
+	for _, control := range controls {
+		if !control.Present() || control.Name() != "package.json" && control.Name() != "package-lock.json" || values[control.Name()] != nil {
+			return domain.DependencyResolution{}, errors.New("npm update controls are invalid")
+		}
+		values[control.Name()] = control.Body()
+	}
+	if _, err := artifactnpm.ParseProjectControls(reference, values["package.json"], values["package-lock.json"]); err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return r.resolveDependencies(ctx, reference, values)
+}
+
+func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, original map[string][]byte) (resolution domain.DependencyResolution, resultErr error) {
 	if ctx == nil || reference.Source().String() != "npm" {
 		return domain.DependencyResolution{}, errors.New("valid npm resolver request is required")
 	}
@@ -204,10 +245,24 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, errors.New("resolver package reference is invalid")
 	}
 	manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + packageSpec + "\"}}")
+	if original != nil {
+		manifest = original["package.json"]
+	}
 	if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json")...); err != nil {
 		return domain.DependencyResolution{}, errors.New("write resolver manifest failed")
 	}
-	command := "cd " + resolverProjectDir + "; HOME=/tmp npm_config_cache=/tmp/cache npm install --package-lock-only --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc"
+	selection := "npm install"
+	selectionFlags := ""
+	if original != nil {
+		if err := input.RunInput(ctx, bytes.NewReader(original["package-lock.json"]), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > "+resolverProjectDir+"/package-lock.json")...); err != nil {
+			return domain.DependencyResolution{}, errors.New("write frozen npm lock failed")
+		}
+		// The supported subset has one direct root; zero/one CLI selections both
+		// update that complete graph, respecting all original dependency constraints.
+		selection = "npm update"
+		selectionFlags = " --save=false"
+	}
+	command := "cd " + resolverProjectDir + "; HOME=/tmp npm_config_cache=/tmp/cache " + selection + " --package-lock-only --ignore-scripts --no-audit --no-fund" + selectionFlags + " --registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc"
 	if _, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", command)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked npm resolution failed")
 	}
@@ -215,7 +270,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("read resolver lockfile failed")
 	}
-	graph, parseErr := artifactnpm.ParsePackageLockV3(reference, lock)
+	graph, parseErr := artifactnpm.ParseProjectControls(reference, manifest, lock)
 	if parseErr != nil {
 		return domain.DependencyResolution{}, fmt.Errorf("parse resolver lockfile: %w", parseErr)
 	}
@@ -224,10 +279,29 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	return domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+	resolution, err = domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	controls := make([]domain.ProjectControlFile, 0, 2)
+	for _, item := range []struct {
+		name string
+		body []byte
+	}{{"package.json", manifest}, {"package-lock.json", lock}} {
+		control, err := domain.NewProjectControlFile(item.name, item.body, true)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		controls = append(controls, control)
+	}
+	return resolution.WithProjectControls(controls)
 }
 
 func npmCreateArguments(network string, hostArguments []string) []string {
+	return nodeResolverCreateArguments(network, hostArguments, []string{"--tmpfs", boundaryHelperMount})
+}
+
+func nodeResolverCreateArguments(network string, hostArguments, helperMount []string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
@@ -239,8 +313,8 @@ func npmCreateArguments(network string, hostArguments []string) []string {
 		"--memory", "512m",
 		"--cpus", "1",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", boundaryHelperMount,
 	}
+	arguments = append(arguments, helperMount...)
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
 	arguments = append(arguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())

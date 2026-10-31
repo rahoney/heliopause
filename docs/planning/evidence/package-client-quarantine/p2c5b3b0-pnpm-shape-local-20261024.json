@@ -1,0 +1,122 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B3b0",
+  "baseline": "7ff0cab8f4dc92aab4d88fbe55d94193fc1b1efa",
+  "status": "LOCAL_OBSERVED_NATIVE_LAYOUT_REPRESENTATION_ONLY",
+  "source_files": [
+    {
+      "path": "internal/sandbox/pnpm_layout_inventory_real_test.go",
+      "sha256": "e8c46f8dcb10bc93563b5b6d65c31dcf5520ede06de127ffb173a2825e77efdf"
+    }
+  ],
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.408,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.594,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.281,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "actual": {
+    "seconds": 21.937,
+    "test_seconds": 19.19,
+    "cases": [
+      {
+        "case": "transitive",
+        "entries": 23,
+        "types": {
+          "53": 9,
+          "48": 11,
+          "50": 3
+        },
+        "owner_modes": {
+          "(1000, 1000, '0o755')": 9,
+          "(1000, 1000, '0o644')": 10,
+          "(1000, 1000, '0o777')": 3,
+          "(1000, 1000, '0o600')": 1
+        },
+        "hardlinks": []
+      },
+      {
+        "case": "peer",
+        "entries": 89,
+        "types": {
+          "53": 25,
+          "48": 56,
+          "50": 7,
+          "49": 1
+        },
+        "owner_modes": {
+          "(1000, 1000, '0o755')": 29,
+          "(1000, 1000, '0o644')": 52,
+          "(1000, 1000, '0o777')": 7,
+          "(1000, 1000, '0o600')": 1
+        },
+        "hardlinks": [
+          {
+            "path": "node_modules/.pnpm/use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store/LICENSE",
+            "target": "node_modules/.pnpm/react@18.3.1/node_modules/react/LICENSE"
+          }
+        ]
+      }
+    ],
+    "original_controls_identity_links": true,
+    "trace_complete": true,
+    "forbidden_observations": 0,
+    "host_unchanged": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "final_original": 0,
+    "dynamic_executed": false,
+    "policy_or_host_installation_executed": false
+  },
+  "not_qualified": [
+    "full archive/layout file/edge/bin/metadata byte validation",
+    "production prepare and dynamic aggregate",
+    "Host transaction/CLI/full P2"
+  ],
+  "cleanup": {
+    "logical_bytes": 165489462,
+    "all_uid_references": 0,
+    "query_errors": 0,
+    "target_absent": true
+  },
+  "raw_evidence": [
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-pnpm-layout-shape.json",
+      "sha256": "25af5c31fe65ae320cf0bb0dfec0861519881df6849467f2c991472e867f9564"
+    },
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-pnpm-layout-shape-actual.log",
+      "sha256": "928795c4b0a795d804e2547535d6dc838c3f4fa8a209e191e6ac85666a35962e"
+    },
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-layout-shape-summary.json",
+      "sha256": "ea312d03d10a1ef047127054c945d48d494a4c87279c01eff58529a90283a378"
+    },
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-upstream-source-receipt.json",
+      "sha256": "fccfa3eacbb77ce25725a17c61c3dddcd80a2dbcdbc54e3474097a7b1d70898f"
+    },
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-pnpm-layout-shape-runtime-preparation.json",
+      "sha256": "e6109983bb518668579e0b6356082b8da3b858b1bb80e81639dd4a9b4278b485"
+    },
+    {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/p2c5b3b0-pnpm-layout-shape-completed-runtime-cleanup.json",
+      "sha256": "dbf2e20d1a9641d5e9daf2762832724513c8871d2719c1f24b1461c3151c3d5a"
+    }
+  ]
+}

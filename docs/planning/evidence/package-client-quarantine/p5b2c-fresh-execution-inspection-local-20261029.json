@@ -1,0 +1,118 @@
+{
+  "scope": "P5-B2c fresh inspection of an already resolved complete non-derived graph; no actual program execution",
+  "source_base": "338c2fd9389731bed33607dfbbd254b53e8584a5",
+  "source_files_each": 1293,
+  "prior1291_unchanged_each": true,
+  "new_source": [
+    {
+      "path": "internal/application/execution_inspect.go",
+      "sha256": "93e0153e644579b31601a9ef1c5e874b8ab60dc8855990326a650009e02934e0",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/application/execution_inspect_test.go",
+      "sha256": "3ab63251fc9b358b33c0e98a988ba4477e6d908fce7ee4e435b25fc25b392116",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (fresh inspection API)",
+    "WIRED": "NO (actual P5 command flow absent)",
+    "QUALIFIED": "YES (named local API/negative and existing application consumers)",
+    "ACCEPTANCE_CLOSED": "YES (B2c API scope); NO (whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.746
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 40.217
+    },
+    {
+      "step": "application-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/application"
+      ],
+      "exit_code": 0,
+      "seconds": 4.233
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.306
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.163
+    }
+  ],
+  "first_quick": {
+    "seconds": 257.574,
+    "exit_code": 1,
+    "cause": "new derived-negative fixture used wheel as source, rejected by existing sdist-to-derived-wheel graph invariant before service entry",
+    "correction": "valid sdist fixture only; production/service/Domain guards unchanged",
+    "raw_prefix": "p5-execution-inspect-first-"
+  },
+  "reused": [
+    "InstallInspectService private already-resolved entry component (existing ProjectInspectService pattern)",
+    "inspectDependency",
+    "inspectDependencyBatch",
+    "dependencyAwareInspection.InspectGraph",
+    "entry/set Policy",
+    "NewInspectedDependencySet",
+    "NewVerifiedSet"
+  ],
+  "verified": [
+    "repeated exact resolution creates fresh operation/runs/acquisition/verification/inspection/Evidence",
+    "batch acquires/verifies all before complete graph inspection",
+    "missing report or foreign intake fails without approval",
+    "independent verify/Evidence failure and entry BLOCK/set MANUAL_REVIEW",
+    "set ALLOW cannot override entry denial",
+    "original graph provider error plus independent store error retained; no Policy after provider failure",
+    "only exact full partial reports recorded on provider failure",
+    "nil/canceled/zero/service/ID failures before entry ports",
+    "later run ID failure retains original cause and prevents partial approval",
+    "derived graph rejected before entry ports",
+    "final cancellation after set Policy cannot return approval"
+  ],
+  "no_install_target_or_resolver_stub": true,
+  "missing": [
+    "selection/resolver and actual adapters factory wiring",
+    "measured selected member bytes and canonical Node context/records handoff",
+    "staging handoff/introduction rehash/backend/output/exit/cancel/cleanup",
+    "CLI and actual hostile qualification"
+  ],
+  "ci423_source_6dd_excludes_this_code": true
+}

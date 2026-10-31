@@ -31,6 +31,9 @@ const (
 type CargoVerifiedCache struct {
 	intakeRoot, evidenceRoot, cacheRoot string
 	evidence                            ProjectEvidenceReader
+	// A private instance-local observer may inspect/abort. It never replaces
+	// the mandatory real tree sync before publication.
+	beforeTreeSync func(string) error
 }
 
 func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenceReader) (*CargoVerifiedCache, error) {
@@ -43,7 +46,7 @@ func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenc
 			return nil, errors.New("cargo cache roots must be canonical absolute paths")
 		}
 	}
-	return &CargoVerifiedCache{intake, evidence, cache, reader}, nil
+	return &CargoVerifiedCache{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, evidence: reader}, nil
 }
 
 type cargoCacheEntry struct {
@@ -206,7 +209,7 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 			if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 				return staged, err
 			}
-			if err := writeRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
+			if err := writePrivateRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
 				return staged, err
 			}
 		}
@@ -233,6 +236,11 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 	}
 	if err := writeRecord(temporary, cargoCacheReceipt, receipt); err != nil {
 		return staged, err
+	}
+	if c.beforeTreeSync != nil {
+		if err := c.beforeTreeSync(temporary); err != nil {
+			return staged, err
+		}
 	}
 	if err := syncTree(temporary); err != nil {
 		return staged, err

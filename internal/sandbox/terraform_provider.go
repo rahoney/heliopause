@@ -54,28 +54,6 @@ func (b *TerraformProviderBackend) probeTerminal(ctx context.Context, container 
 	return "", err
 }
 
-// The collector's bounded kind counts contain accepted records before a fault.
-// Preserve only suspicious facts; the caller retains INCOMPLETE and the first
-// observer failure. These partial counts cannot attest coverage or completion.
-func retainedELFProbeFacts(counts map[string]uint64) []domain.SandboxObservation {
-	var facts []domain.SandboxObservation
-	for _, kind := range []string{"filesystem-outside-workspace", "honeytoken-access", "network-attempt", "process-exec-unexpected"} {
-		count := counts[kind]
-		if count == 0 || count > domain.MaximumObservationSummaryCount {
-			continue
-		}
-		category, subject, ok := traceObservation(kind)
-		if !ok {
-			continue
-		}
-		fact, err := domain.NewCountedSandboxObservation(category, subject, count)
-		if err == nil {
-			facts = append(facts, fact)
-		}
-	}
-	return facts
-}
-
 func (b *TerraformProviderBackend) introduce(ctx context.Context, container string, artifact domain.AcquiredArtifact) error {
 	bundle, err := artifactterraform.ReadIntake(b.elf.intakeRoot, artifact)
 	if err != nil {

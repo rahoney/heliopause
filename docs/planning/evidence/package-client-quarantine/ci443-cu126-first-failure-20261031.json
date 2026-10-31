@@ -1,0 +1,236 @@
+{
+  "work_item": "M13-004/P7 cu126 first failure",
+  "status": "TRUSTED_CPU_READ_DEADLINE_CONFIRMED_HELPER_ENGINE_DELAY_LOWER_CAUSE_UNKNOWN",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "run_id": 41115499227,
+  "attempt": 1,
+  "cpu_full_seconds": 291.08,
+  "cu126_full_seconds": 496.06,
+  "primary": {
+    "stage": "install/preparation",
+    "artifact": "torch@2.14.0+cu126",
+    "digest": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+    "request_context": "OK",
+    "read_context": "DEADLINE_EXCEEDED",
+    "resource": "RESOURCE_ERROR",
+    "poll_ns": 1000000000,
+    "read_ns": 1088664455,
+    "response_ns": 1088477187,
+    "client_transport_started_unix_ns": 1793390699815306382,
+    "helper_started_unix_ns": 1793390699815449250,
+    "helper_engine_ns": 1167706828,
+    "helper_total_ns": 1167906427
+  },
+  "secondary": {
+    "cancelled": true,
+    "termination_gap_ns": 4288398379,
+    "termination_usage_us": 58956242,
+    "cpu_limit_s": 300,
+    "wall_remaining_ns": 2336177820804,
+    "trace_fault": "PROFILE_LOOKUP_FAILURE",
+    "session_complete": false,
+    "not_claimed_as_first_cause": true
+  },
+  "past_success": {
+    "run_id": 39994974417,
+    "number": 398,
+    "source": "095450d52b921adda63a8ae5cd664e87853d8891",
+    "cpu_full_seconds": 282.74,
+    "cu126_full_seconds": 1249.34,
+    "same_go": "1.27.3",
+    "accounting_owner_source_comparison": [
+      {
+        "path": "internal/sandbox/pypi_observation_cpu.go",
+        "old_sha256": "1e576e9f6e51fc68d2356eefcdcc603c011b723e1aa9b8054edcdc3779aa6653",
+        "current_sha256": "1e576e9f6e51fc68d2356eefcdcc603c011b723e1aa9b8054edcdc3779aa6653",
+        "same": true
+      },
+      {
+        "path": "internal/hosttool/observation_resource_linux.go",
+        "old_sha256": "7120e4eb5dee0b2ef76379654d8ff00bb8648369049f622a2b14465e8a1b12ec",
+        "current_sha256": "7120e4eb5dee0b2ef76379654d8ff00bb8648369049f622a2b14465e8a1b12ec",
+        "same": true
+      },
+      {
+        "path": "internal/hosttool/observation_keeper_linux.go",
+        "old_sha256": "545432a7128bd4c037b84cbfe39a2c34c323dd74c8eee267e91a6ebb02b5dbe3",
+        "current_sha256": "545432a7128bd4c037b84cbfe39a2c34c323dd74c8eee267e91a6ebb02b5dbe3",
+        "same": true
+      },
+      {
+        "path": "internal/hosttool/observation_resource_diagnostic_linux.go",
+        "old_sha256": "4c3db7941fe2a9d60f52bcb982432e76e63a18a13ce3478dca41594308627df0",
+        "current_sha256": "4c3db7941fe2a9d60f52bcb982432e76e63a18a13ce3478dca41594308627df0",
+        "same": true
+      },
+      {
+        "path": "internal/hosttool/policy_service_linux.go",
+        "old_sha256": "0b3eb9ad8eb7e874b59eb81a7eb037b0b0001c0bebd1fa047c1adf138faa2434",
+        "current_sha256": "0b3eb9ad8eb7e874b59eb81a7eb037b0b0001c0bebd1fa047c1adf138faa2434",
+        "same": true
+      },
+      {
+        "path": "internal/bootstrap/observation_resource_linux.go",
+        "old_sha256": "db8c4647f263186a18383944cb6a30334da9c5b8fec32e67216318831afdd11d",
+        "current_sha256": "db8c4647f263186a18383944cb6a30334da9c5b8fec32e67216318831afdd11d",
+        "same": true
+      },
+      {
+        "path": "internal/bootstrap/pytorch_linux_integration_test.go",
+        "old_sha256": "a4c90dc6d73cf733727c4f485d2d87a2199a731db1850fb0c1f19ca53eaa8771",
+        "current_sha256": "a4c90dc6d73cf733727c4f485d2d87a2199a731db1850fb0c1f19ca53eaa8771",
+        "same": true
+      },
+      {
+        "path": "internal/bootstrap/pytorch_pressure_test.go",
+        "old_sha256": "520099689f4cd5a7a6afb3667db2d8afc74f7bca227a42d2eac9c0b187160dfa",
+        "current_sha256": "520099689f4cd5a7a6afb3667db2d8afc74f7bca227a42d2eac9c0b187160dfa",
+        "same": true
+      }
+    ]
+  },
+  "pressure": {
+    "ci398_success": [
+      {
+        "profile": "cpu",
+        "samples": 282,
+        "timing_rows": [],
+        "mem_available_kib": {
+          "min": 13078960,
+          "max": 15177332
+        },
+        "controller_peak_rss_kib": {
+          "min": 29972,
+          "max": 1040816
+        },
+        "shmem_kib": {
+          "min": 50804,
+          "max": 1711040
+        },
+        "oom_kill": {
+          "min": 0,
+          "max": 0
+        },
+        "pgscan_direct_delta": 0,
+        "pgsteal_direct_delta": 0,
+        "pswpin_delta": 0,
+        "pswpout_delta": 0,
+        "psi_memory_full_total_us_delta": 0,
+        "psi_io_full_total_us_delta": 2558940
+      },
+      {
+        "profile": "cu126",
+        "samples": 1248,
+        "timing_rows": [],
+        "mem_available_kib": {
+          "min": 1618172,
+          "max": 15185500
+        },
+        "controller_peak_rss_kib": {
+          "min": 33568,
+          "max": 4348100
+        },
+        "shmem_kib": {
+          "min": 50972,
+          "max": 13397048
+        },
+        "oom_kill": {
+          "min": 0,
+          "max": 0
+        },
+        "pgscan_direct_delta": 106610,
+        "pgsteal_direct_delta": 105843,
+        "pswpin_delta": 818053,
+        "pswpout_delta": 1039577,
+        "psi_memory_full_total_us_delta": 2640314,
+        "psi_io_full_total_us_delta": 46976280
+      }
+    ],
+    "ci443_failure": [
+      {
+        "profile": "cpu",
+        "samples": 290,
+        "timing_rows": [],
+        "mem_available_kib": {
+          "min": 13334268,
+          "max": 15040748
+        },
+        "controller_peak_rss_kib": {
+          "min": 30020,
+          "max": 1294180
+        },
+        "shmem_kib": {
+          "min": 50632,
+          "max": 1359780
+        },
+        "oom_kill": {
+          "min": 0,
+          "max": 0
+        },
+        "pgscan_direct_delta": 0,
+        "pgsteal_direct_delta": 0,
+        "pswpin_delta": 0,
+        "pswpout_delta": 0,
+        "psi_memory_full_total_us_delta": 67,
+        "psi_io_full_total_us_delta": 5144468
+      },
+      {
+        "profile": "cu126",
+        "samples": 496,
+        "timing_rows": [
+          "2026-10-30T20:05:04.8829092Z observation_resource_read_timing started_unix_ns=1793390699815449250 dispatch_ns=42567 peer_auth_ns=52588 request_ns=43521 engine_ns=1167706828 response_ns=41477 close_ns=19446 total_ns=1167906427"
+        ],
+        "mem_available_kib": {
+          "min": 4811696,
+          "max": 15239252
+        },
+        "controller_peak_rss_kib": {
+          "min": 29008,
+          "max": 4376928
+        },
+        "shmem_kib": {
+          "min": 21496,
+          "max": 10263712
+        },
+        "oom_kill": {
+          "min": 0,
+          "max": 0
+        },
+        "pgscan_direct_delta": 96963,
+        "pgsteal_direct_delta": 37370,
+        "pswpin_delta": 6747,
+        "pswpout_delta": 396558,
+        "psi_memory_full_total_us_delta": 2072995,
+        "psi_io_full_total_us_delta": 4668096
+      }
+    ]
+  },
+  "cleanup": {
+    "helper_waits": [
+      "0",
+      "0"
+    ],
+    "final": "original1/CONFIRMED_STOPPED/stop0/client_error0/client_restore0/RESTORED"
+  },
+  "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci443-full-source-log-proof.json",
+  "macos_failure": "ci443-macos-first-failure-comparison-20261031.json",
+  "uncertainty": [
+    "helper engine subphase/lock/systemctl/cgroup read/scheduling cause not individually observed",
+    "OS pressure does not by itself prove cause",
+    "prior success is a different whole candidate, not current cu126 qualification"
+  ],
+  "next": "all four exact-source profiles and current support checkpoint qualified; preserve first failure; no same-source retry",
+  "requalification_intent": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-failed-only-intent.json",
+  "requalification": {
+    "run_id": 41115499227,
+    "attempt": 2,
+    "start": "2026-10-30T20:11:55Z",
+    "new_source": false,
+    "scope": "failed Linux/macOS/Required only; retain7 successful jobs",
+    "mutation_calls": 1,
+    "repeat_on_same_failure": false,
+    "status": "success",
+    "qualification": "p7-cu126-final-qualification-20261031.json",
+    "historical_lower_cause": "UNKNOWN"
+  }
+}

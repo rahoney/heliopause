@@ -19,6 +19,34 @@ func cleanupScript(t *testing.T) string {
 	}
 	return p
 }
+
+func TestCIResourceTimingTailIsBoundedAndPreservesOriginalFailure(t *testing.T) {
+	for _, failTail := range []bool{false, true} {
+		t.Run(fmt.Sprint(failTail), func(t *testing.T) {
+			body := cleanupStubs + `
+RUNNER_TEMP="$CASE_DIR"
+printf '%s\n' 'arbitrary-secret-do-not-print' > "$RUNNER_TEMP/haa-network-policy-helper.log"
+for ((i=0;i<30;i++)); do
+ printf 'observation_resource_read_timing started_unix_ns=%s dispatch_ns=1 peer_auth_ns=2 request_ns=3 engine_ns=4 response_ns=5 close_ns=6 total_ns=21\n' "$i" >> "$RUNNER_TEMP/haa-network-policy-helper.log"
+done
+`
+			if failTail {
+				body += "tail() { return 7; }\n"
+			}
+			body += "exit 37\n"
+			code, out, _ := runCleanup(t, body)
+			if code != 37 || strings.Contains(out, "arbitrary-secret") || !strings.Contains(out, "cleanup: original=37") {
+				t.Fatal("diagnostic changed failure or leaked unselected text", code, out)
+			}
+			if !failTail && (strings.Count(out, "observation_resource_read_timing ") != 16 || strings.Contains(out, "started_unix_ns=0 ") || !strings.Contains(out, "started_unix_ns=29 ")) {
+				t.Fatal("tail bound/latest records wrong", out)
+			}
+			if failTail && !strings.Contains(out, "diagnostic: helper read timing unavailable") {
+				t.Fatal("failed query lost", out)
+			}
+		})
+	}
+}
 func runCleanup(t *testing.T, body string, env ...string) (int, string, string) {
 	t.Helper()
 	dir := t.TempDir()

@@ -1,0 +1,431 @@
+{
+  "work_item": "M13-004/P6-G4",
+  "status": "LOCAL_QUALIFIED_HOSTED_FOLLOWUP_COMPLETE",
+  "source_base": "4d7c6e30a50acc3c34218143ba60793ada4146f5",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES (named local); hosted closure in CI446 receipt",
+  "ACCEPTANCE_CLOSED": "YES (G4 bounded functional scope)",
+  "MISSING": [],
+  "baseline": "p6g4-bun-entry-runtime-baseline-20261031.md",
+  "sources": [
+    {
+      "path": "internal/artifact/npm/node_execution_entry.go",
+      "sha256": "eb8074aec997c3adb06e0f7ffcd91b8af1c20f1451ed52481318e7bc8e81b732"
+    },
+    {
+      "path": "internal/artifact/npm/bun_execution_entry.go",
+      "sha256": "e0fc885bc25087cf48a33fe9061c0cb884fed95aaa89332a4c3e9bddd0b1bd13"
+    },
+    {
+      "path": "internal/inspection/npm/execution_entry.go",
+      "sha256": "5af67062c8f40a7711d7aeedbbcb3901a687f1250d9105d41715f6cc74e419ef"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare.go",
+      "sha256": "66bc27a2e82ac551d1de47c1498a3377b99a186aae653b2957e19a084ea54f3d"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_context.go",
+      "sha256": "19a2369649f8850c76233487e9e048023be2eb034612cd560883e5898b9a281a"
+    },
+    {
+      "path": "internal/bootstrap/bun_execution_context.go",
+      "sha256": "225200eb10851b7674be80e53c11d77d16a5a60cc80b8a2dd3021db4b2ee9b89"
+    },
+    {
+      "path": "internal/artifact/npm/bun_execution_layout.go",
+      "sha256": "832ac1bee3ed903396602b2ea04f1f0c647afd8bb12e15af9a39f6da0d821a42"
+    },
+    {
+      "path": "internal/bootstrap/bun_run_execution.go",
+      "sha256": "50e9cce0294f5f1f4ff6b427656ed6a59f91c83387c4f9da434c8513255d9c7b"
+    },
+    {
+      "path": "internal/artifact/npm/bun_execution_entry_test.go",
+      "sha256": "fcd7f5857cc86f7d8741be8064002269df63dfebe8abd1ebbc8be0583d80e480"
+    },
+    {
+      "path": "internal/inspection/npm/execution_entry_test.go",
+      "sha256": "75922337a27a3b18c2818ffe68b69e64c3495c2c023b018998e9ce84c0030eb0"
+    },
+    {
+      "path": "internal/bootstrap/bun_execution_context_test.go",
+      "sha256": "3960afb4c90de6514c16953ca66026e2277b81a876453b88ef37c59c7d15c485"
+    },
+    {
+      "path": "internal/artifact/npm/bun_execution_layout_test.go",
+      "sha256": "a7219ca3d87e74c6613a26a12115ee78d29b816e232ad43e2c588e717a65a2f1"
+    },
+    {
+      "path": "internal/cli/bun_execution.go",
+      "sha256": "cdca07161489037008ac77263035473e3f93e04a40a1b558efc8fe3a0f28d3f5"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_run_integration_test.go",
+      "sha256": "4a82eb1d390e1e353534213febe2d94016d36c50c6207247dda0532cfab9fa7a"
+    },
+    {
+      "path": "internal/bootstrap/bun_declared_entry_integration_test.go",
+      "sha256": "1a2dd006700ac878ecdcdf68f9d6bd0e30a0d2e3850fde3fd8590b9679010e38"
+    },
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "3461e43ae65002f9dbe586b7a516934ee14a844dde77baeb19460b80ecd2f1df"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "bc89a06ae70f9d5913711789965971f14234c82ab767f4a139fcba33db13faf1"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "9987fb31fecf4fd9aa8c80459aca0a64e9023e6afd1915818c5193ea1decbec1"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "ff60bd25593452c23624af5d9569143d127230d826eebec0cecd1a2df90f9db6"
+    }
+  ],
+  "implementation": [
+    "separate immutable Bun byte proof reuses original size/digest and complete inventory reader; existing Node predicate unchanged",
+    "measured closed declaration or explicit force selects exact bound runtime; no duplicate runtime authority",
+    "whole inspection/current Policy/Evidence/records and readonly layout/backend reused",
+    "unused runtime override wrappers removed; original Node context proof and fixed runtime preserved",
+    "existing Bun run CI cohort extended3 to5 parents; no new job/profile/helper/limits"
+  ],
+  "public_fixture": {
+    "selector": "bun-install@0.5.0",
+    "command": "bun-install",
+    "member": "src/index.ts",
+    "shebang": "#!/usr/bin/env bun",
+    "integrity": "sha512-mpe+XGXMsSw9rGxtH2i4kzpHiO+3hAYckVYoXWqgnKj6H+wJVLvvv80Hi/OQUENagkSbVp+KvnqGo1m98T2veg==",
+    "compressed_sha256": "a9ac2418dedd0fa4b274098c11bc57b44d3e09f26ac00d3214ee86c53151257f",
+    "runtime_version": "1.4.4",
+    "dependency_nodes": 1,
+    "original_members": 12,
+    "new_dependency_added": false
+  },
+  "actual": {
+    "operator_exit_code": 0,
+    "seconds": 211.563,
+    "new_application": {
+      "cases": 2,
+      "seconds": 56.51,
+      "exits": [
+        0,
+        1
+      ]
+    },
+    "new_CLI": {
+      "cases": 3,
+      "seconds": 83.63,
+      "aliases": [
+        "bunx",
+        "bun x"
+      ],
+      "force": [
+        false,
+        false,
+        true
+      ],
+      "exits": [
+        0,
+        1,
+        0
+      ]
+    },
+    "existing_Node_application": {
+      "cases": 2,
+      "seconds": 69.13,
+      "exits": [
+        0,
+        1
+      ]
+    },
+    "fresh_whole_allow_records_and_required_checks": true,
+    "typed_Bun_nonzero": true,
+    "no_SKIP": true,
+    "helper_wait_zero": true,
+    "helper_stopped_confirmed": true,
+    "host_five_and_Docker_unchanged": true,
+    "profile_same_inode_restored": true,
+    "observer_endpoint_empty": true
+  },
+  "after_actual_cleanup_review": {
+    "changed_paths": [
+      "internal/bootstrap/node_execution_prepare.go",
+      "internal/bootstrap/node_execution_context.go",
+      "internal/bootstrap/bun_execution_context_test.go"
+    ],
+    "changed_product_functions": "Node private wrappers only inlined; existing context regression now uses typed Bun constructor",
+    "current_Bun_path_functions_unchanged": true,
+    "same_selectCurrentExecutionEntry_and_newRuntimeExecutionContext_bodies": true,
+    "qualification_limit": "actual source snapshot retained; no claim of fresh actual on final complete tree; final Quick/Bootstrap Race plus new hosted close changed owners"
+  },
+  "checks": [
+    {
+      "name": "format",
+      "exit_code": 0,
+      "seconds": 0.716
+    },
+    {
+      "name": "focused-bootstrap",
+      "exit_code": 0,
+      "seconds": 3.229
+    },
+    {
+      "name": "quick",
+      "exit_code": 0,
+      "seconds": 68.579
+    },
+    {
+      "name": "bootstrap-race",
+      "exit_code": 0,
+      "seconds": 15.841
+    },
+    {
+      "name": "workflow",
+      "exit_code": 0,
+      "seconds": 2.42
+    },
+    {
+      "name": "focused-checker",
+      "exit_code": 0,
+      "seconds": 2.098
+    },
+    {
+      "name": "affected-race",
+      "exit_code": 0,
+      "seconds": 130.781
+    },
+    {
+      "name": "checker-race",
+      "exit_code": 0,
+      "seconds": 91.082
+    },
+    {
+      "name": "tagged-bootstrap-vet",
+      "exit_code": 0,
+      "seconds": 2.946
+    },
+    {
+      "name": "tagged-bootstrap-staticcheck",
+      "exit_code": 0,
+      "seconds": 2.456
+    },
+    {
+      "name": "docs",
+      "exit_code": 0,
+      "seconds": 0.312
+    },
+    {
+      "name": "security",
+      "exit_code": 0,
+      "seconds": 15.304
+    }
+  ],
+  "reused_checks_scope": "unchanged artifact/npm, inspection/npm, cli and checker Race owners from v5; changed Bootstrap fully rechecked in v6",
+  "first_failures": [
+    {
+      "proof": "public-actual-v2",
+      "cause": "test namespace omitted installed Bun supply; preparation failed before G4 entry",
+      "product_fix": false,
+      "correction": "reuse existing measured G3 namespace-only readonly supply"
+    },
+    {
+      "proof": "local-checks-v4",
+      "cause": "existing shared PNPM/Bun guard fixture omitted new parents/cases",
+      "correction": "extend existing fixture Bun branch; remove duplicate new fixture; preserve PNPM cases"
+    }
+  ],
+  "unchanged": {
+    "observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721",
+    "CPP_source": true,
+    "runtime_lock": true,
+    "Core_and_Policy": true,
+    "network_and_Host_grants": true,
+    "product_and_test_limits": true,
+    "required_jobs": 10,
+    "same_input_full_native_CPP_CUDA_repeated": false
+  },
+  "scope_boundary": "default Bun shebang including TS selects pinned Bun; Node-compatible default remains Node; no-header TS needs explicit --bun; all native options/TTY/export are not added",
+  "naming_order": "functional acceptance first; naming/distribution later; prior async naming question is not a blocker",
+  "raw_originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v2--actual.log",
+      "bytes": 629,
+      "sha256": "2df0d24996641c86c8d756a42da6e85fa4620b749c44b62a755cb84c16445436",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v2--actual-result.json",
+      "bytes": 807,
+      "sha256": "0ea7c338f4d48e4180606bb96670f3b4672cd0c0d23f1ef57247fd6f90e909f0",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v2--profile-restored.json",
+      "bytes": 299,
+      "sha256": "0760bad03f6584bc1fb9397fc5f908d72d4fae443173f4b252405f95d00aaaf6",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--actual.log",
+      "bytes": 2712,
+      "sha256": "3d489e71c09d9415259d8fc98bc5a94c7fac16ec1d606926ac25cd872578c707",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--actual-result.json",
+      "bytes": 809,
+      "sha256": "8546694d9ad813b488aedf9832e861d12e62f625b3d2f68711ad1f20caf99b2b",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--build-result.json",
+      "bytes": 3058,
+      "sha256": "489e2b7a8903ac686cb9e239c670e28c18f72f5adc5d7da0ca0ad44bf6f1be15",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--host-before.json",
+      "bytes": 2210,
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--host-after.json",
+      "bytes": 2210,
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-public-actual-v3--profile-restored.json",
+      "bytes": 299,
+      "sha256": "0760bad03f6584bc1fb9397fc5f908d72d4fae443173f4b252405f95d00aaaf6",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v4--focused-checker.log",
+      "bytes": 314,
+      "sha256": "672a27f98d635940cd77591dfda2f6ebb06fed879343950789a18747cb5a6aef",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v4--focused-checker-result.json",
+      "bytes": 282,
+      "sha256": "93cd06c885ac224dedd227bed412a251454fe757bd8f731609254615cf739156",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--workflow-result.json",
+      "bytes": 228,
+      "sha256": "879c92a88d6914cafbd5429519beeca41ab5d8b443d2187aea5db99aeb592938",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--focused-checker-result.json",
+      "bytes": 297,
+      "sha256": "9316b0d6393af04487da5ad2a0f4a627ad98349d9790d30343b933383ff3dfa3",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--quick.log",
+      "bytes": 1354,
+      "sha256": "0b349059bdf36f7f7343e31c1092480d3a30369880752660aefcc2576e4f2336",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--quick-result.json",
+      "bytes": 225,
+      "sha256": "fbd2df9b310aa25054e4f3e2362af4692fc6d4287411d3904fa0c10ce19fb1b1",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--affected-race.log",
+      "bytes": 250,
+      "sha256": "9ae644e0fe1783411932ef9bcbbfefee00c6a8d875be2e24f8ba8641a30609d3",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--affected-race-result.json",
+      "bytes": 358,
+      "sha256": "85410eea315633f14e3ccef93b01248b4c05b0af5effaf045609fe2d6cf8c1b7",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--checker-race.log",
+      "bytes": 57,
+      "sha256": "ef61349ac44da8ba31f15330a56fd75a020f079bc33607927f2b9284224b6cce",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-local-checks-v5--checker-race-result.json",
+      "bytes": 265,
+      "sha256": "7b9b7484013b6625ef515b5e170f278d5ecdb9e6acd295b46883d94b5c134d9c",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--source-freeze.json",
+      "bytes": 2847,
+      "sha256": "c40d1390d521010fb7c27d4c56dc29df427d30a3b77c5fb41806bd153fa6a250",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--quick.log",
+      "bytes": 1354,
+      "sha256": "943b8f22214744f4f85d653ae127bf1cd1bd3d33ea746c5fa96a63c74ad4e4cd",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--quick-result.json",
+      "bytes": 224,
+      "sha256": "444f7d604870d294e381fef2a517cc9eef67c8b06870797b58b2c8a3b8f7e175",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--bootstrap-race.log",
+      "bytes": 62,
+      "sha256": "0e012b888e63ea3b7ac52ff7a31029f13834333a712b9a857b184b464edc21a0",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--bootstrap-race-result.json",
+      "bytes": 272,
+      "sha256": "a8f82d006dd2c19644add49450c9a5afe023e292259467d52d09882495248458",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--tagged-bootstrap-vet-result.json",
+      "bytes": 254,
+      "sha256": "77554522118b574cdaaa6e4a916495c21f62c6ee0cf142a565835f83d299c7ee",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--tagged-bootstrap-staticcheck-result.json",
+      "bytes": 282,
+      "sha256": "eb001b14f959f6bc027fd3dd272aad1fc80d3380e623eed0d9b51ecf453e6125",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--docs-result.json",
+      "bytes": 221,
+      "sha256": "caa3e110b4c91657401eca712ec78f3cfe8fd66a6e29ce111d5dad252d1d64df",
+      "storage": "local original; not staged"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6g4-inline-cleanup-v6--security-result.json",
+      "bytes": 230,
+      "sha256": "2165dd2b4f72887966773c255e4acd04f7cd21f68bf9fc8d389991b98081c828",
+      "storage": "local original; not staged"
+    }
+  ],
+  "raw_publication": "local originals retained; not claimed remotely delivered",
+  "hosted": "ci446-bun-declared-entry-hosted-qualification-20261031.json",
+  "CI_impact_review": {
+    "required_new_run": "one grouped ordinary CI with all existing consumers and new2 parents",
+    "no_local_CPP_or_actual_repeat": true,
+    "CUDA": "unchanged C++/Sandbox/Python/runtime lock and CUDA consumer owners; retain prior scoped evidence, do not claim four-profile success on this new tree",
+    "basis": "prevention rules4/5 and plan20 section5: select actual affected consumers; no invariant full/native/CUDA repeat for each helper"
+  }
+}

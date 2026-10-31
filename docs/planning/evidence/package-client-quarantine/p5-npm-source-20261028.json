@@ -1,0 +1,45 @@
+{
+  "scope": "Pinned npm source DATA baseline; no product/runtime support qualification",
+  "source": "12034457a69eabed0429d05d96dbf79bbef3409a",
+  "image": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+  "npm_version": "11.19.0",
+  "files": [
+    {
+      "path": "npm-package.json",
+      "source": "package.json",
+      "sha256": "09dfcf187178ce1ab3ea6194c80d3ae082ad2a86dc1269ac963f94429e718122",
+      "bytes": 6597
+    },
+    {
+      "path": "npx-cli.js",
+      "source": "bin/npx-cli.js",
+      "sha256": "237adf8f3747cad8b9b62fcfd0d9c8d509a64e550337707f55100afcb79e8900",
+      "bytes": 2921
+    },
+    {
+      "path": "npm-exec.js",
+      "source": "lib/commands/exec.js",
+      "sha256": "f341403051a805d7f970d3c0d19d5d374d20c859aef73330ada18e4f0402949d",
+      "bytes": 3989
+    },
+    {
+      "path": "libnpmexec-index.js",
+      "source": "node_modules/libnpmexec/lib/index.js",
+      "sha256": "d3a229153f10a94127933adbd958c4b650a7c225442c21806fee729bd4784254",
+      "bytes": 11277
+    },
+    {
+      "path": "get-bin-from-manifest.js",
+      "source": "node_modules/libnpmexec/lib/get-bin-from-manifest.js",
+      "sha256": "7169b3dfd35b70d4577d031eb4484245436c187b0a25aa8344906e7b70772fdf",
+      "bytes": 641
+    }
+  ],
+  "export_receipt_sha256": "c11ca8e51b8ac03cca3da9ca388f7eee8ca73f3d09d45cabbc017c473e67d4de",
+  "raw_export_receipt": "docs/github-logs/package-client-quarantine-20261021/p5-source-source-export.json",
+  "never_started_readonly_network_none": true,
+  "container_removed": true,
+  "host_Docker_before_after_identical": true,
+  "runtime_source_1281_each_unchanged": true,
+  "qualification": "DATA_SOURCE_ONLY; P5 production NOT_STARTED"
+}

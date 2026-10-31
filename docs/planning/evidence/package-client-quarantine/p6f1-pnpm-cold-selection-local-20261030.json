@@ -1,0 +1,211 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-F1",
+  "source_base": "3ef10c9",
+  "scope": "Fresh native PNPM cold dlx selection and independent public source metadata DATA only; no current Policy/program/CLI authority",
+  "baseline": "p6f-native-node-alias-baseline-20261030.md",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES — public PNPMResolver.SelectToolRun and actual native consumer",
+    "QUALIFIED": "YES — named local cold-selection DATA only",
+    "ACCEPTANCE_CLOSED": "NO — full pnpm one-off current path remains open",
+    "MISSING": [
+      "frozen whole original/peer graph and client entry binding",
+      "current full inspection/Evidence/Policy/runtime/records",
+      "public aliases/CLI and hostile/equivalence",
+      "grouped hosted and whole final profiles"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_run_cache.go",
+      "sha256": "122cefb7eeb40065de638dcba5b7129c90963e413c789f95f18248f5e516f515"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_run_cache_test.go",
+      "sha256": "df8753d792c70af32eb274a7322c70d3bbf046eb228cd6c55424eb4e43f5e24e"
+    },
+    {
+      "path": "internal/sandbox/pnpm_run_resolver.go",
+      "sha256": "60b5d44ba856cdefae87ed627f162265f8a43d3e1d2d72311b0d4bfa39c3e254"
+    },
+    {
+      "path": "internal/sandbox/pnpm_run_resolver_test.go",
+      "sha256": "ace0480228c5d30f5012a18c666eebb954d44f52f7113e1e9f12cf1091b69245"
+    },
+    {
+      "path": "internal/sandbox/pnpm_run_resolver_real_test.go",
+      "sha256": "bdd0e91092b4fe0b4ee600d9d1f4b91207329e29ce2047299d898894143b3d5b"
+    }
+  ],
+  "unchanged_shared_sources": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "ab33bb220fbb3a51549513d45b22e192738300e3c7644cf0b3740d164fd0f650",
+      "unchanged_from": "3ef10c9"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "1c47f3669097b196cbc85673e2cca56eb9572840ae51d85de851eb1f03ddb320",
+      "unchanged_from": "3ef10c9"
+    },
+    {
+      "path": "tools/gvisor-observer/pod-init.json",
+      "sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc",
+      "unchanged_from": "3ef10c9"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_archive.go",
+      "sha256": "e34c960550b4a1581e5e43f96ebc1c32c37a0610f075e044334dbf3365f86753",
+      "unchanged_from": "3ef10c9"
+    }
+  ],
+  "fixed_inputs": {
+    "pnpm_version": "12.15.0",
+    "pnpm_source": "91774e72a04d52ce61db06339696a433d383c764",
+    "pnpm_binary_sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
+    "observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b",
+    "argv_count": 17,
+    "command": "/haa-runtime/helox-pnpm-inert-query",
+    "missing_sealed_absolute_path": true,
+    "ignore_scripts_pnpmfile_workspace": true,
+    "artifact_bin_and_user_argv_not_run": true
+  },
+  "native_final": {
+    "original": "docs/github-logs/package-client-quarantine-20261021/p6-f1-final-existing-observer/",
+    "result": {
+      "exit_code": 0,
+      "seconds": 12.75,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "F1 fresh PNPM cold dlx cache/native lock/independent public source metadata DATA only. Fixed sealed missing absolute command after installation; no artifact bin/user argv/additional Node launch. Controlled final-query comparison with existing observer; no existing consumer replay; current program/Policy/CLI and general equivalence remain open. Product budgets unchanged",
+      "Go_source_base": "3ef10c9",
+      "new_test_source": {
+        "path": "internal/sandbox/pnpm_run_resolver_real_test.go",
+        "sha256": "bdd0e91092b4fe0b4ee600d9d1f4b91207329e29ce2047299d898894143b3d5b"
+      },
+      "local_observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b"
+    },
+    "facts": {
+      "roots": 1,
+      "packages": 1,
+      "instances": 1,
+      "cache_entries": 169,
+      "source_artifacts": 1,
+      "selected": "typescript@5.9.3",
+      "test_seconds": 10.67,
+      "native_DATA": "UNAPPROVED"
+    },
+    "profile_restoration": {
+      "only_phase_changed": true,
+      "matching_candidate_sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc",
+      "restored_sha256": "20b623863b0fe2a3b9949ad30ccb01e646e0ddf37a7824d8ec2fa7789d5582e4",
+      "same_inode": true,
+      "helpers_and_containers_absent_before_restore": true
+    }
+  },
+  "prior_candidate_consumers": {
+    "original": "docs/github-logs/package-client-quarantine-20261021/p6-f1-native-final-v7/",
+    "whole_seconds": 20.237,
+    "new_cold_seconds": 10.83,
+    "existing_startup_seconds": 3.7,
+    "existing_Node_query_seconds": 3.77,
+    "all_pass": true,
+    "experimental_observer_not_final": true
+  },
+  "superseded_candidates": {
+    "absolute_alias_assumption": "Actual relative pkg basename needs no common tar parser extension; removed",
+    "extra_Node_query": "v5 null-output fault and v6 incomplete extra exec; exact latter cause remains unknown; no longer requested",
+    "CPP_null_write_exception": "CPP132 PASS was partial. Final same Go/supply with original observer passed; restored CPP exact base bytes"
+  },
+  "first_failures_originals": [
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-focus/",
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-native-v2/",
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-native-v3/",
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-native-v4/",
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-native-v5/",
+    "docs/github-logs/package-client-quarantine-20261021/p6-f1-first-native-v6/"
+  ],
+  "checks": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 288.888
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 54.282
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 0.429
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 4.916
+    }
+  ],
+  "raw_index": "docs/github-logs/package-client-quarantine-20261021/p6-f1-final-raw-index.json",
+  "CI438": "Frozen31acbfe does not contain F1; actual20min GET continues; no new push/CI for this helper",
+  "limits_permissions_Core_required_jobs_unchanged": true,
+  "documentation_security_checks": [
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.353
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.878
+    }
+  ],
+  "named_F1_DATA_slice_locally_closed": true
+}

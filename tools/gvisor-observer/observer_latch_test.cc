@@ -4,6 +4,7 @@
 #include "tools/haa_gvisor_observer/observer.cc"
 #undef main
 
+#include <tuple>
 #include <chrono>
 #include <signal.h>
 #include <fstream>
@@ -247,6 +248,10 @@ bool RegisterProfileWithGeneration(const std::string& path, const char* containe
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     topology += ";/haa-site|workspace|/|tmpfs|0|0|1|0";
+  } else if (IsPipxNativeProfile(profile)) {
+    topology = "/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0;/haa-runtime|helper|/|9p|0|0|0|0;/haa-pipx|workspace|/|9p|1|0|0|0;/haa-wheels|workspace|/|9p|1|0|0|0;/haa-site|workspace|/|9p|0|0|0|0";
+  } else if (IsPipxRuntimeProfile(profile)) {
+    topology += ";/haa-pipx|workspace|/|9p|1|0|0|0";
   } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     topology += ";/work|workspace|/|tmpfs|0|0|1|0";
   }
@@ -292,6 +297,8 @@ gvisor::sentry::MountTopologySnapshot BuildCanonicalTopologySnapshot(const char*
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     add_mount(next_id++, "/haa-site", "tmpfs", false, false);
+  } else if (IsPipxRuntimeProfile(profile)) {
+    add_mount(next_id++, "/haa-pipx", "9p", true, false);
   } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     add_mount(next_id++, "/work", "tmpfs", false, false);
   }
@@ -605,12 +612,12 @@ bool ExpectNetworkRecord(int output, const char* container_id, const char* sourc
 }
 
 bool ExpectTrustedNetworkRecord(int output, const char* container_id, const char* source, const char* family,
-                               const char* relation = "DIRECT_EXEC_SESSION", const char* process_class = "PYTHON") {
+                               const char* relation = "DIRECT_EXEC_SESSION", const char* process_class = "PYTHON", const char* kind = "trusted-control-network") {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
   const std::string expected = std::string("{\"container_id\":\"") + container_id +
-      "\",\"kind\":\"trusted-control-network\",\"event_source\":\"" + source +
+      "\",\"kind\":\"" + kind + "\",\"event_source\":\"" + source +
       "\",\"family\":\"" + family + "\",\"process_relation\":\"" + relation +
       "\",\"process_class\":\"" + process_class + "\"}";
   return std::string(buffer, size) == expected;
@@ -654,7 +661,8 @@ bool HasPinnedPodInitProfile() {
       profile.find("syscall/socketpair/enter") != std::string::npos &&
       profile.find("syscall/socketpair_result") != std::string::npos &&
       profile.find("syscall/socketpair/exit") != std::string::npos &&
-      profile.find("syscall/close/exit") != std::string::npos &&
+      profile.find("syscall/close/enter") != std::string::npos &&
+      profile.find("syscall/close/exit") == std::string::npos &&
       profile.find("syscall/dup/exit") != std::string::npos &&
       profile.find("syscall/dup2/exit") != std::string::npos &&
       profile.find("syscall/dup3/exit") != std::string::npos &&
@@ -707,8 +715,6 @@ bool VerifyProfileRecordBoundary(int output, const std::string& remote, const st
   context->set_thread_group_id(1);
   context->set_thread_group_start_time_ns(1);
   close_message.set_fd(7);
-  close_message.mutable_exit()->set_errorno(9);
-  close_message.mutable_exit()->set_result(-1);
   // Start and sealed topology each charge one; retain the original accounting.
   const size_t count = overflow ? limit - 1 : limit - 3;
   for (size_t i = 0; i < count; ++i) {
@@ -1009,6 +1015,241 @@ bool VerifyCargoRustcQueryBoundary(const std::string& pathname =
        "missing-clone", "unsealed", "writable-root", "shadow", "no-topology", "other-profile"}) ok = run(scenario) && ok;
   close(output[0]); close(output[1]);
   return ok;
+}
+
+bool VerifyPipxRuntimeReadBoundary() {
+  if (IsPythonProfile(kProfilePipxRuntime) ||
+      ProcessClassForPath("/usr/local/bin/python", kProfilePipxRuntime) != ProcessClass::kPython ||
+      ProcessClassForPath("/usr/local/bin/pip", kProfilePipxRuntime) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/bin/uname", kProfilePipxRuntime) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/local/bin/pip", kProfilePyPI) != ProcessClass::kPip ||
+      IsWorkspacePath("/haa-site/module.py", kProfilePipxRuntime) ||
+      IsWorkspacePath("/haa-pipx/foreign.zip", kProfilePipxRuntime)) return false;
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("mutable-name");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kPython;
+  const auto baseline = state.groups[99];
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_flags(557056);
+  MountAnchor root{1, "/", "oci-root"};
+  for (const char* path : {"/usr/local/lib/python3.14/json/__init__.py", "/usr/local/lib/libpython3.14.so.1.0"}) {
+    open.set_pathname(path);
+    if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &root) != FilesystemClass::kRuntimeRoot) return false;
+  }
+  for (const char* path : {"/usr/local/bin/pip", "/etc/pip.conf", "/usr/local/lib/python3.14/site-packages/pip/__init__.py", "/usr/local/lib/python3.14/site-packages/foreign.py", "/proc/98/maps", "/haa-site/module.py"}) {
+    open.set_pathname(path);
+    auto result = ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &root);
+    if (result == FilesystemClass::kRuntimeRoot || result == FilesystemClass::kWorkspace) return false;
+  }
+  MountAnchor data{4, "/haa-pipx", "workspace"};
+  open.set_pathname("/haa-pipx/pipx-runtime.zip");
+  if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kWorkspace) return false;
+  for (uint64_t flags : {kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenTruncate,kOpenAppend}) {
+    open.set_flags(flags);
+    if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kOutside) return false;
+  }
+  open.set_flags(557056);open.set_pathname("/haa-pipx/foreign.zip");
+  if (ClassifyFilesystemOpen(open, state, kProfilePipxRuntime, &data) != FilesystemClass::kOutside) return false;
+  open.set_pathname("/usr/local/lib/python3.14/json/__init__.py");
+  state.groups[99].current_image_class=ProcessClass::kUnknown;
+  open.mutable_context_data()->set_process_name("python");
+  if (ClassifyFilesystemOpen(open,state,kProfilePipxRuntime,&root)==FilesystemClass::kRuntimeRoot) return false;
+  const auto& after=state.groups[99];
+  return after.role==baseline.role && after.provenance==baseline.provenance &&
+      after.root_eligible==baseline.root_eligible && after.root_consumed==baseline.root_consumed &&
+      after.trusted_control_network_active==baseline.trusted_control_network_active;
+}
+
+bool VerifyPipxRuntimeReadiness(const char* profile=kProfilePipxRuntime) {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, output) != 0) return false;
+  bool success = true;
+  for (int scenario = 0; scenario < 13; ++scenario) {
+    gvisor::sentry::ExecveInfo image;
+    auto* context = image.mutable_context_data();
+    context->set_container_id(kFirstID); context->set_thread_group_id(99);
+    context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+    context->set_is_exec_session(true); context->set_process_name("arbitrary-comm");
+    image.set_binary_path(kBoundaryHelperPath); image.set_execfn(kBoundaryHelperPath);
+    for (const auto& arg : std::vector<std::string>{kBoundaryHelperPath,kLaunchMode,std::string(64,'e'),"/bin/sh","-ceu",kBoundaryReadinessScript}) image.add_argv(arg);
+    if (scenario >= 1 && scenario <= 6) image.set_argv(scenario - 1,"foreign");
+    if (scenario == 7) image.add_argv("extra");
+    if (scenario == 8) image.set_binary_path("/tmp/haa-boundary");
+    if (scenario == 9) image.set_execfn("/tmp/haa-boundary");
+    if (scenario == 10) image.mutable_context_data()->set_parent_thread_group_id(88);
+    if (scenario == 11) image.mutable_context_data()->set_is_exec_session(false);
+    if (scenario == 12) image.set_argv(5,std::string(kBoundaryReadinessScript)+"; /usr/local/bin/python -c evil");
+    ProfileRegistration registration;
+    registration.session_generation=std::string(64,'a');
+    registration.pending_admissions.push_back(ProfileRegistration::PendingAdmission{registration.session_generation,kLaunchMode,std::string(64,'e')});
+    ProcessState state; std::string payload,id;const char* reason=nullptr;
+    if (!image.SerializeToString(&payload)) { success=false; break; }
+    const bool accepted=ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&state,&reason);
+    if (accepted != (scenario == 0)) { success=false; break; }
+    if (accepted) {
+      if (!ExpectRecordExact(output[1],kFirstID,"process-exec-expected") ||
+          state.groups[99].role != ProcessState::Role::kControl ||
+          !state.groups[99].root_consumed || !state.groups[99].demotion_pending ||
+          registration.pending_admissions[0].state != ProfileRegistration::AdmissionState::kConsumed) { success=false; break; }
+      // Exercise the actual demotion and target transitions, with kernel-resolved
+      // dash distinct from the controller's /bin/sh invocation name.
+      auto demotion=image;
+      demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+      for(const char* arg:{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--","/bin/sh","-ceu",kBoundaryReadinessScript})demotion.add_argv(arg);
+      if(!demotion.SerializeToString(&payload)||!ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&state,&reason)||!ExpectRecordExact(output[1],kFirstID,"process-exec-expected")){success=false;break;}
+      auto target=image;target.set_binary_path("/usr/bin/dash");target.set_execfn("/bin/sh");target.clear_argv();
+      for(const char* arg:{"/bin/sh","-ceu",kBoundaryReadinessScript})target.add_argv(arg);
+      for(int mutation=0;mutation<5;++mutation){
+        auto bad=target;auto unchanged=state;
+        if(mutation==0)bad.set_binary_path("/bin/sh");
+        if(mutation==1)bad.set_execfn("/usr/bin/dash");
+        if(mutation==2)bad.set_argv(2,"python -c evil");
+        if(mutation==3)bad.add_argv("extra");
+        if(mutation==4)bad.set_argv(1,"-c");
+        reason=nullptr;
+        if(!bad.SerializeToString(&payload)||ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&unchanged,&reason)||!unchanged.groups[99].launch_target_pending){success=false;break;}
+      }
+      if(!success||!target.SerializeToString(&payload)||!ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&state,&reason)||!ExpectRecordExact(output[1],kFirstID,"process-exec-expected")||state.groups[99].launch_target_pending){success=false;break;}
+    } else if (!state.groups.empty() || registration.pending_admissions[0].state != ProfileRegistration::AdmissionState::kPending) { success=false; break; }
+  }
+  close(output[0]);close(output[1]);return success;
+}
+
+bool VerifyPipxRuntimeAdmission(const std::string& control) {
+  constexpr char id[]="7a7a7a7a7a7a7a7a";
+  if (!RegisterProfile(control,id,kProfilePipxRuntime)) return false;
+  const auto client=gControlClients.find(id);
+  if (client==gControlClients.end()) return false;
+  const auto generation=TestSessionGeneration(id);
+  for (const char* mode : {kELFHandoffMode}) {
+    if (!ControlAdmissionOnFD(client->second,id,mode,generation,std::string(64,'b'),"arm","rejected")) return false;
+  }
+  if (!ArmAdmission(control,id,kLaunchMode,std::string(64,'d')) ||
+      !CancelAdmission(control,id,kLaunchMode,std::string(64,'d')) ||
+      !VerifyPipxRuntimeReadiness() ||
+      !ArmAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
+      !CancelAdmission(control,id,kPythonHandoffMode,std::string(64,'c')) ||
+      !InvalidateProfile(control,id,generation)) return false;
+  close(client->second);gControlClients.erase(client);
+  return true;
+}
+
+bool VerifyGitHubArtifactRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("renamed-artifact");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kArtifact;
+  const ProcessState baseline = state;
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto allowed = [&](const char* profile = kProfileGitHub) {
+    return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kRuntimeRoot;
+  };
+  for (const char* path : {"/proc/99/cgroup", "/proc/99/mountinfo", "/proc/sys/kernel/osrelease", "/proc/99/maps", "/proc/sys/vm/overcommit_memory"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+  }
+  for (const char* path : {"/proc/98/cgroup", "/proc/98/maps", "/proc/self/maps", "/proc/99/maps.evil", "/proc/99/mem", "/proc/99/environ",
+                           "/proc/sys/kernel/hostname", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/overcommit_memory/", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/vm/overcommit_ratio", "/proc/sys/vm/drop_caches", "/proc/self/cgroup"}) {
+    open.set_pathname(path);
+    if (allowed()) return false;
+  }
+  for (const char* path : {"/proc/99/maps", "/proc/sys/vm/overcommit_memory"}) {
+    open.set_pathname(path);
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, uint64_t{557056 | 0400000}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (allowed()) return false;
+    }
+  }
+  open.set_flags(557056);
+  open.set_pathname("/proc/99/cgroup");
+  for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+    open.set_flags(flags);
+    if (allowed()) return false;
+  }
+  open.set_flags(557056);
+  for (const char* path : {"/proc/99/maps", "/proc/sys/vm/overcommit_memory", "/proc/99/cgroup"}) {
+    open.set_pathname(path);
+    for (const char* profile : {kProfilePNPMResolver,kProfileUVResolver,kProfileNPM, kProfilePyPI, kProfileGoResolver, kProfileGoBuild,
+                                kProfileCargoBuild, kProfileTerraformProvider}) {
+      if (allowed(profile)) return false;
+    }
+    anchor.mountpoint = "/proc/99";
+    if (allowed()) return false;
+    anchor.mountpoint = "/proc";
+    anchor.mount_class = "workspace";
+    if (allowed()) return false;
+    anchor.mount_class = "system";
+    open.mutable_context_data()->set_thread_group_start_time_ns(991);
+    if (allowed()) return false;
+    *open.mutable_context_data() = context;
+    for (int scenario = 0; scenario != 9; ++scenario) {
+      state = baseline;
+      auto& group = state.groups[99];
+      switch (scenario) {
+        case 0: group.role = ProcessState::Role::kControl; break;
+        case 1: group.current_image_class = ProcessClass::kShell; break;
+        case 2: group.provenance = ProcessState::Provenance::kCloneChild; break;
+        case 3: group.root_eligible = true; break;
+        case 4: group.root_consumed = false; break;
+        case 5: group.trusted_control_network_active = true; break;
+        case 6: group.demotion_pending = true; break;
+        case 7: group.launch_target_pending = true; break;
+        case 8: group.handoff_target_pending = true; break;
+      }
+      if (allowed()) return false;
+    }
+    state = baseline;
+  }
+  anchor = MountAnchor{11, "/sys/fs/cgroup/cpu", "system"};
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+  }
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.shares");
+  if (allowed()) return false;
+  anchor = MountAnchor{1, "/", "oci-root"};
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libm.so.6",
+                           "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+                           "/lib/x86_64-linux-gnu/libgcc_s.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/libpthread.so.0", "/usr/lib/x86_64-linux-gnu/libdl.so.2"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+    open.set_flags(kOpenReadWrite);
+    if (allowed()) return false;
+    open.set_flags(557056);
+  }
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libpthread.so.0.evil", "/usr/lib/x86_64-linux-gnu/libdl.so.2.evil", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.evil",
+                           "/usr/lib/x86_64-linux-gnu/libcrypto.so.3", "/etc/passwd",
+                           "/work/libm.so.6", "/home/user/libm.so.6"}) {
+    open.set_pathname(path);
+    if (allowed()) return false;
+  }
+  open.set_pathname("/usr/lib/x86_64-linux-gnu/libm.so.6");
+  anchor.mountpoint = "/usr/lib";
+  if (allowed()) return false;
+  anchor.mountpoint = "/";
+  anchor.mount_class = "system";
+  if (allowed()) return false;
+  return state.groups[99].role == ProcessState::Role::kArtifact &&
+      state.groups[99].current_image_class == ProcessClass::kArtifact &&
+      !state.groups[99].trusted_control_network_active;
 }
 
 bool VerifyGoResolverRuntimeReadBoundary() {
@@ -2628,12 +2869,20 @@ bool VerifyFilesystemClassification() {
            "/usr/local/lib/python3.14/__pycache__/os.cpython-314.pyc",
            "/usr/local/lib/python3.14/lib-dynload/_ssl.cpython-314-x86_64-linux-gnu.so",
            "/usr/local/lib/python3.14/site-packages/pip/__init__.py",
-           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info/METADATA",
            "/lib/x86_64-linux-gnu/libssl.so.3"}) {
     python_runtime_open.set_pathname(path);
     if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) !=
         FilesystemClass::kRuntimeRoot) return false;
   }
+  // pip debug reads the bundled distribution directory with these exact flags.
+  python_runtime_open.set_pathname("/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info");
+  python_runtime_open.set_flags(624640);
+  if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kRuntimeRoot) return false;
+  python_runtime_open.set_pathname("/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info/METADATA");
+  python_runtime_open.set_flags(kOpenWriteOnly);
+  if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kOutside) return false;
+  python_runtime_open.set_flags(0);
   // The same immutable read remains filesystem runtime material after role
   // demotion; classification does not restore CONTROL.
   python_runtime_state.groups.find(111)->second.role = ProcessState::Role::kArtifact;
@@ -2680,6 +2929,10 @@ bool VerifyFilesystemClassification() {
   for (const char* path : {
            "/usr/local/lib/python3.15/os.py",
            "/usr/local/lib/python3.14/site-packages/artifact_owned.py",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.1.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.20.dist-info/METADATA",
+           "/usr/local/lib/python3.14/site-packages/pip-26.2.2.dist-info.evil/METADATA",
            "/usr/local/lib/python3.14/site-packages/setuptools/__init__.py",
            "/usr/local/lib/glibc-hwcaps/x86-64-v3/not-libpython.so",
            "/usr/local/lib/../lib/python3.14/os.py",
@@ -3040,8 +3293,6 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   gvisor::syscall::Close close_socket;
   *close_socket.mutable_context_data() = socket.context_data();
   close_socket.set_fd(8);
-  close_socket.mutable_exit()->set_result(0);
-  close_socket.mutable_exit()->set_errorno(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CLOSE, close_socket) || !ExpectNoRecord(output)) return false;
   socket.set_domain(AF_INET6);
   if (!SendSocketCreate(output, client, socket, 8, false, kFifthID, "INET6")) return false;
@@ -3207,6 +3458,127 @@ bool VerifySocketPairDiagnosticPreservesFDAuthority() {
   return passed;
 }
 
+bool VerifyCloseEntryPreservesReusedFD() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  const auto finish = [&](bool ok) { close(output[0]); close(output[1]); return ok; };
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID); context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990); context.set_is_exec_session(true);
+  context.set_process_name("untrusted-name");
+  for (const auto family : {AF_UNIX, AF_NETLINK, AF_INET}) {
+    ProcessState state;
+    if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return finish(false);
+    state.fd_states[99][8] = ProcessState::FDEntry{SocketClassification::kNetwork, AF_INET, false};
+    std::string id = kFirstID;
+    const char* reason = nullptr;
+    auto consume = [&](const auto& message, uint32_t kind) {
+      std::string payload; NormalizedCounts counts; TopologyState topology; Header header{};
+      header.message_type = kind;
+      return message.SerializeToString(&payload) && Handle(header, payload.data(), payload.size(), output[0],
+          &id, kProfilePNPMResolver, nullptr, &state, &counts, &topology, &reason);
+    };
+    gvisor::syscall::Close closed;
+    *closed.mutable_context_data() = context; closed.set_fd(8);
+    if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE)) return finish(false);
+    // The kernel frees the old descriptor before OnClose returns. Another
+    // thread can allocate the same number before the old close exit arrives.
+    gvisor::syscall::Socket created;
+    *created.mutable_context_data() = context; created.set_sysno(41);
+    created.set_domain(family); created.set_type(SOCK_DGRAM);
+    if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+    created.mutable_exit()->set_result(8);
+    if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+    gvisor::syscall::Syscall raw;
+    *raw.mutable_context_data() = context; raw.set_sysno(kSyscallSendtoX86); raw.set_arg1(8);
+    if (!consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW)) {
+      fprintf(stderr, "reused FD unavailable: family=%d reason=%s\n", family, reason == nullptr ? "NONE" : reason);
+      return finish(false);
+    }
+    if (family == AF_INET) {
+      if (!ExpectNetworkRecord(output[1], kFirstID, "SENDTO", "INET", "ARTIFACT_GROUP", "OTHER")) return finish(false);
+    } else if (!ExpectNoRecord(output[1])) return finish(false);
+    // An incompatible exit phase fails closed without erasing the new socket.
+    closed.mutable_exit()->set_result(0);
+    if (consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || reason == nullptr ||
+        strcmp(reason, "STREAM_FAULT") != 0 || state.fd_states[99].at(8).raw_family != family) return finish(false);
+    // Entry revokes authority immediately; a failed exit cannot restore it.
+    closed.clear_exit();
+    if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || !state.fd_states[99].empty()) return finish(false);
+    closed.mutable_exit()->set_result(-1); closed.mutable_exit()->set_errorno(9);
+    if (consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE) || !state.fd_states[99].empty()) return finish(false);
+    if (consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW) || reason == nullptr ||
+        strcmp(reason, "FD_STATE_UNKNOWN") != 0 || !ExpectNoRecord(output[1])) return finish(false);
+  }
+  return finish(true);
+}
+
+bool VerifyFDMutationDiagnosticPreservesAuthority() {
+  if (!VerifyCloseEntryPreservesReusedFD()) return false;
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  const auto finish = [&](bool ok) { close(output[0]); close(output[1]); return ok; };
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID); context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990); context.set_thread_id(101);
+  context.set_thread_start_time_ns(1010); context.set_is_exec_session(true);
+  context.set_process_name("untrusted-name");
+  ProcessState state;
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+      ProcessState::Provenance::kDirectExecRoot, false, true)) return finish(false);
+  std::string id = kFirstID;
+  const char* reason = nullptr;
+  auto consume = [&](const auto& message, uint32_t kind) {
+    std::string payload;
+    NormalizedCounts counts; TopologyState topology; Header header{};
+    header.message_type = kind;
+    return message.SerializeToString(&payload) && Handle(header, payload.data(), payload.size(), output[0], &id,
+        kProfilePNPMResolver, nullptr, &state, &counts, &topology, &reason);
+  };
+  // Closing a tracked socket revokes it; diagnostic history grants no authority.
+  gvisor::syscall::Socket created;
+  *created.mutable_context_data() = context; created.set_sysno(41);
+  created.set_domain(AF_NETLINK); created.set_type(SOCK_RAW | SOCK_CLOEXEC);
+  if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+  created.mutable_exit()->set_result(14);
+  if (!consume(created, gvisor::common::MESSAGE_SYSCALL_SOCKET)) return finish(false);
+  gvisor::syscall::Close closed;
+  *closed.mutable_context_data() = context; closed.set_fd(14);
+  if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE)) return finish(false);
+  gvisor::syscall::Syscall raw;
+  *raw.mutable_context_data() = context; raw.set_sysno(kSyscallSendtoX86); raw.set_arg1(14);
+  auto rejected = [&]() {
+    reason = nullptr;
+    return !consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW) && reason != nullptr &&
+        strcmp(reason, "FD_STATE_UNKNOWN") == 0 && ExpectNoRecord(output[1]);
+  };
+  if (!rejected() || !state.fd_states[99].empty() ||
+      state.fault_raw_diagnostic.find("\"fd_last\":\"CLOSE\",\"fd_last_family\":16") == std::string::npos ||
+      state.fault_raw_diagnostic.find("\"fd_previous\":\"SOCKET\",\"fd_previous_family\":16") == std::string::npos)
+    return finish(false);
+  // Even forged LOCAL diagnostic history cannot classify or grant an FD.
+  state.fd_mutation_diagnostics.clear();
+  RecordFDMutationDiagnostic(&state, 99, 990, 14, "SOCKETPAIR", AF_UNIX);
+  if (!rejected() || !state.fd_states[99].empty()) return finish(false);
+  state.fd_states[99][14] = ProcessState::FDEntry{SocketClassification::kNetwork, AF_INET, false};
+  if (!consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW) ||
+      !ExpectNetworkRecord(output[1], kFirstID, "SENDTO", "INET", "ARTIFACT_GROUP", "OTHER")) return finish(false);
+  state.fd_states[99].clear();
+  // Another identity, another FD and a reused group never appear as history.
+  state.fd_mutation_diagnostics.clear();
+  RecordFDMutationDiagnostic(&state, 98, 990, 14, "CLOSE", AF_UNIX);
+  RecordFDMutationDiagnostic(&state, 99, 991, 14, "CLOSE", AF_UNIX);
+  RecordFDMutationDiagnostic(&state, 99, 990, 15, "CLOSE", AF_UNIX);
+  if (!rejected() || state.fault_raw_diagnostic.find("\"fd_last\"") != std::string::npos) return finish(false);
+  RecordFDMutationDiagnostic(&state, 99, 990, -1, "EXEC", -1);
+  if (!rejected() || state.fault_raw_diagnostic.find("\"fd_last\":\"EXEC\"") == std::string::npos) return finish(false);
+  for (int i = 0; i < 100; ++i) RecordFDMutationDiagnostic(&state, 99, 990, 100 + i, "CLOSE", -1);
+  if (state.fd_mutation_diagnostics.size() != 16 || !rejected() ||
+      state.fault_raw_diagnostic.find("\"fd_last\"") != std::string::npos) return finish(false);
+  return finish(true);
+}
+
 bool VerifyKernelSocketPairTracking() {
   int output[2];
   if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
@@ -3297,7 +3669,7 @@ bool VerifyKernelSocketPairTracking() {
         consume(result, gvisor::common::MESSAGE_SYSCALL_SOCKETPAIR_RESULT, &limited) ||
         limited.fd_states[99].find(5) != limited.fd_states[99].end()) return finish(false);
     gvisor::syscall::Close closed; *closed.mutable_context_data() = context;
-    closed.set_fd(5); closed.mutable_exit()->set_result(0); raw.set_arg1(5);
+    closed.set_fd(5); raw.set_arg1(5);
     if (!consume(closed, gvisor::common::MESSAGE_SYSCALL_CLOSE, &state) ||
         consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW, &state)) return finish(false);
   }
@@ -3305,14 +3677,14 @@ bool VerifyKernelSocketPairTracking() {
 }
 
 bool ExpectRawFaultRecord(int output, const char* id, const char* check, uint64_t fd,
-                          const char* provenance, uint64_t executable_locator) {
+                          const char* provenance, uint64_t executable_locator, const char* fd_history = "") {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   const std::string expected = std::string("{\"container_id\":\"") + id +
       "\",\"kind\":\"stream-fault\",\"reason\":\"FD_STATE_UNKNOWN\",\"fault_site\":\"RAW\",\"fault_raw\":{\"check\":\"" + check +
       "\",\"sysno\":44,\"fd\":" + std::to_string(fd) +
       ",\"kernel_image\":\"UNKNOWN\",\"role\":\"CONTROL\",\"provenance\":\"" + provenance +
-      "\",\"executable_locator\":" + std::to_string(executable_locator) + "}}";
+      "\",\"executable_locator\":" + std::to_string(executable_locator) + fd_history + "}}";
   return size > 0 && std::string(buffer, size) == expected;
 }
 
@@ -3373,7 +3745,8 @@ bool VerifyCloexecReexec(int output, const std::string& remote, const std::strin
   *raw.mutable_context_data() = root.context_data();
   raw.set_sysno(kSyscallSendtoX86);
   raw.set_arg1(3);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) || !ExpectRawFaultRecord(output, kNinthID, "DESCRIPTOR", 3, "DIRECT_EXEC_ROOT", 0xb982a2d37572906dULL)) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) || !ExpectRawFaultRecord(output, kNinthID, "DESCRIPTOR", 3, "DIRECT_EXEC_ROOT", 0xb982a2d37572906dULL,
+      ",\"fd_last\":\"EXEC\",\"fd_last_family\":-1,\"fd_previous\":\"SOCKET\",\"fd_previous_family\":2")) return false;
   close(client);
   return true;
 }
@@ -4397,6 +4770,258 @@ bool VerifyBoundedClassificationSemantics() {
   ProcessClassification unexpected = IsExpectedProcess("/usr/bin/curl", child, kProfilePyPI, &state);
   return !unexpected.expected && unexpected.process_class == ProcessClass::kUnknown &&
       strcmp(unexpected.reason, "PROCESS_PROVENANCE_UNKNOWN") == 0 && strcmp(unexpected.parent_relation, "UNTRACKED_PARENT") == 0;
+}
+
+TopologyState PNPMTargetLifecycleTestTopology(bool bun = false) {
+  const char* project_mount = bun ? kBunTargetProjectMount : kPNPMProjectMount;
+  TopologyState topology;
+  topology.sealed = true; topology.snapshot_seen = true; topology.namespace_id = 99;
+  topology.expected = {
+      {"/", "oci-root", "/", "", true, false, false, false},
+      {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+      {"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false},
+      {project_mount, "workspace", "/tmp", "9p", false, false, false, false}};
+  topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+  topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
+  topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+  topology.anchors.emplace(4, MountAnchor{4, project_mount, "workspace"});
+  return topology;
+}
+
+bool VerifyPNPMTargetLifecycleShapeBoundary() {
+  const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
+  const std::string target = prefix + "is-odd@3.0.1/node_modules/is-odd";
+  const std::string hashed_slot = std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497";
+  const std::string hashed_target = prefix + hashed_slot + "/node_modules/" + std::string(130, 'a');
+  if (!ValidPNPMTargetLifecyclePath(hashed_target)) return false;
+  for (const auto& slot : {hashed_slot.substr(0, 119), hashed_slot + "f", hashed_slot.substr(0, 87) + "-" + hashed_slot.substr(88), hashed_slot.substr(0, 119) + "g", hashed_slot.substr(0, 88) + "69B8023E95A408229C8FE59943DD2497"}) {
+    if (ValidPNPMTargetLifecyclePath(prefix + slot + "/node_modules/pkg")) return false;
+  }
+  for (const auto& path : {target, prefix + "@scope+package@1.2.3/node_modules/@scope/package",
+                         prefix + "use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store"}) {
+    if (!ValidPNPMTargetLifecyclePath(path)) return false;
+  }
+  for (const auto& path : {std::string(""), std::string("/tmp/package"), prefix + "folder/node_modules/pkg",
+       prefix + "pkg@1/node_modules/../other", prefix + "pkg@1/node_modules/pkg/extra", prefix + "pkg@1/node_modules/@scope",
+       prefix + "pkg@1/node_modules/@/pkg", prefix + "pkg@1/node_modules/pkg ", prefix + "pkg@1/node_modules/pkg;id",
+       prefix + "pkg@1/node_modules/$(id)", prefix + "pkg@1/node_modules/pkg\\extra", prefix + "pkg@1/node_modules/pkg//extra",
+       prefix + "pkg@1/node_modules/.", prefix + "pkg@1/node_modules/..", prefix + std::string(512, 'a')}) {
+    if (ValidPNPMTargetLifecyclePath(path)) return false;
+  }
+  gvisor::sentry::ExecveInfo boundary;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), TestAdmissionNonce(350, 3500),
+        std::string("/bin/sh"), std::string("-ceu"), std::string(kPNPMTargetLifecycleCommand), std::string("helox-pnpm-target"), target}) boundary.add_argv(value);
+  const auto topology = PNPMTargetLifecycleTestTopology();
+  if (!IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &topology)) return false;
+  if (IsExactPNPMTargetLifecycleBoundary(boundary, kProfilePNPMResolver, &topology) ||
+      IsExactPNPMTargetLifecycleBoundary(boundary, kProfilePyPI, &topology) ||
+      IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, nullptr)) return false;
+  for (int test = 0; test < 10; ++test) {
+    auto changed = topology;
+    switch (test) {
+      case 0: changed.sealed = false; break;
+      case 1: changed.snapshot_seen = false; break;
+      case 2: changed.namespace_id = 0; break;
+      case 3: changed.expected.pop_back(); changed.anchors.erase(4); break;
+      case 4: changed.expected.back().read_only = true; break;
+      case 5: changed.expected.back().filesystem_type = "tmpfs"; break;
+      case 6: changed.expected.back().mount_class = "helper"; break;
+      case 7: changed.anchors.erase(4); break;
+      case 8: changed.anchors.emplace(5, MountAnchor{5, target, "workspace"}); break;
+      case 9: changed.expected[0].read_only = false; break;
+    }
+    if (IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &changed)) return false;
+  }
+  for (int index : {0, 1, 2, 3, 4, 5, 6, 7}) {
+    auto changed = boundary; changed.set_argv(index, "changed");
+    if (IsExactPNPMTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+  }
+  auto extra = boundary; extra.add_argv("extra");
+  auto wrong_image = boundary; wrong_image.set_binary_path("/tmp/haa-boundary");
+  return !IsExactPNPMTargetLifecycleBoundary(extra, kProfileNPM, &topology) &&
+      !IsExactPNPMTargetLifecycleBoundary(wrong_image, kProfileNPM, &topology);
+}
+
+bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target, bool bun = false) {
+  const auto topology = PNPMTargetLifecycleTestTopology(bun);
+  const char* command = bun ? kBunTargetLifecycleCommand : kPNPMTargetLifecycleCommand;
+  const char* label = bun ? "helox-bun-target" : "helox-pnpm-target";
+  const char* project_directory = bun ? "/tmp/haa-bun-input/project" : "/tmp/haa-pnpm-input/project";
+  const std::string nonce = TestAdmissionNonce(350, 3500);
+  gvisor::common::ContextData root;
+  root.set_container_id(kThirtySecondID); root.set_thread_group_id(350); root.set_thread_group_start_time_ns(3500);
+  root.set_parent_thread_group_id(0); root.set_is_exec_session(true);
+  gvisor::sentry::ExecveInfo boundary;
+  *boundary.mutable_context_data() = root;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), nonce, std::string("/bin/sh"),
+       std::string("-ceu"), std::string(command), std::string(label), target}) boundary.add_argv(value);
+  auto demotion = boundary; demotion.set_binary_path(kSetprivPath); demotion.set_execfn(kSetprivPath); demotion.clear_argv();
+  for (const char* value : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups", "--inh-caps=-all",
+       "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", "/bin/sh"}) demotion.add_argv(value);
+  auto shell = boundary; shell.set_binary_path("/usr/bin/dash"); shell.set_execfn("/bin/sh"); shell.clear_argv();
+  shell.add_argv("/bin/sh"); shell.add_argv("-ceu"); shell.add_argv(command); shell.add_argv(label); shell.add_argv(target);
+  gvisor::sentry::CloneInfo clone; *clone.mutable_context_data() = root;
+  clone.set_created_thread_group_id(351); clone.set_created_thread_start_time_ns(3510);
+  auto child = root; child.set_thread_group_id(351); child.set_thread_group_start_time_ns(3510); child.set_parent_thread_group_id(350);
+  gvisor::sentry::ExecveInfo npm; *npm.mutable_context_data() = child;
+  npm.set_binary_path(kNpmCLIPath); npm.set_execfn(kNpmPath); npm.add_argv(kNpmPath);
+  for (const char* value : {"--prefix", project_directory, "rebuild", "--ignore-scripts=false", "--bin-links=false",
+       "--foreground-scripts", "--offline", "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"}) npm.add_argv(value);
+  npm.add_argv(target);
+  auto node = npm; node.set_binary_path(kNodePath); node.set_execfn(kNodePath); node.clear_argv(); node.add_argv("node"); node.add_argv(kNpmPath);
+  for (int n = 1; n < npm.argv_size(); ++n) node.add_argv(npm.argv(n));
+  int sockets[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+  auto parse = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state, const char* kind,
+                   const char* expected_reason = "CLASS_MISMATCH", const char* expected_class = "NODE",
+                   const char* expected_parent = "TRACKED_GROUP") {
+    std::string payload, id; const char* reason = nullptr;
+    auto registration = TestProfileWithAdmission(kProfileNPM, kLaunchMode, nonce);
+    if (!event.SerializeToString(&payload)) return false;
+    const bool parsed = ParseSentryProcessAndClassify(payload.data(), payload.size(), sockets[0], &id, kProfileNPM, &registration, state, &reason, &topology);
+    if (!parsed) {
+      if (strcmp(kind, "REJECTED") != 0) fprintf(stderr, "PNPM target parse failed image=%s reason=%s\n", DiagnosticImageName(DiagnosticImageForPath(event.binary_path())), reason == nullptr ? "NONE" : reason);
+      return strcmp(kind, "REJECTED") == 0 && reason != nullptr && strcmp(reason, expected_reason) == 0;
+    }
+    if (strcmp(kind, "REJECTED") == 0) return ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", expected_class, expected_reason, expected_parent);
+    return ExpectRecord(sockets[1], kThirtySecondID, kind);
+  };
+  auto baseline = [&](ProcessState* state) {
+    std::string payload, id; const char* reason = nullptr;
+    auto check = [](bool value, const char* step) { if (!value) fprintf(stderr, "PNPM target baseline failed step=%s\n", step); return value; };
+    return check(parse(boundary, state, "process-exec-expected"), "BOUNDARY") && check(state->groups.at(350).pnpm_target_lifecycle == target, "ROOT_TARGET") &&
+        check(parse(demotion, state, "process-exec-expected"), "DEMOTION") && check(parse(shell, state, "process-exec-expected"), "SHELL") &&
+        check(clone.SerializeToString(&payload) && ParseSentryClone(payload.data(), payload.size(), -1, &id, state, &reason), "CLONE") &&
+        check(state->groups.at(351).pnpm_target_lifecycle == target, "CHILD_TARGET") && check(parse(npm, state, "process-exec-expected"), "NPM") &&
+        check(state->groups.at(351).pnpm_target_npm_pending, "PENDING");
+  };
+  ProcessState valid; bool ok = baseline(&valid) && parse(node, &valid, "process-exec-expected") &&
+      !valid.groups.at(351).pnpm_target_npm_pending && valid.groups.at(351).pnpm_target_npm_consumed &&
+      valid.expected_groups.at(351).process_class == ProcessClass::kNode;
+  if (!ok) fprintf(stderr, "PNPM target positive production path failed\n");
+  // Every negative starts after the complete original boundary/clone/launcher.
+  for (int test = 0; ok && test < 16; ++test) {
+    ProcessState state; if (!baseline(&state)) { ok = false; break; }
+    auto changed = node;
+    switch (test) {
+      case 0: changed.set_argv(changed.argv_size()-1, std::string(kPNPMProjectMount)+"/project/node_modules/.pnpm/other@1/node_modules/other"); break;
+      case 1: changed.add_argv("extra"); break;
+      case 2: changed.set_argv(4, "install"); break;
+      case 3: changed.set_binary_path("/usr/bin/node"); break;
+      case 4: changed.set_execfn("/usr/bin/node"); break;
+      case 5: changed.mutable_context_data()->set_thread_group_start_time_ns(3511); break;
+      case 6: changed.mutable_context_data()->set_thread_group_id(999); break;
+      case 7: state.groups.at(351).role = ProcessState::Role::kArtifact; break;
+      case 8: state.groups.at(351).pnpm_target_npm_pending = false; break;
+      case 9: state.groups.at(351).pnpm_target_npm_consumed = true; break;
+      case 10: state.groups.at(350).start_time_ns++; break;
+      case 11: state.groups.at(350).current_image_class = ProcessClass::kNode; break;
+      case 12: state.groups.at(351).clone_creator_group_id = 999; break;
+      case 13: state.groups.at(350).pnpm_target_lifecycle.clear(); break;
+      case 14: state.groups.at(351).provenance = ProcessState::Provenance::kDirectExecRoot; break;
+      case 15: changed.set_argv(changed.argv_size()-1, std::string(kBunTargetProjectMount)+"/project/node_modules/other"); break;
+    }
+    const char* expected_reason = test == 5 ? "PROCESS_IDENTITY_REUSED" :
+        test == 6 ? "PROCESS_PROVENANCE_UNKNOWN" : test == 7 ? "ARTIFACT_ROLE" : "CLASS_MISMATCH";
+    ok = parse(changed, &state, "REJECTED", expected_reason, test == 3 ? "OTHER" : "NODE", test == 7 ? "ARTIFACT_GROUP" : "TRACKED_GROUP");
+    if (!ok) fprintf(stderr, "PNPM target negative failed index=%d\n", test);
+  }
+  // The exact transition cannot consume a weakened control/creator state.
+  for (int test = 0; ok && test < 9; ++test) {
+    ProcessState state; if (!baseline(&state)) { ok = false; break; }
+    switch (test) {
+      case 0: state.groups.at(350).role = ProcessState::Role::kArtifact; break;
+      case 1: state.groups.at(350).provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: state.groups.at(351).root_eligible = true; break;
+      case 3: state.groups.at(351).root_consumed = false; break;
+      case 4: state.groups.at(351).trusted_control_network_active = true; break;
+      case 5: state.groups.at(351).demotion_pending = true; break;
+      case 6: state.groups.at(351).launch_target_pending = true; break;
+      case 7: state.groups.at(351).handoff_target_pending = true; break;
+      case 8: state.groups.at(351).clone_creator_group_start_time_ns++; break;
+    }
+    if (IsExactPNPMTargetNpmNodeTransition(node, kProfileNPM, 351, state.groups.at(351), state.expected_groups.at(351), state) ||
+        IsExactPNPMTargetNpmNodeTransition(node, kProfilePyPI, 351, state.groups.at(351), state.expected_groups.at(351), state)) {
+      fprintf(stderr, "PNPM target role/creator boundary failed index=%d\n", test); ok = false;
+    }
+  }
+  // Each required flag and the sole selector must survive the interpreter
+  // transition unchanged; omission cannot silently disable script coverage.
+  for (int index = 2; ok && index < node.argv_size(); ++index) {
+    for (bool remove : {false, true}) {
+      ProcessState state; if (!baseline(&state)) { ok = false; break; }
+      auto changed = node;
+      if (remove) changed.mutable_argv()->DeleteSubrange(index, 1);
+      else changed.set_argv(index, "changed");
+      if (!parse(changed, &state, "REJECTED")) {
+        fprintf(stderr, "PNPM target flag boundary failed index=%d remove=%d\n", index, remove ? 1 : 0);
+        ok = false; break;
+      }
+    }
+  }
+  // A successful interpreter transition does not re-arm itself.
+  ok = ok && parse(node, &valid, "REJECTED", "BOOTSTRAP_ENDED") && !valid.groups.at(351).pnpm_target_npm_pending;
+  close(sockets[0]); close(sockets[1]); return ok;
+}
+
+bool VerifyPNPMTargetLifecycleProductionPath() {
+  const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
+  return VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "is-odd@3.0.1/node_modules/is-odd") &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497/node_modules/" + std::string(130, 'a'));
+}
+
+bool VerifyBunTargetLifecycleShapeBoundary() {
+  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+  for (const auto& tail : {"pkg", "@scope/pkg", "pkg/node_modules/child", "@scope/pkg/node_modules/@other/child"}) {
+    const std::string target = prefix + tail;
+    if (!ValidBunTargetLifecyclePath(target) || ValidPNPMTargetLifecyclePath(target)) return false;
+    gvisor::sentry::ExecveInfo boundary;
+    boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+    for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), TestAdmissionNonce(350, 3500),
+         std::string("/bin/sh"), std::string("-ceu"), std::string(kBunTargetLifecycleCommand), std::string("helox-bun-target"), target}) boundary.add_argv(value);
+    const auto topology = PNPMTargetLifecycleTestTopology(true);
+    const auto pnpm_topology = PNPMTargetLifecycleTestTopology();
+    if (!IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
+        IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileBunResolver, &topology) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, nullptr) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &pnpm_topology)) return false;
+    for (int test = 0; test < 10; ++test) {
+      auto changed = topology;
+      switch (test) {
+        case 0: changed.sealed = false; break;
+        case 1: changed.snapshot_seen = false; break;
+        case 2: changed.namespace_id = 0; break;
+        case 3: changed.expected.pop_back(); changed.anchors.erase(4); break;
+        case 4: changed.expected.back().read_only = true; break;
+        case 5: changed.expected.back().filesystem_type = "tmpfs"; break;
+        case 6: changed.expected.back().mount_class = "helper"; break;
+        case 7: changed.anchors.erase(4); break;
+        case 8: changed.anchors.emplace(5, MountAnchor{5, target, "workspace"}); break;
+        case 9: changed.expected[0].read_only = false; break;
+      }
+      if (IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &changed)) return false;
+    }
+    for (int index = 0; index < boundary.argv_size(); ++index) {
+      auto changed = boundary; changed.set_argv(index, "changed");
+      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+      changed = boundary; changed.mutable_argv()->DeleteSubrange(index, 1);
+      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+    }
+    auto extra = boundary; extra.add_argv("extra");
+    if (IsExactBunTargetLifecycleBoundary(extra, kProfileNPM, &topology)) return false;
+  }
+  for (const auto& tail : {"", "@scope", "@/pkg", "../pkg", "pkg/child", "pkg/node_modules", "pkg/node_modules/", "pkg//node_modules/child", "pkg;id", "$(id)", "pkg\\child", "pkg/node_modules/../child"}) {
+    if (ValidBunTargetLifecyclePath(prefix + tail)) return false;
+  }
+  return !ValidBunTargetLifecyclePath(prefix + std::string(512, 'a'));
+}
+
+bool VerifyBunTargetLifecycleProductionPath() {
+  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+  return VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "pkg", true) &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "@scope/pkg/node_modules/@other/child", true);
 }
 
 bool VerifyExactNpmNodeInterpreterTransition() {
@@ -5642,7 +6267,7 @@ bool VerifyResolverNpmVersionProductionPath() {
 // Drives the actual SENTRY_EXEC and SENTRY_CLONE path for the one fixed
 // GenerateLockfile command. Each negative starts from the full valid boundary
 // lineage and changes exactly one authorization-relevant condition.
-bool VerifyResolverLockGenerationProductionPath() {
+bool VerifyResolverLockGenerationProductionPath(bool update = false) {
   struct Path {
     gvisor::sentry::ExecveInfo boundary;
     gvisor::sentry::ExecveInfo demotion;
@@ -5668,7 +6293,7 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.boundary.add_argv(admission_nonce);
   path.boundary.add_argv("/bin/sh");
   path.boundary.add_argv("-ceu");
-  path.boundary.add_argv(kLockGenerationCommand);
+  path.boundary.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
 
   path.demotion = path.boundary;
   path.demotion.mutable_context_data()->set_process_name("setpriv");
@@ -5686,7 +6311,7 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.shell.clear_argv();
   path.shell.add_argv("/bin/sh");
   path.shell.add_argv("-ceu");
-  path.shell.add_argv(kLockGenerationCommand);
+  path.shell.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
 
   *path.clone.mutable_context_data() = root;
   path.clone.set_created_thread_group_id(341);
@@ -5704,9 +6329,13 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.npm.set_binary_path(kNpmCLIPath);
   path.npm.set_execfn(kNpmPath);
   path.npm.add_argv(kNpmPath);
-  const char* lock_args[] = {"install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
+  std::vector<const char*> lock_args = {"install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
       "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
       "--globalconfig=/tmp/haa-global.npmrc"};
+  if (update) {
+    lock_args[0] = "update";
+    lock_args.insert(lock_args.begin() + 5, "--save=false");
+  }
   for (const char* argument : lock_args) path.npm.add_argv(argument);
 
   path.node = path.npm;
@@ -6365,7 +6994,8 @@ bool VerifyStrictControlParser() {
 // production SENTRY parser above proves the only PENDING->CONSUMED transition;
 // this latch verifies that control cleanup observes that state rather than
 // treating an already-consumed nonce as ambiguous cancellation.
-bool VerifyAdmissionTerminalControlProtocol() {
+bool VerifyAdmissionTerminalControlProtocol(bool retain_kernel = false, int32_t wait_status = 0,
+                                           bool query_target = false, bool load_target = false) {
   const std::string id = "aabbccddeeff0202";
   const std::string generation(64, 'd');
   const std::string nonce = TestAdmissionNonce(1300, 13000);
@@ -6400,6 +7030,8 @@ bool VerifyAdmissionTerminalControlProtocol() {
       parse(request("arm", nonce), ack("arm", "armed", nonce)) &&
       parse(request("status", nonce), ack("status", "pending", nonce)) &&
       parse(request("complete", nonce), ack("complete", "rejected", nonce));
+  if (retain_kernel) ok = ok && parse(request("outcome", nonce), ack("outcome", "pending", nonce));
+  if (query_target) ok = ok && parse(request("target", nonce), ack("target", "pending", nonce));
   auto registration = profiles.find(id);
   if (!ok || registration == profiles.end() || registration->second.pending_admissions.size() != 1) {
     close(sockets[0]); close(sockets[1]); return false;
@@ -6436,7 +7068,99 @@ bool VerifyAdmissionTerminalControlProtocol() {
     if (output[1] >= 0) close(output[1]);
     close(sockets[0]); close(sockets[1]); return false;
   }
+  if (query_target) {
+    auto& owner = registration->second;
+    ok = ok && parse(request("target", nonce), ack("target", "waiting", nonce));
+    auto different_mode = owner;
+    ok = ok && RetainDirectExecTarget(&different_mode, context, BoundaryMode::kELFHandoff) &&
+        !different_mode.pending_admissions.front().target_loaded;
+    // Neither a child nor a reused root start can populate the exact slot.
+    for (bool child : {false, true}) {
+      auto foreign = context;
+      foreign.set_thread_group_start_time_ns(13001);
+      if (child) { foreign.set_thread_group_id(1301); foreign.set_parent_thread_group_id(1300); }
+      auto copied = owner;
+      ok = ok && RetainDirectExecTarget(&copied, foreign, BoundaryMode::kLaunch) && !copied.pending_admissions.front().target_loaded;
+    }
+    if (load_target) {
+      auto event = boundary;
+      event.set_binary_path(kSetprivPath); event.set_execfn(kSetprivPath); event.clear_argv();
+      for (const char* arg : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups",
+           "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs",
+           "--", "/bin/sh", "-c", ":"}) event.add_argv(arg);
+      auto parse_image = [&](const gvisor::sentry::ExecveInfo& image) {
+        payload.clear(); parsed_container.clear(); parse_reason = nullptr;
+        return image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+            payload.data(), payload.size(), output[0], &parsed_container, kProfilePyPI,
+            &owner, &consumed_state, &parse_reason) &&
+            ExpectRecord(output[1], id.c_str(), "process-exec-expected");
+      };
+      ok = ok && parse_image(event) && !owner.pending_admissions.front().target_loaded;
+      event.set_binary_path("/usr/bin/dash"); event.set_execfn("/bin/sh"); event.clear_argv();
+      for (const char* arg : {"/bin/sh", "-c", ":"}) event.add_argv(arg);
+      ok = ok && parse_image(event) && owner.pending_admissions.front().target_loaded &&
+          parse(request("target", nonce), ack("target", "loaded", nonce));
+      auto duplicate = owner;
+      ok = ok && !RetainDirectExecTarget(&duplicate, context, BoundaryMode::kLaunch);
+    }
+  }
   close(output[0]); close(output[1]);
+  if (retain_kernel) {
+    auto& exact = registration->second;
+    ok = ok && parse(request("outcome", nonce), ack("outcome", "running", nonce));
+    gvisor::sentry::ExitNotifyParentInfo terminal;
+    *terminal.mutable_context_data() = context;
+    terminal.set_exit_status(wait_status);
+    auto parse_exit = [&](const gvisor::sentry::ExitNotifyParentInfo& event, ProcessState* state,
+                          ProfileRegistration* owner) {
+      std::string bytes, container = id;
+      const char* reason = nullptr;
+      return event.SerializeToString(&bytes) && ParseSentryExitNotifyParent(
+          bytes.data(), bytes.size(), &container, state, &reason, owner);
+    };
+    auto wrong_start = terminal;
+    wrong_start.mutable_context_data()->set_thread_group_start_time_ns(13001);
+    auto wrong_container = terminal;
+    wrong_container.mutable_context_data()->set_container_id(kFirstID);
+    ok = ok && !parse_exit(wrong_start, &consumed_state, &exact) &&
+        !parse_exit(wrong_container, &consumed_state, &exact) &&
+        !exact.pending_admissions.front().terminal_seen;
+    // A real tracked descendant exit cannot complete the admitted root.
+    auto child = context;
+    child.set_thread_group_id(1301);
+    child.set_thread_group_start_time_ns(13010);
+    child.set_parent_thread_group_id(1300);
+    child.set_is_exec_session(false);
+    auto child_exit = terminal;
+    *child_exit.mutable_context_data() = child;
+    ok = ok && RegisterGroup(&consumed_state, child, ProcessState::Role::kArtifact,
+        ProcessState::Provenance::kCloneChild, false, true, CommandPhase::kOther) &&
+        parse_exit(child_exit, &consumed_state, &exact) &&
+        !exact.pending_admissions.front().terminal_seen;
+    for (int32_t invalid : {-1, 65, 127, 128, 257, 65535, 65536}) {
+      auto copied_state = consumed_state;
+      auto copied_owner = exact;
+      auto bad = terminal;
+      bad.set_exit_status(invalid);
+      ok = ok && !parse_exit(bad, &copied_state, &copied_owner) &&
+          !copied_owner.pending_admissions.front().terminal_seen;
+    }
+    ok = ok && parse_exit(terminal, &consumed_state, &exact) && consumed_state.groups.empty();
+    if (query_target) {
+      ok = ok && parse(request("target", nonce), ack("target", load_target ? "loaded" : "missed", nonce));
+      auto late = exact;
+      ok = ok && !RetainDirectExecTarget(&late, context, BoundaryMode::kLaunch);
+    }
+    const std::string status = "exited:" + std::to_string(wait_status);
+    ok = ok && parse(request("outcome", nonce), ack("outcome", status.c_str(), nonce)) &&
+        !parse_exit(terminal, &consumed_state, &exact) &&
+        parse(request("status", nonce), ack("status", "consumed", nonce)) &&
+        parse(request("complete", nonce), ack("complete", "completed", nonce)) &&
+        exact.pending_admissions.empty() &&
+        parse(request("outcome", nonce), ack("outcome", "rejected", nonce));
+    close(sockets[0]); close(sockets[1]);
+    return ok;
+  }
   ok = parse(request("cancel", nonce), ack("cancel", "consumed", nonce)) &&
       registration->second.pending_admissions.size() == 1 &&
       parse(request("status", nonce), ack("status", "consumed", nonce)) &&
@@ -6492,6 +7216,401 @@ bool VerifyAdmissionTerminalControlProtocol() {
   close(sockets[0]);
   close(sockets[1]);
   return ok;
+}
+
+// The new mode uses real control ARM and production SENTRY_EXEC transitions.
+// The Artifact never supplies the accepted-target or terminal authority.
+bool VerifyPythonExecutionBoundary() {
+  const std::string id="aabbccddeeff0304", generation(64,'c'), nonce=TestAdmissionNonce(1940,19400);
+  int control_pair[2], output[2];
+  if(socketpair(AF_UNIX,SOCK_SEQPACKET,0,control_pair)!=0)return false;
+  if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0){close(control_pair[0]);close(control_pair[1]);return false;}
+  ControlPeer peer{control_pair[0],false,false,false,"",""};
+  std::map<std::string,ProfileRegistration> profiles;
+  const std::string topology_record="/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0;/haa-runtime|helper|/|9p|0|0|0|0;/haa-site|workspace|/|9p|1|0|0|0";
+  auto control=[&](const std::string& request,const char* expected){
+    if(!ParseControlRecord(request.data(),request.size(),&peer,&profiles))return false;
+    char bytes[kMaxControlRecordBytes];ssize_t count=recv(control_pair[1],bytes,sizeof(bytes),MSG_TRUNC);
+    std::map<std::string,std::string> ack;
+    return count>0 && count<=static_cast<ssize_t>(sizeof(bytes)) && ParseStrictStringObject(bytes,static_cast<size_t>(count),&ack) && ack["status"]==expected && ack["container_id"]==id && ack["session_generation"]==generation;
+  };
+  auto request=[&](const char* op,const char* mode,const std::string& token){return std::string("{\"op\":\"")+op+"\",\"container_id\":\""+id+"\",\"session_generation\":\""+generation+"\",\"mode\":\""+mode+"\",\"nonce\":\""+token+"\"}";};
+  const std::string profile=std::string("{\"op\":\"profile\",\"container_id\":\"")+id+"\",\"profile\":\"python-execution\",\"expected_topology\":\""+topology_record+"\",\"session_generation\":\""+generation+"\"}";
+  bool ok=control(profile,"registered") && control(request("arm",kELFHandoffMode,nonce),"rejected") && control(request("arm",kPythonHandoffMode,nonce),"armed");
+  auto owner=profiles.find(id);
+  if(!ok || owner==profiles.end()){close(control_pair[0]);close(control_pair[1]);close(output[0]);close(output[1]);return false;}
+  TopologyState topology;
+  topology.expected={{"/","oci-root","/","",true,false,false,false},{"/tmp","workspace","/","tmpfs",false,true,true,false},{"/haa-runtime","helper","/","9p",false,false,false,false},{"/haa-site","workspace","/","9p",true,false,false,false}};
+  topology.anchors={{1,{1,"/","oci-root"}},{2,{2,"/tmp","workspace"}},{3,{3,"/haa-runtime","helper"}},{4,{4,"/haa-site","workspace"}},{5,{5,"/proc","system"}}};
+  topology.namespace_id=17;topology.snapshot_seen=true;topology.sealed=true;
+  const std::string module="cowsay.__main__", attr="main", command="cowsay", argument="a b; literal";
+  const std::vector<std::string> invocation{kPythonExecutionPath,"-I","-S","-B","-c",kPythonExecutionProgram,module,attr,command,argument};
+  gvisor::common::ContextData context;
+  context.set_container_id(id);context.set_thread_group_id(1940);context.set_thread_group_start_time_ns(19400);context.set_parent_thread_group_id(0);context.set_is_exec_session(true);context.set_process_name("haa-boundary");
+  gvisor::sentry::ExecveInfo boundary;
+  *boundary.mutable_context_data()=context;boundary.set_binary_path("/usr/bin/dash");boundary.set_execfn(kBoundaryHelperPath);
+  for(const auto& arg:std::vector<std::string>{kBoundaryHelperPath,kPythonHandoffMode,nonce})boundary.add_argv(arg);
+  for(const auto& arg:invocation)boundary.add_argv(arg);
+  auto image=[&](const gvisor::sentry::ExecveInfo& event,ProcessState* state,ProfileRegistration* registration,const TopologyState* mounts,const char* profile_name){
+    std::string bytes,container;const char* reason=nullptr;
+    if(!event.SerializeToString(&bytes) || !ParseSentryProcessAndClassify(bytes.data(),bytes.size(),output[0],&container,profile_name,registration,state,&reason,mounts))return false;
+    return ExpectRecord(output[1],id.c_str(),"process-exec-expected");
+  };
+  for(const char* failure:{"rw","unsealed","shadow","runtime","mode","program","module","attr","argument","count","command"}) {
+    auto event=boundary;auto mounts=topology;auto registration=owner->second;ProcessState failed;
+    if(strcmp(failure,"rw")==0)mounts.expected.back().read_only=false;
+    if(strcmp(failure,"unsealed")==0)mounts.sealed=false;
+    if(strcmp(failure,"shadow")==0)mounts.anchors[6]={6,"/haa-site/child","workspace"};
+    if(strcmp(failure,"runtime")==0)event.set_argv(3,"/usr/bin/python");
+    if(strcmp(failure,"mode")==0)event.set_argv(1,kNodeHandoffMode);
+    if(strcmp(failure,"program")==0)event.set_argv(8,"print('forged')");
+    if(strcmp(failure,"module")==0)event.set_argv(9,"cowsay;forged");
+    if(strcmp(failure,"attr")==0)event.set_argv(10,"main()");
+    if(strcmp(failure,"argument")==0)event.set_argv(12,std::string(32769,'x'));
+    if(strcmp(failure,"count")==0)for(int i=0;i<129;++i)event.add_argv("x");
+    if(strcmp(failure,"command")==0)event.set_argv(11,"/usr/bin/python");
+    ok=ok && !image(event,&failed,&registration,&mounts,kProfilePythonExecution) && !registration.pending_admissions.front().target_loaded;
+  }
+  ProcessState state;
+  ok=ok && image(boundary,&state,&owner->second,&topology,kProfilePythonExecution) &&
+      state.groups.at(1940).role==ProcessState::Role::kArtifact && !state.groups.at(1940).root_eligible &&
+      state.groups.at(1940).root_consumed && !state.groups.at(1940).trusted_control_network_active && state.expected_groups.empty() &&
+      control(request("target",kPythonHandoffMode,nonce),"waiting");
+  auto demotion=boundary;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+  for(const auto& arg:std::vector<std::string>{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--"})demotion.add_argv(arg);
+  for(const auto& arg:invocation)demotion.add_argv(arg);
+  auto wrong_demotion=demotion;wrong_demotion.set_argv(15,"substituted.module");
+  {auto candidate=state;auto registration=owner->second;ok=ok && !image(wrong_demotion,&candidate,&registration,&topology,kProfilePythonExecution);}
+  ok=ok && image(demotion,&state,&owner->second,&topology,kProfilePythonExecution) && state.groups.at(1940).handoff_target_pending && !state.groups.at(1940).demotion_pending;
+  auto target=boundary;target.set_binary_path(kPythonExecutionPath);target.set_execfn(kPythonExecutionPath);target.clear_argv();
+  for(const auto& arg:invocation)target.add_argv(arg);
+  for(const char* failure:{"argv","execfn","module","image"}){
+    auto event=target;auto candidate=state;auto registration=owner->second;
+    if(strcmp(failure,"argv")==0)event.set_argv(9,"substituted");
+    if(strcmp(failure,"execfn")==0)event.set_execfn("python");
+    if(strcmp(failure,"module")==0)event.set_argv(6,module+".changed");
+    if(strcmp(failure,"image")==0)event.set_binary_path("/tmp/python");
+    ok=ok && !image(event,&candidate,&registration,&topology,kProfilePythonExecution) && !registration.pending_admissions.front().target_loaded;
+  }
+  ok=ok && image(target,&state,&owner->second,&topology,kProfilePythonExecution) &&
+      state.groups.at(1940).python_execution_active && state.groups.at(1940).python_execution_target.empty() &&
+      state.groups.at(1940).role==ProcessState::Role::kArtifact && !IsFilesystemControlGroup(context,state) && state.expected_groups.empty() &&
+      control(request("target",kPythonHandoffMode,nonce),"loaded");
+  const MountAnchor root{1,"/","oci-root"},proc{5,"/proc","system"},site{4,"/haa-site","workspace"};
+  gvisor::syscall::Open event;*event.mutable_context_data()=context;event.set_flags(557056);
+  for(const char* path:{"/usr/local/lib/python3.14/encodings/__init__.py","/usr/local/lib/libpython3.14.so.1.0","/etc/ld.so.cache"}) {
+    event.set_pathname(path);
+    ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&root)==FilesystemClass::kRuntimeRoot;
+  }
+  for(const char* failure:{"write","site","pip","inactive","clone","role","start","image","profile","mount"}) {
+    auto candidate=state;auto caller=context;auto mount=root;const char* profile=kProfilePythonExecution;std::string path="/usr/local/lib/python3.14/encodings/__init__.py";uint64_t flags=557056;
+    if(strcmp(failure,"write")==0)flags=557058;
+    if(strcmp(failure,"site")==0)path="/usr/local/lib/python3.14/site-packages/evil.py";
+    if(strcmp(failure,"pip")==0)path="/usr/local/bin/pip";
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1940).python_execution_active=false;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1940).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"role")==0)candidate.groups.at(1940).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19401);
+    if(strcmp(failure,"image")==0){candidate.groups.at(1940).current_image_class=ProcessClass::kShell;caller.set_process_name("python3.14");}
+    if(strcmp(failure,"profile")==0)profile=kProfilePyPI;
+    if(strcmp(failure,"mount")==0)mount.mount_class="workspace";
+    ok=ok && !IsPinnedPythonExecutionRead(caller,candidate,path,flags,profile,&mount);
+  }
+  event.set_pathname("/haa-site/cowsay/__init__.py");
+  ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&site)==FilesystemClass::kWorkspace;
+  event.set_flags(557058);
+  ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&site)==FilesystemClass::kOutside;
+  event.set_flags(557056);event.set_pathname("/proc/1940/maps");
+  ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&proc)==FilesystemClass::kRuntimeRoot;
+  event.set_pathname("/proc/sys/vm/overcommit_memory");event.set_flags(32768);
+  ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&proc)==FilesystemClass::kRuntimeRoot;
+  for(uint64_t flags:{0ULL,557056ULL,32769ULL,32770ULL,33280ULL})
+    ok=ok && !IsPinnedPythonExecutionRead(context,state,event.pathname(),flags,kProfilePythonExecution,&proc);
+  for(const char* path:{"/proc/sys/vm/overcommit_ratio","/proc/sys/vm/overcommit_memory/","/proc/sys/vm/overcommit_memory.evil","/proc/sys/vm/../vm/overcommit_memory"})
+    ok=ok && !IsPinnedPythonExecutionRead(context,state,path,32768,kProfilePythonExecution,&proc);
+  for(const char* failure:{"mount","class","role","clone","inactive","pending","start","image"}) {
+    auto candidate=state;auto caller=context;auto mount=proc;
+    if(strcmp(failure,"mount")==0)mount.mountpoint="/sys";
+    if(strcmp(failure,"class")==0)mount.mount_class="workspace";
+    if(strcmp(failure,"role")==0)candidate.groups.at(1940).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1940).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1940).python_execution_active=false;
+    if(strcmp(failure,"pending")==0)candidate.groups.at(1940).handoff_target_pending=true;
+    if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19401);
+    if(strcmp(failure,"image")==0){candidate.groups.at(1940).current_image_class=ProcessClass::kShell;caller.set_process_name("python");}
+    ok=ok && !IsPinnedPythonExecutionRead(caller,candidate,event.pathname(),32768,kProfilePythonExecution,&mount);
+  }
+  event.set_flags(557056);
+  event.set_pathname("/proc/1/maps");
+  ok=ok && !IsPinnedPythonExecutionRead(context,state,event.pathname(),event.flags(),kProfilePythonExecution,&proc);
+  auto spoof=context;spoof.set_process_name("haa-boundary");event.set_pathname(kBoundaryHelperPath);*event.mutable_context_data()=spoof;
+  ok=ok && ClassifyFilesystemOpen(event,state,kProfilePythonExecution,&root)!=FilesystemClass::kHelperOnly;
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=context;clone.set_created_thread_group_id(1941);clone.set_created_thread_start_time_ns(19410);
+  std::string bytes,container;const char* reason=nullptr;
+  ok=ok && clone.SerializeToString(&bytes) && ParseSentryClone(bytes.data(),bytes.size(),output[0],&container,&state,&reason) &&
+      !state.groups.at(1941).python_execution_active && state.groups.at(1941).python_execution_target.empty();
+  auto later=target;later.set_argv(9,"later");auto changed=state;auto registration=owner->second;
+  ok=ok && !image(later,&changed,&registration,&topology,kProfilePythonExecution) && !changed.groups.at(1940).python_execution_active;
+  gvisor::sentry::ExitNotifyParentInfo terminal;*terminal.mutable_context_data()=context;terminal.set_exit_status(37<<8);bytes.clear();container=id;reason=nullptr;
+  ok=ok && terminal.SerializeToString(&bytes) && ParseSentryExitNotifyParent(bytes.data(),bytes.size(),&container,&state,&reason,&owner->second) &&
+      control(request("outcome",kPythonHandoffMode,nonce),"exited:9472") && control(request("complete",kPythonHandoffMode,nonce),"completed");
+  close(control_pair[0]);close(control_pair[1]);close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyBunExecutionBoundary() {
+  const std::string id="aabbccddeeff0304",nonce=TestAdmissionNonce(1930,19300);
+  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+  TopologyState topology;topology.namespace_id=17;topology.snapshot_seen=true;topology.sealed=true;
+  topology.expected={{"/","oci-root","/","",true,false,false,false},{"/tmp","workspace","/","tmpfs",false,true,true,false},
+      {"/haa-runtime","helper","/","9p",false,false,false,false},{"/tmp/haa-node-execution","workspace","/tmp","9p",true,false,false,false}};
+  topology.anchors={{1,{1,"/","oci-root"}},{2,{2,"/tmp","workspace"}},{3,{3,"/haa-runtime","helper"}},
+      {4,{4,"/tmp/haa-node-execution","workspace"}},{5,{5,"/proc","system"}}};
+  const std::string entry="/tmp/haa-node-execution/project/node_modules/fixture/bin/cli.js";
+  gvisor::common::ContextData context;context.set_container_id(id);context.set_thread_group_id(1930);
+  context.set_thread_group_start_time_ns(19300);context.set_parent_thread_group_id(0);context.set_is_exec_session(true);
+  context.set_process_name("mutable-program-name");
+  gvisor::sentry::ExecveInfo boundary;*boundary.mutable_context_data()=context;
+  boundary.set_binary_path("/usr/bin/dash");boundary.set_execfn(kBoundaryHelperPath);
+  const std::vector<std::string> command={kBunToolPath,"--no-install","--no-env-file","--no-macros","--",entry,"a b; literal"};
+  for(const auto& arg:std::vector<std::string>{kBoundaryHelperPath,kBunHandoffMode,nonce})boundary.add_argv(arg);
+  for(const auto& arg:command)boundary.add_argv(arg);
+  auto image=[&](const gvisor::sentry::ExecveInfo& event,ProcessState* state,ProfileRegistration* registration,const TopologyState& mounts,const char* profile){
+    DrainDatagram(output[1]);std::string bytes,container;const char* reason=nullptr;
+    return event.SerializeToString(&bytes)&&ParseSentryProcessAndClassify(bytes.data(),bytes.size(),output[0],&container,profile,registration,state,&reason,&mounts)&&
+        ExpectRecord(output[1],id.c_str(),"process-exec-expected");
+  };
+  bool ok=true;
+  for(const char* failure:{"rw","unsealed","shadow","helper-fs","entry","runtime","profile","mode","install","env","macros","separator","argv-limit"}){
+    auto event=boundary;auto mounts=topology;auto registration=TestProfileWithAdmission(kProfileBunExecution,kBunHandoffMode,nonce);
+    ProcessState state;const char* profile=kProfileBunExecution;
+    if(strcmp(failure,"rw")==0)mounts.expected.back().read_only=false;
+    if(strcmp(failure,"unsealed")==0)mounts.sealed=false;
+    if(strcmp(failure,"shadow")==0)mounts.anchors[6]={6,"/tmp/haa-node-execution/project/node_modules","workspace"};
+    if(strcmp(failure,"helper-fs")==0)mounts.expected[2].filesystem_type="tmpfs";
+    if(strcmp(failure,"entry")==0)event.set_argv(8,"/tmp/elsewhere.js");
+    if(strcmp(failure,"runtime")==0)event.set_argv(3,kNodePath);
+    if(strcmp(failure,"profile")==0){profile=kProfileNodeExecution;registration.profile=profile;}
+    if(strcmp(failure,"mode")==0)event.set_argv(1,kNodeHandoffMode);
+    if(strcmp(failure,"install")==0)event.set_argv(4,"--install=force");
+    if(strcmp(failure,"env")==0)event.set_argv(5,"--env-file=/tmp/secret");
+    if(strcmp(failure,"macros")==0)event.set_argv(6,"--preload=evil");
+    if(strcmp(failure,"separator")==0)event.set_argv(7,"--eval");
+    if(strcmp(failure,"argv-limit")==0)event.set_argv(9,std::string(32769,'x'));
+    if(image(event,&state,&registration,mounts,profile)){fprintf(stderr,"Bun program accepted negative: %s\n",failure);ok=false;}
+  }
+  if(!ok){fprintf(stderr,"Bun program stage failed: negative matrix\n");close(output[0]);close(output[1]);return false;}
+  auto registration=TestProfileWithAdmission(kProfileBunExecution,kBunHandoffMode,nonce);ProcessState state;
+  ok=ok&&image(boundary,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).role==ProcessState::Role::kArtifact&&
+      !IsTrustedControlNetwork(context,state)&&state.expected_groups.empty()&&!registration.pending_admissions.front().target_loaded;
+  if(!ok){fprintf(stderr,"Bun program stage failed: boundary\n");close(output[0]);close(output[1]);return false;}
+  auto demotion=boundary;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+  for(const char* arg:{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--"})demotion.add_argv(arg);
+  for(const auto& arg:command)demotion.add_argv(arg);
+  ok=ok&&image(demotion,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).bun_execution_demoting;
+  if(!ok){fprintf(stderr,"Bun program stage failed: demotion\n");close(output[0]);close(output[1]);return false;}
+  auto target=boundary;target.set_binary_path(kBunToolPath);target.set_execfn(kBunToolPath);target.clear_argv();
+  for(const auto& arg:command)target.add_argv(arg);
+  ok=ok&&image(target,&state,&registration,topology,kProfileBunExecution)&&state.groups.at(1930).bun_execution_active&&
+      state.groups.at(1930).bun_execution_target.empty()&&!IsTrustedControlNetwork(context,state)&&state.expected_groups.empty()&&
+      registration.pending_admissions.front().target_loaded;
+  if(!ok){fprintf(stderr,"Bun program stage failed: target\n");close(output[0]);close(output[1]);return false;}
+  const MountAnchor proc{5,"/proc","system"};const std::string own="/proc/1930/maps";
+  for(const char* failure:{"normal","write","foreign-map","inactive","control","clone","start","profile","image"}){
+    auto caller=context;auto candidate=state;std::string path=own;uint64_t flags=557056;const char* profile=kProfileBunExecution;
+    if(strcmp(failure,"write")==0)flags=557058;
+    if(strcmp(failure,"foreign-map")==0)path="/proc/1/maps";
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).bun_execution_active=false;
+    if(strcmp(failure,"control")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19301);
+    if(strcmp(failure,"profile")==0)profile=kProfileNodeExecution;
+    if(strcmp(failure,"image")==0)candidate.groups.at(1930).current_image_class=ProcessClass::kNode;
+    ok=ok&&(IsPinnedBunExecutionRead(caller,candidate,path,flags,profile,&proc)==(strcmp(failure,"normal")==0));
+  }
+  if(!ok){fprintf(stderr,"Bun program stage failed: runtime reads\n");close(output[0]);close(output[1]);return false;}
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=context;clone.set_created_thread_group_id(1931);clone.set_created_thread_start_time_ns(19310);
+  std::string bytes,container;const char* reason=nullptr;
+  ok=ok&&clone.SerializeToString(&bytes)&&ParseSentryClone(bytes.data(),bytes.size(),output[0],&container,&state,&reason)&&
+      !state.groups.at(1931).bun_execution_active&&!state.groups.at(1931).bun_execution_demoting&&state.groups.at(1931).bun_execution_target.empty();
+  ok=ok&&!image(target,&state,&registration,topology,kProfileBunExecution);
+  close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyNodeExecutionBoundary() {
+  const std::string id="aabbccddeeff0303", generation(64,'c'), nonce=TestAdmissionNonce(1930,19300);
+  int control_pair[2], output[2];
+  if(socketpair(AF_UNIX,SOCK_SEQPACKET,0,control_pair)!=0)return false;
+  if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0){close(control_pair[0]);close(control_pair[1]);return false;}
+  ControlPeer peer{control_pair[0],false,false,false,"",""};
+  std::map<std::string,ProfileRegistration> profiles;
+  const std::string topology_record="/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0;/haa-runtime|helper|/|9p|0|0|0|0;/tmp/haa-node-execution|workspace|/tmp|9p|1|0|0|0";
+  auto control=[&](const std::string& request,const char* expected){
+    if(!ParseControlRecord(request.data(),request.size(),&peer,&profiles))return false;
+    char bytes[kMaxControlRecordBytes];ssize_t count=recv(control_pair[1],bytes,sizeof(bytes),MSG_TRUNC);
+    std::map<std::string,std::string> ack;
+    return count>0 && count<=static_cast<ssize_t>(sizeof(bytes)) && ParseStrictStringObject(bytes,static_cast<size_t>(count),&ack) && ack["status"]==expected && ack["container_id"]==id && ack["session_generation"]==generation;
+  };
+  auto request=[&](const char* op,const char* mode,const std::string& token){return std::string("{\"op\":\"")+op+"\",\"container_id\":\""+id+"\",\"session_generation\":\""+generation+"\",\"mode\":\""+mode+"\",\"nonce\":\""+token+"\"}";};
+  const std::string profile=std::string("{\"op\":\"profile\",\"container_id\":\"")+id+"\",\"profile\":\"node-execution\",\"expected_topology\":\""+topology_record+"\",\"session_generation\":\""+generation+"\"}";
+  bool ok=control(profile,"registered") && control(request("arm",kELFHandoffMode,nonce),"rejected") && control(request("arm",kNodeHandoffMode,nonce),"armed");
+  auto owner=profiles.find(id);
+  if(!ok || owner==profiles.end()){close(control_pair[0]);close(control_pair[1]);close(output[0]);close(output[1]);return false;}
+  TopologyState topology;
+  topology.expected={{"/","oci-root","/","",true,false,false,false},{"/tmp","workspace","/","tmpfs",false,true,true,false},{"/haa-runtime","helper","/","9p",false,false,false,false},{"/tmp/haa-node-execution","workspace","/tmp","9p",true,false,false,false}};
+  topology.anchors={{1,{1,"/","oci-root"}},{2,{2,"/tmp","workspace"}},{3,{3,"/haa-runtime","helper"}},{4,{4,"/tmp/haa-node-execution","workspace"}},{5,{5,"/proc","system"}}};
+  topology.namespace_id=17;topology.snapshot_seen=true;topology.sealed=true;
+  const std::string entry="/tmp/haa-node-execution/project/node_modules/fixture/bin/cli.js";
+  gvisor::common::ContextData context;
+  context.set_container_id(id);context.set_thread_group_id(1930);context.set_thread_group_start_time_ns(19300);context.set_parent_thread_group_id(0);context.set_is_exec_session(true);context.set_process_name("haa-boundary");
+  gvisor::sentry::ExecveInfo boundary;
+  *boundary.mutable_context_data()=context;boundary.set_binary_path("/usr/bin/dash");boundary.set_execfn(kBoundaryHelperPath);
+  for(const auto& arg:std::vector<std::string>{kBoundaryHelperPath,kNodeHandoffMode,nonce,kNodePath,"--",entry,"a b; literal"})boundary.add_argv(arg);
+  auto image=[&](const gvisor::sentry::ExecveInfo& event,ProcessState* state,ProfileRegistration* registration,const TopologyState* mounts,const char* profile_name){
+    std::string bytes,container;const char* reason=nullptr;
+    if(!event.SerializeToString(&bytes) || !ParseSentryProcessAndClassify(bytes.data(),bytes.size(),output[0],&container,profile_name,registration,state,&reason,mounts))return false;
+    return ExpectRecord(output[1],id.c_str(),"process-exec-expected");
+  };
+  for(const char* failure:{"rw","unsealed","shadow","entry","runtime","profile","mode","argv-limit"}){
+    auto event=boundary;auto mounts=topology;auto registration=owner->second;ProcessState state;const char* profile_name=kProfileNodeExecution;
+    if(strcmp(failure,"rw")==0)mounts.expected.back().read_only=false;
+    if(strcmp(failure,"unsealed")==0)mounts.sealed=false;
+    if(strcmp(failure,"shadow")==0)mounts.anchors[6]={6,"/tmp/haa-node-execution/project/node_modules","workspace"};
+    if(strcmp(failure,"entry")==0)event.set_argv(5,"/tmp/elsewhere.js");
+    if(strcmp(failure,"runtime")==0)event.set_argv(3,"/usr/bin/node");
+    if(strcmp(failure,"profile")==0){profile_name=kProfileNPM;registration.profile=kProfileNPM;}
+    if(strcmp(failure,"mode")==0)event.set_argv(1,kPythonHandoffMode);
+    if(strcmp(failure,"argv-limit")==0)event.set_argv(6,std::string(32769,'x'));
+    ok=ok && !image(event,&state,&registration,&mounts,profile_name) && !registration.pending_admissions.front().target_loaded;
+  }
+  ProcessState state;
+  ok=ok && image(boundary,&state,&owner->second,&topology,kProfileNodeExecution) &&
+      state.groups.at(1930).role==ProcessState::Role::kArtifact && !state.groups.at(1930).root_eligible &&
+      state.groups.at(1930).root_consumed && !state.groups.at(1930).trusted_control_network_active && state.expected_groups.empty() &&
+      control(request("target",kNodeHandoffMode,nonce),"waiting");
+  auto demotion=boundary;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+  for(const auto& arg:std::vector<std::string>{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--",kNodePath,"--",entry,"a b; literal"})demotion.add_argv(arg);
+  ok=ok && image(demotion,&state,&owner->second,&topology,kProfileNodeExecution) && state.groups.at(1930).node_execution_demoting;
+  auto target=boundary;target.set_binary_path(kNodePath);target.set_execfn(kNodePath);target.clear_argv();
+  for(const auto& arg:std::vector<std::string>{kNodePath,"--",entry,"a b; literal"})target.add_argv(arg);
+  for(const char* failure:{"argv","execfn","entry","image"}){
+    auto event=target;auto candidate=state;auto registration=owner->second;
+    if(strcmp(failure,"argv")==0)event.set_argv(3,"substituted");
+    if(strcmp(failure,"execfn")==0)event.set_execfn("node");
+    if(strcmp(failure,"entry")==0)event.set_argv(2,entry+".changed");
+    if(strcmp(failure,"image")==0)event.set_binary_path("/tmp/node");
+    ok=ok && !image(event,&candidate,&registration,&topology,kProfileNodeExecution) && !registration.pending_admissions.front().target_loaded;
+  }
+  ok=ok && image(target,&state,&owner->second,&topology,kProfileNodeExecution) &&
+      state.groups.at(1930).node_execution_active && state.groups.at(1930).node_execution_target.empty() &&
+      state.groups.at(1930).role==ProcessState::Role::kArtifact && !IsFilesystemControlGroup(context,state) && state.expected_groups.empty() &&
+      control(request("target",kNodeHandoffMode,nonce),"loaded");
+  gvisor::syscall::Open open;
+  *open.mutable_context_data()=context;open.set_pathname("/proc/1930/maps");open.set_flags(557056);
+  const MountAnchor proc{5,"/proc","system"};
+  ok=ok && ClassifyFilesystemOpen(open,state,kProfileNodeExecution,&proc)==FilesystemClass::kRuntimeRoot;
+  open.set_pathname("/proc/1930/cgroup");
+  ok=ok && ClassifyFilesystemOpen(open,state,kProfileNodeExecution,&proc)==FilesystemClass::kRuntimeRoot;
+  for(const char* path:{"/proc/self/cgroup","/proc/1/cgroup","/proc/1931/cgroup","/proc/1930/cgroup/","/proc/1930/cgroup.evil","/proc/1930/../1930/cgroup","/proc/1930/environ"}){
+    auto denied=open;denied.set_pathname(path);
+    ok=ok && !IsPinnedNodeExecutionRead(denied.context_data(),state,denied.pathname(),denied.flags(),kProfileNodeExecution,&proc);
+  }
+  for(uint64_t flags:{0ULL,32768ULL,557057ULL,557058ULL,557568ULL})
+    ok=ok && !IsPinnedNodeExecutionRead(open.context_data(),state,open.pathname(),flags,kProfileNodeExecution,&proc);
+  for(const char* failure:{"write","foreign-map","inactive","control-role","clone","foreign-start","other-profile"}){
+    auto event=open;auto candidate=state;const char* profile_name=kProfileNodeExecution;
+    if(strcmp(failure,"write")==0)event.set_flags(557058);
+    if(strcmp(failure,"foreign-map")==0)event.set_pathname("/proc/1/maps");
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).node_execution_active=false;
+    if(strcmp(failure,"control-role")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"foreign-start")==0)event.mutable_context_data()->set_thread_group_start_time_ns(19301);
+    if(strcmp(failure,"other-profile")==0)profile_name=kProfileNPM;
+    ok=ok && !IsPinnedNodeExecutionRead(event.context_data(),candidate,event.pathname(),event.flags(),profile_name,&proc);
+  }
+  const MountAnchor memory{6,"/sys/fs/cgroup/memory","system"};
+  for(const char* path:{"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory/memory.limit_in_bytes"}){
+    auto event=open;event.set_pathname(path);
+    ok=ok && ClassifyFilesystemOpen(event,state,kProfileNodeExecution,&memory)==FilesystemClass::kRuntimeRoot;
+    for(uint64_t flags:{0ULL,32768ULL,557057ULL,557058ULL,557568ULL})
+      ok=ok && !IsPinnedNodeExecutionRead(context,state,path,flags,kProfileNodeExecution,&memory);
+    for(const char* failure:{"inactive","clone","role","start","profile","mount","mount-class"}){
+      auto candidate=state;auto caller=context;auto mount=memory;const char* profile_name=kProfileNodeExecution;
+      if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).node_execution_active=false;
+      if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+      if(strcmp(failure,"role")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+      if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19301);
+      if(strcmp(failure,"profile")==0)profile_name=kProfileNPM;
+      if(strcmp(failure,"mount")==0)mount.mountpoint="/sys";
+      if(strcmp(failure,"mount-class")==0)mount.mount_class="workspace";
+      ok=ok && !IsPinnedNodeExecutionRead(caller,candidate,path,557056,profile_name,&mount);
+    }
+  }
+  for(const char* path:{"/sys/fs/cgroup/memory/foreign/memory.limit_in_bytes","/sys/fs/cgroup/memory/memory.limit_in_bytes.evil","/sys/fs/cgroup/memory/memory.soft_limit_in_bytes/","/sys/fs/cgroup/memory/../memory/memory.limit_in_bytes","/sys/fs/cgroup/memory/cgroup.procs"})
+    ok=ok && !IsPinnedNodeExecutionRead(context,state,path,557056,kProfileNodeExecution,&memory);
+  const MountAnchor sys{7,"/sys","system"};
+  for(const char* path:{"/proc/meminfo","/proc/version_signature","/proc/sys/vm/overcommit_memory","/sys/devices/system/cpu/online"}){
+    auto event=open;event.set_pathname(path);const MountAnchor& mount=HasPrefix(path,"/proc/")?proc:sys;
+    ok=ok && ClassifyFilesystemOpen(event,state,kProfileNodeExecution,&mount)==FilesystemClass::kRuntimeRoot;
+    for(uint64_t flags:{0ULL,32768ULL,557057ULL,557058ULL,557568ULL})
+      ok=ok && !IsPinnedNodeExecutionRead(context,state,path,flags,kProfileNodeExecution,&mount);
+    for(const std::string& changed:{std::string(path)+".evil",std::string(path)+"/",std::string(path)+"/../meminfo"})
+      ok=ok && !IsPinnedNodeExecutionRead(context,state,changed,557056,kProfileNodeExecution,&mount);
+    for(const char* failure:{"inactive","clone","role","start","profile","mount","mount-class"}){
+      auto candidate=state;auto caller=context;auto changed=mount;const char* profile_name=kProfileNodeExecution;
+      if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).node_execution_active=false;
+      if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+      if(strcmp(failure,"role")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+      if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19301);
+      if(strcmp(failure,"profile")==0)profile_name=kProfileNPM;
+      if(strcmp(failure,"mount")==0)changed.mountpoint="/";
+      if(strcmp(failure,"mount-class")==0)changed.mount_class="workspace";
+      ok=ok && !IsPinnedNodeExecutionRead(caller,candidate,path,557056,profile_name,&changed);
+    }
+  }
+  for(const char* path:{"/proc/cpuinfo","/proc/sys/vm/overcommit_ratio","/proc/sys/kernel/hostname","/sys/devices/system/cpu/possible","/proc/1930/environ"})
+    ok=ok && !IsPinnedNodeExecutionRead(context,state,path,557056,kProfileNodeExecution,HasPrefix(path,"/proc/")?&proc:&sys);
+  const MountAnchor dev{8,"/dev","system"};
+  auto null_open=open;null_open.set_pathname("/dev/null");
+  ok=ok && ClassifyFilesystemOpen(null_open,state,kProfileNodeExecution,&dev)==FilesystemClass::kRuntimeRoot;
+  for(uint64_t flags:{0ULL,32768ULL,557057ULL,557058ULL,557568ULL})
+    ok=ok && !IsPinnedNodeExecutionRead(context,state,"/dev/null",flags,kProfileNodeExecution,&dev);
+  for(const char* path:{"/dev/random","/dev/urandom","/dev/zero","/dev/null/","/dev/null.evil","/dev/../dev/null","/tmp/null"})
+    ok=ok && !IsPinnedNodeExecutionRead(context,state,path,557056,kProfileNodeExecution,&dev);
+  for(const char* failure:{"inactive","clone","role","start","profile","mount","mount-class"}){
+    auto candidate=state;auto caller=context;auto mount=dev;const char* profile_name=kProfileNodeExecution;
+    if(strcmp(failure,"inactive")==0)candidate.groups.at(1930).node_execution_active=false;
+    if(strcmp(failure,"clone")==0)candidate.groups.at(1930).provenance=ProcessState::Provenance::kCloneChild;
+    if(strcmp(failure,"role")==0)candidate.groups.at(1930).role=ProcessState::Role::kControl;
+    if(strcmp(failure,"start")==0)caller.set_thread_group_start_time_ns(19301);
+    if(strcmp(failure,"profile")==0)profile_name=kProfileNPM;
+    if(strcmp(failure,"mount")==0)mount.mountpoint="/dev/null";
+    if(strcmp(failure,"mount-class")==0)mount.mount_class="workspace";
+    ok=ok && !IsPinnedNodeExecutionRead(caller,candidate,"/dev/null",557056,profile_name,&mount);
+  }
+  // A real production clone never inherits the new active runtime authority.
+  gvisor::sentry::CloneInfo clone;
+  *clone.mutable_context_data()=context;clone.set_created_thread_group_id(1931);clone.set_created_thread_start_time_ns(19310);
+  std::string bytes,container;const char* reason=nullptr;
+  ok=ok && clone.SerializeToString(&bytes) && ParseSentryClone(bytes.data(),bytes.size(),output[0],&container,&state,&reason) &&
+      !state.groups.at(1931).node_execution_active && !state.groups.at(1931).node_execution_demoting && state.groups.at(1931).node_execution_target.empty() &&
+      state.groups.at(1931).role==ProcessState::Role::kArtifact;
+  // A later successful exec cannot retain active Node runtime reads or turn
+  // the historical target bit into fresh execution authority.
+  auto later=target;later.set_argv(3,"later");auto changed=state;auto registration=owner->second;
+  ok=ok && !image(later,&changed,&registration,&topology,kProfileNodeExecution) && !changed.groups.at(1930).node_execution_active;
+  gvisor::sentry::ExitNotifyParentInfo terminal;
+  *terminal.mutable_context_data()=context;terminal.set_exit_status(37<<8);bytes.clear();container=id;reason=nullptr;
+  ok=ok && terminal.SerializeToString(&bytes) && ParseSentryExitNotifyParent(bytes.data(),bytes.size(),&container,&state,&reason,&owner->second) &&
+      control(request("outcome",kNodeHandoffMode,nonce),"exited:9472") && control(request("complete",kNodeHandoffMode,nonce),"completed");
+  close(control_pair[0]);close(control_pair[1]);close(output[0]);close(output[1]);
+  return ok;
+}
+
+bool VerifyKernelTerminalOutcomes() {
+  for (int32_t wait_status : {0, 37 << 8, 125 << 8, 126 << 8, 127 << 8, 255 << 8, 9, 15 | 128, 64}) {
+    if (!VerifyAdmissionTerminalControlProtocol(true, wait_status)) return false;
+  }
+  return true;
 }
 
 bool VerifySessionAwareControl(const std::string& control) {
@@ -6710,7 +7829,1801 @@ bool VerifyTerraformProviderProfileBoundary() {
    ProcessClassForPath("/work/artifact", kProfileGoBuild) == ProcessClass::kUnknown;
 }
 
+// Exercise the production request/result correlation and attested workspace
+// dispatch, rather than only invoking the filesystem predicate directly.
+bool VerifyRestrictedWorkspaceOpen(const gvisor::common::ContextData& context,
+    const ProcessState& baseline, const TopologyState& topology, const char* profile,
+    int output, int input, const std::string& path, uint64_t mount_id,
+    uint32_t flags, bool outside, bool workspace=false,ProcessState* after=nullptr) {
+  auto state=baseline;
+  gvisor::syscall::Open open;
+  *open.mutable_context_data()=context;
+  open.mutable_context_data()->set_thread_id(context.thread_group_id());
+  open.mutable_context_data()->set_thread_start_time_ns(context.thread_group_start_time_ns());
+  open.set_pathname(path);open.set_flags(flags);open.set_sysno(257);
+  std::string payload,id=kFirstID;const char* reason=nullptr;NormalizedCounts counts;
+  if(!open.SerializeToString(&payload)||!ParseOpenAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,&reason))return false;
+  gvisor::syscall::OpenResult result;
+  *result.mutable_context_data()=open.context_data();
+  result.set_resolved_pathname(path);result.set_mount_id(mount_id);
+  result.set_flags(flags);result.set_sysno(257);result.set_success(true);result.set_errorno(0);
+  const bool parsed=result.SerializeToString(&payload)&&ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+  if(after!=nullptr)*after=state;
+  if(!parsed)return false;
+  const bool counted=counts.immediate_records==(outside?1:0)&&counts.workspace_access==(workspace?1:0)&&state.pending_opens.empty();
+  if(!counted){fprintf(stderr,"restricted workspace dispatch: profile=%s outside=%d findings=%llu workspace=%llu\n",profile,outside,static_cast<unsigned long long>(counts.immediate_records),static_cast<unsigned long long>(counts.workspace_access));DrainDatagram(input);return false;}
+  return !outside||ExpectRecordExact(input,kFirstID,"filesystem-outside-workspace");
+}
+
+bool VerifyUVPythonQueryBoundary() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const std::string& scenario) {
+    DrainDatagram(output[1]);
+    const bool exported = scenario.compare(0, 7, "export-") == 0;
+    const bool base_query = exported && scenario == "export-canonical";
+    const bool cached = exported || scenario.compare(0, 6, "cache-") == 0;
+    const std::string variation = exported ? scenario.substr(7) : (cached ? scenario.substr(6) : scenario);
+    ProcessState state;
+    gvisor::common::ContextData parent;
+    parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
+    parent.set_thread_group_start_time_ns(990); parent.set_parent_thread_group_id(0);
+    parent.set_is_exec_session(true); parent.set_process_name("renamed-uv");
+    if (!RegisterGroup(&state, parent, ProcessState::Role::kControl,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kUV;
+    state.groups[99].trusted_control_network_active = true;
+    state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kUV};
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data() = parent;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload, id; const char* reason = nullptr;
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(),
+        output[0], &id, &state, &reason)) return false;
+    TopologyState topology;
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    topology.expected = {{"/", "oci-root", "/", "", true, false, false, false},
+        {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+        {"/haa-runtime", "helper", "/", "9p", false, false, false, false}};
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
+    topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    topology.expected.push_back({"/haa-site", "workspace", "/", "9p", false, false, false, false});
+    topology.anchors.emplace(6, MountAnchor{6, "/haa-site", "workspace"});
+    gvisor::sentry::ExecveInfo image;
+    *image.mutable_context_data() = parent;
+    auto* child = image.mutable_context_data();
+    child->set_thread_group_id(100); child->set_thread_group_start_time_ns(1000);
+    // Kernel task_clone.go inherits OriginExec from the actual UV parent.
+    child->set_parent_thread_group_id(99); child->set_is_exec_session(true);
+    child->set_process_name("arbitrary-name");
+    image.set_binary_path("/usr/local/bin/python3.14");
+    image.set_execfn(variation == "canonical" ? "/usr/local/bin/python3.14" : "/usr/local/bin/python");
+    if (scenario.compare(0, 5, "tool-") == 0) image.set_execfn("/haa-site/tools/cowsay/bin/python");
+    if (variation == "tool-traversal") image.set_execfn("/haa-site/tools/../cowsay/bin/python");
+    if (variation == "tool-case") image.set_execfn("/haa-site/tools/Cowsay/bin/python");
+    if (variation == "tool-other-alias") image.set_execfn("/haa-site/tools/cowsay/bin/python3");
+    if (variation == "tool-underscore") image.set_execfn("/haa-site/tools/cow_say/bin/python");
+    const std::string cache_root = exported ? "/haa-site/uv-run-cache" : "/tmp/.tmpzw5M7c";
+    const std::string cache_env = exported ? cache_root + "/archive-v0/" +
+        (variation == "id-alphabet" ? "_-0123456789abcd" : "aCTj1Rn4JBKu2JYF") : (variation == "id-alphabet" ?
+        "/tmp/.tmpA1b2C3/archive-v0/_-0123456789abcd" :
+        "/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYF");
+    const std::string helper_root = exported ?
+        (variation == "helper-other" ? "/haa-site/other-cache/.tmpA1s2D3" :
+         (variation == "helper-short" ? "/haa-site/uv-run-cache/.tmpA1s2D" :
+          (variation == "helper-punct" ? "/haa-site/uv-run-cache/.tmpA1s2D_" : "/haa-site/uv-run-cache/.tmpA1s2D3"))) : (variation == "helper-other" ?
+        "/tmp/.tmpQ1w2E3/.tmpA1s2D3" : "/tmp/.tmp3l9KcP/.tmpADARLv");
+    if (cached && !base_query) image.set_execfn(cache_env + "/bin/python");
+    if (cached && variation == "tmp-length") image.set_execfn("/tmp/.tmpzw5M7/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "tmp-punct") image.set_execfn("/tmp/.tmpzw5M7_/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "bucket") image.set_execfn("/tmp/.tmpzw5M7c/archive-v1/aCTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "id-short") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JY/bin/python");
+    if (cached && variation == "id-long") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYFQ/bin/python");
+    if (cached && variation == "id-dot") image.set_execfn("/tmp/.tmpzw5M7c/archive-v0/.CTj1Rn4JBKu2JYF/bin/python");
+    if (cached && variation == "alias") image.set_execfn(cache_env + "/bin/python3");
+    if (cached && variation == "path-traversal") image.set_execfn(cache_env + "/bin/../bin/python");
+    if (cached && variation == "double-slash") image.set_execfn("/tmp/.tmpzw5M7c//archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    image.add_argv(image.execfn()); image.add_argv("-I"); image.add_argv("-B"); image.add_argv("-c");
+    const std::string launcher = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()";
+    image.add_argv(launcher);
+    if (exported || (cached && variation == "helper-other")) {
+      auto code = launcher;
+      code.replace(code.find("/tmp/.tmp3l9KcP/.tmpADARLv"), 26, helper_root);
+      image.set_argv(4, code);
+    }
+    if (cached && variation == "cache-shadow") topology.anchors.emplace(7, MountAnchor{7, cache_root, "workspace"});
+    if (cached && variation == "lib-shadow") topology.anchors.emplace(7, MountAnchor{7, cache_env + "/lib", "workspace"});
+    if (cached && variation == "helper-shadow") topology.anchors.emplace(7, MountAnchor{7, helper_root + "/python", "workspace"});
+    if (cached && variation == "tmp-nosuid") topology.expected[1].nosuid = false;
+    if (cached && variation == "tmp-readonly") topology.expected[1].read_only = true;
+    if (cached && variation == "tmp-duplicate") topology.anchors.emplace(7, MountAnchor{7, "/tmp", "workspace"});
+    if (cached && variation == "tmp-class") topology.anchors[2].mount_class = "system";
+    if (exported && variation == "output-missing") topology.anchors.erase(6);
+    if (exported && variation == "output-kind") topology.expected[3].filesystem_type = "tmpfs";
+    if (exported && variation == "output-readonly") topology.expected[3].read_only = true;
+    if (exported && variation == "output-duplicate") topology.anchors.emplace(7, MountAnchor{7, "/haa-site", "workspace"});
+    if (exported && variation == "output-class") topology.anchors[6].mount_class = "system";
+    if (exported && variation == "cache-root") image.set_execfn("/haa-site/uv-run-cache-other/archive-v0/aCTj1Rn4JBKu2JYF/bin/python");
+    if (variation == "binary") image.set_binary_path("/tmp/python3.14");
+    if (variation == "execfn") image.set_execfn("/usr/local/bin/python3");
+    if (variation == "argv0") image.set_argv(0, "python");
+    if (variation == "no-isolation") image.set_argv(1, "-E");
+    if (variation == "bytecode") image.set_argv(2, "-s");
+    if (variation == "module") image.set_argv(3, "-m");
+    if (variation == "arbitrary-code") image.set_argv(4, "print('query')");
+    if (variation == "extra-code") image.set_argv(4, launcher + "; print('extra')");
+    if (variation == "embedded-nul") image.set_argv(4, launcher + std::string(1, '\0'));
+    if (variation == "traversal") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "../foo"); image.set_argv(4, code); }
+    if (variation == "escaped-path") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "abc\\de"); image.set_argv(4, code); }
+    if (variation == "wrong-module") { auto code = launcher; code.replace(code.find("get_interpreter_info"), 20, "get_interpreter_evil"); image.set_argv(4, code); }
+    if (variation == "extra-arg") image.add_argv("/tmp/artifact.py");
+    if (variation == "short-argv") image.mutable_argv()->RemoveLast();
+    if (variation == "parent-class") state.groups[99].current_image_class = ProcessClass::kPython;
+    if (variation == "parent-role") state.groups[99].role = ProcessState::Role::kArtifact;
+    if (variation == "parent-start") state.groups[99].start_time_ns++;
+    if (variation == "parent-expected") state.expected_groups.erase(99);
+    if (variation == "parent-generation") state.expected_groups[99].start_time_ns++;
+    if (variation == "parent-expected-class") state.expected_groups[99].process_class = ProcessClass::kUnknown;
+    if (variation == "parent-network") state.groups[99].trusted_control_network_active = false;
+    if (variation == "parent-eligible") state.groups[99].root_eligible = true;
+    if (variation == "parent-unconsumed") state.groups[99].root_consumed = false;
+    if (variation == "parent-pending") state.groups[99].handoff_target_pending = true;
+    if (variation == "parent-clone") state.groups[99].provenance = ProcessState::Provenance::kCloneChild;
+    if (variation == "oci-origin") child->set_is_exec_session(false);
+    if (variation == "wrong-parent") child->set_parent_thread_group_id(98);
+    if (variation == "direct-root") { child->set_parent_thread_group_id(0); child->set_is_exec_session(true); state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot; }
+    if (variation == "artifact-child") state.groups[100].role = ProcessState::Role::kArtifact;
+    if (variation == "missing-clone") state.groups[100].uv_python_query_candidate = false;
+    if (variation == "child-network") state.groups[100].trusted_control_network_active = true;
+    if (variation == "child-pending") state.groups[100].launch_target_pending = true;
+    if (variation == "unsealed") topology.sealed = false;
+    if (variation == "missing-snapshot") topology.snapshot_seen = false;
+    if (variation == "writable-root") topology.expected[0].read_only = false;
+    if (variation == "image-shadow") topology.anchors.emplace(4, MountAnchor{4, "/usr/local", "workspace"});
+    if (variation == "runtime-shadow") topology.anchors.emplace(4, MountAnchor{4, "/haa-runtime/uv", "helper"});
+    if (variation == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, exported ? helper_root : "/tmp/.tmp3l9KcP", "workspace"});
+    if (variation == "tmp-bind") topology.expected[1].filesystem_type = "9p";
+    if (variation == "tmp-exec") topology.expected[1].noexec = false;
+    if (variation == "missing-tmp") topology.anchors.erase(2);
+    if (variation == "tool-missing-output") topology.anchors.erase(6);
+    if (variation == "tool-output-kind") topology.expected[3].filesystem_type = "tmpfs";
+    if (variation == "tool-output-readonly") topology.expected[3].read_only = true;
+    if (variation == "tool-output-shadow") topology.anchors.emplace(5, MountAnchor{5, "/haa-site/tools/cowsay", "workspace"});
+    const auto* selected = variation == "no-topology" ? nullptr : &topology;
+    const char* profile = variation == "other-profile" ? kProfilePyPI : kProfileUVResolver;
+    if (variation == "profile-cpu") profile = kProfilePyTorchCPU;
+    if (variation == "profile-cu126") profile = kProfilePyTorchCU126;
+    if (variation == "profile-cu130") profile = kProfilePyTorchCU130;
+    if (variation == "profile-cu132") profile = kProfilePyTorchCU132;
+    ProfileRegistration registration;
+    const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
+    const bool normal = variation == "normal" || variation == "canonical" || variation == "tool-normal" ||
+        (cached && (variation == "id-alphabet" || (!exported && variation == "helper-other")));
+    if (normal && (!parsed || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected"))) return false;
+    if (!normal) DrainDatagram(output[1]);
+    if (state.groups[100].uv_python_query_active != normal) return false;
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = image.context_data(); open.set_flags(557056);
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
+    MountAnchor anchor{1, "/", "oci-root"};
+    auto readable = [&]() { return IsPinnedUVPythonQueryRead(open.context_data(), state, open.pathname(), open.flags(), profile, &anchor); };
+    if (readable() != normal) return false;
+    anchor = MountAnchor{2, "/proc", "system"};
+    open.set_pathname("/proc/sys/vm/overcommit_memory"); open.set_flags(kOpenLargefile);
+    if (readable() != normal) return false;
+    if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    open.set_pathname("/proc/100/maps"); open.set_flags(557056);
+    if (readable() != normal) return false;
+    if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    if (!normal) return true;
+    const MountAnchor cache_anchor{exported ? 6u : 2u, exported ? "/haa-site" : "/tmp", "workspace"};
+    if (cached) {
+      const MountAnchor tmp = cache_anchor;
+      auto expected_cache_read = [&](const std::string& path) {
+        return base_query && !IsAtOrBelowMountpoint(path, helper_root) ? FilesystemClass::kOutside : FilesystemClass::kHelperOnly;
+      };
+      auto check = [&](const std::string& path, uint64_t flags, FilesystemClass expected) {
+        auto candidate = open; candidate.set_pathname(path); candidate.set_flags(flags);
+        return ClassifyFilesystemOpen(candidate, state, profile, &tmp) == expected;
+      };
+      for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", cache_env, cache_env + "/lib",
+          cache_env + "/lib/python3.14", cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, 557056, expected_cache_read(path)) ||
+            !check(path, 622592, expected_cache_read(path))) return false;
+      }
+      if (!check(cache_env + "/pyvenv.cfg", 557056, expected_cache_read(cache_env + "/pyvenv.cfg"))) return false;
+      if (!check(cache_env + "/pyvenv.cfg", kOpenLargefile, expected_cache_read(cache_env + "/pyvenv.cfg"))) return false;
+      for (const std::string& path : {helper_root, helper_root + "/python", helper_root + "/python/packaging",
+          cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, 624640, expected_cache_read(path))) return false;
+      }
+      for (const std::string& path : {helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", helper_root + "/python/packaging/__init__.py",
+          helper_root + "/python/packaging/tags.py", cache_env, cache_env + "/lib",
+          cache_env + "/lib/python3.14", cache_env + "/pyvenv.cfg"}) {
+        if (!check(path, 624640, FilesystemClass::kOutside)) return false;
+      }
+      for (const std::string& path : {helper_root, helper_root + "/python/__init__.py",
+          helper_root + "/python/get_interpreter_info.py", cache_env + "/lib/python3.14/site-packages"}) {
+        if (!check(path, kOpenLargefile, FilesystemClass::kOutside)) return false;
+      }
+      for (const std::string& path : {cache_env + "/lib/python3.14/site-packages/evil.pth",
+          cache_env + "/lib/python3.14/site-packages/sitecustomize.py",
+          cache_env + "/lib/python3.14/site-packages/usercustomize.py",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe/__init__.py",
+          cache_env + "/lib/python3.14/site-packages/evil.so",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe-1.0.dist-info/METADATA",
+          cache_env + "/../" + cache_env.substr(cache_env.rfind('/') + 1) + "/pyvenv.cfg",
+          helper_root + "/../" + helper_root.substr(helper_root.rfind('/') + 1),
+          std::string("/tmp/.tmpQ1w2E3/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          std::string("/tmp/unrelated.py")}) {
+        for (uint64_t flags : {kOpenLargefile, uint64_t{624640}}) {
+          if (!check(path, flags, FilesystemClass::kOutside)) return false;
+        }
+      }
+
+      for (const std::string& path : {cache_env + "/lib/python3.14/site-packages/evil.pth",
+          cache_env + "/lib/python3.14/site-packages/sitecustomize.py",
+          cache_env + "/lib/python3.14/site-packages/usercustomize.py",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe/__init__.py",
+          cache_env + "/lib/python3.14/site-packages/evil.so", cache_env + "/bin/python",
+          cache_env + "/lib/python3.14/site-packages/haa_uv_probe-1.0.dist-info/METADATA",
+          std::string("/tmp/unrelated.py"), std::string("/tmp/.tmpOther1/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          std::string("/tmp/.tmpzw5M7c/archive-v0/OtherEnvironment/pyvenv.cfg"),
+          helper_root + "/../" + helper_root.substr(helper_root.rfind('/') + 1) + "/python/__init__.py"}) {
+        if (!check(path, 557056, FilesystemClass::kOutside)) return false;
+      }
+      const std::string foreign_helper = variation == "helper-other" ?
+          "/tmp/.tmp3l9KcP/.tmpADARLv/python/__init__.py" : "/tmp/.tmpQ1w2E3/.tmpA1s2D3/python/__init__.py";
+      if (!check(foreign_helper, 557056, FilesystemClass::kOutside)) return false;
+      for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenAppend, kOpenTruncate}) {
+        for (const std::string& path : {helper_root + "/python/__init__.py", cache_env + "/pyvenv.cfg", std::string("/tmp/query-write")}) {
+          if (!check(path, flags, FilesystemClass::kOutside)) return false;
+        }
+      }
+      auto candidate = open; candidate.set_pathname(cache_env + "/pyvenv.cfg"); candidate.set_flags(557056);
+      for (const auto& wrong : {MountAnchor{4, exported ? "/haa-site" : "/tmp", "system"}, MountAnchor{4, cache_env, "workspace"}, MountAnchor{1, "/", "oci-root"}}) {
+        if (ClassifyFilesystemOpen(candidate, state, profile, &wrong) != FilesystemClass::kOutside) return false;
+      }
+      const auto accepted_query = state;
+      for (int mutation = 0; mutation < 13; ++mutation) {
+        state = accepted_query; auto& query = state.groups[100];
+        switch (mutation) {
+          case 0: query.role = ProcessState::Role::kControl; break;
+          case 1: query.uv_python_query_active = false; break;
+          case 2: query.start_time_ns++; break;
+          case 3: query.provenance = ProcessState::Provenance::kDirectExecRoot; break;
+          case 4: query.trusted_control_network_active = true; break;
+          case 5: query.current_image_class = ProcessClass::kUnknown; break;
+          case 6: query.root_eligible = true; break;
+          case 7: query.root_consumed = false; break;
+          case 8: query.demotion_pending = true; break;
+          case 9: query.launch_target_pending = true; break;
+          case 10: query.handoff_target_pending = true; break;
+          case 11: state.groups[99].start_time_ns++; break;
+          case 12: state.expected_groups.erase(99); break;
+        }
+        // A stale generation has no authoritative filesystem group. Keep the
+        // classifier's UNKNOWN result rather than inventing an ARTIFACT role.
+        const auto rejected = mutation == 2 ? FilesystemClass::kUnknown : FilesystemClass::kOutside;
+        if (!check(cache_env + "/pyvenv.cfg", 557056, rejected) ||
+            !check(helper_root + "/python/__init__.py", 557056, rejected) ||
+            !check(cache_env + "/pyvenv.cfg", kOpenLargefile, rejected) ||
+            !check(helper_root, 624640, rejected) ||
+            !check(cache_env + "/lib/python3.14/site-packages", 624640, rejected)) return false;
+      }
+      state = accepted_query;
+    }
+    const std::string env = "/haa-site/tools/cowsay";
+    if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/lib/python3.14/site-packages/evil.pth",6,557056,true))return false;
+    if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/pyvenv.cfg",6,kOpenWriteOnly,true))return false;
+    if(!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],"/tmp/query-write",2,kOpenWriteOnly,cached,!cached))return false;
+    if(scenario=="tool-normal"&&!VerifyRestrictedWorkspaceOpen(image.context_data(),state,topology,profile,output[0],output[1],env+"/pyvenv.cfg",6,557056,false))return false;
+
+    anchor = MountAnchor{4, "/haa-site", "workspace"};
+    for (const std::string& path : {env + "/pyvenv.cfg", env, env + "/lib", env + "/lib/python3.14", env + "/lib/python3.14/site-packages"}) {
+      open.set_pathname(path); open.set_flags(557056);
+      const auto expected = variation == "tool-normal" ? FilesystemClass::kHelperOnly : FilesystemClass::kOutside;
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != expected) return false;
+    }
+    for (const std::string& path : {env + "/lib/python3.14/site-packages/evil.pth", env + "/lib/python3.14/site-packages/sitecustomize.py",
+        env + "/lib/python3.14/site-packages/cowsay/__init__.py", env + "/lib/python3.14/site-packages/evil.so",
+        env + "/lib/python3.14/site-packages/cowsay-6.1.dist-info/METADATA", std::string("/haa-site/tools/other/pyvenv.cfg"),
+        env + "/../cowsay/pyvenv.cfg", std::string("/haa-site/pylock.toml"),
+        std::string("/tmp/../haa-site/tools/cowsay/lib/python3.14/site-packages/evil.pth"),
+        std::string("/tmp/output-alias/evil.pth")}) {
+      open.set_pathname(path); open.set_flags(557056);
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kOutside) return false;
+    }
+    open.set_pathname(env + "/pyvenv.cfg");
+    for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenAppend, kOpenTruncate}) {
+      open.set_flags(flags);
+      if (ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kOutside) return false;
+    }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{5, "/haa-site/tools", "workspace"}, MountAnchor{4, "/haa-site", "system"}}) {
+      if (ClassifyFilesystemOpen(open, state, profile, &wrong) != FilesystemClass::kOutside) return false;
+    }
+    anchor = MountAnchor{2, "/proc", "system"};
+    for (const char* path : {"/proc/sys/vm/overcommit_ratio", "/proc/99/maps", "/proc/101/maps", "/proc/self/maps", "/proc/100/environ", "/proc/100/status", "/proc/100/cgroup", "/dev/null", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/proc/100/maps");
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    open.set_pathname("/proc/sys/vm/overcommit_memory");
+    for (uint64_t flags : {uint64_t{0}, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    for (bool maps : {false, true}) {
+      open.set_pathname(maps ? "/proc/100/maps" : "/proc/sys/vm/overcommit_memory");
+      open.set_flags(maps ? 557056 : kOpenLargefile);
+      for (const auto& wrong : {MountAnchor{2, "/proc/sys", "system"}, MountAnchor{2, "/proc", "workspace"}, MountAnchor{2, "/", "oci-root"}}) {
+        anchor = wrong; if (readable()) return false;
+      }
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0"); open.set_flags(557056);
+    if (state.groups[100].role != ProcessState::Role::kArtifact ||
+        state.expected_groups.count(100) != 0 || IsTrustedControlNetwork(*child, state) ||
+        ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    for (const char* path : {"/etc/ld.so.cache", "/usr/local/bin/../lib/libpython3.14.so.1.0", "/usr/local/bin/python3.14",
+        "/usr/share/zoneinfo/Etc/UTC",
+        "/usr/local/lib/python314.zip", "/usr/local/lib/python3.14", "/usr/local/lib/python3.14/encodings/__init__.py",
+        "/usr/local/lib/python3.14/lib-dynload/_struct.cpython-314-x86_64-linux-gnu.so", "/lib/x86_64-linux-gnu/libc.so.6"}) {
+      open.set_pathname(path); if (!readable()) return false;
+    }
+    for (const char* path : {"/etc/passwd", "/etc/resolv.conf", "/proc/100/environ", "/usr/lib/evil.so", "/usr/local/bin/pip",
+        "/usr/share/zoneinfo/Etc/UTC.evil", "/usr/share/zoneinfo/Europe/London", "/etc/localtime",
+        "/usr/local/lib/python3.14/site-packages/pip/__init__.py", "/usr/local/lib/python3.14/site-packages/evil.pth",
+        "/usr/local/lib/python3.15/encodings/__init__.py", "/usr/local/lib/python3.14/../../evil.py", "/tmp/module.py"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/usr/share/zoneinfo/Etc/UTC");
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{2, "/usr/share/zoneinfo", "oci-root"}, MountAnchor{2, "/", "system"}, MountAnchor{2, "/", "workspace"}}) {
+      anchor = wrong; if (readable()) return false;
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
+    for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) { open.set_flags(flags); if (readable()) return false; }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{2, "/usr/local", "oci-root"}, MountAnchor{2, "/", "workspace"}, MountAnchor{2, "/", "system"}}) {
+      anchor = wrong; if (readable()) return false;
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    const auto accepted = state;
+    for (int subject : {0, 1, 2, 3}) {
+      anchor = subject == 0 || subject == 3 ? MountAnchor{1, "/", "oci-root"} : MountAnchor{2, "/proc", "system"};
+      open.set_pathname(subject == 3 ? "/usr/share/zoneinfo/Etc/UTC" :
+          (subject == 0 ? "/usr/local/lib/libpython3.14.so.1.0" :
+           (subject == 1 ? "/proc/sys/vm/overcommit_memory" : "/proc/100/maps")));
+      open.set_flags(subject == 1 ? kOpenLargefile : 557056);
+      for (int mutation = 0; mutation < 13; ++mutation) {
+        state = accepted;
+        auto& group = state.groups[100];
+        switch (mutation) {
+          case 0: group.role = ProcessState::Role::kControl; break;
+          case 1: group.uv_python_query_active = false; break;
+          case 2: group.start_time_ns++; break;
+          case 3: group.provenance = ProcessState::Provenance::kDirectExecRoot; break;
+          case 4: group.trusted_control_network_active = true; break;
+          case 5: group.current_image_class = ProcessClass::kUnknown; break;
+          case 6: group.root_eligible = true; break;
+          case 7: group.root_consumed = false; break;
+          case 8: group.demotion_pending = true; break;
+          case 9: group.launch_target_pending = true; break;
+          case 10: group.handoff_target_pending = true; break;
+          case 11: state.groups[99].start_time_ns++; break;
+          case 12: state.expected_groups.erase(99); break;
+        }
+        if (readable()) return false;
+      }
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0"); open.set_flags(557056);
+    state = accepted;
+    // A query clone inherits neither the active role nor another candidate.
+    *clone.mutable_context_data() = *child;
+    clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(), output[0], &id, &state, &reason)) return false;
+    auto descendant = image;
+    descendant.mutable_context_data()->set_thread_group_id(101);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    descendant.mutable_context_data()->set_parent_thread_group_id(100);
+    *open.mutable_context_data() = descendant.context_data();
+    if (state.groups[101].uv_python_query_candidate || state.groups[101].uv_python_query_active ||
+        !state.groups[101].uv_python_query_restricted || readable()) return false;
+    open.set_pathname(env + "/lib/python3.14/site-packages/evil.pth");
+    MountAnchor tool_anchor{4, "/haa-site", "workspace"};
+    if (ClassifyFilesystemOpen(open, state, profile, &tool_anchor) != FilesystemClass::kOutside) return false;
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
+    if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
+        !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable()) return false;
+    if (cached) {
+      open.set_pathname(helper_root + "/python/__init__.py");
+      MountAnchor tmp = cache_anchor;
+      if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      auto read_mode = open;
+      read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      read_mode.set_pathname(cache_env + "/pyvenv.cfg"); read_mode.set_flags(kOpenLargefile);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+    }
+    // A second exact exec in the original child cannot renew the role.
+    *open.mutable_context_data() = *child;
+    if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
+        !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable() || IsTrustedControlNetwork(*child, state)) return false;
+    if (cached) {
+      open.set_pathname(cache_env + "/pyvenv.cfg");
+      MountAnchor tmp = cache_anchor;
+      if (ClassifyFilesystemOpen(open, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      auto read_mode = open;
+      read_mode.set_pathname(helper_root); read_mode.set_flags(624640);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+      read_mode.set_pathname(cache_env + "/pyvenv.cfg"); read_mode.set_flags(kOpenLargefile);
+      if (ClassifyFilesystemOpen(read_mode, state, profile, &tmp) != FilesystemClass::kOutside) return false;
+    }
+    return true;
+  };
+  bool passed = true;
+  for (const char* scenario : {
+      "normal", "canonical", "tool-normal", "tool-traversal", "tool-case", "tool-underscore",
+      "tool-other-alias", "tool-missing-output", "tool-output-kind", "tool-output-readonly", "tool-output-shadow", "binary",
+      "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
+      "extra-code", "embedded-nul", "traversal", "escaped-path", "wrong-module", "extra-arg",
+      "short-argv", "parent-class", "parent-role", "parent-start", "parent-expected", "parent-generation",
+      "parent-expected-class", "parent-network", "parent-eligible", "parent-unconsumed", "parent-pending", "parent-clone",
+      "oci-origin", "wrong-parent", "direct-root", "artifact-child", "missing-clone", "child-network",
+      "child-pending", "unsealed", "missing-snapshot", "writable-root", "image-shadow", "runtime-shadow",
+      "query-shadow", "tmp-bind", "tmp-exec", "missing-tmp", "no-topology", "other-profile",
+      "cache-normal", "cache-id-alphabet", "cache-helper-other", "cache-tmp-length", "cache-tmp-punct", "cache-bucket",
+      "cache-id-short", "cache-id-long", "cache-id-dot", "cache-alias", "cache-path-traversal", "cache-double-slash",
+      "cache-cache-shadow", "cache-lib-shadow", "cache-helper-shadow", "cache-tmp-nosuid", "cache-tmp-readonly", "cache-tmp-duplicate",
+      "cache-tmp-class", "cache-profile-cpu", "cache-profile-cu126", "cache-profile-cu130", "cache-profile-cu132", "cache-binary",
+      "cache-execfn", "cache-argv0", "cache-no-isolation", "cache-bytecode", "cache-module", "cache-arbitrary-code",
+      "cache-extra-code", "cache-embedded-nul", "cache-traversal", "cache-escaped-path", "cache-wrong-module", "cache-extra-arg",
+      "cache-short-argv", "cache-parent-class", "cache-parent-role", "cache-parent-start", "cache-parent-expected", "cache-parent-generation",
+      "cache-parent-expected-class", "cache-parent-network", "cache-parent-eligible", "cache-parent-unconsumed", "cache-parent-pending", "cache-parent-clone",
+      "cache-oci-origin", "cache-wrong-parent", "cache-direct-root", "cache-artifact-child", "cache-missing-clone", "cache-child-network",
+      "cache-child-pending", "cache-unsealed", "cache-missing-snapshot", "cache-writable-root", "cache-image-shadow", "cache-runtime-shadow",
+      "cache-query-shadow", "cache-tmp-bind", "cache-tmp-exec", "cache-missing-tmp", "cache-no-topology", "cache-other-profile",
+      "export-normal", "export-id-alphabet", "export-helper-other", "export-tmp-length", "export-tmp-punct", "export-bucket", "export-id-short", "export-id-long", "export-id-dot", "export-alias", "export-path-traversal", "export-double-slash", "export-cache-shadow", "export-lib-shadow", "export-helper-shadow", "export-tmp-nosuid", "export-tmp-readonly", "export-tmp-duplicate", "export-tmp-class", "export-profile-cpu", "export-profile-cu126", "export-profile-cu130", "export-profile-cu132", "export-binary", "export-execfn", "export-argv0", "export-no-isolation", "export-bytecode", "export-module", "export-arbitrary-code", "export-extra-code", "export-embedded-nul", "export-traversal", "export-escaped-path", "export-wrong-module", "export-extra-arg", "export-short-argv", "export-parent-class", "export-parent-role", "export-parent-start", "export-parent-expected", "export-parent-generation", "export-parent-expected-class", "export-parent-network", "export-parent-eligible", "export-parent-unconsumed", "export-parent-pending", "export-parent-clone", "export-oci-origin", "export-wrong-parent", "export-direct-root", "export-artifact-child", "export-missing-clone", "export-child-network", "export-child-pending", "export-unsealed", "export-missing-snapshot", "export-writable-root", "export-image-shadow", "export-runtime-shadow", "export-query-shadow", "export-tmp-bind", "export-tmp-exec", "export-missing-tmp", "export-no-topology", "export-other-profile", "export-canonical", "export-output-missing", "export-output-kind", "export-output-readonly", "export-output-duplicate", "export-output-class", "export-cache-root", "export-helper-short", "export-helper-punct"}) {
+    const bool result = run(scenario);
+    if (!result) fprintf(stderr, "UV query boundary failed: %s\n", scenario);
+    passed = result && passed;
+  }
+  close(output[0]); close(output[1]);
+  return passed;
+}
+
+bool VerifyPNPMNodeQueryBoundary() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const std::string& scenario) {
+    DrainDatagram(output[1]);
+    ProcessState state;
+    gvisor::common::ContextData parent;
+    parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
+    parent.set_thread_group_start_time_ns(990); parent.set_parent_thread_group_id(0);
+    parent.set_is_exec_session(true); parent.set_process_name("renamed-pnpm");
+    if (!RegisterGroup(&state, parent, ProcessState::Role::kControl,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kPNPM;
+    state.groups[99].trusted_control_network_active = true;
+    state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kPNPM};
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data() = parent;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload, id; const char* reason = nullptr;
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(),
+        output[0], &id, &state, &reason)) return false;
+    TopologyState topology;
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    topology.expected = {{"/", "oci-root", "/", "", true, false, false, false},
+        {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+        {"/haa-runtime", "helper", "/", "9p", false, false, false, false},
+        {"/tmp/haa-pnpm-input", "workspace", "/tmp", "9p", false, false, false, false}};
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
+    topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    topology.anchors.emplace(4, MountAnchor{4, "/tmp/haa-pnpm-input", "workspace"});
+    gvisor::sentry::ExecveInfo image;
+    *image.mutable_context_data() = parent;
+    auto* child = image.mutable_context_data();
+    child->set_thread_group_id(100); child->set_thread_group_start_time_ns(1000);
+    child->set_parent_thread_group_id(99); child->set_is_exec_session(true);
+    child->set_process_name("arbitrary-name");
+    image.set_binary_path("/usr/local/bin/node"); image.set_execfn("/usr/local/bin/node");
+    image.add_argv(scenario == "canonical" ? "/usr/local/bin/node" : "node"); image.add_argv("--version");
+    if (scenario == "binary") image.set_binary_path("/tmp/node");
+    if (scenario == "execfn") image.set_execfn("/tmp/node");
+    if (scenario == "argv0") image.set_argv(0, "npm");
+    if (scenario == "code") image.set_argv(1, "-e");
+    if (scenario == "alias") image.set_argv(1, "-v");
+    if (scenario == "extra-arg") image.add_argv("/tmp/artifact.js");
+    if (scenario == "short-argv") image.mutable_argv()->RemoveLast();
+    if (scenario == "parent-class") state.groups[99].current_image_class = ProcessClass::kUV;
+    if (scenario == "parent-role") state.groups[99].role = ProcessState::Role::kArtifact;
+    if (scenario == "parent-start") state.groups[99].start_time_ns++;
+    if (scenario == "parent-expected") state.expected_groups.erase(99);
+    if (scenario == "parent-generation") state.expected_groups[99].start_time_ns++;
+    if (scenario == "parent-expected-class") state.expected_groups[99].process_class = ProcessClass::kUnknown;
+    if (scenario == "parent-network") state.groups[99].trusted_control_network_active = false;
+    if (scenario == "parent-eligible") state.groups[99].root_eligible = true;
+    if (scenario == "parent-unconsumed") state.groups[99].root_consumed = false;
+    if (scenario == "parent-pending") state.groups[99].handoff_target_pending = true;
+    if (scenario == "parent-clone") state.groups[99].provenance = ProcessState::Provenance::kCloneChild;
+    if (scenario == "oci-origin") child->set_is_exec_session(false);
+    if (scenario == "wrong-parent") child->set_parent_thread_group_id(98);
+    if (scenario == "direct-root") { child->set_parent_thread_group_id(0); state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot; }
+    if (scenario == "missing-clone") state.groups[100].pnpm_node_query_candidate = false;
+    if (scenario == "artifact-child") state.groups[100].role = ProcessState::Role::kArtifact;
+    if (scenario == "child-network") state.groups[100].trusted_control_network_active = true;
+    if (scenario == "child-pending") state.groups[100].launch_target_pending = true;
+    if (scenario == "unsealed") topology.sealed = false;
+    if (scenario == "missing-snapshot") topology.snapshot_seen = false;
+    if (scenario == "writable-root") topology.expected[0].read_only = false;
+    if (scenario == "image-shadow") topology.anchors.emplace(5, MountAnchor{5, "/usr/local", "workspace"});
+    if (scenario == "runtime-shadow") topology.anchors.emplace(5, MountAnchor{5, kPNPMToolPath, "workspace"});
+    const auto* selected = scenario == "no-topology" ? nullptr : &topology;
+    const char* profile = scenario == "other-profile" ? kProfileUVResolver : kProfilePNPMResolver;
+    ProfileRegistration registration;
+    const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
+    const bool normal = scenario == "normal" || scenario == "canonical";
+    const auto& group = state.groups[100];
+    const bool query = parsed && group.pnpm_node_query_active && group.role == ProcessState::Role::kArtifact &&
+        group.current_image_class == ProcessClass::kNode && !IsTrustedControlNetwork(*child,state) &&
+        state.expected_groups.find(100) == state.expected_groups.end();
+    if (query != normal) return false;
+    if (!normal) {
+      DrainDatagram(output[1]);
+      // A rejected PNPM candidate cannot fall back to a broad CONTROL child.
+      return !parsed || scenario == "other-profile" ||
+          (state.groups[100].role == ProcessState::Role::kArtifact && state.expected_groups.find(100)==state.expected_groups.end());
+    }
+    if (!ExpectRecordExact(output[1], kFirstID, "process-exec-expected")) return false;
+    // Neither a descendant nor a second identical exec gets a fresh query.
+    *clone.mutable_context_data() = *child;
+    clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(), output[0], &id, &state, &reason)) return false;
+    if (state.groups[101].pnpm_node_query_candidate || state.groups[101].pnpm_node_query_active) return false;
+    auto descendant = image;
+    descendant.mutable_context_data()->set_thread_group_id(101);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    descendant.mutable_context_data()->set_parent_thread_group_id(100);
+    if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&state,&reason,selected) ||
+        !ExpectUnexpectedProcessRecord(output[1],kFirstID,"SENTRY_EXEC","OTHER","ARTIFACT_ROLE","ARTIFACT_GROUP") || IsTrustedControlNetwork(descendant.context_data(),state)) return false;
+    if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(),payload.size(),output[0],&id,profile,&registration,&state,&reason,selected) ||
+        !ExpectUnexpectedProcessRecord(output[1],kFirstID,"SENTRY_EXEC","OTHER","ARTIFACT_ROLE","ARTIFACT_GROUP") || IsTrustedControlNetwork(*child,state) || state.groups[100].pnpm_node_query_active) return false;
+    return true;
+  };
+  bool passed = true;
+  for (const char* scenario : {"normal","canonical","binary","execfn","argv0","code","alias","extra-arg","short-argv",
+      "parent-class","parent-role","parent-start","parent-expected","parent-generation","parent-expected-class","parent-network",
+      "parent-eligible","parent-unconsumed","parent-pending","parent-clone","oci-origin","wrong-parent","direct-root","artifact-child",
+      "missing-clone","child-network","child-pending","unsealed","missing-snapshot","writable-root","image-shadow","runtime-shadow","no-topology","other-profile"}) {
+    const bool result = run(scenario);
+    if (!result) fprintf(stderr,"PNPM Node query boundary failed: %s\n",scenario);
+    passed = result && passed;
+  }
+  close(output[0]); close(output[1]);
+  return passed;
+}
+
+bool VerifyPNPMNodeQueryReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID); parent.set_thread_group_id(99); parent.set_thread_group_start_time_ns(990);
+  parent.set_is_exec_session(true); parent.set_parent_thread_group_id(0);
+  if (!RegisterGroup(&state,parent,ProcessState::Role::kControl,ProcessState::Provenance::kDirectExecRoot,false,true)) return false;
+  state.groups[99].current_image_class=ProcessClass::kPNPM; state.groups[99].trusted_control_network_active=true;
+  state.expected_groups[99]=ProcessState::ExpectedGroup{990,ProcessClass::kPNPM};
+  auto child=parent; child.set_thread_group_id(100); child.set_thread_group_start_time_ns(1000); child.set_parent_thread_group_id(99);
+  if (!RegisterGroup(&state,child,ProcessState::Role::kArtifact,ProcessState::Provenance::kCloneChild,false,true)) return false;
+  auto& query=state.groups[100]; query.clone_creator_group_id=99; query.clone_creator_group_start_time_ns=990;
+  query.current_image_class=ProcessClass::kNode; query.pnpm_node_query_active=true;
+  const auto baseline=state;
+  gvisor::syscall::Open open; *open.mutable_context_data()=child; open.set_flags(557056);
+  MountAnchor anchor{1,"/","oci-root"};
+  auto allowed=[&](){return IsPinnedPNPMNodeQueryRead(open.context_data(),state,open.pathname(),open.flags(),kProfilePNPMResolver,&anchor);};
+  for (const char* path : {"/etc/ld.so.cache","/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30","/usr/lib/x86_64-linux-gnu/libgcc_s.so.1","/usr/lib/x86_64-linux-gnu/libm.so.6"}) {
+    open.set_pathname(path);
+    if (!allowed() || ClassifyFilesystemOpen(open,state,kProfilePNPMResolver,&anchor)!=FilesystemClass::kRuntimeRoot) return false;
+  }
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libcrypto.so.3","/usr/lib/x86_64-linux-gnu/libstdc++.so.6.evil","/tmp/libc.so.6","/proc/100/maps","/etc/passwd","/etc/ssl/openssl.cnf","/usr/local/lib/node_modules/npm/bin/npm-cli.js"}) {
+    open.set_pathname(path); if (allowed()) return false;
+  }
+  open.set_pathname("/etc/ld.so.cache");
+  for (uint64_t flags : {uint64_t{0},kOpenLargefile,kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenTruncate,kOpenAppend}) {open.set_flags(flags);if(allowed())return false;}
+  open.set_flags(557056);
+  for (const auto& wrong : {MountAnchor{2,"/etc","oci-root"},MountAnchor{2,"/","workspace"},MountAnchor{2,"/","system"}}) {anchor=wrong;if(allowed())return false;}
+  anchor=MountAnchor{1,"/","oci-root"};
+  for (const char* profile : {kProfileNPM,kProfileUVResolver,kProfileGitHub,kProfilePyPI,kProfileCargoResolver,kProfileGoResolver}) {
+    if(IsPinnedPNPMNodeQueryRead(child,state,open.pathname(),open.flags(),profile,&anchor))return false;
+  }
+  for(int mutation=0;mutation<18;mutation++) {
+    state=baseline;auto& group=state.groups[100];
+    switch(mutation) {
+      case 0:group.role=ProcessState::Role::kControl;break;
+      case 1:group.pnpm_node_query_active=false;break;
+      case 2:group.start_time_ns++;break;
+      case 3:group.provenance=ProcessState::Provenance::kDirectExecRoot;break;
+      case 4:group.trusted_control_network_active=true;break;
+      case 5:group.current_image_class=ProcessClass::kUnknown;break;
+      case 6:group.root_eligible=true;break;
+      case 7:group.root_consumed=false;break;
+      case 8:group.demotion_pending=true;break;
+      case 9:group.launch_target_pending=true;break;
+      case 10:group.handoff_target_pending=true;break;
+      case 11:state.groups[99].start_time_ns++;break;
+      case 12:state.expected_groups.erase(99);break;
+      case 13:state.groups[99].role=ProcessState::Role::kArtifact;break;
+      case 14:state.groups[99].trusted_control_network_active=false;break;
+      case 15:state.expected_groups[99].process_class=ProcessClass::kUV;break;
+      case 16:group.clone_creator_group_id=98;break;
+      case 17:state.groups[99].current_image_class=ProcessClass::kUV;break;
+    }
+    if(allowed())return false;
+  }
+  return true;
+}
+
+bool VerifyUVRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  context->set_container_id(kFirstID); context->set_thread_group_id(99);
+  context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+  context->set_is_exec_session(true); context->set_process_name("renamed-uv");
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kUV;
+  state.groups[99].trusted_control_network_active = true;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kUV};
+  const ProcessState baseline = state;
+  open.set_pathname("/proc/sys/vm/overcommit_memory"); open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto allowed = [&](const char* profile = kProfileUVResolver) {
+    return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kHelperOnly;
+  };
+  if (!allowed()) return false;
+  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/", "/etc/hosts"}) {
+    anchor.mountpoint = mount; anchor.mount_class = strcmp(mount, "/") == 0 ? "oci-root" : "system";
+    for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup",
+        "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
+        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil",
+        "/usr/lib/os-release.evil", "/etc/os-release", "/usr/lib/../lib/os-release",
+        "/usr/local/sbin/evil", "/usr/local/sbin.evil", "/usr/local//sbin", "/usr/local/./sbin",
+        "/usr/local/bin/../sbin", "/usr/bin/evil", "/bin", "/sbin", "/usr/local", "/usr",
+        "/etc/hosts.evil", "/etc/resolv.conf", "/etc/../etc/hosts"}) {
+      open.set_pathname(path); if (allowed()) return false;
+    }
+  }
+  for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release", "/etc/hosts",
+      "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"}) {
+    state = baseline;
+    open.set_pathname(path);
+    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0 || strcmp(path, "/usr/lib/os-release") == 0 ||
+        strcmp(path, "/usr/local/sbin") == 0 || strcmp(path, "/usr/local/bin") == 0 ||
+        strcmp(path, "/usr/sbin") == 0 || strcmp(path, "/usr/bin") == 0;
+    const std::string mountpoint = image ? "/" : (strcmp(path, "/dev/null") == 0 ? "/dev" :
+        (strcmp(path, "/etc/hosts") == 0 ? "/etc/hosts" : (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc")));
+    const std::string mount_class = image ? "oci-root" : "system";
+    anchor.mountpoint = mountpoint; anchor.mount_class = mount_class;
+    if (!allowed()) return false;
+    context->set_parent_thread_group_id(1); if (allowed()) return false;
+    context->set_parent_thread_group_id(0);
+    context->set_is_exec_session(false); if (allowed()) return false;
+    context->set_is_exec_session(true);
+    for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (allowed()) return false;
+    }
+    open.set_flags(557056);
+    for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
+        kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver,
+        kProfilePNPMResolver, kProfileBunResolver, kProfileBunProjectResolver}) {
+      // Existing profiles have their own authorized semantics; the UV-specific
+      // predicate must never supply them a new grant.
+      if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+    }
+    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x", "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"}) { anchor.mountpoint = mount; if (mount != mountpoint && allowed()) return false; }
+    for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/etc/hosts"}) {
+      anchor.mountpoint = root;
+      if (allowed() != (anchor.mountpoint == mountpoint)) return false;
+    }
+    anchor.mountpoint = mountpoint; anchor.mount_class = "workspace"; if (allowed()) return false;
+    anchor.mount_class = image ? "system" : "oci-root"; if (allowed()) return false;
+    anchor.mount_class = mount_class;
+    for (int scenario = 0; scenario < 11; ++scenario) {
+      state = baseline; auto& group = state.groups[99];
+      switch (scenario) {
+        case 0: group.role = ProcessState::Role::kArtifact; break;
+        case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+        case 2: group.current_image_class = ProcessClass::kUnknown; break;
+        case 3: group.root_eligible = true; break;
+        case 4: group.root_consumed = false; break;
+        case 5: group.trusted_control_network_active = false; break;
+        case 6: group.demotion_pending = true; break;
+        case 7: group.launch_target_pending = true; break;
+        case 8: group.handoff_target_pending = true; break;
+        case 9: group.start_time_ns++; break;
+        case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+      }
+      if (allowed()) return false;
+    }
+  }
+  return true;
+}
+
+bool VerifyPNPMRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  context->set_container_id(kFirstID); context->set_thread_group_id(99);
+  context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+  context->set_is_exec_session(true); context->set_process_name("renamed-pnpm");
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kPNPM;
+  state.groups[99].trusted_control_network_active = true;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kPNPM};
+  const ProcessState baseline = state;
+  struct ReadCase { const char* path; const char* mount; const char* mount_class; };
+  auto run = [&](const ReadCase& read) {
+  state = baseline;
+  const char* exact_path = read.path;
+  const char* exact_mount = read.mount;
+  const char* exact_class = read.mount_class;
+  open.set_pathname(exact_path); open.set_flags(557056);
+  MountAnchor anchor{10, exact_mount, exact_class};
+  auto allowed = [&]() { return IsPinnedPNPMRuntimeRead(*context, state, open.pathname(), open.flags(), kProfilePNPMResolver, &anchor); };
+  if (!allowed() || ClassifyFilesystemOpen(open, state, kProfilePNPMResolver, &anchor) != FilesystemClass::kHelperOnly) return false;
+  context->set_parent_thread_group_id(1); if (allowed()) return false;
+  context->set_parent_thread_group_id(0); context->set_is_exec_session(false); if (allowed()) return false;
+  context->set_is_exec_session(true);
+  for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) { open.set_flags(flags); if (allowed()) return false; }
+  open.set_flags(557056);
+  for (const char* profile : {kProfileUVResolver, kProfileNPM, kProfileGitHub, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126, kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+    if (IsPinnedPNPMRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+  }
+  for (const char* path : {"/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/../x86_64-linux-gnu/librt.so.1", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/kernel/hostname", "/proc/sys/kernel/osrelease.evil", "/proc/sys/kernel/../kernel/osrelease", "/dev/random", "/dev/zero", "/dev/urandom.evil", "/dev/../dev/urandom", "/haa-runtime/uv", "/haa-runtime/pnpm.evil", "/haa-runtime/./pnpm", "/sys/devices/system/cpu/possible", "/sys/devices/system/cpu/online.evil", "/sys/devices/system/cpu/../cpu/online", "/sys/fs/cgroup/cpu/cpu.stat", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/sys/fs/cgroup/cpu/../cpu/cpu.cfs_period_us", "/proc/self/mountinfo", "/proc/1/mountinfo", "/proc/100/mountinfo", "/proc/99/mountinfo.evil", "/proc/self/cgroup", "/proc/1/cgroup", "/proc/100/cgroup", "/proc/99/cgroup.evil", "/etc/hosts", "/etc/gai.conf.evil", "/etc//gai.conf", "/etc/../etc/gai.conf", "/tmp/gai.conf", "/etc/hosts.evil", "/etc//hosts", "/etc/../etc/hosts", "/tmp/hosts", "/etc/resolv.conf.evil", "/etc//resolv.conf", "/etc/../etc/resolv.conf", "/tmp/resolv.conf", "/etc/host.conf.evil", "/etc/../etc/host.conf", "/etc//host.conf", "/tmp/host.conf", "/etc/nsswitch.conf.evil", "/etc/../etc/nsswitch.conf", "/etc//nsswitch.conf", "/tmp/nsswitch.conf", "/proc/self/maps", "/proc/1/maps", "/proc/100/maps", "/proc/99/maps.evil", "/tmp/librt.so.1"}) {
+    open.set_pathname(path); if (strcmp(path,exact_path)!=0 && allowed()) return false;
+  }
+  open.set_pathname(exact_path);
+  for (const char* mount : {"/", "/etc/resolv.conf", "/etc/hosts", "/usr/lib", "/usr/lib/x86_64-linux-gnu", "/haa-runtime", "/proc", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/other", "/sys/devices/system/cpu"}) { anchor.mountpoint = mount; if (strcmp(mount,exact_mount)!=0 && allowed()) return false; }
+  anchor.mountpoint = exact_mount;
+  for (const char* mount_class : {"workspace", "system", "helper", "oci-root"}) { anchor.mount_class = mount_class; if (strcmp(mount_class,exact_class)!=0 && allowed()) return false; }
+  anchor.mount_class = exact_class;
+  for (int scenario = 0; scenario < 11; ++scenario) {
+    state = baseline; auto& group = state.groups[99];
+    switch (scenario) {
+      case 0: group.role = ProcessState::Role::kArtifact; break;
+      case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: group.current_image_class = ProcessClass::kUnknown; break;
+      case 3: group.root_eligible = true; break;
+      case 4: group.root_consumed = false; break;
+      case 5: group.trusted_control_network_active = false; break;
+      case 6: group.demotion_pending = true; break;
+      case 7: group.launch_target_pending = true; break;
+      case 8: group.handoff_target_pending = true; break;
+      case 9: group.start_time_ns++; break;
+      case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+    }
+    if (allowed()) return false;
+  }
+  return true;
+  };
+  const ReadCase reads[] = {
+    {"/usr/lib/x86_64-linux-gnu/librt.so.1", "/", "oci-root"},
+    {"/etc/nsswitch.conf", "/", "oci-root"},
+    {"/etc/host.conf", "/", "oci-root"},
+    {"/etc/gai.conf", "/", "oci-root"},
+    {"/etc/resolv.conf", "/etc/resolv.conf", "system"},
+    {"/etc/hosts", "/etc/hosts", "system"},
+    {"/proc/99/maps", "/proc", "system"},
+    {"/proc/sys/vm/overcommit_memory", "/proc", "system"},
+    {"/proc/99/cgroup", "/proc", "system"},
+    {"/proc/99/mountinfo", "/proc", "system"},
+    {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu", "system"},
+    {"/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/sys/fs/cgroup/cpu", "system"},
+    {"/sys/devices/system/cpu/online", "/sys", "system"},
+    {kPNPMToolPath, "/haa-runtime", "helper"},
+    {"/dev/urandom", "/dev", "system"},
+    {"/dev/null", "/dev", "system"},
+    {"/proc/sys/kernel/osrelease", "/proc", "system"},
+  };
+  for (const auto& read : reads) if (!run(read)) return false;
+  return true;
+}
+
+bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolver) {
+  ProcessState state;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  context->set_container_id(kFirstID); context->set_thread_group_id(99);
+  context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+  context->set_is_exec_session(true); context->set_process_name("renamed-bun");
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kBun;
+  state.groups[99].trusted_control_network_active = true;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kBun};
+  const ProcessState baseline = state;
+  struct ReadCase { const char* path; const char* mount; const char* mount_class; uint64_t flags; };
+  auto run = [&](const ReadCase& read) {
+  state = baseline;
+  const char* exact_path = read.path;
+  const char* exact_mount = read.mount;
+  const char* exact_class = read.mount_class;
+  open.set_pathname(exact_path); open.set_flags(read.flags);
+  MountAnchor anchor{10, exact_mount, exact_class};
+  auto allowed = [&]() { return IsPinnedBunRuntimeRead(*context, state, open.pathname(), open.flags(), selected_profile, &anchor); };
+  if (!allowed() || ClassifyFilesystemOpen(open, state, selected_profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+  if ((strcmp(exact_path,"/")==0 || strcmp(exact_path,"/sys/devices/system/cpu/online")==0 || strcmp(exact_path,"/proc/99/cgroup")==0 || strcmp(exact_path,"/usr/share/zoneinfo/Etc/UTC")==0 || strcmp(exact_path,"/etc/host.conf")==0 || strcmp(exact_path,"/etc/nsswitch.conf")==0 || strcmp(exact_path,"/etc/gai.conf")==0 || strcmp(exact_path,"/etc/resolv.conf")==0 || strcmp(exact_path,"/etc/hosts")==0) && IsPinnedBunRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileBunResolver,&anchor)) return false;
+  context->set_parent_thread_group_id(1); if (allowed()) return false;
+  context->set_parent_thread_group_id(0); context->set_is_exec_session(false); if (allowed()) return false;
+  context->set_is_exec_session(true);
+  for (uint64_t flags : {uint64_t{0}, uint64_t{32768}, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) { if (flags == read.flags) continue; open.set_flags(flags); if (allowed()) return false; }
+  open.set_flags(read.flags);
+  for (const char* profile : {kProfilePNPMResolver, kProfileUVResolver, kProfileNPM, kProfileGitHub, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126, kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+    if (IsPinnedBunRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+  }
+  for (const char* path : {"/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/../x86_64-linux-gnu/librt.so.1", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/kernel/hostname", "/proc/sys/kernel/osrelease.evil", "/proc/sys/kernel/../kernel/osrelease", "/dev/random", "/dev/zero", "/dev/urandom.evil", "/dev/../dev/urandom", "/haa-runtime/uv", "/haa-runtime/pnpm.evil", "/haa-runtime/./pnpm", "/sys/devices/system/cpu/possible", "/sys/devices/system/cpu/online.evil", "/sys/devices/system/cpu/../cpu/online", "/sys/fs/cgroup/cpu/cpu.stat", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/sys/fs/cgroup/cpu/../cpu/cpu.cfs_period_us", "/proc/self/mountinfo", "/proc/1/mountinfo", "/proc/100/mountinfo", "/proc/99/mountinfo.evil", "/proc/self/cgroup", "/proc/1/cgroup", "/proc/100/cgroup", "/proc/99/cgroup.evil", "/etc/hosts", "/etc/gai.conf.evil", "/etc//gai.conf", "/etc/../etc/gai.conf", "/tmp/gai.conf", "/etc/hosts.evil", "/etc//hosts", "/etc/../etc/hosts", "/tmp/hosts", "/etc/resolv.conf.evil", "/etc//resolv.conf", "/etc/../etc/resolv.conf", "/tmp/resolv.conf", "/etc/host.conf.evil", "/etc/../etc/host.conf", "/etc//host.conf", "/tmp/host.conf", "/etc/nsswitch.conf.evil", "/etc/../etc/nsswitch.conf", "/etc//nsswitch.conf", "/tmp/nsswitch.conf", "/proc/self/maps", "/proc/1/maps", "/proc/100/maps", "/proc/99/maps.evil", "/tmp/librt.so.1", "/usr/share/zoneinfo/Etc/UTC.evil", "/usr/share/zoneinfo/Etc/../Etc/UTC", "/usr/share/zoneinfo/UTC", "/etc/localtime"}) {
+    open.set_pathname(path); if (strcmp(path,exact_path)!=0 && allowed()) return false;
+  }
+  open.set_pathname(exact_path);
+  for (const char* mount : {"/", "/etc/resolv.conf", "/etc/hosts", "/usr/lib", "/usr/lib/x86_64-linux-gnu", "/haa-runtime", "/proc", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/other", "/sys/devices/system/cpu"}) { anchor.mountpoint = mount; if (strcmp(mount,exact_mount)!=0 && allowed()) return false; }
+  anchor.mountpoint = exact_mount;
+  for (const char* mount_class : {"workspace", "system", "helper", "oci-root"}) { anchor.mount_class = mount_class; if (strcmp(mount_class,exact_class)!=0 && allowed()) return false; }
+  anchor.mount_class = exact_class;
+  for (int scenario = 0; scenario < 11; ++scenario) {
+    state = baseline; auto& group = state.groups[99];
+    switch (scenario) {
+      case 0: group.role = ProcessState::Role::kArtifact; break;
+      case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: group.current_image_class = ProcessClass::kPNPM; break;
+      case 3: group.root_eligible = true; break;
+      case 4: group.root_consumed = false; break;
+      case 5: group.trusted_control_network_active = false; break;
+      case 6: group.demotion_pending = true; break;
+      case 7: group.launch_target_pending = true; break;
+      case 8: group.handoff_target_pending = true; break;
+      case 9: group.start_time_ns++; break;
+      case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+    }
+    if (allowed()) return false;
+  }
+  return true;
+  };
+  std::vector<ReadCase> reads = {{"/proc/sys/vm/overcommit_memory", "/proc", "system", 32768}, {"/proc/99/maps", "/proc", "system", 557056}};
+  if (strcmp(selected_profile,kProfileBunProjectResolver)==0) { reads.push_back({"/sys/devices/system/cpu/online", "/sys", "system", 557056}); reads.push_back({"/proc/99/cgroup", "/proc", "system", 557056}); reads.push_back({"/usr/share/zoneinfo/Etc/UTC", "/", "oci-root", 557056}); reads.push_back({"/etc/host.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/nsswitch.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/gai.conf", "/", "oci-root", 557056}); reads.push_back({"/etc/resolv.conf", "/etc/resolv.conf", "system", 557056}); reads.push_back({"/etc/hosts", "/etc/hosts", "system", 557056}); }
+  if (strcmp(selected_profile,kProfileBunProjectResolver)==0) reads.push_back({"/", "/", "oci-root", 622592});
+  for (const auto& read : reads) if (!run(read)) return false;
+  return true;
+}
+
+bool VerifyBunArtifactRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID); parent.set_thread_group_id(98); parent.set_thread_group_start_time_ns(980);
+  if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  *context = parent; context->set_thread_group_id(99); context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(98);
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kBun;
+  state.groups[99].clone_creator_group_id = 98; state.groups[99].clone_creator_group_start_time_ns = 980;
+  const ProcessState baseline = state;
+  struct Read { const char* path; const char* mount; const char* kind; uint64_t flags; };
+  for (const auto& read : std::vector<Read>{{"/","/","oci-root",622592},{"/etc/ld.so.cache","/","oci-root",557056},
+       {"/usr/lib/x86_64-linux-gnu/libc.so.6","/","oci-root",557056},
+       {"/proc/sys/vm/overcommit_memory","/proc","system",32768},
+       {"/proc/sys/vm/mmap_min_addr","/proc","system",32768},
+       {"/proc/99/statm","/proc","system",32768},
+       {"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+       {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+       {"/proc/99/maps","/proc","system",557056},{"/proc/99/cgroup","/proc","system",557056},
+       {"/sys/devices/system/cpu/online","/sys","system",557056},
+       {"/usr/share/zoneinfo/Etc/UTC","/","oci-root",557056}}) {
+    state = baseline; open.set_pathname(read.path); open.set_flags(read.flags);
+    MountAnchor anchor{10,read.mount,read.kind};
+    auto allowed = [&]() { return IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
+    if (!allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
+    for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
+      if (flags==read.flags) continue; open.set_flags(flags); if (allowed()) return false;
+    }
+    open.set_flags(read.flags);
+    for (const char* path : {"/proc/1/statm","/proc/100/statm","/proc/self/statm","/proc/100/maps","/proc/1/cgroup",
+         "/sys/fs/cgroup/memory/foreign/memory.limit_in_bytes","/etc/passwd","/etc/hosts","/dev/random"}) {
+      open.set_pathname(path); if (allowed()) return false;
+    }
+    open.set_pathname(read.path);
+    for (const char* profile : {kProfileBunResolver,kProfileBunProjectResolver,kProfilePNPMResolver,kProfileUVResolver,kProfileGitHub,kProfilePyPI,kProfileGoResolver}) {
+      if (IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),profile,&anchor)) return false;
+    }
+    open.set_pathname(std::string(read.path)+".evil"); if (allowed()) return false; open.set_pathname(read.path);
+    anchor.mount_class="workspace"; if (allowed()) return false; anchor.mount_class=read.kind;
+    anchor.mountpoint="/foreign"; if (allowed()) return false; anchor.mountpoint=read.mount;
+    for (int scenario=0;scenario<13;++scenario) {
+      state=baseline; auto& group=state.groups[99];
+      switch(scenario) {
+        case 0: group.role=ProcessState::Role::kControl; break;
+        case 1: group.provenance=ProcessState::Provenance::kDirectExecRoot; break;
+        case 2: group.current_image_class=ProcessClass::kNode; break;
+        case 3: group.root_eligible=true; break;
+        case 4: group.root_consumed=false; break;
+        case 5: group.trusted_control_network_active=true; break;
+        case 6: group.demotion_pending=true; break;
+        case 7: group.launch_target_pending=true; break;
+        case 8: group.handoff_target_pending=true; break;
+        case 9: group.start_time_ns++; break;
+        case 10: state.groups[98].start_time_ns++; break;
+        case 11: group.clone_creator_group_id=97; break;
+        case 12: state.expected_groups[99]=ProcessState::ExpectedGroup{990,ProcessClass::kBun}; break;
+      }
+      if (allowed()) return false;
+    }
+  }
+  return true;
+}
+
+bool VerifyBunArtifactRuntimeImageAndCommandBoundary() {
+  auto topology=PNPMTargetLifecycleTestTopology(true);
+  topology.expected[2].filesystem_type="9p"; topology.expected[2].nosuid=false;
+  if (!IsBunArtifactRuntimeImage(&topology,kBunToolPath) || IsBunArtifactRuntimeImage(nullptr,kBunToolPath) ||
+      IsBunArtifactRuntimeImage(&topology,"/tmp/bun") || ProcessClassForPath(kBunToolPath,kProfileNPM)!=ProcessClass::kBun) return false;
+  gvisor::sentry::ExecveInfo boundary;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath),std::string(kLaunchMode),TestAdmissionNonce(350,3500),
+       std::string("/bin/sh"),std::string("-ceu"),std::string(kBunRuntimeTargetLifecycleCommand),
+       std::string("helox-bun-target"),std::string(kBunTargetProjectMount)+"/project/node_modules/pkg"}) boundary.add_argv(value);
+  if (!IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&topology)) return false;
+  const auto ordinary=PNPMTargetLifecycleTestTopology(true);
+  if (IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&ordinary)) return false;
+  for(int scenario=0;scenario<9;++scenario) {
+    auto changed=topology;
+    switch(scenario) {
+      case 0: changed.sealed=false; break;
+      case 1: changed.snapshot_seen=false; break;
+      case 2: changed.expected[2].filesystem_type="tmpfs"; break;
+      case 3: changed.expected[0].read_only=false; break;
+      case 4: changed.expected.back().filesystem_type="tmpfs"; break;
+      case 5: changed.expected.back().noexec=true; break;
+      case 6: changed.anchors.erase(4); break;
+      case 7: changed.anchors.emplace(5,MountAnchor{5,kBunToolPath,"workspace"}); break;
+      case 8: changed.expected.back().mountpoint="/foreign"; break;
+    }
+    if(IsBunArtifactRuntimeImage(&changed,kBunToolPath) || IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&changed))return false;
+  }
+  for(int i=0;i<boundary.argv_size();++i){auto changed=boundary;changed.set_argv(i,"foreign");if(IsExactBunTargetLifecycleBoundary(changed,kProfileNPM,&topology))return false;}
+  return true;
+}
+
+bool VerifyBunProjectLockInstallShapeBoundary() {
+  gvisor::sentry::ExecveInfo message;
+  message.set_binary_path(kBunToolPath); message.set_execfn(kBunToolPath);
+  for (const char* argument : {"/haa-runtime/bun", "--cwd=/tmp/haa-bun-input/project", "install", "--lockfile-only", "--ignore-scripts", "--no-env-file", "--registry=https://registry.npmjs.org/", "--cache-dir=/tmp/haa-bun-input/cache", "--backend=copyfile", "--linker=hoisted", "--save-text-lockfile", "--no-progress", "--no-summary"}) message.add_argv(argument);
+  if (!IsExactBunProjectLockInstall(message) || IsExactBunQuery(message)) return false;
+  for (int i=0; i<message.argv_size(); ++i) {
+    auto changed=message; changed.set_argv(i,"foreign");
+    if (IsExactBunProjectLockInstall(changed)) return false;
+  }
+  for (const char* path : {"bun", "/tmp/bun", "/haa-runtime/./bun", "/haa-runtime/pnpm"}) {
+    auto changed=message; changed.set_binary_path(path); if (IsExactBunProjectLockInstall(changed)) return false;
+    changed=message; changed.set_execfn(path); if (IsExactBunProjectLockInstall(changed)) return false;
+  }
+  auto extra=message; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
+  auto missing=message; missing.mutable_argv()->RemoveLast(); if (IsExactBunProjectLockInstall(missing)) return false;
+  auto query=message; query.clear_argv(); query.add_argv(kBunToolPath); query.add_argv("--version");
+  if (!IsExactBunQuery(query) || IsExactBunProjectLockInstall(query)) return false;
+  auto frozen=message; frozen.add_argv("--frozen-lockfile");
+  if (!IsExactBunProjectLockInstall(frozen)) return false;
+  for (const bool seed : {false,true}) {
+    auto prepared=message;
+    if (seed) prepared.set_argv(1,"--cwd=/tmp/haa-bun-input/seed");
+    else prepared.set_argv(3,"--offline");
+    prepared.add_argv(seed ? "--offline" : "--frozen-lockfile");
+    if (!IsExactBunProjectLockInstall(prepared) || IsExactBunQuery(prepared)) return false;
+    for (int i=0;i<prepared.argv_size();++i) {
+      auto changed=prepared; changed.set_argv(i,"foreign");
+      if (IsExactBunProjectLockInstall(changed)) return false;
+    }
+    for (const char* intent : {"add","update","run","x"}) {
+      auto changed=prepared; changed.set_argv(2,intent); if (IsExactBunProjectLockInstall(changed)) return false;
+    }
+    auto extra=prepared; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
+    auto missing=prepared; missing.mutable_argv()->RemoveLast(); if (IsExactBunProjectLockInstall(missing)) return false;
+  }
+  for (const char* intent : {"add", "update"}) {
+    auto selected=message; selected.set_argv(2,intent);
+    if (IsExactBunProjectLockInstall(selected) != (strcmp(intent,"update")==0)) return false;
+    selected.add_argv("--"); selected.add_argv(strcmp(intent,"add")==0 ? "@scope/probe@^1.0.0" : "@scope/probe");
+    if (!IsExactBunProjectLockInstall(selected) || IsExactBunQuery(selected)) return false;
+    for (const char* bad : {"--eval", "../escape", "/tmp/pkg", "file:pkg", "https://evil.test/pkg", "npm:alias", "probe\nnext", "probe@", "@scope/", "UPPER"}) {
+      auto changed=selected; changed.set_argv(14,bad);
+      if (IsExactBunProjectLockInstall(changed)) return false;
+    }
+    if (strcmp(intent,"update")==0) { auto changed=selected; changed.set_argv(14,"probe@1.0.0"); if (IsExactBunProjectLockInstall(changed)) return false; }
+    for (int i=0;i<14;++i) { auto changed=selected; changed.set_argv(i,"foreign"); if (IsExactBunProjectLockInstall(changed)) return false; }
+    auto extra=selected; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
+  }
+  auto run=message; run.clear_argv();
+  for(const char* arg : {kBunToolPath,"--cwd=/tmp/haa-bun-input","x","--ignore-scripts","--registry=https://registry.npmjs.org/","--package=typescript@5.9.3","/haa-runtime/helox-bunx-inert-query"}) run.add_argv(arg);
+  if(!IsExactBunRunSelection(run) || IsExactBunProjectLockInstall(run)) return false;
+  for(int i=0;i<run.argv_size();++i) { auto changed=run; changed.set_argv(i,"foreign"); if(IsExactBunRunSelection(changed)) return false; }
+  for(const char* bad : {"--package=", "--package=file:pkg", "--package=../pkg", "--package=https://evil.test/pkg", "--package=pkg\nnext"}) {
+    auto changed=run; changed.set_argv(5,bad); if(IsExactBunRunSelection(changed)) return false;
+  }
+  for(const char* image : {"bun","/tmp/bun","/haa-runtime/./bun"}) {
+    auto changed=run; changed.set_binary_path(image); if(IsExactBunRunSelection(changed)) return false;
+    changed=run; changed.set_execfn(image); if(IsExactBunRunSelection(changed)) return false;
+  }
+  auto run_extra=run; run_extra.add_argv("--trust"); if(IsExactBunRunSelection(run_extra)) return false;
+  auto run_missing=run; run_missing.mutable_argv()->RemoveLast(); if(IsExactBunRunSelection(run_missing)) return false;
+  return true;
+}
+
+bool VerifyBunRunPathHandleBoundary(const gvisor::common::ContextData& context, const ProcessState& baseline,
+    const TopologyState& base_topology, int output) {
+  for(const char* scenario : {"normal","legacy-syscall","read-flags","write-flags","failed","errno","relative","outside-cache",
+      "traversal","missing-mount","wrong-mount","shadow","unsealed","profile","root","inactive","role","image",
+      "creator-start","creator-gone","missing-expected","pending-mismatch"}) {
+    auto state=baseline; auto topology=base_topology;
+    topology.anchors.emplace(3,MountAnchor{3,kBunTargetProjectMount,"workspace"});
+    topology.expected.push_back(ExpectedMount{kBunTargetProjectMount,"workspace","/","9p",false,true,true,false});
+    gvisor::syscall::OpenResult result;
+    *result.mutable_context_data()=context;
+    auto* c=result.mutable_context_data(); c->set_thread_id(100);c->set_thread_start_time_ns(1000);
+    result.set_sysno(437);result.set_flags(2654208);result.set_success(true);result.set_mount_id(3);
+    result.set_resolved_pathname("/tmp/haa-bun-input/cache/.bunx-1000/typescript@5.9.3/node_modules/typescript/bin");
+    const char* profile=kProfileBunProjectResolver;
+    if(strcmp(scenario,"legacy-syscall")==0) result.set_sysno(257);
+    else if(strcmp(scenario,"read-flags")==0) result.set_flags(557056);
+    else if(strcmp(scenario,"write-flags")==0) result.set_flags(2654208|kOpenWriteOnly);
+    else if(strcmp(scenario,"failed")==0) result.set_success(false);
+    else if(strcmp(scenario,"errno")==0) result.set_errorno(1);
+    else if(strcmp(scenario,"relative")==0) result.set_resolved_pathname("node_modules/pkg/bin");
+    else if(strcmp(scenario,"outside-cache")==0) result.set_resolved_pathname("/tmp/haa-bun-input/cache/typescript/bin");
+    else if(strcmp(scenario,"traversal")==0) result.set_resolved_pathname("/tmp/haa-bun-input/cache/.bunx-1000/../escape");
+    else if(strcmp(scenario,"missing-mount")==0) result.set_mount_id(99);
+    else if(strcmp(scenario,"wrong-mount")==0) topology.anchors[3].mount_class="system";
+    else if(strcmp(scenario,"shadow")==0) topology.anchors.emplace(4,MountAnchor{4,"/tmp/haa-bun-input/cache","workspace"});
+    else if(strcmp(scenario,"unsealed")==0) topology.sealed=false;
+    else if(strcmp(scenario,"profile")==0) profile=kProfileNPM;
+    else if(strcmp(scenario,"root")==0) {c->set_thread_group_id(99);c->set_thread_group_start_time_ns(990);c->set_parent_thread_group_id(0);}
+    else if(strcmp(scenario,"inactive")==0) state.groups[100].bun_run_install_active=false;
+    else if(strcmp(scenario,"role")==0) state.groups[100].role=ProcessState::Role::kControl;
+    else if(strcmp(scenario,"image")==0) state.groups[100].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"creator-start")==0) state.groups[99].start_time_ns++;
+    else if(strcmp(scenario,"creator-gone")==0) state.groups.erase(99);
+    else if(strcmp(scenario,"missing-expected")==0) state.expected_groups.erase(100);
+    else if(strcmp(scenario,"pending-mismatch")==0) state.pending_opens.emplace(std::make_pair(100,1000),ProcessState::PendingOpen{100,1000,257,2654208,false});
+    NormalizedCounts counts; std::string payload,id;const char* reason=nullptr;
+    const bool parsed=result.SerializeToString(&payload) && ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+    const bool normal=strcmp(scenario,"normal")==0;
+    if(parsed!=normal || counts.workspace_access!=(normal?1:0) || (!normal && strcmp(scenario,"pending-mismatch")==0 && state.pending_opens.empty())) {
+      fprintf(stderr,"Bun openat2 path-handle scenario failed: %s\n",scenario);return false;
+    }
+  }
+  return true;
+}
+
+bool VerifyBunRunInstallChildBoundary(const gvisor::common::ContextData& root, const ProcessState& baseline,
+    const TopologyState& baseline_topology, const ProfileRegistration& baseline_registration, int output, int reader) {
+  for (const char* scenario : {"normal", "argv0", "argv1", "argv2", "argv3", "argv4", "argv5", "argv6", "argv7", "cache-mode",
+      "extra", "missing", "execfn", "image", "parent", "creator-start", "creator-image", "creator-package",
+      "role", "candidate", "profile", "shadow", "reexec", "descendant", "descendant-foreign"}) {
+    ProcessState state=baseline;
+    TopologyState topology=baseline_topology;
+    auto registration=baseline_registration;
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data()=root;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload,id; const char* reason=nullptr;
+    if(!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)) return false;
+    gvisor::sentry::ExecveInfo event;
+    *event.mutable_context_data()=root;
+    auto* context=event.mutable_context_data();
+    context->set_thread_group_id(100); context->set_thread_group_start_time_ns(1000); context->set_parent_thread_group_id(99);
+    event.set_binary_path(kBunToolPath); event.set_execfn(kBunToolPath);
+    const auto& package=baseline.groups.at(99).bun_run_package;
+    for(const char* arg : {kBunToolPath,"add",package.c_str(),"--no-summary"}) event.add_argv(arg);
+    const bool bare=package.rfind('@')==std::string::npos || package.rfind('@')==0;
+    if(bare) event.add_argv("--no-cache");
+    for(const char* arg : {"--force","--ignore-scripts","--registry=https://registry.npmjs.org/"}) event.add_argv(arg);
+    const char* profile=kProfileBunProjectResolver;
+    if(strncmp(scenario,"argv",4)==0) {
+      const int index=scenario[4]-'0'; if(index>=event.argv_size()) continue;
+      event.set_argv(index,"foreign");
+    }
+    else if(strcmp(scenario,"cache-mode")==0) { if(bare) event.mutable_argv()->DeleteSubrange(4,1); else event.add_argv("--no-cache"); }
+    else if(strcmp(scenario,"extra")==0) event.add_argv("--trust");
+    else if(strcmp(scenario,"missing")==0) event.mutable_argv()->RemoveLast();
+    else if(strcmp(scenario,"execfn")==0) event.set_execfn("bun");
+    else if(strcmp(scenario,"image")==0) event.set_binary_path("/tmp/bun");
+    else if(strcmp(scenario,"parent")==0) context->set_parent_thread_group_id(98);
+    else if(strcmp(scenario,"creator-start")==0) state.groups[99].start_time_ns++;
+    else if(strcmp(scenario,"creator-image")==0) state.groups[99].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"creator-package")==0) state.groups[99].bun_run_package="other@1.0.0";
+    else if(strcmp(scenario,"role")==0) state.groups[100].role=ProcessState::Role::kControl;
+    else if(strcmp(scenario,"candidate")==0) state.groups[100].bun_run_install_candidate=false;
+    else if(strcmp(scenario,"profile")==0) profile=kProfileBunResolver;
+    else if(strcmp(scenario,"shadow")==0) topology.anchors.emplace(3,MountAnchor{3,kBunToolPath,"workspace"});
+    auto parse=[&]() { return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(),payload.size(),output,&id,profile,&registration,&state,&reason,&topology); };
+    const bool positive=strcmp(scenario,"normal")==0 || strcmp(scenario,"reexec")==0 || strncmp(scenario,"descendant",10)==0;
+    const bool parsed=parse();
+    if(!positive) {
+      if(parsed || (strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0)) { fprintf(stderr,"Bun child negative failed: %s\n",scenario); return false; }
+      continue;
+    }
+    if(!parsed || !ExpectRecordExact(reader,kFirstID,"process-exec-expected") ||
+        IsTrustedControlNetwork(*context,state) || !(strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0) ||
+        state.groups[100].role!=ProcessState::Role::kArtifact || !state.groups[100].bun_run_package.empty() || state.groups[100].bun_run_install_candidate) return false;
+    for(const char* other : {kProfileBunResolver,kProfileNPM,kProfilePNPMResolver,kProfileUVResolver})
+      if((strcmp(ResolverNetworkKind(*context,state,other),"trusted-bun-install-network")==0)) return false;
+    gvisor::syscall::Connect connect;
+    *connect.mutable_context_data()=*context;
+    sockaddr_in address{}; address.sin_family=AF_INET; address.sin_port=htons(443);
+    connect.set_address(std::string(reinterpret_cast<const char*>(&address),sizeof(address)));
+    if(!connect.SerializeToString(&payload) || !ParseConnectAndSend(payload.data(),payload.size(),output,&id,profile,state,&reason) ||
+        !ExpectTrustedNetworkRecord(reader,kFirstID,"CONNECT","INET","ARTIFACT_GROUP","OTHER","trusted-bun-install-network")) return false;
+    const MountAnchor image_root{8,"/","oci-root"};
+    if(!IsPinnedBunRuntimeRead(*context,state,"/etc/ld.so.cache",557056,profile,&image_root) ||
+        IsPinnedBunRuntimeRead(*context,state,"/etc/ld.so.cache",kOpenWriteOnly,profile,&image_root) ||
+        IsPinnedBunRuntimeRead(*context,state,"/tmp/libc.so.6",557056,profile,&image_root)) return false;
+    const MountAnchor proc{7,"/proc","system"};
+    if(!IsPinnedBunRuntimeRead(*context,state,"/proc/100/maps",557056,profile,&proc) ||
+        IsPinnedBunRuntimeRead(*context,state,"/proc/99/maps",557056,profile,&proc) ||
+        IsPinnedBunRuntimeRead(*context,state,"/proc/100/maps",kOpenWriteOnly,profile,&proc)) return false;
+    if(strcmp(scenario,"normal")==0 && !VerifyBunRunPathHandleBoundary(*context,state,topology,output)) return false;
+    if(strcmp(scenario,"reexec")==0 && parse()) return false;
+    if(strncmp(scenario,"descendant",10)==0) {
+      *clone.mutable_context_data()=*context;
+      clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+      if(!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)) return false;
+      context->set_thread_group_id(101); context->set_thread_group_start_time_ns(1010); context->set_parent_thread_group_id(100);
+      if((strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0) || state.groups[101].bun_run_install_candidate) return false;
+      if(strcmp(scenario,"descendant-foreign")==0) {
+        event.set_binary_path("/tmp/package-program"); event.set_execfn("/tmp/package-program");
+        if(!parse() || !ExpectUnexpectedProcessRecord(reader,kFirstID,"SENTRY_EXEC","OTHER","ARTIFACT_ROLE","ARTIFACT_GROUP") ||
+            (strcmp(ResolverNetworkKind(*context,state,profile),"trusted-bun-install-network")==0)) return false;
+      } else if(parse()) return false;
+    }
+  }
+  return true;
+}
+
+// The pinned kernel has no entry point for openat2. This narrow fixture uses
+// the actual offline install's successful project bin handle, never a file read.
+bool VerifyBunOfflinePathHandleBoundary(const gvisor::common::ContextData& context,
+    const ProcessState& baseline, const TopologyState& base_topology, int output) {
+  for (const char* scenario : {"normal", "legacy", "read", "write", "failed", "errno", "outside", "cache",
+      "relative", "traversal", "mount", "mount-class", "shadow", "unsealed", "profile", "role", "clone",
+      "image", "start", "expected", "expected-start", "expected-class", "inactive", "network-inactive",
+      "root-eligible", "root-unconsumed", "handoff", "demotion", "root-pending", "not-exec-session", "parent", "pending-mismatch"}) {
+    auto state=baseline; auto topology=base_topology;
+    topology.anchors.emplace(3,MountAnchor{3,kBunTargetProjectMount,"workspace"});
+    topology.expected.push_back(ExpectedMount{kBunTargetProjectMount,"workspace","/","9p",false,true,true,false});
+    gvisor::syscall::OpenResult result; *result.mutable_context_data()=context;
+    auto* c=result.mutable_context_data(); c->set_thread_id(99);c->set_thread_start_time_ns(990);
+    result.set_sysno(437);result.set_flags(2654208);result.set_success(true);result.set_mount_id(3);
+    result.set_resolved_pathname("/tmp/haa-bun-input/project/node_modules/typescript/bin");
+    const char* profile=kProfileBunProjectResolver;
+    if(strcmp(scenario,"legacy")==0)result.set_sysno(257);
+    else if(strcmp(scenario,"read")==0)result.set_flags(557056);
+    else if(strcmp(scenario,"write")==0)result.set_flags(2654208|kOpenWriteOnly);
+    else if(strcmp(scenario,"failed")==0)result.set_success(false);
+    else if(strcmp(scenario,"errno")==0)result.set_errorno(1);
+    else if(strcmp(scenario,"outside")==0)result.set_resolved_pathname("/etc/passwd");
+    else if(strcmp(scenario,"cache")==0)result.set_resolved_pathname("/tmp/haa-bun-input/cache/typescript/bin");
+    else if(strcmp(scenario,"relative")==0)result.set_resolved_pathname("node_modules/typescript/bin");
+    else if(strcmp(scenario,"traversal")==0)result.set_resolved_pathname("/tmp/haa-bun-input/project/node_modules/../escape");
+    else if(strcmp(scenario,"mount")==0)result.set_mount_id(99);
+    else if(strcmp(scenario,"mount-class")==0)topology.anchors[3].mount_class="system";
+    else if(strcmp(scenario,"shadow")==0)topology.anchors.emplace(4,MountAnchor{4,"/tmp/haa-bun-input/project","workspace"});
+    else if(strcmp(scenario,"unsealed")==0)topology.sealed=false;
+    else if(strcmp(scenario,"profile")==0)profile=kProfileBunResolver;
+    else if(strcmp(scenario,"role")==0)state.groups[99].role=ProcessState::Role::kArtifact;
+    else if(strcmp(scenario,"clone")==0)state.groups[99].provenance=ProcessState::Provenance::kCloneChild;
+    else if(strcmp(scenario,"image")==0)state.groups[99].current_image_class=ProcessClass::kUnknown;
+    else if(strcmp(scenario,"start")==0)c->set_thread_group_start_time_ns(991);
+    else if(strcmp(scenario,"expected")==0)state.expected_groups.clear();
+    else if(strcmp(scenario,"expected-start")==0)state.expected_groups[99].start_time_ns++;
+    else if(strcmp(scenario,"expected-class")==0)state.expected_groups[99].process_class=ProcessClass::kNode;
+    else if(strcmp(scenario,"inactive")==0)state.groups[99].bun_offline_install_active=false;
+    else if(strcmp(scenario,"network-inactive")==0)state.groups[99].trusted_control_network_active=false;
+    else if(strcmp(scenario,"root-eligible")==0)state.groups[99].root_eligible=true;
+    else if(strcmp(scenario,"root-unconsumed")==0)state.groups[99].root_consumed=false;
+    else if(strcmp(scenario,"handoff")==0)state.groups[99].handoff_target_pending=true;
+    else if(strcmp(scenario,"demotion")==0)state.groups[99].demotion_pending=true;
+    else if(strcmp(scenario,"root-pending")==0)state.groups[99].launch_target_pending=true;
+    else if(strcmp(scenario,"not-exec-session")==0)c->set_is_exec_session(false);
+    else if(strcmp(scenario,"parent")==0)c->set_parent_thread_group_id(98);
+    else if(strcmp(scenario,"pending-mismatch")==0)state.pending_opens.emplace(std::make_pair(99,990),ProcessState::PendingOpen{99,990,257,2654208,false});
+    NormalizedCounts counts;std::string payload,id;const char* reason=nullptr;
+    const bool parsed=result.SerializeToString(&payload)&&ParseOpenResultAndSend(payload.data(),payload.size(),output,&id,profile,&state,&counts,topology,&reason);
+    const bool normal=strcmp(scenario,"normal")==0;
+    if(parsed!=normal || counts.workspace_access!=(normal?1:0) || (strcmp(scenario,"pending-mismatch")==0 && state.pending_opens.empty())) {
+      fprintf(stderr,"Bun offline path-handle scenario failed: %s\n",scenario);return false;
+    }
+  }
+  auto state=baseline;
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=context;
+  clone.set_created_thread_group_id(100);clone.set_created_thread_start_time_ns(1000);
+  std::string payload,id;const char* reason=nullptr;
+  if(!clone.SerializeToString(&payload)||!ParseSentryClone(payload.data(),payload.size(),output,&id,&state,&reason)||
+      state.groups[100].bun_offline_install_active) return false;
+  return true;
+}
+
+bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bool bun_project = false, const char* bun_intent = "install", bool frozen = false, bool selector = false, const char* bun_preparation = nullptr) {
+  const char* profile = bun ? (bun_project ? kProfileBunProjectResolver : kProfileBunResolver) : (pnpm ? kProfilePNPMResolver : kProfileUVResolver);
+  const char* tool = bun ? kBunToolPath : (pnpm ? kPNPMToolPath : kUVToolPath);
+  const ProcessClass tool_class = bun ? ProcessClass::kBun : (pnpm ? ProcessClass::kPNPM : ProcessClass::kUV);
+  if (IsPythonProfile(profile) ||
+      ProcessClassForPath(tool, profile) != tool_class ||
+      ProcessClassForPath("uv", profile) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/tmp/uv", profile) != ProcessClass::kUnknown ||
+      ProcessClassForPath("pnpm", profile) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/tmp/pnpm", profile) != ProcessClass::kUnknown ||
+      ProcessClassForPath(tool, kProfilePyPI) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/local/bin/pip", profile) != ProcessClass::kUnknown)
+    return false;
+  if (ProcessClassForPath(tool, pnpm ? kProfileUVResolver : kProfilePNPMResolver) != ProcessClass::kUnknown ||
+      ProcessClassForPath(tool, kProfileGitHub) != ProcessClass::kUnknown) return false;
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const char* scenario) {
+    TopologyState topology;
+    topology.namespace_id = 1; topology.snapshot_seen = true; topology.sealed = true;
+    topology.expected.push_back(ExpectedMount{"/haa-runtime", "helper", "/", "9p", false, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.anchors.emplace(2, MountAnchor{2, "/haa-runtime", "helper"});
+    if (strcmp(scenario, "unsealed") == 0) topology.sealed = false;
+    if (strcmp(scenario, "missing-snapshot") == 0) topology.snapshot_seen = false;
+    if (strcmp(scenario, "namespace") == 0) topology.namespace_id = 0;
+    if (strcmp(scenario, "wrong-class") == 0) topology.expected[0].mount_class = "workspace";
+    if (strcmp(scenario, "wrong-fs") == 0) topology.expected[0].filesystem_type = "tmpfs";
+    if (strcmp(scenario, "noexec") == 0) topology.expected[0].noexec = true;
+    if (strcmp(scenario, "suid") == 0) topology.expected[0].nosuid = true;
+    if (strcmp(scenario, "missing-anchor") == 0) topology.anchors.erase(2);
+    if (strcmp(scenario, "duplicate") == 0) topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    if (strcmp(scenario, "shadow") == 0) topology.anchors.emplace(3, MountAnchor{3, tool, "workspace"});
+    if (strcmp(scenario, "parent-shadow") == 0) topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "workspace"});
+    const TopologyState* selected = strcmp(scenario, "no-topology") == 0 ? nullptr : &topology;
+    const bool artifact = strcmp(scenario, "artifact") == 0 || strcmp(scenario, "clone") == 0;
+    gvisor::sentry::ExecveInfo event;
+    auto* context = event.mutable_context_data();
+    context->set_container_id(kFirstID); context->set_thread_group_id(99);
+    context->set_thread_group_start_time_ns(990); context->set_is_exec_session(true);
+    context->set_parent_thread_group_id(0); context->set_process_name("haa-boundary");
+    const auto nonce = TestAdmissionNonce(99, 990);
+    auto registration = TestProfileWithAdmission(profile, kLaunchMode, nonce);
+    ProcessState state;
+    auto parse = [&]() {
+      std::string payload, id; const char* reason = nullptr;
+      return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+          payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
+    };
+    if (artifact) {
+      const bool clone = strcmp(scenario, "clone") == 0;
+      context->set_is_exec_session(!clone); context->set_parent_thread_group_id(clone ? 98 : 0);
+      if (!RegisterGroup(&state, *context, ProcessState::Role::kArtifact,
+          clone ? ProcessState::Provenance::kCloneChild : ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    } else {
+      event.set_binary_path(kBoundaryHelperPath); event.set_execfn(kBoundaryHelperPath);
+      event.add_argv(kBoundaryHelperPath); event.add_argv(kLaunchMode); event.add_argv(nonce); event.add_argv(tool);
+      if (strcmp(scenario, "no-nonce") == 0) {
+        registration.pending_admissions.clear();
+        return !parse() && state.groups.empty();
+      }
+      if (!parse() || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected")) return false;
+      event.set_binary_path(kSetprivPath); event.set_execfn(kSetprivPath); event.clear_argv();
+      for (const char* arg : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups",
+          "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", tool}) event.add_argv(arg);
+      if (!parse() || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected")) return false;
+    }
+    event.set_binary_path(tool); event.set_execfn(tool); event.clear_argv();
+    event.add_argv(tool);
+    if (bun_project) {
+      for (const char* argument : {"--cwd=/tmp/haa-bun-input/project", "install", "--lockfile-only", "--ignore-scripts", "--no-env-file", "--registry=https://registry.npmjs.org/", "--cache-dir=/tmp/haa-bun-input/cache", "--backend=copyfile", "--linker=hoisted", "--save-text-lockfile", "--no-progress", "--no-summary"}) event.add_argv(argument);
+      event.set_argv(2,bun_intent);
+      if (bun_preparation != nullptr) {
+        if (strcmp(bun_preparation,"seed")==0) {
+          event.set_argv(1,"--cwd=/tmp/haa-bun-input/seed"); event.add_argv("--offline");
+        } else if (strcmp(bun_preparation,"offline")==0) {
+          event.set_argv(3,"--offline"); event.add_argv("--frozen-lockfile");
+        } else if (strncmp(bun_preparation,"run",3)==0) {
+          event.clear_argv();
+          for (const char* arg : {kBunToolPath, "--cwd=/tmp/haa-bun-input", "x", "--ignore-scripts",
+              "--registry=https://registry.npmjs.org/", "--package=typescript@5.9.3", "/haa-runtime/helox-bunx-inert-query"}) event.add_argv(arg);
+          if(strcmp(bun_preparation,"run-bare")==0) event.set_argv(5,"--package=typescript");
+        } else return false;
+      }
+      if (frozen) event.add_argv("--frozen-lockfile");
+      if (selector) { event.add_argv("--"); event.add_argv(strcmp(bun_intent,"add")==0 ? "probe@^1.0.0" : "probe"); }
+    } else event.add_argv("--version");
+    context->set_process_name("uv");
+    if (strcmp(scenario, "execfn") == 0) event.set_execfn("/tmp/uv");
+    if (strcmp(scenario, "argv0") == 0) event.set_argv(0, "uv");
+    if (strcmp(scenario, "argv1") == 0) event.set_argv(1, "run");
+    if (strcmp(scenario, "extra-arg") == 0) event.add_argv("file.js");
+    const bool allowed_image = strcmp(scenario, "normal") == 0 || artifact;
+    if (!allowed_image) return !parse();
+    if (artifact && bun_preparation != nullptr && strncmp(bun_preparation,"run",3)==0) return !parse();
+    if (!parse()) return false;
+    if (artifact) {
+      return ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") &&
+          state.groups.at(99).role == ProcessState::Role::kArtifact && !IsTrustedControlNetwork(*context, state);
+    }
+    const bool root_allowed = ExpectRecordExact(output[1], kFirstID, "process-exec-expected") &&
+        state.groups.at(99).current_image_class == tool_class &&
+        IsTrustedControlNetwork(*context, state) &&
+        registration.pending_admissions.front().state == ProfileRegistration::AdmissionState::kConsumed;
+    if(!root_allowed) return false;
+    if(bun_project && state.groups[99].bun_offline_install_active !=
+        (bun_preparation!=nullptr && strcmp(bun_preparation,"offline")==0)) return false;
+    if(bun_project && bun_preparation != nullptr && strcmp(bun_preparation,"offline")==0 &&
+        !VerifyBunOfflinePathHandleBoundary(*context,state,topology,output[0])) return false;
+    return bun_preparation == nullptr || strncmp(bun_preparation,"run",3)!=0 ||
+        VerifyBunRunInstallChildBoundary(*context,state,topology,registration,output[0],output[1]);
+  };
+  bool passed = true;
+  for (const char* scenario : {"normal", "artifact", "clone", "no-nonce", "unsealed", "missing-snapshot",
+      "namespace", "wrong-class", "wrong-fs", "noexec", "suid", "missing-anchor", "duplicate", "shadow",
+      "parent-shadow", "no-topology", "execfn", "argv0"}) {
+    if (!run(scenario)) { fprintf(stderr, "%s admission scenario failed: %s\n", pnpm ? "PNPM" : "UV", scenario); passed = false; break; }
+  }
+  if (bun && (!run("argv1") || !run("extra-arg"))) passed = false;
+  close(output[0]); close(output[1]);
+  return passed;
+}
+
+bool VerifyUVRuntimeAdmissionBoundary() { return VerifyPrivateNativeRuntimeAdmissionBoundary(false); }
+bool VerifyPNPMRuntimeAdmissionBoundary() { return VerifyPrivateNativeRuntimeAdmissionBoundary(true); }
+
+namespace {
+TopologyState PipxNativeTestTopology() {
+  TopologyState topology;
+  topology.namespace_id=17; topology.snapshot_seen=true; topology.sealed=true;
+  topology.expected={{"/","oci-root","/","",true,false,false,false},
+      {"/tmp","workspace","/","tmpfs",false,true,true,false},
+      {"/haa-runtime","helper","/","9p",false,false,false,false},
+      {"/haa-pipx","workspace","/","9p",true,false,false,false},
+      {"/haa-wheels","workspace","/","9p",true,false,false,false},
+      {"/haa-site","workspace","/","9p",false,false,false,false}};
+  uint64_t id=0;
+  for(const auto& mount:topology.expected){++id;topology.anchors.emplace(id,MountAnchor{id,mount.mountpoint,mount.mount_class});}
+  return topology;
+}
+
+gvisor::sentry::ExecveInfo PipxNativeTestRoot(const char* operation="install") {
+  gvisor::sentry::ExecveInfo image;
+  auto* context=image.mutable_context_data();context->set_container_id(kFirstID);
+  context->set_thread_group_id(99);context->set_thread_group_start_time_ns(990);
+  context->set_parent_thread_group_id(0);context->set_is_exec_session(true);context->set_process_name("mutable-name");
+  image.set_binary_path("/usr/local/bin/python3.14");image.set_execfn("/usr/local/bin/python");
+  // This is a syntactic version slot only, never an actual runtime claim.
+  for(const auto& arg:std::vector<std::string>{"/usr/local/bin/python","-I","-S","-B","-c",
+      std::string(kPipxNativeProgramPrefix)+"1.2.3"+kPipxNativeProgramSuffix,operation})image.add_argv(arg);
+  if(strcmp(operation,"run")==0){
+    for(const char* arg:{"--backend","uv","--python","/usr/local/bin/python","--no-cache","--no-path-check","--spec","fixture==1.0",kPipxNativePipArguments,"helox-pipx-inert-query"})image.add_argv(arg);
+  }else if(strcmp(operation,"--version")!=0){
+    image.add_argv(strcmp(operation,"install")==0?"fixture==1.0":"fixture");
+    image.add_argv("--backend");image.add_argv("uv");
+    if(strcmp(operation,"install")==0){image.add_argv("--python");image.add_argv("/usr/local/bin/python");}
+    image.add_argv(kPipxNativePipArguments);
+  }
+  return image;
+}
+
+bool PipxNativeTestParse(const gvisor::sentry::ExecveInfo& image,int output,int input,
+                        ProcessState* state,ProfileRegistration* registration,const TopologyState& topology,
+                        bool expected=true,const char* profile=kProfilePipxNativeResolver) {
+  std::string payload,id=kFirstID;const char* reason=nullptr;
+  if(!image.SerializeToString(&payload))return false;
+  const bool parsed=ParseSentryProcessAndClassify(payload.data(),payload.size(),output,&id,profile,registration,state,&reason,&topology);
+  if(expected)return parsed&&ExpectRecordExact(input,kFirstID,"process-exec-expected");
+  DrainDatagram(input);
+  return !parsed||state->first_unexpected_exec.present;
+}
+
+bool PipxNativeTestPrime(const gvisor::sentry::ExecveInfo& root,const TopologyState& topology,
+                        int output,int input,ProcessState* state) {
+  const std::string nonce(64,'c');
+  auto registration=TestProfileWithAdmission(kProfilePipxNativeResolver,kPythonHandoffMode,nonce);
+  auto boundary=root;boundary.set_binary_path(kBoundaryHelperPath);boundary.set_execfn(kBoundaryHelperPath);boundary.clear_argv();
+  for(const auto& arg:std::vector<std::string>{kBoundaryHelperPath,kPythonHandoffMode,nonce})boundary.add_argv(arg);
+  for(const auto& arg:root.argv())boundary.add_argv(arg);
+  if(!PipxNativeTestParse(boundary,output,input,state,&registration,topology))return false;
+  auto demotion=root;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);demotion.clear_argv();
+  for(const char* arg:{kSetprivPath,"--reuid=1000","--regid=1000","--clear-groups","--inh-caps=-all","--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--"})demotion.add_argv(arg);
+  for(const auto& arg:root.argv())demotion.add_argv(arg);
+  if(!PipxNativeTestParse(demotion,output,input,state,&registration,topology)||
+      !PipxNativeTestParse(root,output,input,state,&registration,topology))return false;
+  const auto& group=state->groups[99];
+  return registration.pending_admissions[0].state==ProfileRegistration::AdmissionState::kConsumed&&
+      group.pipx_native_image==ProcessState::PipxNativeImage::kRoot&&IsPipxNativeActiveGroup(group)&&
+      state->expected_groups.empty()&&!IsTrustedControlNetwork(root.context_data(),*state);
+}
+
+bool PipxNativeTestClone(const gvisor::common::ContextData& parent,int32_t child,int64_t start,
+                        ProcessState* state,gvisor::common::ContextData* context) {
+  gvisor::sentry::CloneInfo clone;*clone.mutable_context_data()=parent;
+  clone.set_created_thread_group_id(child);clone.set_created_thread_start_time_ns(start);
+  std::string payload,id=kFirstID;const char* reason=nullptr;
+  if(!clone.SerializeToString(&payload)||!ParseSentryClone(payload.data(),payload.size(),-1,&id,state,&reason))return false;
+  *context=parent;context->set_thread_group_id(child);context->set_thread_group_start_time_ns(start);
+  context->set_parent_thread_group_id(parent.thread_group_id());context->set_process_name("renamed-child");
+  return !state->groups[child].root_eligible&&state->groups[child].root_consumed&&!state->groups[child].trusted_control_network_active&&
+      state->groups[child].pipx_native_image==ProcessState::PipxNativeImage::kNone;
+}
+
+gvisor::sentry::ExecveInfo PipxNativeTestUV(const gvisor::common::ContextData& context,const char* operation="version",bool upgrade=false,
+    const std::string& env="/haa-site/pipx/venvs/fixture") {
+  gvisor::sentry::ExecveInfo image;*image.mutable_context_data()=context;image.set_binary_path(kUVToolPath);image.set_execfn(kUVToolPath);image.add_argv(kUVToolPath);
+  if(strcmp(operation,"version")==0)image.add_argv("--version");
+  else if(strcmp(operation,"venv")==0){for(const auto& arg:std::vector<std::string>{"venv","--python","/usr/local/bin/python","--allow-existing","--quiet",env})image.add_argv(arg);}
+  else{
+    for(const auto& arg:std::vector<std::string>{"pip","install","--python",env+"/bin/python","--quiet"})image.add_argv(arg);
+    if(upgrade)image.add_argv("--upgrade");
+    for(const char* arg:{"--no-build","--no-sources","--no-config","--no-cache","--no-python-downloads","--no-managed-python","--link-mode=copy","--index-url=https://pypi.org/simple/"})image.add_argv(arg);
+    image.add_argv(upgrade?"fixture":"fixture==1.0");
+  }
+  return image;
+}
+
+gvisor::sentry::ExecveInfo PipxNativeTestQuery(const gvisor::common::ContextData& context,bool metadata,bool alias=true,
+    const std::string& env="/haa-site/pipx/venvs/fixture") {
+  gvisor::sentry::ExecveInfo image;*image.mutable_context_data()=context;image.set_binary_path("/usr/local/bin/python3.14");
+  image.set_execfn(alias?env+"/bin/python":"/usr/local/bin/python");image.add_argv(image.execfn());
+  if(metadata){image.add_argv("-c");image.add_argv(kPipxNativeMetadataQuery);}
+  else {image.add_argv("-I");image.add_argv("-B");image.add_argv("-c");image.add_argv("import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()");}
+  return image;
+}
+
+bool VerifyPipxNativeRootAndTopologyBoundary() {
+  if(IsPythonProfile(kProfilePipxNativeResolver)||!IsPythonRuntimeProfile(kProfilePipxNativeResolver)||
+      MaximumRecords(kProfilePipxNativeResolver)!=kMaxNormalizedRecordsPerConnection)return false;
+  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+  bool ok=true;const auto topology=PipxNativeTestTopology();
+  for(const char* operation:{"install","upgrade","--version","run"}){ProcessState state;if(!PipxNativeTestPrime(PipxNativeTestRoot(operation),topology,output[0],output[1],&state))ok=false;}
+  auto root=PipxNativeTestRoot();
+  for(int i=0;i<root.argv_size();++i){auto bad=root;bad.set_argv(i,i==7?"../foreign":"foreign");ProcessState state;if(PipxNativeTestPrime(bad,topology,output[0],output[1],&state))ok=false;}
+  const auto run=PipxNativeTestRoot("run");
+  for(int i=0;i<run.argv_size();++i){auto bad=run;bad.set_argv(i,i==14?"../foreign":"foreign");ProcessState state;if(PipxNativeTestPrime(bad,topology,output[0],output[1],&state))ok=false;}
+  for(const char* requirement:{"helox-pipx-inert-query==1.0","fixture>=1.0","fixture==1.0,!=2.0"}){
+    auto bad=run;bad.set_argv(14,requirement);ProcessState state;if(PipxNativeTestPrime(bad,topology,output[0],output[1],&state))ok=false;
+  }
+  for(const std::string& value:{std::string(kPipxNativeProgramPrefix)+"1.2.3';print('bad')#"+kPipxNativeProgramSuffix,
+       std::string(kPipxNativeProgramPrefix)+"1..3"+kPipxNativeProgramSuffix,std::string(kPipxNativeProgramPrefix)+"1.2.3"+kPipxNativeProgramSuffix+"print('extra')"}){
+    auto bad=root;bad.set_argv(5,value);ProcessState state;if(PipxNativeTestPrime(bad,topology,output[0],output[1],&state))ok=false;
+  }
+  for(int scenario=0;scenario<11;++scenario){auto changed=topology;
+    switch(scenario){case 0:changed.sealed=false;break;case 1:changed.snapshot_seen=false;break;case 2:changed.namespace_id=0;break;
+      case 3:changed.expected[3].read_only=false;break;case 4:changed.expected[4].read_only=false;break;case 5:changed.expected[5].read_only=true;break;
+      case 6:changed.expected[2].filesystem_type="tmpfs";break;case 7:changed.anchors.erase(5);break;
+      case 8:changed.anchors.emplace(20,MountAnchor{20,"/haa-wheels/shadow","workspace"});break;
+      case 9:changed.anchors.emplace(20,MountAnchor{20,"/haa-runtime/uv","helper"});break;
+      case 10:changed.expected.push_back({"/extra","workspace","/","9p",false,false,false,false});break;}
+    if(IsPipxNativeTopology(&changed)){ok=false;break;}
+    ProcessState state;if(PipxNativeTestPrime(root,changed,output[0],output[1],&state))ok=false;
+  }
+  close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeCloneAndQueryBoundary() {
+  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+  bool ok=true;const auto topology=PipxNativeTestTopology();
+  auto run=[&](const char* operation,bool upgrade,bool metadata,bool alias,const std::string& fault,bool temporary=false){
+    DrainDatagram(output[1]);ProcessState state;auto root=PipxNativeTestRoot(temporary?"run":(upgrade?"upgrade":"install"));
+    std::string env=temporary?"/haa-site/pipx/.cache/0123456789abcde":"/haa-site/pipx/venvs/fixture";
+    if(fault=="cache-short")env.pop_back();
+    if(fault=="cache-long")env+="f";
+    if(fault=="cache-case")env.back()='F';
+    if(fault=="cache-traversal")env+="/../0123456789abcde";
+    if(fault=="cache-installed")env="/haa-site/pipx/venvs/fixture";
+    const bool clauses=fault.compare(0,8,"clauses-")==0;
+    if(clauses)root.set_argv(7,"fixture>=1.0,<=1.0");
+    if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state))return false;
+    gvisor::common::ContextData child;
+    if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child))return false;
+    auto image=PipxNativeTestUV(child,operation,upgrade,env);ProfileRegistration registration;
+    if(clauses){
+      std::string requirement="fixture<=1.0,>=1.0";
+      if(fault=="clauses-repeat")requirement="fixture<=1.0,>=1.0,>=1.0";
+      if(fault=="clauses-project")requirement="foreign<=1.0,>=1.0";
+      if(fault=="clauses-version")requirement="fixture<=2.0,>=1.0";
+      if(fault=="clauses-operator")requirement="fixture<1.0,>=1.0";
+      if(fault=="clauses-missing")requirement="fixture>=1.0";
+      if(fault=="clauses-extra")requirement="fixture<=1.0,>=1.0,!=1.0";
+      if(fault=="clauses-empty")requirement="fixture<=1.0,,>=1.0";
+      if(fault=="clauses-trailing")requirement="fixture<=1.0,>=1.0,";
+      if(fault=="clauses-bare")requirement="fixture";
+      image.set_argv(image.argv_size()-1,requirement);
+      if(fault=="clauses-flags")image.set_argv(6,"--no-deps");
+    }
+    if(metadata||std::string(operation)=="query"){
+      if(!metadata){if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology))return false;
+        auto uv_context=image.context_data();if(!PipxNativeTestClone(uv_context,101,1010,&state,&child))return false;}
+      image=PipxNativeTestQuery(child,metadata,alias,env);
+    }
+    const int id=image.context_data().thread_group_id();const int parent=image.context_data().parent_thread_group_id();
+    if(fault=="binary")image.set_binary_path("/tmp/copied-runtime");
+    if(fault=="execfn")image.set_execfn("/tmp/alias");
+    if(fault=="argv0")image.set_argv(0,"foreign");
+    if(fault=="argv")image.set_argv(image.argv_size()-1,"foreign");
+    if(fault=="extra")image.add_argv("extra");
+    if(fault=="origin")image.mutable_context_data()->set_is_exec_session(false);
+    if(fault=="wrong-parent")image.mutable_context_data()->set_parent_thread_group_id(80);
+    if(fault=="child-start")image.mutable_context_data()->set_thread_group_start_time_ns(777);
+    if(fault=="child-network")state.groups[id].trusted_control_network_active=true;
+    if(fault=="child-eligible")state.groups[id].root_eligible=true;
+    if(fault=="child-pending")state.groups[id].handoff_target_pending=true;
+    if(fault=="child-expected")state.expected_groups[id]={state.groups[id].start_time_ns,ProcessClass::kUV};
+    if(fault=="missing-clone")state.groups[id].pipx_native_candidate=false;
+    if(fault=="parent-role")state.groups[parent].role=ProcessState::Role::kControl;
+    if(fault=="parent-start")state.groups[parent].start_time_ns++;
+    if(fault=="parent-network")state.groups[parent].trusted_control_network_active=true;
+    if(fault=="parent-image")state.groups[parent].pipx_native_image=ProcessState::PipxNativeImage::kNone;
+    if(fault=="root-start")state.groups[99].start_time_ns++;
+    const bool normal=fault.empty()||fault=="clauses-reorder"||fault=="clauses-repeat";
+    if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology,normal))return false;
+    const auto expected=normal?(metadata?ProcessState::PipxNativeImage::kMetadataQuery:(std::string(operation)=="query"?ProcessState::PipxNativeImage::kUVQuery:ProcessState::PipxNativeImage::kUV)):ProcessState::PipxNativeImage::kNone;
+    if(state.groups[id].pipx_native_image!=expected||IsTrustedControlNetwork(image.context_data(),state))return false;
+    if(normal&&(state.groups[id].role!=ProcessState::Role::kArtifact||!state.expected_groups.empty()||state.groups[id].pipx_native_candidate))return false;
+    return true;
+  };
+  for(const char* operation:{"version","venv","install","query"})ok=run(operation,false,false,true,"")&&ok;
+  ok=run("venv",true,false,true,"")&&run("install",true,false,true,"")&&run("query",false,false,false,"")&&run("version",false,true,true,"")&&ok;
+  for(const char* fault:{"binary","execfn","argv0","argv","extra","origin","wrong-parent","child-start","child-network","child-eligible","child-pending","child-expected","missing-clone","parent-role","parent-start","parent-network","parent-image","root-start"}){
+    ok=run("venv",true,false,true,fault)&&run("install",false,false,true,fault)&&run("query",false,false,true,fault)&&run("version",false,true,true,fault)&&ok;
+  }
+  for(const char* shape:{"clauses-reorder","clauses-repeat","clauses-project","clauses-version","clauses-operator","clauses-missing","clauses-extra","clauses-empty","clauses-trailing","clauses-bare","clauses-flags"})ok=run("install",false,false,true,shape)&&ok;
+  for(const char* operation:{"version","venv","install","query"})ok=run(operation,false,false,true,"",true)&&ok;
+  ok=run("version",false,true,true,"",true)&&run("query",false,false,false,"",true)&&ok;
+  for(const char* fault:{"binary","execfn","argv0","argv","extra","origin","wrong-parent","child-start","child-network","parent-role","parent-start","parent-image","root-start"}){
+    ok=run("install",false,false,true,fault,true)&&run("query",false,false,true,fault,true)&&run("version",false,true,true,fault,true)&&ok;
+  }
+  for(const char* fault:{"cache-short","cache-long","cache-case","cache-traversal","cache-installed"}){
+    ok=run("venv",false,false,true,fault,true)&&run("install",false,false,true,fault,true)&&run("version",false,true,true,fault,true)&&ok;
+  }
+  close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeReadAndReexecBoundary() {
+  int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+  bool ok=true;const auto topology=PipxNativeTestTopology();
+  for(bool temporary:{false,true})for(bool metadata:{false,true}){
+    const std::string env=temporary?"/haa-site/pipx/.cache/0123456789abcde":"/haa-site/pipx/venvs/fixture";
+    ProcessState state;auto root=PipxNativeTestRoot(temporary?"run":"install");if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)){ok=false;break;}
+    gvisor::common::ContextData child;if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child)){ok=false;break;}
+    ProfileRegistration registration;
+    if(!metadata){auto uv=PipxNativeTestUV(child);if(!PipxNativeTestParse(uv,output[0],output[1],&state,&registration,topology)){ok=false;break;}auto parent=child;if(!PipxNativeTestClone(parent,101,1010,&state,&child)){ok=false;break;}}
+    auto image=PipxNativeTestQuery(child,metadata,true,env);if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology)){ok=false;break;}
+    const auto baseline=state;gvisor::syscall::Open open;*open.mutable_context_data()=child;open.set_flags(557056);
+    for(const auto& check:std::vector<std::tuple<std::string,uint64_t,uint32_t,bool>>{
+        {env+"/lib/python3.14/site-packages/evil.pth",6,557056,true},
+        {"/tmp/query-write",2,kOpenWriteOnly,true},
+        {env+"/pyvenv.cfg",6,557056,false}}){
+      if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],std::get<0>(check),std::get<1>(check),std::get<2>(check),std::get<3>(check)))ok=false;
+    }
+
+    MountAnchor site{6,"/haa-site","workspace"};
+    for(const std::string& path:{env+"/pyvenv.cfg",env,env+"/lib",env+"/lib/python3.14",env+"/lib/python3.14/site-packages"}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kHelperOnly)ok=false;}
+    if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/pyvenv.cfg",6,kOpenLargefile,false))ok=false;
+    for(uint64_t flags:{uint64_t{0},kOpenLargefile|kOpenWriteOnly,kOpenLargefile|kOpenReadWrite,kOpenLargefile|kOpenCreate,kOpenLargefile|kOpenAppend,kOpenLargefile|kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
+    if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14/site-packages",6,624640,false))ok=false;
+    for(const std::string& path:{env,env+"/lib",env+"/lib/python3.14",env+"/pyvenv.cfg",env+"/lib/python3.14/site-packages/evil.pth",env+"/lib/python3.14/site-packages/sitecustomize.py",env+"/lib/python3.14/site-packages/fixture/__init__.py",std::string("/haa-site/pipx/venvs/other/lib/python3.14/site-packages")}){
+      if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],path,6,624640,true))ok=false;
+    }
+    for(uint64_t flags:{uint64_t{624640}|kOpenWriteOnly,uint64_t{624640}|kOpenReadWrite,uint64_t{624640}|kOpenCreate,uint64_t{624640}|kOpenAppend,uint64_t{624640}|kOpenTruncate}){
+      if(!VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14/site-packages",6,flags,true))ok=false;
+    }
+    open.set_flags(557056);
+    for(const std::string& path:{env+"/lib/python3.14/site-packages/evil.pth",env+"/lib/python3.14/site-packages/sitecustomize.py",env+"/lib/python3.14/site-packages/fixture/__init__.py",env+"/lib/python3.14/site-packages/foreign.so",env+"/lib/python3.14/site-packages/fixture-1.0.dist-info/METADATA",std::string("/haa-site/pipx/venvs/other/pyvenv.cfg"),std::string("/tmp/../haa-site/pipx/venvs/fixture/pyvenv.cfg"),std::string("/tmp/output-alias/pyvenv.cfg")}){open.set_pathname(path);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;}
+    for(uint64_t flags:{kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate}){open.set_pathname(env+"/pyvenv.cfg");open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;
+      MountAnchor tmp{2,"/tmp","workspace"};open.set_pathname("/tmp/query-write");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&tmp)!=FilesystemClass::kOutside)ok=false;}
+    open.set_flags(557056);
+    for(const auto& input:std::vector<MountAnchor>{{4,"/haa-pipx","workspace"},{5,"/haa-wheels","workspace"}}){open.set_pathname(input.mountpoint=="/haa-pipx"?"/haa-pipx/pipx-runtime.zip":"/haa-wheels/fixture-1-py3-none-any.whl");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&input)!=FilesystemClass::kOutside)ok=false;}
+    MountAnchor runtime{1,"/","oci-root"};open.set_pathname("/usr/local/lib/python3.14/json/__init__.py");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&runtime)!=FilesystemClass::kRuntimeRoot)ok=false;
+    state.groups[99].start_time_ns++;if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&runtime)!=FilesystemClass::kOutside)ok=false;state=baseline;
+    gvisor::common::ContextData descendant;if(!PipxNativeTestClone(child,102,1020,&state,&descendant)){ok=false;break;}
+    *open.mutable_context_data()=descendant;open.set_pathname(env+"/pyvenv.cfg");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;
+    state=baseline;*open.mutable_context_data()=child;
+    if(!PipxNativeTestParse(image,output[0],output[1],&state,&registration,topology,false)||
+        !state.groups[child.thread_group_id()].pipx_native_query_restricted||state.groups[child.thread_group_id()].pipx_native_image!=ProcessState::PipxNativeImage::kNone||
+        ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&site)!=FilesystemClass::kOutside)ok=false;
+  }
+  // The immutable DATA root is readable only by the active artifact root or
+  // its admitted UV child, and writes/aliases remain outside the workspace.
+  ProcessState state;auto root=PipxNativeTestRoot();if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state))ok=false;
+  gvisor::syscall::Open open;*open.mutable_context_data()=root.context_data();open.set_flags(557056);
+  for(const auto& anchor:std::vector<MountAnchor>{{4,"/haa-pipx","workspace"},{5,"/haa-wheels","workspace"}}){
+    open.set_pathname(anchor.mountpoint=="/haa-pipx"?"/haa-pipx/pipx-runtime.zip":"/haa-wheels/fixture-1-py3-none-any.whl");
+    if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&anchor)!=FilesystemClass::kWorkspace)ok=false;
+    if(!VerifyRestrictedWorkspaceOpen(root.context_data(),state,topology,kProfilePipxNativeResolver,output[0],output[1],open.pathname(),anchor.mount_id,557056,false,true))ok=false;
+    if(!VerifyRestrictedWorkspaceOpen(root.context_data(),state,topology,kProfilePipxNativeResolver,output[0],output[1],open.pathname(),anchor.mount_id,kOpenWriteOnly,true))ok=false;
+    for(uint64_t flags:{kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate}){open.set_flags(flags);if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&anchor)!=FilesystemClass::kOutside)ok=false;}open.set_flags(557056);
+    open.set_pathname(anchor.mountpoint+"/../outside");if(ClassifyFilesystemOpen(open,state,kProfilePipxNativeResolver,&anchor)!=FilesystemClass::kOutside)ok=false;
+  }
+  close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeFirstOutsideDiagnostic() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;const auto topology=PipxNativeTestTopology();ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ gvisor::common::ContextData uv,query;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)||
+    !PipxNativeTestClone(root.context_data(),100,1000,&state,&uv)||
+    !PipxNativeTestParse(PipxNativeTestUV(uv),output[0],output[1],&state,&registration,topology)||
+    !PipxNativeTestClone(uv,101,1010,&state,&query)||
+    !PipxNativeTestParse(PipxNativeTestQuery(query,false),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const std::string env="/haa-site/pipx/venvs/fixture";
+ ProcessState first,second,later;
+ if(!VerifyRestrictedWorkspaceOpen(query,state,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib",6,624640,true,false,&first))ok=false;
+ const std::string saved=first.first_outside_open_diagnostic;
+ if(saved.empty()||saved.find(env)!=std::string::npos||saved.find("\"flags\":624640")==std::string::npos)ok=false;
+ if(!VerifyRestrictedWorkspaceOpen(query,first,topology,kProfilePipxNativeResolver,output[0],output[1],env+"/lib/python3.14",6,624640,true,false,&second)||second.first_outside_open_diagnostic!=saved)ok=false;
+ if(VerifyRestrictedWorkspaceOpen(uv,second,topology,kProfilePipxNativeResolver,output[0],output[1],"/usr/local/bin/pip",1,557056,false,false,&later)||
+    later.first_outside_open_diagnostic!=saved||later.fault_open_diagnostic.empty())ok=false;
+ auto emit=[&](const std::string& first_open){
+  ProcessState diagnostic=later;diagnostic.first_outside_open_diagnostic=first_open;
+  const std::string packed=FaultOpenWithFirstOutside(diagnostic,"STREAM_FAULT","");
+  if(!Send(output[0],kFirstID,"stream-fault","STREAM_FAULT",nullptr,0,"OPEN_RESULT_CLASSIFICATION_IMAGE",UINT64_MAX,packed))return std::string();
+  char bytes[2048];const ssize_t n=recv(output[1],bytes,sizeof(bytes),MSG_DONTWAIT);
+  return n>0?std::string(bytes,static_cast<size_t>(n)):std::string();
+ };
+ const std::string record=emit(saved);
+ if(record.empty()||record.size()>1024||record.find("\"first_outside\":"+saved)==std::string::npos||
+    record.find("\"fault_open\":"+later.fault_open_diagnostic.substr(0,later.fault_open_diagnostic.size()-1))==std::string::npos||record.find(env)!=std::string::npos)ok=false;
+ const std::string bounded=emit(std::string(2048,'x'));
+ if(bounded.empty()||bounded.size()>1024||bounded.find("first_outside")!=std::string::npos||bounded.find("\"reason\":\"STREAM_FAULT\"")==std::string::npos)ok=false;
+ close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeBaseQueryDirectoryRead() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;const auto topology=PipxNativeTestTopology();ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ gvisor::common::ContextData uv,query;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)||
+    !PipxNativeTestClone(root.context_data(),100,1000,&state,&uv)||
+    !PipxNativeTestParse(PipxNativeTestUV(uv),output[0],output[1],&state,&registration,topology)||
+    !PipxNativeTestClone(uv,101,1010,&state,&query)||
+    !PipxNativeTestParse(PipxNativeTestQuery(query,false,false),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const auto baseline=state;MountAnchor anchor{1,"/","oci-root"};const std::string path="/usr/local/lib/python3.14/site-packages";
+ auto permitted=[&](const gvisor::common::ContextData& context,const char* profile,const std::string& target,uint64_t flags,const MountAnchor& mount){return IsPipxNativeABIRead(context,state,target,flags,profile,&mount);};
+ if(!state.groups[101].pipx_native_environment.empty()||!permitted(query,kProfilePipxNativeResolver,path,624640,anchor)||
+    !VerifyRestrictedWorkspaceOpen(query,state,topology,kProfilePipxNativeResolver,output[0],output[1],path,1,624640,false))ok=false;
+ for(const char* target:{"/usr/local/lib/python3.14/site-packages/evil.pth","/usr/local/lib/python3.14/site-packages/foreign.py","/usr/local/lib/python3.14/../python3.14/site-packages"})if(permitted(query,kProfilePipxNativeResolver,target,624640,anchor))ok=false;
+ for(uint64_t flags:{uint64_t{0},kOpenLargefile,uint64_t{624640}|kOpenWriteOnly,uint64_t{624640}|kOpenReadWrite,uint64_t{624640}|kOpenCreate,uint64_t{624640}|kOpenAppend,uint64_t{624640}|kOpenTruncate})if(permitted(query,kProfilePipxNativeResolver,path,flags,anchor))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/","workspace"},{1,"/usr/local/lib/python3.14","oci-root"}})if(permitted(query,kProfilePipxNativeResolver,path,624640,mount))ok=false;
+ for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(query,profile,path,624640,anchor))ok=false;
+ for(int scenario=0;scenario<9;++scenario){
+  state=baseline;auto context=query;
+  switch(scenario){
+   case 0:state.groups[101].role=ProcessState::Role::kControl;break;
+   case 1:state.groups[101].pipx_native_environment="/haa-site/pipx/venvs/fixture";break;
+   case 2:state.groups[101].start_time_ns++;break;
+   case 3:state.groups[100].start_time_ns++;break;
+   case 4:state.groups[99].start_time_ns++;break;
+   case 5:state.groups[100].role=ProcessState::Role::kControl;break;
+   case 6:state.groups[101].trusted_control_network_active=true;break;
+   case 7:context.set_parent_thread_group_id(99);break;
+   case 8:state.groups[101].handoff_target_pending=true;break;
+  }
+  if(permitted(context,kProfilePipxNativeResolver,path,624640,anchor))ok=false;
+ }
+ state=baseline;gvisor::common::ContextData descendant;
+ if(!PipxNativeTestClone(query,102,1020,&state,&descendant)||permitted(descendant,kProfilePipxNativeResolver,path,624640,anchor))ok=false;
+ close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeUVProcReadBoundary() {
+ int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
+ bool ok=true;auto topology=PipxNativeTestTopology();topology.anchors.emplace(7,MountAnchor{7,"/proc","system"});topology.anchors.emplace(8,MountAnchor{8,"/sys/fs/cgroup/cpu","system"});topology.anchors.emplace(9,MountAnchor{9,"/dev","system"});
+ ProcessState state;auto root=PipxNativeTestRoot();ProfileRegistration registration;
+ if(!PipxNativeTestPrime(root,topology,output[0],output[1],&state)){close(output[0]);close(output[1]);return false;}
+ gvisor::common::ContextData child;
+ if(!PipxNativeTestClone(root.context_data(),100,1000,&state,&child)||!PipxNativeTestParse(PipxNativeTestUV(child),output[0],output[1],&state,&registration,topology)){close(output[0]);close(output[1]);return false;}
+ const auto baseline=state;MountAnchor anchor{7,"/proc","system"};
+ gvisor::syscall::Open comm;*comm.mutable_context_data()=child;comm.set_pathname("/proc/100/comm");comm.set_flags(557056);
+ const auto before_comm=ClassifyFilesystemOpen(comm,state,kProfilePipxNativeResolver,&anchor);
+ const std::string comm_diagnostic=FaultOpenDiagnostic(comm,state,anchor);
+ if(IsPipxNativeABIRead(child,state,comm.pathname(),comm.flags(),kProfilePipxNativeResolver,&anchor)||
+    ClassifyFilesystemOpen(comm,state,kProfilePipxNativeResolver,&anchor)!=before_comm||
+    comm_diagnostic.find("\"subject\":\"PROC_SELF_COMM\"")==std::string::npos||
+    strcmp(FaultOpenSubject(child,"/proc/99/comm",anchor),"PROC_PARENT_COMM")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/98/comm",anchor),"OTHER")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/self/comm",anchor),"OTHER")!=0||
+    strcmp(FaultOpenSubject(child,"/proc/100/comm/extra",anchor),"OTHER")!=0)ok=false;
+
+ auto thread=child;thread.set_thread_id(104);
+ if(strcmp(FaultOpenSubject(thread,"/proc/104/comm",anchor),"PROC_THREAD_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/100/comm",anchor),"PROC_SELF_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/99/comm",anchor),"PROC_PARENT_COMM")!=0||
+    strcmp(FaultOpenSubject(thread,"/proc/103/comm",anchor),"OTHER")!=0)ok=false;
+ const std::string path="/proc/sys/vm/overcommit_memory";
+ auto permitted=[&](const gvisor::common::ContextData& context,const char* profile,const std::string& target,uint64_t flags,const MountAnchor& mount){return IsPipxNativeABIRead(context,state,target,flags,profile,&mount);};
+ const std::vector<std::pair<std::string,MountAnchor>> reads={
+  {path,anchor},{"/proc/100/cgroup",anchor},{"/proc/100/mountinfo",anchor},{"/proc/99/comm",anchor},
+  {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
+  {"/sys/fs/cgroup/cpu/cpu.cfs_period_us",MountAnchor{8,"/sys/fs/cgroup/cpu","system"}},
+  {"/dev/null",MountAnchor{9,"/dev","system"}},
+  {"/usr/local/bin/python3.14",MountAnchor{1,"/","oci-root"}},
+  {"/usr/lib/os-release",MountAnchor{1,"/","oci-root"}}};
+ for(const auto& read:reads){
+  if(!permitted(child,kProfilePipxNativeResolver,read.first,557056,read.second)||
+     !VerifyRestrictedWorkspaceOpen(child,state,topology,kProfilePipxNativeResolver,output[0],output[1],read.first,read.second.mount_id,557056,false))ok=false;
+  for(uint64_t flags:{uint64_t{0},kOpenLargefile,uint64_t{622592},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend,kOpenTruncate})if(permitted(child,kProfilePipxNativeResolver,read.first,flags,read.second))ok=false;
+  for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(child,profile,read.first,557056,read.second))ok=false;
+  if(permitted(root.context_data(),kProfilePipxNativeResolver,read.first,557056,read.second))ok=false;
+ }
+ MountAnchor quota{8,"/sys/fs/cgroup/cpu","system"};
+ for(const char* target:{"/sys/fs/cgroup/cpu/cpuacct.usage","/sys/fs/cgroup/cpu/cpu.shares","/sys/fs/cgroup/cpu/cpu.stat","/sys/fs/cgroup/cpu/../cpu/cpu.cfs_quota_us"})if(permitted(child,kProfilePipxNativeResolver,target,557056,quota))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{8,"/sys/fs/cgroup","system"},{8,"/sys/fs/cgroup/cpu","workspace"},{8,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/sys/fs/cgroup/cpu/cpu.cfs_quota_us",557056,mount))ok=false;
+ MountAnchor image{1,"/","oci-root"};
+ for(const char* target:{"/usr/local/bin/python","/usr/local/bin/python3.13","/usr/bin/python3.14","/usr/local/bin/python3.14/extra"})if(permitted(child,kProfilePipxNativeResolver,target,557056,image))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/usr/local/bin","oci-root"},{1,"/","workspace"}})if(permitted(child,kProfilePipxNativeResolver,"/usr/local/bin/python3.14",557056,mount))ok=false;
+ for(const char* target:{"/etc/os-release","/usr/lib/os-release/extra","/usr/lib/../lib/os-release","/etc/lsb-release"})if(permitted(child,kProfilePipxNativeResolver,target,557056,image))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{1,"/usr/lib","oci-root"},{1,"/","workspace"}})if(permitted(child,kProfilePipxNativeResolver,"/usr/lib/os-release",557056,mount))ok=false;
+ MountAnchor device{9,"/dev","system"};
+ for(const char* target:{"/dev/zero","/dev/random","/dev/tty","/dev/../dev/null"})if(permitted(child,kProfilePipxNativeResolver,target,557056,device))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{9,"/dev/other","system"},{9,"/dev","workspace"},{9,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,"/dev/null",557056,mount))ok=false;
+ for(const char* target:{"/proc/sys/vm/overcommit_ratio","/proc/self/maps","/proc/100/maps","/proc/101/cgroup","/proc/self/cgroup","/proc/101/mountinfo","/proc/self/mountinfo","/proc/100/comm","/proc/98/comm","/proc/99/comm/extra","/proc/self/comm","/proc/sys/vm/../vm/overcommit_memory"})if(permitted(child,kProfilePipxNativeResolver,target,557056,anchor))ok=false;
+ for(const auto& mount:std::vector<MountAnchor>{{7,"/proc/sys","system"},{7,"/proc","workspace"},{7,"/","oci-root"}})if(permitted(child,kProfilePipxNativeResolver,path,557056,mount))ok=false;
+ for(const char* profile:{kProfileUVResolver,kProfilePipxRuntime,kProfilePyPI})if(permitted(child,profile,path,557056,anchor))ok=false;
+ if(permitted(root.context_data(),kProfilePipxNativeResolver,path,557056,anchor))ok=false;
+ for(int scenario=0;scenario<13;++scenario){
+  state=baseline;auto context=child;
+  switch(scenario){
+   case 0:state.groups[100].role=ProcessState::Role::kControl;break;
+   case 1:state.groups[100].current_image_class=ProcessClass::kPython;break;
+   case 2:state.groups[100].pipx_native_image=ProcessState::PipxNativeImage::kUVQuery;break;
+   case 3:state.groups[100].trusted_control_network_active=true;break;
+   case 4:state.groups[100].start_time_ns++;break;
+   case 5:state.groups[99].start_time_ns++;break;
+   case 6:state.groups[99].role=ProcessState::Role::kControl;break;
+   case 7:state.groups[99].pipx_native_image=ProcessState::PipxNativeImage::kNone;break;
+   case 8:state.groups[100].handoff_target_pending=true;break;
+   case 9:state.expected_groups[100]=ProcessState::ExpectedGroup{1000,ProcessClass::kUV};break;
+   case 10:context.set_parent_thread_group_id(98);break;
+   case 11:context.set_is_exec_session(false);break;
+   case 12:state.groups.erase(99);break;
+  }
+  for(const auto& read:reads)if(permitted(context,kProfilePipxNativeResolver,read.first,557056,read.second))ok=false;
+ }
+ close(output[0]);close(output[1]);return ok;
+}
+
+bool VerifyPipxNativeProfileAdmission(const std::string& control) {
+  constexpr char id[]="7b7b7b7b7b7b7b7b";
+  if(!RegisterProfile(control,id,kProfilePipxNativeResolver))return false;
+  const auto client=gControlClients.find(id);if(client==gControlClients.end())return false;
+  const auto generation=TestSessionGeneration(id);
+  const bool ok=ControlAdmissionOnFD(client->second,id,kELFHandoffMode,generation,std::string(64,'b'),"arm","rejected")&&
+      ArmAdmission(control,id,kPythonHandoffMode,std::string(64,'c'))&&CancelAdmission(control,id,kPythonHandoffMode,std::string(64,'c'))&&
+      ArmAdmission(control,id,kLaunchMode,std::string(64,'d'))&&CancelAdmission(control,id,kLaunchMode,std::string(64,'d'))&&
+      VerifyPipxRuntimeReadiness(kProfilePipxNativeResolver)&&InvalidateProfile(control,id,generation);
+  close(client->second);gControlClients.erase(client);return ok;
+}
+
+}
+
 int main(int argc, char** argv) {
+  if (argc == 2 && strcmp(argv[1], "--fd-mutation-diagnostic-only") == 0) {
+    const bool passed = VerifyFDMutationDiagnosticPreservesAuthority();
+    fprintf(stderr, "FD mutation diagnostic preserves authority: %s\n", passed ? "PASS" : "FAIL");
+    return passed ? 0 : 1;
+  }
   if(argc==2 && strcmp(argv[1],"--cargo-build-program-query-only")==0){const bool passed=VerifyCargoBuildProgramRustcQueryBoundary();fprintf(stderr,"Cargo program query %s\n",passed?"PASS":"FAIL");return passed?0:1;}
   if(argc==2 && strcmp(argv[1],"--cargo-build-program-null-only")==0){const bool passed=VerifyCargoBuildProgramBoundary(true,true,true);fprintf(stderr,"Cargo program null %s\n",passed?"PASS":"FAIL");return passed?0:1;}
   if(argc==2 && strcmp(argv[1],"--cargo-build-config-only")==0){const bool passed=VerifyCargoBuildConfigurationBoundary();fprintf(stderr,"Cargo configuration %s\n",passed?"PASS":"FAIL");return passed?0:1;}
@@ -6863,10 +9776,19 @@ int main(int argc, char** argv) {
         VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() &&
         VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() &&
         VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() &&
+        VerifyResolverLockGenerationProductionPath(true) &&
         VerifyAuthoritativeProcessGroupLifecycle() && VerifyDirectExecAdmission() &&
-        VerifyAdmissionTerminalControlProtocol() && VerifyStrictControlParser() ? 0 : 1;
+        VerifyAdmissionTerminalControlProtocol() && VerifyKernelTerminalOutcomes() && VerifyStrictControlParser() ? 0 : 1;
   }
   if (argc != 1) return 2;
+  char entry_name[] = "haa_gvisor_observer";
+  char help_option[] = "--help";
+  char* default_entry[] = {entry_name, nullptr};
+  char* help_entry[] = {entry_name, help_option, nullptr};
+  if (observer_main(1, default_entry) != 0 || observer_main(2, help_entry) != 0) {
+    fprintf(stderr, "inert observer entry FAIL\n");
+    return 1;
+  }
   char directory[] = "/tmp/haa-observer-latch-XXXXXX";
   if (mkdtemp(directory) == nullptr) return 1;
   const std::string remote = std::string(directory) + "/remote.sock";
@@ -6878,6 +9800,7 @@ int main(int argc, char** argv) {
   if (output < 0 || pipe(readiness) != 0) return 1;
   const pid_t child = fork();
   if (child == 0) {
+    umask(0000);
     close(readiness[0]);
     char ready_arg[32]; snprintf(ready_arg, sizeof(ready_arg), "--ready-fd=%d", readiness[1]);
     char* arguments[] = {const_cast<char*>("haa_gvisor_observer"), const_cast<char*>(remote.c_str()), const_cast<char*>(output_path.c_str()), const_cast<char*>(control.c_str()), ready_arg, nullptr};
@@ -6885,7 +9808,10 @@ int main(int argc, char** argv) {
   }
   close(readiness[1]);
   char ready = '\0';
-  const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
+  struct stat remote_info{}, control_info{};
+  const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R' &&
+      lstat(remote.c_str(), &remote_info) == 0 && (remote_info.st_mode & 0777) == 0700 &&
+      lstat(control.c_str(), &control_info) == 0 && (control_info.st_mode & 0777) == 0700;
   close(readiness[0]);
   const bool profile = HasPinnedPodInitProfile();
   const bool profile_limits = HasBoundedProfileRecordLimits();
@@ -6966,10 +9892,18 @@ int main(int argc, char** argv) {
   const bool cargo_utc = VerifyCargoResolverRuntimeReadBoundary("/usr/share/zoneinfo/Etc/UTC");
   const bool socketpair_diagnostic = VerifySocketPairDiagnosticPreservesFDAuthority();
   const bool kernel_socketpair = VerifyKernelSocketPairTracking();
+  const bool fd_mutation_diagnostic = VerifyFDMutationDiagnosticPreservesAuthority();
   const bool cargo_rustc_zlib = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/libz.so.1.2.13");
   const bool cargo_rustc_abi = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/librt.so.1") &&
       VerifyCargoRustcQueryBoundary("/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable");
   const bool go_runtime_read = VerifyGoResolverRuntimeReadBoundary();
+  const bool github_artifact_runtime_read = VerifyGitHubArtifactRuntimeReadBoundary();
+  const bool pipx_runtime_read = VerifyPipxRuntimeReadBoundary();
+  const bool pipx_native_root = VerifyPipxNativeRootAndTopologyBoundary();
+  const bool pipx_native_clone = VerifyPipxNativeCloneAndQueryBoundary();
+  const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary() && VerifyPipxNativeUVProcReadBoundary() && VerifyPipxNativeBaseQueryDirectoryRead() && VerifyPipxNativeFirstOutsideDiagnostic();
+  const bool pipx_native_admission = running && VerifyPipxNativeProfileAdmission(control);
+  const bool pipx_runtime_admission = running && VerifyPipxRuntimeAdmission(control);
   const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
   const bool go_build_handoff_read = VerifyGoBuildHandoffReadBoundary();
   const bool cargo_build_handoff_read = VerifyGoBuildHandoffReadBoundary(kProfileCargoBuild);
@@ -7009,6 +9943,12 @@ int main(int argc, char** argv) {
   const bool go_build_cc1_sdk_cgo = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kCc1SDKCgo);
   fprintf(stderr, "STARTING npm_node\n");
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
+  const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
+  const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
+  const bool bun_artifact_reads = VerifyBunArtifactRuntimeReadBoundary();
+  const bool bun_artifact_image = VerifyBunArtifactRuntimeImageAndCommandBoundary();
+  const bool bun_target_shape = VerifyBunTargetLifecycleShapeBoundary();
+  const bool bun_target_production = VerifyBunTargetLifecycleProductionPath();
   fprintf(stderr, "STARTING open_result_negative\n");
   const bool open_result_negative_ok = running && VerifyOpenResultNegativeMatrix(output, remote, control);
   fprintf(stderr, "STARTING open_result_positive\n");
@@ -7022,12 +9962,19 @@ int main(int argc, char** argv) {
   fprintf(stderr, "STARTING resolver_npm_version_production_path\n");
   const bool resolver_npm_version_production_path = VerifyResolverNpmVersionProductionPath();
   fprintf(stderr, "STARTING resolver_lock_generation_production_path\n");
-  const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath();
+  const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath() &&
+      VerifyResolverLockGenerationProductionPath(true);
   fprintf(stderr, "STARTING process_group_lifecycle\n");
   const bool process_group_lifecycle = VerifyAuthoritativeProcessGroupLifecycle();
   fprintf(stderr, "STARTING direct_exec_admission\n");
   const bool direct_exec_admission = VerifyDirectExecAdmission();
 	const bool admission_terminal_protocol = VerifyAdmissionTerminalControlProtocol();
+  const bool kernel_terminal_outcomes = VerifyKernelTerminalOutcomes();
+  const bool python_execution_boundary = VerifyPythonExecutionBoundary();
+  const bool node_execution_boundary = VerifyNodeExecutionBoundary();
+  const bool bun_execution_boundary = VerifyBunExecutionBoundary();
+  const bool kernel_target_load = VerifyAdmissionTerminalControlProtocol(true, 0, true, false) &&
+      VerifyAdmissionTerminalControlProtocol(true, 37 << 8, true, true);
   fprintf(stderr, "STARTING direct_exec_admission_bound\n");
   const bool direct_exec_admission_bound = running && VerifyDirectExecAdmissionBound(output, remote, control);
   fprintf(stderr, "STARTING session_aware_control\n");
@@ -7038,14 +9985,54 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool terraform_profile = VerifyTerraformProviderProfileBoundary();
-  const bool passed = terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool uv_python_query = VerifyUVPythonQueryBoundary();
+  const bool pnpm_node_query = VerifyPNPMNodeQueryBoundary();
+  const bool pnpm_node_query_read = VerifyPNPMNodeQueryReadBoundary();
+  const bool uv_runtime_admission = VerifyUVRuntimeAdmissionBoundary();
+  const bool pnpm_runtime_admission = VerifyPNPMRuntimeAdmissionBoundary();
+  const bool bun_runtime_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true);
+  const bool bun_query_read = VerifyBunQueryReadBoundary();
+  const bool bun_project_read = VerifyBunQueryReadBoundary(kProfileBunProjectResolver);
+  const bool bun_project_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true, true) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",true,false) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"add",false,true) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,false) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,true) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"seed") &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"offline") &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"run") &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",false,false,"run-bare");
+  const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
+  const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
+  const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
+  const bool passed = pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
-      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
+      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
-		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
+		admission_terminal_protocol && kernel_terminal_outcomes && kernel_target_load && python_execution_boundary && node_execution_boundary && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"Pipx native fixed root and six-mount boundary",pipx_native_root},
+      {"Pipx native ARTIFACT clone and query boundary",pipx_native_clone},
+      {"Pipx native readonly inputs and query reexec boundary",pipx_native_read},
+      {"Pipx native control registration/readiness only",pipx_native_admission},
+      {"Pipx fixed ZIP runtime and read boundary",pipx_runtime_read},
+      {"Pipx ARTIFACT-only Python admission",pipx_runtime_admission},
+      {"Bun Artifact exact native runtime reads", bun_artifact_reads},
+      {"Bun Artifact native image and command boundary", bun_artifact_image},
+      {"UV exact interpreter query boundary", uv_python_query},
+      {"PNPM exact Node query boundary", pnpm_node_query},
+      {"PNPM Node query ABI boundary", pnpm_node_query_read},
+      {"UV private tool admission boundary", uv_runtime_admission},
+      {"PNPM private tool admission boundary", pnpm_runtime_admission},
+      {"Bun private tool and exact query admission boundary", bun_runtime_admission},
+      {"Bun exact query overcommit read boundary", bun_query_read},
+      {"Bun project startup read boundary", bun_project_read},
+      {"Bun exact project lock admission boundary", bun_project_admission},
+      {"Bun project lock argv closed shape", bun_project_shape},
+      {"PNPM exact GNU startup read boundary", pnpm_runtime_read},
+      {"UV exact native startup read boundary", uv_runtime_read},
       {"readiness", running}, {"pod-init profile", profile},
       {"profile record limits", profile_limits}, {"finite profile record boundary", record_boundaries}, {"normalized accessors", accessors},
       {"socket family classification", network}, {"unknown socket family", malformed_socket},
@@ -7080,9 +10067,11 @@ int main(int argc, char** argv) {
       {"Cargo close-on-exec entropy boundary", cargo_cloexec_entropy},
       {"SocketPair diagnostic preserves FD authority", socketpair_diagnostic},
       {"Kernel SocketPair descriptor authority", kernel_socketpair},
+      {"FD mutation diagnostic preserves authority", fd_mutation_diagnostic},
       {"Cargo Rustc Zlib ABI boundary", cargo_rustc_zlib},
       {"Cargo Rustc ABI boundary", cargo_rustc_abi},
       {"Go resolver runtime read boundary", go_runtime_read},
+      {"GitHub artifact runtime read boundary", github_artifact_runtime_read},
       {"Go build configuration read boundary", go_build_config_read},
       {"Go build handoff read boundary", go_build_handoff_read},
       {"Cargo build handoff read boundary", cargo_build_handoff_read},
@@ -7122,6 +10111,10 @@ int main(int argc, char** argv) {
       {"Go build assembler null device boundary", go_build_as_null},
       {"Go build CC1 readonly SDK Cgo input boundary", go_build_cc1_sdk_cgo},
       {"exact npm CLI-to-Node", npm_node},
+      {"PNPM target lifecycle shape and topology", pnpm_target_shape},
+      {"PNPM target lifecycle production lineage", pnpm_target_production},
+      {"Bun target lifecycle shape and topology", bun_target_shape},
+      {"Bun target lifecycle production lineage", bun_target_production},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},
       {"no-basename-trust", no_basename_trust_ok},
@@ -7132,6 +10125,11 @@ int main(int argc, char** argv) {
       {"authoritative process-group lifecycle", process_group_lifecycle},
       {"direct-exec one-shot admission", direct_exec_admission},
 		{"direct-exec terminal admission protocol", admission_terminal_protocol},
+      {"kernel direct-exec terminal outcomes", kernel_terminal_outcomes},
+      {"kernel direct-exec accepted target image", kernel_target_load},
+      {"Artifact Python selected console execution boundary", python_execution_boundary},
+      {"Artifact Node readonly execution boundary", node_execution_boundary},
+      {"Artifact Bun readonly execution boundary", bun_execution_boundary},
       {"direct-exec admission bound", direct_exec_admission_bound},
 		{"session-aware control", session_aware_control},
 		{"exact control peer binding", exact_control_peer},

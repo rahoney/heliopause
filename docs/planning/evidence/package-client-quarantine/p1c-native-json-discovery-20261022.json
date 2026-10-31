@@ -1,0 +1,102 @@
+{
+  "baseline": "e25fd979e3baedf25fc79ad07d2de35ab3cf4cae",
+  "scope": "native JSON format discovery in read-only unprivileged offline runc; no artifact import/execution or production gVisor/typed-policy qualification",
+  "uv_native_sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+  "cases": [
+    {
+      "case": "dry-run-old",
+      "exit": 0,
+      "json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "packaging",
+            "version": "24.2",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "install-old",
+      "exit": 0,
+      "json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "packaging",
+            "version": "24.2",
+            "action": "installed"
+          }
+        ],
+        "dry_run": false
+      }
+    },
+    {
+      "case": "upgrade-new",
+      "exit": 0,
+      "json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "packaging",
+            "version": "24.2",
+            "action": "uninstalled"
+          },
+          {
+            "name": "packaging",
+            "version": "25.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": false
+      }
+    },
+    {
+      "case": "same-version",
+      "exit": 0,
+      "json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [],
+        "dry_run": false
+      }
+    }
+  ],
+  "finding": "schema.preview contains native change list, not authenticated URLs/hash/dependency closure; unchanged installed set is omitted",
+  "decision": "retain and wire existing UVLock/standard WHEEL/whole archive/exact-release metadata verification; do not replace with native JSON approval",
+  "not_tested": [
+    "sync JSON output",
+    "production gVisor/typed network selection",
+    "full multi-package native upgrade semantics"
+  ],
+  "cleanup": [
+    {
+      "container": "03b8a47732472af6073bab2f9ca76fd3dc6644f0ac5ccc7df214deea5cc52912",
+      "removed": true
+    },
+    {
+      "container": "028aab48d806c6a8e07e0fcadce8bcf45a57d1bec1d19a26f5571f1e53ca7645",
+      "removed": true
+    },
+    {
+      "container": "e7ada30a19422aae845b3562568455398276f2d10e535ef8a6916bdb4826d245",
+      "removed": true
+    },
+    {
+      "image": "sha256:d67dd77d13599b8a0b688c5e7749f6e41630627689f82e19890d27312878dad1",
+      "removed": true,
+      "no_prune": true
+    }
+  ],
+  "host_before_after_identical": true,
+  "operator_sha256": "e0078aad5e30202a64d5b3a28b4b9ba6b3f0f38dce575d9377cacdb94fc89ec2"
+}

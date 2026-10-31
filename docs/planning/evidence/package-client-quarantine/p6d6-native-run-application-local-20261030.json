@@ -1,0 +1,374 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-D6",
+  "status": "NAMED_CURRENT_NATIVE_RUN_APPLICATION_LOCAL_QUALIFIED",
+  "baseline": "80c8148c87b41ba54d31f9b866bdfbc6827aa4a5",
+  "runtime_inputs": 1387,
+  "existing1384_unchanged": true,
+  "modified_runtime_paths": [],
+  "new_paths": [
+    "internal/bootstrap/python_uv_run_execution.go",
+    "internal/bootstrap/python_uv_run_execution_test.go",
+    "internal/bootstrap/python_uv_run_execution_integration_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/bootstrap/python_uv_run_execution.go",
+      "sha256": "416d46fcf55bb040e983de5ce45200e60e295d7cac07bfcd83c205f732a351bb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution_test.go",
+      "sha256": "f097eb70632bf0f6ddf5550849bdb3249e16be14ac0a3f459fbfd4a3df4dc504",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution_integration_test.go",
+      "sha256": "e71724b89691b26ceb1bbbeaabe3363c44565732344d0cdcc4469798dfecd6fc",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.766
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "./internal/bootstrap",
+        "-run",
+        "^TestPythonUVRunExecution",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 3.323
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.621
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 72.206
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/bootstrap",
+        "./internal/application"
+      ],
+      "exit_code": 0,
+      "seconds": 8.09
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.225
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d6-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.224
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.594
+    }
+  ],
+  "CPP_exact_input_reuse": {
+    "original": "/tmp/haa-p6-d4b2-v1-observer",
+    "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5",
+    "named_latches": 132,
+    "UV_cases": 195
+  },
+  "Go_original_binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p6-d6-v1-bootstrap.test",
+      "bytes": 51856082,
+      "sha256": "3f62786a41916e2f1ea9ea79e11a3c821f9ea4b5e8ce0a869de88e63ac78b8b8"
+    }
+  ],
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 117.806,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "fb762124dd0414569a5f2f42bd0acdf8697aa0ceb335ecc15c74b1e7baf4b981",
+    "sources": [
+      {
+        "path": "/tmp/haa-p6-d6-application-actual-v1/protected-client",
+        "sha256": "3f62786a41916e2f1ea9ea79e11a3c821f9ea4b5e8ce0a869de88e63ac78b8b8"
+      },
+      {
+        "path": "/tmp/haa-p6-d6-application-actual-v1/observer",
+        "sha256": "010cd8030befacb1bc368333bd8d32e6e4cb9ecb894bea0b9e876de378c030f5"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_uv_run_execution.go",
+        "sha256": "416d46fcf55bb040e983de5ce45200e60e295d7cac07bfcd83c205f732a351bb"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_uv_run_execution_test.go",
+        "sha256": "f097eb70632bf0f6ddf5550849bdb3249e16be14ac0a3f459fbfd4a3df4dc504"
+      },
+      {
+        "path": "/tmp/haa-p6-d3-20261029-source/internal/bootstrap/python_uv_run_execution_integration_test.go",
+        "sha256": "e71724b89691b26ceb1bbbeaabe3363c44565732344d0cdcc4469798dfecd6fc"
+      }
+    ],
+    "scope": "current native-run application workflow normal0/guest2/configured-command mismatch3 with fresh public whole source/current inspection/Evidence/Policy/records and same-context existing readonly backend; no CLI/aliases/final qualification",
+    "passed_named_tests": [
+      "TestLinuxPythonUVRunExecutionWorkflowIntegration"
+    ],
+    "native_solver": "ACTUAL UV isolated tool run after independent whole source/startup binding",
+    "current_verification_inspection_Evidence_Policy": "ACTUAL",
+    "owned_python_workspaces_absent": true,
+    "success_cases": [
+      [
+        "1",
+        "true",
+        "true",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "2",
+        "true",
+        "true",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ],
+      [
+        "3",
+        "false",
+        "false",
+        "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+      ]
+    ],
+    "named_pass": true,
+    "observer_directory_entries_after": [],
+    "observer_directory_empty_after": true,
+    "all_expected_cases": true
+  },
+  "actual_parent_seconds": 115.44,
+  "actual_originals": "docs/github-logs/package-client-quarantine-20261021/p6-d6-application-actual-v1-original-inventory.json",
+  "actual_cases": {
+    "normal": "fresh whole current required checks/Evidence/M3/M5 ALLOW; native-run identity; same original/current console/readonly runtime; parent asserts complete exit0 and private body",
+    "guest_error": "separate fresh current approval; same-context readonly runtime; parent asserts complete typed PythonProgramError/guest exit2",
+    "configured_command_mismatch": "separate fresh whole current Policy ALLOW; command differs from native source/console choice; PREPARATION_FAILED, runtime NOT_RUN/no exit/no new staged records"
+  },
+  "human_review": "No existing production/runtime/Core/CLI/CPP source changed. New immutable per-service command/native selector passes resolution only to existing current inspection/Policy. Native DATA entry never becomes approval or runtime acquisition. Existing canonical current console binder re-reads the approved primary; configured/requested/default command must match. Existing Python execution runtime, records, privacy/ASCII reporting and limits retained. Old tool-install factory/identity remains separate.",
+  "exporter_provenance": "Existing pinned never-started Python image DATA exporter with test-only exact final parent/flag dispatch; original/derived hashes preserved in actual exporter-dispatch-provenance. No new hosted profile or native Host program execution claimed.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (current application factory and actual three-case consumer)",
+    "QUALIFIED": "YES (same named local application scope)",
+    "ACCEPTANCE_CLOSED": "YES (same named local scope)",
+    "MISSING": [
+      "uvx/uv tool run CLI aliases and preflight/output/typed exit tests",
+      "additional public package/console-name/dependency equivalence and remaining hostile matrix",
+      "grouped new-source hosted/final CPU/three CUDA/signed qualification"
+    ]
+  },
+  "cleanup": {
+    "completed_duplicate_ELFs": 2,
+    "logical_bytes": 55089722,
+    "cumulative_ELF_files": 245,
+    "private_completed_cache_dirs": 6,
+    "combined_logical_bytes": 11609902450,
+    "root_processes": 91,
+    "references": 0,
+    "query_errors": 0,
+    "Windows_VHD_physical_shrink_claimed": false
+  },
+  "CI435": "sourceb0f4cbc/treeeebd72a1 remains frozen. Actual20min poll02 at18:31:44UTC=8SUCCESS/Linux integration ongoing; next18:51:44UTC. New D5/D6 source outside that run. No new push.",
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-plan.py",
+      "bytes": 5784,
+      "sha256": "a5e1a84add2dd1d8072fd8927e5b39a4e166c768e083b484546b2a9cd2251e91"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-edit.py",
+      "bytes": 9211,
+      "sha256": "f89d50ebb0ccccdab35ae5a1078fd7e3f65a438d416cafb1252c787dc336dc3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-check.py",
+      "bytes": 3181,
+      "sha256": "9fe5bc0c7063791694390619c7d802b1899dc4478d6f0f54b05a957e4b336a86"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-checks.json",
+      "bytes": 1753,
+      "sha256": "2b8482807344affc7811f96ceb7c4bea401efe2be70c3325fab20fb1dd294bc9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-build-identity.json",
+      "bytes": 253130,
+      "sha256": "75b6d2f685bd2e446a43e1c6b4c973ba9db129e1bc4b298b3cb4d45aae2ffdb6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-actual-producer.py",
+      "bytes": 3051,
+      "sha256": "1921b3d0eed5fe666c69f76c21366af5532e58457fc8dfa4bc04690c4dc9d38a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-application-actual-v1.py",
+      "bytes": 12041,
+      "sha256": "eaaf74b97887993cfae5a8df6c5786a766937cea9495cf9775c695dab7dddd56"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-cleanup-producer.py",
+      "bytes": 1870,
+      "sha256": "9bf69c666d3b333e65a8a0244ac6a1c7b37befadc3785952aa63d57c73f78411"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-freeze-actual.py",
+      "bytes": 1060,
+      "sha256": "424aa409d7311b4809e15768474fc41eb6fafe0bc9f0cb0b93a09c544e5bcfd6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-focused.log",
+      "bytes": 61,
+      "sha256": "edd1bb744e5b8ef5f053dec044bcc3c965f7aa344240928ce008fef316d161df"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-tagged-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-quick.log",
+      "bytes": 1354,
+      "sha256": "b67da847925914ee839cb5cca1e35661223e4c2c60aa3c274b5244d85a03ac77"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-affected-race.log",
+      "bytes": 124,
+      "sha256": "6dc9f0f340aa2b382359d567997fe1c57c8b098f60011e4e4184ef6932946415"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-tagged-staticcheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-bootstrap-build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-inventory.py",
+      "bytes": 3798,
+      "sha256": "19f3c40da4ec9565a358477d2e78ba7dbe2058f53b9a0c2ce8597a1fd5badc48"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-cleanup.py",
+      "bytes": 6123,
+      "sha256": "10ab94a30b13e0dc32a693b0d01ae4ed5ca9af17ca5a40f033d6bd2480d3f5f6"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-candidate.json",
+      "bytes": 2551,
+      "sha256": "6805d0db4334318966846774112be66902614fb610d752222c6929fd955e3e9c"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-zombie-proof.json",
+      "bytes": 1629,
+      "sha256": "6d65a5cc5b039fad32f7c1bb274bc5a47b9e795805de39f4bbfd5d9ca29ba3e0"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-preflight.json",
+      "bytes": 4329,
+      "sha256": "6733213e5f62eb06f4585d1cbc8f131654951ec0616069f714641bd5736a3c4d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-result.json",
+      "bytes": 3287,
+      "sha256": "858b4d54ad0f5b90d8139b03beda8a4de8b4a2eb20ad1094f4445973b03b6ee1"
+    }
+  ]
+}

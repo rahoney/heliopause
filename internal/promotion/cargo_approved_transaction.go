@@ -57,7 +57,17 @@ type approvedCargoProjectGuard struct {
 	buildInputs       *domain.ProjectBuildInputs
 }
 
-func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedCargoProjectGuard, resultErr error) {
+func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (*approvedCargoProjectGuard, error) {
+	return p.begin(ctx, install, false, false)
+}
+
+// BeginLockUpdate requires current independent approval or explicit enrollment.
+// Enrollment never bypasses validation of existing controller-owned approval.
+func (p *CargoProjectPromotion) BeginLockUpdate(ctx context.Context, install domain.InstallContext, adopt bool) (*approvedCargoProjectGuard, error) {
+	return p.begin(ctx, install, true, adopt)
+}
+
+func (p *CargoProjectPromotion) begin(ctx context.Context, install domain.InstallContext, lockUpdate, adopt bool) (result *approvedCargoProjectGuard, resultErr error) {
 	if ctx == nil || p == nil || p.cache == nil || p.stateRoot == "" || !install.Valid() {
 		return nil, errors.New("cargo project mutation requires configured approval boundaries")
 	}
@@ -85,6 +95,9 @@ func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.Instal
 	g.plan, err = freezeCargoProject(project)
 	if err != nil {
 		return nil, err
+	}
+	if lockUpdate && g.plan.members["Cargo.lock"] == nil {
+		return nil, errors.New("cargo update requires an existing Cargo.lock")
 	}
 	g.source, err = sandbox.CaptureCargoProjectSource(ctx, project)
 	if err != nil {
@@ -114,9 +127,12 @@ func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.Instal
 		if _, markerErr := g.guard.root.Lstat(cargoTransactionMetadata); !errors.Is(markerErr, os.ErrNotExist) {
 			return nil, errors.New("cargo marker has no independent retained approval")
 		}
+		if lockUpdate && !adopt {
+			return nil, errors.New("cargo update requires current HAA approval or explicit --adopt")
+		}
 	} else if err != nil || !pypiSingleLink(g.originalStateInfo) {
 		return nil, errors.New("cargo retained approval is unavailable or aliased")
-	} else if err := g.verifyRetainedApproval(ctx); err != nil {
+	} else if err := g.verifyRetainedApprovalWithChangedInputs(ctx, lockUpdate && adopt); err != nil {
 		return nil, err
 	}
 	if err := g.VerifyUnchanged(ctx); err != nil {
@@ -151,6 +167,10 @@ func (g *approvedCargoProjectGuard) checkRecoveryState() error {
 }
 
 func (g *approvedCargoProjectGuard) verifyRetainedApproval(ctx context.Context) error {
+	return g.verifyRetainedApprovalWithChangedInputs(ctx, false)
+}
+
+func (g *approvedCargoProjectGuard) verifyRetainedApprovalWithChangedInputs(ctx context.Context, allowChangedInputs bool) error {
 	var doc cargoProjectApproval
 	decoder := json.NewDecoder(bytes.NewReader(g.originalState))
 	decoder.DisallowUnknownFields()
@@ -171,13 +191,35 @@ func (g *approvedCargoProjectGuard) verifyRetainedApproval(ctx context.Context) 
 				matched = true
 			}
 		}
-		if !control.Present() || !matched {
+		if !allowChangedInputs && (!control.Present() || !matched) {
 			return errors.New("cargo retained approval does not match current controls")
 		}
 	}
 	manifests, err := cargoLocalManifestDigests(g.source.Files())
-	if err != nil || !sameCargoManifests(manifests, doc.LocalManifests) {
+	if err != nil || (!allowChangedInputs && !sameCargoManifests(manifests, doc.LocalManifests)) {
 		return errors.New("cargo retained local manifests changed")
+	}
+	// Retained manifest bindings remain structurally valid even when current
+	// user changes are explicitly being re-enrolled.
+	if len(doc.LocalManifests) == 0 || len(doc.LocalManifests) > 4096 {
+		return errors.New("cargo retained local manifest bindings are invalid")
+	}
+	for name, value := range doc.LocalManifests {
+		if filepath.IsAbs(name) || filepath.ToSlash(filepath.Clean(name)) != name || strings.Contains(name, "\\") || strings.HasPrefix(name, "../") || filepath.Base(name) != "Cargo.toml" {
+			return errors.New("cargo retained local manifest path is invalid")
+		}
+		if _, err := domain.NewSHA256Digest(value); err != nil {
+			return errors.New("cargo retained local manifest digest is invalid")
+		}
+	}
+	rootManifest := false
+	for _, control := range doc.Approval.Controls {
+		if control.Path == "Cargo.toml" && control.SHA256 == doc.LocalManifests["Cargo.toml"] {
+			rootManifest = true
+		}
+	}
+	if !rootManifest {
+		return errors.New("cargo retained root manifest binding is invalid")
 	}
 	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval); err != nil {
 		return err
@@ -232,7 +274,7 @@ func (g *approvedCargoProjectGuard) Commit(ctx context.Context, update domain.Pr
 	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactcargo.Source() || !sameCargoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("cargo transaction update differs from guarded project")
 	}
-	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged)
+	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged, !update.HasRequestedResolution())
 }
 
 // CommitSnapshot retains approval for the complete current project without
@@ -257,10 +299,10 @@ func (g *approvedCargoProjectGuard) CommitSnapshot(ctx context.Context, snapshot
 		}
 	}
 
-	return g.commitSelection(ctx, snapshot, controls, staged)
+	return g.commitSelection(ctx, snapshot, controls, staged, false)
 }
 
-func (g *approvedCargoProjectGuard) commitSelection(ctx context.Context, selected domain.ProjectDependencySnapshot, controls []domain.ProjectControlFile, staged domain.StagedProjectSet) (resultErr error) {
+func (g *approvedCargoProjectGuard) commitSelection(ctx context.Context, selected domain.ProjectDependencySnapshot, controls []domain.ProjectControlFile, staged domain.StagedProjectSet, lockOnly bool) (resultErr error) {
 	if !staged.Valid() {
 		return errors.New("cargo project requires an approved staged cache")
 	}
@@ -303,6 +345,9 @@ func (g *approvedCargoProjectGuard) commitSelection(ctx context.Context, selecte
 	if len(selectedBodies) != 2 || artifactcargo.ValidateProjectManifest(selectedBodies["Cargo.toml"], "Cargo.toml") != nil || artifactcargo.ValidateProjectLock(selectedBodies["Cargo.lock"]) != nil {
 		return errors.New("cargo selected controls are incomplete or invalid")
 	}
+	if lockOnly && (g.plan.members["Cargo.lock"] == nil || sha256.Sum256(selectedBodies["Cargo.toml"]) != g.plan.cargoToml) {
+		return errors.New("cargo lock update requires the original manifest and existing lock")
+	}
 	selectedFiles := g.source.Files()
 	for name, body := range selectedBodies {
 		selectedFiles[name] = body
@@ -333,6 +378,7 @@ func (g *approvedCargoProjectGuard) commitSelection(ctx context.Context, selecte
 		return err
 	}
 	plan := g.plan
+	plan.lockOnly = lockOnly
 	plan.authorized = true // Complete typed ALLOW/cache/Evidence were revalidated above.
 	transaction, err := beginCargoProjectTransaction(plan, workspace, controls...)
 	if err != nil {

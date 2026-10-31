@@ -57,6 +57,10 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 			return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH")
 		}
 	}
+	required, err := artifactgo.HashRequiredMods(bundle, artifact.Identity(), declared)
+	if err != nil {
+		return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH")
+	}
 	lookupCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 	started := time.Now()
@@ -73,6 +77,15 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 	}
 	if !exactLine(zipLines, name+" "+version+" "+archiveSum) || !exactLine(modLines, name+" "+version+"/go.mod "+modSum) {
 		return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH")
+	}
+	for _, ref := range required {
+		lines, err := client.Lookup(name, ref.Version+"/go.mod")
+		if err != nil {
+			return domain.VerificationReport{}, ops.lookupError("required-control", started)
+		}
+		if !exactLine(lines, name+" "+ref.Version+"/go.mod "+ref.Sum) {
+			return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH")
+		}
 	}
 	return verificationReport(artifact, true, "")
 }

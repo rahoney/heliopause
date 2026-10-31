@@ -1,0 +1,113 @@
+{
+  "work_item": "M13-004/P3-B5e",
+  "baseline": "728f65013317f61e9b3bf3d102072e0f41cc1d47",
+  "status": {
+    "IMPLEMENTED": "YES (existing fixed supply and compiled bootstrap client reused)",
+    "WIRED": "YES (four current project consumers, owning helper and sandbox restoration)",
+    "QUALIFIED": "YES (named local actual script mode and validators); NO (hosted)",
+    "ACCEPTANCE_CLOSED": "YES (local wiring only); NO (whole P3/remote)",
+    "MISSING": [
+      "hosted exact-source project qualification",
+      "Bun actual SIGINT/SIGKILL/ENOSPC failure acceptance",
+      "explicit Bun Artifact runtime lane",
+      "final support and affected-profile matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "5b83b6b1dc652b0c7005e93bbc739626a537d001a4da15fbc67b1567510e4591",
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "43f7f18cb6e2fbc3bf1aef323edd1e343ca0df855003a4a88d376e1074f0837d",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "20d3ecb2c1c376de54bec7d3388b23a5a6abec2ec3eaf3159fccd9ea62f996e2",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "d2633b8dbe413b0cb8f2a41f4d671475766bc1b0b7922a4a3ff8d49e6e653893",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "c2688706224116311db2ba348a79d0240c58c3e1ca31a7fefa924725c0f710a1",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5e-scope-reviewed-workflow.json",
+      "exit": 0,
+      "seconds": 2.079,
+      "receipt_sha256": "6a05e5fbdf84648a334318ce3cd2a6fba7ee85ece2b26ccc25623f16ee17cdb0"
+    },
+    {
+      "receipt": "p3b5e-scope-reviewed-quick.json",
+      "exit": 0,
+      "seconds": 67.189,
+      "receipt_sha256": "8ce31553c3ee36472c97c5cc87509b43e0e9edc1c9c3f48583921dfdb50adf99"
+    },
+    {
+      "receipt": "p3b5e-scope-reviewed-security.json",
+      "exit": 0,
+      "seconds": 11.872,
+      "receipt_sha256": "4ed7b11eb73867fbe6c7bd1c17d0f6d74b37d19ea8b3d8959d738cba6b02f4a3"
+    },
+    {
+      "receipt": "p3b5e-scope-reviewed-docs.json",
+      "exit": 0,
+      "seconds": 0.286,
+      "receipt_sha256": "d2f107679061ae492778c7c8419f52c6586f470735fff581d3115e64b953e450"
+    },
+    {
+      "receipt": "p3b5e-checker-full-race.json",
+      "exit": 0,
+      "seconds": 38.437,
+      "receipt_sha256": "443e35c0df55b14b03df500193588ca4c47a1db94d51958eff77bdc40982929e"
+    },
+    {
+      "receipt": "p3b5e-ci-project-v1-result.json",
+      "exit": 0,
+      "seconds": 519.694,
+      "receipt_sha256": "baf446796c9f3483727c102522d39f51628d1f8991a77556e2b4509f990714cf"
+    }
+  ],
+  "actual": {
+    "command": "bash scripts/ci-bun-runtime.sh project",
+    "first_state": "no native Bun installation, frozen ZIP downloaded and materialized inside private mount namespace",
+    "top_level_pass_seconds": {
+      "TestBunPublicApprovedCacheIntegration": 46.97,
+      "TestBunPublicProjectTransactionIntegration": 151.89,
+      "TestBunProjectCLIIntegration": 182.7,
+      "TestBunNativeOriginalIntegration": 124.28
+    },
+    "skip": false,
+    "helper": "owning authenticated helper CONFIRMED_STOPPED wait=0",
+    "cleanup": "child installed-root/supply work absent; owned runtime directories removed; Host entire snapshot IDENTICAL",
+    "aggregate_operator_seconds": 519.694,
+    "operator_deadline_seconds": 1320,
+    "namespace_deadline_seconds": 1200,
+    "individual_deadlines": "existing 5m for each client invocation; hosted job timeouts unchanged"
+  },
+  "reuse": {
+    "baseline": "728f65013317f61e9b3bf3d102072e0f41cc1d47",
+    "supply_cleanup_body_identical": true,
+    "supply_cleanup_sha256": "3a80416df7fbd1335326f57115674785df34929b7018c10aa0ef308d4129ed97",
+    "default_native_subshell_identical": true,
+    "default_native_sha256": "76169f429ec0148605166449bcafe6d9ec1c3ab668591acd093bad9b986eba5d",
+    "whole_current_script_sha256": "5b83b6b1dc652b0c7005e93bbc739626a537d001a4da15fbc67b1567510e4591",
+    "scope": "Mechanical reuse only; hosted project qualification remains pending"
+  },
+  "first_failure": {
+    "receipt": "p3b5e-first-workflow-assessment.json",
+    "cause": "validator expected native scope accidentally included new project commands; separated native and guarded bootstrap expectations; no script or security condition relaxed"
+  },
+  "remote": "no push/dispatch in this local substep; CI412 all-green belongs to frozen7544 backend source only",
+  "limitations": "Node-compatible npm lifecycle path; no explicit Bun Artifact runtime or bunx support qualification"
+}

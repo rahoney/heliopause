@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -80,7 +81,12 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
-	identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
+	return resolvedArtifactForAsset(reference.Source(), asset)
+}
+
+func resolvedArtifactForAsset(source domain.SourceID, asset ResolvedAsset) (domain.ResolvedArtifact, error) {
+	selector := asset.Selector()
+	identity, err := domain.NewResolvedArtifactIdentity(source, selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
@@ -198,7 +204,7 @@ func (c *Client) downloadAsset(ctx context.Context, asset resolvedLocator, direc
 	temporaryPath := temporary.Name()
 	defer func() { _ = os.Remove(temporaryPath) }()
 	hash := sha256.New()
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), io.LimitReader(response.Body, int64(asset.size)+1))
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), ports.DownloadReader(ctx, io.LimitReader(response.Body, int64(asset.size)+1), int64(asset.size)))
 	syncErr, closeErr := temporary.Sync(), temporary.Close()
 	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || uint64(written) != asset.size {
 		return "", 0, errors.New("stream GitHub Release asset failed or differed from declared size")
@@ -216,6 +222,7 @@ func (c *Client) request(ctx context.Context, rawURL, accept string, permitRedir
 	}
 	request.Header.Set("Accept", accept)
 	request.Header.Set("User-Agent", "helox/0")
+	request.Header.Set("X-GitHub-Api-Version", APIVersion)
 	clientCopy := *c.httpClient
 	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	response, err := clientCopy.Do(request)

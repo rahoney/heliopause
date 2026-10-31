@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestCargoRuntimeLockMatchesPinnedIdentity(t *testing.T) {
@@ -33,7 +35,7 @@ func TestCargoRuntimeLockMatchesPinnedIdentity(t *testing.T) {
 
 func TestProbeCargoRejectsUnverifiedRuntimeOrImage(t *testing.T) {
 	base := map[string]string{
-		"docker version --format {{.Server.Version}}": "29.8.1",
+		"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine,
 		"runsc --version":      canonicalRunscVersionOutput,
 		"runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n",
 		"docker image inspect " + PinnedCargoRuntime().ImageReference + " --format {{.Id}} {{.Architecture}}": "sha256:" + strings.Repeat("a", 64) + " amd64",

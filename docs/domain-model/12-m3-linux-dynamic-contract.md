@@ -4,12 +4,12 @@ M3는 M2의 exact npm Artifact에 Linux 전용 dynamic lifecycle inspection을 �
 
 ## 1. Runtime identity와 지원 경계
 
-Production backend는 Docker Engine의 OCI runtime integration 위에서 canonical `scripts/runtimes.lock.json`의 gVisor source와 exact HAA patch/build-input·installed-byte identity를 사용한다. 현재 qualification은 `release-20260907.0` / `7c6199801fd233d6d55309af4645d4746a077de7`, Docker29.8.1이다. gVisor는 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. M3 당시 `release-20260810.0` / `5ceb9a5fd5750d6c73dd166441f28306039300d0`과 Docker29.6.x 및 stock upstream SHA-512 결과는 역사적 qualification 범위다. Distributed patched artifact의 architecture별 final digest와 배포 계약은 M10/M13이 소유한다.
+Production backend는 Docker Engine의 OCI runtime integration 위에서 canonical `scripts/runtimes.lock.json`의 gVisor source와 exact HAA patch/build-input·installed-byte identity를 사용한다. 직전 qualification은 `release-20260907.0` / `7c6199801fd233d6d55309af4645d4746a077de7`, Docker29.8.1을 사용했다. 현재 Docker 최소/CI 버전은 canonical lock을 따르며, 2026-10-31 보안 패치 후보와 새 qualification은 [전체 감사](../planning/evidence/m13-004-convenience/full-source-audit-20261031.md)가 소유한다. gVisor는 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. M3 당시 `release-20260810.0` / `5ceb9a5fd5750d6c73dd166441f28306039300d0`과 Docker29.6.x 및 stock upstream SHA-512 결과는 역사적 qualification 범위다. Distributed patched artifact의 architecture별 final digest와 배포 계약은 M10/M13이 소유한다.
 
 - 현재 qualified Host: Linux amd64와 canonical lock의 Docker/runsc/observer identity·필수 cgroup/trace capability. 다른 architecture의 registration이나 source build만으로 동적 지원을 주장하지 않는다. Public installer/Host activation은 M13의 별도 acceptance다.
 - unsupported host: macOS, Windows, Docker/runc-only host, rootless/cgroup capability 또는 gVisor trace capability가 없는 Linux host. 이 경우 required dynamic inspection은 `UNAVAILABLE / M3_DYNAMIC_CAPABILITY_UNAVAILABLE`이며 자동 `ALLOW`가 없다.
 - M3 CI는 `ubuntu-24.04` pinned runner에서 explicit runtime probe가 성공할 때만 Linux dynamic integration job을 실행한다. probe 실패는 skipped success가 아니라 failure다.
-- workload image는 canonical runtime lock의 `node_image.reference`와 bundled npm identity로 고정한다. 현재 Node24.21.0/npm11.19.0이다. Runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
+- workload image는 canonical runtime lock의 `node_image.reference`와 bundled npm identity로 고정한다. Node24.21.0/npm11.19.0 결과는 직전 qualification 범위이며 현재 고정값은 같은 lock을 따른다. Runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
 
 공식 근거: [gVisor installation](https://gvisor.dev/docs/user_guide/install/), [gVisor Docker quick start](https://gvisor.dev/docs/user_guide/quick_start/docker/), [gVisor security model](https://github.com/google/gvisor), [locked gVisor trace/seccheck](https://github.com/google/gvisor/blob/7c6199801fd233d6d55309af4645d4746a077de7/pkg/sentry/seccheck/README.md), [Docker Engine 29 release notes](https://docs.docker.com/engine/release-notes/29/).
 

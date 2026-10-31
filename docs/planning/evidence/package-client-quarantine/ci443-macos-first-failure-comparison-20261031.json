@@ -1,0 +1,50 @@
+{
+  "work_item": "M13-004/P7 cu126 CI443 first failure",
+  "status": "CONFIRMED_PRODUCTION_BUILD_DEADLINE_LOWER_CAUSE_UNKNOWN",
+  "same_whole_tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "image": "macos-26 20260824.0517.1",
+  "setup_go_cache": false,
+  "successful_ci442": {
+    "job": 124196516696,
+    "production_build_seconds": 77.614277,
+    "default_tests": "PASS",
+    "markers": [
+      "2026-10-30T16:58:45.8376200Z [check] prepare module cache",
+      "2026-10-30T16:58:45.8436520Z [check] download product modules",
+      "2026-10-30T16:59:56.8070730Z [check] production build",
+      "2026-10-30T17:01:14.4213500Z [check] default test"
+    ]
+  },
+  "failed_ci443": {
+    "job": 124268547727,
+    "production_build_to_deadline_seconds": 120.11446,
+    "default_tests": "NOT_REACHED",
+    "reported_terminal": "scripts/update-runtime: context deadline exceeded; process exit1",
+    "cleanup_orphan": "dsymutil",
+    "markers": [
+      "2026-10-30T19:30:34.0203520Z [check] prepare module cache",
+      "2026-10-30T19:30:34.0226170Z [check] download product modules",
+      "2026-10-30T19:32:15.4617540Z [check] production build",
+      "2026-10-30T19:34:15.5762140Z github.com/rahoney/heliopause/scripts/update-runtime: context deadline exceeded",
+      "2026-10-30T19:34:18.4902240Z Terminate orphan process: pid (7860) (dsymutil)"
+    ]
+  },
+  "inferences_not_claimed": [
+    "cause is H1/H2/source regression",
+    "specific CPU/memory/cache/service root cause",
+    "default test failure",
+    "deadline increase already approved for macOS"
+  ],
+  "next": "same-source requalification completed with unchanged limits; preserve first build deadline/lower cause UNKNOWN; no rerun",
+  "same_commit_requalification": {
+    "attempt": 2,
+    "job": 124287875595,
+    "conclusion": "success",
+    "production_build_seconds": 83.851358,
+    "default_tests": "PASS",
+    "source_or_limits_changed": false,
+    "historical_lower_cause": "UNKNOWN",
+    "raw_log": "docs/github-logs/package-client-quarantine-20261021/ci443-attempt2-job124287875595.log"
+  }
+}

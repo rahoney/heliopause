@@ -1,0 +1,53 @@
+{
+  "scope": "P4-M4A1 immutable receipt projection to fixed native query interpreter only; no native execution/replay/Host upgrade claim",
+  "baseline": "dea8cf82ea9c2b1dfa7106c9c020b31cff8a8bca",
+  "implemented": "YES",
+  "wired": "YES (existing shared layout body and native data method); NO (original replay/native update backend)",
+  "qualified": "YES (named local canonical and full PyPI Race)",
+  "acceptance_closed": "YES (named data projection); NO (M4/P4)",
+  "checks": [
+    {
+      "receipt": "p4m4a-tool-native-layout-v1-quick.json",
+      "seconds": 250.828,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "receipt": "p4m4a-tool-native-layout-v1-security.json",
+      "seconds": 13.77,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p4m4a-tool-native-layout-v1-docs.json",
+      "seconds": 0.26,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p4m4a-tool-native-layout-v1-full-affected-race.json",
+      "seconds": 7.689,
+      "log_sha256": "dbd9da07bb21f40e0f8bab9c1a170c50459e210da1506e938b45236bf2053579"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/artifact/pypi/uv_tool_layout.go",
+      "sha256": "dd41db6176aee3bc4886f9e0f57d38948b19cb3d6614024d5d7a95895aaad5a4"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_tool_layout_test.go",
+      "sha256": "5e8dd728ed9638f7b53c87c4798a1578a276adc7606b90f8889dec2457472644"
+    }
+  ],
+  "mechanical_reuse": "p4m4a-native-layout-mechanical-reuse-v1.json; existing Host projection body identical except same interpreter passed by original wrapper",
+  "verified": [
+    "original body and exact requirement/options/command names retained",
+    "Host interpreter/exposure replaced by private roots and fixed image Python in selection projection",
+    "stable roundtrip and old Host consumers",
+    "no execution/ownership authority from metadata projection"
+  ],
+  "missing": [
+    "controller metadata-only replay archive and original WHEEL binding",
+    "actual native upgrade/query/complete output/source binding",
+    "current update workflow/public CLI/native adoption/pipx/final profiles"
+  ],
+  "remote_ci": "CI414294bb57 Quick fixture cleanup failure; Linux running/Required pending at03:49:19UTC; follow-up real timer04:09:19UTC; this source local only"
+}

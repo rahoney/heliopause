@@ -1,0 +1,98 @@
+{
+  "work_item": "M13-004/P7 final profile cu130",
+  "profile": "cu130",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "qualified": true,
+  "all10_success": true,
+  "status": "QUALIFIED_EXACT_SOURCE_MACOS_DEPENDENT_REQUALIFICATION",
+  "run_id": 41129501671,
+  "run_number": 444,
+  "run_attempt": 2,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41129501671",
+  "run_started_at": "2026-10-30T22:15:22Z",
+  "run_updated_at": "2026-10-30T22:23:10Z",
+  "ordinary_cpu_prerequisite": "ci442-ordinary-cpu-qualification-20261031.json",
+  "previous_profile": "p7-cu126-final-qualification-20261031.json",
+  "execution_composition": {
+    "retained_successful_attempt1_jobs": 8,
+    "retained_Linux_CPU_and_cu130_full": true,
+    "requalified_jobs": [
+      "macOS",
+      "Required"
+    ],
+    "all10_source_proof": "docs/github-logs/package-client-quarantine-20261021/ci444-attempt2-full-source-log-proof.json",
+    "decoded_log_bytes": 1849046
+  },
+  "linux": {
+    "profile": "cu130",
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "status": "LINUX_QUALIFIED_WHOLE_PROFILE_PENDING_MACOS",
+    "job": 124316524714,
+    "CPU_full_seconds": 300.39,
+    "cu130_full_seconds": 1145.81,
+    "top_parent_occurrences": 6,
+    "unique_top_parents": 5,
+    "no_fail_or_skip": true,
+    "explicit_qualification_input": {
+      "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+      "explicit_input": {
+        "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+        "source": "pypi",
+        "project": "numpy",
+        "version": "2.4.6",
+        "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+        "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+        "reason": "BROADER_MODULE_PROBES"
+      },
+      "plan": "cuda-bindings-numpy",
+      "profile": "cu130",
+      "resolution_sha256": "93614a35aeb83d72800460112f3b1ddd15c09b58346390f18fc9102589e770e3",
+      "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu130",
+      "schema_version": 1,
+      "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+      "target_project": "cuda-bindings",
+      "target_source": "pypi",
+      "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "target_version": "13.4.4",
+      "torch_version": "2.14.0+cu130"
+    },
+    "bounded_command_module": "triton.profiler.viewer",
+    "bounded_command_disposition": "NOT_ATTESTED",
+    "asserted_by_full_test": [
+      "installed torch/current source manifest exists",
+      "bounded not-attested evidence referenced in result/promotion",
+      "qualification-only NumPy not promoted as a requested dependency"
+    ],
+    "helper_waits": [
+      "0",
+      "0"
+    ],
+    "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=170170",
+    "raw_log": "docs/github-logs/package-client-quarantine-20261021/ci444-job124316524714.log"
+  },
+  "macos": {
+    "job": 124341431750,
+    "status": "success",
+    "production_build_seconds": 59.56073,
+    "default_tests": "PASS",
+    "source_or_limits_changed": false
+  },
+  "timer": {
+    "session_id": 70152,
+    "pid": 832409,
+    "uid": 1000,
+    "start_ticks": "7413457",
+    "actual_queries": 1,
+    "next_due_at": null,
+    "observed_exit_code": 0,
+    "exec_chunk_id": "c2f39d",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "first_failure_retained": "ci444-macos-first-failure-20261031.json",
+  "first_failure_log_limitation": "Mac original log HTTP404 BlobNotFound on2 spaced fetches; command phase and lower cause remain UNKNOWN; official whole15min deadline retained",
+  "historical_lower_cause": "UNKNOWN; new success is not proof of root-cause fix",
+  "next": "same-source cu132 then final support/whole acceptance",
+  "whole_acceptance_closed": false
+}

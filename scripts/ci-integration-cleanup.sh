@@ -118,7 +118,7 @@ haa_start_policy_helper() {
   haa_prepare_policy_helper_launch || return $?
   if [[ -z ${RUNNER_TEMP-} ]]; then haa_helper_unknown 1 'missing helper log directory'; return $?; fi
   printf 'helper launch: bash=%s version=%s owner=%s\n' "$BASH" "$BASH_VERSION" "$$"
-  sudo /usr/libexec/heliopause/haa-network-policy-helper >> "$RUNNER_TEMP/haa-network-policy-helper.log" 2>&1 &
+  sudo /usr/libexec/heliopause/haa-network-policy-helper serve >> "$RUNNER_TEMP/haa-network-policy-helper.log" 2>&1 &
   haa_record_policy_helper_launch "$!" || return $?
   for ((attempt=0; attempt<600; attempt++)); do
     haa_observe_policy_helper || return $?
@@ -174,6 +174,23 @@ haa_install_ci_client() {
   if [[ "$1" == "$RUNNER_TEMP/helox" ]]; then haa_client_restore_required=0; fi
 }
 
+# A bounded diagnostic tail is separate from lifecycle/termination authority.
+haa_ci_report_resource_timings() {
+  local log_path
+  if [[ -z ${RUNNER_TEMP-} ]]; then return 0; fi
+  log_path="$RUNNER_TEMP/haa-network-policy-helper.log"
+  if [[ ! -f "$log_path" || -L "$log_path" ]]; then return 0; fi
+  if tail -c 65536 "$log_path" | awk '
+    length($0) <= 512 && /^observation_resource_read_timing started_unix_ns=[0-9]+ dispatch_ns=[0-9]+ peer_auth_ns=[0-9]+ request_ns=[0-9]+ engine_ns=[0-9]+ response_ns=[0-9]+ close_ns=[0-9]+ total_ns=[0-9]+$/ {
+      rows[count % 16] = $0; count++
+    }
+    END { first = count > 16 ? count - 16 : 0; for (i = first; i < count; i++) print rows[i % 16] }
+  ' >&2; then :; else
+    printf 'diagnostic: helper read timing unavailable\n' >&2
+  fi
+  return 0
+}
+
 haa_ci_finish() {
   local original=$1 stop_status=0 restore_status=0 restore_result=NOT_REQUIRED
   trap - EXIT
@@ -188,6 +205,7 @@ haa_ci_finish() {
       echo 'cleanup: production restoration incomplete; helper/replacement identity is uncertain' >&2
     fi
   fi
+  haa_ci_report_resource_timings
   printf 'cleanup: original=%s helper_state=%s helper_stop=%s client_error=%s client_restore=%s restore_result=%s pid=%s\n' "$original" "${haa_helper_state-UNKNOWN}" "$stop_status" "${haa_client_error-0}" "$restore_status" "$restore_result" "${policy_helper_pid-}" >&2
   if (( original != 0 )); then exit "$original"; fi
   if (( stop_status != 0 )); then exit "$stop_status"; fi

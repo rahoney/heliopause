@@ -1,0 +1,141 @@
+{
+  "work_item": "M13-004/P3-B4c-b",
+  "baseline": "1ea12d9b80f4948e7450e34e8d7f83c08c544e91",
+  "status": {
+    "IMPLEMENTED": "YES (production script-free native seed/cache/whole project prepare)",
+    "WIRED": "YES (typed native scope and actual public consumers)",
+    "QUALIFIED": "YES (named local preparation and affected PNPM consumers)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4/Bun)",
+    "MISSING": [
+      "exact instance lifecycle/runtime, complete static-all/dynamic aggregate and Policy wiring",
+      "remaining graph support qualification including cyclic cases",
+      "approved cache/transaction/CLI and whole affected-profile remote qualification; next meaningful candidate must close macOS/Required"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/pnpm_inspection_transport.go",
+      "sha256": "0c41fb49ec4817f59fdf8e2eb23f2bac33baf83e1b94b034c37e6f2e88552a38"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_cache_transport.go",
+      "sha256": "11db466529a5e1325d1fcac62e20a8dcf2443ffb50aca31fd5be0a38ee4f85ca"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_prepare.go",
+      "sha256": "816c842f0db2e87c43e526a335919284c3a7bbe022742d4d00694341e26bc418"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_project.go",
+      "sha256": "5621e59fefe54eecf32a4f3c29506cec10304968c800fbd79c2896f16161d9e2"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_prepare_test.go",
+      "sha256": "a0bf16ed8dd2c86e5d9aaa0bd54e81367d5091fe64e57082db67246a58f79642"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_prepare_real_test.go",
+      "sha256": "973f854c447cdad40a463b28d52d2f0643926a1241d4f0f3dc0a6775698d412d"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_source_real_test.go",
+      "sha256": "1928f2416b96671d64571f9545efae56e47959f76a6658d4f8d3bcf7b7271e20"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "5adb488b1319c5a950be68093804dc4c46561a1178ecb6b41356d1af85850700"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "90f84a4ba551d9f4ad9111dd8c31226f69098e562e49f7a0134c9c259614fb97"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4cb-prepare-first-quick.json",
+      "exit": 0,
+      "seconds": 184.159,
+      "receipt_sha256": "8406a207ac6269cc80c14f271f18a791c8cd1446229f1a0cb1411d51f2a046f6"
+    },
+    {
+      "receipt": "p3b4cb-bun-full-related-race-sockets.json",
+      "exit": 0,
+      "seconds": 57.353,
+      "receipt_sha256": "fc0963b8ca5516ce4be6e6b15d48b67a23228f146a3312705ac2fd57c94fd146"
+    },
+    {
+      "receipt": "p3b4cb-bun-cache-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.271,
+      "receipt_sha256": "5cac49adcbd91a23e9cf89081ca3fd5c46ca4b2bac64790e6d51273e3a5fc9e2"
+    },
+    {
+      "receipt": "p3b4cb-bun-preparation-v1-actual-compile.json",
+      "exit": 0,
+      "seconds": 10.277,
+      "receipt_sha256": "8d73a8f80e8454d08cc650eb5ab4b8756ed7a5a10da24b0b85331ce5e6cf23d0"
+    },
+    {
+      "receipt": "p3b4cb-bun-preparation-observer-canonical-network.json",
+      "exit": 0,
+      "seconds": 267.752,
+      "receipt_sha256": "6fba6b691ec824d60367e6386110192ab9b85869deac6aaa326909caec0bc89b"
+    },
+    {
+      "receipt": "p3b4cb-bun-preparation-v1-result.json",
+      "exit": 0,
+      "seconds": 74.101,
+      "receipt_sha256": "f380787666c560baff8d99574faabe3bb0bf7b0d95f35fef5bcbed93b1acce5c"
+    },
+    {
+      "receipt": "p3b4cb-pnpm-regression-result.json",
+      "exit": 0,
+      "seconds": 173.946,
+      "receipt_sha256": "a830916d4c5355149cc968ef15e92741f995e8abab6f635c085ce7acd3b30495"
+    }
+  ],
+  "bun_actual": {
+    "graphs": [
+      "single",
+      "transitive",
+      "peer",
+      "multiple-versions"
+    ],
+    "source_archives": [
+      1,
+      2,
+      4,
+      3
+    ],
+    "layout_entries": [
+      6,
+      11,
+      63,
+      17
+    ],
+    "multiple_versions": [
+      "is-number@6.0.0",
+      "is-number@7.0.0"
+    ],
+    "boundary_cases": [
+      "complete",
+      "command_and_cleanup",
+      "cleanup_acknowledgement",
+      "incomplete_observation",
+      "forbidden_observation"
+    ],
+    "original_controls_preserved": true,
+    "runtime_fs_or_network_grants_added": false,
+    "lifecycle_Policy_Host_install": "NOT_EXERCISED"
+  },
+  "observer_equivalence": "p3b4cb-observer-canonical-consumer-equivalence.json",
+  "mechanical_reuse": [
+    "p3b4cb-transport-mechanical-reuse.json",
+    "p3b4cb-acquisition-fixture-mechanical-reuse.json"
+  ],
+  "original_environment_failures_preserved": [
+    "p3b4cb-bun-full-related-race.json",
+    "p3b4cb-bun-preparation-observer-canonical.json"
+  ],
+  "ci": "No push/CI for this local helper unit. Next backend/end-to-end checkpoint follows plan section 5 actual timer and continuation rules. CI411 macOS/Required gate remains open."
+}

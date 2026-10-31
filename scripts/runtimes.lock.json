@@ -1,12 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 5,
   "gvisor": {
     "release": "release-20260907.0",
     "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
     "source_repository": "https://github.com/google/gvisor.git",
     "patch": {
       "path": "tools/gvisor/release-20260907.0.patch",
-      "sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+      "sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331"
     },
     "build": {
       "bazel_module_lock_sha256": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",
@@ -20,27 +20,51 @@
     "runtime_bundle": {
       "architecture": "amd64",
       "members": [
-        {"path": "containerd-shim-runsc-v1", "size": 43763177, "sha512": "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"},
-        {"path": "gvisor-bin/checkpointgofer", "size": 69307944, "sha512": "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"},
-        {"path": "gvisor-bin/gvisor-sentry-prewarmer", "size": 1416, "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-        {"path": "gvisor-bin/gvisor_sentry", "size": 52220923, "sha512": "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"},
-        {"path": "gvisor-bin/runsc-metric-server", "size": 53298557, "sha512": "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"},
-        {"path": "runsc", "size": 109851720, "sha512": "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"}
+        {
+          "path": "containerd-shim-runsc-v1",
+          "size": 43865876,
+          "sha512": "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"
+        },
+        {
+          "path": "gvisor-bin/checkpointgofer",
+          "size": 68249064,
+          "sha512": "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"
+        },
+        {
+          "path": "gvisor-bin/gvisor-sentry-prewarmer",
+          "size": 1416,
+          "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+        },
+        {
+          "path": "gvisor-bin/gvisor_sentry",
+          "size": 51923536,
+          "sha512": "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"
+        },
+        {
+          "path": "gvisor-bin/runsc-metric-server",
+          "size": 53387149,
+          "sha512": "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"
+        },
+        {
+          "path": "runsc",
+          "size": 110972712,
+          "sha512": "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"
+        }
       ]
     }
   },
   "docker": {
-    "minimum_engine": "29.8.1",
-    "ci_engine_version": "29.8.1",
+    "minimum_engine": "29.9.2",
+    "ci_engine_version": "29.9.2",
     "ci_ubuntu_24_04_amd64": {
-      "docker_ce_package": "5:29.8.1-1~ubuntu.24.04~noble",
-      "docker_ce_cli_package": "5:29.8.1-1~ubuntu.24.04~noble",
-      "containerd_package": "2.3.5-1~ubuntu.24.04~noble"
+      "docker_ce_package": "5:29.9.2-1~ubuntu.24.04~noble",
+      "docker_ce_cli_package": "5:29.9.2-1~ubuntu.24.04~noble",
+      "containerd_package": "2.4.2-1~ubuntu.24.04~noble"
     }
   },
   "go_image": {
-    "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
-    "go_version": "1.26.9",
+    "reference": "golang:1.27.3-bookworm@sha256:fea12ba16096adec0f699ce1c4da2154d320450e56c1f63671f95d2a3551c77b",
+    "go_version": "1.27.3",
     "architecture": "amd64"
   },
   "rust_image": {
@@ -50,17 +74,85 @@
     "target": "x86_64-unknown-linux-gnu"
   },
   "node_image": {
-    "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
-    "npm_version": "11.19.0"
+    "reference": "node:24.22.1-slim@sha256:e1582112fb9f152ed38eefcd712efc93fee1becb519fdfa57574d5e07eaa5e7d",
+    "npm_version": "11.19.1"
   },
   "python_image": {
-    "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
-    "python_version": "3.14.7",
-    "pip_version": "26.2.1",
+    "reference": "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86",
+    "python_version": "3.14.10",
+    "pip_version": "26.2.2",
     "target": {
       "interpreter": "cp314",
       "abi": "cp314",
       "platform": "manylinux_2_36_x86_64"
+    }
+  },
+  "uv_image": {
+    "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+    "uv_version": "0.13.4",
+    "architecture": "amd64",
+    "provenance": {
+      "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+      "workflow_run": "39441647119",
+      "index_sha256": "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b",
+      "bundle_sha256": "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835",
+      "config_sha256": "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+    },
+    "tool": {
+      "path": "/uv",
+      "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+      "size": 42544544
+    }
+  },
+  "pnpm_tool": {
+    "pnpm_version": "12.15.0",
+    "architecture": "amd64",
+    "archive": {
+      "url": "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz",
+      "sha256": "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598",
+      "size": 25369328
+    },
+    "provenance": {
+      "source_commit": "91774e72a04d52ce61db06339696a433d383c764",
+      "workflow_run": "39583314875",
+      "bundle_path": "tools/pnpm/release-proof.json",
+      "bundle_sha256": "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+    },
+    "tool": {
+      "path": "pnpm",
+      "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
+      "size": 57822504
+    },
+    "notices": {
+      "path": "tools/pnpm/NOTICE",
+      "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2",
+      "size": 3152
+    }
+  },
+  "bun_tool": {
+    "bun_version": "1.4.4",
+    "architecture": "amd64",
+    "runtime_image": "node_image",
+    "archive": {
+      "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip",
+      "sha256": "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c",
+      "size": 51794595
+    },
+    "publisher": {
+      "fingerprint": "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59",
+      "checksums_path": "tools/bun/SHASUMS256.txt.asc",
+      "checksums_sha256": "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+    },
+    "source_commit_observed": "38afee6c84fcf48c0edb2466aa4b27d287a59c30",
+    "tool": {
+      "path": "bun",
+      "sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235",
+      "size": 107308936
+    },
+    "notices": {
+      "path": "tools/bun/NOTICE",
+      "sha256": "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980",
+      "size": 14877
     }
   },
   "python_sources": [
@@ -69,37 +161,250 @@
       "source_id": "pytorch-cpu",
       "index_url": "https://download.pytorch.org/whl/cpu/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu126",
       "source_id": "pytorch-cu126",
       "index_url": "https://download.pytorch.org/whl/cu126/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu130",
       "source_id": "pytorch-cu130",
       "index_url": "https://download.pytorch.org/whl/cu130/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     },
     {
       "name": "pytorch:cu132",
       "source_id": "pytorch-cu132",
       "index_url": "https://download.pytorch.org/whl/cu132/",
       "index_host": "download.pytorch.org",
-      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
-      "owned_projects": ["torch", "torchvision", "torchaudio"]
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "owned_projects": [
+        "torch",
+        "torchvision",
+        "torchaudio"
+      ]
     }
   ],
   "bazel": {
     "version": "8.3.1",
     "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",
     "linux_x86_64_sha512": "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
+  },
+  "pipx_tool": {
+    "pipx_version": "1.18.4",
+    "architecture": "amd64",
+    "runtime_image": "python_image",
+    "inputs": [
+      {
+        "path": "argcomplete/identity.json",
+        "sha256": "2aa271eaa8e23a6fa386c45bd4b4bb1900d4d890c998a73ea9cc7a25741a613f"
+      },
+      {
+        "path": "argcomplete/provenance.json",
+        "sha256": "61d0ce76874cb85aa884c3bd09712e77f3de22674f350c8b85575bb982805e1e"
+      },
+      {
+        "path": "argcomplete/metadata.json",
+        "sha256": "f9ce7f8b9c9b3e8bc469369c373450846a5d95625c78068409cc277794e57269"
+      },
+      {
+        "path": "argcomplete/argcomplete-3.7.2-py3-none-any.whl",
+        "sha256": "6029205678bdd9c1c728a155f5f9ecf5812393f969eef58807641a2bc2aa5b19"
+      },
+      {
+        "path": "click/identity.json",
+        "sha256": "0c782df5b1ec8b77c1c7852d068595d85108b148689ae3b7d2ec14b6d77c3e0c"
+      },
+      {
+        "path": "click/provenance.json",
+        "sha256": "aa8c59737151791b2b9e7a8ed0d5a6885ec49fbb73968a04d7eeb9421c4499bd"
+      },
+      {
+        "path": "click/metadata.json",
+        "sha256": "4e36adc9b46f837e10ce801b7a478f9146fefdfb287292b7668fc64b1474e41d"
+      },
+      {
+        "path": "click/click-8.5.0-py3-none-any.whl",
+        "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"
+      },
+      {
+        "path": "filelock/identity.json",
+        "sha256": "fd45ded86c1bd040adb5fd88f587d7a1f14a9fe5503df6e47d4e464683f53007"
+      },
+      {
+        "path": "filelock/provenance.json",
+        "sha256": "fac996da43df0c56fd2b6d32aaa7055d1400bb6693464ef4a0ae7665bcee21a5"
+      },
+      {
+        "path": "filelock/metadata.json",
+        "sha256": "26b5c358e98a3812b9e561b224f617d396d8fdb40c67b9644d8bde68d6ae8547"
+      },
+      {
+        "path": "filelock/filelock-4.2.1-py3-none-any.whl",
+        "sha256": "7be2662e9e826b9bba28afc0f843a123280d799a2ea44bb5d35ccec67905ae44"
+      },
+      {
+        "path": "iniconfig/identity.json",
+        "sha256": "a65e4790576254a49e22d60eeec17d875923673db33e48c4de745cca657040e9"
+      },
+      {
+        "path": "iniconfig/provenance.json",
+        "sha256": "8a8aaa6c314e055657f034eeb166fc849f563271480a203937e60ccffb6fa458"
+      },
+      {
+        "path": "iniconfig/metadata.json",
+        "sha256": "ab4d5df71d2a4f01a0eb418d7809bb22dca3293991a369309f068c07c1471557"
+      },
+      {
+        "path": "iniconfig/iniconfig-2.3.1-py3-none-any.whl",
+        "sha256": "9121e2c1fdb355232495be3194c8dfe87ccc2d5dee45947b78e68f499790d7a7"
+      },
+      {
+        "path": "packaging/identity.json",
+        "sha256": "dbe36d2bd692258ad8665d52ef412c8e6f4ae72b2121cb4f88e7214d80367995"
+      },
+      {
+        "path": "packaging/provenance.json",
+        "sha256": "5a9e89058dff717aad4b2f658df5145e55541de897a2377e0ff699bc0abbfec8"
+      },
+      {
+        "path": "packaging/metadata.json",
+        "sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d"
+      },
+      {
+        "path": "packaging/packaging-26.3-py3-none-any.whl",
+        "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+      },
+      {
+        "path": "pipx/identity.json",
+        "sha256": "4ea74f3831990a625b5456b31650e95e6b97c75867554409107b6c70afaf552b"
+      },
+      {
+        "path": "pipx/provenance.json",
+        "sha256": "39930f33c7e3a4b6c0f242ad4aaa101e947b8da7ac48d20e151b3d4f29cf2084"
+      },
+      {
+        "path": "pipx/metadata.json",
+        "sha256": "6ca59553a93bb8acd15a284ba0aed78ea5b268553be9552c192d21f9d67b65b0"
+      },
+      {
+        "path": "pipx/pipx-1.18.4-py3-none-any.whl",
+        "sha256": "4672195db7e89526cda1e54cbea116164a58bd40e1c03fe12e380de16b5399a4"
+      },
+      {
+        "path": "platformdirs/identity.json",
+        "sha256": "dd0e98078e6bb963388e7ecfe10ccaf287342950e85634b9826e6dd1344b8721"
+      },
+      {
+        "path": "platformdirs/provenance.json",
+        "sha256": "4881fba13462aa826205e97a5cdc75fd1bcf97e4df55c3c451c59080ce37386b"
+      },
+      {
+        "path": "platformdirs/metadata.json",
+        "sha256": "5781ba4a967abd0810ac5c502d8a6431df37bfe0ecc50675e928b51380a302e9"
+      },
+      {
+        "path": "platformdirs/platformdirs-4.13.4-py3-none-any.whl",
+        "sha256": "502ce08e9d36cf90579ee44e1e764838842fa658e4975ef47344fd053011d2c8"
+      },
+      {
+        "path": "pluggy/identity.json",
+        "sha256": "ed441748303ceab5b066b09b27110416314556903a96063f1efe91e745b5b913"
+      },
+      {
+        "path": "pluggy/provenance.json",
+        "sha256": "0fd8944cb68a31293201d7aeda2846ebb50299c581e05e263bf4624615ef37ec"
+      },
+      {
+        "path": "pluggy/metadata.json",
+        "sha256": "9e8f441bba8382eabf6febf386a5b9610cfe0c16b60b96e7b4b1831bd6d96361"
+      },
+      {
+        "path": "pluggy/pluggy-1.7.0-py3-none-any.whl",
+        "sha256": "7dd7b0d8832ba3cb632c306926ded123429211b83641b35dc5c41ad2d34f9bec"
+      },
+      {
+        "path": "pygments/identity.json",
+        "sha256": "bb84e4efaa9205120791bede856e697b924d2b5a38a13887a15820c23962160b"
+      },
+      {
+        "path": "pygments/metadata.json",
+        "sha256": "330104a10adc8a587e3f98f4e207557125ca0c1d489e129334da5acb2b813a03"
+      },
+      {
+        "path": "pygments/pygments-2.21.0-py3-none-any.whl",
+        "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
+      },
+      {
+        "path": "pytest/identity.json",
+        "sha256": "539695b1208aa9be893d3a8a3cdfb2d0abfc979aa267347b7c597e178392a3aa"
+      },
+      {
+        "path": "pytest/provenance.json",
+        "sha256": "b135b9a81bb14af10cbb940ecec8c902672d2297488d2088e185c00dc6cc33ea"
+      },
+      {
+        "path": "pytest/metadata.json",
+        "sha256": "8ed48304ba7fd0ae974a041f117487b499d553b40e5ce55a9ece677e946f68dd"
+      },
+      {
+        "path": "pytest/pytest-9.1.1-py3-none-any.whl",
+        "sha256": "37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c"
+      },
+      {
+        "path": "userpath/identity.json",
+        "sha256": "fed5040bafd0dd49bb05c82f106a33fed29c47e1199e81ac2925645273f67f20"
+      },
+      {
+        "path": "userpath/metadata.json",
+        "sha256": "5036ea2024f48dc69289bdce02d3aebad8d53eda892846f70ba99752c647ef93"
+      },
+      {
+        "path": "userpath/userpath-1.9.2-py3-none-any.whl",
+        "sha256": "2cbf01a23d655a1ff8fc166dfb78da1b641d1ceabf0fe5f970767d380b14e89d"
+      }
+    ],
+    "tool": {
+      "path": "pipx-runtime.zip",
+      "sha256": "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+      "size": 2455948
+    },
+    "notices": {
+      "path": "tools/pipx/NOTICE",
+      "sha256": "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0",
+      "size": 44855
+    }
   }
 }

@@ -73,10 +73,43 @@ func main() {
 
 func run(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
+		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|uv|pnpm|bun|pipx|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
 	}
 	if args[0] == "capture-gvisor" {
 		return captureGvisor(args[1:], out)
+	}
+	if args[0] == "verify-uv-image" {
+		return verifyUVImage(args[1:], out)
+	}
+	if args[0] == "verify-pipx-publish" {
+		return verifyPipxPublish(args[1:], out)
+	}
+	if args[0] == "verify-pipx-closure" {
+		return verifyPipxClosure(args[1:], out)
+	}
+	if args[0] == "fetch-pipx-supply" {
+		return fetchPipxSupply(args[1:], out)
+	}
+	if args[0] == "materialize-pipx" {
+		return materializePipx(args[1:], out)
+	}
+	if args[0] == "materialize-pipx-candidate" {
+		return materializePipxCandidate(args[1:], out)
+	}
+	if args[0] == "materialize-pnpm" {
+		return materializePNPM(args[1:], out)
+	}
+	if args[0] == "verify-pnpm-release" {
+		return verifyPNPMRelease(args[1:], out)
+	}
+	if args[0] == "materialize-bun" {
+		return materializeBun(args[1:], out)
+	}
+	if args[0] == "materialize-bun-candidate" {
+		return materializeBunCandidate(args[1:], out)
+	}
+	if args[0] == "verify-bun-release" {
+		return verifyBunRelease(args[1:], out)
 	}
 	fs := flag.NewFlagSet("update-runtime "+args[0], flag.ContinueOnError)
 	fs.SetOutput(out)
@@ -86,6 +119,11 @@ func run(args []string, out io.Writer) error {
 	version := fs.String("version", "", "exact stable version; inspection subjects use no version")
 	review := fs.String("review", "", "JSON array of reviewed support records for changed versions")
 	gvisorCapture := fs.String("gvisor-capture", "", "explicit observed gVisor candidate lock and its capture receipt")
+	uvProof := fs.String("uv-proof", "", "absolute frozen upstream UV proof directory; only for changed uv version")
+	uvLayers := fs.String("uv-layers", "", "absolute complete UV layer directory; frozen into external state")
+	pnpmProof := fs.String("pnpm-proof", "", "absolute frozen PNPM identity/bundle/archive directory; only for changed pnpm version")
+	pipxProof := fs.String("pipx-proof", "", "absolute frozen full pipx closure; only for changed pipx version")
+	bunProof := fs.String("bun-proof", "", "absolute frozen Bun identity/signed-checksums/archive/notices directory; only for changed bun version")
 	goPath := fs.String("go", "", "absolute target Go executable; verified against owner and official archive")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
@@ -124,7 +162,68 @@ func run(args []string, out io.Writer) error {
 	}
 	defer unlock()
 	if args[0] == "plan" {
-		p, err := makePlan(absRoot, absState, *component, *version, *review)
+		if (*uvProof != "" || *uvLayers != "") && *component != "uv" {
+			return errors.New("UV supply inputs require the uv component")
+		}
+		if *pnpmProof != "" && *component != "pnpm" {
+			return errors.New("PNPM supply input requires the pnpm component")
+		}
+		if *bunProof != "" && *component != "bun" {
+			return errors.New("bun supply input requires the bun component")
+		}
+		if *pipxProof != "" && *component != "pipx" {
+			return errors.New("pipx supply requires pipx component")
+		}
+		resolve := resolveMetadata
+		if *component == "uv" {
+			current, err := selectedVersion(absRoot, "uv")
+			if err != nil {
+				return err
+			}
+			if *version == current && (*uvProof != "" || *uvLayers != "") {
+				return errors.New("same-version UV preserves the existing supply; new inputs are refused")
+			}
+			resolve = func(component, version string) (metadata, error) {
+				return freezeUVSupply(version, *uvProof, *uvLayers, absState)
+			}
+		}
+		if *component == "pnpm" {
+			current, err := selectedVersion(absRoot, "pnpm")
+			if err != nil {
+				return err
+			}
+			if *version == current && *pnpmProof != "" {
+				return errors.New("same-version pnpm preserves the existing supply; new inputs are refused")
+			}
+			resolve = func(component, version string) (metadata, error) {
+				return freezePNPMSupply(version, *pnpmProof, absState)
+			}
+		}
+		if *component == "bun" {
+			current, err := selectedVersion(absRoot, "bun")
+			if err != nil {
+				return err
+			}
+			if *version == current && *bunProof != "" {
+				return errors.New("same-version Bun preserves existing supply; new inputs are refused")
+			}
+			resolve = func(component, version string) (metadata, error) {
+				return freezeBunSupply(version, *bunProof, absState)
+			}
+		}
+		if *component == "pipx" {
+			current, err := selectedVersion(absRoot, "pipx")
+			if err != nil {
+				return err
+			}
+			if *version == current && *pipxProof != "" {
+				return errors.New("same-version pipx preserves existing supply; new inputs are refused")
+			}
+			resolve = func(component, version string) (metadata, error) {
+				return freezePipxSupply(version, *pipxProof, absState)
+			}
+		}
+		p, err := makePlanResolving(absRoot, absState, *component, *version, *review, resolve)
 		if err != nil {
 			return err
 		}
@@ -159,7 +258,7 @@ func run(args []string, out io.Writer) error {
 	if p.Root != absRoot || p.Schema != 2 || p.ID != planID(p) {
 		return errors.New("plan identity/root mismatch")
 	}
-	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" {
+	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" || *uvProof != "" || *uvLayers != "" || *pnpmProof != "" || *bunProof != "" || *pipxProof != "" {
 		return errors.New("apply/verify use frozen plan inputs only")
 	}
 	if args[0] == "apply" {
@@ -247,6 +346,14 @@ func qualification(component string) []string {
 	switch component {
 	case "go":
 		return []string{"quality-tool compiler/rebuild", "gVisor/observer rebuild", "installed npm/PyPI/GitHub/Go/Cargo/Terraform", "PyTorch CPU", "PyTorch cu126", "PyTorch cu130", "PyTorch cu132", "fresh Required/platform evidence", "verified activation/retirement"}
+	case "uv":
+		return []string{"signed upstream supply/native bytes", "uv pip resolve/install/upgrade/sync", "observer exact admission and pip/npm regression", "PyTorch CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation"}
+	case "pipx":
+		return []string{"complete wheel closure/provided publisher proofs/immutable ZIP", "pipx install/upgrade and fixed UV backend", "gVisor observer/Artifact query admission and existing client regression", "Python CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation/retirement"}
+	case "bun":
+		return []string{"vendor signed archive/native bytes; observed version/source are not build provenance", "Bun install/update native graph/layout/lifecycle", "exact gVisor observer admission and npm/pip/uv/pnpm regression", "common runtime CPU/CUDA impact review", "fresh Required/platform evidence", "verified activation/retirement"}
+	case "pnpm":
+		return []string{"signed upstream archive/native bytes", "pnpm add/install/update peer graph and layout", "observer exact admission and npm/pip/uv regression", "PyTorch CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "python":
 		return []string{"PyPI wheel/sdist/metadata/entry-point/promotion", "PyTorch CPU", "PyTorch cu126", "PyTorch cu130", "PyTorch cu132", "fresh Required/platform evidence", "verified activation"}
 	case "node":

@@ -1,0 +1,285 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004 continuing maintenance",
+  "user_requested_cleanup": true,
+  "scope": "only obsolete regular single-link recorded ELF test binaries and duplicate protected client copies in /tmp; no source, logs, fixed supply, cache, SDK, installed files, Git or active current baselines",
+  "removed_files": 173,
+  "removed_logical_bytes": 6656640828,
+  "removed_allocated_bytes": 6656987136,
+  "logical_GiB": 6.199479874223471,
+  "root_processes_inspected": 85,
+  "process_query_errors": 0,
+  "process_fd_maps_mount_argv_references": 0,
+  "current_baselines_CPP_timer_unchanged": true,
+  "raw_candidate": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-candidate-20261029.json",
+  "raw_preflight": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-preflight-20261029.json",
+  "raw_result": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029.json",
+  "disk_before": {
+    "tmp_free": 800579596288,
+    "repo_free": 16763637760
+  },
+  "disk_after": {
+    "tmp_free": 807236526080,
+    "repo_free": 16727998464
+  },
+  "limit": "Linux /tmp filesystem space reclaimed; Windows C/VHD physical space was not reclaimed by this deletion; no unrelated project files, source/raw evidence, fixed supplies/cache/SDK/installed assets/Git removed",
+  "important_retained": [
+    "/tmp/haa-p6-b1-v2-bootstrap.test",
+    "/tmp/haa-p6-b1-v2-sandbox.test",
+    "/tmp/haa-p6-a3-v2-bootstrap.test",
+    "/tmp/haa-p5-c3c-node-v5-observer",
+    "/tmp/haa-p4o4b1d-candidate-20261027/supply",
+    "/tmp/haa-p4o4b1d3-selected-assets/pipx-runtime-linux-amd64.zip"
+  ],
+  "followup_completed_Go_diagnostic": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54695129,
+    "removed_allocated_bytes": 54702080,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "latest_baselines_unchanged": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-completed-test-cleanup-result-20261029-v3.json",
+    "first_preflight_rejected_without_deletion": "sandbox inventory showed unmapped root65534:65534; root execution view0:0; exact inode/mode/bytes/hash unchanged; refreshed root-context inventory and retained every guard"
+  },
+  "cumulative_removed_files": 251,
+  "cumulative_removed_logical_bytes": 8487015600,
+  "followup_completed_B2A": {
+    "removed_files": 4,
+    "removed_logical_bytes": 109400066,
+    "root_processes": 86,
+    "references": 0,
+    "query_errors": 0,
+    "original_baselines_CPP_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2a-cleanup-result.json"
+  },
+  "followup_completed_B2B": {
+    "removed_files": 12,
+    "removed_logical_bytes": 328456846,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "original_baselines_CPP_retained": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2b-cleanup-result.json"
+  },
+  "followup_completed_D1": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54849309,
+    "root_processes": 98,
+    "references": 0,
+    "query_errors": 0,
+    "original_baselines_CPP_monitor_retained": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d1-cleanup-result.json"
+  },
+  "followup_completed_D2_v1": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54868981,
+    "root_processes": 95,
+    "references": 0,
+    "query_errors": 0,
+    "first_actual_failure_originals_and_baselines_CPP_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d2-cleanup-result.json"
+  },
+  "followup_completed_D2_v2_v7": {
+    "removed_files": 12,
+    "removed_logical_bytes": 329229478,
+    "root_processes": 97,
+    "references": 0,
+    "query_errors": 0,
+    "first_failures_diagnostics_and_positive_originals_preserved": true,
+    "original_baselines_CPP_source_raw_inputs_cache_SDK_Git_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d2-completed-result.json"
+  },
+  "followup_completed_C": {
+    "removed_files": 2,
+    "removed_logical_bytes": 54905002,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "original_binary_source_actual_logs_and_inputs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c-cleanup-result.json"
+  },
+  "followup_completed_D1_native_diagnostics": {
+    "removed_files": 4,
+    "removed_logical_bytes": 61940507,
+    "root_processes": 83,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved_and_revalidated": 6,
+    "first_two_attempts_deleted": 0,
+    "originals_and_CI433_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-result-v3.json"
+  },
+  "followup_completed_D2_first_error": {
+    "removed_files": 4,
+    "removed_logical_bytes": 85908816,
+    "root_processes": 87,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved_and_revalidated": 6,
+    "originals_and_CI433_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d2-completed-result.json"
+  },
+  "followup_completed_D3_private_build_caches": {
+    "removed_cache_directories": 6,
+    "removed_generated_entries": 205013,
+    "removed_logical_regular_bytes": 3288367840,
+    "observed_tmp_free_delta_during_concurrent_fresh_build": 3860549632,
+    "root_processes": 101,
+    "containers_checked": 1,
+    "references": 0,
+    "query_errors": 0,
+    "proved_resource_empty_zombies": 6,
+    "retained_failed_input_source_files": 25452,
+    "retained_all_sources_before_after_identical": true,
+    "raw_failure_sources_logs_ELFs_and_active_new_build_preserved": true,
+    "shared_caches_SDK_fixed_supply_Git_untouched": true,
+    "Windows_C_or_VHD_physical_shrink_claimed": false,
+    "originals": [
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-inventory.py",
+        "bytes": 3637,
+        "sha256": "012cccd868ca1440ad47d3dc230e9c8eac11d8fc142a74eed41e0469e9aaad4f"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-cleanup.py",
+        "bytes": 6577,
+        "sha256": "34a3b599f3578e9dbd84f69b01598acd834c112f8b23b3c1557d6819a12af739"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-candidate.json",
+        "bytes": 6058,
+        "sha256": "c8422bb8ecd4a3f5b6a49d10b5d01d10f13a0adebe56b3d6c18a6040ab8a3743"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-preflight.json",
+        "bytes": 867,
+        "sha256": "34bc53026cad3d5344f8e94e6b430eee02100633b3779b05df97af6529d31153"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-build-cache-result.json",
+        "bytes": 2043,
+        "sha256": "e0b84dc76e7de72c8cc1285d131d42b48f6e0f6f656a0716c2c6772129528872"
+      }
+    ]
+  },
+  "cumulative_removed_private_cache_directories": 6,
+  "combined_removed_logical_bytes_including_private_caches": 11775383440,
+  "followup_completed_D3_actual_copies": {
+    "removed_files": 4,
+    "removed_logical_bytes": 85924576,
+    "root_processes": 83,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "original_Go_CPP_sources_actual_logs_inputs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3-v4-completed-result.json"
+  },
+  "followup_completed_d3e1": {
+    "removed_files": 2,
+    "removed_logical_bytes": 31003206,
+    "root_processes": 96,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_current_CI434_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3e1-completed-result.json"
+  },
+  "followup_completed_d3e2": {
+    "removed_files": 4,
+    "removed_logical_bytes": 85924576,
+    "root_processes": 96,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_current_CI434_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d3e2-completed-result.json"
+  },
+  "followup_completed_d4a": {
+    "date": "2026-10-30",
+    "removed_files": 4,
+    "removed_logical_bytes": 62042442,
+    "root_processes": 118,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_current_CI434_monitor_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4a-completed-result.json"
+  },
+  "followup_terminated_d4b1": {
+    "date": "2026-10-30",
+    "removed_files": 4,
+    "removed_logical_bytes": 62082310,
+    "root_processes": 102,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_current_CI434_monitor_preserved": true,
+    "tests_remain_failed": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b1-completed-result.json"
+  },
+  "followup_completed_d4b2": {
+    "date": "2026-10-30",
+    "removed_files": 4,
+    "removed_logical_bytes": 85971665,
+    "root_processes": 118,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "all_originals_and_reusable_cache_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b2-completed-result.json"
+  },
+  "followup_completed_d4b3": {
+    "date": "2026-10-30",
+    "removed_files": 2,
+    "removed_logical_bytes": 31244251,
+    "root_processes": 101,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "originals_reusable_builds_inputs_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d4b3-completed-result.json"
+  },
+  "followup_completed_d5": {
+    "date": "2026-10-30",
+    "removed_files": 2,
+    "removed_logical_bytes": 31356900,
+    "root_processes": 103,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "originals_and_active_CI435_timer_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d5-completed-result.json"
+  },
+  "followup_completed_d6": {
+    "date": "2026-10-30",
+    "removed_files": 2,
+    "removed_logical_bytes": 55089722,
+    "root_processes": 91,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies_proved": 6,
+    "originals_and_active_CI435_timer_preserved": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d6-completed-result.json"
+  },
+  "followup_D7_failed_cli_and_diagnostic": {
+    "qualification": false,
+    "removed_files": 4,
+    "removed_logical_bytes": 110323054,
+    "root_processes": 91,
+    "references": 0,
+    "query_errors": 0,
+    "resource_empty_zombies": 6,
+    "retained_originals_unchanged": true,
+    "raw_result": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-failed-diagnostic-completed-result.json"
+  },
+  "followup_completed_D7_v2": {
+    "removed_files": 2,
+    "removed_logical_bytes": 55157936,
+    "root_processes": 96,
+    "references": 0,
+    "query_errors": 0,
+    "retained_originals_unchanged": true,
+    "raw_result": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d7-v2-completed-result.json"
+  }
+}

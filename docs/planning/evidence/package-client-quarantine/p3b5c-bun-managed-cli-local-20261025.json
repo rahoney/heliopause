@@ -1,0 +1,123 @@
+{
+  "work_item": "M13-004/P3-B5c",
+  "baseline": "80bd2bd",
+  "status": {
+    "IMPLEMENTED": "YES (Bun add/install/update typed commands/preflight/static version/factory/report)",
+    "WIRED": "YES (production Run/request-local guarded workflow and exact published records)",
+    "QUALIFIED": "YES (named local managed Node-compatible lifecycle scope)",
+    "ACCEPTANCE_CLOSED": "YES (local managed CLI subset); NO (whole Bun/remote)",
+    "MISSING": [
+      "native original ownership/explicit handoff",
+      "explicit Bun Artifact runtime lane",
+      "hosted whole project caller wiring and final support/affected profile qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/cli/pnpm_project.go",
+      "sha256": "5d6ca9bf2f10314f692b425958a5467e0b442d6f56b295463f404e0d21555d70",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/bun_project.go",
+      "sha256": "f2ab6cd260bd33719235c09d3ff67146d55cdcd3d23a4975213ddf8654b7baca",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "6ad71eab12f2c1e534c113cc49f22ee22fd429495ee2a9c716caa240fb754daa",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/bun_project_test.go",
+      "sha256": "a6364f73e8c9601c692560988188c40ff9fea7bec45d213b2f3a4c52062ef3b6",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "sha256": "32f6ab2df39947ae8da1ed6d213452d1fe9959fec180b55c495396ac91ddb7ae",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "15f2d98fc448758549ae26e8f3b3c6e445b1e18fbcced8c7cb6be421ef5ce263",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_client.go",
+      "sha256": "1222ea1e561190e054910fd77b9c2830bb21d656efd59ebd145595cabd4764d4",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_client_test.go",
+      "sha256": "114bb5494f0ecc80b42a9c778ca51d580af92fe6339198657153736acc50c7a6",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_cli_integration_test.go",
+      "sha256": "b74c317268aa598522cb7bf057fd9c91031c17a6bd370e7e4f2c9635e11aaf39",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5c-first-quick.json",
+      "exit": 0,
+      "seconds": 60.369,
+      "receipt_sha256": "0f382d9690327fa596a4c614079c00b64b9a62deb0569fa3df7ee589bf3d8d21"
+    },
+    {
+      "receipt": "p3b5c-qualified-security.json",
+      "exit": 0,
+      "seconds": 11.711,
+      "receipt_sha256": "17171b2c0b32aba44f1b2d3455ce857030df62714b61ec035cc67c9b45a41844"
+    },
+    {
+      "receipt": "p3b5c-qualified-docs.json",
+      "exit": 0,
+      "seconds": 0.389,
+      "receipt_sha256": "0ff197e034d046df838ebd7331d85e029522cf8caf032796ef201e73c24ef1ab"
+    },
+    {
+      "receipt": "p3b5c-cli-full-race.json",
+      "exit": 0,
+      "seconds": 28.452,
+      "receipt_sha256": "b7795d8bfe3a5f0f1b33214448baedce6461b87eed2928a612616af69df9abb5"
+    },
+    {
+      "receipt": "p3b5c-bun-cli-v1-result.json",
+      "exit": 0,
+      "seconds": 360.044,
+      "receipt_sha256": "0f1c98765645ba05bf85aed9959a208a9ec282a3a584491669a6614433331446"
+    }
+  ],
+  "actual": {
+    "seconds": 360.044,
+    "Bun_CLI_seconds": 170.52,
+    "PNPM_CLI_seconds": 186.78,
+    "Bun_fresh_operations": 8,
+    "PNPM_fresh_operations": 9,
+    "cases": [
+      "single install/repeat/add6\u21927/selected update",
+      "peer4 install/repeat",
+      "explicit empty install/repeat, absent lock preserved"
+    ],
+    "records": "fresh operations and per-entry checks/Evidence/Policy, target/cache Manifest/SBOM exact readback",
+    "no_op": "original control/payload inode and mode retained",
+    "negative": "implicit changed-control enrollment and unproven unmanaged payload refused, unknown data preserved",
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL"
+  },
+  "mechanical_reuse": {
+    "receipt": "p3b5c-preflight-mechanical-reuse.json",
+    "original_PNPM_complete_bounded_control_reader_normalized_identical": true
+  },
+  "remote_reference": "p3b4de-bun-backend-ci412-20261025.json confirms timer consumed/all10 full logs/frozen7544 whole tree; this later CLI source is outside that remote candidate",
+  "unchanged": [
+    "existing PNPM/UV commands",
+    "shared Policy/observer/FS/network grants and runtime pins",
+    "canonical JSON mutation result/report/progress/close cause",
+    "source registry remains npm; Bun is client only"
+  ],
+  "scope": "Linux amd64, single copied hoisted public project, managed ownership, Node-compatible lifecycle; no unmanaged native adoption or explicit Bun Artifact execution claim"
+}

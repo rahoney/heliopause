@@ -1,0 +1,208 @@
+{
+  "scope": "P5-C5 bounded npx/npm exec CLI and independent safe output; actual public TypeScript5.9.3 CLI4",
+  "status": "PASS (named local scope)",
+  "baseline_commit": "2720632cd3e97ac3938e41ea5e65707237176b51",
+  "runtime_inputs": 1343,
+  "new_paths": [
+    "internal/cli/execution.go",
+    "internal/cli/execution_test.go",
+    "internal/cli/execution_report.go",
+    "internal/cli/execution_report_test.go",
+    "internal/bootstrap/npm_execution.go",
+    "internal/bootstrap/npm_execution_integration_test.go"
+  ],
+  "modified_paths": [
+    "internal/application/execution_run.go",
+    "internal/application/execution_run_test.go",
+    "internal/cli/package_client.go",
+    "internal/cli/presentation.go",
+    "internal/bootstrap/bootstrap.go"
+  ],
+  "backend_CPP_permissions_budgets_unchanged": true,
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (public CLI/preflight/concrete current workflow)",
+    "QUALIFIED": "YES (named local CLI4)",
+    "ACCEPTANCE_CLOSED": "YES (initial bounded CLI only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.618
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/application",
+        "./internal/cli",
+        "./internal/bootstrap",
+        "-run",
+        "^(TestExecution|TestNPMExecution)"
+      ],
+      "exit_code": 0,
+      "seconds": 13.546
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 271.057
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/application",
+        "./internal/cli",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 34.147
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.721
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.924
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c5-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.169
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 17.454
+    }
+  ],
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c5-v1-bootstrap.test",
+      "sha256": "4560e3f48b6a733807db6df34f2045677e701a9ee5eefebe897fab86e193181a",
+      "bytes": 51232911
+    }
+  ],
+  "actual": {
+    "seconds": 113.529,
+    "cases": [
+      [
+        "1",
+        "npx",
+        "json",
+        "en",
+        "false",
+        "0"
+      ],
+      [
+        "2",
+        "exec",
+        "json",
+        "ko",
+        "true",
+        "1"
+      ],
+      [
+        "3",
+        "npx",
+        "human",
+        "ko",
+        "true",
+        "0"
+      ],
+      [
+        "4",
+        "exec",
+        "human",
+        "en",
+        "false",
+        "1"
+      ]
+    ],
+    "native_selection_acquisition_verification_inspection_Evidence_Policy": "ACTUAL current public TypeScript5.9.3 through existing C4/current production adapters",
+    "fresh_records": "four independent stored execution manifests; actual test verified count4",
+    "program_help": "reached sandbox TypeScript, never intercepted as HAA help",
+    "separate_status": "quarantine/Policy, storage, program exit, output promotion NOT_REQUESTED, execution guest cleanup",
+    "private_output": "counts only by default; explicit --show-output produces independent ASCII quoted data in human/JSON",
+    "program_error": "typed NodeProgramError retained under fixed CLI error with guest process exit1",
+    "all_source_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop_resources_endpoints0": true,
+    "no_skip": true
+  },
+  "local_security_tests": "literal/empty/option-like argv; duplicate/unsupported/invalid UTF8/NUL/count/size/command rejection before composition; CTL/OSC/bidi/invalid-byte payloads and 1MiB streams round-trip to inert ASCII display; explicit privacy/writer failure",
+  "producer_record_correction": "all9 actual profiles PASS; outer producer stale1332 assertion failed after profiles; independent explicit prior1337/current1343+modified5 validation0; original preserved and profiles not repeated",
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c5-v1-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c5-actual-v1-result.json",
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/p5-c5-actual-v1-inventory.json",
+    "producer_notice": "docs/github-logs/package-client-quarantine-20261021/p5-c5-v1-postcondition-final.json"
+  },
+  "hosted": "CI428/source558d75a excludes local C3d/C4/C5; active run preserved",
+  "MISSING": [
+    "grouped hosted wiring/qualification for current controlled12/workflow/CLI",
+    "whole P5/final support4profiles/signed qualification",
+    "output-file export/stdin/TTY and P6/P7 not supported",
+    "child body/held-pipe remains unproven"
+  ]
+}

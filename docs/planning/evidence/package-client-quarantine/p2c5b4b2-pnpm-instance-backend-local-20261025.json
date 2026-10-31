@@ -1,0 +1,135 @@
+{
+  "schema": "helox.pnpm-instance-backend-local/v1",
+  "baseline": "909c8c6",
+  "scope": "B4b2 fresh bound instance backend; named local only",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (direct actual consumer)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_layout.go",
+      "sha256": "5ae664ab7be804caab7c299e76ddf0c973d2c877b450a670102988784907d5b5"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "sha256": "eb4e2c8bd5badc7d98b66683a82b04b59b8ecd55031fc8496a5347c69b80b24c"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend_test.go",
+      "sha256": "3855fdc4d340b2a021d6978584a424863f60af2ba5bd2bdfa9c5edeea42f00c1"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend_real_test.go",
+      "sha256": "1bcded72de4dc3a221500a12216e9de56ad5d90c143c569cc701441b8676593d"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_payload_test.go",
+      "sha256": "f9df3f4509a6d9ae28f74842400ac84bfd4ee0b9cb0842dde97ddfa2371ca95d"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_prepare_test.go",
+      "sha256": "eac48edf0ecb26fa3ade524d5ba9885167fc14758756b42637378f53392136ba"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle.go",
+      "sha256": "d39bbe8e2ec2222b6b7685a3455fdb32536e4eb1ce84f89193360d9b93559f9d"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle_test.go",
+      "sha256": "a0b46e2e7d334eb0fc036b59403f509ba60cbc9864d77ddf1418e2e7dae9e322"
+    },
+    {
+      "path": "internal/sandbox/collector.go",
+      "sha256": "fef5b0cb67388dee66dfc54813c51fbf0e4da756cc214fa0107e32be03a0079b"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider.go",
+      "sha256": "126e1507b022d3e123e5bac422ec5b91baad0a91905d70a47ab705b3f870aae7"
+    },
+    {
+      "path": "internal/sandbox/github_elf.go",
+      "sha256": "c67c932ce1f8518072350739b7bbd18d628eb170b8512007a8e650f535a73a35"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider_test.go",
+      "sha256": "820f8fc5b1c4013264b5f1eaff44e21e56fe83a8acd38df98ca30be11694a5ab"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "daa1de8f658e71b748cab25c8779cc138d5b35bc14f30d8a1df39da4765242d5"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "36b9c8e8732ce51027eb9260a38d341d20f0d3c21a430c7a43e337bdf793abf3"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.738,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-long-fixture-format.json"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 77.62,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-long-fixture-quick.json"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.881,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-long-fixture-security.json"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.25,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-long-fixture-docs.json"
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 21.721,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-long-fixture-race.json"
+    }
+  ],
+  "observer": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-observer-official-release-build.json",
+    "seconds": 241.229,
+    "latch_groups": 112,
+    "exit": 0
+  },
+  "actual": [
+    {
+      "scope": "public transitive2/peer4 and controlled success/exit37; earlier binary before named long fixture",
+      "exit": 0,
+      "seconds": 58.306,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-instance-cwd-result.json",
+      "sha256": "f861559653cd1e331252011f5d689ed319a0e8474655ffe085ae1758c7a7267b"
+    },
+    {
+      "scope": "controlled structural 130-character package name only; final test binary",
+      "exit": 0,
+      "seconds": 10.41,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b2-instance-long-result.json",
+      "sha256": "6b84bec5718aff895ef4510dc50c2b0225d372421375d5fb5823e0b5fffd05d2"
+    }
+  ],
+  "environment": {
+    "go": "1.27.3",
+    "GOMAXPROCS": "2",
+    "quality_cache": "retained warm cache",
+    "actual_test_compile": "original fixture-compatible non-trimpath; production build flags unchanged",
+    "runtime_and_check_limits": "unchanged"
+  },
+  "missing": [
+    "static-all collection budget and instance/session aggregate with partial facts",
+    "Host records/cache/provenance/transaction/CLI",
+    "bundled remote and whole P2 qualification"
+  ]
+}

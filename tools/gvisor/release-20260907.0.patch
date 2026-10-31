@@ -2206,3 +2206,36 @@ index c2e067d1a..f338c86a8 100644
  // TestStartSignal tests that the controller Start message will cause
  // WaitForStartSignal to return.
  func TestStartSignal(t *testing.T) {
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 56b56bc..2594b65 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -288,13 +288,13 @@ go_deps.module(
+ )
+ go_deps.module(
+     path = "golang.org/x/mod",
+-    sum = "h1:gQBtGhjxykdjY9YhZpSlZIsbnaE2+PgjfLWUQTnoZ1U=",
+-    version = "v0.28.0",
++    sum = "h1:qJmnOUb4YB+FsEuM3HcWucdZASCPGhsX6uljO6pog0c=",
++    version = "v0.41.0",
+ )
+ go_deps.module(
+     path = "golang.org/x/sync",
+-    sum = "h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=",
+-    version = "v0.17.0",
++    sum = "h1:KameEIfc1IkluZyXWLn39Wd4tURc6GbCiISGiZm2bQk=",
++    version = "v0.23.0",
+ )
+ go_deps.module(
+     path = "golang.org/x/sys",
+@@ -303,8 +303,8 @@ go_deps.module(
+ )
+ go_deps.module(
+     path = "golang.org/x/tools",
+-    sum = "h1:DVSRzp7FwePZW356yEAChSdNcQo6Nsp+fex1SUW09lE=",
+-    version = "v0.37.0",
++    sum = "h1:k4Xc/1Om9jwkBJBo4NVLMSARBoWtK10mx+W5BnXCeAI=",
++    version = "v0.51.0",
+ )
+ go_deps.module(
+     path = "golang.org/x/term",

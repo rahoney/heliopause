@@ -55,6 +55,21 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
+	return c.freezeRegistrySelection(snapshot, artifact)
+}
+
+func (c *Client) resolveUpgrade(ctx context.Context, requirement Requirement) (domain.ResolvedArtifact, error) {
+	if c == nil || c.resolver == nil || ctx == nil {
+		return domain.ResolvedArtifact{}, errors.New("terraform upgrade selection request is invalid")
+	}
+	snapshot, artifact, err := c.resolver.resolveSnapshot(ctx, domain.ArtifactReference{}, &requirement)
+	if err != nil {
+		return domain.ResolvedArtifact{}, err
+	}
+	return c.freezeRegistrySelection(snapshot, artifact)
+}
+
+func (c *Client) freezeRegistrySelection(snapshot RegistrySnapshot, artifact ProviderArtifact) (domain.ResolvedArtifact, error) {
 	encoded, err := encodeParts(registryHeader, registryParts(snapshot), registryLimits)
 	if err != nil {
 		return domain.ResolvedArtifact{}, err

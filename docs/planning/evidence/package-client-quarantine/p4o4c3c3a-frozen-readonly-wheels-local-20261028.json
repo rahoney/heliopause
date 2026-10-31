@@ -1,0 +1,201 @@
+{
+  "scope": "M13-004/P4-O4-C3c3a immutable whole original snapshot and separate sealed RO wheel transport; named local only",
+  "baseline": {
+    "source": "45a2c8a19c7553c70157d72a2998ee87b3c1fa6e",
+    "tree": "ed6127f3855efb9783bde186bfb31da2754d6caa",
+    "files": 2827
+  },
+  "implemented": "YES (whole snapshot/RO owner)",
+  "wired": "YES (native diagnostic); NO (production native session/profile/factory)",
+  "qualified": "YES (named local input/transport/runc scope)",
+  "acceptance_closed": "NO (whole native pipx/CLI)",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_test.go",
+      "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+      "sha256": "4c56372469d09b8f1da319ee852874778e85f8895c39a0527a4b3412a458d073"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input.go",
+      "sha256": "e6d9e8a445f6d9dff1fde322bccf1074cf951b42b8abdb349c7d0943d3eacd3b"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_input_test.go",
+      "sha256": "70ed19226b19d9606a8a2b231830f02c6eb66195876229751e00bd5924a2ffde"
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume.go",
+      "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+    },
+    {
+      "path": "internal/sandbox/pipx_wheel_volume_test.go",
+      "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 1.727,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 248.619,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 25.848,
+      "log_sha256": "a7ee39832d65ffb99fa810a45b4dc911a90e71f9d4768a198f2c934a7ed9d47e"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 3.965,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 7.068,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.305,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 12.688,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "race_scope": "whole sandbox PASS16.476s; whole PyPI cached, no PyPI source change",
+  "actual": {
+    "scope": "runc ordinary1000 original snapshot/RO input volume + existing C2 ZIP/ native offline install and no-op upgrade; no gVisor/installed current/Policy/publication",
+    "seconds": 17.977,
+    "exit_code": 0,
+    "failure": null,
+    "top_level_passes": [
+      "TestPipxActualReadonlyDataVolume",
+      "TestPipxActualOfflineNativeProgram"
+    ],
+    "exact_parent_pass": true,
+    "no_skip": true,
+    "Host_Docker_input42_ZIP_identical": true,
+    "binary_sha256": "a5ab27e5cefe626a878ba13e1f37a06e13306f7c28bb7f0c40f8ccedac08dbaf",
+    "binary_unchanged": true,
+    "source": [
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "e6d9e8a445f6d9dff1fde322bccf1074cf951b42b8abdb349c7d0943d3eacd3b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input_test.go",
+        "sha256": "70ed19226b19d9606a8a2b231830f02c6eb66195876229751e00bd5924a2ffde"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "87e938bf7138864b698caff59fefc6a18a51ff451de9e44ab22d90fa8d78af31"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "52369892714bedf97c2bf438dcbe90ee91dfd90750bc3292cc3ba1976ec7d32a"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "c75fdc15d76474bb705d6312c418d273af195e09d6915034e035a21f407cb8fb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_test.go",
+        "sha256": "9adf41996efef3c2655ebffef98d6fccec73bf2718fc02aa15d4d63f946ee129"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command_realcorpus_test.go",
+        "sha256": "4c56372469d09b8f1da319ee852874778e85f8895c39a0527a4b3412a458d073"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_query_wheels.go",
+        "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+      }
+    ],
+    "source_unchanged": true
+  },
+  "actual_parent_seconds": {
+    "TestPipxActualReadonlyDataVolume": 5.43,
+    "TestPipxActualOfflineNativeProgram": 12.36
+  },
+  "actual_checks": [
+    "whole original userpath/click snapshot validated before native/Docker",
+    "fixed /haa-wheels root0:0 regular0444 noexec transport; distinct fixed ZIP owner",
+    "single-use seed/RO anchor/writer removal/seal/readers and complete original filename/hash readback",
+    "root write EROFS and foreign RW refusal/removal/recovery",
+    "native fixed program version/install/no-op; strict metadata/separate link/original graph2/replay/layout",
+    "malformed guest UV config negative and same-file fixed-environment success",
+    "noSKIP/owned cleanup/Host5 Docker input42 ZIP source binary unchanged"
+  ],
+  "input_provenance": "actual frozen official archives/metadata; lock is synthetic parser-binding fixture, not live native resolution",
+  "budgets": "public compressed64MiB/artifacts64 unchanged; wheel tmpfs65MiB includes fixed filesystem overhead1MiB, not extra artifact allowance",
+  "C2_guard": {
+    "old_manifest_unchanged": true,
+    "four_selected_supply_DATA_sources_unchanged": true,
+    "two_common_sources_reviewed": [
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "before_sha256": "a1e44046267ab2a9256c3c89f5bb9db698539d078029dda19e84c949b1479ef6",
+        "after_sha256": "5ca21b8ded24260e8a3b1750d1f4c9cfb46f7a75b3a9e9dc4d2c00d00988483c",
+        "reviewed_diff_sha256": "b3e466aab696924599fae46517e6f03e657539280078a5fe09f2a6652a722eeb",
+        "scope": "fixed /haa-wheels destination/capacity/root0 noexec and close whitelist only; existing branches retained"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "before_sha256": "3d0e55bcb0095c840fe650de3ac7f92e46d507430b0834ab288731d331fb50d9",
+        "after_sha256": "13ecd602bd40cc1fdbb52380c9c2b8972a18fe8d880ee368a79cea1edbd8169d",
+        "reviewed_diff_sha256": "e78fa25633957c4705403251669c824b85d24f831e38c7a5ae1dfab3a1d995cc",
+        "scope": "fixed /haa-wheels destination/capacity/root0 noexec and close whitelist only; existing branches retained"
+      }
+    ],
+    "existing_C2_unit_and_actual_pass": true
+  },
+  "first_failures": [],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "installed current supply consumer/native session and dedicated gVisor external profile",
+    "exact offline pipx parent/UV child/installed Python query provenance and complete native output census",
+    "existing current inspection/Evidence/Policy/transaction and public CLI",
+    "hostedUID1001 signed-native and final support/profile matrix"
+  ]
+}

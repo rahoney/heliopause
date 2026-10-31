@@ -1,0 +1,110 @@
+{
+  "work_item": "M13-004/P4-G",
+  "baseline": "0c851b829be8632937203f993e07f0f8443023cd",
+  "status": {
+    "IMPLEMENTED": "YES (held project controls in existing complete venv commit/rollback)",
+    "WIRED": "YES (shared filesystem engine); NO (production native project guard/CLI)",
+    "QUALIFIED": "YES (named local filesystem normal/negative boundary)",
+    "ACCEPTANCE_CLOSED": "YES (named filesystem primitive); NO (whole P4)",
+    "MISSING": [
+      "native project preparation/current original ownership and approved selection/cache publication guard",
+      "actual native project control+venv publication and CLI",
+      "lock-only distinction, persistent UV tool/pipx and P7 final support matrix"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-transaction-v5-format.json",
+      "seconds": 0.632,
+      "sha256": "cedfdbc8dd30667845de3f74fbed25d07cf2dc81016f7acf08a294e480967acd"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-transaction-v5-quick.json",
+      "seconds": 211.067,
+      "sha256": "8fa41bbc7875c22179a1c2027826c54fd3e76061733874afff53b39f7219223e"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-transaction-v5-security.json",
+      "seconds": 11.42,
+      "sha256": "086722f95a693bba344d8021fea300ae65135519eccf66bb8a1aa3bf385f209a"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-transaction-v5-docs.json",
+      "seconds": 0.265,
+      "sha256": "d7ce0f51083d7c8f93c4b300751f74538758c0ea4df05e008aba8799e7171771"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-controls-v5-focused-race.json",
+      "seconds": 14.36,
+      "sha256": "fce294912edfe53b3139c774f00881e5652a84e128cc21ee510ee251987a8963"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-project-controls-v5-full-affected-race.json",
+      "seconds": 229.719,
+      "sha256": "c93ce0b3613db22c9d3761beb9277bcaef0a19896ab0ea8b98db39e0d517b2a9"
+    }
+  ],
+  "scope": {
+    "fixture": "synthetic approved filesystem outputs; inert native-readable control declarations, no download/inspection/native install claim",
+    "positive": [
+      "project parent with .venv child; new manifest/native lock and wheel/script publication",
+      "explicit empty retires every old owner while preserving user data",
+      "existing project control permissions retained; project controls excluded from wheel ownership state"
+    ],
+    "negative": [
+      "old lock absence/existence restored at all seven failure phases, exact original inode/bytes/mode",
+      "current source content/inode/mode/hardlink/appearing lock; concurrent project guard",
+      "nil/canceled context, noncanonical/absent/symlink/hardlink/directory sources, storage/venv overlap, repeated freeze and implicit venv-only commit",
+      "unknown/changed private bytes preserved, primary/rollback causes retained with both recovery guards",
+      "late foreign file inserted at reconcile refuses cleanup inside same rollback; original project/venv restored"
+    ],
+    "no_skips_in_focused_scope": true,
+    "not_claimed": "actual native install/adoption, Policy approval, new public CLI commands or remote qualification"
+  },
+  "corrections": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4g-first-fixture-assessment.json",
+      "cause": "fixture expected os.ErrNotExist from existing snapshot helper; Lstat-before-snapshot correction only; source rules unchanged"
+    },
+    {
+      "red": "docs/github-logs/package-client-quarantine-20261021/p4g-late-cleanup-red.json",
+      "assessment": "docs/github-logs/package-client-quarantine-20261021/p4g-late-cleanup-red-assessment.json",
+      "green": "docs/github-logs/package-client-quarantine-20261021/p4g-late-cleanup-bounded-green.json",
+      "cause": "new wrapper cleanup outside commit after backup disposal; moved inside before disposal, keeping exact same full regression test bytes",
+      "earlier_v3_profiles": "PASS only before newly added acceptance; not final qualification"
+    }
+  ],
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p4g-common-transaction-mechanical-reuse.json",
+  "unchanged_owners": [
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/uv_sync.go",
+    "internal/promotion/uv_sync_publication.go",
+    "internal/promotion/pypi_venv_backup.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/sandbox/uv_project_update.go",
+    "internal/promotion/uv_project_cache.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/uv_project_transaction.go",
+      "sha256": "a4db6cb1bdde7d546846cf309faa1024c1e967bb7b3311d573492c58e1d50748"
+    },
+    {
+      "path": "internal/promotion/uv_project_transaction_test.go",
+      "sha256": "50f43b9eeab48641473d7299f53939f801d1268e83c5ced2b18ccfec0ae5a22c"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "sha256": "e2bedd35d725fe522034df6723fcebba521d8a28901a4333161afd25eaf84d36"
+    },
+    {
+      "path": "internal/promotion/control_transaction_backup.go",
+      "sha256": "9691d856f5158c287bee0625462aaafaa50d77552d6cbcfbe6e5e649fb1f24f7"
+    }
+  ],
+  "ci": "No push/dispatch; helper local unit commits do not start full CI; final grouped support/profile matrix open",
+  "lessons_review": "artifact L15 updated for fixture cause and directly refuted new cleanup ordering; legacy owners not blamed"
+}

@@ -6,10 +6,12 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -27,8 +29,8 @@ func TestObserverSupervisorOwnsOneReceiverHelperAndEndpoints(t *testing.T) {
 	if _, err := os.Lstat(paths.remote); err != nil {
 		t.Fatalf("remote endpoint missing: %v", err)
 	}
-	if _, err := os.Lstat(paths.output); err != nil {
-		t.Fatalf("output endpoint missing: %v", err)
+	if info, err := os.Lstat(paths.output); err != nil || info.Mode().Perm() != 0o600 {
+		t.Fatalf("output endpoint missing or not owner-only: %v", err)
 	}
 	if err := supervisor.Close(); err != nil {
 		t.Fatal(err)
@@ -37,6 +39,30 @@ func TestObserverSupervisorOwnsOneReceiverHelperAndEndpoints(t *testing.T) {
 		if _, err := os.Lstat(path); !errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("supervisor did not clean %q: %v", path, err)
 		}
+	}
+}
+
+func TestObserverSupervisorIgnoresInheritedUmask(t *testing.T) {
+	const variable = "HELOX_TEST_OBSERVER_UMASK"
+	if value := os.Getenv(variable); value != "" {
+		mask, err := strconv.ParseUint(value, 8, 9)
+		if err != nil {
+			t.Fatal(err)
+		}
+		syscall.Umask(int(mask))
+		TestObserverSupervisorOwnsOneReceiverHelperAndEndpoints(t)
+		return
+	}
+	for _, value := range []string{"000", "002", "022", "077"} {
+		t.Run(value, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestObserverSupervisorIgnoresInheritedUmask$")
+			command.Env = append(os.Environ(), variable+"="+value)
+			if output, err := command.CombinedOutput(); err != nil {
+				t.Fatalf("umask %s: %v\n%s", value, err, output)
+			}
+		})
 	}
 }
 

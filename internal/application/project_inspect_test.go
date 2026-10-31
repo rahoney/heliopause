@@ -14,7 +14,7 @@ import (
 
 func TestProjectInspectCoversFrozenSnapshotWithoutResolvingPrimary(t *testing.T) {
 	graph := twoNodeGraph(t)
-	p := newMultiInspectionPorts(t, graph)
+	p := newArchiveActionPorts(t, graph)
 	snapshot := inspectionProjectSnapshot(t, graph)
 	s, err := application.NewProjectInspectService(p, p, p, p, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
@@ -38,7 +38,7 @@ func TestProjectInspectCoversFrozenSnapshotWithoutResolvingPrimary(t *testing.T)
 }
 
 type projectFailingPorts struct {
-	*multiInspectionPorts
+	*archiveActionPorts
 	fail string
 }
 
@@ -66,7 +66,7 @@ func TestProjectInspectNeverReturnsPartialApproval(t *testing.T) {
 	for _, fail := range []string{"verify", "mismatch", "evidence"} {
 		t.Run(fail, func(t *testing.T) {
 			graph := twoNodeGraph(t)
-			p := &projectFailingPorts{newMultiInspectionPorts(t, graph), fail}
+			p := &projectFailingPorts{newArchiveActionPorts(t, graph), fail}
 			s, err := application.NewProjectInspectService(p, p, p, p, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 			if err != nil {
 				t.Fatal(err)

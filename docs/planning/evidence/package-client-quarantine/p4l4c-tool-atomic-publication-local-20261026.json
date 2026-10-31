@@ -1,0 +1,86 @@
+{
+  "scope": "P4-L4C fresh controller receipt and external command links in existing venv journal/rollback, filesystem helpers only",
+  "baseline": "3077b1c3bf41e645b275a50e7c7e86315cc85e26",
+  "implemented": "YES (optional concrete tool participant, controller receipt and inode-bound no-replace links)",
+  "wired": "YES (existing transaction/helper tests); NO (current inspection/Policy/tool backend/public CLI)",
+  "qualified": "YES (named local canonical profiles/focused and full Promotion Race)",
+  "acceptance_closed": "NO (persistent tool feature)",
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 162.708,
+      "raw_receipt": "p4l4c-tool-publication-v2-quick.json",
+      "log_sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 10.887,
+      "raw_receipt": "p4l4c-tool-publication-v2-security.json",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.261,
+      "raw_receipt": "p4l4c-tool-publication-v2-docs.json",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "full-affected-race",
+      "exit": 0,
+      "seconds": 145.864,
+      "raw_receipt": "p4l4c-tool-publication-v2-full-affected-race.json",
+      "log_sha256": "ea4d038a8ac6686fc19380ebc18553c6ee9f3730490e76d0d67d343289c36545"
+    },
+    {
+      "profile": "focused-race",
+      "exit": 0,
+      "seconds": 13.257,
+      "raw_receipt": "p4l4c-tool-publication-v2-focused-race.json",
+      "log_sha256": "3829cb5ec570a35661891384463aab609a164a17f217d8376b7b3b891691f992"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "sha256": "89a650d281d1c3722ab7f78e327e5c1544018e22a5a147c8485ac17c3caa5bbe"
+    },
+    {
+      "path": "internal/promotion/tool_target.go",
+      "sha256": "62d90fd13ebc1cc0009ea44d54d7a543f63fda7a807625568d65aebf305bfc4f"
+    },
+    {
+      "path": "internal/promotion/tool_publication.go",
+      "sha256": "48912f7f415bec5d03d44e70df49fe09afd3ecfc10e9a5a6ccebddb2391a94f2"
+    },
+    {
+      "path": "internal/promotion/tool_publication_test.go",
+      "sha256": "a95b8db190c4003df3f5ff3f5e2a7a242b234bce718031ea6529cf4544f80854"
+    }
+  ],
+  "mechanical_reuse": "p4l4c-venv-engine-mechanical-reuse-v1.json",
+  "verified": [
+    "receipt bytes distinct from unchanged distribution ownership schema2",
+    "same-filesystem private symlink inode capture, anchored no-replace rename and exact final readback",
+    "append-only Tool/ToolLink intent/result/identity and cleanup journal records",
+    "seven injected filesystem publication faults and mid-publication cancellation restore original venv/config/receipt and command absence",
+    "foreign published link retained with journal/backup and both locks",
+    "late foreign private file causes cleanup failure inside rollback boundary; venv/receipt/links restored, foreign data/recovery retained",
+    "persistent root identity/mode change still refuses guard release"
+  ],
+  "first_failure": {
+    "raw_receipt": "p4l4c-tool-publication-v1-quick.json",
+    "seconds": 137.822,
+    "cause": "new post-publication consumer called fresh guard full mutation inventory at Close after common engine had removed owned backup",
+    "correction": "release phase verifies persistent roots/config/locks, mutation/reconciliation checks unchanged"
+  },
+  "missing": [
+    "ordinary current complete inspection/Policy/Manifest/staging to guarded tool backend",
+    "actual native selection plus approved tool installation/CLI",
+    "original native tool upgrade/retired commands/pipx production",
+    "final grouped CPU/CUDA/support profile qualification"
+  ],
+  "remote_ci": "NOT_RUN; helper-local boundary, previously consumed CI413 is not this source qualification"
+}

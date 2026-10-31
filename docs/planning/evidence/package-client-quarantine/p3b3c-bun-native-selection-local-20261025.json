@@ -1,0 +1,165 @@
+{
+  "work_item": "M13-004/P3-B3c",
+  "baseline": "d1d36258a5c3edc20752c10d61e21af0ca937a54",
+  "status": {
+    "IMPLEMENTED": "YES (typed native producer/source/snapshot)",
+    "WIRED": "YES (native selection APIs and actual consumer; CLI not wired)",
+    "QUALIFIED": "YES (named local selected subset)",
+    "ACCEPTANCE_CLOSED": "NO (whole Bun)",
+    "MISSING": [
+      "exact native layout, archive static-all and closure-aware lifecycle/quarantine",
+      "cache/transaction/CLI and broader unsupported package semantics",
+      "whole Bun affected-profile remote qualification and next meaningful macOS/Required checkpoint"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/artifact/npm/bun_selection_input.go",
+      "sha256": "aa3bafa0bfbfa346ed35468f844abe4b11388af438c8bbde2243273d0cbc8ba2"
+    },
+    {
+      "path": "internal/artifact/npm/bun_selection_input_test.go",
+      "sha256": "b61d8bdb9458e2c1db37dad537051e0d72034b442225111bbb77a15560f95c3d"
+    },
+    {
+      "path": "internal/sandbox/bun_resolver.go",
+      "sha256": "689e2063ef34a0a71ed3ac22147d14d45fd72d329552dc2a93ab73a7066a049d"
+    },
+    {
+      "path": "internal/sandbox/bun_resolver_test.go",
+      "sha256": "2969aa2b134dff869b2520d6a83e2fb024b6cb266492595e3aa2f0e19bed3218"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "c746e9780b94e8b259e7820b92e56874b3641bc24ef51c8ef1e34b4d4663af63"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "3763e5fdf2bd5c9f47dee9fa6c4647eea091c229e265aaffdd754195e43c13ad"
+    },
+    {
+      "path": "internal/sandbox/bun_resolver_real_test.go",
+      "sha256": "a11da39ce03e2bf061cdf9f3391adb6a2d03c205bc1ba098a236a6acde486c8c"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver_real_test.go",
+      "sha256": "390d7da306dcf88ebb20d8c1292acca8a5994536f83a006c82b7ce8eb7e2be55"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b3c-bun-selection-final-quick.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 111.564,
+      "log_sha256": "352242670646c3e063d05f462d64b8916fa44d5706939b8e2a8ac9ff6182e822"
+    },
+    {
+      "receipt": "p3b3c-bun-full-related-race.json",
+      "command_display": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 59.056,
+      "log_sha256": "97b8ee54682d3c08d30da739696d8d717e656f282d2bb96a5f40a1755fadd202"
+    },
+    {
+      "receipt": "p3b3c-bun-selection-final-vulnerability.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "vulnerability"
+      ],
+      "exit": 0,
+      "seconds": 16.694,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b3c-bun-selection-tagged-vet.json",
+      "command_display": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 2.825,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "observer": {
+    "receipt": "p3b3c-bun-selection-observer-canonical.json",
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh"
+    ],
+    "seconds": 250.792,
+    "latches_pass": 117,
+    "latches_fail": 0,
+    "observer": {
+      "path": "/tmp/hpr-bx53162k/bun-selection-observer-canonical",
+      "sha256": "880e77a3a64ab6d0df12f22be7343d3f38072874b16bdbccb02a97c9dbf58be8",
+      "size": 3130960
+    }
+  },
+  "actuals": [
+    {
+      "receipt": "p3b3c-bun-selection-canonical-result.json",
+      "native_selection_cases": 9,
+      "failure_boundary_cases": 5,
+      "selection_test_seconds": 57.54,
+      "boundary_test_seconds": 29.67,
+      "operator_seconds": 89.76,
+      "helper_wait": 0,
+      "host_identical": true,
+      "scope": "native data selection -> independent source -> exact controls/runtime snapshot; archive quarantine/Policy/Host install NOT_EXERCISED"
+    },
+    {
+      "receipt": "p3b3c-pnpm-regression-result.json",
+      "counts": {
+        "native_project_boundary": 5,
+        "pnpm_public_native case": 8,
+        "pnpm_project_quarantine case": 4
+      },
+      "operator_seconds": 139.641,
+      "helper_wait": 0,
+      "host_identical": true,
+      "compile_interpretation": "p3b3c-pnpm-regression-compile-interpretation.json"
+    }
+  ],
+  "transition": {
+    "old": "actual native6.0.0 row/SRI with explicitly synthetic widened constraint",
+    "readback": "native frozen accepted exact old controls at6.0.0",
+    "selected_update": "actual7.0.0",
+    "full_update": "actual7.0.0",
+    "not_claimed": "unmanaged target ownership/adoption or archive/Policy approval"
+  },
+  "preserved": [
+    "same nativeProjectScope lifecycle/typed policy/cleanup",
+    "PNPM metadata comparison body reused without changing its production bytes",
+    "existing fresh13-argv and version/revision query guards",
+    "all role/provenance/nonce/topology and filesystem/network permissions; no new read grant",
+    "explicit early cancellation Cause and no output on final scope/cleanup failure"
+  ],
+  "upstream_help": [
+    "p3b2c2-bun-install-help.json",
+    "p3b3c-bun-add-help.json",
+    "p3b3c-bun-update-help.json"
+  ],
+  "source_proof_scope": "Source/snapshot is unapproved. Native script metadata is not safety, and --ignore-scripts is not lifecycle inspection.",
+  "remote": "No push/CI. Same M13-004 continues to B4; remote9410 CI411 macOS/Required gate remains open.",
+  "final_candidate": "Final docs/security and all Root/private index blob/mode/disk/tree checks are required before commit; raw p3b3c-final-* owns those records."
+}

@@ -60,6 +60,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err != nil {
 		return domain.OperationResult{}, fmt.Errorf("generate operation ID: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolvedArtifact, err := s.artifact.Resolve(ctx, request.reference)
 	if err != nil {
 		return failedBeforeRun(operationID, request.reference, domain.ResolvedArtifactIdentity{}, "ARTIFACT_RESOLVE_FAILED", "Artifact identity resolution failed.", fmt.Errorf("resolve Artifact: %w", err))
@@ -76,6 +77,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err := run.Activate(); err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "RUN_ACTIVATION_FAILED", "Inspection Run activation failed.", fmt.Errorf("activate Inspection Run: %w", err))
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "download"})
 	artifact, err := s.artifact.Acquire(ctx, runID, resolvedArtifact)
 	if err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "ARTIFACT_ACQUIRE_FAILED", "Artifact acquisition failed.", fmt.Errorf("acquire Artifact: %w", err))
@@ -83,17 +85,20 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err := run.BindAcquiredArtifact(artifact); err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "ARTIFACT_BINDING_FAILED", "Acquired Artifact binding failed.", fmt.Errorf("bind acquired Artifact: %w", err))
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, artifact)
 	if err != nil {
 		return failRun(run, request.reference, artifact, nil, nil, "VERIFICATION_PROVIDER_FAILED", "Artifact verification failed operationally.", fmt.Errorf("verify Artifact: %w", err))
 	}
 	checks := []domain.CheckExecution{verification.Execution()}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, nil, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", fmt.Errorf("inspect Artifact: %w", err))
 	}
 	checks = append(checks, inspection.Executions()...)
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
+	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
 	references, err := s.evidence.Record(ctx, runID, evidence)
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, nil, "EVIDENCE_RECORD_FAILED", "Evidence recording failed.", fmt.Errorf("record Evidence: %w", err))
@@ -102,6 +107,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, references, "POLICY_INPUT_INVALID", "Policy input construction failed.", fmt.Errorf("construct Policy input: %w", err))
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.policy.Evaluate(policyInput)
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, references, "POLICY_EVALUATION_FAILED", "Policy evaluation failed operationally.", fmt.Errorf("evaluate Policy: %w", err))

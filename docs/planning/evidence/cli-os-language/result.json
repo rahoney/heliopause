@@ -1,0 +1,450 @@
+{
+  "work_item": "CLI-UX-002",
+  "status": "COMPLETE",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "plan_commit": "4d6cc0fb174918a1cf64b117d32fafece2510947",
+  "second_review": {
+    "status": "REVIEWED_BEFORE_SOURCE",
+    "corrected_assumptions": [
+      "npm update constraints are not npm install latest",
+      "cargo lock update is not cargo add",
+      "pip retained environment and upgrade strategy need selection inputs",
+      "npm/PyPI replacement and rollback already implemented",
+      "foreign-environment adoption is separate from managed replacement",
+      "OS process execution belongs in hosttool with bootstrap injection",
+      "DrvFS root ownership differs from native Unix trusted tools",
+      "per-command probe cache and source/fallback reporting required",
+      "time/output/pipe bounds and strict tags required",
+      "actual native qualification differs from cross-compile",
+      "all new bootstrap tests must enter check inventory"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "cmd/helox/main_test.go",
+      "sha256": "730b664e00ff104880d8298192d031d4722012a0b966596907a09437afe65832"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "0e4c39cb2495345ab868868366bbd14a35db4e2e644b7eb5dc3e8e6c61d0c6f7"
+    },
+    {
+      "path": "internal/cli/language_settings.go",
+      "sha256": "9e02de37739ca13522ccb4fb8b15a95f50b949f3f3b578201a087d06ac752798"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "e393e524d3f14106c776fbc7a25e1b5598c3fc8e6188c1b54861cc28eeba356e"
+    },
+    {
+      "path": "internal/cli/system_language.go",
+      "sha256": "c6be4ed6f98622902ad9145280cf831364a646a6afdfbecc8afcd7662a3140b1"
+    },
+    {
+      "path": "internal/cli/system_language_test.go",
+      "sha256": "3bb0f0ec8a3699d729d84d6820ed9f0a178d6ef8f766b6f404ce8d3896a73cfb"
+    },
+    {
+      "path": "internal/hosttool/display_language.go",
+      "sha256": "6b4526832d083a089fd6779576647a58537f94ee93fef4d692fb6d6ba9c0b692"
+    },
+    {
+      "path": "internal/hosttool/display_language_test.go",
+      "sha256": "b473b133fb6bfc20cb72f48c282f653ee58c4f2460ade046969917a8305882f4"
+    }
+  ],
+  "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990",
+  "checks": {
+    "quick": {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 113.87,
+      "log_sha256": "de25279a746d221ef66f0a5a8f12cfd608f33c8c019fdae2965c64e6510367bc",
+      "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+    },
+    "security": {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 14.23,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f",
+      "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 7.76,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit_code": 0,
+      "seconds": 8.24,
+      "log_sha256": "89b6e8cfbd4a05c205f24cadfd520f21e0e4494a99b311eda160282d2cd149c8",
+      "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+    },
+    "race": {
+      "profile": "race",
+      "exit_code": 0,
+      "seconds": 29.44,
+      "log_sha256": "9aafe3c3c03f6dba83b1537cac2ed6424127d3b8d310f0196139ad1979eb6f8d",
+      "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+    }
+  },
+  "darwin_test_compilation": [
+    {
+      "os": "darwin",
+      "arch": "amd64",
+      "package": "hosttool",
+      "exit_code": 0,
+      "seconds": 0.67,
+      "native_execution": false
+    },
+    {
+      "os": "darwin",
+      "arch": "amd64",
+      "package": "bootstrap",
+      "exit_code": 0,
+      "seconds": 1.67,
+      "native_execution": false
+    },
+    {
+      "os": "darwin",
+      "arch": "arm64",
+      "package": "hosttool",
+      "exit_code": 0,
+      "seconds": 0.72,
+      "native_execution": false
+    },
+    {
+      "os": "darwin",
+      "arch": "arm64",
+      "package": "bootstrap",
+      "exit_code": 0,
+      "seconds": 1.82,
+      "native_execution": false
+    }
+  ],
+  "candidate": {
+    "status": "BUILT",
+    "sha256": "eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13",
+    "bytes": 26488645,
+    "seconds": 1.42,
+    "CGO_ENABLED": "0",
+    "actual_go": "1.26.9",
+    "source_inventory_sha256": "468832d3d516f098fdebf2dbd187c3ceec49e240055c6ccc530244a110d5c990"
+  },
+  "real_pty": {
+    "status": "PASS",
+    "binary_sha256": "eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13",
+    "process_locale": "C.UTF-8",
+    "actual_windows_ui": "ko-KR",
+    "effective_auto_language": "ko",
+    "source": "WINDOWS_UI",
+    "cases": [
+      {
+        "case": "first-auto",
+        "args": [
+          "config",
+          "language"
+        ],
+        "exit_code": 0,
+        "seconds": 0.31,
+        "real_pty": true
+      },
+      {
+        "case": "default-help",
+        "args": [
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.33,
+        "real_pty": true
+      },
+      {
+        "case": "one-shot-en",
+        "args": [
+          "--lang",
+          "en",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "env-ja",
+        "args": [
+          "config",
+          "language"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "save-en",
+        "args": [
+          "config",
+          "language",
+          "en"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "saved-en-help",
+        "args": [
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "reset-auto",
+        "args": [
+          "config",
+          "language",
+          "auto"
+        ],
+        "exit_code": 0,
+        "seconds": 0.33,
+        "real_pty": true
+      },
+      {
+        "case": "help-en",
+        "args": [
+          "--lang",
+          "en",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-ko",
+        "args": [
+          "--lang",
+          "ko",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-de",
+        "args": [
+          "--lang",
+          "de",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-fr",
+        "args": [
+          "--lang",
+          "fr",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-es",
+        "args": [
+          "--lang",
+          "es",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-pt-BR",
+        "args": [
+          "--lang",
+          "pt-BR",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "help-ja",
+        "args": [
+          "--lang",
+          "ja",
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.01,
+        "real_pty": true
+      },
+      {
+        "case": "bad-pref-fallback",
+        "args": [
+          "--help"
+        ],
+        "exit_code": 0,
+        "seconds": 0.02,
+        "real_pty": true
+      },
+      {
+        "case": "repair-auto",
+        "args": [
+          "config",
+          "language",
+          "auto"
+        ],
+        "exit_code": 0,
+        "seconds": 0.31,
+        "real_pty": true
+      }
+    ],
+    "saved_auto_preserved": true,
+    "user_settings_changed": false,
+    "scope": "actual compiled CLI on WSL; no native macOS execution or artifact operation claimed"
+  },
+  "local_activation": {
+    "status": "ACTIVATED",
+    "old_cli_sha256": "027970d56fa8dcea7266a9044614e5965128980c8526b433de47f92af19fe268",
+    "new_cli_sha256": "eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13",
+    "helper_observer_config_unchanged": true,
+    "necessary_rollback": "root0600 preserved in durable local operator state"
+  },
+  "installed_smoke": {
+    "status": "PASS",
+    "installed_sha256": "eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13",
+    "uid": 1000,
+    "saved_user_preference_unchanged": true,
+    "auto_with_C_UTF8": "ko / WINDOWS_UI",
+    "actual_npm_json_inspect": {
+      "package": "is-number@7.0.0",
+      "status": "COMPLETED",
+      "policy": "ALLOW",
+      "required_checks": 3,
+      "exit_code": 0,
+      "seconds": 8.01
+    },
+    "helper_lifecycle": "see installed-lifecycle.log canonical EXIT receipt",
+    "canonical_helper_wait": 0,
+    "final_helper_state": "CONFIRMED_STOPPED",
+    "primary_and_cleanup_status": [
+      0,
+      0
+    ]
+  },
+  "remote_ci": {
+    "status": "PASS",
+    "run_id": 39120811016,
+    "run_number": 328,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/39120811016",
+    "pr": 38,
+    "head": "3482e77275b83e5aec873bca5b85ce89c6260706",
+    "actual_checkout": "cf9925284c75fffd3797db8d74765e13a6959694",
+    "whole_checkout_tree_equals_head": true,
+    "jobs": [
+      {
+        "id": 117655868304,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868506,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868510,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868527,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868531,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868543,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868566,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868610,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868643,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 117663871783,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "native_macos": "platform build and actual default test suite PASS; no positive desktop AppleLanguages preference inferred",
+    "cuda": "not dispatched; presentation-only change",
+    "linux_top_level_consumers": 45,
+    "pytorch_cpu_seconds": 280.49,
+    "linux_cleanup": "original0 / CONFIRMED_STOPPED / helper_stop0 / client_error0 / client_restore0"
+  },
+  "raw_owner": "docs/github-logs/cli-os-language-20261018/",
+  "scope": "Language acceptance complete for documented bounded OS reads/fallback; update commands not implemented, no main merge or publication, no historical full-Race claim.",
+  "source_commit": "3482e77275b83e5aec873bca5b85ce89c6260706",
+  "postcheck": {
+    "status": "PASS",
+    "protected_files": 4,
+    "active_consumers": 0,
+    "unknown_consumers": 0,
+    "runtime_endpoints": 0,
+    "previous_cli_backup_verified": true,
+    "raw": "postcheck.json"
+  },
+  "closure_boundary": "Source hashes remain exactly source_commit; closure changes documentation/evidence only. Final PR-head CI receipt is retained under raw_owner without a self-referencing evidence-only commit.",
+  "cleanup": {
+    "status": "PASS",
+    "total_logical_bytes": 1707429444,
+    "final_cleanup_logical_bytes": 1625802285,
+    "earlier_payload_logical_bytes": 81627159,
+    "shared_modules_toolchains_runtime_necessary_rollback_original_evidence": "preserved; symlink targets not followed",
+    "measurement": "logical file bytes only; no physical disk/VHDX reclamation claim",
+    "raw": "final-cleanup.json"
+  },
+  "closure_docs_check": {
+    "profile": "docs",
+    "exit_code": 0,
+    "seconds": 0.26,
+    "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "source_inventory": "closure-final-docs-source.json",
+    "scope": "Canonical final Markdown and qualification status PASS; subsequent additions are cleanup/check receipts in this JSON only, parsed and source hashes rechecked before commit."
+  }
+}

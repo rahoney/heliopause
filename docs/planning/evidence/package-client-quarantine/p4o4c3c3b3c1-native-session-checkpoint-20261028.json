@@ -1,0 +1,236 @@
+{
+  "scope": "M13-004/P4-O4-C3c3b3c1 dedicated fresh native metadata session, typed operational accounting and cleanup checkpoint; whole native execution remains OPEN",
+  "baseline": {
+    "commit": "65a0139cd6321df19403f32737fb5529dc28d2ce",
+    "tree": "ae241fb390723424ad33fccf81b74d7523d6f3b9",
+    "files": 2841
+  },
+  "implemented": "YES for private fresh session/ports/zero-unit operational ledger",
+  "wired": "YES for actual profile/admission/typed resources/whole output reader; installed production composition remains NO",
+  "qualified": "PARTIAL: canonical Go checks, cleanup regressions and CPP128; actual native install NO",
+  "acceptance_closed": "NO",
+  "source": [
+    {
+      "path": "internal/sandbox/pipx_native_session.go",
+      "sha256": "430c88cbf6583fa36b2d5876caefb6de5ae07dc14009193d08619d7b9518c967"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session_test.go",
+      "sha256": "f4e9a98b006a0fc01786a9e1923cf03ab59294699d3cbacdbefe6ddf11f704ce"
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session_real_test.go",
+      "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "286fed8d28d1585fac5ac6c687d458307426f0c52c8b6f4a197c1eaea3ec50ee"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "fea5d99fd88f9e088198f2de246fe8687c0d820068eafcc2d50bdd243b8a9f01"
+    }
+  ],
+  "go_checks_and_binary": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "430c88cbf6583fa36b2d5876caefb6de5ae07dc14009193d08619d7b9518c967"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "f4e9a98b006a0fc01786a9e1923cf03ab59294699d3cbacdbefe6ddf11f704ce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+      }
+    ],
+    "binary_sha256": "3847874280ee3f18606644191ec6a5c0edb311d574b13913c0500a0e3c92e4b7",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.821
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 88.47
+      },
+      {
+        "step": "sandbox-race",
+        "exit_code": 0,
+        "seconds": 25.561
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.045
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.838
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.346
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 13.999
+      }
+    ],
+    "source_after_matches_before": true
+  },
+  "cpp": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4c3c3b3c1-v6-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 274.359,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "286fed8d28d1585fac5ac6c687d458307426f0c52c8b6f4a197c1eaea3ec50ee"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "fea5d99fd88f9e088198f2de246fe8687c0d820068eafcc2d50bdd243b8a9f01"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "4ed83e8353096363c90f88aa08ef6dd443fdf94c99accc7c8548b7ea95f93787",
+    "observer": {
+      "bytes": 3193720,
+      "sha256": "7355072e66f71de9bdf11e2483c3777451a111eef9191ff439f74d5643581fdd"
+    }
+  },
+  "cpp_latches": 128,
+  "mechanical_reuse": "six previous guards, UV selector/program and generic OpenResult switch byte-identical; retained p4o4c3c3b3b-mechanical-reuse.json",
+  "actual_attempts": [
+    {
+      "attempt": 1,
+      "seconds": 2.021,
+      "exit": 1,
+      "qualified": false,
+      "subject": "NOT_REACHED",
+      "cpu_usec": null,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v1-result.json",
+      "raw_log_sha256": "7fc58ee360c29bd021512d340e03a0d5a523d0634b1053384b38f650d7b1e63e",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    },
+    {
+      "attempt": 2,
+      "seconds": 12.006,
+      "exit": 1,
+      "qualified": false,
+      "subject": "VM_OVERCOMMIT_MEMORY",
+      "cpu_usec": 2151674,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v2-result.json",
+      "raw_log_sha256": "aaf9abc6f793314bed9d6414f5465f794be4b3ea71617d8185d3ec98265f7603",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    },
+    {
+      "attempt": 3,
+      "seconds": 12.675,
+      "exit": 1,
+      "qualified": false,
+      "subject": "PROC_SELF_CGROUP",
+      "cpu_usec": 2188053,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v3-result.json",
+      "raw_log_sha256": "ea98518b482a658f7c79d339cbe1ea4bcc6b0feaae45b74642ced23afee89769",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    },
+    {
+      "attempt": 4,
+      "seconds": 11.352,
+      "exit": 1,
+      "qualified": false,
+      "subject": "PROC_SELF_MOUNTINFO",
+      "cpu_usec": 2159176,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v4-result.json",
+      "raw_log_sha256": "28b6023640d710196caa962bbef461ace579521e6728e084d611785687774c62",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    },
+    {
+      "attempt": 5,
+      "seconds": 11.445,
+      "exit": 1,
+      "qualified": false,
+      "subject": "CGROUP_CPU_QUOTA",
+      "cpu_usec": 2187782,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v5-result.json",
+      "raw_log_sha256": "205d87394a7f8915be006860afda2c1b15e7ccaddd7cb82017bf0dbbc9584e35",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    },
+    {
+      "attempt": 6,
+      "seconds": 12.047,
+      "exit": 1,
+      "qualified": false,
+      "subject": "CGROUP_CPU_QUOTA",
+      "cpu_usec": 2454022,
+      "retained_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-actual-v6-result.json",
+      "raw_log_sha256": "665af3b786dc8e3e0e544915f2f770afcfd8b6c9cc60bc78b01c1ae84ca111e0",
+      "host_and_input_unchanged": true,
+      "helper_wait_zero_and_absent": true
+    }
+  ],
+  "last_failure": {
+    "attempt": 6,
+    "first_error": "STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_SYS/CGROUP_CPU_QUOTA",
+    "flags": 557056,
+    "role": "ARTIFACT/CLONE_CHILD",
+    "diagnostic_path_locator": "aea5f4520ac7eba5",
+    "exact_classified_candidate": "/sys/fs/cgroup/cpu/cpu.cfs_period_us",
+    "locator_is_authentication": false,
+    "native_target_attempts": 1,
+    "typed_create_register_close": [
+      1,
+      1,
+      1
+    ],
+    "cpu_usec": 2454022,
+    "returned_controls": 0,
+    "returned_graph": 0
+  },
+  "budgets": "unchanged public pypi CPU30s/wall5m; existing17s reserve and13s active threshold; no inspection units/final COMPLETED or Policy authority",
+  "first_fixture_failures": {
+    "actual1": "wrong package cwd, native NOT_REACHED; operator corrected only",
+    "target_counter": "raw handoff flag comparison missed existing origin framing; v2 target count0 is not no-execution proof",
+    "quick_v4": "Output-only fake did not implement RunDiscard; fixture port corrected; explicit new session discard preflight and actual wrapper delegation separately added"
+  },
+  "remote": "CI421/sourcee859487 qualifies its hosted scope only; this local candidate has not been pushed",
+  "missing": [
+    "native UV exact CPU period read and any later directly observed startup gaps",
+    "fresh observed actual complete output and fault-injected accounting refusal with original/Host/cleanup proof",
+    "installed protected ZIP/complete supply composition and actual caller",
+    "original upgrade/current Evidence/Policy/transaction/CLI and final named profiles"
+  ]
+}

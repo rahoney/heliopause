@@ -1,0 +1,153 @@
+{
+  "schema": "helox.pnpm-ci-consumer-local/v1",
+  "baseline": "9adbfa53f158641fe4c6c944b0f5317fcf3cae87",
+  "scope": "exact existing CI native-supply script project profile and tagged protected bootstrap actual client; parent rebind/restore wiring validated structurally, remote actual still pending",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (existing lifecycle, no new job)",
+    "QUALIFIED": "YES (named local script actual)",
+    "ACCEPTANCE_CLOSED": "NO (remote/whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "bytes": 26648,
+      "sha256": "d54c2df1c659b21c643bf07c8f9a9fe92b456023928571d8cc172c8b80f010ec"
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "bytes": 3668,
+      "sha256": "9d1f172d633f41e047a158947fbad879cd1cbcd9ed7710562c37cbe84aca183f"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "bytes": 6059,
+      "sha256": "92465bd85455d2ecf94546c7f36c201a501d781da9a35384169e93a024cc5748"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "bytes": 8179,
+      "sha256": "562f538f337fb7b498de3c9a8d1a47da1c2d711c754fdcc880fd78e541aa567a"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "bytes": 33373,
+      "sha256": "2b22379fee4f6940371a06f042ca299a56585f47d9dbc48ea8f45c449ef78279"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "seconds": 1.148,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-format.json",
+        "bytes": 595,
+        "sha256": "4f1dd4f8e283a276a08db270a8045f59712ed0a53492b35cf02d6e3ce946b430"
+      }
+    },
+    {
+      "profile": "workflow",
+      "seconds": 1.911,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-workflow.json",
+        "bytes": 312,
+        "sha256": "a91eb2433c8f74f1756380dab4f12e06479207f928ac24b73d9ef883e60226ce"
+      }
+    },
+    {
+      "profile": "quick",
+      "seconds": 57.67,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-quick.json",
+        "bytes": 306,
+        "sha256": "94312c90b71a198a0de719b58883bf13fa05b28ad5d9af4b1e53f962b98a63fc"
+      }
+    },
+    {
+      "profile": "security",
+      "seconds": 8.63,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-security.json",
+        "bytes": 311,
+        "sha256": "9c4405d4130290039b6271ce1855a882313342e869b5176e2645942306121d22"
+      }
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.234,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-docs.json",
+        "bytes": 304,
+        "sha256": "e241302fc687104b9f9dfa952d062ed9d0e41da1e6d5d48298f244d35b457c4f"
+      }
+    },
+    {
+      "profile": "race",
+      "seconds": 29.928,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-first-race.json",
+        "bytes": 349,
+        "sha256": "6ddda9106489df3d131250eb96ae7c32cfac3b37a2af75475ea7802f57794a9b"
+      }
+    }
+  ],
+  "actual": {
+    "seconds": 197.22,
+    "script": "scripts/ci-pnpm-runtime.sh project",
+    "cache_test_seconds": 42.69,
+    "transaction_test_seconds": 147.08,
+    "transaction_modes": [
+      "install",
+      "add",
+      "update"
+    ],
+    "transaction_fixtures": [
+      "single",
+      "peer",
+      "explicit empty"
+    ],
+    "helper_wait": 0,
+    "host_configuration_unchanged": true,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-ci-project-consumer-result.json",
+      "bytes": 1403,
+      "sha256": "3cd74a3272f0c1fece087167470d2fe296bf7d078ab9781f294cc67416afadc4"
+    },
+    "compiled_two_exact_functions": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-final-actual-compile.json",
+      "bytes": 749,
+      "sha256": "6a8e15739ff12eb7a97d5fa1486f52e02753b2f71a8abaae78ec0622d90274c1"
+    }
+  },
+  "completed_runtime_cleanup": {
+    "regular_bytes": 947906618,
+    "directories": 6,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-completed-runtime-cleanup.json",
+      "bytes": 1287,
+      "sha256": "03c6be30640e3de664e3d52ba300bd72b1ad74ab9d6242dd3d5f778dd34d7163"
+    },
+    "first_query_refusal": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-cleanup-query-correction.json",
+      "bytes": 480,
+      "sha256": "178fb8de428a63241da5afc03a8ea9ce32a13ecacac4afeaf096dfd4327e741a"
+    }
+  },
+  "not_qualified": [
+    "new source remote Required/macOS/Linux actual",
+    "native unmanaged-payload adoption",
+    "user CLI and whole P2"
+  ],
+  "next": "one bundled branch push after final complete-candidate checks; continue CLI/source-proof acceptance without per-helper repush",
+  "whole_candidate_correction": {
+    "scope": "projection-only mode correction; source bytes/actual assertions unchanged",
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5b4-private-mode-mismatch.json",
+      "bytes": 287,
+      "sha256": "78c003147c6cb2ab5fb223be3724aeddfaa84cc8d69a8102ab9d38324a4be4a0"
+    },
+    "root_git_mode": "100644",
+    "initial_private_mode": "100755",
+    "corrected_private_mode": "100644"
+  }
+}

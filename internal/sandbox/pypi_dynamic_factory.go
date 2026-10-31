@@ -36,6 +36,20 @@ func newLinuxPyPIDynamicBackend(intakeRoot string, executor TrustedExecutor, obs
 	return backend, nil
 }
 
+// NewLinuxPipxRuntimeBackendWithExecutor reuses the Python transaction runtime
+// without requiring a wheel intake directory or an installed current tool.
+func NewLinuxPipxRuntimeBackendWithExecutor(executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*PythonDynamicBackend, error) {
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	backend, err := newPythonObservationBackend(executor, observer, capabilityProbe)
+	if err != nil {
+		return nil, err
+	}
+	backend.resources = resources
+	return backend, nil
+}
+
 // NewLinuxPyPISdistBuilderWithExecutor uses the composition-root validated
 // Host executor for the build lifecycle.
 func NewLinuxPyPISdistBuilderWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*PythonSdistBuilder, error) {

@@ -1,0 +1,81 @@
+{
+  "work_item": "M13-004/P4-C",
+  "baseline": "70eafe9f50a1193232786f1654a42d5fcd2c53b4",
+  "status": {
+    "IMPLEMENTED": "YES (project export metadata/native provenance and independent whole archive binding)",
+    "WIRED": "YES (typed artifact adapter); NO (production project resolver/CLI)",
+    "QUALIFIED": "YES (named local actual offline export replay plus independent structural archive/metadata binding)",
+    "ACCEPTANCE_CLOSED": "YES (export boundary only); NO (whole P4)",
+    "MISSING": [
+      "isolated actual public native project resolver",
+      "project/venv atomic ownership/transaction and CLI",
+      "persistent UV tool/pipx"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-project-export-first-format.json",
+      "seconds": 1.546,
+      "sha256": "5f0377aa238f7c931c2af0938d2ee397b6d0471bd227d304b8bb56980f450131"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-project-export-first-quick.json",
+      "seconds": 202.258,
+      "sha256": "6c738310e98bbf8ace25fbb7ec2093880997efa20b0359f4143c302b2fe1cc77"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-project-export-first-security.json",
+      "seconds": 12.677,
+      "sha256": "be03fd0de35ae0c670d14cdb649d5288dedc7c0ce845534ce4c0a83c395cfde1"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-project-export-first-docs.json",
+      "seconds": 0.243,
+      "sha256": "d96bbfdc8fbb2cea9f0031672a72cefab878b1363971d766bb124bd33c0141da"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-project-export-full-artifact-race.json",
+      "seconds": 5.88,
+      "sha256": "fba453216845c801318d60c74cfcafa6279ff130a60b5af81fb919c20d39f220"
+    }
+  ],
+  "unchanged_owners": [
+    "internal/artifact/pypi/uv_lock.go",
+    "internal/artifact/pypi/uv_project_lock.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/sandbox/uv_resolver.go",
+    "internal/sandbox/uv_sync_resolver.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "fixtures": [
+    {
+      "path": "internal/artifact/pypi/testdata/uv-0.13.4-project-export-replay.pyproject.toml",
+      "sha256": "d1c563dd5869c4052be127243719546a2cb1d7949259edea012a34ef9bb9ddea"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-0.13.4-project-export-replay.uv.lock",
+      "sha256": "6991562acf067dd6ff81d3a6317ead98cd2c15f8db714627a67ab3cff3b0c5c7"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-0.13.4-project-export-replay.pylock.toml",
+      "sha256": "17657f3057e31c3ad9d677d75649d25ebe5ab623dd813348a4ab2d6193d943e7"
+    }
+  ],
+  "native_query": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4c-export-query-v3-20261026.json",
+    "seconds": 2.779,
+    "scope": "synthetic lock real fixed UV offline export/check only, no actual public acquisition/gVisor/Policy/install claim",
+    "removed_containers": 3,
+    "initial_failures": "v1/v2 Docker cp readonly rootfs; start-order hypothesis refuted; raw receipts preserved"
+  },
+  "boundaries": [
+    "strict existing P1 parser still rejects project index/sdist metadata",
+    "actual manifest/native/export controls and separately named derived view bind exact bytes/presence",
+    "public index and inert sdist identity match native declarations; no source build/execution authority",
+    "existing installed wheel census, independent full archive+Simple metadata/constraints and complete snapshot reused; provenance/hash/source tamper rejected"
+  ],
+  "ci": "CI413 frozen50fd remains pending, P4 source outside run; no helper push/dispatch; remaining CUDA full groups at final affected-source checkpoint/P7 per existing execution cadence",
+  "lessons_review": "evidence L16 records temporary operator failure/refutation; no product transport defect inferred"
+}

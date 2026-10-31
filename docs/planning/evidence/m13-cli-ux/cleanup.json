@@ -1,0 +1,139 @@
+{
+  "status": "PASS",
+  "utc": "2026-10-18T08:11:29.713138+00:00",
+  "consumer_guard": {
+    "active": [],
+    "unknown": []
+  },
+  "paths": [
+    {
+      "path": "/tmp/haa-cli-ux-20261018/operations",
+      "logical_file_bytes": 39086,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/pty-config",
+      "logical_file_bytes": 25,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/pty-config-final",
+      "logical_file_bytes": 25,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/cli-darwin-amd64.test",
+      "logical_file_bytes": 14400416,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/cli-darwin-arm64.test",
+      "logical_file_bytes": 13521074,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/cache",
+      "logical_file_bytes": 1531122989,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/candidate",
+      "logical_file_bytes": 26466716,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-20261018/source",
+      "logical_file_bytes": 52181325,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-activate.py",
+      "logical_file_bytes": 4028,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-build.py",
+      "logical_file_bytes": 2157,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-catalog.py",
+      "logical_file_bytes": 17134,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-check.py",
+      "logical_file_bytes": 2690,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-cleanup.py",
+      "logical_file_bytes": 3908,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-operations.py",
+      "logical_file_bytes": 4436,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-operations.sh",
+      "logical_file_bytes": 363,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-postcheck.py",
+      "logical_file_bytes": 2353,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-pty.py",
+      "logical_file_bytes": 2991,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/haa-cli-ux-readonly-profiles.py",
+      "logical_file_bytes": 1960,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/__pycache__/haa-cli-ux-activate.cpython-314.pyc",
+      "logical_file_bytes": 8891,
+      "status": "REMOVED"
+    },
+    {
+      "path": "/tmp/__pycache__/haa-cli-ux-operations.cpython-314.pyc",
+      "logical_file_bytes": 10289,
+      "status": "REMOVED"
+    }
+  ],
+  "logical_file_bytes": 1637792856,
+  "task_root_absent": true,
+  "shared_targets_preserved": [
+    {
+      "path": "/home/winamp/.cache/heliopause/quality-tools/bin",
+      "device": 2096,
+      "inode": 694559,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 448,
+      "mtime_ns": 1792205139552401222
+    },
+    {
+      "path": "/home/winamp/.cache/heliopause/quality-tools/go-mod",
+      "device": 2096,
+      "inode": 681291,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493,
+      "mtime_ns": 1792230458389946661
+    }
+  ],
+  "preserved": [
+    "active SDK/shared quality tools/module cache",
+    "installed qualified development CLI and runtime/helper/config",
+    "root-owned necessary rollback original",
+    "original operation Evidence9 and raw qualification logs/operator scripts"
+  ],
+  "space_metric": "logical file bytes removed; no claim of physical free blocks or Windows VHDX compaction"
+}

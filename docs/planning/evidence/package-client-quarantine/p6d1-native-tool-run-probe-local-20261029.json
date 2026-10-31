@@ -1,0 +1,236 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-D1 native tool-run DATA-only diagnostic checkpoint",
+  "baseline": "2bab27c5688f9b1bded432e77aac9c54031668c0",
+  "runtime": 1369,
+  "existing1368_unchanged": true,
+  "new_paths": [
+    "internal/sandbox/uv_tool_run_probe_real_test.go"
+  ],
+  "production_CPP132_permissions_budgets_unchanged": true,
+  "checks_current": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.867
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.317
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 11.861
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-d1-v2-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.37
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.845
+    }
+  ],
+  "default_reuse": {
+    "default_membership_bytes_identical": true,
+    "default_list_sha256": "c7fb767cf6ad23ad1dc2ff0ffbf7ad184dc064f5e374909420d1f3bf9c655872",
+    "all_existing1368_runtime_bytes_identical": true,
+    "new_file_excluded_by_linux_realcorpus_tag": "internal/sandbox/uv_tool_run_probe_real_test.go",
+    "C2_canonical_Quick_seconds": 348.386,
+    "C2_whole_checker_Race_seconds": 62.629,
+    "current_new_tagged_test_only": "vet/Staticcheck/build verified separately; no duplicated default/native tests"
+  },
+  "test_binary": {
+    "role": "sandbox",
+    "path": "/tmp/haa-p6-d1-v2-sandbox.test",
+    "sha256": "e36f3edd59e7ce9a7ba8860a0ad81176a8b48dc43303f65fe47109cd8691850c",
+    "bytes": 27753761
+  },
+  "v1": {
+    "state": "FAIL; expected terminal unproven",
+    "parent_seconds": 5.32,
+    "operator_seconds": 9.242,
+    "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d1-actual-v1-original-inventory.json"
+  },
+  "v2": {
+    "state": "FAIL / observer incomplete; do not relabel as PASS",
+    "parent_seconds": 4.77,
+    "operator_seconds": 6.808,
+    "native_command_called": true,
+    "native_exit": 2,
+    "native_stderr_UTF8_bytes": 4683,
+    "native_expected_EACCES_terminal_reached": true,
+    "native_resolution": "ACTUAL offline/no-index/fixed local raw single-wheel fixture; not public golden",
+    "native_cached_interpreter_query": "/tmp/.tmpzw5M7c/archive-v0/aCTj1Rn4JBKu2JYF/bin/python",
+    "observer_first_fault": "OPEN_RESULT_CLASSIFICATION_IMAGE/OTHER/CONTROL/CLONE_CHILD/OCI_IMAGE/flags557056; events15 bytes1710; session_complete=false",
+    "outer_error": "observer stream is incomplete + direct-exec authority ambiguous; native ExitError no longer reachable there",
+    "source_host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "owned_workspaces_observer_endpoints_absent": true,
+    "Policy_public_authentication": "NOT_RUN",
+    "selected_artifact_program": "NOT_RUN; absolute non-executable /dev/null terminal",
+    "originals": "docs/github-logs/package-client-quarantine-20261021/p6-d1-actual-v2-original-inventory.json",
+    "decoded_stderr": "docs/github-logs/package-client-quarantine-20261021/p6-d1-v2-native-stderr-decoded.txt",
+    "decoded_stderr_sha256": "31f28c93280d8d43b759241f5172492bf14b4885fc3df3786492136c730f276b"
+  },
+  "confirmed_error_owner": {
+    "file": "internal/sandbox/direct_exec_admission.go",
+    "methods": [
+      "Output",
+      "RunInput",
+      "RunBounded",
+      "RunOutput"
+    ],
+    "fact": "if finishErr is nonnil these four return finishErr instead of preserving commandErr; actual v2 captured native ExitError2/EACCES before that return while outer error had only observer refusal",
+    "already_correct": "RunDiscard uses errors.Join(commandErr,finishErr); reuse this owner behavior",
+    "separate_limit": "does not cause the native cached-query ABI mismatch or authorize ignoring observation failure"
+  },
+  "query_limit": "native stderr confirms a cached archive-v0 interpreter alias outside current UVToolQueryEnvironment base/tool-home grammar; FNV literal corroboration is not identity authority and exact kernel query rejection binding still needs bounded verification before permission changes",
+  "audit": {
+    "IMPLEMENTED": "YES (diagnostic tagged test)",
+    "WIRED": "YES (local actual only)",
+    "QUALIFIED": "NO (native preparation observation incomplete)",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "preserve first native error in four existing admission wrappers, matching existing RunDiscard",
+      "exact cached-query identity/topology/role negative proof and bounded actual qualification",
+      "public native selector equivalence/golden/aliases/CLI/final support"
+    ]
+  },
+  "cleanup": {
+    "completed_copies_removed": 4,
+    "logical_bytes": 61940507,
+    "root_processes": 83,
+    "resource_empty_zombies_revalidated": 6,
+    "first_two_attempts_deleted": 0,
+    "cumulative_removed_files": 213,
+    "cumulative_logical_bytes": 7704986146,
+    "originals_monitor_fixed_sources_preserved": true,
+    "Windows_VHD_physical_shrink": false,
+    "originals": [
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-inventory.py",
+        "bytes": 2399,
+        "sha256": "a095f8d43be061928c6a45532ccd33bd5a7354a02f26d7be83e875f5b4e27486"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-candidate.json",
+        "bytes": 3055,
+        "sha256": "1575251e1232365010e994d18f1899c80265dac868510bc3a4abbd5faea204f7"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-cleanup.py",
+        "bytes": 5042,
+        "sha256": "e26617a7cbc5d394a03226e921bb283490ddfa1fc2c491b54abb50b4c0ab830a"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-preflight.json",
+        "bytes": 2820,
+        "sha256": "cff03d8105e533506f3da8072e52e94bff349ef80e9b7a3a3b6f76e980f58468"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-first-preflight.json",
+        "bytes": 2820,
+        "sha256": "cff03d8105e533506f3da8072e52e94bff349ef80e9b7a3a3b6f76e980f58468"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-first-candidate.json",
+        "bytes": 3055,
+        "sha256": "1575251e1232365010e994d18f1899c80265dac868510bc3a4abbd5faea204f7"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-zombie-proof.py",
+        "bytes": 1732,
+        "sha256": "1666404222bc263ebe58c22c6074bed9da7ebc15a3ce998403ac82c7f43ca6c8"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-zombie-proof.json",
+        "bytes": 1001,
+        "sha256": "7425b3411d3a0c72e46febbc70aa3d368c02ead90ccade7c5d0517976b998010"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-cleanup-v2.py",
+        "bytes": 6129,
+        "sha256": "beb57ff939d8e340c84ac885ec3f489eece29cbd31d037f6e22bc7768cbe50bf"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-preflight-v2.json",
+        "bytes": 3305,
+        "sha256": "d1507992f32577d484369b4e8011c82934ee37ff44872d75395b275e1eb6c6d8"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-zombie-proof-v2.py",
+        "bytes": 1619,
+        "sha256": "9cf8526e35ab5deff1e348a3a6ea6a1f406acd6d903afafc0b1e92a1aaf7a3ff"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-zombie-proof-v2.json",
+        "bytes": 1764,
+        "sha256": "6f5b70ba89244a9c48ae9c7a62a9018e6bc33f5dd78668705e76df81d6d68e14"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-cleanup-v3.py",
+        "bytes": 6132,
+        "sha256": "175596bf50666418605a366632688498b0aca953b5eb71cb0e1d4d5c7358904b"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-preflight-v3.json",
+        "bytes": 3263,
+        "sha256": "329eccfd2bbf60dafe127acfcebc7600a65fac0e099427414a9dbf381768e187"
+      },
+      {
+        "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-d1-completed-result-v3.json",
+        "bytes": 3733,
+        "sha256": "dfd6ddd45644002dfda977fbe4a46fca2e8daac28e64d8276632355fac242c46"
+      }
+    ]
+  },
+  "CI433": "source87c817d frozen; actual poll01 8SUCCESS/Linux in progress; next12:42:09.907868UTC, worker71198/PID3172981; no push"
+}

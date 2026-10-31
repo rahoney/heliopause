@@ -1,0 +1,142 @@
+{
+  "schema": "p3-bun-backend-ci412-qualification/v1",
+  "source": "7544a0939512607325f858846c262e58b71e28b5",
+  "tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+  "files": 2423,
+  "run_id": 40192015597,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40192015597",
+  "status": "NAMED_REMOTE_QUALIFIED backend native/Node quarantine; whole P3 remains OPEN",
+  "overall": "Required plus9 prerequisites SUCCESS",
+  "elapsed_seconds": 3231,
+  "timer": {
+    "registered_due_UTC": "2026-10-25T13:16:17Z",
+    "actual_observed_UTC": "2026-10-25T13:16:26Z",
+    "actual_timer_due": true,
+    "result_queried_then_independent_local_work_continued": true
+  },
+  "checkouts": [
+    {
+      "job_id": 121164812921,
+      "name": "Docs",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813066,
+      "name": "Minimum Go",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813070,
+      "name": "Security",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813100,
+      "name": "Vulnerability",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813102,
+      "name": "gVisor Observer Helper",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813103,
+      "name": "macOS",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813107,
+      "name": "Representative Wheel Corpus",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813117,
+      "name": "Quick",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121164813131,
+      "name": "gVisor Linux Integration",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    },
+    {
+      "job_id": 121176709209,
+      "name": "Required",
+      "checkout_sha": "0bae4d59c046e71b8ccdcf7682b1683dfbf15dad",
+      "whole_tree": "3b7dbd0343acc7c2b48eb2d6b2ed442d2a2f92f1",
+      "same_as_frozen_source": true
+    }
+  ],
+  "logs": {
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci412-log-capture-inventory.json",
+    "count": 10,
+    "total_bytes": 1148222,
+    "format": "decoded MCP UTF8/BOM with per-chunk readback and full SHA256; not HTTP archive bytes"
+  },
+  "actual": {
+    "linux_top_level_pass": 67,
+    "observer_latches_each": 119,
+    "selected": [
+      {
+        "test": "TestBunPublicNativeResolverIntegration",
+        "seconds": 37.21
+      },
+      {
+        "test": "TestBunActualNativeProjectSelectionBoundary",
+        "seconds": 19.11
+      },
+      {
+        "test": "TestBunPublicProjectQuarantineIntegration",
+        "seconds": 30.24
+      },
+      {
+        "test": "TestPNPMPublicApprovedCacheIntegration",
+        "seconds": 28.34
+      },
+      {
+        "test": "TestPNPMPublicProjectTransactionIntegration",
+        "seconds": 106.65
+      },
+      {
+        "test": "TestPNPMProjectCLIIntegration",
+        "seconds": 124.64
+      },
+      {
+        "test": "TestPNPMNativeOriginalIntegration",
+        "seconds": 87.89
+      },
+      {
+        "test": "TestLinuxPyTorchFullIntegration",
+        "seconds": 288.9
+      }
+    ],
+    "Bun_native_cases": 9,
+    "Bun_boundary_cases": 5,
+    "Bun_quarantine": "transitive2/peer4 public source/all instances with recorded Evidence/entry+set Policy ALLOW; Node lane, Host action NOT_REQUIRED",
+    "PNPM_actual_CLI_fresh_operations": 9,
+    "helper_reaped_wait0": 7,
+    "final_cleanup": "original0 CONFIRMED_STOPPED stop0/client_error0/client_restore0",
+    "macos_native": "go1.27.3 darwin/amd64 build/default SUCCESS"
+  },
+  "excluded": "Later local Bun cache7939092/private74102c8/target transaction and following CLI are not the CI source; explicit Bun runtime/native handoff/whole P3 and final affected profiles remain incomplete",
+  "historical_failure": "CI411 macOS default timeout is preserved. Current macOS success does not establish the historical internal cause."
+}

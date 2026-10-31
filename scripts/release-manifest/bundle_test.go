@@ -20,7 +20,7 @@ func bundleFixture(t *testing.T) string {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	lock := filepath.Join(t.TempDir(), "runtimes.lock.json")
-	if err := os.WriteFile(lock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	images := filepath.Join(root, imageFileName)
@@ -43,7 +43,10 @@ func TestVerifyBundleBindsPackagesAndExactFileSet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"helox-linux-amd64.deb", "helox-linux-amd64.rpm", manifestFileName, checksumFileName, sbomFileName, imageFileName} {
+	if len(names) != 19 {
+		t.Fatalf("complete bundle has %d files, want 19", len(names))
+	}
+	for _, name := range []string{"haa-release-installer-linux-amd64", "helox-linux-amd64.deb", "helox-linux-amd64.rpm", manifestFileName, checksumFileName, sbomFileName, imageFileName} {
 		if !slices.Contains(names, name) {
 			t.Fatalf("verified bundle omits %s", name)
 		}
@@ -63,7 +66,7 @@ func TestVerifyBundleBindsPackagesAndExactFileSet(t *testing.T) {
 	if err := json.Unmarshal(body, &value); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []struct{ name, role string }{{"helox-linux-amd64.deb", "os-package-deb"}, {"helox-linux-amd64.rpm", "os-package-rpm"}} {
+	for _, want := range []struct{ name, role string }{{"haa-release-installer-linux-amd64", "release-installer"}, {"helox-linux-amd64.deb", "os-package-deb"}, {"helox-linux-amd64.rpm", "os-package-rpm"}} {
 		found := false
 		for _, asset := range value.Assets {
 			if asset.Name == want.name {
@@ -77,7 +80,7 @@ func TestVerifyBundleBindsPackagesAndExactFileSet(t *testing.T) {
 }
 
 func TestVerifyBundleRejectsTamperingAndUnboundControlData(t *testing.T) {
-	for _, name := range []string{"extra-file", "directory", "symlink-payload", "missing-package", "changed-package", "checksum-path", "wrong-source", "wrong-run", "wrong-version", "unknown-manifest-field", "unsafe-asset-name", "wrong-role", "bad-lock-digest"} {
+	for _, name := range []string{"extra-file", "directory", "symlink-payload", "missing-package", "changed-package", "missing-installer", "changed-installer", "checksum-path", "wrong-source", "wrong-run", "wrong-version", "unknown-manifest-field", "unsafe-asset-name", "wrong-role", "bad-lock-digest"} {
 		t.Run(name, func(t *testing.T) {
 			root := bundleFixture(t)
 			version, commit, workflow := bundleVersion, bundleCommit, bundleWorkflow
@@ -100,6 +103,14 @@ func TestVerifyBundleRejectsTamperingAndUnboundControlData(t *testing.T) {
 				}
 			case "missing-package":
 				if err := os.Remove(filepath.Join(root, "helox-linux-amd64.rpm")); err != nil {
+					t.Fatal(err)
+				}
+			case "missing-installer":
+				if err := os.Remove(filepath.Join(root, "haa-release-installer-linux-amd64")); err != nil {
+					t.Fatal(err)
+				}
+			case "changed-installer":
+				if err := os.WriteFile(filepath.Join(root, "haa-release-installer-linux-amd64"), []byte("changed installer"), 0600); err != nil {
 					t.Fatal(err)
 				}
 			case "changed-package":

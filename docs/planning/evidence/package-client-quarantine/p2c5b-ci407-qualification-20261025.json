@@ -1,0 +1,150 @@
+{
+  "schema": "helox.pnpm-backend-ci-qualification/v1",
+  "scope": "named e9ca85e backend/cache/records/private copy/independent retained approval/transaction and exact CI parent-client wiring; excludes later CLI/native ownership source",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named remote)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "run": {
+    "id": 40128032402,
+    "number": 407,
+    "head": "e9ca85e4d2af2acd1485f98ff2557762cf3bb4a8",
+    "checkout": "c4da8b10c39d64476fb86cc04153cf5f7fb17753",
+    "tree": "1833b8925425f28979fe55f3c978b63ecddb8882",
+    "files": 2263,
+    "created_at": "2026-10-24T20:02:54Z",
+    "updated_at": "2026-10-24T20:59:31Z",
+    "elapsed_seconds": 3397.0,
+    "conclusion": "success",
+    "url": "https://github.com/rahoney/heliopause/actions/runs/40128032402"
+  },
+  "first_check": {
+    "deadline_utc": "2026-10-24T21:02:54+00:00",
+    "due_observed_utc": "2026-10-24T21:02:54.000202+00:00",
+    "timer": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-first-check-timer-due.json",
+      "bytes": 217,
+      "sha256": "51d8dd7cfc18341d567f535c0426453c1bdcc034e5970d950ebd5aa7a5511705"
+    },
+    "basis": "CI406 54m32 plus new project caller197s and preparation/rebind margin: 60min; actual56m37"
+  },
+  "jobs": [
+    {
+      "id": 120973552210,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552357,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552409,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552418,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552424,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552436,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552453,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552462,
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "id": 120973552509,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 120986062480,
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "actual": {
+    "new_cache_peer_and_empty_seconds": 33.52,
+    "new_project_transaction_single_peer_empty_seconds": 115.83,
+    "native_install_repeat_add_update": true,
+    "independent_target_approval": true,
+    "actual_fresh_operation_records": true,
+    "same_content_control_native_inodes": true,
+    "root_scripts_not_executed": true,
+    "user_files_preserved": true,
+    "previous_project_inspection_archives": 6,
+    "controlled_cases": 3,
+    "public_native_cases": 8,
+    "existing_npm_first_retained_project_commits": 2,
+    "linux_top_level_tests": 62,
+    "cpu_full_seconds": 280.9,
+    "observer_latches_per_job": 112,
+    "confirmed_helpers_wait_zero": 7,
+    "final_cleanup": {
+      "original": 0,
+      "state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    },
+    "native_macos": "Go1.27.3 darwin/amd64 production/default PASS"
+  },
+  "evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-run-confirmed.json",
+      "bytes": 14597,
+      "sha256": "dd34aeef08d8a093f0844137f5599fd7ca0147a9680dacf3f932c1e5b8ce31c0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-jobs-confirmed.json",
+      "bytes": 13513,
+      "sha256": "f89fb55044f169ccf6e912d037ced4500dd47bb6b3a3e03af6c2dbf76c3637b3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-checkouts.json",
+      "bytes": 1249,
+      "sha256": "b0955d31e45d531a2f314379d30eea8988d2fe501749e44ccf940370c3dc06a6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-source-commit.json",
+      "bytes": 37994,
+      "sha256": "39fa88eb1c72de9d72a19827036948dfc65de4d3617cd8b3c32fd1e735d91d02"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-checkout-commit.json",
+      "bytes": 1344246,
+      "sha256": "cd1727e937c30814512af0b2967af99f6628708e6c13fc8b34dafc696d426256"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci407-log-capture-inventory.json",
+      "bytes": 5020,
+      "sha256": "fec894ebada6055fa6873744c4b0458fed6be6d38ae9045c0d84aa78ba00c526"
+    }
+  ],
+  "log_scope": "All ten full decoded MCP text logs preserved byte-for-byte as UTF-8, including BOM; not original HTTP/zip-byte claim. Every transferred chunk read back, full size/SHA256 checked.",
+  "not_qualified": [
+    "later a03ff13 user CLI and its CI invocation",
+    "native unmanaged-payload original-source proof",
+    "whole P2 and public release/main merge"
+  ]
+}

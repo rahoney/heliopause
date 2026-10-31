@@ -7,11 +7,15 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"golang.org/x/mod/sumdb/dirhash"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -221,7 +225,7 @@ func TestGoCacheAggregateFileBudget(t *testing.T) {
 
 // A unit-test approval fixture is deliberately distinct from actual SumDB /
 // Application qualification; the public integration uses the real producer.
-func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files map[string]string) (domain.ProjectVerifiedSet, string) {
+func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files map[string]string, required ...artifactgo.RequiredModControl) (domain.ProjectVerifiedSet, string) {
 	t.Helper()
 	var archive bytes.Buffer
 	w := zip.NewWriter(&archive)
@@ -238,11 +242,23 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		t.Fatal(err)
 	}
 	mod := []byte(files["go.mod"])
-	body := []byte("HAA-GO-MODULE-1\n")
+	envelopeControl, header := mod, "HAA-GO-MODULE-1\n"
+	if len(required) > 0 {
+		var err error
+		envelopeControl, err = json.Marshal(struct {
+			Mod      []byte                          `json:"mod"`
+			Required []artifactgo.RequiredModControl `json:"required_mods"`
+		}{mod, required})
+		if err != nil {
+			t.Fatal(err)
+		}
+		header = "HAA-GO-MODULE-2\n"
+	}
+	body := []byte(header)
 	var length [8]byte
-	binary.BigEndian.PutUint64(length[:], uint64(len(mod)))
+	binary.BigEndian.PutUint64(length[:], uint64(len(envelopeControl)))
 	body = append(body, length[:]...)
-	body = append(body, mod...)
+	body = append(body, envelopeControl...)
 	body = append(body, archive.Bytes()...)
 	run, err := domain.NewRunID()
 	if err != nil {
@@ -278,6 +294,18 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		t.Fatal(err)
 	}
 	integrity := "h1=" + zSum + ";go.mod=" + mSum
+	for i, control := range required {
+		sum, err := dirhash.Hash1([]string{"go.mod"}, func(string) (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(control.Body)), nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+		if i == 0 {
+			integrity += ";required-mods="
+		} else {
+			integrity += ","
+		}
+		integrity += control.Version + ":" + sum
+	}
 	a, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, digest, a.ContentHandle(), a.SizeBytes(), integrity)
 	if err != nil {
 		t.Fatal(err)

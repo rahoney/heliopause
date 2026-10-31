@@ -1,0 +1,174 @@
+{
+  "baseline": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+  "scope": "never-start immutable UV supply and exact root-file transport only; no actual UV execution, running tmpfs/admission or production resolver/CLI",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.421,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 25.915,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.104,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.202,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "actual": {
+    "args": [
+      "sudo",
+      "-n",
+      "unshare",
+      "--mount",
+      "--propagation",
+      "private",
+      "/bin/sh",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-docker-data-qualification/namespace.sh"
+    ],
+    "exit": 0,
+    "seconds": 3.479,
+    "scope": "data-only Docker supply/private file copy; private runtime mount view; no native UV/container execution or Host activation"
+  },
+  "actual_postflight": {
+    "scope": "post actual data-only Docker transport; installed identities/shared images preserved; exact two owned containers absent",
+    "host_before_after_identical": true,
+    "host_files": [
+      {
+        "path": "/usr/local/bin/helox",
+        "resolved": "/usr/libexec/heliopause/helox",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755",
+        "sha256": "eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/runsc",
+        "resolved": "/usr/libexec/heliopause/gvisor/runsc",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755",
+        "sha256": "fac2eeeecc2689df023b18a6000d942f5ff1b47f46c2dbee8144c84a9786c909"
+      },
+      {
+        "path": "/usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json",
+        "resolved": "/usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o644",
+        "sha256": "45d4272c7b495e2a13567547bb2d1cb30af0b74bc2b959f08b93b85929ec5174"
+      },
+      {
+        "path": "/usr/bin/docker",
+        "resolved": "/usr/bin/docker",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755",
+        "sha256": "154be4d7478d2b4c3fe88db8f39f894e14753f4bd3f6596de4d997a1066a6123"
+      }
+    ],
+    "existing_image_records_preserved": 6,
+    "owned_container_names": [
+      "haa-uv-supply-sbx_t5lxxbxdkslm32lnq5pavvtupi",
+      "haa-uv-transport-target-sbx_eohgdi7k7hql7rjiax4wd6maua"
+    ],
+    "removed_container_ids": [
+      "3ef6e65c153aa5afa659ee1ac9a208b8afadd26a7bbc386bdcccc86e9a2ff906",
+      "df22548d260905318eab4377eb802249e0a88fc31caa6c6d8b4699801e072ac3"
+    ],
+    "remaining_owned_containers": 0,
+    "query_errors": 0,
+    "uv_image_retained_for_next_runtime_consumer": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+    "host_activation": false,
+    "uv_or_container_execution": false
+  },
+  "namespace_inputs": {
+    "scope": "private mount namespace, root-owned read-only qualified runtime view; ordinary UID1000 data-only Docker copy",
+    "files": [
+      {
+        "role": "namespace.sh",
+        "sha256": "367750546aa523477f1a738e2cf1c3677411bac07bf9933033243eb5cc5c9745"
+      },
+      {
+        "role": "uv-tool-data.test",
+        "sha256": "6e78951c32fc8725eeb1c80e8869a7771a417d51c4aba5fed3ec6875570c25fa"
+      }
+    ],
+    "host_activation": false,
+    "uv_or_container_execution": false
+  },
+  "source": [
+    {
+      "path": "internal/sandbox/uv_tool_supply.go",
+      "sha256": "7cfbc9648eb24f5a8640ca7235928d49e119c58a14046426ea46e0325383920f"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_supply_test.go",
+      "sha256": "4805064b5177e8536e78befacc4635347543e0d3d973fbe76b68f9e063db2404"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_supply_real_test.go",
+      "sha256": "fc4d7de8b95a87f5e00d08c89719e022fed8ceaba64e4408f8d893653ac170c2"
+    }
+  ],
+  "remaining": [
+    "UV-only64MiB tool mount and exact observer class/admission",
+    "actual native UV startup/resolve and pip/npm regression",
+    "UV production install/upgrade/sync wiring and qualification"
+  ],
+  "host_activation": false,
+  "artifact_or_uv_host_execution": false,
+  "final_delivery_checks": {
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 24.339,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.215,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.685,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "completed_data_cleanup": {
+    "targets": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-docker-data-qualification",
+      "/tmp/haa-uv-runtime-0_e6zmn4/upstream/78fa515da939df1a7735518cd8483877c98aa632744a890e35c0b8c94edae9a6.tar.gz",
+      "/tmp/haa-uv-runtime-0_e6zmn4/upstream/a7a4c1c28acfa0600954ba762985b04fd8db0ecd249573405f86e458150e26a0.tar.gz"
+    ],
+    "entries": 20,
+    "unique_regular_logical_bytes": 368428870,
+    "symlinks_removed_without_following": 0,
+    "references": 0,
+    "query_errors": 0,
+    "removed": true,
+    "retained": "active source/SDK/cache and base qualified runtime; one UV Docker image for immediate native runtime work",
+    "raw_preserved": [
+      "uv-data-actual-namespace-first.log",
+      "uv-data-actual-postflight.json",
+      "uv-data-root-runtime-preparation.json",
+      "uv-data-namespace-inputs.json",
+      "uv-data-namespace.sh"
+    ]
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B2",
+  "baseline": "db464fdca8e4de9070d546d216ddd1861716edb6",
+  "status": "LOCAL_VERIFIED_EXACT_TARGET_PRIMITIVE_ONLY",
+  "implemented": "YES_EXACT_COMMAND_TOPOLOGY_LINEAGE",
+  "wired": "YES_INFRASTRUCTURE_AND_GATED_ACTUAL",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/sandbox/linux_integration_test.go",
+      "sha256": "637fc0f9e59f3abc6d8e26d185d340d17fffb19dce4b1c01e107fc7b13825475"
+    },
+    {
+      "path": "internal/sandbox/pnpm_offline_fixture_real_test.go",
+      "sha256": "6d9ed75505d1bf086ffac287921dea521e9730366876bc3968d4e9967be0df5e"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle.go",
+      "sha256": "ead97ffd73108370cd9ab1a029f23b1d2c459923ec6ce3ccc8ee679338ca720b"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle_real_test.go",
+      "sha256": "2d182485a605ea3d22e4e73ee7e46dea08a4e2c3ff52f9e3b065167ff2106522"
+    },
+    {
+      "path": "internal/sandbox/pnpm_target_lifecycle_test.go",
+      "sha256": "29344f79adc1674cca069a3c85753db03bde3abbe4c2b46d8258b9a3a766a269"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "70df430cc3a9d7dde401cd5fe65b8b7736d8a39c96e75f1bfe555f23c186ae80"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "c5e1c80c23f7cb45e6e7527621f2b9b8069683198042aa0611749a95026e43ab"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "ebc2c9d25bfb1ac37593638dfa092170a87223d451677e805e725398dc553ca1"
+    }
+  ],
+  "checks": {
+    "quick_seconds": 52.586,
+    "security_seconds": 4.851,
+    "docs_seconds": 0.231,
+    "npm_sandbox_full_race_seconds": 21.119,
+    "cpp_latches_pass": 112,
+    "cpp_latches_fail": 0,
+    "cpp_final_seconds": 39.589,
+    "observer_source_sha256": "c5e1c80c23f7cb45e6e7527621f2b9b8069683198042aa0611749a95026e43ab",
+    "observer_binary_sha256": "7c46fa0c0f6ce7a9f006ff49557ad9bad60ad77451ec1c6fcd9556e11746fbe5"
+  },
+  "actual_synthetic": {
+    "seconds": 37.742,
+    "test_seconds": 35.43,
+    "fixtures": [
+      "transitive",
+      "peer"
+    ],
+    "fresh_target_sessions": 4,
+    "positive_events": "preinstall,install,postinstall in exact order",
+    "negative_events": "preinstall only",
+    "negative_original_exit": 37,
+    "negative_timeout": false,
+    "root_dependency_target_prepare_executions": 0,
+    "legacy_npm_baseline_artifact_shell_count": 3,
+    "target_untrusted_artifact_shell_counts": {
+      "positive": 3,
+      "failure": 2
+    },
+    "trace_complete_all": true,
+    "filesystem_honeytoken_network_violations": 0,
+    "network": "exact none/null driver ID and no IPv4/IPv6; logical endpoint may exist",
+    "host_before_after_identical": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "qualification_exit": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "scope": "deliberately changed synthetic layout, not approval of the original acquired archive; no Policy/staging/Host installation"
+  },
+  "actual_existing_consumers": {
+    "seconds": 46.978,
+    "top_level_cases": 8,
+    "scope": [
+      "npm environment isolation",
+      "PNPM startup/empty/Node query/ARTIFACT",
+      "transitive and peer offline native layout",
+      "UV startup and empty interpreter query"
+    ],
+    "host_before_after_identical": true,
+    "helper_wait": 0,
+    "qualification_exit": 0
+  },
+  "failures_preserved": [
+    "C++29/30 negative bare event matcher; product source unchanged when attribution matcher31 passed",
+    "first actual stopped before NPM at overstrict none endpoint object check",
+    "next actual completed scripts but fixture incorrectly expected zero untrusted exec; existing npm actual baseline confirmed the same three observations"
+  ],
+  "missing": [
+    "production static-all and prepared full layout/byte/instance/edge verification",
+    "owned production metadata preparation and fresh per-instance execution",
+    "per-instance raw result aggregate and original Finding/Policy delivery",
+    "verified records/staging/Host transaction/CLI",
+    "new source remote qualification and full P2 acceptance"
+  ],
+  "ci_scope": "CI403 success is db464fd only and does not include this B2 source",
+  "evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-observer-29.json",
+      "sha256": "15a44e24f9702fa6badce9f9eb79bbf2bcfffdfe8a5a2cf5d1619995a34bda4d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-observer-30.json",
+      "sha256": "bb1ddd9697229730ff043a01cb2e73c90b0844d76090e37449a0b33290003a27"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-observer-31.json",
+      "sha256": "6af376bfe249ed5018fcf62002843907d1d1db4ccfce53841885dc53652b81d4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-observer-32.json",
+      "sha256": "a5b5b321a4db1e3ba1d8a556b2f90b0ec22487b3dc1566a6e21ac82d969cac31"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-observer-33.json",
+      "sha256": "ca82b99ef927f34dde9e5a2e53bf5bb8395d83e789c0905665aba84b2d9e3be2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-lifecycle.json",
+      "sha256": "20548494534e76940f4edaf023f0639e7dbb905a0ec07ab90af5cfb9e5684105"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-null-network.json",
+      "sha256": "59676ce4a5057eae3e20bd50bb5337141e1d5b121ced11fcd1cd0898049abc51"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-attribution.json",
+      "sha256": "0c2a488ca0fe99e64713ff89db831b91c71d06af98fcfc21171bf4d0946916ce"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-script-failure.json",
+      "sha256": "8fd0be2e2f4978e9bcc2fbfa7907bc10596bd6f423adbfd2a1051f889d35aaed"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-target-lifecycle.json",
+      "sha256": "0cbcd90077d7d54cfba139746543fd985dc3c4ec7e5ca8d143693e3f7cf4ded0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-target-lifecycle-actual.log",
+      "sha256": "9f544f284f1b286930f870d428bf3c43525e0c6c831b8e4b3de13f9295e5b5e8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-regression.json",
+      "sha256": "8b757849dc2fca836dd1039528bcf846bb5465cabed68b17dc548adff265a184"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-target-regression-actual.log",
+      "sha256": "0ade24c58da7e5efff3d94c6ddda6034c157fb31d395018e06142c0660ef1659"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-target-final-quick.json",
+      "sha256": "6bb5c1e91a4bad9f3d61355a359bd0e7ca97f46e842600fb845fa47598c47e01"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-target-final-security.json",
+      "sha256": "1b075c84b13179b012d87c5b4f5913bcda53b0f492f83eb1e33de4a07b4982ca"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-target-final-docs.json",
+      "sha256": "194d642c3371b1b35fd4ea2d53bd7b1895f4350c7fab0c90c5e3b20db29b3819"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-target-full-race.json",
+      "sha256": "c1ae8193152bfe690fd213066d917732b52797e57115a47a795cb50810a88a1d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-pnpm-standalone-completed-cleanup.json",
+      "sha256": "749d1648bb8b88082f2652e7c3d0d32ca07bf5ba5dd8ae13c9d97ea14eca8a1d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-target-lifecycle-completed-runtime-cleanup.json",
+      "sha256": "3a96325fa7b702d1083d9bf72a1e4bb169143cd7581149767d62d9a5a87f36f9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b2-actual-scope-clarification.json",
+      "sha256": "e5bfba61b6b7c5e83dfee6a38bb1864c2fe39a6711317a9994bfe8695e47896c"
+    }
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

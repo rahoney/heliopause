@@ -1,0 +1,186 @@
+{
+  "work_item": "M13-004/P3-B5d",
+  "baseline": "58957eaa0434a5a46dd096bf27cdb99b2f1f9c9f",
+  "status": {
+    "IMPLEMENTED": "YES (typed immutable Host original view/full independent old-source proof/explicit adoption)",
+    "WIRED": "YES (same-target guard and request-local Bun CLI factory, prior-state failure has no native fallback)",
+    "QUALIFIED": "YES (named local nonempty copied hoisted scope)",
+    "ACCEPTANCE_CLOSED": "YES (named local native ownership subset); NO (whole P3/remote)",
+    "MISSING": [
+      "hosted whole project actual consumer wiring",
+      "explicit Bun Artifact runtime lane",
+      "final support/failure matrix and affected profiles"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/bootstrap/bun_original_test.go",
+      "sha256": "c564657e0bad7dd6307682fb61ebfb5398f4c363c26712916b59165f18b73f22",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_layout.go",
+      "sha256": "9440e046ecb0303c2ac6d1b8299265ac5e875e1dfb732485c5a80432a3651c9c",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/bun_original_layout.go",
+      "sha256": "78af5b77f69e571454ac870fc8705db89353e2def08f41ad30678ed8ba783abb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/bun_original_layout_test.go",
+      "sha256": "19afb149dcdc0c2b8759797ebdf31ad8c7c7ecf11b89090e57d8d755d1c21b7f",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_original.go",
+      "sha256": "b66bdc15326f2329ac1f65c48a44973db039a47670079f15cbde1854e26ad122",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "sha256": "fef9360436e6ec3523eee51e2ec22d81f5147bc483d82ec4d5ebbc45900bd1d1",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_original.go",
+      "sha256": "8f975c8429dc4e7282d8d8e6d6ed03b8195357dcbb459e08d84e55e37ed86c59",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_original_test.go",
+      "sha256": "0238db55bc7e679dd48462887d20c8cea2850785d78b28c315bba022509072da",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_transaction_test.go",
+      "sha256": "16f23ecb39f4ee134c995a7c9bd0cda9b1eb3094c946231b5c27689db36881bd",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_original.go",
+      "sha256": "0da36cafe61a4a2a9559026f02b03d58a156a1cd3f895717509e029603e822e8",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_original_integration_test.go",
+      "sha256": "cbed0fd189152571b21a468e2184b7131b5859aa09ac55ffa1de4b91e769e802",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_project.go",
+      "sha256": "d0070928620cd88bc17333108500c2490f12c9b1c73692be07f757bf760e597d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_project_test.go",
+      "sha256": "921788edd43d0ef5b6423e939ed732dfe9e2af96b30e1c00f3e62d4cff5c6862",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_transaction_integration_test.go",
+      "sha256": "fdc762f26bb24f0f143b12d21530bd7eb53cb610885388fcdeccfba8cb723eb9",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_client.go",
+      "sha256": "7674864290235a9fe9650f24482ecd9f69de2ca9f10ed519e4a238dd12d2ef75",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_cli_integration_test.go",
+      "sha256": "8b8157245c2a2a921e3f8e8ce2c6b88b29076495b0b8c315fa2f0900ae5b40dc",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/bun_project.go",
+      "sha256": "6334014ae71e282d2357d287ad52742e2b9af7fd479383237ef4d8bc0b70a8f0",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/bun_project_test.go",
+      "sha256": "156257b6cd744a59a163f0a5fcaea68a8d7e48a08f1b47da9dad468581c42dc3",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5d-transport-reused-quick.json",
+      "exit": 0,
+      "seconds": 49.72,
+      "receipt_sha256": "1bd9b986268ffc1c07887a0a7af6f3174f8cf20059a8c3649434dbd7facb8fcf"
+    },
+    {
+      "receipt": "p3b5d-qualified-security.json",
+      "exit": 0,
+      "seconds": 16.802,
+      "receipt_sha256": "62720fd7c23674b2e2061f3025b301bc69b9b26b559aae563acecf7b28ba1abb"
+    },
+    {
+      "receipt": "p3b5d-qualified-docs.json",
+      "exit": 0,
+      "seconds": 0.311,
+      "receipt_sha256": "8fba4be21e57fa544d04562095f78b614e88ad31f6fbd0a22db7dcc4de17a43e"
+    },
+    {
+      "receipt": "p3b5d-original-full-race.json",
+      "exit": 0,
+      "seconds": 179.52,
+      "receipt_sha256": "8f66530b316784e661d0f04268d972308ccb6ee7d7f9480d71e53cb28b4f3589"
+    },
+    {
+      "receipt": "p3b5d-bun-native-v3-result.json",
+      "exit": 0,
+      "seconds": 270.704,
+      "receipt_sha256": "2ce2475e09d25b63443afb08bf972e9983f96b0daac94809410efb2d239b9b51"
+    },
+    {
+      "receipt": "p3b5d-cli-regression-v1-result.json",
+      "exit": 0,
+      "seconds": 366.181,
+      "receipt_sha256": "da2d712e3257555577a7d25a15ef189822d8cef060199debfdead4d89f65fd4c"
+    }
+  ],
+  "reuse": {
+    "receipt": "p3b5d-original-mechanical-reuse.json",
+    "guest_Bun_complete_binder_and_original_pinned_transport_normalized_identical": true,
+    "guest_owner": "public parser/binder1000 unchanged; Host original uses actual UID/GID and exposes no execution layout"
+  },
+  "actual": {
+    "native_operator_seconds": 270.704,
+    "Bun_native_seconds": 138.61,
+    "PNPM_native_seconds": 129.4,
+    "each_native_cases": [
+      "single original6 source proof before explicit add7",
+      "native exact6 update retains selected6 with clean current payload",
+      "peer4 full old-source proof before current inspection/Policy/install"
+    ],
+    "negative": "implicit handoff, old bytes/SRI/extra file and post-approval drift refused with original inode/user data preserved",
+    "managed_CLI_operator_seconds": 366.181,
+    "Bun_CLI_seconds": 184.08,
+    "PNPM_CLI_seconds": 179.47,
+    "fresh_CLI_operations_each": 9,
+    "explicit_edited_controls": "full old managed ownership retained before current quarantine; implicit edit remains refused",
+    "helper": "both independent actual scopes CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "both IDENTICAL"
+  },
+  "binary_reuse": {
+    "receipt": "p3b5d-cli-regression-v1-actual-compile.json",
+    "same_native_v3_binary": true,
+    "all_private_Go_sources_equal_Root_without_later_mtime": 1023
+  },
+  "first_failures": {
+    "receipt": "p3b5d-first-failures-assessment.json",
+    "v1_actual": "test-only .bun virtual-store pathname left by mechanical copy; failed before original proof, operator19.186s/helperwait0/Host same",
+    "v2_added_test": "duplicate existing generic HTTP helper; compile0.819s/Quick17.280s, reused existing declaration",
+    "scope": "no product source/permission relaxation in either correction"
+  },
+  "unchanged": [
+    "current selection fresh full quarantine/Evidence/Policy",
+    "existing PNPM original proof, native source bindings and same-target transaction engine",
+    "128MiB compressed/expanded/logical-copy budget and sealed cache limits",
+    "runtime pins, observer119, roles/FS/network grants"
+  ],
+  "excluded": "native empty/shared hardlink/unsafe modes/mixed owner/unknown files/corrupt state are not adopted; current Node lane only; CI412 frozen7544 is outside this source"
+}

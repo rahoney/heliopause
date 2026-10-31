@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "baseline": "9155acd16a62242d14c6390017a355cb2cb8cf31",
+  "scope": "C3e1 primary-free complete/explicit-empty UV lock parser and independent whole-wheel project binding; internal adapter only",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES within artifact adapter; production sync NO",
+  "QUALIFIED": "LOCAL ONLY; same-source remote CI pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source Required/native macOS/Linux qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "bytes": 14242,
+      "sha256": "48598b710f374952859a58b738c50be326b459171052167b8f087a3fbb622f4d"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_installed_controls.go",
+      "bytes": 2801,
+      "sha256": "77972015738fc0765d5a59338acc9364e7a88e2c12f438f09fdfe31095009a41"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock.go",
+      "bytes": 6461,
+      "sha256": "52c13cb3090d7e9eea810f911e9d437337ab3bc68c304193e2b14294c37fd20f"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock_test.go",
+      "bytes": 12452,
+      "sha256": "293b650d8a72e6b3c663b39754c8c8d5886185257d2e7952f16717a938ad7bdb"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock_test.go",
+      "bytes": 9499,
+      "sha256": "75bc2b95c0ab4a10a1cc757484260281f280b68dcc5a33458ab8abaf6be55c81"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.361,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-format.json",
+        "bytes": 110,
+        "sha256": "d446f74f9d9f0390a522d6d31b4e57a5f986c8d4ce7cb21df34572968cf0a503"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 56.786,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-quick.json",
+        "bytes": 110,
+        "sha256": "d8ec0a640bec64e56f6a0a95427ac3699e7a0630d3d0778cb90fce43ec21d991"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-quick.log",
+        "bytes": 1354,
+        "sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.55,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-security.json",
+        "bytes": 111,
+        "sha256": "10c6d52c9b04249e79ce4f51f9424fcc853c6181a1296102cca38a067ed37080"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.221,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-docs.json",
+        "bytes": 108,
+        "sha256": "34a4e70ea438cfc8aa96c412af3a7f018c6368e7650964e8cbd3bddee03ccc21"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.734,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-workflow.json",
+        "bytes": 112,
+        "sha256": "a035d8325c3c68195a5a6eb5ea41d59cd892e209fdfa4aecbb9ebd97b601b32d"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "88264619f503566230f32c005e0870355ff91fb1ee56711f8e0279e4b532508c"
+      }
+    },
+    {
+      "profile": "fuzz",
+      "exit": 0,
+      "seconds": 56.967,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-fuzz.json",
+        "bytes": 109,
+        "sha256": "6aa35926f97f8eaca06cfaf53c685045f4dfa44fa13c243db982e3529d1802ec"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-fuzz.log",
+        "bytes": 175,
+        "sha256": "8be3af30d830065d81916b1a89070680da721c52894b1a5fe767d66af2a0a40e"
+      }
+    },
+    {
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/artifact/pypi",
+        "./internal/application",
+        "./internal/promotion"
+      ],
+      "exit": 0,
+      "seconds": 129.553,
+      "files": [
+        {
+          "path": "internal/artifact/pypi/uv_lock.go",
+          "sha256": "48598b710f374952859a58b738c50be326b459171052167b8f087a3fbb622f4d"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_installed_controls.go",
+          "sha256": "77972015738fc0765d5a59338acc9364e7a88e2c12f438f09fdfe31095009a41"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_project_lock.go",
+          "sha256": "52c13cb3090d7e9eea810f911e9d437337ab3bc68c304193e2b14294c37fd20f"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_project_lock_test.go",
+          "sha256": "293b650d8a72e6b3c663b39754c8c8d5886185257d2e7952f16717a938ad7bdb"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_lock_test.go",
+          "sha256": "75bc2b95c0ab4a10a1cc757484260281f280b68dcc5a33458ab8abaf6be55c81"
+        }
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-consumers-race.json",
+        "bytes": 1016,
+        "sha256": "559919a0e38be89cfb6daae7dc26c386744e2c9c9ca9663e19a64c79dd927e7a"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-consumers-race.log",
+        "bytes": 191,
+        "sha256": "441e96b0015874861de877ebd284d118f67dddd4479c1d7cda1977e42bf0265a"
+      }
+    },
+    {
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/sandbox",
+        "-run",
+        "^Test(UV|PyPIResolver|PyTorch.*(Resolver|Resolve))"
+      ],
+      "exit": 0,
+      "seconds": 10.937,
+      "files": [
+        {
+          "path": "internal/artifact/pypi/uv_lock.go",
+          "sha256": "48598b710f374952859a58b738c50be326b459171052167b8f087a3fbb622f4d"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_installed_controls.go",
+          "sha256": "77972015738fc0765d5a59338acc9364e7a88e2c12f438f09fdfe31095009a41"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_project_lock.go",
+          "sha256": "52c13cb3090d7e9eea810f911e9d437337ab3bc68c304193e2b14294c37fd20f"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_project_lock_test.go",
+          "sha256": "293b650d8a72e6b3c663b39754c8c8d5886185257d2e7952f16717a938ad7bdb"
+        },
+        {
+          "path": "internal/artifact/pypi/uv_lock_test.go",
+          "sha256": "75bc2b95c0ab4a10a1cc757484260281f280b68dcc5a33458ab8abaf6be55c81"
+        }
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-sandbox-race.json",
+        "bytes": 1021,
+        "sha256": "42e7ec46b2c87533433addc1481ec92345b7901e2544512f1649f0198019b86c"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-lock-final-sandbox-race.log",
+        "bytes": 59,
+        "sha256": "05c23756468c8f510dfa17309a00b35f32b030192218c8b52da1807986968b28"
+      }
+    }
+  ],
+  "verification_scope": [
+    "multiple disconnected roots without fake primary; old single-root connectivity/nonempty preserved",
+    "full authenticated archive/RECORD and independent release metadata/Requires-Dist closure including missing/self/unsatisfied rejection",
+    "explicit empty versus absent/null/extra native census and zero object",
+    "source/schema/Python/resource bounds, positive limits even for empty selection",
+    "exact control bytes, actual wheel alternative URL/integrity and target bind graph digest; input order and immutable getters"
+  ],
+  "review_correction": "Common limits must be positive before the empty fast path, matching InspectWheel requirements. No failing before-run or unrelated failure is claimed. Final canonical checks and relevant Race passed.",
+  "native_execution": "NOT_RUN for this parser-only change; CI383 predecessor native scope remains separate",
+  "cleanup": {
+    "go_tmpdir_entries": 0,
+    "new_native_containers_images_volumes": 0,
+    "active_sdk_source_cache": "retained for current P1 validation; no completed payload retained"
+  },
+  "P1_remaining": [
+    "C3e2 complete native producer and independent reader",
+    "C3e3 guarded exact publication/CLI including native ownership for excluded old packages",
+    "whole P1 actual dependency closure and acceptance"
+  ]
+}

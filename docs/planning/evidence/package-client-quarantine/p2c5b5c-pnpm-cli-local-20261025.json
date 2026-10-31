@@ -1,0 +1,260 @@
+{
+  "schema": "helox.pnpm-cli-local/v1",
+  "baseline": "e9ca85e4d2af2acd1485f98ff2557762cf3bb4a8",
+  "scope": "actual public PNPM user CLI for bounded existing single projects; current managed controls only, not unmanaged native ownership",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (production CLI and existing CI project caller)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2/native source-proof/remote)"
+  },
+  "source_inventory": [
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "bytes": 3911,
+      "sha256": "c3e57c1b78a54302f317bd284df98b6f4a5f05d753735c7f3f423cfcb8a45c28"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "bytes": 6400,
+      "sha256": "2153dd2c5da6bc8bdb134cbdaa297bdd9b638d2e2571243db10d0bc56de75faa"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "bytes": 9247,
+      "sha256": "aaa69493ce567210f9b2374a07d0844d3310e530f4498f2bceb48537c2b3c752"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "bytes": 15385,
+      "sha256": "3ac0ff35e68e993cd38782a0188700a98bbbd92b01d7eae7325c8b1c77470298"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_cli_integration_test.go",
+      "bytes": 9168,
+      "sha256": "fb7a374cade20f84b68261af07c77cf747d4121f83721c34bcafbcef00fb1cbd"
+    },
+    {
+      "path": "internal/cli/pnpm_project.go",
+      "bytes": 10910,
+      "sha256": "3ac7ab68cb85fef07cd3ebebca7d3066421b65fdce539f7f2fc9cc13e79beab3"
+    },
+    {
+      "path": "internal/cli/pnpm_project_test.go",
+      "bytes": 10097,
+      "sha256": "57287cf501cbe4ce4fc9444d54fec856c53d2dac686c223fe1ce593ffc8480e5"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "bytes": 17640,
+      "sha256": "f2cccfc252ae042f94a6113901a8aeb7db6eb626a3cbf6f3e60fce23249b8dd7"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "bytes": 13544,
+      "sha256": "7b44ce36d9d2ede58e801b0a0b1f898e6309ac72a8996dcfba51c1c216a3d522"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_client.go",
+      "bytes": 2575,
+      "sha256": "53e0147cf65c6c001df65da10302adf726d30420ad2b91c5234de31d7380bbe3"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_client_test.go",
+      "bytes": 1099,
+      "sha256": "79013d19dc93806c3a48363f35871095a1f44a4efccaca6cbeaa6a1b94cee10c"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "bytes": 24306,
+      "sha256": "b5de9e4897036a4be06e2e0d34dc569cae649fb235162c61193ad13a7bd7175d"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project.go",
+      "bytes": 6257,
+      "sha256": "9e58445ee896df0f0344ff7ab064954be509118cb28e2b77da9fccc2f71d8a44"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project_test.go",
+      "bytes": 1670,
+      "sha256": "0dc3acf3a2e97ed946fb45557bba1441ff2cd9eb56345ee95da6891cd9aba67a"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "bytes": 12023,
+      "sha256": "8c9ac9e044499450002c3c27553c8fc6bdf726965d498ebb238eaebce07c5cf3"
+    },
+    {
+      "path": "internal/promotion/pnpm_approved_transaction.go",
+      "bytes": 4925,
+      "sha256": "ab7401d00ff9fbbc12ec17596ec70fda5153a80816990717f4ec20107da95abe"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction_test.go",
+      "bytes": 15453,
+      "sha256": "0945b3dd8354269c55eb6bd4833749f6325f66ed3388592f9d05f743b4f7c843"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "seconds": 1.218,
+      "scope": "final product and CI caller/checker source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-format.json",
+        "bytes": 1184,
+        "sha256": "05ba4e932e310ff52a912ec066a5289ddade97c015d5950efb57c958523b3002"
+      }
+    },
+    {
+      "profile": "workflow",
+      "seconds": 1.879,
+      "scope": "final product and CI caller/checker source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-workflow.json",
+        "bytes": 312,
+        "sha256": "24d4488c6bc279d20b96591f363d8387b9f1b9c91d793c715c1d842d09440549"
+      }
+    },
+    {
+      "profile": "quick",
+      "seconds": 47.946,
+      "scope": "final product and CI caller/checker source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-quick.json",
+        "bytes": 307,
+        "sha256": "89baf916aa77c34b2962a84e1ff5f402d73e9185bda667b7876414a775ab1a92"
+      }
+    },
+    {
+      "profile": "security",
+      "seconds": 8.659,
+      "scope": "final product and CI caller/checker source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-security.json",
+        "bytes": 312,
+        "sha256": "f468fce604535d92ac22029eb2341859272b15a5bb76c1a178a77734e0fe7d25"
+      }
+    },
+    {
+      "profile": "docs",
+      "seconds": 0.231,
+      "scope": "final product and CI caller/checker source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-docs.json",
+        "bytes": 304,
+        "sha256": "12019776565e01c7029708d84142c0f5095c9a0bd666d44054695172f4fad8ab"
+      }
+    },
+    {
+      "profile": "race",
+      "seconds": 134.175,
+      "scope": "promotion/bootstrap/application/evidence/CLI five packages; before CI-only script/checker addition",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-reviewed-race.json",
+        "bytes": 462,
+        "sha256": "45e1317ea4340baa718da6b7c6dc8114478659267708ac038dfa7da8cfbaae48"
+      }
+    },
+    {
+      "profile": "race",
+      "seconds": 30.325,
+      "scope": "canonical checker package, including CLI caller negatives",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-race.json",
+        "bytes": 349,
+        "sha256": "6b788b9798e3a50df89cb1ab0f7e8a46b8d28a64a8bb28a214cae9a5026eb91c"
+      }
+    }
+  ],
+  "actual": [
+    {
+      "scope": "production CLI single/peer/explicit-empty, 9 fresh operations, install/repeat/add/update and managed-control explicit enrollment; implicit/foreign-native refusal",
+      "seconds": 180.442,
+      "helper_wait": 0,
+      "host_configuration_unchanged": true,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-pnpm-cli-result.json",
+        "bytes": 1439,
+        "sha256": "9bb1b0a878619f576c39e5025c81b1aa00a5d568080a3198b9b0f588b772a99f"
+      }
+    },
+    {
+      "scope": "existing npm inspect actual CLI after client routing change",
+      "seconds": 9.234,
+      "helper_wait": 0,
+      "host_configuration_unchanged": true,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-npm-pnpm-cli-result.json",
+        "bytes": 1389,
+        "sha256": "f9c145f257052e2e1abfd8ac2b82f71166162609b85a03889488733041491ea1"
+      }
+    }
+  ],
+  "actual_compile": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-final-actual-compile.json",
+    "bytes": 656,
+    "sha256": "2e341bf348c25e5ecce8d388b2e7c05f6c8766c753781f526fc9eb15858f3c21"
+  },
+  "darwin_bootstrap_cli_compile": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-darwin-compile.json",
+    "bytes": 564,
+    "sha256": "6f59c210abec2ed63e9d8f5226795a4e6b2a2bab078c307c1be1b1c817098c77"
+  },
+  "ci_command_binding": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-ci-cli-command-binding.json",
+    "bytes": 669,
+    "sha256": "c3ecd3b92eddcc18619398a04b92a9d4469677c8d88be2be6350b4cc830261c1"
+  },
+  "first_failures": [
+    {
+      "scope": "architecture gate before default/actual; forbidden CLI -> runtimeidentity dependency",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-first-quick.json",
+        "bytes": 307,
+        "sha256": "d31fb5e3678979170c324d73fde574b6473d172bfe85add4c9dabe8eabbb2417"
+      },
+      "preserved_source_inventory": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-first-source/inventory.json",
+        "bytes": 2029,
+        "sha256": "12db2e847ec6aa171621c382c3c11d7e3d84fc642cbe4d9aacab25f600d34632"
+      },
+      "correction": "Bootstrap supplies generated pin as inert static composition; no architecture rule relaxation"
+    },
+    {
+      "scope": "architecture passed; existing launcher needs declared project/pin inputs; new human test expected JSON enums",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-composed-quick.json",
+        "bytes": 308,
+        "sha256": "61d10b640b8808db3fa50f6e6a7f908ceecf25c5e460ff18fa8f864bc8b827f3"
+      },
+      "preserved_source_inventory": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-composed-source/inventory.json",
+        "bytes": 2029,
+        "sha256": "7afaf2c10da4cb4de4993121c9363922fbb432564ffc3aea9e6aff091baf6f82"
+      },
+      "correction": "inert real declared project fixture and translated human labels; production validation unchanged"
+    }
+  ],
+  "cleanup": {
+    "regular_bytes": 501366905,
+    "directories": 3,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b5c-completed-runtime-cleanup.json",
+      "bytes": 814,
+      "sha256": "0107789ba61b35cb41a57784dab9d32117879aa24a485d44e59fa145ebaa4932"
+    }
+  },
+  "remote": {
+    "run": 40128032402,
+    "head": "e9ca85e4d2af2acd1485f98ff2557762cf3bb4a8",
+    "scope": "earlier backend/CI caller; excludes this CLI source",
+    "status": "PENDING (first check scheduled 2026-10-24T21:02:54Z)"
+  },
+  "not_qualified": [
+    "native/unmanaged payload adoption requires independent old-source proof",
+    "this source remote actual sequence/Required/native macOS",
+    "whole P2 acceptance",
+    "new-target/global/workspace/execution variants"
+  ]
+}

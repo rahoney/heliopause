@@ -14,45 +14,63 @@ import (
 // It is retained only to explain a fail-closed decision; observations remain
 // the sole policy input.
 type TraceDiagnostic struct {
-	Reason            string
-	FaultSite         string
-	FaultImageLocator uint64
-	FaultOpen         FaultOpenDiagnostic
-	FaultBudget       FaultBudgetDiagnostic
-	FaultRaw          FaultRawDiagnostic
-	FaultLedger       FaultLedgerDiagnostic
-	Events            uint64
-	Bytes             uint64
-	SessionComplete   bool
-	LastKind          string
-	KindCounts        map[string]uint64
+	Reason                string
+	FaultSite             string
+	FaultImageLocator     uint64
+	FaultFirstOutsideOpen FaultOpenDiagnostic
+	FaultOpen             FaultOpenDiagnostic
+	FaultBudget           FaultBudgetDiagnostic
+	FaultRaw              FaultRawDiagnostic
+	FaultLedger           FaultLedgerDiagnostic
+	Events                uint64
+	Bytes                 uint64
+	SessionComplete       bool
+	LastKind              string
+	KindCounts            map[string]uint64
 }
 
 // FaultOpenDiagnostic contains only bounded kernel-derived classifications.
 // It explains a rejected open and never participates in Policy or admission.
 type FaultOpenDiagnostic struct {
-	BuildTargetImage     bool   `json:"build_target_image,omitempty"`
-	Image                string `json:"image"`
-	KernelImage          string `json:"kernel_image,omitempty"`
-	Role                 string `json:"role"`
-	Provenance           string `json:"provenance"`
-	Subject              string `json:"subject"`
-	Mount                string `json:"mount"`
-	Flags                uint32 `json:"flags"`
-	PathLocator          uint64 `json:"path_locator,omitempty"`
-	ExecutableLocator    uint64 `json:"executable_locator,omitempty"`
-	MountpointLocator    uint64 `json:"mountpoint_locator,omitempty"`
-	ExecutablePinned     bool   `json:"executable_pinned,omitempty"`
-	GoDriverCreator      bool   `json:"go_driver_creator,omitempty"`
-	CargoDriverCreator   bool   `json:"cargo_driver_creator,omitempty"`
-	CargoCompilerCreator bool   `json:"cargo_compiler_creator,omitempty"`
-	CargoProgramCreator  bool   `json:"cargo_program_creator,omitempty"`
-	LldSameGroup         bool   `json:"lld_same_group,omitempty"`
-	NativeCCInvocation   bool   `json:"native_cc_invocation,omitempty"`
-	RustcVersionQuery    bool   `json:"rustc_version_query,omitempty"`
-	RustcMetadataQuery   bool   `json:"rustc_metadata_query,omitempty"`
-	RustcArgc            uint32 `json:"rustc_argc,omitempty"`
-	RustcArgvLocator     uint64 `json:"rustc_argv_locator,omitempty"`
+	FirstOutside         *FaultOutsideDiagnostic `json:"first_outside,omitempty"`
+	BuildTargetImage     bool                    `json:"build_target_image,omitempty"`
+	Image                string                  `json:"image"`
+	KernelImage          string                  `json:"kernel_image,omitempty"`
+	Role                 string                  `json:"role"`
+	Provenance           string                  `json:"provenance"`
+	Subject              string                  `json:"subject"`
+	Mount                string                  `json:"mount"`
+	Flags                uint32                  `json:"flags"`
+	PathLocator          uint64                  `json:"path_locator,omitempty"`
+	ExecutableLocator    uint64                  `json:"executable_locator,omitempty"`
+	MountpointLocator    uint64                  `json:"mountpoint_locator,omitempty"`
+	ExecutablePinned     bool                    `json:"executable_pinned,omitempty"`
+	GoDriverCreator      bool                    `json:"go_driver_creator,omitempty"`
+	CargoDriverCreator   bool                    `json:"cargo_driver_creator,omitempty"`
+	CargoCompilerCreator bool                    `json:"cargo_compiler_creator,omitempty"`
+	CargoProgramCreator  bool                    `json:"cargo_program_creator,omitempty"`
+	LldSameGroup         bool                    `json:"lld_same_group,omitempty"`
+	NativeCCInvocation   bool                    `json:"native_cc_invocation,omitempty"`
+	RustcVersionQuery    bool                    `json:"rustc_version_query,omitempty"`
+	RustcMetadataQuery   bool                    `json:"rustc_metadata_query,omitempty"`
+	RustcArgc            uint32                  `json:"rustc_argc,omitempty"`
+	RustcArgvLocator     uint64                  `json:"rustc_argv_locator,omitempty"`
+}
+
+// FaultOutsideDiagnostic is a nonrecursive, compact view of the first native
+// finding. It contains no path/content and does not participate in admission.
+type FaultOutsideDiagnostic struct {
+	Image       string `json:"image"`
+	Role        string `json:"role"`
+	Provenance  string `json:"provenance"`
+	Subject     string `json:"subject"`
+	Mount       string `json:"mount"`
+	Flags       uint32 `json:"flags"`
+	PathLocator uint64 `json:"path_locator"`
+}
+
+func (d FaultOutsideDiagnostic) openDiagnostic() FaultOpenDiagnostic {
+	return FaultOpenDiagnostic{Image: d.Image, Role: d.Role, Provenance: d.Provenance, Subject: d.Subject, Mount: d.Mount, Flags: d.Flags, PathLocator: d.PathLocator}
 }
 
 // FaultBudgetDiagnostic explains the existing helper limit using only fixed
@@ -70,18 +88,22 @@ type FaultBudgetDiagnostic struct {
 // FaultRawDiagnostic explains a rejected send syscall without preserving its
 // payload, address, path or mutable process name. It confers no permission.
 type FaultRawDiagnostic struct {
-	Check              string `json:"check"`
-	Sysno              uint64 `json:"sysno"`
-	FD                 uint64 `json:"fd"`
-	KernelImage        string `json:"kernel_image"`
-	Role               string `json:"role"`
-	Provenance         string `json:"provenance"`
-	ExecutableLocator  uint64 `json:"executable_locator"`
-	SocketpairObserved bool   `json:"socketpair_observed,omitempty"`
-	SocketpairFDMatch  bool   `json:"socketpair_fd_match,omitempty"`
-	SocketpairDomain   int32  `json:"socketpair_domain,omitempty"`
-	SocketpairType     uint32 `json:"socketpair_type,omitempty"`
-	SocketpairSource   string `json:"socketpair_source,omitempty"`
+	Check               string `json:"check"`
+	Sysno               uint64 `json:"sysno"`
+	FD                  uint64 `json:"fd"`
+	KernelImage         string `json:"kernel_image"`
+	Role                string `json:"role"`
+	Provenance          string `json:"provenance"`
+	ExecutableLocator   uint64 `json:"executable_locator"`
+	SocketpairObserved  bool   `json:"socketpair_observed,omitempty"`
+	SocketpairFDMatch   bool   `json:"socketpair_fd_match,omitempty"`
+	SocketpairDomain    int32  `json:"socketpair_domain,omitempty"`
+	SocketpairType      uint32 `json:"socketpair_type,omitempty"`
+	SocketpairSource    string `json:"socketpair_source,omitempty"`
+	FDLastOperation     string `json:"fd_last,omitempty"`
+	FDLastFamily        int32  `json:"fd_last_family,omitempty"`
+	FDPreviousOperation string `json:"fd_previous,omitempty"`
+	FDPreviousFamily    int32  `json:"fd_previous_family,omitempty"`
 }
 
 // FaultLedgerDiagnostic describes the host-owned aggregate ledger, whose
@@ -249,6 +271,10 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 				if errors.As(err, &open) {
 					diagnostic.FaultOpen = open.TraceFaultOpen()
 				}
+				var firstOutside interface{ TraceFaultFirstOutsideOpen() FaultOpenDiagnostic }
+				if errors.As(err, &firstOutside) {
+					diagnostic.FaultFirstOutsideOpen = firstOutside.TraceFaultFirstOutsideOpen()
+				}
 				var counters interface{ TraceFaultBudget() FaultBudgetDiagnostic }
 				if errors.As(err, &counters) {
 					diagnostic.FaultBudget = counters.TraceFaultBudget()
@@ -369,6 +395,9 @@ func (d TraceDiagnostic) String() string {
 	if d.FaultOpen.MountpointLocator != 0 {
 		site += fmt.Sprintf(" open_mountpoint_fnv1a64=%016x", d.FaultOpen.MountpointLocator)
 	}
+	if first := d.FaultFirstOutsideOpen; first.PathLocator != 0 {
+		site += fmt.Sprintf(" first_outside_image=%s first_outside_role=%s first_outside_provenance=%s first_outside_subject=%s first_outside_mount=%s first_outside_flags=%d first_outside_locator_fnv1a64=%016x", first.Image, first.Role, first.Provenance, first.Subject, first.Mount, first.Flags, first.PathLocator)
+	}
 	if d.FaultBudget.Limit != 0 {
 		b := d.FaultBudget
 		site += fmt.Sprintf(" budget_charged=%d budget_limit=%d budget_close=%d budget_fcntl=%d budget_raw=%d budget_other=%d budget_workspace=%d", b.Charged, b.Limit, b.Close, b.Fcntl, b.Raw, b.Other, b.Workspace)
@@ -378,6 +407,12 @@ func (d TraceDiagnostic) String() string {
 		site += fmt.Sprintf(" raw_check=%s raw_sysno=%d raw_fd=%d raw_kernel_image=%s raw_role=%s raw_provenance=%s raw_executable_fnv1a64=%016x", r.Check, r.Sysno, r.FD, r.KernelImage, r.Role, r.Provenance, r.ExecutableLocator)
 		if r.SocketpairObserved {
 			site += fmt.Sprintf(" raw_socketpair_observed=true raw_socketpair_fd_match=%t raw_socketpair_domain=%d raw_socketpair_type=%d raw_socketpair_source=%s", r.SocketpairFDMatch, r.SocketpairDomain, r.SocketpairType, r.SocketpairSource)
+		}
+		if r.FDLastOperation != "" {
+			site += fmt.Sprintf(" raw_fd_last=%s raw_fd_last_family=%d", r.FDLastOperation, r.FDLastFamily)
+		}
+		if r.FDPreviousOperation != "" {
+			site += fmt.Sprintf(" raw_fd_previous=%s raw_fd_previous_family=%d", r.FDPreviousOperation, r.FDPreviousFamily)
 		}
 	}
 	if d.FaultLedger.EventLimit != 0 {
@@ -400,4 +435,26 @@ func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	default:
 		return "", "", false
 	}
+}
+
+// The collector's bounded kind counts contain accepted records before a fault.
+// Preserve only suspicious facts; the caller retains INCOMPLETE and the first
+// observer failure. These partial counts cannot attest coverage or completion.
+func retainedSuspiciousTraceFacts(counts map[string]uint64) []domain.SandboxObservation {
+	var facts []domain.SandboxObservation
+	for _, kind := range []string{"filesystem-outside-workspace", "honeytoken-access", "network-attempt", "process-exec-unexpected"} {
+		count := counts[kind]
+		if count == 0 || count > domain.MaximumObservationSummaryCount {
+			continue
+		}
+		category, subject, ok := traceObservation(kind)
+		if !ok {
+			continue
+		}
+		fact, err := domain.NewCountedSandboxObservation(category, subject, count)
+		if err == nil {
+			facts = append(facts, fact)
+		}
+	}
+	return facts
 }

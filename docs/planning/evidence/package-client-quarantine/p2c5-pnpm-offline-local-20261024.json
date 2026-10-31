@@ -1,0 +1,110 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-A2",
+  "baseline": "40d4e25f6f276e1bdacc828eaea0194328dc3da7",
+  "status": "LOCAL_VERIFIED_TRANSITIVE_PRIMITIVE_ONLY",
+  "implemented": "YES",
+  "wired": "YES_TEST_ONLY",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/sandbox/pnpm_offline_fixture_real_test.go",
+      "sha256": "60f795652c910c7f90762cfeeb891a269ce631dbbd201d40627c0706d4da2748"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime_real_test.go",
+      "sha256": "6660a2d3646303d2927c4378f47c82207a44f17ba02b5e0672c7e3d79b582f4c"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "4a1c83164074ed24e8339d5476ac0d4dbc29a2918b22149aa14971a5247ee0ed"
+    },
+    {
+      "path": "internal/hosttool/observer.go",
+      "sha256": "b2e73e9d9ffea2bdc67cb20d8a8df14648f8822b7b4cd6ca8c7acb1486931148"
+    }
+  ],
+  "actual": {
+    "exit": 0,
+    "seconds": 8.591,
+    "test_seconds": 6.29,
+    "archives": 2,
+    "native_metadata_preparation": "AUTHENTICATED_PUBLIC_REGISTRY",
+    "offline_install_endpoints": 0,
+    "original_controls": "BYTE_IDENTICAL",
+    "installed_identities": "MATCH",
+    "dependency_symlink": "EXACT_MATCH",
+    "scripts": "NOT_EXECUTED",
+    "dynamic_lifecycle": "NOT_EXECUTED",
+    "host_install": "NOT_EXECUTED",
+    "trace_complete": true,
+    "trace_events": 39,
+    "forbidden_observations": 0,
+    "observer_binary_sha256": "87dac65ae24b1b536558aef4266bcacfd8ad90d8bdc86a6ec245137ee390bf27",
+    "host_before_after_identical": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "original_exit": 0,
+    "client_error": 0,
+    "client_restore": 0
+  },
+  "checks": {
+    "quick_seconds": 42.994,
+    "security_seconds": 5.478,
+    "docs_seconds": 0.239,
+    "npm_sandbox_full_race_seconds": 15.052,
+    "original_observer_latches_pass": 110,
+    "original_observer_latches_fail": 0
+  },
+  "missing": [
+    "actual peer instance offline fixture",
+    "production static-all and frozen context binding",
+    "per-target lifecycle required coverage",
+    "verified layout, staging and Host transaction",
+    "CLI wiring and full P2 qualification"
+  ],
+  "evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-early-store.json",
+      "sha256": "1daf28038ebeca3ebb0f3a1dcbb25f74437b7b9108e2e3255414e895a6f8a411"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-early-store-actual.log",
+      "sha256": "0e05411dda4dadc581bb3947102509717fcfa64b2ee0cba5db2969e6bb1a1dc1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-early-store-runtime-preparation.json",
+      "sha256": "e5352dd19c3e04c7d10dc8eaf2d99761cab1418925487fa9cd539ee4a639f56e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-offline-final-full-race.json",
+      "sha256": "24ab4babb6e372d174bbecfa17922c382de370308b3ecb5a47704db0061f5eff"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-offline-final-quick.json",
+      "sha256": "03dffd62926b74a93c59180359fbfd79003962d2163800cc186b6a2fff1ab68e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-offline-final-security.json",
+      "sha256": "2b11c49416fe8c4fbc1a9ae8b4ccd09faf37a45680c6aec0df4c17308947c593"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-offline-final-docs.json",
+      "sha256": "637b0ff67782a900dbfe656b2c0c35d9426475e91c7a86f0cb8d3f9c7906d9cd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-pnpm-startup-observer-28.json",
+      "sha256": "cfdb2c8a9b097bd92aa4d3e65099324e4c9989bba48221960ae50c324d993f93"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-early-store-completed-runtime-cleanup.json",
+      "sha256": "fea721db1b2038b284f9408c0acda65e6a65de9327a06a050b158db52b3df169"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-private-observer-completed-inputs-cleanup.json",
+      "sha256": "278cd14438c8f8a85efb444e48827274fa0eeb8b3bd991c71896935f1e75082e"
+    }
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

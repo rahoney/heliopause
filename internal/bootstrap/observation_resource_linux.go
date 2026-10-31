@@ -24,7 +24,8 @@ func newObservationResourceAdapter() sandbox.ObservationResourceClient {
 }
 
 func observationLease(lease hosttool.ObservationResourceLease) sandbox.ObservationResourceLease {
-	return sandbox.ObservationResourceLease{CgroupParent: lease.CgroupParent, CPU: lease.CPU, UsageUsec: lease.UsageUsec}
+	return sandbox.ObservationResourceLease{CgroupParent: lease.CgroupParent, CPU: lease.CPU, UsageUsec: lease.UsageUsec,
+		ReadTiming: sandbox.ObservationResourceReadTiming(lease.ReadTiming)}
 }
 
 func (a observationResourceAdapter) Create(ctx context.Context, transaction, profile string) (sandbox.ObservationResourceLease, error) {

@@ -63,7 +63,7 @@ func (r *admissionAwareCommandRunner) Output(ctx context.Context, binary string,
 	output, commandErr := r.runner.Output(ctx, binary, prepared...)
 	if finish != nil {
 		if finishErr := finish(ctx, commandErr == nil); finishErr != nil {
-			return output, finishErr
+			return output, errors.Join(commandErr, finishErr)
 		}
 	}
 	return output, commandErr
@@ -81,7 +81,7 @@ func (r *admissionAwareCommandRunner) RunInput(ctx context.Context, input io.Rea
 	commandErr := runner.RunInput(ctx, input, binary, prepared...)
 	if finish != nil {
 		if finishErr := finish(ctx, commandErr == nil); finishErr != nil {
-			return finishErr
+			return errors.Join(commandErr, finishErr)
 		}
 	}
 	return commandErr
@@ -126,7 +126,7 @@ func (r *admissionAwareCommandRunner) RunBounded(ctx context.Context, binary str
 	output, commandErr := runner.RunBounded(ctx, binary, prepared...)
 	if finish != nil {
 		if finishErr := finish(ctx, commandErr == nil); finishErr != nil {
-			return output, finishErr
+			return output, errors.Join(commandErr, finishErr)
 		}
 	}
 	return output, commandErr
@@ -146,7 +146,7 @@ func (r *admissionAwareCommandRunner) RunOutput(ctx context.Context, output io.W
 	commandErr := runner.RunOutput(ctx, output, binary, prepared...)
 	if finish != nil {
 		if finishErr := finish(ctx, commandErr == nil); finishErr != nil {
-			return finishErr
+			return errors.Join(commandErr, finishErr)
 		}
 	}
 	return commandErr
@@ -228,6 +228,10 @@ func directExecOrigin(arguments []string, binary string) (string, string, int, b
 		return arguments[index+2], boundaryPythonHandoffMode, index + 5, true
 	case boundaryOriginELFHandoffMode:
 		return arguments[index+2], boundaryELFHandoffMode, index + 5, true
+	case boundaryOriginNodeHandoffMode:
+		return arguments[index+2], boundaryNodeHandoffMode, index + 5, true
+	case boundaryOriginBunHandoffMode:
+		return arguments[index+2], boundaryBunHandoffMode, index + 5, true
 	default:
 		return "", "", 0, false
 	}
@@ -1010,6 +1014,12 @@ func exchangeDirectExecAdmission(ctx context.Context, operation string, admissio
 				(semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
 		case "complete":
 			return acknowledgement["status"] == "completed" && (semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
+		case "target":
+			_, err := parseDirectExecTarget(acknowledgement["status"])
+			return err == nil && (semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
+		case "outcome":
+			_, err := parseDirectExecOutcome(acknowledgement["status"])
+			return err == nil && (semanticStatusValid == nil || semanticStatusValid(acknowledgement["status"]))
 		default:
 			return false
 		}
@@ -1056,7 +1066,7 @@ func ambiguousDirectExecAdmission(ctx context.Context, admission directExecAdmis
 }
 
 func validBoundaryMode(mode string) bool {
-	return mode == boundaryLaunchMode || mode == boundaryPythonHandoffMode || mode == boundaryELFHandoffMode
+	return mode == boundaryLaunchMode || mode == boundaryPythonHandoffMode || mode == boundaryELFHandoffMode || mode == boundaryNodeHandoffMode || mode == boundaryBunHandoffMode
 }
 func validObserverSecurityGeneration(generation string) bool {
 	return validDirectExecAdmissionNonce(generation)

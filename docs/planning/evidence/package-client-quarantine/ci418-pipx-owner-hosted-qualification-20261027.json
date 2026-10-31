@@ -1,0 +1,146 @@
+{
+  "scope": "CI418 common runtime owner/schema5 and existing hosted consumers; not full pipx runtime support",
+  "status": "QUALIFIED_NAMED_HOSTED",
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40476591687",
+  "run_id": 40476591687,
+  "source_commit": "012c7b4f94d093630e5d2cb05b6e3ce1e220436a",
+  "checkout_commit": "4b88c88d895a84a2c3b997a23232c9cb9ddbd576",
+  "whole_tree": "3649f0bd71148e402687a72344b42640413211f1",
+  "tracked_files": 2726,
+  "all_job_checkouts_match": true,
+  "run_started_at": "2026-10-27T08:52:39Z",
+  "required_completed_at": "2026-10-27T09:58:08Z",
+  "workflow_elapsed_seconds": 3930,
+  "linux_elapsed_seconds": 3897,
+  "jobs": [
+    {
+      "name": "Docs",
+      "id": 122096229779,
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 122096230029,
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 122096230136,
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 122096230140,
+      "conclusion": "success"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 122096230165,
+      "conclusion": "success"
+    },
+    {
+      "name": "Security",
+      "id": 122096230201,
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 122096230202,
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 122096230205,
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 122096230218,
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 122123676619,
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_pass": 79,
+    "skips": 0,
+    "native_uv_adoption_seconds": 123.4,
+    "pytorch_cpu_seconds": 245.96,
+    "helper_wait_zero_count": 11,
+    "final_cleanup": "2026-10-27T09:57:35.7552095Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=536052"
+  },
+  "raw_logs": [
+    {
+      "job": "Docs",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096229779.log",
+      "size": 20517,
+      "sha256": "ff45b9f5a1bb3a8aa6662482facca795a66860efacf69a2632115cb73aa1d5aa"
+    },
+    {
+      "job": "gVisor Linux Integration",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230029.log",
+      "size": 688450,
+      "sha256": "628d2a3278dd0ee5cac3a2097e50702f688c076935579692c83bb62c4c7dfc24"
+    },
+    {
+      "job": "Quick",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230136.log",
+      "size": 23840,
+      "sha256": "1598e9000e549fb1b451b3f9d65666fe559838aa86d5bb1d19599f56118b168a"
+    },
+    {
+      "job": "Vulnerability",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230140.log",
+      "size": 21695,
+      "sha256": "9c2704d84b750d8e297ea7fc1e988e997272be99720196ed0b3268688c207d4a"
+    },
+    {
+      "job": "Representative Wheel Corpus",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230165.log",
+      "size": 35361,
+      "sha256": "c7f5bc015135a6972b32a0c68ad12a073e9e2849c588656ca1672fedce4a4b26"
+    },
+    {
+      "job": "Security",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230201.log",
+      "size": 21849,
+      "sha256": "490f0e3cdf5bba96315011223fabbd92917df1d1fd1d50afa180843c6c59119c"
+    },
+    {
+      "job": "macOS",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230202.log",
+      "size": 26244,
+      "sha256": "e89afdd2222d926fed209e7ad0e292e2022b7e47635fa201d4412f55bc5b66ec"
+    },
+    {
+      "job": "gVisor Observer Helper",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230205.log",
+      "size": 267569,
+      "sha256": "3d8e7f8ed9ff35c2289779eda97a0bd89669b4544d72c22e23844d405f777563"
+    },
+    {
+      "job": "Minimum Go",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122096230218.log",
+      "size": 21509,
+      "sha256": "7b8f1cfa78f426acfe81bce3f08f77b3a3a9fbd4c7713d6b12ad62b7e0581b96"
+    },
+    {
+      "job": "Required",
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci418-job-122123676619.log",
+      "size": 22298,
+      "sha256": "5a9e7bcf68c6301833253c61db2e8c6a50837d029f4dbcd6e553b00d2658a634"
+    }
+  ],
+  "decoded_log_bytes": 1149332,
+  "all_raw_logs_readback_equal": true,
+  "missing": [
+    "O4-B Python ZIP executable inspection/release/bootstrap/activation",
+    "O4-C readonly transport/actual gVisor pipx/native operations/public CLI",
+    "whole P4/final support profiles"
+  ],
+  "unchanged_open_cause": "CI415 FD cause remains OPEN; later PASS is not causal proof",
+  "timing_note": "Linux 64m57s; workflow start through Required 65m29s, run updated_at 65m30s. Earlier 70–90m estimate exceeded actual."
+}

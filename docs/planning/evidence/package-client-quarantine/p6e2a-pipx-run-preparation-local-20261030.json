@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-E2-A",
+  "scope": "Fixed exact-request pipx run Venv preparation ABI and inert terminal only",
+  "audit": {
+    "preparation_ABI": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "named local YES",
+      "ACCEPTANCE_CLOSED": "named preparation slice YES",
+      "MISSING": []
+    },
+    "public_pipx_run": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "complete temporary output/original and console binding",
+        "production resolver and native route semantics",
+        "current application/CLI and affected whole hosted qualification"
+      ]
+    }
+  },
+  "source_base": "f4f7abc50166a5e5b3a2743967674e7b89088678",
+  "source_identity": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "ab33bb220fbb3a51549513d45b22e192738300e3c7644cf0b3740d164fd0f650"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "1c47f3669097b196cbc85673e2cca56eb9572840ae51d85de851eb1f03ddb320"
+    },
+    {
+      "path": "tools/gvisor-observer/pod-init.json",
+      "sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_probe_real_test.go",
+      "sha256": "c6c6fc7351620a41afbcc549fb386d9f2707df0459dbe62e6cbcb928ea3d9f80",
+      "scope": "tagged diagnostic only; tagged diagnostic census update; product Go implementation/current CI source unchanged"
+    }
+  ],
+  "reused_owners": [
+    "ParsePipxNativeRoot",
+    "PipxNativeCreator",
+    "ParseSentryClone",
+    "IsExactPipxNativeUVChild",
+    "IsExactPipxNativePythonQuery",
+    "PipxNativeQueryParent",
+    "pipxNativeSession.prepare/start/cleanup",
+    "scanUVRunCensus"
+  ],
+  "first_failure": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-first-preparation-v1/inventory.json",
+    "native_terminal_reached": true,
+    "observer_reason": "PROCESS_PROVENANCE_UNKNOWN",
+    "site": "SENTRY_EXEC",
+    "session_complete": false,
+    "old_matching_close_exit_profile_only": true
+  },
+  "initial_candidate_failure": {
+    "reason": "existing clone candidate operation allowlist lacked run",
+    "targeted_result": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-preparation-abi-v2/abi-green-result.json",
+    "latch_result": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-preparation-abi-v2/abi-green-diagnostic.log",
+    "correction": "extend existing clone predicate; no new state"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.928
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "./internal/sandbox",
+        "-run",
+        "^TestPipxRunPreparationSafety$",
+        "-count=1",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 9.689
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.318
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 4.675
+    }
+  ],
+  "CPP": {
+    "latches_pass": 132,
+    "latches_fail": 0,
+    "seconds": 48.917,
+    "observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-preparation-abi-v2/full-cpp-result.json"
+  },
+  "actual": {
+    "exit_code": 0,
+    "seconds": 13.142,
+    "host_unchanged": true,
+    "helpers_after": {
+      "matches": [],
+      "errors": []
+    },
+    "no_skip": true,
+    "helper_wait_zero": true,
+    "helper_confirmed_stopped": true,
+    "observer_directory_empty_after": true,
+    "scope": "Single fixed-original pipx run DATA preparation diagnostic; current exact observer matched with canonical close-enter profile temporarily in Host runsc configuration; restored after quiet query. No public selection/current Policy/CLI or whole hosted qualification.",
+    "Go_source_base": "f4f7abc50166a5e5b3a2743967674e7b89088678",
+    "new_test_source": {
+      "path": "internal/sandbox/pipx_run_probe_real_test.go",
+      "sha256": "c6c6fc7351620a41afbcc549fb386d9f2707df0459dbe62e6cbcb928ea3d9f80"
+    },
+    "local_observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b"
+  },
+  "census": {
+    "entries": 83,
+    "environment": "pipx/.cache/c3dc012f54be29e",
+    "meaning": "unapproved DATA; whole source/control binding not yet qualified",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-preparation-abi-v2/census.json"
+  },
+  "protected_profile": {
+    "only_phase_changed": true,
+    "matching_candidate_sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc",
+    "restored_sha256": "20b623863b0fe2a3b9949ad30ccb01e646e0ddf37a7824d8ec2fa7789d5582e4",
+    "same_inode": true,
+    "helpers_and_containers_absent_before_restore": true
+  },
+  "frozen_remote_CI": {
+    "run": 40992454633,
+    "source": "f4f7abc",
+    "new_changes_in_run": false,
+    "no_push_or_cancel": true
+  },
+  "raw_inventory": "docs/github-logs/package-client-quarantine-20261021/p6-e2a-preparation-abi-v2/inventory.json"
+}

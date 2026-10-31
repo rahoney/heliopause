@@ -1,0 +1,14 @@
+[tool]
+requirements = [{ name = "haa-tool-fixture", specifier = ">=1,<2" }]
+python = "/usr/local/bin/python"
+entrypoints = [
+    { name = "haa-demo", install-path = "/work/uv-bin/haa-demo", from = "haa-tool-fixture" },
+    { name = "haa-new", install-path = "/work/uv-bin/haa-new", from = "haa-tool-fixture" },
+]
+
+[tool.options]
+no-index = true
+find-links = ["file:///opt/haa-query/wheels-v2", "file:///opt/haa-query/wheels-v1"]
+link-mode = "copy"
+no-sources = true
+no-build = true

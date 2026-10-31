@@ -1,0 +1,225 @@
+{
+  "scope": "P5-C3c2a current complete Node layout clean readonly DATA view; production preparation/materialization fresh2; no Artifact user program or Host install",
+  "source_base": "1f6fce4d35367163eaaadf71e23a5738e999a213",
+  "source_inputs": 1320,
+  "source_census_sha256": "71db4a585e4cf69d8b831b134b0137e4d07dcb8bc20283eef1bf7ed285174a95",
+  "changed_sources": [
+    {
+      "path": "internal/bootstrap/node_execution_prepare_integration_test.go",
+      "sha256": "ae2e7cccd9d55e6d0df77705e134bdb50891e8f6cfbe9fc7976067e006cb513d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/node_execution_materialize.go",
+      "sha256": "83143f78c7e2afb3ad4d047ea93a7aee40ef21ed2646a04769617fdc8d3604b0",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/execution_input_archive.go",
+      "sha256": "218ff9cdb79bd75c3770b72dc67b0ac59f3f942239d22521021df62699fe8dea",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/execution_input_archive_test.go",
+      "sha256": "1fcd0f1ebf395dccc0a7330d7a0316e1ed5b8edda2fc7826fdab30b164335b60",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/node_execution_inputs.go",
+      "sha256": "b9ad5011d9c1c160e8ba3aa8a86c74e51ea384132c4d052aa0efd9b4a922cec5",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/node_execution_inputs_test.go",
+      "sha256": "c43ef9c1b66168a8e9035f053abefa1fe8c510d2397b13ea89218d849859ccf6",
+      "mode": "100644"
+    }
+  ],
+  "reviewed_existing_owners": [
+    {
+      "path": "internal/bootstrap/node_execution_prepare_integration_test.go",
+      "before_sha256": "359f49594213c4d169338c4d30228804da333830402a94b232481d6434237a89",
+      "after_sha256": "ae2e7cccd9d55e6d0df77705e134bdb50891e8f6cfbe9fc7976067e006cb513d",
+      "reviewed_diff_sha256": "6d826d645a3d327cc044a5206263ae3a856e98a2ecbf5c2003ccec3ae5cc9a26",
+      "scope": "old false defaults kept; readonly variant shares original create/topology body; current tagged parent validates readonly input view"
+    },
+    {
+      "path": "internal/sandbox/node_execution_materialize.go",
+      "before_sha256": "ede9ddcc1ac3faeeb30db2e701ae004787f6de6715d6b6a755b21192b4bdd6de",
+      "after_sha256": "83143f78c7e2afb3ad4d047ea93a7aee40ef21ed2646a04769617fdc8d3604b0",
+      "reviewed_diff_sha256": "d6d67866b04ae456f691c13f7ef7ea91e01dc835dcc2955ad5ae260817e8981b",
+      "scope": "old false defaults kept; readonly variant shares original create/topology body; current tagged parent validates readonly input view"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (bounded relative DATA rendering/full census and readonly lifecycle)",
+    "WIRED": "YES (production tagged preparation parent); NO (Artifact user-run/application/CLI)",
+    "QUALIFIED": "YES (named local DATA scope); NO (new hosted/whole profile matrix)",
+    "ACCEPTANCE_CLOSED": "YES (C3c2a named local input view); NO (P5 user-run/guest output/result/CLI/final)"
+  },
+  "binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3c2a-bootstrap.test",
+      "size": 50961611,
+      "sha256": "31836d825feddba5866b70db5772d4a35ee65c017da4aed704720cf59176cfc4"
+    }
+  ],
+  "observer": {
+    "sha256": "4df80d98633d9f4488f3ecf9de471ac55d11ed1845d92117fc1a4a4ef7614957",
+    "source_and_binary_unchanged_from_C3c1": true,
+    "prior_CPP_latches": 129,
+    "CPP_rebuild_for_DATA_only_change": false
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.711
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 103.303
+    },
+    {
+      "step": "input-focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-run",
+        "^TestNodeExecutionInput"
+      ],
+      "exit_code": 0,
+      "seconds": 1.269
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 30.352
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3c2a-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.992
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.323
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 12.421
+    }
+  ],
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 54.439,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "66def4ac19bd79dcb099765f56ef5a44ebdfe0be5449735248d66c5a601223b5",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-c3c2a-actual-v2/protected-client",
+        "sha256": "31836d825feddba5866b70db5772d4a35ee65c017da4aed704720cf59176cfc4"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c2a-actual-v2/observer",
+        "sha256": "4df80d98633d9f4488f3ecf9de471ac55d11ed1845d92117fc1a4a4ef7614957"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c2-20261029-source/internal/bootstrap/node_execution_prepare.go",
+        "sha256": "b9b393af973bea4d7effe03c6d3aa97a8a397e0e07cfd93e7ace938eaa99aa5e"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c2-20261029-source/internal/bootstrap/node_execution_prepare_integration_test.go",
+        "sha256": "ae2e7cccd9d55e6d0df77705e134bdb50891e8f6cfbe9fc7976067e006cb513d"
+      }
+    ],
+    "scope": "CURRENT production Node preparation/offline whole-set materialization and clean readonly input views; exact TypeScript5.9.3/SRI/fresh2; no Artifact user program or Host install",
+    "passed_named_tests": [
+      "TestLinuxNodeExecutionPreparationIntegration"
+    ],
+    "production_guard_unchanged": true,
+    "fixture_version": "typescript@5.9.3",
+    "user_program_run": false,
+    "owned_node_workspaces_absent": true,
+    "materialization_passes": 2,
+    "readonly_input_passes": 2,
+    "named_pass": true
+  },
+  "input_transition": "exact trusted RW writer + RO reader attested together; retire writer and complete trace; sole RO reader and exact whole-file readback before returning private view",
+  "first_actual": {
+    "seconds": 29.214,
+    "exit": 1,
+    "provider_error": "exit status 1 during readonly API; exact internal I/O phase uncollected",
+    "qualification": "FAIL; not aggregated with later success",
+    "cleanup": "source/Host/Docker/42/ZIP unchanged, helper wait0/final original1, workspaces absent"
+  },
+  "lifetime_probe": {
+    "scope": "separate default-runtime DATA driver diagnostic, not gVisor user-run",
+    "result": "zero attachments loses tmpfs marker; exact reader-before-writer-retirement preserves same marker; Docker inventories equal",
+    "superseded": "writer retirement then new readonly reader creation",
+    "reused_owner": "internal/sandbox/pypi_trusted_transaction.go existing phaseAnchor overlap before preparation termination"
+  },
+  "cancellation_correction": "public unavailable-backend preflight custom cause RED0.008s; named deferred original error + ctx.Err/context.Cause; corrected local regression passes; not a general runtime cause fix",
+  "invariants": "same pinned Node, network none, root readonly, volume128MiB/noexec/UID1000, existing CPU/memory/wall/trace/cleanup; no Artifact CONTROL execution or FS/role/network predicate/Core/CLI changes",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/p5-c3c2a-*",
+  "CI426_excludes_this_source": true,
+  "next": "C3c2b exact Artifact Node admission/profile/image-start and kernel terminal/capture/descendant cleanup reconciliation; never infer image start from root exit"
+}

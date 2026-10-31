@@ -1,0 +1,95 @@
+{
+  "run_id": 40776007178,
+  "number": 427,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40776007178",
+  "source": "e0dc39a9e7d3bc92bfa343390243f40708f8b370",
+  "tree": "fff27985906bb29c6026e48ad274239913b3ded3",
+  "tracked_files": 2959,
+  "source_inputs": 1324,
+  "run_started_at": "2026-10-28T21:56:16Z",
+  "last_actual_query_at": "2026-10-28T23:18:15Z",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 123125377859,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378061,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378100,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378227,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378253,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378303,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378346,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378380,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123125378583,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123159009165,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "timer_session": null,
+  "next_due_at": null,
+  "completed20min_polls": 4,
+  "scope": "grouped C3c1 kernel terminal + C3c2a clean readonly inputs + C3c2b accepted target image DATA + existing Linux actual8root wiring; no Artifact Node user-run/CLI",
+  "authorization": "user-authorized important CI and normal milestone branch push during sleep",
+  "recent_observed_elapsed_to_final_update_seconds": [
+    5730,
+    5520,
+    5343
+  ],
+  "estimated_completion": "roughly90-105min if ordinary pipeline completes; every20min status also detects earlier failure; no promise",
+  "whole_hosted_qualification": "PASS (named ordinary scope)",
+  "later_Node_profile_source_excluded": true,
+  "completed8_same_checkout": "0e7036573ab02e2392f10abff0d32ee70c8c79c6",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 448578,
+  "workflow_final_update_at": "2026-10-28T23:15:01Z",
+  "elapsed_to_final_update_seconds": 4725,
+  "decoded_final_log_bytes": 1229906,
+  "qualified_leaf": "ci427-kernel-readonly-hosted-qualification-20261029.json"
+}

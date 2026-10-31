@@ -123,6 +123,12 @@ npm, PyPI/pipx, Homebrew는 “일단 설치해 보고 싶은 사용자”의 fr
 
 ## 4. Release activation boundary
 
+2026-10-21 owner 방향: 첫 정식 공개판의 목표는 **v1.0.0**이다. 기존 v0.1.0과
+v0.1.1-rc.*의 검증 기록·immutable ref는 유지한다. 목표 버전 선택은 새 tag 생성이나
+publication 실행 승인이 아니다. 사용자의 최신 CLI 검토와 필요한 보완·채널 qualification,
+보호된 main PR merge 및 해당 source의 CI/서명 build 검증을 먼저 수행한다.
+출시 시 공개 CLI·JSON·종료 코드와 지원 platform/runtime 범위를 명확히 확정한다.
+
 - `release` environment는 required reviewer 승인 없이는 publish job을 실행하지 않는다.
 - `v*` tag는 생성·수정·삭제 Ruleset으로 보호한다.
 - tag commit은 protected `main` history에 속해야 한다.
@@ -170,8 +176,12 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3 / full QUALIFIED=NO |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 build/attestation/package lifecycle |
+| 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — [local qualification](./evidence/m13-cli-ux/qualification-20261018.md) |
+| 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — [qualification](./evidence/cli-os-language/qualification-20261018.md); native macOS/CI328 PASS |
+| 3c | SEC-UPD-001 | guarded update-command coverage | IN_PROGRESS — bounded npm qualified including CI330; PyPI implementation active |
+| 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED — after SEC-UPD-001 acceptance |
+| 4 | M13-004 | installed self-quarantine update; npm·PyPI/pipx·Homebrew convenience publication | IN_PROGRESS — native same-runtime path qualified; owner channel names/tap/formula and publisher binding pending |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected activation
@@ -258,6 +268,9 @@ Core assets:
 - `helox` native binaries
 - gVisor observer helper
 - Linux network-policy helper
+- lock-pinned pnpm native client와 source-bound passive notices — [현재 P2 공급·배포 범위](./evidence/package-client-quarantine/p2b2-pnpm-runtime-plan-20261024.md); 실제 guest/제품 qualification과 구분
+- lock-pinned Bun native client와 source-bound passive notices — [현재 P3 공급·배포 범위](./evidence/package-client-quarantine/p3b2b2-bun-release-plan-20261025.md); 실제 gVisor/client qualification은 후속으로 유지
+- lock-pinned pipx Python ZIP DATA와 원본 NOTICE — [현재 P4 공급·배포 범위](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md). `pipx-runtime-linux-amd64.zip`은 native6와 별도인 fixed `pipx-runtime` role이며 system installed0444/private root staging0600으로 다룬다. `pipx-NOTICE.txt`는 release-metadata다. DATA role은 safety·검사 완료·Host import/실행 권한이 아니며 실제 전체 공급/지원 qualification은 별도로 확인한다.
 - runtime-image manifest
 - release manifest
 - SBOM
@@ -296,7 +309,7 @@ exact source commit
 패키지 lifecycle script에서 network download나 arbitrary shell extension을 하지 않는다.
 
 Linux amd64 package payload는 `/usr/lib/heliopause/releases/<version>/`에 CLI,
-observer, network-policy helper와 runtime lock/image manifest를 root 소유로
+observer, network-policy helper, 승인된 M13-004 release-installer와 runtime lock/image manifest를 root 소유로
 설치한다. CLI·observer는 `0555`, privileged helper는 `0500`, metadata는
 `0444`이며 `/usr/bin/helox`는 해당 version의 CLI를 가리킨다. 제공 systemd
 unit는 기본 비활성이고, 실제 caller identity로 보호한
@@ -304,6 +317,9 @@ unit는 기본 비활성이고, 실제 caller identity로 보호한
 동작 config를 생성하거나 기존 active runsc/observer를 교체하지 않는다.
 고정 post-install 안내는 controlled runtime 설정 후 `helox doctor` 실행을
 요구한다. OS package 설치 성공과 verified runtime activation은 별도다.
+Release-installer payload의 포함은 OS package를 native `/versions/` 관리 설치로
+등록하거나 package database를 우회한 self-update를 활성화하지 않는다. 해당 helper는
+자동 실행하지 않으며 native 관리 설치와의 전환은 별도의 명시적 bootstrap/migration이다.
 
 Checksum 생성과 publish의 file set은 같은 manifest verifier를 소비한다.
 Publish는 manifest attestation/source를 먼저 검증한 뒤 basename·role·platform·
@@ -312,6 +328,15 @@ file로 전달한다. Checksum 파일의 임의 경로나 artifact 자체의 fil
 publication authority로 취급하지 않는다.
 
 ### M13-004 — convenience publication
+
+설치된 본체의 검역형 업데이트 우선 요청(2026-10-20)에 대한 흐름·권한 경계는
+[자체 업데이트 설계 제안](../user-journey-cli-ia/07-self-update.md), 현재 audit와
+수정 위치·검사·재검토는 [실행 계획](./evidence/m13-004-convenience/self-update-20261020.md)을
+참조한다. 새 설치 전용 역할과 Linux/WSL2 amd64 우선 범위는2026-10-20 사용자
+승인을 받았다. 기존 network helper 권한은 유지한다.
+승인된 native same-runtime 경로의 구현·실제 서명 qualification은
+[최종 결과](./evidence/m13-004-convenience/signed-native-qualification-20261020.md)가
+소유하며, 아래 채널 acceptance나 M13-005 공개 배포 완료로 확대하지 않는다.
 
 #### npm
 

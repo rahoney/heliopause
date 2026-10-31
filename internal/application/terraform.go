@@ -53,3 +53,35 @@ func (s *TerraformInitService) Init(ctx context.Context, reference domain.Artifa
 	}
 	return TerraformInitResult{Resolution: resolution, ProviderCount: selected.count}, nil
 }
+
+// TerraformUpgradeService inspects all independent current-project providers
+// without fabricating one requested primary. The existing workflow owns every
+// approval, staging, exact commit and close boundary.
+type TerraformUpgradeService struct {
+	resolver   ports.ProjectLockUpdateResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
+}
+
+func NewTerraformUpgradeService(resolver ports.ProjectLockUpdateResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*TerraformUpgradeService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("terraform upgrade requires guarded complete selection, inspection and verified cache staging")
+	}
+	return &TerraformUpgradeService{resolver, promoter, inspection, staging}, nil
+}
+
+func (s *TerraformUpgradeService) Upgrade(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	if s == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("terraform upgrade service is unavailable")
+	}
+	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "terraform-registry", "Terraform",
+		func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+			update, err := s.resolver.ResolveProjectLockUpdate(ctx, install, controls, "")
+			if err == nil && (update.HasRequestedResolution() || len(update.Snapshot().Dependencies()) == 0) {
+				return domain.ProjectDependencyUpdate{}, errors.New("terraform upgrade requires a complete nonempty provider set without a requested primary")
+			}
+			return update, err
+		})
+	return selected.verified, err
+}

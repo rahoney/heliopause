@@ -124,7 +124,7 @@ func (b *GitHubELFBackend) executeELF(ctx context.Context, request domain.Sandbo
 		var diagnostic TraceDiagnostic
 		observations, limitation, diagnostic = collectTraceDiagnostic(collectCtx, trace)
 		if limitation != "" {
-			observations = retainedELFProbeFacts(diagnostic.KindCounts)
+			observations = retainedSuspiciousTraceFacts(diagnostic.KindCounts)
 		}
 	}
 	collectCancel()

@@ -1,0 +1,193 @@
+{
+  "work_item": "M13-004/P3-B6c",
+  "baseline": "9fbc9817a931208c384997d9a40b2bf0f7367d32",
+  "status": {
+    "IMPLEMENTED": "YES (existing full inspection engine retained)",
+    "WIRED": "YES (required native Bun capability through full inspector/Evidence/Policy/cache/CLI/native handoff; hosted JS command wired)",
+    "QUALIFIED": "YES (named local complete public quarantine, CLI/native handoff and negative/normal boundary); NO (hosted candidate)",
+    "ACCEPTANCE_CLOSED": "YES (named local whole native wiring); NO (whole P3/remote/final matrix)",
+    "MISSING": [
+      "hosted exact-source end-to-end qualification",
+      "final support/failure and affected-profile matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "89da79296ee5f27c8fe0e8f6411c3b9946019958da8092f6ac94d6400b66b028",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "b8b82dff59a892b01580bd8c422971178c54627d594e96704df4e074f2a017ca",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "0e0e37a3829f81ce5c3640d7ab729a19c476131fe356186bc191700118db6c0d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/bun_project_inspection_real_test.go",
+      "sha256": "dc2dd6dcebb3781f9965550bdcfc7e951767cde94b444dfa24407e009ea75c95",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/inspection/npm/bun_project.go",
+      "sha256": "c214479094e525f5edce9461898a76974cddf065d9e6ed2ca6f8702f3f237b51",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/inspection/npm/bun_dynamic_test.go",
+      "sha256": "42e4c2012bd60e23d2e160211e5b818e8d008e7d32f50dfeb9bcdbf69556b4f5",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/bun_project_inspection_test.go",
+      "sha256": "76b7a778eb633b4c1cc37e33a5fb3b5f91b474b0e904cd061e23579e7da25b57",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/cli/bun_project.go",
+      "sha256": "04fd9c03fc917575ed03348e3567d38f7b64675ae4921fae7a25f7f3ab9e897d",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b6c-hosted-js-workflow.json",
+      "exit": 0,
+      "seconds": 1.39,
+      "receipt_sha256": "c39115076c1024d49275a8eed359ef57be2b10e29eb32d64f3507d681be906c8"
+    },
+    {
+      "receipt": "p3b6c-hosted-js-quick.json",
+      "exit": 0,
+      "seconds": 66.09,
+      "receipt_sha256": "030d8e5d6b7e6aeaa26a8c318644b934b660154a76831035ab398e859badecb1"
+    },
+    {
+      "receipt": "p3b6c-hosted-js-security.json",
+      "exit": 0,
+      "seconds": 10.228,
+      "receipt_sha256": "66435873e2928e5334cae4415e3bbfa69ca2403408184581fec96819742b5191"
+    },
+    {
+      "receipt": "p3b6c-hosted-js-docs.json",
+      "exit": 0,
+      "seconds": 0.252,
+      "receipt_sha256": "3e13f576a9be0f34ead066c96502abd2b1b8398913a428d419f312fe1022b79d"
+    },
+    {
+      "receipt": "p3b6c-full-affected-race.json",
+      "exit": 0,
+      "seconds": 54.598,
+      "receipt_sha256": "fbb7a9590914dd418cd43d676e40b397e6e14dd9966eeb9c37d2c617b61b977b"
+    },
+    {
+      "receipt": "p3b6c-checker-full-race.json",
+      "exit": 0,
+      "seconds": 35.595,
+      "receipt_sha256": "eedc2959e691347be76e75d7323f0cb811cd0c5a9bf7da91381b6f9210b9d8fa"
+    },
+    {
+      "receipt": "p3b6c-whole-quarantine-v1-result.json",
+      "exit": 0,
+      "seconds": 60.498,
+      "receipt_sha256": "3042eb61be27d69994caa3cd4ba1dbebafe86479fc80238d042df13da1e0d0d4"
+    },
+    {
+      "receipt": "p3b6c-cli-native-v1-result.json",
+      "exit": 0,
+      "seconds": 338.154,
+      "receipt_sha256": "fa2df89b2cb5080536b70afd83eda0819c907e5177a6e087f6d164febef8efb8"
+    }
+  ],
+  "reuse": {
+    "baseline": "9fbc9817a931208c384997d9a40b2bf0f7367d32",
+    "typed_binding": [
+      {
+        "path": "internal/inspection/npm/bun_project.go",
+        "only_typed_capability_name_changed": true,
+        "sha256": "c214479094e525f5edce9461898a76974cddf065d9e6ed2ca6f8702f3f237b51"
+      },
+      {
+        "path": "internal/inspection/npm/bun_dynamic_test.go",
+        "only_typed_capability_name_changed": true,
+        "sha256": "42e4c2012bd60e23d2e160211e5b818e8d008e7d32f50dfeb9bcdbf69556b4f5"
+      },
+      {
+        "path": "internal/sandbox/bun_project_inspection_test.go",
+        "only_typed_capability_name_changed": true,
+        "sha256": "76b7a778eb633b4c1cc37e33a5fb3b5f91b474b0e904cd061e23579e7da25b57"
+      }
+    ],
+    "CI_script": "only one exact native JS consumer line added; supply/materializer/cleanup/project mode all byte-identical",
+    "whole_actual_log_delta_only": "internal/sandbox/bun_project_inspection_real_test.go",
+    "unchanged": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "09583250526001efe617a7546de574d028794ac379eb9a32a45869fcf371df4d"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "ccaadf510fa1b9641449402b67291fe9833ed6a77e4502e28bae484ead318927"
+      },
+      {
+        "path": "internal/inspection/npm/bun_dynamic.go",
+        "sha256": "02cce75b6df8d2856bc9ddfd0a604771a1549894e88b6f1a5379577fa98136c4"
+      },
+      {
+        "path": "internal/policy/m3.go",
+        "sha256": "ccc9255bf6d784b1ff393192ff8d7f93d43dcace74644fc912791891488a9445"
+      },
+      {
+        "path": "internal/bootstrap/bun_project.go",
+        "sha256": "d0070928620cd88bc17333108500c2490f12c9b1c73692be07f757bf760e597d"
+      },
+      {
+        "path": "internal/promotion/bun_transaction.go",
+        "sha256": "c8ced96581ca6527440d3ff5b6a4f6053b8c4a05c2385a9fc4225f854f9c8ac6"
+      },
+      {
+        "path": "internal/promotion/bun_cache.go",
+        "sha256": "791b355a36c61208e18c000dadd2ae6f14e725a059fe6152af1e0d233d0770a3"
+      },
+      {
+        "path": "internal/sandbox/bun_instance_backend.go",
+        "sha256": "7116572cb3eb142236446a8a5194a40bf12f2386ffd2f616a6e3651c7056dbb2"
+      }
+    ]
+  },
+  "actual": {
+    "public_quarantine": "transitive2/peer4 exact source/static/native runtime fresh physical instances; required facts/recorded Evidence/entry-set Policy ALLOW/no primary/Host action NOT_REQUIRED",
+    "public_quarantine_test_seconds": 57.9,
+    "public_quarantine_operator_seconds": 60.498,
+    "public_scope": "script-free public inputs; native Bun JS itself separately qualified by B6b canonical normal/typed exit37",
+    "Bun_native_original_cases": 3,
+    "Bun_native_original_test_seconds": 135.92,
+    "Bun_CLI_fresh_operations": 9,
+    "Bun_CLI_test_seconds": 199.72,
+    "Bun_CLI_native_operator_seconds": 338.154,
+    "target_checks": "complete set/fresh current operation/Policy/records; implicit edited-control enrollment/unproven native refused; old-source proof before explicit native handoff; no-op inode/mode and user files preserved; empty lock absence",
+    "helper": "both actual scopes CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "both IDENTICAL"
+  },
+  "hosted_wiring": {
+    "script": "scripts/ci-bun-runtime.sh",
+    "added_command": "HELOX_BUN_ARTIFACT_EXECUTION=1 ... -test.timeout=3m -test.run ^TestBunActualArtifactExecutionBoundary$",
+    "existing_supply_cleanup_project_mode": "byte-identical after removing only new command line",
+    "validator": "exact active sandbox order/count/env/filter/timeout/failure propagation; missing/comment/echo/duplicate/ignored failure negatives; workflow maintained parser/actionlint",
+    "scope": "existing named consumers and supplied namespace actual reused; grouped hosted run still pending"
+  },
+  "canonical_observer": "p3b6b-bun-artifact-observer-canonical-final.json; exact121 latches/source/observer unchanged",
+  "check_reuse": "Product related four-package full Race54.598s passed; later changed checker command validation has separate whole checker Race35.595s. Public actual test output text alone updated to distinguish native supply from B6b JS; original raw/binary retained, no product behavior delta.",
+  "preserved": [
+    "static-all/full source/layout/physical instances/required coverage/current Evidence/Policy",
+    "same inspected bytes cache/materialization/transaction/independent native proof",
+    "M3 unexpected process MANUAL_REVIEW and FS/honeytoken BLOCK; no Node-only fallback",
+    "runtime pins/limits/roles/network and existing PNPM engine"
+  ],
+  "remote": "no new push or dispatch for helpers; grouped backend-to-whole CLI candidate follows this commit with actual elapsed-based timer",
+  "scope": "local source/runtime/CLI qualification is not whole P3 support, publication, main merge or future bunx/run capability"
+}

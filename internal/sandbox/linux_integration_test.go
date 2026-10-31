@@ -67,7 +67,7 @@ func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
 	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test -z \"$GITHUB_TOKEN\" && test -z \"$NPM_TOKEN\" && test -z \"$PYPI_TOKEN\" && test -z \"$AWS_SECRET_ACCESS_KEY\" && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
 }
 
-func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
+func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) domain.SandboxResult {
 	t.Helper()
 	root := t.TempDir()
 	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
@@ -114,6 +114,7 @@ func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
 		code, _ := result.LimitationCode()
 		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
 	}
+	return result
 }
 
 func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
@@ -251,7 +252,9 @@ func TestLinuxPyTorchResolverIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reference, err := artifactpypi.ParseReferenceForSource("torch", profile.Source())
+	// Keep this positive resolver probe on the same qualified input as the full
+	// CPU integration. Bare latest may name a newly published unhashable wheel.
+	reference, err := artifactpypi.ParseReferenceForSource("torch@"+runtimeidentity.PyTorchCPUVersion, profile.Source())
 	if err != nil {
 		t.Fatal(err)
 	}

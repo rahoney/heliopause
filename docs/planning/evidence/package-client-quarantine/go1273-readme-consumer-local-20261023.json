@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "ab2a16102294387e1da76b6c89ef02ed2e54fdd0",
+  "scope": "existing Go maintenance renderer and consistency checker now own README Build selection; local existing1.26.10 qualification, not target1.27.3 adoption",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES — local current compiler scope",
+    "ACCEPTANCE_CLOSED": "YES — README consumer unit only",
+    "MISSING": []
+  },
+  "source": [
+    {
+      "path": "scripts/check/readme_go_test.go",
+      "sha256": "785efb87af7a598531f3a7215a19084ef6e012ffcf4389a4e4e91cc393889b74"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "b68409edda43fd68baa87226e80a46ad2c5c2f2140bdad285964b9f1bf7d8bd1"
+    },
+    {
+      "path": "scripts/check/tools.go",
+      "sha256": "93b4531304d6633326dfe52151d3764dddc1b2164d2252cbf5545a0fb655679a"
+    },
+    {
+      "path": "scripts/check/tools_test.go",
+      "sha256": "c73a2a8f7b5b2a5a7ca421edd10e39c701d162637e64abf2c1736fcbc73bb6c8"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "d5035102f38aebc96a731af340e7e2e7dcffa8072c12fc0b3efdfddf858f213f"
+    },
+    {
+      "path": "scripts/update-runtime/readme_go_test.go",
+      "sha256": "c26691ce76ab170bc552b83d30294d01d3be3865679ea00e48f198b3ffcbe923"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "06d1beb82a09624b0ae8c10535c9451afab4947859f2e1091bfc223533c85552"
+    }
+  ],
+  "controlled_regression": {
+    "same_test": {
+      "path": "scripts/check/readme_go_test.go",
+      "sha256": "785efb87af7a598531f3a7215a19084ef6e012ffcf4389a4e4e91cc393889b74"
+    },
+    "before_exit": 1,
+    "before_seconds": 1.819,
+    "before_invalid_cases_not_rejected": 7,
+    "old_production_owner_matches_baseline": true,
+    "after_exit": 0,
+    "after_seconds": 0.984,
+    "positive_case": "selected tuple with identical historical text outside Build remains valid"
+  },
+  "first_full_check_failure": {
+    "quick_exit": 1,
+    "quick_seconds": 65.172,
+    "race_exit": 1,
+    "race_seconds": 22.648,
+    "cause": "indirect runtimeOwnerFixture omitted newly required README; synthetic coordinated future-Go fixture also needed matching README fields",
+    "correction": "fixture copies actual README and its synthetic future tuple writes matching minimum/compiler; previous negative errors/assertions unchanged; production guard not weakened"
+  },
+  "canonical_checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.424,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 45.509,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.539,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.231,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.775,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "full_related_race": {
+    "command": [
+      "test",
+      "-trimpath",
+      "-race",
+      "-count=1",
+      "-timeout=5m",
+      "./scripts/check",
+      "./scripts/update-runtime"
+    ],
+    "exit": 0,
+    "seconds": 25.424
+  },
+  "review": [
+    "unique known Build paragraph and selected module/guest/tool tuple required",
+    "two Go values derived from existing Current/Version; no new version owner",
+    "historical identical paragraphs outside Build preserved by actual isolated plan/apply test",
+    "same-version reconciliation preserves exact bytes; missing/duplicate/mixed/unknown source rejected",
+    "normal updater component inventory includes README; existing owner negative consumers retained"
+  ],
+  "cleanup": {
+    "path": "/tmp/haa-go1273-yzyvqne9/probe-readme.py",
+    "bytes": 1577,
+    "sha256": "ce8d4088ba04cc5623e31d46f959854e0d25f71dbfef96271462100c29d1388e",
+    "scope": "completed controlled before/after driver; source/commands/results retained",
+    "removed": true
+  },
+  "target_go1273": "NOT IMPLEMENTED/NOT QUALIFIED yet; only official metadata discovered, target pin/SDK/Host unchanged",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-before-20261023.json",
+      "bytes": 588,
+      "sha256": "ce2b6b4a5c6c5ce5c2e36e1db9a9af8255aa9b73e8cb2d58520fe1b29ee947a7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-before-20261023.log",
+      "bytes": 1236,
+      "sha256": "29e518bb4a6fecf5bb41a6859a99d566c2bd362699ba6945fdf9ed85fae19781"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-after-20261023.json",
+      "bytes": 587,
+      "sha256": "e48e40f31bfafd2f98cd2a53898e310ac339e57df5bd929a77bea2f45ccc9786"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-after-20261023.log",
+      "bytes": 56,
+      "sha256": "415c26f139122e0590982ca115d419acd86d02ad4bdef07203fd3fbf8bb55f37"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-connection-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "ec2323cfd40ee779fd094b0bad643a6b3dbae3819aad2290dc05d698b63b4ad6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-connection-20261023-quick.log",
+      "bytes": 30124,
+      "sha256": "4f62e4ec91f299263540733a9d7696e674292e3554266edaf563b26c05b0dc5e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-connection-race-20261023.json",
+      "bytes": 1243,
+      "sha256": "f66624adc4a2c6f1ee98dd36552c5e731e450885986169f296d383225353b6f6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-connection-race-20261023.log",
+      "bytes": 5704,
+      "sha256": "1766f998f24ec91b8dd2823e3c557fce122b308d0f5f58ad6f1d3e9fad8f4935"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-race-20261023.json",
+      "bytes": 1595,
+      "sha256": "d73334260b1c6cb8cc86c7671861fde4c178d72f9776416060b8a475511f4ff0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-race-20261023.log",
+      "bytes": 123,
+      "sha256": "70d3901308ad419a2d498c9f901b77938f8a5e7041d41d62049b492a662b0979"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-format.json",
+      "bytes": 110,
+      "sha256": "dabecf9647090fd1b89d385f4484ebf2f1e2aed5d394be58fcc28518c0cfbf72"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "b18bacabd90991d83d0cad7d4e65b79fbae85058712b4e578a5b70f8e8317867"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-security.json",
+      "bytes": 112,
+      "sha256": "da945d52e6dad68ffa673dfd878ad32d96bceba0c2baf5fbd7b65638cdf65056"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-docs.json",
+      "bytes": 108,
+      "sha256": "194d642c3371b1b35fd4ea2d53bd7b1895f4350c7fab0c90c5e3b20db29b3819"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-workflow.json",
+      "bytes": 112,
+      "sha256": "9e408596b7b3fadd3d5501ea05ac7431817d1cebc6587b98f9d4c59781c633ba"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-corrected-20261023-workflow.log",
+      "bytes": 1071,
+      "sha256": "d0bc0b28fc17f147f2a6d46c330fc1ce7355b15065d24973d1d7f17ab8538212"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-readme-probe-cleanup-20261023.json",
+      "bytes": 262,
+      "sha256": "08aa8bb2a05bc416c4aa0442131326478621ed1188d4fec2f0a541b8cfbaeae1"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "scope": "CI428 source558d75a current Artifact Node normal/nonzero backend and prior common consumers; excludes later local C3d/C4/C5",
+  "status": "PASS (named hosted scope)",
+  "run_id": 40790847742,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40790847742",
+  "source": "558d75a818a661249f9dcde96211e4399a8aa844",
+  "tree": "f5e4d9f995bd9cd3dfe59a5c2c640f2b06235d7a",
+  "checkout": "d965d5bf297d334647cff6dc67f4cb5110f79922",
+  "tracked_files": 2969,
+  "runtime_inputs": 1330,
+  "all10_success": true,
+  "all10_checkout_whole_tree_matches_source": true,
+  "started_at": "2026-10-28T23:57:29Z",
+  "finished_updated_at": "2026-10-29T01:32:20Z",
+  "elapsed_to_final_update_seconds": 5691,
+  "final_query_at": "2026-10-29T01:42:43Z",
+  "timer05_consumed_retired": true,
+  "decoded10_logs_utf8_bytes": 1278395,
+  "helper_latches": 131,
+  "linux": {
+    "passed_parents": 94,
+    "failed": 0,
+    "skipped": 0,
+    "CPU_full_seconds": 296.32,
+    "public_Node_parent_seconds": 48.93,
+    "Node_cases": [
+      [
+        "1",
+        "0",
+        "4980",
+        "0"
+      ],
+      [
+        "2",
+        "1",
+        "62",
+        "0"
+      ]
+    ],
+    "whole_current_inspection_Policy_records_and_readonly_source": "actual fresh2; TypeScript5.9.3/source SHA25610e108c9; unique manifest2; required3 checks/Evidence4/current ALLOW",
+    "kernel_parent_seconds": 5.41,
+    "kernel_root_cases": 8,
+    "helper_wait0": 16,
+    "final_cleanup_original0": 3,
+    "restored_client": true
+  },
+  "other_jobs": "native macOS, minimum Go, Quick, Security, vulnerability, representative corpus, Docs and Required all SUCCESS",
+  "raw_evidence": {
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci428-final-decoded-log-inventory.json",
+    "source_proof": "docs/github-logs/package-client-quarantine-20261021/ci428-final-source-proof.json",
+    "poll": "docs/github-logs/package-client-quarantine-20261021/ci428-poll05-final.json"
+  },
+  "MISSING": [
+    "later local controlled boundary12/C4 workflow/C5 CLI grouped hosted qualification",
+    "whole P4/P5-P7/final4profiles/signed qualification"
+  ],
+  "unchanged_uncertainty": "older macOS deadline direct cause remains OPEN; this new source PASS is not a causal explanation"
+}

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -202,7 +203,7 @@ func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string
 	hash := sha256.New()
 	integrityHash := sha512.New()
 	limited := io.LimitReader(response.Body, tarballLimit+1)
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash, integrityHash), limited)
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash, integrityHash), ports.DownloadReader(ctx, limited, response.ContentLength))
 	syncErr := temporary.Sync()
 	closeErr := temporary.Close()
 	if copyErr != nil {
@@ -299,13 +300,20 @@ func (r *Resolver) Resolve(ctx context.Context, reference domain.ArtifactReferen
 		return domain.ResolvedArtifact{}, err
 	}
 	selected, found := metadata.Versions[version]
-	if !found || selected.Name != parsed.name || selected.Version != version {
+	if !found {
+		return domain.ResolvedArtifact{}, errors.New("npm metadata selected version is inconsistent")
+	}
+	return r.resolvedVersion(reference.Source(), parsed.name, version, selected)
+}
+
+func (r *Resolver) resolvedVersion(source domain.SourceID, name, version string, selected npmVersionMetadata) (domain.ResolvedArtifact, error) {
+	if selected.Name != name || selected.Version != version {
 		return domain.ResolvedArtifact{}, errors.New("npm metadata selected version is inconsistent")
 	}
 	if err := r.validateTarballURL(selected.Dist.Tarball); err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
-	identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), selected.Name, selected.Version, "tarball")
+	identity, err := domain.NewResolvedArtifactIdentity(source, selected.Name, selected.Version, "tarball")
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
@@ -377,36 +385,9 @@ func (locator npmLocator) selectVersion(metadata packument) (string, error) {
 }
 
 func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packument, error) {
-	endpoint := *r.registry
-	endpoint.Path = "/" + packageName
-	endpoint.RawPath = "/" + url.PathEscape(packageName)
-	timeoutContext, cancel := context.WithTimeout(ctx, metadataTimeout)
-	defer cancel()
-	request, err := http.NewRequestWithContext(timeoutContext, http.MethodGet, endpoint.String(), nil)
+	body, err := r.fetchMetadataBody(ctx, packageName, "")
 	if err != nil {
-		return packument{}, fmt.Errorf("create npm metadata request: %w", err)
-	}
-	request.Header.Set("Accept", metadataAccept)
-	request.Header.Set("User-Agent", "helox/0")
-	response, err := r.client.Do(request)
-	if err != nil {
-		return packument{}, fmt.Errorf("request npm metadata: %w", err)
-	}
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		return packument{}, fmt.Errorf("npm metadata returned unexpected status %d", response.StatusCode)
-	}
-	contentTypes := response.Header.Values("Content-Type")
-	if len(contentTypes) != 1 {
-		return packument{}, errors.New("npm metadata response has missing or ambiguous content type")
-	}
-	mediaType, _, err := mime.ParseMediaType(contentTypes[0])
-	if err != nil || (mediaType != metadataAccept && mediaType != "application/json") {
-		return packument{}, errors.New("npm metadata response has unsupported content type")
-	}
-	body, err := readLimited(response.Body, metadataLimit)
-	if err != nil {
-		return packument{}, fmt.Errorf("read npm metadata: %w", err)
+		return packument{}, err
 	}
 	var metadata packument
 	decoder := json.NewDecoder(strings.NewReader(string(body)))
@@ -415,6 +396,68 @@ func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packu
 	}
 	if err := ensureSingleJSONValue(decoder); err != nil {
 		return packument{}, err
+	}
+	return metadata, nil
+}
+
+func (r *Resolver) fetchMetadataBody(ctx context.Context, packageName, version string) ([]byte, error) {
+	if ctx == nil || r == nil || r.registry == nil || r.client == nil || validatePackageName(packageName) != nil || version != "" && !exactVersion.MatchString(version) {
+		return nil, errors.New("npm metadata request is invalid")
+	}
+	endpoint := *r.registry
+	endpoint.Path = "/" + packageName
+	endpoint.RawPath = "/" + url.PathEscape(packageName)
+	if version != "" {
+		endpoint.Path += "/" + version
+		endpoint.RawPath += "/" + url.PathEscape(version)
+	}
+	timeoutContext, cancel := context.WithTimeout(ctx, metadataTimeout)
+	defer cancel()
+	request, err := http.NewRequestWithContext(timeoutContext, http.MethodGet, endpoint.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("create npm metadata request: %w", err)
+	}
+	accept := metadataAccept
+	if version != "" {
+		accept = "application/json"
+	}
+	request.Header.Set("Accept", accept)
+	request.Header.Set("User-Agent", "helox/0")
+	response, err := r.client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("request npm metadata: %w", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("npm metadata returned unexpected status %d", response.StatusCode)
+	}
+	contentTypes := response.Header.Values("Content-Type")
+	if len(contentTypes) != 1 {
+		return nil, errors.New("npm metadata response has missing or ambiguous content type")
+	}
+	mediaType, _, err := mime.ParseMediaType(contentTypes[0])
+	if err != nil || (mediaType != accept && mediaType != "application/json") {
+		return nil, errors.New("npm metadata response has unsupported content type")
+	}
+	body, err := readLimited(response.Body, metadataLimit)
+	if err != nil {
+		return nil, fmt.Errorf("read npm metadata: %w", err)
+	}
+	return body, nil
+}
+
+func (r *Resolver) fetchVersionMetadata(ctx context.Context, name, version string) (npmVersionMetadata, error) {
+	if !exactVersion.MatchString(version) {
+		return npmVersionMetadata{}, errors.New("npm version metadata requires an exact version")
+	}
+	body, err := r.fetchMetadataBody(ctx, name, version)
+	if err != nil {
+		return npmVersionMetadata{}, err
+	}
+	var metadata npmVersionMetadata
+	decoder := json.NewDecoder(strings.NewReader(string(body)))
+	if decoder.Decode(&metadata) != nil || ensureSingleJSONValue(decoder) != nil {
+		return npmVersionMetadata{}, errors.New("npm version metadata is invalid JSON")
 	}
 	return metadata, nil
 }

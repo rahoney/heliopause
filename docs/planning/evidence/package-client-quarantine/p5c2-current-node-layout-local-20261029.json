@@ -1,0 +1,114 @@
+{
+  "scope": "P5-C2 immutable DATA binding of complete npm layout to current approved execution context; no artifact execution",
+  "source_base": "d09b0a1b8617a315ee50e70228855cb6b47b7b1e",
+  "source_inputs": 1305,
+  "prior1303_unchanged": true,
+  "new_sources": [
+    {
+      "path": "internal/artifact/npm/execution_layout.go",
+      "sha256": "c6e64c4a9b7866030a4dd42268d52103e15c9cdc63c9dc9b9c393c77772a09cb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/execution_layout_test.go",
+      "sha256": "7c481f9c884aabba4abffd6d0cba9e782db568340bb7f2be9ee5283df5c6b6f8",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (layout binding API)",
+    "WIRED": "NO (actual sandbox command flow)",
+    "QUALIFIED": "YES (named local DATA/API)",
+    "ACCEPTANCE_CLOSED": "YES (API); NO (actual materialization/user-run/whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.542
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 245.823
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm"
+      ],
+      "exit_code": 0,
+      "seconds": 47.306
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.254
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.662
+    }
+  ],
+  "reused_owners": [
+    "ParsePNPMLayoutArchive/ReadFile",
+    "indexNPMProjectInventories",
+    "packageNameFromLockPath/resolveLockedDependencyPath",
+    "pnpmInventoryBins/SelectExecutionEntry/BindNodeTarget",
+    "pnpmLayoutEntryModeOwner"
+  ],
+  "proof": [
+    "all current acquired subjects and exact inventories",
+    "normalized npm package record paths and Node dependency lookup edges",
+    "exact whole file/directory census and original member size/hash/mode/owner",
+    "primary explicit command/member and actual Node bytes",
+    "same operation/exact set/resolution/member/runtime matching",
+    "private argv excluded from layout identity/storage",
+    "copy getters and generic formatting/JSON refusal"
+  ],
+  "refused": [
+    "secondary or primary changed bytes",
+    "missing secondary/foreign file",
+    "changed mode/link",
+    "foreign or missing inventory/changed intake handle",
+    "wrong selected command/member",
+    "unreachable Node edge",
+    "nil/zero/cancel/custom cause"
+  ],
+  "limits": [
+    "unit fixtures use synthetic acquired source/Policy metadata; not real M3 dynamic qualification",
+    "does not authenticate a runtime pin or create read-only immutable sandbox mounts",
+    "generated metadata/.bin/links are not implicitly accepted",
+    "full source freeze/offline materialization/new guest admission/output/exit/cancel/cleanup/CLI remain missing",
+    "CI424 source4ec excludes this source"
+  ],
+  "raw_prefix": "p5-c2-* under existing package-client-quarantine-20261021 raw directory"
+}

@@ -1,0 +1,78 @@
+{
+  "scope": "P4-L4B inert native receipt Host layout projection and explicit fresh target/external command guard only",
+  "baseline": "34a8a430b974b4b32d03c74e702e82e624070fd6",
+  "implemented": "YES (strict receipt projection, two-root guard, interpreter fingerprint and exact command absence)",
+  "wired": "YES (concrete helper/default tests); NO (native selection/current approval/publication/public CLI)",
+  "qualified": "YES (named local canonical profiles and full PyPI/Promotion Race)",
+  "acceptance_closed": "NO (persistent tools)",
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 153.95,
+      "raw_receipt": "p4l4b-target-receipt-v2-quick.json",
+      "log_sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 13.3,
+      "raw_receipt": "p4l4b-target-receipt-v2-security.json",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.256,
+      "raw_receipt": "p4l4b-target-receipt-v2-docs.json",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "full-affected-race",
+      "exit": 0,
+      "seconds": 164.114,
+      "raw_receipt": "p4l4b-target-receipt-v2-full-affected-race.json",
+      "log_sha256": "b89d08bffa0162363b4733c605b4a4621d39702e78c9e8ec9a2f734a7a188deb"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/artifact/pypi/uv_tool_layout.go",
+      "sha256": "2ec82b5cd3800ab18f3bca2782f0a243748ce16dd4c4ad9abd2652d5e3cc7006"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_tool_layout_test.go",
+      "sha256": "1ab9d1bd0c490ec66e5ec9f7e339e8916e715c7de452d20ba6a85eed02d6cce9"
+    },
+    {
+      "path": "internal/promotion/tool_target.go",
+      "sha256": "c0b322d573d4aae1bce56c2efef8051075491cdaa3ca4450a1010eba1a408058"
+    },
+    {
+      "path": "internal/promotion/tool_target_test.go",
+      "sha256": "0406ae940d45a37204090486e18e2a642a515d1c38ff1eed7030f1ab36428c6d"
+    }
+  ],
+  "verified": [
+    "original native receipt bytes and all omitted/explicit options preserved; projected control is separate",
+    "normalized package namespace and disjoint canonical existing user-owned roots",
+    "exact pinned cfg version and empty site/ownership; native receipt or installed data refused",
+    "bounded inert Host interpreter alias chain/whole regular-file fingerprint; no Host interpreter execution",
+    "whole selected command collision/case collision and exact absence guard",
+    "cancel/unsupported original/alias loop/concurrent guard/drift failure; foreign files and uncertain guards retained"
+  ],
+  "first_failure": {
+    "raw_receipt": "p4l4b-target-receipt-v1-quick.json",
+    "seconds": 179.778,
+    "cause": "negative fixture attempted to rewrite its own 0500 file before reaching byte-drift assertion",
+    "correction": "fixture initially 0700, same inode/mode changed bytes; production guard unchanged"
+  },
+  "missing": [
+    "atomic controller receipt/external links with venv rollback/recovery",
+    "current whole inspection/Policy/Manifest/staging wiring",
+    "original native upgrade and pipx production admission",
+    "public tool CLI and actual end-to-end qualification",
+    "final grouped affected source CPU/CUDA/support matrix"
+  ],
+  "remote_ci": "NOT_RUN; small internal helper boundary, previous CI413 not reused for this source"
+}

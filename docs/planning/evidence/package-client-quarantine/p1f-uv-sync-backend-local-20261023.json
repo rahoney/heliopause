@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "c6362e3",
+  "scope": "UV complete original guard, proof-bound single native selection, approved project cache/records and existing offline complete publication; local synthetic regression, not actual native sync/CLI/P1 qualification",
+  "implemented": true,
+  "wired": "backend component boundary only; Application/CLI composition remains",
+  "qualified": "LOCAL ONLY",
+  "acceptance_closed": false,
+  "sources": [
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "fe103f7b694c6dba2e93cc76dd532658a74f8e87fbd219f14b39da1d4d822f75"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock.go",
+      "sha256": "8882cbe10ee156a6de959bf59a9d3f1f529037cfe6e8c61f37bdb96f78ad25bc"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_records.go",
+      "sha256": "9bc22a122dfcef2ac9931f1e41eeb9b1f83c5a208014d260633edbd38b81f51e"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_records_test.go",
+      "sha256": "ea0fb4ce99a0a2e2b66ec48e7330c976ba563718bef15cadaed8c29d9caa3694"
+    },
+    {
+      "path": "internal/evidence/manifest.go",
+      "sha256": "8204e57bc53eb973d5caa48d8449a3a8e2cd38e5e98446c4ed8b07a5b4d2209c"
+    },
+    {
+      "path": "internal/evidence/project_manifest.go",
+      "sha256": "e7f774034af5597d4465d007eb87d5bcf78bd68503a22f290ee21fcae1f6d23a"
+    },
+    {
+      "path": "internal/evidence/project_manifest_test.go",
+      "sha256": "6a34f6c291cce785b620a0b80b018abd123b7a524258403d75bced487da97fe3"
+    },
+    {
+      "path": "internal/promotion/pypi_promotion.go",
+      "sha256": "69f13c6f1d1f5def2800398562e425046dc633220d7b3bcb96e95117522224f8"
+    },
+    {
+      "path": "internal/promotion/python_project_cache.go",
+      "sha256": "81b87c236a88f3e912f7c1fea9738d783577aaee1ded84cc5690647753a237dd"
+    },
+    {
+      "path": "internal/promotion/uv_original_inventory_proof_test.go",
+      "sha256": "248d97ea071b8f424b98da963b5d397bd72d5ce3f57f10b7ffba7809a0192fb9"
+    },
+    {
+      "path": "internal/promotion/uv_sync.go",
+      "sha256": "64cfd3defc209ed6eb81ca6bdcc6d6574f475bda2ec1d059cca708cd0bd74c29"
+    },
+    {
+      "path": "internal/promotion/uv_sync_publication.go",
+      "sha256": "9a11e80604e3ad1524bda2e4a1ce0c08164f63b6a62fbe00c3645fee33f92adf"
+    },
+    {
+      "path": "internal/promotion/uv_sync_publication_test.go",
+      "sha256": "548f9cb35021a610c335161d4f8e513bd871275c9c9440d78d6ce97ff44a1c21"
+    },
+    {
+      "path": "internal/promotion/uv_sync_test.go",
+      "sha256": "d7b2adb98d42ac0be664f78bd423684cdbf3bfc07949c6eaba361cb4278127f7"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.283,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 133.472,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.833,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.213,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.67,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "packages": [
+      "promotion",
+      "artifact/pypi",
+      "evidence",
+      "bootstrap",
+      "application"
+    ],
+    "exit": 0,
+    "seconds": 142.011
+  },
+  "first_failures": [
+    {
+      "scope": "first guard compile",
+      "cause": "unused sandbox import in new test; removed; no runtime execution"
+    },
+    {
+      "scope": "first backend Staticcheck",
+      "cause": "extracted old unused findInspection helper and capitalized Python error strings; removed helper and corrected strings"
+    },
+    {
+      "scope": "corrected backend Quick",
+      "cause": "extracted common binder lost previous explicit-empty return before Simple cross-check; restored the CI390 semantics; separate socket EPERM from restricted sandbox and new negative fixture chmod/double-close errors",
+      "correction": "existing empty regressions unchanged; fixture-only writable negative input and sync.OnceValue test cleanup; authorized canonical run with socket access"
+    }
+  ],
+  "cleanup": {
+    "new_native_resources": 0,
+    "completed_test_payloads": "Go testing cleanup; TMPDIR census recorded after final checks",
+    "owned_go_tmp_entries": 0
+  },
+  "remaining": [
+    "actual production App/CLI wiring and fresh inspection/native integration",
+    "source and ownership boundary full real qualification",
+    "same complete approved set CLI reports/blank skip/explicit-empty cases",
+    "common CPU correction cu126/cu130/cu132 actual before P1 closure"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-guard-first-20261023-quick.log",
+      "bytes": 4757,
+      "sha256": "a935aa47d5029bfdf2c57f22b7d7d5746eb98462d054c8a745bd7dd5dfdbd44a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-first-20261023-quick.log",
+      "bytes": 3654,
+      "sha256": "c74ce1475fa248a78fd0c628be4b0ae2f4932ef021ff7eb091813a443e479688"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-corrected-20261023-quick.log",
+      "bytes": 38751,
+      "sha256": "be5c1a6012785c9982e1298a2f3b6e123ef05f1389e817ee6c68b09f025ed9d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-verified-20261023-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-verified-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-verified-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-verified-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-verified-20261023-workflow.log",
+      "bytes": 1071,
+      "sha256": "afd7a950bbc3591e142e566a7acb74aa3b85cc88797bcb1771527470b0471dbb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-backend-race-20261023.log",
+      "bytes": 312,
+      "sha256": "0d73ab30f472971d077cdfd9f9092932a7a7931f2587d3d7dbab7420ba34c63b"
+    }
+  ]
+}

@@ -38,7 +38,8 @@ var (
 
 const maxPyTorchSimpleEntries = 20_000
 
-// SimpleProject is a bounded, parser-normalized PyPI Simple API project page.
+// SimpleProject is bounded, normalized public distribution metadata from a
+// Simple page or an independently validated exact-release JSON response.
 // It never contains a raw HTTP response or unvalidated endpoint.
 type SimpleProject struct {
 	project string
@@ -52,7 +53,7 @@ func (p SimpleProject) Files() []SimpleFile {
 	return append([]SimpleFile(nil), p.files...)
 }
 
-// SimpleFile retains only the file metadata required to cross-check a pip
+// SimpleFile retains only the file metadata required to cross-check a resolver
 // candidate before Controlled Intake observes its content.
 type SimpleFile struct {
 	filename              string
@@ -75,16 +76,17 @@ func (f SimpleFile) Size() uint64           { return f.size }
 // Candidate is one exact pip report selection after its project, version and
 // declared dependency names have been normalized. It is adapter-only data.
 type Candidate struct {
-	project        string
-	source         domain.SourceID
-	version        string
-	filename       string
-	url            string
-	sha256         string
-	requiresPython string
-	primary        bool
-	dependencies   []string
-	requirements   []string
+	project         string
+	source          domain.SourceID
+	version         string
+	filename        string
+	url             string
+	sha256          string
+	requiresPython  string
+	primary         bool
+	dependencies    []string
+	requirements    []string
+	requestedExtras []string
 }
 
 func (c Candidate) Project() string         { return c.project }
@@ -99,6 +101,8 @@ func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dep
 func (c Candidate) DependencyRequirements() []string {
 	return append([]string(nil), c.requirements...)
 }
+
+func (c Candidate) RequestedExtras() []string { return append([]string(nil), c.requestedExtras...) }
 
 // WithPrimary returns a copy with the graph role selected by the resolver.
 func (c Candidate) WithPrimary(primary bool) Candidate {
@@ -499,6 +503,12 @@ func isFinalVersionForProfile(value string, profile SourceProfile) bool {
 }
 
 func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython string, activeExtras []string) (Candidate, error) {
+	return parseReportCandidateWithDependencies(item, profile, activeExtras, func(value string) (string, bool, error) {
+		return parseDeclaredDependencyForProfileWithExtras(value, profile, expectedPython, activeExtras)
+	})
+}
+
+func parseReportCandidateWithDependencies(item pipInstall, profile SourceProfile, activeExtras []string, dependencyFor func(string) (string, bool, error)) (Candidate, error) {
 	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
 	// pip's stable installation-report schema requires archive_info.hashes.
 	// Older pip versions also emitted the legacy singular hash field; when it
@@ -534,7 +544,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, active, err := parseDeclaredDependencyForProfileWithExtras(requirement, profile, expectedPython, activeExtras)
+		dependency, active, err := dependencyFor(requirement)
 		if err != nil {
 			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata: %w", unsupportedRequirementDiagnostic(project, requirement, err))
 		}
@@ -557,7 +567,9 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	}
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
-	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+	extras := append([]string(nil), activeExtras...)
+	sort.Strings(extras)
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements, requestedExtras: extras}, nil
 }
 
 func unsupportedRequirementDiagnostic(parent, requirement string, cause error) error {
@@ -587,6 +599,9 @@ func unsupportedRequirementDiagnostic(parent, requirement string, cause error) e
 }
 
 func boundedExtraSet(extras []string) error {
+	if len(extras) > len(allowedCUDAToolkitExtras) {
+		return errors.New("unsupported requested extra count")
+	}
 	result := make(map[string]bool, len(extras))
 	for _, extra := range extras {
 		if !allowedCUDAToolkitExtras[extra] || result[extra] {

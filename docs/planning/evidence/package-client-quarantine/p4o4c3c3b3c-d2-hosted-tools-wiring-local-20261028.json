@@ -1,0 +1,683 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-d2 existing hosted CI tools-native/tools-bootstrap concrete wiring and exact scripts local qualification plus exact exposed native RECORD derivation; remote not run",
+  "baseline_commit": "5dfab514cee7313f71c1ca1a5f58b3ba24126b6e",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (two modes in existing job/client/helper lifetime owner; no new job)",
+    "QUALIFIED": "YES (named local exact CI source13/Go52 and actual seven parents)",
+    "ACCEPTANCE_CLOSED": "YES (concrete wiring/local scripts/short native proof scope only); hosted/final remain open"
+  },
+  "identity": {
+    "go_source_identity": [
+      {
+        "path": "internal/promotion/tool_target.go",
+        "sha256": "b08f31af38cb8b6dcc9b042598548dec4300050e15648d698954b9d6abd54d0f"
+      },
+      {
+        "path": "internal/promotion/tool_publication.go",
+        "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780"
+      },
+      {
+        "path": "internal/promotion/uv_tool_install.go",
+        "sha256": "32b5d708083657346cdaf851ee32a36e2b36f455b0ff085be2484784f3967227"
+      },
+      {
+        "path": "internal/promotion/uv_tool_update.go",
+        "sha256": "69eab7ee6cc4d13ffde08063994b7f70cfba51df8088c74f21329aaf41cf3649"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install.go",
+        "sha256": "80a826ec1994856f1684166f1c929c7d85767febad7406642409d6fa707eae6c"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install_test.go",
+        "sha256": "bbe3608010716a3344daac1955a3e521e98adf31aabf609656eb12c0478488d6"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool.go",
+        "sha256": "eb696718730c35bd38e84238561dd856137bc89f87fed27fd5a95397b44786e1"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+        "sha256": "eda739723fcc0c983e55787032d483494a1eee728888b25d3c11a092aeda0ddd"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "2634211d82c93ec564c7b4f1964cb3443619d8b1102ce3358cba97a6b2a10f2f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "2f605e7fc6b111fb380a60c5670b156fad6860df34b9249376c21a264b4e864e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "9ca16b5496c9dd2124f1b12d401a1c578cee170259a700bb681d55f18d18d23e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "133e4147d5d0665f55a4339224386a3b2890bb422e34d16126bc2ee423b69976"
+      },
+      {
+        "path": "internal/sandbox/uv_tool_replay.go",
+        "sha256": "1733d908ea2033d82a20915cd524aa601994fa8c5f12d6d31f844f1efd4fea84"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay.go",
+        "sha256": "7135d0552e2cee38b5aeef0ee6f49d095139c03b72274c21420bb5a334defcef"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay_test.go",
+        "sha256": "1f0d451f5adc7a200313963f9d185c23252d46c549e28745a5abffa713640dce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef"
+      },
+      {
+        "path": "internal/promotion/tool_original.go",
+        "sha256": "486c1fdc363f7e8e998a8b15e9d2e3c30de560eda5ba4440aa174466dc951ee5"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update.go",
+        "sha256": "e7b902e21373b6bafa80ea0486f3a0e65105b05234341c4bd85c89f77fb094e9"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update_test.go",
+        "sha256": "a301194c56c4b7c2dedff521e61a4213258af715884eebd629040e65b376d8ec"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_update_integration_test.go",
+        "sha256": "5ce47565c44922671bb74074c3b3f0db2f9d6db6a9ad183de14492d9e6917baa"
+      },
+      {
+        "path": "internal/cli/uv_tool.go",
+        "sha256": "ba02c32a517e90c44b667ae0c5ad14fcdb84b86b7fa1873fbe5faf4bb6a0b9d0"
+      },
+      {
+        "path": "internal/cli/package_client.go",
+        "sha256": "316cea48ff02cf5966818c92b280ab093a70c8c145570f35156ea3f3eac30e87"
+      },
+      {
+        "path": "internal/cli/presentation.go",
+        "sha256": "cb2d58e88e5baabfd3b0111ec29202e6a3efab747a73b57b652c9e3d0854acf1"
+      },
+      {
+        "path": "internal/cli/pipx_tool.go",
+        "sha256": "d6762223589df200f84e167d4763a9f8cdf93cb232f0cc31e98ab92e85814777"
+      },
+      {
+        "path": "internal/cli/pipx_tool_test.go",
+        "sha256": "f30fe614a3cfe174e0a1e38f11d50adbf45b3b2cf5b6a48d30c5db556365c37c"
+      },
+      {
+        "path": "internal/bootstrap/bootstrap.go",
+        "sha256": "4a4566c1d666511dc8564982e480e9ce1e4258182bdee32b4c76ae4c9155324d"
+      },
+      {
+        "path": "internal/bootstrap/python_client.go",
+        "sha256": "125e7eaa1b41223226ef87535c5416068914a2808b21a388a7bdca20f428e4a5"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client.go",
+        "sha256": "93785a7dfd076c0c89ed80090b19af069824d4a01d7e344399970c9fff00f611"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client_test.go",
+        "sha256": "76d8c179c2eeeb58c1036881d84e0aa81a21fdd0c19cfe7e6977e166a0b5cab0"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_cli_integration_test.go",
+        "sha256": "752fd2f69f11a7bb878b667669e3117fd5850c848e9cbfc3a9449102cccf597e"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_upgrade_cli_integration_test.go",
+        "sha256": "7bf495975db4104c73fe839257bac93a148023d5a6ec884d5784698c14c27da3"
+      },
+      {
+        "path": "internal/promotion/uv_tool_native_original.go",
+        "sha256": "6ef4f5d6e2837087dfedd0b612f78ee278aafdbfeaa67ff490385d43b5b08a35"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_native_original_linux_test.go",
+        "sha256": "753b2799c40963b8ff219329223d8181a27a0e7c65b3c69c1c56d73dfb3a78c8"
+      },
+      {
+        "path": "internal/promotion/pypi_native_ownership.go",
+        "sha256": "6bbf3fdee2f654244a85f7dddef76959b6556482ddc28922eab4246579499392"
+      },
+      {
+        "path": "internal/promotion/uv_native_tool_script.go",
+        "sha256": "0f0e56ed19aec98abe6844159ae82647b23223e70a6e7db64a37f1a5ac418526"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "4dcbff9cdaae9796a8df2d136b869b99312abdbe6f5c082fa7c2efa4c874547e"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_native_enrollment_test.go",
+        "sha256": "57b37b67097c31976fdc1d50b7275fe1af153a23cb9c784b337e1252fde8440b"
+      },
+      {
+        "path": "internal/bootstrap/uv_native_fixture_test.go",
+        "sha256": "9b7bfc0f617a31a3fb404c830b88b985eaa95afcba19fb6ebd2679f990ffffe8"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_native_adoption_linux_test.go",
+        "sha256": "ce9fcc1442c8b3302d1f8c1dde324d973f958bb85721b06cb7f0ffb7ebc726a6"
+      },
+      {
+        "path": "internal/promotion/uv_complete_ownership.go",
+        "sha256": "8480ce409ddeae8e5680b68434d6f4cd3a362ba1c20b42a109a8833f0ca059d8"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_native_script.go",
+        "sha256": "5ab6897815a49b56f1d2008af4e93a5f7c02e8092dbf3a23dfa50da794fd52a0"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_native_script_test.go",
+        "sha256": "f9e1d3348e35fad4c558a225ea5a00193a6ee7c631060332be4033bd0ba8ca11"
+      },
+      {
+        "path": "internal/promotion/pypi_native_inventory.go",
+        "sha256": "b65aaa8241f6d586114dfc17810e14131746d6b5d1cb120648b8db86760ac9c4"
+      },
+      {
+        "path": "internal/artifact/pypi/uv_native_script.go",
+        "sha256": "aa95dfebf32de0ff7e535aee40b84c2bc283a8f6a97ea20b3c62f714107f55e0"
+      },
+      {
+        "path": "internal/artifact/pypi/uv_native_script_test.go",
+        "sha256": "622edb803944f15383ceec5df52aaf00bdf4754bbf80db17660b36408ac6ba51"
+      },
+      {
+        "path": "internal/promotion/uv_native_tool_script_linux_test.go",
+        "sha256": "34e51ba4f6c24fcc3cf924dea7bbabed3d5c1fa74745e6a25c348a73abc98bf0"
+      },
+      {
+        "path": "internal/promotion/uv_tool_native_original_linux_test.go",
+        "sha256": "b3bdf407bafbf00da156c7bb77b9eb4afa4ce88f537d2c092e157b88dc344e6b"
+      }
+    ],
+    "ci_source_identity": [
+      {
+        "path": ".github/workflows/heliopause-ci.yml",
+        "sha256": "d54c02b26d8dc10dd1acc394b23336c5349654d9e5a9d849ba08d366d6d1459f"
+      },
+      {
+        "path": "scripts/ci-pipx-runtime.sh",
+        "sha256": "e8e45d17e1a9245ebee9c082fa4db630bfeff31cfdce7988ec3995367754c726"
+      },
+      {
+        "path": "scripts/ci-pipx-tools.sh",
+        "sha256": "691847b20f4395930e29235ec1c885d03ff603dab8f54792e364413fb3466a2d"
+      },
+      {
+        "path": "scripts/ci-uv-tools.sh",
+        "sha256": "91c3bdddcc1fe9ee6627fd21e37f3ef9053bf63acd23bd608574f6587c466503"
+      },
+      {
+        "path": "scripts/check/workflow.go",
+        "sha256": "6afbbcfd99b6d416cff7dcea6ff48a2468b671143b1313923abfdaf572d04f6b"
+      },
+      {
+        "path": "scripts/check/runtime_versions_test.go",
+        "sha256": "b5f1583bfe6f22db6e2c087f22101978eb7484dab476461cc2ef52c22f003c84"
+      },
+      {
+        "path": "scripts/check/pipx_runtime_workflow.go",
+        "sha256": "311be4dd15058e29eae60011e5d0a2841c59d4646d31791e6c291d86e1d45eb8"
+      },
+      {
+        "path": "scripts/check/pipx_runtime_driver_test.go",
+        "sha256": "dde412f54ef8ba06200d1b6dd612da58bffaf2b2b13e816f83a1ce81ad18439a"
+      },
+      {
+        "path": "scripts/check/uv_tools_workflow.go",
+        "sha256": "13af4319182b22ab4ff703c9ea06bc1a220e9be77627ac7052b4a71a86fc1ce5"
+      },
+      {
+        "path": "scripts/check/pipx_tools_workflow.go",
+        "sha256": "bd0e6f676507eef9b342fd8fed185cdf2fafeb608b313ddf1d8268f326a1836c"
+      },
+      {
+        "path": "scripts/check/pipx_tools_workflow_test.go",
+        "sha256": "ee5c0c252de4886c78414628a789ba50c6115328858de8651833855f11c6316b"
+      },
+      {
+        "path": "scripts/check/uv_tools_workflow_test.go",
+        "sha256": "ba6d4becd9ebb15cd638c1eb510610041a6d838bc7a790f28a90c7c7a0f4d3af"
+      },
+      {
+        "path": "scripts/check/pipx_runtime_workflow_test.go",
+        "sha256": "96a3964b90525db9637fa2f2354f8356f4d509d4b299f3ab24a4f9eff41bd5c4"
+      }
+    ],
+    "source_after_matches_before": true,
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.733
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 280.009
+      },
+      {
+        "step": "race",
+        "exit_code": 0,
+        "seconds": 188.792
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 2.875
+      },
+      {
+        "step": "bootstrap-build",
+        "exit_code": 0,
+        "seconds": 4.022
+      },
+      {
+        "step": "sandbox-build",
+        "exit_code": 0,
+        "seconds": 7.67
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.292
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 15.225
+      }
+    ],
+    "checker_race_reused_unchanged_ci": "d2-v2/39.590s",
+    "bootstrap_binary_sha256": "7c1d573ec4f170e61dcc236682182f7ba33b814fe568998b1f0dd651ba17bb09",
+    "sandbox_binary_sha256": "ec9b39d433177199cf51663fb6f17e2e9213e022bc4171446bc142b8c63b7589"
+  },
+  "focused_before_final_client_binding": "PyPI0.032s/Promotion3.469s; original mismatch RED0.039s retained; foreign absent-app test fixture corrected",
+  "native_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 154.349,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "dc6d5a0a929ce3e85614df30c07478a47b3eba3323cdf0d838e0f1aeb95e3b93",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-native-actual-v3/protected-client",
+        "sha256": "ec9b39d433177199cf51663fb6f17e2e9213e022bc4171446bc142b8c63b7589"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-native-actual-v3/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxPipxObservedNativeInstallIntegration",
+      "TestLinuxPipxPublicInstallResolverIntegration",
+      "TestLinuxPipxPublicOriginalUpgradeIntegration"
+    ],
+    "named_pass": true
+  },
+  "bootstrap_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 573.679,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "7ccabb6c0722c66c1a81c1d2ea0ebe5bdcceb16eb27e1fca78aa2179a17c0274",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-bootstrap-actual-v3/protected-client",
+        "sha256": "7c1d573ec4f170e61dcc236682182f7ba33b814fe568998b1f0dd651ba17bb09"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-bootstrap-actual-v3/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestPipxPublicToolApprovedUpgradeIntegration",
+      "TestLinuxPipxToolInstallCLIIntegration",
+      "TestLinuxPipxToolUpgradeCLIIntegration",
+      "TestLinuxPipxToolNativeAdoptionCLIIntegration"
+    ],
+    "named_pass": true
+  },
+  "cpp_reused": "c1-v5/ae301892/128PASS; no observer/profile/coverage/budget changes",
+  "short_record_derivation": {
+    "actual_size": 377,
+    "record_size": 374,
+    "actual_sha256": "c1729c4178a01650d5f5702eb755696f47eaa0eec8a67c9c5add8c33b201ea33",
+    "original_uv_sha256": "01837c6ee8bb0ec93f631a25fa31d88c7bb69f3ea18d58487f8812a70594772b",
+    "exact_first_shebang_minus_E_matches_record_digest_and_size": true
+  },
+  "pinned_source": {
+    "wheel": {
+      "path": "pipx/pipx-1.18.4-py3-none-any.whl",
+      "sha256": "4672195db7e89526cda1e54cbea116164a58bd40e1c03fe12e380de16b5399a4"
+    },
+    "member": "pipx/commands/common.py",
+    "member_sha256": "e2d4c24dd97da2a1b67f1535f6894af6b50df5d6806dec0b7139ef7c592f2cd5",
+    "snippets": [
+      {
+        "first_line": 66,
+        "lines": [
+          "_IGNORE_ENVIRONMENT_FLAG: Final[bytes] = b\" -E\"",
+          "# macOS refuses a shebang line longer than 512 bytes (newline included) and Linux before 5.1 truncates it at 127, which",
+          "# can cut ` -E` to ` -` and make python run stdin; distlib caps the shebangs it writes at the same bounds",
+          "_MAX_SHEBANG_LENGTH: Final[int] = 512 if MACOS else 127"
+        ]
+      },
+      {
+        "first_line": 131,
+        "lines": [
+          "    *,",
+          "    force: bool,",
+          "    suffix: str = \"\",",
+          ") -> list[Path]:",
+          "    collisions: Final[list[Path]] = []",
+          "    for path in paths:",
+          "        if resource_type == \"app\":",
+          "            _add_ignore_environment_to_python_shebang(path)",
+          "        src = path.resolve()"
+        ]
+      },
+      {
+        "first_line": 216,
+        "lines": [
+          "def _add_ignore_environment_to_python_shebang(path: Path) -> None:",
+          "    if WINDOWS or not path.is_file():",
+          "        return",
+          "",
+          "    try:",
+          "        data = path.read_bytes()",
+          "    except OSError:",
+          "        return",
+          "",
+          "    first_line, separator, rest = data.partition(b\"\\n\")",
+          "    if not first_line.startswith(b\"#!\"):",
+          "        return",
+          "",
+          "    interpreter = first_line[2:]",
+          "    if interpreter.endswith(_IGNORE_ENVIRONMENT_FLAG):",
+          "        return",
+          "    if b\"python\" not in interpreter.lower() or b\" \" in interpreter or b\"\\t\" in interpreter:",
+          "        return",
+          "    if len(first_line) + len(separator) + len(_IGNORE_ENVIRONMENT_FLAG) > _MAX_SHEBANG_LENGTH:",
+          "        return",
+          "",
+          "    path.write_bytes(first_line + _IGNORE_ENVIRONMENT_FLAG + separator + rest)"
+        ]
+      }
+    ],
+    "static_only_no_import_or_execution": true
+  },
+  "short_proof_existing_owners_unchanged": [
+    {
+      "path": "internal/artifact/pypi/uv_native_script.go",
+      "sha256": "aa95dfebf32de0ff7e535aee40b84c2bc283a8f6a97ea20b3c62f714107f55e0",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/artifact/pypi/uv_native_script_test.go",
+      "sha256": "622edb803944f15383ceec5df52aaf00bdf4754bbf80db17660b36408ac6ba51",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/promotion/uv_native_tool_script_linux_test.go",
+      "sha256": "34e51ba4f6c24fcc3cf924dea7bbabed3d5c1fa74745e6a25c348a73abc98bf0",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/promotion/uv_tool_native_original_linux_test.go",
+      "sha256": "b3bdf407bafbf00da156c7bb77b9eb4afa4ce88f537d2c092e157b88dc344e6b",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/promotion/tool_publication.go",
+      "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/promotion/pipx_tool_update.go",
+      "sha256": "e7b902e21373b6bafa80ea0486f3a0e65105b05234341c4bd85c89f77fb094e9",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session.go",
+      "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b",
+      "baseline_5dfab51_byte_identical": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef",
+      "baseline_5dfab51_byte_identical": true
+    }
+  ],
+  "first_bootstrap_partial": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 1,
+    "seconds": 364.231,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "e8ab48cf2b524220c6f047902d844a2a637359ac8e0f225c34c232687b1d14bc",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-bootstrap-actual-v2/protected-client",
+        "sha256": "d066b76f363ac51187c52d7ce24ed71c167d40b825f02cfd93402d8044858d99"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-bootstrap-actual-v2/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": false,
+    "passed_named_tests": [
+      "TestPipxPublicToolApprovedUpgradeIntegration",
+      "TestLinuxPipxToolInstallCLIIntegration",
+      "TestLinuxPipxToolUpgradeCLIIntegration"
+    ],
+    "named_pass": false
+  },
+  "test_only_diagnostic_overlay": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 1,
+    "seconds": 7.872,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "5aa4ce3e512ff661ad84f3c1cb6887c2568a83a6eaeac5cfd27f74418ff582dc",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-native-short-diagnostic-v2/protected-client",
+        "sha256": "ae52e907ef158d170014d63e54dd093cced0368595966e5fc8be2dc37452c092"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-native-short-diagnostic-v2/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "scope": "diagnostic_only_expected_original_refusal",
+    "test_only_overlay": {
+      "original_path": "/tmp/haa-p4o1-20261027-source/internal/bootstrap/uv_tool_native_adoption_linux_test.go",
+      "original_sha256": "ce9fcc1442c8b3302d1f8c1dde324d973f958bb85721b06cb7f0ffb7ebc726a6",
+      "overlay_path": "/tmp/haa-p4o4c3c3b3c-d2-native-diagnostic-test.go",
+      "overlay_sha256": "3654e88c835362b6d0f380f82141a21fba466e604dd052a64f91c3478c27633f",
+      "scope": "test-only failure logging; no product source or proof/recipe/budget change",
+      "binary_sha256": "ae52e907ef158d170014d63e54dd093cced0368595966e5fc8be2dc37452c092"
+    },
+    "cause_and_data_captured": true
+  },
+  "first_native_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 1,
+    "seconds": 5.177,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "runner_temp_empty": false,
+    "log_sha256": "e9103de0d29ce6aa5059afa272e3dd2d94fe7753ffc3c0c6843da4d6c29da5c8",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-native-actual-v1/protected-client",
+        "sha256": "14f2853c93ff95f8245de5729292243d8644484d82d55afc1ac29aeeef6d475f"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d2-tools-native-actual-v1/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": false,
+    "passed_named_tests": [],
+    "named_pass": false
+  },
+  "first_failure_assessment": "frozen supply env missing; product NOT_REACHED; dynamic /usr/lib overlay unmount busy preserved owned workspace; first outcome remains FAIL/cleanup NO",
+  "unmount_diagnostic": {
+    "dynamic": {
+      "args": [
+        "/usr/bin/umount",
+        "-i",
+        "-n",
+        "/usr/lib"
+      ],
+      "exit": 32,
+      "stdout": "",
+      "stderr": "umount: /usr/lib: target is busy.\n"
+    },
+    "static": {
+      "args": [
+        "/tmp/haa-p4o4c3c3b3c-d2-unmount-diagnostic-static"
+      ],
+      "exit": 0,
+      "stdout": "static_go_unmount=<nil>\n",
+      "stderr": ""
+    },
+    "mount_namespace": "mnt:[4026532226]",
+    "host_mount_namespace": "mnt:[4026532211]"
+  },
+  "residue_recovery": {
+    "targets": [
+      "/tmp/haa-p4o4c3c3b3c-d2-tools-native-actual-v1/user-tmp/haa-pipx-installed.bIqnp8BU",
+      "/tmp/haa-p4o4c3c3b3c-d2-unmount-diagnostic/upper",
+      "/tmp/haa-p4o4c3c3b3c-d2-unmount-diagnostic/work"
+    ],
+    "references": [],
+    "query_errors": [],
+    "all_targets_removed": true
+  },
+  "fix_boundary": [
+    "explicit materialized sibling 42input supply forwarded to existing compiled frozen reader",
+    "Root parent owns unshare child lifecycle and records namespace identity; workspace deleted after child reaped, no live namespace PID/query errors and original work identity",
+    "fixed ZIP root0:0/0444 readonly/noexec prefix exists only in private /usr/lib overlay; ordinary UID/GID child; no system/runtime activation",
+    "pinned pipx exposed short script -E delta independently derived against original UV RECORD and authenticated old wheel/EP; original bytes/inode/link preserved before approval and on refusal; other clients/files strict",
+    "existing pinned never-started interpreter DATA/Docker cleanup and UV consumers reused unchanged",
+    "canonical helper log retained; only three task workspace prefixes must be absent",
+    "default/checker gates and actual Bash driver harness refuse missing/echoed/ignored/duplicate/child-only/SKIP/empty test dispatch"
+  ],
+  "MISSING": [
+    "same-source grouped hosted CI and actual UID1001 qualification",
+    "whole final CPU/CUDA support matrix and signed/native complete release qualification",
+    "independent legacy ZIP CPU boundary remains open; no blind identical retry"
+  ],
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-d2-"
+}

@@ -28,6 +28,7 @@ func newTerraformPromotionFixture(t *testing.T) (*TerraformProjectPromotion, dom
  random = { source = "hashicorp/random", version = "3.7.2" }
  }
 }
+
 `), 0o600); e != nil {
 		t.Fatal(e)
 	}
@@ -632,5 +633,65 @@ func TestTerraformCommitAndRollbackPreserveForeignBackupMembers(t *testing.T) {
 				t.Fatal("uncertain backup automatically adopted")
 			}
 		})
+	}
+}
+
+func TestTerraformUpgradeRetainsIdenticalLock(t *testing.T) {
+	p, install := newTerraformPromotionFixture(t)
+	ctx := context.Background()
+	initial, err := p.Begin(ctx, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	update, set, _ := terraformApprovedFixture(t, p, initial)
+	staged, err := p.cache.StageProject(ctx, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := initial.Commit(ctx, update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := initial.Close(); err != nil {
+		t.Fatal(err)
+	}
+	lock := filepath.Join(install.Target().String(), artifactterraform.LockControl)
+	if err := os.Chmod(lock, 0o640); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original, err := os.ReadFile(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	guard, err := p.BeginUpgrade(ctx, install, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer guard.Close()
+	update, set, _ = terraformApprovedFixture(t, p, guard)
+	update, err = domain.NewProjectDependencyUpdateFromSnapshot(update.OriginalControls(), update.SelectedControls(), update.Snapshot())
+	if err != nil {
+		t.Fatal(err)
+	}
+	staged, err = p.cache.StageProject(ctx, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Commit(ctx, update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Close(); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.Stat(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(lock)
+	if err != nil || !os.SameFile(before, after) || before.Mode() != after.Mode() || !before.ModTime().Equal(after.ModTime()) || !bytes.Equal(body, original) {
+		t.Fatal("identical upgrade lock lost its identity, permission, timestamp or bytes", err)
 	}
 }

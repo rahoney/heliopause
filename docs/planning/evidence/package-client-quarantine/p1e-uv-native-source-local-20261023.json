@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "baseline": "344af5ebc7beb16156ed7a89678cf1f0040130b2",
+  "scope": "C3e2b native complete UV source selection and independent whole-archive project reader; no target publication/CLI",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES at existing ProjectLockUpdateResolver port; production sync CLI NO",
+  "QUALIFIED": "LOCAL ONLY; fresh actual native gVisor/same-source qualification pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source actual native complete two-root/full-closure/missing-closure/explicit-empty cases",
+    "shared consumers, native macOS/Required remote qualification"
+  ],
+  "P1_remaining": [
+    "C3e3 frozen source/target guard and complete old ownership proof",
+    "complete Python cache/staging/transaction and actual rollback/publication",
+    "CLI source/flag/SKIP report wiring and whole P1 qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_sync_input.go",
+      "bytes": 6210,
+      "sha256": "a6f2fb67d0bc7800d1fbdd97a91a5a06826f43fe72af1caca0bf95f17d934ab5"
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "bytes": 37704,
+      "sha256": "f8ef3509b334523cce64625e7ec38ed874983eb0af9f040a32f812150828e30e"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "bytes": 10583,
+      "sha256": "4e98d256a76630f3187e42b77adb3df032bc4d36be67edb6a899d2f237f04c8e"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "bytes": 16191,
+      "sha256": "65814c19d848e4617fad4c6bdd04f3a18cf205e5409e15cb9dedeea57b9fd5de"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_reader.go",
+      "bytes": 9154,
+      "sha256": "f5e4dc8fd49423dde56c924c5d721a87e25caa0a0ad0100b8c500e7afbd9bd2e"
+    },
+    {
+      "path": "internal/sandbox/uv_sync_resolver.go",
+      "bytes": 10076,
+      "sha256": "34084f8758bba71f3f9c0f66513f3c8553837bf893bb8eb0053c87d47923c599"
+    },
+    {
+      "path": "internal/sandbox/uv_sync_resolver_test.go",
+      "bytes": 10736,
+      "sha256": "0a317f466b377a0977958101d762a6e7ba8f5f224024a0670b6e65f0a7940f0c"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_integration_linux_test.go",
+      "bytes": 5898,
+      "sha256": "ba1a2f8d10341757feb5a0ede1efb599f0c9a0da8143b48f96cc59894376c25e"
+    },
+    {
+      "path": "internal/sandbox/uv_sync_resolver_integration_linux_test.go",
+      "bytes": 3986,
+      "sha256": "f6c5565daa46195b5a21bc74be1babcc097ce103e046d3d26fa494e7f64e8a3b"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.306,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-format.json",
+        "bytes": 110,
+        "sha256": "77db845156613fac7de2f0215b63414119fe22c8bec6192267b2972a2e6e3d3d"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 42.492,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-quick.json",
+        "bytes": 110,
+        "sha256": "23a5fd5f17fdde45db51c71a1c69d7d035c4e4c1d510a26e198e4e9c299e979b"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-quick.log",
+        "bytes": 1354,
+        "sha256": "0b349059bdf36f7f7343e31c1092480d3a30369880752660aefcc2576e4f2336"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.687,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-security.json",
+        "bytes": 112,
+        "sha256": "16c5552a8e31d7ec0a0ca635775187628b0ec70b14ebcae126b06d36660afc6b"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.224,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-docs.json",
+        "bytes": 108,
+        "sha256": "6000a973287cecd0a76fa54ff5d6d849dea5f8d92fe691411069693d7de343fb"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.752,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-workflow.json",
+        "bytes": 112,
+        "sha256": "64904200c569fce8bc9fb5e4219e1b5514e5ce212294246b4f68d67385cd1517"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-reviewed-workflow.log",
+        "bytes": 1071,
+        "sha256": "d88a4766c383ab3325201e8995bfeeeb857f28ff6781562f1f47cccffff2b224"
+      }
+    },
+    {
+      "profile": "fuzz",
+      "exit": 0,
+      "seconds": 54.339,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-first-fuzz.json",
+        "bytes": 109,
+        "sha256": "bd73c9ba399cfdbe1acf1e3f4f9346191c90aa1d3b5ae19dd1536d802fcdf274"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-first-fuzz.log",
+        "bytes": 175,
+        "sha256": "8be3af30d830065d81916b1a89070680da721c52894b1a5fe767d66af2a0a40e"
+      }
+    },
+    {
+      "phase": "candidate-fixed",
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/sandbox",
+        "./internal/artifact/pypi"
+      ],
+      "exit": 0,
+      "seconds": 21.253,
+      "fixture_source": [
+        {
+          "path": "internal/sandbox/direct_exec_admission_test.go",
+          "bytes": 56213,
+          "sha256": "937d7eca866bcec120df616cacccf8c08933ffbfacb60a817c531db1207a1506"
+        },
+        {
+          "path": "internal/sandbox/shared_observer_test.go",
+          "bytes": 34974,
+          "sha256": "16f9364e232a86aca55dd1e287d5813399b265ad983754927ec68831f774b8f0"
+        }
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-candidate-fixed.json",
+        "bytes": 656,
+        "sha256": "0e5eeb3c54f18d6aeb6fd0e5e691568e20c582464319bbc2aa568937d932aa6c"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-candidate-fixed.log",
+        "bytes": 125,
+        "sha256": "d1bb7a568f5cdf4d2aa7a2c9ba827d2e5ce80037e120342e13b5a8d3fe551d92"
+      }
+    }
+  ],
+  "fixture_prerequisite": "p1e-uv-observer-fixture-race-20261023.json: before failure and unchanged baseline reproduced; two test files corrected; after baseline/current full Race PASS",
+  "fuzz_reuse_boundary": "Current native/codec implementation passed canonical fuzz before the test-only counter/mutex corrections. Parser/production source did not change after that fuzz run. Final Quick and full Race include the corrected fixtures.",
+  "actual_native_integration": "NOT_RUN locally: required existing TestUVPublicNativeResolverIntegration now invokes five complete-source cases; same-source actual execution remains pending",
+  "ci384_boundary": "CI384 source12d9a50 ten-success closes C3e1 only and does not include this new native source",
+  "cleanup": {
+    "go_tmpdir_entries": 0,
+    "baseline_comparison_source_and_archive": "DELETED",
+    "new_native_docker_resources_for_code_checks": 0,
+    "active_sdk_source_cache": "RETAINED for P1"
+  }
+}

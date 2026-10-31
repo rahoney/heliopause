@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const pypiDistributionTimeout = 90 * time.Second
@@ -141,7 +142,7 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	defer os.Remove(temporaryPath)
 	hash := sha256.New()
 	writer := io.MultiWriter(temporary, hash, resourceBudgetWriter{session: session})
-	written, copyErr := io.Copy(writer, io.LimitReader(response.Body, policy.MaxArtifactCompressed()+1))
+	written, copyErr := io.Copy(writer, ports.DownloadReader(ctx, io.LimitReader(response.Body, policy.MaxArtifactCompressed()+1), response.ContentLength))
 	syncErr, closeErr := temporary.Sync(), temporary.Close()
 	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || written > policy.MaxArtifactCompressed() {
 		return "", "", 0, errors.New("stream PyPI distribution failed or exceeded bounds")

@@ -91,6 +91,7 @@ func TestGitleaksDetectionContract(t *testing.T) {
 			}
 		})
 	}
+	testGitleaksPublicMetadataContract(t, c, current)
 }
 
 type contractFinding struct {

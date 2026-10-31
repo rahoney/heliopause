@@ -97,12 +97,21 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-002 accepted with C3 exception; M13-003 actual release qualification in progress | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-004 self-update IN_PROGRESS; installation role/Linux amd64 approved; channel names pending separately | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 | Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
-2026-10-17 사용자가 S/C2 이후 C3 조건부 유예를 명시 승인했다. M13-002는 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`이며 실제 missing-CLA는 `NOT_TESTED / DEFERRED`로 보존한다. 정확한 범위·중단/종료 조건은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification) 한 곳이 소유하고, 승인 입력은 [C3 기록](./docs/planning/evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md)을 따른다. M13-003 source1ac1bf6의 PR37 CI325는 실제10SUCCESS이며 남은 실제 build/package qualification을 이어간다. 구체적 병합·release tag·publish 실행 승인은 별도 후보 검토를 따른다. M13-004/005는 미착수이며 현재 작업은 Queue가 소유한다. 아래 이전 단계 문구는 역사적 기록이다.
+2026-10-21 owner 요청으로 최신 CLI의 직접 사용 확인을 채널 등록보다 먼저 진행한다.
+첫 정식 공개판 목표는 v1.0.0이며, 사용자 검토·보완과 채널 qualification 뒤 보호된
+PR merge/main CI·exact 서명 build를 거쳐 배포한다. 실제 tag/publication 권한은
+[release activation boundary](./docs/planning/18-m13-production-release-operations-contract.md#4-release-activation-boundary)를 따른다.
+
+M13-001 저장소 보호와 M13-003의 보호된 v0.1.0 태그·자연 build·attestation·OS package lifecycle 검증을 완료했다. [M13-003 결과](./docs/planning/evidence/m13-003-release-build/qualification-20261017.md)가 정확한 범위를 소유한다. M13-002는 사용자가 승인한 [C3 조건부 유예](./docs/planning/evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`로 유지하고 최초 외부 기여 병합 전에 검증한다. 상세 계약은 [M13](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)을 따른다.
+
+CLI-UX-001·002의 다국어 리포트·진행 표시·OS 표시 언어 감지는 로컬 CLI와 원격 검증을 완료했다. [언어 qualification](./docs/planning/evidence/cli-os-language/qualification-20261018.md)이 실제 WSL·설치 CLI와 native macOS/CI328 범위를 연결한다. 후속 SEC-UPD-001도 [전체 검토](./docs/planning/evidence/update-quarantine/final-review-20261019.md)와 최종 소스cdac96d의 [CI344](./docs/planning/evidence/update-quarantine/ci344-closure.json)를 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 문서화된 여섯 생태계 업데이트·새 검사/Evidence·실패 시 원본 보호·복원·완료 시험 데이터 정리가 검증됐으며, named CPU/cu126/cu130/cu132는 각 소스별 실제 qualification 범위를 유지한다.
+
+CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI352](https://github.com/rahoney/heliopause/actions/runs/39316007445) 열 개 성공을 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 기존 CLI 서비스를 재사용한 대화형 시작 화면과 터미널 복원, 비공개 Cargo payload의 중복 초기 sync 축소를 검증했다. 파일·크기·보안 한도와 최종 real tree sync·no-replace 게시·parent sync는 유지했다. 이전 CI351 시간 초과의 정확한 원인은 미확정으로 남는다. [Qualification](./docs/planning/evidence/cli-launcher/qualification-20261020.md)이 검사·소스·정리 범위를 소유한다. 최종 문서 전달은 해당 head의 별도 실제 CI 결과로 확인한다. 현재 M13-004는 `IN_PROGRESS`다. 승인된 source7fedaf3의 rc5 공식 빌드와 독립13파일 검증, 실제 정상 업데이트·OS 관리자 인증·동시 실행 거부·서비스 rollback·Root 중단/guest cold recovery와 재실행을 [확인](./docs/planning/evidence/m13-004-convenience/signed-native-qualification-20261020.md)했다. 취소 cleanup gap은 [기존 observer owner 수리](./docs/planning/evidence/m13-004-convenience/observer-cancellation-plan-20261021.md)의 source4a8c278와 [CI358](./docs/planning/evidence/m13-004-convenience/signed-native-20261020/observer-remote-ci.json) 열 개 성공을 확인했다. [교정된 caller의 actual signed 시험](./docs/planning/evidence/m13-004-convenience/signed-caller-plan-20261021.md)도 승인된 rc6의 정상 전환·취소 두 경계·fresh whole 재실행으로 완료했다. Native same-runtime 경로는 QUALIFIED/ACCEPTANCE_CLOSED이며 시험 guest/image/volume·다운로드를 정리했다. rahoney 계정 준비는 완료됐고 이름·publisher binding은 채널 연결의 미정 항목이다. PR38은 draft이며 main 병합·영구 CLI 활성화·공개 배포는 별도다. 현재 상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
@@ -183,6 +192,20 @@ deployment를 수행한다.
 | 12 | Milestones | Complete | 구현 단계, 의존 관계와 완료 조건 |
 | 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Defined | 구현 진행 상태는 Current Work Queue가 소유 |
+
+2026-10-21 추가 요청의 [client/runner 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
+[계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역/Policy/transaction을 재사용한다.
+P1 scoped acceptance와 Go1.27.3 전환은 완료했고, 현재 frozen sourceec1c260/tree84e70a9e는
+[CI442 ordinary/CPU](./docs/planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json),
+[cu126](./docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json),
+[cu130](./docs/planning/evidence/package-client-quarantine/p7-cu130-final-qualification-20261031.json),
+[cu132](./docs/planning/evidence/package-client-quarantine/p7-cu132-final-qualification-20261031.json)의 Required10SUCCESS로 qualification을 확인했다.
+H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
+[최종 지원표](./docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)를 따른다.
+이 소스의 결과를 후속 Bun 선언/TS 후보나 별도 TTY/파일 반출·새 서명 배포·채널 acceptance로 확대하지 않는다.
+첫 Read/build/job deadline의 하위 원인은 UNKNOWN이며 성공한 재검증을 원인 수리로 기록하지 않는다.
+2026-10-31 사용자 교정에 따라 기능 구현·acceptance를 채널 이름/배포보다 먼저 진행한다. 후속 G4 Bun 선언/TS entry·runtime 선택은 구현·연결해 실제 앱2/CLI3·기존 Node2를 로컬 검증했다. [최종 묶음 Quick/Race](./docs/planning/evidence/package-client-quarantine/p6g4-bun-declared-entry-local-20261031.json)도 PASS이며 [CI446](./docs/planning/evidence/package-client-quarantine/ci446-bun-declared-entry-hosted-qualification-20261031.json)의 새e3 ordinary 전체10SUCCESS/126·원본·정리까지 확인해 원래 bounded 기능 acceptance를 닫았다. 사용자가 이름을 검토하는 동안 이름과 무관한 미완료·미검토 책임을 기존 source/검증 근거와 대조한다. M13-004전체/새 서명 배포는 미완료다. 모든 native 옵션 동등성은 원래 계약의 약속이 아니며 별도 TTY/반출 확장을 필수 누락과 혼합하지 않는다. 이름 선택은 기능 작업의 blocker가 아니며 기존 질문은 현재 작업에 대해 superseded다. 채널 코드/등록/게시를 시작하지 않았다.
+현재 단일 active item은 M13-004이며 상세 상태·남은 순서는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다. 2026-10-31 사용자 요청으로 이름 결정 전 [전체 코드·보안 감사](./docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 진행한다. 기존 bounded 기능 acceptance와 전체 감사 완료를 구분한다.
 
 ## Open Decisions
 

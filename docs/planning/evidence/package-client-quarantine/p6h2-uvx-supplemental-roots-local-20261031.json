@@ -1,0 +1,453 @@
+{
+  "work_item": "M13-004/P6-H2",
+  "status": "NAMED_LOCAL_CURRENT_HOSTED_AND_SAME_SOURCE_FINAL_PROFILES_QUALIFIED",
+  "base_commit": "e8e13a3b5108bd762607be091d9c9762b46ac538",
+  "approval": "Linux whole CI job150min explicitly approved separately; product/individual test limits unchanged",
+  "updated_utc": "2026-10-30T16:43:28.616290+00:00",
+  "baseline": "p6h2-uvx-supplemental-roots-baseline-20261031.md",
+  "request": {
+    "primary": "python-slugify==8.0.4",
+    "supplemental": [
+      "unidecode==1.4.0"
+    ],
+    "roots": 2,
+    "whole_nodes": 3,
+    "real_edges": 1,
+    "synthetic_edges": 0
+  },
+  "actual": {
+    "source_paths": 47,
+    "native": {
+      "exit_code": 0,
+      "seconds": 60.174,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "H2 actual public joint source/native selection: independent supplemental root, whole3-wheel source, normal DATA and injected incomplete refusal; Policy/program NOT_RUN; unchanged qualified observer",
+      "source_base": "e8e13a3b5108bd762607be091d9c9762b46ac538",
+      "new_test_source": {
+        "path": "internal/sandbox/uv_run_resolver_real_test.go",
+        "sha256": "5035e66fdb9cf74a1456700b343e4ffc827bb97de1aab04e3cbefa382ced18c1"
+      },
+      "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+    },
+    "cli": {
+      "exit_code": 0,
+      "seconds": 139.641,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "H2 actual current whole3-wheel independent supplemental-root CLI: normal0/typed nonzero2/conflicting selection refusal, fresh approval/Manifest/SBOM and real edge count; unchanged qualified observer",
+      "source_base": "e8e13a3b5108bd762607be091d9c9762b46ac538",
+      "new_test_source": {
+        "path": "internal/bootstrap/python_uv_run_cli_integration_test.go",
+        "sha256": "aafb319a0b69c43db45138896715aa7b6ba6895bed084044f618d231b23e38c2"
+      },
+      "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+    },
+    "named_tests": [
+      {
+        "name": "TestUVPublicToolRunSupplementalResolverIntegration",
+        "seconds": 58.29,
+        "cases": [
+          "normal whole source/native DATA",
+          "injected incomplete refusal, no selection"
+        ]
+      },
+      {
+        "name": "TestLinuxUVRunSupplementalExecutionCLIIntegration",
+        "seconds": 137.75,
+        "cases": [
+          "uvx current whole ALLOW/complete0/fresh Manifest+SBOM",
+          "uv tool run current whole ALLOW/typed guest2/fresh Manifest+SBOM",
+          "conflicting requirement no Policy/runtime/new record"
+        ]
+      }
+    ],
+    "source_identity": {
+      "python-slugify": "276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8",
+      "text-unidecode": "1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8",
+      "unidecode": "c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021"
+    }
+  },
+  "checks": {
+    "new_workflow_seconds": 1.849,
+    "tagged_vet_seconds": 4.945,
+    "cli_after_slice_fix_seconds": 2.762,
+    "quick": {
+      "status": "PASS",
+      "seconds": 325.699,
+      "source_proof": "/tmp/haa-p6h2-final-v14/quick-source-proof.json",
+      "isolated_after_start_correction": [
+        ".github/workflows/heliopause-ci.yml",
+        "scripts/check/uv_tools_workflow.go"
+      ],
+      "runtime_source47_unchanged": true
+    },
+    "affected_race": {
+      "status": "PASS",
+      "seconds": 207.472,
+      "packages": 10
+    },
+    "checker_race": {
+      "status": "PASS",
+      "seconds": 88.909
+    },
+    "final_workflow_docs_security": {
+      "status": "PASS",
+      "workflow_seconds": 1.823,
+      "docs_seconds": 0.305,
+      "security_seconds": 19.089
+    },
+    "corrected_workflow": {
+      "status": "PASS",
+      "seconds": 1.823
+    }
+  },
+  "guard_data_replay": {
+    "cases": 10,
+    "all_match_expected": true,
+    "scope": "DATA-only composed preserved named logs, not actual full8 execution",
+    "initial_failure": "new marker regex incorrectly changed existing test filename; corrected both workflow and fixed checker contract",
+    "post_quick_delta": "workflow and checker filename only; runtime source47 unchanged; finish with affected workflow/checker checks"
+  },
+  "cleanup": {
+    "at": "2026-10-30T16:42:12.601344+00:00",
+    "targets": [
+      {
+        "path": "/tmp/haa-p6h2-native-actual-v11/sandbox.test",
+        "dev": 2096,
+        "ino": 949015,
+        "bytes": 28572031,
+        "sha256": "bfe905fff190c9d34685fa43efc17d76d1c85370657452095bc14a7166873ef2"
+      },
+      {
+        "path": "/tmp/haa-p6h2-native-actual-v11/protected-client",
+        "dev": 2096,
+        "ino": 949000,
+        "bytes": 28572031,
+        "sha256": "bfe905fff190c9d34685fa43efc17d76d1c85370657452095bc14a7166873ef2"
+      },
+      {
+        "path": "/tmp/haa-p6h2-native-actual-v11/matched-observer",
+        "dev": 2096,
+        "ino": 949001,
+        "bytes": 3251904,
+        "sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      },
+      {
+        "path": "/tmp/haa-p6h2-cli-actual-v12/bootstrap.test",
+        "dev": 2096,
+        "ino": 949033,
+        "bytes": 52809462,
+        "sha256": "c7b4b0d09fc89a89a3d5c3c4ecb25893f89f553d18d9531d09fa449dd28211aa"
+      },
+      {
+        "path": "/tmp/haa-p6h2-cli-actual-v12/protected-client",
+        "dev": 2096,
+        "ino": 949012,
+        "bytes": 52809462,
+        "sha256": "c7b4b0d09fc89a89a3d5c3c4ecb25893f89f553d18d9531d09fa449dd28211aa"
+      },
+      {
+        "path": "/tmp/haa-p6h2-cli-actual-v12/matched-observer",
+        "dev": 2096,
+        "ino": 949018,
+        "bytes": 3251904,
+        "sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      }
+    ],
+    "references": [],
+    "query_errors": [],
+    "protected_clients_helpers": [],
+    "containers": [],
+    "observer_directory_empty": true,
+    "source_and_logs_preserved": true,
+    "kept_current_qualified_ELF": [
+      "/tmp/haa-p6h2-actual-build-v10/sandbox.test",
+      "/tmp/haa-p6h2-actual-build-v10/bootstrap.test"
+    ],
+    "kept_current_observer": "/tmp/haa-p6g3-cpp/observer-root",
+    "deleted_names": 6,
+    "deleted_inodes": 6,
+    "deleted_logical_bytes": 169266794
+  },
+  "unchanged_qualification_reused": {
+    "cpp_tests": 133,
+    "observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721",
+    "cpp_rerun": false
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-actual.log",
+      "sha256": "4e631079eda2487b4ecc2ba85d6c3944615df5cf9d10d034e5b05ea025393c0e",
+      "bytes": 3067
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-actual-result.json",
+      "sha256": "391fbadeabf47141e025f3e50e27fc89e0aed40b2b790a0c62ca09145706e15e",
+      "bytes": 793
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-host-before.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "bytes": 2210
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-host-after.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "bytes": 2210
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-profile-restored.json",
+      "sha256": "0760bad03f6584bc1fb9397fc5f908d72d4fae443173f4b252405f95d00aaaf6",
+      "bytes": 299
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-build-result.json",
+      "sha256": "6684b139936997c4d3bb0d52aa2482420313ef4545e30d77fc014350c733f67b",
+      "bytes": 8191
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-native-v11-namespace-result.json",
+      "sha256": "fd6c6bf282399336e3ebf11d893f538ac444a70aa78b7f6741b77e8449eb82f9",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-actual.log",
+      "sha256": "b7d802bbd1e0cda93ed766556cccacce6ca507ac3678f691cf94d1396c475551",
+      "bytes": 2747
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-actual-result.json",
+      "sha256": "e0969de56857dc20f49998b8d2e769191f4eabe6d08b7030407e6ec8eb033432",
+      "bytes": 806
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-host-before.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "bytes": 2210
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-host-after.json",
+      "sha256": "1c53306196196532409fbe6949354cf1b3f7a640a2ae545511c64a0a7a41cfa7",
+      "bytes": 2210
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-profile-restored.json",
+      "sha256": "0760bad03f6584bc1fb9397fc5f908d72d4fae443173f4b252405f95d00aaaf6",
+      "bytes": 299
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-build-result.json",
+      "sha256": "0b5d0a8bd7eb335e45a14e55d86fa59180f5afdf557e72da41b1a4d909605239",
+      "bytes": 8202
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-v12-namespace-result.json",
+      "sha256": "032ad4ff5125626f69451c36204313f231e9f39aadfe6b8c147eb7dc66001cc2",
+      "bytes": 214
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-targets-v10-checks.json",
+      "sha256": "2c9dce358f35d9381bd90204099e90194a88308e38a7ee294ce9c6329dbd4f17",
+      "bytes": 384
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-targets-v10-new-workflow.log",
+      "sha256": "1d63e570277524fa88db094dedee0cd10f3c9252fbd5a698dca8c583c9012ef4",
+      "bytes": 63
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-targets-v10-tagged-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-guard-data-replay.json",
+      "sha256": "3e1f6a421df74385f6ec2ad0934c7648f9c568fe92933162cad0e06fe5c49a80",
+      "bytes": 2256
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_source-guard.awk",
+      "sha256": "8ab6c9e6d03f1c7335090d09f28babe888ae4c55f2a4a03f228aed63764c1a65",
+      "bytes": 4166
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_source-composed-data.log",
+      "sha256": "b682f8c8bdcb06369c9069f82ff0b5d1efb079ee7b7cdef0d58cf55552350371",
+      "bytes": 6198
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_source-final-guard.awk",
+      "sha256": "74c7c9408ec38b848e2e5ed648e7d3de83cdaeebe2adad4397053376ef32241e",
+      "bytes": 4140
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_source-final-composed-data.log",
+      "sha256": "b682f8c8bdcb06369c9069f82ff0b5d1efb079ee7b7cdef0d58cf55552350371",
+      "bytes": 6198
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_cli-final-guard.awk",
+      "sha256": "4ff0984839413d5059919388f4e10942f3e0af9bc1dc9ddc40a6ed4e952b0177",
+      "bytes": 5057
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-guards-v14-uv_run_cli-final-composed-data.log",
+      "sha256": "4827c573099ab5c0cc5c4e8baa0501a668a26a1d2ba9f999b54d9b52f8675415",
+      "bytes": 6535
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-quick-v14-checks.json",
+      "sha256": "c73fc2882f6e37f2f1a3c4669d60421b96c4d3d736066d69759815642acaaa38",
+      "bytes": 148
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-quick-v14-quick.log",
+      "sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee",
+      "bytes": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-quick-v14-quick-source-proof.json",
+      "sha256": "de12166e731bc6f909eda04b7969d73a07bb2c4ab0bd93246be83043b7e09427",
+      "bytes": 15391
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-cli-v8-checks.json",
+      "sha256": "4c3bb709b882d571e4115a5049f3028409562d81419ae0bfb1734dc90059c4fe",
+      "bytes": 149
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-cli-v8-focused.log",
+      "sha256": "b83087bb57a2c4ccb3475a840bdc75f5e74c54cdbb148a04cf76fcbc6e9e5fba",
+      "bytes": 725
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-cli-v8-python_execution.go.first-failure.txt",
+      "sha256": "a2c9fccc10e5aa811b9175d25197bdbf34e1eacbb2f01180f5434fe7a4c6565f",
+      "bytes": 12636
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-cli-v8-presentation.go.first-failure.txt",
+      "sha256": "629de97482d7f43f0f3a40217f2f46ea754971fe21b3cccd4c19c1351e13caa0",
+      "bytes": 15379
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-fixed-v9-checks.json",
+      "sha256": "61463814bf58a1c4f69eaa57f5aca58d88e3ea21fd9bab03452bf23c7f529ffc",
+      "bytes": 148
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cli-fixed-v9-focused.log",
+      "sha256": "c24812e7c46438f6382e078499aa5a5fc489ca7a5c540998d94174edc64c5b5d",
+      "bytes": 55
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-wiring-v13-checks.json",
+      "sha256": "34bc9a1266d2f64fae2ba4e2a35fc15fd704b44df827e2bee520d33906ad93b1",
+      "bytes": 221
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-first-wiring-v13-checker.log",
+      "sha256": "e8c488206742ae248498e0ffc1a3fe2045809acce1aceed76b3a6af0db162bc9",
+      "bytes": 254
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-final-source-v14-final-source-freeze.json",
+      "sha256": "02ef9e74dce1086a42a2a113a52c5f565bb13b0e42acdbbc2f4fe11a1c91814c",
+      "bytes": 8122
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-race-v16-checks.json",
+      "sha256": "5a7f3cb9717d630a7db7fdeef5cc850bd53225fe174401fe9b0c39d736c743ec",
+      "bytes": 309
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-race-v16-affected-race.log",
+      "sha256": "6b911b26c2b0c235ec86bb8f18e46fd0a1472daecbc02d5916163ed3d0ad8416",
+      "bytes": 617
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-race-v16-checker-race.log",
+      "sha256": "529d38f7636bb79b6021d0224064b630a2c045d5eec938f98a35658982c37e76",
+      "bytes": 57
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-race-v16-workflow.log",
+      "sha256": "4112bbffa54a16d2c3c9544debd20debf8c1d2445c3b1667851f8297e144c930",
+      "bytes": 1071
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cleanup-preflight.json",
+      "sha256": "7136ddadf22d41d979eb32bfc36ae367116e9b07a9b2b15be1ed6774fc013576",
+      "bytes": 1785
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-cleanup-result.json",
+      "sha256": "948ece99ba23003611f0e9d66809b9345b49a274ddc694ee6232fda8ab67bd6b",
+      "bytes": 1868
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-records-v17-checks.json",
+      "sha256": "e243d323d64984ee1028277fa1112f9117fcc530144a61caa5773775a872041c",
+      "bytes": 148
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-records-v17-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-records-v17-security.log",
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a",
+      "bytes": 166
+    }
+  ],
+  "hosted": {
+    "status": "QUALIFIED CI442 same source",
+    "ordinary_expected_top_parents": 124,
+    "new_jobs": 0,
+    "new_profiles": 0,
+    "required_jobs": 10,
+    "whole_linux_job_minutes": 150,
+    "command_timeouts_minutes": {
+      "new_native_parent": 5,
+      "new_cli_parent": 8
+    },
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "run_id": 41094467995,
+    "checkout": "581dc94f378e21d13c0847356824c5d1db508755",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "proof": "ci442-ordinary-cpu-qualification-20261031.json"
+  },
+  "acceptance_closed": false,
+  "missing": [
+    "same-source cu126/cu130/cu132 actual qualification",
+    "final support/whole P2..P7 acceptance",
+    "main merge/publication remain separate"
+  ],
+  "source_freeze": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p6-h2-final-source-v14-final-source-freeze.json",
+    "source_paths": 51,
+    "root_private_equal": true
+  },
+  "raw_delivery": "LOCAL_ONLY_UNTRACKED; source/structured receipt planned for Git, raw logs not claimed delivered to GitHub",
+  "implemented": true,
+  "wired": true,
+  "qualified_scope": "NAMED_LOCAL_PUBLIC_ROOT_SELECTION_CURRENT_CLI",
+  "current_final_profile_handoff": "p7-final-qualification-20261031.json",
+  "acceptance_scope_note": "current H2 root/whole selection/CLI behavior and exact-source profiles qualified; false whole acceptance does not claim generic capability/M13 channel completion"
+}

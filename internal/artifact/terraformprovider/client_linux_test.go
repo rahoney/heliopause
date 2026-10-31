@@ -120,6 +120,27 @@ func TestAcquisitionConsumesSingleFrozenRegistrySelection(t *testing.T) {
 	}
 }
 
+func TestUpgradeRegistrySelectionRetainsOneFrozenVersionList(t *testing.T) {
+	client, transport, _ := clientFixture(t)
+	endpoint := registryEndpoint + "/v1/providers/hashicorp/random/versions"
+	original := upgradeVersions(t, "3.7.1", "3.7.2")
+	transport.bodies[endpoint] = original
+	resolved, err := client.resolveUpgrade(context.Background(), Requirement{Address: "registry.terraform.io/hashicorp/random", Constraints: []string{"~>3.7.0"}})
+	if err != nil || resolved.Identity().Version() != "3.7.2" {
+		t.Fatal("latest selection failed", err)
+	}
+	transport.bodies[endpoint] = []byte(`{"versions":[]}`)
+	run, _ := domain.NewRunID()
+	acquired, err := client.Acquire(context.Background(), run, resolved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundle, err := ReadIntake(client.intakeRoot, acquired)
+	if err != nil || !bytes.Equal(bundle.parts[1], original) || transport.calls[endpoint] != 1 {
+		t.Fatal("acquisition reselected versions instead of consuming the frozen response", err)
+	}
+}
+
 func TestRegistryRedirectAndIncompleteDownloadsFailClosed(t *testing.T) {
 	for _, fault := range []string{"redirect", "truncated", "excessive", "cancelled"} {
 		t.Run(fault, func(t *testing.T) {

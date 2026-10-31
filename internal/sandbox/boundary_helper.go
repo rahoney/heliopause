@@ -14,9 +14,13 @@ const (
 	boundaryLaunchMode              = "--launch"
 	boundaryPythonHandoffMode       = "--handoff-python"
 	boundaryELFHandoffMode          = "--handoff-elf"
+	boundaryNodeHandoffMode         = "--handoff-node"
+	boundaryBunHandoffMode          = "--handoff-bun"
 	boundaryOriginLaunchMode        = "--origin-launch"
 	boundaryOriginPythonHandoffMode = "--origin-handoff-python"
 	boundaryOriginELFHandoffMode    = "--origin-handoff-elf"
+	boundaryOriginNodeHandoffMode   = "--origin-handoff-node"
+	boundaryOriginBunHandoffMode    = "--origin-handoff-bun"
 	// Docker exec starts only this fixed, root-owned HAA helper as root. The
 	// helper immediately uses setpriv before it execs every root-entry target.
 	// No artifact-selected executable is a Docker exec entrypoint.
@@ -48,7 +52,7 @@ const boundaryAlreadyDemotedValidation = `already_demoted() {
 // operations: launch establishes the Sentry boundary for a direct exec, while
 // handoff only removes trust before artifact execution. The helper never
 // interprets artifact input.
-const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\nadmission() { [ \"${#1}\" -eq 64 ] || exit 125; case \"$1\" in *[!0123456789abcdef]*|'') exit 125 ;; esac; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --launch \"$token\" \"$@\" ;;\n  --origin-handoff-python) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-python \"$token\" \"$@\" ;;\n  --origin-handoff-elf) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-elf \"$token\" \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; admission \"${1-}\"; shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
+const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\nadmission() { [ \"${#1}\" -eq 64 ] || exit 125; case \"$1\" in *[!0123456789abcdef]*|'') exit 125 ;; esac; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --launch \"$token\" \"$@\" ;;\n  --origin-handoff-python) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-python \"$token\" \"$@\" ;;\n  --origin-handoff-elf) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-elf \"$token\" \"$@\" ;;\n  --origin-handoff-node) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-node \"$token\" \"$@\" ;;\n  --origin-handoff-bun) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-bun \"$token\" \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf|--handoff-node|--handoff-bun) shift; admission \"${1-}\"; shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
 // boundaryContainerCommand runs as the OCI init root solely long enough to
 // install the fixed controller helper into its root-owned tmpfs. The helper is
@@ -60,7 +64,15 @@ func boundaryContainerCommand() string {
 		boundaryHelperPath + "; exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
 }
 
-const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"
+// Reuse the credential validator and the existing CONTROL grep readers.
+// Capture both fixed statuses once, then validate their fields with builtins.
+var boundaryReadinessScript = func() string {
+	reader := "done <<HAA_STATUS\n$(grep -E '^(Uid|Gid|Groups|CapInh|CapPrm|CapEff|CapBnd|CapAmb):' /proc/self/status)\nHAA_STATUS"
+	self := strings.Replace(boundaryAlreadyDemotedValidation, "done < /proc/self/status", reader, 1)
+	init := strings.Replace(self, "already_demoted()", "init_demoted()", 1)
+	init = strings.Replace(init, "/proc/self/status", "/proc/1/status", 1)
+	return init + "\n" + self + "\ninit_demoted\nalready_demoted"
+}()
 
 func boundaryOriginMode(mode string) string {
 	switch mode {
@@ -70,6 +82,10 @@ func boundaryOriginMode(mode string) string {
 		return boundaryOriginPythonHandoffMode
 	case boundaryELFHandoffMode:
 		return boundaryOriginELFHandoffMode
+	case boundaryNodeHandoffMode:
+		return boundaryOriginNodeHandoffMode
+	case boundaryBunHandoffMode:
+		return boundaryOriginBunHandoffMode
 	default:
 		panic("invalid Docker boundary mode")
 	}

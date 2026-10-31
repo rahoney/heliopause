@@ -20,6 +20,7 @@ type terraformProjectPlan struct {
 	rootInfo   os.FileInfo
 	lockInfo   os.FileInfo
 	authorized bool
+	upgrade    bool
 }
 
 func freezeTerraformProject(root string) (terraformProjectPlan, error) {
@@ -52,6 +53,9 @@ func (p terraformProjectPlan) verifyUnchanged() error {
 	current, err := freezeTerraformProject(p.root)
 	if err != nil || current.lockHash != p.lockHash || !os.SameFile(p.rootInfo, current.rootInfo) || (p.lockInfo == nil) != (current.lockInfo == nil) || p.lockInfo != nil && !os.SameFile(p.lockInfo, current.lockInfo) {
 		return errors.New("terraform lock file changed during transaction")
+	}
+	if p.upgrade && p.lockInfo != nil && (current.lockInfo.Mode() != p.lockInfo.Mode() || !current.lockInfo.ModTime().Equal(p.lockInfo.ModTime())) {
+		return errors.New("terraform original lock permissions or timestamp changed during upgrade")
 	}
 	return nil
 }
@@ -92,6 +96,7 @@ type terraformProjectTransaction struct {
 	selectedInfo                                              os.FileInfo
 	selectedDirectoryInfo                                     os.FileInfo
 	expectedLock                                              []byte
+	retainedLock                                              bool
 	providers                                                 bool
 	providersMoved, providersPublished                        bool
 	originalTerraformInfo, selectedTerraformInfo              os.FileInfo
@@ -149,12 +154,20 @@ func beginTerraformProjectTransaction(plan terraformProjectPlan, workspace strin
 		_ = boundary.Close()
 		return nil, errors.New("terraform selected lock is invalid")
 	}
-	if err := writeRecord(selected, ".terraform.lock.hcl", body); err != nil {
+	lockFile, err := boundary.OpenFile(filepath.Join(filepath.Base(backup), "selected", ".terraform.lock.hcl"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
 		_ = boundary.Close()
 		return nil, err
 	}
-	_, selectedInfo, err := readGoTransactionControl(boundary, filepath.Join(filepath.Base(backup), "selected", ".terraform.lock.hcl"))
-	if err != nil {
+	_, writeErr := lockFile.Write(body)
+	var modeErr error
+	if plan.upgrade && plan.lockInfo != nil {
+		modeErr = lockFile.Chmod(plan.lockInfo.Mode().Perm())
+	}
+	selectedInfo, statErr := lockFile.Stat()
+	syncErr := lockFile.Sync()
+	closeErr := lockFile.Close()
+	if err := errors.Join(writeErr, modeErr, statErr, syncErr, closeErr); err != nil {
 		_ = boundary.Close()
 		return nil, err
 	}
@@ -163,7 +176,7 @@ func beginTerraformProjectTransaction(plan terraformProjectPlan, workspace strin
 		_ = boundary.Close()
 		return nil, err
 	}
-	return &terraformProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, backupInfo: backupInfo, selectedInfo: selectedInfo, selectedDirectoryInfo: selectedDirectoryInfo, expectedLock: body}, nil
+	return &terraformProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, backupInfo: backupInfo, selectedInfo: selectedInfo, selectedDirectoryInfo: selectedDirectoryInfo, expectedLock: body, retainedLock: plan.upgrade && plan.lockInfo != nil && sha256.Sum256(body) == plan.lockHash}, nil
 }
 func (t *terraformProjectTransaction) commit() error {
 	defer t.boundary.Close()
@@ -235,6 +248,9 @@ func (t *terraformProjectTransaction) backupCurrent() error {
 	if err := t.verifyBoundary(); err != nil {
 		return err
 	}
+	if err := t.verifyRetainedLock(); err != nil {
+		return err
+	}
 	if body, info, err := readGoTransactionControl(t.boundary, terraformTransactionMetadata); err == nil {
 		if t.originalMetadataFrozen && (t.originalMetadataInfo == nil || !os.SameFile(info, t.originalMetadataInfo) || !bytes.Equal(body, t.originalMetadataValue) || info.Mode() != t.originalMetadataInfo.Mode()) {
 			return errors.New("terraform original metadata drifted before backup")
@@ -248,7 +264,7 @@ func (t *terraformProjectTransaction) backupCurrent() error {
 	} else if !errors.Is(err, os.ErrNotExist) || t.originalMetadataFrozen && t.originalMetadataInfo != nil {
 		return errors.New("inspect Terraform transaction metadata")
 	}
-	if t.plan.lockInfo != nil {
+	if t.plan.lockInfo != nil && !t.retainedLock {
 		body, info, err := readGoTransactionControl(t.boundary, ".terraform.lock.hcl")
 		if err != nil || !os.SameFile(info, t.plan.lockInfo) || sha256.Sum256(body) != t.plan.lockHash || info.Mode() != t.plan.lockInfo.Mode() {
 			return errors.New("terraform original lock drifted before backup")
@@ -274,12 +290,18 @@ func (t *terraformProjectTransaction) publishWorkspace() error {
 	if err := t.verifyBoundary(); err != nil {
 		return err
 	}
-	body, info, err := readGoTransactionControl(t.boundary, filepath.Join(filepath.Base(t.backup), "selected", ".terraform.lock.hcl"))
+	if t.retainedLock {
+		if err := t.verifyRetainedLock(); err != nil {
+			return err
+		}
+	} else {
+		body, info, err := readGoTransactionControl(t.boundary, filepath.Join(filepath.Base(t.backup), "selected", ".terraform.lock.hcl"))
 
-	if err != nil || !pypiSingleLink(info) || t.selectedInfo != nil && (!os.SameFile(t.selectedInfo, info) || !bytes.Equal(body, t.expectedLock)) || renameRootNoReplace(t.boundary, filepath.Join(filepath.Base(t.backup), "selected", ".terraform.lock.hcl"), ".terraform.lock.hcl") != nil {
-		return errors.New("publish Terraform lock file")
+		if err != nil || !pypiSingleLink(info) || t.selectedInfo != nil && (!os.SameFile(t.selectedInfo, info) || !bytes.Equal(body, t.expectedLock)) || renameRootNoReplace(t.boundary, filepath.Join(filepath.Base(t.backup), "selected", ".terraform.lock.hcl"), ".terraform.lock.hcl") != nil {
+			return errors.New("publish Terraform lock file")
+		}
+		t.published = true
 	}
-	t.published = true
 	if err := t.check("after-lock-publication"); err != nil {
 		return err
 	}
@@ -426,7 +448,7 @@ func (t *terraformProjectTransaction) rollback() error {
 	if err := syncDirectory(t.plan.root); err != nil {
 		result = errors.Join(result, errors.New("sync Terraform rollback"))
 	}
-	return result
+	return errors.Join(result, t.verifyRetainedLock())
 }
 
 func (t *terraformProjectTransaction) verifyBoundary() error {
@@ -447,10 +469,22 @@ func (t *terraformProjectTransaction) check(phase string) error {
 	if err := t.verifyBoundary(); err != nil {
 		return err
 	}
-	if t.checkpoint != nil {
-		return t.checkpoint(phase)
+	if err := t.verifyRetainedLock(); err != nil {
+		return err
 	}
-	return nil
+	if t.checkpoint != nil {
+		if err := t.checkpoint(phase); err != nil {
+			return err
+		}
+	}
+	return t.verifyRetainedLock()
+}
+
+func (t *terraformProjectTransaction) verifyRetainedLock() error {
+	if !t.retainedLock {
+		return nil
+	}
+	return t.plan.verifyUnchanged()
 }
 func sameTerraformFiles(a, b []terraformFileRecord) bool {
 	left, le := json.Marshal(a)
@@ -474,6 +508,9 @@ func sameTerraformMembers(a, b map[string]os.FileInfo) bool {
 // added by another actor is preserved, even after all visible controls restore.
 func (t *terraformProjectTransaction) verifyBackupContents(originals bool) error {
 	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
+	if err := t.verifyRetainedLock(); err != nil {
 		return err
 	}
 	backup, err := t.boundary.OpenRoot(filepath.Base(t.backup))

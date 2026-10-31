@@ -34,7 +34,7 @@ func TestLinuxTrustedHostExecutorIntegration(t *testing.T) {
 		}
 	}
 	version, err := executor.Output(context.Background(), "docker", "version", "--format", "{{.Server.Version}}")
-	if err != nil || !atLeastVersion(strings.TrimSpace(string(version)), minimumDockerEngine) {
+	if err != nil || !runtimeidentity.DockerEngineSupported(strings.TrimSpace(string(version))) {
 		t.Fatalf("trusted local Docker version=%q error=%v", version, err)
 	}
 	registration, err := executor.Output(context.Background(), "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")

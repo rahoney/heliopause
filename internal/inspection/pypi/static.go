@@ -118,18 +118,9 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 }
 
 func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string, string, error) {
-	parts := strings.Split(artifact.ContentHandle(), ":")
-	if len(parts) != 3 || parts[0] != "intake" || parts[2] != artifact.Identity().Variant() {
-		return "", "", errors.New("PyPI intake handle is invalid")
-	}
-	runID, err := domain.ParseRunID(parts[1])
+	directory, filenameRecord, name, err := i.artifactLocation(artifact)
 	if err != nil {
-		return "", "", errors.New("PyPI intake handle is invalid")
-	}
-	directory := filepath.Join(i.intakeRoot, runID.String())
-	filenameRecord := "filename"
-	if artifact.Identity().Variant() == "derived-wheel" {
-		filenameRecord = "derived-filename"
+		return "", "", err
 	}
 	filenameBytes, err := os.ReadFile(filepath.Join(directory, filenameRecord))
 	filename := string(filenameBytes)
@@ -140,14 +131,29 @@ func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string
 	if !ok || (variant != artifact.Identity().Variant() && !(variant == "wheel" && artifact.Identity().Variant() == "derived-wheel")) {
 		return "", "", errors.New("PyPI intake filename does not match Artifact")
 	}
-	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[variant]
-	if artifact.Identity().Variant() == "derived-wheel" {
-		name = "derived.whl"
-	}
-	if name == "" {
-		return "", "", errors.New("PyPI intake variant is unsupported")
-	}
 	return filepath.Join(directory, name), filename, nil
+}
+
+// artifactLocation shares handle routing without reading mutable intake data.
+func (i *StaticInspector) artifactLocation(artifact domain.AcquiredArtifact) (string, string, string, error) {
+	parts := strings.Split(artifact.ContentHandle(), ":")
+	if len(parts) != 3 || parts[0] != "intake" || parts[2] != artifact.Identity().Variant() {
+		return "", "", "", errors.New("PyPI intake handle is invalid")
+	}
+	runID, err := domain.ParseRunID(parts[1])
+	if err != nil {
+		return "", "", "", errors.New("PyPI intake handle is invalid")
+	}
+	directory := filepath.Join(i.intakeRoot, runID.String())
+	filenameRecord := "filename"
+	if artifact.Identity().Variant() == "derived-wheel" {
+		filenameRecord = "derived-filename"
+	}
+	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[artifact.Identity().Variant()]
+	if name == "" {
+		return "", "", "", errors.New("PyPI intake variant is unsupported")
+	}
+	return directory, filenameRecord, name, nil
 }
 
 func pypiVariant(filename string) (string, bool) {

@@ -1,0 +1,123 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B4b-fingerprint",
+  "baseline": "97dff14acb5f04d6ef166c8584fada2d746611a1",
+  "status": "LOCAL_VERIFIED_EXPLICIT_ENTRY_DIGEST_WIRE_ONLY",
+  "implemented": "YES",
+  "wired": "YES_EXISTING_LAYOUT_FINGERPRINT_OWNER",
+  "qualified": "YES_NAMED_LOCAL_SERIALIZATION_SCOPE; NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_layout_binding_data.go",
+      "sha256": "341bffbea8d5029b69c76a4dd586777ebee48c98512fa507c936a139180d4cfe"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_layout_binding_data_test.go",
+      "sha256": "42c00154982d62dea4246130635ae6907bd257d77a9456dd494df4e76fc84330"
+    }
+  ],
+  "checks": {
+    "format": {
+      "exit": 0,
+      "seconds": 0.748
+    },
+    "quick": {
+      "exit": 0,
+      "seconds": 147.455
+    },
+    "security": {
+      "exit": 0,
+      "seconds": 15.64
+    },
+    "red": {
+      "exit": 1,
+      "seconds": 2.358,
+      "target": "TestPNPMLayoutFingerprintKeepsEqualLengthNodeSearchOrder"
+    },
+    "green": {
+      "exit": 0,
+      "seconds": 3.451,
+      "target": "TestPNPMLayoutFingerprintKeepsEqualLengthNodeSearchOrder"
+    },
+    "npm_and_sandbox_full_race": {
+      "exit": 0,
+      "seconds": 24.805
+    }
+  },
+  "fixture_scope": "same frozen snapshot/acquired inputs; one existing reviewed bin with two different, equally long, valid Node search orders; both BindLayout calls succeed; RED is the intended equal-key assertion, not compile/setup failure",
+  "correction": {
+    "scope": "local explicit entry string digest projection",
+    "internal_schema": "pnpm-inspection-layout/v2",
+    "core_or_public_result_schema_changed": false,
+    "existing_source_mode_code_path_checks_changed": false,
+    "native_command_or_runtime_changed": false,
+    "volatile_metadata_key_stability_preserved": true
+  },
+  "execution_environment": {
+    "tool_process_GOMAXPROCS": 2,
+    "rules_scopes_timeouts_and_runtime_budgets_unchanged": true
+  },
+  "not_executed": [
+    "new native qualification for this serialization-only change",
+    "Artifact execution, PNPM cache, Host publication or full P2 closure"
+  ],
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-full-race.json",
+      "sha256": "bf0d21405f2db5e6bb70922b0dbfc870b083991cdae7d631b714efb2959f330b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-full-race.log",
+      "sha256": "9c8705af4756d15e95714a76a30ca7648e01c645b51fc0db40944cc80112ca95"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-format.json",
+      "sha256": "10a7d6f65a5526c17d6f1cf4ac91875838bd37eb1cf7f85c75a941e4f2acbdd0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-format.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-quick.json",
+      "sha256": "820e29b25d42ca363b4bc270ffd7af8481a3c7356544773191547c17b11757c7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-quick.log",
+      "sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-security.json",
+      "sha256": "63d1522bbb4ac5ad0170dd1cc58f8bdb7ab5a24c7406b1abadcee8fc1c60f1f9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green-security.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green.json",
+      "sha256": "3aa97953769d437a0a232c58b48f1c9a589ef642c2657cf317ae8cd689e295c5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-green.log",
+      "sha256": "809bbbbf17436f70d9998bdc81b7d831380167a55763ed492cbf2c9d4a89b89f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-red-format.json",
+      "sha256": "a885f42e79f4235c63003a86f6362055e605d44d6b094c419ebef8510237efe6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-red-format.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-red.json",
+      "sha256": "0731960ab04761a424ca9549db9105f9ec108ea8e815a0c22303a104c44aaf63"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4b-fingerprint-red.log",
+      "sha256": "9b113f478d2d107f4528afd5011f33a94a49b5a0410086596ba1b5ff5e8c74ce"
+    }
+  ]
+}

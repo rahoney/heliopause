@@ -1,0 +1,92 @@
+{
+  "run_id": 40758148899,
+  "number": 426,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40758148899",
+  "source": "4db0111a4caa02f2f0f15749b876deb37bf32c21",
+  "tree": "e8ad4e1d6c1f8610043f00bef82f31f466e6e661",
+  "tracked_files": 2940,
+  "source_inputs": 1313,
+  "run_started_at": "2026-10-28T19:52:10Z",
+  "last_actual_query_at": "2026-10-28T21:33:27Z",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 123062516444,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062516821,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062516835,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062516925,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062516962,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062517018,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062517139,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062517173,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123062517205,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123111586622,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "timer_session": null,
+  "next_due_at": null,
+  "completed20min_polls": 5,
+  "scope": "grouped C3a controls/C3b real offline materialization; existing current preparation parent fresh2; no artifact user-run/guest output/CLI",
+  "authorization": "ongoing user-authorized important CI and normal milestone push",
+  "previous_CI425": "overall FAILURE/macOS+Required; named Linux PASS; native direct cause OPEN",
+  "recent_observed_elapsed_to_final_update_seconds": [
+    5520,
+    5343
+  ],
+  "estimated_completion": "roughly90-100min if ordinary pipeline completes; 20min timers also detect early failure; no completion promise",
+  "whole_hosted_qualification": "PASS (named ordinary scope)",
+  "later_C3c_source_excluded": true,
+  "completed8_same_checkout": "c106c554236e9a5e0dfabca38f81d5e6516a6f89",
+  "whole_checkout_tree_matches": true,
+  "decoded_partial_log_bytes": 447804,
+  "decoded_final_log_bytes": 1274315
+}

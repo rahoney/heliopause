@@ -1,0 +1,81 @@
+{
+  "scope": "M13-004/P4-O4-C3a inert pipx receipt layout projection; no filesystem execution/ownership/Policy or native support qualification",
+  "baseline": {
+    "source": "a324c452af58101f0c94cda9120c872de5a0bd5f",
+    "tree": "f473631e66256a41c046a745778ed836014a0588",
+    "files": 2811
+  },
+  "implemented": "YES (named layout adapter)",
+  "wired": "YES (existing strict parser and generic layout/exposed-link validation); NO (native/CLI consumer)",
+  "qualified": "YES (named local)",
+  "acceptance_closed": "NO (whole pipx/native/CLI)",
+  "source": [
+    {
+      "path": "internal/artifact/pypi/pipx_tool_layout.go",
+      "sha256": "ed9dc5d0e406957dbb2f35dd4a31690bf5a92360263a0ef513524a3f6c3d6037"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_tool_layout_test.go",
+      "sha256": "2e9efd3375b2c1e566a611a386939f174b18cd2c8776b3e72534032fb556d124"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.839,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 40.768,
+      "log_sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    {
+      "step": "pypi-race",
+      "exit_code": 0,
+      "seconds": 9.298,
+      "log_sha256": "dfe71f2b0824162f9b631e2b0782a2ecf9f57e82c3220ad3cad7602d4dee6417"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.335,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 14.336,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "first_failure": {
+    "checks": "p4o4c3a-v1-checks.json",
+    "quick_seconds": 268.696,
+    "test": "TestPipxLayoutPreservesOmittedAndNullOpaqueFields",
+    "cause": "synthetic test compared directly constructed []string with JSON decoded []any via reflect.DeepEqual",
+    "correction": "same JSON-shaped []any fixture comparison; product guard unchanged",
+    "source": "p4o4c3a-first-source.json"
+  },
+  "validated": [
+    "actual installed/upgraded0.12 metadata retains requirement/version/backend/options and retired/new command sets",
+    "explicit source-interpreter claim remains distinct from environment/bin/python",
+    "opaque pip_args and omitted/null fields preserved; no executable argv produced",
+    "wrong client/zero/changed cached claims/unsafe and overlapping roots rejected",
+    "original bytes immutable; external exposed links checked separately; existing UV rejection retained"
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "pipx metadata-only original upgrade input/replay",
+    "installed supply native fixed execution/profile and complete selection",
+    "guarded current whole-set promotion/bootstrap/CLI",
+    "new hosted UID1001/signed-native/final profiles"
+  ],
+  "remote": {
+    "last_qualified": "CI420/source1e5d21e",
+    "push_checkpoint": "e859487 AWAITING_USER_APPROVAL after auto-review rejection",
+    "new_ci_started": false
+  }
+}
