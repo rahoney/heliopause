@@ -1,0 +1,627 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "work_item": "M13-004",
+  "scope": "user-requested maintained repository source and security audit before naming; not complete M13 or deployment",
+  "recorded_at": "2026-10-31T13:56:51.473115+00:00",
+  "baseline_source": "21a0a25214cce425d1204c63a47935170f68ca71",
+  "qualified_code_source": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+  "qualified_code_tree": "e1cac13504028e8bb4ab1fa8677336eaebb8087f",
+  "qualified_tracked_inputs": 3258,
+  "branch": "milestone/m13-release-build-packages",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES",
+  "ACCEPTANCE_CLOSED": "YES",
+  "MISSING": [],
+  "coverage": {
+    "baseline_tracked_inputs": 3255,
+    "baseline_go_production_files": 681,
+    "baseline_go_test_files": 761,
+    "baseline_cpp_files": 2,
+    "baseline_shell_files": 18,
+    "baseline_python_files": 6,
+    "baseline_yaml_files": 6,
+    "go_ast_parse_errors": 0,
+    "go_ast_baseline_files": 1442,
+    "methods": [
+      "canonical pinned format/build/vet/Staticcheck/test/security/vulnerability/history checks",
+      "supplemental context-rule gosec and Linux default/all-tags + Darwin arm64 deadcode",
+      "shell/Python syntax for tracked24 files",
+      "manual owner review of path/link, command/env, peer/privilege, resource/completion, promotion/rollback, provenance and workflow boundaries",
+      "official runtime advisories/exact immutable image identity and locked supplied package OSV query"
+    ],
+    "supplemental_gosec": {
+      "diagnostics": 346,
+      "disposition": "context review by bounds/ownership/inode/trusted argv/mode; G104 Close failure fixed; no blanket suppression or claim of zero all-rule diagnostics"
+    },
+    "unused_duplicate_complexity_disposition": [
+      "unused GoModule.Endpoints removed after cross-platform/tag consumer analysis",
+      "two existing Run trace-model accessors and test/platform consumers retained with explicit contract reasons",
+      "PNPM/Bun short workspace flows retain distinct accounting semantics and reuse existing common engine",
+      "no length-driven class/function/package splitting or future consumer wiring",
+      "updater Close error retained with first lock failure"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F01",
+      "topic": "bounded socket framing",
+      "existing_owner": "internal/networkpolicy/server.go; internal/hosttool/observation_resource_linux.go",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "ReadSlice in existing readers; normal and oversized no-newline regression; existing authenticated-peer/deadline boundary retained"
+    },
+    {
+      "id": "F02",
+      "topic": "public resolver IPv4",
+      "existing_owner": "internal/networkpolicy/contract.go; internal/sandbox/resolver_network_policy.go",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "existing preflight and typed constructor reject non-public special ranges; public anycast exceptions retained; Bootstrap existing constructor connection reviewed"
+    },
+    {
+      "id": "F03",
+      "topic": "unused output capture",
+      "existing_owner": "internal/hosttool/executor.go",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "existing Cmd.Run discards unreturned output; argv/env/identity/error contracts retained"
+    },
+    {
+      "id": "F04",
+      "topic": "Node security patch",
+      "existing_owner": "runtime lock/generated identity/support review",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "Node24.22.1/npm11.19.1 exact immutable image; official Brotli security backport retains displayed1.2.0"
+    },
+    {
+      "id": "F05",
+      "topic": "Python security patch and metadata connection",
+      "existing_owner": "runtime lock/generated identity/support review; tools/gvisor-observer/observer.cc",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "Python3.14.10/pip26.2.2 exact immutable image; existing two exact pip metadata paths updated with current/old/neighbor/write regression"
+    },
+    {
+      "id": "F06",
+      "topic": "observer endpoint umask",
+      "existing_owner": "internal/sandbox/shared_observer.go; tools/gvisor-observer/observer.cc",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "explicit private Go socket mode and standalone C++0077; inherited-umask regressions; global Go umask/guards unchanged"
+    },
+    {
+      "id": "F07",
+      "topic": "Docker/containerd security floor",
+      "existing_owner": "runtime lock/generated minimum/CI package/support review",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "Docker29.9.2 and Noble containerd2.4.2; hosted actual qualification; existing local Host29.8.1 not activated"
+    },
+    {
+      "id": "F08",
+      "topic": "duplicated Docker version comparison",
+      "existing_owner": "internal/runtimeidentity/docker_version.go; internal/hosttool/executor.go; internal/sandbox/probe.go",
+      "status": "FIXED_AND_QUALIFIED",
+      "change_and_boundary": "existing runtimeidentity shared owner; canonical stable numeric version validation; duplicate private comparisons removed"
+    }
+  ],
+  "local_configuration_and_security": {
+    "runtime_configuration_profiles_passed": 7,
+    "runtime_configuration_elapsed_s": 598.969,
+    "vulnerability_elapsed_s": 28.434,
+    "security_history_elapsed_s": 155.61,
+    "scope_source": "f6c03493a209fdd87ac122439eb6ff8f48bdfa60",
+    "reuse_boundary": "runtime pins/Go production unchanged in358; changed socket test and exact CPP metadata paths separately qualified; current358 hosted security/vulnerability independently passed",
+    "final358_quick_elapsed_s": 369.397,
+    "final358_security_elapsed_s": 21.329,
+    "final358_release_gate_elapsed_s": 0.37,
+    "final358_docs_elapsed_s": 0.328,
+    "supply_osv": {
+      "queried_at": "2026-10-31T07:15:05.482425Z",
+      "locked_product_packages": 13,
+      "reported_vulnerabilities": 0,
+      "known_vulnerable_control_findings": 10,
+      "complete_response_pages": true,
+      "scope": "pipx supplied graph and bundled pip/npm; not all runtime OS packages or unpublished vulnerabilities"
+    }
+  },
+  "qualifications": [
+    {
+      "profile": "ordinary-cpu",
+      "receipt_path": "docs/github-logs/full-source-audit-20261031/ci448-ordinary-cpu-qualification.json",
+      "receipt_sha256": "063ea99f4a468b21d83072aa5fa35fbe9d78f138fba129dcff954c3bd55ed6b3",
+      "status": "ORDINARY_CPU_QUALIFIED",
+      "source": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "tree": "e1cac13504028e8bb4ab1fa8677336eaebb8087f",
+      "actual_checkout": "e77224024ca70ae7d0b147255c733fa7f1d708c8",
+      "whole_tree_matches": true,
+      "run_id": 41183473945,
+      "run_number": 448,
+      "run_url": "https://github.com/rahoney/heliopause/actions/runs/41183473945",
+      "started_at": "2026-10-31T08:10:03Z",
+      "finished_at": "2026-10-31T10:25:05Z",
+      "server_elapsed_s": 8102.0,
+      "success_jobs": 10,
+      "parent_passes": 126,
+      "unique_parents": 126,
+      "actual_skips": 0,
+      "cpu_full_elapsed_s": 268.73,
+      "cpp_latches": 133,
+      "helpers_reaped": 18,
+      "helper_wait_all_zero": true,
+      "cleanup": [
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=735070",
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=735776",
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=982312",
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=998608"
+      ],
+      "actual_timed_queries": 7,
+      "last_timed_query": "2026-10-31T10:30:09.739171+00:00",
+      "worker_natural_exit": 0,
+      "next_due_at": null,
+      "raw_logs": [
+        {
+          "job_id": 124485505741,
+          "name": "Representative Wheel Corpus",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-corpus.log",
+          "sha256": "ba781c458f248ddcc092ec18eeca654a0590104298a8a56bd479f9ee29399284",
+          "size": 35363
+        },
+        {
+          "job_id": 124485505874,
+          "name": "Docs",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-docs.log",
+          "sha256": "c510b5d72c15d4f1973137a095bd9f0c405d50e53f71781971e1e4d172348e8b",
+          "size": 20525
+        },
+        {
+          "job_id": 124485505890,
+          "name": "gVisor Observer Helper",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-observer.log",
+          "sha256": "90acb8859b48eb2c2e2e4811e382797ba3beef218a96a094a2fdc4bfb16f47c9",
+          "size": 278326
+        },
+        {
+          "job_id": 124485505893,
+          "name": "Security",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-security.log",
+          "sha256": "5f55b171e7b10147cce062a00689d5d70e486bcd3dc5dd920ef6671a11c1c1cc",
+          "size": 21964
+        },
+        {
+          "job_id": 124485505901,
+          "name": "Quick",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-quick.log",
+          "sha256": "23c4a8c0d4789816c2000a3d315c7103dedc4ddd808bc3f53b15784ac2d38377",
+          "size": 23839
+        },
+        {
+          "job_id": 124485505906,
+          "name": "gVisor Linux Integration",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-linux.log",
+          "sha256": "938a5ae32d056802d91da4a3a018a29e631cd45dc7c9aa650a80eed8b3324356",
+          "size": 931726
+        },
+        {
+          "job_id": 124485505927,
+          "name": "macOS",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-macos.log",
+          "sha256": "83c99c4ef6dfb4647a0d0159731624f9c21dc5b6f5b6c70648b08076f36ffc1c",
+          "size": 25702
+        },
+        {
+          "job_id": 124485505933,
+          "name": "Vulnerability",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-vulnerability.log",
+          "sha256": "0b8af8f91f07da7b6750375ca21a3660772de5e1f70382a2b96ff65d37e43718",
+          "size": 21705
+        },
+        {
+          "job_id": 124485505973,
+          "name": "Minimum Go",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-minimum-go.log",
+          "sha256": "e9ee5359ba74dcba4acb414bd9aba17aae5ea760ad12e83ca4ac72bc476e4ced",
+          "size": 21505
+        },
+        {
+          "job_id": 124512349865,
+          "name": "Required",
+          "path": "docs/github-logs/full-source-audit-20261031/ci448-required.log",
+          "sha256": "2cb351be153500f2899fc0ddb5fb65f120f273f7f1015ef2321cecda09c2c537",
+          "size": 22297
+        }
+      ],
+      "raw_total_bytes": 1402952
+    },
+    {
+      "profile": "cu126",
+      "receipt_path": "docs/github-logs/full-source-audit-20261031/cu126-qualification.json",
+      "receipt_sha256": "5a6f5c93d846fa23ea5fd04a171edf2fcdaa0e8a3b17487dd3f908f169c3631f",
+      "status": "CU126_QUALIFIED",
+      "source": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "tree": "e1cac13504028e8bb4ab1fa8677336eaebb8087f",
+      "actual_checkout": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "run_id": 41193740506,
+      "run_number": 449,
+      "run_url": "https://github.com/rahoney/heliopause/actions/runs/41193740506",
+      "started_at": "2026-10-31T10:40:57Z",
+      "finished_at": "2026-10-31T11:31:26Z",
+      "server_elapsed_s": 3029.0,
+      "success_jobs": 10,
+      "actual_parent_passes": 6,
+      "actual_skips": 0,
+      "cpu_full_elapsed_s": 288.04,
+      "cuda_full_elapsed_s": 1270.55,
+      "profile_binding": "frozen ordered CPU/CUDA commands + two actual parent PASSes + selected CUDA plan/runtime/torch identity",
+      "runtime": "python:3.14.10;pip:26.2.2;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu126",
+      "torch_version": "2.14.0+cu126",
+      "cpp_latches": 133,
+      "helpers_reaped": 2,
+      "helper_wait_all_zero": true,
+      "cleanup": [
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=171766"
+      ],
+      "actual_timed_queries": 3,
+      "last_timed_query": "2026-10-31T11:40:59.527450+00:00",
+      "worker_natural_exit": 0,
+      "next_due_at": null,
+      "raw_logs": [
+        {
+          "job_id": 124515619349,
+          "name": "Docs",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-docs.log",
+          "sha256": "3775dbe39a77cc14773178ca6db8c3e5580d9c0e25f007feb7dbb1639ae6f665",
+          "size": 20057
+        },
+        {
+          "job_id": 124515619436,
+          "name": "Security",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-security.log",
+          "sha256": "d0b3c2b75374efa3dca98ba9df4f1bbeed5ef71acffb6c83d94bbf3899d0d863",
+          "size": 21505
+        },
+        {
+          "job_id": 124515619452,
+          "name": "Minimum Go",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-minimum-go.log",
+          "sha256": "2662e08a777e6d0958ae6bacc373833e66d086edad5a7611334fe1e2c035c873",
+          "size": 21040
+        },
+        {
+          "job_id": 124515619471,
+          "name": "gVisor Observer Helper",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-observer.log",
+          "sha256": "f1b51a26dab3e4eb0f831955ffed77bdd40af62b708b60ae4bbbf21806050772",
+          "size": 279379
+        },
+        {
+          "job_id": 124515619482,
+          "name": "Representative Wheel Corpus",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-corpus.log",
+          "sha256": "98901fcd8903172a4edd08147103c401b6feedc05456dabfdc918439f2d53dc0",
+          "size": 34898
+        },
+        {
+          "job_id": 124515619517,
+          "name": "gVisor Linux Integration",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-linux.log",
+          "sha256": "048b1fa2383e681bdeff0de0e8f3d9b29d530ca75a3f72ae40614911479eb89b",
+          "size": 1447344
+        },
+        {
+          "job_id": 124515619557,
+          "name": "Vulnerability",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-vulnerability.log",
+          "sha256": "0bcdac9f1f8ff8512da96f7020d44001c112b918b892b10d63ae85e44d6452cf",
+          "size": 21235
+        },
+        {
+          "job_id": 124515619569,
+          "name": "Quick",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-quick.log",
+          "sha256": "d6acf486a6a724cf21ae55f454d31499669c6cfef105437d16e68c44dad5f644",
+          "size": 23377
+        },
+        {
+          "job_id": 124515619659,
+          "name": "macOS",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-macos.log",
+          "sha256": "db3f1707c6d3f9390669d3e8cf23aaccc06cbb56ada703542ec2b75dd6d2eb91",
+          "size": 24887
+        },
+        {
+          "job_id": 124525536889,
+          "name": "Required",
+          "path": "docs/github-logs/full-source-audit-20261031/ci449-required.log",
+          "sha256": "e00a00c78c6f10145e798a65011c11eccf124da51c10fdd348a811f31abaa5af",
+          "size": 21835
+        }
+      ],
+      "raw_total_bytes": 1915557
+    },
+    {
+      "profile": "cu130",
+      "receipt_path": "docs/github-logs/full-source-audit-20261031/cu130-qualification.json",
+      "receipt_sha256": "842039d1cee8a401ee762bdff53ec46bd3222575c4fd3b6560394fcce48e8499",
+      "status": "CU130_QUALIFIED",
+      "source": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "tree": "e1cac13504028e8bb4ab1fa8677336eaebb8087f",
+      "actual_checkout": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "run_id": 41198471800,
+      "run_number": 450,
+      "run_url": "https://github.com/rahoney/heliopause/actions/runs/41198471800",
+      "started_at": "2026-10-31T12:33:44Z",
+      "finished_at": "2026-10-31T12:43:49Z",
+      "server_elapsed_s": 605.0,
+      "success_jobs": 10,
+      "actual_parent_passes": 6,
+      "actual_skips": 0,
+      "cpu_full_elapsed_s": 215.77,
+      "cuda_full_elapsed_s": 855.49,
+      "profile_binding": "frozen ordered CPU/CUDA commands + two actual parent PASSes + selected CUDA plan/runtime/torch identity",
+      "runtime": "python:3.14.10;pip:26.2.2;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu130",
+      "torch_version": "2.14.0+cu130",
+      "cpp_latches": 133,
+      "helpers_reaped": 2,
+      "helper_wait_all_zero": true,
+      "cleanup": [
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=169180"
+      ],
+      "actual_timed_queries": 1,
+      "last_timed_query": "2026-10-31T12:53:45.882597+00:00",
+      "worker_natural_exit": 0,
+      "next_due_at": null,
+      "raw_logs": [
+        {
+          "original_job_id": 124538492411,
+          "retained_from_attempt1": false,
+          "job_id": 124538492411,
+          "name": "macOS",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-macos.log",
+          "sha256": "b4b6e859910abd42aac4b584b1361a54a6b495693f71552ffd679c5817053f0b",
+          "size": 28084
+        },
+        {
+          "original_job_id": 124529340621,
+          "retained_from_attempt1": true,
+          "job_id": 124538493076,
+          "name": "gVisor Observer Helper",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-observer.log",
+          "sha256": "b99bd717203416dd4c1768aae3b2e4a1577d987cd74d5dfd1b90bd288d3a24cd",
+          "size": 272852
+        },
+        {
+          "original_job_id": 124529340388,
+          "retained_from_attempt1": true,
+          "job_id": 124538493360,
+          "name": "Minimum Go",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-minimum-go.log",
+          "sha256": "6250f52ff3f3c3ceb2a2e29e50a4f3170dc29d31c919302567559a019245497b",
+          "size": 21043
+        },
+        {
+          "original_job_id": 124529340487,
+          "retained_from_attempt1": true,
+          "job_id": 124538493593,
+          "name": "Security",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-security.log",
+          "sha256": "80e5c572ac1c9f4f3e7e405b5cd20cdce8cb7a6f1d8827dfcf45c61c92c832dd",
+          "size": 21503
+        },
+        {
+          "original_job_id": 124529340610,
+          "retained_from_attempt1": true,
+          "job_id": 124538515742,
+          "name": "Docs",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-docs.log",
+          "sha256": "803bf4c2c8b1f3f262fa6fd05c40331e7784f88c8b1e51f620a759789f78da09",
+          "size": 20057
+        },
+        {
+          "original_job_id": 124529340620,
+          "retained_from_attempt1": true,
+          "job_id": 124538520507,
+          "name": "Representative Wheel Corpus",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-corpus.log",
+          "sha256": "df5ef3834f47f93b7b60cbc0e0652f716f92820a23c180a0fc14a0ddfeff9c48",
+          "size": 34899
+        },
+        {
+          "original_job_id": 124529340540,
+          "retained_from_attempt1": true,
+          "job_id": 124538522376,
+          "name": "gVisor Linux Integration",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-linux.log",
+          "sha256": "e9078d555ede35ac5d040bdbd9fe7e3f70e3867f61ac5c18b0865f8dc712eab5",
+          "size": 1117306
+        },
+        {
+          "original_job_id": 124529340492,
+          "retained_from_attempt1": true,
+          "job_id": 124538526940,
+          "name": "Vulnerability",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-vulnerability.log",
+          "sha256": "7a6c18811664bc0e8e8c07a41f94f4eb0389cc3bb5e63dec97e7207af7e51b3a",
+          "size": 21235
+        },
+        {
+          "original_job_id": 124529340548,
+          "retained_from_attempt1": true,
+          "job_id": 124538530255,
+          "name": "Quick",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-quick.log",
+          "sha256": "8b2720da9f3c0865fce8223cfc731b7edf23c74422214f64ddc12ac13446ab34",
+          "size": 23385
+        },
+        {
+          "original_job_id": 124540510105,
+          "retained_from_attempt1": false,
+          "job_id": 124540510105,
+          "name": "Required",
+          "path": "docs/github-logs/full-source-audit-20261031/ci450-required.log",
+          "sha256": "19f28fad5dc6fef9468d4642232a2bd68dbb52c8301f3f11d2dbbc653d85d0c9",
+          "size": 21841
+        }
+      ],
+      "raw_total_bytes": 1582205,
+      "original_started_at": "2026-10-31T11:49:53Z",
+      "original_finished_at": "2026-10-31T12:25:19Z",
+      "original_attempt_conclusion": "failure",
+      "original_actual_timed_queries": 2,
+      "retained_success_jobs": 8,
+      "rerun_jobs": [
+        "macOS",
+        "Required"
+      ],
+      "first_mac_underlying_cause": "UNKNOWN; production build120s timeout without compiler diagnostic; tests not reached"
+    },
+    {
+      "profile": "cu132",
+      "receipt_path": "docs/github-logs/full-source-audit-20261031/cu132-qualification.json",
+      "receipt_sha256": "f4fed71ee7c36bf9507431aa8387547af7b48b80489cdd99f338253d48ac86cd",
+      "status": "CU132_QUALIFIED",
+      "source": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "tree": "e1cac13504028e8bb4ab1fa8677336eaebb8087f",
+      "actual_checkout": "358adf9b6aa8e7b237262d25588ee4eaa544d933",
+      "run_id": 41203161813,
+      "run_number": 451,
+      "run_url": "https://github.com/rahoney/heliopause/actions/runs/41203161813",
+      "started_at": "2026-10-31T12:54:25Z",
+      "finished_at": "2026-10-31T13:41:11Z",
+      "server_elapsed_s": 2806.0,
+      "success_jobs": 10,
+      "actual_parent_passes": 6,
+      "actual_skips": 0,
+      "cpu_full_elapsed_s": 290.53,
+      "cuda_full_elapsed_s": 1064.79,
+      "profile_binding": "frozen ordered CPU/CUDA commands + two actual parent PASSes + selected CUDA plan/runtime/torch identity",
+      "runtime": "python:3.14.10;pip:26.2.2;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu132",
+      "torch_version": "2.14.0+cu132",
+      "cpp_latches": 133,
+      "helpers_reaped": 2,
+      "helper_wait_all_zero": true,
+      "cleanup": [
+        "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=170193"
+      ],
+      "actual_timed_queries": 3,
+      "last_timed_query": "2026-10-31T13:54:27.455226+00:00",
+      "worker_natural_exit": 0,
+      "next_due_at": null,
+      "raw_logs": [
+        {
+          "original_job_id": 124542853684,
+          "retained_from_attempt1": false,
+          "job_id": 124542853684,
+          "name": "Security",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-security.log",
+          "sha256": "d71752cf289e2eb9b295128c9eb2fb63cfc7f1740db96dca43947f66e80c7462",
+          "size": 21504
+        },
+        {
+          "original_job_id": 124542853758,
+          "retained_from_attempt1": false,
+          "job_id": 124542853758,
+          "name": "gVisor Linux Integration",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-linux.log",
+          "sha256": "fbd7d362ed4151593769fb52b99ab1788a47fadb0e41808a6054349e026c7836",
+          "size": 1322070
+        },
+        {
+          "original_job_id": 124542853760,
+          "retained_from_attempt1": false,
+          "job_id": 124542853760,
+          "name": "gVisor Observer Helper",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-observer.log",
+          "sha256": "0019d1ba3ed70f5ce76ea0a34bd17e4929a6cded0e4690ba333e4cc4ba13997d",
+          "size": 280674
+        },
+        {
+          "original_job_id": 124542853782,
+          "retained_from_attempt1": false,
+          "job_id": 124542853782,
+          "name": "Vulnerability",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-vulnerability.log",
+          "sha256": "23f9abe3b079cfc07a574e5eaefa935be5e949cfca1d43873142bed918c6ac3e",
+          "size": 21235
+        },
+        {
+          "original_job_id": 124542853788,
+          "retained_from_attempt1": false,
+          "job_id": 124542853788,
+          "name": "Quick",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-quick.log",
+          "sha256": "86abec229b54ceeb2740b5c06eb4a2907c45925d815b7298b50ca2f59c87bf7f",
+          "size": 23384
+        },
+        {
+          "original_job_id": 124542853790,
+          "retained_from_attempt1": false,
+          "job_id": 124542853790,
+          "name": "Minimum Go",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-minimum-go.log",
+          "sha256": "e56953774c13bf9025fef72e87ebd75169b9e7477b5b2f2c777982afbfbb2db1",
+          "size": 21040
+        },
+        {
+          "original_job_id": 124542853830,
+          "retained_from_attempt1": false,
+          "job_id": 124542853830,
+          "name": "Representative Wheel Corpus",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-corpus.log",
+          "sha256": "dc10f0e9a7de3ac83bdfd714f8e99c87d788f8d6a8fabe15bb916cba6b9dc924",
+          "size": 34899
+        },
+        {
+          "original_job_id": 124542853870,
+          "retained_from_attempt1": false,
+          "job_id": 124542853870,
+          "name": "macOS",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-macos.log",
+          "sha256": "5994c8e66760309e85ee36ea734b670603def049d859938190a4789493bd7c08",
+          "size": 23894
+        },
+        {
+          "original_job_id": 124542853965,
+          "retained_from_attempt1": false,
+          "job_id": 124542853965,
+          "name": "Docs",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-docs.log",
+          "sha256": "3f901fbb56c15df7b012a8bc4c2e5ea1490ac51f9047bc83166ae6f86c697f16",
+          "size": 20059
+        },
+        {
+          "original_job_id": 124552973734,
+          "retained_from_attempt1": false,
+          "job_id": 124552973734,
+          "name": "Required",
+          "path": "docs/github-logs/full-source-audit-20261031/ci451-required.log",
+          "sha256": "4afa30914ef4900342c51efb361368e0453bf34ffc9aeb167520ff815634aa14",
+          "size": 21835
+        }
+      ],
+      "raw_total_bytes": 1790594
+    }
+  ],
+  "qualification_raw_logs": 40,
+  "qualification_raw_bytes": 6691308,
+  "ci_failure_disposition": {
+    "CI447": "new test long Mac Unix socket path and Python pip metadata exact-path mismatch minimally fixed in358; original failures retained",
+    "CI450": "first Mac120s build timeout without compiler diagnostic; tests not reached; underlying cause UNKNOWN; one Mac+dependentRequired retry passed84.179s build/default tests; original8 successes retained and GPU not repeated",
+    "timers": "actual20min GET intervals; same active turn consumed terminal; all workers exited naturally; no next due"
+  },
+  "limits_and_remaining_operations": [
+    "audit/test success is not proof of absence of every bug or vulnerability",
+    "full independent upstream source/runtime OS package penetration or CVE inventory is not claimed",
+    "local Host Docker29.8.1 remains below new29.9.2 minimum; deployment requires explicit supported Host transition and acceptance",
+    "original runtime component plans remain APPLIED; current configuration verification and hosted matrix are recorded separately from permanent activation",
+    "exact protected current Release Build/signing/clean-Host publication acceptance remains separate; local Buildx not available in earlier release inspection review",
+    "official name/publisher binding/convenience channels and M13-005 remain separate; no main merge/tag/publication performed"
+  ],
+  "evidence_storage": {
+    "raw_namespace": "docs/github-logs/full-source-audit-20261031",
+    "raw_git_status": "untracked preserved evidence; not automatically staged",
+    "canonical_human_report": "docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md",
+    "source_commits": [
+      "05f27998563291c051a3eaf423b3b7e881041d4e",
+      "bc96cd9b56f9f375f5d13db4aa7a079c10094ab1",
+      "f6c03493a209fdd87ac122439eb6ff8f48bdfa60",
+      "358adf9b6aa8e7b237262d25588ee4eaa544d933"
+    ]
+  }
+}
