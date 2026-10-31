@@ -23,12 +23,20 @@ func (b nodeExecutionEntryBinder) BindExecutionEntry(ctx context.Context, inspec
 }
 
 func bindNodeExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error)) (domain.ExecutionContext, error) {
-	return bindJavaScriptExecutionEntry(ctx, static, inspection, command, selectEntry, "")
+	selected, err := selectCurrentExecutionEntry(ctx, static, inspection, command, selectEntry)
+	if err != nil {
+		return domain.ExecutionContext{}, err
+	}
+	proof, err := static.ReadNodeExecutionEntry(ctx, selected)
+	if err != nil {
+		return domain.ExecutionContext{}, err
+	}
+	return newNodeExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil)
 }
 
-func bindJavaScriptExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error), runtime string) (domain.ExecutionContext, error) {
+func selectCurrentExecutionEntry(ctx context.Context, static *inspectionnpm.Inspector, inspection application.ExecutionInspection, command string, selectEntry func(artifactnpm.ArchiveInventory, string) (artifactnpm.ExecutionEntry, error)) (artifactnpm.ExecutionEntry, error) {
 	if ctx == nil || static == nil || !inspection.Valid() {
-		return domain.ExecutionContext{}, errors.New("node entry binding requires actual static inspection and current whole approval")
+		return artifactnpm.ExecutionEntry{}, errors.New("entry binding requires actual static inspection and current whole approval")
 	}
 	var primary domain.AcquiredArtifact
 	for _, entry := range inspection.Set().Inspected().Inspections() {
@@ -38,23 +46,12 @@ func bindJavaScriptExecutionEntry(ctx context.Context, static *inspectionnpm.Ins
 	}
 	inventory, report, err := static.InspectArchive(ctx, primary)
 	if err != nil {
-		return domain.ExecutionContext{}, err
+		return artifactnpm.ExecutionEntry{}, err
 	}
 	if !inventory.Valid() || len(report.Findings()) != 0 {
-		return domain.ExecutionContext{}, errors.New("current primary has no complete measured archive inventory")
+		return artifactnpm.ExecutionEntry{}, errors.New("current primary has no complete measured archive inventory")
 	}
-	selected, err := selectEntry(inventory, command)
-	if err != nil {
-		return domain.ExecutionContext{}, err
-	}
-	proof, err := static.ReadNodeExecutionEntry(ctx, selected)
-	if err != nil {
-		return domain.ExecutionContext{}, err
-	}
-	if runtime != "" {
-		return newJavaScriptExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil, runtime)
-	}
-	return newNodeExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil)
+	return selectEntry(inventory, command)
 }
 
 // All concrete adapters are supplied by the caller's trusted runtime/storage

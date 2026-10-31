@@ -11,14 +11,13 @@ import (
 // This composition binds the existing Node byte proof to the canonical runtime.
 // It performs no execution and cannot replace fresh whole-set inspection.
 func newNodeExecutionContext(operation domain.OperationID, resolution domain.DependencyResolution, set domain.VerifiedSet, node artifactnpm.NodeExecutionEntry, arguments []string) (domain.ExecutionContext, error) {
-	return newJavaScriptExecutionContext(operation, resolution, set, node, arguments, runtimeidentity.NodeImageReference)
-}
-
-func newJavaScriptExecutionContext(operation domain.OperationID, resolution domain.DependencyResolution, set domain.VerifiedSet, node artifactnpm.NodeExecutionEntry, arguments []string, runtime string) (domain.ExecutionContext, error) {
 	if !node.Valid() {
 		return domain.ExecutionContext{}, errors.New("node execution requires the selected entry byte proof")
 	}
-	entry := node.Entry()
+	return newRuntimeExecutionContext(operation, resolution, set, node.Entry(), arguments, runtimeidentity.NodeImageReference)
+}
+
+func newRuntimeExecutionContext(operation domain.OperationID, resolution domain.DependencyResolution, set domain.VerifiedSet, entry artifactnpm.ExecutionEntry, arguments []string, runtime string) (domain.ExecutionContext, error) {
 	member := entry.Target()
 	return domain.NewExecutionContext(domain.ExecutionContextData{
 		OperationID: operation, Resolution: resolution, Set: set,

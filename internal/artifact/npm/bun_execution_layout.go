@@ -12,6 +12,16 @@ import (
 // completely inspected native layout. It grants no runtime admission; existing
 // Node input readback, immutable mounts and external observation remain required.
 func BindBunNodeExecutionLayout(ctx context.Context, execution domain.ExecutionContext, prepared BunInspectionLayout, primary ArchiveInventory) (NodeExecutionLayout, error) {
+	return bindBunExecutionLayout(ctx, execution, prepared, primary, false)
+}
+
+// BindBunExecutionLayout reuses the same complete native source/layout binding
+// for a measured Bun JS/TS entry. The pinned runtime is enforced by its consumer.
+func BindBunExecutionLayout(ctx context.Context, execution domain.ExecutionContext, prepared BunInspectionLayout, primary ArchiveInventory) (NodeExecutionLayout, error) {
+	return bindBunExecutionLayout(ctx, execution, prepared, primary, true)
+}
+
+func bindBunExecutionLayout(ctx context.Context, execution domain.ExecutionContext, prepared BunInspectionLayout, primary ArchiveInventory, bun bool) (NodeExecutionLayout, error) {
 	if ctx == nil || !execution.Valid() || !prepared.input.context.MatchesExecutionResolution(execution.Resolution()) || !primary.Matches(execution.EntryArtifact()) {
 		return NodeExecutionLayout{}, errNodeExecutionLayout
 	}
@@ -36,7 +46,12 @@ func BindBunNodeExecutionLayout(ctx context.Context, execution domain.ExecutionC
 	if err != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
 	}
-	if _, err := selected.BindNodeTarget(body); err != nil {
+	if bun {
+		_, err = selected.BindBunTarget(body)
+	} else {
+		_, err = selected.BindNodeTarget(body)
+	}
+	if err != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
 	}
 	layout, err := copyNativeNodeExecutionArchive(ctx, prepared)

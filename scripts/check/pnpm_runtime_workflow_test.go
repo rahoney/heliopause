@@ -273,7 +273,7 @@ func testNativeNodeRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T, 
     npm_execution_refusal_integration_test.go:1: production_pnpm_run_refusal case=1 reason=ambiguous current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0
     npm_execution_refusal_integration_test.go:1: production_pnpm_run_refusal case=2 reason=missing current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0
 `
-	for name, input := range map[string]string{
+	inputs := map[string]string{
 		"complete": fixture, "empty": "", "child-only": "    --- PASS: TestLinuxPNPMRunExecutionCLIIntegration/case-1 (1s)\n",
 		"missing-parent":   strings.Replace(fixture, "--- PASS: TestLinuxPNPMRunExecutionCLIIntegration (1s)\n", "", 1),
 		"duplicate":        fixture + "    npm_execution_integration_test.go:1: production_pnpm_run_cli_graph nodes=12 edges=13 primary=rimraf current_policy=ALLOW\n",
@@ -281,7 +281,33 @@ func testNativeNodeRunGuardRejectsMissingDuplicateAndForeignCases(t *testing.T, 
 		"unknown-case":     strings.Replace(fixture, "production_pnpm_run_cli case=3", "production_pnpm_run_cli case=4", 1),
 		"wrong-guest-code": strings.Replace(fixture, "attempt=2 artifact_role=true target_loaded=true exit_code=1", "attempt=2 artifact_role=true target_loaded=true exit_code=0", 1),
 		"foreign-source":   strings.Replace(fixture, "npm_execution_integration_test.go:1: production_pnpm_run_cli case=1", "foreign.go:1: production_pnpm_run_cli case=1", 1),
-	} {
+	}
+	if bun {
+		declared := `--- PASS: TestLinuxBunDeclaredEntryWorkflowIntegration (1s)
+--- PASS: TestLinuxBunDeclaredEntryCLIIntegration (1s)
+    node_execution_run_integration_test.go:1: production_bun_declared_entry_application attempt=1 artifact_role=true target_loaded=true exit_code=0 stdout_bytes=3930 stderr_bytes=0 user_program_run=true
+    node_execution_run_integration_test.go:1: production_bun_declared_entry_application attempt=2 artifact_role=true target_loaded=true exit_code=1 stdout_bytes=0 stderr_bytes=254 user_program_run=true
+    bun_declared_entry_integration_test.go:1: production_bun_declared_entry_cli case=1 alias=bunx forced=false exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+    bun_declared_entry_integration_test.go:1: production_bun_declared_entry_cli case=2 alias=x forced=false exit_code=1 current_policy=ALLOW guest_cleanup=CONFIRMED
+    bun_declared_entry_integration_test.go:1: production_bun_declared_entry_cli case=3 alias=bunx forced=true exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED
+`
+		for name, input := range inputs {
+			if input != "" {
+				inputs[name] = input + declared
+			}
+		}
+		complete := inputs["complete"]
+		inputs["missing-declared-parent"] = strings.Replace(complete, "--- PASS: TestLinuxBunDeclaredEntryWorkflowIntegration (1s)\n", "", 1)
+		inputs["duplicate-declared-parent"] = complete + "--- PASS: TestLinuxBunDeclaredEntryCLIIntegration (1s)\n"
+		inputs["missing-declared-case"] = strings.Replace(complete, "production_bun_declared_entry_cli case=3", "other case=3", 1)
+		inputs["duplicate-declared-case"] = complete + "    bun_declared_entry_integration_test.go:1: production_bun_declared_entry_cli case=3 alias=bunx forced=true exit_code=0 current_policy=ALLOW guest_cleanup=CONFIRMED\n"
+		inputs["wrong-declared-exit"] = strings.Replace(complete, "attempt=2 artifact_role=true target_loaded=true exit_code=1 stdout_bytes=0", "attempt=2 artifact_role=true target_loaded=true exit_code=0 stdout_bytes=0", 1)
+		inputs["missing-declared-error-stream"] = strings.Replace(complete, "stdout_bytes=0 stderr_bytes=254", "stdout_bytes=0 stderr_bytes=0", 1)
+		inputs["wrong-runtime-choice"] = strings.Replace(complete, "case=2 alias=x forced=false", "case=2 alias=x forced=true", 1)
+		inputs["incomplete-cleanup"] = strings.ReplaceAll(complete, "guest_cleanup=CONFIRMED", "guest_cleanup=UNKNOWN")
+		inputs["foreign-declared-source"] = strings.ReplaceAll(complete, "bun_declared_entry_integration_test.go:1:", "foreign.go:1:")
+	}
+	for name, input := range inputs {
 		if bun {
 			input = strings.NewReplacer("PNPM", "Bun", "pnpm", "bun", "alias=dlx", "alias=bunx", "alias=pnx", "alias=x", "alias=pnpx", "alias=bunx").Replace(input)
 		}

@@ -24,7 +24,7 @@ source이고 pnpm/Bun/uv/pipx는 client다. Client 이름을 새 registry identi
 | Bun | `helox bun add <spec>` / `install` / `update [name]` | bun.lock·선택된 linker·lifecycle 정책. Bun runtime 사용은 별도 실행 identity |
 | npx | `helox npx <package> [args]`, 명시 package/command 형식과 `helox npm exec` | package의 bin과 실행 argv를 분리. 로컬 검색·cache도 검역 우회 불가 |
 | uvx | `helox uvx <tool> [args]`, `helox uv tool run` | package와 command가 다르면 명시 `--from`; extras/추가 dependency도 전체 set에 포함 |
-| bunx | `helox bunx <package> [args]`, `helox bun x` | Node shebang 기본 실행과 명시 Bun 실행을 구분하여 runtime admission |
+| bunx | `helox bunx <package> [args]`, `helox bun x` | 측정한 Node/Bun 선언과 명시 Bun 선택을 구분하여 runtime admission |
 | pipx | `helox pipx install <spec>` / `upgrade <name>` / `run <tool> [args]` | 영구 tool venv·entrypoint 소유권과 임시 실행은 다른 작업; backend를 실행마다 자동 탐지하지 않음 |
 | 같은 도구의 연관 진입점 | `helox uv tool install/upgrade`, `helox pnpm dlx` | 같은 typed operation에 연결. pnpx/pnx alias는 선택 버전의 실제 의미와 함께 검증 |
 
@@ -448,21 +448,24 @@ Linux amd64의 named local 앱2/CLI3/refusal2와12-node 기본 bin 사례는
 따른다. 필수 검사·새-source hosted/일반 peer 동등성/hostile/whole final의 남은 상태는
 [Queue](../planning/02-current-work-queue.md)가 소유한다.
 
-### P6 Bun one-off의 Node·명시 Bun 초기 실행 lane
+### P6 Bun one-off의 선언 runtime·명시 Bun 초기 실행 lane
 
 `helox bunx [--bun] [--package <package>] <package-or-command> [--] [args...]`와
 `helox bun x`는 고정 Bun으로 공개 npm의 bare 이름 또는 정확한 버전 하나를 선택한다.
 Native cache·lock은 unapproved DATA이며 독립 npm metadata/SRI와 각 원본을 다시 결합한다.
 모든 native placement/peer edge를 유지하고 기존 whole static·native Artifact runtime 검사와
-현재 Evidence/Policy·실행 기록을 거쳐 승인한 동일 tree의 Node-compatible JS entry를 읽기 전용
-sandbox에서 실행한다. 기본 runtime은 고정 Node이며 설치 target/ownership snapshot을 만들지 않는다.
+현재 Evidence/Policy·실행 기록을 거쳐 승인한 동일 tree의 측정된 entry를 읽기 전용
+sandbox에서 실행한다. 닫힌 Node 선언은 고정 Node, 닫힌 Bun 선언은 고정 Bun을 선택하며
+설치 target/ownership snapshot을 만들지 않는다. 선언 없는 JS는 기존 Node 선택을 유지한다.
 
 명령 생략은 기존 strict npm 선택처럼 package basename과 같은 유일한 bin에 한정한다.
 다중 bin 또는 다른 명령은 `--package <package> <command>`로 명시하며 native의 모호한
-fallback으로 추측하지 않는다. Package 앞의 `--bun`은 같은 검증된 JS entry를 별도 Bun program
+fallback으로 추측하지 않는다. Package 앞의 `--bun`은 같은 검증된 JS/TS entry를 별도 Bun program
 identity·ARTIFACT admission과 고정 Bun으로 실행한다. 자동 설치·env 파일·macro를 끄며 프로그램
-인자는 고정 entry 뒤에 전달한다. Bun-only shebang/TypeScript entry의 자동 선택은 아직 지원하지
-않는다. 기존 Node 실행이나 project lifecycle의 Bun 사용을 이 별도 실행의 증거로 쓰지 않는다.
+인자는 고정 entry 뒤에 전달한다. Bun shebang을 가진 TypeScript entry도 이 경로를 사용한다.
+선언 없는 TS는 확장자만으로 runtime을 추측하지 않고 명시 `--bun`을 요구한다. 허용 확장자는
+`.js/.cjs/.mjs/.ts/.tsx/.mts/.cts`이며 다른 interpreter나 shebang 인자는 거부한다.
+기존 Node 실행이나 project lifecycle의 Bun 사용을 이 별도 실행의 증거로 쓰지 않는다.
 Runtime provisioning, tag/range·URL/local/VCS, 다른 registry, shell, 프로젝트/PATH/global
 cache 검색과 생성 파일 반출은 초기 scope 밖이다. 프로그램 argv·private output·guest exit와
 정리 결과는 기존 실행 계약을 그대로 따른다.
@@ -473,3 +476,6 @@ G1 public cold exact/bare와 G2 현재 앱 normal0/typed nonzero1은 named local
 CLI3/거부2·12-node 기본 명령과 필수 로컬 검사까지 named local qualified다. 명시 Bun program의
 앱·CLI actual과 남은 실행 경계/전체 검사, 새 source hosted·일반 동등성·final의 현재 상태는
 [Queue](../planning/02-current-work-queue.md)를 따른다.
+G4의 [감사·수정 지도](../planning/evidence/package-client-quarantine/p6g4-bun-entry-runtime-baseline-20261031.md)에
+따른 public `bun-install@0.5.0`의 Bun shebang/TS 앱2·CLI3 및 기존 Node 앱2는 실제 로컬 PASS다.
+새 source의 묶음 검사·hosted acceptance는 별도로 닫으며 기존 ec1의 네 profile을 전용하지 않는다.

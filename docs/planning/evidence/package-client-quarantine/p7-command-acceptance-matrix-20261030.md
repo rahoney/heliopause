@@ -40,11 +40,35 @@ H1 root extras와 H2 독립 `--with`는 기존 owner·whole 검사/현재 Policy
 만들지 않는다. 최종 source의 CLI 옵션은 client09 현재 lane과 동일하며 과거 package-only
 거부 문구는 제거했다. Named local만으로 hosted를 주장하지 않고 위 CI442 whole cohort를 사용한다.
 
-일반 native 옵션/recipe 동등성, Bun-only shebang·TypeScript entry 자동 선택, stdin/TTY,
-생성 파일 반출·arbitrary child/held pipe 지원은 구현·검증 완료가 아니다. 이를 승인된 유예나
-전체 지원으로 바꾸지 않는다. `uv run`, `pnpm exec`, `bun run`, runtime provisioning,
+위 표는 ec1의 과거 source checkpoint다. 후속 G4는 Bun-only shebang·TypeScript entry와
+선언에 따른 runtime 선택을 구현·연결했고 실제 public 앱2/CLI3·기존 Node2를 로컬 검증했다.
+[G4 지도](./p6g4-bun-entry-runtime-baseline-20261031.md)가 새 후보를 소유하며 새 hosted와
+기능 acceptance는 아직 OPEN이다. 선언 없는 TS는 명시 `--bun`이 필요하다.
+
+모든 native 옵션/recipe의 동등성은 원래 client09의 약속이 아니다. stdin/TTY·생성 파일
+반출은 별도 acceptance이며 현재 stdout/stderr 우선 lane에 포함하지 않는다. Arbitrary
+child/held pipe는 현재 안전한 거부/불완전 처리의 검증 대상이다. 이 경계를 필수 미구현과
+혼합하거나 승인된 유예·전체 지원으로 바꾸지 않는다. `uv run`, `pnpm exec`, `bun run`, runtime provisioning,
 임의 private/index/global 설치 등의 명시 거부도 client09 계약대로 유지한다.
 네 profile 성공은 이 목록의 구현 증거나 macOS sandbox 지원이 아니다.
+
+## 2026-10-31 기능 우선 acceptance 재대조
+
+이름/배포 준비를 기능 작업의 blocker로 두지 않는다. 아래는 원래 좁은 계약의 실제
+명령·검사·원복 목표와 source evidence를 대조한 판정이다. 초기 scoped 범위의 완료를
+모든 native 옵션·미지원 ABI/registry의 완료로 확대하지 않는다.
+
+| 책임 / 실제 근거 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| P2/P3 project add/install/update·peer/ownership/adopt·실패 원복 — 위 P2/P3 matrix·CI413, ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 기존 matrix가 남긴 최종 profile은 ec1에서 확보됨; 새 기능을 다시 구현하지 않음 |
+| P4 project add/sync/lock-only·UV/pipx install/upgrade·고정 native 인계 — 위 K3/CI417/CI423, ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 일반 native 기본값·다른 recipe는 현재 명시 허용 범위가 아님 |
+| P5/P6 기존 npx/uvx/pipx/pnpm/Bun JS·alias·전체 source/현재 승인·출력/오류·악성/불완전 거부 — 위 각 receipt·ec1 CI442–445 | YES | YES | YES(ec1 scoped) | YES(ec1 scoped) | 공유 entry reader가 바뀐 새 G4 후보의 회귀는 아래 새 hosted에서 확인 |
+| P6-G4 선언 Bun/TS byte proof·runtime 선택·실제 current 앱/CLI·기존 Node 회귀 — G4 지도와 local 원본 | YES | YES | local 실제 PASS / hosted NO | NO | 최종 Quick/Race·tagged 분석·docs/security PASS; 새-source ordinary hosted/현재 지원표 연결 |
+| P7 새 후보의 기능 acceptance | YES(기존 qualification owner) | YES | NO(새 후보) | NO | G4 결과와 해당 후보 hosted·최초 오류·정리를 연결; 불변 CPP/세 CUDA를 이유 없이 반복하지 않음 |
+
+생성 파일/TTY 등의 별도 확장을 이번 좁은 실행 계약의 누락으로 소급하지 않는다.
+필요한 새 동작이 실제로 발견되면 exact gap으로 다시 판정한다. 새 후보의 필수 기능
+acceptance가 닫히기 전에는 이름 선택·배포 단계로 넘어가지 않는다.
 
 ## 인계와 남은 작업
 

@@ -43,6 +43,21 @@ func TestLinuxBunProgramExecutionWorkflowIntegration(t *testing.T) {
 	runNodeExecutionWorkflowIntegration(t, "bun-program")
 }
 
+func TestLinuxBunDeclaredEntryWorkflowIntegration(t *testing.T) {
+	runNodeExecutionFixtureIntegration(t, "bun", bunDeclaredEntryFixture)
+}
+
+type nodeExecutionPublicFixture struct {
+	selector, command, name, version, member, integrity, normal, failure string
+	bunDefault, failureStderr                                            bool
+}
+
+var bunDeclaredEntryFixture = nodeExecutionPublicFixture{
+	selector: "bun-install@0.5.0", command: "bun-install", name: "bun-install", version: "0.5.0", member: "src/index.ts",
+	integrity: "sha512-mpe+XGXMsSw9rGxtH2i4kzpHiO+3hAYckVYoXWqgnKj6H+wJVLvvv80Hi/OQUENagkSbVp+KvnqGo1m98T2veg==",
+	normal:    "bun-install", failure: "--haa-invalid-option", bunDefault: true, failureStderr: true,
+}
+
 type bunProgramWorkflowRunner struct{ bunRunExecutionWorkflow }
 
 func (r bunProgramWorkflowRunner) Run(ctx context.Context, request application.ExecutionPreparationRequest) (application.ExecutionResult, error) {
@@ -50,6 +65,14 @@ func (r bunProgramWorkflowRunner) Run(ctx context.Context, request application.E
 }
 
 func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
+	runNodeExecutionFixtureIntegration(t, client, nodeExecutionPublicFixture{
+		selector: "typescript@5.9.3", command: "tsc", name: "typescript", version: "5.9.3", member: "bin/tsc",
+		integrity: "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+		normal:    "Version 5.9.3", failure: "Unknown compiler option",
+	})
+}
+
+func runNodeExecutionFixtureIntegration(t *testing.T, client string, fixture nodeExecutionPublicFixture) {
 	t.Helper()
 	declared := os.Getenv("HELOX_NODE_EXECUTION_WORKFLOW_INTEGRATION") == "1"
 	if client == "pnpm" {
@@ -157,18 +180,18 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal(err)
 		}
 	}
-	reference, err := artifactnpm.ParseReference("typescript@5.9.3")
+	reference, err := artifactnpm.ParseReference(fixture.selector)
 	if err != nil {
 		t.Fatal(err)
 	}
-	request, err := application.NewExecutionPreparationRequest(reference, "tsc", []string{"--help"})
+	request, err := application.NewExecutionPreparationRequest(reference, fixture.command, []string{"--help"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	var previous application.PreparedExecution
 	for attempt := 1; attempt <= 2; attempt++ {
 		if attempt == 2 {
-			request, err = application.NewExecutionPreparationRequest(reference, "tsc", []string{"--haa-invalid-option"})
+			request, err = application.NewExecutionPreparationRequest(reference, fixture.command, []string{"--haa-invalid-option"})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -188,7 +211,7 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 		subject := entry.Artifact()
 		identity := subject.Identity()
 		declared, ok := subject.DeclaredIntegrity()
-		if identity.Source().String() != "npm" || identity.Name() != "typescript" || identity.Version() != "5.9.3" || !ok || declared != "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==" {
+		if identity.Source().String() != "npm" || identity.Name() != fixture.name || identity.Version() != fixture.version || !ok || declared != fixture.integrity {
 			t.Fatal("actual source differs from fixed official fixture")
 		}
 		checks := map[string]bool{}
@@ -215,10 +238,10 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 		}
 		execution := prepared.ExecutionContext()
 		runtime := runtimeidentity.NodeImageReference
-		if client == "bun-program" {
+		if client == "bun-program" || fixture.bunDefault {
 			runtime = sandbox.BunExecutionRuntimeIdentity()
 		}
-		if execution.OperationID() != inspected.OperationID() || execution.EntryArtifact() != subject || execution.Command() != "tsc" || execution.EntryPath() != "bin/tsc" || execution.EntrySize() == 0 || execution.RuntimeIdentity() != runtime || execution.SourceFingerprint() != inspected.Resolution().LockfileDigest() || !slices.Equal(execution.Arguments(), request.Arguments()) {
+		if execution.OperationID() != inspected.OperationID() || execution.EntryArtifact() != subject || execution.Command() != fixture.command || execution.EntryPath() != fixture.member || execution.EntrySize() == 0 || execution.RuntimeIdentity() != runtime || execution.SourceFingerprint() != inspected.Resolution().LockfileDigest() || !slices.Equal(execution.Arguments(), request.Arguments()) {
 			t.Fatal("Node proof/runtime/current request binding lost")
 		}
 		for name, expected := range map[string][]byte{"manifest.json": prepared.Bundle().ManifestDocument(), "sbom.cdx.json": prepared.Bundle().SBOMDocument()} {
@@ -231,7 +254,7 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal("repeated production request reused approval/records")
 		}
 		code, exited := executed.ExitCode()
-		if !executed.Complete() || !exited || len(executed.Stderr()) != 0 {
+		if !executed.Complete() || !exited || (attempt == 1 || !fixture.failureStderr) && len(executed.Stderr()) != 0 {
 			// This fixed public fixture preserves the bounded original driver
 			// diagnostic; production runtime output remains private.
 			var driver *exec.ExitError
@@ -241,17 +264,21 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 			t.Fatal("actual Artifact Node execution is incomplete", runErr)
 		}
 		if attempt == 1 {
-			if runErr != nil || code != 0 || !strings.Contains(string(executed.Stdout()), "Version 5.9.3") {
+			if runErr != nil || code != 0 || !strings.Contains(string(executed.Stdout()), fixture.normal) {
 				t.Fatal("approved Node help execution failed", runErr)
 			}
 		} else {
 			var program *sandbox.NodeProgramError
 			typed := errors.As(runErr, &program)
-			if client == "bun-program" {
+			if client == "bun-program" || fixture.bunDefault {
 				var bun *sandbox.BunProgramError
 				typed = errors.As(runErr, &bun)
 			}
-			if code != 1 || !typed || !strings.Contains(string(executed.Stdout()), "Unknown compiler option") {
+			output := executed.Stdout()
+			if fixture.failureStderr {
+				output = executed.Stderr()
+			}
+			if code != 1 || !typed || !strings.Contains(string(output), fixture.failure) {
 				t.Fatal("guest nonzero differs from runtime failure", runErr)
 			}
 		}
@@ -270,6 +297,9 @@ func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
 		}
 		if client == "bun-program" {
 			marker = "production_bun_program_application"
+		}
+		if fixture.bunDefault {
+			marker = "production_bun_declared_entry_application"
 		}
 		t.Logf("%s attempt=%d artifact_role=true target_loaded=true exit_code=%d stdout_bytes=%d stderr_bytes=%d user_program_run=true", marker, attempt, code, len(executed.Stdout()), len(executed.Stderr()))
 		previous = prepared

@@ -15,8 +15,8 @@
   현재 client/runner 지원 lane의 source `ec1c260`은 [CI442 ordinary/CPU](docs/planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json)와
   [cu126](docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json)·[cu130](docs/planning/evidence/package-client-quarantine/p7-cu130-final-qualification-20261031.json)·[cu132](docs/planning/evidence/package-client-quarantine/p7-cu132-final-qualification-20261031.json)의 Required10SUCCESS로 검증했다.
   [지원표](docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)는 실제 지원과 미구현 범위를 구분한다.
-  일반 native 동등성·새 서명 배포물·공식 채널 이름/publisher binding과 채널 구현·public publication은 미완료다.
-  다음 채널의 이름 선택은 답변 대기이며, 실제 다음 순서와 검증 상태는 [Queue](docs/planning/02-current-work-queue.md)가 소유한다.
+  후속 Bun 선언/TypeScript entry는 [구현·실제 로컬 앱/CLI와 묶음 Quick/Race 검증](docs/planning/evidence/package-client-quarantine/p6g4-bun-declared-entry-local-20261031.json)을 마쳤으며 새 후보의 hosted acceptance가 남아 있다.
+  사용자 지시에 따라 기능 acceptance를 먼저 마친 뒤 공식 채널 이름/publisher binding·채널 구현·새 서명 배포물을 진행한다. 원래 지원 제외·별도 확장과 필수 누락은 구분하며 실제 순서는 [Queue](docs/planning/02-current-work-queue.md)가 소유한다.
   Main 병합·게시 승인은 별도이며 첫 정식 공개판 목표는 v1.0.0이다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.

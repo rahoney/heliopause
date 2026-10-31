@@ -14,6 +14,10 @@ import (
 // Synthetic measured members exercise structural binding, not native execution
 // or real integrity verification. The public current workflow covers those.
 func bunExecutionLayoutFixture(t *testing.T) (domain.ExecutionContext, BunInspectionLayout, ArchiveInventory) {
+	return bunExecutionLayoutFixtureBody(t, "#!/usr/bin/env node\nconsole.log('synthetic member');\n")
+}
+
+func bunExecutionLayoutFixtureBody(t *testing.T, body string) (domain.ExecutionContext, BunInspectionLayout, ArchiveInventory) {
 	t.Helper()
 	source, cache, reference, _ := bunRunResolutionFixture(t, false)
 	frozen, err := source.BindBunRunCache(context.Background(), cache, reference, "fixture-bun-runtime")
@@ -38,7 +42,7 @@ func bunExecutionLayoutFixture(t *testing.T) (domain.ExecutionContext, BunInspec
 	}
 	files := map[string]string{"package.json": string(manifest)}
 	for _, member := range pkg.Bins {
-		files[member] = "#!/usr/bin/env node\nconsole.log('synthetic member');\n"
+		files[member] = body
 	}
 	var members []ArchiveEntry
 	entries := map[string]layoutTarTestEntry{}
@@ -104,6 +108,20 @@ func bunExecutionLayoutFixture(t *testing.T) (domain.ExecutionContext, BunInspec
 		t.Fatal(err)
 	}
 	return execution, prepared, inventory
+}
+
+func TestBunExecutionLayoutAdmitsBunDeclarationWithoutWideningNode(t *testing.T) {
+	execution, prepared, primary := bunExecutionLayoutFixtureBody(t, "#!/usr/bin/env bun\nconsole.log('synthetic member');\n")
+	if old, err := BindBunNodeExecutionLayout(context.Background(), execution, prepared, primary); err == nil || old.MatchesExecution(execution) {
+		t.Fatal("Bun-only original entered the Node layout path")
+	}
+	layout, err := BindBunExecutionLayout(context.Background(), execution, prepared, primary)
+	if err != nil || !layout.MatchesExecution(execution) || layout.nativeClient != "bun" {
+		t.Fatal("complete Bun original or bound layout facts were lost", err)
+	}
+	if body, err := RenderNodeExecutionInputs(context.Background(), execution, layout); err != nil || len(body) == 0 {
+		t.Fatal("Bun target could not use the existing readonly input renderer", err)
+	}
 }
 
 func TestBunNodeExecutionLayoutRequiresCurrentWholeSourceAndKeepsSeparateIdentity(t *testing.T) {

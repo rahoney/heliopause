@@ -43,6 +43,50 @@ func nodeReadDigest(t *testing.T, body []byte) domain.ContentDigest {
 	return digest
 }
 
+func TestReadBunEntryMeasuresOriginalAndKeepsNodeBoundary(t *testing.T) {
+	for _, test := range []struct{ file, body string }{
+		{"cli.ts", "#!/usr/bin/env bun\nconst x: number = 1;\nconsole.log(x);\n"},
+		{"cli.ts", "const x: number = 1;\n"},
+		{"bin/tool", "#!/usr/bin/env -S bun\nconsole.log('ok');\n"},
+	} {
+		inspector, inventory, entry, _ := executionReadFixture(t, []tarEntry{
+			{name: "package/" + test.file, body: test.body},
+			{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","bin":"` + test.file + `"}`},
+			{name: "package/other.js", body: "other"},
+		}, "")
+		proof, err := inspector.ReadBunExecutionEntry(context.Background(), entry)
+		if err != nil || !proof.Matches(inventory) || !bytes.Equal(proof.Bytes(), []byte(test.body)) {
+			t.Fatal("actual selected original was not measured", err)
+		}
+		if old, err := inspector.ReadNodeExecutionEntry(context.Background(), entry); err == nil || old.Valid() {
+			t.Fatal("Bun-only target entered existing Node proof")
+		}
+		members := inventory.Entries()
+		for i := range members {
+			if members[i].Path == "other.js" {
+				members[i].Digest = nodeReadDigest(t, []byte("foreign"))
+			}
+		}
+		forged, err := artifactnpm.NewArchiveInventory(inventory.Artifact(), members, inventory.Manifest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		foreign, err := artifactnpm.SelectExecutionEntry(forged, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result, err := inspector.ReadBunExecutionEntry(context.Background(), foreign); err == nil || result.Valid() {
+			t.Fatal("changed unselected member bypassed complete original equality")
+		}
+		cause := errors.New("stopped Bun entry read")
+		ctx, cancel := context.WithCancelCause(context.Background())
+		cancel(cause)
+		if result, err := inspector.ReadBunExecutionEntry(ctx, entry); !errors.Is(err, context.Canceled) || !errors.Is(err, cause) || result.Valid() {
+			t.Fatal("Bun entry read lost cancellation/cause", err)
+		}
+	}
+}
+
 func TestReadNodeEntryUsesActualSelectedBytesRegardlessOfArchiveOrder(t *testing.T) {
 	for _, test := range []struct {
 		name, member, body, manifest, command string

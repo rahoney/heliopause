@@ -49,7 +49,7 @@ if [[ "$bun_profile" == project ]]; then
   bun_run_status=0
   (
     cd internal/bootstrap
-    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunRunExecution(Workflow|CLI(Refusal)?)Integration$'
+    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBun(RunExecution(Workflow|CLI(Refusal)?)|DeclaredEntry(Workflow|CLI))Integration$'
   ) >"$bun_run_log" 2>&1 || bun_run_status=$?
   bun_run_log_status=0
   cat -- "$bun_run_log" || bun_run_log_status=$?
@@ -60,9 +60,14 @@ if [[ "$bun_profile" == project ]]; then
   expected["TestLinuxBunRunExecutionWorkflowIntegration"]=1
   expected["TestLinuxBunRunExecutionCLIIntegration"]=1
   expected["TestLinuxBunRunExecutionCLIRefusalIntegration"]=1
+  expected["TestLinuxBunDeclaredEntryWorkflowIntegration"]=1
+  expected["TestLinuxBunDeclaredEntryCLIIntegration"]=1
   cli[1]="alias=bunx format=json language=en show_output=false exit_code=0"
   cli[2]="alias=x format=json language=ko show_output=true exit_code=1"
   cli[3]="alias=bunx format=human language=ko show_output=true exit_code=0"
+  declared_cli[1]="alias=bunx forced=false exit_code=0"
+  declared_cli[2]="alias=x forced=false exit_code=1"
+  declared_cli[3]="alias=bunx forced=true exit_code=0"
   }
   /--- SKIP:/ { bad=1 }
   /^--- PASS:/ { if (!($3 in expected) || parents[$3]++) bad=1; parent_count++ }
@@ -87,7 +92,19 @@ if [[ "$bun_profile" == project ]]; then
   if (id !~ /^[12]$/ || refused[id]++ || $0 !~ ("^[[:space:]]+npm_execution_refusal_integration_test\\.go:[0-9]+: production_bun_run_refusal case=" id " reason=" reason " current_policy=ALLOW preparation=INCOMPLETE runtime_attempted=false exit_absent=true output_bytes=0 stored_manifest=0$")) bad=1
   refusal_count++
   }
-  END { exit (bad || parent_count!=3 || app_count!=2 || case_count!=3 || refusal_count!=2 || graph!=1) }
+  /production_bun_declared_entry_application attempt=/ {
+  if ($0 !~ /^[[:space:]]+node_execution_run_integration_test\.go:[0-9]+: production_bun_declared_entry_application attempt=[12] artifact_role=true target_loaded=true exit_code=[01] stdout_bytes=[0-9]+ stderr_bytes=[0-9]+ user_program_run=true$/) bad=1
+  id=$3; sub(/^attempt=/,"",id)
+  stdout=$7; sub(/^stdout_bytes=/,"",stdout); stderr=$8; sub(/^stderr_bytes=/,"",stderr)
+  if (declared_apps[id]++ || $6 != "exit_code=" (id-1) || (id==1 && (stdout<=0 || stderr!=0)) || (id==2 && (stdout!=0 || stderr<=0))) bad=1
+  declared_app_count++
+  }
+  /production_bun_declared_entry_cli case=/ {
+  id=$3; sub(/^case=/,"",id)
+  if (!(id in declared_cli) || declared_cases[id]++ || $0 !~ ("^[[:space:]]+bun_declared_entry_integration_test\\.go:[0-9]+: production_bun_declared_entry_cli case=" id " " declared_cli[id] " current_policy=ALLOW guest_cleanup=CONFIRMED$")) bad=1
+  declared_case_count++
+  }
+  END { exit (bad || parent_count!=5 || app_count!=2 || case_count!=3 || refusal_count!=2 || graph!=1 || declared_app_count!=2 || declared_case_count!=3) }
   ' "$bun_run_log"
   bun_program_log="$bun_work/program.log"
   bun_program_status=0

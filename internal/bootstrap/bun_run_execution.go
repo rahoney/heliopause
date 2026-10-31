@@ -12,6 +12,7 @@ import (
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 )
@@ -57,7 +58,7 @@ func (r bunRunExecutionWorkflow) run(ctx context.Context, request application.Ex
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
-	service, err := application.NewExecutionService(preparation, bunRunExecutionRuntime{r.backend, r.static, inspector, frozen, bun})
+	service, err := application.NewExecutionService(preparation, bunRunExecutionRuntime{r.backend, r.static, inspector, frozen})
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
@@ -86,10 +87,15 @@ func (b bunRunEntryBinder) BindExecutionEntry(ctx context.Context, inspection ap
 	if !b.frozen.MatchesExecutionResolution(inspection.Resolution()) {
 		return domain.ExecutionContext{}, errors.New("bun entry binding differs from current native whole inspection")
 	}
-	if b.bun {
-		return bindJavaScriptExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry, sandbox.BunExecutionRuntimeIdentity())
+	selected, err := selectCurrentExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry)
+	if err != nil {
+		return domain.ExecutionContext{}, err
 	}
-	return bindNodeExecutionEntry(ctx, b.static, inspection, command, artifactnpm.SelectExecutionEntry)
+	proof, err := b.static.ReadBunExecutionEntry(ctx, selected)
+	if err != nil {
+		return domain.ExecutionContext{}, err
+	}
+	return newBunProgramExecutionContext(inspection.OperationID(), inspection.Resolution(), inspection.Set(), proof, nil, b.bun)
 }
 
 type bunRunExecutionRuntime struct {
@@ -97,12 +103,15 @@ type bunRunExecutionRuntime struct {
 	static    *inspectionnpm.Inspector
 	inspector *inspectionnpm.BunExecutionInspector
 	frozen    artifactnpm.BunInspectionContext
-	bun       bool
 }
 
 func (r bunRunExecutionRuntime) Execute(ctx context.Context, execution domain.ExecutionContext) (application.ExecutionRuntimeOutcome, error) {
 	if ctx == nil || r.backend == nil || r.static == nil || r.inspector == nil || !r.frozen.MatchesExecutionResolution(execution.Resolution()) {
 		return nil, errors.New("bun runtime requires the same complete current inspection")
+	}
+	bun := execution.RuntimeIdentity() == sandbox.BunExecutionRuntimeIdentity()
+	if !bun && execution.RuntimeIdentity() != runtimeidentity.NodeImageReference {
+		return nil, errors.New("bun runtime differs from its bound pinned interpreter")
 	}
 	acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
 	for _, inspection := range execution.Set().Inspected().Inspections() {
@@ -116,11 +125,15 @@ func (r bunRunExecutionRuntime) Execute(ctx context.Context, execution domain.Ex
 	if err != nil || !inventory.Valid() || len(report.Findings()) != 0 {
 		return nil, errors.Join(errors.New("bun current primary has no complete measured original"), err)
 	}
-	layout, err := artifactnpm.BindBunNodeExecutionLayout(ctx, execution, prepared, inventory)
+	bindLayout := artifactnpm.BindBunNodeExecutionLayout
+	if bun {
+		bindLayout = artifactnpm.BindBunExecutionLayout
+	}
+	layout, err := bindLayout(ctx, execution, prepared, inventory)
 	if err != nil {
 		return nil, err
 	}
-	if r.bun {
+	if bun {
 		return r.backend.ExecuteBunExecution(ctx, execution, layout)
 	}
 	return r.backend.ExecuteNodeExecution(ctx, execution, layout)

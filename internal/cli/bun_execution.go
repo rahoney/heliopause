@@ -13,18 +13,18 @@ import (
 func bunRunExecutionDescriptor(nested bool) packageClientDescriptor {
 	d := pnpmRunExecutionDescriptor("pnx")
 	d.id, d.path, d.use = BunRunPackageClient, []string{"bunx"}, "bunx [--package <package>] <package-or-command> [--] [args...]"
-	d.shortEN, d.shortKO = "Quarantine and run a public npm Node entry with Bun", "Bun으로 공개 npm의 Node entry를 검역한 뒤 격리 실행합니다"
-	d.longEN = "Select one bare or exact public package with pinned Bun, freshly quarantine every native dependency, then run its declared Node entry in a bounded read-only sandbox. Use --package <package> <command> for multiple bins or a command different from the package basename. Use --bun to run the same verified Node-compatible entry with pinned Bun. Bun-only shebangs and other entry formats, runtime provisioning, project/PATH/global-cache lookup, shell commands and alternate registries are unavailable. --show-output displays private program streams as ASCII-escaped data."
-	d.longKO = "고정 Bun으로 공개 패키지 이름 또는 정확한 버전 하나를 선택하고 모든 native 의존성을 새로 검역한 뒤 선언된 Node entry를 제한된 읽기 전용 sandbox에서 실행합니다. bin이 여러 개이거나 명령이 패키지 basename과 다르면 --package <패키지> <명령>으로 명시하세요. --bun은 같은 검증된 Node-compatible entry를 고정 Bun으로 실행합니다. Bun-only shebang과 다른 entry 형식·runtime 설치·프로젝트/PATH/전역 cache 검색·shell·다른 registry는 지원하지 않습니다. --show-output은 비공개 프로그램 출력을 ASCII escape 데이터로 표시합니다."
+	d.shortEN, d.shortKO = "Quarantine and run a public npm entry selected by Bun", "Bun으로 선택한 공개 npm entry를 검역한 뒤 격리 실행합니다"
+	d.longEN = "Select one bare or exact public package with pinned Bun, freshly quarantine every native dependency, then run its measured entry in a bounded read-only sandbox. Use --package <package> <command> for multiple bins or a command different from the package basename. Closed Node and Bun shebangs select their pinned runtime. Use --bun to run a verified JavaScript or TypeScript entry with pinned Bun; a TypeScript entry without a runtime declaration requires --bun. Runtime provisioning, project/PATH/global-cache lookup, shell commands and alternate registries are unavailable. --show-output displays private program streams as ASCII-escaped data."
+	d.longKO = "고정 Bun으로 공개 패키지 이름 또는 정확한 버전 하나를 선택하고 모든 native 의존성을 새로 검역한 뒤 원본을 측정한 entry를 제한된 읽기 전용 sandbox에서 실행합니다. bin이 여러 개이거나 명령이 패키지 basename과 다르면 --package <패키지> <명령>으로 명시하세요. 닫힌 Node/Bun shebang은 각각 고정 runtime을 선택합니다. --bun은 검증된 JavaScript·TypeScript entry를 고정 Bun으로 실행하며, runtime 선언이 없는 TypeScript entry는 --bun이 필요합니다. runtime 설치·프로젝트/PATH/전역 cache 검색·shell·다른 registry는 지원하지 않습니다. --show-output은 비공개 프로그램 출력을 ASCII escape 데이터로 표시합니다."
 	d.validate = func(command *cobra.Command, args []string) error {
 		_, err := readBunRunExecutionRequest(command, args)
 		return err
 	}
 	d.flags = func(command *cobra.Command) {
 		configureRunExecutionFlags(command, "package")
-		command.Flags().Bool("bun", false, "Use pinned Bun for the selected Node-compatible entry")
+		command.Flags().Bool("bun", false, "Use pinned Bun for the selected JavaScript or TypeScript entry")
 	}
-	d.flagText["bun"] = packageClientParent{"Run the selected Node-compatible entry with pinned Bun", "선택한 Node-compatible entry를 고정 Bun으로 실행합니다"}
+	d.flagText["bun"] = packageClientParent{"Run the selected JavaScript or TypeScript entry with pinned Bun", "선택한 JavaScript·TypeScript entry를 고정 Bun으로 실행합니다"}
 	d.validateRaw = validateBunRunExecutionRawArgs
 	d.examples = []string{"helox bunx --package typescript@5.9.3 --show-output tsc -- --help", "helox --output json bun x semver@7.8.5 -- 1.2.3"}
 	if nested {
