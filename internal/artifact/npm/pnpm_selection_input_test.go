@@ -89,3 +89,14 @@ func TestPNPMSelectionOutputBindsIntentAndPreservesOtherManifestFields(t *testin
 		t.Fatal("zero input produced selected state")
 	}
 }
+
+func TestPNPMFrozenSelectionRejectsChangedLockBytes(t *testing.T) {
+	lock := pnpmFixture(t, "single")
+	input, err := NewPNPMSelectionInput(PNPMInstall, "", []domain.ProjectControlFile{pnpmInputControl(t, "package.json", pnpmSingleManifest, true), pnpmInputControl(t, "pnpm-lock.yaml", string(lock), true)}, runtimeidentity.PNPMVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = input.ParseOutput([]byte(pnpmSingleManifest), append([]byte("# changed frozen lock\n"), lock...)); err == nil {
+		t.Fatal("frozen native selection changed original lock bytes")
+	}
+}

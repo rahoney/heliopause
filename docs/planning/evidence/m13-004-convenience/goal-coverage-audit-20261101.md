@@ -617,3 +617,80 @@ phase와 각 독립 root 거부도 포함한다. 실제 CLI는 마지막 empty-l
 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Canonical/static/security·hosted/four-profile/final은
 다음 의미 있는 변경 묶음과 합친다. 완료된 protected 복사본2개57363170B는 process 참조0/
 query error0 확인 뒤 삭제했다. 다음 로컬 단위는 B06 UV/PNPM/Bun 선택·lock 옵션 baseline이다.
+
+
+## B06 — UV 선택·lock 및 PNPM/Bun frozen 착수 baseline (77e5611)
+
+전체 보강 기능은 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. 다음 기존 부품은 YES이며 다시 구현하지 않는다.
+
+- PNPM/Bun native install은 기존 lock이 있으면 이미 --frozen-lockfile을 사용하고 parser와
+  whole graph/independent source/승인/transaction을 거친다. CLI 명시 옵션만 없으며 lock 부재는
+  기존 일반 install에서 최초 선택이다. `sandbox/{pnpm,bun}_resolver.go`와
+  `artifact/npm/{pnpm,bun}_selection_input.go`를 그대로 재사용한다.
+- UV virtual project는 현재 단일 기본 dependencies만 읽고 group/extra/marker는 명시 거부한다.
+  `artifact/pypi/uv_project_input.go`의 기존 `uv-project-intent.json`이 intent/selector/runtime
+  digest를 이미 bind한다. 새 options도 이 canonical control에 결합하고 별도 control/pipeline을
+  추가하지 않는다. 기존 native resolver가 lock→frozen export→materialize, 독립 source binding,
+  전체 wheel 검사/cache/프로젝트·venv 반입을 소유한다. 내부 export의 --frozen은 공개 frozen
+  mode가 이미 구현됐다는 뜻이 아니다. 현재 --no-default-groups 고정도 새 dev 선택과 대조한다.
+
+수정 책임 지도: CLI의 실제 요청/flag descriptor → bootstrap의 request-local session →
+기존 frozen input/intent control → 고정 native 선택/lock/export → 기존 graph/source/전체 검사/
+승인 cache/원자 반입·정리. PNPM/Bun frozen은 새 resolver mode/검사 service 없이 CLI request의
+lock 필수 의도를 원본 guard 뒤 확인한 뒤 기존 lock-present native 경로를 사용한다. Preflight
+뒤 lock이 사라져도 최초 선택으로 바뀌지 않도록 guarded controls에서 다시 확인한다.
+
+UV Read/수정 owner: 보강 §4.6, CLI09, `cli/uv_project.go`, `bootstrap/uv_project.go`,
+`artifact/pypi/uv_project_input.go`, `uv_project_lock.go` 및 실제 native lock/export parser,
+`sandbox/uv_project_resolver.go`, 기존 promotion/project preparation. B01의 requirement 문법과
+marker 지원은 재사용 가능 범위를 확인하며 기존 project 전체 graph/source 검사를 생략하지 않는다.
+Unknown fields를 무시하거나 native frozen을 locked로 바꿔 통과시키지 않는다. Default dev/group,
+선택/제외/충돌, extras/marker closure와 locked vs frozen의 서로 다른 의미를 실제 고정 UV와 대조한다.
+
+MISSING: 위 공개 옵션과 bound input/실제 소비자, default/선택/제외/미존재/충돌의 명확한 규칙,
+missing/stale/malformed lock·bytes 불변·원본 경쟁/취소/원복, 실제 native 결과와 검역/최종 반입 비교,
+기존 sync/add/install/update 회귀 및 최종 묶음 canonical/security/hosted qualification.
+먼저 기존 구현을 거의 그대로 쓰는 PNPM/Bun frozen 공개 연결을 완료한 뒤 UV 선택을 보강한다.
+Runtime lock/generator/버전 유지보수·Host 설치는 변경하지 않는다. 새 CI는 시작하지 않는다.
+
+
+B06 첫 PNPM/Bun frozen 연결 checkpoint: 공개 옵션을 install에만 등록하고 명시 false/중복/
+다른 intent와 missing/stale/malformed lock은 preflight에서 거부한다. Request의 lock 필수
+의도를 기존 guard 뒤 immutable controls에서도 재확인한 뒤 원래 native lock-present 경로를
+사용한다. 새 resolver/input mode/pipeline은 없다. 기존 constructor에 request-local flag만
+전달했고 새로운 독립 lock parser를 만들지 않았다. CLI·bootstrap 표적10.194s PASS다.
+PNPM의 기존 ParseOutput은 frozen native argv만으로 lock byte 보존을 가정하여 단순 comment
+추가를 수용했다. 직접 RED2.675s 뒤 기존 Bun과 같은 원본 bytes 비교를 PNPM의 기존 parser에
+추가했다. 네 package selection/CLI/bootstrap 회귀13.752s PASS이며 실제 새 CLI/묶음 검증은
+남는다. [PNPM](https://pnpm.io/cli/install)의 native frozen은 부재·불일치를 거부하지만
+[Bun](https://bun.sh/docs/pm/cli/install)은 lock 부재에서도 잠그지 않고 설치할 수 있다.
+HAA는 설계대로 frozen 요청의 lock 부재를 별도로 거부하며 native 전체 동등성을 주장하지 않는다.
+
+UV는 아직 수정하지 않았다. 기존 strict native lock parser가 group/extra/marker와 여러
+conditional variant를 읽지 못하므로 필드를 무시하여 풀지 않는다. 현재 fixed UV0.13.4의
+실제 native lock/pylock/flag 의미를 DATA로 먼저 수집하고, 기존 canonical intent control에
+선택을 bind하여 전체 source/graph/검사·target 원복을 보강한다. 이 발견을 새 framework나
+새 runtime pin의 필요로 확대하지 않는다. B06 전체 I/W/QUALIFIED/ACCEPTANCE_CLOSED는
+아직 완료가 아니며 원본은 goal-implementation-20261101/b06-*가 소유한다.
+
+
+B06 native UV DATA 수집 V1(parent4.90s/operator6.766s)과 V2(4.51s/6.388s)는
+모든 선택 후 lock 불변·helperwait0·Host/Docker 보존/빈 runtime을 확인했다. 실제 고정
+UV0.13.4의 export는 비활성 platform marker와 같은 이름의 조건부 두 version도 포함하며,
+중첩 group은 root dev-dependencies에 펼쳐지고 root default-groups가 별도로 기록된다.
+따라서 native 전체 lock/portable export와 현재 target의 검사·설치 집합을 같다고 가정하지 않는다.
+
+UV 후속 수정 지도 보완: 현재 strict wire에 실제 관측한 group/extra/marker/version/source
+필드만 추가하고 universal identity를 name+version+source로 검증한다. Marker와 extra는
+B01의 고정 native PEP 440/508 parser 및 authenticated metadata graph validator를 재사용한다.
+기존 additive RequirementsSelection 전체를 가짜 project/installation context로 포장하지 않는다.
+필요한 공통 metadata 검증 부분만 두 실제 소비자에서 함께 쓰고 기존 B01 전용 의미는 유지한다.
+기존 uv-project-intent control에 선택 옵션을 bind하고 source/active target proof의 책임을
+명시한다. Frozen은 기존 lock을 기준으로 선택하며 현재 manifest와 일치시켜 다시 풀지 않는다.
+새 CLI/도메인 허용은 해당 실제 소비자가 완성되기 전에 지원 완료로 표시하지 않는다.
+
+[부분 정규화 receipt](./project-frozen-local-20261102.json)는 PNPM/Bun frozen 연결과 UV DATA의
+서로 다른 범위를 기록한다. 임시 DATA capture test는 원본 source/lock/export/help와 hash
+inventory를 raw에 보존한 뒤 main/scratch에서 제거했다. 완료된 protected 복사본4개64799982B는
+참조0/query error0 확인 뒤 삭제했다. UV parser/선택 구현은 아직 미착수이며 B06만 IN_PROGRESS다.

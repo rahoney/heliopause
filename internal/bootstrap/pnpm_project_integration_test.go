@@ -110,7 +110,7 @@ func TestPNPMPublicProjectTransactionIntegration(t *testing.T) {
 			}
 			bindings := pnpmProjectBindings{intake, evidenceRoot, cacheRoot, stateRoot, source, store, static, native, prepare, backend}
 			apply := func(intent artifactnpm.PNPMSelectionIntent, selector string) (domain.ProjectVerifiedSet, string) {
-				service, err := newPNPMProjectService(bindings, intent, selector, false)
+				service, err := newPNPMProjectService(bindings, intent, selector, false, false)
 				if err != nil {
 					t.Fatal(err)
 				}

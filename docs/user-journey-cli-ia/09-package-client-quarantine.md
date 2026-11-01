@@ -561,3 +561,12 @@ Terraform의 기존 lock 자동 확장과는 다른 bounded 지원이다. 기존
 기본 init의 JSON은 `helox.project-install-result/v1`/`INSTALL`로 표시한다. Backend 접속,
 RPC/plan/apply·cloud 동작 검사나 임의 mirror/CLI 설정 상속은 포함하지 않는다. 현재 로컬
 검증과 남은 묶음 qualification은 [목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의 B04를 따른다.
+
+## PNPM/Bun 명시 frozen 설치 — B06 개발 후보
+
+`helox pnpm install --frozen-lockfile`과 `helox bun install --frozen-lockfile`은 일치하는 기존
+lock을 요구하고 bytes를 보존한다. Preflight와 원본 guard 뒤에서 lock 부재를 거부한 후,
+기존 lock-present native 선택·전체 검역·승인/원자 반입 경로를 그대로 사용한다.
+Stale/malformed lock, 명시 false·중복 옵션과 add/update의 해당 옵션은 거부한다.
+Bun native의 lock 부재 허용은 Heliopause의 frozen 지원에 포함하지 않는다.
+현재 코드·연결과 남은 실제 CLI/묶음 검증은 [B06 부분 receipt](../planning/evidence/m13-004-convenience/project-frozen-local-20261102.json)를 따른다. UV 선택 옵션은 같은 B06에서 계속 보강 중이다.

@@ -286,3 +286,80 @@ func TestBunPreflightRequiresComposedReviewedIdentity(t *testing.T) {
 		t.Fatal("missing static identity accepted")
 	}
 }
+
+func TestBunFrozenInstallAdmissionAndTypedRequest(t *testing.T) {
+	for _, kind := range []string{"valid", "missing", "stale", "malformed", "false", "duplicate", "add", "update"} {
+		t.Run(kind, func(t *testing.T) {
+			target := bunCLIProject(t)
+			manifest, err := os.ReadFile(filepath.Join("..", "artifact", "npm", "testdata", "bun-lock", "single.package.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = os.WriteFile(filepath.Join(target, "package.json"), manifest, 0600); err != nil {
+				t.Fatal(err)
+			}
+			lock, err := os.ReadFile(filepath.Join("..", "artifact", "npm", "testdata", "bun-lock/single.bun.lock"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if kind == "malformed" {
+				lock = []byte("bad lock")
+			}
+			if kind != "missing" {
+				if err = os.WriteFile(filepath.Join(target, "bun.lock"), lock, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if kind == "stale" {
+				p := filepath.Join(target, "package.json")
+				b, err := os.ReadFile(p)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err = os.WriteFile(p, bytes.ReplaceAll(b, []byte("6.0.0"), []byte("7.0.0")), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var out bytes.Buffer
+			root, err := bunCLICommand(&out, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			recorder := &bunCLIRecorder{t: t}
+			if err = cli.AddBunProject(root, recorder); err != nil {
+				t.Fatal(err)
+			}
+			operation := "install"
+			if kind == "add" || kind == "update" {
+				operation = kind
+			}
+			args := []string{"bun", operation, "--target", target, "--frozen-lockfile"}
+			if kind == "false" {
+				args[len(args)-1] = "--frozen-lockfile=false"
+			}
+			if kind == "duplicate" {
+				args = append(args, "--frozen-lockfile")
+			}
+			if operation != "install" {
+				args = append(args, "is-number")
+			}
+			_, err = cli.PreparePresentation(root, args)
+			if kind != "valid" {
+				if err == nil || len(recorder.requests) != 0 {
+					t.Fatal("invalid frozen input reached application", kind, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			root.SetArgs(args)
+			if err = root.ExecuteContext(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			if len(recorder.requests) != 1 || !recorder.requests[0].FrozenLockfile || string(recorder.requests[0].Intent) != "install" || recorder.requests[0].Adopt {
+				t.Fatal("frozen request lost its meaning", recorder.requests)
+			}
+		})
+	}
+}

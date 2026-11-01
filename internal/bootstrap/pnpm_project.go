@@ -31,14 +31,15 @@ type pnpmProjectBindings struct {
 // One command owns one native selection and its exact frozen peer context.
 // The source-neutral workflow never has to reconstruct that native state.
 type pnpmProjectSession struct {
-	bindings   pnpmProjectBindings
-	intent     artifactnpm.PNPMSelectionIntent
-	selector   string
-	operation  domain.OperationID
-	used       bool
-	frozen     artifactnpm.PNPMInspectionContext
-	inspection *application.ProjectInspectService
-	cache      *promotion.PNPMVerifiedCache
+	bindings       pnpmProjectBindings
+	intent         artifactnpm.PNPMSelectionIntent
+	selector       string
+	frozenLockfile bool
+	operation      domain.OperationID
+	used           bool
+	frozen         artifactnpm.PNPMInspectionContext
+	inspection     *application.ProjectInspectService
+	cache          *promotion.PNPMVerifiedCache
 }
 
 type pnpmProjectMutationAdapter struct {
@@ -59,7 +60,7 @@ func (a pnpmProjectMutationAdapter) Begin(ctx context.Context, install domain.In
 	return a.owner.BeginUpgrade(ctx, install, a.adopt)
 }
 
-func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPMSelectionIntent, selector string, adopt bool) (*pnpmProjectService, error) {
+func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPMSelectionIntent, selector string, adopt, frozenLockfile bool) (*pnpmProjectService, error) {
 	if bindings.source == nil || bindings.store == nil || bindings.static == nil || bindings.native == nil || bindings.prepare == nil || bindings.backend == nil {
 		return nil, errors.New("pnpm project requires the actual source, native runtime and inspection adapters")
 	}
@@ -67,7 +68,7 @@ func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPM
 	if err != nil {
 		return nil, err
 	}
-	s := &pnpmProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation}
+	s := &pnpmProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation, frozenLockfile: frozenLockfile}
 	owner, err := promotion.NewPNPMProjectPromotionWithOriginalVerifier(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.PNPMVerifiedCache, error) {
 		if s.cache == nil || !s.frozen.MatchesSnapshot(snapshot) {
 			return nil, errors.New("pnpm operation has no cache for this exact native selection")
@@ -95,6 +96,9 @@ func (s *pnpmProjectSession) ResolveProjectLockUpdate(ctx context.Context, insta
 	input, err := artifactnpm.NewPNPMSelectionInput(s.intent, s.selector, controls, runtimeidentity.PNPMVersion)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
+	}
+	if s.frozenLockfile && (s.intent != artifactnpm.PNPMInstall || !input.Controls()[1].Present()) {
+		return domain.ProjectDependencyUpdate{}, errors.New("pnpm frozen install requires an existing guarded lock")
 	}
 	selected, err := s.bindings.native.SelectProject(ctx, input)
 	if err != nil {

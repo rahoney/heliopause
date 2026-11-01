@@ -13,10 +13,11 @@ import (
 )
 
 type PNPMProjectRequest struct {
-	Intent   artifactnpm.PNPMSelectionIntent
-	Selector string
-	Install  domain.InstallContext
-	Adopt    bool
+	Intent         artifactnpm.PNPMSelectionIntent
+	Selector       string
+	Install        domain.InstallContext
+	Adopt          bool
+	FrozenLockfile bool
 }
 type PNPMProjectOutcome struct {
 	Verified                   domain.ProjectVerifiedSet
@@ -42,15 +43,19 @@ func SetPNPMClientVersion(root *cobra.Command, version string) error {
 	return nil
 }
 
-const pnpmProjectEnglish = "Quarantine the complete public npm package set selected by PNPM before installing it into one existing project. Use the current directory or --target. Native PNPM selects package.json and pnpm-lock.yaml; every selected package is inspected again, including unchanged versions. Root project scripts are preserved and do not run.\n\nAdd accepts one public package name or version/range spec. Install uses the existing manifest and optional lock; an existing lock must match the manifest. Update optionally selects one existing root package by name. Peer instances and approved internal links are preserved. Supports Linux amd64 with the pinned runtime. --adopt explicitly registers supported edited controls or an existing PNPM install after checking its complete payload. Native adoption requires the matching original manifest/lock and the pinned isolated layout with safe copied files. Shared hardlinks, unknown files and corrupt HAA records are refused."
-const pnpmProjectKorean = "PNPM이 선택한 공개 npm 패키지 전체를 검역한 뒤 기존 프로젝트 하나에 설치합니다. 현재 디렉터리 또는 --target을 사용하세요. Native PNPM이 package.json과 pnpm-lock.yaml을 선택하며 같은 버전을 포함한 선택 패키지 전체를 새로 검사합니다. 프로젝트 자체의 script는 보존하고 실행하지 않습니다.\n\nAdd는 공개 패키지 이름 또는 버전·범위 지정 하나를 받습니다. Install은 기존 manifest와 선택적인 lock을 사용하며 기존 lock은 manifest와 일치해야 합니다. Update에는 기존 직접 의존성 이름 하나를 지정할 수 있습니다. Peer instance와 승인된 내부 link를 보존하며 고정 실행 환경의 Linux amd64를 지원합니다. --adopt는 전체 기존 파일을 검증한 뒤 지원하는 설정 변경이나 기존 PNPM 설치를 명시적으로 등록합니다. 기존 설치 인계에는 일치하는 원래 manifest·lock과 고정 isolated 형식의 안전한 복사 파일이 필요합니다. 공유 hardlink·알 수 없는 파일·손상된 HAA 기록은 거부합니다."
+const pnpmProjectEnglish = "Quarantine the complete public npm package set selected by PNPM before installing it into one existing project. Use the current directory or --target. Native PNPM selects package.json and pnpm-lock.yaml; every selected package is inspected again, including unchanged versions. Root project scripts are preserved and do not run.\n\nAdd accepts one public package name or version/range spec. Install uses the existing manifest and optional lock; an existing lock must match the manifest. --frozen-lockfile requires that lock to already exist and preserves it. Update optionally selects one existing root package by name. Peer instances and approved internal links are preserved. Supports Linux amd64 with the pinned runtime. --adopt explicitly registers supported edited controls or an existing PNPM install after checking its complete payload. Native adoption requires the matching original manifest/lock and the pinned isolated layout with safe copied files. Shared hardlinks, unknown files and corrupt HAA records are refused."
+const pnpmProjectKorean = "PNPM이 선택한 공개 npm 패키지 전체를 검역한 뒤 기존 프로젝트 하나에 설치합니다. 현재 디렉터리 또는 --target을 사용하세요. Native PNPM이 package.json과 pnpm-lock.yaml을 선택하며 같은 버전을 포함한 선택 패키지 전체를 새로 검사합니다. 프로젝트 자체의 script는 보존하고 실행하지 않습니다.\n\nAdd는 공개 패키지 이름 또는 버전·범위 지정 하나를 받습니다. Install은 기존 manifest와 선택적인 lock을 사용하며 기존 lock은 manifest와 일치해야 합니다. --frozen-lockfile은 기존 lock을 필수로 요구하고 보존합니다. Update에는 기존 직접 의존성 이름 하나를 지정할 수 있습니다. Peer instance와 승인된 내부 link를 보존하며 고정 실행 환경의 Linux amd64를 지원합니다. --adopt는 전체 기존 파일을 검증한 뒤 지원하는 설정 변경이나 기존 PNPM 설치를 명시적으로 등록합니다. 기존 설치 인계에는 일치하는 원래 manifest·lock과 고정 isolated 형식의 안전한 복사 파일이 필요합니다. 공유 hardlink·알 수 없는 파일·손상된 HAA 기록은 거부합니다."
 
 var pnpmProjectFlagText = map[string]packageClientParent{
-	"target": {"Existing project directory (defaults to the current directory)", "기존 프로젝트 디렉터리(기본값: 현재 디렉터리)"},
-	"adopt":  {"Explicitly register a source-verified existing install or supported edited controls", "원본이 검증된 기존 설치 또는 지원하는 설정 변경을 명시적으로 등록합니다"},
+	"frozen-lockfile": {"Require an existing matching lock without changing it", "일치하는 기존 lock을 요구하며 변경하지 않습니다"},
+	"target":          {"Existing project directory (defaults to the current directory)", "기존 프로젝트 디렉터리(기본값: 현재 디렉터리)"},
+	"adopt":           {"Explicitly register a source-verified existing install or supported edited controls", "원본이 검증된 기존 설치 또는 지원하는 설정 변경을 명시적으로 등록합니다"},
 }
 
 func configurePNPMProjectFlags(command *cobra.Command) {
+	if command.Name() == "install" {
+		command.Flags().Bool("frozen-lockfile", false, pnpmProjectFlagText["frozen-lockfile"].en)
+	}
 	command.Flags().Bool("adopt", false, pnpmProjectFlagText["adopt"].en)
 	command.Flags().Lookup("target").Usage = pnpmProjectFlagText["target"].en
 }
@@ -58,7 +63,7 @@ func validatePNPMProjectRawArgs(args []string) error {
 	counts := map[string]int{}
 	for _, arg := range args {
 		name, _, _ := strings.Cut(arg, "=")
-		if name == "--target" || name == "--adopt" {
+		if name == "--target" || name == "--adopt" || name == "--frozen-lockfile" {
 			counts[name]++
 			if counts[name] > 1 {
 				return errors.New("pnpm project options must not repeat")
@@ -150,6 +155,19 @@ func readPNPMProjectRequest(command *cobra.Command, args []string) (request PNPM
 		}
 		controls = append(controls, control)
 	}
+	frozen := false
+	if command.Name() == "install" {
+		frozen, err = command.Flags().GetBool("frozen-lockfile")
+		if err != nil {
+			return request, err
+		}
+		if command.Flags().Changed("frozen-lockfile") && !frozen {
+			return request, errors.New("explicit false frozen-lockfile is unsupported")
+		}
+		if frozen && !controls[1].Present() {
+			return request, errors.New("frozen install requires an existing lock")
+		}
+	}
 	version := command.Root().Annotations[pnpmClientVersionAnnotation]
 	if version == "" {
 		return request, errors.New("pnpm reviewed client identity was not bound by composition")
@@ -174,7 +192,7 @@ func readPNPMProjectRequest(command *cobra.Command, args []string) (request PNPM
 	if err != nil {
 		return request, err
 	}
-	return PNPMProjectRequest{intent, selector, install, adopt}, nil
+	return PNPMProjectRequest{Intent: intent, Selector: selector, Install: install, Adopt: adopt, FrozenLockfile: frozen}, nil
 }
 
 func AddPNPMProject(root *cobra.Command, service PNPMProjectApplier) error {

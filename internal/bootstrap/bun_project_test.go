@@ -10,7 +10,7 @@ import (
 )
 
 func TestBunProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
-	if service, err := newBunProjectService(bunProjectBindings{}, artifactnpm.BunInstall, "", false); err == nil || service != nil {
+	if service, err := newBunProjectService(bunProjectBindings{}, artifactnpm.BunInstall, "", false, false); err == nil || service != nil {
 		t.Fatal("missing actual adapters accepted")
 	}
 	s := &bunProjectSession{}
@@ -27,5 +27,31 @@ func TestBunProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
 	}
 	if _, err := s.ResolveProjectLockUpdate(context.Background(), domain.InstallContext{}, nil, ""); err == nil || !strings.Contains(err.Error(), "exactly one") {
 		t.Fatal("request repeated selection", err)
+	}
+}
+
+func TestBunFrozenInstallRequiresGuardedLockBeforeNativeSelection(t *testing.T) {
+	manifest, err := domain.NewProjectControlFile("package.json", []byte(`{"dependencies":{}}`), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := domain.NewProjectControlFile("bun.lock", nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := domain.NewInstallTarget(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	install, err := domain.NewNPMProjectInstallContext(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &bunProjectSession{intent: artifactnpm.BunInstall, frozenLockfile: true}
+	if _, err = s.ResolveProjectLockUpdate(context.Background(), install, []domain.ProjectControlFile{manifest, lock}, ""); err == nil || !strings.Contains(err.Error(), "existing guarded lock") {
+		t.Fatal("missing guarded lock reached native selection", err)
+	}
+	if !s.used {
+		t.Fatal("refused native request was reusable")
 	}
 }

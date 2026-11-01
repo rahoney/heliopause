@@ -31,14 +31,15 @@ type bunProjectBindings struct {
 // One command owns one native selection and its exact frozen peer context.
 // The source-neutral workflow never has to reconstruct that native state.
 type bunProjectSession struct {
-	bindings   bunProjectBindings
-	intent     artifactnpm.BunSelectionIntent
-	selector   string
-	operation  domain.OperationID
-	used       bool
-	frozen     artifactnpm.BunInspectionContext
-	inspection *application.ProjectInspectService
-	cache      *promotion.BunVerifiedCache
+	bindings       bunProjectBindings
+	intent         artifactnpm.BunSelectionIntent
+	selector       string
+	frozenLockfile bool
+	operation      domain.OperationID
+	used           bool
+	frozen         artifactnpm.BunInspectionContext
+	inspection     *application.ProjectInspectService
+	cache          *promotion.BunVerifiedCache
 }
 
 type bunProjectMutationAdapter struct {
@@ -59,7 +60,7 @@ func (a bunProjectMutationAdapter) Begin(ctx context.Context, install domain.Ins
 	return a.owner.BeginUpgrade(ctx, install, a.adopt)
 }
 
-func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSelectionIntent, selector string, adopt bool) (*bunProjectService, error) {
+func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSelectionIntent, selector string, adopt, frozenLockfile bool) (*bunProjectService, error) {
 	if bindings.source == nil || bindings.store == nil || bindings.static == nil || bindings.native == nil || bindings.prepare == nil || bindings.backend == nil {
 		return nil, errors.New("bun project requires the actual source, native runtime and inspection adapters")
 	}
@@ -67,7 +68,7 @@ func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSel
 	if err != nil {
 		return nil, err
 	}
-	s := &bunProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation}
+	s := &bunProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation, frozenLockfile: frozenLockfile}
 	owner, err := promotion.NewBunProjectPromotionWithOriginalVerifier(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.BunVerifiedCache, error) {
 		if s.cache == nil || !s.frozen.MatchesSnapshot(snapshot) {
 			return nil, errors.New("bun operation has no cache for this exact native selection")
@@ -95,6 +96,9 @@ func (s *bunProjectSession) ResolveProjectLockUpdate(ctx context.Context, instal
 	input, err := artifactnpm.NewBunSelectionInput(s.intent, s.selector, controls, runtimeidentity.BunVersion)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
+	}
+	if s.frozenLockfile && (s.intent != artifactnpm.BunInstall || !input.Controls()[1].Present()) {
+		return domain.ProjectDependencyUpdate{}, errors.New("bun frozen install requires an existing guarded lock")
 	}
 	selected, err := s.bindings.native.SelectProject(ctx, input)
 	if err != nil {

@@ -1,0 +1,90 @@
+{
+  "schema": "goal-reinforcement-local-checkpoint/v1",
+  "unit": "B06-frozen-substep",
+  "parent": "B06 IN_PROGRESS; UV selection not implemented/wired",
+  "base_commit": "77e561153d3e9e6cbbf50e5f3f5c4a8d25ce21bb",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "NO",
+  "acceptance_closed": "NO",
+  "checks": [
+    {
+      "id": "b06-frozen-targeted",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-frozen-targeted.json",
+      "sha256": "2a95c2935891146466a323d9a5221041741817d513714603d2794da540cc769b",
+      "exit_code": 0,
+      "elapsed": 10.194,
+      "source_unchanged": true
+    },
+    {
+      "id": "b06-pnpm-frozen-bytes-red",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-pnpm-frozen-bytes-red.json",
+      "sha256": "2d2fbfa8b9105bc3aaa0adc3cd7769317a7b379e584f15b0b2efa4da05d90fe2",
+      "exit_code": 1,
+      "elapsed": 2.675,
+      "source_unchanged": true
+    },
+    {
+      "id": "b06-frozen-regressions",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-frozen-regressions.json",
+      "sha256": "47bfd0c93b0fa8d2ab45de41c256e0a159dc33c5ab2472b7d46557bba122aed9",
+      "exit_code": 0,
+      "elapsed": 13.752,
+      "source_unchanged": true
+    },
+    {
+      "id": "b06-uv-options-data-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v1.json",
+      "sha256": "223b91fc83cb8cd2efbad63a382167ac97caa5d9997dba29fcac8fec78902528",
+      "exit_code": 0,
+      "seconds": 6.766,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b06-uv-options-data-v2",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v2.json",
+      "sha256": "19e009df15301167128b9366f7ee9ddbd7f28e3a88d28ab4c0f0587974216aab",
+      "exit_code": 0,
+      "seconds": 6.388,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b06-data-owned-clients-cleanup",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b06-data-owned-clients-cleanup.json",
+      "sha256": "9adf7c9782724a07e5032c8150526481922e1bfaaf933ead177418575e1c75ad",
+      "deleted_bytes": 64799982
+    }
+  ],
+  "native_data": {
+    "scope": "DATA schema/flag behavior only; no source authentication/quarantine/installation",
+    "v1": "Default dev, group/no-group/only-group, extra/all-extras; portable export retains inactive platform markers.",
+    "v2": "Conditional duplicate project versions; selected dependency extras; nested groups flatten; configured default groups; portable export contains both version forks.",
+    "files": [
+      "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v1-files.json",
+      "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v2-files.json"
+    ],
+    "temporary_capture_removed": true
+  },
+  "maintenance": {
+    "runtime_pins_changed": false,
+    "host_installation_changed": false,
+    "new_pipeline": false
+  },
+  "cleanup": {
+    "protected_copies": 4,
+    "deleted_bytes": 64799982,
+    "process_references": 0,
+    "query_errors": 0
+  },
+  "ci_started": false,
+  "missing": [
+    "UV groups/extras/marker projection and distinct locked/frozen implementation/wiring.",
+    "Actual new PNPM/Bun frozen public CLI consumers and grouped canonical/security/hosted/final qualification."
+  ]
+}
