@@ -5,6 +5,11 @@ Status: 감사·미지원 목록 작성 완료, 아래 기능·보안 acceptance
 이번 작업은 설계→실제 호출 경로→기존 검증의 대조와 CLI 사전 검증이다. 제품 코드,
 설치본, Policy, Host 설정을 변경하지 않았으며 새 설치 시험·CI·악성코드 실행은 하지 않았다.
 
+후속 [보강 설계와 완료 기준](../../21-goal-completion-design.md)은 이 감사의 B00–B07/S01–S09와
+자동 정리·시험 정리·불용 코드 확인 C01–C03의 수정 지도를 소유한다. 현재는 설계만 작성하며
+보강 구현은 NOT_STARTED다. 이 감사에서 YES인 기존 retention API는 일반 자동 수거 완료를
+뜻하지 않는다. 자동 수거·quota·crash 복구의 추가 baseline은 해당 설계 §2/§7을 따른다.
+
 ## 1. 기준과 증거
 
 - 원래 요구: [D-005/D-009](../../../threat-model/01-threat-boundary-and-trust.md),

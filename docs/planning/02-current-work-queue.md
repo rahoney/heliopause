@@ -15,16 +15,20 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — prior bounded functionality/audit and local test setup retain their scoped evidence. User-goal reassessment OPEN: both pip/uv install -r forms are unsupported; D-008 environment-triggered dormant behavior induction/detection is not acceptance-closed. Names/deployment must not replace these gaps.
-Last completed substep: user-confirmed launcher artwork COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES in local display scope. Approved exact source hashes and Quick93.086s/security21.332s/docs evidence in art-refresh-20261031.md. Earlier whole-source audit remains closed for code358/four profiles.
-Next action: follow goal-coverage-audit-20261101.md B00–B07/S01–S09. Fix unsupported-command false success, then requirements bulk install and the other missing default project flows; close the original security-goal gaps within existing owners before naming/deployment. Audit/preflight only so far; no feature rewrite or new CI. Preserve the approved UI and local WSL setup.
+Last completed substep: enhancement design DOCUMENTED in 21-goal-completion-design.md; product implementation NOT_STARTED. Prior user-confirmed launcher artwork remains COMPLETE in local display scope; art-refresh-20261031.md owns its exact source/checks. Earlier whole-source audit remains closed for code358/four profiles.
+Next action: design-only per the latest user request. Read 21-goal-completion-design.md for B00–B07/S01–S09/C01–C03; all enhancement implementation is NOT_STARTED. Do not start product changes, artifact deletion or CI until the user requests implementation. Then begin with B00 and the requirements input bundle in the documented order. Preserve the approved UI and local WSL setup.
 Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. Artwork checkpoint had no remote CI/push/installation; the later user-authorized development Host setup is recorded separately and is not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
-Independent local next: goal-coverage-audit-20261101.md owns the expanded command/security gap inventory; local development setup keeps its prior evidence. Source audit closure is not goal-wide acceptance. Earlier unsigned e3 assembly, Buildx limitation and signed Release/Host acceptance keep their own scope.
+Independent local next: design documentation only; goal-coverage-audit-20261101.md owns the baseline and 21-goal-completion-design.md owns the enhancement edit map/acceptance. No implementation is authorized by this design step. Source audit closure is not goal-wide acceptance. Earlier unsigned e3 assembly, Buildx limitation and signed Release/Host acceptance keep their own scope.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 보강 설계 — 문서 작성 / 구현 NOT_STARTED
+
+[보강 설계](./21-goal-completion-design.md)에 B00–B07/S01–S09의 기존 owner·수정 경로·정상/거부/실패 완료 조건과 C01 자동 정리·유한 quota/retention, C02 시험 payload 정리, C03 불용·중복 코드 정리를 연결했다. 16개 순차 단위, 재사용·성능 기준, 묶음 CI와 실제 20분 조회/결과 소비를 명시한다. 현재 DeleteRun은 명시 삭제이며 production caller가 없다는 source 사실과 기존 session 정리를 구분했다. 사용자가 **실제 작업은 아직 하지 말라**고 요청했으므로 이번은 설계 문서만 작성하며 제품·Host·시험 payload·CI는 변경하지 않는다. 보강 기능의 네 상태는 모두 NO/NOT_STARTED다. 후속 구현 지시가 있으면 01/B00부터 진행한다.
 
 ### 2026-11-01 일괄 설치·원래 보안 요구 구현 대조 — 감사 완료 / 기능 OPEN
 

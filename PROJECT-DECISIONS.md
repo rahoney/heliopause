@@ -117,6 +117,8 @@ CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI3
 
 2026-11-01 [일괄 설치·원래 보안 목표 감사](./docs/planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)는 기존 여섯 생태계의 파일 기반 설치와 D-008/MVP-005~008을 대조해 B00~B07/S01~S09의 미지원·미완료를 기록했다. 감사는 완료했으며 기능 acceptance는 OPEN이다. 과거 bounded 구현·감사·Host 연결 완료는 유지하되 전체 사용자 목표 완료로 확대하지 않는다. 현재 Queue는 이름·배포보다 이 gap을 우선한다.
 
+같은 날 사용자는 구현보다 상세 설계를 먼저 요청했다. [보강 설계](./docs/planning/21-goal-completion-design.md)는 기존 owner 재사용, 순차 수정·완료 조건, 자동 정리/유한 보존, 성능·불용 코드, 시험 정리와 묶음 CI/20분 확인을 소유한다. 현재는 문서 작성만이며 모든 보강 구현은 NOT_STARTED다. 후속 구현 지시 전 제품·Host·아티팩트 삭제·CI를 시작하지 않는다.
+
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
 Documentation hierarchy and task routing migration: Complete

@@ -104,6 +104,13 @@ Read:
 - P5 실행기 착수 전 [기존 owner·exact npm source baseline](./planning/evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)
 - 위 Artifact/CLI/Staging route와 아래 runtime maintenance 문서
 
+### 원래 목표 보강과 자동 용량 관리
+
+일괄 설치·원래 보안 목표·자동 정리 보강을 재개할 때는 먼저
+[현재 구현 감사](./planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)와
+[보강 설계·수정 지도·완료 기준](./planning/21-goal-completion-design.md)을 읽는다.
+현재 사용자 요청은 설계만이며 실제 보강 구현은 NOT_STARTED다. 실행 상태는 Queue가 소유한다.
+
 ### Runtime, 배포 또는 trusted tooling
 
 Read:
