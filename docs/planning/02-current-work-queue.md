@@ -14,17 +14,21 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — original bounded functional acceptance and whole-source/security audit COMPLETE. Official name/publisher binding, convenience channels and current signed deployment remain separate; names owner-deferred.
+Active work item status: IN_PROGRESS — prior bounded functionality/audit and local test setup retain their scoped evidence. User-goal reassessment OPEN: both pip/uv install -r forms are unsupported; D-008 environment-triggered dormant behavior induction/detection is not acceptance-closed. Names/deployment must not replace these gaps.
 Last completed substep: user-confirmed launcher artwork COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES in local display scope. Approved exact source hashes and Quick93.086s/security21.332s/docs evidence in art-refresh-20261031.md. Earlier whole-source audit remains closed for code358/four profiles.
-Next action: local WSL/micromamba package test setup COMPLETE; user can activate helox in another terminal and try the prepared empty Python/Go targets. Preserve approved design and current environment. Official name/publisher/channel/current signed deployment remains separate; names owner-deferred. No repeated unchanged full/native/CPP/CUDA/CI.
-Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. No remote CI/push/installation; exact final commit is a local checkpoint, not whole M13 completion.
+Next action: address the documented requirements-install and D-008 dormant/environment-triggered detection gaps within existing owners before naming/deployment. This turn confirmed baseline/preflight only; no feature rewrite or new CI. Local WSL setup remains available; preserve the approved UI and runtime.
+Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. Artwork checkpoint had no remote CI/push/installation; the later user-authorized development Host setup is recorded separately and is not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
-Independent local next: no remaining source-audit implementation. Earlier unsigned e3 assembly and local Buildx limitation retain their original scope; actual current protected Release Build/signing/clean-Host activation is separate and is not claimed by ordinary/CUDA CI.
+Independent local next: current user-goal gaps are tracked in the local development setup leaf; prior source audit closure is not goal-wide acceptance. Earlier unsigned e3 assembly, Buildx limitation and signed Release/Host acceptance keep their own scope.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 requirements 입력·잠복 공급망 탐지 목표 — OPEN
+
+[사용자 목표 재대조](./evidence/m13-004-convenience/local-dev-test-20261101.md#2026-11-01-사용자-핵심-목표-재대조--open)는 실제 두 install -r 거부와 표준 Python 검사 경로의 D-008 유도 환경·조건부 행위 검증 gap을 확인했다. 기존 격리·관찰·검사와 bounded CI 성공을 이 목표의 완료로 확대하지 않는다. IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED와 MISSING을 해당 leaf에 분리했다. 기존 테스트 환경과 과거 결과는 보존하며 이름·배포보다 미완료 목표를 우선한다.
 
 ### 2026-11-01 동일 WSL 사용자 체험 환경 — COMPLETE
 
