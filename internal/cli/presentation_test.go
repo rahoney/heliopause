@@ -294,3 +294,46 @@ func TestUserCancellationIsNotReportedAsBrokenObserver(t *testing.T) {
 		t.Fatal("user cancellation misclassified", out.String())
 	}
 }
+
+func TestPreflightRejectsUnknownChildrenAndInvalidLeafArgs(t *testing.T) {
+	for _, args := range [][]string{
+		{"npm", "ci"}, {"cargo", "fetch"}, {"go", "mod", "tidy"},
+		{"npm", "not-a-command"}, {"pipx", "not-a-command"},
+		{"uv", "pip", "not-a-command"}, {"config", "not-a-command"},
+		{"go", "build"}, {"cargo", "build", "extra"},
+		{"npm", "inspect"}, {"github", "inspect"}, {"doctor", "extra"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var out bytes.Buffer
+			root, err := New(&out, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := PreparePresentation(root, args); err == nil {
+				t.Fatal("invalid request passed runtime preflight")
+			}
+			if out.Len() != 0 {
+				t.Fatal("invalid request printed successful help", out.String())
+			}
+		})
+	}
+}
+
+func TestPreflightAllowsParentsHelpAndLiteralProgramArguments(t *testing.T) {
+	for _, args := range [][]string{
+		{}, {"--help"}, {"npm"}, {"go", "mod"}, {"uv", "pip"},
+		{"pipx"}, {"cargo", "build", "--help"}, {"npm", "inspect", "--help"},
+		{"go", "build", "./..."}, {"cargo", "build"}, {"doctor"},
+		{"npx", "typescript@5.9.3", "--", "--unknown-guest-option"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			root, err := New(io.Discard, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := PreparePresentation(root, args); err != nil {
+				t.Fatal("valid help/command/guest argv rejected", err)
+			}
+		})
+	}
+}

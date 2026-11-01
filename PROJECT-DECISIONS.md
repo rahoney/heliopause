@@ -242,3 +242,5 @@ H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
 - 실제 결정은 관련 canonical leaf 문서에 한 번만 기록한다.
 - 완료된 상세 결정을 이 문서에 장문으로 재서술하지 않는다.
 - 문서 이동 시 상태 링크와 Documentation Guide를 같은 변경에서 갱신한다.
+
+2026-11-01 사용자가 [보강 설계](./docs/planning/21-goal-completion-design.md)의 순차 구현을 승인했다. 과거 설계 전용 제한은 현재 작업에서 superseded이며 B00부터 진행한다. 실행 상태·검증·후속 순서는 Queue를 따른다.

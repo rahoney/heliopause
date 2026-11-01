@@ -125,8 +125,8 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = command.ParseFlags(remaining); err != nil {
 		return "", err
 	}
-	if !packageClient && relativeCommandPath(command) == "pipx" && len(command.Flags().Args()) != 0 {
-		return "", errors.New("pipx supports install and managed upgrade only")
+	if !command.Runnable() && len(command.Flags().Args()) != 0 {
+		return "", fmt.Errorf("unknown command %q for %q", command.Flags().Args()[0], command.CommandPath())
 	}
 	// Preflight and Execute parse the same argv. Slice flags must not accumulate
 	// one accepted occurrence twice; explicit repeats were validated before reset.
@@ -166,12 +166,9 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if packageClient || command.CommandPath() == "helox bootstrap prepare" || command.CommandPath() == "helox self-update" || command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
-		help, _ := command.Flags().GetBool("help")
-		if !help {
-			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
-				return "", err
-			}
+	if help, _ := command.Flags().GetBool("help"); !help {
+		if err := command.ValidateArgs(command.Flags().Args()); err != nil {
+			return "", err
 		}
 	}
 	if p.language != "en" {

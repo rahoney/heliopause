@@ -32,6 +32,15 @@ Policy, result schemas, exit codes, bounds and least-privilege execution remain.
   Doctor retains exit1 for any unavailable requirement, including a missing
   verified public release installation; working controlled runtime is separate.
 
+## Command preflight
+
+Before runtime composition, unknown children of a non-executable command group
+return an error instead of successful parent help. Every registered command uses
+its existing Args validator unless help is requested. Parent-only help, registered
+command help, and literal program arguments on execution commands retain their
+existing behavior. This validation adds no runtime preparation or alternate
+package-manager fallback.
+
 ## Real progress
 
 Progress is observation, never a trust/completion/Policy authority. Only actual

@@ -168,3 +168,30 @@ D-009의 완전 탐지 불가 원칙은 유지하되 이를 S01~09의 구체 누
 
 이 순서는 감사 결과의 backlog이며 위 기능을 이번에 구현했다는 뜻이 아니다.
 원래 목표 acceptance가 OPEN인 동안 이름·배포를 완료 조건으로 앞세우지 않는다.
+
+## B00 구현 착수 — 2026-11-01
+
+기준 a678960. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+MISSING: 부모에 남은 unknown child의 help exit0 및 일부 leaf의 Args 사전 검증 누락.
+기존 `cli.PreparePresentation`→`bootstrap.Run`은 runtime 구성 전에 호출된다.
+`Find`는 non-runnable parent를 반환할 수 있고 pipx 문자열 전용 방어만 있다.
+해당 owner에서 부모 잔여 인자를 공통 거부하고 모든 leaf의 기존 Args를 재사용한다.
+기존 parser/descriptor/runtime 구성은 재작성하지 않는다.
+정상 parent/help·각 기존 command Args·literal execution argv·등록되지 않은 child를
+표적 회귀와 bootstrap no-runtime 시험으로 확인한 뒤 canonical quick/docs를 묶는다.
+runtime/helper/network 변경이 없어 이 작은 수정만의 CI는 실행하지 않는다.
+기존 pipx 전용 분기와 중복 validation 목록이 공통 검증으로 대체되면 제거한다.
+
+### B00 로컬 종료
+
+`PreparePresentation`의 부모 잔여 인자 공통 거부와 모든 등록 명령의 기존 Args 검증을
+연결했다. pipx 전용 분기/명령별 validation 목록을 제거했다. 정상 help·literal argv 유지.
+수정 전 표적 실패, 수정 후 표적2.672s·CLI/bootstrap Race102.707s PASS다.
+Quick의 format/drift/build/architecture/vet/Staticcheck는 통과했다. 첫 archive 후보는
+상위 `/tmp/.git` 때문에 VCS 준비 실패였고 독립 임시 Git 기준으로 해결했다. 이후 Quick의
+기본 테스트는 실행 sandbox의 TCP/Unix socket 금지로 실패했다. 원본 오류는 보존하고
+동일 source의 정확한 기본 테스트 단계만 unrestricted에서284.122s/exit0으로 확인했다.
+Quick 원래 exit1을 전체 profile exit0으로 바꾸어 기록하지 않는다.
+로컬 B00 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES, MISSING=[]다.
+근거는 `docs/github-logs/goal-implementation-20261101/b00-closure.json`과 해당 raw다.
+Runtime/observer/권한·고정 버전·설치본은 불변이며 새 CI 없이 후속 B01+B05로 진행한다.

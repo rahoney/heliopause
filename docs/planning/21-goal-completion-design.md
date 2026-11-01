@@ -1,9 +1,9 @@
 # 원래 목표 보강 — 구현 설계와 완료 기준
 
 작성일: 2026-11-01. 기준 commit: `df3b62da8c1e8e580ad9a7304bcc69c395fe65c3`.
-상태: **설계 문서 작성. 아래 보강 구현은 모두 NOT_STARTED이며 실제 실행 승인이 아니다.**
-사용자의 이번 요청은 설계까지다. 제품 코드·설치 환경·테스트 아티팩트를 변경하거나
-새 CI·타이머를 실행하지 않는다. 후속 구현 지시 전까지 이 경계를 유지한다.
+상태: **2026-11-01 사용자 순차 구현 승인. B00 로컬 COMPLETE, 후속 항목 NOT_STARTED.**
+아래 과거 설계 전용 기록은 당시 범위다. 현재 실행 상태·검증 근거는 Queue를 따른다.
+필수 검증은 의미 있는 묶음으로 모으고 활성 CI가 있을 때 실제20분 감시를 유지한다.
 
 2026-11-01 최종 대조 기준: `17897ec6ba2d43ad0b04685af2b0872b7d997737`.
 원래 MVP-005–008 및 현행 M13 배포 계약과 대조해 검사 적용/부재 판정, 설치본에 대한
@@ -65,7 +65,7 @@ B00–B07/S01–S09와 이번에 요청한 자동 용량 관리·시험 정리·
 
 | ID | 보강 기능 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 재사용 근거 / MISSING |
 | --- | --- | --- | --- | --- | --- | --- |
-| B00 | 미지원 명령의 명시적 실패 | NO | NO | NO | NO | CLI 사전 검증 있음; npm ci/Cargo fetch/Go mod tidy의 help exit0 교정 |
+| B00 | 미지원 명령의 명시적 실패 | YES | YES | YES (local) | YES | 기존 preflight 공통 수정·표적 RED/GREEN·Race·Quick 통과 단계와 기본 테스트 재검증; 감사 leaf의 B00 로컬 종료 참조 |
 | B01 | pip/UV pip 파일·다중 root 설치 | NO | NO | NO | NO | Python resolver/inspection/transaction 있음; 하나의 일괄 INSTALL 연결 |
 | B02 | npm 기본 install/ci | NO | NO | NO | NO | npm graph/update/ownership 있음; 프로젝트 입력·ci 의미 연결 |
 | B03 | Cargo fetch | NO | NO | NO | NO | build 내부 project resolve/검사/cache 있음; fetch-only 공개 경로 |
@@ -148,7 +148,7 @@ network 권한을 공유하지 않는다. 결과/cleanup은 첫 오류를 보존
 
 ### 3.3 순차 작업 단위
 
-모두 NOT_STARTED다. 번호는 실행 순서이며 새 milestone/동시 IN_PROGRESS를 만들지 않는다.
+B00 로컬 acceptance를 닫았고 후속 항목은 NOT_STARTED다. 번호는 실행 순서이며 새 milestone/동시 IN_PROGRESS를 만들지 않는다.
 후행 작업의 독립적인 로컬 작업은 선행 원격 qualification 대기 중 계속할 수 있다.
 다만 선행 실패 결과를 신뢰 전제로 사용해서는 안 된다.
 
