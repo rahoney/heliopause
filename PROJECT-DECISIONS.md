@@ -119,6 +119,8 @@ CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI3
 
 같은 날 사용자는 구현보다 상세 설계를 먼저 요청했다. [보강 설계](./docs/planning/21-goal-completion-design.md)는 기존 owner 재사용, 순차 수정·완료 조건, 자동 정리/유한 보존, 성능·불용 코드, 시험 정리와 묶음 CI/20분 확인을 소유한다. 현재는 문서 작성만이며 모든 보강 구현은 NOT_STARTED다. 후속 구현 지시 전 제품·Host·아티팩트 삭제·CI를 시작하지 않는다.
 
+후속 최종 대조에서 같은 설계의 검사 적용/증명 부재 판정, 실제 설치본의 새 공급물·호환성, 기존 M13으로의 인계를 보완했다. 기능 acceptance와 이름 독립 준비를 닫으면 명명·배포 마무리로 진행하며, 이름에 의존하는 채널 구현·publisher binding·최종 서명/clean Host·게시 검증까지 마쳐야 배포 COMPLETE다. 이 구분은 [설계 §13](./docs/planning/21-goal-completion-design.md#13-기능-완료에서-이름-결정배포로-넘기는-조건)이 소유한다. 이번도 문서만 수정하며 실제 보강 작업은 시작하지 않는다.
+
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
 Documentation hierarchy and task routing migration: Complete

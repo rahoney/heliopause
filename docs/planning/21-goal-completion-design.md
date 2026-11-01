@@ -5,6 +5,10 @@
 사용자의 이번 요청은 설계까지다. 제품 코드·설치 환경·테스트 아티팩트를 변경하거나
 새 CI·타이머를 실행하지 않는다. 후속 구현 지시 전까지 이 경계를 유지한다.
 
+2026-11-01 최종 대조 기준: `17897ec6ba2d43ad0b04685af2b0872b7d997737`.
+원래 MVP-005–008 및 현행 M13 배포 계약과 대조해 검사 적용/부재 판정, 설치본에 대한
+공급·호환성, 명명/배포 인계를 보완했다. 기존 20개 gap·16개 구현 순서는 유지한다.
+
 ## 1. 목적·문서 책임·범위
 
 이 문서는 [목표 대조 감사](./evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의
@@ -131,7 +135,7 @@ network 권한을 공유하지 않는다. 결과/cleanup은 첫 오류를 보존
 | 13 | S05 | 08–09; graph identity 고정 | 전이 의존성까지 advisory 조회·불완전 거부 |
 | 14 | S06 | 12–13; 인증된 이전 inventory | 버전 위험 변화 Evidence와 Policy 연결 |
 | 15 | S07 | 08; 기존 verifier/공급자 trust 검토 | 일반 증명 subject/issuer 검증·부재/실패 구분 |
-| 16 | C01 전체+C02+C03·통합 acceptance | 01–15의 누락·실패 해소 | 유한 디스크·잔여 코드/시험 payload 정리·목표 전체 증거 |
+| 16 | C01 전체+C02+C03·통합 acceptance | 01–15의 누락·실패 해소 | 유한 디스크·잔여 코드/시험 payload 정리·목표 전체 증거와 §13의 이름 독립 배포 준비 |
 
 §9의 검증 묶음을 사용한다. 이 표의 각 행마다 CI를 실행한다는 뜻이 아니다.
 
@@ -305,6 +309,24 @@ Core에 생태계 이름별 if문과 runtime 실행 코드를 넣지 않는다.
 | Terraform provider/GitHub ELF | format/공급 증명/적용 가능한 내용·취약점 검사, 제한 probe의 환경/상태 실험; RPC/임의 인자는 미실행 |
 | update | 해당 위 검사 + S06의 인증된 이전/새 inventory 변화 |
 
+이 표의 적용 기준은 구현 후 결과에 맞춰 임의로 줄이지 않는다. 기본 profile은 다음을
+함께 고정한다. 증명의 **존재 확인**과 존재하는 증명의 **암호 검증**은 서로 다른 사실이다.
+
+| 검사 | 기본 적용·완료 의미 | 자동 허용을 막는 조건 |
+| --- | --- | --- |
+| 기존 digest/whole graph/구조·해당 동적 실험 | 현재 지원 operation의 필수 검사 유지 | 누락·변조·실행 실패·불완전 |
+| S04 내용 분석 | 지원 source는 실제 scanner, binary는 §6.1의 bounded binary capability | 지원한다고 선언한 형식의 skip/parse 실패를 N/A로 전환 |
+| S05 advisory | 검증된 ecosystem/name/version mapping의 직접·전이 node는 필수 조회. 매핑할 수 없는 binary 성분은 unsupported/범위 한계를 명시 | 원래 조회 대상의 mapping 실패·응답 누락·만료·장애를 '해당 없음' 처리 |
+| S07 signature/provenance | 공식 metadata의 제공 여부 확인은 필수. 제공되면 암호 검증도 필수. 진짜 미제공의 기본 처리는 MVP-007에 따라 다른 Evidence와 종합 | discovery 오류, 제공된 증명의 검증 실패, 정책상 필수 증명의 부재 |
+| S06 version diff | 최초 install은 N/A, 인증된 기존 설치를 바꾸는 update는 비교 근거 요구 | 기존 상태를 알 수 없는데 신규 설치로 바꿔 비교 생략 |
+
+S05의 unsupported는 '취약점 없음'이 아니며, 원래 bounded binary 지원 전체를 자동으로
+미지원으로 바꾸는 새 정책도 아니다. 해당 지원 lane의 한계와 종합 판정을 고정하고 정상
+대조군을 검증한다. 새로운 필수 요구로 기존 지원을 축소해야 한다면 기능 완료로 숨기지
+말고 지원 변경의 이유와 영향을 명시한다. 실제 수행 가능한 필수 검사를 N/A로 낮추는
+방법은 허용하지 않는다. 조건부 check의 적용 여부는 고정 profile과 인증된 discovery에
+결합하고 Artifact 출력·HTTP 오류·누락된 결과로 바꾸지 않는다.
+
 결과는 `필수/실행/미실행`, 원인, 실제 실험 한계, policy, installation, cleanup을 구분한다.
 기존 identifier 64 bytes/Evidence summary 1,024 bytes 등 Domain 한도도 유지한다.
 여러 검사 결과를 거대한 summary 문자열에 넣지 않고 기존 check별 bounded record를 사용한다.
@@ -342,6 +364,9 @@ expected 집합만 허용한다. 사람이 읽는 화면과 machine result가 �
 Artifact에 fixture 생성/검사완료 기록 권한을 주지 않는다. 자극 profile 준비 실패는 해당
 required experiment 미완료다. 기존 exact honeytoken 두 경로 분류를 일반 더미 파일이
 자동 탐지된다고 간주하지 말고, 실제 guest 경로/범주와 controller 소유 배치 정보를 연결한다.
+정상 개발 설정용 dummy와 침해 탐지용 canary의 역할도 profile에 구분한다. 모든 `.env`
+읽기를 일괄 honeytoken 위반으로 분류하지 않는다. 정상 설정 읽기와 민감정보 탐색·수집/
+전송을 구분하는 대조군을 기존 S03 정상 시험에 포함하며, 기존 canary 위반 판정은 유지한다.
 
 Env 값의 메모리 내 읽기는 syscall 관찰로 직접 증명하지 못한다. 증거에는 파일 열기,
 synthetic token의 전송 시도처럼 실제 관찰 가능한 결과만 기록한다. 모든 getenv를 잡는다고
@@ -548,7 +573,12 @@ unavailable을 구분한다. 최초 publisher binding이 불명확하면 guessed
 결과는 verified / not published / unsupported / unavailable / invalid를 구분해 기존
 Verification/Evidence 모델로 표현한다. invalid/mismatch는 BLOCK, required인데 증명이나
 검증이 불충분하면 MANUAL_REVIEW다. absent를 verified로 치환하지 않는다. optional 허용
-정책이 있다면 그 적용 범위를 명시하며 signed와 같은 보증 문구를 쓰지 않는다.
+범위는 [MVP-007 부재 처리](../mvp-scope/02-inspection-and-verification.md#mvp-007-signatureprovenance-부재-처리)를
+그대로 따른다. 기본 정책은 제공 여부 확인을 끝낸 진짜 미제공만으로 자동 BLOCK하거나
+일괄 MANUAL_REVIEW하지 않고 다른 필수 Evidence와 종합한다. 명시적으로 증명을 요구하는
+source/profile은 부재 시 자동 ALLOW하지 않는다. 404/빈 응답의 의미도 공급처 계약에 맞게
+확인하며 network/parse/인증 실패를 미제공으로 바꾸지 않는다. '미제공 확인 완료'를
+'서명 검증 성공'으로 기록하지 않는다. 기존 서명 필수 Terraform·HAA/tool 정책은 유지한다.
 
 공식 의미 근거: [npm registry 서명](https://docs.npmjs.com/verifying-registry-signatures/),
 [npm provenance](https://docs.npmjs.com/viewing-package-provenance/),
@@ -558,7 +588,8 @@ Verification/Evidence 모델로 표현한다. invalid/mismatch는 BLOCK, require
 
 완료: valid/missing/wrong subject/wrong publisher·issuer/expired·revoked key/invalid proof·
 network failure, 정상 서명되었지만 S04/S03에서 차단되는 표본, 현재 Terraform/고정 도구
-검증 회귀. 한 registry 구현만으로 모든 공급자 증명 지원 완료라고 표시하지 않는다.
+검증 회귀, 증명을 제공하지 않는 정상 package의 다른 필수 검사 통과 및 truthful한 결과.
+한 registry 구현만으로 모든 공급자 증명 지원 완료라고 표시하지 않는다.
 
 ## 7. C01 — 제품의 자동 정리와 디스크 상한
 
@@ -883,9 +914,13 @@ policy → actual result → negative target 무변경 → cleanup → remaining
   concurrent use·unknown identity에서의 안전한 보류, 실제 사용자 데이터 무변경.
 - 변경 경로의 불용/중복/임시 코드 제거, 비용·메모리·disk 예산 충족과 회수 receipt.
 - 문서·지원표·Queue의 상태가 실제 결과와 같고 모든 필수 CI가 terminal로 확인됨.
+- §13.1의 새 공급물 포함·설치본 연결·이전 형식 호환·현재 후보 조립이 확인됨. 개발자 cache에만
+  있는 도구로 성공하거나 기존 배포물에 새 기능이 빠진 상태로 이름 결정 단계에 넘기지 않음.
 
 위 조건 전에는 이름/배포 완료를 기능 완료의 대체로 삼지 않는다. 전체 목표의 한계와
 이번 bounded acceptance를 설명하되 '오류/버그가 절대 없다'는 증명으로 표현하지 않는다.
+이 조건을 닫으면 **기능 보강을 마치고 이름 결정·배포 마무리 단계로 진입할 수 있다.**
+실제 공개 배포 완료에는 §13.2의 기존 M13-004/005 acceptance도 필요하다.
 
 ## 12. 착수 전 확정할 입력과 멈춰야 할 경계
 
@@ -905,6 +940,67 @@ policy → actual result → negative target 무변경 → cleanup → remaining
 구현 지시를 받으면 01/B00부터 시작하되 이미 구현된 gap이 있는지 해당 owner만 다시 대조한다.
 전체 저장소를 매번 재감사하거나 해결된 실패를 근거 없이 다시 열지 않는다.
 
+## 13. 기능 완료에서 이름 결정·배포로 넘기는 조건
+
+최종 대조 결과, B/S/C의 보강 범위만 닫았다고 바로 공개 배포가 완료되는 것은 아니다.
+[현재 M13-004 baseline](./evidence/m13-004-convenience/baseline-20261017.md)의 최신 갱신과
+[M13 배포 계약](./18-m13-production-release-operations-contract.md)을 그대로 이어받는다.
+채널 wrapper/OIDC·formula와 현재 후보의 서명·clean Host qualification은 실제 남은 일이다.
+새 배포 체계를 만들거나 이 문서로 게시 권한을 추가하지 않는다.
+
+### 13.1 이름과 무관한 준비 — 기존 16번의 종료 조건
+
+새 scanner·rule pack·모의 responder·검증 library/trust data·storage policy는 해당 S/C 작업의
+직접 소비물이다. 구현 완료를 source checkout 안의 호출 성공으로 닫지 않고 다음을 함께 묶는다.
+
+| 기존 수정 owner | 함께 닫을 결과 |
+| --- | --- |
+| `tools/`의 고정 공급 절차, `internal/runtimeidentity`, 기존 runtime/hosttool 경계 | 실제 채택한 도구·규칙·trust/profile의 version/digest·라이선스/NOTICE, 실행 역할·권한·지원 platform. 개발자 PATH나 개인 cache 의존 없음 |
+| 기존 release-build workflow, `scripts/release-manifest`, `internal/releaseinstall`/`releasebootstrap` | 새 필수 공급물이 정확한 manifest/SBOM·package/초기 준비 경로에 포함됨. 현재 bundle 검사에서 누락·변조·잘못된 version/role 거부. 별도 임의 다운로드 installer 없음 |
+| `internal/bootstrap/doctor_linux.go` 및 기존 doctor/result | 설치된 정확한 필수 검사 공급물·설정의 readiness. 과거 네 runtime 항목만 성공했다고 새 전체 검사를 준비 완료로 표시하지 않음 |
+| 기존 self-update/activation·Evidence/transaction/storage owner | 이전 지원 설치에서 새 버전으로 전환, 새 검사 profile 활성화·자료 호환·실패 rollback. 새 schema를 이해 못하는 이전 바이너리가 새 records/cache를 잘못 승인·삭제하지 않음 |
+| 기존 명령/지원표/결과 문서 | 설치본의 실제 명령, default Policy, 제한·미수행 검사·정리 실패 표시와 문서가 일치 |
+
+storage/evidence/profile schema 변경은 version별 읽기·쓰기·migration/rollback 가능 범위를
+같은 변경에서 정한다. 이전 ALLOW는 새 필수 검사 완료 증거가 아니며, 이전 records가 있다고
+신뢰를 자동 승계하지 않는다. 반대로 사용 중인 기존 설치·journal·receipt를 즉시 삭제하지도
+않는다. 미지원 future schema는 명시 거부한다. 현재 승인된 이전 릴리스→새 후보 한 경로와
+실패 원복을 검증하며 모든 역사적 버전의 임의 migration framework를 만들지 않는다.
+
+현재 [자체 업데이트 계약](../user-journey-cli-ia/07-self-update.md)의 검증된 범위는
+Linux/WSL2 amd64·same-runtime이다. 새 공급물 때문에 runtime identity가 달라지면 이 성공을
+자동 전용하지 않는다. 기존 runtime 유지보수/검증 bootstrap 경로의 준비·전환·원복과 실제
+지원 명령을 확정해야 하며, 필요한 cross-runtime 지원은 해당 기존 계약의 변경 여부부터
+판정한다. 새 자동 전환을 이미 지원한다고 가정하거나 새 검사 도구를 빼서 통과시키지 않는다.
+
+최종 기능 후보에서 기존 producer로 실제 package/complete manifest 조립과 설치 경로의
+공급/연결 검사를 한 번 묶는다. 새 필수 공급물을 빼거나 개발 cache를 지운 조건에서도
+readiness가 정확해야 한다. 설치된 CLI/helper/규칙/profile의 hash를 실행한 source에 연결한다.
+서명된 현재 후보가 필요한 실행은 §13.2의 기존 release qualification과 한 번으로 합친다.
+unsigned 조립이나 과거 rc6·CI446 성공을 새 signed 설치 증거로 쓰지 않는다.
+이름이 필요한 wrapper·식별자 대신 placeholder package/job을 먼저 만들지 않는다.
+
+### 13.2 이름 결정 뒤 남는 배포 마무리 — 기존 M13-004/005
+
+| 단계 | 현재 상태·재사용 | 실제 완료 조건의 소유 문서 |
+| --- | --- | --- |
+| 공식 이름/namespace/tap 및 publisher binding | 사용자 선택 대기. 계정 준비와 package 소유/바인딩은 다름 | M13-004 baseline의 ordered plan 및 M13 §6 |
+| npm/PyPI/pipx/Homebrew 진입점·보호된 publication | 전체 채널 구현/연결/qualification/acceptance는 아직 NO. 기존 native bootstrap/verifier 재사용 | M13-004의 exact release/digest·OIDC/provenance·formula 조건 |
+| 최종 source delivery와 서명 후보 | 기존 producer/검증 절차 있음. 보강된 최종 source의 결과는 아직 없음 | 보호된 PR/main/Required → exact tag/build/attestation → manifest/asset set 검증 |
+| 실제 게시·새 Host 설치·지원 smoke | M13-005 NOT_STARTED | M13 §5/§7–10의 draft/public 순서, OS·채널 install/doctor, 생태계별 정상·hostile·cleanup, 게시 후 검증/incident |
+
+이름을 정하면 위 식별자를 확정하여 기존 최소 wrapper·publication 연결을 마무리한다.
+**이름만 바꾸고 게시 버튼을 누르는 단계라고 보고하지 않는다.** 이름과 무관한 제품 보강
+누락을 이 단계로 미루지는 않지만 이름에 의존하는 이 채널 구현은 원래 남은 배포 작업이다.
+필수 채널을 임의 제외해서 '배포 완료'로 만들지 않는다. 현재 macOS 제한과 Linux/WSL2의
+실제 지원 범위도 유지하고 설치 성공을 동적 검사 지원 성공으로 바꾸지 않는다.
+
+M13의 게시 전/후 검증 순서와 승인 경계는 변경하지 않는다. 게시 후 qualification 실패는
+기존 `PUBLISHED_BUT_QUARANTINED` 절차로 처리하며 기존 release overwrite/re-tag로 숨기지 않는다.
+동일 후보의 기능/설치/배포 증거는 재사용하고 이름 변경의 실제 영향을 받는 검사만 추가한다.
+이번 설계 검토는 구현·명명 확정·외부 계정 조작·tag/publish를 실행하지 않는다.
+
 이 문서 변경의 raw-free 후보 hash·문서/보안 검사 기록은
-`docs/github-logs/goal-design-20261101/`에 보존한다. 이는 문서 후보 검사이며 위 보강 기능의
+`docs/github-logs/goal-design-20261101/`과 최종 대조의
+`docs/github-logs/goal-design-final-review-20261101/`에 보존한다. 이는 문서 후보 검사이며 위 보강 기능의
 정상 동작·디스크 수거·새 runtime/CI qualification 증거가 아니다.
