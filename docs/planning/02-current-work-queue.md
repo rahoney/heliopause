@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — original bounded functional acceptance and whole-source/security audit COMPLETE. Official name/publisher binding, convenience channels and current signed deployment remain separate; names owner-deferred.
-Last completed substep: whole-source/security audit COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES. Same code358/treee1ca ordinary/CPU CI448, cu126449, cu130450attempt2, cu132451 all10SUCCESS; scope and evidence in audit ledger.
-Next action: owner reviews official name; preserve qualified code and do not repeat unchanged full/native/CPP/CI. After naming, implement/qualify existing channel plan; before deployment transition unsupported local Host Docker29.8.1 to supported minimum29.9.2+, then current protected build/signing/clean-Host acceptance. No publication or main merge authorized.
-Current substep: whole-source/security audit CLOSED. Four same-source profiles qualified; 40 original logs6691308B/actual source/hash/required result/cleanup verified. CI451 actual20min GET3 at13:54:27.455226UTC consumed terminal10SUCCESS, CPU290.53s/cu1321064.79s/noSKIP/CPP133/helper2wait0/confirmedRESTORED. All query workers exited0; no active CI/next due. CI450 first Mac120s build timeout underlying cause remains UNKNOWN; one Mac+dependentRequired retry passed and original8/GPU reused. Audit scope MISSING=[]; M13-004 overall still IN_PROGRESS.
+Last completed substep: user-confirmed launcher artwork COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES in local display scope. Approved exact source hashes and Quick93.086s/security21.332s/docs evidence in art-refresh-20261031.md. Earlier whole-source audit remains closed for code358/four profiles.
+Next action: preserve the approved launcher design; owner continues official-name review, then existing channel/publisher plan. Do not ask again for visual approval or repeat unchanged full/native/CPP/CUDA/CI. Deployment/Host transition/main merge/tag/publish remain separate.
+Current substep: approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. No remote CI/push/installation; exact final commit is a local checkpoint, not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
 Independent local next: no remaining source-audit implementation. Earlier unsigned e3 assembly and local Buildx limitation retain their original scope; actual current protected Release Build/signing/clean-Host activation is separate and is not claimed by ordinary/CUDA CI.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -25,6 +25,12 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 CLI 시작 화면 아트 — COMPLETE (local 표시 범위)
+
+사용자가 [단순 문 로고·가로 그라데이션·별빛의 최종 화면](./evidence/cli-launcher/art-refresh-20261031.md)을 확정했다. 기존 brand owner와 draw paint 연결 두 파일만 수정했고 final frozen Quick93.086s/security21.332s/docs0.366s PASS다. IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES, MISSING=[]다. 로고는HELIOPAUSE 왼쪽에만 두고 두 번째 줄은 전체 폭을 유지하며 네 메뉴/footer·NO_COLOR·terminal lifecycle은 기존 경계를 재사용한다. 불필요한 큰 심볼 배치 코드는 제거했고 새 runtime mode/package/dependency는 없다.
+
+승인된3개 PNG만 현재 문서에 남겼다. 이번 작업의 미추적 초안18개와 이전 인계는 원본을 보존해 raw로 옮겼고 관련 없는 사용자 자료는 건드리지 않았다. Native macOS hosted·CPP/CUDA를 반복하거나 이전358 전체 CI를 새 artwork의 결과로 전용하지 않는다. 현재 설치본 교체·push·main merge/tag/publish와 M13-004 전체 완료는 별도다.
 
 ### 2026-10-31 사용자 요청: 이름 결정 전 전체 코드·보안 감사 — COMPLETE
 

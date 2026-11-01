@@ -204,13 +204,24 @@ update, inspection, download or repair from menu navigation.
 
 Owner preview refinement: emphasize **Heliopause Artifact Airlock**, with all three
 words in the same five-row block lettering; `helox` is a small command label.
-On the home page use one wordmark row at112+ columns/18+ rows, two at68+/24+,
-or three at44+/28+ when the measured description/notice also leaves four menu
-rows and a footer. Otherwise show the compact full name. Other pages remain
-compact. A navy panel with cyan, white and gold accents uses basic ANSI colors;
-reset every painted row and retain the existing NO_COLOR/never/always semantics.
-Center and pad by visible cells before styling, leaving the physical last column
-unused. No terminal font size, palette or background preference is changed.
+On the home page prefer two wordmark rows at68+ columns/24+ rows; use a single
+row at112+/18+ on shorter screens, or three at44+/28+ when the measured
+description/notice also leaves four menu rows and a footer. Otherwise show the
+compact full name. Other pages remain compact. The existing five-row glyph grid
+has a shallow down/right shadow. A simple five-row door mark uses a flat neutral
+outline, a gray central split and two short yellow handles. It sits only to the
+left of HELIOPAUSE; the second wordmark retains the full centered panel width.
+No metallic shading, texture, large gear or tall side column is introduced.
+The mark appears only when its width fits without losing the full name, four
+menu rows or footer; the existing five-row layout is reused.
+A thin space-themed frame uses a local black background with varied fixed stars
+in empty margins. Wordmarks have a smooth horizontal pink/lavender/cyan24-bit
+foreground gradient applied after plain layout; the metal door/frame/caption use
+basic ANSI accents. No animation/input-loop/runtime dependency is introduced. Reset every painted row and retain existing NO_COLOR/never/always
+semantics. Center and pad by visible cells before styling, leaving the physical
+last column unused. No terminal font size, palette or global background preference
+is changed. The [2026-10-31 refinement](../planning/evidence/cli-launcher/art-refresh-20261031.md)
+records the reference/design scope and actual-output preview.
 Keep a plain-text full-name caption for searching/copying. The existing usage
 labels expose pip install --upgrade/-U and GitHub asset install --replace.
 New package clients remain design-only until wired and qualified.

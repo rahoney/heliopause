@@ -457,7 +457,7 @@ func (l *launcher) draw(width, height int) error {
 	lines := make([]string, 0, height)
 	for i, line := range header {
 		if i < len(brand) {
-			line = l.p.paint(line, brand[i].style)
+			line = brand[i].paint(l.p)
 		}
 		lines = append(lines, line)
 	}
