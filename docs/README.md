@@ -110,6 +110,8 @@ Read:
 [현재 구현 감사](./planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)와
 [보강 설계·수정 지도·완료 기준](./planning/21-goal-completion-design.md)을 읽는다.
 현재 사용자 요청은 설계만이며 실제 보강 구현은 NOT_STARTED다. 실행 상태는 Queue가 소유한다.
+코딩 AI의 지원 생태계별 CLI 결과·대안 재검역·우회 금지 Skill과 최소 MCP 채택 기준은
+같은 보강 설계 §4.8–4.9를 따른다. AI가 검사 코드를 생성하는 향후 계획과 구분한다.
 
 ### Runtime, 배포 또는 trusted tooling
 

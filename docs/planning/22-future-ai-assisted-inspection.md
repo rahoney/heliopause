@@ -5,6 +5,9 @@
 v2.0은 향후 제품 방향의 후보 이름이며 확정 일정·릴리스 범위가 아니다.
 현재 [보강 설계](./21-goal-completion-design.md)의20개 gap·16개 순서와 첫 배포 완료 조건에
 추가하지 않는다. 이번 기록으로 MCP server·감시 daemon·AI SDK·모델·API 키 설정·새 CI를 만들지 않는다.
+후속 사용자 요청의 CLI 사용 Skill과 기본 MCP 연결은 보강 설계 §4.8–4.9가 별도로 소유한다.
+A01은 현재 필수, A02 최소 MCP는 조건부 현재 후보이며 아래 AI 생성 코드 검사 A/B와 다르다.
+기본 MCP를 구현하더라도 이 문서의 코드 생성·제출·재시도 기능까지 구현된 것으로 표시하지 않는다.
 
 ## 1. 목적과 두 단계
 
@@ -18,10 +21,11 @@ AI가 패키지의 API와 사용법을 바탕으로 가장 빠르고 간단한 �
 | A — 사용자 AI 협업 | MCP 사용에 한정해 사용자 AI가 코드 생성·한 번 수정, Heliopause가 격리 실행·관찰 | Heliopause가 자체 모델을 운영하거나 사용자 AI의 API 키를 받을 필요가 없는 초기 후보 |
 | B — 자체 생성·수정 | 오픈소스/오픈웨이트 코딩 모델 내장 또는 사용자 선택 API·AI CLI 연결 | 더 큰 후속 업그레이드/v2.0 핵심 기능 후보. A와 함께 지금 구현하지 않음 |
 
-MCP baseline: `PROJECT-DECISIONS.md`의 Open Decisions는 MCP 제공을 CLI 안정화 후로 둔다.
+MCP baseline: 최초 기록 당시 `PROJECT-DECISIONS.md`는 MCP 제공을 CLI 안정화 후로 두었다.
 확인 기준의 `cmd/`·`internal/`·`go.mod`/`go.sum`에서는 MCP server/등록 경로를 확인하지 못했다.
 MCP 등 자동화가 읽을 machine-readable 결과를 제공하는 것과 MCP server 구현 완료는 다르다.
-A 착수 전 실제 MCP 제공 여부와 client 호환성을 별도 확인하며 현재 지원한다고 표시하지 않는다.
+이후 기본 연결의 채택 기준은 보강 설계 A02로 구체화했다. 여기의 A 착수 전 실제 MCP
+제공 여부와 client 호환성을 별도 확인하며 현재 지원한다고 표시하지 않는다.
 
 ## 2. A의 사용자 흐름 후보
 

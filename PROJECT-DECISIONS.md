@@ -123,6 +123,8 @@ CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI3
 
 후속 보안 검토는 같은 설계 §3.1·§5.6·§11.1에 기존 버전 업데이트 경로 보존, 제한 실행의 실제 범위, 필수 동적 검사를 기본값에 유지하는 원칙과 마지막 보안 평가를 연결했다. 기존16번에서 공격자가 source를 안다는 전제의 평가와 탐지/오탐/미완료·비용을 확인한다. 추가 심층 profile은 실측 후 판단하며 현재 채택·구현으로 표시하지 않는다. 무해 시험의 성공을 실제 악성코드 대부분 차단의 근거로 확대하지 않는다. 제품 구현·Host 변경·CI는 계속 NOT_STARTED다.
 
+후속 AI 사용 요청은 [보강 설계 §4.8–4.9](./docs/planning/21-goal-completion-design.md)에 반영했다. A01의 전체 지원 생태계 CLI 흐름·실패 분류·대안 재검역·우회 금지 Skill은 이번 필수 acceptance다. A02 최소 MCP는 기존 경로 재사용·로컬 stdio 범위의 채택 조건을 충족하면 함께 구현한다. 기존16번에서 검증하며 현재는 설계만 반영/구현 NOT_STARTED다. AI 검사 코드 생성은 별도 향후 후보이고, 지침 제공을 Host 우회 강제 차단으로 표시하지 않는다.
+
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
 Documentation hierarchy and task routing migration: Complete
@@ -230,7 +232,7 @@ H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
 | Evidence storage·retention·cleanup | 구현 직전 상세 설계 |
 | M2 이후 Policy rule·version·reason code | 각 ecosystem 구현 직전 상세 설계 |
 | 라이선스·상표·배포 정책 | 배포 전 |
-| MCP 제공 여부 | CLI 안정화 후. AI 보조 검사의 선행조건이며 현재 구현 완료로 가정하지 않음 |
+| 기본 MCP 제공 | [보강 설계 A02](./docs/planning/21-goal-completion-design.md)의 조건부 현재 후보. CLI 결과 안정화 후 작은 재사용 연결로 닫을 수 있으면 구현·검증; 현재 미구현 |
 | MCP AI 보조 실행 검사·자체 코드 생성 | [향후/v2.0 핵심 기능 후보](./docs/planning/22-future-ai-assisted-inspection.md). 사용자 요청으로 아이디어만 기록 / DEFERRED; 현재 보강·첫 배포 필수 범위 밖 |
 
 ## Documentation Rules

@@ -20,6 +20,7 @@
   후속 [보강 설계](docs/planning/21-goal-completion-design.md)에 수정 위치·재사용·순서·완료 조건과 자동 용량 관리/시험 정리·성능·CI 운영을 명시했다. 사용자 요청에 따라 현재는 설계만 작성했으며 실제 보강 구현은 NOT_STARTED다.
   최종 설계 대조에서 새 검사 공급물의 설치·업데이트 연결과 기본 판정, [명명·배포 인계](docs/planning/21-goal-completion-design.md#13-기능-완료에서-이름-결정배포로-넘기는-조건)를 보완했다. 기능 보강 완료 후 이름 결정·배포 마무리로 진행하며 채널 구현·서명 릴리스·clean Host/게시 검증은 기존 M13 완료 조건대로 남는다.
   후속 검토는 기존 업데이트 체계와 기본 동적 검사를 보존하고, 마지막 통합 단계의 [보안 성능 평가](docs/planning/21-goal-completion-design.md#111-마지막-보안-보강-검토--기존-16번의-필수-종료-단계)를 명시한다. 심층 검사 옵션은 탐지 이득·시간을 측정한 뒤 판단하며 현재 구현된 기능이 아니다.
+  [AI 사용 흐름 설계](docs/planning/21-goal-completion-design.md)는 전체 지원 생태계의 CLI 결과·대안 재검역·우회 금지 Skill을 필수로 보완하고, 기존 경로를 재사용하는 최소 MCP는 조건부 구현 후보로 둔다. 현재는 설계만 반영했으며 Skill/MCP 제공이나 Host 우회 강제 차단을 완료로 표시하지 않는다.
   사용자는 공식 이름을 검토한다. [동일 WSL 개발 체험 환경](docs/planning/evidence/m13-004-convenience/local-dev-test-20261101.md)은 Docker29.9.2·최신 CLI/helper로 전환해 Python 설치·업데이트와 Go 설치·업데이트·빌드까지 확인했다. 공식 채널/publisher binding·새 서명 배포·배포 전 acceptance는 남는다. 원래 지원 제외·별도 확장과 필수 누락은 구분하며 실제 순서는 [Queue](docs/planning/02-current-work-queue.md)가 소유한다.
   Main 병합·게시 승인은 별도이며 첫 정식 공개판 목표는 v1.0.0이다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
