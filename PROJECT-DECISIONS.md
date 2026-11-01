@@ -115,7 +115,7 @@ CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI3
 
 2026-10-31 이름 결정 전 [전체 코드·보안 감사](./docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 완료했다. 코드358/treee1ca의 일반/CPU·cu126·cu130·cu132가 모두 Required10SUCCESS이며 확인된 보안·중복·연결 문제를 기존 owner에서 최소 수정했다. 감사 자체는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES다. M13-004는 이름/publisher binding·채널·현재 서명 배포가 남아 IN_PROGRESS이며 사용자가 승인한 [동일 WSL 개발 체험 환경](./docs/planning/evidence/m13-004-convenience/local-dev-test-20261101.md)은 Docker29.9.2·현재 CLI/helper로 전환하고 실제 Python/Go 소비자를 확인했다. 이 개발 설치는 정식 릴리스 등록·현재 signed deployment의 완료가 아니다. 명명·main merge/tag/publish를 임의 실행하지 않는다.
 
-2026-11-01 [사용자 핵심 목표 재대조](./docs/planning/evidence/m13-004-convenience/local-dev-test-20261101.md#2026-11-01-사용자-핵심-목표-재대조--open)는 두 install -r 미지원과 D-008의 조건부 잠복 행동 유도·탐지 acceptance gap을 확인했다. 과거 bounded 구현·감사·Host 연결 완료는 유지하되 전체 사용자 목표 완료로 확대하지 않는다. 현재 Queue는 이름·배포보다 이 gap을 우선한다.
+2026-11-01 [일괄 설치·원래 보안 목표 감사](./docs/planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)는 기존 여섯 생태계의 파일 기반 설치와 D-008/MVP-005~008을 대조해 B00~B07/S01~S09의 미지원·미완료를 기록했다. 감사는 완료했으며 기능 acceptance는 OPEN이다. 과거 bounded 구현·감사·Host 연결 완료는 유지하되 전체 사용자 목표 완료로 확대하지 않는다. 현재 Queue는 이름·배포보다 이 gap을 우선한다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 

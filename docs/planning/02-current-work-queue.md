@@ -16,15 +16,19 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — prior bounded functionality/audit and local test setup retain their scoped evidence. User-goal reassessment OPEN: both pip/uv install -r forms are unsupported; D-008 environment-triggered dormant behavior induction/detection is not acceptance-closed. Names/deployment must not replace these gaps.
 Last completed substep: user-confirmed launcher artwork COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES in local display scope. Approved exact source hashes and Quick93.086s/security21.332s/docs evidence in art-refresh-20261031.md. Earlier whole-source audit remains closed for code358/four profiles.
-Next action: address the documented requirements-install and D-008 dormant/environment-triggered detection gaps within existing owners before naming/deployment. This turn confirmed baseline/preflight only; no feature rewrite or new CI. Local WSL setup remains available; preserve the approved UI and runtime.
+Next action: follow goal-coverage-audit-20261101.md B00–B07/S01–S09. Fix unsupported-command false success, then requirements bulk install and the other missing default project flows; close the original security-goal gaps within existing owners before naming/deployment. Audit/preflight only so far; no feature rewrite or new CI. Preserve the approved UI and local WSL setup.
 Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. Artwork checkpoint had no remote CI/push/installation; the later user-authorized development Host setup is recorded separately and is not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
-Independent local next: current user-goal gaps are tracked in the local development setup leaf; prior source audit closure is not goal-wide acceptance. Earlier unsigned e3 assembly, Buildx limitation and signed Release/Host acceptance keep their own scope.
+Independent local next: goal-coverage-audit-20261101.md owns the expanded command/security gap inventory; local development setup keeps its prior evidence. Source audit closure is not goal-wide acceptance. Earlier unsigned e3 assembly, Buildx limitation and signed Release/Host acceptance keep their own scope.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 일괄 설치·원래 보안 요구 구현 대조 — 감사 완료 / 기능 OPEN
+
+[구현 대조와 미지원 목록](./evidence/m13-004-convenience/goal-coverage-audit-20261101.md)은 기존 여섯 생태계의 파일 기반 의존성 흐름과 D-008/MVP-005~008을 실제 caller·검사 body·기존 qualification에 연결한다. B00~B07/S01~S09에 독립 baseline과 MISSING을 기록했다. 기본 npm install/ci·Cargo fetch·Terraform init도 미지원이며 npm ci/Cargo fetch/Go mod tidy의 도움말 exit0을 실제 재현했다. 구조 검사 외 악성 패턴·사용자 package 취약점 DB·위험 변화·일반 공급자 증명과 동적 유도/범위 보고가 남는다. 기존 보호·지원 흐름은 재사용한다. 이번은 감사·문서와 싼 preflight만 수행했으며 제품·Host·CI를 변경하지 않았다. 다음은 B00와 requirements 입력 묶음이며 이름·배포는 뒤다.
 
 ### 2026-11-01 requirements 입력·잠복 공급망 탐지 목표 — OPEN
 

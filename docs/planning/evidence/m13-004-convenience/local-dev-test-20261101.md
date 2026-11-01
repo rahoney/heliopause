@@ -79,6 +79,8 @@ sudo /usr/bin/python3 /var/backups/heliopause/dev-test-20261101-4288ddd/restore.
 
 ## 2026-11-01 사용자 핵심 목표 재대조 — OPEN
 
+후속 사용자가 요청한 다른 언어의 일괄 설치·원래 설계 누락 점검은 [목표 구현 감사](./goal-coverage-audit-20261101.md)가 상세 목록·현재 baseline·보완 순서를 소유한다. 아래는 최초 Python 재대조의 근거로 유지한다.
+
 위 COMPLETE는 개발 Host 연결과 명시된 작은 소비자 검증의 범위다. 사용자가 재확인한 잠복·환경 조건부 공급망 악성코드의 설치 전 탐지 목표 전체가 완료됐다는 뜻이 아니다. 원래 [D-008](../../../threat-model/02-isolation-and-inspection.md#d-008-host-자산-접근-통제와-미끼-자산-확정)을 기준으로 상태를 구분한다.
 
 | 책임 / 요구 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 남은 일 |
