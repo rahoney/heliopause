@@ -9,6 +9,10 @@
 원래 MVP-005–008 및 현행 M13 배포 계약과 대조해 검사 적용/부재 판정, 설치본에 대한
 공급·호환성, 명명/배포 인계를 보완했다. 기존 20개 gap·16개 구현 순서는 유지한다.
 
+후속 보안 검토 기준: `4967dad05d3f84f9847719f41130a7119aacc899`.
+버전 유지보수 보존, 제한 실행의 범위·검사 비용, 코드 공개를 전제한 최종 보안 검토와
+측정 기준을 보완한다. 마지막 검토는 기존 16번에 포함하며 구현 완료를 의미하지 않는다.
+
 ## 1. 목적·문서 책임·범위
 
 이 문서는 [목표 대조 감사](./evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의
@@ -34,6 +38,7 @@ B00–B07/S01–S09와 이번에 요청한 자동 용량 관리·시험 정리·
 | 검사·판정·더미 환경 | [원래 검사 요구](../mvp-scope/02-inspection-and-verification.md), [격리 위협 모델](../threat-model/02-isolation-and-inspection.md), [Inspection 계약](../domain-model/08-contract-inspection-sandbox-policy.md), [M11 관찰·privacy](./14-m11-dynamic-detection-depth-contract.md) |
 | 증거·용량 관리 | [Evidence와 Staging](../architecture/04-evidence-staging-promotion.md), [Evidence 계약](../domain-model/09-contract-evidence-staging-promotion.md), [M12 기존 자원 예산](./16-m12-01-ecosystem-expansion-contract.md) |
 | 검증·CI | [Quality toolchain](../engineering/03-quality-toolchain.md), [CI gate](../engineering/04-ci-quality-gate.md), [기존 실행·타이머 규칙](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리) |
+| 버전·검사 공급물 유지보수 | [Runtime upgrade 계약](../engineering/05-runtime-upgrade-maintenance.md), [기존 유지보수 계획](./19-runtime-upgrade-maintenance-plan.md) |
 
 개인 오답노트 INDEX와 해당 artifact/sandbox/evidence/ci 주제도 작업 재개 때 읽는다.
 오답노트를 새 제품 입력이나 CI 의존성으로 만들지 않는다.
@@ -98,6 +103,13 @@ C01의 추가 근거: `internal/evidence/local/store.go: Store.DeleteRun`은 명
 반대로 원자 transaction과 검사/삭제 권한을 거대한 하나의 함수로 합치지도 않는다.
 구현 대체가 필요하면 AGENTS의 기존 위치·재사용 불가 이유·영향 제시와 승인 기준을 따른다.
 
+버전 유지보수의 각 값별 단일 owner, 기존 lock/generator와 `scripts/update-runtime`의
+`plan → apply → verify`를 보존한다. 새 scanner/rule/profile/trust 공급물도 기존 해당
+공급 owner에 등록하고 소비자·배포 manifest·drift 검사에 연결한다. 독립 updater·중복
+version lock·여러 파일의 수동 version 상수는 만들지 않는다. 변경된 공급 경로의 생성
+일관성과 같은 입력의 no-op을 기존 검증에 포함하며, 실제 API/ABI 호환 수정은 영향받는
+모듈에 한정한다. 사용자 project 버전이나 과거 qualification 원본을 일괄 치환하지 않는다.
+
 ### 3.2 공통 처리 경로
 
 ```text
@@ -135,7 +147,7 @@ network 권한을 공유하지 않는다. 결과/cleanup은 첫 오류를 보존
 | 13 | S05 | 08–09; graph identity 고정 | 전이 의존성까지 advisory 조회·불완전 거부 |
 | 14 | S06 | 12–13; 인증된 이전 inventory | 버전 위험 변화 Evidence와 Policy 연결 |
 | 15 | S07 | 08; 기존 verifier/공급자 trust 검토 | 일반 증명 subject/issuer 검증·부재/실패 구분 |
-| 16 | C01 전체+C02+C03·통합 acceptance | 01–15의 누락·실패 해소 | 유한 디스크·잔여 코드/시험 payload 정리·목표 전체 증거와 §13의 이름 독립 배포 준비 |
+| 16 | C01 전체+C02+C03·통합 acceptance | 01–15의 누락·실패 해소 | 유한 디스크·잔여 코드/시험 payload 정리·§11.1 최종 보안 검토/측정·§13 이름 독립 배포 준비 |
 
 §9의 검증 묶음을 사용한다. 이 표의 각 행마다 CI를 실행한다는 뜻이 아니다.
 
@@ -450,6 +462,44 @@ Npm lifecycle, Python hook/import, Cargo/Go 관찰 build, 제한 ELF/provider pr
 연결되는 fixture를 명시한다. 한 생태계의 성공을 나머지의 연결 증거로 쓰지 않는다.
 최종 증거는 input/profile → 조건 배치 → 외부 관찰 → Finding → Policy → 원본 target
 무변경 → 모든 owned resource 정리를 동일 run/subject로 연결해야 한다.
+
+### 5.6 설치 후 실행 범위와 검사 시간
+
+[D-006](../threat-model/02-isolation-and-inspection.md)의 설치 후 제한 실행은 기존 요구다.
+§5.1의 operation별 표와 현재 [동적 검사 baseline](./evidence/m13-004-convenience/goal-coverage-audit-20261101.md#생태계별-현재-동적-검사의-의미)을 함께 따른다.
+설치 성공은 프로그램 실행 완료가 아니고, import/entry/probe 성공도 임의 API·입력·분기를
+모두 실행한 증거가 아니다. Go/Cargo의 관찰 build는 결과 프로그램의 runtime 실행과 다르다.
+
+S01–S03은 기존 Python import/hook/entry, npm 계열 lifecycle/지원 entry, 관찰 build와
+제한 ELF/provider probe에 자극을 연결한다. 설치 때는 조용하고 **지원된 실행 진입점에서만**
+무해한 공격 행동이 나오는 표본과 정상 표본을 S03에 포함한다. 진입점·인자·입력·환경·관찰
+시간을 고정하고 실제 실행·외부 관찰·판정까지 확인한다. Artifact가 고른 명령이나
+출력 문자열을 완료 권위로 쓰지 않는다. 대상 digest와 검사에 필요한 전체 집합의 결합도 유지한다.
+지원하지 않는 API 호출·Go/Cargo application 실행·provider RPC를 검사했다고 표시하지 않는다.
+필요 실행 경로가 없으면 §11.1에 gap으로 남기고 기존 backend로 보완 가능한지 검토한다.
+원래 필수 목표를 '실행 불가'로 축소해 닫지 않으며, 임의 프로그램 전수 실행 framework도 만들지 않는다.
+
+**기본 동적 검사는 시간 절약을 위해 생략하거나 선택 옵션으로 내리지 않는다.** 기본값은
+현재 필수 검사와 이번 S01–S03의 필수 자극 실험을 포함한다. 추가 시나리오·더 긴 관찰은
+기본 대비 탐지 이득과 비용을 측정한 뒤에만 별도 `심층 검사` profile의 필요성을 판단한다.
+이는 옵션 설계 후보이며 현재 최고보안 기능의 구현·채택 결정이 아니다. 장시간 실행만으로
+안전을 보장하지 않으므로 `100% 보호`나 `최고보안 보장`으로 표시하지 않는다.
+
+심층 profile을 채택한다면 기존 typed profile/설정 경로를 최소 확장한다. 기본 required 집합의
+상위 집합이어야 하며, 선택 뒤 준비 실패·timeout·취소를 기본 검사 성공으로 되돌려 자동
+허용하지 않는다. Profile ID/version·실험 목록·예산·실제 수행 범위를 Evidence/cache key에
+결합하고 unknown/변조된 선택은 거부한다. 사용자가 임의 shell·실제 secret·외부 통신을
+설정하는 통로는 만들지 않는다. 기존 한도를 조용히 늘리지 않고 자원 계약 변경과 qualification을
+먼저 확정한다. 새 설정 화면·독립 실행기·새 CI job을 측정 전에 선행 구현하지 않는다.
+
+소요 시간은 전체 graph의 획득·정적 검사·sandbox 준비·실험·정리를 나누어 cold/warm,
+small/medium/기존 대용량 대상에서 §8.1과 함께 측정한다. 일반 backend의 현재45초 한도는
+단일 실행 상한이며 전체 설치의 소요 시간이나 모든 profile의 공통 예산이 아니다.
+실험 수·선택 진입점·직접/전이 package 수와 공유 root budget을 함께 기록한다.
+CI 전체 시간이 사용자 검사 시간인 것처럼 설명하거나 측정 전에 초·분 단위 SLA를 만들지 않는다.
+시간 지연·분석환경 회피는 알려진 한계다([MITRE T1497](https://attack.mitre.org/techniques/T1497/)).
+관찰되지 않은 잠복을 자동으로 알아낼 수 있다고 가정하지 않는다. 알려진 필수 미완료와
+완료된 제한 실험에서의 미탐을 구분하며, 긴 대기만으로 모든 잠복 문제를 해결하려 하지 않는다.
 
 ## 6. 정적 검사·취약점·변화·공급자 검증
 
@@ -913,6 +963,7 @@ policy → actual result → negative target 무변경 → cleanup → remaining
 - 유한 cache/evidence/전체 quota, success/failure/cancel/crash 뒤 자동 정리,
   concurrent use·unknown identity에서의 안전한 보류, 실제 사용자 데이터 무변경.
 - 변경 경로의 불용/중복/임시 코드 제거, 비용·메모리·disk 예산 충족과 회수 receipt.
+- §3.1의 기존 버전 유지보수 경로 보존과 §11.1 최종 보안 검토/측정 완료.
 - 문서·지원표·Queue의 상태가 실제 결과와 같고 모든 필수 CI가 terminal로 확인됨.
 - §13.1의 새 공급물 포함·설치본 연결·이전 형식 호환·현재 후보 조립이 확인됨. 개발자 cache에만
   있는 도구로 성공하거나 기존 배포물에 새 기능이 빠진 상태로 이름 결정 단계에 넘기지 않음.
@@ -921,6 +972,56 @@ policy → actual result → negative target 무변경 → cleanup → remaining
 이번 bounded acceptance를 설명하되 '오류/버그가 절대 없다'는 증명으로 표현하지 않는다.
 이 조건을 닫으면 **기능 보강을 마치고 이름 결정·배포 마무리 단계로 진입할 수 있다.**
 실제 공개 배포 완료에는 §13.2의 기존 M13-004/005 acceptance도 필요하다.
+
+### 11.1 마지막 보안 보강 검토 — 기존 16번의 필수 종료 단계
+
+목적은 원래 위협 목표의 누락·미탐·오탐·미완료와 시간 비용을 대조해 필요한 보완을 닫는
+것이다. 새 감사 framework/daemon은 만들지 않는다. 기존 S03 corpus, 실제 inspector/Policy,
+M12 red-team 검토 방식과 §8 성능 기록을 재사용한다. 판정 기준은 다음과 같다.
+
+1. 공격자는 공개 source·규칙·더미 배치·실험 순서·한도를 안다고 가정한다. 조건부 잠복,
+   실행 진입점 전용 행동, 지연/분석환경 회피, 정상 사용을 닮은 설정 접근, 전이 의존성,
+   공급자 증명은 유효하나 내용이 위험한 표본을 포함한다. 완료 위조·관찰 누락·반입 bytes
+   교체 같은 기존 신뢰 경계 반례는 유효한 증거를 재사용하고 변경된 연결만 추가 검증한다.
+2. 정상/공격 label과 기대 행동을 검사 출력과 독립적으로 정한다. 개발 회귀 표본과 평가용
+   미사용 변형을 분리하고 파일 hash·유사 변형/family 중복을 확인한다. 평가 목록·profile·
+   기대 verdict·지원 한계·성능 예산을 실행 전에 고정한다. 실제 유효 secret·활성 악성코드·
+   실제 C2는 사용하지 않는다. 무해 행동 재현의 성공을 실제 악성코드 모집단 탐지율로 확대하지 않는다.
+3. 대상별 source/도구/규칙/profile/runtime·입력 hash·Finding·최종 verdict·반입 유무·
+   미완료 원인·시간·정리를 기록한다. Package/생태계·위협 유형·실행 단계별 결과를 함께
+   제시하고 쉬운 한 유형을 반복해 전체 비율을 높이지 않는다. 미도달·timeout·미지원·
+   잘못된 시험 입력도 개수/이유를 남기며 실패 뒤 분모에서 조용히 빼지 않는다.
+
+측정에서 `M`은 사전에 고정한 공격 label 표본 수, `G`는 정상 표본 수, `N=M+G`다.
+같은 표본의 기본/심층 profile 결과는 별도로 계산하며 실행 실패도 원래 분모에 남긴다.
+
+| 지표 | 계산·해석 |
+| --- | --- |
+| 탐지율 | 올바른 위협 Finding/Evidence를 만든 공격 표본 / M. 무관한 오류·timeout만으로 성공 처리하지 않음 |
+| 명시 차단율 | 최종 BLOCK인 공격 표본 / M. 그중 올바른 탐지 근거에 의한 BLOCK과 다른 원인의 거부를 분리 |
+| 자동 반입 방지율 | BLOCK·MANUAL_REVIEW·필수 미완료 등으로 실제 자동 반입이 없었던 공격 표본 / M. 탐지율과 다름 |
+| 정상 오탐률 | 잘못된 위협 Finding이 나온 정상 표본 / G. 잘못된 BLOCK과 MANUAL_REVIEW 부담도 각각 별도 집계 |
+| 검사 미완료율 | 필수 검사 하나 이상 미완료/미도달인 표본 / N. 정상/공격 및 원인별로도 분리 |
+| 미탐·반입 위험 | 위협 Finding이 없는 공격 표본, 그중 ALLOW/실제 반입된 표본을 각각 기록 |
+| 성능 | 충분한 표본의 p50/p95와 최대·표본 수, 단계별 시간/peak RSS/disk. 소표본은 관측값이며 모집단 백분위로 주장하지 않음 |
+
+분모가0이면 N/A다. 원시 개수와 표본의 선정 방식·범위를 비율과 함께 표시한다.
+완료된 검사만으로 계산한 보조 탐지율을 쓴다면 전체 분모의 결과도 반드시 같이 제공한다.
+전부 미완료/수동 검토로 넘겨 반입을 막는 것을 '대부분 탐지'로 포장하지 않는다.
+
+종료 조건: 지원을 약속한 필수 공격 시나리오는 올바른 관찰·Finding·기대 Policy와 자동
+반입 없음이 모두 확인되어야 하고, 정상 대조군에는 설명되지 않는 오탐/차단/필수 미완료가
+없어야 한다. Observer/격리/승격 경계 위반, 필수 시나리오의 미탐·자동 반입, 원인 미확정
+실패, 기존 자원 예산 초과는 OPEN이다. 심층에서만 잡히는 **기본 필수 위협**은 기본 검사를
+보완하고 옵션으로 떠넘기지 않는다. 지원 밖의 장기 잠복·임의 API 한계는 별도 남기되
+당초 필수였던 실패 표본을 사후에 지원 밖으로 재분류해 통과시키지 않는다.
+
+발견한 문제는 기존 B/S/C 책임 항목으로 돌려 최소 수정하고 영향받은 평가만 갱신한다.
+평가 표본을 보고 규칙을 고쳤다면 해당 표본은 회귀에 편입하고 같은 결과를 미사용 평가로
+재표기하지 않는다. 미사용 변형을 보충해 다시 확인한다. 남은 gap·검사 범위·측정 결과와
+기본/심층 채택 여부를 한 기록으로 연결한 뒤에만 16번을 닫는다. 보완할 문제가 없으면
+추가 구조/옵션을 만들지 않는다. 이 bounded 평가의 통과만으로 '실제 악성코드 대부분 차단'을
+입증했다고 발표하지 않는다. 그 주장은 대표성 있는 별도 평가와 명시된 대상 범위를 필요로 한다.
 
 ## 12. 착수 전 확정할 입력과 멈춰야 할 경계
 
@@ -1002,5 +1103,6 @@ M13의 게시 전/후 검증 순서와 승인 경계는 변경하지 않는다. 
 
 이 문서 변경의 raw-free 후보 hash·문서/보안 검사 기록은
 `docs/github-logs/goal-design-20261101/`과 최종 대조의
-`docs/github-logs/goal-design-final-review-20261101/`에 보존한다. 이는 문서 후보 검사이며 위 보강 기능의
+`docs/github-logs/goal-design-final-review-20261101/`, 후속 보안 검토의
+`docs/github-logs/goal-design-security-review-20261101/`에 보존한다. 이는 문서 후보 검사이며 위 보강 기능의
 정상 동작·디스크 수거·새 runtime/CI qualification 증거가 아니다.
