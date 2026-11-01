@@ -546,3 +546,18 @@ JSON 결과의 `helox.project-fetch-result/v1`, `FETCH`,
 검역·stage한 뒤 격리 관찰 빌드를 수행한다. Fetch 성공을 동적 실행 검사 완료로 사용하지
 않는다. 최초/반복 실행·cache 변조 거부·후속 build의 로컬 검증과 남은 묶음 qualification은
 [목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의 B03을 따른다.
+
+
+## Terraform 기본 init — B04 개발 후보
+
+`helox terraform init`은 현재 프로젝트의 모든 공개 Provider를 새로 검역한 뒤 원자적으로
+설치한다. Lock이 없을 때만 현재 constraints 안에서 첫 stable 선택을 만든다. 기존 lock은
+전체 required provider와 일치해야 하며 선택·bytes·파일 신원/권한을 보존한다. 빈/불완전 lock,
+constraint 충돌과 소유권 없는 설치·backend/module state는 명시적으로 거부한다. 일반
+Terraform의 기존 lock 자동 확장과는 다른 bounded 지원이다. 기존 명시 provider init과
+`-upgrade`/`--adopt`의 의미는 그대로다.
+
+각 Provider의 서명·archive·격리 help 검사와 Evidence/Policy, 독립 승인·cache를 매번 확인한다.
+기본 init의 JSON은 `helox.project-install-result/v1`/`INSTALL`로 표시한다. Backend 접속,
+RPC/plan/apply·cloud 동작 검사나 임의 mirror/CLI 설정 상속은 포함하지 않는다. 현재 로컬
+검증과 남은 묶음 qualification은 [목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의 B04를 따른다.

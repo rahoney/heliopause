@@ -178,7 +178,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 		localizeHelp(root, p)
 	}
 	goUpgrade, _ := command.Flags().GetBool("upgrade")
-	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update" && command.CommandPath() != "helox cargo fetch") || (source == "terraform" && !goUpgrade) || source == "doctor") {
+	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update" && command.CommandPath() != "helox cargo fetch") || (source == "terraform" && !goUpgrade && (command.CommandPath() != "helox terraform init" || len(command.Flags().Args()) != 0)) || source == "doctor") {
 		return "", errors.New("explicit JSON output is not available for this command")
 	}
 	if packageClient && descriptor.id == UVPipPackageClient && SelectedPackageClientOperation(root) == "sync" {

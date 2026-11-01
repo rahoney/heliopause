@@ -119,3 +119,131 @@ func TestTerraformUpgradeFreezesAllIndependentProviders(t *testing.T) {
 		t.Fatal("selection modified the original project")
 	}
 }
+
+func TestTerraformDefaultInitFirstSelectionAndExactRetainedLock(t *testing.T) {
+	client, transport, _ := clientFixture(t)
+	base := append([]byte(nil), transport.bodies[registryEndpoint+"/v1/providers/hashicorp/random/3.7.2/download/linux/amd64"]...)
+	oldDigest := sha256Hex([]byte("synthetic acquisition bytes; not a verified provider archive"))
+	for _, kind := range []string{"random", "time"} {
+		archive := packageFixture(t, []string{"terraform-provider-" + kind + "_v3.7.2_x5"}, []os.FileMode{0755}, [][]byte{providerELFFixture()}).parts[5]
+		body := bytes.ReplaceAll(base, []byte("random"), []byte(kind))
+		body = bytes.ReplaceAll(body, []byte(oldDigest), []byte(sha256Hex(archive)))
+		transport.bodies[registryEndpoint+"/v1/providers/hashicorp/"+kind+"/versions"] = upgradeVersions(t, "3.7.2")
+		transport.bodies[registryEndpoint+"/v1/providers/hashicorp/"+kind+"/3.7.2/download/linux/amd64"] = body
+		prefix := "https://releases.hashicorp.com/terraform-provider-" + kind + "/3.7.2/terraform-provider-" + kind + "_3.7.2"
+		transport.bodies[prefix+"_SHA256SUMS"] = []byte("synthetic checksum metadata; not signature qualification")
+		transport.bodies[prefix+"_SHA256SUMS.72D7468F.sig"] = []byte("synthetic signature")
+		transport.bodies[prefix+"_linux_amd64.zip"] = archive
+	}
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := []byte("terraform {\n required_providers {\n random = {source=\"hashicorp/random\", version=\">=3.7.0, <3.8.0\"}\n time = {source=\"hashicorp/time\", version=\">=3.7.0, <3.8.0\"}\n }\n}\n")
+	if err = os.WriteFile(filepath.Join(root, "main.tf"), config, 0600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(root)
+	install, _ := domain.NewInstallContext(target)
+	captured, err := CaptureProject(context.Background(), root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := client.ResolveProjectInit(context.Background(), install, captured.Controls)
+	if err != nil || !first.Valid() || first.HasRequestedResolution() || len(first.Snapshot().Dependencies()) != 2 {
+		t.Fatal("initial independent provider selection", err)
+	}
+	var lock []byte
+	for _, control := range first.SelectedControls() {
+		if control.Name() == LockControl {
+			lock = append([]byte("# preserve exact user formatting\n"), control.Body()...)
+		}
+	}
+	if len(lock) == 0 {
+		t.Fatal("missing first lock")
+	}
+	if err = os.WriteFile(filepath.Join(root, LockControl), lock, 0640); err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"random", "time"} {
+		transport.bodies[registryEndpoint+"/v1/providers/hashicorp/"+kind+"/versions"] = upgradeVersions(t, "3.7.3", "3.7.2")
+	}
+	captured, err = CaptureProject(context.Background(), root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	retained, err := client.ResolveProjectInit(context.Background(), install, captured.Controls)
+	if err != nil || !retained.Valid() || retained.HasRequestedResolution() {
+		t.Fatal("retained default init upgraded locked providers", err)
+	}
+	for _, artifact := range retained.Snapshot().Dependencies() {
+		if artifact.Identity().Version() != "3.7.2" {
+			t.Fatal("default init selected newer provider")
+		}
+	}
+	for _, control := range retained.SelectedControls() {
+		if control.Name() == LockControl && !bytes.Equal(control.Body(), lock) {
+			t.Fatal("default init normalized retained lock")
+		}
+	}
+	before := 0
+	for _, n := range transport.calls {
+		before += n
+	}
+	incompatible := bytes.ReplaceAll(config, []byte(">=3.7.0, <3.8.0"), []byte(">=4.0.0"))
+	if err = os.WriteFile(filepath.Join(root, "main.tf"), incompatible, 0600); err != nil {
+		t.Fatal(err)
+	}
+	captured, err = CaptureProject(context.Background(), root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = client.ResolveProjectInit(context.Background(), install, captured.Controls); err == nil {
+		t.Fatal("incompatible retained lock accepted")
+	}
+	after := 0
+	for _, n := range transport.calls {
+		after += n
+	}
+	if before != after {
+		t.Fatal("incompatible lock contacted registry")
+	}
+	if current, err := os.ReadFile(filepath.Join(root, LockControl)); err != nil || !bytes.Equal(current, lock) {
+		t.Fatal("selection mutated original lock", err)
+	}
+}
+
+func TestTerraformDefaultInitRejectsIncompleteLockBeforePublicIO(t *testing.T) {
+	partial, err := EncodeLock([]LockedProvider{{Address: "registry.terraform.io/hashicorp/random", Version: "3.7.2", Hashes: []string{"zh:" + strings.Repeat("1", 64)}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, lock := range map[string][]byte{"empty": {}, "partial": partial} {
+		t.Run(name, func(t *testing.T) {
+			client, transport, _ := clientFixture(t)
+			root, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			config := []byte("terraform {\n required_providers {\n random={source=\"hashicorp/random\",version=\"3.7.2\"}\n time={source=\"hashicorp/time\",version=\"3.7.2\"}\n }\n}\n")
+			if err = os.WriteFile(filepath.Join(root, "main.tf"), config, 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err = os.WriteFile(filepath.Join(root, LockControl), lock, 0600); err != nil {
+				t.Fatal(err)
+			}
+			captured, err := CaptureProject(context.Background(), root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			target, _ := domain.NewInstallTarget(root)
+			install, _ := domain.NewInstallContext(target)
+			if _, err = client.ResolveProjectInit(context.Background(), install, captured.Controls); err == nil {
+				t.Fatal("incomplete retained lock was accepted")
+			}
+			if len(transport.calls) != 0 {
+				t.Fatal("incomplete retained lock contacted public endpoints", transport.calls)
+			}
+		})
+	}
+}

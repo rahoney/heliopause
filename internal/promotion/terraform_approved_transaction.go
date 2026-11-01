@@ -3,6 +3,7 @@ package promotion
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"io"
@@ -55,18 +56,23 @@ type approvedTerraformProjectGuard struct {
 	marker                      []byte
 	markerInfo, metadataDirInfo os.FileInfo
 	closed, committed           bool
-	upgrade, adopt              bool
+	upgrade, adopt, initialize  bool
 }
 
 func (p *TerraformProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedTerraformProjectGuard, resultErr error) {
-	return p.begin(ctx, install, false, false)
+	return p.begin(ctx, install, false, false, false)
 }
 
 func (p *TerraformProjectPromotion) BeginUpgrade(ctx context.Context, install domain.InstallContext, adopt bool) (*approvedTerraformProjectGuard, error) {
-	return p.begin(ctx, install, true, adopt)
+	return p.begin(ctx, install, true, adopt, false)
 }
 
-func (p *TerraformProjectPromotion) begin(ctx context.Context, install domain.InstallContext, upgrade, adopt bool) (result *approvedTerraformProjectGuard, resultErr error) {
+// BeginInit admits no-primary provider installation while preserving an existing lock.
+func (p *TerraformProjectPromotion) BeginInit(ctx context.Context, install domain.InstallContext) (*approvedTerraformProjectGuard, error) {
+	return p.begin(ctx, install, false, false, true)
+}
+
+func (p *TerraformProjectPromotion) begin(ctx context.Context, install domain.InstallContext, upgrade, adopt, initialize bool) (result *approvedTerraformProjectGuard, resultErr error) {
 	if p == nil || ctx == nil || !install.Valid() || !separateRoots([]string{install.Target().String(), p.cache.intakeRoot, p.cache.evidenceRoot, p.cache.cacheRoot, p.stateRoot}) {
 		return nil, errors.New("terraform project mutation request is invalid")
 	}
@@ -77,7 +83,7 @@ func (p *TerraformProjectPromotion) begin(ctx context.Context, install domain.In
 	if e != nil {
 		return nil, e
 	}
-	g := &approvedTerraformProjectGuard{owner: p, install: install, guard: guard, upgrade: upgrade, adopt: adopt}
+	g := &approvedTerraformProjectGuard{owner: p, install: install, guard: guard, upgrade: upgrade, adopt: adopt, initialize: initialize}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, g.Close())
@@ -109,9 +115,9 @@ func (p *TerraformProjectPromotion) begin(ctx context.Context, install domain.In
 	if e != nil {
 		return nil, e
 	}
-	g.plan.upgrade = upgrade
-	if upgrade && g.plan.lockInfo != nil && (g.plan.lockInfo.Mode()&^os.ModePerm != 0 || g.plan.lockInfo.Mode().Perm()&0o022 != 0) {
-		return nil, errors.New("terraform upgrade requires ordinary non-writable-to-others lock permissions")
+	g.plan.preserveLock = upgrade || initialize
+	if (upgrade || initialize) && g.plan.lockInfo != nil && (g.plan.lockInfo.Mode()&^os.ModePerm != 0 || g.plan.lockInfo.Mode().Perm()&0o022 != 0) {
+		return nil, errors.New("terraform retained lock requires ordinary non-writable-to-others permissions")
 	}
 	g.terraformInfo, g.providerFiles, g.providerMembers, e = inspectTerraformInstallation(ctx, guard.root, install.Target().String())
 	if e != nil {
@@ -309,7 +315,7 @@ func (g *approvedTerraformProjectGuard) verifyStateOriginal() error {
 }
 
 func (g *approvedTerraformProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.Valid() || g.upgrade == update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
+	if g == nil || !update.Valid() || (g.upgrade || g.initialize) == update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
 		return errors.New("terraform frozen update differs from guarded project")
 	}
 	if e := g.VerifyUnchanged(ctx); e != nil {
@@ -364,6 +370,9 @@ func (g *approvedTerraformProjectGuard) Commit(ctx context.Context, update domai
 		default:
 			return errors.New("terraform selection contains an unsupported control")
 		}
+	}
+	if g.initialize && g.plan.lockInfo != nil && sha256.Sum256(lockBody) != g.plan.lockHash {
+		return errors.New("terraform default init changed the existing lock")
 	}
 	locks, e := artifactterraform.ParseLock(lockBody)
 	if e != nil || len(locks) != len(doc.Entries) {

@@ -85,3 +85,23 @@ func (s *TerraformUpgradeService) Upgrade(ctx context.Context, install domain.In
 		})
 	return selected.verified, err
 }
+
+// TerraformProjectInitializer selects all providers without a requested primary.
+type TerraformProjectInitializer interface {
+	ResolveProjectInit(context.Context, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)
+}
+
+// InitializeTerraformProject reuses the guarded selection/inspection/cache workflow.
+func InitializeTerraformProject(ctx context.Context, install domain.InstallContext, resolver TerraformProjectInitializer, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (domain.ProjectVerifiedSet, error) {
+	if resolver == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("terraform init selection is unavailable")
+	}
+	result, err := executeGuardedProjectUpdate(ctx, install, promoter, inspection, staging, "terraform-registry", "Terraform", func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+		update, err := resolver.ResolveProjectInit(ctx, install, controls)
+		if err == nil && (update.HasRequestedResolution() || len(update.Snapshot().Dependencies()) == 0) {
+			return domain.ProjectDependencyUpdate{}, errors.New("terraform default init requires a nonempty provider set without a requested primary")
+		}
+		return update, err
+	})
+	return result.verified, err
+}

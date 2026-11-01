@@ -558,3 +558,62 @@ PASS했다. 새 fetch도 첫/전이 의존성의 BLOCK/review/incomplete/integri
 확인했다. 전체 Quick exit0 또는 hosted 완료로 쓰지 않는다. Security18.247s/docs0.344s PASS,
 완료된 protected 복사본8개179440646B는 전체 process 참조0/query error0 뒤 삭제했다.
 B03의 코드·연결 로컬 단위를 기록하고 다음 로컬 단위 B04 baseline으로 진행한다.
+
+
+## B04 — Terraform 기본 init 착수 baseline (05c1bfd)
+
+IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+기존 명시 provider init와 -upgrade는 구현되어 있으며 다시 구현하지 않는다.
+No-argument init은 cli/terraform_upgrade.go:validateTerraformInitArgs에서 거부된다.
+
+재사용 책임 지도: cli/root.go:AddTerraformInit 및 terraform_upgrade.go의 현재 request 분기 →
+bootstrap/terraform.go의 기존 client/promoter/inspection/cache →
+application/project_update.go:executeGuardedProjectUpdate →
+artifact/terraformprovider/project_resolver.go:resolveProjectSelection →
+기존 서명·archive·격리 help 검사/Evidence/Policy →
+promotion/terraform_approved_transaction.go:Commit와 terraform_transaction.go의 단일 반입/복원.
+Provider graph의 독립 roots를 임의 primary/전이 edge로 꾸미지 않는다.
+
+MISSING: 명시 no-primary 기본 init intent, 기존 lock의 선택·bytes·inode/mode 보존과 최초
+lock 선택, 기존 전체 provider 검역/cache·원자 설치 연결, 명확한 INSTALL 결과와 지원 제한,
+최초/반복 init·constraint 불일치·서명/원본 변경 거부·취소/원복 및 기존 명시 init/upgrade 회귀.
+기존 resolver의 upgrade=true를 기본 init에 전용하면 최신 버전으로 바뀌므로 사용하지 않는다.
+기존 lock이 있는 기본 init은 현재 lock의 모든 required provider/version/hash를 사용하며
+누락/constraint 불일치/extra locked provider는 명시 거부한다. 없는 lock만 기존 stable
+constraint selector를 재사용한다. Backend/cloud/remote module/ambient config 요청은0이다.
+
+수정 범위: 기존 native-free registry resolver의 현재 selection helper, 기존 typed service/
+bootstrap/CLI, 기존 guarded promoter의 no-primary init intent와 lock 보존 조건, 해당 실제
+소비자 시험/현행 CI 연결/사용자 문서. Pipeline·도구 pin·서명 trust table·전역 runtime를
+교체하지 않는다. 단일 복제 검사 service나 미래 abstraction은 만들지 않는다.
+Read: 보강 설계 §4.5, M12 계약 §6, CLI09, artifact L21와 공용 sandbox/evidence 교훈.
+공식 의미는 [init](https://developer.hashicorp.com/terraform/cli/commands/init)과
+[dependency lock](https://developer.hashicorp.com/terraform/language/files/dependency-lock)의
+기존 선택 보존/upgrade 구분을 따른다. 현재 bounded provider-only 지원은 그대로 유지한다.
+
+
+B04 로컬 구현·연결 checkpoint: 기존 selected-controls workflow를 호출하는
+`application/terraform.go:InitializeTerraformProject`, 기존 registry selection의 기본 init
+모드와 typed `BeginInit`, 기존 lock 보존 transaction/CLI branch를 추가했다. 별도 service
+class/검사 pipeline/SDK·서명 pin/Host 수정은 없다. No-argument init은 INSTALL이고 기존
+명시 provider init·-upgrade/--adopt는 원래 의미를 유지한다. 기존 lock은 전체 required
+provider·현재 constraints와 맞아야 하며 bytes·inode/mode를 보존한다. 없는 lock만 최초 stable
+선택을 만든다. 불완전/빈 기존 lock은 원격 요청 전 거부하며 backend/cloud/module/ambient
+mirror를 사용하지 않는다. 일반 Terraform의 자동 lock 확장과 구분되는 bounded 계약이다.
+
+기존 required actual parent에 default-complete-project를 추가해 official random3.7.2와
+partner github6.6.0의 최초/반복 CLI 두 calls를 parent33.08s/operator35.004s PASS로 확인했다.
+각 Provider 필수3검사/새 Run·signed source/static/dynamic/Evidence/ALLOW/cache/원자 설치,
+독립 공개 ELF pin·반복 lock 신원/0640 mode, helperwait0/Host·Docker 보존/빈 runtime을 확인했다.
+기존 actual6calls를 로컬에서 반복하지 않았고 같은 CI parent가 새 case를 자동 소비한다.
+첫 표적19.776s는 application 시험의 err 중복 선언 때문에 FAIL(다른4 package PASS)이며
+변수 교정 뒤 application1.410s PASS다. 새 empty-lock negative1.048s FAIL은 존재하는 빈 파일을
+부재로 오인하여 fake 공개 요청6회를 시작한 원인을 확정했다. Lock Present를 별도로 검증한
+현재 Terraform/CLI preflight/공용 guard 표적4패키지 Race27.434s는 PASS다. 최초 설치 원복5
+phase와 각 독립 root 거부도 포함한다. 실제 CLI는 마지막 empty-lock/nonempty-set 안전 거부
+보강 이전 후보이며 final exact-source/hosted를 대신하지 않는다.
+
+[정규화 B04 receipt](./terraform-init-local-20261102.json): IMPLEMENTED=YES / WIRED=YES /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Canonical/static/security·hosted/four-profile/final은
+다음 의미 있는 변경 묶음과 합친다. 완료된 protected 복사본2개57363170B는 process 참조0/
+query error0 확인 뒤 삭제했다. 다음 로컬 단위는 B06 UV/PNPM/Bun 선택·lock 옵션 baseline이다.

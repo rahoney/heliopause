@@ -10,11 +10,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const terraformUpgradeDescriptionEnglish = "Inspect and install exact public providers with init namespace/type@version. Use helox terraform init -upgrade to select the newest stable version of every required provider within the current configuration constraints.\n\nUse --adopt to explicitly enroll supported providerless native controls or changed managed controls. Unmanaged installed provider/backend/module state is refused. Every selected provider receives fresh signature, archive and isolated help-probe checks, even if versions do not change. Provider RPC, plan/apply and cloud behavior are outside this installation check."
-const terraformUpgradeDescriptionKorean = "init namespace/type@version으로 정확한 공개 Provider를 검사한 뒤 설치합니다. 현재 설정의 버전 제약 안에서 모든 Provider를 최신 안정 버전으로 업데이트하려면 helox terraform init -upgrade를 사용하세요.\n\n아직 Provider가 설치되지 않은 일반 설정이나 변경한 관리 설정을 등록하려면 --adopt를 명시하세요. 소유권을 입증하지 못한 Provider·backend·module 설치는 거부합니다. 버전이 같아도 선택된 모든 Provider의 서명·archive와 격리된 help 실행을 새로 검사합니다. RPC·plan/apply·클라우드 동작은 이 설치 검사의 범위에 포함되지 않습니다."
+const terraformUpgradeDescriptionEnglish = "Run helox terraform init to inspect and install all required public providers. An existing complete lock is preserved; an absent lock permits first selection. Lock/configuration mismatch is refused. Use init namespace/type@version for an exact provider. Use helox terraform init -upgrade to select the newest stable version of every required provider within the current configuration constraints.\n\nUse --adopt to explicitly enroll supported providerless native controls or changed managed controls. Unmanaged installed provider/backend/module state is refused. Every selected provider receives fresh signature, archive and isolated help-probe checks, even if versions do not change. Provider RPC, plan/apply and cloud behavior are outside this installation check."
+const terraformUpgradeDescriptionKorean = "helox terraform init은 필요한 모든 공개 Provider를 검사한 뒤 설치합니다. 기존 전체 lock은 보존하고 lock이 없을 때만 최초 선택을 만듭니다. Lock과 설정이 불일치하면 거부합니다. init namespace/type@version은 정확한 Provider를 지정합니다. 현재 설정의 버전 제약 안에서 모든 Provider를 최신 안정 버전으로 업데이트하려면 helox terraform init -upgrade를 사용하세요.\n\n아직 Provider가 설치되지 않은 일반 설정이나 변경한 관리 설정을 등록하려면 --adopt를 명시하세요. 소유권을 입증하지 못한 Provider·backend·module 설치는 거부합니다. 버전이 같아도 선택된 모든 Provider의 서명·archive와 격리된 help 실행을 새로 검사합니다. RPC·plan/apply·클라우드 동작은 이 설치 검사의 범위에 포함되지 않습니다."
 
 type TerraformUpgrader interface {
 	Upgrade(context.Context, domain.InstallContext, bool) (domain.ProjectVerifiedSet, error)
+	InitProject(context.Context, domain.InstallContext) (domain.ProjectVerifiedSet, error)
 }
 
 // Only this exact native spelling is normalized. Reconstructing the discovered
@@ -64,8 +65,11 @@ func validateTerraformInitArgs(command *cobra.Command, args []string) error {
 	if command.Flags().Changed("adopt") {
 		return errors.New("terraform init --adopt requires -upgrade")
 	}
-	if err := cobra.ExactArgs(1)(command, args); err != nil {
+	if err := cobra.MaximumNArgs(1)(command, args); err != nil {
 		return err
+	}
+	if len(args) == 0 {
+		return nil
 	}
 	_, err := artifactterraform.ParseReference(args[0])
 	return err
@@ -85,7 +89,7 @@ func AddTerraformUpgrade(root *cobra.Command, upgrader TerraformUpgrader) error 
 			return err
 		}
 		upgrade, _ := command.Flags().GetBool("upgrade")
-		if !upgrade {
+		if !upgrade && len(args) != 0 {
 			return exactInit(command, args)
 		}
 		install, err := currentGoProjectContext()
@@ -95,12 +99,18 @@ func AddTerraformUpgrade(root *cobra.Command, upgrader TerraformUpgrader) error 
 		adopt, _ := command.Flags().GetBool("adopt")
 		ctx, finish := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
 		defer func() { _ = finish() }()
-		verified, operationErr := upgrader.Upgrade(ctx, install, adopt)
+		var verified domain.ProjectVerifiedSet
+		var operationErr error
+		if upgrade {
+			verified, operationErr = upgrader.Upgrade(ctx, install, adopt)
+		} else {
+			verified, operationErr = upgrader.InitProject(ctx, install)
+		}
 		if operationErr == nil && !verified.Valid() {
-			operationErr = errors.New("terraform upgrade returned no completed project approval")
+			operationErr = errors.New("terraform preparation returned no completed project approval")
 		}
 		progressErr := finish()
-		reportErr := writeProjectUpdateReport(command.OutOrStdout(), verified, operationErr, "", "terraform-registry")
+		reportErr := writeProjectMutationReportWithRecords(command.OutOrStdout(), verified, operationErr, "", "terraform-registry", nil, !upgrade)
 		return errors.Join(operationErr, progressErr, reportErr)
 	}
 	return nil

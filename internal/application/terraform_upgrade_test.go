@@ -20,6 +20,10 @@ func (f *terraformUpgradePipeline) ResolveProjectLockUpdate(_ context.Context, _
 	return f.update, f.step("resolve")
 }
 
+func (f *terraformUpgradePipeline) ResolveProjectInit(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+	return f.ResolveProjectLockUpdate(ctx, install, controls, "")
+}
+
 func terraformUpgradeWorkflowFixture(t *testing.T, fail, name, kind string) (*application.TerraformUpgradeService, *terraformUpgradePipeline, *cargoUpdateAdversePorts) {
 	t.Helper()
 	graph := twoNodeGraphForSource(t, "terraform-registry")
@@ -48,68 +52,100 @@ func terraformUpgradeWorkflowFixture(t *testing.T, fail, name, kind string) (*ap
 }
 
 func TestTerraformUpgradeRequiresAllApprovalAndCloseBoundaries(t *testing.T) {
-	want := []string{"guard", "resolve", "verify-1", "inspect", "verify-2", "stage", "commit", "close"}
-	for _, failure := range append([]string{""}, want...) {
-		t.Run("failure-"+failure, func(t *testing.T) {
-			service, f, _ := terraformUpgradeWorkflowFixture(t, failure, "", "")
-			set, err := service.Upgrade(context.Background(), f.snapshot.Context())
-			if failure == "" {
-				if err != nil || !set.Valid() || !reflect.DeepEqual(f.calls, want) {
-					t.Fatal(err, f.calls)
-				}
-				return
+	for _, operation := range []string{"upgrade", "init"} {
+		t.Run(operation, func(t *testing.T) {
+			want := []string{"guard", "resolve", "verify-1", "inspect", "verify-2", "stage", "commit", "close"}
+			for _, failure := range append([]string{""}, want...) {
+				t.Run("failure-"+failure, func(t *testing.T) {
+					service, f, _ := terraformUpgradeWorkflowFixture(t, failure, "", "")
+					var set domain.ProjectVerifiedSet
+					var err error
+					if operation == "init" {
+						set, err = application.InitializeTerraformProject(context.Background(), f.snapshot.Context(), f, f, f, f)
+					} else {
+						set, err = service.Upgrade(context.Background(), f.snapshot.Context())
+					}
+					if failure == "" {
+						if err != nil || !set.Valid() || !reflect.DeepEqual(f.calls, want) {
+							t.Fatal(err, f.calls)
+						}
+						return
+					}
+					if !errors.Is(err, errDownloadBoundary) || set.Valid() {
+						t.Fatal("failed boundary reported completion or lost cause", err)
+					}
+					if failure == "verify-2" || failure == "stage" || failure == "commit" || failure == "close" {
+						var facts *application.ProjectUpdateFailure
+						if !errors.As(err, &facts) || !facts.Inspected().Valid() {
+							t.Fatal("fresh facts lost", err)
+						}
+					}
+				})
 			}
-			if !errors.Is(err, errDownloadBoundary) || set.Valid() {
-				t.Fatal("failed boundary reported completion or lost cause", err)
-			}
-			if failure == "verify-2" || failure == "stage" || failure == "commit" || failure == "close" {
-				var facts *application.ProjectUpdateFailure
-				if !errors.As(err, &facts) || !facts.Inspected().Valid() {
-					t.Fatal("fresh facts lost", err)
-				}
-			}
+
 		})
 	}
 }
 
 func TestTerraformUpgradeInspectsEachIndependentRootAndRefusesUnsafeSet(t *testing.T) {
-	for _, name := range []string{"first", "second"} {
-		for _, kind := range []string{"block", "review", "incomplete", "integrity"} {
-			t.Run(name+"/"+kind, func(t *testing.T) {
-				service, f, producer := terraformUpgradeWorkflowFixture(t, "", name, kind)
-				set, err := service.Upgrade(context.Background(), f.snapshot.Context())
-				var denied *application.ProjectPolicyFailure
-				if err == nil || set.Valid() || !errors.As(err, &denied) || len(denied.Inspected().Inspections()) != 2 {
-					t.Fatal("unsafe set approved or facts lost", err)
+	for _, operation := range []string{"upgrade", "init"} {
+		t.Run(operation, func(t *testing.T) {
+			for _, name := range []string{"first", "second"} {
+				for _, kind := range []string{"block", "review", "incomplete", "integrity"} {
+					t.Run(name+"/"+kind, func(t *testing.T) {
+						service, f, producer := terraformUpgradeWorkflowFixture(t, "", name, kind)
+						var set domain.ProjectVerifiedSet
+						var err error
+						if operation == "init" {
+							set, err = application.InitializeTerraformProject(context.Background(), f.snapshot.Context(), f, f, f, f)
+						} else {
+							set, err = service.Upgrade(context.Background(), f.snapshot.Context())
+						}
+						var denied *application.ProjectPolicyFailure
+						if err == nil || set.Valid() || !errors.As(err, &denied) || len(denied.Inspected().Inspections()) != 2 {
+							t.Fatal("unsafe set approved or facts lost", err)
+						}
+						want := domain.DecisionBlock
+						if kind == "review" || kind == "incomplete" {
+							want = domain.DecisionManualReview
+						}
+						if denied.Decision().Decision() != want {
+							t.Fatal(denied.Decision())
+						}
+						if !reflect.DeepEqual(f.calls, []string{"guard", "resolve", "verify-1", "inspect", "close"}) || len(producer.calls) != 8 {
+							t.Fatal("unsafe set reached staging/publication or skipped a root", f.calls, producer.calls)
+						}
+					})
 				}
-				want := domain.DecisionBlock
-				if kind == "review" || kind == "incomplete" {
-					want = domain.DecisionManualReview
-				}
-				if denied.Decision().Decision() != want {
-					t.Fatal(denied.Decision())
-				}
-				if !reflect.DeepEqual(f.calls, []string{"guard", "resolve", "verify-1", "inspect", "close"}) || len(producer.calls) != 8 {
-					t.Fatal("unsafe set reached staging/publication or skipped a root", f.calls, producer.calls)
-				}
-			})
-		}
+			}
+
+		})
 	}
 }
 
 func TestTerraformUpgradeRejectsInventedRequestedPrimary(t *testing.T) {
-	service, f, _ := terraformUpgradeWorkflowFixture(t, "", "", "")
-	graph := twoNodeGraphForSource(t, "terraform-registry")
-	resolution, err := domain.NewDependencyResolution(graph, "synthetic:requested", f.snapshot.GraphDigest())
-	if err != nil {
-		t.Fatal(err)
-	}
-	f.update, err = domain.NewProjectDependencyUpdate(f.update.OriginalControls(), f.update.SelectedControls(), f.snapshot, resolution)
-	if err != nil {
-		t.Fatal(err)
-	}
-	set, err := service.Upgrade(context.Background(), f.snapshot.Context())
-	if err == nil || set.Valid() || !reflect.DeepEqual(f.calls, []string{"guard", "resolve", "close"}) {
-		t.Fatal("arbitrary requested primary accepted", err, f.calls)
+	for _, operation := range []string{"upgrade", "init"} {
+		t.Run(operation, func(t *testing.T) {
+			service, f, _ := terraformUpgradeWorkflowFixture(t, "", "", "")
+			graph := twoNodeGraphForSource(t, "terraform-registry")
+			resolution, err := domain.NewDependencyResolution(graph, "synthetic:requested", f.snapshot.GraphDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			f.update, err = domain.NewProjectDependencyUpdate(f.update.OriginalControls(), f.update.SelectedControls(), f.snapshot, resolution)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var set domain.ProjectVerifiedSet
+			if operation == "init" {
+				set, err = application.InitializeTerraformProject(context.Background(), f.snapshot.Context(), f, f, f, f)
+			} else {
+				set, err = service.Upgrade(context.Background(), f.snapshot.Context())
+			}
+			if err == nil || set.Valid() || !reflect.DeepEqual(f.calls, []string{"guard", "resolve", "close"}) {
+				t.Fatal("arbitrary requested primary accepted", err, f.calls)
+			}
+
+		})
 	}
 }

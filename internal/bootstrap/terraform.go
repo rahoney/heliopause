@@ -18,11 +18,14 @@ import (
 )
 
 type terraformProjectMutationAdapter struct {
-	promoter       *promotion.TerraformProjectPromotion
-	upgrade, adopt bool
+	promoter                   *promotion.TerraformProjectPromotion
+	upgrade, adopt, initialize bool
 }
 
 func (a terraformProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
+	if a.initialize {
+		return a.promoter.BeginInit(ctx, install)
+	}
 	if a.upgrade {
 		return a.promoter.BeginUpgrade(ctx, install, a.adopt)
 	}
@@ -89,4 +92,8 @@ func (a *terraformUpgradeAdapter) Upgrade(ctx context.Context, install domain.In
 		return domain.ProjectVerifiedSet{}, err
 	}
 	return service.Upgrade(ctx, install)
+}
+
+func (a *terraformUpgradeAdapter) InitProject(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	return application.InitializeTerraformProject(ctx, install, a.client, terraformProjectMutationAdapter{promoter: a.promoter, initialize: true}, a.inspection, a.cache)
 }
