@@ -23,6 +23,10 @@
 기존 16번 통합 acceptance에 포함한다. 이는 AI가 검사 코드를 생성하는 향후 기능과 다르며,
 이번 요청도 설계 반영까지다. Skill 배포·MCP 구현·사용자 AI 설정 변경은 아직 시작하지 않는다.
 
+누적 설계 검토 기준: `9aa7430efba250c112df1c6c9863a08846d3e0f8`.
+기존 실행기 결과·MCP 권한/취소 경계와 검증 재사용·최종 검토 연결을 대조해 아래 A01/A02를
+명확히 했다. 새 기능군이나 실행 순서는 추가하지 않았으며 문서 검토를 제품 검증으로 보지 않는다.
+
 ## 1. 목적·문서 책임·범위
 
 이 문서는 [목표 대조 감사](./evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의
@@ -344,12 +348,19 @@ PNPM/Bun 실행처럼 의존성을 가져올 수 있는 지원 경로도 지침�
   반영 여부를 exit0, 파일 존재, 텍스트 파싱으로 합성하지 않는다.
 - 미지원 명령·입력 오류·runtime 준비 실패부터 검역 BLOCK/MANUAL_REVIEW, 필수 검사
   미완료, 반입 실패, 반입 후 정리/표시 실패까지 기계가 구분할 안정된 code/status를 제공한다.
-  시작 전에는 operation/run ID나 Policy를 꾸며내지 않는다. 필드 부재·알 수 없는 schema·
-  깨진/잘린 출력·중단은 완료 미확인으로 처리한다. JSON stdout에 로그/아트를 섞지 않는다.
+  시작 전에는 operation/run ID나 Policy를 꾸며내지 않는다. 해당 schema/operation의 필수
+  결과 필드 부재·알 수 없는 schema·깨진/잘린 출력·중단은 완료 미확인으로 처리한다.
+  유효한 no-op/lock-only 등의 계약상 선택 필드 부재까지 오류로 바꾸지 않는다.
+  JSON stdout에 로그/아트를 섞지 않는다.
 - 기존 human/default 출력과 소비자를 보존하면서 빠진 명령에 명시적 `--output json`을
   연결한다. schema 확장이 필요하면 실제 의미 차이와 호환성을 기존 결과 leaf에 기록한다.
   기존 install의 exit 0/10/20/1 의미는 보존하며 다른 명령의 기존 차이는 명시적으로
   매핑한다. 전체 command의 exit 숫자를 일괄 재작성하거나 새 중복 결과 framework를 만들지 않는다.
+- 실행기는 `internal/cli/execution_report.go`의 기존 `helox.execution-result/v1`과
+  `executionProcessCode`를 재사용한다. 정상적으로 실행을 마친 guest도 자체 exit 10/20을
+  반환할 수 있으므로 숫자만으로 MANUAL_REVIEW/BLOCK을 판정하지 않는다. 검역 Policy,
+  preparation, execution/guest exit·signal, cleanup과 전체 명령 오류를 각각 읽는다.
+  프로그램 출력은 기존 opt-in·bounded/untrusted 표시를 유지하고 판정이나 지시로 해석하지 않는다.
 - 성공은 요청한 operation의 완료와 실제 효과가 함께 확인된 상태다. 설치 요청은 현재
   whole-set ALLOW와 실제 반입 완료가 필요하고, fetch/lock-only/no-op은 각 고유 의미를
   표시한다. inspect ALLOW 뒤 raw manager로 다시 내려받아 설치하는 흐름은 제공하지 않는다.
@@ -357,8 +368,9 @@ PNPM/Bun 실행처럼 의존성을 가져올 수 있는 지원 경로도 지침�
 
 **배포할 AI 지침과 Skill**
 
-한 개의 제품용 `SKILL.md`를 사용법의 단일 원본으로 만들고, 저장소 작업 규칙인 루트
+한 개의 제품용 `SKILL.md`를 AI 행동 지침의 단일 원본으로 만들고, 저장소 작업 규칙인 루트
 `AGENTS.md`와 구분한다. 등록 metadata/간단한 사용 순서/실패 대응/지원 문서 링크를 담는다.
+명령·출력·지원 범위는 기존 canonical 계약을 참조하며 Skill에서 따로 정의하지 않는다.
 CLI를 다시 감싼 script, 언어별 Skill 복제, 별도 dependency나 AI provider API는 필요 없다.
 설치된 제품과 같은 버전의 Skill을 사용하고, 사용자 AI의 지원 경로에 명시적으로 등록하는
 방법을 제공한다. 사용자 전역 설정을 몰래 고치거나 모든 AI가 자동으로 읽는다고 가정하지 않는다.
@@ -399,12 +411,20 @@ Skill이나 MCP 자체가 강제로 가로막는다고 표시하지 않는다. �
   해당 생태계 계약대로 처리하며 실패 후보 무반입·실패 시 원본 보존/rollback도 확인한다.
 - 공통 소비자 시험에서 잘린 결과/미지원 schema·준비 실패·반입 후 정리 실패·우회 유도
   출력을 다루고 raw manager fallback 0을 확인한다. 미완료나 MANUAL_REVIEW를 성공으로
-  바꾸지 않는다. 중복 호출/취소 시 기존 guard·원복·정리도 보존한다.
+  바꾸지 않는다. 실행기의 guest exit 10/20과 실제 Policy 거부를 구분하고, 유효한 no-op/
+  lock-only의 선택 필드 부재도 확인한다. 중복 호출/취소 시 기존 guard·원복·정리도 보존한다.
 - 지원한다고 표시할 AI client에서 배포 Skill의 실제 로딩과 최소 한 번의 거부→대안→완료
   사용 흐름을 확인한다. 제품의 결정론적 end-to-end 증거와 실제 AI 사용 기록을 구분하며
   fixture replay만으로 AI 연동 완료라 하지 않는다. 모델 전체의 행동 보장은 주장하지 않는다.
 - 기존 16번의 묶음 검증/§13 설치본 확인에 연결한다. 새 AI 호출을 모든 CI마다 강제하지
   않고 client/version·모델·Skill/source·출력·실제 수행 명령·정리 범위를 기록한다.
+
+검증은 기존 command/mode별 acceptance 기록에 source·입력·결과 계약·실제 소비 경로를
+연결해 관리한다. 서로 다른 선택/반영 경로의 실제 성공·거부 증거는 빠뜨리지 않되, 동일한
+공통 parser/결과 소비/실패 처리의 모든 반례를 언어×client×mode마다 다시 실행하지 않는다.
+차이가 있는 경로만 추가하고 같은 owner의 회귀 증거를 참조한다. 실제 AI client의 Skill 사용
+확인은 이 제품 검증과 구분한 대표 사용 시험이며 모든 생태계의 외부 AI 호출을 요구하지 않는다.
+AI client 미준비 시 결정론적 검증은 계속하되 실제 AI 연동 QUALIFIED는 미확인으로 남긴다.
 
 ### 4.9 A02 — 기존 검역 경로를 노출하는 최소 MCP의 채택 기준
 
@@ -430,15 +450,23 @@ CLI만으로 가능하다는 이유로 배제하지 않는다. 다만 현재 ser
   필요하면 §3.1 및 repository의 대체 승인 규칙을 따른다.
 - stdio stdout은 protocol 전용, 진단은 bounded/redacted stderr로 둔다. 사용자 권한으로
   실행하고 요청별 project/target을 명시·검증하며 연결마다 다른 요청의 cwd/env/승인 상태를
-  섞지 않는다. 요청 대상은 사용자 허용 workspace/target 안으로 제한한다. 단순한 직렬 처리와
-  기존 대상 guard를 우선하고 새로운 daemon·작업 DB·queue·원격 HTTP/OAuth는 도입하지 않는다.
+  섞지 않는다. 요청 크기/개수/깊이는 parse 전부터 기존 입력·자원 예산으로 제한한다.
+  허용 workspace/target은 운영자가 정한 시작 설정에서 고정하고, tool 인자나 client가 제시한
+  경로를 범위 확대 승인으로 쓰지 않는다. 설정 부재는 전체 filesystem 허용이 아니다.
+  기존 root/descriptor guard로 symlink·경로 교체도 검사한다. 단순한 직렬 처리와 기존 대상
+  guard를 우선하고 새로운 daemon·작업 DB·queue·원격 HTTP/OAuth는 도입하지 않는다.
 - 긴 검사에 대한 client timeout·취소/연결 종료를 실제 child/session cleanup까지 전달한다.
-  응답 유실 뒤 같은 설치를 무조건 반복하지 않으며 기존 기록으로 실제 반영 상태를 확인한다.
+  변경 작업을 직렬화해도 SDK의 취소/종료 처리를 같은 작업 뒤에 묶어 기다리게 하지 않는다.
+  응답 유실 뒤에는 기존 설치 기록/원복 원장으로 실제 반영 상태를 확인하고, 조회 불가/만료/
+  신원 불명은 UNKNOWN으로 남긴다. 새 작업 DB나 자동 재시도를 만들어 성공을 추정하지 않는다.
   이 lifecycle을 기존 owner로 안전하게 닫지 못하면 불완전한 server를 출시하지 않는다.
 - 최소 한 실제 지원 client에서 발견→호출→거부 사유→대안 재검역→반영과 timeout/취소,
   잘못된 입력/범위 밖 경로, CLI와 동등한 결과·대상 보호를 검증한다. 해당 client/protocol/
   SDK 버전·등록 방법과 사용자가 설치/업데이트를 요청한 범위를 기록한다. 모든 MCP client
   호환을 주장하지 않으며 MCP 요청도 신뢰된 승인이나 보안 검사 생략권이 아니다.
+  요청이 허용 경로를 스스로 늘리거나 link로 이탈하는 반례, 실행 중 실제 취소와 응답 유실도
+  포함한다. Artifact 원문·guest 출력·private 경로를 AI 응답에 자동 첨부하지 않고 기존
+  정규화 결과/privacy 경계를 유지한다. JSON escaping만으로 prompt injection이 해결됐다고 보지 않는다.
 
 채택 조건을 넘는 큰 공통 구조 교체·상시 service·별도 인증/작업 시스템이 필요하면 exact
 부족점·영향·남은 작업을 기록하고 A02를 DEFERRED로 둔다. '어려울 것 같다'는 추정만으로
@@ -1020,6 +1048,10 @@ code·runtime entry·fixture는 단순 텍스트 검색 0건만으로 불용이�
 5. source·입력 digest·runtime·Policy가 같고 이미 유효한 결과는 재사용한다. 수정된 경우
    영향받은 결과만 새로 얻는다. raw를 가진 원래 cwd에서 `./...`/docs/format을 실행하지 않는다.
 
+A01/A02도 이 기준을 따른다. CLI 결과 보완은 해당 B/S 묶음, Skill과 채택한 MCP의 실제
+사용·취소/권한 검증은 기존16번에 합친다. 별도 언어별 AI CI나 MCP 전용 전체 검사를
+늘리지 않으며 필수 coverage는 §4.8의 command/mode 증거 연결로 확인한다.
+
 | 변경 묶음 | 로컬로 먼저 모을 작업 | 원격 CI가 필요한 경계 |
 | --- | --- | --- |
 | B00–B07 | command/입력/고정 native 선택·원자 반영을 연속 검증 | 새 backend/native 의미가 후속 신뢰를 막거나 client end-to-end 후보가 완성된 때 |
@@ -1141,6 +1173,8 @@ M12 red-team 검토 방식과 §8 성능 기록을 재사용한다. 판정 기�
    실행 진입점 전용 행동, 지연/분석환경 회피, 정상 사용을 닮은 설정 접근, 전이 의존성,
    공급자 증명은 유효하나 내용이 위험한 표본을 포함한다. 완료 위조·관찰 누락·반입 bytes
    교체 같은 기존 신뢰 경계 반례는 유효한 증거를 재사용하고 변경된 연결만 추가 검증한다.
+   A01과 채택한 A02의 결과 오해석·우회 유도·범위 밖 요청/취소 검증은 §4.8–4.9의 같은
+   증거로 연결한다. 이 인터페이스 반례를 악성 아티팩트 탐지율의 표본에 섞지 않는다.
 2. 정상/공격 label과 기대 행동을 검사 출력과 독립적으로 정한다. 개발 회귀 표본과 평가용
    미사용 변형을 분리하고 파일 hash·유사 변형/family 중복을 확인한다. 평가 목록·profile·
    기대 verdict·지원 한계·성능 예산을 실행 전에 고정한다. 실제 유효 secret·활성 악성코드·
@@ -1174,7 +1208,7 @@ M12 red-team 검토 방식과 §8 성능 기록을 재사용한다. 판정 기�
 보완하고 옵션으로 떠넘기지 않는다. 지원 밖의 장기 잠복·임의 API 한계는 별도 남기되
 당초 필수였던 실패 표본을 사후에 지원 밖으로 재분류해 통과시키지 않는다.
 
-발견한 문제는 기존 B/S/C 책임 항목으로 돌려 최소 수정하고 영향받은 평가만 갱신한다.
+발견한 문제는 기존 B/S/C/A 책임 항목으로 돌려 최소 수정하고 영향받은 평가만 갱신한다.
 평가 표본을 보고 규칙을 고쳤다면 해당 표본은 회귀에 편입하고 같은 결과를 미사용 평가로
 재표기하지 않는다. 미사용 변형을 보충해 다시 확인한다. 남은 gap·검사 범위·측정 결과와
 기본/심층 채택 여부를 한 기록으로 연결한 뒤에만 16번을 닫는다. 보완할 문제가 없으면
@@ -1193,6 +1227,7 @@ M12 red-team 검토 방식과 §8 성능 기록을 재사용한다. 판정 기�
 | S04/S07 | 선택 도구/library exact version/hash·라이선스·공급/배포 가능성 | 미검증/floating latest 채택 금지, 해당 capability OPEN 유지 |
 | S05 | provider schema/pagination·package mapping·typed network allowlist | 이름 추측/조용한 skip 금지, unsupported/incomplete로 표시 |
 | C01 | 실제 store root/lease·approval 참조·filesystem 한도·기존 대용량 profile | 소유 불명 파일 삭제 금지, 필요한 이동/설정 변경의 영향부터 확정 |
+| A01/A02 | 명령별 실제 schema/exit 의미·지원 AI client/Skill 로딩; MCP 채택 시 SDK와 운영자 설정/취소 경계 (§4.8–4.9) | 기존 결과 재구현·client 지원 추정 금지; 필수 A01 미검증과 조건부 A02 유예를 구분 |
 | 모든 작업 | 현재 Git/Queue/필수 입력·최초 미해결 실패 | 과거 CI436 등을 현재 실패로 가정하지 말고 최신 상태와 원본 대조 |
 
 이 설계에서는 새 package version이나 운영 환경 값을 추측으로 lock에 쓰지 않았다.
@@ -1201,7 +1236,7 @@ M12 red-team 검토 방식과 §8 성능 기록을 재사용한다. 판정 기�
 
 ## 13. 기능 완료에서 이름 결정·배포로 넘기는 조건
 
-최종 대조 결과, B/S/C의 보강 범위만 닫았다고 바로 공개 배포가 완료되는 것은 아니다.
+최종 대조 결과, B/S/C/A의 보강 범위만 닫았다고 바로 공개 배포가 완료되는 것은 아니다.
 [현재 M13-004 baseline](./evidence/m13-004-convenience/baseline-20261017.md)의 최신 갱신과
 [M13 배포 계약](./18-m13-production-release-operations-contract.md)을 그대로 이어받는다.
 채널 wrapper/OIDC·formula와 현재 후보의 서명·clean Host qualification은 실제 남은 일이다.
