@@ -230,7 +230,8 @@ H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
 | Evidence storage·retention·cleanup | 구현 직전 상세 설계 |
 | M2 이후 Policy rule·version·reason code | 각 ecosystem 구현 직전 상세 설계 |
 | 라이선스·상표·배포 정책 | 배포 전 |
-| MCP 제공 여부 | CLI 안정화 후 |
+| MCP 제공 여부 | CLI 안정화 후. AI 보조 검사의 선행조건이며 현재 구현 완료로 가정하지 않음 |
+| MCP AI 보조 실행 검사·자체 코드 생성 | [향후/v2.0 핵심 기능 후보](./docs/planning/22-future-ai-assisted-inspection.md). 사용자 요청으로 아이디어만 기록 / DEFERRED; 현재 보강·첫 배포 필수 범위 밖 |
 
 ## Documentation Rules
 

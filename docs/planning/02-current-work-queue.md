@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — prior bounded functionality/audit and local test setup retain their scoped evidence. User-goal reassessment OPEN: both pip/uv install -r forms are unsupported; D-008 environment-triggered dormant behavior induction/detection is not acceptance-closed. Names/deployment must not replace these gaps.
-Last completed substep: enhancement-design security review DOCUMENTED in 21-goal-completion-design.md; updater preservation, bounded post-install execution, measured profile selection and final security evaluation added to the existing scope. Product implementation NOT_STARTED. Prior artwork and code358 audit keep their scoped evidence.
+Last completed substep: future AI-assisted inspection idea RECORDED / DEFERRED in 22-future-ai-assisted-inspection.md. MCP-only client code submission and later internal generation are future candidates, not new current acceptance. The security review in 21-goal-completion-design.md remains the current design. Product implementation NOT_STARTED. Prior artwork and code358 audit keep their scoped evidence.
 Next action: await the user's implementation instruction; this turn is design review only. Read 21-goal-completion-design.md for the unchanged B00–B07/S01–S09/C01–C03 and 16-unit order, including sections 5.6/11.1/13. Unit16 includes the final attacker-informed review and detection/false-positive/incomplete-rate assessment; mandatory dynamic checks stay in the default profile, optional deep inspection is a measurement-dependent design candidate. Completing feature criteria permits naming/release-finalization entry, not immediate public-release completion. Do not start product changes, artifact deletion or CI. When implementation is requested, begin with B00. Preserve the approved UI and local WSL setup.
 Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. Artwork checkpoint had no remote CI/push/installation; the later user-authorized development Host setup is recorded separately and is not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
@@ -25,6 +25,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 AI 보조 실행 검사 — 향후 후보 기록 / DEFERRED
+
+사용자 요청에 따라 [MCP 사용자 AI 협업과 자체 생성 후보](./22-future-ai-assisted-inspection.md)를 기록했다. 코드 생성/디버깅·전용 위치 제출·격리 실행·최대2회 시도와 실패 시 선택 검사 생략을 구분하며, 내장 모델/API/AI CLI는 후속 v2.0 핵심 기능 후보로 둔다. MCP 제공도 선행 확인 사항이다. 현재20개 gap·16개 순서·첫 배포 acceptance는 그대로이며 실제 구현·모델/API 연결·CI를 시작하지 않는다.
 
 ### 2026-11-01 보안 성능·실행 범위 재검토 — 설계 보완 / 구현 NOT_STARTED
 
