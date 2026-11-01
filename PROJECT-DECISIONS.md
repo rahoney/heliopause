@@ -243,4 +243,4 @@ H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
 - 완료된 상세 결정을 이 문서에 장문으로 재서술하지 않는다.
 - 문서 이동 시 상태 링크와 Documentation Guide를 같은 변경에서 갱신한다.
 
-2026-11-01 사용자가 [보강 설계](./docs/planning/21-goal-completion-design.md)의 순차 구현을 승인했다. 과거 설계 전용 제한은 현재 작업에서 superseded다. B00 로컬 완료와 B01+B05·[B02 로컬 구현/연결](./docs/planning/evidence/m13-004-convenience/npm-project-local-20261102.json)을 기록했으며 grouped qualification은 OPEN이다. 다음 로컬 항목은 B03 Cargo fetch-only이며 실행 상태·검증·후속 순서는 Queue를 따른다.
+2026-11-01 사용자가 [보강 설계](./docs/planning/21-goal-completion-design.md)의 순차 구현을 승인했다. 과거 설계 전용 제한은 현재 작업에서 superseded다. B00 로컬 완료와 B01+B05·[B02 로컬 구현/연결](./docs/planning/evidence/m13-004-convenience/npm-project-local-20261102.json)을 기록했으며 grouped qualification은 OPEN이다. [B03 Cargo fetch 구현·연결](./docs/planning/evidence/m13-004-convenience/cargo-fetch-local-20261102.json)도 로컬 검증했으며 다음 로컬 항목은 B04 Terraform 기본 init이다. 실행 상태·검증·후속 순서는 Queue를 따른다.

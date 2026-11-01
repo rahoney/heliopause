@@ -31,6 +31,14 @@ func (a cargoProjectMutationAdapter) BeginBuild(ctx context.Context, install dom
 	return a.promoter.Begin(ctx, install)
 }
 
+type cargoFetchMutationAdapter struct {
+	promoter *promotion.CargoProjectPromotion
+}
+
+func (a cargoFetchMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
+	return a.promoter.BeginFetch(ctx, install)
+}
+
 type cargoLockMutationAdapter struct {
 	promoter *promotion.CargoProjectPromotion
 	adopt    bool
@@ -53,6 +61,14 @@ func (s *cargoUpdateService) Update(ctx context.Context, install domain.InstallC
 		return domain.ProjectVerifiedSet{}, err
 	}
 	return service.Update(ctx, install, selector)
+}
+
+func (s *cargoUpdateService) Fetch(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	service, err := application.NewCargoFetchService(s.resolver, cargoFetchMutationAdapter{s.promoter}, s.inspection, s.cache)
+	if err != nil {
+		return domain.ProjectVerifiedSet{}, err
+	}
+	return service.Fetch(ctx, install)
 }
 
 func newCargoServices(resolver *sandbox.CargoResolver, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (add *application.CargoAddService, build *application.CargoBuildService, update *cargoUpdateService, resultErr error) {

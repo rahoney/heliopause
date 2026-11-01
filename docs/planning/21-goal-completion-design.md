@@ -256,10 +256,13 @@ complete replacement 경로로 우회하지 않는다. 원래 대상에서 제�
 
 ### 4.4 B03 — Cargo fetch-only
 
-수정 owner는 `cli/root.go` Cargo 등록, `bootstrap/cargo.go`,
-`application/cargo_build.go: resolveProjectSnapshot` 호출 경로와
-`application/project_snapshot.go`, `promotion/cargo_cache.go`다.
+수정 owner는 `cli/root.go` Cargo 등록, `bootstrap/cargo.go`, `application/cargo.go`와
+기존 `project_update.go:executeGuardedProjectUpdate`, `sandbox/cargo_project_resolver.go`,
+`promotion/cargo_cache.go`/`cargo_approved_transaction.go`/`cargo_transaction.go`다.
 기존 resolve→전체 검사→검증 cache commit까지 재사용하고 관찰 build는 호출하지 않는다.
+기존 `cargo_build.go`의 snapshot 준비는 원래 lock과 동일 controls를 요구하므로 그대로 유지한다.
+최초 lock은 선택 controls를 처리하는 기존 workflow와 typed fetch guard로 반입하고,
+기존 lock/update의 승인·보존 조건은 완화하지 않는다.
 새 fetch가 나왔다고 CargoBuild의 준비·검사를 복사하거나 생략하지 않는다.
 
 Cargo.toml만 있는 최초 선택/lock 생성과 기존 Cargo.lock 선택 보존을 구분한다.

@@ -19,6 +19,13 @@ func TestCargoLockUpdateFixedCommandAdmission(t *testing.T) {
 		args []string
 		want bool
 	}{
+		{"fetch-metadata", []string{"metadata", "--locked", "--format-version", "1", "--all-features"}, true},
+		{"arbitrary-metadata-features", []string{"metadata", "--locked", "--format-version", "1", "--features", "foreign"}, false},
+		{"initial-fetch", []string{"fetch"}, true},
+		{"locked-fetch", []string{"fetch", "--locked"}, true},
+		{"fetch-config", []string{"fetch", "--config", "foreign"}, false},
+		{"fetch-offline", []string{"fetch", "--offline"}, false},
+		{"fetch-build", []string{"fetch", "build"}, false},
 		{"existing-metadata", []string{"metadata", "--locked", "--format-version", "1"}, true},
 		{"existing-add", []string{"add", "itoa@=1.0.17"}, true},
 		{"complete-update", []string{"update"}, true},
@@ -53,7 +60,7 @@ type cargoLockUpdateRunner struct {
 
 func (r *cargoLockUpdateRunner) RunCargo(ctx context.Context, workspace string, environment []string, args ...string) ([]byte, error) {
 	r.args = append(r.args, append([]string(nil), args...))
-	if args[0] != "update" {
+	if args[0] != "update" && args[0] != "fetch" {
 		return r.base.RunCargo(ctx, workspace, environment, args...)
 	}
 	if workspace == r.base.original || ValidateCargoResolverEnvironment(environment, strings.TrimPrefix(environment[0], "CARGO_HOME=")) != nil {
@@ -153,6 +160,75 @@ func TestCargoLockUpdateRejectsUnboundSelectionBeforePublication(t *testing.T) {
 				t.Fatal("primary cause lost")
 			}
 			assertCargoPrivateCleanup(t, runner.base)
+		})
+	}
+}
+
+// Structural native selection fixtures only. Public crate authentication and
+// actual SDK/build suppression require the separate protected integration.
+func TestCargoFetchKeepsFirstAndExistingLockIntentsWithoutBuild(t *testing.T) {
+	for _, fault := range []string{"initial", "existing", "lock changed", "manifest changed", "source changed", "cancelled"} {
+		t.Run(fault, func(t *testing.T) {
+			root, install, base := cargoProjectResolverFixture(t, true)
+			runner := &cargoLockUpdateRunner{base: base}
+			files := map[string][]byte{"Cargo.toml": base.manifest, "Cargo.lock": base.lock}
+			if fault == "initial" {
+				if err := os.Remove(filepath.Join(root, "Cargo.lock")); err != nil {
+					t.Fatal(err)
+				}
+				delete(files, "Cargo.lock")
+			}
+			controls, err := cargoFrozenControls(files)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch fault {
+			case "lock changed":
+				base.lock = append(bytes.Clone(base.lock), []byte("\n# unexpected native rewrite\n")...)
+			case "manifest changed":
+				runner.mutation = "Cargo.toml"
+			case "source changed":
+				base.mutateMetadata = "src/main.rs"
+			}
+			resolver, err := NewCargoResolver(runner)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			if fault == "cancelled" {
+				cancel()
+			}
+			update, err := resolver.ResolveProjectFetch(ctx, install, controls)
+			if fault == "initial" || fault == "existing" {
+				if err != nil || !update.Valid() || update.HasRequestedResolution() || len(update.Snapshot().Dependencies()) != 1 || !artifactcargo.EqualControls(update.OriginalControls(), controls) {
+					t.Fatal("fetch selection lost its whole input", err)
+				}
+				expected := "fetch"
+				if fault == "existing" {
+					expected += " --locked"
+				}
+				if len(runner.args) != 2 || strings.Join(runner.args[0], " ") != expected || strings.Join(runner.args[1], " ") != "metadata --locked --format-version 1 --all-features" {
+					t.Fatal("fetch built, updated or replayed selection", runner.args)
+				}
+			} else if err == nil || update.Valid() {
+				t.Fatal("changed/cancelled fetch input accepted", fault, err)
+			}
+			if fault == "cancelled" && (len(runner.args) != 0 || !errors.Is(err, context.Canceled)) {
+				t.Fatal("cancelled fetch reached SDK", err)
+			}
+			for name, before := range files {
+				now, err := os.ReadFile(filepath.Join(root, name))
+				if err != nil || !bytes.Equal(now, before) {
+					t.Fatal("native fetch changed original controls", name, err)
+				}
+			}
+			if fault == "initial" {
+				if _, err := os.Lstat(filepath.Join(root, "Cargo.lock")); !errors.Is(err, os.ErrNotExist) {
+					t.Fatal("first selection published lock before quarantine", err)
+				}
+			}
+			assertCargoPrivateCleanup(t, base)
 		})
 	}
 }

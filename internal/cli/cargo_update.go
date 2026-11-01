@@ -104,6 +104,7 @@ type machineProjectLifecycle struct {
 }
 
 type cargoUpdateReport struct {
+	Scope                 string                   `json:"inspection_scope,omitempty"`
 	LocalProjectLifecycle *machineProjectLifecycle `json:"project_lifecycle,omitempty"`
 
 	Schema         string              `json:"schema_version"`
@@ -205,7 +206,13 @@ func buildProjectMutationReport(verified domain.ProjectVerifiedSet, cause error,
 
 func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool, lifecycle ...projectLifecycleReport) error {
 	facts := buildProjectMutationReport(verified, cause, selector, source, records, installing)
+	return writeProjectMutationFacts(output, facts, cause, lifecycle...)
+}
+
+func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFacts, cause error, lifecycle ...projectLifecycleReport) error {
 	report, inspected, decision, checks := facts.report, facts.inspected, facts.decision, facts.checks
+	source, selector, installing := report.Source, report.Selector, report.Operation == "INSTALL"
+	records := report.VerifiedSet
 	if len(lifecycle) > 1 {
 		return errors.New("project report requires one local lifecycle result")
 	}
@@ -250,7 +257,10 @@ func writeProjectMutationReportWithRecords(output io.Writer, verified domain.Pro
 		policy = report.Policy.Decision
 	}
 	p.reportHeader(report.Operation, report.Status, policy, "")
-	if source == "npm" {
+	if report.Operation == "FETCH" {
+		p.line("%s %s", p.text("Dependency preparation:", "의존성 준비:"), p.stateLabel(report.Promotion))
+		p.line("%s", p.text("Scope: dependencies only; build scripts, procedural macros and application code were not executed.", "검사 범위: 의존성 준비. 빌드 스크립트·프로시저 매크로·애플리케이션 코드는 실행하지 않았습니다."))
+	} else if source == "npm" {
 		label := p.text("Project update:", "프로젝트 업데이트:")
 		if installing {
 			label = p.text("Project installation:", "프로젝트 설치:")

@@ -277,3 +277,117 @@ func TestCargoLockUpdateEnrollmentRequiresExplicitIntentAndIndependentProof(t *t
 		}
 	}
 }
+
+func TestCargoFetchPublishesFirstLockAndPreservesExistingControls(t *testing.T) {
+	for _, initial := range []bool{true, false} {
+		t.Run(map[bool]string{true: "initial", false: "existing"}[initial], func(t *testing.T) {
+			p, old, selection, staged := approvedCargoLockFixture(t, true)
+			if err := old.Close(); err != nil {
+				t.Fatal(err)
+			}
+			root := selection.Snapshot().Context().Target().String()
+			manifest, err := os.Lstat(filepath.Join(root, "Cargo.toml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock, err := os.Lstat(filepath.Join(root, "Cargo.lock"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if initial {
+				if err = os.Remove(filepath.Join(root, "Cargo.lock")); err != nil {
+					t.Fatal(err)
+				}
+				if guard, err := p.BeginLockUpdate(context.Background(), selection.Snapshot().Context(), true); err == nil {
+					_ = guard.Close()
+					t.Fatal("ordinary update gained first-lock authority")
+				}
+			}
+			guard, err := p.BeginFetch(context.Background(), selection.Snapshot().Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			update, err := domain.NewProjectDependencyUpdateFromSnapshot(guard.Controls(), selection.SelectedControls(), selection.Snapshot())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = guard.Commit(context.Background(), update, staged); err != nil {
+				_ = guard.Close()
+				t.Fatal("fetch failed to retain approved dependencies", err)
+			}
+			if err = guard.Close(); err != nil {
+				t.Fatal(err)
+			}
+			currentManifest, err := os.Lstat(filepath.Join(root, "Cargo.toml"))
+			if err != nil || !os.SameFile(manifest, currentManifest) || manifest.Mode() != currentManifest.Mode() {
+				t.Fatal("fetch replaced unchanged manifest", err)
+			}
+			currentLock, err := os.Lstat(filepath.Join(root, "Cargo.lock"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !initial && (!os.SameFile(lock, currentLock) || lock.Mode() != currentLock.Mode()) {
+				t.Fatal("fetch replaced existing lock")
+			}
+			if initial && currentLock.Mode().Perm() != 0600 {
+				t.Fatal("first lock lost private creation mode")
+			}
+			next, err := p.Begin(context.Background(), selection.Snapshot().Context())
+			if err != nil {
+				t.Fatal("fetch approval cannot be consumed by existing project guard", err)
+			}
+			if err = next.Close(); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestCargoFirstFetchRollbackRestoresAbsentLock(t *testing.T) {
+	for _, phase := range []string{"before-backup", "before-publication", "before-approval", "after-approval"} {
+		t.Run(phase, func(t *testing.T) {
+			p, old, selection, staged := approvedCargoLockFixture(t, true)
+			if err := old.Close(); err != nil {
+				t.Fatal(err)
+			}
+			root := selection.Snapshot().Context().Target().String()
+			if err := os.Remove(filepath.Join(root, "Cargo.lock")); err != nil {
+				t.Fatal(err)
+			}
+			g, err := p.BeginFetch(context.Background(), selection.Snapshot().Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := g.Close(); err != nil {
+					t.Error(err)
+				}
+			})
+			update, err := domain.NewProjectDependencyUpdateFromSnapshot(g.Controls(), selection.SelectedControls(), selection.Snapshot())
+			if err != nil {
+				t.Fatal(err)
+			}
+			primary := errors.New("injected first-fetch publication failure")
+			p.checkpoint = func(current string) error {
+				if current == phase {
+					return primary
+				}
+				return nil
+			}
+			if err := g.Commit(context.Background(), update, staged); !errors.Is(err, primary) {
+				t.Fatalf("first-fetch primary cause lost: %v", err)
+			}
+			if err := g.plan.verifyUnchanged(); err != nil {
+				t.Fatal("first-fetch rollback changed original controls", err)
+			}
+			for _, name := range []string{filepath.Join(root, cargoTransactionMetadata), filepath.Join(p.stateRoot, g.stateName)} {
+				if _, err := os.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+					t.Fatal("failed first fetch retained approval", name, err)
+				}
+			}
+			if err := g.checkRecoveryState(); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}

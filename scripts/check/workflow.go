@@ -601,6 +601,8 @@ func workflowJobIDs(contents string) []string {
 // Their presence in comments, another job or a skipped step supplies no gate.
 const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
 const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
+const cargoFetchSelectionIntegrationCommand = `HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'`
+const cargoFetchCLIIntegrationCommand = `HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'`
 const uvSyncCLIIntegrationCommand = `HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'`
 
 var uvIntegrationCommands = []string{
@@ -646,6 +648,8 @@ func validatePlatformBuildCache(contents string) []string {
 }
 
 var cargoIntegrationCommands = []string{
+	cargoFetchSelectionIntegrationCommand,
+	cargoFetchCLIIntegrationCommand,
 	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
 	`docker pull "$rust_image"`,
 	cargoSourceIntegrationCommand,
@@ -777,7 +781,7 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 	if err != nil {
 		return nil
 	}
-	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"}
+	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"}
 	counts := map[string]int{}
 	for _, block := range blocks {
 		var lines []string
@@ -793,7 +797,7 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 		}
 	}
 	var findings []string
-	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand, uvSyncCLIIntegrationCommand} {
+	for command := range scopes {
 		if counts[command] != 1 {
 			findings = append(findings, fmt.Sprintf("fixture integration requires one matching package subshell for %q", command))
 		}

@@ -440,3 +440,45 @@ func EqualControls(a, b []domain.ProjectControlFile) bool {
 	}
 	return len(byName) == 0
 }
+
+// ValidateFetchLockCoverage checks fetch's complete locked registry set after
+// the ordinary metadata factory has validated graph/feature/source semantics.
+// Build/update keep their selected-feature subset semantics.
+func ValidateFetchLockCoverage(snapshot domain.ProjectDependencySnapshot, lock []byte) error {
+	invalid := errors.New("cargo fetch metadata does not cover its exact locked registry set")
+	if !snapshot.Valid() || snapshot.Source() != Source() {
+		return invalid
+	}
+	sum := sha256.Sum256(lock)
+	bound := false
+	for _, control := range snapshot.ControlDigests() {
+		if control.Name() == "Cargo.lock" && control.Digest().String() == hex.EncodeToString(sum[:]) {
+			bound = true
+		}
+	}
+	if !bound {
+		return invalid
+	}
+	locked, err := parseLock(lock)
+	if err != nil {
+		return err
+	}
+	count := 0
+	for _, entry := range locked {
+		if entry.Source != "" {
+			count++
+		}
+	}
+	dependencies := snapshot.Dependencies()
+	if count != len(dependencies) {
+		return invalid
+	}
+	for _, artifact := range dependencies {
+		identity := artifact.Identity()
+		entry, exists := locked["registry:"+identity.Name()+"@"+identity.Version()]
+		if !exists || identity.Source() != Source() || identity.Variant() != "crate" || artifact.DeclaredIntegrity() != "sha256="+entry.Checksum {
+			return invalid
+		}
+	}
+	return nil
+}

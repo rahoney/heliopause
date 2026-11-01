@@ -271,6 +271,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddCargoUpdate(command, updateService); err != nil {
 			return err
 		}
+		if err := cli.AddCargoFetch(command, updateService); err != nil {
+			return err
+		}
 	}
 	if source != "" && source == "terraform" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {

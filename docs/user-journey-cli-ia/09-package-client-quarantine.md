@@ -528,3 +528,21 @@ Npm 후크의 고정 Node에는 기존 Node console의 제한된 로더·ABI 읽
 Kernel image/고정 OCI root·실제 clone creator를 검증하며 ARTIFACT 역할과 unexpected-process
 사실을 유지한다. 네트워크·임의 파일·쓰기·후속 실행에 CONTROL 권한을 부여하지 않는다.
 현재 구현·검증 상태와 미완료 qualification은 [목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)을 따른다.
+
+## Cargo 의존성 준비 — B03 개발 후보
+
+`helox cargo fetch`는 현재 프로젝트의 전체 공개 crates.io lock 집합을 검역하여 캐시에
+준비한다. Cargo.lock이 없으면 최초 선택을 만들고, 있으면 그 선택과 원본 bytes·파일 신원을
+보존한다. Manifest와 기존 lock이 맞지 않으면 자동 upgrade하지 않고 거부한다. 임의 인수·
+옵션·대체 registry/config는 받지 않으며 SDK 버전은 기존 runtime lock을 따른다.
+
+Fetch는 inactive optional을 포함하는 metadata와 정확한 lock의 registry identity/checksum
+전체를 대조하고, 기존 독립 source 인증·integrity/static 검사·Evidence/Policy·원자적 control/
+승인 cache 반입을 사용한다. Build script·proc-macro·애플리케이션은 실행하지 않는다.
+JSON 결과의 `helox.project-fetch-result/v1`, `FETCH`,
+`inspection_scope: DEPENDENCY_PREPARATION`은 이 범위만 나타낸다.
+
+이후 `helox cargo build`는 기존 retained approval/cache를 검증하고 locked graph를 새로
+검역·stage한 뒤 격리 관찰 빌드를 수행한다. Fetch 성공을 동적 실행 검사 완료로 사용하지
+않는다. 최초/반복 실행·cache 변조 거부·후속 build의 로컬 검증과 남은 묶음 qualification은
+[목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의 B03을 따른다.

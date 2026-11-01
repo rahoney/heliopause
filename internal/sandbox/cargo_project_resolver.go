@@ -182,8 +182,20 @@ func (r *CargoResolver) ResolveProjectLockUpdate(ctx context.Context, install do
 	return r.resolveProjectUpdate(ctx, install, original, arguments, nil)
 }
 
+// ResolveProjectFetch prepares a complete graph without a primary or build.
+// Existing locks remain exact; only an absent lock permits first selection.
+func (r *CargoResolver) ResolveProjectFetch(ctx context.Context, install domain.InstallContext, original []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+	arguments := []string{"fetch"}
+	for _, control := range original {
+		if control.Name() == "Cargo.lock" && control.Present() {
+			arguments = append(arguments, "--locked")
+		}
+	}
+	return r.resolveProjectUpdate(ctx, install, original, arguments, nil)
+}
+
 func (r *CargoResolver) resolveProjectUpdate(ctx context.Context, install domain.InstallContext, original []domain.ProjectControlFile, arguments []string, requested *domain.ArtifactReference) (update domain.ProjectDependencyUpdate, resultErr error) {
-	if r == nil || r.runner == nil || ctx == nil || !install.Valid() || !validCargoResolverCommand(arguments) || (requested == nil && arguments[0] != "update") || (requested != nil && arguments[0] != "add") {
+	if r == nil || r.runner == nil || ctx == nil || !install.Valid() || !validCargoResolverCommand(arguments) || (requested == nil && arguments[0] != "update" && arguments[0] != "fetch") || (requested != nil && arguments[0] != "add") {
 		return update, errors.New("valid Cargo project update request is required")
 	}
 	if err := ctx.Err(); err != nil {
@@ -204,7 +216,7 @@ func (r *CargoResolver) resolveProjectUpdate(ctx context.Context, install domain
 	if err != nil || !artifactcargo.EqualControls(original, current) {
 		return update, errors.New("cargo original controls changed before selection")
 	}
-	if requested == nil {
+	if requested == nil && arguments[0] == "update" {
 		selector := ""
 		for index, argument := range arguments {
 			if index == 2 {
@@ -239,10 +251,17 @@ func (r *CargoResolver) resolveProjectUpdate(ctx context.Context, install domain
 	if len(selectedFiles["Cargo.lock"]) == 0 || !sameCargoProjectData(frozen, selectedFiles, true) {
 		return update, errors.New("cargo selection changed source outside root controls or omitted lock")
 	}
+	if arguments[0] == "fetch" && len(frozen["Cargo.lock"]) != 0 && !bytes.Equal(frozen["Cargo.lock"], selectedFiles["Cargo.lock"]) {
+		return update, errors.New("cargo fetch changed the original lock selection")
+	}
 	if requested == nil && !bytes.Equal(frozen["Cargo.toml"], selectedFiles["Cargo.toml"]) {
 		return update, errors.New("cargo lock update changed the original manifest")
 	}
-	metadata, err := r.runner.RunCargo(ctx, workspace, environment, "metadata", "--locked", "--format-version", "1")
+	metadataArgs := []string{"metadata", "--locked", "--format-version", "1"}
+	if arguments[0] == "fetch" {
+		metadataArgs = append(metadataArgs, "--all-features")
+	}
+	metadata, err := r.runner.RunCargo(ctx, workspace, environment, metadataArgs...)
 	if err != nil {
 		return update, cargoRunnerFailure("cargo selected metadata failed", err)
 	}
@@ -268,6 +287,11 @@ func (r *CargoResolver) resolveProjectUpdate(ctx context.Context, install domain
 	snapshot, err := artifactcargo.BuildProjectSnapshot(install, metadata, files["Cargo.toml"], files["Cargo.lock"], root, PinnedCargoRuntime().ImageReference, files)
 	if err != nil {
 		return update, err
+	}
+	if arguments[0] == "fetch" {
+		if err := artifactcargo.ValidateFetchLockCoverage(snapshot, files["Cargo.lock"]); err != nil {
+			return update, err
+		}
 	}
 	if requested == nil {
 		return domain.NewProjectDependencyUpdateFromSnapshot(original, selected, snapshot)

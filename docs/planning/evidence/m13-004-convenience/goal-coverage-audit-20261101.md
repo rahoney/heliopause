@@ -478,3 +478,83 @@ QUALIFIED/ACCEPTANCE_CLOSED=NO다. B02 완료 판정을 전체 보강 완료로 
 시험 사본34개848163547B를 task digest·owner·프로세스 참조 부재 확인 뒤 제거했으며
 Host 설치본·runtime lock·SDK/캐시·실패 원본은 유지했다. 새 CI/설치/배포는 하지 않았다.
 독립적인 다음 로컬 항목은 B03 Cargo fetch-only다.
+
+
+## B03 — Cargo fetch-only 착수 baseline (2dba2bd)
+
+현재 기능 판정: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. 공개 fetch 명령과 typed native fetch admission은 없고,
+기존 bootstrap의 invalid-command 회귀가 그 사전 거부를 확인한다.
+
+기존 재사용 owner는 구현돼 있다. `application/cargo_build.go`의
+`resolveProjectSnapshot`은 기존 lock의 준비·전체 검사·cache commit이고 실제 build가
+뒤따른다. `application/project_update.go:executeGuardedProjectUpdate`는 원본 guard·선택
+controls·전체 검사·stage·commit·실패 사실 보존을 이미 공유한다.
+`sandbox/cargo_project_resolver.go`는 anchored source/private workspace/native 선택과
+metadata--locked/source binding을 소유하고 `promotion/cargo_approved_transaction.go`와
+`cargo_transaction.go`는 independent approval·control/기록 원자적 반입/복원을 소유한다.
+이 구현을 대체하거나 fetch 요청에서 관찰 build를 대신 호출하지 않는다.
+
+확인된 acceptance gap은 최초 lock이다. 기존 snapshot helper는 원래 controls와 같은
+snapshot만 commit하고, no-primary update guard/transaction은 기존 Cargo.lock을 전제로 한다.
+따라서 새 fetch 선택을 기존 guarded selected-controls workflow에 연결하고 최초 lock을
+허용하는 typed guard를 기존 transaction에 추가한다. Cargo.toml과 기존 lock bytes/신원은
+보존하며 기존 update의 lock/명시 enrollment 요구를 완화하지 않는다. 새 fetch 전용
+복제 pipeline·일반 framework·미래 API를 만들지 않는다.
+
+[공식 Cargo fetch](https://doc.rust-lang.org/cargo/commands/cargo-fetch.html)는 lock이 없으면
+먼저 생성하고, lock이 있으면 그 선택을 내려받는다. 대상 옵션이 없으면 모든 target의
+의존성을 획득한다. 현재 지원 경계에서 최초/기존 lock을 별도 고정하고 임의 SDK/config/
+registry/target argv는 받지 않는다. 버전은 기존 runtime owner를 사용한다.
+
+MISSING: closed native fetch 선택, 최초/기존 lock의 typed guarded commit,
+기존 whole inspection/cache와 연결한 CLI structured dependency-preparation 결과,
+cold/warm·변조·전이 거부·취소/원복·build invocation0 및 후속 기존 build의 cache 소비.
+Read: 보강 설계 §4.4, M12 계약 §5 Cargo, Source/Policy/guard와 오답노트 L20.
+기존 Cargo build와 업데이트 의미·동적 검사 및 200MiB/기존 observation 한도를 유지한다.
+
+
+B03 진행: closed fetch admission RED7.455s→GREEN7.548s, 첫/기존 lock·변조/취소의
+structural selection6/7.440s와 typed first-lock transaction/기존 update 회귀13.874s PASS다.
+이것은 public source 인증·실제 SDK·CLI·build 미실행 qualification이 아니다. 서비스/guard를
+기존 selected-controls owner에 연결하는 중이며 공개 명령은 아직 미등록이다.
+
+추가 필수 대조: [Cargo metadata](https://doc.rust-lang.org/cargo/commands/cargo-metadata.html)의
+기본 graph는 비활성 optional dependency를 제외하지만 [lock 생성 의미](https://doc.rust-lang.org/cargo/reference/resolver.html#features)는
+workspace의 모든 feature를 고려한다. 현재 fetch 후보가 기존 build용 기본 metadata만 사용하면
+다운로드 대상 일부를 누락할 수 있다. Native optional/all-target 사례와 lock 전체 census를
+확인하고 fetch 모드만 보완한다. 기존 build/update의 기본 feature 의미는 바꾸지 않는다.
+
+
+B03 현재 구현·연결 checkpoint: `CargoFetchService`는 기존 guarded update workflow,
+실제 complete project inspector/cache, typed fetch guard와 lock-only transaction을 재사용한다.
+별도 pipeline/SDK pin/Host 변경은 없다. 공개 `helox cargo fetch`는 no-argument만 받고
+`helox.project-fetch-result/v1`의 FETCH/DEPENDENCY_PREPARATION으로 build 미실행을 표시한다.
+기존 update/add/build의 feature/승인/예산 계약은 유지한다.
+
+Actual optional DATA V3의 누락은 fetch-only all-features metadata + exact locked registry
+identity/checksum census로 교정했다. DATA V4 parent9.73s/operator11.582s PASS이며
+source authentication/whole quarantine/build 증거는 아니다. 별도 full CLI V2는
+parent33.64s/operator35.509s, cold first-lock/warm existing-lock 두 required 검사/ALLOW,
+빌드 스크립트 미실행, cache receipt 변조 거부와 lock/승인 보존, 후속 기존 관찰 build의
+승인 ELF 생성, helperwait0/Host·Docker 불변/빈 runtime을 확인했다. CLI V1의 첫 두 fetch는
+성공했지만 시험이 project marker에 cache handle이 있다고 가정해 실패했다. Controller의
+독립 approval에서 handle을 읽는 시험만 수정했으며 제품 실패로 재분류하지 않는다.
+기존 build는 retained approval/cache를 재검증하고 동일 locked bytes를 다시 검사·stage한다.
+같은 handle을 무검사 소비하거나 원격 qualification이 끝났다고 표시하지 않는다.
+
+첫 lock transaction 네 phase의 실패는 원래 absent lock/manifest 신원·mode/독립 승인 부재와
+최초 오류를 복원했다. 기존 CI job에 native/CLI 소비자를 연결하며 첫 위치가 PNPM의 필수
+compile/client/helper/restore 순서를 끊은 것을 checker가 거부했다. 기존 순서를 유지한
+별도 Cargo 구간으로 이동한 checker4.140s PASS다. Security18.247s PASS이고 Quick와
+관련 소비자 최종 대조는 진행 중이다. 원본은 `goal-implementation-20261101/b03-*`가 소유한다.
+판정은 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다.
+MISSING은 최종 소비자 회귀·변경 묶음 hosted/four-profile/final acceptance다.
+
+최종 B03 로컬 checkpoint는 [정규화 receipt](./cargo-fetch-local-20261102.json)가 소유한다.
+Quick246.721s의 정적 단계는 PASS이고 기본 테스트는 stale fetch negative 및 socket 권한으로
+FAIL했다. Fixture를 unsupported extra 인수로 고친 뒤 영향받는 전체6패키지 Race250.376s가
+PASS했다. 새 fetch도 첫/전이 의존성의 BLOCK/review/incomplete/integrity 거부를 기존 시험으로
+확인했다. 전체 Quick exit0 또는 hosted 완료로 쓰지 않는다. Security18.247s/docs0.344s PASS,
+완료된 protected 복사본8개179440646B는 전체 process 참조0/query error0 뒤 삭제했다.
+B03의 코드·연결 로컬 단위를 기록하고 다음 로컬 단위 B04 baseline으로 진행한다.

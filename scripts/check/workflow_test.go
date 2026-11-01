@@ -263,7 +263,7 @@ func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
 	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
 		t.Fatal(findings)
 	}
-	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"} {
+	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"} {
 		scope := "          (\n            cd " + directory + "\n            " + command + "\n          )"
 		if strings.Count(source, scope) != 1 {
 			t.Fatal("canonical fixture command has no unique package scope")

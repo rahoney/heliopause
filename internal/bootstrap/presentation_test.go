@@ -49,7 +49,7 @@ func TestInvalidCommandsFailBeforeRuntimePreparation(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", cache)
 	t.Setenv("PATH", t.TempDir())
 	for _, args := range [][]string{
-		{"npm", "ci", "extra"}, {"cargo", "fetch"}, {"go", "mod", "tidy"},
+		{"npm", "ci", "extra"}, {"cargo", "fetch", "extra"}, {"go", "mod", "tidy"},
 		{"npm", "not-a-command", "--help"}, {"pipx", "not-a-command"},
 		{"go", "build"}, {"cargo", "build", "extra"}, {"doctor", "extra"},
 	} {

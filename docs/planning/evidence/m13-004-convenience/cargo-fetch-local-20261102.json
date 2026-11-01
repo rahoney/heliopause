@@ -1,0 +1,313 @@
+{
+  "schema": "goal-reinforcement-local-checkpoint/v1",
+  "unit": "B03",
+  "base_commit": "2dba2bd9392760eca67baad17a5caaa6f1dbe6dc",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "NO",
+  "acceptance_closed": "NO",
+  "checks": [
+    {
+      "id": "b03-fetch-admission-red",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-admission-red.json",
+      "sha256": "b1a455f91be0722d7b3738ea4c809104e9888760116ffb9985956cd995790aae",
+      "exit_code": 1,
+      "elapsed": 7.455,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-admission-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-admission-green.json",
+      "sha256": "c65d9aae7c28096a322492abe89e86f8503893881437f893ed5cb95ff42e6a69",
+      "exit_code": 0,
+      "elapsed": 7.548,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-selection-first",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-selection-first.json",
+      "sha256": "0189a9237b7aa10d5806e42b97747025d558158ddae82205c7f5e59fea344771",
+      "exit_code": 0,
+      "elapsed": 7.44,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-first-lock-transaction-first",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-first-lock-transaction-first.json",
+      "sha256": "8cb39badbcb16177f5f0022a774f1b9a3314cd59ab8b8cb0e7d1e6c6632a1174",
+      "exit_code": 0,
+      "elapsed": 13.874,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-complete-lock-census",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-complete-lock-census.json",
+      "sha256": "7f7ed84e2a11c0527f22b97b6a65ceaef5ae1b6e76260f79c00a843c0acf82ef",
+      "exit_code": 0,
+      "elapsed": 0.764,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-cli-wiring-first",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-cli-wiring-first.json",
+      "sha256": "80820ab3268fbf99daae6f53a2e3f5a4581f31ff73899db8fc1b98334691fef8",
+      "exit_code": 1,
+      "elapsed": 6.661,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-cli-composition-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-cli-composition-green.json",
+      "sha256": "93c49e6f23ad0edcbf7e4eef93b0d3d60d0326217efac4b6dc05228d68511b40",
+      "exit_code": 1,
+      "elapsed": 4.582,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-report-and-boundaries",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-report-and-boundaries.json",
+      "sha256": "226dca92547708788f0091217fc4d2b5241307a9802aab98f79d31b05760b2b5",
+      "exit_code": 1,
+      "elapsed": 1.877,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-report-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-report-green.json",
+      "sha256": "b666871352912b9085b094f0af6a9071948c4175c1335db5b01c03b173f5cc9f",
+      "exit_code": 0,
+      "elapsed": 4.414,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-scope-v3",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-scope-v3.json",
+      "sha256": "c4246d22fa025e753e94cae5cb9390d3c08177f3be055bdc833f414b91f5e971",
+      "exit_code": 1,
+      "seconds": 11.72,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b03-fetch-scope-v4",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-scope-v4.json",
+      "sha256": "67070a4225104f7b26a1eb6d6352df8e91336842ff95709d6b29fa552c112bd0",
+      "exit_code": 0,
+      "seconds": 11.582,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b03-fetch-cli-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-cli-v1.json",
+      "sha256": "836dabf888abb124b890a2b6a684897fab31cf710480ae5881b42f8ee41211cb",
+      "exit_code": 1,
+      "seconds": 21.859,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b03-fetch-cli-v2",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-cli-v2.json",
+      "sha256": "c378fb49a8862f2c0556a546e4a502c3abd53557b343c5281abf707b48e739d6",
+      "exit_code": 0,
+      "seconds": 35.509,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b03-fetch-rollback-workflow",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-rollback-workflow.json",
+      "sha256": "0e8a9eab646fbd3d2bf85de6aa5ba634cd0e08f619240ae6963b201c963c1f02",
+      "exit_code": 1,
+      "elapsed": 11.916,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-fetch-workflow-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-fetch-workflow-green.json",
+      "sha256": "c925af06471fedf9c71bf145df1b68773c67881939f01ebd3939f93d1e3f57ac",
+      "exit_code": 0,
+      "elapsed": 4.14,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-candidate-quick",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-candidate-quick.json",
+      "sha256": "8bc58ad7d77b40c2ac2ff7197ba1fc42f549e7bb2da22f334630134b8b515183",
+      "exit_code": 1,
+      "elapsed": 246.721,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-candidate-security",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-candidate-security.json",
+      "sha256": "d6ce5a508f4827a0e640fb452b198b5b824eb27a7ae6d0351c58b5085501aceb",
+      "exit_code": 0,
+      "elapsed": 18.247,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-consumer-race",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-consumer-race.json",
+      "sha256": "645c67ea4ab27db4c345fea0385fc826aec0deaf86dd6040a930350bef1fa023",
+      "exit_code": 0,
+      "elapsed": 250.376,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-candidate-docs",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-candidate-docs.json",
+      "sha256": "d265871a49100858b2c5d553fddf71eae0822bedb5c9eff3cb27295a85b14022",
+      "exit_code": 0,
+      "elapsed": 0.344,
+      "source_unchanged": true
+    },
+    {
+      "id": "b03-owned-clients-cleanup",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b03-owned-clients-cleanup.json",
+      "sha256": "6fef7d2ff7bd2ceee362e948ecfea19a1a8109e849a7d9f73fc5fbf699aa34c1",
+      "deleted_bytes": 179440646
+    }
+  ],
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "fc737810d914b6572abb98336393af93624281b4d66a36869cc5b03cab02a28a"
+    },
+    {
+      "path": "internal/application/cargo.go",
+      "sha256": "6718651a1ac1d707937884cec68e31e46f884c9a35956d47d8c722dc4d35015b"
+    },
+    {
+      "path": "internal/application/project_update_test.go",
+      "sha256": "ac0857fab0916c0a5779f056c1f22dadbd25e36de560bf6b8ccb583e1b5c7804"
+    },
+    {
+      "path": "internal/artifact/cargo/project.go",
+      "sha256": "65f999716eafee2f2ddbbf84b40173c3233dc07d91f6c560a59bcf5b48ca5dc1"
+    },
+    {
+      "path": "internal/artifact/cargo/project_test.go",
+      "sha256": "20671e4d341a5d37b9236778114e74bc50e5df4c34e619dba165ea68c79a99ef"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "f7093b689735dd0e710e84deabfe54868d1063fe532f39c58826354340697a55"
+    },
+    {
+      "path": "internal/bootstrap/cargo.go",
+      "sha256": "d053dbd4663f610b8a8c963c3f53c299340a64f87d420415478e9ff97b4c112c"
+    },
+    {
+      "path": "internal/bootstrap/cargo_fetch_integration_test.go",
+      "sha256": "27e8965495f8972de45392ef8e1ac5df97e9901840669d8373ce286bad1efa06"
+    },
+    {
+      "path": "internal/bootstrap/presentation_test.go",
+      "sha256": "2e5ca9f90a039da1e9b46772b1ac8bfb2bab77858f253749f154e8198bf2aebf"
+    },
+    {
+      "path": "internal/cli/cargo_fetch.go",
+      "sha256": "9a37adc58d14aa11eddc5fd8b35d81866637a9608cfba9f01b616363ab5c2546"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "db7d69c9de9ba36f40e9ada214d2939c2f5c9232a8e3713f005e3bb8c3999b1a"
+    },
+    {
+      "path": "internal/cli/cargo_update_test.go",
+      "sha256": "365e45183d8099385f972c36827b88ec12d3c99a9ad3d0da50aeb7873028c1f1"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "bf901bd3428961355042d929ef5d234f1b8364f3161773b7afcad89197375cd7"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "sha256": "9087e1451c4920362b2de098981707768df934348854b564864be50fd8ba9cf2"
+    },
+    {
+      "path": "internal/cli/presentation_test.go",
+      "sha256": "74019f9770068b58351b3326ef7eb46e0293bf6eec7c552021b815e1711ecbc3"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "a54a38975fa10804a470cc1801b5103050c6e2fa0f24abb6170f4477f5442193"
+    },
+    {
+      "path": "internal/promotion/cargo_approved_transaction.go",
+      "sha256": "9209788381c9e92dbc8b6cca6ff175bde22d70f88b4ebcb47513bce5b36d9745"
+    },
+    {
+      "path": "internal/promotion/cargo_lock_update_test.go",
+      "sha256": "c3b564f6666ea713f21ddde5f161c0e723c0484829a50196ceebb9de86e0212d"
+    },
+    {
+      "path": "internal/promotion/cargo_transaction.go",
+      "sha256": "0f015c33e2fefe83f1404666aeb7a1cdb56531da63483765d92fe87744492e45"
+    },
+    {
+      "path": "internal/sandbox/cargo_fetch_real_test.go",
+      "sha256": "0aec596938b439e7626815ccc4039cf52f2fee670adf5ba37dd437ad63a7a44c"
+    },
+    {
+      "path": "internal/sandbox/cargo_isolated_runner.go",
+      "sha256": "36a17a0f37deccaf317a227cdfac252f06e5ba6ce9aefc608e169b5c5f0bf897"
+    },
+    {
+      "path": "internal/sandbox/cargo_lock_update_test.go",
+      "sha256": "3d96971a73fe9350f472545df9313e7e82cfbbd3cf489553991e1a0a60fb2930"
+    },
+    {
+      "path": "internal/sandbox/cargo_project_resolver.go",
+      "sha256": "cbbd144aca278d7294ffaf0163c24b1c6862bba0f3af70402bb964f0d785cbf0"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "fa5304303773da6878b7bc375b854b91e2815b3227d8086495d4f0fb75113b02"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "c988f2bf3c65d4f0661b94aaebcc6175b73b97491e17de4e1262fd986e62857a"
+    }
+  ],
+  "actual_cases": {
+    "native_optional": "Pinned native fetch plus all-features metadata includes inactive optional itoa1.0.17; exact locked registry identity/checksum census required. DATA selection only.",
+    "public_cli": "Cold first lock and warm existing lock: whole public source authentication, two required integrity/static checks, ALLOW, manifest identity preserved and no compiled output despite panic build.rs.",
+    "tamper": "Retained cache receipt mutation refused before selection; original lock, project marker and independent controller approval preserved.",
+    "build": "Existing observed Cargo build validates retained approval/cache, reinspects/stages same locked dependency bytes, and publishes approved ELF. Old build preparation is retained; not identical handle consumption without reinspection.",
+    "rollback": "First-lock four publication fault phases restore absent lock, original manifest identity/mode, absent approval and primary cause. Direct/transitive BLOCK, review, incomplete and integrity failures refuse staging/publication via actual fetch service.",
+    "ci": "Two native/CLI consumers added within existing job after existing client lifecycle sequences. Validator accepts package working directories and active exact commands; no hosted run started."
+  },
+  "verification_interpretation": {
+    "quick": "246.721s FAIL retained: static stages pass; default CLI stale cargo fetch negative fixture plus sandbox/promotion socket permission failures. Fixture corrected; final full affected six-package Race250.376s PASS unrestricted. Do not claim full Quick exit0.",
+    "initial_failures": "Native V3 confirms inactive optional omission; V4 corrects fetch-only metadata/census. CLI V1 two fetches pass then test assumes project marker cache field; V2 reads independent controller approval and passes. Early compile/test-scope/JSON capability/CI lifecycle placement failures remain raw.",
+    "reuse": "No new duplicate pipeline, future placeholder, SDK pin or Host installation change; shared result renderer reused and old consumers covered by six-package Race."
+  },
+  "cleanup": {
+    "protected_test_copies": 8,
+    "deleted_bytes": 179440646,
+    "receipt": "docs/github-logs/goal-implementation-20261101/b03-owned-clients-cleanup.json",
+    "process_references": 0,
+    "query_errors": 0,
+    "shared_tools_retained": true
+  },
+  "missing": [
+    "Grouped hosted/four-profile qualification and final exact-source acceptance; no full functional completion claim.",
+    "Existing B01 Anyio plugin compatibility and later B/S/C/A units remain open."
+  ],
+  "runtime_lock_sha256": "e7c3032907570d508cf0dcdc3bb49b8d079b735b48bd855e900b605f13b4a0b1",
+  "runtime_maintenance_changed": false,
+  "ci_started": false,
+  "host_installation_changed": false,
+  "ai_generated_execution": "v2 DEFERRED"
+}
