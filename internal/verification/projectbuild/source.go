@@ -19,7 +19,7 @@ type SourceVerifier struct {
 }
 
 func NewSourceVerifier(reader BuildSourceReader, kind string) (*SourceVerifier, error) {
-	if reader == nil || (kind != "go" && kind != "cargo") {
+	if reader == nil || (kind != "go" && kind != "cargo" && kind != "npm") {
 		return nil, errors.New("project source verification requires a bounded reader")
 	}
 	return &SourceVerifier{reader, kind}, nil

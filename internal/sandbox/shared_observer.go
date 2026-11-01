@@ -555,6 +555,16 @@ func (o *SharedObserver) StartBunTargetLifecycleProfile(ctx context.Context, con
 	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
 }
 
+// StartNPMProjectTargetLifecycleProfile adds only the separately attested
+// Node project workspace used by this complete npm inspection request.
+func (o *SharedObserver) StartNPMProjectTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := nodeMaterializationExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
 // StartBunRuntimeTargetLifecycleProfile uses the separately attested native
 // runtime volume. Ordinary Node-only Bun and PNPM sessions keep their topology.
 func (o *SharedObserver) StartBunRuntimeTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {

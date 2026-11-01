@@ -504,3 +504,27 @@ named source 지원을 변경하지 않는다. 일괄 요청의 임의 index/URL
 전체 원본·선택·archive·metadata를 결합한 뒤 기존 static-all gate, 동적 관찰,
 Evidence/Policy와 Python transaction을 거친다. 선택·검사·반입 중 실패 또는 commit 전
 원본 변경은 전체 거부/검증된 rollback이며, hash·native report만으로 승인하지 않는다.
+
+
+## npm 기본 프로젝트 설치와 ci — B02 개발 후보
+
+`helox npm install`은 현재 디렉터리 또는 `--target`의 package.json 전체를 고정 npm으로
+선택한다. Lock이 없으면 생성하고 manifest가 달라졌으면 다시 조정한다. `helox npm ci`는
+일치하는 package-lock.json이 필수이며 그 bytes를 보존한다. 기존 명시 패키지 install과
+update는 각각 기존 경로를 사용한다. Native npm을 Host에서 먼저 실행하는 fallback은 없다.
+
+모든 registry archive와 실제 설치 위치를 독립적으로 결합한 뒤 전체 검역·기록·기존 소유권
+검증을 통과해야 lock/node_modules/기록을 원자적으로 반입한다. 임의의 기존 node_modules,
+workspace/private registry/local·VCS·URL dependency는 이 후보에서 지원하지 않는다.
+
+프로젝트 설치 후크가 있으면 숨김 환경 파일·기존 node_modules를 제외한 bounded local source를
+고정하고 별도 `project-local/npm-source` 검사로 실행한다. 실제 native offline ci가 선언된
+설치 단계·조건부 dependencies hook·implicit binding.gyp를 처리한다. 결과의
+`project_lifecycle`은 필요 여부, 실행 상태와 그 검사의 Evidence/Policy를 구분한다.
+성공한 관찰도 Host 스크립트 실행 권한을 주지 않으며 기존 M4 제한 또는 M3 Finding에 따라
+설치를 수동 검토로 보류한다. 필수 실행 미완료는 설치 성공으로 표시하지 않는다.
+
+Npm 후크의 고정 Node에는 기존 Node console의 제한된 로더·ABI 읽기만 재사용한다.
+Kernel image/고정 OCI root·실제 clone creator를 검증하며 ARTIFACT 역할과 unexpected-process
+사실을 유지한다. 네트워크·임의 파일·쓰기·후속 실행에 CONTROL 권한을 부여하지 않는다.
+현재 구현·검증 상태와 미완료 qualification은 [목표 감사 원장](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)을 따른다.

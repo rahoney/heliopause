@@ -172,6 +172,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh", "bash scripts/ci-pnpm-runtime.sh project"})...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm project", []string{"bash scripts/ci-npm-project.sh native", "bash scripts/ci-npm-project.sh project"})...)
 	findings = append(findings, validatePNPMInspectionClientOrder(contents)...)
 	findings = append(findings, validatePNPMProjectClientOrder(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "Bun", []string{"bash scripts/ci-bun-runtime.sh", "bash scripts/ci-bun-runtime.sh project"})...)

@@ -44,32 +44,38 @@ type npmInspectionPayloadLayout interface {
 }
 
 func prepareNPMInspectionPayload(ctx context.Context, layout npmInspectionPayloadLayout, kind nativeRuntimeToolKind) (pnpmInspectionPayload, error) {
+	if ctx == nil || layout == nil {
+		return pnpmInspectionPayload{}, errPNPMInspectionPayload
+	}
+	return renderNPMInspectionPayload(ctx, layout.Digest(), layout.InspectionManifest(), layout.Entries(), layout.ReadFile, kind)
+}
+
+func renderNPMInspectionPayload(ctx context.Context, digest domain.ContentDigest, manifest []byte, entries []artifactnpm.PNPMLayoutEntry, readFile func(string) ([]byte, error), kind nativeRuntimeToolKind) (pnpmInspectionPayload, error) {
 	if _, ok := nativeProjectIdentity(kind); !ok {
 		return pnpmInspectionPayload{}, errPNPMInspectionPayload
 	}
 
-	if ctx == nil || layout.Digest().String() == "" || len(layout.Entries()) == 0 {
+	if ctx == nil || digest.String() == "" || len(entries) == 0 || readFile == nil {
 		return pnpmInspectionPayload{}, errPNPMInspectionPayload
 	}
 	if err := ctx.Err(); err != nil {
 		return pnpmInspectionPayload{}, errors.Join(errPNPMInspectionPayload, err, context.Cause(ctx))
 	}
-	manifest := layout.InspectionManifest()
 	if len(manifest) == 0 || len(manifest) > artifactnpm.ProjectControlLimit {
 		return pnpmInspectionPayload{}, errPNPMInspectionPayload
 	}
 	selected := map[string]artifactnpm.PNPMLayoutEntry{}
-	for _, entry := range layout.Entries() {
+	for _, entry := range entries {
 		if kind == nativeRuntimePNPM && (entry.Name == "node_modules/.modules.yaml" || entry.Name == "node_modules/.pnpm/lock.yaml" || entry.Name == "node_modules/.pnpm-workspace-state-v1.json") {
 			continue
 		}
 		selected[entry.Name] = entry
 	}
-	groups, err := pnpmPayloadFileGroups(layout.Entries(), selected)
+	groups, err := pnpmPayloadFileGroups(entries, selected)
 	if err != nil {
 		return pnpmInspectionPayload{}, err
 	}
-	payload := pnpmInspectionPayload{kind: kind, layout: layout.Digest(), entries: map[string]pnpmPayloadEntry{}, groups: map[string]string{}}
+	payload := pnpmInspectionPayload{kind: kind, layout: digest, entries: map[string]pnpmPayloadEntry{}, groups: map[string]string{}}
 	var output bytes.Buffer
 	writer := tar.NewWriter(&output)
 	emit := func(entry artifactnpm.PNPMLayoutEntry, logicalSize int64, body []byte) error {
@@ -127,7 +133,7 @@ func prepareNPMInspectionPayload(ctx context.Context, layout npmInspectionPayloa
 			continue
 		}
 		entry := selected[name]
-		body, err := layout.ReadFile(name)
+		body, err := readFile(name)
 		if err != nil {
 			return pnpmInspectionPayload{}, errors.Join(errPNPMInspectionPayload, err)
 		}

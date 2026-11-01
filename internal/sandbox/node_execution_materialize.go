@@ -75,42 +75,60 @@ func nodeExecutionInputCreateArguments(session domain.SandboxSessionID, volume c
 
 // MaterializeNodeExecution runs only the pinned npm controller with scripts
 // disabled. The requested artifact command/argv are never executed here.
-func (b *Backend) MaterializeNodeExecution(ctx context.Context, execution domain.ExecutionContext, controls []domain.ProjectControlFile, inventories []artifactnpm.ArchiveInventory) (layout artifactnpm.NodeExecutionLayout, resultErr error) {
-	if b == nil || ctx == nil || !execution.Valid() || execution.RuntimeIdentity() != nodeImageReference || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
-		return layout, errNodeMaterialization
+func (b *Backend) MaterializeNodeExecution(ctx context.Context, execution domain.ExecutionContext, controls []domain.ProjectControlFile, inventories []artifactnpm.ArchiveInventory) (artifactnpm.NodeExecutionLayout, error) {
+	if b == nil || ctx == nil || !execution.Valid() || execution.RuntimeIdentity() != nodeImageReference || len(inventories) != len(execution.Set().Inspected().Inspections()) {
+		return artifactnpm.NodeExecutionLayout{}, errNodeMaterialization
 	}
-	if ctx.Err() != nil {
-		return layout, errors.Join(errNodeMaterialization, ctx.Err(), context.Cause(ctx))
+	var subjects []domain.AcquiredArtifact
+	for _, inspection := range execution.Set().Inspected().Inspections() {
+		subjects = append(subjects, inspection.Artifact())
+	}
+	var layout artifactnpm.NodeExecutionLayout
+	err := b.withMaterializedNodeInputs(ctx, execution.SourceFingerprint().String(), subjects, controls, false, func(run context.Context, native artifactnpm.PNPMLayoutArchive) error {
+		var err error
+		layout, err = artifactnpm.BindMaterializedNodeExecutionLayout(run, execution, inventories, native)
+		return err
+	})
+	if err != nil {
+		return artifactnpm.NodeExecutionLayout{}, err
+	}
+	return layout, nil
+}
+
+// Both typed consumers validate their context/coverage before this resource
+// owner. Script-free data preparation cannot grant artifact execution authority.
+func (b *Backend) withMaterializedNodeInputs(ctx context.Context, fingerprint string, subjects []domain.AcquiredArtifact, controls []domain.ProjectControlFile, binLinks bool, consume func(context.Context, artifactnpm.PNPMLayoutArchive) error) (resultErr error) {
+	if b == nil || ctx == nil || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || consume == nil {
+		return errNodeMaterialization
+	}
+	if _, err := domain.NewSHA256Digest(fingerprint); err != nil {
+		return errors.Join(errNodeMaterialization, err)
+	}
+	if err := ctx.Err(); err != nil {
+		return errors.Join(errNodeMaterialization, err, context.Cause(ctx))
 	}
 	intake, ok := b.introducer.(*DockerArtifactIntroducer)
 	streams, streamOK := b.runner.(streamingDockerOutput)
 	input, inputOK := b.runner.(inputCommandRunner)
 	observer, observerOK := b.observer.(nodeMaterializationObserver)
 	if !ok || !streamOK || !inputOK || !observerOK {
-		return layout, errNodeMaterialization
-	}
-	var subjects []domain.AcquiredArtifact
-	for _, inspection := range execution.Set().Inspected().Inspections() {
-		subjects = append(subjects, inspection.Artifact())
-	}
-	if len(inventories) != len(subjects) {
-		return layout, errNodeMaterialization
+		return errNodeMaterialization
 	}
 	archives, err := intake.freezeNPMProjectArchives(ctx, subjects)
 	if err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	payload, err := nodeMaterializationPayload(ctx, archives, controls)
 	if err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	capability, err := b.probe(ctx)
 	if err != nil || !capability.Available {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	session, err := b.newSessionID()
 	if err != nil || session.String() == "" {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	name := "heliopause-" + session.String()
 	var container string
@@ -145,17 +163,14 @@ func (b *Backend) MaterializeNodeExecution(ctx context.Context, execution domain
 		if ctx.Err() != nil {
 			resultErr = errors.Join(resultErr, errNodeMaterialization, ctx.Err(), context.Cause(ctx))
 		}
-		if resultErr != nil {
-			layout = artifactnpm.NodeExecutionLayout{}
-		}
 	}()
-	project, err = createNodeMaterializationVolume(ctx, b.runner, session.String(), execution.SourceFingerprint().String())
+	project, err = createNodeMaterializationVolume(ctx, b.runner, session.String(), fingerprint)
 	if err != nil {
-		return layout, fmt.Errorf("create node materialization workspace: %w", errors.Join(errNodeMaterialization, err))
+		return fmt.Errorf("create node materialization workspace: %w", errors.Join(errNodeMaterialization, err))
 	}
 	arguments, err := nodeMaterializationCreateArguments(session, project)
 	if err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	arguments = append(arguments[:1], append([]string{"--label", nodeMaterializationOwnerLabel + "=" + session.String()}, arguments[1:]...)...)
 	attempted = true
@@ -164,57 +179,57 @@ func (b *Backend) MaterializeNodeExecution(ctx context.Context, execution domain
 		container = strings.TrimSpace(string(created))
 	}
 	if err != nil || container == "" {
-		return layout, fmt.Errorf("create node materialization runtime: %w", errors.Join(errNodeMaterialization, err))
+		return fmt.Errorf("create node materialization runtime: %w", errors.Join(errNodeMaterialization, err))
 	}
 	trace, err = observer.StartNodeMaterializationProfile(ctx, container)
 	if err != nil || trace == nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	run, cancel := context.WithTimeout(ctx, b.wallTimeout)
 	defer cancel()
 	if _, err := b.runner.Output(run, "docker", "start", container); err != nil {
-		return layout, fmt.Errorf("start node materialization runtime: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
+		return fmt.Errorf("start node materialization runtime: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
 	}
 	if err := awaitBoundaryHelper(run, b.runner, container); err != nil {
-		return layout, errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
+		return errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
 	}
 	if err := awaitMountAnchors(run, b.observer, container); err != nil {
-		return layout, errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
+		return errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
 	}
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	if err := input.RunInput(run, bytes.NewReader(payload), "docker", "cp", "--archive", "-", container+":"+nodeExecutionRoot); err != nil {
-		return layout, fmt.Errorf("copy frozen node materialization input: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
+		return fmt.Errorf("copy frozen node materialization input: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
 	}
 	if err := verifyPNPMInstanceNetwork(run, b.runner, container); err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
-	if err := discardCommand(run, b.runner, "docker", nodeMaterializationArguments(container)...); err != nil {
-		return layout, fmt.Errorf("run fixed npm materialization controller: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
+	materialize := nodeMaterializationArguments(container)
+	if binLinks {
+		materialize = boundaryExecArguments(container, boundaryLaunchMode, "/bin/sh", "-ceu", nodeProjectMaterializationCommand)
+	}
+	if err := discardCommand(run, b.runner, "docker", materialize...); err != nil {
+		return fmt.Errorf("run fixed npm materialization controller: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
 	}
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
 	output := nativeToolArchiveOutput{limit: artifactnpm.PNPMLayoutArchiveLimit}
 	if err := streams.RunOutput(run, &output, "docker", "cp", container+":"+nodeExecutionProject+"/node_modules", "-"); err != nil || output.failed {
-		return layout, fmt.Errorf("read materialized node tree: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
+		return fmt.Errorf("read materialized node tree: %w", errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run)))
 	}
 	native, err := artifactnpm.ParsePNPMLayoutArchive(run, output.body)
 	if err != nil {
-		return layout, errors.Join(errNodeMaterialization, err)
+		return errors.Join(errNodeMaterialization, err)
 	}
-	layout, err = artifactnpm.BindMaterializedNodeExecutionLayout(run, execution, inventories, native)
-	if err != nil || run.Err() != nil {
-		return artifactnpm.NodeExecutionLayout{}, errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
+	if err := consume(run, native); err != nil || run.Err() != nil {
+		return errors.Join(errNodeMaterialization, err, run.Err(), context.Cause(run))
 	}
-	return layout, nil
+	return nil
 }
-
 func nodeMaterializationArguments(container string) []string {
-	// Only HAA's fixed controller source enters the shell. Its immutable Node
-	// child uses the existing observed CONTROL clone lineage, never Artifact
-	// code. The trailing builtin keeps the controller waiting for its child;
+	// The trailing builtin keeps the fixed controller waiting for its child;
 	// -e preserves a failing child status before the builtin can run.
 	return boundaryExecArguments(container, boundaryLaunchMode, "/bin/sh", "-ceu", nodeMaterializationCommand)
 }
@@ -224,8 +239,15 @@ const nodeMaterializationCommand = "/usr/local/bin/node -- /usr/local/lib/node_m
 	"--workspaces=false --no-audit --no-fund --no-update-notifier --cache=/tmp/.npm " +
 	"--userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc --script-shell=/haa-runtime/haa-boundary\n:"
 
+// This second fixed shape is used only for npm project preparation, which
+// preserves the client's ordinary executable links in its inspected tree.
+const nodeProjectMaterializationCommand = "/usr/local/bin/node -- /usr/local/lib/node_modules/npm/bin/npm-cli.js " +
+	"--prefix /tmp/haa-node-execution/project ci --offline --ignore-scripts=true --bin-links=true " +
+	"--workspaces=false --no-audit --no-fund --no-update-notifier --cache=/tmp/.npm " +
+	"--userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc --script-shell=/haa-runtime/haa-boundary\n:"
+
 func nodeMaterializationPayload(ctx context.Context, archives []pnpmInspectionArchive, controls []domain.ProjectControlFile) ([]byte, error) {
-	if len(archives) == 0 || len(controls) != 2 {
+	if len(controls) != 2 {
 		return nil, errNodeMaterialization
 	}
 	var output bytes.Buffer

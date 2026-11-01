@@ -39,6 +39,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
+	if err := cli.SetNPMClientVersion(command, runtimeidentity.NodeNPMVersion); err != nil {
+		return err
+	}
 	if err := cli.SetPNPMClientVersion(command, runtimeidentity.PNPMVersion); err != nil {
 		return err
 	}
@@ -121,6 +124,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := pythonClient.checkPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
 			return err
 		}
+	}
+	if cli.NPMProjectRequested(command) && (runtime.GOOS != "linux" || runtime.GOARCH != "amd64") {
+		return errors.New("npm whole-project quarantine requires Linux amd64")
 	}
 	if cli.SelectedPackageClient(command) == cli.PNPMPackageClient {
 		if source != "npm" {
@@ -280,6 +286,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddTerraformUpgrade(command, upgradeService); err != nil {
 			return err
 		}
+	}
+	if source == "npm" && cli.NPMProjectRequested(command) {
+		if err := bindNPMProjectClient(command, trustedExecutor, processObserver); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
 	}
 	if source == "npm" && cli.SelectedPackageClient(command) == cli.PNPMPackageClient {
 		if err := bindPNPMProjectClient(command, trustedExecutor, processObserver); err != nil {

@@ -14,8 +14,8 @@ type BunLayoutProvider interface {
 	PreparedLayoutFor(domain.ProjectDependencySnapshot, map[domain.DependencyNodeID]domain.AcquiredArtifact) (artifactnpm.BunInspectionLayout, error)
 }
 
-// BunProjectRecordBuilder retains explicit control absence in operation records.
-type BunProjectRecordBuilder interface {
+// NPMProjectRecordBuilder retains explicit control absence in operation records.
+type NPMProjectRecordBuilder interface {
 	BuildProjectWithControlPresence(context.Context, domain.OperationID, domain.ProjectVerifiedSet, []domain.LockedDependency, []domain.DependencyEdge, []domain.ProjectControlFile, string) (domain.ContentDigest, []byte, []byte, error)
 }
 
@@ -25,13 +25,13 @@ type BunVerifiedCache struct {
 	frozen                              artifactnpm.BunInspectionContext
 	evidence                            ProjectEvidenceReader
 	layout                              BunLayoutProvider
-	recordBuilder                       BunProjectRecordBuilder
+	recordBuilder                       NPMProjectRecordBuilder
 	operation                           domain.OperationID
 	beforeTreeSync                      func(string) error
 	beforePrepareSync                   func(*BunPreparedProject) error
 }
 
-func NewBunVerifiedCache(intake, evidence, cache string, frozen artifactnpm.BunInspectionContext, reader ProjectEvidenceReader, layout BunLayoutProvider, records BunProjectRecordBuilder, operation domain.OperationID) (*BunVerifiedCache, error) {
+func NewBunVerifiedCache(intake, evidence, cache string, frozen artifactnpm.BunInspectionContext, reader ProjectEvidenceReader, layout BunLayoutProvider, records NPMProjectRecordBuilder, operation domain.OperationID) (*BunVerifiedCache, error) {
 	roots := []string{intake, evidence, cache}
 	if !frozen.Valid() || reader == nil || layout == nil || records == nil || operation.String() == "" || !separateRoots(append(roots, frozen.Snapshot().Context().Target().String())) {
 		return nil, errors.New("bun cache requires frozen context, actual operation, records and separate trusted roots")

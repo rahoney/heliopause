@@ -21,49 +21,13 @@ func (c *BunVerifiedCache) projectRecords(ctx context.Context, set domain.Projec
 		return pnpmProjectRecords{}, errors.New("bun project records require actual operation and builder")
 	}
 	lock := c.frozen.Lock()
-	unique := map[string]domain.DependencyNodeID{}
-	instances := map[string]domain.DependencyNodeID{}
-	var nodes []domain.LockedDependency
-	for _, artifact := range set.Inspected().Snapshot().Dependencies() {
-		key := artifact.Identity().Name() + "@" + artifact.Identity().Version()
-		node, err := domain.ProjectDependencyNodeID(artifact.Identity())
-		if err != nil || unique[key].String() != "" {
-			return pnpmProjectRecords{}, errors.Join(errors.New("bun record package binding is incomplete"), err)
-		}
-		dependency, err := domain.NewLockedDependencyWithRecordPath(node, domain.DependencyTransitive, artifact, key, false)
-		if err != nil {
-			return pnpmProjectRecords{}, err
-		}
-		unique[key] = node
-		nodes = append(nodes, dependency)
+	var placements []npmHoistedRecordPlacement
+	for _, pkg := range lock.Packages() {
+		placements = append(placements, npmHoistedRecordPlacement{pkg.Key, pkg.Name, pkg.Version, pkg.Targets})
 	}
-	for _, instance := range lock.Packages() {
-		node := unique[instance.Name+"@"+instance.Version]
-		if node.String() == "" || instances[instance.Key].String() != "" {
-			return pnpmProjectRecords{}, errors.New("bun record instance package is missing or duplicated")
-		}
-		instances[instance.Key] = node
-	}
-	var edges []domain.DependencyEdge
-	seen := map[domain.DependencyEdge]bool{}
-	for _, instance := range lock.Packages() {
-		for _, target := range instance.Targets {
-			from, to := instances[instance.Key], instances[target]
-			if to.String() == "" {
-				return pnpmProjectRecords{}, errors.New("bun record instance edge is missing")
-			}
-			if from == to {
-				continue
-			}
-			edge, err := domain.NewDependencyEdge(from, to)
-			if err != nil {
-				return pnpmProjectRecords{}, err
-			}
-			if !seen[edge] {
-				seen[edge] = true
-				edges = append(edges, edge)
-			}
-		}
+	nodes, edges, err := npmHoistedProjectRecordGraph(set.Inspected().Snapshot(), placements)
+	if err != nil {
+		return pnpmProjectRecords{}, err
 	}
 	digest, document, sbom, err := c.recordBuilder.BuildProjectWithControlPresence(ctx, c.operation, set, nodes, edges, c.frozen.Controls(), c.frozen.RuntimeIdentity())
 	if err != nil {
@@ -77,4 +41,57 @@ func (c *BunVerifiedCache) projectRecords(ctx context.Context, set domain.Projec
 		return pnpmProjectRecords{}, errors.Join(errors.New("bun project provenance exceeds fixed bound"), err)
 	}
 	return pnpmProjectRecords{digest, document, sbom, provenance}, nil
+}
+
+type npmHoistedRecordPlacement struct {
+	key, name, version string
+	targets            map[string]string
+}
+
+func npmHoistedProjectRecordGraph(snapshot domain.ProjectDependencySnapshot, placements []npmHoistedRecordPlacement) ([]domain.LockedDependency, []domain.DependencyEdge, error) {
+	unique := map[string]domain.DependencyNodeID{}
+	instances := map[string]domain.DependencyNodeID{}
+	var nodes []domain.LockedDependency
+	for _, artifact := range snapshot.Dependencies() {
+		key := artifact.Identity().Name() + "@" + artifact.Identity().Version()
+		node, err := domain.ProjectDependencyNodeID(artifact.Identity())
+		if err != nil || unique[key].String() != "" {
+			return nil, nil, errors.Join(errors.New("hoisted project record package binding is incomplete"), err)
+		}
+		dependency, err := domain.NewLockedDependencyWithRecordPath(node, domain.DependencyTransitive, artifact, key, false)
+		if err != nil {
+			return nil, nil, err
+		}
+		unique[key] = node
+		nodes = append(nodes, dependency)
+	}
+	for _, instance := range placements {
+		node := unique[instance.name+"@"+instance.version]
+		if node.String() == "" || instances[instance.key].String() != "" {
+			return nil, nil, errors.New("hoisted project record instance package is missing or duplicated")
+		}
+		instances[instance.key] = node
+	}
+	var edges []domain.DependencyEdge
+	seen := map[domain.DependencyEdge]bool{}
+	for _, instance := range placements {
+		for _, target := range instance.targets {
+			from, to := instances[instance.key], instances[target]
+			if to.String() == "" {
+				return nil, nil, errors.New("hoisted project record instance edge is missing")
+			}
+			if from == to {
+				continue
+			}
+			edge, err := domain.NewDependencyEdge(from, to)
+			if err != nil {
+				return nil, nil, err
+			}
+			if !seen[edge] {
+				seen[edge] = true
+				edges = append(edges, edge)
+			}
+		}
+	}
+	return nodes, edges, nil
 }

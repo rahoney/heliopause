@@ -478,6 +478,9 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	}
 	if installCommand := findLeaf(root, "npm", "install"); installCommand != nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return errors.New("npm whole-project installation is not configured")
+			}
 			reference, err := artifactnpm.ParseReference(args[0])
 			if err != nil {
 				return err
@@ -698,7 +701,6 @@ func initializeCommandTree(root *cobra.Command) {
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))
-	npm.AddCommand(newStaticLeaf("install <package-reference>", "Install an npm package into the current project", true))
 	npmUpdate := newStaticLeaf("update [package]", "Update an npm project after complete quarantine checks", true)
 	npmUpdate.Args = validateNPMUpdateArgs
 	npmUpdate.Long = npmUpdateDescriptionEnglish

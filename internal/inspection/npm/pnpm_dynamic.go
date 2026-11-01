@@ -27,6 +27,7 @@ type projectInspectionClient uint8
 const (
 	projectInspectionPNPM projectInspectionClient = iota + 1
 	projectInspectionBun
+	projectInspectionNPM
 )
 
 func projectInspectionPrefix(client projectInspectionClient) (string, error) {
@@ -35,6 +36,8 @@ func projectInspectionPrefix(client projectInspectionClient) (string, error) {
 		return "pnpm", nil
 	case projectInspectionBun:
 		return "bun", nil
+	case projectInspectionNPM:
+		return "npm-project", nil
 	default:
 		return "", errors.New("unknown project inspection client")
 	}
@@ -111,6 +114,8 @@ func npmProjectCoverageReport(subject domain.AcquiredArtifact, expected, attempt
 	incomplete, notExecuted := "M13_PNPM_DYNAMIC_INCOMPLETE", "M13_PNPM_DYNAMIC_NOT_EXECUTED"
 	if client == projectInspectionBun {
 		incomplete, notExecuted = "M13_BUN_DYNAMIC_INCOMPLETE", "M13_BUN_DYNAMIC_NOT_EXECUTED"
+	} else if client == projectInspectionNPM {
+		incomplete, notExecuted = "M13_NPM_PROJECT_DYNAMIC_INCOMPLETE", "M13_NPM_PROJECT_DYNAMIC_NOT_EXECUTED"
 	}
 
 	check, err := domain.NewCheckID(prefix + "-dynamic-lifecycle")

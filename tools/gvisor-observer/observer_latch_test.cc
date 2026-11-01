@@ -4772,8 +4772,8 @@ bool VerifyBoundedClassificationSemantics() {
       strcmp(unexpected.reason, "PROCESS_PROVENANCE_UNKNOWN") == 0 && strcmp(unexpected.parent_relation, "UNTRACKED_PARENT") == 0;
 }
 
-TopologyState PNPMTargetLifecycleTestTopology(bool bun = false) {
-  const char* project_mount = bun ? kBunTargetProjectMount : kPNPMProjectMount;
+TopologyState PNPMTargetLifecycleTestTopology(bool bun = false, bool npm_project = false) {
+  const char* project_mount = npm_project ? kNPMProjectTargetMount : bun ? kBunTargetProjectMount : kPNPMProjectMount;
   TopologyState topology;
   topology.sealed = true; topology.snapshot_seen = true; topology.namespace_id = 99;
   topology.expected = {
@@ -4843,11 +4843,11 @@ bool VerifyPNPMTargetLifecycleShapeBoundary() {
       !IsExactPNPMTargetLifecycleBoundary(wrong_image, kProfileNPM, &topology);
 }
 
-bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target, bool bun = false) {
-  const auto topology = PNPMTargetLifecycleTestTopology(bun);
-  const char* command = bun ? kBunTargetLifecycleCommand : kPNPMTargetLifecycleCommand;
-  const char* label = bun ? "helox-bun-target" : "helox-pnpm-target";
-  const char* project_directory = bun ? "/tmp/haa-bun-input/project" : "/tmp/haa-pnpm-input/project";
+bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target, bool bun = false, bool npm_project = false, bool npm_root = false) {
+  const auto topology = PNPMTargetLifecycleTestTopology(bun, npm_project);
+  const char* command = npm_root ? kNPMProjectRootLifecycleCommand : npm_project ? kNPMProjectTargetLifecycleCommand : bun ? kBunTargetLifecycleCommand : kPNPMTargetLifecycleCommand;
+  const char* label = npm_root ? "helox-npm-project-root" : npm_project ? "helox-npm-project-target" : bun ? "helox-bun-target" : "helox-pnpm-target";
+  const char* project_directory = npm_project ? "/tmp/haa-node-execution/project" : bun ? "/tmp/haa-bun-input/project" : "/tmp/haa-pnpm-input/project";
   const std::string nonce = TestAdmissionNonce(350, 3500);
   gvisor::common::ContextData root;
   root.set_container_id(kThirtySecondID); root.set_thread_group_id(350); root.set_thread_group_start_time_ns(3500);
@@ -4867,9 +4867,14 @@ bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target,
   auto child = root; child.set_thread_group_id(351); child.set_thread_group_start_time_ns(3510); child.set_parent_thread_group_id(350);
   gvisor::sentry::ExecveInfo npm; *npm.mutable_context_data() = child;
   npm.set_binary_path(kNpmCLIPath); npm.set_execfn(kNpmPath); npm.add_argv(kNpmPath);
+  if (npm_root) {
+    for (const char* value : {"ci", "--ignore-scripts=false", "--bin-links=true", "--foreground-scripts",
+         "--offline", "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"}) npm.add_argv(value);
+  } else {
   for (const char* value : {"--prefix", project_directory, "rebuild", "--ignore-scripts=false", "--bin-links=false",
        "--foreground-scripts", "--offline", "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"}) npm.add_argv(value);
   npm.add_argv(target);
+  }
   auto node = npm; node.set_binary_path(kNodePath); node.set_execfn(kNodePath); node.clear_argv(); node.add_argv("node"); node.add_argv(kNpmPath);
   for (int n = 1; n < npm.argv_size(); ++n) node.add_argv(npm.argv(n));
   int sockets[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
@@ -4971,22 +4976,33 @@ bool VerifyPNPMTargetLifecycleProductionPath() {
       VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497/node_modules/" + std::string(130, 'a'));
 }
 
-bool VerifyBunTargetLifecycleShapeBoundary() {
-  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
-  for (const auto& tail : {"pkg", "@scope/pkg", "pkg/node_modules/child", "@scope/pkg/node_modules/@other/child"}) {
-    const std::string target = prefix + tail;
-    if (!ValidBunTargetLifecyclePath(target) || ValidPNPMTargetLifecyclePath(target)) return false;
+bool VerifyHoistedTargetLifecycleShapeBoundary(bool npm_project, bool npm_root = false) {
+  const std::string prefix = std::string(npm_project ? kNPMProjectTargetMount : kBunTargetProjectMount) + "/project/node_modules/";
+  auto valid = [&](const std::string& path) { return npm_root ? path == kNPMProjectDirectory :
+      npm_project ? ValidNPMProjectTargetLifecyclePath(path) : ValidBunTargetLifecyclePath(path); };
+  auto boundary_valid = npm_root ? IsExactNPMProjectRootLifecycleBoundary : npm_project ? IsExactNPMProjectTargetLifecycleBoundary : IsExactBunTargetLifecycleBoundary;
+  const char* command = npm_root ? kNPMProjectRootLifecycleCommand : npm_project ? kNPMProjectTargetLifecycleCommand : kBunTargetLifecycleCommand;
+  const char* label = npm_root ? "helox-npm-project-root" : npm_project ? "helox-npm-project-target" : "helox-bun-target";
+  const std::vector<std::string> tails = npm_root ? std::vector<std::string>{""} :
+      std::vector<std::string>{"pkg", "@scope/pkg", "pkg/node_modules/child", "@scope/pkg/node_modules/@other/child"};
+  for (const auto& tail : tails) {
+    const std::string target = npm_root ? kNPMProjectDirectory : prefix + tail;
+    if (!valid(target) || ValidPNPMTargetLifecyclePath(target)) return false;
     gvisor::sentry::ExecveInfo boundary;
     boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
     for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), TestAdmissionNonce(350, 3500),
-         std::string("/bin/sh"), std::string("-ceu"), std::string(kBunTargetLifecycleCommand), std::string("helox-bun-target"), target}) boundary.add_argv(value);
-    const auto topology = PNPMTargetLifecycleTestTopology(true);
+         std::string("/bin/sh"), std::string("-ceu"), std::string(command), std::string(label), target}) boundary.add_argv(value);
+    const auto topology = PNPMTargetLifecycleTestTopology(!npm_project, npm_project);
     const auto pnpm_topology = PNPMTargetLifecycleTestTopology();
-    if (!IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
+    if (!boundary_valid(boundary, kProfileNPM, &topology) ||
         IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
-        IsExactBunTargetLifecycleBoundary(boundary, kProfileBunResolver, &topology) ||
-        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, nullptr) ||
-        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &pnpm_topology)) return false;
+        (npm_root && IsExactNPMProjectTargetLifecycleBoundary(boundary, kProfileNPM, &topology)) ||
+        (!npm_root && IsExactNPMProjectRootLifecycleBoundary(boundary, kProfileNPM, &topology)) ||
+        (npm_project ? IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &topology) :
+                       IsExactNPMProjectTargetLifecycleBoundary(boundary, kProfileNPM, &topology)) ||
+        boundary_valid(boundary, kProfileBunResolver, &topology) ||
+        boundary_valid(boundary, kProfileNPM, nullptr) ||
+        boundary_valid(boundary, kProfileNPM, &pnpm_topology)) return false;
     for (int test = 0; test < 10; ++test) {
       auto changed = topology;
       switch (test) {
@@ -5001,21 +5017,21 @@ bool VerifyBunTargetLifecycleShapeBoundary() {
         case 8: changed.anchors.emplace(5, MountAnchor{5, target, "workspace"}); break;
         case 9: changed.expected[0].read_only = false; break;
       }
-      if (IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &changed)) return false;
+      if (boundary_valid(boundary, kProfileNPM, &changed)) return false;
     }
     for (int index = 0; index < boundary.argv_size(); ++index) {
       auto changed = boundary; changed.set_argv(index, "changed");
-      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+      if (boundary_valid(changed, kProfileNPM, &topology)) return false;
       changed = boundary; changed.mutable_argv()->DeleteSubrange(index, 1);
-      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+      if (boundary_valid(changed, kProfileNPM, &topology)) return false;
     }
     auto extra = boundary; extra.add_argv("extra");
-    if (IsExactBunTargetLifecycleBoundary(extra, kProfileNPM, &topology)) return false;
+    if (boundary_valid(extra, kProfileNPM, &topology)) return false;
   }
   for (const auto& tail : {"", "@scope", "@/pkg", "../pkg", "pkg/child", "pkg/node_modules", "pkg/node_modules/", "pkg//node_modules/child", "pkg;id", "$(id)", "pkg\\child", "pkg/node_modules/../child"}) {
-    if (ValidBunTargetLifecyclePath(prefix + tail)) return false;
+    if (valid(prefix + tail)) return false;
   }
-  return !ValidBunTargetLifecyclePath(prefix + std::string(512, 'a'));
+  return !valid(prefix + std::string(512, 'a'));
 }
 
 bool VerifyBunTargetLifecycleProductionPath() {
@@ -6267,7 +6283,11 @@ bool VerifyResolverNpmVersionProductionPath() {
 // Drives the actual SENTRY_EXEC and SENTRY_CLONE path for the one fixed
 // GenerateLockfile command. Each negative starts from the full valid boundary
 // lineage and changes exactly one authorization-relevant condition.
-bool VerifyResolverLockGenerationProductionPath(bool update = false) {
+bool VerifyResolverLockGenerationProductionPath(const char* operation = "install") {
+  const bool update = strcmp(operation, "update") == 0;
+  const bool ci = strcmp(operation, "ci") == 0;
+  if (!update && !ci && strcmp(operation, "install") != 0) return false;
+  const char* command = ci ? kLockCIValidationCommand : update ? kLockUpdateCommand : kLockGenerationCommand;
   struct Path {
     gvisor::sentry::ExecveInfo boundary;
     gvisor::sentry::ExecveInfo demotion;
@@ -6293,7 +6313,7 @@ bool VerifyResolverLockGenerationProductionPath(bool update = false) {
   path.boundary.add_argv(admission_nonce);
   path.boundary.add_argv("/bin/sh");
   path.boundary.add_argv("-ceu");
-  path.boundary.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
+  path.boundary.add_argv(command);
 
   path.demotion = path.boundary;
   path.demotion.mutable_context_data()->set_process_name("setpriv");
@@ -6311,7 +6331,7 @@ bool VerifyResolverLockGenerationProductionPath(bool update = false) {
   path.shell.clear_argv();
   path.shell.add_argv("/bin/sh");
   path.shell.add_argv("-ceu");
-  path.shell.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
+  path.shell.add_argv(command);
 
   *path.clone.mutable_context_data() = root;
   path.clone.set_created_thread_group_id(341);
@@ -6335,6 +6355,9 @@ bool VerifyResolverLockGenerationProductionPath(bool update = false) {
   if (update) {
     lock_args[0] = "update";
     lock_args.insert(lock_args.begin() + 5, "--save=false");
+  } else if (ci) {
+    lock_args[0] = "ci";
+    lock_args[1] = "--dry-run";
   }
   for (const char* argument : lock_args) path.npm.add_argv(argument);
 
@@ -8709,7 +8732,7 @@ bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolv
   return true;
 }
 
-bool VerifyBunArtifactRuntimeReadBoundary() {
+bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBun) {
   ProcessState state;
   gvisor::common::ContextData parent;
   parent.set_container_id(kFirstID); parent.set_thread_group_id(98); parent.set_thread_group_start_time_ns(980);
@@ -8718,11 +8741,11 @@ bool VerifyBunArtifactRuntimeReadBoundary() {
   auto* context = open.mutable_context_data();
   *context = parent; context->set_thread_group_id(99); context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(98);
   if (!RegisterGroup(&state, *context, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
-  state.groups[99].current_image_class = ProcessClass::kBun;
+  state.groups[99].current_image_class = image;
   state.groups[99].clone_creator_group_id = 98; state.groups[99].clone_creator_group_start_time_ns = 980;
   const ProcessState baseline = state;
   struct Read { const char* path; const char* mount; const char* kind; uint64_t flags; };
-  for (const auto& read : std::vector<Read>{{"/","/","oci-root",622592},{"/etc/ld.so.cache","/","oci-root",557056},
+  const std::vector<Read> bun_reads{{"/","/","oci-root",622592},{"/etc/ld.so.cache","/","oci-root",557056},
        {"/usr/lib/x86_64-linux-gnu/libc.so.6","/","oci-root",557056},
        {"/proc/sys/vm/overcommit_memory","/proc","system",32768},
        {"/proc/sys/vm/mmap_min_addr","/proc","system",32768},
@@ -8731,11 +8754,22 @@ bool VerifyBunArtifactRuntimeReadBoundary() {
        {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
        {"/proc/99/maps","/proc","system",557056},{"/proc/99/cgroup","/proc","system",557056},
        {"/sys/devices/system/cpu/online","/sys","system",557056},
-       {"/usr/share/zoneinfo/Etc/UTC","/","oci-root",557056}}) {
+       {"/usr/share/zoneinfo/Etc/UTC","/","oci-root",557056}};
+  const std::vector<Read> node_reads{{"/etc/ld.so.cache","/","oci-root",557056},
+      {"/usr/lib/x86_64-linux-gnu/libc.so.6","/","oci-root",557056},
+      {"/usr/local/bin/node","/","oci-root",557056},{"/etc/ssl/openssl.cnf","/","oci-root",557056},
+      {"/usr/share/zoneinfo/Etc/UTC","/","oci-root",557056},{"/proc/99/maps","/proc","system",557056},
+      {"/proc/99/cgroup","/proc","system",557056},{"/proc/meminfo","/proc","system",557056},
+      {"/proc/version_signature","/proc","system",557056},{"/proc/sys/vm/overcommit_memory","/proc","system",557056},
+      {"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+      {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+      {"/sys/devices/system/cpu/online","/sys","system",557056},{"/dev/null","/dev","system",557056}};
+  for (const auto& read : image == ProcessClass::kNode ? node_reads : bun_reads) {
     state = baseline; open.set_pathname(read.path); open.set_flags(read.flags);
     MountAnchor anchor{10,read.mount,read.kind};
-    auto allowed = [&]() { return IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
-    if (!allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
+    auto allowed = [&]() { return IsPinnedNPMArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
+    if (IsExpectedProcess(image == ProcessClass::kNode ? kNodePath : kBunToolPath,*context,kProfileNPM,&state).expected ||
+        state.groups[99].role != ProcessState::Role::kArtifact || !allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
     for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
       if (flags==read.flags) continue; open.set_flags(flags); if (allowed()) return false;
     }
@@ -8746,7 +8780,7 @@ bool VerifyBunArtifactRuntimeReadBoundary() {
     }
     open.set_pathname(read.path);
     for (const char* profile : {kProfileBunResolver,kProfileBunProjectResolver,kProfilePNPMResolver,kProfileUVResolver,kProfileGitHub,kProfilePyPI,kProfileGoResolver}) {
-      if (IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),profile,&anchor)) return false;
+      if (IsPinnedNPMArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),profile,&anchor)) return false;
     }
     open.set_pathname(std::string(read.path)+".evil"); if (allowed()) return false; open.set_pathname(read.path);
     anchor.mount_class="workspace"; if (allowed()) return false; anchor.mount_class=read.kind;
@@ -8756,7 +8790,7 @@ bool VerifyBunArtifactRuntimeReadBoundary() {
       switch(scenario) {
         case 0: group.role=ProcessState::Role::kControl; break;
         case 1: group.provenance=ProcessState::Provenance::kDirectExecRoot; break;
-        case 2: group.current_image_class=ProcessClass::kNode; break;
+        case 2: group.current_image_class=ProcessClass::kUnknown; break;
         case 3: group.root_eligible=true; break;
         case 4: group.root_consumed=false; break;
         case 5: group.trusted_control_network_active=true; break;
@@ -8766,7 +8800,7 @@ bool VerifyBunArtifactRuntimeReadBoundary() {
         case 9: group.start_time_ns++; break;
         case 10: state.groups[98].start_time_ns++; break;
         case 11: group.clone_creator_group_id=97; break;
-        case 12: state.expected_groups[99]=ProcessState::ExpectedGroup{990,ProcessClass::kBun}; break;
+        case 12: state.expected_groups[99]=ProcessState::ExpectedGroup{990,image}; break;
       }
       if (allowed()) return false;
     }
@@ -9776,7 +9810,7 @@ int main(int argc, char** argv) {
         VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() &&
         VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() &&
         VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() &&
-        VerifyResolverLockGenerationProductionPath(true) &&
+        VerifyResolverLockGenerationProductionPath("update") && VerifyResolverLockGenerationProductionPath("ci") &&
         VerifyAuthoritativeProcessGroupLifecycle() && VerifyDirectExecAdmission() &&
         VerifyAdmissionTerminalControlProtocol() && VerifyKernelTerminalOutcomes() && VerifyStrictControlParser() ? 0 : 1;
   }
@@ -9945,10 +9979,13 @@ int main(int argc, char** argv) {
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
   const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
-  const bool bun_artifact_reads = VerifyBunArtifactRuntimeReadBoundary();
+  const bool bun_artifact_reads = VerifyNPMArtifactRuntimeReadBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode);
   const bool bun_artifact_image = VerifyBunArtifactRuntimeImageAndCommandBoundary();
-  const bool bun_target_shape = VerifyBunTargetLifecycleShapeBoundary();
-  const bool bun_target_production = VerifyBunTargetLifecycleProductionPath();
+  const bool bun_target_shape = VerifyHoistedTargetLifecycleShapeBoundary(false) && VerifyHoistedTargetLifecycleShapeBoundary(true) && VerifyHoistedTargetLifecycleShapeBoundary(true, true);
+  const bool bun_target_production = VerifyBunTargetLifecycleProductionPath() &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(std::string(kNPMProjectTargetMount) + "/project/node_modules/pkg", false, true) &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(std::string(kNPMProjectTargetMount) + "/project/node_modules/@scope/pkg/node_modules/@other/child", false, true) &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(kNPMProjectDirectory, false, true, true);
   fprintf(stderr, "STARTING open_result_negative\n");
   const bool open_result_negative_ok = running && VerifyOpenResultNegativeMatrix(output, remote, control);
   fprintf(stderr, "STARTING open_result_positive\n");
@@ -9963,7 +10000,7 @@ int main(int argc, char** argv) {
   const bool resolver_npm_version_production_path = VerifyResolverNpmVersionProductionPath();
   fprintf(stderr, "STARTING resolver_lock_generation_production_path\n");
   const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath() &&
-      VerifyResolverLockGenerationProductionPath(true);
+      VerifyResolverLockGenerationProductionPath("update") && VerifyResolverLockGenerationProductionPath("ci");
   fprintf(stderr, "STARTING process_group_lifecycle\n");
   const bool process_group_lifecycle = VerifyAuthoritativeProcessGroupLifecycle();
   fprintf(stderr, "STARTING direct_exec_admission\n");

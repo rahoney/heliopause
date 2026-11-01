@@ -82,6 +82,7 @@ func TestPNPMProjectActualRequiresMatchingClientAndParentRestoration(t *testing.
 		t.Fatal("no unique project return to sandbox client")
 	}
 	for name, candidate := range map[string]string{
+		"missing-npm-project":     strings.Replace(original, "          bash scripts/ci-npm-project.sh project\n", "", 1),
 		"missing-tag":             strings.Replace(original, pnpmBootstrapTestBuildCommand, strings.Replace(pnpmBootstrapTestBuildCommand, "-tags=realcorpus ", "", 1), 1),
 		"wrong-package":           strings.Replace(original, pnpmBootstrapTestBuildCommand, strings.Replace(pnpmBootstrapTestBuildCommand, "./internal/bootstrap", "./internal/sandbox", 1), 1),
 		"wrong-client":            strings.Replace(original, `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, 1),

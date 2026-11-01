@@ -20,6 +20,8 @@ func nativeProjectIdentity(kind nativeRuntimeToolKind) (nativeProjectSpec, bool)
 		return nativeProjectSpec{"pnpm", pnpmProjectRoot, pnpmProjectDirectory, "pnpm-lock.yaml", pnpmResolverProfile}, true
 	case nativeRuntimeBun:
 		return nativeProjectSpec{"bun", bunProjectRoot, bunProjectDirectory, "bun.lock", bunProjectResolverProfile}, true
+	case nativeRuntimeNPMProject:
+		return nativeProjectSpec{"npm-project", nodeExecutionRoot, nodeExecutionProject, "package-lock.json", "npm-lifecycle"}, true
 	default:
 		return nativeProjectSpec{}, false
 	}
@@ -31,6 +33,8 @@ func createNativeProjectVolume(ctx context.Context, runner CommandRunner, owner 
 		return createPNPMProjectVolume(ctx, runner, owner)
 	case nativeRuntimeBun:
 		return createInputVolume(ctx, runner, owner+"-bun-project", runtimeidentity.BunToolSHA256, bunProjectWorkspaceLimit, false, projectBuildVolumeConfig{bunProjectRoot, false})
+	case nativeRuntimeNPMProject:
+		return createInputVolume(ctx, runner, owner+"-npm-project", runtimeidentity.RuntimeLockSHA256, nodeExecutionWorkspaceLimit, false, projectBuildVolumeConfig{nodeExecutionRoot, false})
 	default:
 		return closureVolume{}, errors.New("native project kind unavailable")
 	}

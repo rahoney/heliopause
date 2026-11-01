@@ -20,15 +20,15 @@ import (
 
 const maxGoBuildSourceArchiveBytes = artifactgo.MaxModuleExpandedBytes + (2*artifactgo.MaxModuleFiles+2)*512
 
-type goBuildSourceMember struct {
+type projectSourceMember struct {
 	name   string
 	info   os.FileInfo
 	digest [32]byte
 }
 
-type goBuildSourcePlan struct {
+type projectSourcePlan struct {
 	artifact domain.AcquiredArtifact
-	members  []goBuildSourceMember
+	members  []projectSourceMember
 }
 
 // SnapshotBuildSource copies bounded project data under the live original
@@ -134,7 +134,7 @@ func (g *approvedGoProjectGuard) SnapshotBuildSource(ctx context.Context) (resul
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	g.buildSource = &goBuildSourcePlan{artifact: artifact, members: members}
+	g.buildSource = &projectSourcePlan{artifact: artifact, members: members}
 	if err := g.VerifyBuildSource(ctx); err != nil {
 		g.buildSource = nil
 		return domain.AcquiredArtifact{}, err
@@ -174,11 +174,23 @@ func (g *approvedGoProjectGuard) VerifyBuildSource(ctx context.Context) error {
 // Each directory is opened once and kept anchored while copying its direct
 // members. Resolving a full relative path again could follow a replaced parent
 // into a hidden namespace even when os.Root prevents an escape outside the root.
-func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result []byte, resultMembers []goBuildSourceMember, resultErr error) {
+func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result []byte, resultMembers []projectSourceMember, resultErr error) {
 	if err := g.VerifyUnchanged(ctx); err != nil {
 		return nil, nil, err
 	}
-	root, err := g.guard.root.OpenRoot(".")
+	return collectProjectSource(ctx, g.guard.root, g.guard.rootInfo, g.plan.controls, projectSourceLimits{files: artifactgo.MaxModuleFiles, fileBytes: artifactgo.MaxModuleFileBytes, expandedBytes: artifactgo.MaxModuleExpandedBytes, archiveBytes: maxGoBuildSourceArchiveBytes}, nil)
+}
+
+type projectSourceLimits struct {
+	files                                  int
+	fileBytes, expandedBytes, archiveBytes int64
+	preserveExecutable                     bool
+}
+
+// Both live guards retain their own source/approval policy. This reader only
+// shares anchored, bounded, single-link copying and exact identity checks.
+func collectProjectSource(ctx context.Context, sourceRoot *os.Root, sourceInfo os.FileInfo, controls []domain.ProjectControlFile, limits projectSourceLimits, excludedRoot map[string]bool) (result []byte, resultMembers []projectSourceMember, resultErr error) {
+	root, err := sourceRoot.OpenRoot(".")
 	if err != nil {
 		return nil, nil, errors.New("open Go build source root")
 	}
@@ -192,7 +204,7 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 		}
 	}()
 	openedRoot, err := root.Stat(".")
-	if err != nil || !os.SameFile(openedRoot, g.guard.rootInfo) {
+	if err != nil || !os.SameFile(openedRoot, sourceInfo) {
 		return nil, nil, errors.New("go build source root identity changed")
 	}
 	type pendingMember struct {
@@ -212,17 +224,17 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 		if err != nil {
 			return errors.New("open Go build source inventory")
 		}
-		entries, readErr := file.ReadDir(2*artifactgo.MaxModuleFiles + 1)
+		entries, readErr := file.ReadDir(2*limits.files + 1)
 		closeErr := file.Close()
 		if readErr != nil && !errors.Is(readErr, io.EOF) || closeErr != nil {
 			return errors.New("read Go build source inventory")
 		}
 		for _, entry := range entries {
 			visited++
-			if visited > 2*artifactgo.MaxModuleFiles {
+			if visited > 2*limits.files {
 				return errors.New("go build source exceeds bounded entry limits")
 			}
-			if strings.HasPrefix(entry.Name(), ".") {
+			if strings.HasPrefix(entry.Name(), ".") || prefix == "" && excludedRoot[entry.Name()] {
 				continue
 			}
 			name := path.Join(prefix, entry.Name())
@@ -251,7 +263,7 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 				return errors.New("go build source requires single-link regular files")
 			} else {
 				fileCount++
-				if fileCount > artifactgo.MaxModuleFiles {
+				if fileCount > limits.files {
 					return errors.New("go build source exceeds bounded file limits")
 				}
 				pending = append(pending, pendingMember{name, entry.Name(), directory, info})
@@ -265,11 +277,11 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 	sort.Slice(pending, func(i, j int) bool { return pending[i].name < pending[j].name })
 	var archive bytes.Buffer
 	writer := tar.NewWriter(&archive)
-	var members []goBuildSourceMember
+	var members []projectSourceMember
 	var total int64
-	controls := map[string]domain.ProjectControlFile{}
-	for _, control := range g.plan.controls {
-		controls[control.Name()] = control
+	remainingControls := map[string]domain.ProjectControlFile{}
+	for _, control := range controls {
+		remainingControls[control.Name()] = control
 	}
 	for _, member := range pending {
 		if err := ctx.Err(); err != nil {
@@ -283,10 +295,10 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 			if err := writer.WriteHeader(&tar.Header{Name: member.name, Mode: 0o700, Typeflag: tar.TypeDir}); err != nil {
 				return nil, nil, errors.New("write Go source directory header")
 			}
-			members = append(members, goBuildSourceMember{name: member.name, info: info})
+			members = append(members, projectSourceMember{name: member.name, info: info})
 			continue
 		}
-		if !info.Mode().IsRegular() || !pypiSingleLink(info) || info.Size() < 0 || info.Size() > artifactgo.MaxModuleFileBytes || total+info.Size() > artifactgo.MaxModuleExpandedBytes {
+		if !info.Mode().IsRegular() || !pypiSingleLink(info) || info.Size() < 0 || info.Size() > limits.fileBytes || total+info.Size() > limits.expandedBytes {
 			return nil, nil, errors.New("go build source exceeds bounded content or identity limits")
 		}
 		file, err := member.parent.OpenFile(member.leaf, os.O_RDONLY|syscall.O_NONBLOCK, 0)
@@ -305,27 +317,31 @@ func (g *approvedGoProjectGuard) collectBuildSource(ctx context.Context) (result
 			return nil, nil, errors.New("go build source changed during copy")
 		}
 		total += int64(len(body))
-		if control, exists := controls[member.name]; exists {
+		if control, exists := remainingControls[member.name]; exists {
 			if !control.Present() || !bytes.Equal(body, control.Body()) {
 				return nil, nil, errors.New("go build source controls differ from guard")
 			}
-			delete(controls, member.name)
+			delete(remainingControls, member.name)
 		}
-		if err := writer.WriteHeader(&tar.Header{Name: member.name, Mode: 0o400, Size: int64(len(body)), Typeflag: tar.TypeReg}); err != nil {
+		mode := int64(0o400)
+		if limits.preserveExecutable {
+			mode |= int64(info.Mode().Perm() & 0o111)
+		}
+		if err := writer.WriteHeader(&tar.Header{Name: member.name, Mode: mode, Size: int64(len(body)), Typeflag: tar.TypeReg}); err != nil {
 			return nil, nil, errors.New("write Go build source header")
 		}
 		if _, err := writer.Write(body); err != nil {
 			return nil, nil, errors.New("write Go build source data")
 		}
-		if archive.Len() > maxGoBuildSourceArchiveBytes {
+		if int64(archive.Len()) > limits.archiveBytes {
 			return nil, nil, errors.New("go build source archive exceeds bound")
 		}
-		members = append(members, goBuildSourceMember{member.name, info, sha256.Sum256(body)})
+		members = append(members, projectSourceMember{member.name, info, sha256.Sum256(body)})
 	}
-	if len(controls) != 0 {
+	if len(remainingControls) != 0 {
 		return nil, nil, errors.New("go build source control inventory is incomplete")
 	}
-	if err := writer.Close(); err != nil || archive.Len() > maxGoBuildSourceArchiveBytes {
+	if err := writer.Close(); err != nil || int64(archive.Len()) > limits.archiveBytes {
 		return nil, nil, errors.New("go build source archive exceeds bound")
 	}
 	return archive.Bytes(), members, nil

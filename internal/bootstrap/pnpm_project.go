@@ -47,7 +47,7 @@ type pnpmProjectMutationAdapter struct {
 }
 
 type pnpmProjectService struct {
-	workflow *application.PNPMProjectService
+	workflow *application.NPMCompleteProjectService
 	promoter *promotion.PNPMProjectPromotion
 }
 
@@ -77,7 +77,7 @@ func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPM
 	if err != nil {
 		return nil, err
 	}
-	workflow, err := application.NewPNPMProjectService(s, pnpmProjectMutationAdapter{owner, adopt}, s, s)
+	workflow, err := application.NewNPMCompleteProjectService("pnpm", s, pnpmProjectMutationAdapter{owner, adopt}, s, s)
 	if err != nil {
 		return nil, err
 	}

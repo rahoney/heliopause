@@ -82,7 +82,7 @@ func (g *approvedPNPMProjectGuard) Commit(ctx context.Context, update domain.Pro
 	}
 	if g.previous != nil && g.previous.Approval.Graph == approval.Graph && g.previous.Approval.Runtime == approval.Runtime {
 		samePayload := g.previous.Approval.Layout == approval.Layout
-		if !samePayload && g.owner.client == npmProjectCacheBun {
+		if !samePayload && (g.owner.client == npmProjectCacheBun || g.owner.client == npmProjectCacheNPM) {
 			// A fresh intake handle changes Bun's inspection binding. Retention
 			// instead compares both complete approved Host censuses; current
 			// source/recorded Evidence/layout verification remains mandatory.

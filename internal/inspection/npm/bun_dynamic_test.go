@@ -33,14 +33,14 @@ func TestBunPartialFactsDoNotCompleteRequiredLifecycle(t *testing.T) {
 		}
 		// Structural normalization only; actual layout binding is exercised by the
 		// project/realcorpus consumer, not this zero-layout interpretation fixture.
-		facts, err := bunInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, result)
+		facts, err := npmProjectInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, result, projectInspectionBun)
 		if err != nil || len(facts.Findings()) != 1 || facts.Findings()[0].Code() != "M3_UNEXPECTED_PROCESS" {
 			t.Fatal("partial suspicious facts discarded", err)
 		}
 		if !strings.Contains(facts.Evidence()[0].Summary(), session.String()) || !strings.Contains(facts.Evidence()[0].Summary(), `"PROCESS:process-exec-unexpected":2`) {
 			t.Fatal("actual session/count lost")
 		}
-		coverage, err := bunCoverageReport(subject, 2, 1, 0, true)
+		coverage, err := npmProjectCoverageReport(subject, 2, 1, 0, true, projectInspectionBun)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,7 +61,7 @@ func TestBunCoverageNeverInventsSessionOrCompletesMissingPeer(t *testing.T) {
 		failed                         bool
 		want                           domain.ExecutionStatus
 	}{{2, 0, 0, false, domain.ExecutionNotExecuted}, {2, 1, 1, false, domain.ExecutionIncomplete}, {2, 2, 2, false, domain.ExecutionCompleted}, {2, 2, 2, true, domain.ExecutionIncomplete}} {
-		report, err := bunCoverageReport(subject, test.expected, test.attempted, test.completed, test.failed)
+		report, err := npmProjectCoverageReport(subject, test.expected, test.attempted, test.completed, test.failed, projectInspectionBun)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -69,7 +69,7 @@ func TestBunCoverageNeverInventsSessionOrCompletesMissingPeer(t *testing.T) {
 			t.Fatal("invalid coverage", report)
 		}
 	}
-	if _, err := bunInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, domain.SandboxResult{}); err == nil {
+	if _, err := npmProjectInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, domain.SandboxResult{}, projectInspectionBun); err == nil {
 		t.Fatal("zero result made observation evidence")
 	}
 	var zero *BunProjectInspector
@@ -135,11 +135,13 @@ func TestBunActualResultAggregationRejectsReusedMissingAndFailedSessions(t *test
 	}{{"all", []domain.SandboxResult{one, two}, nil, 2}, {"reused", []domain.SandboxResult{one, one}, nil, 1}, {"missing", []domain.SandboxResult{one, {}}, nil, 1}, {"partial", []domain.SandboxResult{one, partial}, cause, 1}} {
 		t.Run(test.name, func(t *testing.T) {
 			executor := &bunSequenceExecutor{results: test.results, cause: test.cause}
-			inspector := &BunProjectInspector{execute: executor}
-			states := []bunInspectionState{{subject: subject, instances: []artifactnpm.BunLockedPackage{{Key: "tiny"}, {Key: "parent/tiny"}}}}
+			execute := func(ctx context.Context, subject domain.AcquiredArtifact, instance string) (domain.SandboxResult, error) {
+				return executor.ExecuteBunRuntimeInstance(ctx, artifactnpm.BunInspectionLayout{}, subject, instance)
+			}
+			states := []npmProjectInspectionState{{subject: subject, instances: []string{"tiny", "parent/tiny"}}}
 			// Structural aggregation fixture: runtime execution/layout binding is not
 			// claimed by these result fakes; actual project consumer validates both.
-			err := inspector.observeInstances(context.Background(), artifactnpm.BunInspectionLayout{}, states)
+			err := observeNPMProjectInstances(context.Background(), states, projectInspectionBun, artifactnpm.BunInspectionLayout{}, execute)
 			if (err == nil) != (test.name == "all") || states[0].completed != test.want || len(executor.calls) != 2 || executor.calls[0] == executor.calls[1] {
 				t.Fatal("peer/session coverage collapsed", err)
 			}
@@ -180,7 +182,7 @@ func TestBunInvalidFullSummaryStillRetainsSuspiciousFacts(t *testing.T) {
 	if _, err := result.ObservationSummary(); err == nil {
 		t.Fatal("invalid test summary")
 	}
-	report, err := bunInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, result)
+	report, err := npmProjectInstanceFacts(subject, "tiny", artifactnpm.BunInspectionLayout{}, result, projectInspectionBun)
 	if err == nil || len(report.Findings()) != 1 || report.Findings()[0].Code() != "M3_HONEYTOKEN_ACCESS" || !strings.Contains(report.Evidence()[0].Summary(), `"summary_incomplete":true`) {
 		t.Fatal("summary failure erased security facts", err)
 	}
@@ -201,9 +203,11 @@ func TestBunCancellationDuringFinalResultCannotCompleteCoverage(t *testing.T) {
 	defer cancel(nil)
 	cause := errors.New("controlled final-result cancellation")
 	executor := &bunSequenceExecutor{results: []domain.SandboxResult{result}, after: func() { cancel(cause) }}
-	inspector := &BunProjectInspector{execute: executor}
-	states := []bunInspectionState{{subject: subject, instances: []artifactnpm.BunLockedPackage{{Key: "tiny"}}}}
-	if err := inspector.observeInstances(ctx, artifactnpm.BunInspectionLayout{}, states); !errors.Is(err, cause) || !errors.Is(err, context.Canceled) || states[0].completed != 0 || len(states[0].leaves) != 1 {
+	execute := func(ctx context.Context, subject domain.AcquiredArtifact, instance string) (domain.SandboxResult, error) {
+		return executor.ExecuteBunRuntimeInstance(ctx, artifactnpm.BunInspectionLayout{}, subject, instance)
+	}
+	states := []npmProjectInspectionState{{subject: subject, instances: []string{"tiny"}}}
+	if err := observeNPMProjectInstances(ctx, states, projectInspectionBun, artifactnpm.BunInspectionLayout{}, execute); !errors.Is(err, cause) || !errors.Is(err, context.Canceled) || states[0].completed != 0 || len(states[0].leaves) != 1 {
 		t.Fatal("final cancellation lost coverage/facts/cause", err)
 	}
 }
