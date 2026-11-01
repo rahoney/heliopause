@@ -72,15 +72,19 @@ type pythonProjectMaterial struct {
 
 func (c *PythonProjectCache) approval(ctx context.Context, set domain.ProjectVerifiedSet, update domain.ProjectDependencyUpdate) (pythonProjectReceipt, error) {
 	if ctx == nil || c == nil || !set.Valid() || !update.Valid() || update.HasRequestedResolution() || !reflect.DeepEqual(set.Inspected().Snapshot(), update.Snapshot()) || update.Snapshot().Source() != artifactpypi.PublicPyPIProfile().Source() || (update.Snapshot().Context().Mode() != domain.InstallPythonVenv && update.Snapshot().Context().Mode() != domain.InstallPythonProjectControls) {
-		return pythonProjectReceipt{}, errors.New("python cache requires the exact approved complete UV selection")
+		return pythonProjectReceipt{}, errors.New("python cache requires the exact approved complete Python selection")
 	}
 	if err := ctx.Err(); err != nil {
 		return pythonProjectReceipt{}, err
 	}
 	s := update.Snapshot()
+	_, runtimeIdentity, err := pythonSelectedProject(update)
+	if err != nil {
+		return pythonProjectReceipt{}, err
+	}
 	reasons := set.Decision().Reasons()
 	sort.Strings(reasons)
-	doc := pythonProjectReceipt{Schema: 1, Operation: c.operation.String(), Graph: s.GraphDigest().String(), Target: s.Context().Target().String(), Mode: string(s.Context().Mode()), Runtime: sandbox.UVResolverRuntimeIdentity(), Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version(), Reasons: reasons, DependencyFree: s.DependencyFree(), Controls: []cacheFileRecord{}, Entries: []pythonProjectCacheEntry{}}
+	doc := pythonProjectReceipt{Schema: 1, Operation: c.operation.String(), Graph: s.GraphDigest().String(), Target: s.Context().Target().String(), Mode: string(s.Context().Mode()), Runtime: runtimeIdentity, Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version(), Reasons: reasons, DependencyFree: s.DependencyFree(), Controls: []cacheFileRecord{}, Entries: []pythonProjectCacheEntry{}}
 	for _, control := range s.ControlDigests() {
 		doc.Controls = append(doc.Controls, cacheFileRecord{Path: control.Name(), SHA256: control.Digest().String()})
 	}
@@ -102,19 +106,45 @@ func (c *PythonProjectCache) approval(ctx context.Context, set domain.ProjectVer
 	return doc, nil
 }
 
-func uvSyncSelectedLock(update domain.ProjectDependencyUpdate) (artifactpypi.UVProjectLock, error) {
+// Both actual producers share approved storage/readback, while preserving
+// their distinct native provenance and metadata semantics.
+type pythonProjectSelection interface {
+	SelectResolvedWheels([]domain.ResolvedArtifact) ([]artifactpypi.UVLockedWheel, error)
+	ProjectRecords([]domain.ResolvedArtifact, []artifactpypi.UVWheelInput, artifactpypi.WheelTarget, artifactpypi.WheelLimits) ([]domain.LockedDependency, []domain.DependencyEdge, error)
+}
+
+func pythonSelectedProject(update domain.ProjectDependencyUpdate) (pythonProjectSelection, string, error) {
+	var source, selected domain.ProjectControlFile
 	for _, control := range update.SelectedControls() {
-		if control.Name() == artifactpypi.UVSelectionLockControlName {
-			return artifactpypi.ParseUVProjectLock(control.Body(), sandbox.PinnedPythonRuntime().PythonVersion)
+		switch control.Name() {
+		case artifactpypi.RequirementsInputControlName:
+			source = control
+		case artifactpypi.RequirementsSelectionControlName:
+			selected = control
 		}
 	}
-	return artifactpypi.UVProjectLock{}, errors.New("python project cache lacks the actual selected native lock")
+	if source.Present() || selected.Present() {
+		runtime := sandbox.PinnedPythonRuntime()
+		target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
+		selection, err := artifactpypi.ParseRequirementsUpdate(update, target)
+		if err != nil {
+			return nil, "", err
+		}
+		return selection, selection.RuntimeIdentity(), nil
+	}
+	for _, control := range update.SelectedControls() {
+		if control.Name() == artifactpypi.UVSelectionLockControlName {
+			selection, err := artifactpypi.ParseUVProjectLock(control.Body(), sandbox.PinnedPythonRuntime().PythonVersion)
+			return selection, sandbox.UVResolverRuntimeIdentity(), err
+		}
+	}
+	return nil, "", errors.New("python project cache lacks the actual selected native provenance")
 }
 
 // Re-read approved bytes and filenames at both storage boundaries. Neither a
 // receipt path nor a wheel's untrusted METADATA supplies approval authority.
 func (c *PythonProjectCache) material(ctx context.Context, root string, set domain.ProjectVerifiedSet, update domain.ProjectDependencyUpdate, intake bool) (result pythonProjectMaterial, resultErr error) {
-	lock, err := uvSyncSelectedLock(update)
+	lock, runtimeIdentity, err := pythonSelectedProject(update)
 	if err != nil {
 		return result, err
 	}
@@ -168,7 +198,7 @@ func (c *PythonProjectCache) material(ctx context.Context, root string, set doma
 			return result, errors.New("python project archive path is unsafe")
 		}
 		info, err := os.Lstat(path)
-		if err != nil || !info.Mode().IsRegular() || !pypiSingleLink(info) || info.Size() != wheel.Size || uint64(info.Size()) != a.SizeBytes() {
+		if err != nil || !info.Mode().IsRegular() || !pypiSingleLink(info) || wheel.Size != 0 && info.Size() != wheel.Size || uint64(info.Size()) != a.SizeBytes() {
 			return result, errors.New("python project archive size or identity differs")
 		}
 		file, err := os.Open(path)
@@ -187,7 +217,7 @@ func (c *PythonProjectCache) material(ctx context.Context, root string, set doma
 	if err != nil {
 		return result, err
 	}
-	digest, document, sbom, err := c.records.BuildProject(ctx, c.operation, set, nodes, edges, update.SelectedControls(), sandbox.UVResolverRuntimeIdentity())
+	digest, document, sbom, err := c.records.BuildProject(ctx, c.operation, set, nodes, edges, update.SelectedControls(), runtimeIdentity)
 	if err != nil {
 		return result, err
 	}

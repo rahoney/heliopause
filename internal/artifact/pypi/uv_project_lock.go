@@ -41,8 +41,15 @@ func (l UVProjectLock) Control() (domain.ProjectControlFile, error) {
 // SelectResolvedWheels matches the complete immutable selection to one exact
 // archive per real project. It neither acquires content nor grants approval.
 func (l UVProjectLock) SelectResolvedWheels(artifacts []domain.ResolvedArtifact) ([]UVLockedWheel, error) {
-	if len(l.body) == 0 || len(artifacts) != len(l.packages) {
+	if len(l.body) == 0 {
 		return nil, errors.New("complete UV archive selection is unavailable")
+	}
+	return selectResolvedProjectWheels(l.packages, artifacts)
+}
+
+func selectResolvedProjectWheels(packages []UVLockedPackage, artifacts []domain.ResolvedArtifact) ([]UVLockedWheel, error) {
+	if len(artifacts) != len(packages) {
+		return nil, errors.New("complete Python archive selection is unavailable")
 	}
 	byName := make(map[string]domain.ResolvedArtifact, len(artifacts))
 	for _, artifact := range artifacts {
@@ -53,7 +60,7 @@ func (l UVProjectLock) SelectResolvedWheels(artifacts []domain.ResolvedArtifact)
 		byName[id.Name()] = artifact
 	}
 	result := make([]UVLockedWheel, 0, len(artifacts))
-	for _, project := range l.packages {
+	for _, project := range packages {
 		artifact, ok := byName[project.Name]
 		if !ok || artifact.Identity().Version() != project.Version {
 			return nil, errors.New("complete UV archive version differs from native lock")

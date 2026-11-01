@@ -12,6 +12,10 @@ const pypiUpgradeDescriptionEnglish = "Inspect and install a distribution into a
 const pypiUpgradeDescriptionKorean = "기존 Python 3.14 가상환경에 패키지를 검사한 뒤 설치합니다.\n\n패키지 하나를 업데이트하려면 --upgrade 또는 -U를 사용하세요. 이름, 정확한 버전(name==version), 지원하는 숫자 버전 제약을 지정할 수 있습니다. 기본 출처는 공개 PyPI입니다. 공식 PyTorch는 --source pytorch:cpu, pytorch:cu126, pytorch:cu130 또는 pytorch:cu132로 명시하며 local version을 보존합니다. 기본 전략은 only-if-needed이며 버전이 같아도 선택된 전체 의존성을 새로 검사한 뒤 교체합니다. 기존 HAA 소유권 기록을 검증합니다. 일반 pip 설치를 인계받으려면 --adopt를 명시하세요. 지원하는 공개 wheel 파일은 공식 이전 wheel의 원본과 대조한 뒤 교체합니다. 일반 설치의 PyTorch 파일, console script, 다른 scheme 파일, 비표준 bytecode 캐시는 지원하지 않습니다."
 
 func validatePyPIInstallArgs(command *cobra.Command, args []string) error {
+	if usesPythonRequirements(command, args) {
+		_, err := readPythonRequirementsRequest(command, args)
+		return err
+	}
 	if err := cobra.ExactArgs(1)(command, args); err != nil {
 		return err
 	}

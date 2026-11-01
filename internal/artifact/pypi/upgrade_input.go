@@ -144,20 +144,29 @@ func parseUpgradeInstalledMetadata(file InstalledMetadataFile, python string) (I
 	return parseUpgradeInstalledMetadataWithExtras(file, python, nil)
 }
 
-func parseUpgradeInstalledMetadataWithExtras(file InstalledMetadataFile, python string, activeExtras []string) (InstalledProject, error) {
+func parseInstalledMetadataIdentity(file InstalledMetadataFile) (InstalledProject, *rfc822Metadata, error) {
 	if len(file.Body) == 0 || len(file.Body) > defaultWheelMaxMetadata || len(file.Directory) == 0 || len(file.Directory) > 255 {
-		return InstalledProject{}, errors.New("installed dependency metadata is empty")
+		return InstalledProject{}, nil, errors.New("installed dependency metadata is empty")
 	}
 	headers, err := parseRFC822Metadata(file.Body, defaultWheelMaxMetadata)
 	if err != nil || len(headers.all("name")) != 1 || len(headers.all("version")) != 1 || len(headers.all("requires-dist")) > maxPyPIReportEntries {
-		return InstalledProject{}, errors.New("installed dependency metadata is invalid or ambiguous")
+		return InstalledProject{}, nil, errors.New("installed dependency metadata is invalid or ambiguous")
 	}
 	project, nameErr := NormalizeProjectName(headers.all("name")[0])
 	version, versionErr := NormalizeInstalledVersion(headers.all("version")[0])
-	if nameErr != nil || versionErr != nil || file.Directory != wheelDistInfo(project, version) {
-		return InstalledProject{}, errors.New("installed dist-info identity differs from metadata")
+	if nameErr != nil || versionErr != nil || !wheelDistInfoMatches(file.Directory, project, version) {
+		return InstalledProject{}, nil, errors.New("installed dist-info identity differs from metadata")
 	}
 	result := InstalledProject{project: project, version: version, directory: file.Directory, metadata: append([]byte(nil), file.Body...)}
+	return result, headers, nil
+}
+
+func parseUpgradeInstalledMetadataWithExtras(file InstalledMetadataFile, python string, activeExtras []string) (InstalledProject, error) {
+	result, headers, err := parseInstalledMetadataIdentity(file)
+	if err != nil {
+		return InstalledProject{}, err
+	}
+	project := result.project
 	for _, requirement := range headers.all("requires-dist") {
 		if len(requirement) > 1024 || strings.ContainsAny(requirement, "\r\n\x00\t") || requirement != strings.TrimSpace(requirement) {
 			return InstalledProject{}, errors.New("installed dependency requirement exceeds supported bounds")

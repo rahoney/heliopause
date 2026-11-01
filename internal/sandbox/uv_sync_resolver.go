@@ -91,6 +91,11 @@ func (r *UVResolver) ResolveProjectLockUpdate(ctx context.Context, install domai
 	if err := ctx.Err(); err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
+	for _, control := range original {
+		if control.Name() == artifactpypi.RequirementsInputControlName {
+			return r.resolveRequirementsUpdate(ctx, install, original)
+		}
+	}
 	input, err := parseUVSyncOriginalControls(original)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
@@ -211,7 +216,7 @@ func (r *PyPIResolver) bindUVNativeProjectSelection(ctx context.Context, install
 		return domain.ProjectDependencySnapshot{}, err
 	}
 	var snapshot domain.ProjectDependencySnapshot
-	err = r.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var err error
 		snapshot, err = lock.BindProject(install, controls, inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits())
 		return err

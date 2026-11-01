@@ -94,7 +94,7 @@ type WheelInspection struct {
 	Files                             []WheelFile
 	RequiresPython                    string
 	RequiresDist, ImportNames         []string
-	// Retained only for UV run's requested-root-extra binding. It is not
+	// Retained for authenticated requested-extra and requirements binding. It is not
 	// serialized inspection authority or an installed tool receipt.
 	providesExtra []string
 	distInfo      string

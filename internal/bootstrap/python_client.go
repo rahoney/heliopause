@@ -112,7 +112,10 @@ func bindUVPipPackageClient(command *cobra.Command, bindings pythonClientBinding
 		}
 		upgraders[intent] = updater
 	}
-	return cli.AddUVPipInstallAndUpdates(command, installer, upgraders[artifactpypi.UVUpgradeSelection], upgraders[artifactpypi.UVUpgradePackageSelection])
+	if err := cli.AddUVPipInstallAndUpdates(command, installer, upgraders[artifactpypi.UVUpgradeSelection], upgraders[artifactpypi.UVUpgradePackageSelection]); err != nil {
+		return err
+	}
+	return cli.AddPythonRequirementsInstall(command, cli.UVPipPackageClient, &pythonRequirementsService{bindings: bindings, client: "uv"})
 }
 
 func bindPipPackageClient(command *cobra.Command, bindings pythonClientBindings) error {
@@ -148,5 +151,8 @@ func bindPipPackageClient(command *cobra.Command, bindings pythonClientBindings)
 			updaters[profile.Source().String()] = pyTorchResourceInstaller{installer: updater, profile: profile}
 		}
 	}
-	return cli.AddPyPIInstallSourcesAndUpdates(command, installers, updaters)
+	if err := cli.AddPyPIInstallSourcesAndUpdates(command, installers, updaters); err != nil {
+		return err
+	}
+	return cli.AddPythonRequirementsInstall(command, cli.PipPackageClient, &pythonRequirementsService{bindings: bindings, client: "pip"})
 }

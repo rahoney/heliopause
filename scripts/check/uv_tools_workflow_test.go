@@ -254,7 +254,7 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 		"ignored error":   strings.Replace(script, uvRunSourceCommand, uvRunSourceCommand+" || true", 1),
 		"missing branch":  strings.Replace(script, "if [[ ${1-} == uv-run-source ]]; then", "if false; then", 1),
 		"native fallback": strings.Replace(script, " && ${1-} != uv-run-source", "", 1),
-		"unknown profile": strings.Replace(script, "|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli) ;;", "|1:anything) ;;", 1),
+		"unknown profile": strings.Replace(script, "|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli|1:python-requirements) ;;", "|1:anything) ;;", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == script {
@@ -396,6 +396,70 @@ func TestUVRunCurrentDispatchAndCohortGuards(t *testing.T) {
 			}
 			if len(validateCurrentExecutionPreparationQualification(original[:start]+original[end:])) == 0 {
 				t.Fatal("missing native current cohort admitted")
+			}
+		})
+	}
+}
+
+func TestRequirementsCIRequiresCompleteOwnedCohort(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-uv-tools.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	if findings := validateUVToolsScript(source); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for name, changed := range map[string]string{
+		"missing cohort":     strings.Replace(source, pythonRequirementsCIScope, "", 1),
+		"duplicate cohort":   source + "\n" + pythonRequirementsCIScope,
+		"wrong count":        strings.Replace(source, "count!=32", "count!=31", 1),
+		"wrong parent":       strings.Replace(source, "$3!=\"TestPythonRequirementsPublicInstallationIntegration\"", "$3!=\"OtherParent\"", 1),
+		"skip guard omitted": strings.Replace(source, "/^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }", "", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validateUVToolsScript(changed)) == 0 {
+				t.Fatal("incomplete requirements cohort accepted")
+			}
+		})
+	}
+}
+
+func TestRequirementsCIResultGuardRejectsMissingSkippedAndDuplicateCases(t *testing.T) {
+	_, rest, ok := strings.Cut(pythonRequirementsCIScope, "awk '\n")
+	if !ok {
+		t.Fatal("missing result guard")
+	}
+	program, _, ok := strings.Cut(rest, "' \"$RUNNER_TEMP/python-requirements.log\"")
+	if !ok {
+		t.Fatal("unbounded result guard")
+	}
+	var lines []string
+	for _, client := range []string{"pip", "uv"} {
+		for _, name := range []string{"initial-empty", "excluded-marker", "final-empty"} {
+			lines = append(lines, "    python_requirements_integration_test.go:1: requirements_actual client="+client+" case="+name+" entries=0 noop=true seconds=0.001")
+		}
+		for _, name := range []string{"two-roots", "retained-compatible", "update-roots", "include-extra", "shared-transitive", "hash-match"} {
+			lines = append(lines, "    python_requirements_integration_test.go:1: requirements_actual client="+client+" case="+name+" entries=7 noop=false seconds=0.001")
+		}
+		for _, name := range []string{"joint-conflict", "invalid-grammar", "hash-missing", "hash-mismatch", "transitive-block", "installation-failure", "source-drift"} {
+			lines = append(lines, "    python_requirements_integration_test.go:1: requirements_actual client="+client+" case="+name+" denied=true seconds=0.001")
+		}
+	}
+	source := strings.Join(append(lines, "--- PASS: TestPythonRequirementsPublicInstallationIntegration (1.00s)"), "\n") + "\n"
+	for name, fixture := range map[string]string{
+		"complete": source, "no parent": strings.Join(lines, "\n"), "missing case": strings.Replace(source, lines[0]+"\n", "", 1),
+		"duplicate case": source + lines[0] + "\n", "skipped": source + "    --- SKIP: optional (0.00s)\n",
+		"wrong mode":     strings.Replace(source, "entries=0 noop=true", "entries=1 noop=false", 1),
+		"unknown client": strings.Replace(source, "client=pip", "client=other", 1),
+		"wrong source":   strings.Replace(source, "python_requirements_integration_test.go:1:", "foreign.go:1:", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			command := exec.Command("/usr/bin/awk", program)
+			command.Stdin = strings.NewReader(fixture)
+			output, err := command.CombinedOutput()
+			if (err == nil) != (name == "complete") {
+				t.Fatalf("result guard %s: %v %s", name, err, output)
 			}
 		})
 	}

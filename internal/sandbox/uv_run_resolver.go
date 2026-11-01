@@ -154,7 +154,7 @@ func (r *UVResolver) preparePythonRunOriginalWithExtras(ctx context.Context, req
 		return nil, err
 	}
 	var frozen *pipxNativeInput
-	if err := r.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	if err := r.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var freezeErr error
 		frozen, freezeErr = freezePythonRunNativeInput(ctx, lock, inputs, pages, request)
 		return freezeErr

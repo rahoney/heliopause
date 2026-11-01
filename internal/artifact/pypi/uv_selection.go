@@ -85,6 +85,36 @@ func (u UpgradeInput) ParseUVSelection(body []byte) (UVSelection, error) {
 	if u.python == "" || u.requirement.source != PublicPyPIProfile().Source() || len(body) == 0 || len(body) > maxReportBytes {
 		return UVSelection{}, errors.New("UV selection requires bounded native delta and original input")
 	}
+	result, err := parseUVSelectionDelta(body, u.installed)
+	if err != nil {
+		return UVSelection{}, err
+	}
+	result.input = u
+	version := result.versions[u.requirement.project]
+	if len(result.versions) > maxPyPIReportEntries || !u.requirement.AcceptsVersion(version) {
+		return UVSelection{}, errors.New("UV selection does not satisfy requested root")
+	}
+	result.reference, err = ParseReference(u.requirement.project + "@" + version)
+	if err != nil {
+		return UVSelection{}, err
+	}
+	extras, err := u.upgradeExtraObligations(result.versions, nil)
+	if err != nil {
+		return UVSelection{}, err
+	}
+	result.constraints, err = selectedInstalledVersionConstraints(u.installed, u.python, result.versions, extras)
+	if err != nil {
+		return UVSelection{}, err
+	}
+	return result, nil
+}
+
+// Both installed-aware clients use the same strict dry-run/change validation.
+// The caller still binds its own real roots and complete selection.
+func parseUVSelectionDelta(body []byte, installed []InstalledProject) (UVSelection, error) {
+	if len(body) == 0 || len(body) > maxReportBytes {
+		return UVSelection{}, errors.New("UV delta exceeds bounds")
+	}
 	if err := validateUVJSONKeys(body); err != nil {
 		return UVSelection{}, err
 	}
@@ -104,9 +134,9 @@ func (u UpgradeInput) ParseUVSelection(body []byte) (UVSelection, error) {
 	if decoder.Decode(&wire) != nil || ensureSingleJSONValue(decoder) != nil || wire.Schema.Version != "preview" || wire.DryRun == nil || !*wire.DryRun || wire.Changes == nil || len(wire.Changes) > 2*maxPyPIReportEntries {
 		return UVSelection{}, errors.New("UV native delta schema, dry-run or bounds are invalid")
 	}
-	result := UVSelection{input: u, versions: map[string]string{}, installed: map[string]string{}, delta: append([]byte(nil), body...)}
+	result := UVSelection{versions: map[string]string{}, installed: map[string]string{}, delta: append([]byte(nil), body...)}
 	before := map[string]string{}
-	for _, project := range u.installed {
+	for _, project := range installed {
 		before[project.project] = project.version
 		result.versions[project.project] = project.version
 	}
@@ -143,22 +173,8 @@ func (u UpgradeInput) ParseUVSelection(body []byte) (UVSelection, error) {
 			return UVSelection{}, errors.New("UV replacement omitted original uninstall")
 		}
 	}
-	version := result.versions[u.requirement.project]
-	if len(result.versions) > maxPyPIReportEntries || !u.requirement.AcceptsVersion(version) {
-		return UVSelection{}, errors.New("UV selection does not satisfy requested root")
-	}
-	var err error
-	result.reference, err = ParseReference(u.requirement.project + "@" + version)
-	if err != nil {
-		return UVSelection{}, err
-	}
-	extras, err := u.upgradeExtraObligations(result.versions, nil)
-	if err != nil {
-		return UVSelection{}, err
-	}
-	result.constraints, err = u.selectedVersionConstraints(result.versions, extras)
-	if err != nil {
-		return UVSelection{}, err
+	if len(result.versions) > maxPyPIReportEntries {
+		return UVSelection{}, errors.New("UV selected versions exceed bounds")
 	}
 	return result, nil
 }

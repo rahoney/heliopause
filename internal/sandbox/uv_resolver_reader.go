@@ -37,7 +37,7 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 		return domain.DependencyResolution{}, err
 	}
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
-	err = r.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		graph, err := lock.BindWheels(inputs, pages, target, policy.WheelLimits())
 		if err != nil {
 			return err
@@ -61,7 +61,7 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 
 // Archive bytes and metadata stay inside one bounded workspace/session until
 // the actual consumer finishes its independent binding. No solver is run here.
-func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artifactpypi.UVLockedWheel, operation func([]artifactpypi.UVWheelInput, []artifactpypi.SimpleProject) error) (resultErr error) {
+func (r *PyPIResolver) withPythonArchiveInputs(ctx context.Context, selected []artifactpypi.UVLockedWheel, requireDeclaredSize bool, operation func(context.Context, string, []artifactpypi.UVWheelInput, []artifactpypi.SimpleProject) error) (resultErr error) {
 	if r == nil || r.runner == nil || ctx == nil || operation == nil || r.profile.Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return errors.New("uv independent archive reader is unavailable")
 	}
@@ -69,7 +69,7 @@ func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artif
 		return err
 	}
 	if len(selected) == 0 {
-		if err := operation([]artifactpypi.UVWheelInput{}, []artifactpypi.SimpleProject{}); err != nil {
+		if err := operation(ctx, "", []artifactpypi.UVWheelInput{}, []artifactpypi.SimpleProject{}); err != nil {
 			return err
 		}
 		return ctx.Err()
@@ -89,7 +89,7 @@ func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artif
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
 	var total int64
 	for _, wheel := range selected {
-		if wheel.Size <= 0 || wheel.Size > policy.MaxGraphCompressed()-total {
+		if wheel.Size < 0 || requireDeclaredSize && wheel.Size == 0 || wheel.Size > policy.MaxGraphCompressed()-total {
 			return errors.New("uv selected archive budget exceeds bounds")
 		}
 		total += wheel.Size
@@ -118,6 +118,7 @@ func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artif
 		}
 		ctx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 		defer cancel()
+		var downloaded int64
 		var pages []artifactpypi.SimpleProject
 		var inputs []artifactpypi.UVWheelInput
 		for _, wheel := range selected {
@@ -140,13 +141,21 @@ func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artif
 			}
 			declared := false
 			for _, file := range page.Files() {
-				if file.URL() == wheel.URL && file.Filename() == wheel.Filename && file.SHA256() == wheel.SHA256 && file.Size() == uint64(wheel.Size) && !file.Yanked() {
+				if file.URL() == wheel.URL && file.Filename() == wheel.Filename && file.SHA256() == wheel.SHA256 && (!requireDeclaredSize && wheel.Size == 0 || file.Size() == uint64(wheel.Size)) && !file.Yanked() {
+					if file.Size() > uint64(policy.MaxArtifactCompressed()) {
+						return errors.New("python archive exceeds its source budget")
+					}
+					wheel.Size = int64(file.Size())
 					declared = true
 				}
 			}
 			if !declared {
 				return errors.New("uv selected archive differs from independent release metadata")
 			}
+			if wheel.Size <= 0 || wheel.Size > policy.MaxGraphCompressed()-downloaded {
+				return errors.New("python archive graph exceeds its source budget")
+			}
+			downloaded += wheel.Size
 			pages = append(pages, page)
 			file, err := os.CreateTemp(workspace, "archive-")
 			if err != nil {
@@ -164,7 +173,7 @@ func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artif
 			}
 			inputs = append(inputs, artifactpypi.UVWheelInput{URL: wheel.URL, Reader: file, Size: wheel.Size})
 		}
-		if err := operation(inputs, pages); err != nil {
+		if err := operation(ctx, container, inputs, pages); err != nil {
 			return err
 		}
 		return ctx.Err()

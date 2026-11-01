@@ -87,12 +87,12 @@ func introduceUVSelectionFiles(ctx context.Context, runner inputCommandRunner, c
 	var names []string
 	var total int
 	for name, body := range files {
-		if !validClosureDestination(name) || name != "constraints.txt" && !(strings.HasPrefix(name, "original/") && strings.Count(name, "/") == 2 && strings.HasSuffix(name, ".dist-info/METADATA")) || len(body) == 0 || len(body) > uvNativeLockLimit-total {
+		if !validClosureDestination(name) || name != "constraints.txt" && name != "requirements.txt" && name != "requirements-constraints.txt" && !(strings.HasPrefix(name, "original/") && strings.Count(name, "/") == 2 && strings.HasSuffix(name, ".dist-info/METADATA")) || len(body) == 0 || len(body) > uvNativeLockLimit-total {
 			return errors.New("UV selection input path or bytes exceed bounds")
 		}
 		total += len(body)
 		names = append(names, name)
-		if name != "constraints.txt" {
+		if strings.HasPrefix(name, "original/") {
 			directories[path.Dir(name)] = true
 			directories["original"] = true
 		}

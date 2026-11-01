@@ -64,9 +64,9 @@ func TestUVPackageClientRejectsUnsupportedIntentBeforeComposition(t *testing.T) 
 	t.Setenv("VIRTUAL_ENV", "")
 	cases := [][]string{
 		{}, {"idna"}, {"idna", "--target", "relative"}, {"idna", "--target", "/tmp/a,b"},
-		{"idna>=3", "--target", "/tmp/venv"}, {"idna==3.11rc1", "--target", "/tmp/venv"},
+		{"idna==3.11rc1", "--target", "/tmp/venv"},
 		{"idna==3.11==4", "--target", "/tmp/venv"}, {"https://example.invalid/a.whl", "--target", "/tmp/venv"},
-		{"idna", "requests", "--target", "/tmp/venv"}, {"idna", "--target", "/tmp/venv", "--target=/tmp/other"},
+		{"idna", "--target", "/tmp/venv", "--target=/tmp/other"},
 		{"idna", "--target", "/tmp/venv", "--adopt"},
 		{"idna", "--target", "/tmp/venv", "--upgrade", "--upgrade-package", "idna"},
 		{"idna", "--target", "/tmp/venv", "--upgrade-package", "requests"},

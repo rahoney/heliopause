@@ -104,7 +104,7 @@ func (p *UVSyncPreparation) Begin(ctx context.Context, install domain.InstallCon
 	if err != nil {
 		return nil, err
 	}
-	s.proof, err = prepareUVCompleteOwnership(ctx, tx, s.original, install, p.native, p.adopt, s.VerifyUnchanged)
+	s.proof, err = preparePythonCompleteOwnership(ctx, tx, s.original, install, p.native, p.adopt, s.VerifyUnchanged)
 	if err != nil {
 		return nil, err
 	}

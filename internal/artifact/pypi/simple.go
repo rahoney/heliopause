@@ -1032,6 +1032,12 @@ func parseDeclaredDependency(value string) (string, error) {
 // yanked Simple API file with the same endpoint, filename, SHA-256 and
 // Requires-Python metadata.
 func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candidate, error) {
+	return crossCheckReport(report, pages, false)
+}
+
+// Exact archive metadata is checked for general PEP syntax by the requirements
+// native validator after source binding. Legacy report callers keep their rules.
+func crossCheckReport(report InstallationReport, pages []SimpleProject, exactPythonMetadata bool) ([]Candidate, error) {
 	if len(report.candidates) == 0 || len(pages) != len(report.candidates) {
 		return nil, errors.New("invalid PyPI Simple cross-check is incomplete")
 	}
@@ -1044,7 +1050,7 @@ func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candi
 	}
 	for _, candidate := range report.candidates {
 		page, ok := byProject[candidate.project]
-		if !ok || candidate.source != page.source || !matchesSimpleFile(candidate, page) {
+		if !ok || candidate.source != page.source || !matchesSimpleFile(candidate, page, exactPythonMetadata) {
 			return nil, errors.New("pip candidate does not match PyPI Simple metadata")
 		}
 	}
@@ -1133,10 +1139,15 @@ func selectedPyTorchSimpleFile(candidate Candidate, page SimpleProject) (SimpleF
 	return selected, nil
 }
 
-func matchesSimpleFile(candidate Candidate, page SimpleProject) bool {
+func matchesSimpleFile(candidate Candidate, page SimpleProject, exactPythonMetadata bool) bool {
 	matches := 0
 	for _, file := range page.files {
 		requiresPythonMatches := requiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)
+		if exactPythonMetadata && file.requiresPython == candidate.requiresPython {
+			// No normalization: independently authenticated bytes are identical.
+			// The requirements lane still validates the syntax and target with pip.
+			requiresPythonMatches = true
+		}
 		if IsPyTorchSource(page.source) && file.requiresPythonPresent {
 			requiresPythonMatches = authenticatedRequiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)
 		}

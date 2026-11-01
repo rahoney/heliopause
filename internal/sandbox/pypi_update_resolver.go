@@ -81,7 +81,12 @@ if len(body)>4194304: raise ValueError('upgrade control exceeds bound')
 with open(sys.argv[1],'xb') as output: output.write(body)`
 
 func (r *PyPIResolver) writeUpgradeControl(ctx context.Context, containerID, name string, body []byte) error {
-	if (name != "update-input.json" && name != "upgrade-constraints.txt") || len(body) == 0 || len(body) > 4<<20 {
+	switch name {
+	case "update-input.json", "upgrade-constraints.txt", "requirements-input.json", "requirements-roots.txt", "requirements-constraints.txt", "requirements-original.json", "requirements-selected.txt", "requirements-metadata.json":
+	default:
+		return errors.New("PyPI upgrade private control is unsupported")
+	}
+	if len(body) == 0 || len(body) > artifactpypi.RequirementsInputByteLimit {
 		return errors.New("PyPI upgrade private control is unsupported")
 	}
 	runner, ok := r.runner.(inputCommandRunner)

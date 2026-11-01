@@ -44,7 +44,7 @@ func (p *UVProjectPromotion) Begin(ctx context.Context, install domain.InstallCo
 	if err != nil {
 		return nil, err
 	}
-	p.guard = &uvProjectPublicationGuard{uvProjectSession: session, publication: p}
+	p.guard = &uvProjectPublicationGuard{pythonProjectSession: session, publication: p}
 	return p.guard, nil
 }
 
@@ -75,7 +75,7 @@ func (p *UVProjectPromotion) StageProject(ctx context.Context, set domain.Projec
 }
 
 type uvProjectPublicationGuard struct {
-	*uvProjectSession
+	*pythonProjectSession
 	publication     *UVProjectPromotion
 	commitAttempted bool
 }

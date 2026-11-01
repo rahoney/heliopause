@@ -76,11 +76,11 @@ Native 의미 확인은 공식 문서를 사용했다. [pip requirements](https:
 | ID | 실제 gap | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING / 보완 경로 |
 | --- | --- | --- | --- | --- | --- | --- |
 | B00 | 미지원 하위 명령의 명시적 실패 | NO | NO | NO | NO | `npm ci`, `cargo fetch`, `go mod tidy`가 도움말만 출력하고 exit0. 공통 CLI 사전 검증에서 거부하되 부모 도움말/정상 명령은 유지. 현재 runtime 준비 뒤 발견되는 일부 문법 오류도 runtime 전에 판정 |
-| B01 | pip·UV pip requirements 설치 | NO | NO | NO | NO | `-r`/`--requirement`와 여러 root를 하나의 frozen 입력·전체 graph·승인/원자 반영에 연결. 기존 pip/UV resolver·inspection·promotion 재사용. 한 줄씩 독립 설치하거나 sync로 바꿔 기존 패키지를 삭제하지 않음 |
+| B01 | pip·UV pip requirements 설치 | YES | YES | NO | NO | `-r`/`--requirement`와 여러 root를 하나의 frozen 입력·전체 graph·승인/원자 반영에 연결. 기존 pip/UV resolver·inspection·promotion 재사용. 한 줄씩 독립 설치하거나 sync로 바꿔 기존 패키지를 삭제하지 않음 |
 | B02 | npm 기본 프로젝트 설치와 ci | NO | NO | NO | NO | package.json/lock 전체 설치, ci의 lock 필수·불일치 거부·lock 무변경과 target 교체/원복. 기존 npm whole graph/update/ownership owner 재사용, 다른 client로 몰래 대체하지 않음 |
 | B03 | Cargo fetch-only | NO | NO | NO | NO | 기존 complete project resolve/inspect/cache 경로를 공개 명령에 연결. Cargo.toml만 있는 최초 lock 생성과 기존 lock 보존을 별도 검증. build를 대신 실행하지 않음 |
 | B04 | Terraform 기본 init | NO | NO | NO | NO | 현재 configuration의 전체 provider와 기존 lock 선택 보존. lock 없을 때 선택, unchanged 재검사, ownership/원복. upgrade를 자동 붙이지 않음; backend/cloud 실행은 별도 범위 |
-| B05 | Python 일괄 입력의 일반 요구사항 문법 | NO | NO | NO | NO | 버전 범위·extras·환경 marker·주석/빈 줄/CRLF, 반복 -r와 제한된 상대 include/-c, hash 검증. 중복·충돌·include cycle/경로 탈출/파일 변경·빈 파일 no-op·부분 설치 금지까지 B01 acceptance로 묶음. 임의 index·VCS·editable은 자동 허용하지 않음 |
+| B05 | Python 일괄 입력의 일반 요구사항 문법 | YES | YES | NO | NO | 버전 범위·extras·환경 marker·주석/빈 줄/CRLF, 반복 -r와 제한된 상대 include/-c, hash 검증. 중복·충돌·include cycle/경로 탈출/파일 변경·빈 파일 no-op·부분 설치 금지까지 B01 acceptance로 묶음. 임의 index·VCS·editable은 자동 허용하지 않음 |
 | B06 | 기존 project 명령의 흔한 선택/고정 옵션 | NO | NO | NO | NO | UV group/extra/marker·locked/frozen, PNPM/Bun의 명시적 frozen-lockfile 옵션. 현재 `--group`, 두 `--frozen-lockfile`는 실제 unknown flag. PNPM의 기존 lock 일치 검증 자체는 구현돼 있음; 옵션 부재를 lock 검증 전무로 표현하지 않음 |
 | B07 | Go 소스에 맞춘 의존성 파일 정리 | NO | NO | NO | NO | `go mod tidy` 미지원. `mod download`와 다른 추가·제거/소스선택 의미이므로 별도 지원 후보. B01~04 기본 일괄 설치보다 후순위 |
 
@@ -195,3 +195,84 @@ Quick 원래 exit1을 전체 profile exit0으로 바꾸어 기록하지 않는�
 로컬 B00 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES, MISSING=[]다.
 근거는 `docs/github-logs/goal-implementation-20261101/b00-closure.json`과 해당 raw다.
 Runtime/observer/권한·고정 버전·설치본은 불변이며 새 CI 없이 후속 B01+B05로 진행한다.
+
+## B01+B05 — requirements 전체 요청 / 로컬 검증 중
+
+기준 commit `d7688a5`. 현재 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. 아래 부분 증거를 전체 완료나 정식 설치본 지원으로 확대하지 않는다.
+
+기존 단일 primary의 UpgradeInput/pip report와 exact pins·완전 교체인 UVSyncInput을
+완화하지 않고, 반복 `-r`/`-c`와 여러 roots를 하나의 frozen 입력으로 연결했다. 파일 수·깊이·
+전체 bytes를 제한하고 cycle/경로 탈출/links/민감 파일명/env 확장/임의 index·URL·VCS·
+editable을 사전 거부한다. 주석·continuation·CRLF·범위·extras·marker·hash는 실제 고정
+pip parser와 각 client의 native 선택을 사용한다. 오류는 원문 대신 안전한 상대 파일명·행을 반환한다.
+
+재사용 owner는 `uv_sync_source.go`의 held guard/file witnesses, Python/UV native session,
+독립 archive/RECORD·예산 검사, `ProjectDependencySnapshot`과 whole inspection/Policy,
+`PythonProjectCache` 및 additive `commitSelection`이다. 원본 RFC822/identity 검증을 공유하고
+새 requirements lane의 일반 PEP 조건만 같은 고정 parser로 대조한다. 기존 CUDA/UV bounded
+metadata 해석과 runtime lock/generator/update 경로는 유지한다. 새 client 출처·전체 선택·
+원본·source digests를 결합하며 가짜 primary/UV 결과로 pip 위장/한 줄씩 반입은 하지 않는다.
+기존 무관 패키지·사용자 파일을 보존하고 no-op은 검사·staging·commit 없이 같은 install
+schema의 SKIPPED/NOT_PERFORMED를 반환한다. preflight의 반복 slice reset도 기존 owner를 쓴다.
+
+### 실제 검증과 최초 실패
+
+원본은 `docs/github-logs/goal-implementation-20261101/`의 명시 label에 보존한다.
+시험은 보호된 기존 client를 private mount namespace에서 시험 ELF로 바인딩하고 별도 policy
+helper를 사용했다. Host 설치·global service는 교체하지 않는다. 성공을 표시한 operator는
+helper wait0·소유 runtime 회수·보호 파일/global service/Docker 전후 동일성까지 확인한다.
+
+| 증거 | 확인한 범위 | 한계 |
+| --- | --- | --- |
+| `b01-actual-v3`, `b01-actual-v6` | pip 기본6/225.86s, UV 기본6/236.63s PASS | 후속 일반 문법·실패 사례의 전체 증거 아님 |
+| `b01-actual-v11` | pip 앞12: 기본·안전한 문법 실패·marker·include/constraint/extra7nodes·공통 전이7nodes·hash 정상/누락/불일치 PASS | 시험용 Finding 합성 오류로 parent FAIL 유지 |
+| `b01-actual-v12-pip-tail` | 직전 동일9versions를 HAA로 새 준비한 뒤 transitive BLOCK·실제 격리 materialization 후 실패·source drift·최종 no-op PASS; operator293.768s | V11 앞12와 합성한 부분 coverage이며 단일 pip16 parent PASS 아님 |
+| `b01-actual-v13-uv` | UV 전체16/772.58s PASS; operator776.265s, no-SKIP/helper wait0/Host·Docker 동일/관찰·policy runtime 정리 | pip 단일 parent·hosted·전체 profile 성공 아님 |
+| `b01-original-pep-unit`, `b01-pinned-original-graph` | 원본 identity·일반 조건·extras·선택 밖 변경·필수 원본 필드 대조; unit10.837s/pinned DATA13·18.472s PASS | DATA는 artifact 실행/검역 완료 아님 |
+| `b01-cli-final-green`, `b01-body-cleanup-unit` | CLI 전체4.868s/PyPI 전체7.064s PASS; no-op schema RED→GREEN | 전체 Quick 종료 성공 아님 |
+| `b01-bundle-security` | canonical security23.117s PASS | 최종 전체 보강 보안 성능 평가 아님 |
+
+V1은 operator namespace 비교 오류로 제품 미도달, V2는 private observer 경로를 외부 Docker
+이 볼 수 없어 timeout이었다. V3 UV의 일반 Python 프로그램은 UV query 전용 profile에 맞지
+않았다. CPP/loader 권한을 넓히지 않고 기존 Python reader를 사용했다. V4/V5는 UV compile에
+잘못 전달한 `--requirement`를 실제 exit2/stderr로 확인해 positional source로 교정했다.
+V7 PySocks는 공식 wheel/release의 Requires-Python 원문이 같아도 기존 matcher가 거부했다.
+새 requirements lane에서만 byte-identical binding과 고정 PEP 검증을 함께 요구한다. V8 다음
+설치의 `PySocks-1.7.1.dist-info`는 기존 `wheelDistInfoMatches`로 검증해 literal 대소문자
+재구성 오류를 제거했다. 자세한 실패/교정 범위는 artifact L02가 소유한다.
+
+V9/V10의 Anyio4.16.0/SHA c66ae634는 필수 pytest11 plugin import에서 pytest 부재로 실패했다.
+같은 unit/bytes의 제한 capture와 공식 archive DATA로 원인을 확인했으며 capture overlay는
+복구했다. 검사를 생략/완화하지 않는다. requests/httpcore의 certifi 공유로 B01 기본 공통
+전이 acceptance를 분리했고, Anyio 환경 호환성·검사 미완료는 최종16번 보안 검토에 OPEN으로
+남긴다. 이 실패는 악성 탐지 성능이나 해결 성공에 포함하지 않는다. sandbox L14를 따른다.
+
+V11의 시험용 transitive Finding helper는 복합 report를 primitive로 다시 합성했다. 제품
+Domain은 유지하고 real check/Evidence를 보존하는 helper를 RED→GREEN4.812s로 확인했다.
+V12는 그 뒤의 네 사례만 실제 실행해 통과한 앞12의 불필요한 반복을 피했다.
+
+### 묶음 검사·연결·남은 acceptance
+
+첫 Quick129.750s는 새 generic 오류 문자열 ST1005로 실패했고 해당 literal만 교정했다.
+Quick v2/366.807s는 static 전체와 default48/49가 PASS이며 CLI의 옛 복수 root/extra 미지원
+negative 두 행만 실패했다. 해당 행을 새 positive로 옮기고 CLI 전체를 재확인했다. 원래
+Quick exit1을 보존하며 같은 불변 package를 전체 반복하지 않는다.
+
+영향8 package Race256.368s는 제품7 package가 모두 PASS이고 checker의 기존 unknown-profile
+mutation이 새 mode를 포함하지 못해 실패했다. 기대 suffix만 교정한 checker 전체 Race
+100.722s가 PASS다. 제품7개와 checker 후속의 합성 증거이며 첫 묶음 exit1은 보존한다.
+기존 `ci-uv-tools.sh`에 requirements mode를 추가해 protected tagged client·package cwd·ordinary
+분기와32개 고유 case·parent/no-SKIP/결과를 고정했다. 새 job은 없고 workflow2.813s와 실제
+awk 포함 표적1.783s는 PASS다. 새 hosted CI는 아직 실행하지 않는다.
+
+C03 점검에서 실제 소비자 없는 parser 원문 사본/Body accessor를 제거했다. 원본 bytes의
+소유·hash·drift는 기존 RequirementsInput/guard가 계속 맡는다. 문서 profile0.400s도 PASS다.
+MISSING은 전체32의 grouped hosted 증거, 공통 Python 변경의 네 profile 영향/필수
+최종 실제 회귀, 최종 문서 대조다. 최종16번의 Anyio 검토도 남는다. 완료된 시험 실행파일13개
+693,869,279B는88개 프로세스의 fd/maps 참조0·조회 오류0과 기록된 hash/inode/소유권을
+확인해 회수했다. 설치본·원본 증거·현재 SDK/cache는 보존했다.
+
+[로컬 checkpoint](./requirements-local-20261102.json)가 정확한 source inventory와 부분/후속
+검사·실제 사례 범위·정리·미완료 acceptance를 연결한다. 다음 B02는 이 검증된 구현을
+재구현하지 않고 진행하며 네 profile/hosted는 후속 의미 있는 변경 묶음에서 검증한다.

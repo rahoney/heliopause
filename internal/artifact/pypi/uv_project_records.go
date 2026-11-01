@@ -41,17 +41,19 @@ func projectRecordsFromCandidates(artifacts []domain.ResolvedArtifact, candidate
 	nodes := make([]domain.LockedDependency, 0, len(artifacts))
 	edges := []domain.DependencyEdge{}
 	byProject := map[string]domain.DependencyNodeID{}
+	byArtifact := make(map[string]domain.ResolvedArtifact, len(artifacts))
+	for _, artifact := range artifacts {
+		name := artifact.Identity().Name()
+		if _, seen := byArtifact[name]; seen {
+			return nil, nil, errors.New("project record repeats an archive subject")
+		}
+		byArtifact[name] = artifact
+	}
 	for _, candidate := range candidates {
 		if _, seen := byProject[candidate.project]; seen {
 			return nil, nil, errors.New("project record repeats a subject")
 		}
-		var actual domain.ResolvedArtifact
-		for _, artifact := range artifacts {
-			if artifact.Identity().Name() == candidate.project {
-				actual = artifact
-				break
-			}
-		}
+		actual := byArtifact[candidate.project]
 		if actual.Identity().Version() != candidate.version || actual.AcquisitionLocator() != candidate.url || actual.DeclaredIntegrity() != "sha256:"+candidate.sha256 {
 			return nil, nil, errors.New("project record archive identity differs from approval")
 		}
