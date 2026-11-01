@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — original bounded functional acceptance and whole-source/security audit COMPLETE. Official name/publisher binding, convenience channels and current signed deployment remain separate; names owner-deferred.
 Last completed substep: user-confirmed launcher artwork COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES in local display scope. Approved exact source hashes and Quick93.086s/security21.332s/docs evidence in art-refresh-20261031.md. Earlier whole-source audit remains closed for code358/four profiles.
-Next action: preserve the approved launcher design; owner continues official-name review, then existing channel/publisher plan. Do not ask again for visual approval or repeat unchanged full/native/CPP/CUDA/CI. Deployment/Host transition/main merge/tag/publish remain separate.
-Current substep: approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. No remote CI/push/installation; exact final commit is a local checkpoint, not whole M13 completion.
+Next action: local WSL/micromamba package test setup COMPLETE; user can activate helox in another terminal and try the prepared empty Python/Go targets. Preserve approved design and current environment. Official name/publisher/channel/current signed deployment remains separate; names owner-deferred. No repeated unchanged full/native/CPP/CUDA/CI.
+Current substep: user-authorized controlled development installation CLOSED locally; Docker29.9.2/current CLI-helper-pod-init and running policy service, runtime4OK and Python install/update + Go get/update/build PASS. Formal release record remains unavailable. Approved simple-door artwork CLOSED locally. Logo only left of HELIOPAUSE, full centered second title, horizontal RGB gradient/fixed stars. Four menus/footer/NO_COLOR/lifecycle preserved. Final frozen source checks passed; selected3 PNGs and current contract retained, rejected untracked drafts archived with hashes. No remote CI/push/installation; exact final commit is a local checkpoint, not whole M13 completion.
 Acceptance audit: keep IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED independently. Prior source/profile checkpoint is not functional completion. Native all-option equivalence is not promised by the original initial contract; stdin/TTY/file-export have separate acceptance. Do not mix explicit exclusions with required omissions or relabel unimplemented goals as approved deferral.
 Independent local next: no remaining source-audit implementation. Earlier unsigned e3 assembly and local Buildx limitation retain their original scope; actual current protected Release Build/signing/clean-Host activation is separate and is not claimed by ordinary/CUDA CI.
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -25,6 +25,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ```
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
+
+### 2026-11-01 동일 WSL 사용자 체험 환경 — COMPLETE
+
+[개발 검증 환경 설정](./evidence/m13-004-convenience/local-dev-test-20261101.md)을 완료했다. 기존 설치와 이전 Docker 패키지를 백업하고 Docker29.9.2/현재 CLI·helper·pod-init을 적용했다. 기존 unit의 누락된 serve 인자 한 줄만 고쳤다. 실제 helox 환경의 runtime4OK, packaging24.2→25.0 설치·업데이트, Go uuid1.5.0→1.6.0·관찰 build가 PASS다. 사용자 체험 폴더는 비어 있으며 개발 의존성은 보존했다. IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES, MISSING=[]는 이 local 체험 범위다. 같은 소스의 full/native/CPP/CI는 반복하지 않았고 정식 release 기록·본체 self-update·공개 배포 완료로 전용하지 않는다.
 
 ### 2026-11-01 CLI 시작 화면 아트 — COMPLETE (local 표시 범위)
 
