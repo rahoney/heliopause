@@ -122,6 +122,23 @@ required-success 규칙을 이 범위에서 명시적으로 대체한다.
 
 검증된 `RECORD`에서 선언된 `Import-Name`·`Import-Namespace`, Python `.py` 모듈 및 Python extension 모듈이 전혀 없고 구조적으로 실행 가능 Python 표면이 없음이 정적으로 입증된 wheel(metadata-only 또는 native library/header 등 native/data-only wheel)은 Python import 적용 대상이 아님을 정적으로 확정할 수 있다. 이 경우에도 동일한 격리 session에서 exact wheel closure를 offline 설치하고 설치된 distribution identity를 확인하며 observer 완료를 요구한다. 결과에는 import `NOT_APPLICABLE`을 명시한다. 설치 가능 payload가 있지만 import surface를 안전하게 확정할 수 없거나 모호한 wheel은 이 예외에 해당하지 않으며 기존처럼 fail-closed다.
 
+현재 ordinary wheel 관찰은 동일 RO 코드 closure와 root CPU/wall/trace 한도 안에서 최소/
+모의 두 환경의 각 단위를 fresh process·전용 opaque `/tmp` subpath로 실행한다. 환경별
+readonly keeper와 전체 profile의 before/final inventory를 사용하며 두 workspace 용량의
+합은 기존 writable tmpfs 상한이다. 물리 launch는 N개 원래 단위에 `2N+4`이며 기존 상한을
+늘리지 않는다. 두 환경의 optional command가 모두 zero인 경우에만 합친 `ATTESTED`가
+가능하고, 한쪽의 관찰/종료/회계 누락은 전체 required 미완료다. 별도 사용자 프로그램 실행과
+Pipx 도구 공급물 관찰은 각자의 기존 경로이며 이 연결의 완료 주장에 포함하지 않는다.
+
+현재 required profile은 중앙 Python image·gVisor patch와 공통 환경/schema version에
+결합한다. 두 환경의 상태/활성 관찰 증거가 없으면 완료로 정규화하지 않는다. 상태 Evidence는
+같은 target·check·profile에 묶이며 단위별 raw 경로·dummy 내용은 보존하지 않는다.
+보조 환경의 `m5-inspection-environment/v2`는 `original_environment=NOT_ATTESTED`와
+input/binding을 보존하고, 별도 `pypi-supplemented-observations` Evidence ID와 관찰 summary의
+SHA256을 참조한다. 각 Evidence의1024B 한도를 유지하며 전체 관찰을 메타데이터에 중복
+삽입하지 않는다. 확인된 Finding은 두 증거를 참조한다. 기존 저장된 v1 자료는 과거 결과로
+읽을 수 있지만 새 required profile의 완료 증거로 재사용하지 않는다.
+
 ## 4. sdist와 derived wheel
 
 sdist는 build를 필요로 할 수 있는 executable Artifact다. source archive 또는 PEP 517 backend는 Host에서 실행하지 않는다.

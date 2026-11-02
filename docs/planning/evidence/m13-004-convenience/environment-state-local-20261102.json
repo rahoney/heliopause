@@ -580,5 +580,114 @@
       "remaining ecosystem consumers",
       "whole S01/S08/C01 and grouped/final qualification"
     ]
+  },
+  "python_subpath_primitive_checkpoint": {
+    "baseline_commit": "66fbdd5",
+    "scope": "inert runc DATA and exact existing mount identity validation only; no Python/gVisor workspace wiring yet",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "receipts": [
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-data-v1.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-unrequested-subpath-red.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-identity-green.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-complete-input-green.json"
+    ],
+    "input_boundary": "first RED/partial GREEN omit changed test from selected hash list; retained, not full-input proof; complete-input green includes 419 files",
+    "missing": [
+      "actual Python environment wiring",
+      "gVisor authority and source topology",
+      "full affected-consumer checks with completed Python bundle"
+    ],
+    "superseded_by": "ordinary_python_environment_checkpoint for current consumer wiring"
+  },
+  "ordinary_python_environment_checkpoint": {
+    "baseline_commit": "66fbdd5",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "ordinary wheel inspection, same trusted transaction; two profiles and isolated unit subpaths; other consumers and full qualification open",
+    "physical_launches": "2*N+4 within original 2*MaxObservationImportsPerArtifact+4",
+    "workspace_capacity": "two profiles share original writable tmpfs capacity",
+    "required_profile": "pypi-dynamic-environments-v3",
+    "supplemented_metadata": "m5-inspection-environment/v2 with separate observation ID and summary SHA256",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-subpath-data-v1.json",
+        "sha256": "89c8d6d6c5cabfdf4bca6a505ed7b6c28423dba690c8de443463c88bbf6b1805"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-connected-compile-primitives.json",
+        "sha256": "51bdffabed3e73c3e87acabcbfc610234045c06200118c1a6a6f6664d5fd0219"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-connected-targets-v2.json",
+        "sha256": "fbc5044e54d2c15a318a0e6049f7b51f498f741d75a047324482753841714954"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-affected-package-regressions.json",
+        "sha256": "f9316b812bbc99058b018fc5d847b97ef9c42c9d733d7f92ae1ef5a4b0da5730"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-consumer-green.json",
+        "sha256": "f6f7e400f05d9a7a0ee1a2d6a2119a170509b7b903d7db2fb98e70078a15e8f4"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-input-boundary.json",
+        "sha256": "efdd828691892e6ff810a2cb313d4bbafd215e7abbc6c89dec1791ec8075a9e4"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-native-build-v2.json",
+        "sha256": "b90f661168130c9704a5249e2374ebe8e9ee2b339e4a59f9a481127b6ea706e3"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-helper-build-v2.json",
+        "sha256": "35eeca2da74b7f4b1f9ed584e1bd3064accbe0a785c6c0ad3fdbc15068535f3b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-native-v1.json",
+        "sha256": "90bc6242afce4f915c7a8587b60bf7b6b0dce943c1c19bd8ce0a26491e88d8a6"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-summary-budget-red.json",
+        "sha256": "9b7175b65d01da88d9a97bf9ae36c7696d3692677b68de0e1b462c29692ac383"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-separated-evidence-green.json",
+        "sha256": "5d3a39cb9ba8ffbab09f945f46b14a9707ac75abb54491c869d405ed0584788e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-original-binaries-cleanup.json",
+        "sha256": "65311693e36fdf9380b2794336ddef70f54389fa7e1614bc4beafd1c013e66e8"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-foundation.json",
+        "sha256": "8df8b8e797aebe97c694f334f61b45511bd3be74da132c124203adfa6ebe5dba"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-owner-race.json",
+        "sha256": "f94c0b40d9dd8e78bf22717335a7f766c0540a397445683d66531d0259473c52"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-staticcheck.json",
+        "sha256": "d2eae1051ad1b336c31f040be0566a389998fbc9c6033b326671018b20dca381"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-security.json",
+        "sha256": "3f5b04b9f099215b028d4d3bf3ce2502cfe4b296ddf8516e32060acea01bca5d"
+      }
+    ],
+    "missing": [
+      "native normalization/persisted Evidence",
+      "no-import/optional/prerequisite/root-profile acceptance",
+      "remaining ecosystem consumers",
+      "whole S01/S08/C01/final qualification"
+    ]
   }
 }

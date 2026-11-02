@@ -111,9 +111,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 type pythonClosurePhase string
 
 const (
-	pythonClosurePreparation pythonClosurePhase = "PREPARATION"
-	pythonClosureAnchor      pythonClosurePhase = "ANCHOR"
-	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
+	pythonClosurePreparation            pythonClosurePhase = "PREPARATION"
+	pythonClosureAnchor                 pythonClosurePhase = "ANCHOR"
+	pythonClosureObservation            pythonClosurePhase = "OBSERVATION"
+	pythonClosureEnvironmentPreparation pythonClosurePhase = "ENVIRONMENT_PREPARATION"
+	pythonClosureEnvironmentAnchor      pythonClosurePhase = "ENVIRONMENT_ANCHOR"
+	pythonClosureEnvironmentObservation pythonClosurePhase = "ENVIRONMENT_OBSERVATION"
 )
 
 // observationTraceLedger is shared by every phase of one observation
@@ -216,17 +219,38 @@ func pythonClosureExpectedTopology(profile string, phase pythonClosurePhase) ([]
 	if !ok {
 		return nil, false
 	}
-	readOnly := phase == pythonClosureAnchor || phase == pythonClosureObservation
-	if phase != pythonClosurePreparation && !readOnly {
+	var readOnly bool
+	switch phase {
+	case pythonClosurePreparation, pythonClosureEnvironmentPreparation:
+	case pythonClosureAnchor, pythonClosureObservation, pythonClosureEnvironmentAnchor, pythonClosureEnvironmentObservation:
+		readOnly = true
+	default:
 		return nil, false
 	}
-	for index := range base {
-		if base[index].Mountpoint == pythonSitePath {
-			base[index] = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
-			return base, true
+	result := make([]observerMountExpectation, 0, len(base)+2)
+	site := false
+	for _, mount := range base {
+		if mount.Mountpoint == pythonSitePath {
+			site = true
+			if phase == pythonClosureEnvironmentAnchor {
+				continue
+			}
+			mount = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
+		}
+		if mount.Mountpoint == environmentWorkspaceRoot && (phase == pythonClosureEnvironmentAnchor || phase == pythonClosureEnvironmentObservation) {
+			mount = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", phase == pythonClosureEnvironmentAnchor, true, true, false}
+		}
+		result = append(result, mount)
+	}
+	if !site {
+		return nil, false
+	}
+	if phase == pythonClosureEnvironmentPreparation {
+		for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+			result = append(result, observerMountExpectation{pythonEnvironmentPreparationPrefix + string(kind), "workspace", environmentWorkspaceRoot, "9p", false, false, false, false})
 		}
 	}
-	return nil, false
+	return result, true
 }
 
 func isPythonObserverProfile(profile string) bool {

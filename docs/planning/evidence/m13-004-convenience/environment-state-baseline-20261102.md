@@ -337,3 +337,85 @@ ACCEPTANCE_CLOSED=YES(아래 한정 scope)다. `is-number@7.0.0`의 기존 publi
 operation 범위를 검증했다. 영구 설치 bytes/inode와 Docker 상태를 복원했고 root 보호
 시험 사본395388457B 및 exact compiler 출력을 제거했다. 이는 이 npm readback gap만의
 완료이며 다른 consumer와 전체 S01/S08/C01·hosted/final qualification은 계속 OPEN이다.
+
+
+## Python 소비자 baseline — 기존 trusted transaction 확장 전
+
+기준 `66fbdd5`. 최소/모의 환경 및 writable state 연결의 IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. 기존 `executeTrustedTransaction`의 인증된 RO
+closure, 단위별 fresh process, optional command/prerequisite semantics와 `startPhase`/
+`terminatePhase`/공유 CPU·trace·wall 원장은 구현/연결돼 있으므로 대체하지 않는다.
+`inspection/pypi/dynamic.go`는 현재 observation/command 결과를 보존하지만 환경 상태는 없다.
+
+`observationPolicyForPython`와 Host resource service의 현재 launch 상한은 동일한
+`2*MaxObservationImportsPerArtifact()+4`다. 매 단위마다 새 readonly keeper를 추가하면 두
+환경에서 이를 넘으므로 그 방식이나 상한 확대는 사용하지 않는다. 검토할 좁은 선택은
+환경별 owned volume 하나/readonly keeper 하나에 고정 단위별 subpath를 두고 각 writer에는
+자신의 subpath만 `/tmp`로 제공하는 것이다. Prep/기존 closure anchor2 + 환경 keeper2 +
+두 환경의 N writer = `2N+4`로 현재 launch 상한 안이며 CPU·trace·wall은 하나다.
+
+이 mount 의미는 아직 확인되지 않았다. 먼저 고정 image/runc의 inert DATA로 Docker
+volume-subpath 분리·inspect의 실제 identity·readonly keeper 선연결과 writer 제거 후
+보존을 작은 시험으로 확인한다. gVisor 권위·Python Artifact 실행 성공으로 확대하지 않는다.
+지원되지 않으면 원본 실패를 남기고 기존 종료/격리·예산을 약화하지 않는 경로를 재검토한다.
+추가 MISSING은 actual subpath/guest topology 검증, 두 환경의 기존 단위/optional/prerequisite
+재조정과 현재 profile 선언·저장 상태 Evidence, 정상/조건부/준비·취소·불완전 회귀다.
+
+
+위 inert DATA trial V1/4.389s는 runc·고정 Node image에서 단위별 파일 분리, `..`로 다른
+단위 미노출, readonly keeper 선연결·writer 제거 뒤 상태 보존과 exact 자원 정리를 PASS했다.
+중요한 실제 입력은 Docker `Mounts.Source`가 subpath를 표시하지 않고 원래 volume root를
+그대로 반환한다는 점이다. 실제 subpath는 기존 canonical inspect template이 이미 읽는
+`HostConfig.Mounts[].VolumeOptions.Subpath`에만 있다. 따라서 새 query/검증 framework를
+만들지 않고 기존 typed mount 구조와 검증에 기대 subpath의 정확한 일치를 연결한다.
+현재 typed 구조는 Subpath를 무시하므로 먼저 이 누락의 negative 회귀를 확인한다.
+원본은 `s01-python-subpath-data-v1.json`이며 gVisor/Python 실행 검증으로 쓰지 않는다.
+
+
+기존 root mount 검증의 Subpath 무시를 Python/Go 양쪽7.896s RED로 확인했고 기존
+`mountArgument`/`verifyContainerMount`/`verifyAttachments`에서만 정확한 기대값을 검사한다.
+원래 호출은 빈 subpath만 허용하며 새 경로는 현재 `/tmp`의 RW/non-executable workspace,
+controller opaque unit directory로 제한한다. 조회 template·CPU/wall/launch 한도는 그대로다.
+새 identity 표적의 완전 입력0.941s PASS이며 전체 Python 연결/qualification은 아직 NO다.
+첫 RED/부분 GREEN7.757s 원장의 frozen 목록에 수정 test 파일이 빠졌음을 확인했다.
+원본은 보존하고 같은 test를419개 입력 목록에 포함한 후 format/표적을 확인했다. 두 부분
+원장의 source_unchanged를 전체 변경 입력의 증명으로 확대하지 않는다.
+
+
+### ordinary Python 현재 연결 — 로컬 부분 검증
+
+기존 `pythonTransactionExecutor`에 공통 profile/volume/inventory를 연결했고, 현재 필요한
+Python 환경 수명 코드는 같은 모듈의 `pypi_environment.go`에 둔다. 새 backend·generic
+workflow·완료 protocol은 없다. 기존 Python/Node argv의 `/tmp`/env 변환만 공통 함수로
+재사용하며 코드 closure·command·중앙 image owner는 그대로다. 환경별 whole-volume RO
+keeper 두 개, 단위별 전용 subpath와 두 최종 snapshot을 사용한다. 전체 writable 용량을
+두 환경이 나눠 쓰고 물리 launch `2N+4`, CPU·wall·trace·기존 import cap은 유지한다.
+원래 단위를 두 실험으로 계상하며 optional command 결과는 원래 unit ID/owner에 합친다.
+Root/readonly keeper의 실제 liveness·exact subpath/attachment를 검사하고 writer의 전체
+종료·once-only drain 뒤 snapshot을 읽는다. Pipx 공급 도구·별도 사용자 프로그램 실행은
+현재 이 변경의 완료 범위가 아니며 후속 책임 대조를 유지한다.
+
+Native4/42.372s(no-skip/helperwait0)는 기존 npm 대조군8.24s, Python 기본9.62s, 두 import
+단위/최소·모의 profile 분리 및 정상 credential cue 읽기12.64s, 단기6종 동작과 같은 최종
+snapshot9.47s를 통과했다. 같은 kernel/CPP bytes를 재사용했고 불변 CPP/full을 반복하지
+않았다. 보호 시험 사본368547205B와 exact compiler 출력을 제거했으며 기존 파일 hash/
+inode·Docker 상태를 복원했다. 실제 관찰 전 Doc checkpoint 두 사본만 낡았음을 발견해
+입력을 맞췄고0.447+0.142s cache build의 binary bytes가 동일함을 확인했다. 첫 build는
+제품 compile 범위로 보존하며 그 상태에서 native를 시작하지 않았다.
+
+Sandbox 전체9.160s PASS를 포함한 첫 두 package20.090s는 보조 환경 증거를 배열 마지막으로
+찾던 기존 test만 실패했다. Kind로 정확히 선택하는 test 교정 뒤 PyPI 전체1.242s PASS다.
+최초 새 fixture의 delete 인자 typo compile4.301s와 교정 후 연결 표적7.797s도 원본을 보존한다.
+실제 native 관찰량을 보조 검사에 전달한1.070s RED는 metadata/관찰의 중첩이1024B를 넘음을
+재현했다. 한도 확대 없이 별도 observation Evidence와 ID/summary SHA256으로 연결한
+현재 PyPI 전체1.315s는 PASS다. Finding은 metadata와 실제 관찰 양쪽을 참조한다.
+
+ordinary Python 연결의 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. MISSING은 정상화·persisted Evidence의 실제 경로, no-import/
+optional/prerequisite와 지원 root profile의 묶음 acceptance, 다른 생태계 consumer 및 전체
+S01/S08/C01·최종 qualification이다. 새 CI·영구 Host 설치 변경은 없다.
+
+현재 Python 변경 묶음의 canonical foundation50.461s, 영향5 package Race53.971s,
+고정 Staticcheck14.279s, canonical security14.366s가 PASS다. Native4는 backend/공통
+workspace 경로의 앞선 정확한 source 범위이며 뒤의 보조 결과 encoding 수정까지 native로
+검증했다고 확대하지 않는다. 현재 구현/연결과 남은 actual acceptance를 독립 유지한다.

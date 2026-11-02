@@ -22,8 +22,15 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux Python/gVisor dynamic integration")
 	}
+	result := runLinuxPyPIWheelIntegration(t, linuxDynamicWheel(t))
+	if len(result.EnvironmentStates()) != 2 {
+		t.Fatal("both fresh environment states missing")
+	}
+}
+
+func runLinuxPyPIWheelIntegration(t *testing.T, wheel []byte) domain.SandboxResult {
+	t.Helper()
 	root := t.TempDir()
-	wheel := linuxDynamicWheel(t)
 	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "wheel.whl")
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		t.Fatal(err)
@@ -66,10 +73,16 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	backend.resources = integrationObservationResources{client: resources}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	result, err := backend.InspectWheel(ctx, artifact, static.ImportNames)
+	plan, err := artifactpypi.BuildObservationPlan(static, artifactpypi.PublicPyPIProfile().ResourcePolicy())
+	if err != nil {
+		t.Fatal(err)
+	}
+	observed, err := backend.InspectWheelWithPlan(ctx, artifact, plan, []domain.AcquiredArtifact{artifact})
+	result := observed.SandboxResult
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("dynamic result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
 	}
+	return result
 }
 
 type integrationObservationResources struct {
@@ -709,4 +722,80 @@ func TestLinuxRetainedPythonTransactionIntegration(t *testing.T) {
 	if resources.creates != 1 || resources.closes != 1 || resources.units != len(plan.Units)+prerequisiteUnits {
 		t.Fatal("shared authorization/unit reconciliation failed")
 	}
+}
+
+func TestLinuxPythonFreshEnvironmentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires protected Python environment integration")
+	}
+	program := `import os
+from pathlib import Path
+marker=Path('/tmp/haa-unit-'+__name__.replace('.','-'))
+if marker.exists():
+    raise RuntimeError('previous unit workspace leaked')
+marker.write_text('temporary unit state')
+credential=Path('/tmp/.aws/credentials')
+token=os.environ.get('GITHUB_TOKEN','')
+if token:
+    if not token.startswith('haa-invalid-') or token not in credential.read_text():
+        raise RuntimeError('synthetic environment missing')
+elif credential.exists():
+    raise RuntimeError('mock fixture leaked into minimal environment')
+`
+	wheel := linuxDynamicWheelWithProgramAndFiles(t, program, map[string][]byte{
+		"example/child.py":                       []byte(program + "\ndef main():\n    return None\n"),
+		"example-1.0.dist-info/entry_points.txt": []byte("[haa_fixture]\nfresh = example.child:main\n"),
+	})
+	result := runLinuxPyPIWheelIntegration(t, wheel)
+	for _, fact := range result.Observations() {
+		if fact.Category() == domain.ObservationHoneytoken || fact.Category() == domain.ObservationNetwork || fact.Subject() == "process-exec-unexpected" || fact.Subject() == "filesystem-outside-workspace" {
+			t.Fatalf("normal synthetic configuration read misclassified: %+v", fact)
+		}
+	}
+	states := result.EnvironmentStates()
+	if len(states) != 2 {
+		t.Fatal("two profile states missing")
+	}
+	for _, state := range states {
+		if !state.VFSOperationsCovered || state.Created < 2 {
+			t.Fatalf("independent root/child unit workspaces were not observed: %+v", state)
+		}
+	}
+	t.Log("fresh minimal/mock profiles and per-unit root/child filesystem isolation; no inherited Host secrets")
+}
+
+func TestLinuxPythonTransientFilesystemIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires protected Python environment integration")
+	}
+	program := `from pathlib import Path
+first=Path('/tmp/haa-transient-first')
+second=Path('/tmp/haa-transient-second')
+first.write_text('temporary data')
+first.rename(second)
+second.chmod(0o600)
+with second.open('w'):
+    pass
+second.unlink()
+`
+	result := runLinuxPyPIWheelIntegration(t, linuxDynamicWheelWithProgram(t, program))
+	counts := map[string]uint64{}
+	for _, fact := range result.Observations() {
+		counts[fact.Subject()] += fact.Count()
+	}
+	for _, kind := range []string{"filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation"} {
+		if counts[kind] < 2 {
+			t.Fatalf("both environments did not observe operation %s: %v", kind, counts)
+		}
+	}
+	states := result.EnvironmentStates()
+	if len(states) != 2 {
+		t.Fatal("state evidence missing")
+	}
+	for _, state := range states {
+		if !state.VFSOperationsCovered || state.Before != state.After || state.Created+state.Deleted+state.Modified != 0 {
+			t.Fatalf("transient-only changes were misreported as final-state changes: %+v", state)
+		}
+	}
+	t.Logf("two fresh profiles; transient operations observed independently of equal final snapshots; bounded counts=%v", counts)
 }

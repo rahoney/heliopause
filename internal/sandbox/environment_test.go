@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -157,5 +158,62 @@ func TestEnvironmentContainerKeepsExistingBoundaryAndAttestsOnlyFixedWorkspace(t
 	}
 	if _, err := (&SharedObserver{}).StartEnvironmentProfile(context.Background(), strings.Repeat("a", 64), false, nil); err == nil {
 		t.Fatal("environment observer started without a shared budget")
+	}
+}
+
+func TestInspectionEnvironmentUnitRootsAreIsolated(t *testing.T) {
+	session, _ := domain.NewSandboxSessionID()
+	profile, _ := newInspectionEnvironmentProfile(developmentEnvironment, session)
+	first, second := "unit-"+strings.Repeat("a", 64), "unit-"+strings.Repeat("b", 64)
+	payload, err := profile.payload(first, second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := environmentTarFixture(t, nil, "")
+	state, err := scanEnvironmentState(context.Background(), bytes.NewReader(append(root[:512], payload...)), environmentStateLimits{entries: 64, bytes: 32 << 10, archiveBytes: 64 << 10})
+	if err != nil || profile.verifyPlacement(state, first, second) != nil {
+		t.Fatal("unit fixtures unavailable", err)
+	}
+	if _, ok := state.files["project/.env"]; ok {
+		t.Fatal("unit fixture leaked to whole-volume root")
+	}
+	delete(state.files, second+"/project/.env")
+	if profile.verifyPlacement(state, first) != nil || profile.verifyPlacement(state, first, second) == nil {
+		t.Fatal("one unit substituted for another unit's fixture")
+	}
+	for _, roots := range [][]string{{""}, {"../escape"}, {first, first}, {first + "/child"}, {"unit-" + strings.Repeat("A", 64)}} {
+		if _, err := profile.payload(roots...); err == nil {
+			t.Fatal("invalid unit roots accepted", roots)
+		}
+	}
+}
+
+func TestInspectionEnvironmentAppliesToExistingPythonRuntimeArguments(t *testing.T) {
+	session, _ := domain.NewSandboxSessionID()
+	profile, _ := newInspectionEnvironmentProfile(developmentEnvironment, session)
+	volume := closureVolume{name: "haa-closure-environment", transaction: session.String(), manifestID: profile.identity, createdAt: "2026-11-03T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-environment/_data", capacity: 1 << 20, projectBuildDestination: environmentWorkspaceRoot}
+	closure := volume
+	closure.name = "haa-closure-site"
+	closure.projectBuildDestination = ""
+	base, err := pythonObservationCreateArguments(session.String(), 5, phaseObservation, closure, ObservationResourceLease{CgroupParent: "fixed-parent", CPU: 2}, artifactpypi.PublicPyPIProfile().ResourcePolicy())
+	if err != nil {
+		t.Fatal(err)
+	}
+	subpath := "unit-" + strings.Repeat("a", 64)
+	args, err := applyEnvironmentWorkspace(base, pythonImageReference, profile, volume, false, subpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	joined := strings.Join(args, "\x00")
+	for _, required := range []string{pythonImageReference, "--cpuset-cpus\x002", "--cgroup-parent\x00fixed-parent", "target=" + pythonSitePath + ",volume-nocopy,readonly", "target=/tmp,volume-nocopy,volume-subpath=" + subpath, "--annotation\x00" + environmentWorkspacePolicy, "HOME=/tmp", "GITHUB_TOKEN=haa-invalid-", boundaryContainerCommand()} {
+		if !strings.Contains(joined, required) {
+			t.Fatalf("existing Python boundary lost: %s", required)
+		}
+	}
+	if strings.Count(joined, "--mount\x00") != 2 || strings.Count(joined, "--label\x00"+closureManifestLabel+"=") != 1 || strings.Contains(joined, "--tmpfs\x00/tmp:") {
+		t.Fatal("duplicated or conflicting workspace/closure configuration")
+	}
+	if _, err := applyEnvironmentWorkspace(base, "foreign-image", profile, volume, false, subpath); err == nil {
+		t.Fatal("unlocked environment image accepted")
 	}
 }

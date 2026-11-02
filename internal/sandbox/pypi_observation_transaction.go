@@ -14,6 +14,8 @@ import (
 // Neither process output nor Python state is an input to this ledger.
 type observationUnit struct {
 	id          string
+	originalID  string
+	environment inspectionEnvironment
 	kind        observationUnitKind
 	candidate   string
 	program     string
@@ -297,10 +299,21 @@ func (t *observationTransaction) commandObservations() []PythonCommandObservatio
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	var out []PythonCommandObservation
+	positions := make(map[string]int)
 	for _, id := range t.order {
 		state := t.expected[id]
-		if state.finished && state.unit.coverage == artifactpypi.PostInstallCommandObservation {
-			out = append(out, PythonCommandObservation{Module: state.unit.candidate, UnitID: id, OwnerSHA256: state.unit.ownerDigest, ZeroExit: state.outcome == observationZeroExit})
+		if !state.finished || state.unit.coverage != artifactpypi.PostInstallCommandObservation {
+			continue
+		}
+		original := state.unit.originalID
+		if original == "" {
+			original = id
+		}
+		if index, seen := positions[original]; seen {
+			out[index].ZeroExit = out[index].ZeroExit && state.outcome == observationZeroExit
+		} else {
+			positions[original] = len(out)
+			out = append(out, PythonCommandObservation{Module: state.unit.candidate, UnitID: original, OwnerSHA256: state.unit.ownerDigest, ZeroExit: state.outcome == observationZeroExit})
 		}
 	}
 	return out

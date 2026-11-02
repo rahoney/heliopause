@@ -78,18 +78,49 @@ func newInspectionEnvironmentProfile(kind inspectionEnvironment, session domain.
 	return profile, nil
 }
 
-func (p inspectionEnvironmentProfile) payload() ([]byte, error) {
-	if p.identity == "" || len(p.fixtures) == 0 {
+// Unit directories are opaque controller identities, never artifact paths.
+func validEnvironmentUnitSubpath(value string) bool {
+	if len(value) != 69 || !strings.HasPrefix(value, "unit-") {
+		return false
+	}
+	for _, c := range value[5:] {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	return true
+}
+
+func (p inspectionEnvironmentProfile) payload(roots ...string) ([]byte, error) {
+	if p.identity == "" || len(p.fixtures) == 0 || len(roots) > int(domain.MaximumObservationSummaryCount) {
 		return nil, errors.New("inspection environment payload is unavailable")
+	}
+	rooted := len(roots) != 0
+	if !rooted {
+		roots = []string{""}
 	}
 	var body bytes.Buffer
 	archive := tar.NewWriter(&body)
-	for _, file := range p.fixtures {
-		if err := archive.WriteHeader(&tar.Header{Name: file.name, Mode: file.mode, Typeflag: file.kind, Size: int64(len(file.content)), Uid: 1000, Gid: 1000}); err != nil {
-			return nil, err
+	seen := make(map[string]bool, len(roots))
+	for _, root := range roots {
+		prefix := ""
+		if rooted {
+			if !validEnvironmentUnitSubpath(root) || seen[root] {
+				return nil, errEnvironmentState
+			}
+			seen[root] = true
+			prefix = root + "/"
+			if err := archive.WriteHeader(&tar.Header{Name: root, Mode: 0700, Typeflag: tar.TypeDir, Uid: 1000, Gid: 1000}); err != nil {
+				return nil, err
+			}
 		}
-		if _, err := archive.Write([]byte(file.content)); err != nil {
-			return nil, err
+		for _, file := range p.fixtures {
+			if err := archive.WriteHeader(&tar.Header{Name: prefix + file.name, Mode: file.mode, Typeflag: file.kind, Size: int64(len(file.content)), Uid: 1000, Gid: 1000}); err != nil {
+				return nil, err
+			}
+			if _, err := archive.Write([]byte(file.content)); err != nil {
+				return nil, err
+			}
 		}
 	}
 	if err := archive.Close(); err != nil {
@@ -98,19 +129,38 @@ func (p inspectionEnvironmentProfile) payload() ([]byte, error) {
 	return body.Bytes(), nil
 }
 
-func (p inspectionEnvironmentProfile) verifyPlacement(state environmentState) error {
-	if p.identity == "" || state.digest == "" || len(p.fixtures) == 0 {
+func (p inspectionEnvironmentProfile) verifyPlacement(state environmentState, roots ...string) error {
+	if p.identity == "" || state.digest == "" || len(p.fixtures) == 0 || len(roots) > int(domain.MaximumObservationSummaryCount) {
 		return errEnvironmentState
 	}
-	for _, expected := range p.fixtures {
-		actual, present := state.files[expected.name]
-		if !present || actual.kind != expected.kind || actual.mode != expected.mode || actual.uid != 1000 || actual.gid != 1000 || actual.size != int64(len(expected.content)) {
-			return errEnvironmentState
-		}
-		if expected.kind == tar.TypeReg {
-			digest := sha256.Sum256([]byte(expected.content))
-			if actual.digest != hex.EncodeToString(digest[:]) {
+	rooted := len(roots) != 0
+	if !rooted {
+		roots = []string{""}
+	}
+	seen := make(map[string]bool, len(roots))
+	for _, root := range roots {
+		prefix := ""
+		if rooted {
+			if !validEnvironmentUnitSubpath(root) || seen[root] {
 				return errEnvironmentState
+			}
+			seen[root] = true
+			prefix = root + "/"
+			dir, ok := state.files[root]
+			if !ok || dir.kind != tar.TypeDir || dir.mode != 0700 || dir.uid != 1000 || dir.gid != 1000 {
+				return errEnvironmentState
+			}
+		}
+		for _, expected := range p.fixtures {
+			actual, present := state.files[prefix+expected.name]
+			if !present || actual.kind != expected.kind || actual.mode != expected.mode || actual.uid != 1000 || actual.gid != 1000 || actual.size != int64(len(expected.content)) {
+				return errEnvironmentState
+			}
+			if expected.kind == tar.TypeReg {
+				digest := sha256.Sum256([]byte(expected.content))
+				if actual.digest != hex.EncodeToString(digest[:]) {
+					return errEnvironmentState
+				}
 			}
 		}
 	}
@@ -134,10 +184,6 @@ func environmentContainerArguments(session domain.SandboxSessionID, profile insp
 	if _, err := domain.ParseSandboxSessionID(volume.transaction); err != nil {
 		return nil, errEnvironmentState
 	}
-	mount, err := volume.mountArgument(readOnly)
-	if err != nil {
-		return nil, err
-	}
 	base := createArguments(session)
 	if readOnly {
 		for index := range base {
@@ -145,6 +191,26 @@ func environmentContainerArguments(session domain.SandboxSessionID, profile insp
 				base[index] += "-anchor"
 			}
 		}
+	}
+	for index, arg := range base {
+		if arg == nodeImageReference {
+			tail := append([]string{"--label", closureVolumeLabel + "=" + volume.transaction, "--label", closureManifestLabel + "=" + profile.identity}, base[index:]...)
+			base = append(base[:index], tail...)
+			break
+		}
+	}
+	return applyEnvironmentWorkspace(base, nodeImageReference, profile, volume, readOnly, "")
+}
+
+// Preserve each consumer's pinned image, command, closure and labels while
+// applying the same fixed /tmp, synthetic environment and guest restriction.
+func applyEnvironmentWorkspace(base []string, image string, profile inspectionEnvironmentProfile, volume closureVolume, readOnly bool, subpath string) ([]string, error) {
+	if (image != nodeImageReference && image != pythonImageReference) || profile.identity == "" || volume.manifestID != profile.identity || volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
+		return nil, errEnvironmentState
+	}
+	mount, err := volume.mountArgument(readOnly, subpath)
+	if err != nil {
+		return nil, err
 	}
 	args := make([]string, 0, len(base)+len(profile.environment)+4)
 	workspaces, environment, images := 0, 0, 0
@@ -157,9 +223,8 @@ func environmentContainerArguments(session domain.SandboxSessionID, profile insp
 		case base[index] == "--env" && index+1 < len(base):
 			index++
 			environment++
-		case base[index] == nodeImageReference:
-			args = append(args, "--label", closureVolumeLabel+"="+volume.transaction,
-				"--label", closureManifestLabel+"="+profile.identity, "--annotation", environmentWorkspacePolicy)
+		case base[index] == image:
+			args = append(args, "--annotation", environmentWorkspacePolicy)
 			args = append(args, profile.environment...)
 			args = append(args, base[index])
 			images++

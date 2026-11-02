@@ -120,7 +120,17 @@ func TestInspectionPrerequisiteKeepsRequestedGraphAndBaseFailure(t *testing.T) {
 					if node == graph.Primary() {
 						continue
 					}
-					summary := report.Evidence()[len(report.Evidence())-1].Summary()
+					summary := ""
+					matches := 0
+					for _, fact := range report.Evidence() {
+						if fact.Kind() == "pypi-dynamic-import-supplemented" {
+							summary = fact.Summary()
+							matches++
+						}
+					}
+					if matches != 1 {
+						t.Fatalf("supplemented scope evidence count=%d", matches)
+					}
 					if !strings.Contains(summary, `"original_environment":"NOT_ATTESTED"`) || !strings.Contains(summary, input.Artifact.Digest().String()) {
 						t.Fatal(summary)
 					}
@@ -354,4 +364,62 @@ func (*prerequisiteStorageCompletion) Reserve(context.Context, ports.StorageRequ
 func (s *prerequisiteStorageCompletion) NoteInspection(_ context.Context, run domain.RunID, complete bool) error {
 	s.completed[run] = complete
 	return nil
+}
+
+func TestInspectionPrerequisiteKeepsNativeOperationSummaryWithinEvidenceBudget(t *testing.T) {
+	root := t.TempDir()
+	_, acquired, input := prerequisiteGraphFixture(t, root)
+	var target domain.AcquiredArtifact
+	for _, artifact := range acquired {
+		if artifact.Identity().Name() == "dependency" {
+			target = artifact
+		}
+	}
+	static, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	wheel, _, err := static.InspectWheel(context.Background(), target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var observations []domain.SandboxObservation
+	// Fixed normalized counts from the current tiny transient-file native case.
+	for subject, count := range map[string]uint64{"filesystem-workspace-access": 55, "filesystem-workspace-create": 20, "filesystem-workspace-permission-operation": 14, "filesystem-workspace-rename": 5, "filesystem-workspace-size-operation": 16, "filesystem-workspace-unlink": 19, "filesystem-workspace-write": 17} {
+		fact, err := domain.NewCountedSandboxObservation(domain.ObservationFilesystem, subject, count)
+		if err != nil {
+			t.Fatal(err)
+		}
+		observations = append(observations, fact)
+	}
+	for subject, count := range map[string]uint64{"environment-minimal-v1-completed": 1, "environment-mock-development-v1-completed": 1, "process-exec-expected": 73, "python-observation-experiment-completed": 1} {
+		fact, err := domain.NewCountedSandboxObservation(domain.ObservationProcess, subject, count)
+		if err != nil {
+			t.Fatal(err)
+		}
+		observations = append(observations, fact)
+	}
+	inspector, _ := NewDynamicInspector(&prerequisiteRunner{t: t, observations: observations})
+	report, err := inspector.InspectWheelWithPrerequisites(context.Background(), target, wheel, []domain.AcquiredArtifact{target}, []domain.AcquiredArtifact{input.Artifact})
+	if err != nil || report.Execution().Status() != domain.ExecutionCompleted {
+		t.Fatalf("normal observed prerequisite failed normalization: %v", err)
+	}
+	var metadata, observed domain.Evidence
+	for _, fact := range report.Evidence() {
+		if len(fact.Summary()) > 1024 {
+			t.Fatal("evidence bound enlarged")
+		}
+		if fact.Kind() == "pypi-dynamic-import-supplemented" {
+			metadata = fact
+		}
+		if fact.ID().String() == supplementedObservationEvidenceID {
+			observed = fact
+		}
+	}
+	digest := sha256.Sum256([]byte(observed.Summary()))
+	if observed.Summary() == "" || observed.Identity() != target.Identity() || observed.Digest() != target.Digest() || observed.CheckID() != metadata.CheckID() || !strings.Contains(metadata.Summary(), `"schema":"m5-inspection-environment/v2"`) || !strings.Contains(metadata.Summary(), observed.ID().String()) || !strings.Contains(metadata.Summary(), hex.EncodeToString(digest[:])) {
+		t.Fatal("supplemented observations lost same-subject reference or digest")
+	}
+	for _, subject := range []string{"filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation"} {
+		if !strings.Contains(observed.Summary(), subject) {
+			t.Fatal("successful operation evidence omitted", subject)
+		}
+	}
 }
