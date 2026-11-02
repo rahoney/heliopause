@@ -71,7 +71,7 @@ func bindPNPMProjectClient(command *cobra.Command, executor sandbox.TrustedExecu
 	if err != nil {
 		return err
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer)
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return err
 	}

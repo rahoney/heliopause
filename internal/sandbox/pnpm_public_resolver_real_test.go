@@ -60,7 +60,7 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer())
+	backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

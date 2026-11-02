@@ -30,7 +30,7 @@ func runNPMExecution(ctx context.Context, command *cobra.Command, executor *host
 	if err != nil {
 		return err
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer)
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return err
 	}

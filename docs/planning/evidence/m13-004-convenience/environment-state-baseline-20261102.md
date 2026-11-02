@@ -150,3 +150,62 @@ CI는 시작하지 않았고 설치 환경은 변경하지 않았다.
 포함했다. 해당1.596s와 수정된 canonical foundation25.164s가 PASS다. Runtime 유지보수
 3 package37.155s·보안34.484s도 PASS다. S01/S08 전체 구현·Docker/observer/Artifact
 qualification은 이 검사들로 완료 처리하지 않는다.
+
+
+## 다음 구현 단위 — npm 두 fresh 실행의 root 예산
+
+기준 `bdb488c`. S01/S08 전체 상태는 위 네 NO를 유지한다. Npm 두 환경 실행의
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED도 NO다. 기존 `Backend.Execute`의
+one-shot lifecycle과 소개/관찰/종료는 구현돼 있으므로 다른 backend로 대체하지 않는다.
+공통 profile·volume/TAR/diff와 기존 `observationTransaction`, `observationCPUWatch`,
+`ObservationResourceClient`를 재사용해 필요한 두 실행만 연결한다.
+
+현재 privileged helper의 root budget profile은 PyPI/PyTorch만 허용한다. 최초 MISSING은
+npm의 고정 profile을 같은 CPU30초 authorization에 연결하는 것이다. 두 환경 전체의
+writer+readonly keeper4개가 root launch ceiling이며 실행마다 CPU/wall/event 한도를
+새로 부여하지 않는다. Npm 기존45초 wall·메모리·tmpfs·관찰 예산은 유지한다. Source/
+image/guest argv를 Artifact가 고르거나 raw manager로 우회하는 옵션은 없다.
+
+그 뒤 기존 factory/Bootstrap에 같은 typed resource adapter를 전달하고 profile 배치 검증,
+baseline→Artifact 실행→전체 tree 종료/trace drain→final inventory를 묶는다. 준비/관찰/
+정리 실패와 취소는 complete를 만들지 않는다. 현재는 이 단위의 baseline이며 새 실행이
+이미 제품에 연결됐다는 의미가 아니다.
+
+
+Npm 연결 중 실제 고정 lifecycle의 `HOME=/tmp`를 확인했다. 모의 설정을 무시되는
+`/tmp/home`에 두지 않고 기존 HOME의 run 전용 root에 배치하며 trusted argv/CPP 권한은
+바꾸지 않는다. 합산 실행 연결 뒤에도 typed 상태 digest/범위와 expected profile·기존
+one-shot 승인 재사용 거부를 닫아야 한다. 현재 제한된 변화 수를 전체 S08 증거 완료로
+표시하지 않는다. 다른 기존 생태계 진입점도 별도로 남는다.
+
+
+## 2026-11-03 npm 기존 lifecycle의 두 환경 연결 — 부분 검증
+
+기준 `bdb488c`에서 기존 `Backend.Execute`와 소개/관찰/종료 owner를 확장했다. 같은
+root authorization에 writer/readonly keeper 총4개를 등록하고 두 fresh 환경을 실행한다.
+CPU30초·기존45초 wall·메모리/tmpfs·공유 trace 한도는 재부여하지 않는다. 실행 전 profile
+배치를 검증하고, writer 전체 종료/trace drain 뒤 readonly final inventory를 비교한다.
+등록 실패 뒤 이미 시작된 trace도 기존 once-only 수집기로 회수한다. 실행의 최초 code와
+cause를 cleanup 오류가 덮지 않는다. 새 `npm-dynamic-lifecycle-environments-v2` 선언과
+기존 CheckPlan 검증은 과거 one-shot 승인을 거부한다. 다른 project 검사 profile을 새
+검사에 완료한 것으로 바꾸지 않는다.
+
+이 npm 연결의 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. 한정 actual3/31.307s는 실제 Docker·새 pinned gVisor·현재
+observer/helper에서 기본 설치, Host synthetic 값 미유입, 최소/모의 조건 및 fresh 파일
+분리를 통과했다. 기존 설치 bytes/inode·Docker 자원·helper process 상태를 복원했고,
+큰 시험 사본370078511B를 제거했다. ABI가 같은 기존 observer는 canonical4 source hash가
+동일함을 확인해 재사용했다. 새 CPP/full 빌드나 CI를 중복 실행하지 않았다.
+
+최초 timeout fallback panic과 수정된 표적 회귀, socket 제약으로 실패한 첫 Race 및
+sandbox만의 정상 권한 재검증, 자원 생성 전 중단된 operator 종료값 오류를 원본 그대로
+구분한다. [단일 부분 원장](./environment-state-local-20261102.json)의
+`npm_environment_checkpoint`가 입력과 각 raw receipt를 연결한다.
+
+MISSING은 typed 상태 digest/범위의 Evidence 연결, 실행 중 단기 파일 변화 관찰,
+다른 생태계의 기존 실행 consumer와 대응 actual, 묶음 최종 qualification이다.
+S01/S08 전체 네 상태는 여전히 NO이며 C01 전체와 B01 호환 gap도 OPEN이다.
+
+이 연결 묶음의 canonical foundation70.578s·security24.750s와 영향4 package vet4.769s가
+PASS다. 실제 실행 후 exact hash/신원 확인으로 원래 시험용 compiler 출력38421834B도
+제거했다. 재사용할 verified SDK/bundle과 도구 cache·원본 source/log는 보존한다.

@@ -261,5 +261,109 @@
       }
     ],
     "foundation_interpretation": "original foundation83.085s passed all compile stages then found the pre-existing C01 derived-wheel sandbox→Core/Ports import missing from the checker. Existing Architecture-001 permits backend→opaque Ports; exact edge and concrete-storage/bootstrap negatives registered. Boundary test1.596s and corrected foundation25.164s PASS. No runtime-patch causation claimed."
+  },
+  "npm_environment_checkpoint": {
+    "baseline_commit": "bdb488c",
+    "date": "2026-11-03",
+    "scope": "existing npm archive Backend.Execute only; shared resource/trace/wall accounting, two fresh workspaces and readonly final inventory; not all ecosystem/S01/S08 completion",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-root-resource-red.json",
+        "sha256": "7944c792a07a08cbdab88e4c8dea83f0606f191dbee474e9e455329f4833874f"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-root-resource-green.json",
+        "sha256": "7c0a6417290cce6361dc36f1464abad67491eb1295fe9e2e239780f93e05953a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-model-first.json",
+        "sha256": "b701f7fa21f1a820d69a06d3368131bfdf32ca073bcdd9105516c814f6599bfd"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-negative.json",
+        "sha256": "a78e0f04ea66d547e00c61192adc371dbec756003e449f733f04782a231ee59d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-negative-fixed.json",
+        "sha256": "a6492395db2d17ebd1058df03be298d3279e1ab4f03db13cd8ec053a5c035b41"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-race.json",
+        "sha256": "fb3476f3ff648bb689d987097f9bfff7eb283d7bf804b7247174c02b6ca09f7e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-sandbox-race-unrestricted.json",
+        "sha256": "648783177cd1c22de4815353a693104f3905ff2efbbb6d461db43e0a85feea0d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-static.json",
+        "sha256": "75a8f42ff63a5527c8c2e39c51e1c239109cb2736f7a1cdeab9e9e4ec09317fa"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-profile-check.json",
+        "sha256": "9c26ede016806c3ccc45d5999b55f50bec2bc6b37b0962373c019f47354d4bca"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-build.json",
+        "sha256": "9a606fcbeda5b8626b6534553450149e6f66549de997986ee9e8c3c6bd1e8fbf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-helper-build.json",
+        "sha256": "31bfadb47f7a757a3a01f06432707fae6055cbcce64700009e149ec67a296f80"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v1-preflight.json",
+        "sha256": "6fef0923fd17989cc7b803414560775725093ea85aff4d900cd0791cb4525e9a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v2.json",
+        "sha256": "43811b3f036429c569b4c20823ffe57eadd08a5f765246c7a62cef05f400189d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-foundation.json",
+        "sha256": "2e94776df2343fa1b5ccd376fca5ee1c1901647413c7e53cb8f8e65be780b56b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-security.json",
+        "sha256": "a29807c6e48bb182e19a4bb0b01d26b55c16b66c012e4038a8621f355efdd72f"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-vet.json",
+        "sha256": "cf6ced0a87b082a4e1494cb3e3c8fe9a1912c219f38acb2115620c240a98b0fe"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-original-binaries-cleanup.json",
+        "sha256": "55ea294d048909933ff3ec71721f3b739a7feefc59cd27c69bf8109e190652a4"
+      }
+    ],
+    "native": {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v2.json",
+      "named_cases": 3,
+      "elapsed_seconds": 31.307,
+      "scope": "controlled npm lifecycle, inherited Host synthetic test values not leaked, fresh minimal/development cues and no prior marker",
+      "installation_restored": true,
+      "helper_wait_zero": true,
+      "temporary_copy_bytes_removed": 370078511,
+      "original_test_binaries_removed_bytes": 38421834
+    },
+    "first_failures": [
+      "new candidate timeout fallback dereferenced a runtime removed by stop before returning lifecycle-accounting error; exact regression fixed and retained",
+      "first grouped Race had sandbox socket permission failures; other three packages PASS; only sandbox repeated unrestricted",
+      "native operator v1 incorrectly required mountpoint non-mount status 1; aborted before resource creation; v2 uses actual mountinfo"
+    ],
+    "profile": "npm-dynamic-lifecycle-environments-v2; existing ExpectedChecks/CheckPlan rejects legacy one-shot profile",
+    "remaining": [
+      "typed state digest/scope in persisted evidence",
+      "transient file event coverage and privacy",
+      "remaining ecosystem experiment consumers and matching native cases",
+      "grouped whole qualification and remaining S01/S08 acceptance"
+    ],
+    "local_checkpoint_checks": "canonical foundation70.578s/security24.750s/affected vet4.769s PASS; earlier owner Race/static retain their exact source scope"
   }
 }

@@ -139,7 +139,7 @@ func TestEnvironmentStateWorkspaceTransportPrimitive(t *testing.T) {
 		args = append(args, profile.environment...)
 		args = append(args, "--entrypoint", "/bin/sleep", runtimeidentity.NodeImageReference, "90")
 		if mode == "runsc" && !readonly {
-			args, err = environmentContainerArguments(session, profile, volume)
+			args, err = environmentContainerArguments(session, profile, volume, false)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -155,7 +155,7 @@ func TestEnvironmentStateWorkspaceTransportPrimitive(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			trace, err = environmentObserver.StartEnvironmentProfile(ctx, id, budget)
+			trace, err = environmentObserver.StartEnvironmentProfile(ctx, id, false, budget)
 			if err != nil {
 				t.Fatal("DATA observer start", err)
 			}

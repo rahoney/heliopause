@@ -28,13 +28,6 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
-	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux gVisor runtime")
-	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`)
-}
-
 func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
 	runner := integrationRunner{t: t}
 	if path := integrationBinary("runsc"); path != runtimeidentity.LocalRunscPath {
@@ -46,75 +39,6 @@ func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
 	if _, ok := admissionAwareRunner(runner).(*admissionAwareCommandRunner); !ok {
 		t.Fatal("integration runner must use the direct-exec admission wrapper")
 	}
-}
-
-func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
-	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux gVisor runtime")
-	}
-	for key, value := range map[string]string{
-		"GITHUB_TOKEN":          "fake-github-token",
-		"NPM_TOKEN":             "fake-npm-token",
-		"PYPI_TOKEN":            "fake-pypi-token",
-		"AWS_SECRET_ACCESS_KEY": "fake-aws-secret",
-		"OPENAI_API_KEY":        "fake-openai-key",
-		"CI_SECRET":             "fake-ci-secret",
-		"ARBITRARY_TOKEN":       "fake-arbitrary-token",
-		"SSH_AUTH_SOCK":         "/tmp/fake-ssh-agent.sock",
-	} {
-		t.Setenv(key, value)
-	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test -z \"$GITHUB_TOKEN\" && test -z \"$NPM_TOKEN\" && test -z \"$PYPI_TOKEN\" && test -z \"$AWS_SECRET_ACCESS_KEY\" && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
-}
-
-func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) domain.SandboxResult {
-	t.Helper()
-	root := t.TempDir()
-	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	file, err := os.Create(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gzipWriter := gzip.NewWriter(file)
-	writer := tar.NewWriter(gzipWriter)
-	if err := writer.WriteHeader(&tar.Header{Name: "package/package.json", Size: int64(len(body)), Mode: 0o600}); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := writer.Write([]byte(body)); err != nil {
-		t.Fatal(err)
-	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := gzipWriter.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := file.Close(); err != nil {
-		t.Fatal(err)
-	}
-	supervisor := integrationObserverSupervisor(t)
-	defer supervisor.Close()
-	runner := integrationRunner{t: t}
-	introducer, err := NewDockerArtifactIntroducer(root, runner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	backend, err := NewBackend(runner, introducer, supervisor.Observer(), integrationCapabilityProbe(runner))
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := backend.Execute(context.Background(), integrationRequest(t))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Status() != domain.SandboxCompleted {
-		code, _ := result.LimitationCode()
-		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
-	}
-	return result
 }
 
 func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
@@ -631,20 +555,4 @@ func (b *boundedIntegrationOutput) Write(data []byte) (int, error) {
 		b.remaining -= len(accepted)
 	}
 	return count, nil
-}
-
-func integrationRequest(t *testing.T) domain.SandboxRequest {
-	t.Helper()
-	source, _ := domain.NewSourceID("npm")
-	identity, _ := domain.NewResolvedArtifactIdentity(source, "tiny", "1.2.3", "tarball")
-	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
-	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:tarball", 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	request, err := domain.NewSandboxRequest(artifact)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return request
 }

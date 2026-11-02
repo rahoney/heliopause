@@ -180,6 +180,27 @@ type pythonPhaseRuntime struct {
 	traceResult pythonPhaseTrace
 }
 
+// Both existing Python transactions and environment experiments use the same
+// once-only drain and independently authenticated resource termination.
+func (runtime *pythonPhaseRuntime) stopAndCollect(resources ObservationResourceClient, transaction string) (ObservationResourceLease, pythonPhaseTrace, error) {
+	traceDone := make(chan pythonPhaseTrace, 1)
+	go func() { traceDone <- runtime.collect() }()
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	lease, err := resources.Terminate(cleanupCtx, transaction, runtime.id)
+	cancel()
+	return lease, <-traceDone, err
+}
+
+func (runtime *pythonPhaseRuntime) collect() pythonPhaseTrace {
+	runtime.traceOnce.Do(func() {
+		traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+		defer cancel()
+		observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		runtime.traceResult = pythonPhaseTrace{observations, limitation, diagnostic}
+	})
+	return runtime.traceResult
+}
+
 type pythonTransactionExecutor struct {
 	backend           *PythonDynamicBackend
 	observer          observationPhaseObserver
@@ -672,22 +693,7 @@ func (t *pythonTransactionExecutor) terminatePhase(id string) (resultErr error) 
 	if runtime == nil || runtime.collected || runtime.trace == nil || !runtime.registered {
 		return errors.New("python observation runtime cleanup evidence is unavailable")
 	}
-	traceDone := make(chan pythonPhaseTrace, 1)
-	go func() {
-		// A phase stream is consumable once. Cleanup retries may still drain
-		// resources, but must retain the first complete or failed evidence.
-		runtime.traceOnce.Do(func() {
-			traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
-			defer cancel()
-			observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
-			runtime.traceResult = pythonPhaseTrace{observations, limitation, diagnostic}
-		})
-		traceDone <- runtime.traceResult
-	}()
-	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
-	lease, err := t.resources.Terminate(cleanupCtx, t.transaction, id)
-	cancel()
-	trace := <-traceDone
+	lease, trace, err := runtime.stopAndCollect(t.resources, t.transaction)
 	if err != nil || trace.limitation != "" || !trace.diagnostic.SessionComplete || lease.CgroupParent != t.lease.CgroupParent {
 		return errors.Join(resultErr, t.diagnostic("phase-termination", fmt.Errorf("phase=%s container=%s helper=%s parent_match=%t cumulative_cpu_us=%d limitation=%s trace={%s}",
 			runtime.phase, id, pythonResourceErrorReason(err), lease.CgroupParent == t.lease.CgroupParent, lease.UsageUsec, trace.limitation, trace.diagnostic.String())))

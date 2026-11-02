@@ -374,7 +374,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		var dynamicSandbox ports.Sandbox
 		if runtime.GOOS == "linux" {
-			backend, err := sandbox.NewLinuxBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver)
+			backend, err := sandbox.NewLinuxBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver, newObservationResourceAdapter())
 			if err != nil {
 				return err
 			}

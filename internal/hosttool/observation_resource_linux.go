@@ -245,7 +245,9 @@ func observationParent(transaction string) (string, error) {
 }
 
 func observationPolicy(name string) (artifactpypi.ResourcePolicy, error) {
-	if name == "pypi" {
+	// The existing default CPU authorization matches the npm lifecycle's
+	// unchanged 30-second ceiling. Environment experiments share this parent.
+	if name == "pypi" || name == "npm-lifecycle" {
 		return artifactpypi.PublicPyPIProfile().ResourcePolicy(), nil
 	}
 	if !strings.HasPrefix(name, "pytorch:") {
@@ -320,9 +322,15 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 		if err != nil {
 			return ObservationResourceLease{}, err
 		}
+		maxLaunches := 2*policy.MaxObservationImportsPerArtifact() + 4
+		if request.Profile == "npm-lifecycle" {
+			// Two fresh writers and their readonly keepers, never one
+			// replenished authorization per environment.
+			maxLaunches = 4
+		}
 		session = &observationResourceSession{peer: peer, parent: parent, cpu: cpu, path: path, keeperScope: keeperScope, usage: baseline,
 			ceiling:     uint64(policy.RuntimeCPUSecs()) * 1_000_000,
-			maxLaunches: 2*policy.MaxObservationImportsPerArtifact() + 4,
+			maxLaunches: maxLaunches,
 			containers:  make(map[string]string), scopes: make(map[string]string),
 			drainedScopes: make(map[string]struct{}), drainedContainers: make(map[string]string)}
 		e.sessions[request.Transaction] = session

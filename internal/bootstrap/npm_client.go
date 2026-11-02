@@ -61,7 +61,7 @@ func bindNPMProjectClient(command *cobra.Command, executor sandbox.TrustedExecut
 	if err != nil {
 		return err
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer)
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return err
 	}

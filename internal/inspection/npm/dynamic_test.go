@@ -2,10 +2,12 @@ package npm
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestDynamicInspectorNormalizesOnlyBoundedM3Findings(t *testing.T) {
@@ -90,10 +92,13 @@ func TestDynamicInspectorPreservesUnavailableAndResourceLimits(t *testing.T) {
 	}
 }
 
-type fakeSandbox struct{ result domain.SandboxResult }
+type fakeSandbox struct {
+	result domain.SandboxResult
+	err    error
+}
 
 func (f fakeSandbox) Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error) {
-	return f.result, nil
+	return f.result, f.err
 }
 
 func dynamicArtifact(t *testing.T) domain.AcquiredArtifact {
@@ -128,4 +133,48 @@ func observation(t *testing.T, category domain.ObservationCategory, subject stri
 		t.Fatal(err)
 	}
 	return item
+}
+
+func TestDynamicInspectorPreservesTrustedIncompleteCause(t *testing.T) {
+	cause := errors.New("resource cleanup failed")
+	for _, status := range []domain.SandboxStatus{domain.SandboxIncomplete, domain.SandboxCompleted} {
+		code := ""
+		if status == domain.SandboxIncomplete {
+			code = "M3_DYNAMIC_TIMEOUT"
+		}
+		inspector, _ := NewDynamicInspector(fakeSandbox{result: sandboxResult(t, status, code, nil), err: cause})
+		report, err := inspector.Inspect(context.Background(), dynamicArtifact(t))
+		if status == domain.SandboxCompleted {
+			if !errors.Is(err, cause) {
+				t.Fatal("operational error accepted as completion")
+			}
+			continue
+		}
+		if got, _ := report.Execution().LimitationCode(); err != nil || report.Execution().Status() != domain.ExecutionIncomplete || got != code {
+			t.Fatalf("first incomplete result lost: %s %v", got, err)
+		}
+	}
+}
+
+func TestDynamicInspectorRequiresFreshEnvironmentProfile(t *testing.T) {
+	inspector, _ := NewDynamicInspector(fakeSandbox{result: sandboxResult(t, domain.SandboxCompleted, "", nil)})
+	artifact := dynamicArtifact(t)
+	expected, err := inspector.ExpectedChecks(context.Background(), artifact, domain.CheckInspection)
+	if err != nil || len(expected) != 1 {
+		t.Fatal("required profile declaration unavailable", err)
+	}
+	report, err := inspector.Inspect(context.Background(), artifact)
+	legacy, _ := domain.CheckProfileDigest("npm-dynamic-lifecycle-v1", runtimeidentity.NodeImageReference)
+	if err != nil || !expected[0].Required() || expected[0].ProfileDigest() == legacy || report.Execution().ProfileDigest() != expected[0].ProfileDigest() {
+		t.Fatal("one-shot evidence profile reused or current result/declaration disagree", err)
+	}
+	run, _ := domain.NewRunID()
+	plan, err := domain.NewCheckPlan(run, artifact, expected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	old, err := domain.NewCheckExecution(expected[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", legacy)
+	if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{old}) == nil || plan.Validate(run, artifact, []domain.CheckExecution{report.Execution()}) != nil {
+		t.Fatal("retained one-shot approval was accepted or current approval rejected", err)
+	}
 }

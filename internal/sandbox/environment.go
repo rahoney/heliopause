@@ -49,24 +49,20 @@ func newInspectionEnvironmentProfile(kind inspectionEnvironment, session domain.
 		{name: ".haa-honeytoken", content: invalid + "\n", mode: 0400, kind: tar.TypeReg, canary: true},
 	}}
 	if kind == developmentEnvironment {
-		for index, value := range profile.environment {
-			if value == "HOME=/tmp" {
-				profile.environment[index] = "HOME=/tmp/home"
-			}
-		}
+		// The fixed lifecycle already uses HOME=/tmp. Put ordinary config
+		// cues there so they are visible without changing its trusted argv.
 		for _, name := range []string{"GITHUB_TOKEN", "NPM_TOKEN", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"} {
 			profile.environment = append(profile.environment, "--env", name+"="+invalid)
 		}
 		profile.fixtures = append(profile.fixtures,
-			environmentFixture{name: "home", mode: 0700, kind: tar.TypeDir},
-			environmentFixture{name: "home/.aws", mode: 0700, kind: tar.TypeDir},
-			environmentFixture{name: "home/.ssh", mode: 0700, kind: tar.TypeDir},
+			environmentFixture{name: ".aws", mode: 0700, kind: tar.TypeDir},
+			environmentFixture{name: ".ssh", mode: 0700, kind: tar.TypeDir},
 			environmentFixture{name: "project", mode: 0700, kind: tar.TypeDir},
 			environmentFixture{name: "project/.env", content: "APP_ENV=development\nAPI_TOKEN=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
-			environmentFixture{name: "home/.aws/credentials", content: "[default]\naws_access_key_id=" + invalid + "\naws_secret_access_key=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
-			environmentFixture{name: "home/.npmrc", content: "//registry.npmjs.org/:_authToken=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
-			environmentFixture{name: "home/.pypirc", content: "[pypi]\nusername=__token__\npassword=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
-			environmentFixture{name: "home/.ssh/id_ed25519", content: "HAA INVALID SYNTHETIC KEY " + invalid + "\n", mode: 0600, kind: tar.TypeReg},
+			environmentFixture{name: ".aws/credentials", content: "[default]\naws_access_key_id=" + invalid + "\naws_secret_access_key=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
+			environmentFixture{name: ".npmrc", content: "//registry.npmjs.org/:_authToken=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
+			environmentFixture{name: ".pypirc", content: "[pypi]\nusername=__token__\npassword=" + invalid + "\n", mode: 0600, kind: tar.TypeReg},
+			environmentFixture{name: ".ssh/id_ed25519", content: "HAA INVALID SYNTHETIC KEY " + invalid + "\n", mode: 0600, kind: tar.TypeReg},
 			environmentFixture{name: "project/README.md", content: "Synthetic inspection workspace.\n", mode: 0600, kind: tar.TypeReg},
 		)
 	}
@@ -130,16 +126,26 @@ func createEnvironmentWorkspace(ctx context.Context, runner CommandRunner, sessi
 	return createInputVolume(ctx, runner, session.String(), profile.identity, capacity, false, projectBuildVolumeConfig{environmentWorkspaceRoot, false})
 }
 
-func environmentContainerArguments(session domain.SandboxSessionID, profile inspectionEnvironmentProfile, volume closureVolume) ([]string, error) {
+func environmentContainerArguments(session domain.SandboxSessionID, profile inspectionEnvironmentProfile, volume closureVolume, readOnly bool) ([]string, error) {
 	if session.String() == "" || profile.identity == "" || volume.manifestID != profile.identity ||
-		volume.transaction != session.String() || volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
+		volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
 		return nil, errEnvironmentState
 	}
-	mount, err := volume.mountArgument(false)
+	if _, err := domain.ParseSandboxSessionID(volume.transaction); err != nil {
+		return nil, errEnvironmentState
+	}
+	mount, err := volume.mountArgument(readOnly)
 	if err != nil {
 		return nil, err
 	}
 	base := createArguments(session)
+	if readOnly {
+		for index := range base {
+			if base[index] == "heliopause-"+session.String() {
+				base[index] += "-anchor"
+			}
+		}
+	}
 	args := make([]string, 0, len(base)+len(profile.environment)+4)
 	workspaces, environment, images := 0, 0, 0
 	for index := 0; index < len(base); index++ {
@@ -170,22 +176,22 @@ func environmentContainerArguments(session domain.SandboxSessionID, profile insp
 // Only this typed entry changes the existing npm profile's workspace topology.
 // Guest noexec/nosuid must be present independently of the backing tmpfs.
 // A runtime that only provides ordinary 9p fails before any artifact launch.
-func (o *SharedObserver) StartEnvironmentProfile(ctx context.Context, container string, budget *observationTraceLedger) (TraceReader, error) {
-	topology, ok := environmentExpectedTopology()
+func (o *SharedObserver) StartEnvironmentProfile(ctx context.Context, container string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := environmentExpectedTopology(readOnly)
 	if !ok || budget == nil {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	return o.startProfileWithBudget(ctx, container, "npm-lifecycle", topology, budget)
 }
 
-func environmentExpectedTopology() ([]observerMountExpectation, bool) {
+func environmentExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
 	topology, ok := observerExpectedTopology("npm-lifecycle")
 	if !ok {
 		return nil, false
 	}
 	for index, mount := range topology {
 		if mount.Mountpoint == environmentWorkspaceRoot {
-			topology[index] = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", false, true, true, false}
+			topology[index] = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", readOnly, true, true, false}
 			return topology, true
 		}
 	}

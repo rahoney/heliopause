@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -34,11 +33,12 @@ type ArtifactIntroducer interface {
 // CapabilityProbe reports whether the locked Linux gVisor runtime is usable.
 type CapabilityProbe func(context.Context) (Capability, error)
 
-// Backend creates one gVisor-backed Docker container per Sandbox Session.
+// Backend owns fresh gVisor experiments and their common inspection budget.
 type Backend struct {
 	runner       CommandRunner
 	introducer   ArtifactIntroducer
 	observer     TraceObserver
+	resources    ObservationResourceClient
 	probe        CapabilityProbe
 	newSessionID func() (domain.SandboxSessionID, error)
 	wallTimeout  time.Duration
@@ -62,8 +62,8 @@ func NewBackend(runner CommandRunner, introducer ArtifactIntroducer, observer Tr
 	return &Backend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, wallTimeout: sandboxWallTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
-// Execute introduces the acquired artifact exactly once, runs it under gVisor,
-// and disposes of the container before returning a bounded raw result.
+// Execute runs the exact artifact in each required fresh environment and
+// disposes of its runtimes before returning a bounded raw result.
 func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {
 	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
 		return domain.SandboxResult{}, errors.New("sandbox backend is not configured")
@@ -83,79 +83,7 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		return incomplete(sessionID, capability.LimitationCode)
 	}
 
-	created, err := b.runner.Output(ctx, "docker", createArguments(sessionID)...)
-	if err != nil {
-		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
-	}
-	containerID := strings.TrimSpace(string(created))
-	if !containerIDPattern.MatchString(containerID) {
-		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
-	}
-	trace, err := startTrace(ctx, b.observer, containerID, "npm-lifecycle")
-	if err != nil {
-		if b.cleanup(containerID) != nil {
-			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_OBSERVER_FAILED")
-	}
-
-	runContext, cancel := context.WithTimeout(ctx, b.wallTimeout)
-	defer cancel()
-	if _, err := b.runner.Output(runContext, "docker", "start", containerID); err != nil {
-		if b.cleanup(containerID) != nil {
-			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
-	}
-	if err := awaitBoundaryHelper(runContext, b.runner, containerID); err != nil {
-		if b.cleanup(containerID) != nil {
-			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
-	}
-	if err := awaitMountAnchors(runContext, b.observer, containerID); err != nil {
-		if b.cleanup(containerID) != nil {
-			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_OBSERVER_FAILED")
-	}
-	if err := b.introducer.Introduce(runContext, containerID, request.Artifact()); err != nil {
-		cleanupErr := b.cleanup(containerID)
-		if cleanupErr != nil {
-			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
-	}
-
-	_, runErr := b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryLaunchMode,
-		"/bin/sh", "-ceu", npmLifecycleCommand)...)
-	timedOut := runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded
-	// The pinned gVisor remote session is container-scoped, while the npm
-	// command is a Docker exec inside the still-running PID1 container. End the
-	// container session first so the helper can flush its aggregate and emit
-	// stream-end; only then can collection reach a truthful EOF.
-	cleanupErr := b.cleanup(containerID)
-	collectContext, collectCancel := context.WithTimeout(context.Background(), b.cleanupWait)
-	observations, observationLimitation := collectTrace(collectContext, trace)
-	collectCancel()
-	if cleanupErr != nil {
-		return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
-	}
-	if runErr != nil {
-		if timedOut {
-			return incomplete(sessionID, "M3_DYNAMIC_TIMEOUT")
-		}
-		return incomplete(sessionID, "M3_DYNAMIC_EXECUTION_FAILED")
-	}
-	if observationLimitation != "" {
-		return incomplete(sessionID, observationLimitation)
-	}
-	observation, err := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
-	if err != nil {
-		return domain.SandboxResult{}, fmt.Errorf("create Sandbox observation: %w", err)
-	}
-	observations = append(observations, observation)
-	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", observations)
+	return b.executeEnvironmentInspection(ctx, request, sessionID)
 }
 
 func (b *Backend) cleanup(containerID string) error {

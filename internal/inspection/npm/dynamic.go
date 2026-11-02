@@ -10,7 +10,9 @@ import (
 )
 
 // DynamicInspector interprets raw Sandbox results; it never controls a runtime.
-const dynamicCheckProfileName = "npm-dynamic-lifecycle-v1"
+// v2 requires both fresh minimal-v1 and mock-development-v1 experiments under
+// one resource authorization; retained one-shot v1 evidence cannot satisfy it.
+const dynamicCheckProfileName = "npm-dynamic-lifecycle-environments-v2"
 
 type DynamicInspector struct{ sandbox ports.Sandbox }
 
@@ -35,7 +37,9 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		return domain.InspectionReport{}, err
 	}
 	result, err := i.sandbox.Execute(ctx, request)
-	if err != nil {
+	// A trusted backend may retain an operational cause alongside its valid
+	// incomplete result. Keep that first limitation in the required check.
+	if err != nil && (result.Status() != domain.SandboxIncomplete || result.SessionID().String() == "") {
 		return domain.InspectionReport{}, err
 	}
 	return normalizeDynamicResult(artifact, result)

@@ -104,7 +104,7 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 					t.Error(err)
 				}
 			}()
-			backend, err := sandbox.NewLinuxBackendWithExecutor(root+"/intake", runner, observer.Observer())
+			backend, err := sandbox.NewLinuxBackendWithExecutor(root+"/intake", runner, observer.Observer(), newObservationResourceAdapter())
 			if err != nil {
 				t.Fatal(err)
 			}
