@@ -315,3 +315,25 @@ raw 입력·범위·한정 증거를 연결한다. 전체 S01/S08/C01 완료나 
 PASS다. Actual 후 compiler 시험 출력36621774B를 exact hash/inode로 확인해 제거했다.
 SDK/verified bundle은 다음 소비자 검증의 입력이므로 보존한다. 마지막 변경은 legacy
 profile 표적 fixture와 문서뿐이며 위 native/Race product source와 구분한다.
+
+
+## 다음 누락 단위 — 실제 정규화·저장 Evidence readback
+
+기준 `22927b4`. npm Backend.Execute → DynamicInspector → 기존 Application Inspect →
+Local Evidence Record/ReadReference의 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. Domain/normalizer·저장 경로는 재구현하지 않는다. 기존
+`internal/bootstrap/npm_project_integration_test.go`의 trusted runtime 구성을 재사용해
+작은 고정 공개 npm 패키지 한 개를 실제 검역하고, 현재 required profile과 같은 Run/subject의
+저장된 두 환경 Evidence를 읽는다. MISSING은 실제 kernel 관찰이 기록된 summary와
+fixture/baseline/final digest·scope/profile의 저장 후 동일성 및 정상 Policy 결과다.
+기존 all-profile/모든 생태계 qualification을 이 한 사례로 대체하지 않는다.
+
+
+실제 readback 단위는 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES(아래 한정 scope)다. `is-number@7.0.0`의 기존 public resolver →
+실제 두 환경/VFS 관찰 → 현재 required check → Application → Local Record/ReadReference
+→ Policy ALLOW를 native1/11.13s(operator13.413s), no-skip/helperwait0로 확인했다.
+저장된 같은 Run/subject/check/profile과 두 환경의 fixture/baseline/final digest·scope·
+operation 범위를 검증했다. 영구 설치 bytes/inode와 Docker 상태를 복원했고 root 보호
+시험 사본395388457B 및 exact compiler 출력을 제거했다. 이는 이 npm readback gap만의
+완료이며 다른 consumer와 전체 S01/S08/C01·hosted/final qualification은 계속 OPEN이다.

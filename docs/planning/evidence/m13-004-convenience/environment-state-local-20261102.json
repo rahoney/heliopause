@@ -545,5 +545,40 @@
       "native operator v1 BUILD basename filter selected unrelated files; pre-resource NOT_RUN"
     ],
     "test_output_cleanup_bytes": 36621774
+  },
+  "persisted_evidence_checkpoint": {
+    "baseline_commit": "22927b4",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "scope": "one exact pinned public npm artifact, actual two fresh profiles and active VFS facts through existing Application/local store readback and Policy ALLOW only",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-build.json",
+        "sha256": "35564c61159bf847d1dd61f4bb8eb8b52efc38b079a013279ede4d403b9269a7"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-helper-build.json",
+        "sha256": "9dca32edd7d868ae5337aa66d7711112137303ee95b005fa64eaa29958af0c58"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-native-v1.json",
+        "sha256": "f4d30e8da7b58f82b788179f6aaa19cc59aab8d2f63429b2a246f97b2af82495"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-cleanup.json",
+        "sha256": "dfdd450dfe25df34b70e56e804f3b938877643bf5007d977a9000e6156d05c93"
+      }
+    ],
+    "host": "exact original restored; temporary protected copies 395388457B removed",
+    "original_compiler_output_cleanup_bytes": 63547791,
+    "missing": [
+      "remaining ecosystem consumers",
+      "whole S01/S08/C01 and grouped/final qualification"
+    ]
   }
 }
