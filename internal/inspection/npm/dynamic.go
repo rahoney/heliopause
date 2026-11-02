@@ -75,8 +75,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 			return domain.NewInspectionReport(execution, nil, nil)
 		}
 	}
-	states := result.EnvironmentStates()
-	if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+	if !completeDynamicEnvironments(result) {
 		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE", profile)
 		if err != nil {
 			return domain.InspectionReport{}, err
@@ -103,22 +102,11 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	retained := []domain.Evidence{evidence}
-	for _, state := range states {
-		summary, err := state.Summary()
-		if err != nil {
-			return domain.InspectionReport{}, err
-		}
-		id, err := domain.NewEvidenceID("npm-workspace-" + string(state.Profile))
-		if err != nil {
-			return domain.InspectionReport{}, err
-		}
-		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
-		if err != nil {
-			return domain.InspectionReport{}, err
-		}
-		retained = append(retained, fact)
+	workspaces, err := workspaceEvidence(artifact, checkID, result, "npm-workspace")
+	if err != nil {
+		return domain.InspectionReport{}, err
 	}
+	retained := append([]domain.Evidence{evidence}, workspaces...)
 	codes := dynamicFindingCodes(result.Observations())
 	findings := make([]domain.Finding, 0, len(codes))
 	for _, code := range codes {
@@ -172,4 +160,31 @@ func (i *DynamicInspector) ExpectedChecks(ctx context.Context, artifact domain.A
 		return nil, err
 	}
 	return []domain.CheckRequirement{requirement}, nil
+}
+
+func completeDynamicEnvironments(result domain.SandboxResult) bool {
+	states := result.EnvironmentStates()
+	return len(states) == 2 && states[0].VFSOperationsCovered && states[1].VFSOperationsCovered
+}
+
+// Archive, instance and local-root consumers retain the same bounded state
+// contract under their own current check and opaque controller-owned IDs.
+func workspaceEvidence(artifact domain.AcquiredArtifact, checkID domain.CheckID, result domain.SandboxResult, prefix string) ([]domain.Evidence, error) {
+	var facts []domain.Evidence
+	for _, state := range result.EnvironmentStates() {
+		summary, err := state.Summary()
+		if err != nil {
+			return nil, err
+		}
+		id, err := domain.NewEvidenceID(prefix + "-" + string(state.Profile))
+		if err != nil {
+			return nil, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, fact)
+	}
+	return facts, nil
 }

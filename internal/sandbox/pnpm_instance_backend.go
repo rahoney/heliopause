@@ -1,23 +1,18 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"slices"
 	"strings"
+	"time"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 var errPNPMInstanceExecution = errors.New("pnpm instance inspection is unavailable or incomplete")
-
-type pnpmTargetTraceObserver interface {
-	StartPNPMTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-}
 
 // ExecutePNPMInstance observes one exact frozen instance in a fresh session.
 // The layout is static input binding, not Policy approval or Host authority.
@@ -28,7 +23,7 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if err := ctx.Err(); err != nil {
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err, context.Cause(ctx))
 	}
-	observer, ok := b.observer.(pnpmTargetTraceObserver)
+	_, ok := b.observer.(npmInstanceEnvironmentTraceObserver)
 	_, inputOK := b.runner.(inputCommandRunner)
 	_, outputOK := b.runner.(streamingDockerOutput)
 	if !ok || !inputOK || !outputOK {
@@ -43,176 +38,178 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 	if err != nil {
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err)
 	}
-	return b.executeNPMInstance(ctx, nativeRuntimePNPM, target, payload, observer.StartPNPMTargetLifecycleProfile)
+	return b.executeNPMInstance(ctx, nativeRuntimePNPM, target, payload)
 }
 
 // Both typed callers validate their opaque layout before this resource owner.
-func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error)) (domain.SandboxResult, error) {
-	return b.executeNPMInstanceWithBunRuntime(ctx, kind, target, payload, startTrace, nil)
+func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload) (domain.SandboxResult, error) {
+	return b.executeNPMInstanceWithBunRuntime(ctx, kind, target, payload, nil)
 }
 
-func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error), prepare func(context.Context) (nativeProjectTool, error)) (domain.SandboxResult, error) {
-	spec, known := nativeProjectIdentity(kind)
+func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, prepare func(context.Context) (nativeProjectTool, error)) (result domain.SandboxResult, resultErr error) {
+	defer func() {
+		if result.Status() != domain.SandboxCompleted {
+			resultErr = errors.Join(errPNPMInstanceExecution, resultErr)
+		}
+	}()
+	_, known := nativeProjectIdentity(kind)
 	validTarget := kind == nativeRuntimePNPM && validPNPMTargetLifecyclePath(target) || kind == nativeRuntimeBun && validBunTargetLifecyclePath(target) || kind == nativeRuntimeNPMProject && (validNPMProjectTargetLifecyclePath(target) || target == nodeExecutionProject)
-	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || startTrace == nil || prepare != nil && kind != nativeRuntimeBun {
+	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || prepare != nil && kind != nativeRuntimeBun {
 		return domain.SandboxResult{}, errPNPMInstanceExecution
 	}
 	session, err := b.newSessionID()
 	if err != nil || session.String() == "" {
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err)
 	}
-	var project closureVolume
-	var native nativeRuntimeVolume
-	var tool nativeProjectTool
-	var container string
-	var trace TraceReader
-	finish := func(code string, cause error) (domain.SandboxResult, error) {
-		if ctx.Err() != nil {
-			if code == "" {
-				code = "M3_DYNAMIC_EXECUTION_FAILED"
-			}
-			cause = errors.Join(cause, ctx.Err(), context.Cause(ctx))
-		}
-		if container != "" {
-			if err := b.cleanup(container); err != nil {
-				if code == "" {
-					code = "M3_DYNAMIC_CLEANUP_FAILED"
-				}
-				cause = errors.Join(cause, err)
-			}
-		}
-		var observations []domain.SandboxObservation
-		if trace != nil {
-			collect, done := resolverCleanupContext()
-			facts, limitation, diagnostic := collectTraceDiagnostic(collect, trace)
-			done()
-			observations = facts
-			if limitation != "" {
-				if kind == nativeRuntimeNPMProject && target == nodeExecutionProject {
-					cause = errors.Join(cause, fmt.Errorf("npm local root observer diagnostic: %s", diagnostic.String()))
-				}
-				observations = retainedSuspiciousTraceFacts(diagnostic.KindCounts)
-				if code == "" {
-					code = limitation
-				}
-				cause = errors.Join(cause, errors.New(limitation))
-			}
-		}
-		if project.name != "" {
-			cleanup, done := resolverCleanupContext()
-			err := closeWritableOutputVolume(cleanup, b.runner, &project, spec.root)
-			done()
-			if err != nil {
-				if code == "" {
-					code = "M3_DYNAMIC_CLEANUP_FAILED"
-				}
-				cause = errors.Join(cause, err)
-			}
-		}
-		if native.name != "" {
-			cleanup, done := resolverCleanupContext()
-			err := native.close(cleanup, b.runner)
-			done()
-			if err != nil {
-				if code == "" {
-					code = "M3_DYNAMIC_CLEANUP_FAILED"
-				}
-				cause = errors.Join(cause, err)
-			}
-		}
-		if code != "" {
-			result, err := domain.NewSandboxResult(session, domain.SandboxIncomplete, code, observations)
-			return result, errors.Join(errPNPMInstanceExecution, cause, err)
-		}
-		completed, err := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
-		if err != nil {
-			return domain.SandboxResult{}, err
-		}
-		return domain.NewSandboxResult(session, domain.SandboxCompleted, "", append(observations, completed))
+	observer, ok := b.observer.(environmentTraceObserver)
+	_, instanceObserver := b.observer.(npmInstanceEnvironmentTraceObserver)
+	_, inputOK := b.runner.(inputCommandRunner)
+	_, streamOK := b.runner.(streamingDockerOutput)
+	_, discardOK := b.runner.(discardCommandRunner)
+	if !ok || !instanceObserver || !inputOK || !streamOK || !discardOK || b.resources == nil {
+		return incomplete(session, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE")
 	}
 	capability, err := b.probe(ctx)
 	if err != nil {
-		return finish("M3_DYNAMIC_CAPABILITY_ERROR", err)
+		result, failure := incomplete(session, "M3_DYNAMIC_CAPABILITY_ERROR")
+		return result, errors.Join(failure, err)
 	}
 	if !capability.Available {
-		return finish("M3_DYNAMIC_CAPABILITY_UNAVAILABLE", nil)
+		return incomplete(session, "M3_DYNAMIC_CAPABILITY_UNAVAILABLE")
 	}
+	operation, code, err := b.newEnvironmentInspection(session, observer)
+	if err != nil {
+		result, resultErr := incomplete(session, code)
+		return result, errors.Join(resultErr, err)
+	}
+	run, cancel := context.WithDeadline(ctx, operation.ledger.policy.wallDeadline)
+	defer cancel()
+	if err := operation.initialize(run, cancel); err != nil {
+		return operation.finish(ctx, run, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err)
+	}
+	seen := map[string]bool{session.String(): true}
+	for _, profileKind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+		experiment, err := b.newSessionID()
+		if err != nil || experiment.String() == "" || seen[experiment.String()] {
+			return operation.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err)
+		}
+		seen[experiment.String()] = true
+		profile, err := newInspectionEnvironmentProfile(profileKind, experiment)
+		if err != nil {
+			return operation.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err)
+		}
+		code, cause := operation.instanceExperiment(run, experiment, profile, kind, target, payload, prepare)
+		if code != "" || cause != nil {
+			return operation.finish(ctx, run, code, cause)
+		}
+	}
+	completed, err := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
+	if err != nil {
+		return operation.finish(ctx, run, "M3_DYNAMIC_OBSERVER_FAILED", err)
+	}
+	operation.observed = append(operation.observed, completed)
+	return operation.finish(ctx, run, "", nil)
+}
+
+// The original frozen payload, null network, native runtime and exact lifecycle
+// argv remain this instance owner's responsibility. Resource termination and
+// workspace evidence use the same owner as ordinary npm archive inspection.
+func (n *environmentInspection) instanceExperiment(ctx context.Context, session domain.SandboxSessionID, profile inspectionEnvironmentProfile, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, prepare func(context.Context) (nativeProjectTool, error)) (string, error) {
+	b := n.backend
+	n.projectKind = kind
+	var tool nativeProjectTool
+	var err error
 	if prepare != nil {
 		tool, err = prepare(ctx)
 		if err != nil || tool == nil || tool.nativeKind() != nativeRuntimeBun {
-			return finish("M3_DYNAMIC_SETUP_FAILED", errors.Join(errBunToolSupply, err))
+			return "M3_DYNAMIC_SETUP_FAILED", errors.Join(errBunToolSupply, err)
 		}
-		native, err = createNativeRuntimeVolume(ctx, b.runner, nativeRuntimeBun)
+		n.native, err = createNativeRuntimeVolume(ctx, b.runner, nativeRuntimeBun)
 		if err != nil {
-			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+			return "M3_DYNAMIC_SETUP_FAILED", err
 		}
 	}
-	project, err = createNativeProjectVolume(ctx, b.runner, session.String(), kind)
+	n.project, err = createNativeProjectVolume(ctx, b.runner, session.String(), kind)
 	if err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	args, err := npmInstanceCreateArguments(session, project, kind)
-	if err == nil && native.name != "" {
-		args, err = bunArtifactRuntimeCreateArguments(args, native)
-	}
+	n.volume, err = createEnvironmentWorkspace(ctx, b.runner, n.owner, profile, n.policy.RuntimeTmpfs())
 	if err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		n.uncertain = n.volume.name != ""
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
 	}
-	created, err := b.runner.Output(ctx, "docker", args...)
+	writer, err := n.start(ctx, session, profile, false)
 	if err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	container = strings.TrimSpace(string(created))
-	if !exactObservationContainerID(container) {
-		container = ""
-		return finish("M3_DYNAMIC_SETUP_FAILED", errPNPMInstanceExecution)
-	}
-	trace, err = startTrace(ctx, container)
-	if err != nil || trace == nil {
-		return finish("M3_DYNAMIC_OBSERVER_FAILED", err)
-	}
-	run, cancel := context.WithTimeout(ctx, b.wallTimeout)
-	defer cancel()
-	if _, err := b.runner.Output(run, "docker", "start", container); err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", errors.Join(err, run.Err(), context.Cause(run)))
-	}
-	if err := awaitBoundaryHelper(run, b.runner, container); err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", errors.Join(err, run.Err(), context.Cause(run)))
-	}
-	if err := awaitMountAnchors(run, b.observer, container); err != nil {
-		return finish("M3_DYNAMIC_OBSERVER_FAILED", err)
-	}
-	if native.name != "" {
-		if err := native.verifyTarget(run, b.runner, container); err != nil {
-			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	container := writer.id
+	if n.native.name != "" {
+		if err := n.native.verifyTarget(ctx, b.runner, container); err != nil {
+			return "M3_DYNAMIC_SETUP_FAILED", err
 		}
-		if err := tool.introduce(run, b.runner, container); err != nil {
-			return finish("M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err)
+		if err := tool.introduce(ctx, b.runner, container); err != nil {
+			return "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err
 		}
-		if err := native.verifyTarget(run, b.runner, container); err != nil {
-			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		if err := n.native.verifyTarget(ctx, b.runner, container); err != nil {
+			return "M3_DYNAMIC_SETUP_FAILED", err
 		}
 	}
-	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	if err := n.project.verifyAttachments(ctx, b.runner, map[string]bool{container: false}); err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	if err := copyNPMInspectionPayload(run, b.runner, container, payload, kind); err != nil {
-		return finish("M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err)
+	if err := copyNPMInspectionPayload(ctx, b.runner, container, payload, kind); err != nil {
+		return "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err
 	}
-	if err := verifyPNPMInstanceNetwork(run, b.runner, container); err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	if err := verifyPNPMInstanceNetwork(ctx, b.runner, container); err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	if err := n.project.verifyAttachments(ctx, b.runner, map[string]bool{container: false}); err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	if native.name != "" {
-		if err := native.verifyTarget(run, b.runner, container); err != nil {
-			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	if n.native.name != "" {
+		if err := n.native.verifyTarget(ctx, b.runner, container); err != nil {
+			return "M3_DYNAMIC_SETUP_FAILED", err
 		}
+	}
+	seed, err := profile.payload()
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	if err := b.runner.(inputCommandRunner).RunInput(ctx, bytes.NewReader(seed), "docker", "cp", "--archive", "-", container+":/tmp"); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	anchor, err := n.start(ctx, session, profile, true)
+	if err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
+	}
+	attachments := map[string]bool{container: false, anchor.id: true}
+	if err := n.project.verifyAttachments(ctx, b.runner, attachments); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	if err := n.volume.verifyAttachments(ctx, b.runner, attachments); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	// Existing source membership plus the bounded change allowance covers large
+	// unchanged project trees without using the summary-count cap as a file cap.
+	capacity := n.policy.RuntimeTmpfs() + n.project.capacity
+	limits := environmentStateLimits{entries: len(payload.entries) + int(domain.MaximumObservationSummaryCount), bytes: capacity, archiveBytes: 2 * capacity}
+	before, err := captureEnvironmentState(ctx, b.runner, anchor.id, limits)
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	if err := profile.verifyPlacement(before); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	n.ledger.mu.Lock()
+	n.ledger.preparationOK = true
+	n.ledger.anchorAlive = true
+	n.ledger.mu.Unlock()
+	if err := n.ledger.beginUnit(string(profile.kind), container, time.Now()); err != nil {
+		return "M3_DYNAMIC_ACCOUNTING_INCOMPLETE", err
 	}
 	var command []string
 	if kind == nativeRuntimeBun {
-		if native.name != "" {
+		if n.native.name != "" {
 			command, err = bunRuntimeTargetLifecycleExecArguments(container, target)
 		} else {
 			command, err = bunTargetLifecycleExecArguments(container, target)
@@ -225,34 +222,30 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 		command, err = pnpmTargetLifecycleExecArguments(container, target)
 	}
 	if err != nil {
-		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	_, err = b.runner.Output(run, "docker", command...)
-	if err != nil || run.Err() != nil {
-		code := "M3_DYNAMIC_EXECUTION_FAILED"
-		if errors.Is(run.Err(), context.DeadlineExceeded) {
-			code = "M3_DYNAMIC_TIMEOUT"
+	commandErr := discardCommand(ctx, b.runner, "docker", command...)
+	primary := ""
+	if commandErr != nil || ctx.Err() != nil {
+		primary = "M3_DYNAMIC_EXECUTION_FAILED"
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			primary = "M3_DYNAMIC_TIMEOUT"
 		}
-		return finish(code, errors.Join(err, run.Err(), context.Cause(run)))
+		commandErr = errors.Join(commandErr, ctx.Err(), context.Cause(ctx))
 	}
-	return finish("", nil)
-}
-
-func npmInstanceCreateArguments(session domain.SandboxSessionID, project closureVolume, kind nativeRuntimeToolKind) ([]string, error) {
-	spec, known := nativeProjectIdentity(kind)
-	if !known || project.destination() != spec.root || project.projectBuildExecutable {
-		return nil, errPNPMInstanceExecution
+	if err := n.stop(container); err != nil {
+		if primary != "" {
+			return primary, errors.Join(commandErr, err)
+		}
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
 	}
-	mount, err := project.mountArgument(false)
-	if err != nil {
-		return nil, err
+	if primary != "" {
+		return primary, commandErr
 	}
-	args := createArguments(session)
-	image := slices.Index(args, runtimeidentity.NodeImageReference)
-	if image < 0 {
-		return nil, errPNPMInstanceExecution
+	if err := n.project.verifyAttachments(ctx, b.runner, map[string]bool{anchor.id: true}); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
 	}
-	return append(append(append([]string{}, args[:image]...), "--mount", mount), args[image:]...), nil
+	return n.completeEnvironment(ctx, profile, writer, anchor, before, limits)
 }
 
 // A successful query must prove the canonical Docker null network and absence

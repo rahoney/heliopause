@@ -9,10 +9,6 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-type bunRuntimeTargetTraceObserver interface {
-	StartBunRuntimeTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-}
-
 const bunRuntimeTargetLifecycleCommand = `mkdir -p /tmp/.npm; PATH=/haa-runtime:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1"`
 
 func bunRuntimeTargetLifecycleExecArguments(container, target string) ([]string, error) {
@@ -44,7 +40,7 @@ func (b *Backend) executeBunRuntimeInstance(ctx context.Context, layout artifact
 	if err := ctx.Err(); err != nil {
 		return domain.SandboxResult{}, errors.Join(errBunInstanceExecution, err, context.Cause(ctx))
 	}
-	observer, ok := b.observer.(bunRuntimeTargetTraceObserver)
+	_, ok := b.observer.(npmInstanceEnvironmentTraceObserver)
 	_, inputOK := b.runner.(inputCommandRunner)
 	_, outputOK := b.runner.(streamingDockerOutput)
 	if !ok || !inputOK || !outputOK {
@@ -59,7 +55,7 @@ func (b *Backend) executeBunRuntimeInstance(ctx context.Context, layout artifact
 	if err != nil {
 		return domain.SandboxResult{}, errors.Join(errBunInstanceExecution, err)
 	}
-	result, err := b.executeNPMInstanceWithBunRuntime(ctx, nativeRuntimeBun, target, payload, observer.StartBunRuntimeTargetLifecycleProfile, prepare)
+	result, err := b.executeNPMInstanceWithBunRuntime(ctx, nativeRuntimeBun, target, payload, prepare)
 	if err != nil {
 		return result, errors.Join(errBunInstanceExecution, err)
 	}

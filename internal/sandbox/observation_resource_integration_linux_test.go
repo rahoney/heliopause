@@ -135,6 +135,15 @@ type integrationObservationResources struct {
 	client *hosttool.ObservationResourceClient
 }
 
+func integrationObservationResourceAdapter(t *testing.T) ObservationResourceClient {
+	t.Helper()
+	client, err := hosttool.NewSystemObservationResourceClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return integrationObservationResources{client: client}
+}
+
 func integrationObservationLease(lease hosttool.ObservationResourceLease) ObservationResourceLease {
 	return ObservationResourceLease{CgroupParent: lease.CgroupParent, CPU: lease.CPU, UsageUsec: lease.UsageUsec}
 }

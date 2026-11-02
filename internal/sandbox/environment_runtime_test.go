@@ -21,9 +21,11 @@ type environmentModelFile struct {
 	body []byte
 	mode int64
 	kind byte
+	link string
 }
 type environmentModelContainer struct {
 	volume            string
+	mounts            map[string]string
 	readOnly, started bool
 	trace             *cleanupGatedTraceReader
 	done              chan struct{}
@@ -45,13 +47,18 @@ type environmentBackendModel struct {
 	commandCause, closeCause                                              error
 	payload                                                               []byte
 	traceRecords                                                          []TraceRecord
+	traceError                                                            error
 	order                                                                 []string
 	traces                                                                []*cleanupGatedTraceReader
 }
 
+func newEnvironmentBackendState() *environmentBackendModel {
+	return &environmentBackendModel{volumes: make(map[string]dockerVolumeInspection), files: make(map[string]map[string]environmentModelFile), containers: make(map[string]*environmentModelContainer), parent: "haaobs-model.slice", payload: []byte("fixed model input")}
+}
+
 func newEnvironmentBackendModel(t *testing.T) (*Backend, *environmentBackendModel, domain.SandboxRequest) {
 	t.Helper()
-	f := &environmentBackendModel{volumes: make(map[string]dockerVolumeInspection), files: make(map[string]map[string]environmentModelFile), containers: make(map[string]*environmentModelContainer), parent: "haaobs-model.slice", payload: []byte("fixed model input")}
+	f := newEnvironmentBackendState()
 	sum := sha256.Sum256(f.payload)
 	source, _ := domain.NewSourceID("npm")
 	identity, _ := domain.NewResolvedArtifactIdentity(source, "tiny", "1.0.0", "tarball")
@@ -122,13 +129,23 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 	case "create":
 		f.next++
 		id := fmt.Sprintf("%064x", f.next)
-		mount := modelArgument(args, "--mount")
-		fields := map[string]string{}
-		for _, part := range strings.Split(mount, ",") {
-			key, value, _ := strings.Cut(part, "=")
-			fields[key] = value
+		c := &environmentModelContainer{mounts: make(map[string]string)}
+		for index, arg := range args {
+			if arg != "--mount" || index+1 >= len(args) {
+				continue
+			}
+			fields := map[string]string{}
+			for _, part := range strings.Split(args[index+1], ",") {
+				key, value, _ := strings.Cut(part, "=")
+				fields[key] = value
+			}
+			c.mounts[fields["target"]] = fields["source"]
+			if fields["target"] == "/tmp" {
+				c.volume = fields["source"]
+				c.readOnly = strings.Contains(args[index+1], ",readonly")
+			}
 		}
-		f.containers[id] = &environmentModelContainer{volume: fields["source"], readOnly: strings.Contains(mount, ",readonly")}
+		f.containers[id] = c
 		return []byte(id), nil
 	case "inspect":
 		id := args[len(args)-1]
@@ -137,10 +154,15 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 			return nil, errors.New("unknown model container")
 		}
 		if modelArgument(args, "--format") == containerMountInspectTemplate {
-			volume := f.volumes[c.volume]
-			configured := dockerHostMountInspection{Type: "volume", Source: c.volume, Target: "/tmp", ReadOnly: c.readOnly}
-			configured.VolumeOptions.NoCopy = true
-			return json.Marshal(dockerContainerMountInspection{ID: id, Mounts: []dockerMountInspection{{Type: "volume", Name: c.volume, Source: volume.Mountpoint, Destination: "/tmp", Driver: "local", RW: !c.readOnly}}, HostMounts: []dockerHostMountInspection{configured}})
+			view := dockerContainerMountInspection{ID: id}
+			for target, name := range c.mounts {
+				volume := f.volumes[name]
+				configured := dockerHostMountInspection{Type: "volume", Source: name, Target: target, ReadOnly: c.readOnly}
+				configured.VolumeOptions.NoCopy = true
+				view.Mounts = append(view.Mounts, dockerMountInspection{Type: "volume", Name: name, Source: volume.Mountpoint, Destination: target, Driver: "local", RW: !c.readOnly})
+				view.HostMounts = append(view.HostMounts, configured)
+			}
+			return json.Marshal(view)
 		}
 		return []byte(id + "|true|2"), nil
 	case "exec":
@@ -149,7 +171,11 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 		filter := modelArgument(args, "--filter")
 		var ids []string
 		for id, c := range f.containers {
-			if filter == "volume="+c.volume || filter == "id="+id {
+			matches := filter == "id="+id
+			for _, volume := range c.mounts {
+				matches = matches || filter == "volume="+volume
+			}
+			if matches {
 				ids = append(ids, id)
 			}
 		}
@@ -216,10 +242,14 @@ func (f *environmentBackendModel) RunDiscard(ctx context.Context, _ string, args
 func (f *environmentBackendModel) RunInput(_ context.Context, input io.Reader, _ string, args ...string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	id, _, _ := strings.Cut(args[len(args)-1], ":")
+	id, destination, _ := strings.Cut(args[len(args)-1], ":")
 	c := f.containers[id]
 	if c == nil {
 		return errors.New("unknown model writer")
+	}
+	volume := c.mounts[destination]
+	if volume == "" {
+		return errors.New("unknown model destination")
 	}
 	archive := tar.NewReader(input)
 	for {
@@ -237,7 +267,15 @@ func (f *environmentBackendModel) RunInput(_ context.Context, input io.Reader, _
 		if f.failure == "placement" && header.Name == ".haa-honeytoken" {
 			continue
 		}
-		f.files[c.volume][header.Name] = environmentModelFile{body: body, mode: header.Mode, kind: header.Typeflag}
+		name := strings.TrimSuffix(header.Name, "/")
+		file := environmentModelFile{body: body, mode: header.Mode, kind: header.Typeflag, link: header.Linkname}
+		if header.Typeflag == tar.TypeLink {
+			file = f.files[volume][header.Linkname]
+			if file.kind != tar.TypeReg {
+				return errors.New("unresolved model hardlink")
+			}
+		}
+		f.files[volume][name] = file
 	}
 }
 func (f *environmentBackendModel) RunOutput(_ context.Context, output io.Writer, _ string, args ...string) error {
@@ -260,8 +298,22 @@ func (f *environmentBackendModel) RunOutput(_ context.Context, output io.Writer,
 	if err := archive.WriteHeader(&tar.Header{Name: "./", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
 		return err
 	}
+	files := make(map[string]environmentModelFile)
 	for name, file := range f.files[c.volume] {
-		if err := archive.WriteHeader(&tar.Header{Name: name, Typeflag: file.kind, Mode: file.mode, Size: int64(len(file.body)), Uid: 1000, Gid: 1000}); err != nil {
+		files[name] = file
+	}
+	for destination, volume := range c.mounts {
+		if destination == "/tmp" || !strings.HasPrefix(destination, "/tmp/") {
+			continue
+		}
+		prefix := strings.TrimPrefix(destination, "/tmp/")
+		files[prefix] = environmentModelFile{kind: tar.TypeDir, mode: 0700}
+		for name, file := range f.files[volume] {
+			files[prefix+"/"+name] = file
+		}
+	}
+	for name, file := range files {
+		if err := archive.WriteHeader(&tar.Header{Name: name, Typeflag: file.kind, Mode: file.mode, Size: int64(len(file.body)), Linkname: file.link, Uid: 1000, Gid: 1000}); err != nil {
 			return err
 		}
 		if _, err := archive.Write(file.body); err != nil {
@@ -292,7 +344,7 @@ func (f *environmentBackendModel) StartEnvironmentProfile(_ context.Context, id 
 	}
 	f.budget = budget
 	done := make(chan struct{})
-	reader := &cleanupGatedTraceReader{cleanup: done, records: append([]TraceRecord(nil), f.traceRecords...)}
+	reader := &cleanupGatedTraceReader{cleanup: done, records: append([]TraceRecord(nil), f.traceRecords...), err: f.traceError}
 	f.containers[id].trace = reader
 	f.containers[id].done = done
 	f.traces = append(f.traces, reader)

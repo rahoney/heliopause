@@ -118,6 +118,7 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			if err != nil || !approved.Valid() || approved.Inspected().Snapshot().GraphDigest() != snapshot.GraphDigest() {
 				t.Fatal("complete npm dependency quarantine", err)
 			}
+			requireNPMProjectEnvironmentEvidence(t, ctx, store, "npm-project", approved.Inspected().Inspections())
 			acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
 			count := 0
 			for _, entry := range approved.Inspected().Inspections() {
@@ -274,6 +275,64 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			return
 		}
 	}
+}
+
+// Current npm, PNPM and Bun application tests read the actual persisted facts,
+// rather than substituting model results for the sandbox-to-store connection.
+func requireNPMProjectEnvironmentEvidence(t *testing.T, ctx context.Context, store *local.Store, prefix string, entries []domain.DependencyInspection) {
+	t.Helper()
+	for _, entry := range entries {
+		checks := map[domain.CheckID]domain.CheckExecution{}
+		profiles := map[domain.CheckID]map[domain.SandboxEnvironmentProfile]bool{}
+		for _, check := range entry.Checks() {
+			if strings.HasPrefix(check.ID().String(), prefix+"-instance-facts-") {
+				if check.Status() != domain.ExecutionCompleted {
+					t.Fatal("actual project observation interpretation incomplete")
+				}
+				checks[check.ID()] = check
+				profiles[check.ID()] = map[domain.SandboxEnvironmentProfile]bool{}
+			}
+		}
+		if len(checks) == 0 {
+			t.Fatal("actual project instance checks missing")
+		}
+		for _, ref := range entry.Evidence() {
+			fact, _, err := store.ReadReference(ctx, entry.RunID(), ref, entry.Artifact().Identity(), entry.Artifact().Digest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fact.Kind() != "workspace-state" {
+				continue
+			}
+			check, known := checks[fact.CheckID()]
+			if !known || fact.ProfileDigest() != check.ProfileDigest() || len(fact.Summary()) > 1024 {
+				t.Fatal("persisted project environment check/profile binding lost")
+			}
+			var state struct {
+				Schema     string                           `json:"schema"`
+				Profile    domain.SandboxEnvironmentProfile `json:"profile"`
+				Fixture    string                           `json:"fixture_digest"`
+				Before     string                           `json:"baseline_digest"`
+				After      string                           `json:"final_digest"`
+				Scope      string                           `json:"scope"`
+				Transient  string                           `json:"transient_changes"`
+				Operations string                           `json:"operation_scope"`
+			}
+			if err := json.Unmarshal([]byte(fact.Summary()), &state); err != nil {
+				t.Fatal(err)
+			}
+			if state.Schema != domain.SandboxEnvironmentStateSchema || state.Scope != "MUTABLE_WORKSPACE" || state.Transient != "SESSION_VFS_OPERATIONS" || state.Operations != "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE" || len(state.Fixture) != 64 || len(state.Before) != 64 || len(state.After) != 64 || profiles[check.ID()][state.Profile] {
+				t.Fatal("persisted project environment state incomplete or duplicated")
+			}
+			profiles[check.ID()][state.Profile] = true
+		}
+		for _, seen := range profiles {
+			if len(seen) != 2 || !seen[domain.SandboxEnvironmentMinimal] || !seen[domain.SandboxEnvironmentDevelopment] {
+				t.Fatal("actual project instance lost its two persisted environment profiles")
+			}
+		}
+	}
+	t.Logf("project_environment_evidence client=%s archives=%d same_run/subject/check/profile=true two_states_per_instance=true", prefix, len(entries))
 }
 
 func npmProjectIntegrationRuntime(t *testing.T, ctx context.Context) (sandbox.TrustedExecutor, *sandbox.ObserverSupervisor, *sandbox.NPMResolver) {

@@ -110,11 +110,12 @@ func TestBunActualResultAggregationRejectsReusedMissingAndFailedSessions(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	one, err := domain.NewSandboxResult(first, domain.SandboxCompleted, "", nil)
+	states := sandboxResult(t, domain.SandboxCompleted, "", nil).EnvironmentStates()
+	one, err := domain.NewSandboxResult(first, domain.SandboxCompleted, "", nil, states...)
 	if err != nil {
 		t.Fatal(err)
 	}
-	two, err := domain.NewSandboxResult(second, domain.SandboxCompleted, "", nil)
+	two, err := domain.NewSandboxResult(second, domain.SandboxCompleted, "", nil, states...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,13 +127,17 @@ func TestBunActualResultAggregationRejectsReusedMissingAndFailedSessions(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
+	missingEnvironment, err := domain.NewSandboxResult(second, domain.SandboxCompleted, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	cause := errors.New("controlled original execution cause")
 	for _, test := range []struct {
 		name    string
 		results []domain.SandboxResult
 		cause   error
 		want    int
-	}{{"all", []domain.SandboxResult{one, two}, nil, 2}, {"reused", []domain.SandboxResult{one, one}, nil, 1}, {"missing", []domain.SandboxResult{one, {}}, nil, 1}, {"partial", []domain.SandboxResult{one, partial}, cause, 1}} {
+	}{{"all", []domain.SandboxResult{one, two}, nil, 2}, {"reused", []domain.SandboxResult{one, one}, nil, 1}, {"missing", []domain.SandboxResult{one, {}}, nil, 1}, {"environment-missing", []domain.SandboxResult{one, missingEnvironment}, nil, 1}, {"partial", []domain.SandboxResult{one, partial}, cause, 1}} {
 		t.Run(test.name, func(t *testing.T) {
 			executor := &bunSequenceExecutor{results: test.results, cause: test.cause}
 			execute := func(ctx context.Context, subject domain.AcquiredArtifact, instance string) (domain.SandboxResult, error) {
@@ -144,6 +149,26 @@ func TestBunActualResultAggregationRejectsReusedMissingAndFailedSessions(t *test
 			err := observeNPMProjectInstances(context.Background(), states, projectInspectionBun, artifactnpm.BunInspectionLayout{}, execute)
 			if (err == nil) != (test.name == "all") || states[0].completed != test.want || len(executor.calls) != 2 || executor.calls[0] == executor.calls[1] {
 				t.Fatal("peer/session coverage collapsed", err)
+			}
+			if test.name == "all" {
+				for _, leaf := range states[0].leaves {
+					count := 0
+					bound, err := domain.BindEvidenceProfiles(leaf.Executions(), leaf.Evidence())
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, fact := range bound {
+						if fact.Kind() == "workspace-state" {
+							count++
+							if fact.CheckID() != leaf.Execution().ID() || fact.ProfileDigest() != leaf.Execution().ProfileDigest() || fact.Identity() != subject.Identity() || fact.Digest() != subject.Digest() {
+								t.Fatal("workspace evidence lost current check/profile/subject")
+							}
+						}
+					}
+					if count != 2 {
+						t.Fatal("instance omitted a workspace")
+					}
+				}
 			}
 			if test.cause != nil && !errors.Is(err, test.cause) {
 				t.Fatal("first cause lost", err)

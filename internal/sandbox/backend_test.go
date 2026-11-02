@@ -260,6 +260,7 @@ func (s *sequencedObserver) AwaitMountAnchors(context.Context, string) error {
 type cleanupGatedTraceReader struct {
 	cleanup <-chan struct{}
 	records []TraceRecord
+	err     error
 }
 
 func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
@@ -269,6 +270,11 @@ func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error)
 		return TraceRecord{}, ctx.Err()
 	}
 	if len(r.records) == 0 {
+		if r.err != nil {
+			err := r.err
+			r.err = nil
+			return TraceRecord{}, err
+		}
 		return TraceRecord{}, io.EOF
 	}
 	record := r.records[0]

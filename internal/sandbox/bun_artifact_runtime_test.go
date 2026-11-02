@@ -18,6 +18,7 @@ import (
 type bunArtifactRuntimeRunner struct {
 	*pnpmInstanceRunner
 	native                        dockerVolumeInspection
+	nativeContainers              map[string]bool
 	nativeNames                   []string
 	nativeRemovals, introductions int
 	nativeFault                   string
@@ -57,16 +58,33 @@ func (r *bunArtifactRuntimeRunner) Output(ctx context.Context, binary string, ar
 		copy := slices.Clone(args)
 		mount := "type=volume,source=" + r.native.Name + ",target=/haa-runtime,volume-nocopy"
 		index := slices.Index(copy, mount)
+		if index < 0 {
+			return r.pnpmInstanceRunner.Output(ctx, binary, args...)
+		}
 		if index < 1 || copy[index-1] != "--mount" {
 			r.t.Fatal("native runtime mount absent")
 		}
 		copy[index-1], copy[index] = "--tmpfs", boundaryHelperMount
-		return r.pnpmInstanceRunner.Output(ctx, binary, copy...)
+		body, err := r.pnpmInstanceRunner.Output(ctx, binary, copy...)
+		if err == nil {
+			if r.nativeContainers == nil {
+				r.nativeContainers = make(map[string]bool)
+			}
+			r.nativeContainers[string(body)] = true
+		}
+		return body, err
 	}
 	if binary == "docker" && len(args) > 2 && args[0] == "inspect" && args[2] == containerMountInspectTemplate {
 		body, err := r.pnpmInstanceRunner.Output(ctx, binary, args...)
 		if err != nil {
 			return nil, err
+		}
+		r.environmentBackendModel.mu.Lock()
+		container := r.environmentBackendModel.containers[args[len(args)-1]]
+		reader := container != nil && container.readOnly
+		r.environmentBackendModel.mu.Unlock()
+		if reader {
+			return body, nil
 		}
 		var view dockerContainerMountInspection
 		if err := json.Unmarshal(body, &view); err != nil {
@@ -85,6 +103,17 @@ func (r *bunArtifactRuntimeRunner) Output(ctx context.Context, binary string, ar
 	if binary == "docker" && len(args) > 0 && args[0] == "ps" && slices.Contains(args, "volume="+r.native.Name) && r.nativeFault == "foreign-runtime" && r.active {
 		r.calls++
 		return []byte(strings.Repeat("e", 64)), nil
+	}
+	if binary == "docker" && len(args) > 0 && args[0] == "ps" && slices.Contains(args, "volume="+r.native.Name) {
+		r.environmentBackendModel.mu.Lock()
+		defer r.environmentBackendModel.mu.Unlock()
+		var ids []string
+		for id := range r.nativeContainers {
+			if r.environmentBackendModel.containers[id] != nil {
+				ids = append(ids, id)
+			}
+		}
+		return []byte(strings.Join(ids, "\n")), nil
 	}
 	if binary == "docker" && len(args) > 0 && args[0] == "exec" && slices.Contains(args, bunRuntimeTargetLifecycleCommand) {
 		copy := slices.Clone(args)
@@ -112,18 +141,14 @@ func (p bunArtifactRuntimeTool) introduce(_ context.Context, _ CommandRunner, id
 	return nil
 }
 
-type bunArtifactRuntimeObserver struct{ *pnpmInstanceObserver }
-
-func (o *bunArtifactRuntimeObserver) StartBunRuntimeTargetLifecycleProfile(ctx context.Context, id string) (TraceReader, error) {
-	return o.StartPNPMTargetLifecycleProfile(ctx, id)
-}
-
 func newBunArtifactRuntimeTestBackend(t *testing.T, r *bunArtifactRuntimeRunner) *Backend {
 	t.Helper()
-	b, err := NewBackend(r, &recordingIntroducer{}, &bunArtifactRuntimeObserver{&pnpmInstanceObserver{}}, availableProbe)
+	observer := &pnpmInstanceObserver{}
+	b, err := NewBackend(r, &recordingIntroducer{}, observer, availableProbe)
 	if err != nil {
 		t.Fatal(err)
 	}
+	wirePNPMInstanceEnvironment(b, r.pnpmInstanceRunner, observer)
 	return b
 }
 
@@ -142,7 +167,7 @@ func TestBunArtifactRuntimeOwnsFreshNativeAndProjectVolumes(t *testing.T) {
 		}
 		sessions = append(sessions, result.SessionID().String())
 	}
-	if sessions[0] == sessions[1] || len(r.nativeNames) != 2 || r.nativeNames[0] == r.nativeNames[1] || r.nativeRemovals != 2 || r.volumeRemovals != 2 || r.removals != 2 || r.introductions != 2 || r.executions != 2 {
+	if sessions[0] == sessions[1] || len(r.nativeNames) != 4 || r.nativeNames[0] == r.nativeNames[1] || r.nativeRemovals != 4 || r.volumeRemovals != 8 || r.removals != 8 || r.introductions != 4 || r.executions != 4 {
 		t.Fatal("runtime/session reused or not finalized", r)
 	}
 	if slices.Index(r.events, "bun-tool") < 0 || slices.Index(r.events, "bun-tool") > slices.Index(r.events, "copy") {
@@ -178,7 +203,7 @@ func TestBunArtifactRuntimeRefusesUnprovenSupplyAndPreservesCause(t *testing.T) 
 				if r.calls != 0 {
 					t.Fatal("preflight started Docker")
 				}
-			} else if r.nativeRemovals != 1 || r.removals != 1 || r.volumeRemovals != 1 {
+			} else if r.nativeRemovals < 1 || len(r.environmentBackendModel.containers) != 0 || len(r.environmentBackendModel.volumes) != 0 {
 				t.Fatal("runtime resources not finalized")
 			}
 			if (mode == "prepare" || mode == "native-copy" || mode == "cleanup") && !errors.Is(err, cause) {

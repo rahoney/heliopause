@@ -161,6 +161,62 @@ func TestEnvironmentContainerKeepsExistingBoundaryAndAttestsOnlyFixedWorkspace(t
 	}
 }
 
+func TestNPMInstanceEnvironmentKeepsExistingMountAuthority(t *testing.T) {
+	for _, kind := range []nativeRuntimeToolKind{nativeRuntimePNPM, nativeRuntimeBun, nativeRuntimeNPMProject} {
+		spec, _ := nativeProjectIdentity(kind)
+		for _, readOnly := range []bool{false, true} {
+			topology, ok := npmInstanceEnvironmentExpectedTopology(kind, false, readOnly)
+			if !ok {
+				t.Fatal("current instance topology unavailable", kind)
+			}
+			var workspaces, projects int
+			for _, mount := range topology {
+				switch mount.Mountpoint {
+				case "/tmp":
+					if mount.FSType != "9p" || mount.ReadOnly != readOnly || !mount.NoExec || !mount.NoSUID || mount.NoDev {
+						t.Fatal("parent workspace restriction lost")
+					}
+					workspaces++
+				case spec.root:
+					if mount.FSType != "9p" || mount.Parent != "/tmp" || mount.ReadOnly != readOnly || mount.NoExec || mount.NoSUID || mount.NoDev {
+						t.Fatal("existing project authority changed")
+					}
+					projects++
+				case "/haa-runtime":
+					if mount.FSType != "tmpfs" {
+						t.Fatal("ordinary writer/keeper gained a native runtime")
+					}
+				}
+			}
+			if workspaces != 1 || projects != 1 {
+				t.Fatal("missing or duplicate workspace")
+			}
+		}
+	}
+	native, ok := npmInstanceEnvironmentExpectedTopology(nativeRuntimeBun, true, false)
+	if !ok {
+		t.Fatal("existing Bun runtime writer unavailable")
+	}
+	for _, mount := range native {
+		if mount.Mountpoint == "/haa-runtime" && (mount.FSType != "9p" || mount.NoSUID) {
+			t.Fatal("existing Bun runtime topology changed")
+		}
+	}
+	for _, input := range []struct {
+		kind           nativeRuntimeToolKind
+		native, reader bool
+	}{
+		{0, false, false}, {nativeRuntimePNPM, true, false}, {nativeRuntimeNPMProject, true, false}, {nativeRuntimeBun, true, true},
+	} {
+		if _, ok := npmInstanceEnvironmentExpectedTopology(input.kind, input.native, input.reader); ok {
+			t.Fatal("unknown/foreign runtime or native DATA keeper admitted")
+		}
+	}
+	if _, err := (&SharedObserver{}).startNPMInstanceEnvironmentProfile(context.Background(), strings.Repeat("a", 64), nativeRuntimePNPM, false, false, nil); err == nil {
+		t.Fatal("instance observer started without shared trace budget")
+	}
+}
+
 func TestInspectionEnvironmentUnitRootsAreIsolated(t *testing.T) {
 	session, _ := domain.NewSandboxSessionID()
 	profile, _ := newInspectionEnvironmentProfile(developmentEnvironment, session)

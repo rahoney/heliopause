@@ -102,6 +102,16 @@ func TestEnvironmentStateRejectsUnboundedIncompleteAndEscapingTrees(t *testing.T
 		{"link ancestor", []tar.Header{{Name: "a/b"}, {Name: "a", Typeflag: tar.TypeSymlink, Linkname: "other"}}, limits},
 		{"file ancestor", []tar.Header{{Name: "a/b"}, {Name: "a"}}, limits},
 		{"hard link", []tar.Header{{Name: "link", Typeflag: tar.TypeLink, Linkname: "other"}}, limits},
+		{"hardlink forward", []tar.Header{{Name: "link", Typeflag: tar.TypeLink, Linkname: "file"}, {Name: "file"}}, limits},
+		{"hardlink cycle", []tar.Header{{Name: "first", Typeflag: tar.TypeLink, Linkname: "second"}, {Name: "second", Typeflag: tar.TypeLink, Linkname: "first"}}, limits},
+		{"hardlink absolute", []tar.Header{{Name: "file"}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "/file"}}, limits},
+		{"hardlink escape", []tar.Header{{Name: "file"}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "../file"}}, limits},
+		{"hardlink noncanonical", []tar.Header{{Name: "file"}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "a/../file"}}, limits},
+		{"hardlink directory", []tar.Header{{Name: "dir", Typeflag: tar.TypeDir}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "dir"}}, limits},
+		{"hardlink symlink", []tar.Header{{Name: "file", Typeflag: tar.TypeSymlink, Linkname: "other"}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "file"}}, limits},
+		{"hardlink mode", []tar.Header{{Name: "file", Mode: 0600}, {Name: "link", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "file"}}, limits},
+		{"hardlink owner", []tar.Header{{Name: "file", Uid: 42}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "file"}}, limits},
+		{"hardlink group", []tar.Header{{Name: "file", Gid: 42}, {Name: "link", Typeflag: tar.TypeLink, Linkname: "file"}}, limits},
 		{"device", []tar.Header{{Name: "device", Typeflag: tar.TypeChar}}, limits},
 		{"FIFO", []tar.Header{{Name: "pipe", Typeflag: tar.TypeFifo}}, limits},
 		{"entries", []tar.Header{{Name: "a"}}, environmentStateLimits{entries: 1, bytes: 64, archiveBytes: 16 << 10}},
@@ -139,6 +149,38 @@ func TestEnvironmentStateInventoriesLinksWithoutFollowingThem(t *testing.T) {
 	}, "data")
 	if state.bytes != 4 || len(state.files) != 4 || state.files["bin/tool"].kind != tar.TypeSymlink {
 		t.Fatal("link target was followed or omitted")
+	}
+}
+
+func TestEnvironmentStateInventoriesRegularHardlinkContent(t *testing.T) {
+	// Docker DATA may emit the same inode as one regular file and subsequent
+	// hardlinks. Its choice of representative must not change the inventory.
+	first := scanEnvironmentFixture(t, []tar.Header{
+		{Name: "COPY", Mode: 0644, Size: 4},
+		{Name: "LICENSE", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "./COPY"},
+	}, "data")
+	second := scanEnvironmentFixture(t, []tar.Header{
+		{Name: "LICENSE", Mode: 0644, Size: 4},
+		{Name: "COPY", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "LICENSE"},
+	}, "data")
+	if first.digest != second.digest || first.bytes != 4 || first.files["COPY"] != first.files["LICENSE"] {
+		t.Fatal("regular hardlink content was omitted or depends on TAR representation")
+	}
+	chained := scanEnvironmentFixture(t, []tar.Header{
+		{Name: "COPY", Mode: 0644, Size: 4},
+		{Name: "LICENSE", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "COPY"},
+		{Name: "other", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "LICENSE"},
+	}, "data")
+	if chained.files["other"] != first.files["COPY"] || chained.bytes != 4 {
+		t.Fatal("already resolved alias was not inventoried once")
+	}
+	changed := scanEnvironmentFixture(t, []tar.Header{
+		{Name: "COPY", Mode: 0644, Size: 4},
+		{Name: "LICENSE", Mode: 0644, Typeflag: tar.TypeLink, Linkname: "COPY"},
+	}, "edit")
+	changes, err := compareEnvironmentStates(first, changed)
+	if err != nil || changes != (environmentChanges{modified: 2}) {
+		t.Fatalf("hardlinked content change lost: %+v, %v", changes, err)
 	}
 }
 

@@ -262,3 +262,49 @@ func environmentExpectedTopology(readOnly bool) ([]observerMountExpectation, boo
 	}
 	return nil, false
 }
+
+// Instance writers retain their existing attested project/runtime layout. A
+// DATA keeper uses the ordinary fixed Node helper and reads both workspaces.
+func npmInstanceEnvironmentExpectedTopology(kind nativeRuntimeToolKind, nativeBun, readOnly bool) ([]observerMountExpectation, bool) {
+	spec, known := nativeProjectIdentity(kind)
+	if !known || nativeBun && (kind != nativeRuntimeBun || readOnly) {
+		return nil, false
+	}
+	var topology []observerMountExpectation
+	var ok bool
+	switch kind {
+	case nativeRuntimePNPM:
+		topology, ok = pnpmTargetLifecycleExpectedTopology()
+	case nativeRuntimeBun:
+		if nativeBun {
+			topology, ok = bunRuntimeTargetLifecycleExpectedTopology()
+		} else {
+			topology, ok = bunTargetLifecycleExpectedTopology()
+		}
+	case nativeRuntimeNPMProject:
+		topology, ok = nodeMaterializationExpectedTopology()
+	}
+	if !ok {
+		return nil, false
+	}
+	workspace, project := 0, 0
+	for index, mount := range topology {
+		switch mount.Mountpoint {
+		case environmentWorkspaceRoot:
+			topology[index] = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", readOnly, true, true, false}
+			workspace++
+		case spec.root:
+			topology[index].ReadOnly = readOnly
+			project++
+		}
+	}
+	return topology, workspace == 1 && project == 1
+}
+
+func (o *SharedObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, container string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := npmInstanceEnvironmentExpectedTopology(kind, nativeBun, readOnly)
+	if !ok || budget == nil {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, container, "npm-lifecycle", topology, budget)
+}

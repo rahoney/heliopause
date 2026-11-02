@@ -17,18 +17,32 @@ import (
 
 type pnpmInstanceActualObserver struct{ pnpmPrepareTraceObserver }
 
-func (o *pnpmInstanceActualObserver) StartPNPMTargetLifecycleProfile(ctx context.Context, id string) (TraceReader, error) {
-	observer, ok := o.TraceObserver.(pnpmTargetTraceObserver)
+func (o *pnpmInstanceActualObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	observer, ok := o.TraceObserver.(npmInstanceEnvironmentTraceObserver)
 	if !ok {
-		return nil, errors.New("fixed target profile unavailable")
+		return nil, errors.New("fixed instance environment profile unavailable")
 	}
-	reader, err := observer.StartPNPMTargetLifecycleProfile(ctx, id)
+	reader, err := observer.startNPMInstanceEnvironmentProfile(ctx, id, kind, nativeBun, readOnly, budget)
 	if err != nil {
 		return nil, err
 	}
 	wrapped := &pnpmPrepareTrace{TraceReader: reader, kinds: map[string]uint64{}}
 	o.traces = append(o.traces, wrapped)
 	return wrapped, nil
+}
+func (o *pnpmInstanceActualObserver) StartEnvironmentProfile(ctx context.Context, id string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	observer, ok := o.TraceObserver.(environmentTraceObserver)
+	if !ok {
+		return nil, errors.New("shared environment observer unavailable")
+	}
+	return observer.StartEnvironmentProfile(ctx, id, readOnly, budget)
+}
+func (o *pnpmInstanceActualObserver) observationUsage(budget *observationTraceLedger) (uint64, uint64, error) {
+	observer, ok := o.TraceObserver.(observationPhaseObserver)
+	if !ok {
+		return 0, 0, errors.New("shared observation usage unavailable")
+	}
+	return observer.observationUsage(budget)
 }
 
 func TestPNPMActualProductionInstanceExecution(t *testing.T) {
@@ -77,6 +91,7 @@ func TestPNPMActualProductionInstanceExecution(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			backend.resources = integrationObservationResourceAdapter(t)
 			count := 0
 			for _, subject := range data.inspection.Artifacts() {
 				instances, err := data.inspection.InstancesFor(subject)
@@ -86,7 +101,7 @@ func TestPNPMActualProductionInstanceExecution(t *testing.T) {
 				for _, instance := range instances {
 					before := len(observer.traces)
 					result, err := backend.ExecutePNPMInstance(ctx, bound, subject, instance.Key)
-					if err != nil || result.Status() != domain.SandboxCompleted {
+					if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
 						t.Fatal("fresh production instance", result.Status(), err)
 					}
 					id := result.SessionID().String()
@@ -94,12 +109,17 @@ func TestPNPMActualProductionInstanceExecution(t *testing.T) {
 						t.Fatal("session identity reused")
 					}
 					sessions[id] = true
-					if len(observer.traces) != before+1 || !observer.traces[before].complete {
+					if len(observer.traces) != before+4 {
 						t.Fatal("actual instance has no independent complete trace")
 					}
-					for _, kind := range []string{"process-exec-unexpected", "filesystem-outside-workspace", "honeytoken-access", "network-attempt"} {
-						if observer.traces[before].kinds[kind] != 0 {
-							t.Fatal("unexpected public instance observation", kind)
+					for _, trace := range observer.traces[before:] {
+						if !trace.complete {
+							t.Fatal("instance workspace trace incomplete")
+						}
+						for _, kind := range []string{"process-exec-unexpected", "filesystem-outside-workspace", "honeytoken-access", "network-attempt"} {
+							if trace.kinds[kind] != 0 {
+								t.Fatal("unexpected public instance observation", kind)
+							}
 						}
 					}
 					count++
@@ -131,6 +151,7 @@ func TestPNPMActualProductionInstanceExecution(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			backend.resources = integrationObservationResourceAdapter(t)
 			before := len(observer.traces)
 			result, err := backend.ExecutePNPMInstance(ctx, bound, input.Artifacts()[0], input.Context().Lock().Snapshots()[0].Key)
 			if failed {
@@ -138,25 +159,35 @@ func TestPNPMActualProductionInstanceExecution(t *testing.T) {
 				if err == nil || !errors.As(err, &exited) || exited.ExitCode() != 37 || result.Status() != domain.SandboxIncomplete {
 					t.Fatal("first script exit lost", err, result.Status())
 				}
-			} else if err != nil || result.Status() != domain.SandboxCompleted {
-				t.Fatal("controlled execution failed", err)
+			} else if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
+				code, _ := result.LimitationCode()
+				t.Fatal("controlled execution failed", result.Status(), code, err)
 			}
-			if len(observer.traces) != before+1 || !observer.traces[before].complete {
-				t.Fatal("controlled trace incomplete")
-			}
-			trace := observer.traces[before]
-			want := uint64(3)
+			traceCount := 4
+			want := uint64(6)
 			if failed {
+				traceCount = 2
 				want = 2
 			}
-			if trace.kinds["process-exec-unexpected"] != want {
-				t.Fatal("script shells lost artifact attribution", trace.kinds)
+			if len(observer.traces) != before+traceCount {
+				t.Fatal("controlled traces incomplete")
 			}
-			for _, kind := range []string{"filesystem-outside-workspace", "honeytoken-access", "network-attempt"} {
-				if trace.kinds[kind] != 0 {
-					t.Fatal("controlled unexpected access", kind)
+			var shells uint64
+			for _, trace := range observer.traces[before:] {
+				if !trace.complete {
+					t.Fatal("controlled trace incomplete")
+				}
+				shells += trace.kinds["process-exec-unexpected"]
+				for _, kind := range []string{"filesystem-outside-workspace", "honeytoken-access", "network-attempt"} {
+					if trace.kinds[kind] != 0 {
+						t.Fatal("controlled unexpected access", kind)
+					}
 				}
 			}
+			if shells != want {
+				t.Fatal("script shells lost artifact attribution", shells, want)
+			}
+
 			if failed {
 				found := false
 				for _, fact := range result.Observations() {

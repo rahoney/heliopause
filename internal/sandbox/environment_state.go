@@ -129,6 +129,17 @@ func scanEnvironmentState(ctx context.Context, input io.Reader, limits environme
 			if header.Size != 0 {
 				return environmentState{}, errEnvironmentState
 			}
+		case tar.TypeLink:
+			// Docker emits already-seen inode aliases. Inventory their regular
+			// content without extraction, a second read or order-dependent identity.
+			// Forward, cyclic, external and nonregular references stay incomplete.
+			target := strings.TrimPrefix(header.Linkname, "./")
+			original, present := state.files[target]
+			if header.Size != 0 || len(target) > 4096 || !validClosureDestination(target) ||
+				!present || original.kind != tar.TypeReg || original.mode != file.mode || original.uid != file.uid || original.gid != file.gid {
+				return environmentState{}, errEnvironmentState
+			}
+			file = original
 		case tar.TypeSymlink:
 			// Inventory the link itself; never follow it, including links into
 			// proc/dev or outside the attested writable root.
@@ -143,7 +154,7 @@ func scanEnvironmentState(ctx context.Context, input io.Reader, limits environme
 			digest := sha256.Sum256([]byte(header.Linkname))
 			file.digest = hex.EncodeToString(digest[:])
 		default:
-			// Hard links, devices, FIFO and unknown types are incomplete,
+			// Devices, FIFO and unknown types are incomplete,
 			// rather than silently missing content from the snapshot.
 			return environmentState{}, errEnvironmentState
 		}

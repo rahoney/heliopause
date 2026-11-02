@@ -778,5 +778,161 @@
       "C01 and grouped hosted/final qualification"
     ],
     "no_new_ci_or_permanent_host_change": true
+  },
+  "npm_instance_environment_baseline": {
+    "commit": "a0637df",
+    "existing_execution": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "new_two_environment_gap": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "data_primitive": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-nested-data-v1.json",
+      "sha256": "fe26714b515f9eddf6667377daecaaf344b02b3599c9a41dd87de4a498105f93",
+      "scope": "runc inert nested volume DATA only"
+    },
+    "missing": [
+      "fresh two-environment instance lifecycle with shared unchanged resource ceilings",
+      "existing typed topology adaptation and readonly whole-workspace snapshot",
+      "profile-bound normalized Evidence and actual consumer/failure/cancel/cleanup checks"
+    ]
+  },
+  "npm_instance_environment_checkpoint": {
+    "baseline_commit": "a0637df",
+    "scope": "current npm/PNPM/Bun instance and npm local-root two-environment runtime, normalized Evidence and selected actual Application/store/publication flows; whole S01/S08 acceptance remains open",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "implementation": [
+      "existing environmentInspection owns shared root CPU/wall/trace/launch and termination/snapshot for archive and current project instances",
+      "original frozen payload, target command, native Bun supply and null-network boundaries preserved",
+      "one writer and readonly whole-workspace reader per fresh profile; nested project captured only after writer/drain",
+      "instance/root Evidence uses existing check/subject/profile and bounded workspace-state-v2 summaries",
+      "same-tree already-seen regular hardlinks inventoried without extraction; forward/external/nonregular or mode/owner disagreement rejected"
+    ],
+    "native_initial": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v1.json",
+        "sha256": "3dd407eb062a711a748d35b19719593336964183abebb4229cece96c0ed16efd"
+      },
+      "overall": "FAIL; scoped archive, npm nested/root, public PNPM transitive and both Bun instance lanes PASS; controlled-success FAIL and later controlled cases NOT_REACHED",
+      "reuse": "unchanged kernel/CPP and passed consumer source; later common scanner accepts bounded regular inode aliases and adds negative tests"
+    },
+    "hardlink_correction": {
+      "red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-inventory-red.json",
+        "sha256": "33ed91d75daf80fee367d4b01ff28cf89adaa8d60d7c2f3a768cc92e89e66c62"
+      },
+      "green": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-inventory-green.json",
+        "sha256": "c5eeb63e7bc67e9c9beefe7823f5333f18c101ce0ffca3397557a47e271fb7a0"
+      },
+      "actual": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v2.json",
+        "sha256": "7aec334683ee831ec3fc380bb49ced34ffe46060457bff174eb797e6d99a7f7b"
+      },
+      "scope": "only failed controlled-success and previously unreached controlled-exit37/controlled-long-name; original shared-inode payload retained"
+    },
+    "application_store": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v3.json",
+      "sha256": "134d95ac53d994db1ff021abd0bfd2d498ea59543451655611a156afcfe94273"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-foundation.json",
+        "sha256": "b01c3597129fa47f90e00cf71fd586761582dd0d2c9e85ed2248f83714dd9cc3"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-sandbox-regressions-v2.json",
+        "sha256": "22b6d60312c3401c9109d20d8bb787f0443cf197ce8e804aee4af8f323159502"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-normalization-green.json",
+        "sha256": "ada59765dc89f435cf343792e5566ab9a591554fe914dfdc9e8f432f35c8cd74"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-race.json",
+        "sha256": "87f82e506e9d1927deaaa2e03929dfc6ebd04a8cfb408420625a74b1c5c85550"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-tagged-staticcheck-v2.json",
+        "sha256": "f35405156cc7724479e6be12c01520d2f9cb13a54c9d15a389fbb55921c162db"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-tagged-staticcheck.json",
+        "sha256": "42254978a2076c9768c33938c7d4a331b3f9583501aaa042d7c0918b96b24e36"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-race.json",
+        "sha256": "10ca7b257dd4dbc080806ccd7d4a48afb2a531e0ab2dbd8e29ad72015baf0568"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-store-tagged-staticcheck.json",
+        "sha256": "d92dd04966a5636e82089030e86ab063a9e96685e78cec538ead74be6560fbbf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-final-security.json",
+        "sha256": "9f0189f176459511fe82b389bb3dc6760b86e0ffc9b9161377dc7bc58f6e0af9"
+      }
+    ],
+    "original_failures": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-existing-consumers-red.json",
+        "sha256": "44fe6c0621d2c573fc3e32693d9609af123766a8266b9c9ad673a46f99a7363b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-model-first-tests.json",
+        "sha256": "9eb342c41a4fbd418c1c5a510b0b699feaaa0b2dbe0a1cedcc364b776f6c98f6"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-model-tests-v2.json",
+        "sha256": "f4be74cc523e0f50d0c92e70718e272227c4d17220a7cbf4c5c9f49889e832e9"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-normalization-red.json",
+        "sha256": "c4300e62cd95ca53e27e42be8766ede72901d8f396c4a1a77a7afbffc3f5e7b1"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-owner-regressions.json",
+        "sha256": "5bb8f68b1efe169c6890d6fd2ad1df74f8a9d493a27797a605bbaf4e6b6ef05b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-tagged-staticcheck.json",
+        "sha256": "96dccb6872b598ad44a4734f4780674b4dd6bf319b94db0fc785af411980b293"
+      }
+    ],
+    "native_supply": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-fixed-tool-acquisition.json",
+        "sha256": "6100b3bf2024ecce632591c6bd3634bc06d9da34d5a17fc266d026ef649f51bf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-pnpm-materialize.json",
+        "sha256": "30d458c504449e2784d33a7dccd2c6d2814e7fe36213f3d0ade42dd5b61ff6d0"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-bun-materialize.json",
+        "sha256": "70ab9887deb332fcd77fefc620fa27a740ab78836c68fe6925596d4b3ec7757d"
+      }
+    ],
+    "cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-cleanup.json",
+      "sha256": "6c8946b5fbcabd073c88e9e7dc96ae74f054330a82a83236606d7239b3227f11"
+    },
+    "remaining": [
+      "other ecosystem build/probe consumers",
+      "whole S01/S08 failure/dormant corpus and grouped/hosted/final qualification",
+      "B01 Anyio/large-catalog and ordinary Six source-binding follow-up remain separate"
+    ]
   }
 }

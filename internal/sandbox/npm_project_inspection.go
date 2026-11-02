@@ -54,9 +54,7 @@ func (b *Backend) ExecuteNPMProjectInstance(ctx context.Context, layout artifact
 	if err := ctx.Err(); err != nil {
 		return domain.SandboxResult{}, errors.Join(err, context.Cause(ctx))
 	}
-	observer, ok := b.observer.(interface {
-		StartNPMProjectTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-	})
+	_, ok := b.observer.(npmInstanceEnvironmentTraceObserver)
 	if !ok {
 		return domain.SandboxResult{}, errors.New("npm project instance has no typed observer")
 	}
@@ -69,5 +67,5 @@ func (b *Backend) ExecuteNPMProjectInstance(ctx context.Context, layout artifact
 	if err != nil {
 		return domain.SandboxResult{}, err
 	}
-	return b.executeNPMInstance(ctx, nativeRuntimeNPMProject, target, payload, observer.StartNPMProjectTargetLifecycleProfile)
+	return b.executeNPMInstance(ctx, nativeRuntimeNPMProject, target, payload)
 }

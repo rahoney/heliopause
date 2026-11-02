@@ -86,13 +86,6 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	return b.executeEnvironmentInspection(ctx, request, sessionID)
 }
 
-func (b *Backend) cleanup(containerID string) error {
-	cleanupContext, cancel := context.WithTimeout(context.Background(), b.cleanupWait)
-	defer cancel()
-	_, err := b.runner.Output(cleanupContext, "docker", "rm", "--force", containerID)
-	return err
-}
-
 func incomplete(sessionID domain.SandboxSessionID, limitation string) (domain.SandboxResult, error) {
 	return domain.NewSandboxResult(sessionID, domain.SandboxIncomplete, limitation, nil)
 }

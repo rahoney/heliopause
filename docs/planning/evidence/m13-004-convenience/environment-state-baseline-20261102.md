@@ -457,3 +457,65 @@ canonical foundation26.100s PASS를 구분한다. 새 검사마다 전체 CPP/na
 root-profile 경계다. S01/S08 전체·나머지 생태계 및 실패/취소/보안·최종 qualification,
 C01 전체와 requirements 호환 gap은 계속 OPEN이다. 원본과 source별 검증 범위는
 같은 local 원장의 `ordinary_python_acceptance_checkpoint`가 소유한다.
+
+
+### 다음 연결 baseline — npm/PNPM/Bun project·instance
+
+기준 `a0637df`. 기존 instance 실행(`executeNPMInstanceWithBunRuntime`), frozen layout/
+payload·source binding, 정확한 target argv·Bun runtime 공급·null network·전체 trace/정리는
+IMPLEMENTED=YES / WIRED=YES다. 이전 bounded qualification은 기존 P7 원장 범위이며,
+현재 보강 후보의 이 owner 전체 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. 두 fresh 환경/
+공유 총량·readonly snapshot·상태 Evidence 연결이라는 새 gap은 네 상태 모두 NO다.
+
+재사용 위치는 `pnpm_instance_backend.go`의 기존 실행·정리, `environment_runtime.go`의
+공통 자원·종료 원장, `environment.go`의 profile·배치, `shared_observer.go`와 기존
+PNPM/Bun/Node/Bun-runtime topology 생성자, `environment_state.go`의 bounded `/tmp`
+reader다. 이미 구현된 resolver/layout/target command를 다시 만들거나 별도 backend/
+framework로 교체하지 않는다. archive 경로의 정상 동작과 기존 권한·버전 owner를 보존한다.
+
+`DATA s01-node-nested-data-v1`3.692s는 고정 Node image/runc·Artifact0에서 부모 `/tmp`와
+중첩 project volume을 같은 reader로 읽고 writer 제거 뒤 양쪽 내용 변화를 확인했다.
+작은 owned volume2개/컨테이너를 정확히 정리했고 기존 Docker 상태는 동일하다.
+이는 실제 gVisor/observer/악성 탐지/Policy proof가 아니다.
+
+MISSING: 기존 네 topology의 실제 `/tmp` 추가 제한과 project RO reader, 두 환경의 fresh
+payload·원래 총 CPU/wall/trace/launch 원장, descendant 종료 후 전체 writable tree snapshot,
+profile-bound 상태 Evidence·실패/취소/정리와 정상 instance/root consumer의 한정 실제 검증.
+선택적 사용자 프로그램 실행을 두 번 실행하는 변경과 다른 생태계 작업은 섞지 않는다.
+
+
+## Node project·instance 현재 연결 — 로컬 부분 검증
+
+기준 `a0637df`의 기존 네 실행 경로를 수정했고 별도 backend·완료 protocol은 만들지
+않았다. 같은 `environmentInspection`이 archive와 instance의 자원·관찰·종료를 소유하며
+기존 frozen payload/target argv/null network/Bun 공급은 원래 owner가 계속 검증한다.
+두 fresh profile마다 writer와 전체 workspace의 RO reader를 만들고, writer 종료·trace
+회수 뒤 기존 bounded `/tmp` DATA reader로 중첩 project도 포함해 비교한다. 기존 root
+총량·CPU/wall/trace/launch 한도를 profile마다 재부여하지 않는다. 선택적 사용자 프로그램
+실행은 이 두 검사 실험과 별개로 유지한다. Instance/root의 같은 check/subject/profile에
+두 bounded 상태 Evidence를 기록하고, 두 환경 coverage가 빠지면 required 완료를 거부한다.
+더 이상 쓰지 않는 instance trace callback/interface/create helper와 cleanup만 제거했다.
+
+첫 실제 묶음 `s01-node-instance-native-v1`269.273s는 **전체 FAIL**이다. 기존 archive,
+npm nested3·local-root2, PNPM 공개 transitive2와 Bun의 Node/native 공급 각4 instance는
+PASS다. PNPM controlled-success는 새 state collector가 원래 payload의 정상 hardlink를
+거부하는 조건으로 남았고 뒤 controlled 두 사례는 미도달이었다. 같은 hardlink inventory의
+직접 RED7.918s 뒤, 이미 읽은 같은 tree의 일반 파일을 mode/owner와 함께 검증해 내용으로
+계상하는 좁은 교정을 했다. 실제 추출·추가 파일 read는 없고 외부/forward/cycle/특수·
+symlink target과 mode/owner 불일치는 계속 거부한다. inode 공유 관계 자체의 증명은 아니다.
+표적 GREEN7.910s와 Race13.271s 뒤 실제 v2/31.613s는 실패 사례 및 미도달 exit37/긴 이름
+세 사례만 PASS했다. 통과한 첫 묶음 소비자나 불변 kernel/CPP를 다시 실행하지 않았다.
+
+별도 v3/225.092s는 새 실제 저장·읽기 acceptance다. 기존 npm bin1·PNPM/Bun single
+Application의 검역/기록/ALLOW/cache/반입·재설치/업데이트 흐름을 사용해 각 instance의
+두 상태를 같은 Run/subject/check/profile로 읽었다. 기존 original target/user-file/no-op
+inode 보존도 PASS다. Node 계열 current 연결은 IMPLEMENTED=YES / WIRED=YES이며,
+whole QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. Go/Cargo build·ELF/provider probe, 전체
+실패/잠복 corpus와 grouped/hosted/final qualification은 여전히 MISSING이다.
+
+부분 원장의 원본별 입력·범위를 따른다. 공통 foundation42.159s, 전체 sandbox16.599s/
+inspection npm1.664s, 두 package Race34.849s 및 태그 Staticcheck, 마지막 보안20.177s가
+한정 PASS다. 앞선 model/fixture 오류와 unused cleanup 실패는 원본을 보존했다. 모든 실제
+시험은 helper wait0/Host·Docker 동일과 정확한 설정/runtime 복원을 확인했으며 큰 보호
+사본은 각 operator가 정리했다. 완료된 원본 바이너리·공급9개336114856B도 전체 proc
+무참조/query error0 뒤 삭제했다. 중앙 버전 정의·업데이트 방법/권한·Host 설치·CI는 그대로다.

@@ -8,7 +8,6 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type NPMProjectRootSourceReader interface {
@@ -81,6 +80,9 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 			limitation = code
 		}
 	}
+	if status == domain.ExecutionCompleted && !completeDynamicEnvironments(result) {
+		status, limitation = domain.ExecutionIncomplete, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE"
+	}
 	for _, fact := range result.Observations() {
 		if fact.Category() == domain.ObservationResource {
 			status, limitation = domain.ExecutionIncomplete, "M3_DYNAMIC_RESOURCE_LIMIT"
@@ -135,7 +137,11 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 		}
 		findings = append(findings, finding)
 	}
-	dynamic, err := domain.NewInspectionReport(check, findings, []domain.Evidence{observed, bound})
+	workspaces, err := workspaceEvidence(subject, factsID, result, "npm-project-root-ws")
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	dynamic, err := domain.NewInspectionReport(check, findings, append([]domain.Evidence{observed, bound}, workspaces...))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -156,7 +162,7 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 }
 
 func npmRootCheckProfile() domain.ContentDigest {
-	profile, _ := domain.CheckProfileDigest("npm-project-root-v1", runtimeidentity.NodeImageReference)
+	profile, _ := domain.CheckProfileDigest("npm-project-root-environments-v2", dynamicCheckRuntimeDescriptor)
 	return profile
 }
 
