@@ -206,6 +206,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/evidence/local": {
 			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/ports":  true,
+		},
+		modulePath + "/internal/storage": {
+			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/ports":  true,
 		},
 		modulePath + "/internal/sandbox": {
 			modulePath + "/internal/artifact/terraformprovider": true,
@@ -304,6 +309,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/pypi":            {},
 		modulePath + "/internal/inspection/npm":               {},
 		modulePath + "/internal/evidence/local":               {},
+		modulePath + "/internal/storage":                      {},
 		modulePath + "/internal/sandbox":                      {},
 		modulePath + "/internal/promotion":                    {},
 		modulePath + "/internal/runtimeidentity":              {},

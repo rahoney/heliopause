@@ -30,6 +30,7 @@ func (s *PreparedInstallService) Install(ctx context.Context, request InstallReq
 	if err != nil {
 		return outcome, err
 	}
+	ctx = ports.WithStorageOperation(ctx, operation)
 	outcome = InstallOutcome{inspection: newPartialInspectedInstall(operation, request, domain.DependencyResolution{}), failureCode: "INSTALL_PREPARATION_FAILED"}
 	if err := ctx.Err(); err != nil {
 		return outcome, err

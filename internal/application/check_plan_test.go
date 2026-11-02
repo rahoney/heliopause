@@ -16,6 +16,7 @@ type declaredInspectFixture struct {
 	mode     string
 	profile  domain.ContentDigest
 	declared int
+	cancel   context.CancelFunc
 }
 
 func (f *declaredInspectFixture) ExpectedChecks(_ context.Context, _ domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
@@ -24,6 +25,10 @@ func (f *declaredInspectFixture) ExpectedChecks(_ context.Context, _ domain.Acqu
 		return nil, errors.New("declaration was not frozen before execution")
 	}
 	f.declared++
+	if f.cancel != nil {
+		f.cancel()
+		return nil, errors.New("declaration unavailable after cancellation")
+	}
 	names := []string{"fixture-static", "fixture-dynamic"}
 	if kind == domain.CheckVerification {
 		names = []string{"fixture-integrity"}
@@ -137,5 +142,26 @@ func TestInspectFreezesIndependentChecksBeforeExecution(t *testing.T) {
 				t.Fatal("missing/duplicate/foreign-profile check passed coverage")
 			}
 		})
+	}
+}
+
+func TestInspectDeclarationCancellationPreservesCause(t *testing.T) {
+	base, _ := fakeworkflow.New(fakeworkflow.Safe)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	profile, _ := domain.CheckProfileDigest("declared-fixture-v1", "")
+	fixture := &declaredInspectFixture{Ports: base, profile: profile, cancel: cancel}
+	service, err := application.NewInspectService(fixture, fixture, fixture, fixture, policy.M3{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, _ := fixture.Reference()
+	request, _ := application.NewInspectRequest(reference)
+	result, err := service.Inspect(ctx, request)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancellation cause lost: %v", err)
+	}
+	if result.Status() != domain.OperationFailed || fixture.declared != 1 || len(fixture.Calls()) != 2 {
+		t.Fatal("checks ran after declaration cancellation")
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -60,6 +61,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err != nil {
 		return domain.OperationResult{}, fmt.Errorf("generate operation ID: %w", err)
 	}
+	ctx = ports.WithStorageOperation(ctx, operationID)
 	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolvedArtifact, err := s.artifact.Resolve(ctx, request.reference)
 	if err != nil {
@@ -98,7 +100,8 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
-		return failRun(run, request.reference, artifact, checks, nil, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", fmt.Errorf("inspect Artifact: %w", err), plans...)
+		checks, references, recordErr := recordFailedInspection(ctx, s.evidence, runID, artifact, verification, inspection)
+		return failRun(run, request.reference, artifact, checks, references, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", errors.Join(fmt.Errorf("inspect Artifact: %w", err), recordErr), plans...)
 	}
 	checks = append(checks, inspection.Executions()...)
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
@@ -179,13 +182,16 @@ func freezeCheckPlan(ctx context.Context, run domain.RunID, artifact domain.Acqu
 	if !ok {
 		return nil, errors.New("inspection check declaration is unavailable")
 	}
-	checks, err := verifier.ExpectedChecks(ctx, artifact, domain.CheckVerification)
-	if err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	checks, err := verifier.ExpectedChecks(ctx, artifact, domain.CheckVerification)
+	if err != nil || ctx.Err() != nil {
+		return nil, errors.Join(err, ctx.Err())
+	}
 	inspections, err := inspector.ExpectedChecks(ctx, artifact, domain.CheckInspection)
-	if err != nil {
-		return nil, err
+	if err != nil || ctx.Err() != nil {
+		return nil, errors.Join(err, ctx.Err())
 	}
 	checks = append(append([]domain.CheckRequirement(nil), checks...), inspections...)
 	plan, err := domain.NewCheckPlan(run, artifact, checks)
@@ -193,4 +199,38 @@ func freezeCheckPlan(ctx context.Context, run domain.RunID, artifact domain.Acqu
 		return nil, err
 	}
 	return []domain.CheckPlan{plan}, nil
+}
+
+// Keep already confirmed facts on an operational failure before payload finish.
+// This bounded, cancellation-independent write never evaluates Policy or creates
+// a complete inspection. Foreign partial facts cannot replace verified facts.
+func recordFailedInspection(ctx context.Context, store ports.Evidence, run domain.RunID, artifact domain.AcquiredArtifact, verification domain.VerificationReport, inspection domain.InspectionReport) ([]domain.CheckExecution, []domain.EvidenceReference, error) {
+	checks := []domain.CheckExecution{verification.Execution()}
+	facts := verification.Evidence()
+	var partialErr error
+	for _, fact := range inspection.Evidence() {
+		if fact.Identity() != artifact.Identity() || fact.Digest() != artifact.Digest() {
+			partialErr = errors.New("failed inspection Evidence has a foreign subject")
+			break
+		}
+	}
+	if partialErr == nil {
+		checks = append(checks, inspection.Executions()...)
+		facts = append(facts, inspection.Evidence()...)
+	}
+	if len(facts) == 0 {
+		return checks, nil, partialErr
+	}
+	for _, fact := range facts {
+		if fact.Identity() != artifact.Identity() || fact.Digest() != artifact.Digest() {
+			return checks, nil, errors.Join(partialErr, errors.New("failed verification Evidence has a foreign subject"))
+		}
+	}
+	recordContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
+	refs, err := store.Record(recordContext, run, facts, checks...)
+	if err != nil {
+		err = fmt.Errorf("retain failed inspection Evidence: %w", err)
+	}
+	return checks, refs, errors.Join(partialErr, err)
 }

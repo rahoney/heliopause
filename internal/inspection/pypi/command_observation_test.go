@@ -14,6 +14,7 @@ import (
 type commandRunner struct {
 	result sandbox.PythonObservationResult
 	plan   artifactpypi.ObservationPlan
+	err    error
 }
 
 func (r *commandRunner) InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error) {
@@ -21,7 +22,11 @@ func (r *commandRunner) InspectWheel(context.Context, domain.AcquiredArtifact, [
 }
 func (r *commandRunner) InspectWheelWithPlan(_ context.Context, _ domain.AcquiredArtifact, p artifactpypi.ObservationPlan, _ []domain.AcquiredArtifact) (sandbox.PythonObservationResult, error) {
 	r.plan = p
-	return r.result, nil
+	return r.result, r.err
+}
+
+func (r *commandRunner) InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	panic("typed plan required")
 }
 
 func TestCommandObservationPreservesPolicyAndEvidenceScope(t *testing.T) {

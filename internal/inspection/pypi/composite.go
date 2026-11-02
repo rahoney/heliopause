@@ -65,7 +65,7 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 	}
 	dynamic, err := i.dynamic.InspectWheel(ctx, artifact, wheel)
 	if err != nil {
-		return domain.InspectionReport{}, err
+		return static, err
 	}
 	return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
 }
@@ -127,11 +127,11 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 		return reports, nil
 	}
 	if i.dynamic == nil {
-		return nil, errors.New("PyPI dynamic inspector is unavailable")
+		return reports, errors.New("PyPI dynamic inspector is unavailable")
 	}
 	edges, prerequisites, err := prepare(states)
 	if err != nil {
-		return nil, err
+		return reports, err
 	}
 	for _, dependency := range nodes {
 		artifact := acquired[dependency.Node()]
@@ -146,11 +146,11 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			var err error
 			closure, err = graphClosureNodes(nodes, edges, dependency.Node(), acquired)
 			if err != nil {
-				return nil, err
+				return reports, err
 			}
 		}
 		if err := validateRuntimeClosureNodes(ctx, closure, nodes, states); err != nil {
-			return nil, err
+			return reports, err
 		}
 		var dynamic domain.InspectionReport
 		if input, present := prerequisites[dependency.Node()]; present {
@@ -159,11 +159,11 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			dynamic, err = i.dynamic.InspectWheelWithClosure(ctx, artifact, states[dependency.Node()].wheel, closure)
 		}
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], dynamic})
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		reports[dependency.Node()] = report
 	}

@@ -3,6 +3,7 @@ package pypi
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -98,5 +99,47 @@ func TestDerivedWheelStaticResultRemainsAvailableToDynamicPhase(t *testing.T) {
 	wheel, report, err := inspector.InspectWheel(context.Background(), artifact)
 	if err != nil || len(report.Findings()) != 0 || wheel.Project != identity.Name() || len(wheel.ImportNames) == 0 {
 		t.Fatalf("derived wheel static result lost: %q %v", wheel.Project, err)
+	}
+}
+
+func TestCompositeRetainsStaticReportAfterDynamicFailure(t *testing.T) {
+	static, artifact, _ := consoleIntakeFixture(t)
+	cause := errors.New("dynamic runner unavailable")
+	dynamic, err := NewDynamicInspector(&commandRunner{err: cause})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := NewCompositeInspector(static, dynamic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	report, err := inspector.Inspect(context.Background(), artifact)
+	if !errors.Is(err, cause) || len(report.Executions()) != 1 || len(report.Evidence()) == 0 || report.Execution().ID().String() != "pypi-static-archive" {
+		t.Fatalf("static facts/original cause lost: %v %#v", err, report.Executions())
+	}
+}
+
+func TestGraphRetainsStaticReportsAfterDynamicFailure(t *testing.T) {
+	static, artifact, _ := consoleIntakeFixture(t)
+	cause := errors.New("dynamic runner unavailable")
+	dynamic, _ := NewDynamicInspector(&commandRunner{err: cause})
+	inspector, _ := NewCompositeInspector(static, dynamic)
+	declared, _ := artifact.DeclaredIntegrity()
+	resolved, err := domain.NewResolvedArtifact(artifact.Identity(), "https://example.test/wheel", declared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, _ := domain.NewDependencyNodeID("primary")
+	node, err := domain.NewLockedDependency(id, domain.DependencyPrimary, resolved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := domain.NewLockedDependencyGraph([]domain.LockedDependency{node}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reports, err := inspector.InspectGraph(context.Background(), graph, map[domain.DependencyNodeID]domain.AcquiredArtifact{id: artifact})
+	if !errors.Is(err, cause) || len(reports) != 1 || len(reports[id].Evidence()) == 0 {
+		t.Fatalf("static graph facts/original cause lost: %v %d", err, len(reports))
 	}
 }

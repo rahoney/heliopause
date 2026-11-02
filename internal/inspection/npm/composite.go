@@ -30,10 +30,16 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 	reports := make([]domain.InspectionReport, 0, len(i.inspectors))
 	for _, inspector := range i.inspectors {
 		report, err := inspector.Inspect(ctx, artifact)
-		if err != nil {
-			return domain.InspectionReport{}, err
+		if err == nil || len(report.Executions()) != 0 {
+			reports = append(reports, report)
 		}
-		reports = append(reports, report)
+		if err != nil {
+			if len(reports) == 0 {
+				return domain.InspectionReport{}, err
+			}
+			partial, combineErr := domain.NewCompositeInspectionReport(reports)
+			return partial, errors.Join(err, combineErr)
+		}
 	}
 	return domain.NewCompositeInspectionReport(reports)
 }

@@ -147,8 +147,8 @@ func TestProjectProviderFailureRecordsExactFactsWithoutPolicyOrPartialApproval(t
 				}
 			}
 			if mode == "missing" || mode == "foreign" {
-				if p.records != 0 {
-					t.Fatal("invalid facts were recorded")
+				if p.records != 2 || len(p.retained) != 2 {
+					t.Fatal("verified facts lost or invalid partial facts recorded")
 				}
 			} else if p.records != 2 || len(p.retained) != 4 {
 				t.Fatal("exact partial evidence lost", p.records)

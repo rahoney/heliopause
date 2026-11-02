@@ -53,6 +53,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err != nil {
 		return result, published, err
 	}
+	ctx = ports.WithStorageOperation(ctx, operationID)
 	runID, err := s.newRun()
 	if err != nil {
 		return result, published, err

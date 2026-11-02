@@ -92,6 +92,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	if err != nil {
 		return InspectedInstall{}, fmt.Errorf("generate operation ID: %w", err)
 	}
+	ctx = ports.WithStorageOperation(ctx, operationID)
 	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolution, err := s.resolver.ResolveDependencies(ctx, request.reference, request.context)
 	if err != nil {
@@ -365,7 +366,9 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
-		return domain.DependencyInspection{}, fail("INSPECTION_PROVIDER_FAILED", err)
+		var recordErr error
+		current.checks, current.references, recordErr = recordFailedInspection(ctx, s.evidence, runID, artifact, verification, inspection)
+		return domain.DependencyInspection{}, fail("INSPECTION_PROVIDER_FAILED", errors.Join(err, recordErr))
 	}
 	if len(additionalChecks) != 0 {
 		leaves := []domain.InspectionReport{inspection}
@@ -464,7 +467,9 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
-		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, fail("INSPECTION_PROVIDER_FAILED", err)
+		var recordErr error
+		current.checks, current.references, recordErr = recordFailedInspection(ctx, s.evidence, runID, artifact, verification, inspection)
+		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, fail("INSPECTION_PROVIDER_FAILED", errors.Join(err, recordErr))
 	}
 	checks = append(checks, inspection.Executions()...)
 	current.checks = checks

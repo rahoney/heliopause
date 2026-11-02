@@ -28,6 +28,7 @@ import (
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
+	resourcestorage "github.com/rahoney/heliopause/internal/storage"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 	verificationpypi "github.com/rahoney/heliopause/internal/verification/pypi"
@@ -151,6 +152,22 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := uvPackageClientPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
 			return err
 		}
+	}
+	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" {
+		cacheRoot, storageErr := os.UserCacheDir()
+		if storageErr != nil {
+			return storageErr
+		}
+		storage, storageErr := resourcestorage.NewLocal(ctx, filepath.Join(cacheRoot, "heliopause"), domain.DefaultStoragePolicy())
+		if storageErr != nil {
+			return storageErr
+		}
+		ctx = ports.WithStorage(ctx, storage)
+		defer func() {
+			closeErr := storage.Close()
+			cli.PresentFinalizationError(command, closeErr)
+			resultErr = errors.Join(resultErr, closeErr)
+		}()
 	}
 	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
 		var closeRuntime func() error

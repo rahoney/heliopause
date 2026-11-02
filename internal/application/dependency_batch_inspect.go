@@ -97,24 +97,23 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	reports, err := inspect(artifacts)
 	if err != nil {
-		// A provider may return bounded partial facts with its original failure.
-		// Record only exact complete report coverage; never evaluate Policy or
-		// construct an approved set on this path.
-		if len(reports) != 0 {
+		// Keep verification even if no complete, subject-bound inspection map
+		// is available. Invalid partial reports never become performed checks.
+		validReports := len(reports) != 0
+		if validReports {
 			if reportErr := validateFailedDependencyReports(nodes, reports, byNode); reportErr != nil {
 				err = errors.Join(err, reportErr)
-			} else {
-				for _, item := range pending {
-					facts := append(item.verification.Evidence(), reports[item.dependency.Node()].Evidence()...)
-					item.checks = append([]domain.CheckExecution{item.verification.Execution()}, reports[item.dependency.Node()].Executions()...)
-					refs, recordErr := s.evidence.Record(ctx, item.runID, facts, item.checks...)
-					if recordErr != nil {
-						err = errors.Join(err, recordErr)
-					} else {
-						item.references = refs
-					}
-				}
+				validReports = false
 			}
+		}
+		for _, item := range pending {
+			var report domain.InspectionReport
+			if validReports {
+				report = reports[item.dependency.Node()]
+			}
+			var recordErr error
+			item.checks, item.references, recordErr = recordFailedInspection(ctx, s.evidence, item.runID, item.artifact, item.verification, report)
+			err = errors.Join(err, recordErr)
 		}
 		return failPending("INSPECTION_PROVIDER_FAILED", err)
 	}

@@ -280,6 +280,7 @@ type executionGraphFailurePorts struct {
 	providerErr, recordErr error
 	mode                   string
 	records, policies      int
+	facts                  int
 }
 
 func (p *executionGraphFailurePorts) InspectGraph(ctx context.Context, graph domain.LockedDependencyGraph, artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
@@ -295,6 +296,7 @@ func (p *executionGraphFailurePorts) InspectGraph(ctx context.Context, graph dom
 }
 func (p *executionGraphFailurePorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	p.records++
+	p.facts += len(evidence)
 	if p.recordErr != nil {
 		return nil, p.recordErr
 	}
@@ -323,12 +325,12 @@ func TestExecutionGraphFailureRetainsOnlyExactFactsAndOriginalCauses(t *testing.
 			if !errors.Is(err, provider) || result.Valid() || result.Set().Valid() || p.policies != 0 {
 				t.Fatal("provider failure became approval or original cause lost", err)
 			}
-			wantRecords := 2
+			wantFacts := 4
 			if mode == "missing" || mode == "foreign" {
-				wantRecords = 0
+				wantFacts = 2
 			}
-			if p.records != wantRecords {
-				t.Fatal("inexact failed graph facts recorded", p.records)
+			if p.records != 2 || p.facts != wantFacts {
+				t.Fatal("verified facts lost or inexact failed graph facts recorded", p.records, p.facts)
 			}
 			if mode == "store" && !errors.Is(err, store) {
 				t.Fatal("cleanup/store replaced original error", err)

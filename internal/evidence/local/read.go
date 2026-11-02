@@ -9,8 +9,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -25,26 +23,12 @@ func (s *Store) ReadReference(ctx context.Context, run domain.RunID, ref domain.
 	if err := ctx.Err(); err != nil {
 		return domain.Evidence{}, domain.ContentDigest{}, err
 	}
-	// Reject symlinks in each store path component before confined opening.
-	path := filepath.VolumeName(s.root) + string(filepath.Separator)
-	var rootInfo os.FileInfo
-	for _, part := range strings.Split(strings.TrimPrefix(s.root, path), string(filepath.Separator)) {
-		path = filepath.Join(path, part)
-		info, err := os.Lstat(path)
-		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
-			return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence store path is unavailable")
-		}
-		rootInfo = info
-	}
-	root, err := os.OpenRoot(s.root)
+	root, rootInfo, err := s.openRoot()
 	if err != nil {
-		return domain.Evidence{}, domain.ContentDigest{}, errors.New("open Evidence store")
+		return domain.Evidence{}, domain.ContentDigest{}, err
 	}
 	defer root.Close()
-	openedStore, err := root.Stat(".")
-	if err != nil || rootInfo == nil || !os.SameFile(rootInfo, openedStore) {
-		return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence store identity changed")
-	}
+
 	runInfo, err := root.Lstat(run.String())
 	if err != nil || !runInfo.IsDir() || runInfo.Mode()&os.ModeSymlink != 0 {
 		return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence Run is unavailable")
