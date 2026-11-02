@@ -42,6 +42,22 @@ type InspectionStorage interface {
 	NoteInspection(context.Context, domain.RunID, bool) error
 }
 
+// StorageUse tracks the existing command's guards and execution consumers. The
+// returned function records their final close/outcome once; an error protects
+// the command's inputs and never changes their security or installation result.
+type StorageUse interface {
+	TrackUse(context.Context) (func(error), error)
+}
+
+// TrackStorageUse keeps optional storage composition out of workflow owners.
+// The existing owner still closes its guard/runtime and preserves every error.
+func TrackStorageUse(ctx context.Context) (func(error), error) {
+	if tracker, ok := StorageFromContext(ctx).(StorageUse); ok {
+		return tracker.TrackUse(ctx)
+	}
+	return func(error) {}, nil
+}
+
 type storageContextKey struct{}
 type storageOperationKey struct{}
 

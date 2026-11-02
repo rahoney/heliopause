@@ -37,6 +37,7 @@ import (
 
 // Run constructs and executes the CLI with process-owned dependencies.
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultErr error) {
+	outerFinalizersClosed := true
 	command, err := cli.New(stdout, stderr)
 	if err != nil {
 		return err
@@ -166,7 +167,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		ctx = ports.WithStorage(ctx, storage)
 		defer func() {
 			cleanupContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
-			finishErr := storage.Finish(cleanupContext, resultErr == nil)
+			finishErr := storage.Finish(cleanupContext, outerFinalizersClosed)
 			cancel()
 			closeErr := errors.Join(finishErr, storage.Close())
 			cli.PresentFinalizationError(command, closeErr)
@@ -185,6 +186,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if closeRuntime != nil {
 			defer func() {
 				cleanupErr := closeRuntime()
+				outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 				cli.PresentFinalizationError(command, cleanupErr)
 				resultErr = errors.Join(resultErr, cleanupErr)
 			}()
@@ -205,6 +207,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		defer func() {
 			cleanupErr := trustedExecutor.Close()
+			outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 			cli.PresentFinalizationError(command, cleanupErr)
 			resultErr = errors.Join(resultErr, cleanupErr)
 		}()
@@ -222,6 +225,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		processObserver = observerSupervisor.Observer()
 		defer func() {
 			cleanupErr := observerSupervisor.Close()
+			outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 			cli.PresentFinalizationError(command, cleanupErr)
 			resultErr = errors.Join(resultErr, cleanupErr)
 		}()

@@ -87,8 +87,7 @@ func NewExecutionPreparationService(resolver ExecutionResolver, inspection *Exec
 	return &ExecutionPreparationService{resolver, inspection, entry, records, staging}, nil
 }
 
-func (s *ExecutionPreparationService) Prepare(ctx context.Context, request ExecutionPreparationRequest) (PreparedExecution, error) {
-	outcome := PreparedExecution{}
+func (s *ExecutionPreparationService) Prepare(ctx context.Context, request ExecutionPreparationRequest) (outcome PreparedExecution, resultErr error) {
 	fail := func(code string, cause error) (PreparedExecution, error) {
 		outcome.failure = code
 		if ctx != nil && ctx.Err() != nil {
@@ -106,6 +105,11 @@ func (s *ExecutionPreparationService) Prepare(ctx context.Context, request Execu
 	if err := ctx.Err(); err != nil {
 		return fail("CANCELED", err)
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return fail("STORAGE_USE_UNAVAILABLE", err)
+	}
+	defer func() { finishUse(resultErr) }()
 	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolution, err := s.resolver.ResolveExecutionDependencies(ctx, validated.reference)
 	if err != nil {

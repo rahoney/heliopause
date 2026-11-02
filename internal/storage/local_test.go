@@ -739,8 +739,8 @@ func TestIntakeFinalizationRechecksMemberAfterWholeInventory(t *testing.T) {
 }
 
 func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t *testing.T) {
-	for _, removedByOwner := range []bool{false, true} {
-		t.Run(map[bool]string{false: "shared incomplete", true: "owner removed"}[removedByOwner], func(t *testing.T) {
+	for _, scenario := range []string{"shared incomplete", "owner removed", "consumer active", "consumer failed"} {
+		t.Run(scenario, func(t *testing.T) {
 			path := storageTestRoot(t)
 			store, err := openTestStorage(context.Background(), path, storageFixturePolicy(t, 4))
 			if err != nil {
@@ -774,7 +774,7 @@ func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t 
 			if err := store.NoteInspection(ctx, runs[0], true); err != nil {
 				t.Fatal(err)
 			}
-			if removedByOwner {
+			if scenario == "owner removed" {
 				if err := store.intake.Remove(runs[1].String() + "/payload"); err != nil {
 					t.Fatal(err)
 				}
@@ -788,6 +788,38 @@ func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t 
 					t.Fatal("confirmed owner removal retained accounting")
 				}
 				return
+			}
+			if scenario == "consumer active" || scenario == "consumer failed" {
+				if err := store.NoteInspection(ctx, runs[1], true); err != nil {
+					t.Fatal(err)
+				}
+				finish, err := store.TrackUse(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := store.Finish(ctx, true); err == nil {
+					t.Fatal("active guard did not protect inputs")
+				}
+				for _, run := range runs {
+					if _, err := store.intake.Stat(run.String() + "/payload"); err != nil {
+						t.Fatal(err)
+					}
+				}
+				var cause error
+				if scenario == "consumer failed" {
+					cause = errors.New("controlled unproven guard close")
+				}
+				finish(cause)
+				finish(nil) // repeated completion cannot erase an earlier failure
+				if scenario == "consumer active" {
+					if err := store.Finish(ctx, true); err != nil {
+						t.Fatal(err)
+					}
+					if len(store.entries) != 0 {
+						t.Fatal("completed consumers retained inputs")
+					}
+					return
+				}
 			}
 			if err := store.Finish(ctx, true); err == nil {
 				t.Fatal("incomplete shared consumer accepted")

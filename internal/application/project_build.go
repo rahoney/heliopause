@@ -36,6 +36,11 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err := ctx.Err(); err != nil {
 		return result, published, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return result, published, err
+	}
+	defer func() { finishUse(resultErr) }()
 	guard, err := s.mutation.BeginBuild(ctx, install)
 	if err != nil {
 		return result, published, err

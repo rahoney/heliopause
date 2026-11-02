@@ -53,6 +53,11 @@ func (s *InstallUpdateService) Install(ctx context.Context, request InstallReque
 	if err := ctx.Err(); err != nil {
 		return outcome, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return outcome, err
+	}
+	defer func() { finishUse(resultErr) }()
 	session, err := s.preparation.BeginInstallUpdate(ctx, request.updateSource, request.updateSelector, request.context, request.adopt)
 	if err != nil {
 		if code := ports.InstallUpdateFailureCode(err); code != "" {

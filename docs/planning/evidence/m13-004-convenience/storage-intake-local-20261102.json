@@ -1,7 +1,7 @@
 {
   "schema": "helox.local-checkpoint/v1",
   "baseline": "ecf1202",
-  "scope": "C01 existing public/frozen acquisition, bounded derived writes, actual-byte sealing and normal-command shared-consumer last-use only",
+  "scope": "C01 public/frozen acquisition, derived writes, current-command consumer finalization and safe intake collection foundation; whole C01 remains open",
   "c01_status": {
     "IMPLEMENTED": "NO",
     "WIRED": "NO",
@@ -22,12 +22,17 @@
     "register only four reviewed adapter-to-Core/Ports edges and reject concrete storage/bootstrap shortcuts",
     "reserve and seal frozen source replay while preserving original caller ownership",
     "explicit same-operation intake extension before derived output; seal original plus derived members",
-    "charge resident bytes once and replay additional pending/actual bytes without adopting restarted-owner authority"
+    "charge resident bytes once and replay additional pending/actual bytes without adopting restarted-owner authority",
+    "reuse existing guard and preparation close order with one-shot active/uncertain storage-use tracking",
+    "retain original security/install/error facts independently from outer runtime finalization",
+    "preserve complete nonzero/signal execution as drained while retaining incomplete execution inputs",
+    "actual ALLOW/BLOCK archive input collection preserves Evidence and caller original files"
   ],
   "missing": [
-    "failure/cancellation/runtime-drain and shared lease/crash recovery",
-    "staging/cache/rollback accounting and operation peak reservation",
-    "automatic expiry/finite cache collection, settings/result cleanup axes",
+    "full failure/cancellation/typed project and preparation policy-denial cleanup classification",
+    "persistent shared lease/generation and bounded crash recovery",
+    "staging/cache/rollback and operation peak accounting",
+    "automatic expiry/pins/finite cache and journal compaction, settings/result cleanup axes",
     "100-repeat and final native/hosted qualification"
   ],
   "checks": [
@@ -572,6 +577,150 @@
       "sha256": "797c67ba45ea44db2a3a71fa5d089162518ea6edad8a2d4b4da01e4b7eeaecf4",
       "exit_code": 0,
       "elapsed_seconds": 2.409,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-consumer-use-first.json",
+      "sha256": "db842fd3d0c3dd2cf9e9d3615c6b07c89114b052620a5bda15ca791de262a103",
+      "exit_code": 0,
+      "elapsed_seconds": 5.307,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-consumer-facts-race.json",
+      "sha256": "16280cd0c16c9b87c7390dada2e9d584096772f0c55846e9a408fb87a513afcb",
+      "exit_code": 0,
+      "elapsed_seconds": 50.336,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-consumer-facts-staticcheck.json",
+      "sha256": "2cf57fba161fd7ad54538809dc6c86bf2ddaebb49c7257d1d845c446c33e8fd6",
+      "exit_code": 0,
+      "elapsed_seconds": 21.325,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-consumer-facts-security.json",
+      "sha256": "bb1ff7500cfc47c48d4fd718031f0bb1cd7115c168220d21e67c0d4078eeafcd",
+      "exit_code": 0,
+      "elapsed_seconds": 23.17,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-consumer-facts-vet.json",
+      "sha256": "0008fabfdff8eebd027899f7cd18c2e020050d841041528bdb5b21afaa4c5b62",
+      "exit_code": 0,
+      "elapsed_seconds": 2.62,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-execution-preparation-use.json",
+      "sha256": "05b6076f1cd99b1b86c14b254af1ec603696cf98a336c149cda3be2590f45c89",
+      "exit_code": 0,
+      "elapsed_seconds": 2.103,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-execution-preparation-current-race.json",
+      "sha256": "ad46a458af59330cfe6a947ef6b1d88f2fe27a9ad345d0408b0718ddd314bb97",
+      "exit_code": 0,
+      "elapsed_seconds": 5.08,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-execution-preparation-current-staticcheck.json",
+      "sha256": "21b7541ad2f18c6e0a1870f698ce7e3d9c753c35bcdd25ddbe43f7a0494862b9",
+      "exit_code": 0,
+      "elapsed_seconds": 2.475,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-execution-preparation-current-vet.json",
+      "sha256": "6bc7345952eb455acdf10ca42c3415e3aad48b83a61bb44495b13e87377f5b3d",
+      "exit_code": 0,
+      "elapsed_seconds": 1.143,
       "source_unchanged": true,
       "environment": {
         "GOOS": "",

@@ -35,6 +35,8 @@ type Local struct {
 	owned                                                      map[string]bool
 	inspected                                                  map[domain.RunID]bool
 	closed                                                     bool
+	activeUses                                                 uint64
+	uncertainUse                                               bool
 	mu                                                         sync.Mutex
 	root, evidence, intake, state                              *os.Root
 	journal                                                    *os.File
@@ -843,14 +845,43 @@ func (s *Local) NoteInspection(ctx context.Context, run domain.RunID, complete b
 	return nil
 }
 
-// Finish runs only after the outer command and its deferred guards/runtime
-// closes. A failed command or incomplete required observation retains bytes and
-// accounting. Restart reclamation is a separate, still protected path.
-func (s *Local) Finish(ctx context.Context, commandSucceeded bool) error {
+func (s *Local) TrackUse(ctx context.Context) (func(error), error) {
+	if s == nil || ctx == nil {
+		return nil, errors.New("storage consumer requires context")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed || s.activeUses == math.MaxUint64 {
+		return nil, errors.New("storage consumer tracking is unavailable")
+	}
+	s.activeUses++
+	done := false
+	return func(cause error) {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		if done {
+			return
+		}
+		done = true
+		s.activeUses--
+		if cause != nil {
+			s.uncertainUse = true
+		}
+	}, nil
+}
+
+// Finish runs after the command and its outer runtime finalizers. Policy/guest
+// exit failure does not itself imply active consumers. Required check completion
+// and tracked guard/execution outcomes remain independent deletion conditions.
+// Restart reclamation is a separate, still protected path.
+func (s *Local) Finish(ctx context.Context, outerFinalizersClosed bool) error {
 	if s == nil || ctx == nil {
 		return errors.New("storage finalization requires context")
 	}
-	if !commandSucceeded {
+	if !outerFinalizersClosed {
 		return nil
 	}
 	s.mu.Lock()
@@ -866,6 +897,9 @@ func (s *Local) Finish(ctx context.Context, commandSucceeded bool) error {
 		return nil
 	} // inert composition must remain inert
 	return s.withLock(ctx, func() error {
+		if s.activeUses != 0 || s.uncertainUse {
+			return errors.New("intake remains accounted: consumer finalization is active or unproven")
+		}
 		var failures []error
 		for key := range s.owned {
 			record, exists := s.entries[key]

@@ -76,95 +76,113 @@ func acquiredFrozenFixture(t *testing.T, root, name string, body []byte) (Frozen
 }
 
 func TestFrozenIntakeFeedsExistingInspectWorkflow(t *testing.T) {
-	path := filepath.Join(privateFrozenRoot(t), "haa")
-	root := filepath.Join(path, "intake")
-	if err := os.MkdirAll(root, 0700); err != nil {
-		t.Fatal(err)
-	}
-	spec := domain.DefaultStoragePolicy().Spec()
-	spec.MinimumFreeBytes = 1
-	policyValue, err := domain.NewStoragePolicy(spec)
-	if err != nil {
-		t.Fatal(err)
-	}
-	storageOwner, err := storage.NewLocal(context.Background(), path, policyValue)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer storageOwner.Close()
-	ctx := ports.WithStorage(context.Background(), storageOwner)
-	var archive bytes.Buffer
-	writer := zip.NewWriter(&archive)
-	file, err := writer.Create("README.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := file.Write([]byte("controlled archive fixture")); err != nil {
-		t.Fatal(err)
-	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-	entry, original := acquiredFrozenFixture(t, root, "package.zip", archive.Bytes())
-	frozen, err := NewFrozenIntake(context.Background(), root, []FrozenEntry{entry})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer frozen.Close()
-	inspector, err := inspectiongithub.NewStaticInspector(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	evidence, err := local.NewStore(filepath.Join(path, "evidence"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	service, err := application.NewInspectService(frozen, verificationgithub.IntegrityVerifier{}, inspector, evidence, policy.M6{}, domain.NewOperationID, domain.NewRunID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	request, err := application.NewInspectRequest(entry.Reference)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := service.Inspect(ctx, request)
-	if err != nil {
-		t.Fatal(err)
-	}
-	decision, ok := result.PolicyDecision()
-	if result.Status() != domain.OperationCompleted || !ok || decision.Decision() != domain.DecisionAllow || len(result.Checks()) != 2 || len(result.Evidence()) != 2 {
-		t.Fatalf("existing archive inspection did not complete: %+v", result)
-	}
-	run, ok := result.RunID()
-	if !ok {
-		t.Fatal("new inspection Run missing")
-	}
-	originalRun := strings.Split(entry.Acquired.ContentHandle(), ":")[1]
-	if run.String() == originalRun {
-		t.Fatal("reused acquisition Run as a new inspection Run")
-	}
-	copied, err := os.ReadFile(filepath.Join(root, run.String(), "asset"))
-	if err != nil || !bytes.Equal(copied, archive.Bytes()) {
-		t.Fatal("inspection consumed different bytes")
-	}
-	if err := frozen.Close(); err != nil {
-		t.Fatal(err)
-	}
-	journal, err := os.ReadFile(filepath.Join(path, ".storage", "resources.jsonl"))
-	if err != nil || !bytes.Contains(journal, []byte(`"kind":"intake"`)) {
-		t.Fatalf("frozen copy was not registered: %s %v", journal, err)
-	}
-	if err := storageOwner.Finish(ctx, true); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(filepath.Join(root, run.String())); !os.IsNotExist(err) {
-		t.Fatal("copied input remains after last use", err)
-	}
-	if _, err := os.Stat(original); err != nil {
-		t.Fatal("Close removed caller-owned intake")
-	}
-	if _, err := frozen.Resolve(context.Background(), entry.Reference); err == nil {
-		t.Fatal("closed intake resolved")
+	for _, blocked := range []bool{false, true} {
+		t.Run(map[bool]string{false: "allow", true: "policy block"}[blocked], func(t *testing.T) {
+			path := filepath.Join(privateFrozenRoot(t), "haa")
+			root := filepath.Join(path, "intake")
+			if err := os.MkdirAll(root, 0700); err != nil {
+				t.Fatal(err)
+			}
+			spec := domain.DefaultStoragePolicy().Spec()
+			spec.MinimumFreeBytes = 1
+			policyValue, err := domain.NewStoragePolicy(spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			storageOwner, err := storage.NewLocal(context.Background(), path, policyValue)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer storageOwner.Close()
+			ctx := ports.WithStorage(context.Background(), storageOwner)
+			var archive bytes.Buffer
+			writer := zip.NewWriter(&archive)
+			entryName := "README.txt"
+			if blocked {
+				entryName = "../escape"
+			}
+			file, err := writer.Create(entryName)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := file.Write([]byte("controlled archive fixture")); err != nil {
+				t.Fatal(err)
+			}
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+			entry, original := acquiredFrozenFixture(t, root, "package.zip", archive.Bytes())
+			frozen, err := NewFrozenIntake(context.Background(), root, []FrozenEntry{entry})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer frozen.Close()
+			inspector, err := inspectiongithub.NewStaticInspector(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			evidence, err := local.NewStore(filepath.Join(path, "evidence"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			service, err := application.NewInspectService(frozen, verificationgithub.IntegrityVerifier{}, inspector, evidence, policy.M6{}, domain.NewOperationID, domain.NewRunID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			request, err := application.NewInspectRequest(entry.Reference)
+			if err != nil {
+				t.Fatal(err)
+			}
+			result, err := service.Inspect(ctx, request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			decision, ok := result.PolicyDecision()
+			expectedDecision := domain.DecisionAllow
+			if blocked {
+				expectedDecision = domain.DecisionBlock
+			}
+			if result.Status() != domain.OperationCompleted || !ok || decision.Decision() != expectedDecision || len(result.Checks()) != 2 || len(result.Evidence()) != 2 {
+				t.Fatalf("existing archive inspection did not complete: %+v", result)
+			}
+			run, ok := result.RunID()
+			if !ok {
+				t.Fatal("new inspection Run missing")
+			}
+			originalRun := strings.Split(entry.Acquired.ContentHandle(), ":")[1]
+			if run.String() == originalRun {
+				t.Fatal("reused acquisition Run as a new inspection Run")
+			}
+			copied, err := os.ReadFile(filepath.Join(root, run.String(), "asset"))
+			if err != nil || !bytes.Equal(copied, archive.Bytes()) {
+				t.Fatal("inspection consumed different bytes")
+			}
+			if err := frozen.Close(); err != nil {
+				t.Fatal(err)
+			}
+			journal, err := os.ReadFile(filepath.Join(path, ".storage", "resources.jsonl"))
+			if err != nil || !bytes.Contains(journal, []byte(`"kind":"intake"`)) {
+				t.Fatalf("frozen copy was not registered: %s %v", journal, err)
+			}
+			if err := storageOwner.Finish(ctx, true); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Stat(filepath.Join(root, run.String())); !os.IsNotExist(err) {
+				t.Fatal("copied input remains after last use", err)
+			}
+			for _, ref := range result.Evidence() {
+				if _, _, err := evidence.ReadReference(ctx, run, ref, entry.Acquired.Identity(), entry.Acquired.Digest()); err != nil {
+					t.Fatal("cleanup lost security Evidence", err)
+				}
+			}
+			if _, err := os.Stat(original); err != nil {
+				t.Fatal("Close removed caller-owned intake")
+			}
+			if _, err := frozen.Resolve(context.Background(), entry.Reference); err == nil {
+				t.Fatal("closed intake resolved")
+			}
+
+		})
 	}
 }
 

@@ -209,3 +209,33 @@ PASS다. 이는 고정 작은 filesystem/recording-runner와 기존 시험 범�
 아직 완료가 아니다. close error가 기존 primary와 join된 사실이나 executor.Close만으로
 runtime 부재를 추론하지 않고 실제 기존 종료 owner에서 사실을 전달해야 한다. C01 전체
 및 storage lease generation/crash·cache/retention/설정/성능 acceptance는 계속 OPEN이다.
+
+## ca3ffe7 이후 — 현재 command의 실제 consumer 종료 근거
+
+기존 Prepared/Update install, project download/update/build guard 및 실행 준비·실행 owner에
+좁은 `TrackStorageUse`를 연결했다. 기존 Close 순서/오류는 그대로이며 active consumer와
+실패한 종료는 그 command의 intake를 보호한다. callback은 한 번만 계상하고 실패가 뒤의
+반복 호출로 지워지지 않는다. 메모리상 current-command 사실이며 crash lease가 아니다.
+
+Bootstrap은 runtime wrapper·trusted executor·observer의 실제 defer 결과를 별도로 모은다.
+단순 command error==nil을 삭제 전제나 runtime 부재로 쓰지 않는다. 기존 필수 check의 완료,
+전체 shared input 집합, tracked consumer 및 outer finalizer가 모두 충족돼야 정리한다.
+게스트의 검증된 nonzero/signal 종료와 관찰 incomplete도 기존 execution outcome 계약대로
+구분하며, 판정/설치 여부와 원래 오류를 바꾸지 않는다.
+
+실제 frozen archive의 ALLOW/BLOCK 두 경우는 입력 사본만 수거하고 원본 caller 파일과
+현재 Evidence를 보존했다. Prepared guard의 시작/실제 Close 뒤 기록, begin/close 오류와
+Policy 거부, active/failed consumer 보호가 연결됐다. 영향4 package Race50.336s,
+Staticcheck21.325s/security23.170s/vet2.620s는 PASS다.
+
+이후 source 대조에서 두 execution preparation의 staging 실패도 실행 consumer 이전의
+별도 수명임을 확인해 같은 tracker에 연결했다. 기존 resolve/record/stage 실패 및 terminal
+회귀2.103s, 현재 Application 전체 Race5.080s·Staticcheck2.475s·vet1.143s는 PASS다.
+앞4 package 보안/Race를 이 두 후속 hook의 동일 전체 입력 결과로 바꾸지 않는다.
+
+현재 기본 Port/유한 정책·획득/파생/재생 등록·actual seal·normal/완료 BLOCK 정리·불확실한
+consumer 보호가 후속 검사에 사용할 수 있게 연결됐다. 설계09의 foundation을 재사용해
+다음 S01/S08 생성 owner를 연결한다. 이것은 C01 전체의 완료가 아니며 C01 네 상태는 NO다.
+Stage16에서 실패/취소·typed project/preparation Policy 오류의 더 정확한 정리, 지속 shared
+lease/generation·bounded crash recovery, staging/cache/rollback 전량·peak accounting,
+retention/pin/원장 compaction, 설정·result 축·반복/최종 qualification을 반드시 마쳐야 한다.

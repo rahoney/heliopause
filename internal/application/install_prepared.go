@@ -35,6 +35,11 @@ func (s *PreparedInstallService) Install(ctx context.Context, request InstallReq
 	if err := ctx.Err(); err != nil {
 		return outcome, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return outcome, err
+	}
+	defer func() { finishUse(resultErr) }()
 	session, err := s.preparation.BeginInstall(ctx, request.reference, request.context)
 	if err != nil {
 		return outcome, err
