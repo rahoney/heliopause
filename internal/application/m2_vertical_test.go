@@ -53,7 +53,14 @@ func TestM3ControlledVerticalWorkflow(t *testing.T) {
 			resolver, _ := npmartifact.NewResolver(registryURL, &http.Client{Transport: transport}, filepath.Join(root, "intake"))
 			static, _ := npminspection.NewInspector(filepath.Join(root, "intake"))
 			session, _ := domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")
-			result, _ := domain.NewSandboxResult(session, test.status, test.limitation, test.observations)
+			var states []domain.SandboxEnvironmentState
+			if test.status == domain.SandboxCompleted {
+				digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+				for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+					states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest})
+				}
+			}
+			result, _ := domain.NewSandboxResult(session, test.status, test.limitation, test.observations, states...)
 			dynamic, _ := npminspection.NewDynamicInspector(m3Sandbox{result: result})
 			inspector, _ := npminspection.NewCompositeInspector(static, dynamic)
 			store, _ := local.NewStore(filepath.Join(root, "evidence"))

@@ -13,13 +13,13 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-type inspectionEnvironment string
+type inspectionEnvironment = domain.SandboxEnvironmentProfile
 
 const (
-	minimalEnvironment         inspectionEnvironment = "minimal-v1"
-	developmentEnvironment     inspectionEnvironment = "mock-development-v1"
-	environmentWorkspaceRoot                         = "/tmp"
-	environmentWorkspacePolicy                       = "dev.heliopause.workspace-policy=tmp-noexec-v1"
+	minimalEnvironment         = domain.SandboxEnvironmentMinimal
+	developmentEnvironment     = domain.SandboxEnvironmentDevelopment
+	environmentWorkspaceRoot   = "/tmp"
+	environmentWorkspacePolicy = "dev.heliopause.workspace-policy=tmp-noexec-v1"
 )
 
 type environmentFixture struct {

@@ -1,6 +1,6 @@
 {
   "baseline_commit": "b085058",
-  "scope": "S01/S08 common synthetic profile and bounded DATA inventory only; production two-experiment wiring and whole acceptance OPEN",
+  "scope": "S01/S08 incremental common foundation and npm wiring; global qualification/acceptance OPEN",
   "status": {
     "IMPLEMENTED": "NO",
     "WIRED": "NO",
@@ -365,5 +365,63 @@
       "grouped whole qualification and remaining S01/S08 acceptance"
     ],
     "local_checkpoint_checks": "canonical foundation70.578s/security24.750s/affected vet4.769s PASS; earlier owner Race/static retain their exact source scope"
+  },
+  "typed_state_checkpoint": {
+    "baseline_commit": "243dbfb",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "existing npm two-environment Backend.Execute -> typed SandboxResult -> same-subject workspace-state Evidence; other consumers unchanged",
+    "profile": "npm-dynamic-environment-state-v1",
+    "version_binding": [
+      "locked Node image",
+      "locked gVisor patch",
+      "common environment profile versions",
+      "workspace-state schema"
+    ],
+    "evidence_limit_bytes": 1024,
+    "workspace_evidence_per_completed_npm_check": 2,
+    "retained": [
+      "opaque fixture/baseline/final SHA256",
+      "file type/mode/owner/size/content change counts",
+      "MUTABLE_WORKSPACE scope",
+      "transient_changes NOT_COVERED"
+    ],
+    "excluded": [
+      "raw names/paths",
+      "raw contents/env/argv",
+      "Host identifiers"
+    ],
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-targeted.json",
+        "sha256": "8cb1d067fecb64a19664f018905038f0b3bd257922e0565b70d8d22c0f4df17c",
+        "elapsed": 13.121
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-owner-race.json",
+        "sha256": "eedb8e1a7c1a039c69e7077d78219eab10f83cf401cf1a09e0c12d68eee8ddb5",
+        "elapsed": 50.882
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-owner-static.json",
+        "sha256": "cba12e1c019ac4342b4a4fda5b6fe797cb2fe15161d2751c2952d0d6bd2b2591",
+        "elapsed": 24.263
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-foundation.json",
+        "sha256": "bf861c3e195f19e95ac139b7a529361000f75735a6a715b7cb715b740c44f7b6",
+        "elapsed": 70.534
+      }
+    ],
+    "remaining": [
+      "grouped native persisted state evidence subject/profile/cleanup verification",
+      "transient create/write/rename/unlink/permission-change event coverage",
+      "other ecosystem profile/state consumers and whole S01/S08 acceptance"
+    ]
   }
 }

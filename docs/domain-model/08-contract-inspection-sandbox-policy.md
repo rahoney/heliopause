@@ -144,6 +144,15 @@ Session B → fresh environment
 
 기존 실패 Observation/Evidence는 삭제하지 않는다. Sandbox Port는 Finding, Finding Severity, Verification Result, Policy Decision, Verified Set, Promotion을 직접 결정하지 않는다.
 
+현재 두 synthetic 환경의 상태 비교는 `SandboxEnvironmentState`로 전달한다. 공통
+profile/version, fixture·baseline·final SHA256과 생성/삭제/변경 수만 보존하고 raw 경로와
+내용은 전달하지 않는다. Inspection은 같은 Artifact·CheckID에 환경별 `workspace-state`
+Evidence를 추가하며 기존 observation summary와 Evidence당1024B 한도는 유지한다.
+Snapshot 범위는 `MUTABLE_WORKSPACE`, 중간 생성 후 삭제 관찰은 현재 `NOT_COVERED`다.
+이 증거는 악성 판정이나 syscall coverage 완료를 뜻하지 않는다. 현재 npm required 검사
+profile은 두 환경의 상태 증거도 요구하며 runtime/image·공통 profile/schema version에
+결합한다. 예전 단일 실행/변화 수만 가진 승인은 현재 CheckPlan을 만족하지 않는다.
+
 ### Policy Contract
 
 `Policy`는 외부 security tool adapter가 아니라 Heliopause 내부의 **최종 보안 판정 책임**이다. 반드시 외부 Adapter를 가진 outbound Port일 필요가 없으며, Application이 의존하는 안정적인 **Policy Contract / Domain Service boundary**로 취급한다.

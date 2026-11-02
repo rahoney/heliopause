@@ -369,6 +369,15 @@ func TestNPMEnvironmentFlowUsesTwoFreshWorkspacesAndOneBudget(t *testing.T) {
 	if model.creates != 1 || model.registers != 4 || model.commands != 2 || model.introductions != 2 || model.snapshots != 4 || model.removed != 2 || len(model.containers) != 0 || len(model.volumes) != 0 {
 		t.Fatalf("resources were reused, replenished or not drained: creates=%d registrations=%d commands=%d introductions=%d snapshots=%d removed=%d", model.creates, model.registers, model.commands, model.introductions, model.snapshots, model.removed)
 	}
+	states := result.EnvironmentStates()
+	if len(states) != 2 || states[0].FixtureDigest == states[1].FixtureDigest {
+		t.Fatal("fresh profile identities missing")
+	}
+	for _, state := range states {
+		if state.Created != 1 || state.Deleted != 0 || state.Modified != 0 || state.Before == state.After {
+			t.Fatalf("final snapshot facts not retained: %+v", state)
+		}
+	}
 	counts := map[string]uint64{}
 	for _, fact := range result.Observations() {
 		counts[fact.Subject()] += fact.Count()

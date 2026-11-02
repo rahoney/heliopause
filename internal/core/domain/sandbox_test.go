@@ -140,3 +140,55 @@ func TestSandboxRequestRequiresAcquiredContent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestSandboxEnvironmentStateIsBoundedAndOwned(t *testing.T) {
+	session, _ := domain.NewSandboxSessionID()
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	other, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	valid := domain.SandboxEnvironmentState{Profile: domain.SandboxEnvironmentMinimal, FixtureDigest: digest, Before: digest, After: other, Created: 1}
+	states := []domain.SandboxEnvironmentState{valid}
+	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", nil, states...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	states[0].Created = 999
+	copy := result.EnvironmentStates()
+	copy[0].Created = 999
+	if result.EnvironmentStates()[0] != valid {
+		t.Fatal("result retains mutable input/output slices")
+	}
+	summary, err := valid.Summary()
+	if err != nil || len(summary) > 1024 || !strings.Contains(summary, `"transient_changes":"NOT_COVERED"`) || !strings.Contains(summary, `"created":1`) || strings.Contains(summary, "/") || strings.Contains(summary, "haa-invalid") {
+		t.Fatalf("unsafe or incomplete summary: %q %v", summary, err)
+	}
+	for name, mutate := range map[string]func(*domain.SandboxEnvironmentState){
+		"raw profile":     func(s *domain.SandboxEnvironmentState) { s.Profile = "../../Host-path" },
+		"fixture absent":  func(s *domain.SandboxEnvironmentState) { s.FixtureDigest = domain.ContentDigest{} },
+		"baseline absent": func(s *domain.SandboxEnvironmentState) { s.Before = domain.ContentDigest{} },
+		"final absent":    func(s *domain.SandboxEnvironmentState) { s.After = domain.ContentDigest{} },
+		"count overflow":  func(s *domain.SandboxEnvironmentState) { s.Created = ^uint64(0) },
+		"combined count": func(s *domain.SandboxEnvironmentState) {
+			s.Created = domain.MaximumObservationSummaryCount
+			s.Modified = 1
+		},
+		"unchanged digest": func(s *domain.SandboxEnvironmentState) { s.After = s.Before },
+		"missing change":   func(s *domain.SandboxEnvironmentState) { s.Created = 0 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			state := valid
+			mutate(&state)
+			if _, err := state.Summary(); err == nil {
+				t.Fatal("invalid summary accepted")
+			}
+			if _, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", nil, state); err == nil {
+				t.Fatal("invalid result accepted")
+			}
+		})
+	}
+	if _, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", nil, valid, valid); err == nil {
+		t.Fatal("duplicate profile accepted")
+	}
+	if _, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", nil, valid, valid, valid); err == nil {
+		t.Fatal("unbounded profiles accepted")
+	}
+}

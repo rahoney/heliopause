@@ -41,6 +41,7 @@ type environmentInspection struct {
 	finalCPU      uint64
 	events, bytes uint64
 	observed      []domain.SandboxObservation
+	states        []domain.SandboxEnvironmentState
 }
 
 func (b *Backend) executeEnvironmentInspection(ctx context.Context, request domain.SandboxRequest, owner domain.SandboxSessionID) (domain.SandboxResult, error) {
@@ -111,7 +112,7 @@ func (b *Backend) executeEnvironmentInspection(ctx context.Context, request doma
 	if code != "" {
 		status = domain.SandboxIncomplete
 	}
-	result, resultErr := domain.NewSandboxResult(owner, status, code, operation.observed)
+	result, resultErr := domain.NewSandboxResult(owner, status, code, operation.observed, operation.states...)
 	return result, errors.Join(resultErr, cause)
 }
 
@@ -247,6 +248,10 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 		return "M3_DYNAMIC_EXECUTION_FAILED", errors.Join(commandErr, err)
 	}
 	n.events, n.bytes = events, bytes
+	fixtureDigest, _ := domain.NewSHA256Digest(profile.identity)
+	beforeDigest, _ := domain.NewSHA256Digest(before.digest)
+	afterDigest, _ := domain.NewSHA256Digest(after.digest)
+	n.states = append(n.states, domain.SandboxEnvironmentState{Profile: profile.kind, FixtureDigest: fixtureDigest, Before: beforeDigest, After: afterDigest, Created: changes.created, Deleted: changes.deleted, Modified: changes.modified})
 	for _, change := range []struct {
 		subject string
 		count   uint64

@@ -3,6 +3,7 @@ package npm
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestDynamicInspectorNormalizesOnlyBoundedM3Findings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 1 {
+	if report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 3 {
 		t.Fatalf("report = %#v", report)
 	}
 	if summary := report.Evidence()[0].Summary(); !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":3`) {
@@ -119,7 +120,14 @@ func sandboxResult(t *testing.T, status domain.SandboxStatus, code string, obser
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := domain.NewSandboxResult(id, status, code, observations)
+	var states []domain.SandboxEnvironmentState
+	if status == domain.SandboxCompleted {
+		digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+		for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+			states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest})
+		}
+	}
+	result, err := domain.NewSandboxResult(id, status, code, observations, states...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,17 +172,52 @@ func TestDynamicInspectorRequiresFreshEnvironmentProfile(t *testing.T) {
 		t.Fatal("required profile declaration unavailable", err)
 	}
 	report, err := inspector.Inspect(context.Background(), artifact)
-	legacy, _ := domain.CheckProfileDigest("npm-dynamic-lifecycle-v1", runtimeidentity.NodeImageReference)
-	if err != nil || !expected[0].Required() || expected[0].ProfileDigest() == legacy || report.Execution().ProfileDigest() != expected[0].ProfileDigest() {
-		t.Fatal("one-shot evidence profile reused or current result/declaration disagree", err)
+	if err != nil || !expected[0].Required() || report.Execution().ProfileDigest() != expected[0].ProfileDigest() {
+		t.Fatal("current result/declaration disagree", err)
 	}
 	run, _ := domain.NewRunID()
 	plan, err := domain.NewCheckPlan(run, artifact, expected)
 	if err != nil {
 		t.Fatal(err)
 	}
-	old, err := domain.NewCheckExecution(expected[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", legacy)
-	if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{old}) == nil || plan.Validate(run, artifact, []domain.CheckExecution{report.Execution()}) != nil {
-		t.Fatal("retained one-shot approval was accepted or current approval rejected", err)
+	for _, name := range []string{"npm-dynamic-lifecycle-v1", "npm-dynamic-lifecycle-environments-v2"} {
+		legacy, _ := domain.CheckProfileDigest(name, runtimeidentity.NodeImageReference)
+		old, err := domain.NewCheckExecution(expected[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", legacy)
+		if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{old}) == nil || plan.Validate(run, artifact, []domain.CheckExecution{report.Execution()}) != nil {
+			t.Fatal("retained approval was accepted or current approval rejected", name, err)
+		}
+	}
+}
+
+func TestDynamicInspectorRequiresBothStateEvidenceAndRetainsBoundScope(t *testing.T) {
+	full := sandboxResult(t, domain.SandboxCompleted, "", nil)
+	for _, count := range []int{0, 1, 2} {
+		t.Run(fmt.Sprint(count), func(t *testing.T) {
+			result, err := domain.NewSandboxResult(full.SessionID(), domain.SandboxCompleted, "", nil, full.EnvironmentStates()[:count]...)
+			if err != nil {
+				t.Fatal(err)
+			}
+			inspector, _ := NewDynamicInspector(fakeSandbox{result: result})
+			artifact := dynamicArtifact(t)
+			report, err := inspector.Inspect(context.Background(), artifact)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if count < 2 {
+				code, _ := report.Execution().LimitationCode()
+				if report.Execution().Status() != domain.ExecutionIncomplete || code != "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE" || len(report.Evidence()) != 0 {
+					t.Fatal("missing state accepted")
+				}
+				return
+			}
+			if report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 3 {
+				t.Fatal("state facts missing")
+			}
+			for _, e := range report.Evidence()[1:] {
+				if e.Identity() != artifact.Identity() || e.Digest() != artifact.Digest() || e.CheckID() != report.Execution().ID() || len(e.Summary()) > 1024 || !strings.Contains(e.Summary(), `"transient_changes":"NOT_COVERED"`) || !strings.Contains(e.Summary(), `"scope":"MUTABLE_WORKSPACE"`) {
+					t.Fatal("state subject, bound or scope lost")
+				}
+			}
+		})
 	}
 }

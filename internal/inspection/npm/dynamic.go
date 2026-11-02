@@ -10,9 +10,12 @@ import (
 )
 
 // DynamicInspector interprets raw Sandbox results; it never controls a runtime.
-// v2 requires both fresh minimal-v1 and mock-development-v1 experiments under
-// one resource authorization; retained one-shot v1 evidence cannot satisfy it.
-const dynamicCheckProfileName = "npm-dynamic-lifecycle-environments-v2"
+// Required fresh experiments and state evidence are bound to the common
+// version owners; one-shot or earlier count-only evidence cannot satisfy them.
+const (
+	dynamicCheckProfileName       = "npm-dynamic-environment-state-v1"
+	dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema
+)
 
 type DynamicInspector struct{ sandbox ports.Sandbox }
 
@@ -46,7 +49,7 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 }
 
 func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.SandboxResult) (domain.InspectionReport, error) {
-	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, runtimeidentity.NodeImageReference)
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, dynamicCheckRuntimeDescriptor)
 	checkID, err := domain.NewCheckID("npm-dynamic-lifecycle")
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -72,6 +75,14 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 			return domain.NewInspectionReport(execution, nil, nil)
 		}
 	}
+	states := result.EnvironmentStates()
+	if len(states) != 2 {
+		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE", profile)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewInspectionReport(execution, nil, nil)
+	}
 	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -92,6 +103,22 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
+	retained := []domain.Evidence{evidence}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		id, err := domain.NewEvidenceID("npm-workspace-" + string(state.Profile))
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		retained = append(retained, fact)
+	}
 	codes := dynamicFindingCodes(result.Observations())
 	findings := make([]domain.Finding, 0, len(codes))
 	for _, code := range codes {
@@ -101,7 +128,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 		}
 		findings = append(findings, finding)
 	}
-	return domain.NewInspectionReport(execution, findings, []domain.Evidence{evidence})
+	return domain.NewInspectionReport(execution, findings, retained)
 }
 
 func dynamicFindingCodes(observations []domain.SandboxObservation) []string {
@@ -139,7 +166,7 @@ func (i *DynamicInspector) ExpectedChecks(ctx context.Context, artifact domain.A
 		return nil, err
 	}
 	id, _ := domain.NewCheckID("npm-dynamic-lifecycle")
-	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, runtimeidentity.NodeImageReference)
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, dynamicCheckRuntimeDescriptor)
 	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
 	if err != nil {
 		return nil, err

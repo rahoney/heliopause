@@ -209,3 +209,39 @@ S01/S08 전체 네 상태는 여전히 NO이며 C01 전체와 B01 호환 gap도 
 이 연결 묶음의 canonical foundation70.578s·security24.750s와 영향4 package vet4.769s가
 PASS다. 실제 실행 후 exact hash/신원 확인으로 원래 시험용 compiler 출력38421834B도
 제거했다. 재사용할 verified SDK/bundle과 도구 cache·원본 source/log는 보존한다.
+
+
+## 다음 누락 단위 — typed 상태 비교 Evidence
+
+기준 `243dbfb`. 기존 `environmentState`/`compareEnvironmentStates`의 digest·차이와
+npm runtime 종료 순서는 구현/연결됐지만 `SandboxResult`는 observation count만 전달한다.
+`normalizeDynamicResult`는 기존1024B의 observation summary 하나만 저장하므로 상태
+비교 증거의 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다.
+
+MISSING만 확장한다. 기존 SandboxResult에 최대 두 typed profile·fixture/before/after
+SHA256·변화 수를 전달하고, 기존 Inspection의 같은 Artifact/CheckID에 환경별 Evidence를
+추가한다. 기존 observation summary와 Evidence당1024B 한도는 유지한다. 원시 파일명/내용/
+Host 경로는 저장하지 않으며 snapshot 사이의 생성 후 삭제는 아직 관찰하지 못한다는
+범위를 명시한다. 현재 npm required profile은 상태 증거 부재도 거부하고 과거 profile의
+승인 재사용은 기존 CheckPlan이 막는다. 다른 검사 결과의 계약·새 저장소/스키마 framework를
+만들지 않는다. 실행 중 syscall coverage와 다른 생태계 연결은 이 단위 뒤에도 남는다.
+
+
+### typed 상태 비교의 로컬 연결 결과
+
+위 누락 단위의 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. 기존 SandboxResult에 두 공통 profile과 opaque digest·변화 수를
+값으로 전달하고, Inspection이 같은 Artifact·CheckID에 별도 Evidence 두 개를 보존한다.
+관찰 summary와 각 Evidence의1024B 한도는 그대로다. 현재 비교 필드는 file type/mode/
+owner/size/content digest이며 실행 중 단기 변화는 `NOT_COVERED`로 명시한다.
+
+필수 상태 증거가0/1개면 완료가 아니며 잘못된 profile/hash/count·불일치·중복은 거부한다.
+입력/반환 slice 사본을 통해 결과를 바꿀 수 없다. 새 required profile은 image·gVisor patch·
+공통 profile/schema version에 묶여 기존 one-shot와 count-only 승인을 거부한다. 다른 언어의
+기존 observation 결과를 새 환경 검증이 완료됐다고 바꾸지 않는다.
+
+표적13.121s, 영향5 package Race50.882s, Staticcheck24.263s와 canonical foundation70.534s가
+PASS다. 원본·입력·범위는 같은 부분 원장의 `typed_state_checkpoint`가 소유한다. 새 typed
+Evidence의 persisted actual은 다음 의미 있는 native 묶음에 모으며 앞3 native 성공을
+이 변경의 성공으로 재사용하지 않는다. 다음은 기존 observer의 단기 filesystem event
+지원 대조와 필요한 coverage 연결이며 다른 생태계·최종 qualification도 계속 OPEN이다.
