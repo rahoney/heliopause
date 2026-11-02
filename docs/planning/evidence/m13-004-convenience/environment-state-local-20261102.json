@@ -684,10 +684,99 @@
       }
     ],
     "missing": [
-      "native normalization/persisted Evidence",
-      "no-import/optional/prerequisite/root-profile acceptance",
-      "remaining ecosystem consumers",
+      "remaining ecosystem consumers and shared failure/cancel/security acceptance",
+      "ordinary Six1.17 source-binding compatibility investigation (actual report not captured)",
       "whole S01/S08/C01/final qualification"
-    ]
+    ],
+    "scoped_acceptance_evidence": "ordinary_python_acceptance_checkpoint"
+  },
+  "ordinary_python_acceptance_checkpoint": {
+    "product_commit": "559c900",
+    "scope": "ordinary Python current normalization/store, metadata-only/no-import, selected optional/prerequisite root-profile boundaries only; other consumers and final qualification open",
+    "scoped_status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "public_and_supplemented_record": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v4.json",
+      "sha256": "81acdbd2e26f0e11607d15d2bfacd48b2be87441a98735e02fd94cf762e88e04"
+    },
+    "independent_native_cases": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v3.json",
+        "sha256": "cda9fa71f4451c42646871dc129c518e4459ebc25e3e7eeedb60ba4beb3a56a3"
+      },
+      "overall": "FAIL; only metadata and profile-sequences cases PASS",
+      "reuse": "unchanged production/kernel/CPP and exact sandbox test source; later changes only bootstrap test and unrelated tagged PNPM comparator",
+      "passed_top_level": [
+        "TestLinuxPythonMetadataOnlyEnvironmentIntegration",
+        "TestLinuxPythonCommandSequenceIntegration",
+        "TestLinuxInspectionPrerequisiteSequenceIntegration"
+      ],
+      "selected_profiles": [
+        "cpu",
+        "cu126",
+        "cu130",
+        "cu132"
+      ],
+      "large_torch_closure": "NOT_TESTED"
+    },
+    "tagged_consumer_comparator": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-tagged-consumer-native-v1.json",
+      "sha256": "dda285ba6e5952d64f1a6c33bc33564ae0a7c0924e3efe59a6d3183567a4347a"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-foundation.json",
+        "sha256": "f08f067c3040b216f8d819133aac4bb012ce3795a9ba736ece8e2f903c80cded"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-tagged-staticcheck-v2.json",
+        "sha256": "b01aac1fee6e05f935c9ce64cc946ebab80a1384f117dbabbad4031dbc75f070"
+      }
+    ],
+    "originals": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-persisted-build.json",
+        "sha256": "326fb837a8b3267977d66fafb5db86590f8e9f6f903f571d0bd11c2e758cc04c"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-persisted-native-v1.json",
+        "sha256": "cbfadbfea88709d08afb38936ea1ad539bd63068e99db49e8fd3c4085aa26660"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v1.json",
+        "sha256": "b95de3bbd141b3c71abfa718f596ca648c8a4b4cc6c2aff428c22372c4ac1693"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v2.json",
+        "sha256": "0857f149381c5be624a3a84e4ff6bd85dc29d50668bfc1d26060692ba2db337b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-six-metadata-comparison.json",
+        "sha256": "e6da9d9699b5f65dfe5138356393d999c22d6dc4aaaff468ce2eaa52ea7a4ec1"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-fixture-metadata.json",
+        "sha256": "f59b094feb46c6bad4adda7f09d152273012b362fdcfbe546bb59fb1d75c4866"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-tagged-staticcheck.json",
+        "sha256": "2e2705d969d23ef693313a2cc4cd8fda1a1a378addd0cb4d8b72f81b86dbc36b"
+      }
+    ],
+    "original_binaries_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-cleanup.json",
+      "sha256": "5edbac24f8d8dfe7868362d60d95a34c9d8c6076895befd13a28d96f2c99aa0d"
+    },
+    "missing": [
+      "whole S01/S08 ecosystem wiring and shared failure/cancel/security matrix",
+      "ordinary Six1.17 source-binding refusal; exact pip report comparison not captured",
+      "B01 Anyio/large-public-catalog compatibility",
+      "C01 and grouped hosted/final qualification"
+    ],
+    "no_new_ci_or_permanent_host_change": true
   }
 }

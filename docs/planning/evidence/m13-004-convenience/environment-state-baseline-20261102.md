@@ -419,3 +419,41 @@ S01/S08/C01·최종 qualification이다. 새 CI·영구 Host 설치 변경은 �
 고정 Staticcheck14.279s, canonical security14.366s가 PASS다. Native4는 backend/공통
 workspace 경로의 앞선 정확한 source 범위이며 뒤의 보조 결과 encoding 수정까지 native로
 검증했다고 확대하지 않는다. 현재 구현/연결과 남은 actual acceptance를 독립 유지한다.
+
+
+### ordinary Python 실제 결과·저장과 경계 소비자 — 한정 완료
+
+구현 기준 `559c900`의 product bytes를 바꾸지 않고 기존 Application/정적·동적 inspector/
+LocalStore를 사용했다. 고정 공개 packaging24.2의 실제 검역·두 환경·VFS 관찰·필수 profile·
+같은 Run/subject의 저장 Evidence readback·Policy ALLOW와, 승인 가능한 leaf
+`typing_extensions4.15.0`을 사용한 별도 보조 검사의 v2 metadata/관찰 ID·SHA256/두 상태
+저장을 확인했다. 보조 검사 자체를 원래 요청 환경의 성공으로 표시하지 않으며
+`NOT_ATTESTED`와 원래 선택 집합을 유지한다. Native v4는50.00s(operator52.565s) PASS다.
+
+별도 native v3에서 metadata-only/no-import6.34s와 기존 선택적 명령48.68s·보조 입력
+순서75.90s가 PASS다. 후자의 두 기존 시험은 각각 CPU/cu126/cu130/cu132에서 선정한
+네 사례이며, 보조 입력 첫 실패의 소유 digest/exit37·동일 observer의 다음 CPU 완료를
+확인했다. 전체 large PyTorch closure/모든 profile 조합 qualification은 아니다. v3 전체는
+idna 보조 입력 거부 때문에 FAIL이며 성공한 독립 사례만 재사용한다. v4에서 이들을
+반복하지 않았다. 현재 cpp/kernel/Go·언어 image 버전 owner는 그대로다.
+
+첫 새 시험의 helper 반환형 compile 오류와 내부 reference 문법, Evidence ID/Kind 혼동은
+시험 오류다. Six1.17.0의 실제 source-binding 거부(v2)는 별도 호환성 MISSING이며,
+공식 Simple/wheel Python 조건의 공백·순서 차이는 DATA로 보존했다. 실제 pip report를
+수집하지 않았으므로 정확한 불일치 항목·인과 해결은 미확정이다. 이를 검사 예외로
+허용하지 않았다. idna3.11은 optional extra 의존성 선언이 있어 기존 leaf-only prerequisite
+계약이 거부한 것이다. 공식 metadata와 기존 validator로 입력 적합성을 먼저 확인한 후
+현재 leaf로 교정했고 제품의 prerequisite 제한은 바꾸지 않았다.
+
+추가 realcorpus Staticcheck가 기존 PNPM fixture의 옛 npm helper 호출을 검출했다.
+호출 인자와3 scripts×2환경의 기대6만 고쳤고, 기존 비교 부분만 native7.82s
+(operator10.219s) PASS다. 하위 PNPM fixture와 Policy는 미실행이며 원본의
+`no tests to run`은 제외된 하위 시험 범위다. 태그 포함 Staticcheck15.366s와 앞선
+canonical foundation26.100s PASS를 구분한다. 새 검사마다 전체 CPP/native/CI를
+반복하지 않았다. 보호 사본은 각 시험에서 원상 복원 후 삭제했으며, 종료된 원본
+바이너리7개194027732B도 root96 process/참조0/query 오류0·hash/inode 확인 후 제거했다.
+
+이 단위의 완료는 실제 Python normalization/저장, no-import와 선정된 optional/prerequisite/
+root-profile 경계다. S01/S08 전체·나머지 생태계 및 실패/취소/보안·최종 qualification,
+C01 전체와 requirements 호환 gap은 계속 OPEN이다. 원본과 source별 검증 범위는
+같은 local 원장의 `ordinary_python_acceptance_checkpoint`가 소유한다.

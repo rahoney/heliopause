@@ -3,11 +3,14 @@
 package sandbox
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
@@ -25,6 +28,49 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	result := runLinuxPyPIWheelIntegration(t, linuxDynamicWheel(t))
 	if len(result.EnvironmentStates()) != 2 {
 		t.Fatal("both fresh environment states missing")
+	}
+}
+
+func TestLinuxPythonMetadataOnlyEnvironmentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux Python/gVisor dynamic integration")
+	}
+	// No module or hook: the observed offline installation and both workspaces
+	// must complete without inventing an import unit or relaxing launch limits.
+	metadata := "example-1.0.dist-info/"
+	files := map[string]string{
+		metadata + "METADATA": "Metadata-Version: 2.4\nName: example\nVersion: 1.0\n",
+		metadata + "WHEEL":    "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+	}
+	names := []string{metadata + "METADATA", metadata + "WHEEL"}
+	var record strings.Builder
+	for _, name := range names {
+		sum := sha256.Sum256([]byte(files[name]))
+		fmt.Fprintf(&record, "%s,sha256=%s,%d\n", name, base64.RawURLEncoding.EncodeToString(sum[:]), len(files[name]))
+	}
+	files[metadata+"RECORD"] = record.String() + metadata + "RECORD,,\n"
+	var wheel bytes.Buffer
+	writer := zip.NewWriter(&wheel)
+	for _, name := range append(names, metadata+"RECORD") {
+		entry, err := writer.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := entry.Write([]byte(files[name])); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	result := runLinuxPyPIWheelIntegration(t, wheel.Bytes())
+	if len(result.EnvironmentStates()) != 2 {
+		t.Fatal("metadata-only workspaces missing")
+	}
+	for _, state := range result.EnvironmentStates() {
+		if !state.VFSOperationsCovered || state.Before != state.After || state.Created != 0 || state.Deleted != 0 || state.Modified != 0 {
+			t.Fatalf("metadata-only workspace changed or not covered: %+v", state)
+		}
 	}
 }
 
@@ -242,7 +288,7 @@ func TestLinuxInspectionPrerequisiteSequenceIntegration(t *testing.T) {
 				resources := &prerequisiteIntegrationResources{ObservationResourceClient: integrationObservationResources{client: client}}
 				backend.resources = resources
 				result, err := backend.InspectWheelWithPrerequisites(ctx, target, plan, []domain.AcquiredArtifact{target}, []domain.AcquiredArtifact{input})
-				wantUnits := 2
+				wantUnits := 4 // prerequisite and target, each in two fresh environments
 				if fail {
 					wantUnits = 1
 					if err == nil || result.Status() != domain.SandboxIncomplete || !strings.Contains(err.Error(), "command=EXIT_STATUS_37") || !strings.Contains(err.Error(), "unit_artifact_digest="+input.Digest().String()) {
@@ -250,6 +296,9 @@ func TestLinuxInspectionPrerequisiteSequenceIntegration(t *testing.T) {
 					}
 				} else if err != nil || result.Status() != domain.SandboxCompleted {
 					t.Fatalf("normal input: %s %v", result.Status(), err)
+				}
+				if !fail && len(result.EnvironmentStates()) != 2 {
+					t.Fatal("completed prerequisite request lacks both workspaces")
 				}
 				if resources.creates != 1 || resources.closes != 1 || resources.units != wantUnits {
 					t.Fatalf("reset/missing units: %+v", resources)
@@ -472,7 +521,7 @@ func runLinuxPythonRootPolicyTransactions(t *testing.T, mode string) {
 					t.Fatalf("library query observer fault: %s", reason)
 				}
 			} else if mode == "command-sequence" {
-				if err != nil || result.Status() != domain.SandboxCompleted || len(result.Commands) != 1 || result.Commands[0].Module != "example.cli" || result.Commands[0].ZeroExit == test.fail {
+				if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 || len(result.Commands) != 1 || result.Commands[0].Module != "example.cli" || result.Commands[0].ZeroExit == test.fail {
 					t.Fatalf("command sequence: status=%s commands=%+v err=%v", result.Status(), result.Commands, err)
 				}
 			} else if test.fail {

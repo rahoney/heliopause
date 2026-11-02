@@ -30,14 +30,14 @@ func TestPNPMActualTargetLifecycleFixture(t *testing.T) {
 	if os.Getenv("HELOX_PNPM_TARGET_LIFECYCLE_FIXTURE") != "1" {
 		t.Fatal("declare HELOX_PNPM_TARGET_LIFECYCLE_FIXTURE=1 for synthetic lifecycle qualification")
 	}
-	legacy := runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"printf preinstall >> /tmp/legacy-events","install":"printf install >> /tmp/legacy-events","postinstall":"printf postinstall >> /tmp/legacy-events"}}`)
+	legacy := runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"printf preinstall >> /tmp/legacy-events","install":"printf install >> /tmp/legacy-events","postinstall":"printf postinstall >> /tmp/legacy-events"}}`, domain.SandboxCompleted)
 	var legacyArtifactExecs uint64
 	for _, observation := range legacy.Observations() {
 		if observation.Category() == domain.ObservationProcess && observation.Subject() == "process-exec-unexpected" {
 			legacyArtifactExecs += observation.Count()
 		}
 	}
-	if legacyArtifactExecs != 3 {
+	if legacyArtifactExecs != 6 { // three scripts in each of the two required fresh environments
 		t.Fatalf("existing npm script attribution differs: count=%d", legacyArtifactExecs)
 	}
 	t.Logf("legacy_npm_script_attribution artifact_execs=%d required_review_semantics=UNCHANGED", legacyArtifactExecs)
