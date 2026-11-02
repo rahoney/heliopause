@@ -84,12 +84,13 @@ type projectUpdateFacts interface {
 }
 
 type cargoUpdateEntry struct {
-	Identity machineIdentity            `json:"identity"`
-	Digest   machineDigest              `json:"digest"`
-	RunID    string                     `json:"run_id"`
-	Checks   []machineCheck             `json:"checks"`
-	Evidence []machineEvidenceReference `json:"evidence_references"`
-	Policy   machinePolicy              `json:"policy"`
+	Identity  machineIdentity            `json:"identity"`
+	Digest    machineDigest              `json:"digest"`
+	RunID     string                     `json:"run_id"`
+	Checks    []machineCheck             `json:"checks"`
+	CheckPlan *machineCheckPlan          `json:"check_plan,omitempty"`
+	Evidence  []machineEvidenceReference `json:"evidence_references"`
+	Policy    machinePolicy              `json:"policy"`
 }
 
 type projectLifecycleReport struct {
@@ -107,18 +108,19 @@ type cargoUpdateReport struct {
 	Scope                 string                   `json:"inspection_scope,omitempty"`
 	LocalProjectLifecycle *machineProjectLifecycle `json:"project_lifecycle,omitempty"`
 
-	Schema         string              `json:"schema_version"`
-	Operation      string              `json:"operation"`
-	Status         string              `json:"operation_status"`
-	Promotion      string              `json:"promotion_status"`
-	Source         string              `json:"source_id"`
-	Selector       string              `json:"selector,omitempty"`
-	Graph          string              `json:"graph_digest,omitempty"`
-	DependencyFree bool                `json:"dependency_free"`
-	Entries        []cargoUpdateEntry  `json:"entries"`
-	Policy         *machinePolicy      `json:"policy,omitempty"`
-	Error          *machineError       `json:"error,omitempty"`
-	VerifiedSet    *machineVerifiedSet `json:"verified_set,omitempty"`
+	Schema            string              `json:"schema_version"`
+	Operation         string              `json:"operation"`
+	Status            string              `json:"operation_status"`
+	Promotion         string              `json:"promotion_status"`
+	Source            string              `json:"source_id"`
+	Selector          string              `json:"selector,omitempty"`
+	Graph             string              `json:"graph_digest,omitempty"`
+	DependencyFree    bool                `json:"dependency_free"`
+	Entries           []cargoUpdateEntry  `json:"entries"`
+	InspectionResults []machineResult     `json:"inspection_results,omitempty"`
+	Policy            *machinePolicy      `json:"policy,omitempty"`
+	Error             *machineError       `json:"error,omitempty"`
+	VerifiedSet       *machineVerifiedSet `json:"verified_set,omitempty"`
 }
 
 func projectUpdatePolicy(decision domain.PolicyDecision) machinePolicy {
@@ -189,10 +191,9 @@ func buildProjectMutationReport(verified domain.ProjectVerifiedSet, cause error,
 		for _, inspection := range inspected.Inspections() {
 			a := inspection.Artifact()
 			id := a.Identity()
-			entry := cargoUpdateEntry{Identity: machineIdentity{id.Source().String(), id.Name(), id.Version(), id.Variant()}, Digest: machineDigest{a.Digest().Algorithm(), a.Digest().String()}, RunID: inspection.RunID().String(), Checks: []machineCheck{}, Evidence: []machineEvidenceReference{}, Policy: projectUpdatePolicy(inspection.PolicyDecision())}
+			entry := cargoUpdateEntry{Identity: machineIdentity{id.Source().String(), id.Name(), id.Version(), id.Variant()}, Digest: machineDigest{a.Digest().Algorithm(), a.Digest().String()}, RunID: inspection.RunID().String(), Checks: []machineCheck{}, CheckPlan: presentCheckPlan(inspection.CheckPlan()), Evidence: []machineEvidenceReference{}, Policy: projectUpdatePolicy(inspection.PolicyDecision())}
 			for _, check := range inspection.Checks() {
-				limitation, _ := check.LimitationCode()
-				entry.Checks = append(entry.Checks, machineCheck{check.ID().String(), string(check.Kind()), check.Required(), string(check.Capability()), string(check.Status()), limitation})
+				entry.Checks = append(entry.Checks, presentCheck(check))
 				checks = append(checks, check)
 			}
 			for _, evidence := range inspection.Evidence() {
@@ -211,6 +212,7 @@ func writeProjectMutationReportWithRecords(output io.Writer, verified domain.Pro
 
 func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFacts, cause error, lifecycle ...projectLifecycleReport) error {
 	report, inspected, decision, checks := facts.report, facts.inspected, facts.decision, facts.checks
+	report.InspectionResults = machineInspectionFailures(cause)
 	source, selector, installing := report.Source, report.Selector, report.Operation == "INSTALL"
 	records := report.VerifiedSet
 	if len(lifecycle) > 1 {
@@ -286,6 +288,9 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 	if selector != "" {
 		p.line("%s %s", p.text("Selected package:", "선택한 패키지:"), safeTerminal(selector))
 	}
+	if !inspected.Valid() {
+		p.renderInspectionFailure(cause)
+	}
 	if inspected.Valid() {
 		if source == "npm" {
 			p.line("%s %d", p.text("Inspected npm packages:", "검사한 npm 패키지 수:"), len(report.Entries))
@@ -298,6 +303,8 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 		} else {
 			p.line("%s %d", p.text("Inspected crates:", "검사한 crate 수:"), len(report.Entries))
 		}
+		p.renderInspectionFailure(cause)
+		currentInspections := inspected.Inspections()
 		for index, entry := range report.Entries {
 			if index == 64 {
 				p.line("… %s", p.text("See JSON for remaining entries.", "나머지 항목은 JSON으로 확인하세요."))
@@ -308,6 +315,9 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 				name = strings.Replace(name, "_", "/", 1)
 			}
 			p.line("  %s@%s  %s", safeTerminal(name), safeTerminal(entry.Identity.Version), safeTerminal(entry.Policy.Decision))
+			if index < len(currentInspections) {
+				p.renderCheckPlan(currentInspections[index].CheckPlan(), currentInspections[index].Checks())
+			}
 			for _, check := range entry.Checks {
 				if check.ExecutionStatus != "COMPLETED" || check.Capability != "SUPPORTED" {
 					p.line("    %s: %s %s", safeTerminal(check.ID), safeTerminal(check.ExecutionStatus), safeTerminal(check.LimitationCode))
@@ -330,6 +340,7 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 			if rootDecision, known := lifecycle[0].result.PolicyDecision(); known {
 				p.renderReasons(rootDecision.Reasons())
 			}
+			p.renderCheckPlan(lifecycle[0].result.CheckPlan(), lifecycle[0].result.Checks())
 			p.renderChecks(lifecycle[0].result.Checks())
 		}
 	}

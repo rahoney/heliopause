@@ -8,6 +8,7 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type NPMProjectRootSourceReader interface {
@@ -51,7 +52,7 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 		}
 	}
 	staticID, _ := domain.NewCheckID("npm-project-root-static")
-	staticCheck, _ := domain.NewCheckExecution(staticID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	staticCheck, _ := domain.NewCheckExecution(staticID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", npmRootCheckProfile())
 	staticEvidenceID, _ := domain.NewEvidenceID("npm-project-root-source-structure")
 	staticFact, err := domain.NewEvidence(staticEvidenceID, staticID, subject.Identity(), subject.Digest(), "npm-project-root-source-structure", fmt.Sprintf("Bounded local source entries=%d declared_install_hooks=%d binding_gyp=%t. Local bytes are not registry provenance.", len(source.Entries()), len(phases), implicit))
 	if err != nil {
@@ -89,12 +90,12 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 		if len(result.Observations()) != 0 {
 			return domain.InspectionReport{}, errors.Join(errors.New("npm root observations lack an actual session"), executionErr)
 		}
-		check, _ := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M13_NPM_PROJECT_ROOT_NOT_EXECUTED")
+		check, _ := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M13_NPM_PROJECT_ROOT_NOT_EXECUTED", npmRootCheckProfile())
 		dynamic, err := domain.NewInspectionReport(check, nil, nil)
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
-		factsCheck, _ := domain.NewCheckExecution(factsID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M13_NPM_PROJECT_ROOT_NOT_EXECUTED")
+		factsCheck, _ := domain.NewCheckExecution(factsID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M13_NPM_PROJECT_ROOT_NOT_EXECUTED", npmRootCheckProfile())
 		facts, err := domain.NewInspectionReport(factsCheck, nil, nil)
 		if err != nil {
 			return domain.InspectionReport{}, err
@@ -108,7 +109,7 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 	if summary == "" {
 		return domain.InspectionReport{}, errors.Join(executionErr, summaryErr)
 	}
-	check, err := domain.NewCheckExecution(factsID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, err := domain.NewCheckExecution(factsID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", npmRootCheckProfile())
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -138,7 +139,7 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	coverageCheck, err := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+	coverageCheck, err := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, npmRootCheckProfile())
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -152,4 +153,25 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 		return domain.InspectionReport{}, err
 	}
 	return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic, coverage})
+}
+
+func npmRootCheckProfile() domain.ContentDigest {
+	profile, _ := domain.CheckProfileDigest("npm-project-root-v1", runtimeidentity.NodeImageReference)
+	return profile
+}
+
+func (i *NPMProjectRootInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || a != i.input.Source() {
+		return nil, errors.New("npm root declaration differs from the frozen subject")
+	}
+	var result []domain.CheckRequirement
+	for _, name := range []string{"npm-project-root-static", "npm-project-root-lifecycle", "npm-project-root-observation-facts"} {
+		id, _ := domain.NewCheckID(name)
+		requirement, err := domain.NewCheckRequirement(id, kind, name != "npm-project-root-observation-facts", npmRootCheckProfile())
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, requirement)
+	}
+	return result, nil
 }

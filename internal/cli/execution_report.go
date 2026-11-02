@@ -12,17 +12,21 @@ import (
 )
 
 type executionReport struct {
-	Schema          string                `json:"schema"`
-	Quarantine      string                `json:"quarantine"`
-	Policy          string                `json:"policy"`
-	Preparation     string                `json:"preparation"`
-	Execution       string                `json:"execution"`
-	ExitCode        *uint8                `json:"exit_code,omitempty"`
-	Signal          *uint8                `json:"signal,omitempty"`
-	OutputPromotion string                `json:"output_promotion"`
-	GuestCleanup    string                `json:"execution_guest_cleanup"`
-	FailureCode     string                `json:"failure_code,omitempty"`
-	ProgramOutput   executionOutputReport `json:"program_output"`
+	Schema            string                `json:"schema"`
+	Quarantine        string                `json:"quarantine"`
+	Policy            string                `json:"policy"`
+	Preparation       string                `json:"preparation"`
+	Execution         string                `json:"execution"`
+	ExitCode          *uint8                `json:"exit_code,omitempty"`
+	Signal            *uint8                `json:"signal,omitempty"`
+	OutputPromotion   string                `json:"output_promotion"`
+	GuestCleanup      string                `json:"execution_guest_cleanup"`
+	FailureCode       string                `json:"failure_code,omitempty"`
+	ProgramOutput     executionOutputReport `json:"program_output"`
+	CheckPlans        []machineCheckPlan    `json:"check_plans,omitempty"`
+	Checks            []machineCheck        `json:"checks,omitempty"`
+	InspectionResults []machineResult       `json:"inspection_results,omitempty"`
+	inspections       []domain.DependencyInspection
 }
 
 type executionOutputReport struct {
@@ -49,12 +53,37 @@ func newExecutionReport(result application.ExecutionResult, cause error, show bo
 	prepared := result.Preparation()
 	if inspected := prepared.Inspection(); inspected.Valid() {
 		r.Quarantine, r.Policy = "COMPLETED", string(inspected.Set().Decision().Decision())
+		r.inspections = inspected.Set().Inspected().Inspections()
 	}
 	if inspected := result.SelectionPreparation().Inspection(); inspected.Valid() {
 		r.Quarantine, r.Policy = "COMPLETED", string(inspected.Set().Decision().Decision())
+		r.inspections = inspected.Set().Inspected().Inspections()
 	}
 	if decision, ok := executionDenialDecision(cause); ok {
 		r.Quarantine, r.Policy = "COMPLETED", string(decision.Decision())
+	}
+	var connected *application.ExecutionPolicyFailure
+	if errors.As(cause, &connected) {
+		r.inspections = connected.Inspected().Inspections()
+	}
+	var selected *application.ExecutionSelectionPolicyFailure
+	if errors.As(cause, &selected) {
+		r.inspections = selected.Inspected().Inspections()
+	}
+	for _, inspection := range r.inspections {
+		if plan := presentCheckPlan(inspection.CheckPlan()); plan != nil {
+			r.CheckPlans = append(r.CheckPlans, *plan)
+		}
+		for _, check := range inspection.Checks() {
+			item := presentCheck(check)
+			item.Node = inspection.Node().String()
+			item.RunID = inspection.RunID().String()
+			r.Checks = append(r.Checks, item)
+		}
+	}
+	r.InspectionResults = machineInspectionFailures(cause)
+	if len(r.Checks) != 0 || len(r.InspectionResults) != 0 {
+		r.Schema = "helox.execution-result/v2"
 	}
 	if prepared.Valid() || result.SelectionPreparation().Valid() {
 		r.Preparation = "COMPLETED"
@@ -109,7 +138,7 @@ func executionDenialDecision(cause error) (domain.PolicyDecision, bool) {
 	return domain.PolicyDecision{}, false
 }
 
-func writeExecutionReport(output io.Writer, r executionReport, machine bool) error {
+func writeExecutionReport(output io.Writer, r executionReport, machine bool, cause error) error {
 	if output == nil {
 		return errors.New("execution reporting requires an output writer")
 	}
@@ -117,6 +146,20 @@ func writeExecutionReport(output io.Writer, r executionReport, machine bool) err
 		return json.NewEncoder(output).Encode(r)
 	}
 	p := presentationFor(output)
+	p.renderInspectionFailure(cause)
+	for index, inspection := range r.inspections {
+		if index >= 8 {
+			p.line("… %s: %d", p.text("Further inspection runs in JSON", "추가 검사 Run은 JSON 참조"), len(r.inspections)-index)
+			break
+		}
+		p.line("Run: %s", inspection.RunID().String())
+		p.renderCheckPlan(inspection.CheckPlan(), inspection.Checks())
+		p.renderChecks(inspection.Checks())
+	}
+	if p.writeErr != nil {
+		return p.writeErr
+	}
+
 	code, signal := "NOT_AVAILABLE", "NOT_AVAILABLE"
 	if r.ExitCode != nil {
 		code = strconv.Itoa(int(*r.ExitCode))

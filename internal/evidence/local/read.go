@@ -105,7 +105,18 @@ func (s *Store) ReadReference(ctx context.Context, run domain.RunID, ref domain.
 	if err != nil {
 		return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence check is invalid")
 	}
-	evidence, err := domain.NewEvidence(ref.ID(), check, identity, digest, doc.Kind, doc.Summary)
+	var profiles []domain.ContentDigest
+	if doc.SchemaVersion != "" || doc.ProfileSHA256 != "" {
+		if doc.SchemaVersion != "helox.evidence/v2" {
+			return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence schema is unsupported")
+		}
+		profile, e := domain.NewSHA256Digest(doc.ProfileSHA256)
+		if e != nil {
+			return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence profile is invalid")
+		}
+		profiles = []domain.ContentDigest{profile}
+	}
+	evidence, err := domain.NewEvidence(ref.ID(), check, identity, digest, doc.Kind, doc.Summary, profiles...)
 	if err != nil {
 		return domain.Evidence{}, domain.ContentDigest{}, errors.New("evidence content is invalid")
 	}

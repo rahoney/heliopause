@@ -876,3 +876,165 @@ PASS이며 CPP/실제 성공을 불변 범위에서 재사용했다. 원래 두 
 [Go tidy 로컬 결과](./go-tidy-local-20261102.json)가 source·원본 hash·범위와 남은 상태를
 소유한다. 완료된 B07 보호 사본243103816B와 원본 실행 파일223560952B도 refs0/errors0 뒤
 정리했다. 다음 로컬 단위는 S09이고 hosted/final·Anyio 미완료는 유지한다.
+
+
+### S09 baseline·수정 책임 지도 — 2026-11-02 / IN_PROGRESS
+
+기준f20551d의 S09 전체는 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. `CheckExecution`의 required/capability/status와 bounded ID·Evidence,
+`NewPolicyInput`의 subject/digest·Evidence reference membership, `M3`의 반환된 required
+미완료 거부는 이미 IMPLEMENTED/WIRED=YES이며 재구현하지 않는다. 기존 `check.go`의
+composite는 반환된 checks를 결합하고, `application/inspect.go`·`install_inspect.go`·
+`project_inspect.go`는 실제 반환 checks를 수집한다. 실행 전 expected 집합과 exact membership
+대조는 없다. `policy/m3.go:Evaluate`는 첫 inspection finding에서 반환하므로 뒤의 BLOCK이
+앞의 MANUAL_REVIEW에 가려질 수 있다. 이는 source에서 확인한 gap이며 재현 시험은 다음이다.
+
+Read: planning21 §5.1/§3/§9, Domain-005와 Contract-002의 check requirement/subject·Run/
+limitation·Policy 책임 및 fail-closed, 현재 INDEX의 artifact L02/evidence L11·L16.
+수정 책임은 기존 Domain check/report validation → Application의 실행 전 불변 선언/결과
+수집 → adapter/composite/bootstrap의 실제 operation/profile 선언 → Policy/CLI와 cache의
+동일 사실 소비다. Core에 생태계 분기나 실행 도구를 넣거나 별도 workflow engine을 만들지
+않는다. 단일 Verification report를 여러 결과로 확장하는 S07의 실제 필요도 함께 대조하되
+현재 integrity 의미를 덮어쓰지 않는다. 아직 구현하지 않은 S01–08은 완료로 표시하지 않는다.
+
+MISSING: source/profile/experiment별 선언 owner와 실제 current consumer를 확정하고,
+실행 전 expected set을 고정해 누락·중복·extra/wrong subject/profile·잘못된 Evidence를
+거부한다. 기존 준비 실패/timeout/observer 불완전의 자동 ALLOW 금지는 유지한다. Finding
+우선순위 BLOCK > MANUAL_REVIEW > ALLOW를 배열 순서와 독립시키고 현재 policy/schema의
+명시 버전·legacy record 재사용 경계를 한 곳에서 관리한다. 결과/설치/cleanup 축·기존
+정상 소비자와 필수 coverage를 연결한 뒤 필요한 affected 검사만 모은다. API 모양은 실제
+adapter/bootstrap/record consumer를 읽기 전 추측으로 정하지 않는다. 새 CI는 없다.
+
+
+S09 우선순위 직접 재현: `M3_NETWORK_ATTEMPT`→`M3_HONEYTOKEN_ACCESS`,
+`M3_UNEXPECTED_PROCESS`→`M3_FILESYSTEM_VIOLATION`, manual→unknown finding 세 조합은
+기존 M3에서 MANUAL_REVIEW였다(표적0.696s RED). 역순도 함께 검사했다. 기존 함수 안에서
+manual 사유를 보류하고 모든 BLOCK을 먼저 판정하도록 최소 수정했다. M3 version은 기존
+단일 상수에서2로 올렸으며 policy/domain0.753s PASS다. 새 checker/framework/CI는 없다.
+이것은 S09의 우선순위 부분만 검증한 결과다. Expected profile·missing/duplicate membership,
+Application/bootstrap/CLI/cache의 현재 정책·schema 소비자 연결은 계속 MISSING이며
+이전 qualification이나 현재 installed Host가 새 정책으로 갱신됐다고 주장하지 않는다.
+
+
+S09 report 결합 직접 재현: 현 `NewCompositeInspectionReport`는 같은 check ID를 두 번
+수용하고, 정상 nested composite는 두 번째 Evidence를 첫 execution에 붙여 검증하다가
+거부했다. 또한 첫 check가 incomplete인 nested report의 다른 completed check finding도
+거부했다. 즉 nested는 silent ALLOW가 아니라 결합 실패였음을 구분한다. 중복/nested/
+부분 실패 옆 확정 finding의0.519s RED 뒤 기존 immutable report 결합에서 모든 child를
+보존하고 check/Evidence ID의 중복을 거부하도록 최소 수정했다. 원래 primitive report
+검증은 재사용하며 새 report/engine을 만들지 않았다. Domain/policy와 npm/PyPI 소비자
+4 package8.743s PASS다. Declared expected profile와 Application·cache/schema 연결은
+계속 MISSING이고 full/native/CI를 반복하지 않았다.
+
+
+S09 독립 선언 연결(부분 구현): 기존 Domain에 immutable CheckRequirement/CheckPlan과
+O(n) required membership·kind/required/profile/run/subject 대조를 추가했다. 알려진 optional
+관찰 fact는 선언하되 미생성 자체를 required 누락으로 보지 않으며 unknown/duplicate는
+거부한다. Application의 Inspect/단건·batch dependency/build가 provider의 역할별 선언을
+Verify/Inspect 전에 고정한다. M1/M2 legacy 계약과 현재 M3/M6 선언 요구는 구분한다.
+새 Application 회귀는 빠진 동적 검사·중복·foreign profile을 거부하고 두 선언이 실행 전에
+호출됨을 확인했다(`s09-npm-vertical-coverage`1.860s PASS, 기본 npm 네 관찰 경우 포함).
+Go/Cargo producer4 package1.211s도 PASS다. `s09-producer-regressions`11.836s에서 Domain·
+Policy와 모든 verification/inspection package는 PASS였지만 Application19개 상위 사례는
+기존 공용 fixture가 선언하지 않아 FAIL이었다. 공용/재정의 fixture를 갱신한 후
+`s09-current-application`2.286s는 graph fixture의 실제 ID와 독립 선언 불일치 한 건만
+남겼으며 원본 실패는 보존한다. Fixture 요구를 삭제하거나 product guard를 완화하지 않는다.
+
+Python 논리 필수 실행 check ID는 `pypi-dynamic-import`로 고정하고 no-import/supplemented
+범위는 기존 Evidence kind/ID·summary로 구분한다. 정적 선행조건 실패는 필요한 동적 phase를
+NOT_EXECUTED로 보존한다. Terraform도 같은 선행 중단을 명시하며 optional suspicious fact와
+필수 probe coverage를 구분한다. npm/pnpm/Bun 프로젝트는 frozen lock에서 인스턴스 선언을
+한 번 인덱싱해 per-subject 재조회한다. 버전 입력은 기존 runtimeidentity generated owner를
+참조하며 runtime lock/generated 파일은 수정하지 않았다. GitHub M6도 manual 뒤 BLOCK을
+숨기지 않는 우선순위와 단일 version2를 반영 중이다. 이전 결과를 이 후속 후보의 통과로
+확대하지 않는다.
+
+MISSING 유지: Evidence v2/profile 기록·legacy/current cache/approval의 소비자, 결과 schema와
+사람/JSON의 같은 expected/actual 표시, PEP517 선행 derivation의 독립 선언·합쳐진 결과와
+build 승인 경계, 현재 전체 정상 fixture/실제 연결 회귀 및 묶음 qualification. 현재 기록
+port를 별도 store 없이 확장하는 변경은 아직 검증 중이다. S09 완료/전체 목표 완료 아님.
+CI/Host 변경·push는 없으며 뒤 S01–08/C/A 작업은 아직 시작하지 않았다.
+
+
+S09 derived/static 직접 재현: `StaticInspector.InspectWheel`이 실제 parser의 derived-wheel
+지원을 호출한 뒤 typed wheel 결과를 버려 `"" <nil>`이었다. 실제 bounded wheel을 derived
+intake 형식으로 만든4.732s RED 뒤 기존 wrapper 조건 하나를 교정했다. PEP517은 build 전에
+독립 requirement를 생성해 DerivedDependency에 운반하고, 후속 Run은 이를 자기 expected
+집합과 결합한다. 추가 build check/Evidence도 composite report에 포함하며 unknown 추가
+fact는 버리지 않고 거부한다. `s09-derived-storage-consumers`9.052s의 Application/Domain/
+Evidence/PyPI/GitHub/Policy6 package PASS는 이 로컬 후보 범위다. Evidence recording의
+첫 컴파일은 port의 named/unnamed variadic 혼합 때문에1.819s FAIL이었고 두 signature를
+교정한 뒤 storage4.656s PASS(legacy/current 구분·foreign/duplicate actual 거부 포함)다.
+
+캐시 경계는 보유한 plan의 Run/subject/check 집합을 재검증하고 v2 Evidence profile이 실제
+check와 일치해야 한다. `s09-cache-profile-consumers`20.737s의 filter는 Go Evidence/Cargo/
+Terraform만 실제 이름과 일치했다. Label만 보고 PNPM/Bun 검증으로 확대하지 않는다.
+그 두 helper를 수정했지만 `PNPMCache/BunCache` prefix와 실제 `PNPMApproved/BunApproved`
+이름이 달라 아직 NOT_REACHED이며 정확한 선택 검사에 포함한다. 전체 S09는 계속 OPEN이다.
+
+
+S09 기록/결과 소비자 후속(부분 구현): 실제 이름을 선택한 `s09-pnpm-bun-github-cache`
+19.804s는 PNPM/Bun 정상·재확인 경계와 legacy/foreign profile 캐시 거부·GitHub 소유권
+cohort PASS다. GitHub 새 승인 schema2는 현재 M6 version을 composition root에서 주입받고
+독립 선언·profiled Evidence를 요구한다. 과거 schema1/이전 policy는 인증된 설치 소유권
+읽기에만 남기며 현재 새 승인에는 쓸 수 없다. Go/Cargo도 retained 소유권 읽기와 실제
+cache/build 사용을 구분해 후자는 profile 없는 Evidence를 거부하도록 연결 중이다.
+
+`OperationResult`/`DependencyInspection`이 plan을 보유하고 JSON/human은 expected와 actual을
+구분한다. 새 `operation-result/v2`와 `check-plan/v1` schema를 추가했다. 기존 선언/profile
+없는 M1 결과는 v1로 남기며 새 graph 진단·coverage 결과는 v2다. 첫7 package16.012s에서
+CLI 두 install fixture만 새 v2를 v1로 기대해 FAIL였고 다른6 package는 PASS였다. 해당
+두 현재 기대를 교정한 후 Application/CLI/bootstrap7.115s PASS다. 새 메타정보를 기존
+additionalProperties=false인 v1에 몰래 넣지 않는다. 현재 `check-jsonschema`와 Python
+jsonschema 모듈은 이 환경에 없어 새 metaschema 검증은 아직 NOT_RUN이고 qualification
+전에 해결해야 한다. Schema2 syntax/typed presenter 성공을 metaschema PASS로 쓰지 않는다.
+
+Batch/단건 provider 실패는 기존 Run finalization과 error cause를 유지하면서 immutable
+`InspectionFailure`의 표시용 Run 결과를 보존한다. 이는 partial verified set/설치 권한이
+아니다. 기존 정확한 부분 Evidence 기록과 현재 plan/actual이 install·project·execution
+보고서로 전달된다. 설치 중단 JSON에는 parent/child Policy나 verified set을 만들지 않고
+필수2/실제1을 human/JSON에 동일하게 남긴2.973s 표적이 PASS다. Source-profile 선언은
+고정 runtime owner뿐 아니라 Python의 실제 root lane/ResourcePolicy와 target도 결합하며
+pypi/cpu/cu126/cu130/cu132는 recording runner 시험 범위만 확인했다.
+
+새 Evidence profile 메타정보를 도입한 뒤 build 승인 exact 비교가 raw fact와 달라지는
+자체 회귀를 실제 Go/Cargo wrapper 시험12.336s RED로 확인했다. Normal의 최초 원인은
+`required Evidence is unavailable or changed`이고 existing/foreign-output은 해당 checkpoint가
+미도달해 생긴 후속 assertion이다. 파일을 실제 삭제했다고 기록하지 않는다. 기존 바인딩을
+다른 profile로 덮지 않는 `BindEvidenceProfiles`를 기록과 두 build 승인에서 재사용했고,
+required exact 비교는 유지했다. `s09-build-profile-and-partials-green`18.471s는 두 build
+전체 정상/거부 cases와 partial facts·relabel 거부·Python profile 표적 PASS다. 새 native/CPP/
+CI·Host 변경은 없다. 전체 S09는 final Quick/보안/기록 schema·실제 current 정상 cohort와
+묶음 qualification이 OPEN이며 뒤 작업의 완료로 확대하지 않는다.
+
+
+S09 첫 canonical Quick284.249s는 정적 단계 전체 PASS / default49 package terminal / 전체
+exit1이다. 최초 artifact/githubrelease의 production authenticity 경로와 releaseprovenance
+회귀는 기존 두 verifier의 planner 미연결, UV publication 네 parent는 synthetic fixture의
+선언 미연결이었다. 기존 release authenticity의 복합 의미를 유지하며 고정 trust root·선택된
+release identity·기존 SHA 검사 profile을 선언/actual에 결합했고, UV fixture도 독립 목록과
+profiled record로 갱신했다. 정확한 실패 owners와 legacy ownership 회귀의19.725s PASS는
+이 후속 범위다. 기존49 package 전체를 성공으로 바꾸거나 같은 full 검사를 반복하지 않는다.
+S09+C01 의미 있는 공용 후보에서 다음 필수 묶음 검증을 소비한다.
+
+새 schema는 실제 presenter5종(정상/누락 INSPECT, 설치 성공/승격 실패/검사 중단)과
+Draft2020-12 metaschema·invalid type 거부를0.040s 확인했다. 처음 capture 준비가 두 파일
+중 한 assertion에서 멈춰 첫 capture는2종만 출력했고, 다음 raw는 중복 log를 포함한7행/
+5개 고유 JSON이었다. 현재 중복 log는 제거했다. 원본 capture-v1/v2와
+`s09-schema-metaschema-and-instances.json`이 정확한 source·schema·입력 SHA를 소유한다.
+동일 기능의 검증 도구는 공식 Go jsonschema/v6@v6.0.3을 **설치본** HAA로6 module 검역
+get49.092s/격리 build64.756s를 거쳐 준비했다. 이는 테스트 도구 공급이며 현재 S09 native
+qualification이 아니다. 도구 binary SHA6945c8e0c55f4b6c4897f76525e045a8c80b2003b1d67a7695ff12cbc84dd766
+한 사본은 뒤 schema 검증에 필요해 보존한다. 전용 Python venv/Go 프로젝트·cache/state의
+4606개 정규 파일179805369 logical bytes를 정리했고 도구 source/lock은 원본 receipt에 보존했다.
+사용자 개발 환경·공용 cache·기존 observer는 건드리지 않았다. 제품 자동 정리 C01 완료는 아니다.
+
+**B01 후속 호환 gap(미완료):** 같은 도구 준비의 설치본 HAA가 check-jsonschema0.39.0의
+charset-normalizer2461 files와 jsonschema4.26.0의 rpds-py5604 files를 limit1024로 각각
+16.223s/16.884s resolve 단계에서 거부했다. 현재 candidate `simple.go:simpleFilesLimit`도
+공개 PyPI에 같은 `maxPyPIReportEntries=1024`를 사용함을 source에서 확인했다. 악성 탐지나
+새 candidate 실제 설치 실패로 확대하지 않는다. B01 최종 compatibility/incomplete 평가와
+함께 bounded metadata catalog 처리의 정상 큰 목록/한도 초과/전체 byte budget을 검토·보완해야
+한다. 이번 S09에서 한도를 조용히 늘리거나 raw manager로 실패한 설치를 우회하지 않았다.
+원본은 s09-schema-validator-quarantine/s09-jsonschema-validator-quarantine이며 기존 Anyio
+미완료도 유지한다. 배포 준비 완료로 판단하기 전에 이 gap을 닫는다.

@@ -590,7 +590,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence)
+		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence, policy.M6PolicyVersion)
 		if err != nil {
 			return err
 		}

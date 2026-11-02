@@ -158,7 +158,7 @@ func (p *updateFindingPorts) Inspect(ctx context.Context, artifact domain.Acquir
 	}
 	check := report.Execution()
 	if p.mode == "inspection-incomplete" {
-		check, _ = domain.NewCheckExecution(check.ID(), check.Kind(), true, domain.CapabilitySupported, domain.ExecutionIncomplete, "CONTROLLED_UPDATE_FIXTURE")
+		check, _ = domain.NewCheckExecution(check.ID(), check.Kind(), true, domain.CapabilitySupported, domain.ExecutionIncomplete, "CONTROLLED_UPDATE_FIXTURE", check.ProfileDigest())
 		return domain.NewInspectionReport(check, nil, report.Evidence())
 	}
 	code := p.findingCode
@@ -274,8 +274,8 @@ func (p *gitHubUpdatePolicyPorts) Acquire(ctx context.Context, run domain.RunID,
 	return domain.NewAcquiredArtifactWithDeclaredIntegrity(artifact.Identity(), digest, artifact.ContentHandle(), artifact.SizeBytes(), resolved.DeclaredIntegrity())
 }
 
-func (p *gitHubUpdatePolicyPorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
-	if _, err := p.multiInspectionPorts.Record(ctx, run, evidence); err != nil {
+func (p *gitHubUpdatePolicyPorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
+	if _, err := p.multiInspectionPorts.Record(ctx, run, evidence, checks...); err != nil {
 		return nil, err
 	}
 	p.recorded[run] = append([]domain.Evidence(nil), evidence...)

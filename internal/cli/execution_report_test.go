@@ -36,7 +36,7 @@ func TestExecutionOutputIsExplicitBoundedInertData(t *testing.T) {
 		report := executionReport{Schema: "display-test-only", ProgramOutput: shown}
 		for _, machine := range []bool{false, true} {
 			var out bytes.Buffer
-			if err := writeExecutionReport(&out, report, machine); err != nil {
+			if err := writeExecutionReport(&out, report, machine, nil); err != nil {
 				t.Fatal(err)
 			}
 			if bytes.ContainsAny(out.Bytes(), "\x1b\x07\r") || strings.Contains(out.String(), "\nQuarantine: COMPLETED") {
@@ -54,10 +54,10 @@ type executionFailWriter struct{}
 func (executionFailWriter) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
 func TestExecutionReportPreservesWriterFailure(t *testing.T) {
 	for _, machine := range []bool{true, false} {
-		if err := writeExecutionReport(executionFailWriter{}, executionReport{}, machine); !errors.Is(err, io.ErrClosedPipe) {
+		if err := writeExecutionReport(executionFailWriter{}, executionReport{}, machine, nil); !errors.Is(err, io.ErrClosedPipe) {
 			t.Fatal("writer cause lost", err)
 		}
-		if err := writeExecutionReport(nil, executionReport{}, machine); err == nil {
+		if err := writeExecutionReport(nil, executionReport{}, machine, nil); err == nil {
 			t.Fatal("nil writer accepted")
 		}
 	}

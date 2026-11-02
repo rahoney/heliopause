@@ -250,7 +250,8 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 		if err != nil {
 			t.Fatal(err)
 		}
-		factExecution, err := domain.NewCheckExecution(factCheck, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		experimentProfile, _ := domain.CheckProfileDigest("pnpm-instance-experiment-v1", runtimeidentity.NodeImageReference+"|"+runtimeidentity.PNPMVersion)
+		factExecution, err := domain.NewCheckExecution(factCheck, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", experimentProfile)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -272,7 +273,7 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 			t.Fatal(err)
 		}
 		coverageID, _ := domain.NewCheckID("pnpm-dynamic-lifecycle")
-		coverageCheck, _ := domain.NewCheckExecution(coverageID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		coverageCheck, _ := domain.NewCheckExecution(coverageID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", experimentProfile)
 		coverageEvidenceID, _ := domain.NewEvidenceID("pnpm-instance-coverage")
 		coverageFact, err := domain.NewEvidence(coverageEvidenceID, coverageID, subject.Identity(), subject.Digest(), "pnpm-instance-coverage", "expected=1 attempted=1 completed=1")
 		if err != nil {
@@ -290,12 +291,29 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 		if err != nil {
 			t.Fatal(err)
 		}
-		evidence := append(verified.Evidence(), combined.Evidence()...)
-		refs, err := store.Record(context.Background(), run, evidence)
+		declaredVerification, err := (verificationnpm.IntegrityVerifier{}).ExpectedChecks(context.Background(), subject, domain.CheckVerification)
 		if err != nil {
 			t.Fatal(err)
 		}
-		policyInput, err := domain.NewPolicyInput(run, subject, verified, combined, refs)
+		declaredStatic, err := static.ExpectedChecks(context.Background(), subject, domain.CheckInspection)
+		if err != nil {
+			t.Fatal(err)
+		}
+		factRequirement, _ := domain.NewCheckRequirement(factCheck, domain.CheckInspection, false, experimentProfile)
+		coverageRequirement, _ := domain.NewCheckRequirement(coverageID, domain.CheckInspection, true, experimentProfile)
+		requirements := append(declaredVerification, declaredStatic...)
+		requirements = append(requirements, factRequirement, coverageRequirement)
+		plan, err := domain.NewCheckPlan(run, subject, requirements)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checks := append([]domain.CheckExecution{verified.Execution()}, combined.Executions()...)
+		evidence := append(verified.Evidence(), combined.Evidence()...)
+		refs, err := store.Record(context.Background(), run, evidence, checks...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		policyInput, err := domain.NewPolicyInput(run, subject, verified, combined, refs, plan)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -303,7 +321,7 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 		if err != nil {
 			t.Fatal(err)
 		}
-		inspection, err := domain.NewDependencyInspection(node, run, subject, append([]domain.CheckExecution{verified.Execution()}, combined.Executions()...), refs, decision)
+		inspection, err := domain.NewDependencyInspection(node, run, subject, checks, refs, decision, plan)
 		if err != nil {
 			t.Fatal(err)
 		}

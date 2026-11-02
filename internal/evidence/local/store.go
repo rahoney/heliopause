@@ -27,7 +27,7 @@ func NewStore(root string) (*Store, error) {
 
 // Record atomically publishes one complete normalized Evidence batch and
 // returns opaque references only after its Run directory is durable.
-func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence) (references []domain.EvidenceReference, resultErr error) {
+func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) (references []domain.EvidenceReference, resultErr error) {
 	if ctx == nil {
 		return nil, errors.New("context is required")
 	}
@@ -37,6 +37,13 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 	if s == nil || s.root == "" || runID.String() == "" || len(evidence) == 0 {
 		return nil, errors.New("evidence store requires root, Run ID, and a non-empty batch")
 	}
+	// Profile bindings are supplied by the actual normalized checks. Legacy
+	// callers remain readable as legacy; they cannot create v2 approval evidence.
+	bound, bindingErr := domain.BindEvidenceProfiles(checks, evidence)
+	if bindingErr != nil {
+		return nil, bindingErr
+	}
+	evidence = bound
 	seen := make(map[domain.EvidenceID]bool, len(evidence))
 	for _, item := range evidence {
 		if seen[item.ID()] {
@@ -134,6 +141,10 @@ func (s *Store) DeleteRun(ctx context.Context, runID domain.RunID) error {
 
 func (s *Store) write(directory string, runID domain.RunID, evidence domain.Evidence) error {
 	payload := record{EvidenceID: evidence.ID().String(), RunID: runID.String(), CheckID: evidence.CheckID().String(), Kind: evidence.Kind(), Summary: evidence.Summary(), SourceID: evidence.Identity().Source().String(), Name: evidence.Identity().Name(), Version: evidence.Identity().Version(), Variant: evidence.Identity().Variant(), SHA256: evidence.Digest().String()}
+	if evidence.ProfileDigest().String() != "" {
+		payload.SchemaVersion = "helox.evidence/v2"
+		payload.ProfileSHA256 = evidence.ProfileDigest().String()
+	}
 	canonical, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -173,17 +184,19 @@ func closeEvidenceTemporary(file *os.File) error {
 }
 
 type record struct {
-	EvidenceID   string `json:"evidence_id"`
-	RunID        string `json:"run_id"`
-	CheckID      string `json:"check_id"`
-	Kind         string `json:"kind"`
-	Summary      string `json:"summary"`
-	SourceID     string `json:"source_id"`
-	Name         string `json:"name"`
-	Version      string `json:"version"`
-	Variant      string `json:"variant"`
-	SHA256       string `json:"sha256"`
-	RecordSHA256 string `json:"record_sha256"`
+	SchemaVersion string `json:"schema_version,omitempty"`
+	ProfileSHA256 string `json:"profile_sha256,omitempty"`
+	EvidenceID    string `json:"evidence_id"`
+	RunID         string `json:"run_id"`
+	CheckID       string `json:"check_id"`
+	Kind          string `json:"kind"`
+	Summary       string `json:"summary"`
+	SourceID      string `json:"source_id"`
+	Name          string `json:"name"`
+	Version       string `json:"version"`
+	Variant       string `json:"variant"`
+	SHA256        string `json:"sha256"`
+	RecordSHA256  string `json:"record_sha256"`
 }
 
 func syncDirectory(path string) error {

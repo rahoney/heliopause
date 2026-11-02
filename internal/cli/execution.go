@@ -131,7 +131,7 @@ func runExecutionRequest(command *cobra.Command, runner ExecutionRunner, request
 	progressErr := finish()
 	show, _ := command.Flags().GetBool("show-output")
 	report := newExecutionReport(result, cause, show)
-	reportErr := writeExecutionReport(command.OutOrStdout(), report, machineOutput(command))
+	reportErr := writeExecutionReport(command.OutOrStdout(), report, machineOutput(command), cause)
 	code := executionProcessCode(result, cause)
 	if reportErr != nil || progressErr != nil {
 		code = 1

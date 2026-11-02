@@ -44,6 +44,11 @@ Run + 실제 Artifact + 생성 근거
 
 신뢰하지 않는 Artifact 또는 Sandbox 내부 process가 Evidence 기록을 임의로 수정·삭제할 수 없어야 한다. 기록은 trusted controller/observer 측에서 수행한다. Raw Observation/Tool Output과 Normalized Evidence는 분리하여 저장하거나 참조할 수 있다.
 
+현재 `Record`의 actual check 목록은 check ID별 고정 profile을 함께 저장하기 위한 명시 입력이다.
+Evidence v2는 `schema_version`과 `profile_sha256`을 canonical record hash에 포함한다. 목록의
+중복 check나 Evidence가 참조하는 다른 check는 기록 전에 거부한다. Profile 없는 과거
+record는 legacy로 읽을 수 있지만 새 profile 검사 완료·재사용 승인으로 승격하지 않는다.
+
 Evidence Port는 기록과 추적만 담당하며 Finding 해석, Verification 수행, Policy Decision 생성, Verified Set 승인 또는 Promotion을 수행하지 않는다.
 
 ### Evidence 무결성 실패

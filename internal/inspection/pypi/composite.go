@@ -57,7 +57,11 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 		return domain.InspectionReport{}, err
 	}
 	if hasBlockingFinding(static) {
-		return static, nil
+		skipped, err := skippedDynamicReport(ctx)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
 	}
 	dynamic, err := i.dynamic.InspectWheel(ctx, artifact, wheel)
 	if err != nil {
@@ -106,6 +110,20 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 	// A blocked or incomplete static result must not be made executable as a
 	// dependency of another node's dynamic import fixture.
 	if !staticReady {
+		for _, dependency := range nodes {
+			if acquired[dependency.Node()].Identity().Variant() == "sdist" {
+				continue
+			}
+			skipped, err := skippedDynamicReport(ctx)
+			if err != nil {
+				return nil, err
+			}
+			report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], skipped})
+			if err != nil {
+				return nil, err
+			}
+			reports[dependency.Node()] = report
+		}
 		return reports, nil
 	}
 	if i.dynamic == nil {
@@ -251,3 +269,15 @@ func validateRuntimeClosureNodes(ctx context.Context, closure []domain.AcquiredA
 }
 
 func hasBlockingFinding(report domain.InspectionReport) bool { return len(report.Findings()) != 0 }
+
+func (i *CompositeInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil || i.dynamic == nil {
+		return nil, errors.New("pypi check declaration is unavailable")
+	}
+	result, err := i.static.ExpectedChecks(ctx, artifact, kind)
+	if err != nil || artifact.Identity().Variant() == "sdist" {
+		return result, err
+	}
+	dynamic, err := i.dynamic.ExpectedChecks(ctx, artifact, kind)
+	return append(result, dynamic...), err
+}

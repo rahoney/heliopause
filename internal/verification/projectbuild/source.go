@@ -36,11 +36,22 @@ func (v *SourceVerifier) Verify(ctx context.Context, artifact domain.AcquiredArt
 		return domain.VerificationReport{}, errors.Join(errors.New("project source byte binding could not be verified"), ctx.Err())
 	}
 	checkID, _ := domain.NewCheckID("project-build-input-binding")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest("project-build-input-binding-v1", v.kind)
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("project-build-input-binding-result")
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), v.kind+"-build-source-binding", "Frozen local source archive identity and complete consumed bytes rechecked. This verifies local byte binding, not public registry provenance or project safety.")
 	if err != nil {
 		return domain.VerificationReport{}, err
 	}
 	return domain.NewVerificationReport(check, domain.VerificationVerified, []domain.Evidence{evidence})
+}
+
+func (v *SourceVerifier) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if v == nil || v.reader == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckVerification || a.Identity().Source().String() != "project-local" || a.Identity().Variant() != v.kind+"-source" {
+		return nil, errors.New("project source declaration is invalid")
+	}
+	id, _ := domain.NewCheckID("project-build-input-binding")
+	profile, _ := domain.CheckProfileDigest("project-build-input-binding-v1", v.kind)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	return []domain.CheckRequirement{requirement}, err
 }

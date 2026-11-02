@@ -104,7 +104,19 @@ func TestCommandObservationPreservesPolicyAndEvidenceScope(t *testing.T) {
 						refs = append(refs, ref)
 					}
 					run, _ := domain.NewRunID()
-					input, err := domain.NewPolicyInput(run, a, verified, report, refs)
+					declaredVerification, err := (verificationpypi.IntegrityVerifier{}).ExpectedChecks(ctx, a, domain.CheckVerification)
+					if err != nil {
+						t.Fatal(err)
+					}
+					declaredInspection, err := inspector.ExpectedChecks(ctx, a, domain.CheckInspection)
+					if err != nil {
+						t.Fatal(err)
+					}
+					plan, err := domain.NewCheckPlan(run, a, append(declaredVerification, declaredInspection...))
+					if err != nil {
+						t.Fatal(err)
+					}
+					input, err := domain.NewPolicyInput(run, a, verified, report, refs, plan)
 					if err != nil {
 						t.Fatal(err)
 					}

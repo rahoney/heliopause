@@ -13,11 +13,12 @@ import (
 // GitHubReleasePromotion publishes one already-staged standalone asset. It
 // never resolves or downloads a Release and never grants target authority to a sandbox.
 type GitHubReleasePromotion struct {
-	stagingRoot  string
-	stateRoot    string
-	evidenceRoot string
-	evidence     ProjectEvidenceReader
-	checkpoint   func(string) error
+	stagingRoot   string
+	stateRoot     string
+	evidenceRoot  string
+	evidence      ProjectEvidenceReader
+	checkpoint    func(string) error
+	policyVersion uint64
 }
 
 func NewGitHubReleasePromotion(stagingRoot string) (*GitHubReleasePromotion, error) {

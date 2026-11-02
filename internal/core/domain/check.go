@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -124,13 +127,22 @@ type CheckExecution struct {
 	capability Capability
 	status     ExecutionStatus
 	limitation string
+	profile    ContentDigest
 }
 
 // NewCheckExecution constructs a semantically valid check execution envelope.
-func NewCheckExecution(id CheckID, kind CheckKind, required bool, capability Capability, status ExecutionStatus, limitationCode string) (CheckExecution, error) {
+func NewCheckExecution(id CheckID, kind CheckKind, required bool, capability Capability, status ExecutionStatus, limitationCode string, profiles ...ContentDigest) (CheckExecution, error) {
 	if id.value == "" {
 		return CheckExecution{}, errors.New("check ID is required")
 	}
+	if len(profiles) > 1 || len(profiles) == 1 && profiles[0].value == "" {
+		return CheckExecution{}, errors.New("check execution profile is invalid")
+	}
+	var profile ContentDigest
+	if len(profiles) == 1 {
+		profile = profiles[0]
+	}
+
 	if kind != CheckVerification && kind != CheckInspection {
 		return CheckExecution{}, fmt.Errorf("invalid check kind %q", kind)
 	}
@@ -153,8 +165,10 @@ func NewCheckExecution(id CheckID, kind CheckKind, required bool, capability Cap
 			return CheckExecution{}, errors.New("non-completed check requires an uppercase limitation code")
 		}
 	}
-	return CheckExecution{id: id, kind: kind, required: required, capability: capability, status: status, limitation: limitationCode}, nil
+	return CheckExecution{id: id, kind: kind, required: required, capability: capability, status: status, limitation: limitationCode, profile: profile}, nil
 }
+
+func (c CheckExecution) ProfileDigest() ContentDigest { return c.profile }
 
 func (c CheckExecution) ID() CheckID                    { return c.id }
 func (c CheckExecution) Kind() CheckKind                { return c.kind }
@@ -247,29 +261,50 @@ func NewCompositeInspectionReport(reports []InspectionReport) (InspectionReport,
 	findings := make([]Finding, 0)
 	evidence := make([]Evidence, 0)
 	diagnostics := make([]InspectionDiagnostic, 0)
+	seenChecks := make(map[CheckID]bool)
+	seenEvidence := make(map[EvidenceID]bool)
 	for _, report := range reports {
-		execution := report.execution
-		if execution.kind != CheckInspection {
-			return InspectionReport{}, errors.New("inspection report requires an Inspection check")
+		if len(report.executions) == 0 {
+			return InspectionReport{}, errors.New("inspection report has no declared execution")
 		}
-		if execution.status != ExecutionCompleted && len(report.findings) != 0 {
-			return InspectionReport{}, errors.New("non-completed inspection cannot claim final Findings")
-		}
-		if execution.status == ExecutionCompleted && len(report.evidence) == 0 {
-			return InspectionReport{}, errors.New("completed inspection requires Evidence")
-		}
-		if err := validateEvidenceForCheck(execution.id, report.evidence); err != nil {
-			return InspectionReport{}, err
-		}
-		if err := validateFindingsForEvidence(report.findings, report.evidence); err != nil {
-			return InspectionReport{}, err
-		}
-		for _, diagnostic := range report.diagnostics {
-			if _, err := NewInspectionDiagnostic(diagnostic.cause, diagnostic.stage); err != nil {
+		// Nested reports are immutable values already validated here. Validate
+		// primitive constructor inputs once, then retain every child check.
+		if len(report.executions) == 1 {
+			execution := report.execution
+			if execution.kind != CheckInspection {
+				return InspectionReport{}, errors.New("inspection report requires an Inspection check")
+			}
+			if execution.status != ExecutionCompleted && len(report.findings) != 0 {
+				return InspectionReport{}, errors.New("non-completed inspection cannot claim final Findings")
+			}
+			if execution.status == ExecutionCompleted && len(report.evidence) == 0 {
+				return InspectionReport{}, errors.New("completed inspection requires Evidence")
+			}
+			if err := validateEvidenceForCheck(execution.id, report.evidence); err != nil {
 				return InspectionReport{}, err
 			}
+			if err := validateFindingsForEvidence(report.findings, report.evidence); err != nil {
+				return InspectionReport{}, err
+			}
+			for _, diagnostic := range report.diagnostics {
+				if _, err := NewInspectionDiagnostic(diagnostic.cause, diagnostic.stage); err != nil {
+					return InspectionReport{}, err
+				}
+			}
 		}
-		executions = append(executions, execution)
+		for _, execution := range report.executions {
+			if seenChecks[execution.id] {
+				return InspectionReport{}, errors.New("inspection report contains duplicate checks")
+			}
+			seenChecks[execution.id] = true
+			executions = append(executions, execution)
+		}
+		for _, item := range report.evidence {
+			if seenEvidence[item.id] {
+				return InspectionReport{}, errors.New("inspection report contains duplicate Evidence")
+			}
+			seenEvidence[item.id] = true
+		}
 		findings = append(findings, report.findings...)
 		evidence = append(evidence, report.evidence...)
 		diagnostics = append(diagnostics, report.diagnostics...)
@@ -312,4 +347,103 @@ func validateFindingsForEvidence(findings []Finding, evidence []Evidence) error 
 		}
 	}
 	return nil
+}
+
+// CheckRequirement is declared by a controller-owned operation/profile before
+// execution. It carries no actual status or approval. Experiment identity is
+// part of the unique CheckID; profile binds its fixed runtime/rules context.
+type CheckRequirement struct {
+	id       CheckID
+	kind     CheckKind
+	required bool
+	profile  ContentDigest
+}
+
+func NewCheckRequirement(id CheckID, kind CheckKind, required bool, profile ContentDigest) (CheckRequirement, error) {
+	if id.value == "" || (kind != CheckVerification && kind != CheckInspection) || profile.value == "" {
+		return CheckRequirement{}, errors.New("check requirement needs a valid identifier, kind and profile")
+	}
+	return CheckRequirement{id, kind, required, profile}, nil
+}
+
+func (r CheckRequirement) ID() CheckID                  { return r.id }
+func (r CheckRequirement) Kind() CheckKind              { return r.kind }
+func (r CheckRequirement) Required() bool               { return r.required }
+func (r CheckRequirement) ProfileDigest() ContentDigest { return r.profile }
+
+// CheckPlan is immutable expected membership for one actual Run/content subject.
+// The caller must freeze it before invoking its verification/inspection ports.
+type CheckPlan struct {
+	run          RunID
+	identity     ResolvedArtifactIdentity
+	digest       ContentDigest
+	requirements []CheckRequirement
+}
+
+func NewCheckPlan(run RunID, artifact AcquiredArtifact, requirements []CheckRequirement) (CheckPlan, error) {
+	if run.value == "" || artifact.identity.source.value == "" || artifact.digest.value == "" || len(requirements) == 0 {
+		return CheckPlan{}, errors.New("check plan requires a Run, exact subject and declared checks")
+	}
+	seen := make(map[CheckID]bool, len(requirements))
+	for _, r := range requirements {
+		if _, err := NewCheckRequirement(r.id, r.kind, r.required, r.profile); err != nil {
+			return CheckPlan{}, err
+		}
+		if seen[r.id] {
+			return CheckPlan{}, errors.New("check plan contains duplicate identities")
+		}
+		seen[r.id] = true
+	}
+	return CheckPlan{run, artifact.identity, artifact.digest, append([]CheckRequirement(nil), requirements...)}, nil
+}
+
+func (p CheckPlan) Valid() bool {
+	return p.run.value != "" && p.identity.source.value != "" && p.digest.value != "" && len(p.requirements) != 0
+}
+func (p CheckPlan) RunID() RunID                       { return p.run }
+func (p CheckPlan) Identity() ResolvedArtifactIdentity { return p.identity }
+func (p CheckPlan) Digest() ContentDigest              { return p.digest }
+
+func (p CheckPlan) Requirements() []CheckRequirement {
+	return append([]CheckRequirement(nil), p.requirements...)
+}
+
+// Validate compares exact membership in O(n). A failed/unavailable required
+// check can match its declaration; Policy still refuses automatic ALLOW.
+func (p CheckPlan) Validate(run RunID, artifact AcquiredArtifact, checks []CheckExecution) error {
+	if !p.Valid() || p.run != run || p.identity != artifact.identity || p.digest != artifact.digest {
+		return errors.New("check plan belongs to a different Run or subject")
+	}
+	expected := make(map[CheckID]CheckRequirement, len(p.requirements))
+	for _, r := range p.requirements {
+		expected[r.id] = r
+	}
+	seen := make(map[CheckID]bool, len(checks))
+	for _, c := range checks {
+		r, ok := expected[c.id]
+		if !ok || seen[c.id] || c.kind != r.kind || c.required != r.required || c.profile != r.profile {
+			return errors.New("actual check identity, kind, requirement or profile differs from its declaration")
+		}
+		seen[c.id] = true
+	}
+	for _, r := range p.requirements {
+		if r.required && !seen[r.id] {
+			return errors.New("actual checks do not cover the declared required plan")
+		}
+	}
+	return nil
+}
+
+// CheckProfileDigest binds a named rule/experiment schema to its opaque fixed
+// runtime descriptor. Domain does not interpret provider or ecosystem names.
+func CheckProfileDigest(name, runtimeDescriptor string) (ContentDigest, error) {
+	if _, err := NewCheckID(name); err != nil {
+		return ContentDigest{}, err
+	}
+	body, err := json.Marshal([]string{name, runtimeDescriptor})
+	if err != nil {
+		return ContentDigest{}, err
+	}
+	digest := sha256.Sum256(body)
+	return NewSHA256Digest(hex.EncodeToString(digest[:]))
 }

@@ -22,6 +22,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const checkProfileName = "go-module-sumdb-v1"
+
 const sumDBKey = "sum.golang.org+033de0ae+Ac4zctda0e5eza+HJyk9SxEdh+s3Ux18htTTAD8OuAn8"
 
 type IntegrityVerifier struct {
@@ -42,24 +44,25 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 	if ctx == nil || ctx.Err() != nil || v == nil || v.http == nil || artifact.Identity().Source() != artifactgo.Source() {
 		return domain.VerificationReport{}, errors.New("go module verification request is invalid")
 	}
+	profile, _ := domain.CheckProfileDigest(checkProfileName, v.key)
 	bundle, err := artifactgo.ReadIntake(v.intakeRoot, artifact)
 	if err != nil {
 		return domain.VerificationReport{}, err
 	}
 	archiveSum, modSum, err := artifactgo.HashBundle(bundle, artifact.Identity())
 	if err != nil {
-		return verificationReport(artifact, false, "M12_GO_MODULE_CONTENT_INVALID")
+		return verificationReport(artifact, false, "M12_GO_MODULE_CONTENT_INVALID", profile)
 	}
 	declared, present := artifact.DeclaredIntegrity()
 	if present {
 		expectedZip, expectedMod, err := artifactgo.ParseIntegrity(declared)
 		if err != nil || archiveSum != expectedZip || modSum != expectedMod {
-			return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH")
+			return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH", profile)
 		}
 	}
 	required, err := artifactgo.HashRequiredMods(bundle, artifact.Identity(), declared)
 	if err != nil {
-		return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH")
+		return verificationReport(artifact, false, "M12_GO_DECLARED_SUM_MISMATCH", profile)
 	}
 	lookupCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
@@ -76,7 +79,7 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 		return domain.VerificationReport{}, ops.lookupError("control", started)
 	}
 	if !exactLine(zipLines, name+" "+version+" "+archiveSum) || !exactLine(modLines, name+" "+version+"/go.mod "+modSum) {
-		return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH")
+		return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH", profile)
 	}
 	for _, ref := range required {
 		lines, err := client.Lookup(name, ref.Version+"/go.mod")
@@ -84,10 +87,10 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 			return domain.VerificationReport{}, ops.lookupError("required-control", started)
 		}
 		if !exactLine(lines, name+" "+ref.Version+"/go.mod "+ref.Sum) {
-			return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH")
+			return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH", profile)
 		}
 	}
-	return verificationReport(artifact, true, "")
+	return verificationReport(artifact, true, "", profile)
 }
 
 func exactLine(lines []string, expected string) bool {
@@ -100,9 +103,9 @@ func exactLine(lines []string, expected string) bool {
 	return count == 1
 }
 
-func verificationReport(artifact domain.AcquiredArtifact, verified bool, code string) (domain.VerificationReport, error) {
+func verificationReport(artifact domain.AcquiredArtifact, verified bool, code string, profile domain.ContentDigest) (domain.VerificationReport, error) {
 	checkID, _ := domain.NewCheckID("go-module-sumdb")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("go-module-sumdb-result")
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "go-module-sumdb", "Exact proxy module envelope h1 identities checked against authenticated SumDB records.")
 	if err != nil {
@@ -263,4 +266,20 @@ func (o *databaseOps) lookupError(stage string, started time.Time) error {
 	// caused the final rejection. No peer error is wrapped or logged.
 	return fmt.Errorf("go SumDB authenticated %s lookup failed: %w (last_remote_failure=%s last_remote_stage=%s last_http_status=%d requests=%d bytes=%d elapsed_ms=%d)",
 		stage, cause, o.lastRemoteFailure, o.lastRemoteStage, o.lastHTTPStatus, o.requests, o.bytes, time.Since(started).Milliseconds())
+}
+
+func (v *IntegrityVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if v == nil || v.http == nil || v.key == "" || ctx == nil || kind != domain.CheckVerification || artifact.Identity().Source() != artifactgo.Source() {
+		return nil, errors.New("go verification declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("go-module-sumdb")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, v.key)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

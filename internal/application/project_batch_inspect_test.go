@@ -95,14 +95,16 @@ func (p *projectPartialFailurePorts) InspectProject(ctx context.Context, snapsho
 	}
 	return reports, p.providerErr
 }
-func (p *projectPartialFailurePorts) Record(ctx context.Context, run domain.RunID, facts []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *projectPartialFailurePorts) Record(ctx context.Context, run domain.RunID, facts []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	p.records++
 	p.retained = append(p.retained, facts...)
 	if p.recordErr != nil {
 		return nil, p.recordErr
 	}
-	return p.multiInspectionPorts.Record(ctx, run, facts)
+	return p.multiInspectionPorts.Record(ctx, run, facts, checks...)
 }
+func (*projectPartialFailurePorts) RequiresCheckPlan() bool { return true }
+
 func (p *projectPartialFailurePorts) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	p.policies++
 	return (policy.M3{}).Evaluate(input)
@@ -125,6 +127,24 @@ func TestProjectProviderFailureRecordsExactFactsWithoutPolicyOrPartialApproval(t
 			approved, err := service.InspectProject(context.Background(), inspectionProjectSnapshot(t, graph))
 			if !errors.Is(err, provider) || approved.Valid() || p.policies != 0 {
 				t.Fatal("failure cause or no-approval contract lost", err)
+			}
+			var failure *application.InspectionFailure
+			if !errors.As(err, &failure) || len(failure.Results()) != 2 {
+				t.Fatal("partial run results were lost", err)
+			}
+			for _, result := range failure.Results() {
+				if !result.CheckPlan().Valid() || len(result.CheckPlan().Requirements()) != 2 || result.Status() != domain.OperationFailed {
+					t.Fatal("failed declaration or Run status was lost")
+				}
+				if _, hasPolicy := result.PolicyDecision(); hasPolicy {
+					t.Fatal("provider failure manufactured completed Policy")
+				}
+				if mode == "exact" && (len(result.Checks()) != 2 || len(result.Evidence()) != 2) {
+					t.Fatal("recorded partial facts were lost")
+				}
+				if (mode == "missing" || mode == "foreign") && len(result.Checks()) != 1 {
+					t.Fatal("invalid partial inspection was presented as performed")
+				}
 			}
 			if mode == "missing" || mode == "foreign" {
 				if p.records != 0 {

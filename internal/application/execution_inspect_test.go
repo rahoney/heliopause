@@ -293,12 +293,12 @@ func (p *executionGraphFailurePorts) InspectGraph(ctx context.Context, graph dom
 	}
 	return reports, p.providerErr
 }
-func (p *executionGraphFailurePorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *executionGraphFailurePorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	p.records++
 	if p.recordErr != nil {
 		return nil, p.recordErr
 	}
-	return p.multiInspectionPorts.Record(ctx, run, evidence)
+	return p.multiInspectionPorts.Record(ctx, run, evidence, checks...)
 }
 func (p *executionGraphFailurePorts) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	p.policies++

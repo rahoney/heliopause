@@ -21,20 +21,33 @@ type PNPMInstanceExecutor interface {
 // PNPMProjectInspector retains frozen complete-project context beside the
 // source-neutral Inspection interface. It cannot silently inspect one primary.
 type PNPMProjectInspector struct {
-	frozen    artifactnpm.PNPMInspectionContext
-	static    *Inspector
-	prepare   PNPMInspectionPreparer
-	execute   PNPMInstanceExecutor
-	handoffMu sync.Mutex
-	active    bool
-	prepared  artifactnpm.PNPMInspectionLayout
+	expectedInstances map[string][]string
+	frozen            artifactnpm.PNPMInspectionContext
+	static            *Inspector
+	prepare           PNPMInspectionPreparer
+	execute           PNPMInstanceExecutor
+	handoffMu         sync.Mutex
+	active            bool
+	prepared          artifactnpm.PNPMInspectionLayout
 }
 
 func NewPNPMProjectInspector(frozen artifactnpm.PNPMInspectionContext, static *Inspector, prepare PNPMInspectionPreparer, execute PNPMInstanceExecutor) (*PNPMProjectInspector, error) {
 	if !frozen.Valid() || static == nil || prepare == nil || execute == nil {
 		return nil, errors.New("pnpm project inspection requires frozen context and all consumers")
 	}
-	return &PNPMProjectInspector{frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
+	expectedInstances := make(map[string][]string)
+	packages := make(map[string]string)
+	for _, pkg := range frozen.Lock().Packages() {
+		packages[pkg.Key] = pkg.Name + "\x00" + pkg.Version
+	}
+	for _, instance := range frozen.Lock().Snapshots() {
+		key := packages[instance.Package]
+		if key == "" {
+			return nil, errors.New("pnpm declaration has unknown instance package")
+		}
+		expectedInstances[key] = append(expectedInstances[key], instance.Key)
+	}
+	return &PNPMProjectInspector{expectedInstances: expectedInstances, frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
 }
 func (i *PNPMProjectInspector) Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	return domain.InspectionReport{}, errors.New("pnpm inspection requires the complete frozen project")
@@ -213,4 +226,11 @@ func (i *PNPMProjectInspector) observeInstances(ctx context.Context, layout arti
 		}
 	}
 	return nil
+}
+
+func (i *PNPMProjectInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil {
+		return nil, errors.New("project declaration is unavailable")
+	}
+	return npmProjectExpectedChecks(ctx, a, kind, i.static, i.expectedInstances[a.Identity().Name()+"\x00"+a.Identity().Version()], projectInspectionPNPM)
 }

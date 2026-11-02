@@ -91,7 +91,7 @@ func cargoCacheFixture(t *testing.T, c *CargoVerifiedCache, project string, file
 	var items []domain.Evidence
 	for _, kind := range []domain.CheckKind{domain.CheckVerification, domain.CheckInspection} {
 		id, _ := domain.NewCheckID("fixture-" + strings.ToLower(string(kind)))
-		check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		checks = append(checks, check)
 		eID, _ := domain.NewEvidenceID(id.String())
 		item, err := domain.NewEvidence(eID, id, identity, digest, "fixture", "Synthetic complete cache check evidence.")
@@ -104,12 +104,12 @@ func cargoCacheFixture(t *testing.T, c *CargoVerifiedCache, project string, file
 	if err != nil {
 		t.Fatal(err)
 	}
-	refs, err := store.Record(context.Background(), run, items)
+	refs, err := store.Record(context.Background(), run, items, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
 	node, _ := domain.ProjectDependencyNodeID(identity)
-	inspection, err := domain.NewDependencyInspection(node, run, artifact, checks, refs, decision)
+	inspection, err := domain.NewDependencyInspection(node, run, artifact, checks, refs, decision, cacheFixturePlan(t, run, artifact, []string{"fixture-verification", "fixture-inspection"}))
 	if err != nil {
 		t.Fatal(err)
 	}

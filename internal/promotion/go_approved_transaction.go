@@ -190,7 +190,7 @@ func (g *approvedGoProjectGuard) verifyRetainedApprovalWithChangedInputs(ctx con
 			return errors.New("go retained approval does not match current controls")
 		}
 	}
-	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval); err != nil {
+	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval, false); err != nil {
 		return err
 	}
 	digest, err := domain.NewSHA256Digest(doc.CacheDigest)

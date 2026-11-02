@@ -81,7 +81,7 @@ B00–B07/S01–S09와 이번에 요청한 자동 용량 관리·시험 정리·
 | S06 | 이전/새 버전 위험 변화 | NO | NO | NO | NO | update 원본/ownership guard 있음; 인증된 두 inventory의 보안 diff |
 | S07 | 일반 package 공급자 증명 | NO | NO | NO | NO | digest 및 일부 전용 서명 검증 있음; 일반 배포물 증명 discovery/검증 |
 | S08 | 동적 실행 전후 상태 변화 | NO | NO | NO | NO | observer summary/mount census 있음; 파일·권한 변화 및 관찰 한계 |
-| S09 | 요청별 필수 검사 완전성 | NO | NO | NO | NO | 전달된 Required 실패는 거부; 아예 누락된 required unit 검출 |
+| S09 | 요청별 필수 검사 완전성 | YES | YES | NO | NO | 독립 선언/profile·actual·증거/결과 연결 로컬 후보; 공용 묶음 qualification OPEN |
 | C01 | 제품 자동 정리·유한 보존 | NO | NO | NO | NO | session Close/실패 temp 정리/명시 DeleteRun 있음; 전체 수명·quota·crash 복구 |
 | C02 | 이번 보강 시험 payload 정리 | NO | NO | NO | NO | 기존 시험 정리 방식 재사용; 새 시험별 inventory·회수 증거는 실행 뒤 생성 |
 | C03 | 이번 변경의 잔여 코드 정리 | NO | NO | NO | NO | 기존 checker/좁은 caller 감사 재사용; 대체된 경로의 불용 여부는 구현 뒤 확인 |

@@ -69,3 +69,10 @@ func (i *PNPMExecutionInspector) PreparedLayoutFor(resolution domain.DependencyR
 	}
 	return i.shared.prepared, nil
 }
+
+func (i *PNPMExecutionInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.shared == nil {
+		return nil, errors.New("execution declaration is unavailable")
+	}
+	return i.shared.ExpectedChecks(ctx, a, kind)
+}

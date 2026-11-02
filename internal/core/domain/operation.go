@@ -57,6 +57,7 @@ type OperationResultData struct {
 	RunID            RunID
 	RunOutcome       RunOutcome
 	Checks           []CheckExecution
+	CheckPlan        CheckPlan
 	Evidence         []EvidenceReference
 	PolicyDecision   PolicyDecision
 	OperationalError OperationError
@@ -72,6 +73,7 @@ type OperationResult struct {
 	runID            RunID
 	runOutcome       RunOutcome
 	checks           []CheckExecution
+	plan             CheckPlan
 	evidence         []EvidenceReference
 	decision         PolicyDecision
 	operationalError OperationError
@@ -106,11 +108,21 @@ func NewInspectOperationResult(data OperationResultData) (OperationResult, error
 			return OperationResult{}, errors.New("run outcome cannot exist without a Run ID")
 		}
 	}
+	if data.CheckPlan.Valid() {
+		if data.CheckPlan.run != data.RunID || data.CheckPlan.identity != data.ResolvedIdentity || data.CheckPlan.digest != data.Digest {
+			return OperationResult{}, errors.New("result declaration belongs to another Run or subject")
+		}
+		if data.Status == OperationCompleted {
+			if err := data.CheckPlan.Validate(data.RunID, AcquiredArtifact{identity: data.ResolvedIdentity, digest: data.Digest}, data.Checks); err != nil {
+				return OperationResult{}, err
+			}
+		}
+	}
 	return OperationResult{
 		operationID: data.OperationID, status: data.Status, reference: data.Reference,
 		resolvedIdentity: data.ResolvedIdentity, digest: data.Digest,
 		runID: data.RunID, runOutcome: data.RunOutcome,
-		checks: append([]CheckExecution(nil), data.Checks...), evidence: append([]EvidenceReference(nil), data.Evidence...),
+		plan: data.CheckPlan, checks: append([]CheckExecution(nil), data.Checks...), evidence: append([]EvidenceReference(nil), data.Evidence...),
 		decision: data.PolicyDecision, operationalError: data.OperationalError,
 	}, nil
 }
@@ -119,7 +131,9 @@ func (r OperationResult) OperationID() OperationID     { return r.operationID }
 func (r OperationResult) Operation() OperationType     { return OperationInspect }
 func (r OperationResult) Status() OperationStatus      { return r.status }
 func (r OperationResult) Reference() ArtifactReference { return r.reference }
-func (r OperationResult) Checks() []CheckExecution     { return append([]CheckExecution(nil), r.checks...) }
+func (r OperationResult) CheckPlan() CheckPlan         { return r.plan }
+
+func (r OperationResult) Checks() []CheckExecution { return append([]CheckExecution(nil), r.checks...) }
 func (r OperationResult) Evidence() []EvidenceReference {
 	return append([]EvidenceReference(nil), r.evidence...)
 }
@@ -144,10 +158,11 @@ type PolicyInput struct {
 	verification VerificationReport
 	inspection   InspectionReport
 	evidence     []EvidenceReference
+	plan         CheckPlan
 }
 
 // NewPolicyInput validates a complete normalized check set for one exact subject.
-func NewPolicyInput(runID RunID, artifact AcquiredArtifact, verification VerificationReport, inspection InspectionReport, evidence []EvidenceReference) (PolicyInput, error) {
+func NewPolicyInput(runID RunID, artifact AcquiredArtifact, verification VerificationReport, inspection InspectionReport, evidence []EvidenceReference, plans ...CheckPlan) (PolicyInput, error) {
 	if runID.value == "" || artifact.identity.source.value == "" {
 		return PolicyInput{}, errors.New("policy input requires Run ID and acquired Artifact")
 	}
@@ -157,6 +172,18 @@ func NewPolicyInput(runID RunID, artifact AcquiredArtifact, verification Verific
 	if len(evidence) == 0 {
 		return PolicyInput{}, errors.New("policy input requires recorded Evidence references")
 	}
+	if len(plans) > 1 {
+		return PolicyInput{}, errors.New("policy input requires at most one frozen check plan")
+	}
+	var plan CheckPlan
+	if len(plans) == 1 {
+		plan = plans[0]
+		checks := append([]CheckExecution{verification.Execution()}, inspection.Executions()...)
+		if err := plan.Validate(runID, artifact, checks); err != nil {
+			return PolicyInput{}, err
+		}
+	}
+
 	reportEvidence := append(verification.Evidence(), inspection.Evidence()...)
 	wantEvidence := make(map[EvidenceID]bool, len(reportEvidence))
 	for _, item := range reportEvidence {
@@ -175,8 +202,10 @@ func NewPolicyInput(runID RunID, artifact AcquiredArtifact, verification Verific
 		}
 		seenReferences[reference.id] = true
 	}
-	return PolicyInput{runID: runID, artifact: artifact, verification: verification, inspection: inspection, evidence: append([]EvidenceReference(nil), evidence...)}, nil
+	return PolicyInput{runID: runID, artifact: artifact, verification: verification, inspection: inspection, evidence: append([]EvidenceReference(nil), evidence...), plan: plan}, nil
 }
+
+func (i PolicyInput) CheckPlan() CheckPlan { return i.plan }
 
 func (i PolicyInput) RunID() RunID                     { return i.runID }
 func (i PolicyInput) Artifact() AcquiredArtifact       { return i.artifact }

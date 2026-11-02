@@ -37,3 +37,22 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 	}
 	return domain.NewCompositeInspectionReport(reports)
 }
+
+func (i *CompositeInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || len(i.inspectors) == 0 || kind != domain.CheckInspection {
+		return nil, errors.New("npm inspection declaration is unavailable")
+	}
+	var result []domain.CheckRequirement
+	for _, inspector := range i.inspectors {
+		planner, ok := inspector.(ports.CheckPlanner)
+		if !ok {
+			return nil, errors.New("npm child check declaration is unavailable")
+		}
+		checks, err := planner.ExpectedChecks(ctx, artifact, kind)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, checks...)
+	}
+	return result, nil
+}

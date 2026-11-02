@@ -65,3 +65,10 @@ func (i *ReleaseManifestInspector) Inspect(ctx context.Context, artifact domain.
 func (i *ReleaseManifestInspector) invalid(artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	return i.static.report(artifact, "release-manifest-schema", "Official release manifest schema or fixed role bindings are invalid.", "SELF_UPDATE_MANIFEST_INVALID")
 }
+
+func (i *ReleaseManifestInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil {
+		return nil, errors.New("release manifest declaration is unavailable")
+	}
+	return i.static.ExpectedChecks(ctx, a, kind)
+}

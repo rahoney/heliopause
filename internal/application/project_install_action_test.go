@@ -27,7 +27,7 @@ func (p *archiveActionPorts) Inspect(_ context.Context, artifact domain.Acquired
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", fixtureCheckProfile())
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -122,4 +122,13 @@ func TestProjectInspectionRetainsArchiveActionThroughSingleAndBatch(t *testing.T
 			}
 		}
 	}
+}
+
+func (p *archiveActionPorts) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if kind == domain.CheckVerification {
+		return p.multiInspectionPorts.ExpectedChecks(ctx, a, kind)
+	}
+	id, _ := domain.NewCheckID("npm-static-archive")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, fixtureCheckProfile())
+	return []domain.CheckRequirement{requirement}, err
 }

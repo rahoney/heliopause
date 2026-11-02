@@ -18,8 +18,8 @@ import (
 
 // NewRecordedGitHubReleasePromotion extends the existing publisher with an
 // independent ownership record. Its old constructor remains strictly new-only.
-func NewRecordedGitHubReleasePromotion(staging, evidence, state string, reader ProjectEvidenceReader) (*GitHubReleasePromotion, error) {
-	if reader == nil || !separateRoots([]string{staging, evidence, state}) {
+func NewRecordedGitHubReleasePromotion(staging, evidence, state string, reader ProjectEvidenceReader, policyVersion uint64) (*GitHubReleasePromotion, error) {
+	if reader == nil || policyVersion == 0 || !separateRoots([]string{staging, evidence, state}) {
 		return nil, errors.New("GitHub ownership requires separate staging/Evidence/state roots")
 	}
 	for _, path := range []string{staging, evidence, state} {
@@ -32,6 +32,7 @@ func NewRecordedGitHubReleasePromotion(staging, evidence, state string, reader P
 		return nil, err
 	}
 	p.stateRoot, p.evidenceRoot, p.evidence = state, evidence, reader
+	p.policyVersion = policyVersion
 	return p, nil
 }
 

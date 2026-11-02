@@ -79,7 +79,19 @@ func TestInspectionPrerequisiteKeepsRequestedGraphAndBaseFailure(t *testing.T) {
 					refs = append(refs, ref)
 				}
 				run, _ := domain.NewRunID()
-				policyInput, err := domain.NewPolicyInput(run, rootArtifact, verified, rootReport, refs)
+				declaredVerification, err := (verificationpypi.IntegrityVerifier{}).ExpectedChecks(ctx, rootArtifact, domain.CheckVerification)
+				if err != nil {
+					t.Fatal(err)
+				}
+				declaredInspection, err := inspector.ExpectedChecks(ctx, rootArtifact, domain.CheckInspection)
+				if err != nil {
+					t.Fatal(err)
+				}
+				plan, err := domain.NewCheckPlan(run, rootArtifact, append(declaredVerification, declaredInspection...))
+				if err != nil {
+					t.Fatal(err)
+				}
+				policyInput, err := domain.NewPolicyInput(run, rootArtifact, verified, rootReport, refs, plan)
 				if err != nil {
 					t.Fatal(err)
 				}

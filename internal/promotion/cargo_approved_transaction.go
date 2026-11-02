@@ -232,7 +232,7 @@ func (g *approvedCargoProjectGuard) verifyRetainedApprovalWithChangedInputs(ctx 
 	if !rootManifest {
 		return errors.New("cargo retained root manifest binding is invalid")
 	}
-	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval); err != nil {
+	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval, false); err != nil {
 		return err
 	}
 	digest, err := domain.NewSHA256Digest(doc.CacheDigest)

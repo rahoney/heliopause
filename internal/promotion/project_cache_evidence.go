@@ -15,6 +15,17 @@ func projectCacheEvidence(ctx context.Context, reader ProjectEvidenceReader, ins
 }
 
 func projectCacheEvidenceFacts(ctx context.Context, reader ProjectEvidenceReader, inspection domain.DependencyInspection) ([]goCacheEvidence, []domain.Evidence, error) {
+	plan := inspection.CheckPlan()
+	if !plan.Valid() {
+		return nil, nil, errors.New("project cache approval requires its frozen check declaration")
+	}
+	if err := plan.Validate(inspection.RunID(), inspection.Artifact(), inspection.Checks()); err != nil {
+		return nil, nil, err
+	}
+	checks := make(map[domain.CheckID]domain.CheckExecution)
+	for _, check := range inspection.Checks() {
+		checks[check.ID()] = check
+	}
 	var facts []domain.Evidence
 	var records []goCacheEvidence
 	covered := map[domain.CheckID]bool{}
@@ -23,6 +34,10 @@ func projectCacheEvidenceFacts(ctx context.Context, reader ProjectEvidenceReader
 		item, digest, err := reader.ReadReference(ctx, inspection.RunID(), ref, artifact.Identity(), artifact.Digest())
 		if err != nil {
 			return nil, nil, err
+		}
+		check, known := checks[item.CheckID()]
+		if !known || item.ProfileDigest().String() == "" || item.ProfileDigest() != check.ProfileDigest() {
+			return nil, nil, errors.New("project cache Evidence is legacy or differs from its declared check profile")
 		}
 		covered[item.CheckID()] = true
 		facts = append(facts, item)

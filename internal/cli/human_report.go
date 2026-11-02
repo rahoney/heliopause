@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -23,6 +24,7 @@ func (p *presentation) renderResult(result domain.OperationResult) error {
 	if identity, ok := result.ResolvedIdentity(); ok {
 		p.line("%s  %s@%s (%s)", p.text("Resolved:", "확정 버전:"), safeTerminal(identity.Name()), safeTerminal(identity.Version()), safeTerminal(identity.Variant()))
 	}
+	p.renderCheckPlan(result.CheckPlan(), result.Checks())
 	p.renderChecks(result.Checks())
 	if hasPolicy {
 		p.renderReasons(decision.Reasons())
@@ -64,9 +66,11 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 			checks = append(checks, item.Checks()...)
 			if index < 8 {
 				p.line("Run: %s", item.RunID().String())
+				p.renderCheckPlan(item.CheckPlan(), item.Checks())
 			}
 		}
 	}
+	p.renderInspectionFailure(operationErr)
 	p.renderChecks(checks)
 	p.renderReasons(decision.Reasons())
 	for index, item := range inspection.DependencyPolicyDiagnostics() {
@@ -174,7 +178,7 @@ func (p *presentation) renderChecks(checks []domain.CheckExecution) {
 	grouped := map[string]row{}
 	for _, check := range checks {
 		limitation, _ := check.LimitationCode()
-		key := fmt.Sprintf("%s\x00%s\x00%s\x00%t\x00%s", check.ID(), check.Status(), check.Capability(), check.Required(), limitation)
+		key := fmt.Sprintf("%s\x00%s\x00%s\x00%t\x00%s\x00%s\x00%s", check.ID(), check.Status(), check.Capability(), check.Required(), limitation, check.Kind(), check.ProfileDigest())
 		item := grouped[key]
 		item.check = check
 		item.count++
@@ -204,6 +208,9 @@ func (p *presentation) renderChecks(checks []domain.CheckExecution) {
 			required = p.text("required", "필수")
 		}
 		p.line("  %s %s — %s / %s [%s] ×%d", p.paint(marker, color), p.checkName(check.ID().String()), p.stateLabel(string(check.Status())), p.stateLabel(string(check.Capability())), required, item.count)
+		if p.verbose && check.ProfileDigest().String() != "" {
+			p.line("    Profile SHA256: %s", check.ProfileDigest().String())
+		}
 		if limitation, ok := check.LimitationCode(); ok {
 			p.line("    %s %s", p.text("Limitation:", "검사 한계:"), safeTerminal(limitation))
 		}
@@ -367,4 +374,52 @@ func (p *presentation) renderProjectSummary(source, kind string, count int, dige
 	p.line("│ %s: %s", p.text("Control digest", "입력·제어 파일 해시"), safeTerminal(digest))
 	p.line("╰────────────────────────────────────────")
 	return p.writeErr
+}
+
+func (p *presentation) renderCheckPlan(plan domain.CheckPlan, checks []domain.CheckExecution) {
+	if !plan.Valid() {
+		p.line("%s", p.text("Check scope: declaration unavailable", "검사 범위: 선언 확인 불가"))
+		return
+	}
+	required, optional := 0, 0
+	seen := make(map[domain.CheckID]bool, len(checks))
+	for _, check := range checks {
+		seen[check.ID()] = true
+	}
+	for _, requirement := range plan.Requirements() {
+		if requirement.Required() {
+			required++
+		} else {
+			optional++
+		}
+		if requirement.Required() && !seen[requirement.ID()] {
+			p.line("  ! %s — %s", p.checkName(requirement.ID().String()), p.text("required result missing", "필수 검사 결과 누락"))
+		}
+		if p.verbose {
+			p.line("Declared: %s %s required=%t profile=%s", requirement.ID(), requirement.Kind(), requirement.Required(), requirement.ProfileDigest())
+		}
+	}
+	p.line("%s %d / %s %d / %s %d", p.text("Declared required:", "선언된 필수 검사:"), required, p.text("optional:", "선택:"), optional, p.text("actual:", "실제 결과:"), len(checks))
+}
+
+func (p *presentation) renderInspectionFailure(cause error) {
+	var failure *application.InspectionFailure
+	if !errors.As(cause, &failure) {
+		return
+	}
+	results := failure.Results()
+	for index, result := range results {
+		if index >= 8 {
+			p.line("… %s: %d", p.text("Further run results in JSON", "추가 Run 결과는 JSON 참조"), len(results)-index)
+			break
+		}
+		if identity, ok := result.ResolvedIdentity(); ok {
+			p.line("%s %s@%s", p.text("Partial inspection:", "중단 시점 검사:"), safeTerminal(identity.Name()), safeTerminal(identity.Version()))
+		}
+		if run, ok := result.RunID(); ok {
+			p.line("Run: %s", run.String())
+		}
+		p.renderCheckPlan(result.CheckPlan(), result.Checks())
+		p.renderChecks(result.Checks())
+	}
 }

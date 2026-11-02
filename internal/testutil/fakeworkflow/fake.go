@@ -176,7 +176,7 @@ func (p *Ports) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (
 	return domain.NewInspectionReport(execution, findings, []domain.Evidence{evidence})
 }
 
-func (p *Ports) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *Ports) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	p.record("evidence")
 	if err := validContext(ctx); err != nil {
 		return nil, err

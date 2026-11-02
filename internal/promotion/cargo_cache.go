@@ -267,7 +267,7 @@ func (c *CargoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain
 }
 
 func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected cargoCacheDocument) (string, error) {
-	if err := c.verifyRecordedApproval(ctx, expected); err != nil {
+	if err := c.verifyRecordedApproval(ctx, expected, true); err != nil {
 		return "", err
 	}
 	id, ok := strings.CutPrefix(handle, "project-cache:")
@@ -329,7 +329,7 @@ func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, di
 	return filepath.Join(root, "vendor"), nil
 }
 
-func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument) error {
+func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument, requireProfiles bool) error {
 	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("cargo retained approval coverage is invalid")
 	}
@@ -361,8 +361,8 @@ func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc car
 			if err != nil {
 				return err
 			}
-			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if err != nil || hash.String() != record.SHA256 {
+			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != record.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("cargo retained Evidence is changed or unavailable")
 			}
 		}

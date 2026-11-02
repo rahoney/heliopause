@@ -85,40 +85,44 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err := run.BindAcquiredArtifact(artifact); err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "ARTIFACT_BINDING_FAILED", "Acquired Artifact binding failed.", fmt.Errorf("bind acquired Artifact: %w", err))
 	}
+	plans, err := freezeCheckPlan(ctx, runID, artifact, s.verification, s.inspection, s.policy)
+	if err != nil {
+		return failRun(run, request.reference, artifact, nil, nil, "CHECK_PLAN_UNAVAILABLE", "Required check declaration is unavailable.", err, plans...)
+	}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, artifact)
 	if err != nil {
-		return failRun(run, request.reference, artifact, nil, nil, "VERIFICATION_PROVIDER_FAILED", "Artifact verification failed operationally.", fmt.Errorf("verify Artifact: %w", err))
+		return failRun(run, request.reference, artifact, nil, nil, "VERIFICATION_PROVIDER_FAILED", "Artifact verification failed operationally.", fmt.Errorf("verify Artifact: %w", err), plans...)
 	}
 	checks := []domain.CheckExecution{verification.Execution()}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
-		return failRun(run, request.reference, artifact, checks, nil, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", fmt.Errorf("inspect Artifact: %w", err))
+		return failRun(run, request.reference, artifact, checks, nil, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", fmt.Errorf("inspect Artifact: %w", err), plans...)
 	}
 	checks = append(checks, inspection.Executions()...)
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
 	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
-	references, err := s.evidence.Record(ctx, runID, evidence)
+	references, err := s.evidence.Record(ctx, runID, evidence, checks...)
 	if err != nil {
-		return failRun(run, request.reference, artifact, checks, nil, "EVIDENCE_RECORD_FAILED", "Evidence recording failed.", fmt.Errorf("record Evidence: %w", err))
+		return failRun(run, request.reference, artifact, checks, nil, "EVIDENCE_RECORD_FAILED", "Evidence recording failed.", fmt.Errorf("record Evidence: %w", err), plans...)
 	}
-	policyInput, err := domain.NewPolicyInput(runID, artifact, verification, inspection, references)
+	policyInput, err := domain.NewPolicyInput(runID, artifact, verification, inspection, references, plans...)
 	if err != nil {
-		return failRun(run, request.reference, artifact, checks, references, "POLICY_INPUT_INVALID", "Policy input construction failed.", fmt.Errorf("construct Policy input: %w", err))
+		return failRun(run, request.reference, artifact, checks, references, "POLICY_INPUT_INVALID", "Policy input construction failed.", fmt.Errorf("construct Policy input: %w", err), plans...)
 	}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.policy.Evaluate(policyInput)
 	if err != nil {
-		return failRun(run, request.reference, artifact, checks, references, "POLICY_EVALUATION_FAILED", "Policy evaluation failed operationally.", fmt.Errorf("evaluate Policy: %w", err))
+		return failRun(run, request.reference, artifact, checks, references, "POLICY_EVALUATION_FAILED", "Policy evaluation failed operationally.", fmt.Errorf("evaluate Policy: %w", err), plans...)
 	}
 	if err := run.FinalizeCompleted(decision); err != nil {
-		return failRun(run, request.reference, artifact, checks, references, "RUN_FINALIZATION_FAILED", "Inspection Run finalization failed.", fmt.Errorf("finalize Inspection Run: %w", err))
+		return failRun(run, request.reference, artifact, checks, references, "RUN_FINALIZATION_FAILED", "Inspection Run finalization failed.", fmt.Errorf("finalize Inspection Run: %w", err), plans...)
 	}
 	return domain.NewInspectOperationResult(domain.OperationResultData{
 		OperationID: operationID, Status: domain.OperationCompleted, Reference: request.reference,
 		ResolvedIdentity: identity, Digest: artifact.Digest(), RunID: runID, RunOutcome: domain.RunCompleted,
-		Checks: checks, Evidence: references, PolicyDecision: decision,
+		Checks: checks, CheckPlan: policyInput.CheckPlan(), Evidence: references, PolicyDecision: decision,
 	})
 }
 
@@ -134,7 +138,7 @@ func failedBeforeRun(operationID domain.OperationID, reference domain.ArtifactRe
 	return result, cause
 }
 
-func failRun(run *domain.InspectionRun, reference domain.ArtifactReference, artifact domain.AcquiredArtifact, checks []domain.CheckExecution, references []domain.EvidenceReference, code, message string, cause error) (domain.OperationResult, error) {
+func failRun(run *domain.InspectionRun, reference domain.ArtifactReference, artifact domain.AcquiredArtifact, checks []domain.CheckExecution, references []domain.EvidenceReference, code, message string, cause error, plans ...domain.CheckPlan) (domain.OperationResult, error) {
 	if err := run.FinalizeFailed(code); err != nil {
 		return domain.OperationResult{}, errors.Join(cause, fmt.Errorf("finalize failed Inspection Run: %w", err))
 	}
@@ -147,6 +151,9 @@ func failRun(run *domain.InspectionRun, reference domain.ArtifactReference, arti
 		ResolvedIdentity: run.Identity(), RunID: run.ID(), RunOutcome: domain.RunFailed,
 		Checks: checks, Evidence: references, OperationalError: operationError,
 	}
+	if len(plans) == 1 {
+		data.CheckPlan = plans[0]
+	}
 	if artifact.Digest().String() != "" {
 		data.Digest = artifact.Digest()
 	}
@@ -155,4 +162,35 @@ func failRun(run *domain.InspectionRun, reference domain.ArtifactReference, arti
 		return domain.OperationResult{}, errors.Join(cause, err)
 	}
 	return result, cause
+}
+
+// Only legacy policies that do not claim current M3 coverage can omit a plan.
+// Every configured current provider declares before any check executes.
+func freezeCheckPlan(ctx context.Context, run domain.RunID, artifact domain.AcquiredArtifact, verification, inspection any, policy Policy) ([]domain.CheckPlan, error) {
+	required, ok := policy.(interface{ RequiresCheckPlan() bool })
+	if !ok || !required.RequiresCheckPlan() {
+		return nil, nil
+	}
+	verifier, ok := verification.(ports.CheckPlanner)
+	if !ok {
+		return nil, errors.New("verification check declaration is unavailable")
+	}
+	inspector, ok := inspection.(ports.CheckPlanner)
+	if !ok {
+		return nil, errors.New("inspection check declaration is unavailable")
+	}
+	checks, err := verifier.ExpectedChecks(ctx, artifact, domain.CheckVerification)
+	if err != nil {
+		return nil, err
+	}
+	inspections, err := inspector.ExpectedChecks(ctx, artifact, domain.CheckInspection)
+	if err != nil {
+		return nil, err
+	}
+	checks = append(append([]domain.CheckRequirement(nil), checks...), inspections...)
+	plan, err := domain.NewCheckPlan(run, artifact, checks)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckPlan{plan}, nil
 }

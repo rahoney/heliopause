@@ -78,3 +78,25 @@ func hexDigest(value []byte) string {
 	}
 	return string(result)
 }
+
+func TestDerivedWheelStaticResultRemainsAvailableToDynamicPhase(t *testing.T) {
+	inspector, original, directory := consoleIntakeFixture(t)
+	for _, pair := range [][2]string{{"wheel.whl", "derived.whl"}, {"filename", "derived-filename"}} {
+		if err := os.Rename(filepath.Join(directory, pair[0]), filepath.Join(directory, pair[1])); err != nil {
+			t.Fatal(err)
+		}
+	}
+	identity, err := domain.NewResolvedArtifactIdentity(original.Identity().Source(), original.Identity().Name(), original.Identity().Version(), "derived-wheel")
+	if err != nil {
+		t.Fatal(err)
+	}
+	declared, _ := original.DeclaredIntegrity()
+	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, original.Digest(), strings.TrimSuffix(original.ContentHandle(), ":wheel")+":derived-wheel", original.SizeBytes(), declared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheel, report, err := inspector.InspectWheel(context.Background(), artifact)
+	if err != nil || len(report.Findings()) != 0 || wheel.Project != identity.Name() || len(wheel.ImportNames) == 0 {
+		t.Fatalf("derived wheel static result lost: %q %v", wheel.Project, err)
+	}
+}

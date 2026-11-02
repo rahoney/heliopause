@@ -352,7 +352,7 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		if err != nil {
 			t.Fatal(err)
 		}
-		check, err := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, err := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -374,11 +374,11 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		}
 		items = append(items, item)
 	}
-	refs, err := store.Record(context.Background(), run, items)
+	refs, err := store.Record(context.Background(), run, items, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
-	i, err := domain.NewDependencyInspection(node, run, a, checks, refs, decision)
+	i, err := domain.NewDependencyInspection(node, run, a, checks, refs, decision, cacheFixturePlan(t, run, a, []string{"fixture-verification", "fixture-inspection"}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -408,4 +408,33 @@ func canonicalGoTestRoot(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return root
+}
+
+func cacheFixtureProfile() domain.ContentDigest {
+	profile, _ := domain.CheckProfileDigest("cache-consumer-fixture-v1", "")
+	return profile
+}
+func cacheFixturePlan(t *testing.T, run domain.RunID, a domain.AcquiredArtifact, names []string) domain.CheckPlan {
+	t.Helper()
+	var requirements []domain.CheckRequirement
+	for index, name := range names {
+		id, err := domain.NewCheckID(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		kind := domain.CheckInspection
+		if index == 0 {
+			kind = domain.CheckVerification
+		}
+		requirement, err := domain.NewCheckRequirement(id, kind, true, cacheFixtureProfile())
+		if err != nil {
+			t.Fatal(err)
+		}
+		requirements = append(requirements, requirement)
+	}
+	plan, err := domain.NewCheckPlan(run, a, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return plan
 }

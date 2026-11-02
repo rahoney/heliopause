@@ -69,7 +69,7 @@ func pipxRuntimeIncomplete(code string) (domain.InspectionReport, error) {
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	check, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, code)
+	check, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, code, githubDynamicProfile(pipxRuntimeCheck))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -143,4 +143,13 @@ func pipxRuntimeReport(artifact domain.AcquiredArtifact, units []artifactpypi.Pl
 		evidenceItems = append(evidenceItems, evidence)
 	}
 	return domain.NewInspectionReport(report.Execution(), report.Findings(), evidenceItems)
+}
+
+func (i *PipxRuntimeInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || a.Identity().Source().String() != "github-release" || a.Identity().Variant() != "pipx-runtime-linux-amd64.zip" {
+		return nil, errors.New("pipx runtime declaration is invalid")
+	}
+	id, _ := domain.NewCheckID(pipxRuntimeCheck)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, githubDynamicProfile(pipxRuntimeCheck))
+	return []domain.CheckRequirement{requirement}, err
 }

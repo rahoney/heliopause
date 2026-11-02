@@ -19,20 +19,26 @@ type NPMProjectInstanceExecutor interface {
 // NPMProjectInspector retains the exact whole native selection throughout
 // static-all, materialization and independently observed logical instances.
 type NPMProjectInspector struct {
-	frozen   artifactnpm.NPMProjectInspectionContext
-	static   *Inspector
-	prepare  NPMProjectInspectionPreparer
-	execute  NPMProjectInstanceExecutor
-	mu       sync.Mutex
-	active   bool
-	prepared artifactnpm.NPMProjectInspectionLayout
+	expectedInstances map[string][]string
+	frozen            artifactnpm.NPMProjectInspectionContext
+	static            *Inspector
+	prepare           NPMProjectInspectionPreparer
+	execute           NPMProjectInstanceExecutor
+	mu                sync.Mutex
+	active            bool
+	prepared          artifactnpm.NPMProjectInspectionLayout
 }
 
 func NewNPMProjectInspector(frozen artifactnpm.NPMProjectInspectionContext, static *Inspector, prepare NPMProjectInspectionPreparer, execute NPMProjectInstanceExecutor) (*NPMProjectInspector, error) {
 	if !frozen.Valid() || static == nil || prepare == nil || execute == nil {
 		return nil, errors.New("npm project inspection requires exact context and actual consumers")
 	}
-	return &NPMProjectInspector{frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
+	expectedInstances := make(map[string][]string)
+	for _, pkg := range frozen.Lock().Packages() {
+		key := pkg.Name + "\x00" + pkg.Version
+		expectedInstances[key] = append(expectedInstances[key], pkg.Location)
+	}
+	return &NPMProjectInspector{expectedInstances: expectedInstances, frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
 }
 
 func (i *NPMProjectInspector) Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error) {
@@ -119,4 +125,11 @@ func (i *NPMProjectInspector) PreparedLayoutFor(snapshot domain.ProjectDependenc
 		return artifactnpm.NPMProjectInspectionLayout{}, errors.New("npm completed layout differs from current exact input")
 	}
 	return i.prepared, nil
+}
+
+func (i *NPMProjectInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil {
+		return nil, errors.New("project declaration is unavailable")
+	}
+	return npmProjectExpectedChecks(ctx, a, kind, i.static, i.expectedInstances[a.Identity().Name()+"\x00"+a.Identity().Version()], projectInspectionNPM)
 }
