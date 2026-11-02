@@ -26,6 +26,10 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
 
+### 2026-11-02 S01/S08 baseline — IN_PROGRESS
+
+[현재 owner·재사용·수명 대조](./evidence/m13-004-convenience/environment-state-baseline-20261102.md)는 기존 최소 격리/관찰과 실제 모의 환경·파일 내용 diff를 구분한다. S01/S08 네 상태는 모두 NO이며 먼저 owned workspace/readonly keeper와 bounded TAR reader의 작은 DATA 검증을 수행한다. 기존 한도·권한·업데이트 체계를 유지하고 새 helper/framework를 선행 생성하지 않는다. C01 전체 잔여 acceptance와 B01 호환 gap은 계속 OPEN이다.
+
 ### 2026-11-02 C01 foundation — IN_PROGRESS
 
 [Baseline와 현재 부분 구현](./evidence/m13-004-convenience/storage-lifetime-baseline-20261102.md)은 기존 owner를 대조한 뒤 확인된 실패 근거/취소 유실과 공통 Evidence 예약 원장을 보강한다. 원래 기록·게시·Close 경계를 재사용하며 quota가 찼다고 미만료 자료나 알 수 없는 자료를 삭제하지 않는다. C01 전체 자동 정리/유한 저장소 완료와 final qualification은 계속 OPEN이며 새 CI/Host 변경은 없다.
