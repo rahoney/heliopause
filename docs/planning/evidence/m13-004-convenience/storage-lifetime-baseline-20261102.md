@@ -110,3 +110,35 @@ preflight만 실패했다. 다른 package의 성공을 잃거나 실패를 숨�
 
 최종 영향 owner Race3.137s, 고정 표적 Staticcheck4.621s, canonical security12.788s와 Darwin
 amd64 build1.523s는 PASS다. Darwin은 compile-only이며 native 실행 증거가 아니다.
+
+## ecf1202 이후 — intake 등록 IN_PROGRESS
+
+첫 npm 작은 HTTP fixture는 다운로드가 원장 등록보다 앞선 것을0.841s에 재현했다.
+성공 fixture의 Content-Type도 기존 intake 계약에 맞춰 교정했다. 같은 Local의 root/opaque
+key·quota를 intake에 확장하고 생성 owner에서 기존 tarball byte/file bound를 예약한 뒤
+다운로드한다. oversize 판정용1byte까지 예약하며 기존 security limit은 바꾸지 않는다.
+
+Npm writer/실패 정리도 held root를 사용하고 알 수 없는 잔여 member는 보호한다. 실제
+HTTP 성공/실패·기존 npm owner·동일 Run의 intake/Evidence8.138s PASS다. 성공 intake는
+실제 bytes/tree를 seal해 RETAINED로 계상하며 검사/staging 전에 삭제하지 않는다. 이 등록은 마지막 소비/실제 runtime
+종료 증명·자동 수거 완료가 아니다. 다른 생성 owner와 finish/reference 계약을 계속 연결한다.
+
+### 현재 command의 last-use — 부분 연결
+
+Npm intake는 생성 시 IN_USE, 실제 bytes/tree hash 게시 뒤 RETAINED로 계상한다. Application은
+기존 Evidence 기록 경로 한 곳을 재사용해 필수 실제 검사의 완료를 전달한다. Bootstrap의
+최상위 defer는 기존 guard/runtime close 뒤 bounded Finish를 호출하며 명령 실패/검사 미완료는
+보호한다. 재시작한 다른 owner의 항목은 이 메모리상 last-use 사실만으로 수거하지 않는다.
+
+Root identity·seal hash·single-link를 확인한 뒤 DELETING을 durable 게시하고, 각 member의
+identity/content를 제거 직전에 다시 읽고 REMOVED를 기록한다. 전체 inventory만 재사용한
+최초 코드의 post-inventory mutation은0.859s RED였고 leaf 재대조로 교정했다. inode 교체/
+내용 변조/추가 파일/hardlink/재시작 owner는 작은 filesystem 시험에서 보존됐다.
+
+이는 현재 정상 완료 npm 경로의 부분 연결이다. 실패/취소/정책 거부·모든 runtime 자원과
+다른 intake/cache/staging, active shared lease와 crash recovery의 전체 수명은 아직 MISSING이다.
+
+현재 부분 연결의 영향 storage/application/npm Race63.064s, 고정 Staticcheck20.776s,
+기존 bootstrap preflight16.577s, canonical security20.456s와 Darwin compile10.878s는 PASS다.
+[부분 checkpoint](./storage-intake-local-20261102.json)는 실패/교정과 각 source 입력을 구분한다.
+Darwin 실행·전체 C01 및 최종 hosted qualification은 여전히 OPEN이다.

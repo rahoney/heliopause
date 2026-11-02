@@ -108,7 +108,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	checks = append([]domain.CheckExecution{verification.Execution()}, report.Inspection().Executions()...)
 	facts := append(verification.Evidence(), report.Inspection().Evidence()...)
 	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
-	refs, err = s.evidence.Record(ctx, runID, facts, checks...)
+	refs, err = recordInspectionEvidence(ctx, s.evidence, runID, facts, checks...)
 	if err != nil {
 		r, e := failRun(run, reference, inputs.Source(), checks, nil, "EVIDENCE_RECORD_FAILED", "Build Evidence recording failed.", err, plans...)
 		return r, published, e

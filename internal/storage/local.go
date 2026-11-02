@@ -32,18 +32,21 @@ const maxJournalBytes = 16 << 20
 // This foundation accounts Evidence first. It does not claim cache GC or adopt
 // old payloads as owned resources.
 type Local struct {
-	closed                                         bool
-	mu                                             sync.Mutex
-	root, evidence, state                          *os.Root
-	journal                                        *os.File
-	rootInfo, evidenceInfo, stateInfo, journalInfo os.FileInfo
-	path                                           string
-	policy                                         domain.StoragePolicy
-	offset                                         int64
-	entries                                        map[string]resourceRecord
-	charged, runs, pending                         uint64
-	legacyBytes, legacyRuns                        uint64
-	now                                            func() time.Time
+	owned                                                      map[string]bool
+	inspected                                                  map[domain.RunID]bool
+	closed                                                     bool
+	mu                                                         sync.Mutex
+	root, evidence, intake, state                              *os.Root
+	journal                                                    *os.File
+	rootInfo, evidenceInfo, intakeInfo, stateInfo, journalInfo os.FileInfo
+	path                                                       string
+	policy                                                     domain.StoragePolicy
+	offset                                                     int64
+	entries                                                    map[string]resourceRecord
+	charged, runs, pending                                     uint64
+	legacyBytes, legacyRuns, legacyIntake                      uint64
+	evidenceCharged, evidenceRuns                              uint64
+	now                                                        func() time.Time
 }
 
 type fileIdentity struct {
@@ -90,7 +93,7 @@ func NewLocal(ctx context.Context, path string, policy domain.StoragePolicy) (*L
 	if !filepath.IsAbs(path) || filepath.Clean(path) != path || path == "/" || !policy.Valid() {
 		return nil, errors.New("storage requires an absolute owned root and validated policy")
 	}
-	return &Local{path: path, policy: policy, entries: make(map[string]resourceRecord), now: time.Now}, nil
+	return &Local{path: path, policy: policy, entries: make(map[string]resourceRecord), owned: make(map[string]bool), inspected: make(map[domain.RunID]bool), now: time.Now}, nil
 }
 
 // Composition is inert. Only an actual reservation opens the private ledger;
@@ -136,7 +139,7 @@ func (s *Local) open(ctx context.Context) (resultErr error) {
 	if err != nil || !ownedDirectory(s.rootInfo) {
 		return errors.New("storage root is not owned and private")
 	}
-	for _, name := range []string{"evidence", ".storage"} {
+	for _, name := range []string{"evidence", "intake", ".storage"} {
 		if err := root.Mkdir(name, 0700); err != nil && !errors.Is(err, os.ErrExist) {
 			return err
 		}
@@ -150,6 +153,14 @@ func (s *Local) open(ctx context.Context) (resultErr error) {
 		return err
 	}
 	s.evidenceInfo, err = s.evidence.Stat(".")
+	if err != nil {
+		return err
+	}
+	s.intake, err = root.OpenRoot("intake")
+	if err != nil {
+		return err
+	}
+	s.intakeInfo, err = s.intake.Stat(".")
 	if err != nil {
 		return err
 	}
@@ -172,12 +183,19 @@ func (s *Local) open(ctx context.Context) (resultErr error) {
 	if s.journalInfo.Sys().(*syscall.Stat_t).Dev != s.evidenceInfo.Sys().(*syscall.Stat_t).Dev {
 		return errors.New("evidence and its reservation ledger must share a filesystem")
 	}
+	if s.journalInfo.Sys().(*syscall.Stat_t).Dev != s.intakeInfo.Sys().(*syscall.Stat_t).Dev {
+		return errors.New("intake and its reservation ledger must share a filesystem")
+	}
 	if err := errors.Join(s.journal.Sync(), syncRoot(s.state), syncRoot(s.root)); err != nil {
 		return err
 	}
 	if err := s.locked(inventoryContext, func() error {
 		var inventoryErr error
 		s.legacyBytes, s.legacyRuns, inventoryErr = s.legacyEvidenceUsage(inventoryContext)
+		if inventoryErr != nil {
+			return inventoryErr
+		}
+		s.legacyIntake, inventoryErr = s.legacyIntakeUsage(inventoryContext)
 		return inventoryErr
 	}); err != nil {
 		return err
@@ -206,6 +224,10 @@ func (s *Local) closeDescriptors() error {
 	if s.evidence != nil {
 		errs = append(errs, s.evidence.Close())
 		s.evidence = nil
+	}
+	if s.intake != nil {
+		errs = append(errs, s.intake.Close())
+		s.intake = nil
 	}
 	if s.state != nil {
 		errs = append(errs, s.state.Close())
@@ -244,6 +266,10 @@ func (s *Local) locked(ctx context.Context, work func() error) (resultErr error)
 	current, err = s.root.Lstat("evidence")
 	if err != nil || !privateDirectory(current) || !os.SameFile(current, s.evidenceInfo) {
 		return errors.New("evidence root changed")
+	}
+	current, err = s.root.Lstat("intake")
+	if err != nil || !privateDirectory(current) || !os.SameFile(current, s.intakeInfo) {
+		return errors.New("intake root changed")
 	}
 	current, err = s.root.Lstat(".storage")
 	if err != nil || !privateDirectory(current) || !os.SameFile(current, s.stateInfo) {
@@ -295,7 +321,7 @@ func (s *Local) refresh() error {
 
 func (s *Local) validate(event journalEvent) error {
 	r := event.Resource
-	if r.Schema != "helox.storage/v1" || r.Kind != "evidence" || r.Target != r.Run || !plainHandle(r.Temporary) || r.Temporary == r.Target || r.ReservedBytes == 0 || r.ReservedBytes > math.MaxInt64 || r.ReservedFiles == 0 || r.Created <= 0 || r.Expiry <= r.Created || r.Identity.UID != uint32(os.Geteuid()) || r.Identity.Inode == 0 {
+	if r.Schema != "helox.storage/v1" || !validResourceHandles(r.Kind, r.Temporary, r.Target, r.Run) || r.ReservedBytes == 0 || r.ReservedBytes > math.MaxInt64 || r.ReservedFiles == 0 || r.Created <= 0 || r.Expiry < r.Created || (r.Kind == "evidence" && r.Expiry == r.Created) || r.Identity.UID != uint32(os.Geteuid()) || r.Identity.Inode == 0 {
 		return errors.New("storage resource event does not match the active policy or trusted handle contract")
 	}
 	if _, err := domain.NewSHA256Digest(r.Policy); err != nil {
@@ -307,7 +333,7 @@ func (s *Local) validate(event journalEvent) error {
 	if _, err := domain.ParseRunID(r.Run); err != nil {
 		return err
 	}
-	before, exists := s.entries[r.Run]
+	before, exists := s.entries[resourceKey(r.Kind, r.Run)]
 	switch event.Action {
 	case "reserve":
 		if exists || r.Phase != "IN_USE" || r.LogicalBytes != 0 || r.Content != "" || s.charged > math.MaxUint64-r.ReservedBytes {
@@ -322,6 +348,14 @@ func (s *Local) validate(event journalEvent) error {
 			return err
 		}
 
+	case "deleting":
+		if !exists || r.Kind != "intake" || before.Phase != "RETAINED" || r.Phase != "DELETING" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
+			return errors.New("invalid intake deletion transition")
+		}
+	case "removed":
+		if !exists || r.Kind != "intake" || before.Phase != "DELETING" || r.Phase != "REMOVED" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
+			return errors.New("invalid intake removal completion")
+		}
 	case "abort":
 		if !exists || before != r || before.Phase != "IN_USE" {
 			return errors.New("invalid storage reservation release")
@@ -340,20 +374,38 @@ func (s *Local) apply(event journalEvent) error {
 	r := event.Resource
 	switch event.Action {
 	case "reserve":
+		if r.Kind == "evidence" {
+			s.evidenceCharged += r.ReservedBytes
+			s.evidenceRuns++
+		}
 		s.pending += r.ReservedBytes
 		s.charged += r.ReservedBytes
 		s.runs++
-		s.entries[r.Run] = r
+		s.entries[resourceKey(r.Kind, r.Run)] = r
 	case "commit":
+		if r.Kind == "evidence" {
+			s.evidenceCharged -= r.ReservedBytes
+			s.evidenceCharged += r.LogicalBytes
+		}
 		s.pending -= r.ReservedBytes
 		s.charged -= r.ReservedBytes
 		s.charged += r.LogicalBytes
-		s.entries[r.Run] = r
+		s.entries[resourceKey(r.Kind, r.Run)] = r
+	case "deleting":
+		s.entries[resourceKey(r.Kind, r.Run)] = r
+	case "removed":
+		s.charged -= r.LogicalBytes
+		s.runs--
+		delete(s.entries, resourceKey(r.Kind, r.Run))
 	case "abort":
+		if r.Kind == "evidence" {
+			s.evidenceCharged -= r.ReservedBytes
+			s.evidenceRuns--
+		}
 		s.pending -= r.ReservedBytes
 		s.charged -= r.ReservedBytes
 		s.runs--
-		delete(s.entries, r.Run)
+		delete(s.entries, resourceKey(r.Kind, r.Run))
 	}
 	return nil
 }
@@ -392,8 +444,8 @@ func (s *Local) append(event journalEvent) error {
 }
 
 func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (lease ports.StorageLease, resultErr error) {
-	if request.Kind != "evidence" || request.Operation.String() == "" || request.Run.String() == "" || request.Target != request.Run.String() || !plainHandle(request.Temporary) || request.Temporary == request.Target || request.Bytes == 0 || request.Files == 0 || request.Files > 1<<20 {
-		return nil, errors.New("invalid Evidence storage reservation")
+	if !validResourceHandles(request.Kind, request.Temporary, request.Target, request.Run.String()) || request.Operation.String() == "" || request.Run.String() == "" || request.Bytes == 0 || request.Files == 0 || request.Files > 1<<20 {
+		return nil, errors.New("invalid storage reservation")
 	}
 	var directory *os.Root
 	defer func() {
@@ -402,17 +454,20 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		}
 	}()
 	resultErr = s.withLock(ctx, func() error {
-		if _, exists := s.entries[request.Run.String()]; exists {
+		payload := s.resourceRoot(request.Kind)
+		if _, exists := s.entries[resourceKey(request.Kind, request.Run.String())]; exists {
 			return errors.New("storage Run is already registered")
 		}
-		info, err := s.evidence.Lstat(request.Temporary)
+		info, err := payload.Lstat(request.Temporary)
 		if err != nil || !privateDirectory(info) {
-			return errors.New("new Evidence temporary directory is not owned")
+			return errors.New("new storage directory is not owned")
 		}
-		if _, err := s.evidence.Lstat(request.Target); !errors.Is(err, os.ErrNotExist) {
-			return errors.New("evidence publication target already exists or is unknown")
+		if request.Temporary != request.Target {
+			if _, err := payload.Lstat(request.Target); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("storage publication target already exists or is unknown")
+			}
 		}
-		directory, err = s.evidence.OpenRoot(request.Temporary)
+		directory, err = payload.OpenRoot(request.Temporary)
 		if err != nil {
 			return err
 		}
@@ -432,9 +487,13 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		// Existing unregistered runs are counted, never silently adopted/deleted.
 		legacyBytes, legacyRuns := s.legacyBytes, s.legacyRuns
 		limits := s.policy.Spec()
-		if s.charged > limits.EvidenceBytes || legacyBytes > limits.EvidenceBytes-s.charged || request.Bytes > limits.EvidenceBytes-s.charged-legacyBytes || s.runs+legacyRuns >= uint64(limits.EvidenceRuns) {
+		if request.Kind == "evidence" && (s.evidenceCharged > limits.EvidenceBytes || legacyBytes > limits.EvidenceBytes-s.evidenceCharged || request.Bytes > limits.EvidenceBytes-s.evidenceCharged-legacyBytes || s.evidenceRuns+legacyRuns >= uint64(limits.EvidenceRuns)) {
 			return errors.New("evidence retention quota is full; unexpired or unowned records are protected")
 		}
+		if s.charged > limits.TotalBytes || legacyBytes > limits.TotalBytes-s.charged || s.legacyIntake > limits.TotalBytes-s.charged-legacyBytes || request.Bytes > limits.TotalBytes-s.charged-legacyBytes-s.legacyIntake {
+			return errors.New("managed storage quota is full")
+		}
+
 		var filesystem syscall.Statfs_t
 		if err := syscall.Fstatfs(int(s.journal.Fd()), &filesystem); err != nil {
 			return err
@@ -448,10 +507,15 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		}
 		stamp := s.now().Unix()
 		stat := info.Sys().(*syscall.Stat_t)
-		record := resourceRecord{Schema: "helox.storage/v1", Policy: s.policy.Digest().String(), Operation: request.Operation.String(), Run: request.Run.String(), Kind: "evidence", Temporary: request.Temporary, Target: request.Target, Identity: fileIdentity{uint64(stat.Dev), uint64(stat.Ino), stat.Uid, uint32(info.Mode())}, ReservedBytes: request.Bytes, ReservedFiles: request.Files, Phase: "IN_USE", Created: stamp, Expiry: stamp + int64(limits.EvidenceTTLSeconds)}
+		expiry := stamp
+		if request.Kind == "evidence" {
+			expiry += int64(limits.EvidenceTTLSeconds)
+		}
+		record := resourceRecord{Schema: "helox.storage/v1", Policy: s.policy.Digest().String(), Operation: request.Operation.String(), Run: request.Run.String(), Kind: request.Kind, Temporary: request.Temporary, Target: request.Target, Identity: fileIdentity{uint64(stat.Dev), uint64(stat.Ino), stat.Uid, uint32(info.Mode())}, ReservedBytes: request.Bytes, ReservedFiles: request.Files, Phase: "IN_USE", Created: stamp, Expiry: expiry}
 		if err := s.append(journalEvent{"reserve", record}); err != nil {
 			return err
 		}
+		s.owned[resourceKey(record.Kind, record.Run)] = true
 		lease = &resourceLease{store: s, directory: directory, record: record}
 		return nil
 	})
@@ -463,16 +527,16 @@ func (l *resourceLease) Commit(ctx context.Context) error {
 		return errors.New("storage lease is closed")
 	}
 	return l.store.withLock(ctx, func() error {
-		current, exists := l.store.entries[l.record.Run]
+		current, exists := l.store.entries[resourceKey(l.record.Kind, l.record.Run)]
 		if !exists || current != l.record {
 			return errors.New("storage lease changed")
 		}
-		info, err := l.store.evidence.Lstat(l.record.Target)
+		info, err := l.store.resourceRoot(l.record.Kind).Lstat(l.record.Target)
 		pinned, pinnedErr := l.directory.Stat(".")
 		if err != nil || pinnedErr != nil || !privateDirectory(info) || !os.SameFile(info, pinned) {
 			return errors.New("published Evidence identity differs from allocation")
 		}
-		bytes, digest, err := measureEvidence(ctx, l.directory, l.record.ReservedBytes, l.record.ReservedFiles)
+		bytes, digest, err := measureResource(ctx, l.directory, l.record.Kind, l.record.ReservedBytes, l.record.ReservedFiles, nil)
 		if err != nil {
 			return err
 		}
@@ -497,18 +561,18 @@ func (l *resourceLease) Abort(ctx context.Context) error {
 	}
 	return l.store.withLock(ctx, func() error {
 		for _, name := range []string{l.record.Temporary, l.record.Target} {
-			if _, err := l.store.evidence.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+			if _, err := l.store.resourceRoot(l.record.Kind).Lstat(name); !errors.Is(err, os.ErrNotExist) {
 				return errors.New("storage reservation remains accounted: payload exists or its absence is unknown")
 			}
 		}
-		current, exists := l.store.entries[l.record.Run]
+		current, exists := l.store.entries[resourceKey(l.record.Kind, l.record.Run)]
 		if !exists {
 			return nil
 		}
 		if current != l.record {
 			return errors.New("storage reservation changed before release")
 		}
-		if err := syncRoot(l.store.evidence); err != nil {
+		if err := syncRoot(l.store.resourceRoot(l.record.Kind)); err != nil {
 			return err
 		}
 		return l.store.append(journalEvent{"abort", l.record})
@@ -545,7 +609,12 @@ func privateFile(info os.FileInfo) bool {
 	return ok && stat.Uid == uint32(os.Geteuid()) && stat.Nlink == 1
 }
 
-func measureEvidence(ctx context.Context, root *os.Root, maxBytes, maxFiles uint64) (total uint64, digest string, resultErr error) {
+type measuredMember struct {
+	info   os.FileInfo
+	sha256 string
+}
+
+func measureResource(ctx context.Context, root *os.Root, kind string, maxBytes, maxFiles uint64, capture map[string]measuredMember) (total uint64, digest string, resultErr error) {
 	f, err := root.Open(".")
 	if err != nil {
 		return 0, "", err
@@ -565,23 +634,18 @@ func measureEvidence(ctx context.Context, root *os.Root, maxBytes, maxFiles uint
 			return 0, "", err
 		}
 		info, err := root.Lstat(entry.Name())
-		if err != nil || !privateFile(info) || !strings.HasSuffix(entry.Name(), ".json") || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
+		if err != nil || !privateFile(info) || (kind == "evidence" && !strings.HasSuffix(entry.Name(), ".json")) || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
 			return 0, "", errors.New("evidence member exceeds ownership or byte reservation")
 		}
-		file, err := root.OpenFile(entry.Name(), os.O_RDONLY|syscall.O_NOFOLLOW, 0)
+		memberDigest, err := hashResourceMember(ctx, root, entry.Name(), info)
 		if err != nil {
 			return 0, "", err
 		}
-		opened, statErr := file.Stat()
-		memberHash := sha256.New()
-		count, readErr := io.Copy(memberHash, io.LimitReader(file, info.Size()+1))
-		after, afterErr := file.Stat()
-		closeErr := file.Close()
-		if statErr != nil || afterErr != nil || readErr != nil || closeErr != nil || !os.SameFile(info, opened) || !os.SameFile(info, after) || count != info.Size() || !info.ModTime().Equal(after.ModTime()) || !privateFile(after) {
-			return 0, "", errors.New("evidence member changed during accounting")
+		if capture != nil {
+			capture[entry.Name()] = measuredMember{info, memberDigest}
 		}
-		total += uint64(count)
-		_, _ = fmt.Fprintf(hash, "%s\x00%d\x00%x\n", entry.Name(), count, memberHash.Sum(nil))
+		total += uint64(info.Size())
+		_, _ = fmt.Fprintf(hash, "%s\x00%d\x00%s\n", entry.Name(), info.Size(), memberDigest)
 	}
 	return total, hex.EncodeToString(hash.Sum(nil)), nil
 }
@@ -603,7 +667,7 @@ func (s *Local) legacyEvidenceUsage(ctx context.Context) (total, runs uint64, re
 		if err := ctx.Err(); err != nil {
 			return 0, 0, err
 		}
-		if _, registered := s.entries[entry.Name()]; registered {
+		if _, registered := s.entries[resourceKey("evidence", entry.Name())]; registered {
 			continue
 		}
 		if _, err := domain.ParseRunID(entry.Name()); err != nil {
@@ -617,7 +681,7 @@ func (s *Local) legacyEvidenceUsage(ctx context.Context) (total, runs uint64, re
 		if err != nil {
 			return 0, 0, err
 		}
-		size, _, measureErr := measureEvidence(ctx, root, s.policy.Spec().EvidenceBytes-total, 1<<20)
+		size, _, measureErr := measureResource(ctx, root, "evidence", s.policy.Spec().EvidenceBytes-total, 1<<20, nil)
 		closeErr := root.Close()
 		if err := errors.Join(measureErr, closeErr); err != nil {
 			return 0, 0, err
@@ -634,4 +698,240 @@ func syncRoot(root *os.Root) error {
 		return err
 	}
 	return errors.Join(directory.Sync(), directory.Close())
+}
+
+func resourceKey(kind, run string) string { return kind + ":" + run }
+func validResourceHandles(kind, temporary, target, run string) bool {
+	if target != run || !plainHandle(temporary) {
+		return false
+	}
+	return kind == "evidence" && temporary != target || kind == "intake" && temporary == target
+}
+func (s *Local) resourceRoot(kind string) *os.Root {
+	if kind == "intake" {
+		return s.intake
+	}
+	return s.evidence
+}
+
+// Legacy intake contributes logical bytes without acquiring deletion authority.
+// Current intake creation is flat and bounded; unknown nested/query states stop
+// admission rather than being guessed away or recursively removed.
+func (s *Local) legacyIntakeUsage(ctx context.Context) (total uint64, resultErr error) {
+	directory, err := s.intake.Open(".")
+	if err != nil {
+		return 0, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, directory.Close()) }()
+	const maximumInventoryEntries = 100000
+	entries, err := directory.ReadDir(maximumInventoryEntries + 1)
+	if err != nil && err != io.EOF {
+		return 0, err
+	}
+	if len(entries) > maximumInventoryEntries {
+		return 0, errors.New("intake inventory exceeds bounded capacity")
+	}
+	remaining := maximumInventoryEntries - len(entries)
+	for _, entry := range entries {
+		if err := ctx.Err(); err != nil {
+			return 0, err
+		}
+		if _, registered := s.entries[resourceKey("intake", entry.Name())]; registered {
+			continue
+		}
+		info, err := s.intake.Lstat(entry.Name())
+		if err != nil || !privateDirectory(info) {
+			return 0, errors.New("legacy intake directory is unknown")
+		}
+		root, err := s.intake.OpenRoot(entry.Name())
+		if err != nil {
+			return 0, err
+		}
+		file, err := root.Open(".")
+		if err != nil {
+			return 0, errors.Join(err, root.Close())
+		}
+		members, readErr := file.ReadDir(remaining + 1)
+		closeErr := file.Close()
+		if (readErr != nil && readErr != io.EOF) || closeErr != nil || len(members) > remaining {
+			return 0, errors.Join(errors.New("legacy intake members are unknown"), readErr, closeErr, root.Close())
+		}
+		remaining -= len(members)
+		for _, member := range members {
+			if err := ctx.Err(); err != nil {
+				return 0, errors.Join(err, root.Close())
+			}
+			info, err := root.Lstat(member.Name())
+			if err != nil || !info.Mode().IsRegular() || info.Size() < 0 || uint64(info.Size()) > s.policy.Spec().TotalBytes-total {
+				return 0, errors.Join(errors.New("legacy intake usage is unknown or exceeds quota"), root.Close())
+			}
+			total += uint64(info.Size())
+		}
+		if err := root.Close(); err != nil {
+			return 0, err
+		}
+	}
+	return total, nil
+}
+
+func (s *Local) NoteInspection(ctx context.Context, run domain.RunID, complete bool) error {
+	if s == nil || ctx == nil || run.String() == "" {
+		return errors.New("storage inspection requires a Run and context")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return errors.New("storage is closed")
+	}
+	s.inspected[run] = complete
+	return nil
+}
+
+// Finish runs only after the outer command and its deferred guards/runtime
+// closes. A failed command or incomplete required observation retains bytes and
+// accounting. Restart reclamation is a separate, still protected path.
+func (s *Local) Finish(ctx context.Context, commandSucceeded bool) error {
+	if s == nil || ctx == nil {
+		return errors.New("storage finalization requires context")
+	}
+	if !commandSucceeded {
+		return nil
+	}
+	s.mu.Lock()
+	anyIntake := false
+	for key := range s.owned {
+		if strings.HasPrefix(key, "intake:") {
+			anyIntake = true
+			break
+		}
+	}
+	s.mu.Unlock()
+	if !anyIntake {
+		return nil
+	} // inert composition must remain inert
+	return s.withLock(ctx, func() error {
+		var failures []error
+		for key := range s.owned {
+			record, exists := s.entries[key]
+			if !exists || record.Kind != "intake" {
+				continue
+			}
+			run, err := domain.ParseRunID(record.Run)
+			if err != nil {
+				failures = append(failures, err)
+				continue
+			}
+			if !s.inspected[run] || record.Phase != "RETAINED" {
+				failures = append(failures, fmt.Errorf("intake %s remains accounted: complete observation/last-use proof is unavailable", record.Run))
+				continue
+			}
+			if err := s.removeSealedIntake(ctx, record); err != nil {
+				failures = append(failures, fmt.Errorf("intake %s cleanup: %w", record.Run, err))
+			}
+		}
+		return errors.Join(failures...)
+	})
+}
+
+func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (resultErr error) {
+	current, err := s.intake.Lstat(record.Target)
+	if err != nil || !matchesIdentity(current, record.Identity) {
+		return errors.New("intake cleanup directory identity is unknown")
+	}
+	root, err := s.intake.OpenRoot(record.Target)
+	if err != nil {
+		return err
+	}
+	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
+	held, err := root.Stat(".")
+	if err != nil || !os.SameFile(current, held) {
+		return errors.New("intake cleanup directory changed")
+	}
+	bytes, digest, err := measureResource(ctx, root, "intake", record.ReservedBytes, record.ReservedFiles, nil)
+	if err != nil {
+		return err
+	}
+	if bytes != record.LogicalBytes || digest != record.Content {
+		return errors.New("intake cleanup content changed since sealing")
+	}
+	deleting := record
+	deleting.Phase = "DELETING"
+	if err := s.append(journalEvent{"deleting", deleting}); err != nil {
+		return err
+	}
+	// Re-read after the durable transition, immediately before removing members.
+	members := make(map[string]measuredMember)
+	bytes, digest, err = measureResource(ctx, root, "intake", record.ReservedBytes, record.ReservedFiles, members)
+	if err != nil || bytes != record.LogicalBytes || digest != record.Content {
+		return errors.Join(errors.New("intake cleanup readback changed"), err)
+	}
+	directory, err := root.Open(".")
+	if err != nil {
+		return err
+	}
+	entries, readErr := directory.ReadDir(int(record.ReservedFiles) + 1)
+	closeErr := directory.Close()
+	if (readErr != nil && readErr != io.EOF) || closeErr != nil || uint64(len(entries)) > record.ReservedFiles {
+		return errors.Join(errors.New("intake cleanup inventory changed"), readErr, closeErr)
+	}
+	for _, entry := range entries {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		expected, known := members[entry.Name()]
+		info, err := root.Lstat(entry.Name())
+		if !known || err != nil || !privateFile(info) || !os.SameFile(expected.info, info) || info.Size() != expected.info.Size() || !info.ModTime().Equal(expected.info.ModTime()) {
+			return errors.New("intake cleanup member ownership changed")
+		}
+		digest, err := hashResourceMember(ctx, root, entry.Name(), info)
+		if err != nil || digest != expected.sha256 {
+			return errors.Join(errors.New("intake cleanup member changed after inventory"), err)
+		}
+		if err := root.Remove(entry.Name()); err != nil {
+			return err
+		}
+	}
+	current, err = s.intake.Lstat(record.Target)
+	if err != nil || !matchesIdentity(current, record.Identity) {
+		return errors.New("intake cleanup parent changed")
+	}
+	if err := s.intake.Remove(record.Target); err != nil {
+		return err
+	}
+	if err := syncRoot(s.intake); err != nil {
+		return err
+	}
+	removed := record
+	removed.Phase = "REMOVED"
+	return s.append(journalEvent{"removed", removed})
+}
+func matchesIdentity(info os.FileInfo, identity fileIdentity) bool {
+	if !privateDirectory(info) {
+		return false
+	}
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	return ok && uint64(stat.Dev) == identity.Device && uint64(stat.Ino) == identity.Inode && stat.Uid == identity.UID && uint32(info.Mode()) == identity.Mode
+}
+
+func hashResourceMember(ctx context.Context, root *os.Root, name string, info os.FileInfo) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	file, err := root.OpenFile(name, os.O_RDONLY|syscall.O_NOFOLLOW, 0)
+	if err != nil {
+		return "", err
+	}
+	opened, statErr := file.Stat()
+	hash := sha256.New()
+	count, readErr := io.Copy(hash, io.LimitReader(file, info.Size()+1))
+	after, afterErr := file.Stat()
+	closeErr := file.Close()
+	current, currentErr := root.Lstat(name)
+	if statErr != nil || afterErr != nil || currentErr != nil || readErr != nil || closeErr != nil || !os.SameFile(info, opened) || !os.SameFile(info, after) || !os.SameFile(info, current) || count != info.Size() || after.Size() != info.Size() || !after.ModTime().Equal(info.ModTime()) || current.Size() != info.Size() || !current.ModTime().Equal(info.ModTime()) || !privateFile(after) || !privateFile(current) {
+		return "", errors.New("resource member changed during accounting/readback")
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

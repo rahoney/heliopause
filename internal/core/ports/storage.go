@@ -31,6 +31,12 @@ type StorageLease interface {
 	Close() error
 }
 
+// InspectionStorage records a trusted caller's completed-check boundary. It
+// does not approve installation or turn an incomplete experiment into success.
+type InspectionStorage interface {
+	NoteInspection(context.Context, domain.RunID, bool) error
+}
+
 type storageContextKey struct{}
 type storageOperationKey struct{}
 

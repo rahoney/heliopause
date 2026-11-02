@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
@@ -164,7 +165,10 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		ctx = ports.WithStorage(ctx, storage)
 		defer func() {
-			closeErr := storage.Close()
+			cleanupContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+			finishErr := storage.Finish(cleanupContext, resultErr == nil)
+			cancel()
+			closeErr := errors.Join(finishErr, storage.Close())
 			cli.PresentFinalizationError(command, closeErr)
 			resultErr = errors.Join(resultErr, closeErr)
 		}()

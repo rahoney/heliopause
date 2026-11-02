@@ -401,7 +401,7 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if len(additionalChecks) == 0 {
 		evidence = append(evidence, additionalEvidence...)
 	}
-	references, err := s.evidence.Record(ctx, runID, evidence, checks...)
+	references, err := recordInspectionEvidence(ctx, s.evidence, runID, evidence, checks...)
 	if err != nil {
 		return domain.DependencyInspection{}, fail("EVIDENCE_RECORD_FAILED", err)
 	}
@@ -474,7 +474,7 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	checks = append(checks, inspection.Executions()...)
 	current.checks = checks
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
-	references, err := s.evidence.Record(ctx, runID, evidence, checks...)
+	references, err := recordInspectionEvidence(ctx, s.evidence, runID, evidence, checks...)
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, fail("EVIDENCE_RECORD_FAILED", err)
 	}

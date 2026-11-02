@@ -106,7 +106,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	checks = append(checks, inspection.Executions()...)
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
 	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
-	references, err := s.evidence.Record(ctx, runID, evidence, checks...)
+	references, err := recordInspectionEvidence(ctx, s.evidence, runID, evidence, checks...)
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, nil, "EVIDENCE_RECORD_FAILED", "Evidence recording failed.", fmt.Errorf("record Evidence: %w", err), plans...)
 	}
@@ -233,4 +233,25 @@ func recordFailedInspection(ctx context.Context, store ports.Evidence, run domai
 		err = fmt.Errorf("retain failed inspection Evidence: %w", err)
 	}
 	return checks, refs, errors.Join(partialErr, err)
+}
+
+// The existing application owner, rather than a filesystem adapter, interprets
+// check completion. Finalization still waits for the outer command/transactions.
+func recordInspectionEvidence(ctx context.Context, store ports.Evidence, run domain.RunID, facts []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
+	refs, err := store.Record(ctx, run, facts, checks...)
+	if err != nil {
+		return refs, err
+	}
+	if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+		complete := len(checks) != 0
+		for _, check := range checks {
+			if check.Required() && check.Status() != domain.ExecutionCompleted {
+				complete = false
+			}
+		}
+		if err := lifetime.NoteInspection(ctx, run, complete); err != nil {
+			return refs, err
+		}
+	}
+	return refs, nil
 }

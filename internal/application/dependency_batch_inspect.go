@@ -125,7 +125,7 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 		checks := append([]domain.CheckExecution{item.verification.Execution()}, report.Executions()...)
 		item.checks = checks
 		evidence := append(item.verification.Evidence(), report.Evidence()...)
-		references, err := s.evidence.Record(ctx, item.runID, evidence, checks...)
+		references, err := recordInspectionEvidence(ctx, s.evidence, item.runID, evidence, checks...)
 		if err != nil {
 			return failPending("EVIDENCE_RECORD_FAILED", err)
 		}

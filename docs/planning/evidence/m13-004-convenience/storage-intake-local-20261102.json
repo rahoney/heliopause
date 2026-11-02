@@ -1,0 +1,186 @@
+{
+  "schema": "helox.local-checkpoint/v1",
+  "baseline": "ecf1202",
+  "scope": "C01 npm intake reservation, actual-byte sealing and normal-command last-use only",
+  "c01_status": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "implemented": [
+    "register npm intake before download using existing byte/file bounds",
+    "seal actual bytes and content identity on acquisition success",
+    "separate intake and Evidence accounting for the same Run",
+    "reuse durable application Evidence boundary and outer command finalization",
+    "protect unknown, changed, linked, incomplete and restarted-owner resources; read back each member immediately before unlink"
+  ],
+  "missing": [
+    "other acquisition owners, derived/staging/cache/rollback accounting",
+    "failure/cancellation/runtime-drain and shared reference lifetime",
+    "bounded crash recovery, retention and finite cache collection",
+    "settings/result cleanup axes and 100-repeat/final hosted qualification"
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-npm-intake-registration-red.json",
+      "sha256": "b8617c39995b025fcddfde0d400f7bf448fbe5374d89b71dc6fd15882c05a287",
+      "exit_code": 1,
+      "elapsed_seconds": 0.841,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-npm-intake-mixed-owner.json",
+      "sha256": "8b3eadaef2607155f8639d67a61e2b99197724aa9c47733aaaebe529ae88be0f",
+      "exit_code": 0,
+      "elapsed_seconds": 8.138,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-npm-intake-sealed-actual.json",
+      "sha256": "3b8be8fc32b3616eab4dc7ecb8f3d1ec95557bed3464fca289ade13ff692429d",
+      "exit_code": 0,
+      "elapsed_seconds": 2.673,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-finish-post-inventory-red.json",
+      "sha256": "31a1f7ece056bb7816bd094c189d1ea3561813ede86c60cc1cba5f66c4ab7951",
+      "exit_code": 1,
+      "elapsed_seconds": 0.859,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-finish-member-readback-boundary.json",
+      "sha256": "56f6a8eea043ed2b5aede56ec12f51c3393708af33ff6ea0e337036e6c735c75",
+      "exit_code": 0,
+      "elapsed_seconds": 0.85,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-intake-finish-current-race.json",
+      "sha256": "5b51f3dccccc8c2e67723d4fc099d621109b1fedd1d922281be77e00943b6e1d",
+      "exit_code": 0,
+      "elapsed_seconds": 63.064,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-intake-finish-current-staticcheck.json",
+      "sha256": "5aeb57f7e19e6901911c2ff987285a95b7e8f7405a591efbe81d51b1330c5631",
+      "exit_code": 0,
+      "elapsed_seconds": 20.776,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-intake-finish-preflight.json",
+      "sha256": "838b2061780d4afd1e7f57f26fdf9ec2fef536b9e8ae752caac6fba6fbace7cf",
+      "exit_code": 0,
+      "elapsed_seconds": 16.577,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-intake-finish-security.json",
+      "sha256": "559270b57002c6cba789ac47eb39a9662ed61b5950fbe2e48f4aeffa6d1dea41",
+      "exit_code": 0,
+      "elapsed_seconds": 20.456,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-intake-finish-darwin-build.json",
+      "sha256": "a8928276fd8845836e4e691a6c00e616999e40b41c053c5622be02792dc57e8e",
+      "exit_code": 0,
+      "elapsed_seconds": 10.878,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    }
+  ]
+}
