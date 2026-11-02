@@ -75,14 +75,14 @@ Native 의미 확인은 공식 문서를 사용했다. [pip requirements](https:
 
 | ID | 실제 gap | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING / 보완 경로 |
 | --- | --- | --- | --- | --- | --- | --- |
-| B00 | 미지원 하위 명령의 명시적 실패 | NO | NO | NO | NO | `npm ci`, `cargo fetch`, `go mod tidy`가 도움말만 출력하고 exit0. 공통 CLI 사전 검증에서 거부하되 부모 도움말/정상 명령은 유지. 현재 runtime 준비 뒤 발견되는 일부 문법 오류도 runtime 전에 판정 |
+| B00 | 미지원 하위 명령의 명시적 실패 | YES | YES | NO | NO | 공통 preflight 로컬 완료; 새 등록 operation의 negative는 실제 미지원 입력으로 보존. Grouped/final pending. |
 | B01 | pip·UV pip requirements 설치 | YES | YES | NO | NO | `-r`/`--requirement`와 여러 root를 하나의 frozen 입력·전체 graph·승인/원자 반영에 연결. 기존 pip/UV resolver·inspection·promotion 재사용. 한 줄씩 독립 설치하거나 sync로 바꿔 기존 패키지를 삭제하지 않음 |
 | B02 | npm 기본 프로젝트 설치와 ci | YES | YES | NO | NO | package.json/lock 전체 설치, ci의 lock 필수·불일치 거부·lock 무변경과 target 교체/원복. 기존 npm whole graph/update/ownership owner 재사용, 다른 client로 몰래 대체하지 않음 |
-| B03 | Cargo fetch-only | NO | NO | NO | NO | 기존 complete project resolve/inspect/cache 경로를 공개 명령에 연결. Cargo.toml만 있는 최초 lock 생성과 기존 lock 보존을 별도 검증. build를 대신 실행하지 않음 |
-| B04 | Terraform 기본 init | NO | NO | NO | NO | 현재 configuration의 전체 provider와 기존 lock 선택 보존. lock 없을 때 선택, unchanged 재검사, ownership/원복. upgrade를 자동 붙이지 않음; backend/cloud 실행은 별도 범위 |
+| B03 | Cargo fetch-only | YES | YES | NO | NO | 05c1bfd fetch-only 로컬 구현/CLI·원복 검증. Grouped hosted/final pending. |
+| B04 | Terraform 기본 init | YES | YES | NO | NO | 77e5611 선택 보존 init 로컬 구현/실제 providers·원복 검증. Grouped hosted/final pending. |
 | B05 | Python 일괄 입력의 일반 요구사항 문법 | YES | YES | NO | NO | 버전 범위·extras·환경 marker·주석/빈 줄/CRLF, 반복 -r와 제한된 상대 include/-c, hash 검증. 중복·충돌·include cycle/경로 탈출/파일 변경·빈 파일 no-op·부분 설치 금지까지 B01 acceptance로 묶음. 임의 index·VCS·editable은 자동 허용하지 않음 |
-| B06 | 기존 project 명령의 흔한 선택/고정 옵션 | NO | NO | NO | NO | UV group/extra/marker·locked/frozen, PNPM/Bun의 명시적 frozen-lockfile 옵션. 현재 `--group`, 두 `--frozen-lockfile`는 실제 unknown flag. PNPM의 기존 lock 일치 검증 자체는 구현돼 있음; 옵션 부재를 lock 검증 전무로 표현하지 않음 |
-| B07 | Go 소스에 맞춘 의존성 파일 정리 | NO | NO | NO | NO | `go mod tidy` 미지원. `mod download`와 다른 추가·제거/소스선택 의미이므로 별도 지원 후보. B01~04 기본 일괄 설치보다 후순위 |
+| B06 | 기존 project 명령의 흔한 선택/고정 옵션 | YES | YES | NO | NO | 5f0f461 UV group/extra/marker/locked/frozen 및 PNPM/Bun frozen 로컬 실제 검증; grouped hosted/final pending. |
+| B07 | Go 소스에 맞춘 의존성 파일 정리 | YES | YES | NO | NO | 소스 기반 tidy·whole 검역·원자 controls의 로컬 구현/검증 완료; go-tidy-local-20261102.json. Grouped hosted/final pending. |
 
 `pip install a b`, `uv pip install a b`도 실제 ExactArgs(1)로 거부됐다. 여러 root
 입력은 B01의 같은 owner에서 다루며 별도 중복 설치기를 만들지 않는다.
@@ -806,3 +806,73 @@ workflow1.868s도 PASS였으며 새 native/CLI parent와 case census는 기존 U
 B06 로컬 checkpoint의 네 상태·실제 source 지문·원본 receipt/hash와 남은 범위는
 [UV selection 결과](./uv-project-selection-local-20261102.json)에 연결한다. 다음 로컬 단위는 B07이며
 CI를 새로 실행하거나 설치본을 교체하지 않았다.
+
+
+### B07 baseline·수정 책임 지도 — 2026-11-02 / IN_PROGRESS
+
+기준5f0f461에서 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. `cli/root.go`는 mod download만 등록하고
+`sandbox/gomodule_resolver.go:ResolveProjectDependencies`는 controls-only download/graph다.
+Source 기반 tidy 선택은 없으며 기존 download를 이름만 바꿔 연결하지 않는다.
+Read는 planning21 §4.7/§3/§9, M12 ecosystem contract §4, Artifact Port와
+Evidence/Staging/Promotion·fail-closed 계약이다. 공식 Go module reference의 tidy 의미
+(테스트·플랫폼·사용자 build tag 포함, ignore 제외)은 고정 runtime native로 처리한다.
+
+재사용: Cargo의 anchored source reader/identity witness를 두 실제 source 소비자에 필요한
+공통 data-copy 부분으로만 추출하고 Cargo manifest/lock 검증·예산은 유지한다. Go source에는
+기존 Go archive 예산과 go.mod/sum 원본을 결합한다. 기존 Go isolated runner에 명시적인
+source 입력 경로를 연결하되 일반 get/download의 controls-only 경계는 유지한다.
+`GoProjectPromotion`의 기존 guard/approved cache/transaction과 checkpoint를 사용하고
+source를 publication 전후 재확인한다. Application의 기존 guarded project update가 전체
+검사·Policy·staging을 수행하며 fake primary를 만들지 않는다. CLI/bootstrap은 tidy와
+명시 adoption을 해당 owner에 연결한다. Runtime lock/generated 버전 owner는 수정하지 않는다.
+
+MISSING: native tidy의 import 추가/제거·test·다른 build tag 선택·no-op·빈 graph,
+unsupported replace/nested module·source/control 교체·충돌/rollback의 거부, 실제 전체
+검역/승인/controls-only 원자 반영 및 영향 검사. Host 프로그램/test/generate 실행이나
+임의 VCS·toolchain 다운로드를 허용하지 않는다. Grouped hosted/final은 다른 B 항목과
+함께 닫으며 새 CI/job/profile을 만들지 않는다.
+
+
+B07 로컬 구현/연결 후속(QUALIFIED=NO / ACCEPTANCE_CLOSED=NO): 기존 source copy를
+profile별 기존 limits/control grammar와 함께 재사용하고 Go tidy용 source 입력을 격리
+runner에 명시적으로 연결했다. 일반 get/download는 controls-only를 유지한다. 신규 primary를
+만들지 않고 기존 guarded whole-project 검사·Policy/cache/transaction을 사용한다.
+
+Native v1은 TAR의 `/proc/filesystems`, v2는 추가 direct mkdir의 같은 읽기 경계에서
+실패했다. v3 Docker cp는 daemon이 gVisor tmpfs 목적지를 볼 수 없어 실패했으며 이 경로를
+제거했다. 기존 Cargo TAR의 exact fixed image/CONTROL shell clone/proc metadata 조건만
+Go 소비자에 연결했다. 표적 CPP RED44.222s → 전체133/52.046s PASS이며 새 profile·network
+권한·한도를 만들지 않았다. Matching native v4는 source imports/test/custom tag 추가,
+no-op, 전체 제거3사례37.96s/operator39.839s PASS다. 이 단계는 검역/설치 완료가 아니다.
+
+Public CLI v1은 원래 go.sum이 없는 입력에서 기존 private controls writer가 빈 pair를
+요구해 PUBLISH_CONTROLS에서 실패했다(12.59s/operator14.512s). 같은 부재 조건의
+표적8.536s RED 뒤 disposable 사본만 빈 go.sum을 준비했다. 기존 source 원본의 부재와
+held guard/원자 publication을 보존했으며 관련4 package12.490s PASS다. CPP와 이미
+통과한 native의 sum-present 입력은 반복하지 않았다.
+
+Current CLI v2는 parent1/cases3·61.95s/operator63.866s PASS다. 암묵 native adoption 거부,
+명시 등록 후 새 SumDB/static 검사·Evidence·Policy·검증 cache와 actual controls의 일치,
+no-op의 새 검사와 inode/mode/mtime 보존, 전체 제거의 명시 empty graph를 확인했다.
+Host/Docker 불변·helperwait0·observer/policy runtime 비움을 확인했다. Source 교체·외부
+link/replace/workspace/nested module 거부와 publication 전 source 변경 시 controls rollback은
+표적 실제 filesystem 시험으로 검증했다. 기존 Go/Cargo 정상 source 회귀와 Application의
+모든 approval boundary 실패도 포함한다. 새 Go 두 parent와 unique case census는 기존 CI
+cohort에 연결했으며 새 job/profile/CI 실행은 없다. 최종 canonical/Race/workflow 및
+hosted/final은 아직 OPEN이며 다음 순서는 S09다.
+
+B06 완료 시험 원본 바이너리13개417436020B도 각 실제 receipt hash·단일 링크·소유자와
+실행 참조0/query error0을 확인한 뒤 제거했다(`b06-original-binaries-cleanup.json`).
+원본 receipt/log·공유 cache와 현재 검사 입력은 보존한다.
+
+
+B07 최종 로컬 checkpoint: 첫 Quick91.796s는 오류 문구 ST1005로 default test 미도달이었다.
+최초 Race264.120s는 다른5 package PASS, CLI/bootstrap의 B00 tidy-is-unsupported 기대가
+실패했다. 두 negative를 실제 미지원 verify로 바꿔 거부 범위/개수를 유지했고 표적10.373s와
+해당 두 Race44.473s가 PASS다. 오류 문구17곳의 Go→go 외 제품 동작 차이가 없음을 actual
+CLI source SHA로 역산 확인했다. 최종 Quick277.493s·security21.413s·docs0.341s·workflow1.763s
+PASS이며 CPP/실제 성공을 불변 범위에서 재사용했다. 원래 두 exit1은 성공으로 바꾸지 않는다.
+[Go tidy 로컬 결과](./go-tidy-local-20261102.json)가 source·원본 hash·범위와 남은 상태를
+소유한다. 완료된 B07 보호 사본243103816B와 원본 실행 파일223560952B도 refs0/errors0 뒤
+정리했다. 다음 로컬 단위는 S09이고 hosted/final·Anyio 미완료는 유지한다.

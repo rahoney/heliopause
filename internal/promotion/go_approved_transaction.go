@@ -14,6 +14,7 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
 type goProjectApproval struct {
@@ -44,6 +45,7 @@ type approvedGoProjectGuard struct {
 	originalStateInfo os.FileInfo
 	closed            bool
 	committed         bool
+	tidySource        *sandbox.GoProjectSource
 	buildSource       *projectSourcePlan
 	buildCache        *domain.AcquiredArtifact
 	buildInputs       *domain.ProjectBuildInputs
@@ -216,6 +218,11 @@ func (g *approvedGoProjectGuard) VerifyUnchanged(ctx context.Context) error {
 	if err := g.plan.verifyUnchanged(); err != nil {
 		return err
 	}
+	if g.tidySource != nil {
+		if err := g.tidySource.Verify(ctx); err != nil {
+			return err
+		}
+	}
 	info, err := os.Lstat(g.owner.stateRoot)
 	if err != nil || !os.SameFile(g.stateInfo, info) {
 		return errors.New("go retained approval root changed")
@@ -246,7 +253,7 @@ func sameGoTransactionControls(left, right []domain.ProjectControlFile) bool {
 }
 
 func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
+	if g == nil || (!update.HasRequestedResolution() && g.tidySource == nil) || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("go transaction update differs from guarded project")
 	}
 	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged)
@@ -337,6 +344,27 @@ func (g *approvedGoProjectGuard) commitSelection(ctx context.Context, selected d
 	if g.plan.upgrade {
 		transaction.checkpoint = g.owner.updateCheckpoint
 	}
+	if g.tidySource != nil {
+		selectedBodies := map[string][]byte{}
+		for _, control := range controls {
+			selectedBodies[control.Name()] = control.Body()
+		}
+		transaction.checkpoint = func(phase string) error {
+			if g.owner.updateCheckpoint != nil {
+				if err := g.owner.updateCheckpoint(phase); err != nil {
+					return err
+				}
+			}
+			if phase == "before-backup" {
+				return g.VerifyUnchanged(ctx)
+			}
+			if phase == "before-approval" {
+				return g.tidySource.VerifyPublishedControls(ctx, selectedBodies)
+			}
+			return ctx.Err()
+		}
+	}
+
 	published := false
 	transaction.publishApproval = func() error {
 		current, info, err := readGoTransactionControl(g.state, g.stateName)
@@ -418,8 +446,11 @@ func (g *approvedGoProjectGuard) Close() error {
 	}
 	g.closed = true
 	var result error
+	if g.tidySource != nil {
+		result = g.tidySource.Close()
+	}
 	if g.state != nil {
-		result = g.state.Close()
+		result = errors.Join(result, g.state.Close())
 	}
 	return errors.Join(result, g.guard.release())
 }

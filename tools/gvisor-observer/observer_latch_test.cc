@@ -1489,6 +1489,9 @@ bool VerifyGoBuildConfigurationReadBoundary(const char* profile = kProfileGoBuil
   child.trusted_control_network_active = true;
   if (classify() == FilesystemClass::kHelperOnly) return false;
   child.trusted_control_network_active = false;
+  child.provenance = ProcessState::Provenance::kDirectExecRoot;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.provenance = ProcessState::Provenance::kCloneChild;
   child.current_image_class = ProcessClass::kUnknown;
   if (classify() == FilesystemClass::kHelperOnly) return false;
   child.current_image_class = ProcessClassForPath(tar ? "/usr/bin/tar" : "/usr/bin/mkdir", profile);
@@ -9785,6 +9788,11 @@ int main(int argc, char** argv) {
     fprintf(stderr, "observer latch %s: Cargo entropy read boundary\n", passed ? "PASS" : "FAIL");
     return passed ? 0 : 1;
   }
+  if (argc == 2 && strcmp(argv[1], "--go-tidy-source-only") == 0) {
+    const bool passed = VerifyGoBuildConfigurationReadBoundary(kProfileGoResolver, true);
+    fprintf(stderr, "observer latch %s: Go tidy source configuration read boundary\n", passed ? "PASS" : "FAIL");
+    return passed ? 0 : 1;
+  }
   if (argc == 2 && strcmp(argv[1], "--cargo-tar-only") == 0) {
     const bool passed = VerifyGoBuildConfigurationReadBoundary(kProfileCargoResolver, true);
     fprintf(stderr, "observer latch %s: Cargo TAR configuration read boundary\n", passed ? "PASS" : "FAIL");
@@ -9938,7 +9946,8 @@ int main(int argc, char** argv) {
   const bool pipx_native_read = VerifyPipxNativeReadAndReexecBoundary() && VerifyPipxNativeUVProcReadBoundary() && VerifyPipxNativeBaseQueryDirectoryRead() && VerifyPipxNativeFirstOutsideDiagnostic();
   const bool pipx_native_admission = running && VerifyPipxNativeProfileAdmission(control);
   const bool pipx_runtime_admission = running && VerifyPipxRuntimeAdmission(control);
-  const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
+  const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary() &&
+      VerifyGoBuildConfigurationReadBoundary(kProfileGoResolver, true);
   const bool go_build_handoff_read = VerifyGoBuildHandoffReadBoundary();
   const bool cargo_build_handoff_read = VerifyGoBuildHandoffReadBoundary(kProfileCargoBuild);
   const bool cargo_build_pinned_target = VerifyCargoBuildHandoffPinnedTarget();

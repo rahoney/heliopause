@@ -481,11 +481,23 @@ dependency state를 transactionally 갱신한다.
 ```bash
 helox go get example.com/module@v1.2.3
 helox go mod download
+helox go mod tidy [--adopt]
 helox go build ./...
 ```
 
-`go mod`는 command group이므로 첫 release에서 명시적으로 지원하는 `go mod`
-operation은 `go mod download`로 한정한다.
+`go mod download`는 현재 controls의 graph를 준비하며 소스에 맞춰 정리하지 않는다.
+M13 보강의 `go mod tidy`는 현재 단일 모듈의 bounded source·test·build-tag 입력을
+anchored reader로 고정하고 고정 Go가 의존성을 추가·제거한다. 숨김 namespace와 vendor는
+전달하지 않으며 workspace·중첩 모듈·replace·SDK/non-require directive 변경은 거부한다.
+Native/변경 controls 등록에는 `--adopt`가 필요하다. 원래 의존성이 없는 최초 프로젝트는
+기존 dependency-free 등록 경계를 사용한다.
+
+Tidy는 기존 public proxy/SumDB, 전체 선택 검사·Policy·검증 cache와 원자 controls 반영을
+재사용한다. `go.sum`이 없으면 private 사본만 빈 파일로 준비하고, 전체 승인 전 Host
+설정을 만들지 않는다. Source/control 신원·내용을 선택 후와 publication 전후 재확인하며
+같은 controls는 inode·mode·mtime을 보존한다. JSON은 `helox.project-tidy-result/v1`의
+`TIDY`/`DEPENDENCY_CONTROLS`로 검사와 실제 반영 완료를 구분한다. 이는 프로젝트 실행이나
+관찰 build 완료가 아니며 로컬/hosted qualification 상태는 Queue와 goal 감사 leaf가 소유한다.
 
 `helox go build`를 first-release contract에 포함한다. 이유는 HAA가 검증한 module을
 격리 cache에서 확인한 뒤 사용자가 일반 `go build`를 실행하면서 dependency를 다시

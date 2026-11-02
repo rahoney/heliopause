@@ -2498,7 +2498,8 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if ((strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && path == "/work/artifact") return ProcessClass::kArtifact;
   if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kCargoBinary) return ProcessClass::kCargo;
-  if (strcmp(profile, kProfileCargoResolver) == 0 && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
+  // The same pinned source-copy image serves both project resolver profiles.
+  if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileGoResolver) == 0) && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kRustcBinary) return ProcessClass::kCargoRustc;
   return ProcessClass::kUnknown;
 }
@@ -3949,15 +3950,15 @@ bool IsPinnedProjectConfigurationRead(
     const std::string& path, uint64_t flags, const char* profile,
     const MountAnchor* anchor) {
   if (profile == nullptr ||
-      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoResolver) != 0 &&
-       strcmp(profile, kProfileCargoBuild) != 0) ||
+      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileGoResolver) != 0 &&
+       strcmp(profile, kProfileCargoResolver) != 0 && strcmp(profile, kProfileCargoBuild) != 0) ||
       path != "/proc/filesystems" || IsWriteCapableOpen(flags) || anchor == nullptr ||
       anchor->mount_class != "system" || anchor->mountpoint != "/proc") return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kControl ||
       group->provenance != ProcessState::Provenance::kCloneChild ||
       (group->current_image_class != ProcessClass::kMkdir &&
-       !(strcmp(profile, kProfileCargoResolver) == 0 && group->current_image_class == ProcessClass::kCargoTar)) ||
+       !((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileGoResolver) == 0) && group->current_image_class == ProcessClass::kCargoTar)) ||
       group->root_eligible || !group->root_consumed ||
       group->trusted_control_network_active || group->demotion_pending ||
       group->launch_target_pending || group->handoff_target_pending ||

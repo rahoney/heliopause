@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+const goTidyNativeCensus = `awk 'BEGIN { expected["imports-tests-tags"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyProjectResolverIntegration \(/ { parents++ } /actual_go_tidy=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyProjectResolverIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-resolver.log"`
+const goTidyCLICensus = `awk 'BEGIN { expected["adopt"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyCLIIntegration \(/ { parents++ } /actual_go_tidy_cli=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyCLIIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-cli.log"`
+
 const workflowRelativePath = ".github/workflows/heliopause-ci.yml"
 const securityWorkflowRelativePath = ".github/workflows/heliopause-security.yml"
 const releaseWorkflowRelativePath = ".github/workflows/heliopause-release-build.yml"
@@ -214,8 +217,10 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 		"HELOX_PYTORCH_PROFILE=cu132",
 		`docker pull "$go_image"`,
 
-		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'`,
-		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload)Integration$'`,
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot|TidyProjectResolver)Integration$' | tee "$RUNNER_TEMP/haa-go-resolver.log"`,
+		goTidyNativeCensus,
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload|TidyCLI)Integration$' | tee "$RUNNER_TEMP/haa-go-cli.log"`,
+		goTidyCLICensus,
 		`HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'`,
 		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",

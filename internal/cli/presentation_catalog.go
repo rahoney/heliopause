@@ -32,6 +32,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		"helox go":                    {"Inspect and build public Go Modules", "공개 Go 모듈 검사·다운로드·빌드"},
 		"helox go get":                {"Inspect and add Go dependencies", "Go 모듈과 의존성을 확인하고 프로젝트를 갱신합니다"},
 		"helox go mod":                {"Manage project Go dependencies", "현재 Go 프로젝트의 모듈 작업"},
+		"helox go mod tidy":           {"Reconcile source dependencies after quarantine", "소스의 의존성을 전체 검역 후 정리합니다"},
 		"helox go mod download":       {"Inspect and cache project dependencies", "현재 프로젝트 의존성을 검사하고 검증된 캐시에 준비합니다"},
 		"helox go build":              {"Build the approved Go project", "허용된 Go 프로젝트를 격리 환경에서 빌드합니다"},
 		"helox cargo":                 {"Inspect and build public crates.io packages", "공개 crates.io 패키지 검사·빌드"},
@@ -64,6 +65,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		}
 		if command.CommandPath() == "helox go get" {
 			command.Long = p.text(goUpgradeDescriptionEnglish, goUpgradeDescriptionKorean)
+		}
+		if command.CommandPath() == "helox go mod tidy" {
+			command.Long = p.text(goTidyDescriptionEnglish, goTidyDescriptionKorean)
 		}
 		if command.CommandPath() == "helox terraform init" {
 			command.Long = p.text(terraformUpgradeDescriptionEnglish, terraformUpgradeDescriptionKorean)
@@ -101,6 +105,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		localizePackageClientCommand(command, p)
 		if command.CommandPath() == "helox pip install" {
 			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native wheel files after independent ownership verification and full inspection", "공식 wheel과 기존 파일의 소유권을 대조하고 전체 검사 후 지원하는 일반 venv를 등록합니다")
+		}
+		if command.CommandPath() == "helox go mod tidy" {
+			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native or changed controls after complete inspection", "지원하는 일반 프로젝트나 변경한 설정을 전체 검사 후 명시적으로 등록합니다")
 		}
 		if command.CommandPath() == "helox cargo update" {
 			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native or changed controls after complete inspection", "지원하는 일반 프로젝트나 변경한 설정을 전체 검사 후 명시적으로 등록합니다")

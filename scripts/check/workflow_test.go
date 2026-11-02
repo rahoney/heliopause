@@ -332,3 +332,33 @@ func selectedGoForTest(t *testing.T) string {
 	}
 	return owners["Go"]
 }
+
+func TestGoTidyWorkflowRequiresBothCohortsAndUniqueCaseCensus(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(root, workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	selected := selectedGoForTest(t)
+	if findings := validateCIWorkflow(original, selected); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for name, fixture := range map[string]string{
+		"missing native parent":     strings.Replace(original, "|TidyProjectResolver)", ")", 1),
+		"missing CLI parent":        strings.Replace(original, "|TidyCLI)", ")", 1),
+		"native census missing":     strings.Replace(original, goTidyNativeCensus, "echo missing native census", 1),
+		"CLI census missing":        strings.Replace(original, goTidyCLICensus, "echo missing CLI census", 1),
+		"native duplicate accepted": strings.Replace(original, goTidyNativeCensus, strings.Replace(goTidyNativeCensus, "seen[fields[1]]++", "0", 1), 1),
+		"CLI partial accepted":      strings.Replace(original, goTidyCLICensus, strings.Replace(goTidyCLICensus, "cases != 3", "cases != 2", 1), 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validateCIWorkflow(fixture, selected)) == 0 {
+				t.Fatal("incomplete tidy workflow accepted")
+			}
+		})
+	}
+}

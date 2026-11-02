@@ -95,3 +95,33 @@ func (s *GoModuleProjectResolutionService) Resolve(ctx context.Context, installC
 	}
 	return resolveProjectSnapshot(ctx, installContext, s.resolver, s.promoter, s.inspection, s.staging, "go-proxy", "Go")
 }
+
+// GoModuleTidyService selects from frozen source and uses the same full graph
+// inspection, Policy, staging and atomic controls workflow as other updates.
+type GoModuleTidyService struct {
+	resolver   ports.ProjectLockUpdateResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
+}
+
+func NewGoModuleTidyService(resolver ports.ProjectLockUpdateResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*GoModuleTidyService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("go tidy requires source selection and every approval boundary")
+	}
+	return &GoModuleTidyService{resolver, promoter, inspection, staging}, nil
+}
+
+func (s *GoModuleTidyService) Tidy(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	if s == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("go tidy service is unavailable")
+	}
+	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "go-proxy", "Go", func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+		update, err := s.resolver.ResolveProjectLockUpdate(ctx, install, controls, "")
+		if err == nil && update.HasRequestedResolution() {
+			return domain.ProjectDependencyUpdate{}, errors.New("go tidy requires complete-project selection without a primary")
+		}
+		return update, err
+	})
+	return selected.verified, err
+}
