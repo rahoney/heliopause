@@ -171,6 +171,7 @@ sandbox     → Sandbox Port 구현 + core/domain
 - external verifier 호출과 result normalization은 `internal/verification`에 둔다.
 - static/dynamic inspection 및 raw observation 해석은 `internal/inspection`에 둔다.
 - Linux isolation backend, Session 생성·종료·폐기와 observation capture는 `internal/sandbox`에 둔다.
+- 파생 wheel의 저장 예약은 `core/ports.Storage`만 소비하며 concrete `internal/storage`나 composition root를 참조하지 않는다.
 - 구체 runtime 선택 전에는 Docker, containerd, VM 이름을 package 경계나 공통 contract에 넣지 않는다.
 
 ### Policy, Evidence와 Promotion

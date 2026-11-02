@@ -93,5 +93,173 @@
     "create-then-delete syscall coverage and normalized Evidence/Policy/S09 connection",
     "all ecosystem owners and grouped native/hosted qualification"
   ],
-  "static_correction": "legacy NUL file type is handled without deprecated TypeRegA; default-build producer-completion regression now exercises capture; no runtime two-experiment wiring claimed"
+  "static_correction": "legacy NUL file type is handled without deprecated TypeRegA; default-build producer-completion regression now exercises capture; no runtime two-experiment wiring claimed",
+  "workspace_runtime_attempt": {
+    "checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-runtime-construction.json",
+        "sha256": "b784a286bf471188a672f6c192728bc156bb69c19430f3dc625acab9e1848a60",
+        "exit_code": 1,
+        "elapsed": 0.799,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-runtime-construction-fixed.json",
+        "sha256": "3b2e644ceb618c4af1562551aa6fa25adeca12ec7121d195848c8afd852c5f54",
+        "exit_code": 0,
+        "elapsed": 9.748,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-data-v1.json",
+        "sha256": "2066abff5698900fd34124a85ca71343b4cac0d64ebeaf3d5936b7fa3f0b7bc5",
+        "exit_code": 0,
+        "elapsed": 4.425,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-data-v2.json",
+        "sha256": "85179a1a5950a69758c4344b5530397da14c05e722a5b9bdd144b7433654fd46",
+        "exit_code": 0,
+        "elapsed": 13.522,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v3.json",
+        "sha256": "d5532efd9fd00f5a7a0b4310d0dbd92a39a2b7b6e80d35b397ac8254960b1759",
+        "exit_code": 1,
+        "elapsed": 13.054,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v4.json",
+        "sha256": "6752aaf04b9b50917a4a6bcfc8e535194571f18349c8d1066cc3604856f2c897",
+        "exit_code": 1,
+        "elapsed": 12.591,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v5-diagnostic.json",
+        "sha256": "3e31f5cebd1a68f1495418ababe61f2886793bb78989c63b5f7f44841d6227ff",
+        "exit_code": 1,
+        "elapsed": 12.448,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-script-v6.json",
+        "sha256": "53fe3ef168e7f31516c8f841e2aa336fa4af4b119ab87d6fbc815cbbf55d67eb",
+        "exit_code": 1,
+        "elapsed": 13.303,
+        "source_unchanged": true
+      }
+    ],
+    "data_result": "gVisor DATA transport and complete expected trace locally PASS; no artifact experiment/qualification",
+    "noexec_counterexample": "fixed shebang directly executed and returned99 instead of execution refusal126; current unguarded /tmp named-volume candidate REJECTED",
+    "original_failures": "first construction build failure was a test interface mismatch; ELF first did not reach execution, later139 is not noexec proof; original errors retained",
+    "current_guard": "observer requires actual guest NoExec and NoSUID before artifact launch; no fallback to backing tmpfs flags",
+    "runtime_candidate": "scoped upstream9 named cases and coherent bundle PASS; private OCI flags/EACCES PASS; Docker/observer/two-experiment wiring remain OPEN",
+    "maintenance": "same source commit, same selected Go1.27.3/Bazel/builder and existing runtime update/capture/verify owners; no new updater/Host installation/CI"
+  },
+  "runtime_boundary_checkpoint": {
+    "checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-race.json",
+        "sha256": "356328ba741adac1ec173a7f58ee95950eeb6731455936715477f1c9b268e6d9",
+        "elapsed": 55.323,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-static.json",
+        "sha256": "ba4c1cc0a4a7cc726fa8b55f604aac060bee17159cebc722a2f4bc9eed6a4f00",
+        "elapsed": 24.857,
+        "exit_code": 1,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-current-static.json",
+        "sha256": "7b1eb722646a595778d766db409971aead9596c9a8ce543b812189dd154e87b1",
+        "elapsed": 16.103,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-vet.json",
+        "sha256": "f6c77a8599683504d5a780ad8eddc89b91220ec0c9c22d8fb19f6acbd03748b5",
+        "elapsed": 3.377,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-workspace-policy-named-tests.json",
+        "sha256": "6978e00be2e88f14d04bd3eea7731af405e72197345c17b3304303955ba3e9e9",
+        "elapsed": 19.001,
+        "exit_code": 0,
+        "scope": "focused pinned upstream boot policy regression; no Host installation/CI"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-coherent-bundle.json",
+        "sha256": "458734d42a2129cfe7058332ae7c1a9de5d6e0b4e567b0041b125a569192ac32",
+        "elapsed": 88.444,
+        "exit_code": 0,
+        "scope": "same prepared source/SDK/cache as named upstream tests; canonical capture-gvisor and strict six-member verifier; no Host installation/CI",
+        "exit_code_scope": "build/capture/strict-verifier aggregate observed terminal"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-oci-noexec-v2.json",
+        "sha256": "a90c2cdc34073b47319c849b951ad052368493d9bcfb6557eb66803f08d8f4c5",
+        "elapsed": 1.696,
+        "exit_code": 0,
+        "scope": "same verified six-member candidate; fixed static Go DATA probe in private PID/mount namespace; no installed Host/Docker configuration changes"
+      }
+    ],
+    "upstream_named_cases": 9,
+    "coherent_bundle": "six members verified; five Go binaries all Go1.27.3; existing required trace capabilities retained",
+    "runtime_owner_change": "observed capture lock adopted through existing generator; only patch/member identities changed, source commit/Go/SDK/images/Bazel/builder unchanged",
+    "actual_native": "private direct OCI DATA: unannotated fixed script exit99 and guest flags false; annotated flags noexec/nosuid true and syscall Exec EACCES/exit0; private namespace reaped, copies removed",
+    "not_qualified": [
+      "Docker production observer with new bundle",
+      "actual two-environment artifact flow and shared CPU/wall/event accounting",
+      "all ecosystem consumers and hosted/final qualification"
+    ],
+    "operator_failures": "first Bazel XML empty named census caused operator assertion; named cached rerun closed9 cases. Direct OCI v1 cleanup null handling masked cases; prep PermissionError unintentionally reran v1 and overwrote its receipt; separate interpretation retains known/missing facts. v2 kept primary/cleanup independent and passed. No product fix inferred from operator errors.",
+    "grouped_checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-foundation.json",
+        "sha256": "fa4bf04f28798c23c5bd871995565c1bc71761391ca3bad9b6e7fcdb296c98bc",
+        "exit_code": 1,
+        "elapsed": 83.085,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-foundation-fixed.json",
+        "sha256": "89b1d0d33705c755bc0953383797e8cb54caa6d21b4dcd5a35c5661e3c27001a",
+        "exit_code": 0,
+        "elapsed": 25.164,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-security.json",
+        "sha256": "fdcb0586a489138a836360f8ec7aaf4cb1f1c8496604f8151489d39aab110f9b",
+        "exit_code": 0,
+        "elapsed": 34.484,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-owner-tests.json",
+        "sha256": "7608460b6e87fa38ea7e8c90bb8394de81b2546a0f9ba1ef93f5f389ab2a326e",
+        "exit_code": 0,
+        "elapsed": 37.155,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-storage-port-boundary.json",
+        "sha256": "f3dd4eee6ab93cdb236645713a75b7efe2c58623caa846980519c91b479e4e7d",
+        "exit_code": 0,
+        "elapsed": 1.596,
+        "source_unchanged": true
+      }
+    ],
+    "foundation_interpretation": "original foundation83.085s passed all compile stages then found the pre-existing C01 derived-wheel sandbox→Core/Ports import missing from the checker. Existing Architecture-001 permits backend→opaque Ports; exact edge and concrete-storage/bootstrap negatives registered. Boundary test1.596s and corrected foundation25.164s PASS. No runtime-patch causation claimed."
+  }
 }

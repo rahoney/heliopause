@@ -68,7 +68,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot && project[0].destination != environmentWorkspaceRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
@@ -107,10 +107,13 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		if volume.destination() == nodeExecutionRoot {
 			return volume, errors.Join(errors.New("node materialization volume creation outcome is unavailable"), err)
 		}
+		if volume.destination() == environmentWorkspaceRoot {
+			return volume, errors.Join(errEnvironmentState, err)
+		}
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
 	if err := volume.verify(ctx, runner); err != nil {
-		if volume.destination() == pipxRuntimeRoot || volume.destination() == nodeExecutionRoot {
+		if volume.destination() == pipxRuntimeRoot || volume.destination() == nodeExecutionRoot || volume.destination() == environmentWorkspaceRoot {
 			return volume, err
 		}
 		// Never adopt a volume whose post-create identity is uncertain. The caller

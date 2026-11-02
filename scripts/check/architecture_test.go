@@ -127,7 +127,7 @@ func TestPipxReleaseInspectionParserEdgesRemainScoped(t *testing.T) {
 
 func TestStorageConsumersUseOnlyOpaquePortBoundary(t *testing.T) {
 	const module = "example.test/project"
-	for _, owner := range []string{"internal/artifact/gomodule", "internal/artifact/cargo", "internal/artifact/terraformprovider", "internal/inspection/pypi"} {
+	for _, owner := range []string{"internal/artifact/gomodule", "internal/artifact/cargo", "internal/artifact/terraformprovider", "internal/inspection/pypi", "internal/sandbox"} {
 		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/" + owner, Imports: []string{module + "/internal/core/ports"}}}); len(findings) != 0 {
 			t.Fatal("approved storage contract rejected", owner, findings)
 		}

@@ -3,10 +3,12 @@ package sandbox
 import (
 	"archive/tar"
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -14,8 +16,10 @@ import (
 type inspectionEnvironment string
 
 const (
-	minimalEnvironment     inspectionEnvironment = "minimal-v1"
-	developmentEnvironment inspectionEnvironment = "mock-development-v1"
+	minimalEnvironment         inspectionEnvironment = "minimal-v1"
+	developmentEnvironment     inspectionEnvironment = "mock-development-v1"
+	environmentWorkspaceRoot                         = "/tmp"
+	environmentWorkspacePolicy                       = "dev.heliopause.workspace-policy=tmp-noexec-v1"
 )
 
 type environmentFixture struct {
@@ -115,4 +119,75 @@ func (p inspectionEnvironmentProfile) verifyPlacement(state environmentState) er
 		}
 	}
 	return nil
+}
+
+// Reuse the existing finite named-volume owner. Keeping the destination fixed
+// preserves the existing runtime paths; a profile cannot select a Host mount.
+func createEnvironmentWorkspace(ctx context.Context, runner CommandRunner, session domain.SandboxSessionID, profile inspectionEnvironmentProfile, capacity int64) (closureVolume, error) {
+	if session.String() == "" || profile.identity == "" {
+		return closureVolume{}, errEnvironmentState
+	}
+	return createInputVolume(ctx, runner, session.String(), profile.identity, capacity, false, projectBuildVolumeConfig{environmentWorkspaceRoot, false})
+}
+
+func environmentContainerArguments(session domain.SandboxSessionID, profile inspectionEnvironmentProfile, volume closureVolume) ([]string, error) {
+	if session.String() == "" || profile.identity == "" || volume.manifestID != profile.identity ||
+		volume.transaction != session.String() || volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
+		return nil, errEnvironmentState
+	}
+	mount, err := volume.mountArgument(false)
+	if err != nil {
+		return nil, err
+	}
+	base := createArguments(session)
+	args := make([]string, 0, len(base)+len(profile.environment)+4)
+	workspaces, environment, images := 0, 0, 0
+	for index := 0; index < len(base); index++ {
+		switch {
+		case base[index] == "--tmpfs" && index+1 < len(base) && strings.HasPrefix(base[index+1], "/tmp:"):
+			args = append(args, "--mount", mount)
+			index++
+			workspaces++
+		case base[index] == "--env" && index+1 < len(base):
+			index++
+			environment++
+		case base[index] == nodeImageReference:
+			args = append(args, "--label", closureVolumeLabel+"="+volume.transaction,
+				"--label", closureManifestLabel+"="+profile.identity, "--annotation", environmentWorkspacePolicy)
+			args = append(args, profile.environment...)
+			args = append(args, base[index])
+			images++
+		default:
+			args = append(args, base[index])
+		}
+	}
+	if workspaces != 1 || environment != len(isolatedContainerEnvironmentArguments())/2 || images != 1 {
+		return nil, errEnvironmentState
+	}
+	return args, nil
+}
+
+// Only this typed entry changes the existing npm profile's workspace topology.
+// Guest noexec/nosuid must be present independently of the backing tmpfs.
+// A runtime that only provides ordinary 9p fails before any artifact launch.
+func (o *SharedObserver) StartEnvironmentProfile(ctx context.Context, container string, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := environmentExpectedTopology()
+	if !ok || budget == nil {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, container, "npm-lifecycle", topology, budget)
+}
+
+func environmentExpectedTopology() ([]observerMountExpectation, bool) {
+	topology, ok := observerExpectedTopology("npm-lifecycle")
+	if !ok {
+		return nil, false
+	}
+	for index, mount := range topology {
+		if mount.Mountpoint == environmentWorkspaceRoot {
+			topology[index] = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", false, true, true, false}
+			return topology, true
+		}
+	}
+	return nil, false
 }

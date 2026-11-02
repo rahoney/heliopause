@@ -6,7 +6,7 @@
     "source_repository": "https://github.com/google/gvisor.git",
     "patch": {
       "path": "tools/gvisor/release-20260907.0.patch",
-      "sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331"
+      "sha256": "2a34d5f2fc722682c43dc331f47cb808934a89a79e45d542b375d517de5294b7"
     },
     "build": {
       "bazel_module_lock_sha256": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",
@@ -37,8 +37,8 @@
         },
         {
           "path": "gvisor-bin/gvisor_sentry",
-          "size": 51923536,
-          "sha512": "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"
+          "size": 51920567,
+          "sha512": "53c11254a8996cf7be1feb599aa7193d23a229b932d083c993640f6633691d8b0dad26c70bc606dca8bea82df252a251f6b75dfc08a4776eeb793b12894e32b5"
         },
         {
           "path": "gvisor-bin/runsc-metric-server",
@@ -47,8 +47,8 @@
         },
         {
           "path": "runsc",
-          "size": 110972712,
-          "sha512": "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"
+          "size": 110973559,
+          "sha512": "6ad31694a8fc4789e6bcb392710fc544ed3a62129579d22ee13ca21957863e3c6235df5d3eb3e9bb2d32adf5367227eec39dae3b90f00e02cac956f40f01b5e5"
         }
       ]
     }

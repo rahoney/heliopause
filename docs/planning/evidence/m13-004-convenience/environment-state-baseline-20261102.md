@@ -77,3 +77,76 @@ Staticcheck18.725s·vet1.736s는 PASS다.
 이는 다음 runtime 연결에 사용할 현재 구현 단위다. 두 환경을 실제 Artifact 검사에
 연결하거나 S01/S08 네 상태를 YES로 올린 것이 아니다. 위 순서의2–5와 전체 acceptance는
 계속 남는다. 새 helper/binary/framework·Host 설치 변경·원격 CI는 없다.
+
+
+## 2026-11-02 gVisor DATA와 noexec 경계 — 현재 후보 미승인
+
+기존 installed helper와 새 Go topology의 고정 DATA4.425s, 이어 suspicious 사실 부재까지
+확인한13.522s는 PASS였다. 후자는16 expected process events/1824 bytes, session_complete를
+확인했고 C++·Host 설치는 바꾸지 않았다. 그러나 이는 guest 실행 금지와 별도다.
+
+`/tmp` 전체를 named volume/guest9p로 교체하는 후보는 backing tmpfs noexec를 실제 guest
+noexec로 전용할 수 없다. 고정 ELF 제어의 도입 실패·139(SIGSEGV)는 최초 원본으로
+보존하며 해당 시험으로 차단 성공을 주장하지 않는다. 단순 shebang 제어의 실제
+`DATA_EXEC_EXIT=99`(13.303s, test FAIL)는 직접 실행이 가능함을 확인했다. 기대한126과
+다르므로 후보는 **반증/제품 연결 금지**다. 기존 제품의 private `/tmp` tmpfs·권한·버전
+입력은 바꾸지 않았고, 제품 Artifact 실행에는 연결하지 않았다.
+
+다음은 같은 source의 실패 반복이나 권한 확대가 아니라 guest mount flags를 실제로
+보존하는 지원 경로 조사다. 전후 DATA 읽기와 noexec를 모두 만족하기 전에는 두 fresh
+Artifact 실험 연결·qualification을 진행하지 않는다. S01/S08의 네 상태는 계속 NO다.
+
+
+### 최소 보완 경로와 기존 업데이트 owner
+
+고정 upstream `7c619980`의 `runsc/boot/vfs.go:ParseMountOptions`는 OCI mount options에서
+NoExec/NoSUID를 만들며, Docker named-volume backing 옵션이 이 guest options로 전용되지
+않는다. 현재 제품 `/tmp` private tmpfs의 실제 guest flags를 바꾸지 않는다.
+
+보완은 기존 pinned HAA gVisor patch 안의 좁은 **추가 제한**으로 검토한다. Controller가
+요청한 versioned workspace policy만 고정 `/tmp`의 guest noexec/nosuid를 강제하고 알 수
+없는 policy는 거부한다. 다른 mount와 executable child mount는 바꾸지 않으며 새 capability,
+privileged manager, Artifact 선택 mount 또는 observer grant를 추가하지 않는다. Go observer는
+실제 guest 두 flags를 필수로 요구해 구형/불일치 runtime에서 준비를 거부하도록 먼저 고쳤다.
+
+새 runtime 후보는 engineering05의 기존 exact source/patch·Go owner·Bazel/builder·전체 bundle
+capture/strict verifier·runtime generator를 그대로 사용한다. 기존 SDK·이미지 버전을 새로
+선택하거나 다른 updater를 만들지 않는다. Patch hash와 실제 산출물 identity는 검증된
+후보에서만 갱신하며 기존 installed runtime이나 과거 qualification을 성공으로 승계하지
+않는다. 이 수정 전후의 작은 runtime 회귀와 실제 flags/직접 실행 거부를 먼저 닫는다.
+
+
+## 2026-11-02 고정 runtime의 guest 제한 — 부분 경계 검증
+
+기존 source/Go/Bazel/builder로9개 named upstream 회귀19.001s와 같은 캐시의 완전한
+six-member bundle88.444s가 PASS다. 기존 `capture-gvisor`·strict verifier·compiler/trace
+capability 검사를 재사용했다. 관측 member 지문을 canonical lock에 반영하고 기존
+`generate-runtime-lock.go`로 파생 코드를 생성했다. Source commit·선택 Go1.27.3·이미지·
+Bazel/builder 버전은 바뀌지 않았다. Node/Python 등의 버전 owner도 그대로다.
+
+별도 PID/mount namespace의 고정 static DATA 대조1.696s는 정책이 없을 때 guest flags가
+false이고 shebang script가99로 실행됨을 확인했다. 같은 입력에 정책을 넣으면 실제 guest
+noexec/nosuid가 true이며 `execve`가 EACCES로 거부됐다. 임의 Artifact·외부 연결·설치된
+runtime/Docker 설정 변경은0이다. 이 결과는 직접 OCI runtime 경계에 한정하며 새 bundle의
+Docker/production observer·두 fresh Artifact 실험·합산 CPU/wall/event 원장 검증이 아니다.
+Namespace 종료와 빈 runtime 상태 조회 뒤 보호된 임시 사본을 제거했고 고정 시험 binary
+역시 지문 대조 후 제거했다. 개발 tool cache와 후속 소비자에 필요한 검증 bundle은 유지한다.
+
+최초 upstream launcher는 성공했으나 XML의 named census가 비어 operator가 실패했다.
+캐시를 재사용한 verbose 결과로9개를 확인했다. Direct OCI의 최초 정리 오류와 준비 단계
+권한 오류 뒤의 의도치 않은 동일 operator 재실행은 숨기지 않는다. V1의 최초 원래 case
+결과는 미확정이며 덮인 receipt에서 복구하지 못한 owned-root path도 NOT_KNOWN이다.
+[부분 원장](./environment-state-local-20261102.json)과 별도 raw interpretation이 근거를
+소유한다. V2는 최초 결과와 cleanup을 독립 보존한 뒤 PASS다.
+
+S01/S08 전체의 네 상태는 계속 NO다. 다음은 기존 root 자원/완료 원장을 사용한 두 fresh
+Artifact 실행 연결과 전 생태계·파일 변화·단기 생성/삭제·privacy/Policy acceptance다.
+CI는 시작하지 않았고 설치 환경은 변경하지 않았다.
+
+
+현재 묶음 foundation의 최초83.085s는 compile 단계들 뒤 기존 C01 파생 writer의
+`sandbox → Core/Ports` 검사표 누락에서 실패했다. Architecture-001 방향을 유지하고
+실제 opaque 계약만 등록했으며 concrete storage/bootstrap 거부도 같은 기존 회귀에
+포함했다. 해당1.596s와 수정된 canonical foundation25.164s가 PASS다. Runtime 유지보수
+3 package37.155s·보안34.484s도 PASS다. S01/S08 전체 구현·Docker/observer/Artifact
+qualification은 이 검사들로 완료 처리하지 않는다.
