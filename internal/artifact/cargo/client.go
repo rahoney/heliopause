@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const MaxCrateBytes = 64 << 20
@@ -112,10 +113,6 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if _, err := ParseIntegrity(resolved.DeclaredIntegrity()); err != nil {
 		return result, err
 	}
-	body, err := c.read(ctx, endpoint, MaxCrateBytes)
-	if err != nil {
-		return result, err
-	}
 	if err := os.MkdirAll(c.intakeRoot, 0o700); err != nil {
 		return result, err
 	}
@@ -127,13 +124,61 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err := root.Mkdir(run.String(), 0o700); err != nil {
 		return result, err
 	}
+
+	allocation, err := root.Lstat(run.String())
+	if err != nil {
+		return result, err
+	}
+	directory, err := root.OpenRoot(run.String())
+	if err != nil {
+		return result, err
+	}
+	defer directory.Close()
+	opened, err := directory.Stat(".")
+	if err != nil || !os.SameFile(allocation, opened) {
+		return result, errors.New("intake directory changed")
+	}
+	var lease ports.StorageLease
 	defer func() {
 		if resultErr != nil {
-			resultErr = errors.Join(resultErr, root.RemoveAll(run.String()))
+			current, cleanupErr := root.Lstat(run.String())
+			if cleanupErr == nil && os.SameFile(allocation, current) {
+				// Never recursively remove members whose completed ownership
+				// and last-use have not been established.
+				cleanupErr = root.Remove(run.String())
+				if cleanupErr == nil {
+					parent, err := root.Open(".")
+					cleanupErr = err
+					if err == nil {
+						cleanupErr = errors.Join(parent.Sync(), parent.Close())
+					}
+				}
+			} else {
+				cleanupErr = errors.Join(errors.New("intake cleanup ownership is unknown"), cleanupErr)
+			}
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				cleanupErr = lease.Abort(cleanupCtx)
+				cancel()
+			}
+			resultErr = errors.Join(resultErr, cleanupErr)
 			result = domain.AcquiredArtifact{}
 		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
 	}()
-	file, err := root.OpenFile(run.String()+"/package.crate", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: MaxCrateBytes, Files: 1})
+		if err != nil {
+			return result, err
+		}
+	}
+	body, err := c.read(ctx, endpoint, MaxCrateBytes)
+	if err != nil {
+		return result, err
+	}
+	file, err := directory.OpenFile("package.crate", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return result, err
 	}
@@ -147,7 +192,16 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err != nil {
 		return result, err
 	}
-	return domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), content, "intake:"+run.String()+":crate", uint64(len(body)), resolved.DeclaredIntegrity())
+	result, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), content, "intake:"+run.String()+":crate", uint64(len(body)), resolved.DeclaredIntegrity())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	return result, nil
 }
 
 func (c *Client) read(ctx context.Context, endpoint string, limit int64) ([]byte, error) {

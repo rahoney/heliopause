@@ -24,12 +24,13 @@ type uvProjectBindings struct {
 }
 
 type uvProjectService struct {
-	workflow *application.UVProjectService
-	promoter *promotion.UVProjectPromotion
+	operation domain.OperationID
+	workflow  *application.UVProjectService
+	promoter  *promotion.UVProjectPromotion
 }
 
 func (s *uvProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
-	return s.workflow.Apply(ctx, install)
+	return s.workflow.Apply(ports.WithStorageOperation(ctx, s.operation), install)
 }
 
 func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool, selection ...artifactpypi.UVProjectSelection) (*uvProjectService, error) {
@@ -63,5 +64,5 @@ func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.U
 	if err != nil {
 		return nil, err
 	}
-	return &uvProjectService{workflow, promoter}, nil
+	return &uvProjectService{operation, workflow, promoter}, nil
 }

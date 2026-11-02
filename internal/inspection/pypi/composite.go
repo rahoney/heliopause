@@ -3,9 +3,11 @@ package pypi
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // graphStaticState is private PyPI preparation state. It never crosses the
@@ -166,6 +168,27 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			return reports, err
 		}
 		reports[dependency.Node()] = report
+	}
+	if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+		for target, input := range prerequisites {
+			directory, _, _, err := i.static.artifactLocation(input)
+			if err != nil {
+				return reports, err
+			}
+			run, err := domain.ParseRunID(filepath.Base(directory))
+			if err != nil {
+				return reports, err
+			}
+			complete := true
+			for _, execution := range reports[target].Executions() {
+				if execution.Required() && execution.Status() != domain.ExecutionCompleted {
+					complete = false
+				}
+			}
+			if err := lifetime.NoteInspection(ctx, run, complete); err != nil {
+				return reports, err
+			}
+		}
 	}
 	return reports, nil
 }

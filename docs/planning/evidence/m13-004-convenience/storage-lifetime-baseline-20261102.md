@@ -142,3 +142,43 @@ identity/content를 제거 직전에 다시 읽고 REMOVED를 기록한다. 전�
 기존 bootstrap preflight16.577s, canonical security20.456s와 Darwin compile10.878s는 PASS다.
 [부분 checkpoint](./storage-intake-local-20261102.json)는 실패/교정과 각 source 입력을 구분한다.
 Darwin 실행·전체 C01 및 최종 hosted qualification은 여전히 OPEN이다.
+
+## 169d61f 이후 — 기존 공개 획득 owner와 공유 소비자 연결
+
+Npm의 같은 원장/lease를 PyPI·Go·Cargo·Terraform·GitHub의 기존 Acquire에 연결했다.
+각 source의 기존 compressed/bundle/file 한도를 읽어 다운로드 전에 예약하고, 성공 때
+실제 bytes/tree를 seal한다. PyPI filename의 기존0400 권한은 유지하며 journal/Evidence의
+0600 요건은 완화하지 않는다. Go/Terraform envelope overhead도 기존 encoder 형식에서
+계산한다. 고정 runtime identity·버전 lock·CPU/CUDA resource policy는 변경하지 않는다.
+
+- PyPI 최초3.658s는 예약 전 다운로드와 quota 거부 누락을 재현했다. 같은 owner 시험은
+  5.804s 중 PyPI PASS/storage localhost 권한 미도달이었고, 동일 소스의 로컬 소켓 권한
+  보완5.644s는 두 package PASS였다. 권한 실패를 제품 finding으로 기록하지 않는다.
+- Go/Cargo/Terraform 최초1.965s는 세 경로 모두 quota 거부 전에 다운로드했다.
+  생성 owner의 기존 held-root/byte bound를 유지한 첫 세 package2.394s PASS다.
+- GitHub 최초 named RED는 Go의 새 held-root local 변수 충돌로 build에서 멈췄으므로
+  동작 재현으로 집계하지 않는다. 이어 전체 영향7 package17.744s에서는6 package가
+  PASS, 기존 release-set의 manifest digest 실패 정리만 잔여 사본을 검출했다.
+  완료된 asset의 생성 FileInfo를 기존 `discardReplayRun`에 전달해 해당 owner의 한정
+  삭제 경계를 재사용했다. 원래 실패와 새 source/quota/failure 시험9.305s PASS다.
+- 공유 consumer 직접0.940s는 다른 node가 미완료인데 이미 검사된 input을 삭제했으며,
+  기존 owner가 먼저 삭제한 사본도 원장에서 해제하지 못했다. Finish의 prepass는 전체
+  공유 집합의 완료부터 확인하고, owner의 확인된/durable 부재만 기존 journal 전이로
+  해제한다. 같은0.996s 표적 PASS다. query 실패를 부재로 바꾸지 않는다.
+- PNPM/Bun/UV와 requirements의 기존 operation ID를 원본 소유권 준비부터 전달한다.
+  원본 static layout proof와 PyPI 보조 입력은 자기 용도의 완료만 표시하고 설치 ALLOW를
+  만들지 않는다. 실제 graph node/외부 runtime/guard가 끝나기 전에는 공유 입력을 삭제하지 않는다.
+- 영향10 package Race102.085s PASS다. Quick84.336s는 build/test-build까지 PASS 후
+  새 Port 소비자4개의 import 등록 누락으로 architecture에서 멈췄다. Adapter→Core/Ports의
+  기존 원칙과 설계§7.2에 해당하는4개만 등록하고 concrete storage/bootstrap 우회 금지
+  회귀를 함께 유지했다. 기본 검사 나머지와 보안 검사의 실제 결과는 같은 intake checkpoint를 따른다.
+
+이 범위는 공개 Acquire와 정상 명령의 연결이다. Frozen replay·derived writer·실패/취소의
+실제 drain·active shared lease/crash recovery·staging/cache/rollback·자동 retention·설정과
+result 축 및 최종 qualification은 여전히 MISSING이다. C01 전체 네 상태는 NO를 유지한다.
+
+해당 public acquisition 묶음의 최종 Quick302.007s와 canonical security31.773s는 PASS다.
+Race102.085s 이후 product source는 그대로이며 checker 등록/문서만 보완했다.
+다음 실제 수정 owner는 `sandbox/pypi_build.go: streamDerivedWheel`다. 기존 Run directory에
+추가하는 derived wheel/filename은 별도 생성 경로이므로 현재 seal 뒤 쓰기·예약·actual bytes
+갱신을 먼저 연결한다. 현재의 성공 획득 시험을 해당 파생 쓰기 완료로 전용하지 않는다.

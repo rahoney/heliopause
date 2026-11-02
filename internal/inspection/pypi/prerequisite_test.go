@@ -17,6 +17,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationpypi "github.com/rahoney/heliopause/internal/verification/pypi"
@@ -46,9 +47,15 @@ func TestInspectionPrerequisiteKeepsRequestedGraphAndBaseFailure(t *testing.T) {
 				inspector.WithInspectionPrerequisites(func(context.Context, domain.LockedDependencyGraph) ([]InspectionPrerequisite, error) {
 					return []InspectionPrerequisite{input}, nil
 				})
-				reports, err := inspector.InspectGraph(ctx, graph, acquired)
+				lifetime := &prerequisiteStorageCompletion{completed: make(map[domain.RunID]bool)}
+				reports, err := inspector.InspectGraph(ports.WithStorage(ctx, lifetime), graph, acquired)
 				if err != nil {
 					t.Fatal(err)
+				}
+				directory, _, _, locationErr := static.artifactLocation(input.Artifact)
+				inputRun, runErr := domain.ParseRunID(filepath.Base(directory))
+				if locationErr != nil || runErr != nil || len(lifetime.completed) != 1 || !lifetime.completed[inputRun] {
+					t.Fatal("supporting input completion was not bound to its own Run", lifetime.completed, locationErr, runErr)
 				}
 				if len(reports) != 2 || !reflect.DeepEqual(beforeNodes, graph.Nodes()) || !reflect.DeepEqual(beforeEdges, graph.Edges()) {
 					t.Fatal("inspection input changed original membership")
@@ -332,4 +339,19 @@ func prerequisiteFixtureWheel(t *testing.T, root, name, tag string, extra map[st
 		t.Fatal(err)
 	}
 	return a
+}
+
+// Input completion is independent of the original requested graph's Policy.
+// The common finalizer still waits for every shared consumer before deletion.
+type prerequisiteStorageCompletion struct{ completed map[domain.RunID]bool }
+
+func (*prerequisiteStorageCompletion) Policy() domain.StoragePolicy {
+	return domain.DefaultStoragePolicy()
+}
+func (*prerequisiteStorageCompletion) Reserve(context.Context, ports.StorageRequest) (ports.StorageLease, error) {
+	return nil, fmt.Errorf("unexpected inspection-time acquisition")
+}
+func (s *prerequisiteStorageCompletion) NoteInspection(_ context.Context, run domain.RunID, complete bool) error {
+	s.completed[run] = complete
+	return nil
 }

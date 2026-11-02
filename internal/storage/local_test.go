@@ -737,3 +737,66 @@ func TestIntakeFinalizationRechecksMemberAfterWholeInventory(t *testing.T) {
 		t.Fatal("changed data was removed", readErr)
 	}
 }
+
+func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t *testing.T) {
+	for _, removedByOwner := range []bool{false, true} {
+		t.Run(map[bool]string{false: "shared incomplete", true: "owner removed"}[removedByOwner], func(t *testing.T) {
+			path := storageTestRoot(t)
+			store, err := openTestStorage(context.Background(), path, storageFixturePolicy(t, 4))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer store.Close()
+			operation, _ := domain.NewOperationID()
+			ctx := ports.WithStorageOperation(context.Background(), operation)
+			var runs []domain.RunID
+			for index := 0; index < 2; index++ {
+				run, _ := domain.NewRunID()
+				runs = append(runs, run)
+				if err := store.intake.Mkdir(run.String(), 0700); err != nil {
+					t.Fatal(err)
+				}
+				lease, err := store.Reserve(ctx, ports.StorageRequest{Operation: operation, Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: 128, Files: 1})
+				if err != nil {
+					t.Fatal(err)
+				}
+				payload := filepath.Join(path, "intake", run.String(), "payload")
+				if err := os.WriteFile(payload, []byte("sealed bytes"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				if err := lease.Commit(ctx); err != nil {
+					t.Fatal(err)
+				}
+				if err := lease.Close(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := store.NoteInspection(ctx, runs[0], true); err != nil {
+				t.Fatal(err)
+			}
+			if removedByOwner {
+				if err := store.intake.Remove(runs[1].String() + "/payload"); err != nil {
+					t.Fatal(err)
+				}
+				if err := store.intake.Remove(runs[1].String()); err != nil {
+					t.Fatal(err)
+				}
+				if err := store.Finish(ctx, true); err != nil {
+					t.Fatal(err)
+				}
+				if len(store.entries) != 0 || store.charged != 0 {
+					t.Fatal("confirmed owner removal retained accounting")
+				}
+				return
+			}
+			if err := store.Finish(ctx, true); err == nil {
+				t.Fatal("incomplete shared consumer accepted")
+			}
+			for _, run := range runs {
+				if _, err := store.intake.Stat(run.String() + "/payload"); err != nil {
+					t.Fatal("shared input deleted before all consumers completed", err)
+				}
+			}
+		})
+	}
+}

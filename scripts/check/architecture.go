@@ -126,14 +126,17 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/artifact/gomodule": {
+			modulePath + "/internal/core/ports":            true,
 			modulePath + "/internal/core/domain":           true,
 			modulePath + "/internal/artifact/projectbuild": true,
 		},
 		modulePath + "/internal/artifact/projectbuild": {modulePath + "/internal/core/domain": true},
 		modulePath + "/internal/artifact/cargo": {
+			modulePath + "/internal/core/ports":  true,
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/terraformprovider": {
+			modulePath + "/internal/core/ports":             true,
 			modulePath + "/internal/core/domain":            true,
 			modulePath + "/internal/artifact/githubrelease": true,
 		},
@@ -199,6 +202,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/inspection/pypi": {
+			modulePath + "/internal/core/ports":      true,
 			modulePath + "/internal/artifact/pypi":   true,
 			modulePath + "/internal/core/domain":     true,
 			modulePath + "/internal/sandbox":         true,

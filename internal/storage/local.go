@@ -540,6 +540,11 @@ func (l *resourceLease) Commit(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		// Payload and publication entries must be durable before the journal
+		// makes the reservation reusable as a sealed resource.
+		if err := errors.Join(syncRoot(l.directory), syncRoot(l.store.resourceRoot(l.record.Kind))); err != nil {
+			return err
+		}
 		committed := l.record
 		committed.Phase = "RETAINED"
 		committed.LogicalBytes = bytes
@@ -609,6 +614,19 @@ func privateFile(info os.FileInfo) bool {
 	return ok && stat.Uid == uint32(os.Geteuid()) && stat.Nlink == 1
 }
 
+// Intake also owns immutable 0400 metadata. Journal and Evidence retain their
+// stricter 0600 contracts; both payload modes prohibit foreign access and links.
+func privateResourceFile(info os.FileInfo) bool {
+	if privateFile(info) {
+		return true
+	}
+	if info == nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0400 || info.Mode()&(os.ModeSetuid|os.ModeSetgid) != 0 {
+		return false
+	}
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	return ok && stat.Uid == uint32(os.Geteuid()) && stat.Nlink == 1
+}
+
 type measuredMember struct {
 	info   os.FileInfo
 	sha256 string
@@ -634,7 +652,7 @@ func measureResource(ctx context.Context, root *os.Root, kind string, maxBytes, 
 			return 0, "", err
 		}
 		info, err := root.Lstat(entry.Name())
-		if err != nil || !privateFile(info) || (kind == "evidence" && !strings.HasSuffix(entry.Name(), ".json")) || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
+		if err != nil || !privateResourceFile(info) || (kind == "evidence" && (!privateFile(info) || !strings.HasSuffix(entry.Name(), ".json"))) || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
 			return 0, "", errors.New("evidence member exceeds ownership or byte reservation")
 		}
 		memberDigest, err := hashResourceMember(ctx, root, entry.Name(), info)
@@ -819,6 +837,25 @@ func (s *Local) Finish(ctx context.Context, commandSucceeded bool) error {
 			if !exists || record.Kind != "intake" {
 				continue
 			}
+			// Existing concrete owners can already have removed their short-lived
+			// source proof. Confirm durable absence before releasing accounting;
+			// a stat/query error never counts as absence.
+			if _, err := s.intake.Lstat(record.Target); errors.Is(err, os.ErrNotExist) && record.Phase == "RETAINED" {
+				if err := syncRoot(s.intake); err != nil {
+					return err
+				}
+				deleting := record
+				deleting.Phase = "DELETING"
+				if err := s.append(journalEvent{"deleting", deleting}); err != nil {
+					return err
+				}
+				removed := deleting
+				removed.Phase = "REMOVED"
+				if err := s.append(journalEvent{"removed", removed}); err != nil {
+					return err
+				}
+				continue
+			}
 			run, err := domain.ParseRunID(record.Run)
 			if err != nil {
 				failures = append(failures, err)
@@ -826,6 +863,17 @@ func (s *Local) Finish(ctx context.Context, commandSucceeded bool) error {
 			}
 			if !s.inspected[run] || record.Phase != "RETAINED" {
 				failures = append(failures, fmt.Errorf("intake %s remains accounted: complete observation/last-use proof is unavailable", record.Run))
+				continue
+			}
+		}
+		// Inputs can be shared by another node's runtime. An incomplete member
+		// protects the command's entire set, including its supporting inputs.
+		if len(failures) != 0 {
+			return errors.Join(failures...)
+		}
+		for key := range s.owned {
+			record, exists := s.entries[key]
+			if !exists || record.Kind != "intake" {
 				continue
 			}
 			if err := s.removeSealedIntake(ctx, record); err != nil {
@@ -883,7 +931,7 @@ func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (
 		}
 		expected, known := members[entry.Name()]
 		info, err := root.Lstat(entry.Name())
-		if !known || err != nil || !privateFile(info) || !os.SameFile(expected.info, info) || info.Size() != expected.info.Size() || !info.ModTime().Equal(expected.info.ModTime()) {
+		if !known || err != nil || !privateResourceFile(info) || info.Mode() != expected.info.Mode() || !os.SameFile(expected.info, info) || info.Size() != expected.info.Size() || !info.ModTime().Equal(expected.info.ModTime()) {
 			return errors.New("intake cleanup member ownership changed")
 		}
 		digest, err := hashResourceMember(ctx, root, entry.Name(), info)
@@ -930,7 +978,7 @@ func hashResourceMember(ctx context.Context, root *os.Root, name string, info os
 	after, afterErr := file.Stat()
 	closeErr := file.Close()
 	current, currentErr := root.Lstat(name)
-	if statErr != nil || afterErr != nil || currentErr != nil || readErr != nil || closeErr != nil || !os.SameFile(info, opened) || !os.SameFile(info, after) || !os.SameFile(info, current) || count != info.Size() || after.Size() != info.Size() || !after.ModTime().Equal(info.ModTime()) || current.Size() != info.Size() || !current.ModTime().Equal(info.ModTime()) || !privateFile(after) || !privateFile(current) {
+	if statErr != nil || afterErr != nil || currentErr != nil || readErr != nil || closeErr != nil || !os.SameFile(info, opened) || !os.SameFile(info, after) || !os.SameFile(info, current) || count != info.Size() || after.Size() != info.Size() || !after.ModTime().Equal(info.ModTime()) || current.Size() != info.Size() || !current.ModTime().Equal(info.ModTime()) || !privateResourceFile(after) || !privateResourceFile(current) || after.Mode() != info.Mode() || current.Mode() != info.Mode() {
 		return "", errors.New("resource member changed during accounting/readback")
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil

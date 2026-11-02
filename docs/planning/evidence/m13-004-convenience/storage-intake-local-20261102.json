@@ -1,7 +1,7 @@
 {
   "schema": "helox.local-checkpoint/v1",
   "baseline": "ecf1202",
-  "scope": "C01 npm intake reservation, actual-byte sealing and normal-command last-use only",
+  "scope": "C01 existing public acquisition owners, actual-byte sealing and normal-command shared-consumer last-use only",
   "c01_status": {
     "IMPLEMENTED": "NO",
     "WIRED": "NO",
@@ -13,13 +13,20 @@
     "seal actual bytes and content identity on acquisition success",
     "separate intake and Evidence accounting for the same Run",
     "reuse durable application Evidence boundary and outer command finalization",
-    "protect unknown, changed, linked, incomplete and restarted-owner resources; read back each member immediately before unlink"
+    "protect unknown, changed, linked, incomplete and restarted-owner resources; read back each member immediately before unlink",
+    "pre-download bounded reservations for existing PyPI/Go/Cargo/Terraform/GitHub Acquire owners",
+    "preserve immutable PyPI filename mode and stricter journal/Evidence modes",
+    "reuse exact existing GitHub replay cleanup for failed completed assets",
+    "bind original-layout and supporting-input completion without installation approval",
+    "wait for all shared consumers before deleting any input; acknowledge concrete-owner durable absence",
+    "register only four reviewed adapter-to-Core/Ports edges and reject concrete storage/bootstrap shortcuts"
   ],
   "missing": [
-    "other acquisition owners, derived/staging/cache/rollback accounting",
-    "failure/cancellation/runtime-drain and shared reference lifetime",
-    "bounded crash recovery, retention and finite cache collection",
-    "settings/result cleanup axes and 100-repeat/final hosted qualification"
+    "frozen replay and derived-wheel writer registration/updated accounting",
+    "failure/cancellation/runtime-drain and shared lease/crash recovery",
+    "staging/cache/rollback accounting and operation peak reservation",
+    "automatic expiry/finite cache collection, settings/result cleanup axes",
+    "100-repeat and final native/hosted qualification"
   ],
   "checks": [
     {
@@ -181,6 +188,270 @@
         "GOFLAGS": "-mod=readonly",
         "GOMAXPROCS": "2"
       }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-pypi-intake-registration-red.json",
+      "sha256": "572eb54d54746108f3138ff77deb32d78ac3069ceffa623b6c48050e332445ee",
+      "exit_code": 1,
+      "elapsed_seconds": 3.658,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-pypi-intake-registration-green.json",
+      "sha256": "d597eca8f0e8c6d12ece049182104a056902955ea36107ac25244b7b4e1ab475",
+      "exit_code": 1,
+      "elapsed_seconds": 5.804,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      },
+      "scope_note": "PyPI PASS; storage local listener denied by sandbox; original failure retained"
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-pypi-intake-owner-host.json",
+      "sha256": "369b78a8de115385f3f48194bb0aae6bc0d8eaa3181b1df18badcec96a498ab1",
+      "exit_code": 0,
+      "elapsed_seconds": 5.644,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-bundle-intake-registration-red.json",
+      "sha256": "c301ef6265be93dd5a4294c87346feef2fe8a8e6219f6ed7c9a326f5ac2bf846",
+      "exit_code": 1,
+      "elapsed_seconds": 1.965,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-bundle-intake-first.json",
+      "sha256": "746e5cb2d08cae9bf723aab33ad0a0f0903ce0960a484086d79b89d60f8017ab",
+      "exit_code": 0,
+      "elapsed_seconds": 2.394,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-release-intake-registration-red.json",
+      "sha256": "85066a0e3aa9da1317e75a8267ead1530d64f7ddc8ee9a00175b6c7689fc6fa4",
+      "exit_code": 1,
+      "elapsed_seconds": 2.053,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      },
+      "scope_note": "build failed in Go adapter local variable declaration; GitHub behavior NOT_REACHED"
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-all-intake-owner-host.json",
+      "sha256": "3b153ed6cd89e2e497a11eec608eb49754804ab9205195158dca00f7ae43d012",
+      "exit_code": 1,
+      "elapsed_seconds": 17.744,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-release-first-failure-green.json",
+      "sha256": "e3234d4e9490a387a21dcfb53e88a7947faaa104f4e2620e7c6ac58aaed5b936",
+      "exit_code": 0,
+      "elapsed_seconds": 9.305,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-shared-consumer-and-absence-red.json",
+      "sha256": "7ca4d902547b1a512066882aba697256aae4aad67a3ab2068e59b9c8a199f7f6",
+      "exit_code": 1,
+      "elapsed_seconds": 0.94,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-shared-consumer-and-absence-green.json",
+      "sha256": "88c5539f781fdee47cc19f74e451a9fa2bea07fb1906e85d0cf998d0d298275f",
+      "exit_code": 0,
+      "elapsed_seconds": 0.996,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-grouped-race.json",
+      "sha256": "1a8ccfdae34e3f28c1718582e606d11a89323a6a1dd279f321cd759cfe80d61d",
+      "exit_code": 0,
+      "elapsed_seconds": 102.085,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-grouped-quick.json",
+      "sha256": "fac4ffe2b7527a8f42ed46bbab9e48a92124cdc909b101e449ceb98a4a052e1c",
+      "exit_code": 1,
+      "elapsed_seconds": 84.336,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-current-quick.json",
+      "sha256": "d4614684adba8f06f1dc88f1f621ee87adaa62900c6c52f26c3fae62a5acfdbd",
+      "exit_code": 0,
+      "elapsed_seconds": 302.007,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-current-security.json",
+      "sha256": "8368e6727cac2ffb93e38feac49985ae8bdd69e2bcfb50a3e82c9cbc3df012d3",
+      "exit_code": 0,
+      "elapsed_seconds": 31.773,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-checkpoint-docs.json",
+      "sha256": "27b8fd1ad885352ecb1c04dda102c3c5539bdb78598a9b6310bc6b632787562e",
+      "exit_code": 0,
+      "elapsed_seconds": 0.386,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-six-owner-darwin-build.json",
+      "sha256": "0fa0009173579712ba4d6386fe1a8f3aeaf3b405fbbe47afcb1db9ecb5f5af28",
+      "exit_code": 0,
+      "elapsed_seconds": 11.388,
+      "source_unchanged": false,
+      "environment": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      },
+      "scope_note": "compile-only; original source_unchanged=false retained because compilation overlapped pending source synchronization of exactly three checkpoint Markdown/JSON files; all before/retained Go source hashes match; no frozen whole-input/native execution claim",
+      "changed_noncode_paths": [
+        "docs/planning/02-current-work-queue.md",
+        "docs/planning/evidence/m13-004-convenience/storage-intake-local-20261102.json",
+        "docs/planning/evidence/m13-004-convenience/storage-lifetime-baseline-20261102.md"
+      ]
     }
   ]
 }

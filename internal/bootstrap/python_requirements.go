@@ -40,6 +40,7 @@ func (s *pythonRequirementsService) InstallRequirements(ctx context.Context, req
 	if err != nil {
 		return outcome, err
 	}
+	ctx = ports.WithStorageOperation(ctx, operation)
 	cache, err := promotion.NewPythonProjectCache(b.intakeRoot, b.evidenceRoot, b.stagingRoot, b.evidence, evidence.Generator{}, operation)
 	if err != nil {
 		return outcome, err

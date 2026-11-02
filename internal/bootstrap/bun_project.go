@@ -48,12 +48,13 @@ type bunProjectMutationAdapter struct {
 }
 
 type bunProjectService struct {
-	workflow *application.BunProjectService
-	promoter *promotion.BunProjectPromotion
+	operation domain.OperationID
+	workflow  *application.BunProjectService
+	promoter  *promotion.BunProjectPromotion
 }
 
 func (s *bunProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
-	return s.workflow.Apply(ctx, install)
+	return s.workflow.Apply(ports.WithStorageOperation(ctx, s.operation), install)
 }
 
 func (a bunProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
@@ -82,7 +83,7 @@ func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSel
 	if err != nil {
 		return nil, err
 	}
-	return &bunProjectService{workflow, owner}, nil
+	return &bunProjectService{operation, workflow, owner}, nil
 }
 
 func (s *bunProjectSession) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {

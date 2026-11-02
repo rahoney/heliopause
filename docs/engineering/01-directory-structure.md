@@ -163,6 +163,7 @@ sandbox     → Sandbox Port 구현 + core/domain
 
 - npm, PyPI, GitHub Releases의 생태계 전용 parsing·API·metadata·dependency resolution은 각각 `internal/artifact/npm`, `pypi`, `githubreleases`에 둔다.
 - 공통 Artifact identity와 result는 `core/domain`, 계약은 `core/ports`를 사용한다.
+- 현재 npm/PyPI/GitHub·Go/Cargo/Terraform 획득 owner는 `core/ports.Storage`의 opaque 예약/게시 계약을 사용한다. PyPI inspection은 보조 입력의 실제 검사 완료만 같은 Port에 전달하며 구체 `internal/storage`를 import하거나 Policy를 생성하지 않는다.
 - 생태계별 구현 간 공유 코드가 실제로 생기기 전에는 `artifact/common`을 만들지 않는다.
 
 ### Verification, Inspection과 Sandbox

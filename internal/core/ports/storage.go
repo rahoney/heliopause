@@ -31,8 +31,10 @@ type StorageLease interface {
 	Close() error
 }
 
-// InspectionStorage records a trusted caller's completed-check boundary. It
-// does not approve installation or turn an incomplete experiment into success.
+// InspectionStorage records a trusted caller's input-specific completed-check
+// boundary, including static original-layout proofs and supporting inspection
+// inputs. It never approves installation; outer finalization waits for all
+// shared consumers and their guards/runtime closes.
 type InspectionStorage interface {
 	NoteInspection(context.Context, domain.RunID, bool) error
 }
