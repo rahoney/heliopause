@@ -37,22 +37,17 @@ type streamingDockerOutput interface {
 // and content are checked; the three pip-owned dist-info additions are bounded
 // and recorded under their canonical distribution only.
 func verifyClosureInstallation(ctx context.Context, runner CommandRunner, containerID string, manifest closureManifest, capacity int64) (closureInstallation, error) {
-	output, ok := runner.(streamingDockerOutput)
-	if !ok || ctx == nil || !exactObservationContainerID(containerID) || manifest.identity == "" || capacity <= 0 {
+	if manifest.identity == "" || capacity <= 0 {
 		return closureInstallation{}, errors.New("python closure installation verifier is unavailable")
 	}
-	reader, writer := io.Pipe()
-	commandResult := make(chan error, 1)
-	go func() {
-		err := output.RunOutput(ctx, writer, "docker", "cp", containerID+":"+pythonSitePath+"/.", "-")
-		_ = writer.CloseWithError(err)
-		commandResult <- err
-	}()
-	installed, verifyErr := scanClosureTar(reader, manifest, capacity)
-	_ = reader.CloseWithError(verifyErr)
-	commandErr := <-commandResult
-	if verifyErr != nil || commandErr != nil || ctx.Err() != nil {
-		return closureInstallation{}, fmt.Errorf("python closure installed tree does not match authenticated manifest: %w", errors.Join(verifyErr, commandErr, ctx.Err()))
+	var installed closureInstallation
+	err := readContainerTree(ctx, runner, containerID, pythonSitePath, func(input io.Reader) error {
+		var err error
+		installed, err = scanClosureTar(input, manifest, capacity)
+		return err
+	})
+	if err != nil {
+		return closureInstallation{}, fmt.Errorf("python closure installed tree does not match authenticated manifest: %w", err)
 	}
 	return installed, nil
 }

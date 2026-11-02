@@ -49,6 +49,31 @@ identity를 함께 대조하며 zero-attachment나 runtime tmpfs의 Docker cp를
    실패·불완전·취소와 각 기존 생태계 진입점을 닫는다. 원래 한도를 늘리거나 검사를 생략하지 않는다.
 
 실제 namespace/mount/observer 변경 전 해당 경계의 작은 시험부터 수행하고 의미 있는
-변경 묶음으로 필수 native/CPP/hosted 검증을 모은다. 현재 S01/S08 실행·제품 코드·새 CI는 없다.
+변경 묶음으로 필수 native/CPP/hosted 검증을 모은다. 전체 S01/S08 Artifact 실행 연결과 새 CI는 아직 없다.
 [C01 전체의 잔여 수명·quota acceptance](./storage-lifetime-baseline-20261102.md)는
 설계16의 통합 종료까지 계속 OPEN이며 이 baseline으로 완료 처리하지 않는다.
+
+
+## 2026-11-02 공통 profile·bounded DATA inventory — 부분 구현
+
+`environment.go`가 최소/모의 개발환경의 synthetic env·설정 파일과 기존 exact canary의
+역할을 한 곳에서 소유한다. Host 파일/env를 입력으로 읽지 않으며 fresh session마다 무효
+marker와 profile identity가 다르다. `environment_state.go`는 기존 Python 설치 verifier의
+streaming Docker DATA transport를 재사용하고 내용·종류·mode·소유자·size·digest를
+임시 inventory로 비교한다. 원래 closure manifest 검사는 유지한다. 상대 링크를 따라가지
+않고 escape/특수 파일/중복·ancestor 충돌/entry·byte·transport 한도/불완전 producer는
+snapshot 전체 실패다. 비교는 선형이고 canonical inventory digest만 정렬 비용이 든다.
+
+[부분 검증 원장](./environment-state-local-20261102.json)이 frozen source별 원본 receipt를
+소유한다. 첫 DATA16.810s와 공통 profile/reader 연결 후13.773s는 runc·고정 image 도구만
+사용했다. 후자는 실제 배치의 bytes/mode/UID/GID, 생성·수정·삭제, readonly keeper 선연결과
+writer 제거 뒤 상태 보존을 확인했다. 첫 시험의 exact 소유 volume/container 부재도 별도
+읽기 전용 query로 확인했다. Artifact 코드·외부 네트워크 실행은0이고 gVisor/observer는
+NOT_TESTED다. 전체 sandbox Race35.371s PASS는 최초 공통 구현 범위이며 뒤의 legacy
+TAR 상수 교정과 producer-failure 회귀는 별도 current receipt로 구분한다. 최초 Staticcheck
+8.355s의 U1000/SA1019 실패는 보존한다. Current 전송/경계 표적11.935s·고정
+Staticcheck18.725s·vet1.736s는 PASS다.
+
+이는 다음 runtime 연결에 사용할 현재 구현 단위다. 두 환경을 실제 Artifact 검사에
+연결하거나 S01/S08 네 상태를 YES로 올린 것이 아니다. 위 순서의2–5와 전체 acceptance는
+계속 남는다. 새 helper/binary/framework·Host 설치 변경·원격 CI는 없다.

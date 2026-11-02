@@ -28,7 +28,7 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 
 ### 2026-11-02 S01/S08 baseline — IN_PROGRESS
 
-[현재 owner·재사용·수명 대조](./evidence/m13-004-convenience/environment-state-baseline-20261102.md)는 기존 최소 격리/관찰과 실제 모의 환경·파일 내용 diff를 구분한다. S01/S08 네 상태는 모두 NO이며 먼저 owned workspace/readonly keeper와 bounded TAR reader의 작은 DATA 검증을 수행한다. 기존 한도·권한·업데이트 체계를 유지하고 새 helper/framework를 선행 생성하지 않는다. C01 전체 잔여 acceptance와 B01 호환 gap은 계속 OPEN이다.
+[현재 owner·재사용·수명 대조](./evidence/m13-004-convenience/environment-state-baseline-20261102.md)는 기존 최소 격리/관찰과 실제 모의 환경·파일 내용 diff를 구분한다. S01/S08 네 상태는 모두 NO다. Owned workspace/readonly keeper의 첫 actual DATA와 공통 synthetic profile/bounded TAR inventory의 actual DATA는 통과했다. 부분 구현·원본 실패·검증 범위는 같은 baseline과 environment-state-local-20261102.json이 소유한다. 다음은 기존 runtime/observer와 전체 자원 예산 안의 두 fresh 실험 연결이다. 기존 한도·권한·업데이트 체계를 유지하고 새 helper/framework를 선행 생성하지 않는다. C01 전체 잔여 acceptance와 B01 호환 gap은 계속 OPEN이다.
 
 ### 2026-11-02 C01 foundation — IN_PROGRESS
 

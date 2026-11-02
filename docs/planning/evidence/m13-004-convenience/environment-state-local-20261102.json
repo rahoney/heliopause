@@ -1,0 +1,97 @@
+{
+  "baseline_commit": "b085058",
+  "scope": "S01/S08 common synthetic profile and bounded DATA inventory only; production two-experiment wiring and whole acceptance OPEN",
+  "status": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-workspace-data-actual-v1.json",
+      "sha256": "06f09b964f6756164a94ee2103c406d9a8c3ff4e34cead1f0d425f8e97d73f24",
+      "exit_code": 0,
+      "elapsed": 16.81,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-first.json",
+      "sha256": "4557efc861b6b03d10563a1853fa76291e84342df1dce59bd6a9e6b7dbfee33b",
+      "exit_code": 0,
+      "elapsed": 8.723,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-profile-data-v2.json",
+      "sha256": "2196a1724bcfd20a48e08b1e89d7316cc8bd2805b5adbabcb4bcf29812352ed0",
+      "exit_code": 0,
+      "elapsed": 13.773,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-race.json",
+      "sha256": "c81c496b0392ce81eacb9616003a88d44437914afac797d6bc5f1409c5647986",
+      "exit_code": 0,
+      "elapsed": 35.371,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-static.json",
+      "sha256": "e7943b159893d381c0d629eb4cb7fca7e71e129a5d3822f4a09dd614b8794aa1",
+      "exit_code": 1,
+      "elapsed": 8.355,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-transport-tests.json",
+      "sha256": "e3c3d792d2c648ea01fff9268d5bebe2f96d895d2f063465a8bd6fbad8291579",
+      "exit_code": 0,
+      "elapsed": 11.935,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-current-static.json",
+      "sha256": "33546c61323534dadd92530f0b499d4c33c22276530c2500ca56ef7a4f90ce15",
+      "exit_code": 0,
+      "elapsed": 18.725,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-vet.json",
+      "sha256": "157739a4945850b45b6db02832ecc00420b9a26f46f3348c424a9fca8eba6d81",
+      "exit_code": 0,
+      "elapsed": 1.736,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-docs.json",
+      "sha256": "3260b52e3d091a5f83827f1d7c9ae5d92c8651f2b8680d5eaa5c25c5bb029fc3",
+      "exit_code": 0,
+      "elapsed": 0.394,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-security.json",
+      "sha256": "2602ed69adbc7257ff643c01e8242ba6f19fc2ad2d2f7ef481dd2511494df73e",
+      "exit_code": 0,
+      "elapsed": 19.085,
+      "source_unchanged": true
+    }
+  ],
+  "facts": [
+    "controller synthetic profile and normal-config/canary role separation",
+    "content/mode/uid/gid/type/hash comparison; bounded TAR, logical bytes, entries, relative links; no path or content in comparison counts",
+    "same existing Python closure DATA transport reused; original schema and manifest guard retained",
+    "actual runc DATA placement verified; readonly keeper preserves snapshot after writer disposal; gVisor/Artifact/observer NOT_TESTED"
+  ],
+  "original_static_failure": "default-build capture consumer missing (U1000), deprecated TypeRegA (SA1019); retained without relabeling",
+  "remaining": [
+    "existing sandbox runtime/observer mount connection",
+    "independent fresh minimal/development Artifact experiments within one total resource authorization",
+    "all descendants terminated and observer drained before final snapshot",
+    "create-then-delete syscall coverage and normalized Evidence/Policy/S09 connection",
+    "all ecosystem owners and grouped native/hosted qualification"
+  ],
+  "static_correction": "legacy NUL file type is handled without deprecated TypeRegA; default-build producer-completion regression now exercises capture; no runtime two-experiment wiring claimed"
+}
