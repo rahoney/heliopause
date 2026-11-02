@@ -14,6 +14,9 @@ type StorageRequest struct {
 	Kind              string
 	Temporary, Target string
 	Bytes, Files      uint64
+	// Extend reserves additional writes to this operation's already sealed intake.
+	// Bytes/Files are additional bounds; original bytes remain charged.
+	Extend bool
 }
 
 // Storage accounts a reservation durably before the owner writes payloads.

@@ -17,9 +17,11 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	inspectiongithub "github.com/rahoney/heliopause/internal/inspection/githubrelease"
 	"github.com/rahoney/heliopause/internal/policy"
+	"github.com/rahoney/heliopause/internal/storage"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 )
 
@@ -74,7 +76,23 @@ func acquiredFrozenFixture(t *testing.T, root, name string, body []byte) (Frozen
 }
 
 func TestFrozenIntakeFeedsExistingInspectWorkflow(t *testing.T) {
-	root := privateFrozenRoot(t)
+	path := filepath.Join(privateFrozenRoot(t), "haa")
+	root := filepath.Join(path, "intake")
+	if err := os.MkdirAll(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	spec := domain.DefaultStoragePolicy().Spec()
+	spec.MinimumFreeBytes = 1
+	policyValue, err := domain.NewStoragePolicy(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	storageOwner, err := storage.NewLocal(context.Background(), path, policyValue)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer storageOwner.Close()
+	ctx := ports.WithStorage(context.Background(), storageOwner)
 	var archive bytes.Buffer
 	writer := zip.NewWriter(&archive)
 	file, err := writer.Create("README.txt")
@@ -97,7 +115,7 @@ func TestFrozenIntakeFeedsExistingInspectWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	evidence, err := local.NewStore(t.TempDir())
+	evidence, err := local.NewStore(filepath.Join(path, "evidence"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +127,7 @@ func TestFrozenIntakeFeedsExistingInspectWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := service.Inspect(context.Background(), request)
+	result, err := service.Inspect(ctx, request)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,6 +149,16 @@ func TestFrozenIntakeFeedsExistingInspectWorkflow(t *testing.T) {
 	}
 	if err := frozen.Close(); err != nil {
 		t.Fatal(err)
+	}
+	journal, err := os.ReadFile(filepath.Join(path, ".storage", "resources.jsonl"))
+	if err != nil || !bytes.Contains(journal, []byte(`"kind":"intake"`)) {
+		t.Fatalf("frozen copy was not registered: %s %v", journal, err)
+	}
+	if err := storageOwner.Finish(ctx, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, run.String())); !os.IsNotExist(err) {
+		t.Fatal("copied input remains after last use", err)
 	}
 	if _, err := os.Stat(original); err != nil {
 		t.Fatal("Close removed caller-owned intake")

@@ -800,3 +800,85 @@ func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t 
 		})
 	}
 }
+
+func TestIntakeExpansionAccountsOnlyNewBytesAndReplaysWithoutAdoptingOwnership(t *testing.T) {
+	path := storageTestRoot(t)
+	policy := storageFixturePolicy(t, 4)
+	store, err := openTestStorage(context.Background(), path, policy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	run, _ := domain.NewRunID()
+	operation, _ := domain.NewOperationID()
+	ctx := ports.WithStorageOperation(context.Background(), operation)
+	if err := store.intake.Mkdir(run.String(), 0700); err != nil {
+		t.Fatal(err)
+	}
+	request := ports.StorageRequest{Operation: operation, Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: 128, Files: 1}
+	lease, err := store.Reserve(ctx, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(path, "intake", run.String(), "source"), []byte("source"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Close(); err != nil {
+		t.Fatal(err)
+	}
+	request.Extend, request.Bytes = true, 200
+	foreign := request
+	foreign.Operation, _ = domain.NewOperationID()
+	if _, err := store.Reserve(ctx, foreign); err == nil {
+		t.Fatal("another operation expanded an active input")
+	}
+	lease, err = store.Reserve(ctx, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if store.pending != 200 || store.charged != 206 || store.runs != 1 {
+		t.Fatalf("resident bytes counted twice: pending=%d charged=%d runs=%d", store.pending, store.charged, store.runs)
+	}
+	replayed, err := openTestStorage(ctx, path, policy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer replayed.Close()
+	if replayed.pending != 200 || replayed.charged != 206 || replayed.runs != 1 {
+		t.Fatal("pending expansion lost on replay")
+	}
+	if _, err := replayed.Reserve(ctx, request); err == nil {
+		t.Fatal("restarted owner adopted expansion authority")
+	}
+	if err := os.WriteFile(filepath.Join(path, "intake", run.String(), "derived"), []byte("derived"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if store.pending != 0 || store.charged != 13 || store.runs != 1 {
+		t.Fatal("expanded publication did not charge exact total")
+	}
+	if err := replayed.withLock(ctx, func() error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	if replayed.pending != 0 || replayed.charged != 13 || replayed.runs != 1 {
+		t.Fatal("expanded publication replay differs")
+	}
+	// Reopening and mutating the same inode must not authorize another writer.
+	if err := os.WriteFile(filepath.Join(path, "intake", run.String(), "source"), []byte("change"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Reserve(ctx, request); err == nil {
+		t.Fatal("changed source was expanded")
+	}
+	if store.pending != 0 || store.charged != 13 {
+		t.Fatal("rejected expansion changed accounting")
+	}
+}

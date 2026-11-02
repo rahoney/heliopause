@@ -1,7 +1,7 @@
 {
   "schema": "helox.local-checkpoint/v1",
   "baseline": "ecf1202",
-  "scope": "C01 existing public acquisition owners, actual-byte sealing and normal-command shared-consumer last-use only",
+  "scope": "C01 existing public/frozen acquisition, bounded derived writes, actual-byte sealing and normal-command shared-consumer last-use only",
   "c01_status": {
     "IMPLEMENTED": "NO",
     "WIRED": "NO",
@@ -19,10 +19,12 @@
     "reuse exact existing GitHub replay cleanup for failed completed assets",
     "bind original-layout and supporting-input completion without installation approval",
     "wait for all shared consumers before deleting any input; acknowledge concrete-owner durable absence",
-    "register only four reviewed adapter-to-Core/Ports edges and reject concrete storage/bootstrap shortcuts"
+    "register only four reviewed adapter-to-Core/Ports edges and reject concrete storage/bootstrap shortcuts",
+    "reserve and seal frozen source replay while preserving original caller ownership",
+    "explicit same-operation intake extension before derived output; seal original plus derived members",
+    "charge resident bytes once and replay additional pending/actual bytes without adopting restarted-owner authority"
   ],
   "missing": [
-    "frozen replay and derived-wheel writer registration/updated accounting",
     "failure/cancellation/runtime-drain and shared lease/crash recovery",
     "staging/cache/rollback accounting and operation peak reservation",
     "automatic expiry/finite cache collection, settings/result cleanup axes",
@@ -452,6 +454,134 @@
         "docs/planning/evidence/m13-004-convenience/storage-intake-local-20261102.json",
         "docs/planning/evidence/m13-004-convenience/storage-lifetime-baseline-20261102.md"
       ]
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-writer-registration-red.json",
+      "sha256": "9ed9e5fbb91efcff27877c725f102ef9f3ff7588cad07d914e02072a7b9b84a1",
+      "exit_code": 1,
+      "elapsed_seconds": 8.043,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-writer-first.json",
+      "sha256": "cd8ac0b237f0af27a1749f48bf322d06aec9e801f4cd7ff16c0cee5bc94b5232",
+      "exit_code": 0,
+      "elapsed_seconds": 10.799,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-expansion-replay-first.json",
+      "sha256": "c34f879f3fdf404414c4137dad77718bd7a41985f76bbfdfe701fa4df143db94",
+      "exit_code": 0,
+      "elapsed_seconds": 0.857,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-frozen-intake-registration-red.json",
+      "sha256": "653f5fd9dac1610aa2a1e9b781d28711621b2316dbe072588d4b68d3bdbd3632",
+      "exit_code": 1,
+      "elapsed_seconds": 8.566,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-frozen-race.json",
+      "sha256": "d7b40c047017986b38661223306b139dcf45923a91e9c03c763c17634136d89a",
+      "exit_code": 0,
+      "elapsed_seconds": 56.092,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-frozen-staticcheck.json",
+      "sha256": "7543e5543533ae1b6591b63bde8bfbd6ece296a1a279dd357e6f1317930f0c9a",
+      "exit_code": 0,
+      "elapsed_seconds": 25.883,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-frozen-security.json",
+      "sha256": "dfd52f04b68f433d8cff206a5d7385aaa7858ade0ebbe08284892d67ef49745d",
+      "exit_code": 0,
+      "elapsed_seconds": 30.848,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-derived-frozen-vet.json",
+      "sha256": "797c67ba45ea44db2a3a71fa5d089162518ea6edad8a2d4b4da01e4b7eeaecf4",
+      "exit_code": 0,
+      "elapsed_seconds": 2.409,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
     }
   ]
 }

@@ -182,3 +182,30 @@ Race102.085s 이후 product source는 그대로이며 checker 등록/문서만 �
 다음 실제 수정 owner는 `sandbox/pypi_build.go: streamDerivedWheel`다. 기존 Run directory에
 추가하는 derived wheel/filename은 별도 생성 경로이므로 현재 seal 뒤 쓰기·예약·actual bytes
 갱신을 먼저 연결한다. 현재의 성공 획득 시험을 해당 파생 쓰기 완료로 전용하지 않는다.
+
+## c573120 이후 — 파생 쓰기와 frozen replay 연결
+
+`streamDerivedWheel`의 실제 writer 시험8.043s는 추가 파일을 예약 없이 쓰며, 성공 후 기존
+seal의 파일 수와 달라 정상 수거가 실패하는 것을 확인했다. 같은 Run의 기존 Reserve에
+명시적 Extend를 추가했다. 자신의 operation·held directory·기존 seal을 먼저 확인하고
+추가 bytes/files만 예약하며, 원래 자료를 삭제하거나 다른 Run으로 옮기지 않는다.
+게시 뒤 전체 실제 bytes/tree를 seal한다. 기존 builder의64MiB 한도와0400 metadata는 유지한다.
+
+원장의 base_bytes는 이미 resident인 bytes와 추가 pending bytes를 구분한다. 추가 예약/
+publication replay, 다른 operation/restarted owner의 확장 거부, same-inode source 변경
+거부0.857s가 PASS다. 원장 재생은 accounting이며 중단 operation의 삭제 권한을 복원하지 않는다.
+
+Frozen intake의 기존 Application inspect 시험8.566s는 Evidence만 기록하고 복사 intake를
+등록하지 않았음을 확인했다. 기존 held source FD/해시 복사·`discardReplayRun`을 유지하고
+복사 전에 같은 예약, 성공 뒤 seal, 실패의 확인된 부재 뒤 abort를 연결했다. 원래 caller의
+자료는 legacy accounting만 하며 새 삭제 소유권을 만들지 않는다.
+
+영향5 package Race56.092s, 고정 Staticcheck25.883s, canonical security30.848s와 vet2.409s는
+PASS다. 이는 고정 작은 filesystem/recording-runner와 기존 시험 범위이며 실제 sdist build·
+새 native/CPP/hosted qualification이 아니다. 새 full Quick/CI를 이 helper 묶음만으로 반복하지 않았다.
+
+다음은 `bootstrap.Run`과 기존 Application guard/Close의 종료 근거다. 현재 Finish는 실패한
+명령을 보수적으로 보존하므로, Policy 거부·실패·취소의 정리와 primary/secondary result 축은
+아직 완료가 아니다. close error가 기존 primary와 join된 사실이나 executor.Close만으로
+runtime 부재를 추론하지 않고 실제 기존 종료 owner에서 사실을 전달해야 한다. C01 전체
+및 storage lease generation/crash·cache/retention/설정/성능 acceptance는 계속 OPEN이다.

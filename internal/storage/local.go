@@ -65,6 +65,7 @@ type resourceRecord struct {
 	Identity      fileIdentity `json:"identity"`
 	ReservedBytes uint64       `json:"reserved_bytes"`
 	ReservedFiles uint64       `json:"reserved_files"`
+	BaseBytes     uint64       `json:"base_bytes,omitempty"`
 	LogicalBytes  uint64       `json:"logical_bytes"`
 	Content       string       `json:"content_sha256,omitempty"`
 	Phase         string       `json:"phase"`
@@ -321,7 +322,7 @@ func (s *Local) refresh() error {
 
 func (s *Local) validate(event journalEvent) error {
 	r := event.Resource
-	if r.Schema != "helox.storage/v1" || !validResourceHandles(r.Kind, r.Temporary, r.Target, r.Run) || r.ReservedBytes == 0 || r.ReservedBytes > math.MaxInt64 || r.ReservedFiles == 0 || r.Created <= 0 || r.Expiry < r.Created || (r.Kind == "evidence" && r.Expiry == r.Created) || r.Identity.UID != uint32(os.Geteuid()) || r.Identity.Inode == 0 {
+	if r.Schema != "helox.storage/v1" || !validResourceHandles(r.Kind, r.Temporary, r.Target, r.Run) || r.ReservedBytes == 0 || r.ReservedBytes > math.MaxInt64 || r.BaseBytes > r.ReservedBytes || r.ReservedFiles == 0 || r.ReservedFiles > 1<<20 || (r.Kind == "evidence" && r.BaseBytes != 0) || r.Created <= 0 || r.Expiry < r.Created || (r.Kind == "evidence" && r.Expiry == r.Created) || r.Identity.UID != uint32(os.Geteuid()) || r.Identity.Inode == 0 {
 		return errors.New("storage resource event does not match the active policy or trusted handle contract")
 	}
 	if _, err := domain.NewSHA256Digest(r.Policy); err != nil {
@@ -336,8 +337,17 @@ func (s *Local) validate(event journalEvent) error {
 	before, exists := s.entries[resourceKey(r.Kind, r.Run)]
 	switch event.Action {
 	case "reserve":
-		if exists || r.Phase != "IN_USE" || r.LogicalBytes != 0 || r.Content != "" || s.charged > math.MaxUint64-r.ReservedBytes {
+		if exists || r.BaseBytes != 0 || r.Phase != "IN_USE" || r.LogicalBytes != 0 || r.Content != "" || s.charged > math.MaxUint64-r.ReservedBytes {
 			return errors.New("invalid or duplicate storage reservation")
+		}
+
+	case "expand":
+		expected := before
+		expected.Phase, expected.LogicalBytes, expected.Content = "IN_USE", 0, ""
+		expected.BaseBytes = before.LogicalBytes
+		expected.ReservedBytes, expected.ReservedFiles = r.ReservedBytes, r.ReservedFiles
+		if !exists || before.Kind != "intake" || before.Phase != "RETAINED" || r != expected || r.ReservedBytes <= r.BaseBytes || r.ReservedFiles <= before.ReservedFiles || s.charged > math.MaxUint64-(r.ReservedBytes-r.BaseBytes) {
+			return errors.New("invalid intake expansion reservation")
 		}
 
 	case "commit":
@@ -382,12 +392,16 @@ func (s *Local) apply(event journalEvent) error {
 		s.charged += r.ReservedBytes
 		s.runs++
 		s.entries[resourceKey(r.Kind, r.Run)] = r
+	case "expand":
+		s.pending += r.ReservedBytes - r.BaseBytes
+		s.charged += r.ReservedBytes - r.BaseBytes
+		s.entries[resourceKey(r.Kind, r.Run)] = r
 	case "commit":
 		if r.Kind == "evidence" {
 			s.evidenceCharged -= r.ReservedBytes
 			s.evidenceCharged += r.LogicalBytes
 		}
-		s.pending -= r.ReservedBytes
+		s.pending -= r.ReservedBytes - r.BaseBytes
 		s.charged -= r.ReservedBytes
 		s.charged += r.LogicalBytes
 		s.entries[resourceKey(r.Kind, r.Run)] = r
@@ -402,7 +416,7 @@ func (s *Local) apply(event journalEvent) error {
 			s.evidenceCharged -= r.ReservedBytes
 			s.evidenceRuns--
 		}
-		s.pending -= r.ReservedBytes
+		s.pending -= r.ReservedBytes - r.BaseBytes
 		s.charged -= r.ReservedBytes
 		s.runs--
 		delete(s.entries, resourceKey(r.Kind, r.Run))
@@ -444,7 +458,7 @@ func (s *Local) append(event journalEvent) error {
 }
 
 func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (lease ports.StorageLease, resultErr error) {
-	if !validResourceHandles(request.Kind, request.Temporary, request.Target, request.Run.String()) || request.Operation.String() == "" || request.Run.String() == "" || request.Bytes == 0 || request.Files == 0 || request.Files > 1<<20 {
+	if !validResourceHandles(request.Kind, request.Temporary, request.Target, request.Run.String()) || request.Operation.String() == "" || request.Run.String() == "" || request.Bytes == 0 || request.Files == 0 || request.Files > 1<<20 || request.Extend && request.Kind != "intake" {
 		return nil, errors.New("invalid storage reservation")
 	}
 	var directory *os.Root
@@ -455,8 +469,10 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 	}()
 	resultErr = s.withLock(ctx, func() error {
 		payload := s.resourceRoot(request.Kind)
-		if _, exists := s.entries[resourceKey(request.Kind, request.Run.String())]; exists {
-			return errors.New("storage Run is already registered")
+		key := resourceKey(request.Kind, request.Run.String())
+		previous, exists := s.entries[key]
+		if exists != request.Extend || request.Extend && (!s.owned[key] || previous.Operation != request.Operation.String() || previous.Phase != "RETAINED") {
+			return errors.New("storage Run is already registered or expansion ownership is unavailable")
 		}
 		info, err := payload.Lstat(request.Temporary)
 		if err != nil || !privateDirectory(info) {
@@ -475,14 +491,24 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		if err != nil || !os.SameFile(opened, info) {
 			return errors.New("evidence allocation identity changed")
 		}
-		f, err := directory.Open(".")
-		if err != nil {
-			return err
-		}
-		items, readErr := f.ReadDir(1)
-		closeErr := f.Close()
-		if len(items) != 0 || readErr != io.EOF || closeErr != nil {
-			return errors.New("storage registration must precede payload writes")
+		if request.Extend {
+			if !matchesIdentity(info, previous.Identity) || request.Bytes > math.MaxInt64-previous.LogicalBytes || request.Files > (1<<20)-previous.ReservedFiles {
+				return errors.New("intake expansion exceeds its identity or finite reservation")
+			}
+			bytes, digest, err := measureResource(ctx, directory, "intake", previous.ReservedBytes, previous.ReservedFiles, nil)
+			if err != nil || bytes != previous.LogicalBytes || digest != previous.Content {
+				return errors.Join(errors.New("intake changed before expansion"), err)
+			}
+		} else {
+			f, err := directory.Open(".")
+			if err != nil {
+				return err
+			}
+			items, readErr := f.ReadDir(1)
+			closeErr := f.Close()
+			if len(items) != 0 || readErr != io.EOF || closeErr != nil {
+				return errors.New("storage registration must precede payload writes")
+			}
 		}
 		// Existing unregistered runs are counted, never silently adopted/deleted.
 		legacyBytes, legacyRuns := s.legacyBytes, s.legacyRuns
@@ -512,7 +538,16 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 			expiry += int64(limits.EvidenceTTLSeconds)
 		}
 		record := resourceRecord{Schema: "helox.storage/v1", Policy: s.policy.Digest().String(), Operation: request.Operation.String(), Run: request.Run.String(), Kind: request.Kind, Temporary: request.Temporary, Target: request.Target, Identity: fileIdentity{uint64(stat.Dev), uint64(stat.Ino), stat.Uid, uint32(info.Mode())}, ReservedBytes: request.Bytes, ReservedFiles: request.Files, Phase: "IN_USE", Created: stamp, Expiry: expiry}
-		if err := s.append(journalEvent{"reserve", record}); err != nil {
+		action := "reserve"
+		if request.Extend {
+			record = previous
+			record.Phase, record.LogicalBytes, record.Content = "IN_USE", 0, ""
+			record.BaseBytes = previous.LogicalBytes
+			record.ReservedBytes = previous.LogicalBytes + request.Bytes
+			record.ReservedFiles = previous.ReservedFiles + request.Files
+			action = "expand"
+		}
+		if err := s.append(journalEvent{action, record}); err != nil {
 			return err
 		}
 		s.owned[resourceKey(record.Kind, record.Run)] = true
