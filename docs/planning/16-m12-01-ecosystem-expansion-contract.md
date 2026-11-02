@@ -818,8 +818,13 @@ verified cache에 없으면 build 중 외부 download로 보충하지 않고 res
 검증했다. 측정 최대값을 새 recipe의 event count로 전용하지 않는다. 검증 소비자와
 최종 qualification은 [Go qualification evidence](./evidence/m12-002-go-build-qualification/result.json)와 Queue가 소유한다.
 
-Host transaction의 preparation/build 공용 normalized-event 원장은 20,000으로
-제한한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
+Host transaction의 두 필수 fresh 환경에 대한 preparation/build/readonly keeper 공용
+normalized-event 원장은 **40,000**으로 제한한다. 2026-11-03에 사용자가 기존20,000의
+Go-only 조정을 승인했다. 새 VFS 관찰/두 환경을 포함한 실제 pflag의
+16,920+3,696>20,000 실패를 근거로 하며 기존 단일 실험 상한을 환경마다 다시 지급하지
+않는다. 실제 source/원본과 한정 qualification은
+[환경 상태 원장](./evidence/m13-004-convenience/environment-state-local-20261102.json)이
+소유한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
 새로 열어 예산을 보충하지 않는다. Physical collector는 10,000 records / 2 MiB,
 workspace summary saturation은 10,000, CPU 1 core·memory 512 MiB·build transaction
 3 minutes를 유지한다. Helper charged events, physical records, summary count와

@@ -64,24 +64,25 @@ func TestAggregateLedgerDiagnosticSeparatesNormalizedCountFromRecords(t *testing
 
 func TestGoBuildAggregateLedgerNeverReplenishesAcrossStreams(t *testing.T) {
 	ledger, err := newObservationTraceLedger(goBuildProfile)
-	if err != nil || ledger.maxEvents != 20000 || ledger.maxBytes != 2<<20 {
+	if err != nil || ledger.maxEvents != 40000 || ledger.maxBytes != 2<<20 {
 		t.Fatalf("build ledger = %+v, %v", ledger, err)
 	}
-	// Preparation and build share one authorization; summary counts consume it.
-	for _, events := range []uint64{619, 10000, 9381} {
+	// Both experiments' preparation/compiler/keeper streams share one
+	// authorization; each counted summary consumes the remaining total.
+	for _, events := range []uint64{619, 10000, 9381, 619, 10000, 9381} {
 		if err := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &events}, 134); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if ledger.events != 20000 {
+	if ledger.events != 40000 {
 		t.Fatal("exact aggregate bound was not charged")
 	}
 	err = ledger.charge(helperRecord{Kind: "process-exec-expected"}, 134)
 	var fault observerFault
-	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 20000 || ledger.bytes != 402 {
+	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 40000 || ledger.bytes != 804 {
 		t.Fatal("overflow succeeded or changed the remaining authorization")
 	}
-	for _, profile := range []string{"pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
+	for _, profile := range []string{"npm-lifecycle", cargoBuildProfile, "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
 		other, err := newObservationTraceLedger(profile)
 		if err != nil || other.maxEvents != uint64(traceBudgetForProfile(profile).events) {
 			t.Fatalf("existing profile budget changed: %q", profile)

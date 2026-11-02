@@ -572,6 +572,12 @@ synthetic token의 전송 시도처럼 실제 관찰 가능한 결과만 기록�
 완료: 더미 부재 때 잠복하는 무해 표본이 배치된 실험에서만 활성화, 준비 오류 거부,
 Host env/파일 미노출, 원래 정상 workload 동작, run 간 더미/오염 미공유, 종료 후 payload 부재.
 
+기존 normalized quota가 추가 필수 관찰/두 실험에서 정상 입력을 차단하면 관찰 생략이나
+stream별 재충전으로 해결하지 않는다. 실측·사용자 승인에 따른 Go 공유 총량 조정은
+[canonical Go budget](./16-m12-01-ecosystem-expansion-contract.md#go-build-observation-budget)을
+따르고 recipe/check profile에 결합한다. 다른 profile과 physical/byte/CPU/memory/wall,
+mount/role/network·필수 검사 경계는 승인 범위 밖에서 바꾸지 않는다.
+
 ### 5.3 S08 — 전후 파일 변화와 실행 중 관찰을 결합한다
 
 기존 archive/payload inventory·hash·path guard를 재사용해 관찰 workspace와 dummy HOME의

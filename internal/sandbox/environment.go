@@ -205,7 +205,8 @@ func environmentContainerArguments(session domain.SandboxSessionID, profile insp
 // Preserve each consumer's pinned image, command, closure and labels while
 // applying the same fixed /tmp, synthetic environment and guest restriction.
 func applyEnvironmentWorkspace(base []string, image string, profile inspectionEnvironmentProfile, volume closureVolume, readOnly bool, subpath string) ([]string, error) {
-	if (image != nodeImageReference && image != pythonImageReference) || profile.identity == "" || volume.manifestID != profile.identity || volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
+	buildImage := image == PinnedGoRuntime().ImageReference || image == PinnedCargoRuntime().ImageReference
+	if (image != nodeImageReference && image != pythonImageReference && !buildImage) || profile.identity == "" || volume.manifestID != profile.identity || volume.destination() != environmentWorkspaceRoot || volume.projectBuildExecutable {
 		return nil, errEnvironmentState
 	}
 	mount, err := volume.mountArgument(readOnly, subpath)
@@ -213,6 +214,7 @@ func applyEnvironmentWorkspace(base []string, image string, profile inspectionEn
 		return nil, err
 	}
 	args := make([]string, 0, len(base)+len(profile.environment)+4)
+	isolated := isolatedContainerEnvironmentArguments()
 	workspaces, environment, images := 0, 0, 0
 	for index := 0; index < len(base); index++ {
 		switch {
@@ -221,6 +223,17 @@ func applyEnvironmentWorkspace(base []string, image string, profile inspectionEn
 			index++
 			workspaces++
 		case base[index] == "--env" && index+1 < len(base):
+			if environment < len(isolated)/2 {
+				if base[index+1] != isolated[2*environment+1] {
+					return nil, errEnvironmentState
+				}
+			} else if buildImage {
+				// Keep the current builder's fixed compiler/offline settings.
+				// Only the generic prefix is replaced by the synthetic profile.
+				args = append(args, base[index], base[index+1])
+			} else {
+				return nil, errEnvironmentState
+			}
 			index++
 			environment++
 		case base[index] == image:
@@ -232,7 +245,7 @@ func applyEnvironmentWorkspace(base []string, image string, profile inspectionEn
 			args = append(args, base[index])
 		}
 	}
-	if workspaces != 1 || environment != len(isolatedContainerEnvironmentArguments())/2 || images != 1 {
+	if workspaces != 1 || environment < len(isolated)/2 || images != 1 {
 		return nil, errEnvironmentState
 	}
 	return args, nil

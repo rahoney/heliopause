@@ -40,6 +40,10 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 		return domain.ProjectBuildReport{}, errors.New("project build observation is incomplete or substituted")
 	}
 	result := observation.SandboxResult()
+	states := result.EnvironmentStates()
+	if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+		return domain.ProjectBuildReport{}, errors.New("project build environment observation is incomplete")
+	}
 	checkID, _ := domain.NewCheckID("project-build-observation")
 	status, limitation := domain.ExecutionCompleted, ""
 	for _, fact := range result.Observations() {
@@ -64,6 +68,21 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 			return domain.ProjectBuildReport{}, err
 		}
 		facts = append(facts, evidence)
+	}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		id, err := domain.NewEvidenceID("project-build-workspace-" + string(state.Profile))
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		fact, err := domain.NewEvidence(id, checkID, inputs.Source().Identity(), inputs.Source().Digest(), "workspace-state", summary)
+		if err != nil {
+			return domain.ProjectBuildReport{}, err
+		}
+		facts = append(facts, fact)
 	}
 	seen := map[string]bool{}
 	findings := []domain.Finding{}
@@ -101,10 +120,13 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 
 func (i *Inspector) checkProfile() domain.ContentDigest {
 	image := runtimeidentity.GoImageReference
+	name := "project-build-observation-environments-v3"
 	if i.kind == "cargo" {
 		image = runtimeidentity.RustImageReference
+		name = "project-build-observation-environments-v2"
 	}
-	profile, _ := domain.CheckProfileDigest("project-build-observation-v1", image)
+	descriptor := image + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+	profile, _ := domain.CheckProfileDigest(name, descriptor)
 	return profile
 }
 

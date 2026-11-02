@@ -3,6 +3,7 @@ package bootstrap_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,7 +32,11 @@ func TestLinuxGoTransitiveRetainedBuildObservationIntegration(t *testing.T) {
 }
 
 func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
-	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./testdata", true)
+	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./testdata", true, false)
+}
+
+func TestLinuxGoDependencyFreeRetainedOutputEnvironmentIntegration(t *testing.T) {
+	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./...", false, true)
 }
 
 // This gate starts with actual CLI acquisition/verification/inspection/Policy
@@ -39,10 +44,10 @@ func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
 // to the observed builder. It does not qualify output publication or build CLI.
 func goRetainedBuildObservationIntegration(t *testing.T, reference, main string) {
 	t.Helper()
-	goRetainedBuildSelectionIntegration(t, reference, main, "./...", false)
+	goRetainedBuildSelectionIntegration(t, reference, main, "./...", false, false)
 }
 
-func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector string, invalid bool) {
+func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector string, invalid, capture bool) {
 	t.Helper()
 	if os.Getenv("HELOX_GO_RETAINED_BUILD_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor and authenticated helper")
@@ -115,12 +120,43 @@ func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := builder.ObserveBuild(ctx, snapshot, source, inputCache, selector)
+	var result domain.SandboxResult
+	if capture {
+		run, err := domain.NewRunID()
+		if err != nil {
+			t.Fatal(err)
+		}
+		inputs, err := domain.NewProjectBuildInputs(snapshot, source, inputCache, run, selector)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var observed domain.ProjectBuildObservation
+		observed, err = builder.Build(ctx, inputs)
+		result = observed.SandboxResult()
+		if err != nil {
+			cause := err
+			for range 16 {
+				if joined, ok := cause.(interface{ Unwrap() []error }); ok && len(joined.Unwrap()) != 0 {
+					cause = joined.Unwrap()[0]
+				} else if next := errors.Unwrap(cause); next != nil {
+					cause = next
+				} else {
+					break
+				}
+			}
+			t.Fatalf("actual retained output build: %v original_cause=%v", err, cause)
+		}
+		if observed.Output().Identity().Variant() != "go-output" || observed.Binding().SourceDigest() != source.Digest() {
+			t.Fatal("actual retained output/source binding missing")
+		}
+	} else {
+		result, err = builder.ObserveBuild(ctx, snapshot, source, inputCache, selector)
+	}
 	if invalid {
 		if err == nil || result.Status() != domain.SandboxIncomplete || !strings.Contains(err.Error(), "command_status=EXIT_STATUS_1") {
 			t.Fatalf("explicit invalid source did not preserve compiler failure: %v status=%s", err, result.Status())
 		}
-	} else if err != nil || result.Status() != domain.SandboxCompleted {
+	} else if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
 		t.Fatalf("actual retained-cache observed build: %v status=%s", err, result.Status())
 	}
 	for _, observed := range result.Observations() {

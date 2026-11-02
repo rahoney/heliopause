@@ -934,5 +934,252 @@
       "whole S01/S08 failure/dormant corpus and grouped/hosted/final qualification",
       "B01 Anyio/large-catalog and ordinary Six source-binding follow-up remain separate"
     ]
+  },
+  "project_build_environment_baseline": {
+    "commit": "8293b20",
+    "existing": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "new_environment_gap": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "owners": [
+      "internal/sandbox/gomodule_observed_build.go",
+      "internal/sandbox/cargo_observed_build.go",
+      "internal/inspection/projectbuild/build.go"
+    ],
+    "reuse": [
+      "current immutable input/graph/compiler/output and cleanup owners",
+      "same per-call 3-minute context and trace ledger across fresh sequential profiles",
+      "existing synthetic profiles, owned volume, fixed Node DATA keeper and bounded inventory"
+    ],
+    "missing": [
+      "fixed Go/Rust env preserving workspace args and typed writer/reader topology",
+      "fresh mutable workspaces/output and post-termination inventory without copying immutable inputs",
+      "both experiments required, first output returned only after second success/cleanup",
+      "profile/recipe-bound normalized Evidence and targeted negative/actual consumers"
+    ]
+  },
+  "project_build_environment_candidate_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "Go/Cargo two-environment source connection; scoped local native matrix qualified, whole S01/S08 and grouped/final acceptance open",
+    "changes": [
+      "existing per-call 3-minute context and trace ledger reused across two sequential fresh experiments",
+      "existing frozen input handles and preparation/writer overlap replayed per profile; at most two active containers",
+      "fixed Node readonly DATA keeper omits immutable input/cache and preserves output after writer drain",
+      "secondary output uses existing bounded parser without another intake directory/copy",
+      "required two covered states and same-check bounded Evidence/profile/recipe connection"
+    ],
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-current-targets.json",
+        "sha256": "4a17335b3be7ca69856998a2ee0f870b2ad11cb5fc3129b0a686ba1079a2a5e0"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-foundation.json",
+        "sha256": "5a8fb5d992bf5b5c1e3ba57ccd78b659f3b570b69c33433844a7ac10b6e42043"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-tagged-staticcheck.json",
+        "sha256": "81b449551fbf100fbde2a6e1ed036f4dc48eb99dd1a18bdeb8641e8ef648edaf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-vet.json",
+        "sha256": "145caca3010c46f596159c2284e8d0b105104c75ca675fb4c68a3cb5d203efea"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-security.json",
+        "sha256": "004dd5867ffecc91bed57852aec9bd69c79c74aa973d1c184cf26f3d83752942"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-race.json",
+        "sha256": "2d9861b4a08c65b0bd3060e3bdf9c15c3f92829d2cc3990e7243ce2eec99908a"
+      }
+    ],
+    "first_failure": {
+      "receipts": [
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v1.json",
+          "sha256": "6eada74481b92021ea56e50415d91a961072bff74a8b9ad5794f16470891b48b"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v2.json",
+          "sha256": "0088114b2e61f6ca97b78252eaad08a66809614fb38fe0b96dc551e10de3fb4f"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v3.json",
+          "sha256": "0cf8b5e5b1216c27b931b1c6184383a6aae561b9abf906ede8c6ccdc1dd870cc"
+        }
+      ],
+      "phase": "PREPARATION",
+      "original_cause": "python closure volume identity already exists",
+      "owner": "createInputVolume derives the name solely from transaction; current connection reused the experiment transaction for input and workspace",
+      "diagnostic_scope": "v1 CLI FAIL; v2 integration-only CLI unwrap returned nil, removed; v3 direct guarded output Build exposes original primary cause; Cargo NOT_RUN",
+      "minimum_correction": "workspace uses existing outer Sandbox result owner; input keeps fresh experiment identity; global naming/absence guard unchanged",
+      "correction_qualification": "SCOPED_PASS_NATIVE_V4",
+      "diagnostic_boundary": "firstDiagnostic default zero fields are not total trace execution counts"
+    },
+    "remaining": [
+      "ELF/Terraform probe two-environment consumers",
+      "whole S01/S08 failure/dormancy corpus and grouped/hosted/final acceptance"
+    ],
+    "owner_correction": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v4.json",
+        "sha256": "aa65b1faf878741f782345b3af88c0041d7ee21bbcfc4688abbc73e3d2d4adbc"
+      },
+      "targets": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-owner-targets.json",
+        "sha256": "0b9d5fdbf88bd1ac6d4366a0a50fca9ebff004e7610a72269281f273bec9d793"
+      },
+      "changed_go_files": [
+        "internal/sandbox/cargo_observed_build.go",
+        "internal/sandbox/gomodule_observed_build.go"
+      ],
+      "scope": "direct guarded Go retained output, Go CLI two complete operations and same-check state Evidence readback, Cargo dependency-free original CLI only; no library/public/negative corpus yet"
+    },
+    "next_failure": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v5.json",
+        "sha256": "5b01e858ba9d8884659d99d9c7724f56fa67a839abb20bc35639f6862f2439ed"
+      },
+      "case": "TestLinuxGoPublicBuildCLIIntegration",
+      "phase": "ENVIRONMENT_FINAL",
+      "code": "EVENT_LIMIT",
+      "ledger_events": 16924,
+      "limit": 20000,
+      "requested_events": 3700,
+      "requested_bytes": 133,
+      "remaining_matrix": "NOT_REACHED after first failure",
+      "correction_under_test": "Go-only one shared40000 total; complete counts retained, no stream replenishment; exact boundary/cross-stream checks, quota-bound recipe and revised Go check profile",
+      "correction_status": "SCOPED_PASS_NATIVE_V7",
+      "role_find_comparison": {
+        "receipt": {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v6.json",
+          "sha256": "83a193fddbe7e0f5cc69a458b68357f5caf10212a37655b100befdeefa71f790"
+        },
+        "status": "FAIL; not a quota solution; source flag reverted",
+        "events": 16920,
+        "requested": 3696,
+        "total_at_rejection": 20616,
+        "unchanged_limit": 20000
+      }
+    },
+    "budget_proposal": {
+      "status": "OWNER_APPROVED_2026-11-03; implemented and scoped local qualification passed",
+      "existing_canonical": 20000,
+      "proposed_go_transaction_total": 40000,
+      "scope": "one aggregate for both mandatory environments including all preparation/compiler/reader counted summaries; no per-profile replenishment",
+      "unchanged": [
+        "250000 helper charged records per connection",
+        "10000 physical records per collector",
+        "10000 summary saturation",
+        "2MiB transaction bytes",
+        "1CPU/512MiB/3minute transaction and current mount/role/network/required coverage"
+      ],
+      "planned_changes": [
+        "canonical Go budget leaf and S01 design rationale",
+        "single Go host-ledger cap plus exact boundary/cross-stream tests",
+        "bind changed Go budget to recipe/check profile",
+        "rerun first failed pflag and then unreached matrix; keep prior basic native successes scoped"
+      ],
+      "approval": "User explicitly replied 조정해도되 to the concrete Go-only40000 shared-total proposal"
+    },
+    "scoped_qualification": {
+      "native": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v7.json",
+        "sha256": "2563525cdc7fd0f61e0b8bfae13ecc90b87464f4eb06cb004a0537f81a92f42e"
+      },
+      "checks": [
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-format.json",
+          "sha256": "b767aa85e6d0080e644d1b4a656dc00d9d338f79e783c1549499e4988a2fab50"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-targets.json",
+          "sha256": "aad0f7c53b409bcd2c8266dd15802e1e995252b9529fd5acd8d24be9a88a91a6"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-staticcheck.json",
+          "sha256": "2835fd99a21ad97678723709d6bf00cbb726e02b13b1b83ba8fd2a2e2bdf0cb5"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-approved-final-race.json",
+          "sha256": "d7a40829a4172b35a25bb4578add0fa0d5c77b2d1750c1a9eadbbbe3d43577c8"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-approved-normalization-race.json",
+          "sha256": "048d5083a98dd280bc6a741f4c0390089e4a080f9f35abd35ff09bb5d865580d"
+        }
+      ],
+      "cleanup": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-cleanup.json",
+        "sha256": "61d5eb784bd561c1d26406eb854812379f28d1d279c26354b87f0f74db47eb61"
+      },
+      "cases": [
+        {
+          "mode": "go-values",
+          "exit_code": 0,
+          "named_pass_count": 2,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "go-guards",
+          "exit_code": 0,
+          "named_pass_count": 2,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "cargo-values",
+          "exit_code": 0,
+          "named_pass_count": 3,
+          "expected_count": 3,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "cargo-guards",
+          "exit_code": 0,
+          "named_pass_count": 4,
+          "expected_count": 4,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        }
+      ],
+      "elapsed": 382.694,
+      "go_source_files_match_current": 397,
+      "scope": [
+        "Go pflag and library actual CLI, persisted current same-check two-state Evidence",
+        "Go selected invalid testdata and mixed invalid packages preserve compiler failures",
+        "Cargo public/library/build.rs actual CLI and persisted same-check two-state Evidence",
+        "Cargo FS refusal; minimal-dormant/mock-only network attempt exactly1, publication refused",
+        "Cargo second-environment failure retires first provisional output; invalid source refused"
+      ],
+      "race_scope_note": "first final Race selected sandbox cap/topology only (projectbuild no tests); exact TestBuildEnvironmentCoverageAndEvidence separately selected and passed",
+      "unchanged_runtime_cpp": true,
+      "host_unchanged": true,
+      "all_helpers_wait_zero": true,
+      "large_copies_removed_bytes": 395555292,
+      "completed_original_binaries_removed_bytes": 63714626
+    }
   }
 }

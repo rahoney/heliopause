@@ -15,6 +15,7 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func TestLinuxGoDependencyFreeBuildCLIIntegration(t *testing.T) {
@@ -249,7 +250,7 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 		if strings.HasPrefix(main, "package library\n") {
 			outputFiles = 0
 		}
-		if filepath.Base(directory) != receipt.Run || len(receipt.Files) != outputFiles || len(receipt.Evidence) != 3 {
+		if filepath.Base(directory) != receipt.Run || len(receipt.Files) != outputFiles || len(receipt.Evidence) != 5 {
 			t.Fatal("build output/Run/Evidence coverage differs")
 		}
 		for _, digest := range []string{receipt.Source, receipt.Cache, receipt.Graph, receipt.Output, receipt.Recipe} {
@@ -267,6 +268,7 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 				t.Fatal("published output differs from receipt")
 			}
 		}
+		profiles := map[domain.SandboxEnvironmentProfile]string{}
 		for _, record := range receipt.Evidence {
 			body, err := os.ReadFile(filepath.Join(root, "cache", "heliopause", "evidence", receipt.Run, record.ID+".json"))
 			if err != nil || record.Handle != "evidence:"+receipt.Run+":"+record.ID {
@@ -276,6 +278,10 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 			if hex.EncodeToString(hash[:]) != record.SHA256 {
 				t.Fatal("build Evidence binding changed")
 			}
+			readBuildEnvironmentEvidence(t, body, "go", receipt.Run, receipt.Source, profiles)
+		}
+		if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
+			t.Fatal("actual Go build lost same-check two-environment Evidence")
 		}
 		t.Logf("actual CLI retained build reference=%s graph=%s source=%s cache=%s output=%s recipe=%s", reference, receipt.Graph, receipt.Source, receipt.Cache, receipt.Output, receipt.Recipe)
 	}
@@ -288,4 +294,47 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 	if _, err := os.Lstat(filepath.Join(project, ".heliopause-go-transaction.lock")); !os.IsNotExist(err) {
 		t.Fatal("build guard was not released")
 	}
+}
+
+// Both current build CLI consumers verify the records already authenticated by
+// their published receipt. This does not execute or rebuild either product.
+func readBuildEnvironmentEvidence(t *testing.T, body []byte, kind, run, source string, profiles map[domain.SandboxEnvironmentProfile]string) {
+	t.Helper()
+	var record struct {
+		Schema  string `json:"schema_version"`
+		Profile string `json:"profile_sha256"`
+		Run     string `json:"run_id"`
+		Check   string `json:"check_id"`
+		Kind    string `json:"kind"`
+		Source  string `json:"source_id"`
+		Variant string `json:"variant"`
+		Digest  string `json:"sha256"`
+		Summary string `json:"summary"`
+	}
+	if err := json.Unmarshal(body, &record); err != nil {
+		t.Fatal(err)
+	}
+	if record.Kind != "workspace-state" {
+		return
+	}
+	if record.Schema != "helox.evidence/v2" || record.Run != run || record.Check != "project-build-observation" || record.Source != "project-local" || record.Variant != kind+"-source" || record.Digest != source || len(record.Profile) != 64 {
+		t.Fatal("actual build workspace Evidence binding changed")
+	}
+	var state struct {
+		Schema     string                           `json:"schema"`
+		Profile    domain.SandboxEnvironmentProfile `json:"profile"`
+		Fixture    string                           `json:"fixture_digest"`
+		Before     string                           `json:"baseline_digest"`
+		After      string                           `json:"final_digest"`
+		Scope      string                           `json:"scope"`
+		Transient  string                           `json:"transient_changes"`
+		Operations string                           `json:"operation_scope"`
+	}
+	if err := json.Unmarshal([]byte(record.Summary), &state); err != nil {
+		t.Fatal(err)
+	}
+	if state.Schema != domain.SandboxEnvironmentStateSchema || state.Scope != "MUTABLE_WORKSPACE" || state.Transient != "SESSION_VFS_OPERATIONS" || state.Operations != "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE" || len(state.Fixture) != 64 || len(state.Before) != 64 || len(state.After) != 64 || profiles[state.Profile] != "" {
+		t.Fatal("actual build workspace state incomplete or duplicated")
+	}
+	profiles[state.Profile] = record.Profile
 }

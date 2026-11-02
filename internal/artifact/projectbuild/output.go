@@ -70,6 +70,16 @@ func (o *CapturedBuildOutput) Close(keep bool) error {
 	return nil
 }
 
+// ValidateBuildOutput consumes the same bounded output grammar without making
+// an intake copy. Secondary environment products grant no publication authority.
+func ValidateBuildOutput(ctx context.Context, stream io.Reader) error {
+	if ctx == nil || stream == nil {
+		return errBuildOutput
+	}
+	_, err := scanBuildOutput(ctx, stream, false, nil)
+	return err
+}
+
 // CaptureBuildOutput reconstructs bounded flat compiler output as private data.
 // Untrusted TAR names/metadata confer no permissions or publication authority.
 func CaptureBuildOutput(ctx context.Context, intake string, inputs domain.ProjectBuildInputs, stream io.Reader) (_ *CapturedBuildOutput, resultErr error) {

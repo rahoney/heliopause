@@ -519,3 +519,145 @@ inspection npm1.664s, 두 package Race34.849s 및 태그 Staticcheck, 마지막 
 시험은 helper wait0/Host·Docker 동일과 정확한 설정/runtime 복원을 확인했으며 큰 보호
 사본은 각 operator가 정리했다. 완료된 원본 바이너리·공급9개336114856B도 전체 proc
 무참조/query error0 뒤 삭제했다. 중앙 버전 정의·업데이트 방법/권한·Host 설치·CI는 그대로다.
+
+
+### Go/Cargo build 연결 전 baseline — `8293b20`
+
+| 항목 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 기존 observed build/input/output | YES | YES | NO | NO | 현재 보강 후보의 grouped/final qualification; 이전 bounded 증거는 원래 scope로 보존 |
+| 새 두 환경·workspace 상태 연결 | NO | NO | NO | NO | fresh 작업 공간, 공유 총량, 종료 후 writable roots만의 상태, 같은 build check의 Evidence |
+
+기존 Go의 `ObservedGoBuilder.observe`/`goBuildOperation`, Cargo의 `Build`/
+`cargoBuildOperation`가 입력/정적 source·cache verifier, exact offline graph, compiler
+명령, output capture와 종료를 소유한다. `inspection/projectbuild/build.go`가 관찰/binding을
+같은 source 대상으로 정규화한다. 이 기능은 다시 구현하지 않는다. `GoBuildRunner`의
+package selector/취소 검증과 Cargo의 고정 default build 의미도 유지한다.
+
+최소 수정 지도는 다음과 같다.
+
+- 각 fresh profile에서 기존 immutable input의 preparation→RO writer와 overlap→preparation
+  종료 순서를 재사용한다. 동일 frozen input handle을 재생하고 두 실험은 기존3분
+  context/동일 trace ledger를 공유한다. profile별 root timeout/
+  event budget을 새로 만들지 않는다. 동시에 활성인 Artifact compiler는 하나다.
+- 기존 `/tmp`512MiB와 output/target의 용량·실행 가능 역할은 유지한다. 각 profile의
+  workspace와 output은 fresh이며 이전 profile의 자원 종료·부재 확인 후 다음을 만든다.
+  기존 builder의 input/graph/command/출력 검증 body를 재사용하고 임의 argv를 추가하지 않는다.
+- 기존 환경 profile·bounded DATA reader·volume/trace owner를 재사용한다. 상태 reader는
+  고정 Node helper와 RO workspace/output만 사용하고 큰 immutable source/cache input은
+  붙이지 않는다. 따라서 mutable roots를 읽기 위해 readonly dependency tree를 매번 다시
+  전송·해싱하지 않는다. Artifact writer 종료/trace 회수 뒤 final을 읽는다.
+- 공통 argv 변환은 Go/Rust의 고정 compiler/offline env를 보존해야 한다. 현재 npm/Python용
+  변환은 추가 env를 허용하지 않으므로 그대로 적용하면 안 된다. 기존 generic env 구간과
+  current builder가 소유한 fixed env를 구분하며 Host env 복제는 없다. Typed topology에서
+  input RO/output RW 역할과 reader RO를 각각 증명한다.
+- 두 실험 모두 성공·정리된 경우에만 원래 최소 환경의 검증된 build output을 반환한다.
+  두 번째 output은 검증 후 폐기하며 비결정적 정상 build에 byte 일치를 강요하지 않는다.
+  recipe/check profile은 두 환경·고정 reader image/관찰·상태 계약을 중앙 runtime 값으로
+  결합한다. 선택적 사용자 실행·이미 만들어진 결과의 임의 재실행은 추가하지 않는다.
+
+먼저 공통 args/topology와 상태/원장 전제의 싼 표적 검사를 수행하고 Go owner부터 실제
+연결한다. 새로운 범용 backend/제네릭 실행 callback/manager·관찰 권한 예외를 선행
+생성하지 않는다. 고정 kernel/CPP는 실제 실패나 ABI 변경이 필요하지 않으면 재사용한다.
+
+검토 중 기존 L18의 tmpfs zero-attachment 반증을 대조해 input volume을 두 profile 사이에
+단순 보존하는 가정은 제외했다. 별도 immutable keeper를 늘리지 않고 기존 input 전달/
+readback을 fresh profile마다 수행하며 preparation 종료는 writer가 붙은 뒤다. State reader는
+그 뒤 연결해 동시에 활성인 컨테이너를 원래 preparation+build의2개 안에 유지한다.
+Output은 writer 전체 종료 뒤 RO reader에서 캡처하고 검증·정리된 첫 결과만 반입 후보로
+유지한다. 이는 수정 지도 교정이며 새 native/보안 권한 검증 결과는 아니다.
+
+
+### Go/Cargo 현재 후보와 최초 실패 — 실제 연결 미검증
+
+기존 build body를 각 fresh 실험에서 재사용하고 같은3분 context/trace 총량을 공유하도록
+연결했다. Node DATA keeper의 RO output에서 writer 종료 후 상태/출력을 읽고, 보조 실험
+output은 기존 parser로 검증만 해 두 번째 intake 사본/Run 경로 충돌을 만들지 않는다.
+필수 두 환경/VFS coverage 누락3종 거부와 check/subject/profile Evidence 표적8.235s,
+foundation46.665s·태그 Staticcheck18.618s·vet4.373s·보안16.693s·영향3 package
+Race36.167s는 PASS다. 현재 소스 연결 IMPLEMENTED=YES / WIRED=YES이고 QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. 원본·source 범위는 같은 부분 원장의 candidate checkpoint를 따른다.
+
+첫 실제 Go CLI v1/18.362s는 PREPARATION 실패로 중단했고 Cargo는 미도달이다.
+CLI의 test-only unwrap v2/17.782s는 nil이어서 그 코드는 제거했다. 기존 guarded 직접
+Build output 소비자를 추가한 v3/17.352s가 `python closure volume identity already exists`를
+보존했다. 기존 volume 이름은 destination/manifest가 아니라 transaction에서 파생되는데
+새 연결이 input/workspace에 같은 실험 ID를 전달했다. Workspace에는 기존 상위 Sandbox
+결과 owner를 사용하고 input에는 fresh 실험 ID를 유지하는 최소 교정의 실제 검증이 다음이다.
+전체 이름 규칙이나 존재/부재 guard·권한을 바꾸지 않는다. FirstDiagnostic 기본 zero는
+전체 trace 수가 아니며 이 실패를 Artifact 검사/반입 성공으로 기록하지 않는다.
+
+
+Go/Cargo identity 최소 교정의 실제 v4/173.009s는 direct Go output52.61s, Go CLI의
+두 독립 작업/동일 check 상태 기록 읽기95.14s, Cargo dependency-free 기존 CLI19.25s를
+PASS했다. v3 대비 Go source 변경은 두 build owner의 ID 연결뿐이며 kernel/CPP는 그대로다.
+표적8.233s도 PASS이고 모든 helper wait0/원래 Host·Docker 동일/정확한 복원·사본 정리다.
+Cargo 최초 fixture는 ELF/receipt 존재만 검사하므로 상태 readback의 명시적 assertion은
+다음 library/public fixture에서 확인한다. 다음은 library/public·기존 경계 거부와 모의 env에서만
+네트워크 시도하는 무해 Cargo script 및 두 번째 실험 실패의 첫 provisional output 수거다.
+첫 실패는 위 한정 범위로 교정됐으며 전체 네 상태를 완료로 올리지 않는다.
+
+
+다음 actual v5/120.241s는 Go public pflag의 ENVIRONMENT_FINAL에서 EVENT_LIMIT로 끝나
+후속은 미도달이다. Ledger16924에 counted summary3700을 더하면 고정20000을 넘는다.
+Byte는81663/2097152이며 physical records와 logical count를 구분한다. 원본은 같은 부분
+원장의 next_failure에 연결했다. 상한/관찰/두 환경을 완화하지 않고, 완료된 전체 선택 compile
+뒤 package-name role query의 불필요한 dependency 재로딩을 pinned Go의 `list -find`로
+생략하는 최소 후보를 검증한다. 전체 선택 compile과 output command·원래 순서는 유지한다.
+고정 Go source `cmd/go/internal/list/list.go`가 -find의 IgnoreImports/package identification을
+정의한다. 아직 quota 교정 성공이 아니며 표적/같은 실패 입력의 실제 검증이 다음이다.
+
+
+### Go 공유 quota 변경 제안 — 사용자 결정 전 / 미구현
+
+같은 입력 v6/118.126s도 EVENT_LIMIT(16920+3696>20000)다. `-find`는 quota 교정이
+아니므로 제거했고 반복하지 않는다. 필요한 전체 compile/output/두 실험이나 관찰 사실을
+빼지 않는다. 기존 계약의 Go normalized-event 총량20000은 그대로이며 다음 변경은 아직 없다.
+
+구체 제안은 Go의 **작업 전체 공유 총량만40000**으로 versioning하는 것이다. 필수 두 fresh
+실험의 preparation/compiler/readonly reader와 counted summary를 하나의 원장에 계속
+합산하고 stream/profile별 초기화를 하지 않는다. Helper250000/connection, physical10000/
+collector, summary saturation10000, aggregate2MiB, CPU1·memory512MiB·3분, mount/role/
+network/필수 검사 경계는 모두 유지한다. Canonical Go budget leaf/보강 설계의 근거를 먼저
+갱신하고 한 상수·정확 경계/교차 stream 회귀 및 Go recipe/check profile에 이 변경을 묶은 뒤
+같은 pflag 실패와 미도달 matrix를 검증한다. Bare Go/Cargo v4 성공은 원래 한정 범위로 보존한다.
+
+AGENTS의 기존 security invariant 유지와 [Go budget 고정 계약](../../16-m12-01-ecosystem-expansion-contract.md#go-build-observation-budget)을
+직접 대조해 현재 명세의 수치 변경은 구현 편의로 자동 승인하지 않는다. 이 제안은 code
+변경/qualification이 아니며 사용자 결정 전에는20000을 유지한다. 독립적인 Cargo matrix는
+같은 기존 한도 안에서 계속할 수 있다.
+
+
+### Go quota 사용자 승인 — 구현 후보 / 실제 검증 전
+
+2026-11-03 사용자가 위 구체 공유40000 제안에 `조정해도되`라고 승인했다. Canonical Go
+budget과 보강 설계에 반영하고 한 상수만 수정했다. Go recipe에는 같은 상수를 명시적으로
+넣고 schema/check profile을 revision해 이전 계약의 기록과 구분한다. Cargo profile은
+그대로다. 두 환경/stream의 합산 exact40000과40001 거부·2MiB 및 다른 profile/physical
+한도 불변을 표적 회귀로 검증한 뒤 최초 pflag 실패와 미도달 matrix를 계속한다. 아직 actual
+성공은 아니며 위 failed -find 후보는 제거된 상태다.
+
+
+### Go/Cargo 한정 실제 검증 — 승인된 공유 총량 반영
+
+사용자 승인 뒤 Go-only 공유40000과 recipe/check profile revision을 반영한
+`s01-build-environment-native-v7`382.694s의11개 사례가 모두 PASS했다. 최초 pflag 실패,
+Go library와 invalid testdata/mixed package, Cargo public/library/build.rs 및 filesystem
+거부·모의 환경에서만 활성화되는 network·두 번째 실험 실패·invalid source를 확인했다.
+Cargo 조건부 표본은 최소 환경에서 잠복하고 모의 환경에서만 네트워크 시도1회를 남겼으며,
+같은 현재 검사에 결합한 두 상태 Evidence를 실제 저장소에서 읽고 반입 거부를 확인했다.
+두 번째 실험의 compile 실패 때 첫 임시 output도 남지 않았다. 원래 compiler 전체 선택/
+명령 순서와 다른 profile·physical/bytes/CPU/memory/wall/권한 경계는 유지했다.
+
+승인 경계 표적12.971s와 tagged Staticcheck21.685s, quota/topology Race14.413s 및 정확한
+normalizer8개 사례 Race1.398s가 PASS다. 첫 final Race의 projectbuild는 잘못된 이름 필터로
+미실행이었으므로 별도 exact test만 실행했다. 초기 후보의 foundation/vet/security/full
+영향 Race는 원래 source 범위로 보존하고 최신 전체 후보 성공으로 확대하지 않는다.
+실제11개 사례는 모두 helper wait0/정확한 runtime·설정 복원/Host 동일을 확인했다. Operator
+사본395555292B와 완료된 원본 바이너리2개63714626B를 무참조/query error0 확인 뒤 제거했다.
+SDK/cache/source와 원본 증거는 보존했다. 부분 원장의 SHA와 source 목록이 검증 범위를 소유한다.
+
+Go/Cargo 현재 연결 IMPLEMENTED=YES / WIRED=YES이며 위 한정 로컬 소비자는 검증됐다.
+전체 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO를 유지한다. 다음 MISSING은 ELF/Terraform
+제한 probe의 같은 환경·상태 연결이며, 전체 S01/S08/C01와 grouped/hosted/final qualification,
+다른 보강 항목을 계속한다. 새 CI·push·Host 설치는 실행하지 않았다.

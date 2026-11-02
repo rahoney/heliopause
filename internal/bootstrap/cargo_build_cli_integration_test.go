@@ -15,6 +15,7 @@ import (
 
 	projectbuild "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func TestLinuxCargoDependencyFreeBuildCLIIntegration(t *testing.T) {
@@ -149,6 +150,23 @@ func cargoBuildSelectedFixtureCLI(t *testing.T, files map[string]string, outputs
 				t.Fatal("failed build published output")
 			}
 			if failure != "" && strings.Contains(err.Error()+stdout.String(), failure) && !strings.Contains(stdout.String(), "Policy: ALLOW") && !strings.Contains(stdout.String(), "Build output:") {
+				if strings.Contains(failure, "command_status=") {
+					// A later environment may fail after the first product was
+					// captured. No provisional output may survive that failure.
+					intake := filepath.Join(root, "cache", "heliopause", "intake")
+					runs, readErr := os.ReadDir(intake)
+					if readErr != nil {
+						t.Fatal(readErr)
+					}
+					for _, run := range runs {
+						if !run.IsDir() {
+							continue
+						}
+						if _, statErr := os.Lstat(filepath.Join(intake, run.Name(), "cargo-output.tar")); !os.IsNotExist(statErr) {
+							t.Fatal("failed build retained provisional output", statErr)
+						}
+					}
+				}
 				t.Logf("actual Cargo build denied: %v stdout=%s", err, stdout.String())
 				return
 			}
@@ -216,7 +234,7 @@ func verifyCargoBuildReceipt(t *testing.T, root, project, directory string, outp
 	if err != nil || json.Unmarshal(body, &receipt) != nil {
 		t.Fatal("build receipt invalid")
 	}
-	if receipt.Schema != 1 || receipt.Policy == "" || receipt.PolicyVersion == 0 || receipt.Run != filepath.Base(directory) || len(receipt.Files) != outputCount || len(receipt.Evidence) != 3 {
+	if receipt.Schema != 1 || receipt.Policy == "" || receipt.PolicyVersion == 0 || receipt.Run != filepath.Base(directory) || len(receipt.Files) != outputCount || len(receipt.Evidence) != 5 {
 		t.Fatal("Run/Policy/output/Evidence coverage differs")
 	}
 	for _, digest := range []string{receipt.Source, receipt.Cache, receipt.Graph, receipt.Output, receipt.Recipe} {
@@ -236,6 +254,7 @@ func verifyCargoBuildReceipt(t *testing.T, root, project, directory string, outp
 		}
 	}
 	seenEvidence := map[string]bool{}
+	profiles := map[domain.SandboxEnvironmentProfile]string{}
 	for _, record := range receipt.Evidence {
 		body, err := os.ReadFile(filepath.Join(root, "cache", "heliopause", "evidence", receipt.Run, record.ID+".json"))
 		if err != nil || seenEvidence[record.ID] || record.Handle != "evidence:"+receipt.Run+":"+record.ID {
@@ -246,6 +265,10 @@ func verifyCargoBuildReceipt(t *testing.T, root, project, directory string, outp
 			t.Fatal("independent Evidence hash differs")
 		}
 		seenEvidence[record.ID] = true
+		readBuildEnvironmentEvidence(t, body, "cargo", receipt.Run, receipt.Source, profiles)
+	}
+	if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
+		t.Fatal("actual Cargo build lost same-check two-environment Evidence")
 	}
 	t.Logf("actual Cargo build run=%s source=%s cache=%s graph=%s output=%s recipe=%s", receipt.Run, receipt.Source, receipt.Cache, receipt.Graph, receipt.Output, receipt.Recipe)
 }
@@ -317,6 +340,60 @@ func TestLinuxCargoBuildFilesystemSecurityCLIIntegration(t *testing.T) {
 
 func TestLinuxCargoBuildNetworkSecurityCLIIntegration(t *testing.T) {
 	cargoBuildFixtureCLIExpect(t, cargoBuildScriptFixture("fn main() { let _ = std::net::TcpStream::connect(\"192.0.2.1:443\"); }\n"), nil, "M3_NETWORK_ATTEMPT")
+}
+
+func TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration(t *testing.T) {
+	cargoBuildFixtureCLIExpect(t, cargoBuildScriptFixture("fn main() { if std::env::var(\"GITHUB_TOKEN\").is_ok() { let _ = std::net::TcpStream::connect(\"192.0.2.1:443\"); } }\n"), nil, "M3_NETWORK_ATTEMPT")
+	evidenceRoot := filepath.Join(os.Getenv("XDG_CACHE_HOME"), "heliopause", "evidence")
+	runs, err := os.ReadDir(evidenceRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, run := range runs {
+		if !run.IsDir() {
+			continue
+		}
+		body, err := os.ReadFile(filepath.Join(evidenceRoot, run.Name(), "project-build-observation-result.json"))
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil || found {
+			t.Fatal("conditional build observation unavailable or duplicated", err)
+		}
+		var record struct {
+			Kind    string `json:"kind"`
+			Summary string `json:"summary"`
+			Digest  string `json:"sha256"`
+			Profile string `json:"profile_sha256"`
+		}
+		var summary struct {
+			Counts map[string]uint64 `json:"counts"`
+		}
+		if json.Unmarshal(body, &record) != nil || json.Unmarshal([]byte(record.Summary), &summary) != nil || record.Kind != "cargo-build-observation" || summary.Counts[string(domain.ObservationNetwork)+":network-attempt"] != 1 {
+			t.Fatal("dummy-env-only activation did not retain exactly one observed network attempt")
+		}
+		profiles := map[domain.SandboxEnvironmentProfile]string{}
+		for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+			state, err := os.ReadFile(filepath.Join(evidenceRoot, run.Name(), "project-build-workspace-"+string(profile)+".json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			readBuildEnvironmentEvidence(t, state, "cargo", run.Name(), record.Digest, profiles)
+		}
+		if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] != record.Profile || profiles[domain.SandboxEnvironmentDevelopment] != record.Profile {
+			t.Fatal("conditional activation lost the same-check two-environment binding")
+		}
+		found = true
+	}
+	if !found {
+		t.Fatal("conditional activation observation was not persisted")
+	}
+	t.Log("minimal dormant / mock-development network attempt1 / two persisted states / publication refused")
+}
+
+func TestLinuxCargoSecondEnvironmentFailureCLIIntegration(t *testing.T) {
+	cargoBuildFixtureCLIExpect(t, cargoBuildScriptFixture("fn main() { if std::env::var(\"GITHUB_TOKEN\").is_ok() { std::process::exit(37); } }\n"), nil, "command_status=EXIT_STATUS_101")
 }
 
 func TestLinuxCargoBuildConfigurationSecurityCLIIntegration(t *testing.T) {

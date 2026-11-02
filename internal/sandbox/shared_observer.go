@@ -129,9 +129,9 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
-// The Go build ledger aggregates preparation and compiler streams, including
-// counted workspace summaries. This does not increase physical collector limits.
-const maximumGoBuildLedgerEvents = 20000
+// Both required Go environments share this one preparation/compiler/keeper
+// ledger, including counted summaries. Physical collector limits are unchanged.
+const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
 	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" {

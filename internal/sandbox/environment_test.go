@@ -273,3 +273,72 @@ func TestInspectionEnvironmentAppliesToExistingPythonRuntimeArguments(t *testing
 		t.Fatal("unlocked environment image accepted")
 	}
 }
+
+func TestInspectionEnvironmentPreservesFixedBuildConfiguration(t *testing.T) {
+	session, _ := domain.NewSandboxSessionID()
+	profile, _ := newInspectionEnvironmentProfile(developmentEnvironment, session)
+	volume := closureVolume{name: "haa-closure-build-environment", transaction: session.String(), manifestID: profile.identity, createdAt: "created", mountpoint: "/volume/environment", capacity: 512 << 20, projectBuildDestination: environmentWorkspaceRoot}
+	for _, test := range []struct {
+		kind, image string
+		base        []string
+	}{
+		{"go", PinnedGoRuntime().ImageReference, goBuildCreateArgumentsForCache(goBuildGuestCache)},
+		{"cargo", PinnedCargoRuntime().ImageReference, cargoBuildCreateArgumentsForMounts("input-mount", "target-mount")},
+	} {
+		t.Run(test.kind, func(t *testing.T) {
+			args, err := applyEnvironmentWorkspace(test.base, test.image, profile, volume, false, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			joined := strings.Join(args, "\x00")
+			for index, arg := range test.base {
+				if arg == "--env" && !strings.Contains(joined, "--env\x00"+test.base[index+1]+"\x00") {
+					t.Fatal("fixed compiler/offline configuration lost", test.base[index+1])
+				}
+			}
+			if strings.Contains(joined, "--tmpfs\x00/tmp:") || strings.Count(joined, "target=/tmp,volume-nocopy") != 1 || !strings.Contains(joined, "--annotation\x00"+environmentWorkspacePolicy) || !strings.Contains(joined, "GITHUB_TOKEN=haa-invalid-") {
+				t.Fatal("fresh synthetic workspace missing or duplicated")
+			}
+		})
+	}
+	for _, kind := range []string{"go", "cargo"} {
+		for _, reader := range []bool{false, true} {
+			topology, ok := projectBuildEnvironmentExpectedTopology(kind, true, reader)
+			if !ok {
+				t.Fatal("build topology missing")
+			}
+			inputs, outputs, workspaces := 0, 0, 0
+			for _, mount := range topology {
+				switch mount.Mountpoint {
+				case environmentWorkspaceRoot:
+					workspaces++
+					if mount.FSType != "9p" || mount.ReadOnly != reader || !mount.NoExec || !mount.NoSUID {
+						t.Fatal("workspace restriction lost")
+					}
+				case goBuildGuestInput, cargoBuildGuestInput:
+					inputs++
+					if reader || !mount.ReadOnly {
+						t.Fatal("DATA keeper gained immutable input or compiler writable input")
+					}
+				case goBuildGuestOutput, cargoBuildGuestTarget:
+					outputs++
+					if mount.ReadOnly != reader || mount.NoExec {
+						t.Fatal("output execution/read-only role changed")
+					}
+				}
+			}
+			if workspaces != 1 || outputs != 1 || !reader && inputs != 1 || reader && inputs != 0 {
+				t.Fatal("build topology membership changed")
+			}
+		}
+	}
+	if _, ok := projectBuildEnvironmentExpectedTopology("foreign", true, false); ok {
+		t.Fatal("foreign build profile accepted")
+	}
+	if _, ok := projectBuildEnvironmentExpectedTopology("cargo", false, false); ok {
+		t.Fatal("Cargo target omitted")
+	}
+	if _, err := (&SharedObserver{}).startProjectBuildEnvironmentProfile(context.Background(), strings.Repeat("a", 64), "go", true, false, nil); err == nil {
+		t.Fatal("build environment started without shared trace budget")
+	}
+}
