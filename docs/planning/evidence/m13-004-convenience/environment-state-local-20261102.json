@@ -1181,5 +1181,119 @@
       "large_copies_removed_bytes": 395555292,
       "completed_original_binaries_removed_bytes": 63714626
     }
+  },
+  "elf_environment_candidate_checkpoint": {
+    "baseline_commit": "72a7a02",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "first_failure": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v1.json",
+        "sha256": "5f2776cdef9f3b93e9e80e7318dd4e6834bf4ebfba08e3767aec73a99baff2f4"
+      },
+      "cause": "new preparation-only MKDIR CONTROL/DIRECT_EXEC_ROOT PROC open classification STREAM_FAULT before artifact handoff",
+      "next": "use existing Docker DATA TAR for fixed empty mountpoint; no observer authority expansion",
+      "remaining_matrix": "NOT_REACHED",
+      "restored": true,
+      "host_unchanged": true,
+      "test_copy_bytes_removed": 370502496,
+      "correction": "SCOPED_PASS_NATIVE_V2: fixed DATA TAR mountpoint replaces unnecessary MKDIR executable; no CPP/authority exception"
+    },
+    "remaining": [
+      "S02 responder primitive and S03 dormant/normal/failure corpus",
+      "native PNPM fixed --version and whole shared failure/cancel/cleanup grouped qualification",
+      "whole S01/S08/C01 and hosted/final acceptance"
+    ],
+    "scope": "Current fixed ELF/provider two environments implemented/wired; scoped native consumers and store/CLI acceptance passed; whole S01/S08 and grouped/final remain open",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-current-targets.json",
+        "sha256": "b6e044268f6d5b9785d254af8e78ae5f8643fb852b7736621267cfe72a038f58"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-foundation.json",
+        "sha256": "feb626d112e14838c4d44e18da5fe3493424d88eccf9e557a304cf96a3e0aaed"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-security.json",
+        "sha256": "6eaa8ed7627931ea6314c8086760271d2edd6eec45bcb319317bf3585e88d3db"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-current-race.json",
+        "sha256": "9964ad39a6aeff935d07c7ab71783288edba4a1233f0e0b8441e327c2171d4da"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-sandbox-race.json",
+        "sha256": "08e6d3fcac9de463877c6fdeed84aae6afd95b65e8a341c620b28f8fd8614f93"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-corrected-staticcheck.json",
+        "sha256": "12d09f5bb40fb31f651e102a5fd9fffaf053f1fe4559d5944855ec14295e2f00"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-terraform-consumer-targets.json",
+        "sha256": "530fb28ab9847e826519c9e91b5889c43cbaa7aceadb67b382a00fd0f15a3c2d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-terraform-last-use-race.json",
+        "sha256": "6805061305c6097796854ea5b25ffdf52b5bebe090d4474282f485e2491b9e99"
+      }
+    ],
+    "actual": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v2.json",
+        "sha256": "4d58cb88b071f21fe42aad7e870be094b6f33e5b6e7cbadccda302a243328f6a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v3.json",
+        "sha256": "49784a2085f7033faa6a545ff3fda4876f16e3c158545c3cb3dbc5190ba0c0b7"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v4.json",
+        "sha256": "4070fb41bedfe0130df5025d284641d6fa35a59d311256e2a4a2c65b5d33ed47"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v5.json",
+        "sha256": "8a5517aba2e4eb61e61d7d5a7efcb7de1f619a74a9eda65f91a8d097b64be207"
+      }
+    ],
+    "qualification_scopes": {
+      "native_v2": "seven normal/FS/network/process/public-provider probes; unchanged runtime/CPP",
+      "native_v3": "overall FAIL: GitHub actual current normalizer Record/ReadReference PASS; Terraform initial reservation missing operation ID",
+      "native_v4": "overall FAIL: source/dynamic/Policy/cache/atomic publication completed; outer selection-DATA last-use unrecorded; not whole command success",
+      "native_v5": "default whole-provider CLI initial/reinstall with current same-check two states per provider and retained-lock identity, four refusals; final cleanup complete",
+      "go_source_files_match_native_v5": 409,
+      "race_scope": "initial current-race sandbox compile failed on removed helper refs, other3 packages PASS; corrected sandbox-only PASS; latest Terraform artifact/promotion/bootstrap focused Race PASS"
+    },
+    "cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-cleanup.json",
+      "sha256": "a4ca71ce1b71ddcc90f0d6f553e4a7b232af6145e1a683ebee17f786bd5990f4"
+    },
+    "final_checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-foundation.json",
+        "sha256": "9536e4c5bf6ccfd9480647c7535514c19d3e992c2d26e6e33bcbe1553593a1ed",
+        "elapsed": 52.328
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-security.json",
+        "sha256": "db001ba69a423e049c5e583923032154118fe6a698a6a32633ea9f83c70f2cda",
+        "elapsed": 23.725
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-staticcheck.json",
+        "sha256": "31730d2f6e6c86b678f3380820b360f47dcfd5f24ff62a22376ca3b86d9b3806",
+        "elapsed": 27.494
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-vet.json",
+        "sha256": "86c4da68a1024a594dfb1fad5aa5b4b0cd66084d806e35c8d1d494bec22c9f3e",
+        "elapsed": 15.237
+      }
+    ]
   }
 }

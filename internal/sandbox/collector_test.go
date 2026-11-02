@@ -14,7 +14,7 @@ import (
 )
 
 func TestCollectTraceNormalizesKindsWithoutPayload(t *testing.T) {
-	observations, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{{Kind: "process-exec", Bytes: 12}, {Kind: "network-attempt", Bytes: 16}}})
+	observations, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{{Kind: "process-exec", Bytes: 12}, {Kind: "network-attempt", Bytes: 16}}})
 	if limitation != "" || len(observations) != 2 {
 		t.Fatalf("collectTrace() = (%d observations, %q)", len(observations), limitation)
 	}
@@ -105,7 +105,7 @@ func TestCollectTraceFailsClosedOnUntrustedOrOversizedInput(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, limitation := collectTrace(context.Background(), test.reader)
+			_, limitation, _ := collectTraceDiagnostic(context.Background(), test.reader)
 			if limitation != test.want {
 				t.Fatalf("limitation = %q, want %q", limitation, test.want)
 			}
@@ -295,7 +295,7 @@ func TestCollectTraceDiagnosticDeterministicFormatting(t *testing.T) {
 }
 
 func TestCollectTraceRetainsUniqueSubjectsWithSaturatingCounts(t *testing.T) {
-	observations, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{
+	observations, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{
 		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
 		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
 		{Kind: "network-attempt", Bytes: 10},
@@ -313,7 +313,7 @@ func TestCollectTraceRetainsUniqueSubjectsWithSaturatingCounts(t *testing.T) {
 
 func TestCollectTraceFailsClosedOnInvalidAggregateCount(t *testing.T) {
 	for _, count := range []uint64{domain.MaximumObservationSummaryCount + 1, ^uint64(0)} {
-		_, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{{Kind: "filesystem-workspace-access", Bytes: 1, Count: count}}})
+		_, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{{Kind: "filesystem-workspace-access", Bytes: 1, Count: count}}})
 		if limitation != "M3_DYNAMIC_OBSERVER_FAILED" {
 			t.Fatalf("count %d limitation = %q", count, limitation)
 		}

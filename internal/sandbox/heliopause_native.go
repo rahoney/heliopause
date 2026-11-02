@@ -13,8 +13,8 @@ import (
 // isolation and observation; selecting a probe confers no trusted-tool role.
 type HeliopauseNativeBackend struct{ elf *GitHubELFBackend }
 
-func NewLinuxHeliopauseNativeBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*HeliopauseNativeBackend, error) {
-	elf, err := newLinuxGitHubELFBackend(intakeRoot, executor, observer)
+func NewLinuxHeliopauseNativeBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*HeliopauseNativeBackend, error) {
+	elf, err := newLinuxGitHubELFBackend(intakeRoot, executor, observer, resources)
 	if err != nil {
 		return nil, err
 	}

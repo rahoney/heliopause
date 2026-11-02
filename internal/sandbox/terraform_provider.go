@@ -15,8 +15,8 @@ import (
 // cloud operation or Host/provider execution outside the isolated lifecycle.
 type TerraformProviderBackend struct{ elf *GitHubELFBackend }
 
-func NewLinuxTerraformProviderBackend(intake string, executor TrustedExecutor, observer TraceObserver) (*TerraformProviderBackend, error) {
-	elf, err := newLinuxGitHubELFBackend(intake, executor, observer)
+func NewLinuxTerraformProviderBackend(intake string, executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*TerraformProviderBackend, error) {
+	elf, err := newLinuxGitHubELFBackend(intake, executor, observer, resources)
 	if err != nil {
 		return nil, err
 	}

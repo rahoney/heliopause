@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -68,6 +69,7 @@ func TestLinuxTerraformProviderProbeIntegration(t *testing.T) {
 				t.Fatal(e)
 			}
 			backend := &TerraformProviderBackend{elf: elf}
+			elf.resources = integrationObservationResourceAdapter(t)
 			request, e := domain.NewSandboxRequest(acquired)
 			if e != nil {
 				t.Fatal(e)
@@ -77,8 +79,12 @@ func TestLinuxTerraformProviderProbeIntegration(t *testing.T) {
 				code, _ := result.LimitationCode()
 				t.Fatalf("Provider probe result=%s/%s observer_reason=%s error=%v", result.Status(), code, integrationObserverFaultReason(supervisor), e)
 			}
+			states := result.EnvironmentStates()
+			if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+				t.Fatal("public provider probe missing two states")
+			}
 			for _, o := range result.Observations() {
-				if o.Category() == domain.ObservationNetwork || o.Category() == domain.ObservationResource || o.Category() == domain.ObservationHoneytoken || (o.Category() == domain.ObservationFilesystem && o.Subject() != "filesystem-workspace-access") || (o.Category() == domain.ObservationProcess && (o.Subject() == "process-exec-unexpected" || o.Subject() == "process-unexpected")) {
+				if o.Category() == domain.ObservationNetwork || o.Category() == domain.ObservationResource || o.Category() == domain.ObservationHoneytoken || (o.Category() == domain.ObservationFilesystem && !strings.HasPrefix(o.Subject(), "filesystem-workspace-") && !strings.HasPrefix(o.Subject(), "workspace-")) || (o.Category() == domain.ObservationProcess && (o.Subject() == "process-exec-unexpected" || o.Subject() == "process-unexpected")) {
 					t.Fatalf("positive provider has disallowed observation: %s/%s", o.Category(), o.Subject())
 				}
 			}

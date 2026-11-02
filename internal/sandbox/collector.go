@@ -187,13 +187,6 @@ func awaitMountAnchors(ctx context.Context, observer TraceObserver, containerID 
 	return ready.AwaitMountAnchors(ctx, containerID)
 }
 
-// collectTrace normalizes trusted gVisor observer kinds without retaining raw
-// paths, argv, environment, file contents, or process output.
-func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string) {
-	observations, limitation, _ := collectTraceDiagnostic(ctx, reader)
-	return observations, limitation
-}
-
 var recognizedTraceKinds = []string{
 	"process-exec",
 	"process-exec-expected",

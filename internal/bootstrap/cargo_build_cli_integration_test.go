@@ -265,7 +265,7 @@ func verifyCargoBuildReceipt(t *testing.T, root, project, directory string, outp
 			t.Fatal("independent Evidence hash differs")
 		}
 		seenEvidence[record.ID] = true
-		readBuildEnvironmentEvidence(t, body, "cargo", receipt.Run, receipt.Source, profiles)
+		readWorkspaceEnvironmentEvidence(t, body, "cargo", receipt.Run, receipt.Source, profiles)
 	}
 	if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
 		t.Fatal("actual Cargo build lost same-check two-environment Evidence")
@@ -379,7 +379,7 @@ func TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			readBuildEnvironmentEvidence(t, state, "cargo", run.Name(), record.Digest, profiles)
+			readWorkspaceEnvironmentEvidence(t, state, "cargo", run.Name(), record.Digest, profiles)
 		}
 		if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] != record.Profile || profiles[domain.SandboxEnvironmentDevelopment] != record.Profile {
 			t.Fatal("conditional activation lost the same-check two-environment binding")

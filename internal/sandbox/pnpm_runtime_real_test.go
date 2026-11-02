@@ -306,7 +306,7 @@ func TestPNPMActualReleaseArtifactProbe(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	backend, err := NewLinuxHeliopauseNativeBackendWithExecutor(root, executor, supervisor.Observer())
+	backend, err := NewLinuxHeliopauseNativeBackendWithExecutor(root, executor, supervisor.Observer(), integrationObservationResourceAdapter(t))
 	if err != nil {
 		t.Fatal(err)
 	}

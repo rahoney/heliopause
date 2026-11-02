@@ -32,6 +32,8 @@ type environmentInspection struct {
 	backend       *Backend
 	observer      environmentTraceObserver
 	owner         domain.SandboxSessionID
+	profileName   string
+	work          closureVolume
 	lease         ObservationResourceLease
 	ledger        *observationTransaction
 	traceBudget   *observationTraceLedger
@@ -66,7 +68,7 @@ func (b *Backend) executeEnvironmentInspection(ctx context.Context, request doma
 		result, e := incomplete(owner, "M3_DYNAMIC_EXECUTION_FAILED")
 		return result, errors.Join(e, err)
 	}
-	operation, code, err := b.newEnvironmentInspection(owner, observer)
+	operation, code, err := b.newEnvironmentInspection(owner, observer, "npm-lifecycle")
 	if err != nil {
 		result, resultErr := incomplete(owner, code)
 		return result, errors.Join(resultErr, err)
@@ -77,14 +79,17 @@ func (b *Backend) executeEnvironmentInspection(ctx context.Context, request doma
 	return operation.finish(ctx, run, code, cause)
 }
 
-func (b *Backend) newEnvironmentInspection(owner domain.SandboxSessionID, observer environmentTraceObserver) (*environmentInspection, string, error) {
+func (b *Backend) newEnvironmentInspection(owner domain.SandboxSessionID, observer environmentTraceObserver, profile string) (*environmentInspection, string, error) {
+	if profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
+		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", errEnvironmentState
+	}
 	now := time.Now()
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
 	units := []observationUnit{
 		{id: string(minimalEnvironment), kind: observationLifecycle, candidate: string(minimalEnvironment), coverage: artifactpypi.RequiredObservation},
 		{id: string(developmentEnvironment), kind: observationLifecycle, candidate: string(developmentEnvironment), coverage: artifactpypi.RequiredObservation},
 	}
-	accounting, err := observationPolicyForPython(policy, "npm-lifecycle", len(units), now)
+	accounting, err := observationPolicyForPython(policy, profile, len(units), now)
 	if err != nil {
 		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err
 	}
@@ -95,11 +100,11 @@ func (b *Backend) newEnvironmentInspection(owner domain.SandboxSessionID, observ
 	if err != nil {
 		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err
 	}
-	budget, err := newObservationTraceLedger("npm-lifecycle")
+	budget, err := newObservationTraceLedger(profile)
 	if err != nil {
 		return nil, "M3_DYNAMIC_OBSERVER_FAILED", err
 	}
-	return &environmentInspection{backend: b, observer: observer, owner: owner, ledger: ledger, traceBudget: budget, policy: policy, runtimes: make(map[string]*pythonPhaseRuntime)}, "", nil
+	return &environmentInspection{backend: b, observer: observer, owner: owner, profileName: profile, ledger: ledger, traceBudget: budget, policy: policy, runtimes: make(map[string]*pythonPhaseRuntime)}, "", nil
 }
 
 func (n *environmentInspection) finish(ctx, run context.Context, code string, cause error) (domain.SandboxResult, error) {
@@ -137,7 +142,7 @@ func (n *environmentInspection) finish(ctx, run context.Context, code string, ca
 
 func (n *environmentInspection) initialize(ctx context.Context, cancel context.CancelFunc) error {
 	n.attempted = true
-	lease, err := n.backend.resources.Create(ctx, n.owner.String(), "npm-lifecycle")
+	lease, err := n.backend.resources.Create(ctx, n.owner.String(), n.profileName)
 	if err != nil || lease.CgroupParent == "" || lease.CPU < 0 {
 		return errors.Join(errEnvironmentState, err)
 	}
@@ -251,11 +256,16 @@ func (n *environmentInspection) completeEnvironment(ctx context.Context, profile
 	if err := n.volume.verifyAttachments(ctx, n.backend.runner, map[string]bool{anchor.id: true}); err != nil {
 		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
 	}
+	if n.work.name != "" {
+		if err := n.work.verifyAttachments(ctx, n.backend.runner, map[string]bool{anchor.id: true}); err != nil {
+			return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+		}
+	}
 	after, err := captureEnvironmentState(ctx, n.backend.runner, anchor.id, limits)
 	if err != nil {
 		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
 	}
-	if n.project.name == "" && after.files["artifact.tgz"] != before.files["artifact.tgz"] {
+	if n.project.name == "" && n.work.name == "" && after.files["artifact.tgz"] != before.files["artifact.tgz"] {
 		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", errEnvironmentState
 	}
 	changes, err := compareEnvironmentStates(before, after)
@@ -303,6 +313,12 @@ func (n *environmentInspection) completeEnvironment(ctx context.Context, profile
 		return "M3_DYNAMIC_CLEANUP_FAILED", err
 	}
 	n.volume = closureVolume{}
+	if n.work.name != "" {
+		if err := closeWritableOutputVolume(ctx, n.backend.runner, &n.work, elfWriterWork); err != nil {
+			return "M3_DYNAMIC_CLEANUP_FAILED", err
+		}
+		n.work = closureVolume{}
+	}
 	if n.project.name != "" {
 		if err := closeWritableOutputVolume(ctx, n.backend.runner, &n.project, n.project.destination()); err != nil {
 			return "M3_DYNAMIC_CLEANUP_FAILED", err
@@ -324,6 +340,9 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 	}
 	defer func() { resultErr = errors.Join(resultErr, n.watch.endTransition(context.Background())) }()
 	args, err := environmentContainerArguments(session, profile, n.volume, readOnly)
+	if n.work.name != "" && err == nil {
+		args, err = n.elfContainerArguments(session, profile, readOnly)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +390,20 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 	if err := n.volume.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
 		return nil, err
 	}
-	if n.project.name != "" {
+	if n.work.name != "" {
+		work := n.work
+		if readOnly {
+			work.projectBuildDestination = elfReaderWork
+		}
+		if err := work.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
+			return nil, err
+		}
+		observer, ok := n.observer.(elfEnvironmentTraceObserver)
+		if !ok {
+			return nil, errEnvironmentState
+		}
+		runtime.trace, err = observer.startELFEnvironmentProfile(ctx, id, n.profileName, readOnly, n.traceBudget)
+	} else if n.project.name != "" {
 		if err := n.project.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
 			return nil, err
 		}
@@ -511,6 +543,9 @@ func (n *environmentInspection) close() error {
 	}
 	if n.volume.name != "" && !n.uncertain {
 		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.volume, environmentWorkspaceRoot))
+	}
+	if n.work.name != "" && !n.uncertain {
+		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.work, elfWriterWork))
 	}
 	if n.project.name != "" && !n.uncertain {
 		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.project, n.project.destination()))

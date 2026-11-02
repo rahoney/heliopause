@@ -134,7 +134,7 @@ type observationTraceLedger struct {
 const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" {
+	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)

@@ -1245,9 +1245,11 @@ member64MiB, expanded aggregate200MiB, archive10,000entries, complete installed 
 200MiB/10,000files/20,000entries의 한도를 유지한다. 한도 밖 package는 자동 설치하지 않는다.
 
 Verified signer에만 같은 acquired subject의 required isolated `-help` probe를 수행한다.
-`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 한 번 실행하고
+`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 각 필수 fresh 환경에서 한 번 실행하고
 network-none, readonly OCI root, 기존 CPU30s/wall30s/memory512MiB/PID64/charged10,000
-경계를 적용한다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
+경계를 두 환경 전체의 공유 원장에 적용한다. Wall30s/CPU30s/charged10,000을 환경마다
+재부여하지 않는다. 종료 후 상태는 고정 RO keeper에서 기록하며 두 환경의 terminal과
+workspace Evidence가 모두 필요하다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
 기록한다. Terminal1은 consumed exact direct-exec admission과 typed external target exit를
 함께 요구한다. stdout·error string·bare exit error는 완료 authority가 아니다. Missing
 observation, ambiguous admission, timeout/resource/cleanup failure는 required INCOMPLETE다.

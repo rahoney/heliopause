@@ -90,7 +90,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 		return domain.InspectionReport{}, e
 	}
 	result, e := i.sandbox.Execute(ctx, request)
-	if e != nil {
+	if e != nil && result.Status() != domain.SandboxIncomplete {
 		return domain.InspectionReport{}, e
 	}
 	dynamic, e := providerProbeReports(artifact, result)
@@ -124,8 +124,12 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 			}
 		}
 	}
-	if status == domain.ExecutionCompleted && (terminal != 1 || lifecycle != 1) {
+	if status == domain.ExecutionCompleted && (terminal != 2 || lifecycle != 1) {
 		status, limitation = domain.ExecutionIncomplete, "M12_TERRAFORM_PROBE_TERMINAL_UNPROVEN"
+	}
+	states := result.EnvironmentStates()
+	if status == domain.ExecutionCompleted && (len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered) {
+		status, limitation = domain.ExecutionIncomplete, "M12_TERRAFORM_ENVIRONMENT_INCOMPLETE"
 	}
 	summary, e := result.ObservationSummary()
 	if e != nil {
@@ -139,6 +143,19 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 	ev, e := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "terraform-provider-dynamic", summary)
 	if e != nil {
 		return nil, e
+	}
+	facts := []domain.Evidence{ev}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return nil, err
+		}
+		stateID, _ := domain.NewEvidenceID("terraform-workspace-" + string(state.Profile))
+		fact, err := domain.NewEvidence(stateID, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, fact)
 	}
 	seen := map[string]bool{}
 	var findings []domain.Finding
@@ -183,7 +200,7 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 		}
 		return []domain.InspectionReport{partial, coverage}, nil
 	}
-	report, err := domain.NewInspectionReport(check, findings, []domain.Evidence{ev})
+	report, err := domain.NewInspectionReport(check, findings, facts)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +212,12 @@ func providerCheckProfile(name string) domain.ContentDigest {
 	if name != "terraform-provider-static" {
 		runtime = runtimeidentity.NodeImageReference
 	}
-	profile, _ := domain.CheckProfileDigest(name+"-v1", runtime)
+	revision := name + "-v1"
+	if name != "terraform-provider-static" {
+		revision = name + "-environments-v2"
+		runtime += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+	}
+	profile, _ := domain.CheckProfileDigest(revision, runtime)
 	return profile
 }
 

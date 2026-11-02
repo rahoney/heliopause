@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // ResolveProjectDependencyUpdate selects the complete explicit provider set
@@ -159,6 +160,14 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 		}
 		if e := c.freezePackage(resolved, bundle); e != nil {
 			return domain.ProjectDependencyUpdate{}, e
+		}
+		if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+			// This preselection DATA copy is fully read and independently frozen.
+			// Required source/dynamic checks use a separate acquired Run later;
+			// outer guard/consumer finalization still controls actual retirement.
+			if e := lifetime.NoteInspection(ctx, run, true); e != nil {
+				return domain.ProjectDependencyUpdate{}, e
+			}
 		}
 		p := LockedProvider{Address: r.Address, Version: version, Constraints: strings.Join(r.Constraints, ", "), Hashes: []string{contents.H1, contents.ZH}}
 		if exists && old.Version == version {

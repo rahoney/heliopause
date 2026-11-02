@@ -68,7 +68,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot && project[0].destination != environmentWorkspaceRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot && project[0].destination != environmentWorkspaceRoot && project[0].destination != elfWriterWork && project[0].destination != elfReaderWork) || project[0].executable != (project[0].destination == cargoBuildGuestTarget || project[0].destination == elfWriterWork || project[0].destination == elfReaderWork))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
@@ -107,13 +107,13 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		if volume.destination() == nodeExecutionRoot {
 			return volume, errors.Join(errors.New("node materialization volume creation outcome is unavailable"), err)
 		}
-		if volume.destination() == environmentWorkspaceRoot {
+		if volume.destination() == environmentWorkspaceRoot || volume.destination() == elfWriterWork {
 			return volume, errors.Join(errEnvironmentState, err)
 		}
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
 	if err := volume.verify(ctx, runner); err != nil {
-		if volume.destination() == pipxRuntimeRoot || volume.destination() == nodeExecutionRoot || volume.destination() == environmentWorkspaceRoot {
+		if volume.destination() == pipxRuntimeRoot || volume.destination() == nodeExecutionRoot || volume.destination() == environmentWorkspaceRoot || volume.destination() == elfWriterWork {
 			return volume, err
 		}
 		// Never adopt a volume whose post-create identity is uncertain. The caller
@@ -258,9 +258,25 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 			return errors.New("python closure container requests an unauthorized bind mount")
 		}
 	}
+	destination := v.destination()
+	if readOnly && destination == elfWriterWork {
+		destination = elfReaderWork
+	}
+	if v.destination() == elfWriterWork || v.destination() == elfReaderWork {
+		for _, mount := range actual.Mounts {
+			if mount.Name == v.name && mount.Destination != destination {
+				return errEnvironmentState
+			}
+		}
+		for _, mount := range actual.HostMounts {
+			if mount.Source == v.name && mount.Target != destination {
+				return errEnvironmentState
+			}
+		}
+	}
 	actualMatches, configuredMatches := 0, 0
 	for _, mount := range actual.Mounts {
-		if mount.Destination != v.destination() {
+		if mount.Destination != destination {
 			continue
 		}
 		actualMatches++
@@ -270,7 +286,7 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 		}
 	}
 	for _, mount := range actual.HostMounts {
-		if mount.Target != v.destination() {
+		if mount.Target != destination {
 			continue
 		}
 		configuredMatches++

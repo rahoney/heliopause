@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 // Actual installed client exercises source authentication, fixed isolated probe,
@@ -171,10 +172,10 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 					Approval struct {
 						Policy  string `json:"policy"`
 						Entries []struct {
-							Name, Version, Run string
-							Executable         string            `json:"executable"`
-							ExecutableDigest   string            `json:"executable_digest"`
-							Evidence           []json.RawMessage `json:"evidence"`
+							Name, Version, Run, Envelope string
+							Executable                   string                        `json:"executable"`
+							ExecutableDigest             string                        `json:"executable_digest"`
+							Evidence                     []struct{ ID, SHA256 string } `json:"evidence"`
 						} `json:"entries"`
 					} `json:"approval"`
 				}
@@ -183,8 +184,23 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 				}
 				runs := map[string]bool{}
 				for _, entry := range state.Approval.Entries {
-					if len(entry.Evidence) != 3 || entry.Run == "" || previousRuns[entry.Run] || runs[entry.Run] {
+					if len(entry.Evidence) != 5 || entry.Run == "" || previousRuns[entry.Run] || runs[entry.Run] {
 						t.Fatal("independent source/static/dynamic Evidence or Run binding missing")
+					}
+					profiles := map[domain.SandboxEnvironmentProfile]string{}
+					for _, record := range entry.Evidence {
+						body, err := os.ReadFile(filepath.Join(root, "cache", "heliopause", "evidence", entry.Run, record.ID+".json"))
+						if err != nil {
+							t.Fatal(err)
+						}
+						hash := sha256.Sum256(body)
+						if hex.EncodeToString(hash[:]) != record.SHA256 {
+							t.Fatal("provider Evidence record substituted")
+						}
+						readWorkspaceEnvironmentEvidence(t, body, "terraform", entry.Run, entry.Envelope, profiles)
+					}
+					if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
+						t.Fatal("provider lost same-check two-environment records")
 					}
 					runs[entry.Run] = true
 					path := filepath.Join(project, ".terraform/providers/registry.terraform.io", strings.Replace(entry.Name, "_", "/", 1), entry.Version, "linux_amd64", entry.Executable)

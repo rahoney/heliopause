@@ -247,7 +247,7 @@ func observationParent(transaction string) (string, error) {
 func observationPolicy(name string) (artifactpypi.ResourcePolicy, error) {
 	// The existing default CPU authorization matches the npm lifecycle's
 	// unchanged 30-second ceiling. Environment experiments share this parent.
-	if name == "pypi" || name == "npm-lifecycle" {
+	if name == "pypi" || name == "npm-lifecycle" || name == "github-elf" || name == "terraform-provider" {
 		return artifactpypi.PublicPyPIProfile().ResourcePolicy(), nil
 	}
 	if !strings.HasPrefix(name, "pytorch:") {
@@ -323,7 +323,7 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 			return ObservationResourceLease{}, err
 		}
 		maxLaunches := 2*policy.MaxObservationImportsPerArtifact() + 4
-		if request.Profile == "npm-lifecycle" {
+		if request.Profile == "npm-lifecycle" || request.Profile == "github-elf" || request.Profile == "terraform-provider" {
 			// Two fresh writers and their readonly keepers, never one
 			// replenished authorization per environment.
 			maxLaunches = 4

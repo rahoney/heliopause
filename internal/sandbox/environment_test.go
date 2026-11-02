@@ -4,12 +4,86 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+func TestELFEnvironmentPreservesFixedMountsAndSharedAccounting(t *testing.T) {
+	for key, value := range map[string]string{"GITHUB_TOKEN": "fake-github-token", "NPM_TOKEN": "fake-npm-token", "PYPI_TOKEN": "fake-pypi-token", "AWS_SECRET_ACCESS_KEY": "fake-aws-secret", "OPENAI_API_KEY": "fake-openai-key", "CI_SECRET": "fake-ci-secret", "ARBITRARY_TOKEN": "fake-arbitrary-token", "SSH_AUTH_SOCK": "/tmp/fake-ssh-agent.sock", "DOCKER_HOST": "tcp://fake-host.invalid:2375"} {
+		t.Setenv(key, value)
+	}
+
+	session, _ := domain.NewSandboxSessionID()
+	profile, _ := newInspectionEnvironmentProfile(developmentEnvironment, session)
+	workspace := closureVolume{name: "haa-closure-elf-env", createdAt: "created", mountpoint: "/volume/elf-env", transaction: session.String(), manifestID: profile.identity, capacity: elfWorkspaceCapacity, projectBuildDestination: environmentWorkspaceRoot}
+	work := closureVolume{name: "haa-closure-elf-work", createdAt: "created", mountpoint: "/volume/elf-work", transaction: session.String(), manifestID: profile.identity, capacity: elfWorkspaceCapacity, projectBuildDestination: elfWriterWork, projectBuildExecutable: true}
+	for _, name := range []string{"github-elf", "terraform-provider"} {
+		for _, readOnly := range []bool{false, true} {
+			op := environmentInspection{volume: workspace, work: work, profileName: name}
+			args, err := op.elfContainerArguments(session, profile, readOnly)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assertExplicitNonAuthorityEnvironment(t, args)
+			for _, forbidden := range []string{"type=bind", "--volume", "--privileged", "--pid host", "--network host", "/var/run/docker.sock", "SSH_AUTH_SOCK"} {
+				if strings.Contains(strings.Join(args, " "), forbidden) {
+					t.Fatal("ELF host authority exposed", forbidden)
+				}
+			}
+			joined := strings.Join(args, "\x00")
+			corpus, err := os.ReadFile(filepath.Join("testdata", "credential-path-corpus.txt"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, path := range strings.Fields(string(corpus)) {
+				if strings.Contains(joined, path) {
+					t.Fatal("Host credential corpus embedded in ELF create", path)
+				}
+			}
+
+			root := elfWriterWork
+			if readOnly {
+				root = elfReaderWork
+			}
+			for _, required := range []string{"--network\x00none", "--read-only", "--cap-drop\x00ALL", "--cap-add\x00SETUID", "--cap-add\x00SETGID", "--cap-add\x00SETPCAP", boundaryContainerCommand(), "target=/tmp,volume-nocopy", "target=" + root + ",volume-nocopy", environmentWorkspacePolicy, "GITHUB_TOKEN=haa-invalid-"} {
+				if !strings.Contains(joined, required) {
+					t.Fatal("ELF isolation argument missing", required)
+				}
+			}
+			topology, ok := elfEnvironmentExpectedTopology(name, readOnly)
+			if !ok {
+				t.Fatal("fixed profile rejected")
+			}
+			seen := false
+			for _, mount := range topology {
+				if mount.Mountpoint == root {
+					seen = true
+					if mount.ReadOnly != readOnly || mount.NoExec {
+						t.Fatal("executable work role changed")
+					}
+				}
+			}
+			if !seen {
+				t.Fatal("work topology absent")
+			}
+		}
+		budget, err := newObservationTraceLedger(name)
+		if err != nil || budget.maxEvents != uint64(defaultTraceBudget.events) || budget.maxBytes != defaultTraceBudget.bytes {
+			t.Fatal("ELF transaction allowance changed", err)
+		}
+	}
+	if _, ok := elfEnvironmentExpectedTopology("foreign-profile", false); ok {
+		t.Fatal("foreign ELF profile accepted")
+	}
+	if strings.Contains(work.tmpfsOptions(), ",noexec") || !strings.Contains(workspace.tmpfsOptions(), ",noexec") {
+		t.Fatal("work execution and scratch restriction confused")
+	}
+}
 
 func TestInspectionEnvironmentIsSyntheticFreshAndRoleSeparated(t *testing.T) {
 	t.Setenv("GITHUB_TOKEN", "host-secret-must-not-appear")

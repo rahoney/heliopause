@@ -661,3 +661,105 @@ Go/Cargo 현재 연결 IMPLEMENTED=YES / WIRED=YES이며 위 한정 로컬 소�
 전체 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO를 유지한다. 다음 MISSING은 ELF/Terraform
 제한 probe의 같은 환경·상태 연결이며, 전체 S01/S08/C01와 grouped/hosted/final qualification,
 다른 보강 항목을 계속한다. 새 CI·push·Host 설치는 실행하지 않았다.
+
+
+### GitHub ELF/Terraform 제한 probe 연결 전 baseline — `72a7a02`
+
+| 항목 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 기존 ELF introduction/고정 handoff/provider terminal | YES | YES | NO | NO | 새 보강 후보의 묶음 qualification; 기존 bounded 동작은 재사용 |
+| probe 두 환경·종료 후 상태·공유 총량 | NO | NO | NO | NO | fresh 두 실험, 기존30s CPU/trace 공유, `/tmp`·`/work` 상태, 같은 required check Evidence |
+
+`GitHubELFBackend.executeELF`가 source/profile·introduction·고정 실행·종료를,
+`TerraformProviderBackend.probeTerminal`이 exact admission과 typed exit0/1을 소유한다.
+현재 private tmpfs는 writer 삭제 뒤 읽을 수 없으며 두 번 실행만 추가하면 CPU/trace가
+재부여된다. 기존 `environmentInspection`의 watch/ledger/owned volume/start/stop/finalize를
+재사용하고 ELF introduction/terminal을 기존 owner에 유지한다. 별도 manager·완료 protocol을
+만들지 않는다. 공유 자원 service에는 두 exact profile을 기존30s/4launch 계약으로 연결한다.
+
+`/tmp`256MiB/noexec와 `/work`256MiB/exec 역할은 그대로다. 기존 owned volume의 두 fixed
+destination을 추가해 `/work`는 reader의 `/tmp/haa-elf-work`에서 RO로 읽고 하나의 bounded
+inventory에 포함한다. Writer 종료/drain 전 final 금지, 실제 Artifact ELF의 재해시와 두
+profile 준비·canary placement를 유지한다. Canonical provider wall30s를 두 실험 전체에
+적용하며 GitHub의 기존45s를 늘리지 않는다. Provider terminal은 환경마다1개/전체2개로
+명시하고 arbitrary argv/RPC/cloud 작업을 추가하지 않는다. Pipx의 별도 GitHub normalizer
+소비자는 이 ELF coverage 요구와 분리해 기존 동작을 보존한다.
+
+먼저 fixed mount/공유 budget·terminal/coverage의 싼 검사 후 actual DATA/정상·거부/조건부
+probe를 묶어 검증한다. 새 kernel/CPP는 현재 소비자에서 실제 필요가 확인된 경우에만
+수정하며 기존 버전 owner/업데이트 경로는 유지한다. 전체 S01/S08 acceptance는 계속 OPEN이다.
+
+
+ELF 공통 경로의 추가 소비자인 `HeliopauseNativeBackend`의 고정 PNPM `--version`도 같은
+공유 자원 port를 composition root에서 연결한다. 별도 runtime 검증/업데이트 owner는 유지한다.
+첫 표적12.681s에서 sandbox/GitHub/hosttool/bootstrap은 PASS였고 provider 두 fixture는 새
+상태 Evidence2개를 기존1개로 기대해 FAIL했다. 실제 record 수로 fixture만 교정하고 필수
+환경0/1/VFS coverage 누락 거부·세 exact resource profile의 동일30s/4launch 경계를 추가했다.
+새 실행 성공이나 whole qualification으로 기록하지 않는다. 첫 format 준비는 sync 종료 전에
+새 source가 없어 NOT_RUN이었으며 terminal sync 뒤에만 실제 format을 실행했다.
+
+
+ELF 첫 actual `s01-elf-environment-native-v1`4.142s는 정상 GitHub fixture의 새 준비용
+MKDIR/CONTROL/DIRECT_EXEC_ROOT·PROC open 분류에서 STREAM_FAULT였다. Artifact handoff와
+provider·나머지 matrix는 미도달이다. 새 mkdir를 위한 권한/CPP 예외를 만들지 않고 같은
+fixed 빈 mountpoint를 기존 `docker cp --archive` DATA transport로 준비하도록 교정한다.
+아직 실제 교정 성공은 아니다. Helperwait0/Host 동일/정확한 복원·370502496B 사본 정리는
+완료됐으며 처음 실패 원본을 유지한다. 앞 compile 실패는 제거한 생성 함수의 test 참조
+두 곳이며 그 시험의 Host env/credential/권한 범위는 현재 ELF argv 시험으로 이동했다.
+Production에서 더 이상 쓰지 않는 collectTrace facade도 제거하고 같은 diagnostic collector를
+시험에서 직접 사용한다. Sandbox-only Race38.424s와 corrected tagged Staticcheck20.649s는
+그 compile 교정 범위의 PASS이며 actual 성공을 대신하지 않는다.
+
+
+Actual v2/44.166s의 정상2·거부3·공개 provider2가 모두 PASS했다. Runtime/CPP 불변,
+helperwait0/정확한 복원·Host 동일/370503871B 사본 정리다. 별도 v3/10.700s는 GitHub 실제
+normalizer→Record/ReadReference/같은 check·profile의 두 상태를 PASS했고, default Terraform
+CLI는 선행 resolver Acquire의 `invalid storage reservation`으로 FAIL해 뒤 시험이 미도달이다.
+C01의 기존 reservation은 OperationID를 요구하는데 현재 Terraform 준비에는 CLI context의
+operation이 없다. 기존 bootstrap Terraform 어댑터 하나를 init/upgrade/default init에 함께
+사용해 현재 요청 ID를 전파한다. Source client/공통 workflow·storage guard를 완화하지 않는다.
+
+같은 경로의 retained cache는 증거3개와 check당1개를 고정해 새 상태2개를 거부한다. 현재
+필수 source/static/dynamic 및 두 환경의 exact5 Evidence ID를 요구하고 동적 세 record의
+profile 일치도 확인한다. 기존 fixture는 이 계약의 올바른5개로 갱신한다. 이는 연결 gap의
+수정 지도이며 새 실제 CLI 성공은 아직 미검증이다. 첫 실패/정리와 GitHub 성공 범위는
+원장 및 native-v3 원본을 그대로 유지한다.
+
+
+CLI v4/29.606s는 새로운 작업 ID·exact5 cache 검증 후 두 provider의 필수3검사/각 상태2개와
+entry/set ALLOW·반입 COMPLETED까지 도달했으나 outer storage Finish가 선택용 intake2개의
+last-use 미기록으로 FAIL했다. Whole command 완료/성공으로 기록하지 않는다. 기존
+freezePackage는 정확한 bundle을 독립 bytes로 복제해 보존하므로, bounded ReadIntake/정적
+package/lock 검사와 freeze가 모두 끝난 해당 DATA Run에만 기존 InspectionStorage 종료
+기록을 연결한다. 후속 별도 acquired Run의 서명·동적 검사/Policy는 그대로 필수이고 outer
+guard/공유 consumer 종료 전 삭제하지 않는다. 기존 storage Finish를 무시하거나 모든 Run을
+일괄 완료 처리하지 않는다. 같은 두-provider fixture에 실제 유한 storage와 Finish/사본 부재,
+원래 frozen source 재생을 연결해 검사한다. Host 동일/정확한 복원·395592651B 사본 정리다.
+
+
+### ELF/provider 연결의 한정 로컬 종료
+
+Native-v5/65.670s는 default 전체 provider2개의 최초 설치와 재설치55.61s, 현재5개씩의
+같은 source/Run/check/profile 상태 record readback, 필수3검사·entry/set ALLOW·cache·원자
+반영 및 원래 lock identity/mode 보존을 PASS했다. Checksum mismatch/remote module/foreign
+cache/동시 변경 거부4개7.60s도 PASS다. 실패한 선택 입력은 보호하며 이를 자동 정리 전체
+완료로 확대하지 않는다. C01의 불확실한 실패·crash/lease/cache/retention은 별도 MISSING이다.
+
+현재 ELF/provider 연결 IMPLEMENTED=YES / WIRED=YES이고 위 local 소비자는 검증됐다.
+Whole QUALIFIED=NO / ACCEPTANCE_CLOSED=NO를 유지한다. 이전 v2의7개 probe와 v3의
+GitHub stored Evidence 성공을 재사용했고 CPP/kernel·해결된 소비자를 재실행하지 않았다.
+처음 compile/fixture/MKDIR/operation/last-use 실패는 원본 그대로 남겼다. 최신 Terraform
+artifact/promotion/bootstrap의 표적 Race34.602s도 PASS다. Native PNPM 고정 probe, 공통
+실패/취소·잠복/정상 corpus 및 grouped/hosted/final은 미완료이며 다음은 S02 primitive다.
+
+모든 실제 실행은 helperwait0/정확한 runtime·설정 복원/Host 동일을 확인했고 operator의
+큰 사본은 각각 제거했다. 마지막 완료 바이너리3개93987630B도 전체95 process의 무참조와
+query error0·exact hash/inode를 검증한 뒤 삭제했다. Source/SDK/cache/원본은 보존했다.
+상세 source별 검사·실패·최종 범위와 SHA는 같은 부분 원장이 소유한다. 새 CI/push/Host
+설치 변경이나 전체 보강 완료는 아니다.
+
+
+마지막 code 후보의 canonical foundation52.328s/security23.725s와 영향7 package의 tagged
+Staticcheck27.494s·vet15.237s도 PASS다. Code는 native-v5 이후 불변이며 뒤 변경은 이
+검증의 기록뿐이다. 추가 full native/CPP/CI를 만들지 않고 같은 M13-004의 다음 missing을
+계속한다.

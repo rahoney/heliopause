@@ -278,7 +278,7 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 			if hex.EncodeToString(hash[:]) != record.SHA256 {
 				t.Fatal("build Evidence binding changed")
 			}
-			readBuildEnvironmentEvidence(t, body, "go", receipt.Run, receipt.Source, profiles)
+			readWorkspaceEnvironmentEvidence(t, body, "go", receipt.Run, receipt.Source, profiles)
 		}
 		if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
 			t.Fatal("actual Go build lost same-check two-environment Evidence")
@@ -296,9 +296,9 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 	}
 }
 
-// Both current build CLI consumers verify the records already authenticated by
-// their published receipt. This does not execute or rebuild either product.
-func readBuildEnvironmentEvidence(t *testing.T, body []byte, kind, run, source string, profiles map[domain.SandboxEnvironmentProfile]string) {
+// Current build/provider CLI consumers read the state records authenticated by
+// their published receipt. This does not execute or rebuild their products.
+func readWorkspaceEnvironmentEvidence(t *testing.T, body []byte, kind, run, source string, profiles map[domain.SandboxEnvironmentProfile]string) {
 	t.Helper()
 	var record struct {
 		Schema  string `json:"schema_version"`
@@ -317,7 +317,11 @@ func readBuildEnvironmentEvidence(t *testing.T, body []byte, kind, run, source s
 	if record.Kind != "workspace-state" {
 		return
 	}
-	if record.Schema != "helox.evidence/v2" || record.Run != run || record.Check != "project-build-observation" || record.Source != "project-local" || record.Variant != kind+"-source" || record.Digest != source || len(record.Profile) != 64 {
+	check, subjectSource, variant := "project-build-observation", "project-local", kind+"-source"
+	if kind == "terraform" {
+		check, subjectSource, variant = "terraform-provider-dynamic", "terraform-registry", "linux/amd64"
+	}
+	if record.Schema != "helox.evidence/v2" || record.Run != run || record.Check != check || record.Source != subjectSource || record.Variant != variant || record.Digest != source || len(record.Profile) != 64 {
 		t.Fatal("actual build workspace Evidence binding changed")
 	}
 	var state struct {

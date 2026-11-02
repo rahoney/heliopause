@@ -77,7 +77,7 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 	if !capability.Available {
 		return incomplete(session, "M3_DYNAMIC_CAPABILITY_UNAVAILABLE")
 	}
-	operation, code, err := b.newEnvironmentInspection(session, observer)
+	operation, code, err := b.newEnvironmentInspection(session, observer, "npm-lifecycle")
 	if err != nil {
 		result, resultErr := incomplete(session, code)
 		return result, errors.Join(resultErr, err)

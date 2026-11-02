@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/storage"
 )
 
 func TestTerraformUpgradeFreezesAllIndependentProviders(t *testing.T) {
@@ -55,9 +57,31 @@ func TestTerraformUpgradeFreezesAllIndependentProviders(t *testing.T) {
 	}
 	target, _ := domain.NewInstallTarget(root)
 	install, _ := domain.NewInstallContext(target)
-	update, err := client.ResolveProjectLockUpdate(context.Background(), install, capture.Controls, "")
+	storageRoot := filepath.Join(root, "storage")
+	spec := domain.DefaultStoragePolicy().Spec()
+	spec.MinimumFreeBytes = 1
+	policy, err := domain.NewStoragePolicy(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner, err := storage.NewLocal(context.Background(), storageRoot, policy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer owner.Close()
+	client.intakeRoot = filepath.Join(storageRoot, "intake")
+	operation, _ := domain.NewOperationID()
+	ctx := ports.WithStorageOperation(ports.WithStorage(context.Background(), owner), operation)
+	update, err := client.ResolveProjectLockUpdate(ctx, install, capture.Controls, "")
 	if err != nil || !update.Valid() || update.HasRequestedResolution() || len(update.Snapshot().Dependencies()) != 2 {
 		t.Fatal("complete independent provider selection failed", err)
+	}
+	if err := owner.Finish(ctx, true); err != nil {
+		t.Fatal("completed preselection DATA retains unproven last-use", err)
+	}
+	remaining, err := os.ReadDir(client.intakeRoot)
+	if err != nil || len(remaining) != 0 {
+		t.Fatal("completed preselection copies remain", err)
 	}
 	for _, control := range update.SelectedControls() {
 		if control.Name() == ConfigurationControl {
