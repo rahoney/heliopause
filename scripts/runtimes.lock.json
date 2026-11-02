@@ -6,7 +6,7 @@
     "source_repository": "https://github.com/google/gvisor.git",
     "patch": {
       "path": "tools/gvisor/release-20260907.0.patch",
-      "sha256": "2a34d5f2fc722682c43dc331f47cb808934a89a79e45d542b375d517de5294b7"
+      "sha256": "c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68"
     },
     "build": {
       "bazel_module_lock_sha256": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",
@@ -22,13 +22,13 @@
       "members": [
         {
           "path": "containerd-shim-runsc-v1",
-          "size": 43865876,
-          "sha512": "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"
+          "size": 43892969,
+          "sha512": "b74e187449c4de5f091d66875dedfff4b2f50c54771367f5e2d404148ac544be2fe1b7ff1aa5463dfc01a0070513a18621d87127e9c1928cf0303a093b8514e2"
         },
         {
           "path": "gvisor-bin/checkpointgofer",
-          "size": 68249064,
-          "sha512": "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"
+          "size": 68279621,
+          "sha512": "292d8db3da84aa1b80a8d874a71c506731b7d0ffd10246b823ee122c80514471ec4e4b1343bfda3c825da828b84f97b5c99d3111fd0035113b91d0a5aeac0786"
         },
         {
           "path": "gvisor-bin/gvisor-sentry-prewarmer",
@@ -37,18 +37,18 @@
         },
         {
           "path": "gvisor-bin/gvisor_sentry",
-          "size": 51920567,
-          "sha512": "53c11254a8996cf7be1feb599aa7193d23a229b932d083c993640f6633691d8b0dad26c70bc606dca8bea82df252a251f6b75dfc08a4776eeb793b12894e32b5"
+          "size": 51952312,
+          "sha512": "5cb31d23567463e0aaca08047b09801fbd363e3986b9dc9ae1d4ab5a22890363ee7e8d2f83751be292b405a384f7d8110dcfc51596c87b5a42d7362051e0ccd5"
         },
         {
           "path": "gvisor-bin/runsc-metric-server",
-          "size": 53387149,
-          "sha512": "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"
+          "size": 53413734,
+          "sha512": "87b44729b82008dbc2cc6455f68586827e6d96dbddb6d2023e98d66ff94a8ec37bc2ff150b8b379fc6668db47946551076f782c92357e17bd0459fefc6d4d68f"
         },
         {
           "path": "runsc",
-          "size": 110973559,
-          "sha512": "6ad31694a8fc4789e6bcb392710fc544ed3a62129579d22ee13ca21957863e3c6235df5d3eb3e9bb2d32adf5367227eec39dae3b90f00e02cac956f40f01b5e5"
+          "size": 111030944,
+          "sha512": "a677715fba638f745240c5cc2496a2132009086179cc918236b407e9cb5835d1be706e4033ede4b3bfa66c87b738b8e4db1331dab4cb1798b6cf7685bb25165b"
         }
       ]
     }

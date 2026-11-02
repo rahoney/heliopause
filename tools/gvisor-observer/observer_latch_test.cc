@@ -278,6 +278,7 @@ gvisor::sentry::MountTopologySnapshot BuildCanonicalTopologySnapshot(const char*
   context->set_parent_thread_group_id(0);
   snapshot.set_mount_namespace_id(1);
   snapshot.set_snapshot_complete(true);
+  snapshot.set_filesystem_mutation_ready(true);
   auto add_mount = [&snapshot](uint64_t id, const char* mountpoint, const char* fs, bool read_only, bool noexec) {
     auto* mount = snapshot.add_mounts();
     mount->set_mount_id(id);
@@ -4593,6 +4594,7 @@ bool VerifyTopologyFailClosed(int output, const std::string& remote, const std::
     *no_root.mutable_context_data() = start.context_data();
     no_root.set_mount_namespace_id(1);
     no_root.set_snapshot_complete(true);
+    no_root.set_filesystem_mutation_ready(true);
     auto* m = no_root.add_mounts();
     m->set_mount_id(2);
     m->set_parent_mount_id(1);
@@ -9653,9 +9655,93 @@ bool VerifyPipxNativeProfileAdmission(const std::string& control) {
   close(client->second);gControlClients.erase(client);return ok;
 }
 
+
+bool VerifyFilesystemMutationAuthorityAndBounds() {
+ {
+  auto snapshot=BuildCanonicalTopologySnapshot(kFirstID,kProfileNPM);
+  snapshot.set_filesystem_mutation_ready(false);
+  std::string payload;snapshot.SerializeToString(&payload);std::string id=kFirstID;
+  TopologyState mounts;const char* reason=nullptr;
+  if(ParseTopologySnapshot(payload.data(),payload.size(),-1,&id,&mounts,&reason) || reason==nullptr || strcmp(reason,"OBSERVATION_PROFILE_INCOMPLETE")!=0 || mounts.sealed)return false;
+ }
+
+ using Event=gvisor::sentry::FilesystemMutation;
+ ProcessState state;state.groups[101].start_time_ns=9001;
+ const auto role=state.groups.at(101).role;
+ TopologyState topology;topology.namespace_id=77;topology.sealed=true;topology.snapshot_seen=true;
+ topology.expected.push_back(ExpectedMount{"/","oci-root","/","overlay",true,false,true,true});
+ topology.expected.push_back(ExpectedMount{"/tmp","workspace","/","9p",false,true,true,false});
+ topology.anchors.emplace(1,MountAnchor{1,"/","oci-root"});
+ topology.anchors.emplace(2,MountAnchor{2,"/tmp","workspace"});
+ topology.anchors.emplace(3,MountAnchor{3,"/dev","system"});
+ auto event=[&](Event::Operation operation) {
+  Event value;value.set_operation(operation);value.set_mount_namespace_id(77);value.set_mount_id(2);
+  auto* context=value.mutable_context_data();context->set_container_id(kFirstID);context->set_thread_group_id(101);context->set_thread_group_start_time_ns(9001);
+  return value;
+ };
+ auto handle=[&](const Event& value,TopologyState& mounts,NormalizedCounts* counts,const char** reason) {
+  std::string payload;value.SerializeToString(&payload);std::string id=kFirstID;
+  const Header header{sizeof(Header),gvisor::common::MESSAGE_SENTRY_FILESYSTEM_MUTATION,0};
+  FaultSite site=FaultSite::kNone;
+  const bool ok=Handle(header,payload.data(),payload.size(),-1,&id,kProfileNPM,nullptr,&state,counts,&mounts,reason,&site);
+  return ok && state.groups.at(101).role==role;
+ };
+ for (int index=0;index<6;++index) {
+  auto value=event(index<4?static_cast<Event::Operation>(index+1):Event::SETATTR);
+  if (index==1) value.set_written_bytes(7);
+  if (index==2) value.set_other_mount_id(2);
+  if (index==4) value.set_attribute_mask(STATX_MODE);
+  if (index==5) value.set_attribute_mask(STATX_SIZE);
+  NormalizedCounts counts;const char* reason=nullptr;
+  if(!handle(value,topology,&counts,&reason) || counts.immediate_records!=0 || counts.workspace_access!=0)return false;
+  for(int other=0;other<6;++other)if(counts.workspace_mutations[other]!=(index==other?1u:0u))return false;
+ }
+ auto base=event(Event::WRITE);base.set_written_bytes(1);
+ std::vector<Event> invalid;
+ auto changed=base;changed.set_mount_namespace_id(0);invalid.push_back(changed);
+ changed=base;changed.set_mount_namespace_id(78);invalid.push_back(changed);
+ changed=base;changed.set_mount_id(0);invalid.push_back(changed);
+ changed=base;changed.set_mount_id(999);invalid.push_back(changed);
+ changed=base;changed.set_operation(Event::UNSPECIFIED);invalid.push_back(changed);
+ changed=base;changed.set_operation(static_cast<Event::Operation>(99));invalid.push_back(changed);
+ changed=base;changed.set_written_bytes(0);invalid.push_back(changed);
+ changed=base;changed.set_written_bytes(UINT64_MAX);invalid.push_back(changed);
+ changed=base;changed.set_attribute_mask(STATX_MODE);invalid.push_back(changed);
+ changed=base;changed.set_other_mount_id(2);invalid.push_back(changed);
+ changed=event(Event::RENAME);invalid.push_back(changed);
+ changed=event(Event::SETATTR);invalid.push_back(changed);
+ changed=event(Event::SETATTR);changed.set_attribute_mask(0x80000000);invalid.push_back(changed);
+ changed=base;changed.mutable_context_data()->set_thread_group_start_time_ns(9002);invalid.push_back(changed);
+ changed=base;changed.mutable_context_data()->set_thread_group_id(102);invalid.push_back(changed);
+ changed=base;changed.mutable_context_data()->set_container_id(kSecondID);invalid.push_back(changed);
+ for (const auto& value:invalid) {
+  NormalizedCounts counts;const char* reason=nullptr;
+  if(handle(value,topology,&counts,&reason) || reason==nullptr)return false;
+  for(const auto count:counts.workspace_mutations)if(count!=0)return false;
+ }
+ NormalizedCounts counts;const char* reason=nullptr;
+ changed=base;changed.mutable_context_data()->set_container_id(kSecondID);
+ if(handle(changed,topology,&counts,&reason) || strcmp(reason,"CONTAINER_MISMATCH")!=0)return false;
+ auto unsealed=topology;unsealed.sealed=false;
+ if(handle(base,unsealed,&counts,&reason))return false;
+ auto readonly=topology;readonly.expected[1].read_only=true;
+ if(handle(base,readonly,&counts,&reason))return false;
+ changed=base;changed.set_mount_id(1);if(handle(changed,topology,&counts,&reason))return false;
+ changed=base;changed.set_mount_id(3);if(!handle(changed,topology,&counts,&reason))return false;
+ for(const auto count:counts.workspace_mutations)if(count!=0)return false;
+ counts.workspace_mutations[1]=kMaxNormalizedObservationCount;
+ if(!handle(base,topology,&counts,&reason) || counts.workspace_mutations[1]!=kMaxNormalizedObservationCount)return false;
+ return true;
+}
+
 }
 
 int main(int argc, char** argv) {
+ if(argc==2 && strcmp(argv[1],"--filesystem-mutation-only")==0) {
+  const bool passed=VerifyFilesystemMutationAuthorityAndBounds();
+  fprintf(stderr,"Filesystem mutation authority and bounds: %s\n",passed?"PASS":"FAIL");return passed?0:1;
+ }
+
   if (argc == 2 && strcmp(argv[1], "--fd-mutation-diagnostic-only") == 0) {
     const bool passed = VerifyFDMutationDiagnosticPreservesAuthority();
     fprintf(stderr, "FD mutation diagnostic preserves authority: %s\n", passed ? "PASS" : "FAIL");
@@ -9996,6 +10082,7 @@ int main(int argc, char** argv) {
       VerifyPNPMTargetLifecycleProductionPathForTarget(std::string(kNPMProjectTargetMount) + "/project/node_modules/@scope/pkg/node_modules/@other/child", false, true) &&
       VerifyPNPMTargetLifecycleProductionPathForTarget(kNPMProjectDirectory, false, true, true);
   fprintf(stderr, "STARTING open_result_negative\n");
+  const bool filesystem_mutation=VerifyFilesystemMutationAuthorityAndBounds();
   const bool open_result_negative_ok = running && VerifyOpenResultNegativeMatrix(output, remote, control);
   fprintf(stderr, "STARTING open_result_positive\n");
   const bool open_result_positive_ok = running && VerifyOpenResultPositiveMatrix(output, remote, control);
@@ -10051,7 +10138,7 @@ int main(int argc, char** argv) {
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -10161,6 +10248,7 @@ int main(int argc, char** argv) {
       {"PNPM target lifecycle production lineage", pnpm_target_production},
       {"Bun target lifecycle shape and topology", bun_target_shape},
       {"Bun target lifecycle production lineage", bun_target_production},
+      {"Filesystem mutation authority and bounds",filesystem_mutation},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},
       {"no-basename-trust", no_basename_trust_ok},

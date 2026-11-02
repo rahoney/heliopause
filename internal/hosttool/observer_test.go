@@ -147,3 +147,27 @@ func TestObserverCancelledStartDoesNotLaunchChild(t *testing.T) {
 		t.Fatalf("cancelled context launched child: %v", err)
 	}
 }
+
+func TestObserverBuildIdentityRequiresFilesystemMutationABI(t *testing.T) {
+	for _, test := range []struct {
+		name, identity string
+		accept         bool
+	}{
+		{"legacy commit only", "gvisor-commit=" + gVisorObserverCommit, false},
+		{"current filesystem ABI", "gvisor-commit=" + gVisorObserverCommit + "\nfilesystem-mutation=v1", true},
+		{"wrong ABI", "gvisor-commit=" + gVisorObserverCommit + "\nfilesystem-mutation=v0", false},
+		{"wrong commit", "gvisor-commit=incorrect\nfilesystem-mutation=v1", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "helper")
+			// Fixed synthetic identities only; no user argv or environment is evaluated.
+			body := "#!/bin/sh\nprintf '%s\n' '" + test.identity + "'\n"
+			if err := os.WriteFile(path, []byte(body), 0700); err != nil {
+				t.Fatal(err)
+			}
+			if err := verifyObserverBuildIdentity(context.Background(), path); (err == nil) != test.accept {
+				t.Fatalf("identity acceptance=%t want %t err=%v", err == nil, test.accept, err)
+			}
+		})
+	}
+}

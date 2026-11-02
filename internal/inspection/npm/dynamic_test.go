@@ -124,7 +124,7 @@ func sandboxResult(t *testing.T, status domain.SandboxStatus, code string, obser
 	if status == domain.SandboxCompleted {
 		digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
 		for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
-			states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest})
+			states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
 		}
 	}
 	result, err := domain.NewSandboxResult(id, status, code, observations, states...)
@@ -180,11 +180,15 @@ func TestDynamicInspectorRequiresFreshEnvironmentProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"npm-dynamic-lifecycle-v1", "npm-dynamic-lifecycle-environments-v2"} {
-		legacy, _ := domain.CheckProfileDigest(name, runtimeidentity.NodeImageReference)
+	for _, previous := range []struct{ name, descriptor string }{
+		{"npm-dynamic-lifecycle-v1", runtimeidentity.NodeImageReference},
+		{"npm-dynamic-lifecycle-environments-v2", runtimeidentity.NodeImageReference},
+		{dynamicCheckProfileName, strings.Replace(dynamicCheckRuntimeDescriptor, domain.SandboxEnvironmentStateSchema, "workspace-state-v1", 1)},
+	} {
+		legacy, _ := domain.CheckProfileDigest(previous.name, previous.descriptor)
 		old, err := domain.NewCheckExecution(expected[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", legacy)
 		if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{old}) == nil || plan.Validate(run, artifact, []domain.CheckExecution{report.Execution()}) != nil {
-			t.Fatal("retained approval was accepted or current approval rejected", name, err)
+			t.Fatal("retained approval was accepted or current approval rejected", previous.name, err)
 		}
 	}
 }
@@ -214,10 +218,26 @@ func TestDynamicInspectorRequiresBothStateEvidenceAndRetainsBoundScope(t *testin
 				t.Fatal("state facts missing")
 			}
 			for _, e := range report.Evidence()[1:] {
-				if e.Identity() != artifact.Identity() || e.Digest() != artifact.Digest() || e.CheckID() != report.Execution().ID() || len(e.Summary()) > 1024 || !strings.Contains(e.Summary(), `"transient_changes":"NOT_COVERED"`) || !strings.Contains(e.Summary(), `"scope":"MUTABLE_WORKSPACE"`) {
+				if e.Identity() != artifact.Identity() || e.Digest() != artifact.Digest() || e.CheckID() != report.Execution().ID() || len(e.Summary()) > 1024 || !strings.Contains(e.Summary(), `"transient_changes":"SESSION_VFS_OPERATIONS"`) || !strings.Contains(e.Summary(), `"scope":"MUTABLE_WORKSPACE"`) {
 					t.Fatal("state subject, bound or scope lost")
 				}
 			}
 		})
+	}
+}
+
+func TestDynamicInspectorRefusesSnapshotWithoutActiveOperationCoverage(t *testing.T) {
+	full := sandboxResult(t, domain.SandboxCompleted, "", nil)
+	states := full.EnvironmentStates()
+	states[1].VFSOperationsCovered = false
+	result, err := domain.NewSandboxResult(full.SessionID(), domain.SandboxCompleted, "", nil, states...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, _ := NewDynamicInspector(fakeSandbox{result: result})
+	report, err := inspector.Inspect(context.Background(), dynamicArtifact(t))
+	code, _ := report.Execution().LimitationCode()
+	if err != nil || report.Execution().Status() != domain.ExecutionIncomplete || code != "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE" || len(report.Evidence()) != 0 {
+		t.Fatal("snapshot-only evidence accepted as active operation coverage", err)
 	}
 }

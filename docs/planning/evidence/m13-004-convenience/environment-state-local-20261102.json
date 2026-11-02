@@ -423,5 +423,127 @@
       "transient create/write/rename/unlink/permission-change event coverage",
       "other ecosystem profile/state consumers and whole S01/S08 acceptance"
     ]
+  },
+  "filesystem_operation_checkpoint": {
+    "baseline_commit": "6bac0e8",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "existing mounted VFS success -> pinned remote sink -> sealed helper -> bounded neutral facts -> npm typed environment coverage",
+    "schema": "workspace-state-v2",
+    "coverage": "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE",
+    "identity": "filesystem-mutation=v1",
+    "patch_sha256": "c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68",
+    "runtime_lock_sha256": "fc8f145832bde0bb872b988c5b14b54948ec5a9633bff628b63f6595511b5182",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-tests-v1.json",
+        "sha256": "8a741fff4f1ec324b5d483806b8653b10497639f06424fff8e80c0b2ec5ac92f",
+        "elapsed": 285.348
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-tests-v2.json",
+        "sha256": "21f95cec8ef40962e119d7a979ecbaaaf97a364f7c7eccf0974b543c82969a0a",
+        "elapsed": 33.658
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-observer-targeted-v1.json",
+        "sha256": "77d71aa9917b9143789e5644a46ffcd1ca81481c3a36fff4097a5f426e883188",
+        "elapsed": 218.249
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-source-preparation-v4.json",
+        "sha256": "a7440a50b63d03a25a8d9cb2d68d2627604c17d93bf3c09c15e9ce83e2ef10df",
+        "elapsed": 2.225
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-observer-batch-v4.json",
+        "sha256": "39f1eab7fb1b8528d6d485e56744c02007ee01430148a85f008bb9a3f0fc5835",
+        "elapsed": 254.002
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-runtime-coherent-bundle-v4.json",
+        "sha256": "86b0714ed5956bb5adce39bf19bea30e8a12c8b13752ea7ab14d78884a3eb8c1",
+        "elapsed": 86.563
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-candidate-adoption.json",
+        "sha256": "1bc085f949ada8ff058d9195c7cdb991afdf04bcda4393f25638ef7b2bb3ba2e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-go-targets.json",
+        "sha256": "a04f3b347be6ec4580e57edef305e1962421af1e2f08ac5465cdb3149a7b67bf",
+        "elapsed": 18.086
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-build.json",
+        "sha256": "2690a61fa1f26af036f5b75f6a035b60507da3ab0a6728060e5cf7ef0cce2e0b",
+        "elapsed": 12.237
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-helper-build.json",
+        "sha256": "00c9626f0c50a9b2ff409fb4413aebeb77eb868653042521072344341f50061d",
+        "elapsed": 3.242
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-v1-preflight.json",
+        "sha256": "2a43e2c25ed034eb7992d255602448504a63519a99a802ff6d9a40ddb86f76aa"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-v2.json",
+        "sha256": "ab7dcbf84aef1269b7499eb12045e3dfc3e4b58b2f43cfcc7fd57bc21df6259f",
+        "elapsed": 42.637
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-foundation.json",
+        "sha256": "8caf21a5ce232958f841097d0a7657952d4d62216c398285d471b0270a271b77",
+        "elapsed": 89.877
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-owner-race.json",
+        "sha256": "8fcd391de9c45ad7238b6f5dbfa5f2907c95f16e3c518d369b54bb7f01c20614",
+        "elapsed": 47.879
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-staticcheck.json",
+        "sha256": "046ec1564fd82398f4c2450a95b3c245900e4f4965f5aa35d371a1aaf0532707",
+        "elapsed": 17.88
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-security.json",
+        "sha256": "f6617af7a98f0978b4516d3b091222baeb612714718b4fb19be4280fb3653cbc",
+        "elapsed": 24.569
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-legacy-profile-regression.json",
+        "sha256": "e1c4e3c2bcea2d86c76b39119be2916965d82bdd900bb7cbed0030897a0df527",
+        "elapsed": 1.035
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-original-binaries-cleanup.json",
+        "sha256": "8a2bc83dbc2507c579ee189f866838c22687d1c36ceb7a608803cd957c0a8811"
+      }
+    ],
+    "limitations": [
+      "session includes setup/installer; not artifact-only actions",
+      "no per-path transient pairing; raw paths/contents excluded",
+      "all mmap stores not covered",
+      "actual transient fixture retains existing unexpected Artifact exec observations; not a Policy ALLOW claim"
+    ],
+    "missing": [
+      "persisted native Evidence",
+      "remaining ecosystem environment consumers",
+      "whole S01/S08/C01 grouped and final qualification"
+    ],
+    "host": "exact hash/inode/Docker restored; helper waits zero; temporary protected copies 368462440B removed",
+    "original_failures": [
+      "kernel v1 oldParentVD struct compile error; corrected .Mount()",
+      "native operator v1 BUILD basename filter selected unrelated files; pre-resource NOT_RUN"
+    ],
+    "test_output_cleanup_bytes": 36621774
   }
 }

@@ -93,7 +93,7 @@ type SandboxEnvironmentProfile string
 const (
 	SandboxEnvironmentMinimal     SandboxEnvironmentProfile = "minimal-v1"
 	SandboxEnvironmentDevelopment SandboxEnvironmentProfile = "mock-development-v1"
-	SandboxEnvironmentStateSchema                           = "workspace-state-v1"
+	SandboxEnvironmentStateSchema                           = "workspace-state-v2"
 )
 
 // SandboxEnvironmentState retains only controller-owned snapshot identities
@@ -102,6 +102,7 @@ type SandboxEnvironmentState struct {
 	Profile                      SandboxEnvironmentProfile
 	FixtureDigest, Before, After ContentDigest
 	Created, Deleted, Modified   uint64
+	VFSOperationsCovered         bool
 }
 
 func (s SandboxEnvironmentState) validate() error {
@@ -123,16 +124,17 @@ func (s SandboxEnvironmentState) Summary() (string, error) {
 		return "", err
 	}
 	value := struct {
-		Schema    string                    `json:"schema"`
-		Profile   SandboxEnvironmentProfile `json:"profile"`
-		Fixture   string                    `json:"fixture_digest"`
-		Before    string                    `json:"baseline_digest"`
-		After     string                    `json:"final_digest"`
-		Scope     string                    `json:"scope"`
-		Transient string                    `json:"transient_changes"`
-		Created   uint64                    `json:"created"`
-		Deleted   uint64                    `json:"deleted"`
-		Modified  uint64                    `json:"modified"`
+		Schema     string                    `json:"schema"`
+		Profile    SandboxEnvironmentProfile `json:"profile"`
+		Fixture    string                    `json:"fixture_digest"`
+		Before     string                    `json:"baseline_digest"`
+		After      string                    `json:"final_digest"`
+		Scope      string                    `json:"scope"`
+		Transient  string                    `json:"transient_changes"`
+		Operations string                    `json:"operation_scope,omitempty"`
+		Created    uint64                    `json:"created"`
+		Deleted    uint64                    `json:"deleted"`
+		Modified   uint64                    `json:"modified"`
 	}{
 		Schema:    SandboxEnvironmentStateSchema,
 		Profile:   s.Profile,
@@ -144,6 +146,10 @@ func (s SandboxEnvironmentState) Summary() (string, error) {
 		Created:   s.Created,
 		Deleted:   s.Deleted,
 		Modified:  s.Modified,
+	}
+	if s.VFSOperationsCovered {
+		value.Transient = "SESSION_VFS_OPERATIONS"
+		value.Operations = "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE"
 	}
 	encoded, err := json.Marshal(value)
 	if err != nil {

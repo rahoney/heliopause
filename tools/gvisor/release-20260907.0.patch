@@ -31,8 +31,81 @@ index 56b56bc..2594b65 100644
  )
  go_deps.module(
      path = "golang.org/x/term",
+diff --git a/pkg/sentry/fsimpl/gofer/filesystem.go b/pkg/sentry/fsimpl/gofer/filesystem.go
+index f904640..aca9bfc 100644
+--- a/pkg/sentry/fsimpl/gofer/filesystem.go
++++ b/pkg/sentry/fsimpl/gofer/filesystem.go
+@@ -1047,6 +1047,10 @@ afterTrailingSymlink:
+ 			// Either the creation was a success, or we got an
+ 			// unexpected error. Either way we can return here.
+ 			parent.opMu.Unlock()
++			if createErr == nil {
++				unlock()
++				vfs.NotifyFilesystemMutation(ctx, vfs.FilesystemCreate, rp.Mount(), nil, 0, 0)
++			}
+ 			return fd, createErr
+ 		}
+ 
+diff --git a/pkg/sentry/kernel/seccheck.go b/pkg/sentry/kernel/seccheck.go
+index 7c84c44..e379957 100644
+--- a/pkg/sentry/kernel/seccheck.go
++++ b/pkg/sentry/kernel/seccheck.go
+@@ -15,8 +15,10 @@
+ package kernel
+ 
+ import (
++	"gvisor.dev/gvisor/pkg/context"
+ 	"gvisor.dev/gvisor/pkg/sentry/seccheck"
+ 	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
++	"gvisor.dev/gvisor/pkg/sentry/vfs"
+ )
+ 
+ func getTaskCurrentWorkingDirectory(t *Task) string {
+@@ -91,3 +93,18 @@ func LoadSeccheckDataLocked(t *Task, mask seccheck.FieldMask, info *pb.ContextDa
+ 	}
+ 	t.Credentials().LoadSeccheckData(mask, info)
+ }
++
++// RecordFilesystemMutation implements the VFS recorder for Task and AsyncContext.
++// LoadSeccheckData retains the existing TaskSet locking and process generation.
++func (t *Task) RecordFilesystemMutation(ctx context.Context, mutation vfs.FilesystemMutation) {
++	if !seccheck.Global.Enabled(seccheck.PointFilesystemMutation) {
++		return
++	}
++	fields := seccheck.Global.GetFieldSet(seccheck.PointFilesystemMutation)
++	event := &pb.FilesystemMutation{Operation: mutation.Operation, MountNamespaceId: mutation.NamespaceID, MountId: mutation.MountID, OtherMountId: mutation.OtherMountID, WrittenBytes: mutation.WrittenBytes, AttributeMask: mutation.AttributeMask}
++	if !fields.Context.Empty() {
++		event.ContextData = &pb.ContextData{}
++		LoadSeccheckData(t, fields.Context, event.ContextData)
++	}
++	_ = seccheck.Global.SentToSinks(func(s seccheck.Sink) error { return s.FilesystemMutation(ctx, fields, event) })
++}
+diff --git a/pkg/sentry/kernel/task_context.go b/pkg/sentry/kernel/task_context.go
+index ed1ffda..6d1f3b8 100644
+--- a/pkg/sentry/kernel/task_context.go
++++ b/pkg/sentry/kernel/task_context.go
+@@ -29,6 +29,7 @@ import (
+ 	"gvisor.dev/gvisor/pkg/sentry/limits"
+ 	"gvisor.dev/gvisor/pkg/sentry/pgalloc"
+ 	"gvisor.dev/gvisor/pkg/sentry/platform"
++	"gvisor.dev/gvisor/pkg/sentry/seccheck"
+ 	"gvisor.dev/gvisor/pkg/sentry/unimpl"
+ 	"gvisor.dev/gvisor/pkg/sentry/uniqueid"
+ 	"gvisor.dev/gvisor/pkg/sentry/vfs"
+@@ -97,6 +98,11 @@ func (t *Task) contextValue(key any, isTaskGoroutine bool) any {
+ 			defer t.mu.Unlock()
+ 		}
+ 		return t.FSContext().RootDirectory()
++	case vfs.CtxFilesystemMutationRecorder:
++		if seccheck.Global.Enabled(seccheck.PointFilesystemMutation) {
++			return t
++		}
++		return nil
+ 	case vfs.CtxMountNamespace:
+ 		if !isTaskGoroutine {
+ 			t.mu.Lock()
 diff --git a/pkg/sentry/platform/platform.go b/pkg/sentry/platform/platform.go
-index 22c8dc1d8..75398c762 100644
+index 22c8dc1..75398c7 100644
 --- a/pkg/sentry/platform/platform.go
 +++ b/pkg/sentry/platform/platform.go
 @@ -505,6 +505,10 @@ type Requirements struct {
@@ -47,7 +120,7 @@ index 22c8dc1d8..75398c762 100644
  type SeccompInfo interface {
  	// Variables returns a map from named variables to the value they should
 diff --git a/pkg/sentry/platform/ptrace/BUILD b/pkg/sentry/platform/ptrace/BUILD
-index 17ca8d608..1b8233862 100644
+index 17ca8d6..1b82338 100644
 --- a/pkg/sentry/platform/ptrace/BUILD
 +++ b/pkg/sentry/platform/ptrace/BUILD
 @@ -1,4 +1,4 @@
@@ -82,7 +155,7 @@ index 17ca8d608..1b8233862 100644
 +    ],
 +)
 diff --git a/pkg/sentry/platform/ptrace/filters.go b/pkg/sentry/platform/ptrace/filters.go
-index a6773ee79..c3ed85dd7 100644
+index a6773ee..c3ed85d 100644
 --- a/pkg/sentry/platform/ptrace/filters.go
 +++ b/pkg/sentry/platform/ptrace/filters.go
 @@ -19,24 +19,47 @@ import (
@@ -148,7 +221,7 @@ index a6773ee79..c3ed85dd7 100644
  // PrecompiledSeccompInfo implements
 diff --git a/pkg/sentry/platform/ptrace/filters_test.go b/pkg/sentry/platform/ptrace/filters_test.go
 new file mode 100644
-index 000000000..7e2916f3c
+index 0000000..7e2916f
 --- /dev/null
 +++ b/pkg/sentry/platform/ptrace/filters_test.go
 @@ -0,0 +1,93 @@
@@ -246,7 +319,7 @@ index 000000000..7e2916f3c
 +	}
 +}
 diff --git a/pkg/sentry/platform/systrap/BUILD b/pkg/sentry/platform/systrap/BUILD
-index ee3b436b0..c38875ce9 100644
+index ee3b436..c38875c 100644
 --- a/pkg/sentry/platform/systrap/BUILD
 +++ b/pkg/sentry/platform/systrap/BUILD
 @@ -113,6 +113,7 @@ go_test(
@@ -267,7 +340,7 @@ index ee3b436b0..c38875ce9 100644
          "//pkg/sentry/memmap",
          "//pkg/sentry/pgalloc",
 diff --git a/pkg/sentry/platform/systrap/filters.go b/pkg/sentry/platform/systrap/filters.go
-index 0958e6ccc..a24b80d9b 100644
+index 0958e6c..a24b80d 100644
 --- a/pkg/sentry/platform/systrap/filters.go
 +++ b/pkg/sentry/platform/systrap/filters.go
 @@ -36,6 +36,7 @@ func (systrapSeccomp) Variables() precompiledseccomp.Values {
@@ -289,7 +362,7 @@ index 0958e6ccc..a24b80d9b 100644
  		},
 diff --git a/pkg/sentry/platform/systrap/filters_test.go b/pkg/sentry/platform/systrap/filters_test.go
 new file mode 100644
-index 000000000..ae235e864
+index 0000000..ae235e8
 --- /dev/null
 +++ b/pkg/sentry/platform/systrap/filters_test.go
 @@ -0,0 +1,94 @@
@@ -388,10 +461,10 @@ index 000000000..ae235e864
 +	}
 +}
 diff --git a/pkg/sentry/seccheck/metadata.go b/pkg/sentry/seccheck/metadata.go
-index 3484e3409..6e47181b2 100644
+index 3484e34..ae145de 100644
 --- a/pkg/sentry/seccheck/metadata.go
 +++ b/pkg/sentry/seccheck/metadata.go
-@@ -31,6 +31,10 @@ const (
+@@ -31,6 +31,11 @@ const (
  	PointExitNotifyParent
  	PointTaskExit
  	PointMmap
@@ -399,25 +472,27 @@ index 3484e3409..6e47181b2 100644
 +	PointMountTopologySnapshot
 +	PointMountTopologyMutation
 +	PointSocketPairResult
++	PointFilesystemMutation
  
  	// Add new Points above this line.
  	pointLengthBeforeSyscalls
-@@ -338,6 +342,10 @@ func genericInit() {
+@@ -338,6 +343,11 @@ func genericInit() {
  		Name:          "sentry/mmap",
  		ContextFields: defaultContextFields,
  	})
 +	registerPoint(PointDesc{ID: PointOpenResult, Name: "syscall/open_result", ContextFields: defaultContextFields})
 +	registerPoint(PointDesc{ID: PointSocketPairResult, Name: "syscall/socketpair_result", ContextFields: defaultContextFields})
++	registerPoint(PointDesc{ID: PointFilesystemMutation, Name: "sentry/filesystem_mutation", ContextFields: defaultContextFields})
 +	registerPoint(PointDesc{ID: PointMountTopologySnapshot, Name: "sentry/mount_topology_snapshot", ContextFields: defaultContextFields})
 +	registerPoint(PointDesc{ID: PointMountTopologyMutation, Name: "sentry/mount_topology_mutation", ContextFields: defaultContextFields})
  }
  
  var initOnce sync.Once
 diff --git a/pkg/sentry/seccheck/points/common.proto b/pkg/sentry/seccheck/points/common.proto
-index 546e58962..35a027e87 100644
+index 546e589..94c7e64 100644
 --- a/pkg/sentry/seccheck/points/common.proto
 +++ b/pkg/sentry/seccheck/points/common.proto
-@@ -166,5 +166,9 @@ enum MessageType {
+@@ -166,5 +166,10 @@ enum MessageType {
    MESSAGE_SYSCALL_MMAP = 36;
    MESSAGE_SYSCALL_LISTEN = 37;
    MESSAGE_SYSCALL_PTRACE = 38;
@@ -425,13 +500,14 @@ index 546e58962..35a027e87 100644
 +  MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT = 40;
 +  MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION = 41;
 +  MESSAGE_SYSCALL_SOCKETPAIR_RESULT = 42;
++  MESSAGE_SENTRY_FILESYSTEM_MUTATION = 43;
  }
  // LINT.ThenChange(../../../../examples/seccheck/server.cc)
 diff --git a/pkg/sentry/seccheck/points/sentry.proto b/pkg/sentry/seccheck/points/sentry.proto
-index 7e41b2bf1..7c7304702 100644
+index 7e41b2b..8b1f589 100644
 --- a/pkg/sentry/seccheck/points/sentry.proto
 +++ b/pkg/sentry/seccheck/points/sentry.proto
-@@ -188,3 +188,26 @@ message MmapInfo {
+@@ -188,3 +188,47 @@ message MmapInfo {
    // copied up to the upper layer).
    bool overlayfs_lower = 10;
  }
@@ -452,14 +528,35 @@ index 7e41b2bf1..7c7304702 100644
 +  uint64 mount_namespace_id = 2;
 +  bool snapshot_complete = 3;
 +  repeated MountTopologyEntry mounts = 4;
++  bool filesystem_mutation_ready = 5;
 +}
 +
 +message MountTopologyMutation {
 +  gvisor.common.ContextData context_data = 1;
 +  uint64 mount_namespace_id = 2;
 +}
++
++// Successful VFS operations, attributed to actual mounted objects. There are
++// no guest pathnames, file contents, descriptor guesses or caller receipts.
++message FilesystemMutation {
++  enum Operation {
++    UNSPECIFIED = 0;
++    CREATE = 1;
++    WRITE = 2;
++    RENAME = 3;
++    UNLINK = 4;
++    SETATTR = 5;
++  }
++  gvisor.common.ContextData context_data = 1;
++  Operation operation = 2;
++  uint64 mount_namespace_id = 3;
++  uint64 mount_id = 4;
++  uint64 other_mount_id = 5;
++  uint64 written_bytes = 6;
++  uint32 attribute_mask = 7;
++}
 diff --git a/pkg/sentry/seccheck/points/syscall.proto b/pkg/sentry/seccheck/points/syscall.proto
-index c9dc3be67..9a71017ed 100644
+index c9dc3be..9a71017 100644
 --- a/pkg/sentry/seccheck/points/syscall.proto
 +++ b/pkg/sentry/seccheck/points/syscall.proto
 @@ -46,6 +46,30 @@ message Open {
@@ -494,10 +591,10 @@ index c9dc3be67..9a71017ed 100644
    gvisor.common.ContextData context_data = 1;
    Exit exit = 2;
 diff --git a/pkg/sentry/seccheck/seccheck.go b/pkg/sentry/seccheck/seccheck.go
-index 7422baf1c..86305d02d 100644
+index 7422baf..1b05084 100644
 --- a/pkg/sentry/seccheck/seccheck.go
 +++ b/pkg/sentry/seccheck/seccheck.go
-@@ -111,6 +111,10 @@ type Sink interface {
+@@ -111,6 +111,11 @@ type Sink interface {
  	ExitNotifyParent(ctx context.Context, fields FieldSet, info *pb.ExitNotifyParentInfo) error
  	TaskExit(context.Context, FieldSet, *pb.TaskExit) error
  	Mmap(context.Context, FieldSet, *pb.MmapInfo) error
@@ -505,10 +602,11 @@ index 7422baf1c..86305d02d 100644
 +	SocketPairResult(context.Context, FieldSet, *pb.SocketPairResult) error
 +	MountTopologySnapshot(context.Context, FieldSet, *pb.MountTopologySnapshot) error
 +	MountTopologyMutation(context.Context, FieldSet, *pb.MountTopologyMutation) error
++	FilesystemMutation(context.Context, FieldSet, *pb.FilesystemMutation) error
  
  	ContainerStart(context.Context, FieldSet, *pb.Start) error
  
-@@ -177,6 +181,17 @@ func (SinkDefaults) Mmap(context.Context, FieldSet, *pb.MmapInfo) error {
+@@ -177,6 +182,17 @@ func (SinkDefaults) Mmap(context.Context, FieldSet, *pb.MmapInfo) error {
  	return nil
  }
  
@@ -526,8 +624,17 @@ index 7422baf1c..86305d02d 100644
  // RawSyscall implements Sink.RawSyscall.
  func (SinkDefaults) RawSyscall(context.Context, FieldSet, *pb.Syscall) error {
  	return nil
+@@ -364,3 +380,8 @@ func (s *State) GetFieldSet(p Point) FieldSet {
+ 	defer s.registrationMu.RUnlock()
+ 	return s.pointFields[p]
+ }
++
++// FilesystemMutation implements Sink.FilesystemMutation.
++func (SinkDefaults) FilesystemMutation(context.Context, FieldSet, *pb.FilesystemMutation) error {
++	return nil
++}
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote.go b/pkg/sentry/seccheck/sinks/remote/remote.go
-index b05cc263a..4fbb2db51 100644
+index b05cc26..d7ca93f 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote.go
 @@ -271,6 +271,26 @@ func (r *remote) Mmap(_ context.Context, _ seccheck.FieldSet, info *pb.MmapInfo)
@@ -557,8 +664,18 @@ index b05cc263a..4fbb2db51 100644
  // ContainerStart implements seccheck.Sink.
  func (r *remote) ContainerStart(_ context.Context, _ seccheck.FieldSet, info *pb.Start) error {
  	r.write(info, pb.MessageType_MESSAGE_CONTAINER_START)
+@@ -288,3 +308,9 @@ func (r *remote) Syscall(ctx context.Context, fields seccheck.FieldSet, ctxData
+ 	r.write(msg, msgType)
+ 	return nil
+ }
++
++// FilesystemMutation implements seccheck.Sink.
++func (r *remote) FilesystemMutation(_ context.Context, _ seccheck.FieldSet, info *pb.FilesystemMutation) error {
++	r.write(info, pb.MessageType_MESSAGE_SENTRY_FILESYSTEM_MUTATION)
++	return nil
++}
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote_test.go b/pkg/sentry/seccheck/sinks/remote/remote_test.go
-index 407280d9c..fe0a9a8ca 100644
+index 407280d..fe0a9a8 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote_test.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote_test.go
 @@ -154,6 +154,158 @@ func TestBasic(t *testing.T) {
@@ -721,10 +838,10 @@ index 407280d9c..fe0a9a8ca 100644
  	server, err := test.NewServer()
  	if err != nil {
 diff --git a/pkg/sentry/syscalls/linux/BUILD b/pkg/sentry/syscalls/linux/BUILD
-index 187532404..7b2bc069c 100644
+index 1875324..4f4b08e 100644
 --- a/pkg/sentry/syscalls/linux/BUILD
 +++ b/pkg/sentry/syscalls/linux/BUILD
-@@ -140,7 +140,27 @@ go_test(
+@@ -140,7 +140,28 @@ go_test(
          "linux64_amd64_test.go",
          "linux64_arm64_test.go",
          "linux64_test.go",
@@ -749,16 +866,17 @@ index 187532404..7b2bc069c 100644
 +        "//pkg/sentry/seccheck",
 +        "//pkg/sentry/seccheck/points:points_go_proto",
 +        "//pkg/sentry/vfs",
++        "//pkg/usermem",
 +        "@org_golang_google_protobuf//proto:go_default_library",
 +        "@org_golang_x_sys//unix:go_default_library",
 +    ],
  )
 diff --git a/pkg/sentry/syscalls/linux/open_result_test.go b/pkg/sentry/syscalls/linux/open_result_test.go
 new file mode 100644
-index 000000000..30b8adceb
+index 0000000..5ceb022
 --- /dev/null
 +++ b/pkg/sentry/syscalls/linux/open_result_test.go
-@@ -0,0 +1,564 @@
+@@ -0,0 +1,629 @@
 +// Copyright 2026 The gVisor Authors.
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
@@ -795,15 +913,17 @@ index 000000000..30b8adceb
 +	"gvisor.dev/gvisor/pkg/sentry/seccheck"
 +	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
 +	"gvisor.dev/gvisor/pkg/sentry/vfs"
++	"gvisor.dev/gvisor/pkg/usermem"
 +)
 +
 +type recordingSink struct {
 +	seccheck.SinkDefaults
-+	mu          sync.Mutex
-+	openResults []*pb.OpenResult
-+	pairResults []*pb.SocketPairResult
-+	mutations   []*pb.MountTopologyMutation
-+	snapshots   []*pb.MountTopologySnapshot
++	mu            sync.Mutex
++	openResults   []*pb.OpenResult
++	pairResults   []*pb.SocketPairResult
++	mutations     []*pb.MountTopologyMutation
++	snapshots     []*pb.MountTopologySnapshot
++	fileMutations []*pb.FilesystemMutation
 +}
 +
 +func (s *recordingSink) Name() string { return "recording-sink" }
@@ -951,6 +1071,7 @@ index 000000000..30b8adceb
 +		{Pt: seccheck.PointSocketPairResult, Fields: fields},
 +		{Pt: seccheck.PointMountTopologySnapshot, Fields: fields},
 +		{Pt: seccheck.PointMountTopologyMutation, Fields: fields},
++		{Pt: seccheck.PointFilesystemMutation, Fields: fields},
 +	})
 +
 +	return task1, task2, sink, rootMountID
@@ -1323,8 +1444,70 @@ index 000000000..30b8adceb
 +		t.Errorf("Failed Umount2 emitted unexpected mutation event!")
 +	}
 +}
++
++func (s *recordingSink) FilesystemMutation(_ context.Context, _ seccheck.FieldSet, event *pb.FilesystemMutation) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.fileMutations = append(s.fileMutations, proto.Clone(event).(*pb.FilesystemMutation))
++	return nil
++}
++
++func TestFilesystemMutationSuccessfulOperationsAndAsyncActor(t *testing.T) {
++	task, _, sink, mountID := setupTestEnvironment(t)
++	root := task.MountNamespace().Root(task)
++	defer root.DecRef(task)
++	path := func(name string) *vfs.PathOperation {
++		return &vfs.PathOperation{Root: root, Start: root, Path: fspath.Parse(name)}
++	}
++	file, err := task.Kernel().VFS().OpenAt(task, task.Credentials(), path("/testfile"), &vfs.OpenOptions{Flags: linux.O_RDWR})
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer file.DecRef(task)
++	async := task.AsyncContext()
++	if n, err := file.Write(async, usermem.BytesIOSequence([]byte("x")), vfs.WriteOptions{}); err != nil || n != 1 {
++		t.Fatal("write", n, err)
++	}
++	if n, err := file.Write(async, usermem.BytesIOSequence(nil), vfs.WriteOptions{}); err != nil || n != 0 {
++		t.Fatal("empty write", n, err)
++	}
++	truncated, err := task.Kernel().VFS().OpenAt(task, task.Credentials(), path("/testfile"), &vfs.OpenOptions{Flags: linux.O_RDWR | linux.O_TRUNC})
++	if err != nil {
++		t.Fatal(err)
++	}
++	truncated.DecRef(task)
++	if n, err := file.PWrite(async, usermem.BytesIOSequence([]byte("y")), 0, vfs.WriteOptions{}); err != nil || n != 1 {
++		t.Fatal("positional write", n, err)
++	}
++	if err := task.Kernel().VFS().RenameAt(task, task.Credentials(), path("/testfile"), path("/renamed"), &vfs.RenameOptions{}); err != nil {
++		t.Fatal(err)
++	}
++	if err := file.SetStat(async, vfs.SetStatOptions{Stat: linux.Statx{Mask: linux.STATX_MODE, Mode: 0600}}); err != nil {
++		t.Fatal(err)
++	}
++	if err := task.Kernel().VFS().UnlinkAt(task, task.Credentials(), path("/renamed")); err != nil {
++		t.Fatal(err)
++	}
++	if err := task.Kernel().VFS().UnlinkAt(task, task.Credentials(), path("/missing")); err == nil {
++		t.Fatal("missing file unexpectedly removed")
++	}
++	sink.mu.Lock()
++	defer sink.mu.Unlock()
++	expected := []pb.FilesystemMutation_Operation{pb.FilesystemMutation_WRITE, pb.FilesystemMutation_SETATTR, pb.FilesystemMutation_WRITE, pb.FilesystemMutation_RENAME, pb.FilesystemMutation_SETATTR, pb.FilesystemMutation_UNLINK}
++	if len(sink.fileMutations) != len(expected) {
++		t.Fatalf("failed/empty operation counted or success missing: %+v", sink.fileMutations)
++	}
++	for i, event := range sink.fileMutations {
++		if event.Operation != expected[i] || event.MountId != mountID || event.MountNamespaceId != task.MountNamespace().ID || event.ContextData == nil || event.ContextData.ThreadId == 0 || event.ContextData.ThreadStartTimeNs == 0 {
++			t.Fatalf("source attribution lost: %+v", event)
++		}
++		if event.Operation == pb.FilesystemMutation_RENAME && event.OtherMountId != mountID {
++			t.Fatal("rename source mount missing")
++		}
++	}
++}
 diff --git a/pkg/sentry/syscalls/linux/points.go b/pkg/sentry/syscalls/linux/points.go
-index f8e38d360..d98c16eac 100644
+index f8e38d3..d98c16e 100644
 --- a/pkg/sentry/syscalls/linux/points.go
 +++ b/pkg/sentry/syscalls/linux/points.go
 @@ -69,6 +69,23 @@ func getIovecSize(t *kernel.Task, addr hostarch.Addr, iovcnt int) uint64 {
@@ -1353,7 +1536,7 @@ index f8e38d360..d98c16eac 100644
  	p := &pb.Open{
 diff --git a/pkg/sentry/syscalls/linux/socketpair_result_test.go b/pkg/sentry/syscalls/linux/socketpair_result_test.go
 new file mode 100644
-index 000000000..255c87688
+index 0000000..255c876
 --- /dev/null
 +++ b/pkg/sentry/syscalls/linux/socketpair_result_test.go
 @@ -0,0 +1,108 @@
@@ -1466,7 +1649,7 @@ index 000000000..255c87688
 +	}
 +}
 diff --git a/pkg/sentry/syscalls/linux/sys_file.go b/pkg/sentry/syscalls/linux/sys_file.go
-index c2f114d19..1d7cca193 100644
+index c2f114d..1d7cca1 100644
 --- a/pkg/sentry/syscalls/linux/sys_file.go
 +++ b/pkg/sentry/syscalls/linux/sys_file.go
 @@ -29,6 +29,8 @@ import (
@@ -1578,7 +1761,7 @@ index c2f114d19..1d7cca193 100644
  	addr2 := args[1].Pointer()
  
 diff --git a/pkg/sentry/syscalls/linux/sys_mount.go b/pkg/sentry/syscalls/linux/sys_mount.go
-index 02e94b6ae..91ec91924 100644
+index 02e94b6..91ec919 100644
 --- a/pkg/sentry/syscalls/linux/sys_mount.go
 +++ b/pkg/sentry/syscalls/linux/sys_mount.go
 @@ -24,7 +24,12 @@ import (
@@ -1610,7 +1793,7 @@ index 02e94b6ae..91ec91924 100644
  	flags := args[1].Int()
  
 diff --git a/pkg/sentry/syscalls/linux/sys_socket.go b/pkg/sentry/syscalls/linux/sys_socket.go
-index 17b7c7ce3..a1daec718 100644
+index 17b7c7c..a1daec7 100644
 --- a/pkg/sentry/syscalls/linux/sys_socket.go
 +++ b/pkg/sentry/syscalls/linux/sys_socket.go
 @@ -31,6 +31,8 @@ import (
@@ -1658,8 +1841,238 @@ index 17b7c7ce3..a1daec718 100644
  	return 0, nil, nil
  }
  
+diff --git a/pkg/sentry/vfs/BUILD b/pkg/sentry/vfs/BUILD
+index f0c12ef..78877d1 100644
+--- a/pkg/sentry/vfs/BUILD
++++ b/pkg/sentry/vfs/BUILD
+@@ -173,6 +173,7 @@ go_library(
+     visibility = ["//pkg/sentry:internal"],
+     deps = [
+         ":events_go_proto",
++        "//pkg/sentry/seccheck/points:points_go_proto",
+         "//pkg/abi/linux",
+         "//pkg/atomicbitops",
+         "//pkg/bitmap",
+@@ -214,6 +215,7 @@ go_test(
+         "dentry_test.go",
+         "device_test.go",
+         "file_description_impl_util_test.go",
++        "filesystem_mutation_test.go",
+         "mount_test.go",
+         "posix_acl_test.go",
+     ],
+diff --git a/pkg/sentry/vfs/context.go b/pkg/sentry/vfs/context.go
+index a744bd4..b1cb567 100644
+--- a/pkg/sentry/vfs/context.go
++++ b/pkg/sentry/vfs/context.go
+@@ -17,8 +17,10 @@ package vfs
+ import (
+ 	goContext "context"
+ 
++	"gvisor.dev/gvisor/pkg/abi/linux"
+ 	"gvisor.dev/gvisor/pkg/context"
+ 	"gvisor.dev/gvisor/pkg/sentry/checkpoint"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
+ )
+ 
+ // contextID is this package's type for context.Context.Value keys.
+@@ -35,6 +37,9 @@ const (
+ 	// map[checkpoint.ResourceID]int mapping filesystem unique IDs (cf.
+ 	// gofer.InternalFilesystemOptions.UniqueID) to host FDs.
+ 	CtxRestoreFilesystemFDMap
++
++	// CtxFilesystemMutationRecorder is supplied by the kernel Task/AsyncContext.
++	CtxFilesystemMutationRecorder
+ )
+ 
+ // MountNamespaceFromContext returns the MountNamespace used by ctx. If ctx is
+@@ -115,3 +120,61 @@ func (rc rootContext) Value(key any) any {
+ 		return rc.Context.Value(key)
+ 	}
+ }
++
++// FilesystemMutation is a successful operation on actual mounted objects.
++// It contains no dentry, pathname, file data or user-supplied completion state.
++type FilesystemMutation struct {
++	Operation                                        pb.FilesystemMutation_Operation
++	NamespaceID, MountID, OtherMountID, WrittenBytes uint64
++	AttributeMask                                    uint32
++}
++
++const (
++	FilesystemCreate  = pb.FilesystemMutation_CREATE
++	FilesystemWrite   = pb.FilesystemMutation_WRITE
++	FilesystemRename  = pb.FilesystemMutation_RENAME
++	FilesystemUnlink  = pb.FilesystemMutation_UNLINK
++	FilesystemSetattr = pb.FilesystemMutation_SETATTR
++)
++
++type filesystemMutationRecorder interface {
++	RecordFilesystemMutation(context.Context, FilesystemMutation)
++}
++
++// NotifyFilesystemMutation is called only after the existing operation succeeds.
++// Namespace/mount identities are copied under the existing mount lock, in O(1).
++// Never-mounted anonymous objects (pipes/sockets) are outside namespace scope.
++// A disconnected/foreign mounted object produces an invalid namespace, so the
++// consumer cannot mistake it for a successfully attributed workspace operation.
++func NotifyFilesystemMutation(ctx context.Context, operation pb.FilesystemMutation_Operation, mount, other *Mount, written uint64, attributes uint32) {
++	recorder, ok := ctx.Value(CtxFilesystemMutationRecorder).(filesystemMutationRecorder)
++	if !ok {
++		return
++	}
++	attributes &= linux.STATX_MODE | linux.STATX_UID | linux.STATX_GID | linux.STATX_SIZE
++	if operation == FilesystemSetattr && attributes == 0 {
++		return
++	}
++	if mount == nil {
++		recorder.RecordFilesystemMutation(ctx, FilesystemMutation{Operation: operation})
++		return
++	}
++	event := FilesystemMutation{Operation: operation, MountID: mount.ID, WrittenBytes: written, AttributeMask: attributes}
++	mount.vfs.mountMu.Lock()
++	if mount.ns == nil {
++		mount.vfs.mountMu.Unlock()
++		return
++	}
++	event.NamespaceID = mount.ns.ID
++	if mount.umounted {
++		event.NamespaceID = 0
++	}
++	if other != nil {
++		event.OtherMountID = other.ID
++		if other.vfs != mount.vfs || other.ns != mount.ns || other.umounted {
++			event.NamespaceID = 0
++		}
++	}
++	mount.vfs.mountMu.Unlock()
++	recorder.RecordFilesystemMutation(ctx, event)
++}
+diff --git a/pkg/sentry/vfs/file_description.go b/pkg/sentry/vfs/file_description.go
+index 7257c31..ee50898 100644
+--- a/pkg/sentry/vfs/file_description.go
++++ b/pkg/sentry/vfs/file_description.go
+@@ -603,6 +603,9 @@ func (fd *FileDescription) SetStat(ctx context.Context, opts SetStatOptions) err
+ 		})
+ 		err := fd.vd.mount.fs.impl.SetStatAt(ctx, rp, opts)
+ 		rp.Release(ctx)
++		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemSetattr, fd.Mount(), nil, 0, opts.Stat.Mask)
++		}
+ 		return err
+ 	}
+ 	if err := fd.impl.SetStat(ctx, opts); err != nil {
+@@ -611,6 +614,7 @@ func (fd *FileDescription) SetStat(ctx context.Context, opts SetStatOptions) err
+ 	if ev := InotifyEventFromStatMask(opts.Stat.Mask); ev != 0 {
+ 		fd.Dentry().InotifyWithParent(ctx, ev, 0, InodeEvent)
+ 	}
++	NotifyFilesystemMutation(ctx, FilesystemSetattr, fd.Mount(), nil, 0, opts.Stat.Mask)
+ 	return nil
+ }
+ 
+@@ -716,6 +720,7 @@ func (fd *FileDescription) PWrite(ctx context.Context, src usermem.IOSequence, o
+ 	n, err := fd.impl.PWrite(ctx, src, offset, opts)
+ 	if n > 0 {
+ 		fd.Dentry().InotifyWithParent(ctx, linux.IN_MODIFY, 0, PathEvent)
++		NotifyFilesystemMutation(ctx, FilesystemWrite, fd.Mount(), nil, uint64(n), 0)
+ 	}
+ 	return n, err
+ }
+@@ -728,6 +733,7 @@ func (fd *FileDescription) Write(ctx context.Context, src usermem.IOSequence, op
+ 	n, err := fd.impl.Write(ctx, src, opts)
+ 	if n > 0 {
+ 		fd.Dentry().InotifyWithParent(ctx, linux.IN_MODIFY, 0, PathEvent)
++		NotifyFilesystemMutation(ctx, FilesystemWrite, fd.Mount(), nil, uint64(n), 0)
+ 	}
+ 	return n, err
+ }
+diff --git a/pkg/sentry/vfs/filesystem_mutation_test.go b/pkg/sentry/vfs/filesystem_mutation_test.go
+new file mode 100644
+index 0000000..08c07f6
+--- /dev/null
++++ b/pkg/sentry/vfs/filesystem_mutation_test.go
+@@ -0,0 +1,79 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package vfs
++
++import (
++	"gvisor.dev/gvisor/pkg/abi/linux"
++	"gvisor.dev/gvisor/pkg/context"
++	"testing"
++)
++
++type mutationTestRecorder struct{ events []FilesystemMutation }
++
++func (r *mutationTestRecorder) RecordFilesystemMutation(_ context.Context, event FilesystemMutation) {
++	r.events = append(r.events, event)
++}
++
++type mutationTestContext struct {
++	context.Context
++	recorder *mutationTestRecorder
++}
++
++func (c mutationTestContext) Value(key any) any {
++	if key == CtxFilesystemMutationRecorder {
++		return c.recorder
++	}
++	return c.Context.Value(key)
++}
++
++func TestFilesystemMutationMountIdentityAndScope(t *testing.T) {
++	system := newMountTestSystem(t)
++	defer system.destroy()
++	recorder := &mutationTestRecorder{}
++	ctx := mutationTestContext{system.ctx, recorder}
++	mount := system.root.Mount()
++	NotifyFilesystemMutation(ctx, FilesystemWrite, mount, nil, 7, 0)
++	if len(recorder.events) != 1 {
++		t.Fatal("mounted operation not emitted")
++	}
++	event := recorder.events[0]
++	if event.MountID != mount.ID || event.NamespaceID != system.mntns.ID || event.WrittenBytes != 7 || event.Operation != FilesystemWrite {
++		t.Fatalf("actual mount/source lost: %+v", event)
++	}
++	NotifyFilesystemMutation(system.ctx, FilesystemWrite, mount, nil, 7, 0)
++	if len(recorder.events) != 1 {
++		t.Fatal("context without actor granted a recorder")
++	}
++	anonymous := system.vfs.NewDisconnectedMount(mount.fs, mount.root, &MountOptions{})
++	defer anonymous.DecRef(system.ctx)
++	NotifyFilesystemMutation(ctx, FilesystemWrite, anonymous, nil, 9, 0)
++	if len(recorder.events) != 1 {
++		t.Fatal("anonymous pipe/socket-style mount entered namespace coverage")
++	}
++	NotifyFilesystemMutation(ctx, FilesystemSetattr, mount, nil, 0, linux.STATX_MTIME)
++	if len(recorder.events) != 1 {
++		t.Fatal("unobserved timestamp scope claimed")
++	}
++	NotifyFilesystemMutation(ctx, FilesystemSetattr, mount, nil, 0, linux.STATX_MODE|linux.STATX_MTIME)
++	if len(recorder.events) != 2 || recorder.events[1].AttributeMask != linux.STATX_MODE {
++		t.Fatal("unsupported attribute bits retained")
++	}
++	foreign := newMountTestSystem(t)
++	defer foreign.destroy()
++	NotifyFilesystemMutation(ctx, FilesystemRename, mount, foreign.root.Mount(), 0, 0)
++	if len(recorder.events) != 3 || recorder.events[2].NamespaceID != 0 {
++		t.Fatal("foreign namespace represented as an attested operation")
++	}
++}
 diff --git a/pkg/sentry/vfs/namespace.go b/pkg/sentry/vfs/namespace.go
-index add1bf726..3ecd2c449 100644
+index add1bf7..3ecd2c4 100644
 --- a/pkg/sentry/vfs/namespace.go
 +++ b/pkg/sentry/vfs/namespace.go
 @@ -22,6 +22,56 @@ import (
@@ -1719,8 +2132,95 @@ index add1bf726..3ecd2c449 100644
  // A MountNamespace is a collection of Mounts.//
  // MountNamespaces are reference-counted. Unless otherwise specified, all
  // MountNamespace methods require that a reference is held.
+diff --git a/pkg/sentry/vfs/vfs.go b/pkg/sentry/vfs/vfs.go
+index f1f7901..e5d5d74 100644
+--- a/pkg/sentry/vfs/vfs.go
++++ b/pkg/sentry/vfs/vfs.go
+@@ -388,6 +388,7 @@ func (vfs *VirtualFilesystem) LinkAt(ctx context.Context, creds *auth.Credential
+ 		}
+ 		err := rp.mount.fs.impl.LinkAt(ctx, rp, oldVD)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemCreate, rp.mount, nil, 0, 0)
+ 			oldVD.DecRef(ctx)
+ 			return nil
+ 		}
+@@ -434,6 +435,7 @@ func (vfs *VirtualFilesystem) MkdirAt(ctx context.Context, creds *auth.Credentia
+ 		}
+ 		err := rp.mount.fs.impl.MkdirAt(ctx, rp, *opts)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemCreate, rp.mount, nil, 0, 0)
+ 			return nil
+ 		}
+ 		if checkInvariants {
+@@ -476,6 +478,7 @@ func (vfs *VirtualFilesystem) MknodAt(ctx context.Context, creds *auth.Credentia
+ 		}
+ 		err := rp.mount.fs.impl.MknodAt(ctx, rp, *opts)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemCreate, rp.mount, nil, 0, 0)
+ 			return nil
+ 		}
+ 		if checkInvariants {
+@@ -545,6 +548,18 @@ func (vfs *VirtualFilesystem) OpenAt(ctx context.Context, creds *auth.Credential
+ 		}
+ 		fd, err := rp.mount.fs.impl.OpenAt(ctx, rp, *opts)
+ 		if err == nil {
++			// O_PATH was handled above. For an actual regular-file open with
++			// O_TRUNC, record the completed size operation, not a guessed byte write.
++			// The returned object and its type are kernel-owned. Unknown metadata
++			// emits an unattributed event, which cannot qualify as workspace coverage.
++			if opts.Flags&linux.O_TRUNC != 0 && ctx.Value(CtxFilesystemMutationRecorder) != nil {
++				stat, statErr := fd.Stat(ctx, StatOptions{Mask: linux.STATX_TYPE})
++				if statErr != nil || stat.Mask&linux.STATX_TYPE == 0 {
++					NotifyFilesystemMutation(ctx, FilesystemSetattr, nil, nil, 0, linux.STATX_SIZE)
++				} else if stat.Mode&linux.S_IFMT == linux.S_IFREG {
++					NotifyFilesystemMutation(ctx, FilesystemSetattr, fd.Mount(), nil, 0, linux.STATX_SIZE)
++				}
++			}
+ 			fdCleanup := cleanup.Make(func() {
+ 				fd.DecRef(ctx)
+ 			})
+@@ -662,6 +677,7 @@ func (vfs *VirtualFilesystem) RenameAt(ctx context.Context, creds *auth.Credenti
+ 		}
+ 		err := rp.mount.fs.impl.RenameAt(ctx, rp, oldParentVD, oldName, renameOpts)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemRename, rp.mount, oldParentVD.Mount(), 0, 0)
+ 			oldParentVD.DecRef(ctx)
+ 			return nil
+ 		}
+@@ -705,6 +721,7 @@ func (vfs *VirtualFilesystem) RmdirAt(ctx context.Context, creds *auth.Credentia
+ 		}
+ 		err := rp.mount.fs.impl.RmdirAt(ctx, rp)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemUnlink, rp.mount, nil, 0, 0)
+ 			return nil
+ 		}
+ 		if checkInvariants {
+@@ -733,6 +750,7 @@ func (vfs *VirtualFilesystem) SetStatAt(ctx context.Context, creds *auth.Credent
+ 		}
+ 		err := rp.mount.fs.impl.SetStatAt(ctx, rp, *opts)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemSetattr, rp.mount, nil, 0, opts.Stat.Mask)
+ 			return nil
+ 		}
+ 		if !rp.handleError(ctx, err) {
+@@ -821,6 +839,7 @@ func (vfs *VirtualFilesystem) SymlinkAt(ctx context.Context, creds *auth.Credent
+ 		}
+ 		err := rp.mount.fs.impl.SymlinkAt(ctx, rp, target)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemCreate, rp.mount, nil, 0, 0)
+ 			return nil
+ 		}
+ 		if checkInvariants {
+@@ -862,6 +881,7 @@ func (vfs *VirtualFilesystem) UnlinkAt(ctx context.Context, creds *auth.Credenti
+ 		}
+ 		err := rp.mount.fs.impl.UnlinkAt(ctx, rp)
+ 		if err == nil {
++			NotifyFilesystemMutation(ctx, FilesystemUnlink, rp.mount, nil, 0, 0)
+ 			return nil
+ 		}
+ 		if checkInvariants {
 diff --git a/runsc/boot/BUILD b/runsc/boot/BUILD
-index 6a3f1aaca..4cf47864f 100644
+index 6a3f1aa..4cf4786 100644
 --- a/runsc/boot/BUILD
 +++ b/runsc/boot/BUILD
 @@ -179,6 +179,7 @@ go_test(
@@ -1748,7 +2248,7 @@ index 6a3f1aaca..4cf47864f 100644
      ],
  )
 diff --git a/runsc/boot/filter/config/BUILD b/runsc/boot/filter/config/BUILD
-index 42fd484b8..9c61ad914 100644
+index 42fd484..9c61ad9 100644
 --- a/runsc/boot/filter/config/BUILD
 +++ b/runsc/boot/filter/config/BUILD
 @@ -53,7 +53,9 @@ go_test(
@@ -1762,7 +2262,7 @@ index 42fd484b8..9c61ad914 100644
          "@org_golang_x_sys//unix:go_default_library",
      ],
 diff --git a/runsc/boot/filter/config/config_precompiled.go b/runsc/boot/filter/config/config_precompiled.go
-index ed4291e05..ca9126ee8 100644
+index ed4291e..ca9126e 100644
 --- a/runsc/boot/filter/config/config_precompiled.go
 +++ b/runsc/boot/filter/config/config_precompiled.go
 @@ -36,7 +36,7 @@ const (
@@ -1775,7 +2275,7 @@ index ed4291e05..ca9126ee8 100644
  
  // allPrecompiledPlatforms returns a list of `platform.SeccompInfo` instances
 diff --git a/runsc/boot/filter/config/config_test.go b/runsc/boot/filter/config/config_test.go
-index a5e635c10..d74762d68 100644
+index a5e635c..d74762d 100644
 --- a/runsc/boot/filter/config/config_test.go
 +++ b/runsc/boot/filter/config/config_test.go
 @@ -16,13 +16,17 @@ package config
@@ -1999,7 +2499,7 @@ index a5e635c10..d74762d68 100644
 +	}
 +}
 diff --git a/runsc/boot/loader.go b/runsc/boot/loader.go
-index d78a9606c..aa9d734fa 100644
+index d78a960..01af05e 100644
 --- a/runsc/boot/loader.go
 +++ b/runsc/boot/loader.go
 @@ -27,6 +27,7 @@ import (
@@ -2020,7 +2520,7 @@ index d78a9606c..aa9d734fa 100644
  	case restoringUnstarted:
  		// If we are restoring, we do not want to create a process.
  	default:
-@@ -1357,6 +1361,38 @@ func (l *Loader) run() error {
+@@ -1357,6 +1361,43 @@ func (l *Loader) run() error {
  	return nil
  }
  
@@ -2038,7 +2538,12 @@ index d78a9606c..aa9d734fa 100644
 +	if len(entries) > 64 {
 +		return fmt.Errorf("mount topology exceeds 64 mounts")
 +	}
-+	evt := pb.MountTopologySnapshot{MountNamespaceId: ns.ID, SnapshotComplete: true}
++	mutationFields := seccheck.Global.GetFieldSet(seccheck.PointFilesystemMutation)
++	mutationReady := seccheck.Global.Enabled(seccheck.PointFilesystemMutation) &&
++		mutationFields.Context.Contains(seccheck.FieldCtxtContainerID) &&
++		mutationFields.Context.Contains(seccheck.FieldCtxtThreadGroupID) &&
++		mutationFields.Context.Contains(seccheck.FieldCtxtThreadGroupStartTime)
++	evt := pb.MountTopologySnapshot{MountNamespaceId: ns.ID, SnapshotComplete: true, FilesystemMutationReady: mutationReady}
 +	fields := seccheck.Global.GetFieldSet(seccheck.PointMountTopologySnapshot)
 +	if !fields.Context.Empty() {
 +		evt.ContextData = &pb.ContextData{}
@@ -2060,7 +2565,7 @@ index d78a9606c..aa9d734fa 100644
  func (l *Loader) createSubcontainer(cid string, tty *fd.FD) error {
  	l.mu.Lock()
 diff --git a/runsc/boot/loader_test.go b/runsc/boot/loader_test.go
-index c2e067d1a..f338c86a8 100644
+index c2e067d..4ca6d15 100644
 --- a/runsc/boot/loader_test.go
 +++ b/runsc/boot/loader_test.go
 @@ -27,7 +27,9 @@ import (
@@ -2081,7 +2586,7 @@ index c2e067d1a..f338c86a8 100644
  	"gvisor.dev/gvisor/pkg/sentry/vfs"
  	"gvisor.dev/gvisor/pkg/sync"
  	"gvisor.dev/gvisor/pkg/unet"
-@@ -197,6 +200,157 @@ func TestRun(t *testing.T) {
+@@ -197,6 +200,161 @@ func TestRun(t *testing.T) {
  	}
  }
  
@@ -2103,6 +2608,7 @@ index c2e067d1a..f338c86a8 100644
 +	sink := &snapshotTestSink{}
 +	seccheck.Global.AppendSink(sink, []seccheck.PointReq{
 +		{Pt: seccheck.PointMountTopologySnapshot, Fields: seccheck.FieldSet{}},
++		{Pt: seccheck.PointFilesystemMutation, Fields: seccheck.FieldSet{Context: seccheck.MakeFieldMask(seccheck.FieldCtxtContainerID, seccheck.FieldCtxtThreadGroupID, seccheck.FieldCtxtThreadGroupStartTime)}},
 +	})
 +
 +	l, cleanup, err := createLoader(testConfig(), testSpec())
@@ -2144,6 +2650,9 @@ index c2e067d1a..f338c86a8 100644
 +	snap := sink.snapshots[0]
 +	sink.mu.Unlock()
 +
++	if !snap.FilesystemMutationReady {
++		t.Error("required active mutation profile/identity fields not attested")
++	}
 +	if !snap.SnapshotComplete {
 +		t.Errorf("expected SnapshotComplete=true")
 +	}

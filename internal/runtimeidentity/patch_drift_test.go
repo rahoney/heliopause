@@ -209,6 +209,7 @@ func TestPatchDrift_I_ExactPatchedRuntimeSatisfiesCapability(t *testing.T) {
 	t.Parallel()
 	patchedTraceMetadata := `
 Name: sentry/clone, optional fields: []
+Name: sentry/filesystem_mutation, optional fields: []
 Name: sentry/mount_topology_mutation, optional fields: []
 Name: sentry/mount_topology_snapshot, optional fields: []
 Name: syscall/open_result, optional fields: []

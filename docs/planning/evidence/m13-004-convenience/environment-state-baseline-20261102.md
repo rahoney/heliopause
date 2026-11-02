@@ -245,3 +245,73 @@ PASS다. 원본·입력·범위는 같은 부분 원장의 `typed_state_checkpoi
 Evidence의 persisted actual은 다음 의미 있는 native 묶음에 모으며 앞3 native 성공을
 이 변경의 성공으로 재사용하지 않는다. 다음은 기존 observer의 단기 filesystem event
 지원 대조와 필요한 coverage 연결이며 다른 생태계·최종 qualification도 계속 OPEN이다.
+
+
+## 단기 filesystem event baseline — 조사 중
+
+기준 `6bac0e8`. 이 누락의 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. 기존 성공 OPEN_RESULT와 mount/provenance·privacy 경계는
+재사용하며 다시 구현하지 않는다. 현재 pod-init은 write/rename/unlink/chmod 성공 point를
+요청하지 않고, C++ Handle 및 Go collector vocabulary에도 이 성공 종류가 없다. 기존
+OPEN/OPEN_RESULT access 수를 실제 write·create·delete 완료로 바꿀 수 없다. Pinned
+upstream `syscall.Write`는 exit/fd/path/count를 갖지만 현재 필요로 하는 sealed mount
+identity가 없고, 현재 OpenResult도 socket FD table을 파일 object 권위로 만들지 않는다.
+
+수정 후보는 기존 VFS의 성공 반환 지점과 actual Mount identity다. 읽은 경로는
+`pkg/sentry/vfs/vfs.go`의 UnlinkAt/SetStatAt/RenameAt, `file_description.go`의 Write/PWrite,
+기존 inotify와 gofer의 create/unlink/rename 처리다. Inotify의 watcher 객체만으로는
+현재 Mount를 증명하지 않으므로 이를 곧바로 authority로 사용하지 않는다. 이 baseline 시점에는 kernel
+point·C++/Go parser·profile 및 SDK를 수정하지 않았고 새 방법의 실행을 검증하지 않았다.
+
+MISSING은 성공한 create/write/rename/unlink/permission operation의 정확한 kernel 정보와
+기존 sealed workspace의 결합, raw 비보존·한도·누락 거부, controller/setup과 Artifact 관찰
+범위 구분, create-then-delete/실패 동작/정상 대조 actual이다. 기존 공용 유지보수 절차와
+자원 한도를 유지하고 필요한 observer/runtime 변경이 모인 뒤 검증한다.
+
+
+### 2026-11-03 단기 filesystem 관찰 후보 — 격리 빌드 검증
+
+기준 `6bac0e8`에서 기존 pinned upstream·VFS 성공 반환·remote sink를 재사용한다.
+O_CREAT 요청 자체를 생성 성공으로 세지 않고 gofer의 실제 새 파일 생성, Write/PWrite의
+양수 반환, 성공한 rename/unlink와 mode/owner/size 변경을 actual mount namespace/ID에
+결합한다. O_TRUNC의 성공한 regular-file 크기 변경도 포함한다. 경로·FD 추측·파일 내용은
+wire나 결과에 추가하지 않는다. mmap store 전체, 파일별 create/delete 짝 또는 Artifact만의
+행위라는 주장은 하지 않으며 세션의 setup/installer 동작도 포함한 범위를 명시한다.
+
+기존 topology snapshot은 실행 전 필수 mutation point와 container/group/start context의
+활성 여부를 증명한다. C++은 그 증명이 없으면 seal/readiness 전에 거부하며 기존 helper
+identity 검사도 새 ABI를 요구한다. 새 완료 channel/daemon/권한은 없다. 정상 workspace
+동작은 중립 관찰이고 위반 Finding이 아니며 기존 raw/record·공유 trace 예산을 소비한다.
+
+V2 kernel 표적4/33.658s와 C++ 새 matrix218.249s는 각각 당시 후보의 부분 증거다.
+V4의 O_TRUNC/활성 증명을 포함한 **kernel7 + 전체 CPP134/254.002s PASS**, no-skip·source
+불변·ABI identity를 확인했다. Go의 envelope/공유 예산/구형 helper/불완전 coverage 등
+5 package 표적18.086s도 PASS다. 원본 `s08-filesystem-kernel-tests-v2`,
+`s08-filesystem-observer-targeted-v1`, `s08-filesystem-kernel-observer-batch-v4`,
+`s08-filesystem-go-targets`는 goal-implementation-20261101에 보존한다.
+
+첫 kernel V1의 oldParentVD type compile 오류는 `.Mount()`로 교정했으며 성공으로 덮지
+않는다. V4 patch `c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68`는
+canonical source preparation으로 동일 고정 SDK에 적용했다. Go/Bazel owner·버전 갱신 방식은
+그대로다. coherent6 build/capture/strict verify86.563s와 main runtime 잠금 연결을 완료했다.
+Persisted Evidence·다른 생태계 연결과 최종 qualification은 미완료다. 이 부분 증거를 전체 S01/S08
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED로 확대하지 않는다. 새 CI/영구 Host 변경 없음.
+
+
+새 관찰 경로의 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. Actual V2/42.637s는 기본 설치/Host synthetic 값 미유입/fresh2/
+단기6종 관찰4개와 필수 point 누락/context 누락 거부2개가 no-skip PASS였다. 누락은
+Artifact 소개 전 `OBSERVATION_PROFILE_INCOMPLETE`이며 states는0개다. 단기 표본의
+Artifact Node/shell은 기존 unexpected 관찰을 유지하므로 이 표본을 Policy ALLOW 성공으로
+기록하지 않는다. 기존 hash/inode·Docker 자원·helperwait0을 복원하고 시험 사본368462440B를
+제거했다. V1은 operator의 BUILD basename 오선택으로 자원 생성 전 NOT_RUN이며 원본을 보존한다.
+
+같은 product 후보의 canonical foundation89.877s, 영향6 package Race47.879s와 고정
+Staticcheck17.880s가 PASS다. 새 runtime은 Go1.27.3/같은 Bazel lock·중앙 owner를 유지하며
+검증된 여섯 member와 patch만 교체했다. 단일 부분 원장의 `filesystem_operation_checkpoint`가
+raw 입력·범위·한정 증거를 연결한다. 전체 S01/S08/C01 완료나 hosted/final 검증은 아니다.
+
+기존 snapshot-only schema의 승인 재사용 거부 표적1.035s와 canonical security24.569s도
+PASS다. Actual 후 compiler 시험 출력36621774B를 exact hash/inode로 확인해 제거했다.
+SDK/verified bundle은 다음 소비자 검증의 입력이므로 보존한다. 마지막 변경은 legacy
+profile 표적 fixture와 문서뿐이며 위 native/Race product source와 구분한다.

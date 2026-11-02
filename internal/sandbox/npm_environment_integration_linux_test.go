@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,7 +21,7 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor runtime")
 	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`)
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`, domain.SandboxCompleted)
 }
 
 func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
@@ -39,10 +40,10 @@ func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
 	} {
 		t.Setenv(key, value)
 	}
-	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test \"$GITHUB_TOKEN\" != fake-github-token && test \"$NPM_TOKEN\" != fake-npm-token && test -z \"$PYPI_TOKEN\" && test \"$AWS_SECRET_ACCESS_KEY\" != fake-aws-secret && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test \"$GITHUB_TOKEN\" != fake-github-token && test \"$NPM_TOKEN\" != fake-npm-token && test -z \"$PYPI_TOKEN\" && test \"$AWS_SECRET_ACCESS_KEY\" != fake-aws-secret && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`, domain.SandboxCompleted)
 }
 
-func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) domain.SandboxResult {
+func runLinuxGVisorLifecycleIntegration(t *testing.T, body string, want domain.SandboxStatus) domain.SandboxResult {
 	t.Helper()
 	root := t.TempDir()
 	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
@@ -88,11 +89,17 @@ func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) domain.Sandbo
 	backend.resources = integrationObservationResources{client: resources}
 	result, err := backend.Execute(context.Background(), integrationRequest(t, path))
 	if err != nil {
-		t.Fatal(err)
+		if want != domain.SandboxIncomplete || result.Status() != want {
+			t.Fatal(err)
+		}
+		t.Logf("expected incomplete result retains original cause: %v", err)
 	}
-	if result.Status() != domain.SandboxCompleted {
+	if result.Status() != want {
 		code, _ := result.LimitationCode()
 		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
+	}
+	if want == domain.SandboxIncomplete {
+		t.Logf("observer failure retained: %s", integrationObserverFaultReason(supervisor))
 	}
 	return result
 }
@@ -122,7 +129,7 @@ func TestLinuxGVisorFreshEnvironmentIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor and protected resource service")
 	}
-	result := runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test ! -e /tmp/haa-environment-dirty; case \"$GITHUB_TOKEN\" in \"\") test ! -e /tmp/.aws/credentials;; haa-invalid-*) test -r /tmp/.aws/credentials;; *) exit 51;; esac; : > /tmp/haa-environment-dirty"}}`)
+	result := runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test ! -e /tmp/haa-environment-dirty; case \"$GITHUB_TOKEN\" in \"\") test ! -e /tmp/.aws/credentials;; haa-invalid-*) test -r /tmp/.aws/credentials;; *) exit 51;; esac; : > /tmp/haa-environment-dirty"}}`, domain.SandboxCompleted)
 	counts := map[string]uint64{}
 	for _, fact := range result.Observations() {
 		counts[fact.Subject()] += fact.Count()
@@ -133,4 +140,51 @@ func TestLinuxGVisorFreshEnvironmentIntegration(t *testing.T) {
 		}
 	}
 	t.Log("fresh environments=2; inherited Host secrets=absent; synthetic cues=isolated; previous-run marker=absent; completion authority=external")
+}
+
+func TestLinuxGVisorTransientFilesystemIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor and protected resource service")
+	}
+	// Leave no file behind: a snapshot alone cannot show these operations.
+	script := `node -e 'const fs=require("fs");const a="/tmp/transient-a",b="/tmp/transient-b";fs.writeFileSync(a,"temporary");const fd=fs.openSync(a,"r+");fs.writeSync(fd,Buffer.from("x"),0,1,0);fs.closeSync(fd);fs.renameSync(a,b);fs.chmodSync(b,0o600);fs.truncateSync(b,0);fs.unlinkSync(b);if(fs.existsSync(a)||fs.existsSync(b))process.exit(61)'`
+	body, err := json.Marshal(map[string]any{"name": "tiny", "version": "1.2.3", "scripts": map[string]string{"preinstall": script}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := runLinuxGVisorLifecycleIntegration(t, string(body), domain.SandboxCompleted)
+	counts := map[string]uint64{}
+	for _, fact := range result.Observations() {
+		counts[fact.Subject()] += fact.Count()
+	}
+	for _, kind := range []string{"filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation"} {
+		if counts[kind] < 2 {
+			t.Fatalf("missing successful operation in both fresh environments: %s counts=%v", kind, counts)
+		}
+	}
+	states := result.EnvironmentStates()
+	if len(states) != 2 {
+		t.Fatalf("state coverage=%d", len(states))
+	}
+	for _, state := range states {
+		if !state.VFSOperationsCovered {
+			t.Fatal("active operation coverage absent")
+		}
+		summary, err := state.Summary()
+		if err != nil || len(summary) > 1024 {
+			t.Fatalf("state evidence invalid: %v", err)
+		}
+	}
+	t.Logf("two fresh environments: transient operations observed; raw paths/data excluded; bounded counts=%v", counts)
+}
+
+func TestLinuxGVisorMissingFilesystemObservationIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_MISSING_FILESYSTEM_OBSERVATION") != "1" {
+		t.Skip("requires controlled pod-init missing required mutation point or context")
+	}
+	result := runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`, domain.SandboxIncomplete)
+	code, _ := result.LimitationCode()
+	if code != "M3_DYNAMIC_SETUP_FAILED" || len(result.EnvironmentStates()) != 0 {
+		t.Fatalf("missing observation profile accepted: %s states=%d", code, len(result.EnvironmentStates()))
+	}
 }

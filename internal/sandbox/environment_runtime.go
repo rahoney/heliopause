@@ -251,7 +251,7 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 	fixtureDigest, _ := domain.NewSHA256Digest(profile.identity)
 	beforeDigest, _ := domain.NewSHA256Digest(before.digest)
 	afterDigest, _ := domain.NewSHA256Digest(after.digest)
-	n.states = append(n.states, domain.SandboxEnvironmentState{Profile: profile.kind, FixtureDigest: fixtureDigest, Before: beforeDigest, After: afterDigest, Created: changes.created, Deleted: changes.deleted, Modified: changes.modified})
+	n.states = append(n.states, domain.SandboxEnvironmentState{Profile: profile.kind, FixtureDigest: fixtureDigest, Before: beforeDigest, After: afterDigest, Created: changes.created, Deleted: changes.deleted, Modified: changes.modified, VFSOperationsCovered: true})
 	for _, change := range []struct {
 		subject string
 		count   uint64

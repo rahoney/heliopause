@@ -57,7 +57,7 @@ func TestM3ControlledVerticalWorkflow(t *testing.T) {
 			if test.status == domain.SandboxCompleted {
 				digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
 				for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
-					states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest})
+					states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
 				}
 			}
 			result, _ := domain.NewSandboxResult(session, test.status, test.limitation, test.observations, states...)

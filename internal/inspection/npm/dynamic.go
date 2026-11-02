@@ -76,7 +76,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 		}
 	}
 	states := result.EnvironmentStates()
-	if len(states) != 2 {
+	if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
 		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE", profile)
 		if err != nil {
 			return domain.InspectionReport{}, err

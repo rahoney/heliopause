@@ -106,6 +106,7 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 var RequiredObservationPoints = []string{
 	"syscall/open_result",
 	"syscall/socketpair_result",
+	"sentry/filesystem_mutation",
 	"sentry/mount_topology_snapshot",
 	"sentry/mount_topology_mutation",
 }

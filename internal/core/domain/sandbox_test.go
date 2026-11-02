@@ -161,6 +161,12 @@ func TestSandboxEnvironmentStateIsBoundedAndOwned(t *testing.T) {
 	if err != nil || len(summary) > 1024 || !strings.Contains(summary, `"transient_changes":"NOT_COVERED"`) || !strings.Contains(summary, `"created":1`) || strings.Contains(summary, "/") || strings.Contains(summary, "haa-invalid") {
 		t.Fatalf("unsafe or incomplete summary: %q %v", summary, err)
 	}
+	covered := valid
+	covered.VFSOperationsCovered = true
+	coveredSummary, err := covered.Summary()
+	if err != nil || len(coveredSummary) > 1024 || !strings.Contains(coveredSummary, `"transient_changes":"SESSION_VFS_OPERATIONS"`) || !strings.Contains(coveredSummary, `"operation_scope":"CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE"`) {
+		t.Fatalf("operation coverage missing: %q %v", coveredSummary, err)
+	}
 	for name, mutate := range map[string]func(*domain.SandboxEnvironmentState){
 		"raw profile":     func(s *domain.SandboxEnvironmentState) { s.Profile = "../../Host-path" },
 		"fixture absent":  func(s *domain.SandboxEnvironmentState) { s.FixtureDigest = domain.ContentDigest{} },

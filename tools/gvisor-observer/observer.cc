@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <linux/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -325,6 +326,7 @@ enum class FaultSite {
   kExecSyscall,
   kOpen,
   kOpenResult,
+  kFilesystemMutation,
   kOpenResultEnvelope,
   kOpenResultCorrelation,
   kOpenResultFailureFormat,
@@ -366,6 +368,7 @@ const char* FaultSiteName(FaultSite site) {
     case FaultSite::kExecSyscall: return "EXEC_SYSCALL";
     case FaultSite::kOpen: return "OPEN";
     case FaultSite::kOpenResult: return "OPEN_RESULT";
+    case FaultSite::kFilesystemMutation: return "FILESYSTEM_MUTATION";
     case FaultSite::kOpenResultEnvelope: return "OPEN_RESULT_ENVELOPE";
     case FaultSite::kOpenResultCorrelation: return "OPEN_RESULT_CORRELATION";
     case FaultSite::kOpenResultFailureFormat: return "OPEN_RESULT_FAILURE_FORMAT";
@@ -594,8 +597,14 @@ struct ProcessState {
 
 struct NormalizedCounts {
   uint64_t workspace_access = 0;
+  uint64_t workspace_mutations[6]{};
   uint64_t runtime_root_access = 0;
   size_t immediate_records = 0;
+};
+
+constexpr const char* kWorkspaceMutationKinds[] = {
+ "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename",
+ "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation",
 };
 
 struct ExpectedMount {
@@ -6532,6 +6541,9 @@ bool ParseTopologySnapshot(const char* payload, size_t payload_size, int output,
       message.mounts_size() <= 0 || static_cast<size_t>(message.mounts_size()) > kMaxTopologyMounts) {
     *reason = "TOPOLOGY_INVALID"; return false;
   }
+  // Availability in trace metadata is insufficient: the running kernel must
+  // attest that this point and its attribution fields are actually active.
+  if (!message.filesystem_mutation_ready()) { *reason="OBSERVATION_PROFILE_INCOMPLETE";return false; }
   std::map<uint64_t, const gvisor::sentry::MountTopologyEntry*> mounts;
   std::map<std::string, uint64_t> mountpoints;
   uint64_t root_id = 0;
@@ -6604,6 +6616,60 @@ bool ParseTopologySnapshot(const char* payload, size_t payload_size, int output,
   return Send(output, *container_id, "mount-anchors-ready");
 }
 
+// Successful operations on kernel-supplied mounted objects. These neutral
+// counters grant no file-access, executable, role, network or completion authority.
+// Paths, contents, descriptors and raw IDs never enter the normalized envelope.
+bool ParseFilesystemMutation(const char* payload, size_t payload_size, std::string* container_id,
+                             const ProcessState& state, const TopologyState& topology,
+                             NormalizedCounts* counts, const char** reason) {
+ gvisor::sentry::FilesystemMutation message;
+ if (!message.ParseFromArray(payload,payload_size)) { *reason="STREAM_FAULT";return false; }
+ if (!ValidateContextContainer(message.context_data(),container_id,reason)) return false;
+ if (!ValidProcessIdentity(message.context_data())) { *reason="PROCESS_PROVENANCE_UNKNOWN";return false; }
+ const auto group=state.groups.find(message.context_data().thread_group_id());
+ if (group==state.groups.end() || !SameGroup(group->second,message.context_data())) {
+  *reason="PROCESS_PROVENANCE_UNKNOWN";return false;
+ }
+ if (!topology.sealed || !topology.snapshot_seen || topology.namespace_id==0 ||
+     message.mount_namespace_id()!=topology.namespace_id) { *reason="TOPOLOGY_INVALID";return false; }
+ constexpr uint32_t attributes=STATX_MODE|STATX_UID|STATX_GID|STATX_SIZE;
+ const auto operation=message.operation();
+ if (operation<gvisor::sentry::FilesystemMutation::CREATE || operation>gvisor::sentry::FilesystemMutation::SETATTR ||
+     (operation==gvisor::sentry::FilesystemMutation::WRITE ? message.written_bytes()==0 || message.written_bytes()>INT64_MAX : message.written_bytes()!=0) ||
+     (operation==gvisor::sentry::FilesystemMutation::SETATTR ? message.attribute_mask()==0 || (message.attribute_mask()&~attributes)!=0 : message.attribute_mask()!=0) ||
+     (operation==gvisor::sentry::FilesystemMutation::RENAME ? message.other_mount_id()==0 : message.other_mount_id()!=0)) {
+  *reason="STREAM_FAULT";return false;
+ }
+ auto workspace=[&](uint64_t id,bool* writable)->bool {
+  const auto anchor=topology.anchors.find(id);
+  if (id==0 || anchor==topology.anchors.end()) return false;
+  *writable=false;
+  bool declared=false;
+  for (const auto& expected:topology.expected) {
+   if (expected.mountpoint!=anchor->second.mountpoint) continue;
+   if (expected.read_only) return false;
+   declared=true;
+  }
+  if (anchor->second.mount_class=="workspace") {
+   if (!declared) return false;
+   *writable=true;
+  }
+  return true;
+ };
+ bool source=false,destination=false;
+ if (!workspace(message.mount_id(),&source) ||
+     (operation==gvisor::sentry::FilesystemMutation::RENAME && !workspace(message.other_mount_id(),&destination))) {
+  *reason="TOPOLOGY_MISMATCH";return false;
+ }
+ if (!source && !destination) return true;
+ auto charge=[&](size_t index) { if (counts->workspace_mutations[index]<kMaxNormalizedObservationCount) ++counts->workspace_mutations[index]; };
+ if (operation==gvisor::sentry::FilesystemMutation::SETATTR) {
+  if (message.attribute_mask()&(STATX_MODE|STATX_UID|STATX_GID)) charge(4);
+  if (message.attribute_mask()&STATX_SIZE) charge(5);
+ } else { charge(static_cast<size_t>(operation)-1); }
+ return true;
+}
+
 bool ParseTopologyMutation(const char* payload, size_t payload_size, std::string* container_id,
                            const TopologyState& topology, const char** reason) {
   gvisor::sentry::MountTopologyMutation message;
@@ -6674,6 +6740,9 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
         return false;
       }
       return true;
+    case gvisor::common::MESSAGE_SENTRY_FILESYSTEM_MUTATION:
+      set_fault_site(FaultSite::kFilesystemMutation);
+      return ParseFilesystemMutation(payload,payload_size,container_id,*process_state,*topology,counts,reason);
     case gvisor::common::MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT:
       if (!process_state->bootstrap_group_set) {
         *reason = "TOPOLOGY_INVALID";
@@ -6784,7 +6853,7 @@ int main(int argc, char** argv) {
     return 0;
   }
   if (argc == 2 && strcmp(argv[1], "--identity") == 0) {
-    printf("gvisor-commit=%s\n", HAA_GVISOR_COMMIT);
+    printf("gvisor-commit=%s\nfilesystem-mutation=v1\n", HAA_GVISOR_COMMIT);
     return 0;
   }
   if (argc != 4 && argc != 5) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET HAA_CONTROL_SEQPACKET_SOCKET [--ready-fd=FD]");
@@ -6882,7 +6951,7 @@ int main(int argc, char** argv) {
     }
     if (!stream.fault && stream.normalized_counts.workspace_access != 0) {
       const char* profile = stream.profile.empty() ? nullptr : stream.profile.c_str();
-      if (stream.normalized_records + stream.normalized_counts.immediate_records == MaximumRecords(profile)) {
+      if (stream.normalized_records + stream.normalized_counts.immediate_records >= MaximumRecords(profile)) {
         stream.fault = true;
         stream.fault_reason = "EVENT_LIMIT";
         stream.process_state.terminal_fault_site = FaultSite::kEventLimit;
@@ -6891,6 +6960,25 @@ int main(int argc, char** argv) {
         stream.fault = true;
         stream.fault_reason = "STREAM_FAULT";
         stream.process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
+      } else {
+        ++stream.normalized_counts.immediate_records;
+      }
+    }
+    // Reuse the existing end-of-stream aggregate lane and unchanged budget.
+    // Setup and lifecycle operations share the session; these are not claimed
+    // to be Artifact-only actions or per-path change/pair identities.
+    for (size_t index=0; !stream.fault && index<6; ++index) {
+      if (stream.normalized_counts.workspace_mutations[index]==0) continue;
+      const char* profile=stream.profile.empty()?nullptr:stream.profile.c_str();
+      if (stream.normalized_records+stream.normalized_counts.immediate_records>=MaximumRecords(profile)) {
+        stream.fault=true;stream.fault_reason="EVENT_LIMIT";
+        stream.process_state.terminal_fault_site=FaultSite::kEventLimit;
+      } else if (!Send(output,stream.container_id,kWorkspaceMutationKinds[index],nullptr,nullptr,
+                       stream.normalized_counts.workspace_mutations[index])) {
+        stream.fault=true;stream.fault_reason="STREAM_FAULT";
+        stream.process_state.terminal_fault_site=FaultSite::kWorkspaceSend;
+      } else {
+        ++stream.normalized_counts.immediate_records;
       }
     }
     std::string fault_budget;

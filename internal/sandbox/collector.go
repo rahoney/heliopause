@@ -199,6 +199,12 @@ var recognizedTraceKinds = []string{
 	"process-exec-expected",
 	"process-exec-unexpected",
 	"filesystem-workspace-access",
+	"filesystem-workspace-create",
+	"filesystem-workspace-write",
+	"filesystem-workspace-rename",
+	"filesystem-workspace-unlink",
+	"filesystem-workspace-permission-operation",
+	"filesystem-workspace-size-operation",
 	"filesystem-outside-workspace",
 	"network-attempt",
 	"honeytoken-access",
@@ -426,7 +432,7 @@ func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	switch kind {
 	case "process-exec", "process-exec-expected", "process-exec-unexpected":
 		return domain.ObservationProcess, kind, true
-	case "filesystem-workspace-access", "filesystem-outside-workspace":
+	case "filesystem-workspace-access", "filesystem-outside-workspace", "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation":
 		return domain.ObservationFilesystem, kind, true
 	case "network-attempt":
 		return domain.ObservationNetwork, kind, true

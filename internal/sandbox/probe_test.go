@@ -47,12 +47,12 @@ func TestProbe(t *testing.T) {
 		{name: "missing runtime", operatingSystem: "linux", executor: fakeExecutor{lookupError: errors.New("missing")}, limitation: "M3_RUNTIME_UNAVAILABLE"},
 		{name: "old Docker", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.5.3"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
 		{name: "vulnerable Docker", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.8.1"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
-		{name: "prerelease Docker", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.9.2-rc.1", "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
+		{name: "prerelease Docker", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.9.2-rc.1", "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
 		{name: "wrong gVisor", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": "release-20260727.0"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
 		{name: "release label is not a source stamp", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": "runsc version " + runtimeidentity.GVisorRelease + "\nspec: 1.0.2\n"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
 		{name: "unpatched gVisor lacking observation points", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: sentry/clone\nName: sentry/execve\n"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
-		{name: "missing image", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n"}}, limitation: "M3_IMAGE_UNAVAILABLE"},
-		{name: "available", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, available: true},
+		{name: "missing image", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n"}}, limitation: "M3_IMAGE_UNAVAILABLE"},
+		{name: "available", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine, "runsc --version": canonicalRunscVersionOutput, "runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, available: true},
 	}
 	for _, test := range tests {
 		test := test
@@ -67,7 +67,7 @@ func TestProbe(t *testing.T) {
 }
 
 func TestProbeUsesOnlyTrustedLogicalRunsc(t *testing.T) {
-	patched := "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n"
+	patched := "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n"
 	executor := &recordingProbeExecutor{fakeExecutor: fakeExecutor{outputs: map[string]string{
 		"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine,
 		"runsc --version":      canonicalRunscVersionOutput,
@@ -129,11 +129,21 @@ func join(values []string) string {
 }
 
 func TestPatchCapabilityRejectsGuestBufferOnlySocketPairRuntime(t *testing.T) {
-	old := "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: syscall/socketpair/exit\n"
+	old := "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\nName: syscall/socketpair/exit\n"
 	if err := VerifyPatchCapability(old); err == nil {
 		t.Fatal("guest-buffer SocketPair runtime accepted without kernel-owned descriptors")
 	}
 	if err := VerifyPatchCapability(old + "Name: syscall/socketpair_result\n"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPatchCapabilityRequiresFilesystemMutation(t *testing.T) {
+	metadata := "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n"
+	if err := VerifyPatchCapability(metadata); err == nil {
+		t.Fatal("snapshot-only runtime accepted")
+	}
+	if err := VerifyPatchCapability(metadata + "Name: sentry/filesystem_mutation\n"); err != nil {
 		t.Fatal(err)
 	}
 }
