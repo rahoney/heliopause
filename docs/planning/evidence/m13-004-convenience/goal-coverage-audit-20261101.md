@@ -694,3 +694,115 @@ B01의 고정 native PEP 440/508 parser 및 authenticated metadata graph validat
 서로 다른 범위를 기록한다. 임시 DATA capture test는 원본 source/lock/export/help와 hash
 inventory를 raw에 보존한 뒤 main/scratch에서 제거했다. 완료된 protected 복사본4개64799982B는
 참조0/query error0 확인 뒤 삭제했다. UV parser/선택 구현은 아직 미착수이며 B06만 IN_PROGRESS다.
+
+
+B06 UV input/scope 진행(아직 미연결): 기존 `uv_project_input.go`에 optional/group/default-group
+필드를 명시적으로 추가하고 새 `uv_project_scope.go`에서 요청 선택·nested group cycle/부재/
+source/예산을 검증한다. `UVProjectSelection`은 기존 uv-project-intent.json의 optional selection
+필드에 bind하므로 zero-option 기존 canonical bytes는 유지한다. General requirement의 source
+lexical gate는 B01 RequirementsInput을 재사용하며 PEP 440/508 의미를 CUDA bounded parser로
+대체하지 않는다. 선택 roots는 포함 group을 한 번씩 방문하며, group 제외는 top-level 선택에
+적용한다. 포함된 group의 요구가 인라인으로 전개된 의미는 유지한다.
+
+새 scope/일반 requirement/intent replay와 legacy project 표적 첫9.328s는 바뀐 group/extra/marker를
+계속 unsupported로 기대한 기존 negative3 때문에 FAIL했다. Invalid group type으로 바꾸고 새
+valid-general source 시험을 추가한 후 artifact/sandbox 표적3.431s PASS다. 이것은 native 의미나
+검역·설치 완료가 아니다. `sandbox/uv_project_resolver.go:ResolveProjectLockUpdate`의 임시
+rich-input guard가 target metadata consumer 완성 전 반입을 거부한다. 새 UV CLI flag는 아직
+등록하지 않았고 group add/extra/marker·locked/frozen의 native 연결과 cache/원복은 MISSING이다.
+
+다음 연결의 구체 책임: native universal lock/portable export는 inactive marker와 version fork를
+보존한다. 고정 B01 PEP parser로 현재 target의 projection을 만들고, authenticated wheel metadata
+검증의 공통 부분을 기존 B01/새 UV 실제 소비자에서 재사용한다. Additive installation context나
+가짜 plan을 만들지 않는다. Options는 기존 intent에 두고 실제 target/metadata proof도 해당
+기록에 optional subsection으로 bind하여 native export 원문·검증 view와 구분한다. 기존6-control
+계약·zero-option encoding과 B01 전용 semantics, 4MiB/graph budget·runtime 유지보수를 보존한다.
+새 parser 허용은 graph/source/metadata binding과 cache readback까지 검증한 뒤에만 공개한다.
+임시 rich-input guard 제거는 B06 전체 완료 조건에 명시적으로 남긴다.
+
+
+B06 UV target/metadata 연결 후보(qualification OPEN): 기존 native wire를 명시적으로 읽고
+universal name+version identity와 source/graph를 검증한다. 원본 V2는 charset-normalizer의
+91개 wheel 대안 때문에 기존64 상한에서 거부된다. 원본을 줄이거나 상한을 늘리지 않고
+구조 전용 projection과 실제 over-budget 거부를 구분한다. 새 per-variant 검증을 전체-set
+공통 parser로 교정해 total wheels/aggregate download budget을 유지했다. 해당 universal
+표적10.252s PASS다. 이것은 원본 V2의 검역·설치 성공이 아니다.
+
+기존 B01의 archive metadata 수집·payload·graph 및 static readback 부분만 실제 두 소비자가
+공유한다. UV는 별도 additive context 없이 선택 root와 portable 조건을 고정 PEP parser에
+전달하며, 현재 target proof를 기존 intent의 optional subsection에 보존한다. 원본6-control과
+zero-option bytes는 유지한다. Resolver→static inspector→cache readback이 같은 proof를 읽고
+archive/metadata 변조를 거부한다. Native frozen은 lock 재해결을 생략하고 locked는 적합성을
+확인하며 둘 다 exact bytes 후조건을 둔다. CLI sync 선택은 bootstrap과 held guard까지 연결한다.
+
+첫 target build0.896s는 scratch inventory에 uv_project_export.go가 누락된 검증 입력 오류였다.
+목록을 보완한 실제 source 후속21.366s는 기존 public cache의 unheld seventh-control 거부 회귀를
+검출했다. 공개 validator의 exact6 조건을 복원하고 기존 adoption wrapper의 DATA readback과
+구분했다. 새 archive/static/cache metadata 변조·전체 용량 한도 및 B01 기존 회귀까지 포함한
+다섯 package20.662s PASS다. 실제 rich native·CLI/complete 검사/approval·rollback은 아직
+검증 전이며 source상 연결을 acceptance 완료로 확대하지 않는다.
+
+
+B06 UV actual 후속(whole qualification OPEN): v1 3.67s/5.573s와 v2 4.05s/5.825s의
+최초 실패는 native가 빈 group metadata를 보존하면서 edge table을 생략한 경우였다.
+실제 `empty` 원인과 직접3.145s RED 뒤 빈 선언만 허용하고 비어 있지 않은 group의 누락
+거부를 유지했다. 표적3.48s PASS 후 v3는 기본/포함/only/중첩 제외4개를 통과했으나
+six의 source Requires-Python 표기에서 중단했다(parent108.52s/operator110.313s).
+
+독립 공개 원본의 lock SHA256과 Simple hash·실제 archive를 대조한
+`b06-six-source-python-metadata.json`은 동일 조건의 comma 순서/주변 공백 차이를 확인했다.
+기존 general PEP 경로만 clause 전체 보존·정렬/주변 trim을 허용하고 native 문법/runtime
+검증을 유지했다. 내부 version 공백·누락/추가/다른 clause·hash/URL/yank 거부와 legacy
+비교 보존을 검증했다. 첫3.532s RED와 바뀐 표기를 계속 거부하던 기존 fixture의3.496s
+FAIL을 보존하고 fixture 의미 교정 후3.510s PASS다.
+
+v4b는 extra/all-extras/빈 group/locked/stale locked 거부/stale frozen6개를 통과했다.
+현재 기본 group을 변경한 frozen은 saved graph의 unreachable 검증이 거부했다
+(parent121.64s/operator123.554s). Native frozen은 old versions/edges를 유지하면서 현재
+선택/defaults를 사용하므로 roots만 이에 맞췄다. Portable marker가 requirements 파일에
+새 줄을 주입할 수 있던 candidate도 직접3.296s RED 뒤 기존 public positional lexical gate를
+재사용해 차단했으며 metadata/static/archive proof를 포함한3.42s PASS다.
+
+v5의 현재 frozen default는21.62s PASS지만 requests[socks]는 portable wheel `name`에서
+strict 거부였다(parent48.35s/operator50.249s). DATA v3은 realcorpus build tag 누락으로
+테스트0개였으며 원본 exit0를 검증 성공으로 쓰지 않는다(`v3-interpretation.json`).
+교정된 v3b는 actual parent1/5.64s·operator7.693s로 원본 lock/export를 보존했다.
+원본·hash inventory는 `b06-uv-options-data-v3b-files*`가 소유하며 temporary capture Go는
+raw source를 보존한 뒤 main/scratch에서 제거했다.
+
+정확한 v3 fixture의 offline3.952s RED는 PySocks URL basename과 별도로 UV가 정규화한
+wheel `name`을 기록함을 보였다. 두 export 소비자에 해당 field와 원본 package/filename,
+version/build/tag suffix의 exact 결합만 추가했다. URL·실제 filename·SHA는 바꾸지 않으며
+sdist name 확대는 허용하지 않는다. 원본/변형 거부·기존 requirements 표적3.612s PASS이고,
+새 v6의 dependency-extra는6 packages/27.66s(operator29.455s)·actual parent1/noSKIP,
+독립 archive/source/PEP graph·helperwait0·Host/Docker/빈 runtime을 확인했다.
+이 native 사례는 Policy나 Host 설치 완료가 아니다. 후속 public CLI와 기존 CI script 연결은
+아래에서 별도로 검증했다. 전체 grouped/final qualification은 계속 MISSING이다.
+
+B06 public CLI 후속: 첫 v1은 다섯 업무 사례가 통과한 뒤 빈 디렉터리까지 없어야 한다는
+시험 assertion에서 실패했다(parent176.47s/operator178.527s). 기존 retirement 계약은
+사용자 디렉터리를 보존하며 소유 파일만 제거한다. 제품 삭제 범위를 늘리지 않고 site 전체에
+패키지 파일·metadata·link가 남지 않는 assertion으로 바로잡았다. v2는 parent1/cases5,
+175.56s/operator177.482s PASS다. only-group·extra·stale frozen의 기존 version/lock 보존,
+stale locked 거부 시 target/control 전체 불변, 빈 선택의 기존 패키지 제거와 사용자 파일
+보존을 확인했다. 비어 있지 않은 선택은 새 run/Evidence·필수 검사·ALLOW·cache와
+published controls/SBOM까지 확인했고 빈 선택을 새 동적 검사 실행으로 표시하지 않았다.
+
+PNPM/Bun은 기존 CLI parent의 두 번째 설치에 명시 `--frozen-lockfile`과 lock bytes
+불변 assertion을 연결했다. 첫 v1 5.352s는 고정 native 공급 부재로 설치 전 실패했다.
+기존 lock URL/hash와 canonical materializer로 준비하고 private mount namespace에서만
+공급한 v2는 parents2/flag cases2, Bun109.26s·PNPM93.04s/operator204.373s PASS다.
+기존 add/update·adoption 거부·fresh records/ownership·root scripts 미실행도 보존했다.
+두 public CLI 실행은 noSKIP/helperwait0·빈 observer/policy runtime·Host/Docker 불변이며
+실제 Host `/usr/lib/heliopause` 설치는 생성하지 않았다.
+
+최종 후보의 Quick383.200s와 security26.393s는 source 불변 PASS다. 앞서 docs0.463s와
+workflow1.868s도 PASS였으며 새 native/CLI parent와 case census는 기존 UV CI 경로에
+연결했다. 영향받는 일곱 package Race311.623s도 source 불변 PASS다. 최종 문서 receipt는 별도로 남긴다. 이 로컬 근거를
+단일 current native12 전체 실행이나 hosted/final 완료로 확대하지 않는다. 완료된 시험의
+보호 사본·native 다운로드/공급 파일은 신원/hash·실행 참조 부재 확인 후 삭제했다.
+상세 원본은 `goal-implementation-20261101/b06-*` receipt가 소유한다.
+
+B06 로컬 checkpoint의 네 상태·실제 source 지문·원본 receipt/hash와 남은 범위는
+[UV selection 결과](./uv-project-selection-local-20261102.json)에 연결한다. 다음 로컬 단위는 B07이며
+CI를 새로 실행하거나 설치본을 교체하지 않았다.

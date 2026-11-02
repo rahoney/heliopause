@@ -32,7 +32,7 @@ func (s *uvProjectService) Apply(ctx context.Context, install domain.InstallCont
 	return s.workflow.Apply(ctx, install)
 }
 
-func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool) (*uvProjectService, error) {
+func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool, selection ...artifactpypi.UVProjectSelection) (*uvProjectService, error) {
 	operation, err := domain.NewOperationID()
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.U
 	if err != nil {
 		return nil, err
 	}
-	preparation, err := promotion.NewUVProjectPreparation(b.promoter, b.resolver, root, intent, selector, adopt, []string{b.intakeRoot, b.evidenceRoot, b.cacheRoot})
+	preparation, err := promotion.NewUVProjectPreparation(b.promoter, b.resolver, root, intent, selector, adopt, []string{b.intakeRoot, b.evidenceRoot, b.cacheRoot}, selection...)
 	if err != nil {
 		return nil, err
 	}

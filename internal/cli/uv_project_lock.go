@@ -117,7 +117,30 @@ func readUVProjectSource(command *cobra.Command, intent artifactpypi.UVProjectIn
 	if err != nil {
 		return "", input, err
 	}
-	input, err = artifactpypi.ParseUVProjectInput(manifest.Body(), lock.Body(), lock.Present(), intent, selector)
+	selection := artifactpypi.UVProjectSelection{}
+	if command.Name() == "sync" {
+		for name, destination := range map[string]*[]string{"group": &selection.Groups, "only-group": &selection.OnlyGroups, "no-group": &selection.NoGroups, "extra": &selection.Extras} {
+			values, err := command.Flags().GetStringArray(name)
+			if err != nil {
+				return "", input, err
+			}
+			if command.Flags().Changed(name) && len(values) == 0 {
+				return "", input, errors.New("UV group and extra selections must not be empty")
+			}
+			*destination = values
+		}
+		for name, destination := range map[string]*bool{"all-extras": &selection.AllExtras, "locked": &selection.Locked, "frozen": &selection.Frozen} {
+			value, err := command.Flags().GetBool(name)
+			if err != nil {
+				return "", input, err
+			}
+			if command.Flags().Changed(name) && !value {
+				return "", input, errors.New("UV selection flags must not explicitly disable themselves")
+			}
+			*destination = value
+		}
+	}
+	input, err = artifactpypi.ParseUVProjectInput(manifest.Body(), lock.Body(), lock.Present(), intent, selector, selection)
 	if err != nil {
 		return "", input, err
 	}

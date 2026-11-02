@@ -52,8 +52,9 @@ func TestPNPMProjectCLIIntegration(t *testing.T) {
 			if err := os.WriteFile(note, []byte("preserve user file\n"), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			apply := func(operation, selector string, adopt bool) {
+			apply := func(operation, selector string, adopt bool, flags ...string) {
 				args := []string{"--lang", "ko", "--output", "json", "pnpm", operation, "--target", target}
+				args = append(args, flags...)
 				if adopt {
 					args = append(args, "--adopt")
 				}
@@ -145,7 +146,21 @@ func TestPNPMProjectCLIIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			apply("install", "", false)
+			if fixture.entries > 0 {
+				lockPath := filepath.Join(target, "pnpm-lock.yaml")
+				before, err := os.ReadFile(lockPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				apply("install", "", false, "--frozen-lockfile")
+				after, err := os.ReadFile(lockPath)
+				if err != nil || !bytes.Equal(before, after) {
+					t.Fatal("explicit frozen CLI changed lock bytes", err)
+				}
+				t.Logf("actual_frozen_lockfile=PASS client=pnpm fixture=%s", fixture.name)
+			} else {
+				apply("install", "", false)
+			}
 			controlAfter, err := os.Lstat(manifest)
 			if err != nil || !os.SameFile(controlBefore, controlAfter) || controlAfter.Mode() != 0o600 {
 				t.Fatal("CLI repeat changed original control inode/mode", err)

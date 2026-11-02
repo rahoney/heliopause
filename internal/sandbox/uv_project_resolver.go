@@ -142,8 +142,25 @@ func (r *UVProjectResolver) ResolveProjectLockUpdate(ctx context.Context, instal
 		return domain.ProjectDependencyUpdate{}, err
 	}
 	var snapshot domain.ProjectDependencySnapshot
-	err = r.native.reader.withPythonArchiveInputs(ctx, wheels, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.native.reader.withPythonArchiveInputs(ctx, wheels, true, func(ctx context.Context, container string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var err error
+		if export.NeedsMetadataProjection() {
+			export, err = export.BindTargetMetadata(inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits(), func(body []byte) ([]byte, error) {
+				return r.native.reader.validateRequirementsMetadataInSession(ctx, container, body)
+			})
+			if err != nil {
+				return err
+			}
+			intent, err := export.IntentControl()
+			if err != nil {
+				return err
+			}
+			for i := range selected {
+				if selected[i].Name() == intent.Name() {
+					selected[i] = intent
+				}
+			}
+		}
 		snapshot, err = export.BindProject(install, selected, inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits())
 		return err
 	})
@@ -178,8 +195,13 @@ func (r *UVProjectResolver) materializeProject(ctx context.Context, input artifa
 	}
 	lockArgs = append(lockArgs, common...)
 	lockArgs = append(lockArgs, "--no-sources")
-	if _, err := reader.runner.Output(ctx, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, append([]string{uvToolGuestPath}, lockArgs...)...)...); err != nil {
-		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, uvReaderFailure{"native UV project selection failed", err}
+	if input.Selection().Locked {
+		lockArgs = append(lockArgs, "--locked")
+	}
+	if !input.Selection().Frozen {
+		if _, err := reader.runner.Output(ctx, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, append([]string{uvToolGuestPath}, lockArgs...)...)...); err != nil {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, uvReaderFailure{"native UV project selection failed", err}
+		}
 	}
 	manifest, err := readUVProjectControl(ctx, reader.runner, session.container, artifactpypi.UVProjectInputControl)
 	if err != nil {
@@ -194,11 +216,29 @@ func (r *UVProjectResolver) materializeProject(ctx context.Context, input artifa
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
 	}
+	if input.Selection().Locked || input.Selection().Frozen {
+		original, present := input.NativeLock()
+		if !present || !bytes.Equal(original, lockBody) {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, errors.New("UV fixed lock bytes changed")
+		}
+	}
 	lock, err := artifactpypi.ParseUVNativeProjectLock(selectedInput, lockBody)
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
 	}
-	args := append([]string{"export", "--format", "pylock.toml", "--frozen", "--no-emit-project", "--no-default-groups", "--output-file", uvNativeProjectRoot + "/pylock.toml"}, common...)
+	args := append([]string{"export", "--format", "pylock.toml", "--frozen", "--no-emit-project", "--output-file", uvNativeProjectRoot + "/pylock.toml"}, common...)
+	selection := input.Selection()
+	for _, flag := range []struct {
+		name   string
+		values []string
+	}{{"--group", selection.Groups}, {"--only-group", selection.OnlyGroups}, {"--no-group", selection.NoGroups}, {"--extra", selection.Extras}} {
+		for _, value := range flag.values {
+			args = append(args, flag.name, value)
+		}
+	}
+	if selection.AllExtras {
+		args = append(args, "--all-extras")
+	}
 	if _, err := reader.runner.Output(ctx, "docker", boundaryExecArguments(session.container, boundaryLaunchMode, append([]string{uvToolGuestPath}, args...)...)...); err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, uvReaderFailure{"native UV project export failed", err}
 	}
@@ -209,6 +249,25 @@ func (r *UVProjectResolver) materializeProject(ctx context.Context, input artifa
 	export, err := lock.ParseTargetExport(exportBody)
 	if err != nil {
 		return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+	}
+	if export.NeedsMetadataProjection() {
+		projection, err := export.ProjectionInput()
+		if err != nil {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+		}
+		var native artifactpypi.RequirementsNativeInput
+		err = reader.withPythonResolverSourceSession(ctx, reader.profile.Source(), func(ctx context.Context, container string, _ PythonRuntime) error {
+			var err error
+			native, err = reader.parseRequirementsInSession(ctx, container, projection)
+			return err
+		})
+		if err != nil {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+		}
+		export, err = export.ProjectTarget(native.Body())
+		if err != nil {
+			return artifactpypi.UVProjectExport{}, uvNativeOutput{}, err
+		}
 	}
 	if input.Intent() == artifactpypi.UVProjectAdd {
 		if err := input.ValidateAddSelection(selectedInput, export.Packages()); err != nil {

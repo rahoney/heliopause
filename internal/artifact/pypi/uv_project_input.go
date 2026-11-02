@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -33,18 +34,27 @@ type UVProjectInput struct {
 	lockPresent      bool
 	intent           UVProjectIntent
 	selector         string
+	selection        UVProjectSelection
+	rich             bool
+	rawRequirements  []string
+	optional         map[string][]string
+	groups           map[string]uvProjectGroup
+	defaultGroups    []string
 }
 
 type uvProjectInputWire struct {
+	Groups  map[string][]any `toml:"dependency-groups"`
 	Project *struct {
-		Name         string    `toml:"name"`
-		Version      string    `toml:"version"`
-		Python       string    `toml:"requires-python"`
-		Dependencies *[]string `toml:"dependencies"`
+		Name                 string              `toml:"name"`
+		Version              string              `toml:"version"`
+		Python               string              `toml:"requires-python"`
+		Dependencies         *[]string           `toml:"dependencies"`
+		OptionalDependencies map[string][]string `toml:"optional-dependencies"`
 	} `toml:"project"`
 	Tool *struct {
 		UV *struct {
-			Package *bool `toml:"package"`
+			Package       *bool `toml:"package"`
+			DefaultGroups any   `toml:"default-groups"`
 		} `toml:"uv"`
 	} `toml:"tool"`
 }
@@ -52,9 +62,26 @@ type uvProjectInputWire struct {
 // ParseUVProjectInput accepts the first reviewed virtual-project subset. No
 // target interpreter, local build, configuration discovery or native execution
 // occurs here. Unknown fields fail closed before any native command.
-func ParseUVProjectInput(body, lock []byte, lockPresent bool, intent UVProjectIntent, selector string) (UVProjectInput, error) {
+func ParseUVProjectInput(body, lock []byte, lockPresent bool, intent UVProjectIntent, selector string, selection ...UVProjectSelection) (UVProjectInput, error) {
 	if !validUVProjectText(body, false) || !validUVProjectText(lock, !lockPresent) || !lockPresent && len(lock) != 0 {
 		return UVProjectInput{}, errors.New("UV project controls are absent, invalid or exceed bounds")
+	}
+	if len(selection) > 1 {
+		return UVProjectInput{}, errors.New("UV project requires one selection request")
+	}
+	scope := UVProjectSelection{}
+	if len(selection) == 1 {
+		scope = selection[0]
+	}
+	scope, scopeErr := canonicalUVProjectSelection(scope)
+	if scopeErr != nil {
+		return UVProjectInput{}, scopeErr
+	}
+	if (scope.Locked || scope.Frozen) && !lockPresent {
+		return UVProjectInput{}, errors.New("UV locked or frozen selection requires an existing lock")
+	}
+	if intent != UVProjectSync && !scope.empty() {
+		return UVProjectInput{}, errors.New("UV selection options currently require sync")
 	}
 	var wire uvProjectInputWire
 	if err := toml.NewDecoder(bytes.NewReader(body)).DisallowUnknownFields().Decode(&wire); err != nil {
@@ -73,12 +100,23 @@ func ParseUVProjectInput(body, lock []byte, lockPresent bool, intent UVProjectIn
 	if len(dependencies) > PublicPyPIProfile().ResourcePolicy().MaxGraphArtifacts() {
 		return UVProjectInput{}, errors.New("UV project dependency set exceeds bounds")
 	}
-	result := UVProjectInput{project: project, version: version, body: append([]byte(nil), body...), lock: append([]byte(nil), lock...), lockPresent: lockPresent, intent: intent}
+	result := UVProjectInput{project: project, version: version, body: append([]byte(nil), body...), lock: append([]byte(nil), lock...), lockPresent: lockPresent, intent: intent, selection: scope}
+	if err := result.readScope(wire); err != nil {
+		return UVProjectInput{}, err
+	}
 	seen := map[string]bool{}
 	for _, value := range dependencies {
 		requirement, err := parseUVProjectRequirement(value)
-		if err != nil || requirement.Project() == project || seen[requirement.Project()] {
-			return UVProjectInput{}, errors.New("UV project dependency is unsupported, repeated or self-referencing")
+		if err != nil {
+			name, sourceErr := uvProjectPublicRequirementName(value)
+			if sourceErr != nil || name == project {
+				return UVProjectInput{}, errors.New("UV project dependency is unsupported or self-referencing")
+			}
+			result.rich = true
+			continue
+		}
+		if requirement.Project() == project || seen[requirement.Project()] {
+			return UVProjectInput{}, errors.New("UV project dependency is repeated or self-referencing")
 		}
 		seen[requirement.Project()] = true
 		result.requirements = append(result.requirements, requirement)
@@ -131,7 +169,7 @@ func (p UVProjectInput) SelectManifest(body []byte) (UVProjectInput, error) {
 	if !p.Valid() {
 		return UVProjectInput{}, errors.New("UV original project is unavailable")
 	}
-	after, err := ParseUVProjectInput(body, p.lock, p.lockPresent, p.intent, p.selector)
+	after, err := ParseUVProjectInput(body, p.lock, p.lockPresent, p.intent, p.selector, p.selection)
 	if err != nil {
 		return UVProjectInput{}, err
 	}
@@ -160,6 +198,37 @@ func (p UVProjectInput) SelectManifest(body []byte) (UVProjectInput, error) {
 	selector, err := parseUVProjectRequirement(p.selector)
 	if err != nil {
 		return UVProjectInput{}, err
+	}
+	// Native add may change only its requested dependency. Preserve all general
+	// marker/extra clauses too; the bounded compatibility view omits them.
+	unrelated := func(values []string) ([]byte, error) {
+		result := []string{}
+		for _, value := range values {
+			name, err := uvProjectPublicRequirementName(value)
+			if err != nil {
+				return nil, err
+			}
+			if name == selector.Project() {
+				if _, err := parseUVProjectRequirement(value); err != nil {
+					return nil, errors.New("UV add cannot replace an existing conditional dependency")
+				}
+				continue
+			}
+			if requirement, err := parseUVProjectRequirement(value); err == nil {
+				value = uvProjectRequirementKey(requirement)
+			}
+			result = append(result, value)
+		}
+		sort.Strings(result)
+		return json.Marshal(result)
+	}
+	beforeRequirements, err := unrelated(p.rawRequirements)
+	if err != nil {
+		return UVProjectInput{}, err
+	}
+	afterRequirements, err := unrelated(after.rawRequirements)
+	if err != nil || !bytes.Equal(beforeRequirements, afterRequirements) {
+		return UVProjectInput{}, errors.New("native UV add changed an unrelated general requirement")
 	}
 	before := map[string]UpgradeRequirement{}
 	selected := map[string]UpgradeRequirement{}
@@ -240,19 +309,26 @@ func (p UVProjectInput) ValidateAddSelection(after UVProjectInput, packages []UV
 }
 
 type uvProjectIntentWire struct {
-	Version  int             `json:"version"`
-	Intent   UVProjectIntent `json:"intent"`
-	Selector string          `json:"selector"`
-	UV       string          `json:"uv_version"`
-	Python   string          `json:"python_version"`
-	ToolHash string          `json:"uv_tool_sha256"`
+	Version   int                  `json:"version"`
+	Intent    UVProjectIntent      `json:"intent"`
+	Selector  string               `json:"selector"`
+	UV        string               `json:"uv_version"`
+	Python    string               `json:"python_version"`
+	ToolHash  string               `json:"uv_tool_sha256"`
+	Selection *UVProjectSelection  `json:"selection,omitempty"`
+	Target    *uvProjectTargetWire `json:"target,omitempty"`
 }
 
 func (p UVProjectInput) Controls() ([]domain.ProjectControlFile, error) {
 	if !p.Valid() {
 		return nil, errors.New("UV project input is unavailable")
 	}
-	body, err := json.Marshal(uvProjectIntentWire{1, p.intent, p.selector, runtimeidentity.UVVersion, runtimeidentity.PythonVersion, runtimeidentity.UVToolSHA256})
+	var scope *UVProjectSelection
+	if !p.selection.empty() {
+		copy := p.selection.clone()
+		scope = &copy
+	}
+	body, err := json.Marshal(uvProjectIntentWire{Version: 1, Intent: p.intent, Selector: p.selector, UV: runtimeidentity.UVVersion, Python: runtimeidentity.PythonVersion, ToolHash: runtimeidentity.UVToolSHA256, Selection: scope})
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +373,11 @@ func ParseUVProjectControls(controls []domain.ProjectControlFile) (UVProjectInpu
 	if json.Unmarshal(byName[UVProjectIntentControl].Body(), &wire) != nil {
 		return UVProjectInput{}, errors.New("UV project intent is invalid")
 	}
-	result, err := ParseUVProjectInput(byName[UVProjectInputControl].Body(), byName[UVNativeLockControl].Body(), byName[UVNativeLockControl].Present(), wire.Intent, wire.Selector)
+	scope := UVProjectSelection{}
+	if wire.Selection != nil {
+		scope = *wire.Selection
+	}
+	result, err := ParseUVProjectInput(byName[UVProjectInputControl].Body(), byName[UVNativeLockControl].Body(), byName[UVNativeLockControl].Present(), wire.Intent, wire.Selector, scope)
 	if err != nil {
 		return UVProjectInput{}, err
 	}

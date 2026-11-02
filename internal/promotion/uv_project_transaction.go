@@ -36,7 +36,7 @@ func (p *uvProjectFileTransaction) close(recovery bool) error {
 	return errors.Join(p.guard.verify(), p.guard.file.Close(), p.guard.root.Close())
 }
 
-func freezeUVProjectFiles(ctx context.Context, tx *pypiVenvTransaction, root string, intent artifactpypi.UVProjectIntent, selector string, trustedRoots []string) (_ artifactpypi.UVProjectInput, resultErr error) {
+func freezeUVProjectFiles(ctx context.Context, tx *pypiVenvTransaction, root string, intent artifactpypi.UVProjectIntent, selector string, trustedRoots []string, selection ...artifactpypi.UVProjectSelection) (_ artifactpypi.UVProjectInput, resultErr error) {
 	if ctx == nil || tx == nil || tx.project != nil || len(trustedRoots) == 0 || !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" {
 		return artifactpypi.UVProjectInput{}, errors.New("UV project requires one guarded canonical source")
 	}
@@ -92,7 +92,7 @@ func freezeUVProjectFiles(ctx context.Context, tx *pypiVenvTransaction, root str
 		}
 		bodies[i], snapshots[i] = body, &snapshot
 	}
-	input, err := artifactpypi.ParseUVProjectInput(bodies[0], bodies[1], snapshots[1] != nil, intent, selector)
+	input, err := artifactpypi.ParseUVProjectInput(bodies[0], bodies[1], snapshots[1] != nil, intent, selector, selection...)
 	if err != nil {
 		return artifactpypi.UVProjectInput{}, err
 	}

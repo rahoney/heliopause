@@ -2,6 +2,8 @@ package pypi
 
 import (
 	"bytes"
+	"errors"
+	"github.com/pelletier/go-toml/v2"
 	"os"
 	"strings"
 	"testing"
@@ -183,5 +185,74 @@ func TestUVProjectExportRejectsMetadataSourceAndSelectionTampering(t *testing.T)
 	}
 	if _, err := (UVProjectExport{}).SelectInstalledWheelControls(nil, WheelTarget{}); err == nil {
 		t.Fatal("zero export selected installed census")
+	}
+}
+
+func TestUVProjectActualDependencyExtraExportSchema(t *testing.T) {
+	read := func(name string) []byte {
+		t.Helper()
+		body, err := os.ReadFile("testdata/uv-project-options-native/v3/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return body
+	}
+	fail := func(stage string, err error) {
+		t.Helper()
+		var missing *toml.StrictMissingError
+		if errors.As(err, &missing) {
+			t.Fatal(stage, missing.String())
+		}
+		t.Fatal(stage, err)
+	}
+	input, err := ParseUVProjectInput(read("pyproject.toml"), nil, false, UVProjectSync, "")
+	if err != nil {
+		fail("manifest", err)
+	}
+	native, err := ParseUVNativeProjectLock(input, read("uv.lock"))
+	if err != nil {
+		fail("native", err)
+	}
+	export, err := native.ParseTargetExport(read("default.pylock.toml"))
+	if err != nil {
+		fail("portable", err)
+	}
+	if !export.NeedsMetadataProjection() {
+		t.Fatal("dependency extra lost its metadata consumer")
+	}
+	if _, err := export.ProjectionInput(); err != nil {
+		fail("projection", err)
+	}
+}
+
+func TestUVProjectExportWheelNameCannotChangeNativeArchiveIdentity(t *testing.T) {
+	inputBody, err := os.ReadFile("testdata/uv-project-options-native/v3/pyproject.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lockBody, err := os.ReadFile("testdata/uv-project-options-native/v3/uv.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	exportBody, err := os.ReadFile("testdata/uv-project-options-native/v3/default.pylock.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := ParseUVProjectInput(inputBody, nil, false, UVProjectSync, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	native, err := ParseUVNativeProjectLock(input, lockBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"other-1.7.1-py3-none-any.whl", "pysocks-1.7.2-py3-none-any.whl", "pysocks-1.7.1-1-py3-none-any.whl", "pysocks-1.7.1-cp314-none-any.whl", "../pysocks-1.7.1-py3-none-any.whl"} {
+		changed := bytes.Replace(exportBody, []byte(`name = "pysocks-1.7.1-py3-none-any.whl"`), []byte(`name = "`+name+`"`), 1)
+		if bytes.Equal(changed, exportBody) {
+			t.Fatal("name substitution did not reach the native fixture")
+		}
+		if _, err := native.ParseTargetExport(changed); err == nil {
+			t.Fatal("export name changed archive identity", name)
+		}
 	}
 }

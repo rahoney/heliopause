@@ -62,6 +62,29 @@ for (name in expected) if (seen["pip/" name]!=1 || seen["uv/" name]!=1) exit 1
 exit 0
 fi`
 
+const uvProjectScopeNativeCIScope = `(
+cd internal/sandbox
+HELOX_UV_PROJECT_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestUVProjectSelectionOptionsIntegration$' | tee "$RUNNER_TEMP/uv-project-scope.log"
+)
+awk '
+/no tests to run|^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS: TestUVProjectSelectionOptionsIntegration [(]/ { parents++ }
+/actual_uv_scope=/ { selected++ }
+/stale_locked=REFUSED/ { refused++ }
+END { if (parents!=1 || selected!=11 || refused!=1 || bad) exit 1 }
+' "$RUNNER_TEMP/uv-project-scope.log"`
+
+const uvProjectScopeCLICIScope = `(
+cd internal/bootstrap
+HELOX_UV_SYNC_CLI_INTEGRATION=1 HELOX_UV_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxUVProjectSelectionCLIIntegration$' | tee "$RUNNER_TEMP/uv-project-scope-cli.log"
+)
+awk '
+/no tests to run|^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS: TestLinuxUVProjectSelectionCLIIntegration [(]/ { parents++ }
+/actual_uv_scope_cli=PASS case=/ { cases++ }
+END { if (parents!=1 || cases!=5 || bad) exit 1 }
+' "$RUNNER_TEMP/uv-project-scope-cli.log"`
+
 func validateUVToolsScript(contents string) []string {
 	counts := map[string]int{}
 	var active []string
@@ -90,7 +113,7 @@ func validateUVToolsScript(contents string) []string {
 	if strings.Count(joined, pythonRequirementsCIScope) != 1 {
 		findings = append(findings, "requirements CI needs its protected tagged client, complete pip/UV cases and no-SKIP result guard")
 	}
-	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, uvRunSupplementalSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-cli ]]; then", pipxRunCLICommand, "else", uvRunCLICommand, uvRunSupplementalCLICommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-workflow ]]; then", pipxRunWorkflowCommand, "else", uvRunWorkflowCommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
+	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, uvRunSupplementalSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-cli ]]; then", pipxRunCLICommand, "else", uvRunCLICommand, uvRunSupplementalCLICommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", uvProjectScopeNativeCIScope, "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-workflow ]]; then", pipxRunWorkflowCommand, "else", uvRunWorkflowCommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", uvProjectScopeCLICIScope, "fi"}} {
 		if strings.Count(joined, strings.Join(scope, "\n")) != 1 {
 			findings = append(findings, "UV tools consumer requires its package and owned data cleanup scope")
 		}

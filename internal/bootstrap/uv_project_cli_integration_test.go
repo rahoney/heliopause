@@ -4,9 +4,14 @@ package bootstrap_test
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -156,4 +161,189 @@ func TestLinuxUVProjectCLIIntegration(t *testing.T) {
 		t.Fatal("unowned original changed", err)
 	}
 	t.Log("actual_uv_project_cli=PASS unowned original UPDATE_ADOPTION_REQUIRED; no implicit adoption")
+}
+
+func TestLinuxUVProjectSelectionCLIIntegration(t *testing.T) {
+	if os.Getenv("HELOX_UV_PROJECT_CLI_INTEGRATION") != "1" {
+		t.Skip("requires authenticated pinned UV project CLI environment")
+	}
+	ctx, root, cache, oldVenv := uvSyncActualEnvironment(t)
+	project := filepath.Join(root, "project")
+	if err := os.Mkdir(project, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	venv := filepath.Join(project, ".venv")
+	if err := os.Rename(oldVenv, venv); err != nil {
+		t.Fatal(err)
+	}
+	manifest := filepath.Join(project, "pyproject.toml")
+	body := []byte("[project]\nname='haa-cli-selection'\nversion='0.1.0'\nrequires-python='==" + sandbox.PinnedPythonRuntime().PythonVersion + "'\ndependencies=[\"packaging==25.0; sys_platform == 'linux'\"]\n[project.optional-dependencies]\nnet=['idna==3.10']\n[dependency-groups]\ndev=['six==1.17.0']\nempty=[]\n[tool.uv]\npackage=false\n")
+	if err := os.WriteFile(manifest, body, 0o640); err != nil {
+		t.Fatal(err)
+	}
+	note := filepath.Join(venv, "user-note")
+	if err := os.WriteFile(note, []byte("preserve user data"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	apply := func(name string, expected []string, flags ...string) uvSyncActualReport {
+		t.Helper()
+		args := append([]string{"--lang", "ko", "--output", "json", "uv", "sync", "--project", project}, flags...)
+		var out, diagnostic bytes.Buffer
+		if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
+			t.Fatalf("actual UV scope %s failed: %v stdout=%s diagnostics=%s", name, err, out.String(), diagnostic.String())
+		}
+		var report uvSyncActualReport
+		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.project-update-result/v1" || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || report.Verified.Manifest == "" || report.Verified.Count != len(expected) || len(report.Entries) != len(expected) || report.DependencyFree != (len(expected) == 0) {
+			t.Fatal("incomplete scope report", out.String())
+		}
+		actual := []string{}
+		for _, entry := range report.Entries {
+			if seen[entry.Run] || entry.Run == "" || len(entry.Checks) < 3 || len(entry.Evidence) < 3 {
+				t.Fatal("scope skipped fresh inspection")
+			}
+			seen[entry.Run] = true
+			for _, check := range entry.Checks {
+				if check.Required && check.Status != "COMPLETED" {
+					t.Fatal("scope required check incomplete")
+				}
+			}
+			actual = append(actual, entry.Identity.Name)
+			if entry.Identity.Name == "packaging" && entry.Identity.Version != "25.0" {
+				t.Fatal("frozen silently resolved current manifest version")
+			}
+		}
+		sort.Strings(actual)
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("scope %s selected %v want %v", name, actual, expected)
+		}
+		payload := actualUVSyncPayload(t, cache, report)
+		document, err := os.ReadFile(filepath.Join(payload, "manifest.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var records struct {
+			Controls []struct {
+				Name    string
+				Content []byte
+			} `json:"project_controls"`
+		}
+		if json.Unmarshal(document, &records) != nil || len(records.Controls) != 6 {
+			t.Fatal("scope provenance missing")
+		}
+		targetProof := false
+		for _, control := range records.Controls {
+			if control.Name == "pyproject.toml" || control.Name == "uv.lock" {
+				current, err := os.ReadFile(filepath.Join(project, control.Name))
+				if err != nil || !bytes.Equal(current, control.Content) {
+					t.Fatal("scope published control differs from approval", err)
+				}
+			}
+			if control.Name == "uv-project-intent.json" {
+				var intent struct {
+					Target *struct{ Projection, Graph []byte }
+				}
+				if json.Unmarshal(control.Content, &intent) != nil || intent.Target == nil || len(intent.Target.Projection) == 0 || len(intent.Target.Graph) == 0 {
+					t.Fatal("scope target proof missing")
+				}
+				targetProof = true
+			}
+		}
+		if !targetProof {
+			t.Fatal("scope intent missing")
+		}
+		if current, err := os.ReadFile(note); err != nil || string(current) != "preserve user data" {
+			t.Fatal("scope changed user data", err)
+		}
+		t.Logf("actual_uv_scope_cli=PASS case=%s entries=%d fresh_checks=%t manifest=%s", name, len(expected), len(expected) > 0, report.Verified.Manifest)
+		return report
+	}
+	apply("only-group", []string{"six"}, "--only-group", "dev")
+	apply("extra", []string{"idna", "packaging", "six"}, "--extra", "net")
+	lockPath := filepath.Join(project, "uv.lock")
+	lock, err := os.ReadFile(lockPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	edited := bytes.ReplaceAll(body, []byte("packaging==25.0"), []byte("packaging==24.2"))
+	if err := os.WriteFile(manifest, edited, 0o640); err != nil {
+		t.Fatal(err)
+	}
+	apply("stale-frozen", []string{"idna", "packaging", "six"}, "--frozen", "--extra", "net")
+	if current, err := os.ReadFile(lockPath); err != nil || !bytes.Equal(current, lock) {
+		t.Fatal("frozen CLI rewrote lock", err)
+	}
+	// Compare the complete small target before the native freshness refusal.
+	snapshot := func() map[string]string {
+		result := map[string]string{}
+		err := filepath.WalkDir(venv, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			relative, err := filepath.Rel(venv, path)
+			if err != nil {
+				return err
+			}
+			info, err := entry.Info()
+			if err != nil {
+				return err
+			}
+			value := fmt.Sprint(info.Mode())
+			if info.Mode().IsRegular() {
+				body, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				value += fmt.Sprintf("/%x", sha256.Sum256(body))
+			} else if info.Mode()&os.ModeSymlink != 0 {
+				target, err := os.Readlink(path)
+				if err != nil {
+					return err
+				}
+				value += "/" + target
+			} else if !info.IsDir() {
+				return fmt.Errorf("unexpected target entry %s", relative)
+			}
+			result[relative] = value
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return result
+	}
+	before := snapshot()
+	var out, diagnostic bytes.Buffer
+	err = bootstrap.Run(ctx, []string{"--lang", "ko", "--output", "json", "uv", "sync", "--project", project, "--locked", "--extra", "net"}, &out, &diagnostic)
+	var refused struct {
+		Status string `json:"operation_status"`
+	}
+	if err == nil || json.Unmarshal(out.Bytes(), &refused) != nil || refused.Status == "COMPLETED" {
+		t.Fatal("stale locked CLI accepted", err, out.String(), diagnostic.String())
+	}
+	if !reflect.DeepEqual(before, snapshot()) {
+		t.Fatal("stale locked CLI changed target")
+	}
+	if current, err := os.ReadFile(manifest); err != nil || !bytes.Equal(current, edited) {
+		t.Fatal("stale locked CLI changed manifest", err)
+	}
+	if current, err := os.ReadFile(lockPath); err != nil || !bytes.Equal(current, lock) {
+		t.Fatal("stale locked CLI changed lock", err)
+	}
+	t.Log("actual_uv_scope_cli=PASS case=stale-locked refused=true target_unchanged=true")
+	apply("empty-only", []string{}, "--frozen", "--only-group", "empty")
+	site := filepath.Join(venv, "lib", "python3.14", "site-packages")
+	// Empty parent directories are retained by the existing ownership contract.
+	// Every site file in this initially empty fixture came from the selected wheels.
+	if err := filepath.WalkDir(site, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !entry.IsDir() {
+			return fmt.Errorf("empty group retained a package file or link: %s", path)
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
 }

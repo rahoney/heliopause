@@ -312,10 +312,23 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 | 구문 | `helox uv add <name-or-requirement>`, `helox uv sync`, `helox uv lock --upgrade` |
 | 경로 | `--project` 또는 cwd. Add/sync는 --target 또는 project/.venv의 기존 venv이며 explicit target이 VIRTUAL_ENV보다 우선. Lock --upgrade는 project controls만 대상으로 하고 venv를 요구하지 않음 |
 | 입력 | 단일 virtual pyproject/public PyPI wheel; bare 또는 PEP508 bounded version 조건; 이전 lock의 virtual root identity/Python 계약을 유지한 direct-dependency 편집 뒤 public uv.lock을 남긴 채 sync 가능 |
+| Sync 선택 | `--group`/`--only-group`/`--no-group`, `--extra`/`--all-extras`, `--locked`/`--frozen`. 반복 group/extra는 합치며 존재하지 않는 선택·빈 값·상충 조합·필요한 lock 부재를 거부. Add의 bounded selector와 lock --upgrade 구문은 유지 |
 | 반영 | current 전체 검사·Evidence·Policy 후 add/sync는 manifest/native lock/소유 환경 파일을 함께 commit·rollback; 같은 버전도 재검사; 명시 empty는 소유 파일을 제거하고 사용자 파일 보존. Lock --upgrade는 기존 uv.lock만 반영하고 manifest와 환경 보존 |
 | 출력 | `--output human/json`; auto는 terminal 여부를 따름. 성공 후 실제 Manifest/SBOM 참조 |
 | 실행 조건 | Linux amd64/fixed UV·Python 검사 runtime. Add/sync는 기존 venv와 HAA 소유권 또는 명시 --adopt의 native UV 전체 인증 필요. Lock --upgrade는 기존 supported public uv.lock 필요; --target/adopt는 지원하지 않음 |
 | 남은 acceptance | persistent tools/최종 profile qualification; 임의 native 옵션과 runtime provisioning은 이 installed lane에 없음 |
+
+B06 source 후보의 sync는 public dependency group/extra·PEP marker를 고정 native parser와
+인증된 wheel metadata에 결합한다. 기본 dev 또는 설정된 default group을 포함하며 only-group은
+프로젝트와 기본 선택을 제외한다. No-group은 최상위 선택에 우선하며 포함 group 안에 인라인된
+요구는 유지한다. Group+only-group, only-group+extra/all-extras, locked+frozen은 거부한다.
+Locked는 현재 manifest 적합성을 확인하고 원본 lock bytes를 유지한다. Frozen은 기존 lock의
+versions/edges를 다시 해결하지 않으면서 현재 group/extra/default 선택을 적용한다.
+Universal lock/portable export의 비활성 조건·다중 version은 그대로 보존하고 현재 target의
+선택 전체만 새로 검역한다. 선택·metadata proof는 기존 intent에 기록하며 기존6-control과
+zero-option original encoding, source/archive·예산·소유권·원복 경계는 유지한다.
+현재 후보의 local native와 public CLI/hosted/final 검증 상태는 [Queue](../planning/02-current-work-queue.md)가
+소유하며 installed binary나 공개 release의 갱신 완료를 뜻하지 않는다.
 
 [P4-J native adoption](../planning/evidence/package-client-quarantine/p4j-uv-project-adoption-local-20261026.json)은 고정 native UV 공개 wheel 설치 전체의 명시 `--adopt`를 add/sync에 연결한다. Unselected 원본도 authentic old wheel과 대조하며 generated scripts/compiled caches/cross-scheme 출력·unknown source는 인계하지 않는다. Current 선택 전체는 다시 검사·승인하고 원본 proof는 records에만 결합한다. Marker/이전 ALLOW만으로 인계하거나 설치하지 않는다.
 

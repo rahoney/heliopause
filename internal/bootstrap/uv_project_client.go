@@ -34,7 +34,7 @@ func (s uvProjectCLIService) ApplyUVProject(ctx context.Context, request cli.UVP
 		outcome.ManifestID, outcome.ManifestHandle, outcome.SBOMHandle = id, manifest, sbom
 		return outcome, nil
 	}
-	service, err := newUVProjectService(s.bindings, request.ProjectRoot, request.Intent, request.Selector, request.Adopt)
+	service, err := newUVProjectService(s.bindings, request.ProjectRoot, request.Intent, request.Selector, request.Adopt, request.Selection)
 	if err != nil {
 		return outcome, err
 	}

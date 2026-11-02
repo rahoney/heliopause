@@ -19,9 +19,13 @@ import (
 // authenticates an archive or permits installation/build/execution.
 type UVNativeProjectLock struct {
 	body, manifest []byte
+	input          UVProjectInput
 	python         string
 	packages       []UVLockedPackage
 	sources        map[string]uvNativeArchive
+	rich           bool
+	variants       map[string]uvNativePackage
+	root           uvNativePackage
 }
 
 type uvNativeArchive struct {
@@ -31,6 +35,23 @@ type uvNativeArchive struct {
 	Uploaded string `toml:"upload-time"`
 }
 
+type uvNativeDependency struct {
+	Name    string `toml:"name"`
+	Version string `toml:"version"`
+	Source  *struct {
+		Registry string `toml:"registry"`
+	} `toml:"source"`
+	Marker string   `toml:"marker"`
+	Extra  []string `toml:"extra"`
+}
+
+type uvNativeRequirement struct {
+	Name      string   `toml:"name"`
+	Specifier string   `toml:"specifier"`
+	Marker    string   `toml:"marker"`
+	Extras    []string `toml:"extras"`
+}
+
 type uvNativePackage struct {
 	Name    string `toml:"name"`
 	Version string `toml:"version"`
@@ -38,24 +59,26 @@ type uvNativePackage struct {
 		Registry *string `toml:"registry"`
 		Virtual  *string `toml:"virtual"`
 	} `toml:"source"`
-	Dependencies []struct {
-		Name string `toml:"name"`
-	} `toml:"dependencies"`
-	Wheels   []uvNativeArchive `toml:"wheels"`
-	Sdist    *uvNativeArchive  `toml:"sdist"`
-	Metadata *struct {
-		RequiresDist []struct {
-			Name      string `toml:"name"`
-			Specifier string `toml:"specifier"`
-		} `toml:"requires-dist"`
+	Dependencies      []uvNativeDependency            `toml:"dependencies"`
+	Optional          map[string][]uvNativeDependency `toml:"optional-dependencies"`
+	Groups            map[string][]uvNativeDependency `toml:"dev-dependencies"`
+	DefaultGroups     []string                        `toml:"default-groups"`
+	ResolutionMarkers []string                        `toml:"resolution-markers"`
+	Wheels            []uvNativeArchive               `toml:"wheels"`
+	Sdist             *uvNativeArchive                `toml:"sdist"`
+	Metadata          *struct {
+		RequiresDist   []uvNativeRequirement            `toml:"requires-dist"`
+		ProvidesExtras []string                         `toml:"provides-extras"`
+		RequiresDev    map[string][]uvNativeRequirement `toml:"requires-dev"`
 	} `toml:"metadata"`
 }
 
 type uvNativeProjectLockWire struct {
-	Version  int               `toml:"version"`
-	Revision int               `toml:"revision"`
-	Python   string            `toml:"requires-python"`
-	Packages []uvNativePackage `toml:"package"`
+	ResolutionMarkers []string          `toml:"resolution-markers"`
+	Version           int               `toml:"version"`
+	Revision          int               `toml:"revision"`
+	Python            string            `toml:"requires-python"`
+	Packages          []uvNativePackage `toml:"package"`
 }
 
 func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjectLock, error) {
@@ -67,9 +90,11 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 		return UVNativeProjectLock{}, err
 	}
 	var manifest uvProjectInputWire
-	if toml.Unmarshal(input.body, &manifest) != nil || manifest.Project == nil || wire.Version != 1 || wire.Revision != 5 || !requiresPythonMetadataMatches(manifest.Project.Python, wire.Python) || len(wire.Packages) == 0 || len(wire.Packages) > PublicPyPIProfile().ResourcePolicy().MaxGraphArtifacts()+1 {
+	if toml.Unmarshal(input.body, &manifest) != nil || manifest.Project == nil || wire.Version != 1 || wire.Revision != 5 || !uvProjectPythonMatches(manifest.Project.Python, wire.Python) || len(wire.Packages) == 0 || len(wire.Packages) > PublicPyPIProfile().ResourcePolicy().MaxGraphArtifacts()+1 {
 		return UVNativeProjectLock{}, errors.New("native UV project lock schema, runtime or package count is unsupported")
 	}
+	rich := input.NeedsMetadataProjection() || uvNativeWireHasScopes(wire)
+	variants := map[string]uvNativePackage{}
 	byName := map[string]uvNativePackage{}
 	var root uvNativePackage
 	sources := map[string]uvNativeArchive{}
@@ -77,10 +102,11 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 	for _, item := range wire.Packages {
 		name, err := NormalizeProjectName(item.Name)
 		version, versionErr := NormalizeVersion(item.Version)
-		if err != nil || name != item.Name || byName[name].Name != "" || versionErr != nil || version != item.Version || !IsFinalVersion(version) {
+		if err != nil || name != item.Name || (!rich && byName[name].Name != "") || versionErr != nil || version != item.Version || !IsFinalVersion(version) || variants[name+"@"+item.Version].Name != "" {
 			return UVNativeProjectLock{}, errors.New("native UV project package identity is invalid or repeated")
 		}
 		byName[name] = item
+		variants[name+"@"+item.Version] = item
 		if name == input.project {
 			if item.Version != input.version || item.Source.Virtual == nil || *item.Source.Virtual != "." || item.Source.Registry != nil || len(item.Wheels) != 0 || item.Sdist != nil {
 				return UVNativeProjectLock{}, errors.New("native UV virtual root differs from frozen project")
@@ -106,7 +132,14 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 		}
 		validationPackages = append(validationPackages, map[string]any{"name": item.Name, "version": item.Version, "wheels": wheels})
 	}
-	if root.Name == "" || validateUVNativeRoot(input, root, byName) != nil || validateUVNativeClosure(root.Name, byName) != nil {
+	if rich {
+		if root.Name == "" {
+			return UVNativeProjectLock{}, errors.New("native UV conditional root is absent")
+		}
+		if err := validateUVNativeVariantGraph(root.Name+"@"+root.Version, variants); err != nil {
+			return UVNativeProjectLock{}, err
+		}
+	} else if root.Name == "" || validateUVNativeRoot(input, root, byName) != nil || validateUVNativeClosure(root.Name, byName) != nil {
 		return UVNativeProjectLock{}, errors.New("native UV project root, constraints or complete closure differs from manifest")
 	}
 	// This is an internal validation view, never claimed to be native export
@@ -115,11 +148,21 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 	if err != nil {
 		return UVNativeProjectLock{}, err
 	}
-	parsed, err := ParseUVProjectLock(view, runtimeidentity.PythonVersion)
+	packages, err := parseUVLockedPackages(view, runtimeidentity.PythonVersion, "", "", false, true, rich)
 	if err != nil {
 		return UVNativeProjectLock{}, err
 	}
-	return UVNativeProjectLock{body: append([]byte(nil), body...), manifest: input.Body(), python: wire.Python, packages: parsed.Packages(), sources: sources}, nil
+	if rich {
+		// Universal variants share the same aggregate archive and download budgets.
+		sources = map[string]uvNativeArchive{}
+		for key, item := range variants {
+			if item.Sdist != nil {
+				sources[key] = *item.Sdist
+			}
+		}
+		return UVNativeProjectLock{body: append([]byte(nil), body...), manifest: input.Body(), input: input, python: wire.Python, packages: packages, sources: sources, rich: true, variants: variants, root: root}, nil
+	}
+	return UVNativeProjectLock{body: append([]byte(nil), body...), manifest: input.Body(), input: input, python: wire.Python, packages: packages, sources: sources}, nil
 }
 
 // UV preserves the configured public index's trailing slash; its default

@@ -311,8 +311,7 @@ func (r RequirementsSelection) BindWheels(inputs []UVWheelInput, pages []SimpleP
 			return RequirementsSelection{}, err
 		}
 	} else {
-		sum := sha256.Sum256(payload)
-		graph, err = json.Marshal(requirementsMetadataGraph{Version: 1, Input: hex.EncodeToString(sum[:]), Python: runtimeidentity.PythonVersion, Pip: runtimeidentity.PipVersion, Roots: []string{}, Edges: [][]string{}})
+		graph, err = emptyRequirementsMetadataGraph(payload)
 		if err != nil {
 			return RequirementsSelection{}, err
 		}
@@ -352,13 +351,7 @@ func (r RequirementsSelection) metadataInput(inputs []UVWheelInput, target Wheel
 		packages = append(packages, UVLockedPackage{Name: name, Version: version, Wheels: []UVLockedWheel{wheel}})
 		wheels = append(wheels, wheel)
 	}
-	metadata := make([]requirementsProjectMetadata, 0, len(wheels))
-	candidates := make([]Candidate, 0, len(wheels))
-	err := inspectSelectedWheelArchives(packages, runtimeidentity.PythonVersion, inputs, target, limits, func(project UVLockedPackage, wheel UVLockedWheel, inspection WheelInspection) error {
-		metadata = append(metadata, requirementsProjectMetadata{project.Name, project.Version, wheel.SHA256, inspection.RequiresPython, append([]string{}, inspection.RequiresDist...), append([]string{}, inspection.providesExtra...)})
-		candidates = append(candidates, Candidate{project: project.Name, version: project.Version, source: PublicPyPIProfile().Source(), filename: wheel.Filename, url: wheel.URL, sha256: wheel.SHA256, requiresPython: inspection.RequiresPython})
-		return nil
-	})
+	metadata, candidates, err := inspectRequirementsMetadata(packages, inputs, target, limits)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -372,9 +365,21 @@ func (r RequirementsSelection) metadataInput(inputs []UVWheelInput, target Wheel
 	return payload, candidates, wheels, nil
 }
 
+// Both requirements installation and UV project selection authenticate the same
+// archive metadata without importing the selected packages.
+func inspectRequirementsMetadata(packages []UVLockedPackage, inputs []UVWheelInput, target WheelTarget, limits WheelLimits) ([]requirementsProjectMetadata, []Candidate, error) {
+	metadata := make([]requirementsProjectMetadata, 0, len(packages))
+	candidates := make([]Candidate, 0, len(packages))
+	err := inspectSelectedWheelArchives(packages, runtimeidentity.PythonVersion, inputs, target, limits, func(project UVLockedPackage, wheel UVLockedWheel, inspection WheelInspection) error {
+		metadata = append(metadata, requirementsProjectMetadata{project.Name, project.Version, wheel.SHA256, inspection.RequiresPython, append([]string{}, inspection.RequiresDist...), append([]string{}, inspection.providesExtra...)})
+		candidates = append(candidates, Candidate{project: project.Name, version: project.Version, source: PublicPyPIProfile().Source(), filename: wheel.Filename, url: wheel.URL, sha256: wheel.SHA256, requiresPython: inspection.RequiresPython})
+		return nil
+	})
+	return metadata, candidates, err
+}
+
 func (r RequirementsSelection) metadataPayload(metadata []requirementsProjectMetadata) ([]byte, error) {
 	var err error
-	sort.Slice(metadata, func(i, j int) bool { return metadata[i].Name < metadata[j].Name })
 	constraints := []byte{}
 	if r.native.HasActiveRoots() {
 		constraints, err = r.source.SelectionConstraints(r.native, r.wire.Delta)
@@ -403,6 +408,11 @@ func (r RequirementsSelection) metadataPayload(metadata []requirementsProjectMet
 		}
 		originals = append(originals, requirementsProjectMetadata{Name: project.project, Version: project.version, Python: python, Requirements: append([]string{}, headers.all("requires-dist")...), Extras: append([]string{}, extras...)})
 	}
+	return requirementsMetadataPayload(r.wire.Source, r.native, constraints, metadata, originals)
+}
+
+func requirementsMetadataPayload(source string, native RequirementsNativeInput, constraints []byte, metadata, originals []requirementsProjectMetadata) ([]byte, error) {
+	sort.Slice(metadata, func(i, j int) bool { return metadata[i].Name < metadata[j].Name })
 	payload, err := json.Marshal(struct {
 		Version       int                           `json:"version"`
 		Source        string                        `json:"source_sha256"`
@@ -411,7 +421,7 @@ func (r RequirementsSelection) metadataPayload(metadata []requirementsProjectMet
 		RequireHashes bool                          `json:"require_hashes"`
 		Wheels        []requirementsProjectMetadata `json:"wheels"`
 		Originals     []requirementsProjectMetadata `json:"originals"`
-	}{1, r.wire.Source, r.native.Clauses(), string(constraints), r.native.RequireHashes(), metadata, originals})
+	}{1, source, native.Clauses(), string(constraints), native.RequireHashes(), metadata, originals})
 	if err != nil || len(payload) > RequirementsInputByteLimit {
 		return nil, errors.New("requirements metadata payload exceeds bounds")
 	}
@@ -487,53 +497,67 @@ type requirementsMetadataGraph struct {
 	Edges   [][]string `json:"edges"`
 }
 
+func emptyRequirementsMetadataGraph(payload []byte) ([]byte, error) {
+	sum := sha256.Sum256(payload)
+	return json.Marshal(requirementsMetadataGraph{Version: 1, Input: hex.EncodeToString(sum[:]), Python: runtimeidentity.PythonVersion, Pip: runtimeidentity.PipVersion, Roots: []string{}, Edges: [][]string{}})
+}
+
 func (r RequirementsSelection) bindMetadataGraph(payload, body []byte, candidates []Candidate) (RequirementsSelection, error) {
+	bound, err := bindRequirementsMetadataGraph(r.native, payload, body, candidates)
+	if err != nil {
+		return RequirementsSelection{}, err
+	}
+	r.wire.Graph, r.candidates = bytes.Clone(body), bound
+	return r, nil
+}
+
+func bindRequirementsMetadataGraph(native RequirementsNativeInput, payload, body []byte, candidates []Candidate) ([]Candidate, error) {
 	invalid := errors.New("requirements native graph does not cover the authenticated metadata")
 	if len(body) == 0 || len(body) > RequirementsInputByteLimit || validateNativeJSONKeys(body, 4) != nil {
-		return RequirementsSelection{}, invalid
+		return nil, invalid
 	}
 	var graph requirementsMetadataGraph
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	decoder.DisallowUnknownFields()
 	sum := sha256.Sum256(payload)
 	if decoder.Decode(&graph) != nil || ensureSingleJSONValue(decoder) != nil || graph.Version != 1 || graph.Input != hex.EncodeToString(sum[:]) || graph.Python != runtimeidentity.PythonVersion || graph.Pip != runtimeidentity.PipVersion || graph.Roots == nil || graph.Edges == nil {
-		return RequirementsSelection{}, invalid
+		return nil, invalid
 	}
 	byName := map[string]int{}
 	for index, candidate := range candidates {
 		if _, seen := byName[candidate.project]; seen {
-			return RequirementsSelection{}, invalid
+			return nil, invalid
 		}
 		byName[candidate.project] = index
 	}
 	expectedRoots := map[string]bool{}
-	for _, clause := range r.native.clauses {
+	for _, clause := range native.clauses {
 		if clause.Active && !clause.Constraint {
 			expectedRoots[clause.Project] = true
 		}
 	}
 	if len(graph.Roots) != len(expectedRoots) {
-		return RequirementsSelection{}, invalid
+		return nil, invalid
 	}
 	for _, root := range graph.Roots {
 		if !expectedRoots[root] {
-			return RequirementsSelection{}, invalid
+			return nil, invalid
 		}
 		delete(expectedRoots, root)
 		if _, ok := byName[root]; !ok {
-			return RequirementsSelection{}, invalid
+			return nil, invalid
 		}
 	}
 	edges := map[[2]string]bool{}
 	for _, edge := range graph.Edges {
 		if len(edge) != 2 || edge[0] == edge[1] {
-			return RequirementsSelection{}, invalid
+			return nil, invalid
 		}
 		key := [2]string{edge[0], edge[1]}
 		from, fromOK := byName[edge[0]]
 		_, toOK := byName[edge[1]]
 		if !fromOK || !toOK || edges[key] {
-			return RequirementsSelection{}, invalid
+			return nil, invalid
 		}
 		edges[key] = true
 		candidates[from].dependencies = append(candidates[from].dependencies, edge[1])
@@ -550,14 +574,12 @@ func (r RequirementsSelection) bindMetadataGraph(payload, body []byte, candidate
 		pending = append(pending, candidates[byName[name]].dependencies...)
 	}
 	if len(reached) != len(candidates) {
-		return RequirementsSelection{}, invalid
+		return nil, invalid
 	}
 	for index := range candidates {
 		sort.Strings(candidates[index].dependencies)
 	}
-	r.wire.Graph = bytes.Clone(body)
-	r.candidates = candidates
-	return r, nil
+	return candidates, nil
 }
 
 func (r RequirementsSelection) Snapshot(install domain.InstallContext, controls []domain.ProjectControlFile, target WheelTarget) (domain.ProjectDependencySnapshot, error) {
@@ -638,6 +660,22 @@ func (r RequirementsSelection) ProjectRecordsFromInspections(artifacts []domain.
 	if err != nil {
 		return nil, nil, err
 	}
+	metadata, candidates, err := requirementsMetadataFromInspections(selected, wheels)
+	if err != nil {
+		return nil, nil, err
+	}
+	payload, err := r.metadataPayload(metadata)
+	if err != nil {
+		return nil, nil, err
+	}
+	bound, err := r.bindMetadataGraph(payload, r.wire.Graph, candidates)
+	if err != nil {
+		return nil, nil, err
+	}
+	return projectRecordsFromCandidates(artifacts, bound.candidates)
+}
+
+func requirementsMetadataFromInspections(selected []UVLockedWheel, wheels []WheelInspection) ([]requirementsProjectMetadata, []Candidate, error) {
 	if len(wheels) != len(selected) {
 		return nil, nil, errors.New("requirements static coverage is incomplete")
 	}
@@ -662,13 +700,5 @@ func (r RequirementsSelection) ProjectRecordsFromInspections(artifacts []domain.
 		metadata = append(metadata, requirementsProjectMetadata{name, version, wheel.SHA256, inspection.RequiresPython, append([]string{}, inspection.RequiresDist...), append([]string{}, inspection.providesExtra...)})
 		candidates = append(candidates, Candidate{project: name, version: version, source: PublicPyPIProfile().Source(), filename: wheel.Filename, url: wheel.URL, sha256: wheel.SHA256})
 	}
-	payload, err := r.metadataPayload(metadata)
-	if err != nil {
-		return nil, nil, err
-	}
-	bound, err := r.bindMetadataGraph(payload, r.wire.Graph, candidates)
-	if err != nil {
-		return nil, nil, err
-	}
-	return projectRecordsFromCandidates(artifacts, bound.candidates)
+	return metadata, candidates, nil
 }

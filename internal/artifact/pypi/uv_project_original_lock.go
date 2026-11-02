@@ -36,6 +36,10 @@ func ValidateUVProjectOriginalLock(input UVProjectInput, body []byte) error {
 	if roots != 1 {
 		return errors.New("UV original project lock requires one virtual root")
 	}
+	if input.NeedsMetadataProjection() || uvNativeWireHasScopes(wire) {
+		_, err := ParseUVNativeProjectLock(input, body)
+		return err
+	}
 	requirements := []string{}
 	if root.Metadata != nil {
 		if len(root.Metadata.RequiresDist) > PublicPyPIProfile().ResourcePolicy().MaxGraphArtifacts() {

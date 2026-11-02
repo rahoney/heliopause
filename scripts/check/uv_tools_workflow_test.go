@@ -19,6 +19,10 @@ func TestUVToolsConcreteConsumersAndImageDataBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"missing project native scope":      strings.Replace(original, "HELOX_UV_PROJECT_RESOLVER_INTEGRATION=1", "HELOX_UV_PROJECT_RESOLVER_INTEGRATION=0", 1),
+		"missing project CLI scope":         strings.Replace(original, "HELOX_UV_PROJECT_CLI_INTEGRATION=1", "HELOX_UV_PROJECT_CLI_INTEGRATION=0", 1),
+		"missing project native census":     strings.Replace(original, "selected!=11", "selected!=0", 1),
+		"missing project CLI census":        strings.Replace(original, "cases!=5", "cases!=0", 1),
 		"skip current readonly inputs":      strings.Replace(original, "HELOX_PYTHON_EXECUTION_INPUT_INTEGRATION=1", "HELOX_PYTHON_EXECUTION_INPUT_INTEGRATION=0", 1),
 		"ignore current readonly inputs":    strings.Replace(original, pythonExecutionInputsCommand, pythonExecutionInputsCommand+" || true", 1),
 		"wrong current readonly parent":     strings.Replace(original, "^TestLinuxPythonExecutionInputsIntegration$", "^TestLinuxNodeExecutionInputsIntegration$", 1),
