@@ -531,3 +531,63 @@ site-packages 경로도 고정 Python version에서 파생한다. Whole S05 네 
 OPEN이다. 다음은 user-visible advisory 상세 전달, source/profile의 적용 범위와 나머지 실제
 소비자 대조다. Root 결과는 현재 판정 code/check/Evidence references를 제공하지만 advisory
 ID/수정 경계/URL을 직접 표시하는 경로는 아직 대조·보강해야 한다. 새 CI/영구 Host 변경은 없다.
+
+
+## 열두 번째 단위 시작 — user-visible advisory 상세 baseline·수정 지도
+
+기준 `74372f5`. `advisory.report`의 bounded record facts와 Local.ReadReference의 정확한
+Run/ref/identity/digest/profile 조회는 이미 IMPLEMENTED/WIRED=YES다. 현재 Result/Dependency
+Inspection은 Evidence reference만 전달하므로 CLI의 ID/심각도·영향·수정 경계/URL 표시 연결은
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED 모두 NO다. Actual MAL 결과도 판정 code와
+opaque reference까지만 보여 이 gap을 직접 확인했다. 기존 reader/Policy/Domain 결과를
+재구현하거나 전체 review persistence/query를 이 작업에 끼워 넣지 않는다.
+
+기존 CLI presentation 상태에 현재 Local.ReadReference와 동일한 read-only 경계를 Root에서
+한 번 공급한다. 모든 해당 registry 경로의 cacheRoot/heliopause/evidence는 같은 owner임을
+Go/Cargo 포함 현재 constructor로 확인했다. Store constructor는 경로만 갖는 inert object이며
+새 DB/연결/영구 사본은 없다. Source별 writer·검역/판정/승인/반입 흐름은 변경하지 않는다.
+UI는 같은 CheckPlan의 Run/identity/digest와 current advisory check/profile에 결합된 recorded
+facts만 읽는다. Schema·kind·binding·무결성/조회 오류는 상세 미확인으로 표시하고 새 Policy나
+안전 판정을 만들지 않는다. Domain API에 provider용 결과 fields나 새 evidence authority를
+추가하지 않는다.
+
+공통 loader/view 한 곳을 standalone/project/install/execution의 기존 human/JSON presenter에서
+재사용한다. 정상 ALLOW의 기본 세부 출력/I/O는 늘리지 않고, review/block의 advisory record를
+현재 subject와 함께 표시한다. Human은 bounded 핵심 record/수정 경계·고정 URL을 보이며
+나머지는 JSON으로 확인할 수 있게 한다. 조회 실패는 원래 Policy/operation/installation과
+별도 상세 상태로 남겨 primary 오류·exit 의미를 덮지 않는다. Raw tool/env/network payload는
+표시하지 않는다. Graph별 repeated 전체 store scan이나 cache/network 조회도 만들지 않는다.
+
+Inspection에서 영향 enum을 wire상 의미 있는 문자열로 정규화하고 UI는 점수/영향을 다시
+평가하지 않는다. 이 실제 출력 의미 변경은 advisory profile을 갱신해 구분한다. 완료 조건은
+record ID/unknown severity/영향·수정 예/URL의 human/JSON 전달, exact subject/profile·record
+오류/legacy 값·cancel의 안전한 상세 미확인, 원래 BLOCK/정리 축과 user data 보존이다.
+표적 presenter/store 연결을 먼저 검사하고 실제 추가 UI qualification은 나머지 S05 source/
+profile·consumer 변경과 모은다. 앞 actual5case를 출력만 추가한 helper마다 반복하지 않는다.
+
+
+열두 번째 실제 source 대조에서 기존 binary 적용 분기의 잘못된 가정을 확인했다. 구현과
+시험이 `terraform-provider`를 공유했지만 실제 adapter.Source()는 `terraform-registry`다.
+실제 Source()와 존재하지 않는 alias를 쓰는 RED2.293s에서 두 방향 오류를 모두 확인했다.
+직접 Source/SourceName을 사용하고 canonical architecture의 해당 두 adapter import만
+명시해 교정한다. 임의 source는 required로 유지한다. 아홉 번째의 controlled literal 시험은
+실제 Terraform 적용을 증명하지 않았으며 이전 좁은 green을 근거로 이 오판을 유지하지 않는다.
+해당 원래 evidence는 편집하지 않고 이 반증과 후속 검증에 연결한다. Version owner·실제
+Terraform native/형식/서명·동적 필수 조건은 바꾸지 않는다.
+
+
+열두 번째 단위의 IMPLEMENTED/WIRED는 YES다. Existing Local.ReadReference를 공급한 공통
+presentation loader/view를 standalone/install/project/execution 결과에 연결하고 advisory
+profilev4의 영향 문자열을 표시한다. Domain/Policy/승인 구조·실행 권한·runtime version owner는
+변경하지 않았다. 실제 Local 기록/조회와 human/JSON20case가 정상 field 전달, unknown severity의
+0점 오표시 금지, foreign subject/profile·변조/누락·cancel·legacy 거부와 primary Policy/exit
+보존·정상 ALLOW의 추가 조회0을 확인했다. 표적3.639s, 영향3package Race38.901s와 canonical
+foundation53.629s/security22.576s·Staticcheck9.854s/vet1.387s가 PASS다. Tagged build는
+실제 test 미실행이다. [부분 원장](./advisory-details-local-20261103.json)이 source·최초
+SourceID RED/현재 checks를 소유하며 QUALIFIED/ACCEPTANCE_CLOSED와 whole S05는 NO다.
+
+표시 계약은 [Terminal presentation](../../../user-journey-cli-ia/05-terminal-presentation.md#recorded-advisory-detail--m13-004-s05)이
+소유한다. 앞 actual5case를 helper/출력별로 다시 돌리지 않았다. 나머지 source/profile 적용과
+현재 public consumer·text-only legacy 경로를 대조해 실제 확인을 모으며, 새로운 metadata의
+native 결과를 앞 v3 profile 결과로 표시하지 않는다. Known package mapping 미지원으로 기존
+지원 profile 전체를 뜻하지 않게 막지 않는지도 확인해야 한다. 새 CI/영구 Host 변경은 없다.

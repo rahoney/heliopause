@@ -12,6 +12,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/spf13/cobra"
 )
@@ -32,6 +33,7 @@ type presentation struct {
 	width                            int
 	verbose                          bool
 	refreshAdvisories                bool
+	readAdvisoryEvidence             func(domain.RunID, domain.EvidenceReference, domain.ResolvedArtifactIdentity, domain.ContentDigest) (domain.Evidence, domain.ContentDigest, error)
 	localeExplicit, skipSaved        bool
 	warnedSettings                   bool
 	writeErr                         error

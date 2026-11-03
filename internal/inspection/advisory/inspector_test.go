@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
+
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -494,8 +497,9 @@ func TestAdvisoryApplicabilityKeepsBinaryLimitsExplicitAndPackageFailuresRequire
 		source, version string
 		required        bool
 	}{
-		{"github-release", "1.0.0", false},
-		{"terraform-provider", "1.0.0", false},
+		{artifactgithub.SourceName, "1.0.0", false},
+		{artifactterraform.Source().String(), "1.0.0", false},
+		{"terraform-provider", "1.0.0", true},
 		{"pypi", "1.0.0+local", true},
 		{"npm", "latest", true},
 		{"unknown", "1.0.0", true},
@@ -524,5 +528,39 @@ func TestAdvisoryApplicabilityKeepsBinaryLimitsExplicitAndPackageFailuresRequire
 	}
 	if calls != 0 {
 		t.Fatal("guessed a binary/public package mapping")
+	}
+}
+
+func TestAdvisoryRecordEvidenceUsesReadableImpactAndFixedProviderLink(t *testing.T) {
+	inspector, err := newInspector(&retainedInspector{}, &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) { return nil, errors.New("unused") })}, calculatorBuildInfo())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ name, version, want string }{{"affected", "1.0.0", "AFFECTED"}, {"fixed", "1.2.3", "UNAFFECTED"}, {"withdrawn", "1.0.0", "WITHDRAWN"}, {"unknown", "1.0.0", "UNKNOWN"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			var record osvRecord
+			if err := json.Unmarshal([]byte(recordFixture), &record); err != nil {
+				t.Fatal(err)
+			}
+			if tc.name == "withdrawn" {
+				record.Withdrawn = &record.Modified
+			}
+			if tc.name == "unknown" {
+				record.Affected[0].Ranges[0].Type = "UNSUPPORTED"
+			}
+			artifact := advisoryArtifact(t, "npm", "fixture", tc.version)
+			facts := []responseFact{{strings.Repeat("a", 64), strings.Repeat("b", 64), record.Modified, int64(len(recordFixture))}}
+			report, err := inspector.report(artifact, osvPackage{"npm", "fixture", tc.version}, true, []osvRecord{record}, facts, nil)
+			if err != nil || len(report.Evidence()) != 2 {
+				t.Fatal(err)
+			}
+			var detail struct {
+				ID, URL, Impact string
+				ScoreKnown      bool `json:"score_known"`
+			}
+			if json.Unmarshal([]byte(report.Evidence()[1].Summary()), &detail) != nil || detail.ID != "OSV-1" || detail.URL != "https://osv.dev/vulnerability/OSV-1" || detail.Impact != tc.want || detail.ScoreKnown {
+				t.Fatal("normalized display contract differs", report.Evidence()[1].Summary())
+			}
+		})
 	}
 }

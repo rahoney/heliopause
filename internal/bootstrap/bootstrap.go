@@ -168,6 +168,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if storageErr != nil {
 			return storageErr
 		}
+		reader, readerErr := local.NewStore(filepath.Join(cacheRoot, "heliopause", "evidence"))
+		if readerErr != nil {
+			return readerErr
+		}
+		if err := cli.SetAdvisoryEvidenceReader(command, reader); err != nil {
+			return err
+		}
 		ctx = ports.WithStorage(ctx, storage)
 		defer func() {
 			cleanupContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)

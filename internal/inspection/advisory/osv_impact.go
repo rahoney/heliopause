@@ -17,6 +17,19 @@ const (
 	impactWithdrawn
 )
 
+func (v versionImpact) String() string {
+	switch v {
+	case impactUnaffected:
+		return "UNAFFECTED"
+	case impactAffected:
+		return "AFFECTED"
+	case impactWithdrawn:
+		return "WITHDRAWN"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 // assessRecord interprets exact package/version facts, never a final Policy
 // Decision. An unmatched provider subject is incomplete, not a clean result.
 func assessRecord(query osvPackage, record osvRecord) (versionImpact, error) {

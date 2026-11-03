@@ -134,6 +134,9 @@ func WriteJSONResult(output io.Writer, result domain.OperationResult) error {
 		return errors.New("JSON presenter requires output and a valid Operation Result")
 	}
 	document := presentOperationResult(result)
+	if decision, ok := result.PolicyDecision(); ok {
+		document.AdvisoryDetails = presentationFor(output).advisoryDetails(result.CheckPlan(), result.Checks(), result.Evidence(), decision)
+	}
 	encoder := json.NewEncoder(output)
 	encoder.SetEscapeHTML(true)
 	if err := encoder.Encode(document); err != nil {
@@ -143,6 +146,7 @@ func WriteJSONResult(output io.Writer, result domain.OperationResult) error {
 }
 
 type machineResult struct {
+	AdvisoryDetails    *advisoryDetails           `json:"advisory_details,omitempty"`
 	SchemaVersion      string                     `json:"schema_version"`
 	OperationID        string                     `json:"operation_id"`
 	Operation          string                     `json:"operation"`

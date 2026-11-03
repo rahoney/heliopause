@@ -28,6 +28,7 @@ func (p *presentation) renderResult(result domain.OperationResult) error {
 	p.renderChecks(result.Checks())
 	if hasPolicy {
 		p.renderReasons(decision.Reasons())
+		p.renderAdvisoryDetails(p.advisoryDetails(result.CheckPlan(), result.Checks(), result.Evidence(), decision))
 	}
 	if opErr, ok := result.Error(); ok {
 		p.line("%s %s — %s", p.text("Error:", "오류:"), safeTerminal(opErr.Code()), p.errorExplanation(opErr.Code()))
@@ -67,6 +68,7 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 			if index < 8 {
 				p.line("Run: %s", item.RunID().String())
 				p.renderCheckPlan(item.CheckPlan(), item.Checks())
+				p.renderAdvisoryDetails(p.advisoryDetails(item.CheckPlan(), item.Checks(), item.Evidence(), item.PolicyDecision()))
 			}
 		}
 	}

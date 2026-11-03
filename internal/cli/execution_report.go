@@ -12,6 +12,7 @@ import (
 )
 
 type executionReport struct {
+	AdvisoryDetails   []*advisoryDetails    `json:"advisory_details,omitempty"`
 	Schema            string                `json:"schema"`
 	Quarantine        string                `json:"quarantine"`
 	Policy            string                `json:"policy"`
@@ -142,11 +143,19 @@ func writeExecutionReport(output io.Writer, r executionReport, machine bool, cau
 	if output == nil {
 		return errors.New("execution reporting requires an output writer")
 	}
+	p := presentationFor(output)
+	for _, inspection := range r.inspections {
+		if details := p.advisoryDetails(inspection.CheckPlan(), inspection.Checks(), inspection.Evidence(), inspection.PolicyDecision()); details != nil {
+			r.AdvisoryDetails = append(r.AdvisoryDetails, details)
+		}
+	}
 	if machine {
 		return json.NewEncoder(output).Encode(r)
 	}
-	p := presentationFor(output)
 	p.renderInspectionFailure(cause)
+	for _, details := range r.AdvisoryDetails {
+		p.renderAdvisoryDetails(details)
+	}
 	for index, inspection := range r.inspections {
 		if index >= 8 {
 			p.line("… %s: %d", p.text("Further inspection runs in JSON", "추가 검사 Run은 JSON 참조"), len(r.inspections)-index)

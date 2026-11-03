@@ -97,14 +97,14 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 			// A bounded example boundary is not a promised upgrade target. The
 			// provider may describe multiple disjoint affected/fixed intervals.
 			body, err := json.Marshal(struct {
-				ID           string        `json:"id"`
-				URL          string        `json:"url"`
-				Modified     string        `json:"modified"`
-				Impact       versionImpact `json:"impact"`
-				BaseScore    float64       `json:"base_score"`
-				ScoreKnown   bool          `json:"score_known"`
-				FixedExample string        `json:"fixed_example,omitempty"`
-			}{record.ID, "https://osv.dev/vulnerability/" + record.ID, record.Modified.UTC().Format(time.RFC3339Nano), impact, score, known, fixed})
+				ID           string  `json:"id"`
+				URL          string  `json:"url"`
+				Modified     string  `json:"modified"`
+				Impact       string  `json:"impact"`
+				BaseScore    float64 `json:"base_score"`
+				ScoreKnown   bool    `json:"score_known"`
+				FixedExample string  `json:"fixed_example,omitempty"`
+			}{record.ID, "https://osv.dev/vulnerability/" + record.ID, record.Modified.UTC().Format(time.RFC3339Nano), impact.String(), score, known, fixed})
 			if err != nil {
 				return domain.InspectionReport{}, err
 			}

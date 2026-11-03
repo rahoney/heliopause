@@ -139,6 +139,9 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	document.InspectionResults = machineInspectionFailures(operationErr)
 	if inspection.Set().Valid() {
 		for _, item := range inspection.Set().Inspections() {
+			if details := presentationFor(output).advisoryDetails(item.CheckPlan(), item.Checks(), item.Evidence(), item.PolicyDecision()); details != nil {
+				document.AdvisoryDetails = append(document.AdvisoryDetails, details)
+			}
 			if plan := presentCheckPlan(item.CheckPlan()); plan != nil {
 				document.CheckPlans = append(document.CheckPlans, *plan)
 			}
@@ -196,6 +199,7 @@ func installStatuses(outcome application.InstallOutcome, operationErr error) (st
 }
 
 type installMachineResult struct {
+	AdvisoryDetails             []*advisoryDetails                     `json:"advisory_details,omitempty"`
 	SchemaVersion               string                                 `json:"schema_version"`
 	OperationID                 string                                 `json:"operation_id"`
 	Operation                   string                                 `json:"operation"`

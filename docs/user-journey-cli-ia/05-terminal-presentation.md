@@ -78,6 +78,25 @@ codes stay visible and escaped, with a generic explanation rather than a guessed
 root cause. No arbitrary provider output, credentials, URLs or terminal controls
 are replayed. Strings are bounded and escaped for safe terminal rendering.
 
+## Recorded advisory detail — M13-004 S05
+
+Completed review/block advisory checks expose optional `advisory_details` in
+standalone, installation, project-entry and execution JSON results. The same
+view supplies bounded human records: ID, assessed impact, known CVSS base score
+or explicit unknown severity, an example fixed boundary and the fixed OSV link.
+Impact values are `UNKNOWN`, `UNAFFECTED`, `AFFECTED`, or `WITHDRAWN`. A fixed
+example is an interval boundary, not a promised safe upgrade target.
+
+The presentation reuses Local.ReadReference for the exact current CheckPlan
+Run/subject/digest/profile. It never re-queries or re-evaluates Policy. The detail
+view states `AVAILABLE`, `UNAVAILABLE`, or `INCOMPLETE` separately from the original
+operation, checks, Policy, installation and exit. Missing, changed, foreign or
+legacy-incompatible detail is not a completed zero-advisory result. Normal ALLOW
+adds no default record I/O. Human output shows at most five records per displayed
+subject and directs larger record lists to JSON. Partial workflow failure keeps
+its existing check/error/reference output; this does not implement a general
+historical `review` command or replay raw scanner output.
+
 ## OS display-language correction — CLI-UX-002
 
 Status: COMPLETE for the documented bounded OS reads and fallback; local WSL/PTY,

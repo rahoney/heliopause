@@ -84,13 +84,14 @@ type projectUpdateFacts interface {
 }
 
 type cargoUpdateEntry struct {
-	Identity  machineIdentity            `json:"identity"`
-	Digest    machineDigest              `json:"digest"`
-	RunID     string                     `json:"run_id"`
-	Checks    []machineCheck             `json:"checks"`
-	CheckPlan *machineCheckPlan          `json:"check_plan,omitempty"`
-	Evidence  []machineEvidenceReference `json:"evidence_references"`
-	Policy    machinePolicy              `json:"policy"`
+	AdvisoryDetails *advisoryDetails           `json:"advisory_details,omitempty"`
+	Identity        machineIdentity            `json:"identity"`
+	Digest          machineDigest              `json:"digest"`
+	RunID           string                     `json:"run_id"`
+	Checks          []machineCheck             `json:"checks"`
+	CheckPlan       *machineCheckPlan          `json:"check_plan,omitempty"`
+	Evidence        []machineEvidenceReference `json:"evidence_references"`
+	Policy          machinePolicy              `json:"policy"`
 }
 
 type projectLifecycleReport struct {
@@ -250,6 +251,11 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 		report.LocalProjectLifecycle = &machineProjectLifecycle{local.checked, local.required, status, result}
 	}
 	p := presentationFor(output)
+	currentInspections := inspected.Inspections()
+	for n := 0; n < len(currentInspections) && n < len(report.Entries); n++ {
+		entry := currentInspections[n]
+		report.Entries[n].AdvisoryDetails = p.advisoryDetails(entry.CheckPlan(), entry.Checks(), entry.Evidence(), entry.PolicyDecision())
+	}
 	if !p.human() {
 		return json.NewEncoder(output).Encode(report)
 	}
@@ -304,7 +310,6 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 			p.line("%s %d", p.text("Inspected crates:", "검사한 crate 수:"), len(report.Entries))
 		}
 		p.renderInspectionFailure(cause)
-		currentInspections := inspected.Inspections()
 		for index, entry := range report.Entries {
 			if index == 64 {
 				p.line("… %s", p.text("See JSON for remaining entries.", "나머지 항목은 JSON으로 확인하세요."))
@@ -315,6 +320,7 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 				name = strings.Replace(name, "_", "/", 1)
 			}
 			p.line("  %s@%s  %s", safeTerminal(name), safeTerminal(entry.Identity.Version), safeTerminal(entry.Policy.Decision))
+			p.renderAdvisoryDetails(entry.AdvisoryDetails)
 			if index < len(currentInspections) {
 				p.renderCheckPlan(currentInspections[index].CheckPlan(), currentInspections[index].Checks())
 			}

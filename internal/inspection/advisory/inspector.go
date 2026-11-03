@@ -10,9 +10,11 @@ import (
 	"strings"
 
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"golang.org/x/mod/semver"
@@ -64,7 +66,7 @@ func newInspector(inner ports.Inspection, client *http.Client, info *debug.Build
 	if identity == "" {
 		return nil, errors.New("advisory calculator build identity is unavailable")
 	}
-	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v3", osvEndpoint+"|osv-1.x|base-score|"+identity)
+	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v4", osvEndpoint+"|osv-1.x|base-score|"+identity)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +124,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 // package lane or an unknown source never enter this exception.
 func advisoryRequired(artifact domain.AcquiredArtifact) bool {
 	switch artifact.Identity().Source().String() {
-	case "github-release", "terraform-provider":
+	case artifactgithub.SourceName, artifactterraform.Source().String():
 		return false
 	default:
 		return true
