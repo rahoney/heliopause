@@ -57,7 +57,7 @@ func newInspector(inner ports.Inspection, client *http.Client, info *debug.Build
 	if identity == "" {
 		return nil, errors.New("advisory calculator build identity is unavailable")
 	}
-	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v1", osvEndpoint+"|osv-1.x|base-score|"+identity)
+	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v2", osvEndpoint+"|osv-1.x|base-score|"+identity)
 	if err != nil {
 		return nil, err
 	}

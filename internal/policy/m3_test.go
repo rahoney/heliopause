@@ -19,6 +19,7 @@ func TestM3RequiresCompletedDynamicCheckAndInterpretsDynamicFindings(t *testing.
 		{"network", check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "M3_NETWORK_ATTEMPT", domain.DecisionManualReview},
 		{"advisory review", check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "M13_ADVISORY_REVIEW", domain.DecisionManualReview},
 		{"advisory high", check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "M13_ADVISORY_HIGH", domain.DecisionBlock},
+		{"explicit malware advisory", check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "M13_ADVISORY_MALICIOUS", domain.DecisionBlock},
 		{"honeytoken", check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "M3_HONEYTOKEN_ACCESS", domain.DecisionBlock},
 	}
 	for _, test := range tests {
@@ -128,6 +129,7 @@ func TestM3UsesStrongestFindingRegardlessOfReportOrder(t *testing.T) {
 		{"M3_UNEXPECTED_PROCESS", "M3_FILESYSTEM_VIOLATION"},
 		{"M3_NETWORK_ATTEMPT", "UNKNOWN_SECURITY_FINDING"},
 		{"M13_ADVISORY_REVIEW", "M13_ADVISORY_HIGH"},
+		{"M13_ADVISORY_REVIEW", "M13_ADVISORY_MALICIOUS"},
 		{"M13_ADVISORY_REVIEW", "M3_HONEYTOKEN_ACCESS"},
 	} {
 		for _, reverse := range []bool{false, true} {

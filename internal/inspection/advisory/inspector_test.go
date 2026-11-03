@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -414,5 +415,68 @@ func TestInspectorForwardsFrozenProjectAndSupplementalExecutionInputs(t *testing
 	}
 	if _, err := wrapped.InspectExecutionSelection(context.Background(), selection, graphAcquired); err == nil || len(unsupported.calls) != 0 || posts != 3 {
 		t.Fatal("wrapper invented execution-selection support for a per-artifact inspector", err)
+	}
+}
+
+func TestInspectorBlocksExplicitMalwareAndDeduplicatesAliasFindings(t *testing.T) {
+	artifact := advisoryArtifact(t, "npm", "fixture", "1.0.0")
+	inspector, err := newInspector(&retainedInspector{}, &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) { return nil, errors.New("unused") })}, calculatorBuildInfo())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var base osvRecord
+	if err := json.Unmarshal([]byte(recordFixture), &base); err != nil {
+		t.Fatal(err)
+	}
+	base.Severity = nil
+	base.Aliases = nil
+	malware := base
+	malware.ID = "MAL-2026-1"
+	malware.Aliases = []string{base.ID}
+	withdrawn := malware
+	withdrawn.Withdrawn = &base.Modified
+	other := base
+	other.ID = "OSV-2026-other"
+	other.Aliases = []string{"CVE-2026-1234"}
+	bridge := base
+	bridge.ID = "OSV-2026-bridge"
+	bridge.Aliases = []string{base.ID, "CVE-2026-1234"}
+	bridge.Severity = []osvSeverity{{"CVSS_V3", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}
+	manyAliases := base
+	for n := range 128 {
+		manyAliases.Aliases = append(manyAliases.Aliases, strings.Repeat("x", 189)+strconv.Itoa(n))
+	}
+	facts := []responseFact{{requestSHA256: strings.Repeat("a", 64), responseSHA256: strings.Repeat("b", 64), fetchedAt: base.Modified, responseBytes: 64}}
+	for _, tc := range []struct {
+		name       string
+		records    []osvRecord
+		version    string
+		codes      []string
+		references int
+	}{
+		{"malware without CVSS", []osvRecord{malware}, "1.0.0", []string{"M13_ADVISORY_MALICIOUS"}, 1},
+		{"unaffected malware", []osvRecord{malware}, "1.2.3", nil, 0},
+		{"withdrawn malware", []osvRecord{withdrawn}, "1.0.0", nil, 0},
+		{"symmetric alias", []osvRecord{base, malware}, "1.0.0", []string{"M13_ADVISORY_MALICIOUS"}, 2},
+		{"reversed alias", []osvRecord{malware, base}, "1.0.0", []string{"M13_ADVISORY_MALICIOUS"}, 2},
+		{"transitive shared alias", []osvRecord{base, other, bridge}, "1.0.0", []string{"M13_ADVISORY_HIGH"}, 3},
+		{"withdrawal does not silence active alias", []osvRecord{withdrawn, base}, "1.0.0", []string{"M13_ADVISORY_REVIEW"}, 2},
+		{"independent advisories", []osvRecord{base, other}, "1.0.0", []string{"M13_ADVISORY_REVIEW", "M13_ADVISORY_REVIEW"}, 1},
+		{"large alias list retains bounded summaries", []osvRecord{manyAliases}, "1.0.0", []string{"M13_ADVISORY_REVIEW"}, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			report, err := inspector.report(artifact, osvPackage{"npm", "fixture", tc.version}, true, tc.records, facts, nil)
+			if err != nil || len(report.Findings()) != len(tc.codes) {
+				t.Fatal("malware/alias result differs", report.Findings(), err)
+			}
+			for n, finding := range report.Findings() {
+				if finding.Code() != tc.codes[n] || len(finding.EvidenceIDs()) != tc.references {
+					t.Fatal("strongest Finding or original references lost", finding)
+				}
+			}
+			if len(report.Evidence()) != len(tc.records)+1 {
+				t.Fatal("deduplication discarded original facts")
+			}
+		})
 	}
 }

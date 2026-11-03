@@ -221,7 +221,11 @@ conditions that may produce them.
 M13-004 S05 adds `M13_ADVISORY_REVIEW` for affected advisories below the
 confirmed HIGH threshold, missing/unsupported CVSS, or unknown version impact.
 It remains `MANUAL_REVIEW`; confirmed affected CVSS base scores at least7.0
-produce `M13_ADVISORY_HIGH` and `BLOCK`. Human severity labels alone are not
+produce `M13_ADVISORY_HIGH` and `BLOCK`. An active primary OSV `MAL-` record
+whose exact package/version is affected produces `M13_ADVISORY_MALICIOUS` and
+`BLOCK`, including when CVSS is absent. Alias components preserve all original
+Evidence and emit their strongest Finding; withdrawal of one record does not
+withdraw another active record. Human severity labels alone are not
 authoritative. Any stronger integrity/static/dynamic/unknown blocking Finding
 still wins regardless of report order. Required advisory mapping/query/assessment
 incompleteness never permits automatic installation. Provider I/O and score

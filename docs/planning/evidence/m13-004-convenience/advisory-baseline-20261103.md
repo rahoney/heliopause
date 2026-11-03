@@ -341,3 +341,48 @@ writer generation/crash 회수·journal maintenance·전체 retention은 여전�
 응답 cache만으로 무제한 사본 문제 전체를 해결했다고 표시하지 않는다. 정확한 source와
 checks/최초 실패는 [cache 부분 원장](./advisory-cache-local-20261103.json)에 연결하며, 다음은 explicit malware/alias·binary 범위와
 실제 CLI/NOTICE 공급이다. Runtime/compiler version selector·CPP·Host는 변경하지 않았다.
+
+
+## 여덟 번째 단위 시작 — 명시 악성·alias baseline·수정 지도
+
+기준 `20d1b49`. Record decoder의 aliases/withdrawn·정확한 version 영향 평가와 공통 report/
+M3 판정은 IMPLEMENTED/WIRED=YES이며 재구현하지 않는다. 명시 악성 분류와 alias 중복
+Finding 병합은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED가 모두 NO다.
+현재 `report`는 record마다 review/high Finding을 만들므로 severity가 없는 MAL record가
+review에 머물며 같은 vulnerability의 alias record도 중복된다. 이 두 acceptance gap만
+기존 report에서 고치며 transport/parser/resolver/저장소·버전 selector는 변경하지 않는다.
+
+[OSV 명세](https://ossf.github.io/osv-schema/#aliases-field)의 aliases는 대칭·추이 관계다.
+동일 subject의 이미 취득한 record와 alias token만 O(records+aliases)로 연결하고 새 조회나
+전역 database를 만들지 않는다. 각 원본 ID·modified·영향·응답 사실은 보존하며 component당
+가장 강한 Finding 한 개에 관련 Evidence를 결합한다. Withdrawn/unaffected가 다른 active
+record의 차단을 지우지 않으며 다른 package/subject의 결과를 합치지 않는다.
+
+명시 악성은 [OSV 등록 MAL namespace](https://ossf.github.io/osv-schema/#id-field)와
+[공식 Malicious Packages 보고 형식](https://github.com/ossf/malicious-packages/blob/main/CONTRIBUTING.md)을
+기준으로 primary MAL ID의 영향 확인 시 `M13_ADVISORY_MALICIOUS`를 BLOCK으로 보낸다.
+원래 M3의 strongest/default BLOCK을 재사용한다. Summary의 malware 단어·human severity·
+임의 alias 문자열만으로 악성을 추측하지 않는다. 실제 MAL-2026-2307의 공개 record도
+severity 없이 explicit versions를 제공함을 확인했다(정보 조회만, package 미취득/미실행).
+모든 악성 package나 feed가 MAL에 존재한다고 주장하지 않는다.
+
+표적 acceptance는 no-CVSS MAL affected/정상·withdrawn, alias 대칭/추이·단절/독립 record,
+약한 record로 강한 차단이 사라지지 않음과 모든 관련 Evidence 보존이다. 이후 기존 공통
+Policy의 blocker/review 순서 회귀를 묶어 확인한다. Binary 적용 범위/실제 CLI/NOTICE와
+whole S05·최종 qualification은 이 단위만으로 닫지 않는다.
+
+
+명시 악성·alias 단위의 IMPLEMENTED/WIRED는 YES다. 기존 원본에서 no-CVSS MAL이 review이고
+alias가 중복되는 RED1.046s를 보존한 뒤 현재 report의 한정 보강으로 Race5.251s가 PASS다.
+같은 subject 안의 symmetric/transitive/shared alias·순서 반전·독립 record, withdrawn의
+active 차단 미소거와128alias의 bounded summary를 확인했다. CVSS/영향 해석·transport는
+재구현하지 않았고, M3의 기존 default/strongest BLOCK을 그대로 사용한다. 새 code도 Policy
+순서 회귀에서 BLOCK이다. Advisory profile을v2로 갱신해 앞선 profile과 구분했다.
+원래 record마다 ID/modified/impact/CVSS/고정 OSV URL의 bounded Evidence를 남기며 alias
+원문 배열을1024B summary에 몰아넣지 않는다. Component Finding은 모든 record fact를 참조한다.
+
+Staticcheck1.418s/vet0.509s·현재 두 package gosec0.541s도 PASS다. Static/vet는 마지막
+summary 배열 제거 전 source이며 최종 Race/gosec과 구분한다. 재현 입력·최초 RED/범위는
+[부분 원장](./advisory-malware-alias-local-20261103.json)이 소유한다. QUALIFIED/
+ACCEPTANCE_CLOSED는 actual CLI/최종 조건이 남아 NO다. 공통 foundation/security·실제
+consumer 검증은 다음 binary 적용·NOTICE 공급과 의미 있는 묶음으로 모으며 새 CI는 없다.

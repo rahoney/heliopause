@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -47,6 +48,7 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 		}
 	}
 	var findings []domain.Finding
+	var assessments []advisoryFinding
 	var assessmentErr error
 	if mapped && lookupErr == nil {
 		if len(responses) == 0 {
@@ -88,12 +90,13 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 			// provider may describe multiple disjoint affected/fixed intervals.
 			body, err := json.Marshal(struct {
 				ID           string        `json:"id"`
+				URL          string        `json:"url"`
 				Modified     string        `json:"modified"`
 				Impact       versionImpact `json:"impact"`
 				BaseScore    float64       `json:"base_score"`
 				ScoreKnown   bool          `json:"score_known"`
 				FixedExample string        `json:"fixed_example,omitempty"`
-			}{record.ID, record.Modified.UTC().Format(time.RFC3339Nano), impact, score, known, fixed})
+			}{record.ID, "https://osv.dev/vulnerability/" + record.ID, record.Modified.UTC().Format(time.RFC3339Nano), impact, score, known, fixed})
 			if err != nil {
 				return domain.InspectionReport{}, err
 			}
@@ -108,17 +111,21 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 			if impact == impactAffected && known && score >= 7 {
 				code = "M13_ADVISORY_HIGH"
 			}
-			if code != "" {
-				finding, err := domain.NewFinding(code, []domain.EvidenceID{id})
-				if err != nil {
-					return domain.InspectionReport{}, err
-				}
-				findings = append(findings, finding)
+			// MAL is OSV's registered malicious-packages namespace. Provider
+			// descriptions, severity labels and arbitrary alias text are not a
+			// classification source; exact affected versions still apply.
+			if impact == impactAffected && strings.HasPrefix(record.ID, "MAL-") {
+				code = "M13_ADVISORY_MALICIOUS"
 			}
+			assessments = append(assessments, advisoryFinding{record.ID, record.Aliases, code, id})
 		}
 	}
-	if status != domain.ExecutionCompleted {
-		findings = nil
+	if status == domain.ExecutionCompleted {
+		var err error
+		findings, err = aliasFindings(assessments)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
 	}
 	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, i.profile)
 	if err != nil {
@@ -126,4 +133,74 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 	}
 	report, err := domain.NewInspectionReport(execution, findings, evidence)
 	return report, errors.Join(assessmentErr, err)
+}
+
+type advisoryFinding struct {
+	id       string
+	aliases  []string
+	code     string
+	evidence domain.EvidenceID
+}
+
+// OSV aliases are symmetric and transitive. Visit each record/token once, keep
+// every original fact, and emit the strongest finding for each component. This
+// operates only on one acquired subject's already authenticated record set.
+func aliasFindings(facts []advisoryFinding) ([]domain.Finding, error) {
+	byAlias := map[string][]*advisoryFinding{}
+	for n := range facts {
+		fact := &facts[n]
+		for _, token := range append([]string{fact.id}, fact.aliases...) {
+			byAlias[token] = append(byAlias[token], fact)
+		}
+	}
+	visited := map[*advisoryFinding]bool{}
+	tokens := map[string]bool{}
+	var findings []domain.Finding
+	for n := range facts {
+		start := &facts[n]
+		if visited[start] {
+			continue
+		}
+		visited[start] = true
+		pending := []*advisoryFinding{start}
+		code := ""
+		var references []domain.EvidenceID
+		for len(pending) != 0 {
+			fact := pending[0]
+			pending = pending[1:]
+			references = append(references, fact.evidence)
+			switch fact.code {
+			case "M13_ADVISORY_MALICIOUS":
+				code = fact.code
+			case "M13_ADVISORY_HIGH":
+				if code != "M13_ADVISORY_MALICIOUS" {
+					code = fact.code
+				}
+			case "M13_ADVISORY_REVIEW":
+				if code == "" {
+					code = fact.code
+				}
+			}
+			for _, token := range append([]string{fact.id}, fact.aliases...) {
+				if tokens[token] {
+					continue
+				}
+				tokens[token] = true
+				for _, next := range byAlias[token] {
+					if !visited[next] {
+						visited[next] = true
+						pending = append(pending, next)
+					}
+				}
+			}
+		}
+		if code != "" {
+			finding, err := domain.NewFinding(code, references)
+			if err != nil {
+				return nil, err
+			}
+			findings = append(findings, finding)
+		}
+	}
+	return findings, nil
 }
