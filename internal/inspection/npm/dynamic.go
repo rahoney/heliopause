@@ -13,8 +13,8 @@ import (
 // Required fresh experiments and state evidence are bound to the common
 // version owners; one-shot or earlier count-only evidence cannot satisfy them.
 const (
-	dynamicCheckProfileName       = "npm-dynamic-environment-state-v1"
-	dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema
+	dynamicCheckProfileName       = "npm-dynamic-environment-state-v2"
+	dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 )
 
 type DynamicInspector struct{ sandbox ports.Sandbox }

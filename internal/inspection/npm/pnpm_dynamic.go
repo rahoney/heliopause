@@ -191,7 +191,7 @@ func npmProjectCheckProfile(client projectInspectionClient) domain.ContentDigest
 	if client == projectInspectionBun {
 		version = runtimeidentity.BunVersion + "|" + runtimeidentity.BunToolSHA256
 	}
-	profile, _ := domain.CheckProfileDigest(prefix+"-instance-environments-v2", dynamicCheckRuntimeDescriptor+"|"+version)
+	profile, _ := domain.CheckProfileDigest(prefix+"-instance-environments-v3", dynamicCheckRuntimeDescriptor+"|"+version)
 	return profile
 }
 

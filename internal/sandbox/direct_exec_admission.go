@@ -87,6 +87,18 @@ func (r *admissionAwareCommandRunner) RunInput(ctx context.Context, input io.Rea
 	return commandErr
 }
 
+// Init attachment is not a direct exec admission. Artifact launches still use
+// the existing one-at-a-time admission owner while this control pipe is open.
+func (r *admissionAwareCommandRunner) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	runner, ok := r.runner.(interface {
+		StartContainerInputOutput(context.Context, io.Reader, io.Writer, string) error
+	})
+	if !ok || !exactObservationContainerID(id) {
+		return errors.New("sandbox init controller channel is unavailable")
+	}
+	return runner.StartContainerInputOutput(ctx, input, output, id)
+}
+
 func (r *admissionAwareCommandRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	runner, ok := r.runner.(discardCommandRunner)
 	if !ok {

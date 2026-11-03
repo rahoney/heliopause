@@ -84,6 +84,13 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 	}
 	run, cancel := context.WithDeadline(ctx, operation.ledger.policy.wallDeadline)
 	defer cancel()
+	var tool nativeProjectTool
+	if prepare != nil {
+		tool, err = prepare(run)
+		if err != nil || tool == nil || tool.nativeKind() != nativeRuntimeBun {
+			return operation.finish(ctx, run, "M3_DYNAMIC_SETUP_FAILED", errors.Join(errBunToolSupply, err))
+		}
+	}
 	if err := operation.initialize(run, cancel); err != nil {
 		return operation.finish(ctx, run, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err)
 	}
@@ -94,11 +101,11 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 			return operation.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err)
 		}
 		seen[experiment.String()] = true
-		profile, err := newInspectionEnvironmentProfile(profileKind, experiment)
+		profile, err := newInspectionEnvironmentProfile(profileKind, experiment, operation.responder)
 		if err != nil {
 			return operation.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err)
 		}
-		code, cause := operation.instanceExperiment(run, experiment, profile, kind, target, payload, prepare)
+		code, cause := operation.instanceExperiment(run, experiment, profile, kind, target, payload, tool)
 		if code != "" || cause != nil {
 			return operation.finish(ctx, run, code, cause)
 		}
@@ -114,16 +121,11 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 // The original frozen payload, null network, native runtime and exact lifecycle
 // argv remain this instance owner's responsibility. Resource termination and
 // workspace evidence use the same owner as ordinary npm archive inspection.
-func (n *environmentInspection) instanceExperiment(ctx context.Context, session domain.SandboxSessionID, profile inspectionEnvironmentProfile, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, prepare func(context.Context) (nativeProjectTool, error)) (string, error) {
+func (n *environmentInspection) instanceExperiment(ctx context.Context, session domain.SandboxSessionID, profile inspectionEnvironmentProfile, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, tool nativeProjectTool) (string, error) {
 	b := n.backend
 	n.projectKind = kind
-	var tool nativeProjectTool
 	var err error
-	if prepare != nil {
-		tool, err = prepare(ctx)
-		if err != nil || tool == nil || tool.nativeKind() != nativeRuntimeBun {
-			return "M3_DYNAMIC_SETUP_FAILED", errors.Join(errBunToolSupply, err)
-		}
+	if tool != nil {
 		n.native, err = createNativeRuntimeVolume(ctx, b.runner, nativeRuntimeBun)
 		if err != nil {
 			return "M3_DYNAMIC_SETUP_FAILED", err
@@ -133,7 +135,7 @@ func (n *environmentInspection) instanceExperiment(ctx context.Context, session 
 	if err != nil {
 		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	n.volume, err = createEnvironmentWorkspace(ctx, b.runner, n.owner, profile, n.policy.RuntimeTmpfs())
+	n.volume, err = createEnvironmentWorkspace(ctx, b.runner, n.owner, profile, n.policy.RuntimeTmpfs()-responderSupplyCapacity)
 	if err != nil {
 		n.uncertain = n.volume.name != ""
 		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err

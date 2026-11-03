@@ -140,7 +140,7 @@ func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...
 			}
 			return nil, r.runErr
 		}
-		if len(args) < 4 || !slices.Equal(args, boundaryReadinessArguments(args[3])) {
+		if len(args) < 4 || !slices.Equal(args, boundaryReadinessArguments(args[3])) && !slices.Equal(args, boundaryReadinessArguments(args[3], true)) {
 			r.t.Fatal("unexpected exec", args)
 		}
 		return nil, nil
@@ -231,7 +231,7 @@ func (r *pnpmInstanceRunner) RunOutput(ctx context.Context, output io.Writer, bi
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.calls++
-	if strings.HasSuffix(args[1], ":/tmp/.") {
+	if strings.HasSuffix(args[1], ":/tmp/.") || strings.HasSuffix(args[1], ":/etc/resolv.conf") {
 		return r.environmentBackendModel.RunOutput(ctx, output, binary, args...)
 	}
 	r.events = append(r.events, "readback")
@@ -262,7 +262,7 @@ func (o *pnpmInstanceObserver) Start(context.Context, string) (TraceReader, erro
 }
 func (o *pnpmInstanceObserver) AwaitMountAnchors(context.Context, string) error { return nil }
 
-func (o *pnpmInstanceObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, _ nativeRuntimeToolKind, _ bool, reader bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *pnpmInstanceObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, _ nativeRuntimeToolKind, _ bool, reader bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	o.ids = append(o.ids, id)
 	if o.err != nil {
 		return nil, o.err
@@ -279,13 +279,14 @@ func (o *pnpmInstanceObserver) startNPMInstanceEnvironmentProfile(ctx context.Co
 		}
 	}
 	f.mu.Unlock()
-	return f.StartEnvironmentProfile(ctx, id, reader, budget)
+	return f.StartEnvironmentProfile(ctx, id, reader, budget, supplies...)
 }
 func wirePNPMInstanceEnvironment(b *Backend, r *pnpmInstanceRunner, o *pnpmInstanceObserver) {
 	f := newEnvironmentBackendState()
 	r.environmentBackendModel = f
 	o.environmentBackendModel = f
 	b.resources = r
+	b.prepareResponder = f.prepareResponder
 }
 
 func pnpmInstanceFixture(t *testing.T) (artifactnpm.PNPMInspectionLayout, domain.AcquiredArtifact, string) {
@@ -324,7 +325,7 @@ func TestPNPMInstanceRunsExactBoundTargetWithFreshSessions(t *testing.T) {
 			t.Fatal("accepted observation lost")
 		}
 	}
-	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 4 || r.removals != 8 || r.volumeRemovals != 8 || !slices.Equal(o.ids, r.ids) {
+	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 4 || r.removals != 8 || r.volumeRemovals != 10 || !slices.Equal(o.ids, r.ids) {
 		t.Fatal("session/resources reused or not finalized")
 	}
 	if slices.Index(r.events, "readback") < slices.Index(r.events, "copy") {

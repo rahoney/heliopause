@@ -22,6 +22,9 @@ const (
 	nativeRuntimePipx
 	// npm project inspection uses the existing Node image, not a supplied tool volume.
 	nativeRuntimeNPMProject
+	// A project-owned guest component; its identity comes from the protected
+	// current installation, rather than a third-party runtime lock pin.
+	nativeRuntimeResponder
 )
 
 type nativeRuntimeToolSpec struct {
@@ -51,6 +54,9 @@ func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpe
 		// DATA transport only. The existing single-writer native volume is
 		// unavailable for this kind; readonly lifecycle is a separate owner.
 		return nativeRuntimeToolSpec{name: "pipx-runtime.zip", guestPath: pipxToolGuestPath, sha256: runtimeidentity.PipxToolSHA256, size: runtimeidentity.PipxToolSize, installedName: runtimeidentity.PipxRuntimeAssetName, maxBytes: 8 << 20}, true
+	case nativeRuntimeResponder:
+		return nativeRuntimeToolSpec{name: responderToolName, guestPath: responderGuestPath,
+			installedName: responderToolName, maxBytes: responderSupplyCapacity - (64 << 10)}, true
 	default:
 		return nativeRuntimeToolSpec{}, false
 	}
@@ -130,15 +136,21 @@ func scanNativeToolTar(body []byte, identity nativeToolFileIdentity, kind native
 
 func introduceNativeTool(ctx context.Context, runner CommandRunner, container string, kind nativeRuntimeToolKind, body []byte) error {
 	spec, known := nativeRuntimeToolIdentity(kind)
+	if known && kind == nativeRuntimeResponder && len(body) > 0 && int64(len(body)) <= spec.maxBytes {
+		spec.size = int64(len(body))
+	}
 	input, acceptsInput := runner.(inputCommandRunner)
 	output, streamsOutput := runner.(streamingDockerOutput)
-	if ctx == nil || !known || !acceptsInput || !streamsOutput || !exactObservationContainerID(container) || int64(len(body)) != spec.size {
+	if ctx == nil || !known || !acceptsInput || !streamsOutput || !exactObservationContainerID(container) || len(body) == 0 || int64(len(body)) > spec.maxBytes || int64(len(body)) != spec.size {
 		return errNativeToolTransport
 	}
 	if err := ctx.Err(); err != nil {
 		return errors.Join(errNativeToolTransport, err)
 	}
 	digest := sha256.Sum256(body)
+	if kind == nativeRuntimeResponder {
+		spec.sha256 = hex.EncodeToString(digest[:])
+	}
 	if hex.EncodeToString(digest[:]) != spec.sha256 {
 		return errNativeToolTransport
 	}

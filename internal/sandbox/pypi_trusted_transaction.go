@@ -172,6 +172,7 @@ type pythonPhaseTrace struct {
 
 type pythonPhaseRuntime struct {
 	id          string
+	responder   *inspectionResponder
 	phase       pythonObservationPhase
 	trace       TraceReader
 	registered  bool
@@ -183,12 +184,20 @@ type pythonPhaseRuntime struct {
 // Both existing Python transactions and environment experiments use the same
 // once-only drain and independently authenticated resource termination.
 func (runtime *pythonPhaseRuntime) stopAndCollect(resources ObservationResourceClient, transaction string) (ObservationResourceLease, pythonPhaseTrace, error) {
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancel()
+	var stopErr error
+	if runtime.responder != nil {
+		stopErr = runtime.responder.stop(cleanupCtx)
+	}
 	traceDone := make(chan pythonPhaseTrace, 1)
 	go func() { traceDone <- runtime.collect() }()
-	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
 	lease, err := resources.Terminate(cleanupCtx, transaction, runtime.id)
-	cancel()
-	return lease, <-traceDone, err
+	trace := <-traceDone
+	if runtime.responder != nil {
+		stopErr = errors.Join(stopErr, runtime.responder.waitAfterTermination(cleanupCtx, err == nil))
+	}
+	return lease, trace, errors.Join(stopErr, err)
 }
 
 func (runtime *pythonPhaseRuntime) collect() pythonPhaseTrace {

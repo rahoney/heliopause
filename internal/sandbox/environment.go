@@ -6,12 +6,88 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"slices"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+func environmentResolverArguments() []string {
+	return []string{"--dns", "127.0.0.1", "--dns-search", ".",
+		"--dns-opt", "ndots:0", "--dns-opt", "timeout:1", "--dns-opt", "attempts:1"}
+}
+
+const environmentResolverInspectTemplate = `{"ID":{{json .Id}},"DNS":{{json .HostConfig.Dns}},"Search":{{json .HostConfig.DnsSearch}},"Options":{{json .HostConfig.DnsOptions}}}`
+
+// This is checked before an untrusted client can initialize its resolver.
+// Docker metadata alone is insufficient: the root-owned generated file must
+// contain only the fixed loopback nameserver, search and bounded options.
+func verifyEnvironmentResolver(ctx context.Context, runner CommandRunner, container string) error {
+	output, ok := runner.(streamingDockerOutput)
+	if !ok || ctx == nil || !exactObservationContainerID(container) {
+		return errEnvironmentState
+	}
+	var config struct {
+		ID                   string
+		DNS, Search, Options []string
+	}
+	body, err := runner.Output(ctx, "docker", "inspect", "--format", environmentResolverInspectTemplate, container)
+	if err != nil || len(body) > 4096 || json.Unmarshal(body, &config) != nil || config.ID != container ||
+		!slices.Equal(config.DNS, []string{"127.0.0.1"}) || !slices.Equal(config.Search, []string{"."}) ||
+		!slices.Equal(config.Options, []string{"ndots:0", "timeout:1", "attempts:1"}) {
+		return errors.Join(errEnvironmentState, err)
+	}
+	archive := nativeToolArchiveOutput{limit: 64 << 10}
+	if err := output.RunOutput(ctx, &archive, "docker", "cp", container+":/etc/resolv.conf", "-"); err != nil || archive.failed {
+		return errors.Join(errEnvironmentState, err)
+	}
+	return verifyEnvironmentResolverArchive(ctx, archive.body)
+}
+
+func verifyEnvironmentResolverArchive(ctx context.Context, body []byte) error {
+	if ctx == nil || ctx.Err() != nil || len(body) > 64<<10 {
+		return errEnvironmentState
+	}
+	input := bytes.NewReader(body)
+	archive := tar.NewReader(input)
+	header, err := archive.Next()
+	if err != nil || (header.Name != "resolv.conf" && header.Name != "./resolv.conf") ||
+		header.Typeflag != tar.TypeReg || header.Linkname != "" || header.Uid != 0 || header.Gid != 0 ||
+		header.Mode != 0644 || header.Size <= 0 || header.Size > 4096 {
+		return errEnvironmentState
+	}
+	content, err := io.ReadAll(archive)
+	if err != nil || int64(len(content)) != header.Size {
+		return errEnvironmentState
+	}
+	lines := make([]string, 0, 3)
+	for line := range strings.SplitSeq(string(content), "\n") {
+		line, _, _ = strings.Cut(line, "#")
+		if fields := strings.Fields(line); len(fields) != 0 {
+			lines = append(lines, strings.Join(fields, " "))
+		}
+	}
+	slices.Sort(lines)
+	// Docker omits the neutral "search ." line. Its metadata above must still
+	// explicitly request it; no inherited or alternate search domain is valid.
+	if !slices.Equal(lines, []string{"nameserver 127.0.0.1", "options ndots:0 timeout:1 attempts:1"}) &&
+		!slices.Equal(lines, []string{"nameserver 127.0.0.1", "options ndots:0 timeout:1 attempts:1", "search ."}) {
+		return errEnvironmentState
+	}
+	if _, err := archive.Next(); err != io.EOF {
+		return errEnvironmentState
+	}
+	for _, value := range body[len(body)-input.Len():] {
+		if value != 0 {
+			return errEnvironmentState
+		}
+	}
+	return ctx.Err()
+}
 
 type inspectionEnvironment = domain.SandboxEnvironmentProfile
 
@@ -39,9 +115,14 @@ type inspectionEnvironmentProfile struct {
 	fixtures    []environmentFixture
 }
 
-func newInspectionEnvironmentProfile(kind inspectionEnvironment, session domain.SandboxSessionID) (inspectionEnvironmentProfile, error) {
-	if session.String() == "" || (kind != minimalEnvironment && kind != developmentEnvironment) {
+func newInspectionEnvironmentProfile(kind inspectionEnvironment, session domain.SandboxSessionID, supplies ...*responderSupply) (inspectionEnvironmentProfile, error) {
+	if session.String() == "" || (kind != minimalEnvironment && kind != developmentEnvironment) || len(supplies) > 1 {
 		return inspectionEnvironmentProfile{}, errors.New("inspection environment profile is invalid")
+	}
+	if len(supplies) == 1 {
+		if _, err := supplies[0].mountArgument(); err != nil || len(supplies[0].digest) != 64 {
+			return inspectionEnvironmentProfile{}, errResponderSupply
+		}
 	}
 	marker := sha256.Sum256([]byte(string(kind) + "\x00" + session.String()))
 	invalid := "haa-invalid-" + hex.EncodeToString(marker[:16])
@@ -68,6 +149,12 @@ func newInspectionEnvironmentProfile(kind inspectionEnvironment, session domain.
 	}
 	hash := sha256.New()
 	_, _ = fmt.Fprintf(hash, "%s\x00%s\n", kind, session.String())
+	if len(supplies) == 1 {
+		_, _ = fmt.Fprintf(hash, "responder:%s\n", supplies[0].digest)
+	}
+	for _, argument := range environmentResolverArguments() {
+		_, _ = fmt.Fprintf(hash, "%d:%s\n", len(argument), argument)
+	}
 	for _, entry := range profile.environment {
 		_, _ = fmt.Fprintf(hash, "%d:%s\n", len(entry), entry)
 	}
@@ -237,6 +324,10 @@ func applyEnvironmentWorkspace(base []string, image string, profile inspectionEn
 			index++
 			environment++
 		case base[index] == image:
+			// Both experiments receive only the fixed guest DNS configuration.
+			// The minimal experiment has no responder, so it stays a blackhole;
+			// neither experiment inherits Host nameservers/search domains.
+			args = append(args, environmentResolverArguments()...)
 			args = append(args, "--annotation", environmentWorkspacePolicy)
 			args = append(args, profile.environment...)
 			args = append(args, base[index])
@@ -254,10 +345,17 @@ func applyEnvironmentWorkspace(base []string, image string, profile inspectionEn
 // Only this typed entry changes the existing npm profile's workspace topology.
 // Guest noexec/nosuid must be present independently of the backing tmpfs.
 // A runtime that only provides ordinary 9p fails before any artifact launch.
-func (o *SharedObserver) StartEnvironmentProfile(ctx context.Context, container string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) StartEnvironmentProfile(ctx context.Context, container string, readOnly bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := environmentExpectedTopology(readOnly)
-	if !ok || budget == nil {
+	if !ok || budget == nil || len(supplies) > 1 || len(supplies) == 1 && readOnly {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return o.startProfileWithBudget(ctx, container, "npm-lifecycle", topology, budget)
 }
@@ -314,10 +412,17 @@ func npmInstanceEnvironmentExpectedTopology(kind nativeRuntimeToolKind, nativeBu
 	return topology, workspace == 1 && project == 1
 }
 
-func (o *SharedObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, container string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, container string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := npmInstanceEnvironmentExpectedTopology(kind, nativeBun, readOnly)
-	if !ok || budget == nil {
+	if !ok || budget == nil || len(supplies) > 1 || len(supplies) == 1 && readOnly {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return o.startProfileWithBudget(ctx, container, "npm-lifecycle", topology, budget)
 }

@@ -163,8 +163,8 @@ func githubDynamicProfile(name string) domain.ContentDigest {
 	}
 	revision := name + "-v1"
 	if name != pipxRuntimeCheck {
-		revision = name + "-environments-v2"
-		image += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+		revision = name + "-environments-v3"
+		image += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 	}
 	profile, _ := domain.CheckProfileDigest(revision, image)
 	return profile

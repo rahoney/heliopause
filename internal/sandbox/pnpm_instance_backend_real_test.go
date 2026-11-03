@@ -17,12 +17,12 @@ import (
 
 type pnpmInstanceActualObserver struct{ pnpmPrepareTraceObserver }
 
-func (o *pnpmInstanceActualObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *pnpmInstanceActualObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, kind nativeRuntimeToolKind, nativeBun, readOnly bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	observer, ok := o.TraceObserver.(npmInstanceEnvironmentTraceObserver)
 	if !ok {
 		return nil, errors.New("fixed instance environment profile unavailable")
 	}
-	reader, err := observer.startNPMInstanceEnvironmentProfile(ctx, id, kind, nativeBun, readOnly, budget)
+	reader, err := observer.startNPMInstanceEnvironmentProfile(ctx, id, kind, nativeBun, readOnly, budget, supplies...)
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +30,12 @@ func (o *pnpmInstanceActualObserver) startNPMInstanceEnvironmentProfile(ctx cont
 	o.traces = append(o.traces, wrapped)
 	return wrapped, nil
 }
-func (o *pnpmInstanceActualObserver) StartEnvironmentProfile(ctx context.Context, id string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *pnpmInstanceActualObserver) StartEnvironmentProfile(ctx context.Context, id string, readOnly bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	observer, ok := o.TraceObserver.(environmentTraceObserver)
 	if !ok {
 		return nil, errors.New("shared environment observer unavailable")
 	}
-	return observer.StartEnvironmentProfile(ctx, id, readOnly, budget)
+	return observer.StartEnvironmentProfile(ctx, id, readOnly, budget, supplies...)
 }
 func (o *pnpmInstanceActualObserver) observationUsage(budget *observationTraceLedger) (uint64, uint64, error) {
 	observer, ok := o.TraceObserver.(observationPhaseObserver)

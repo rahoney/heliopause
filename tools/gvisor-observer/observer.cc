@@ -1,6 +1,7 @@
 // HAA's gVisor observer is compiled inside the exact pinned gVisor source tree.
 // It consumes the upstream remote sink protocol and emits only bounded kinds to
 // HAA's trusted datagram boundary; it never logs trace payloads.
+#include <fcntl.h>
 #include <arpa/inet.h>
 #include <err.h>
 #include <netinet/in.h>
@@ -80,6 +81,7 @@ constexpr uint64_t kOpenLargefile = 00100000;
 constexpr uint64_t kCloneThread = 0x00010000;
 constexpr char kBoundaryHelperPath[] = "/haa-runtime/haa-boundary";
 constexpr char kSetprivPath[] = "/usr/bin/setpriv";
+constexpr char kResponderPath[] = "/haa-responder/haa-sandbox-responder";
 constexpr char kLaunchMode[] = "--launch";
 constexpr char kPythonHandoffMode[] = "--handoff-python";
 constexpr char kELFHandoffMode[] = "--handoff-elf";
@@ -222,6 +224,7 @@ enum class ProcessClass {
   kNpm,
   kArtifact,
   kSleep,
+  kResponder,
   kMkdir,
   kCat,
   kChmod,
@@ -540,6 +543,7 @@ struct ProcessState {
     bool python_execution_active = false;
   };
   bool bootstrap_active = true;
+  bool responder_init = false;
   bool bootstrap_group_set = false;
   int32_t bootstrap_group_id = 0;
   int64_t bootstrap_group_start_time_ns = 0;
@@ -1799,7 +1803,7 @@ CommandPhase ClassifyCommandShape(const gvisor::sentry::ExecveInfo& message) {
   return CommandPhase::kOther;
 }
 
-bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message) {
+bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message, bool responder = false) {
   if (message.binary_path() != kSetprivPath || message.execfn() != kSetprivPath ||
       message.argv_size() < 10) return false;
   static constexpr const char* kRequired[] = {
@@ -1807,14 +1811,17 @@ bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message) {
       "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all",
       "--no-new-privs", "--"};
   for (size_t index = 0; index < sizeof(kRequired) / sizeof(kRequired[0]); ++index) {
-    if (message.argv(static_cast<int>(index)) != kRequired[index]) return false;
+    const std::string expected = responder && index == 1 ? "--reuid=1001" :
+        responder && index == 2 ? "--regid=1001" : kRequired[index];
+    if (message.argv(static_cast<int>(index)) != expected) return false;
   }
   return true;
 }
 
-bool IsExactOCIBootstrapDemotion(const gvisor::sentry::ExecveInfo& message) {
-  return IsExactSetprivDemotion(message) && message.argv_size() == 11 &&
-      message.argv(9) == "/bin/sleep" && message.argv(10) == "infinity";
+bool IsExactOCIBootstrapDemotion(const gvisor::sentry::ExecveInfo& message, bool responder = false) {
+  return IsExactSetprivDemotion(message,responder) && message.argv_size() == 11 &&
+      message.argv(9) == (responder ? kResponderPath : "/bin/sleep") &&
+      message.argv(10) == (responder ? "serve" : "infinity");
 }
 
 // This is the byte-for-byte identity produced by boundaryContainerCommand().
@@ -1852,15 +1859,44 @@ case "${1-}" in
 esac
 ' > "$tmp"; chown 0:0 "$tmp"; chmod 0555 "$tmp"; mv "$tmp" /haa-runtime/haa-boundary; exec /usr/bin/setpriv --reuid=1000 --regid=1000 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs -- /bin/sleep infinity)HAA";
 
+std::string ResponderBootstrapCommand() {
+  const std::string ordinary = kOCIBootstrapCommand;
+  const std::string tail = "exec /usr/bin/setpriv --reuid=1000 --regid=1000 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs -- /bin/sleep infinity";
+  if (ordinary.size() < tail.size() || ordinary.compare(ordinary.size()-tail.size(),tail.size(),tail)!=0) return "";
+  return ordinary.substr(0,ordinary.size()-tail.size()) +
+      "GOMAXPROCS=1 exec /usr/bin/setpriv --reuid=1001 --regid=1001 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs -- " + kResponderPath + " serve";
+}
+
+bool HasResponderSupplyExpectation(const TopologyState* topology) {
+  if (topology==nullptr) return false;
+  size_t found=0;
+  for (const auto& mount:topology->expected) {
+    if (mount.mountpoint!="/haa-responder") continue;
+    if (mount.mount_class!="helper" || mount.parent!="/" || mount.filesystem_type!="9p" || !mount.read_only || mount.noexec) return false;
+    ++found;
+  }
+  return found==1;
+}
+
+bool IsResponderImage(const TopologyState* topology) {
+  if (!HasResponderSupplyExpectation(topology) || !topology->sealed || !topology->snapshot_seen) return false;
+  size_t found=0;
+  for (const auto& item:topology->anchors) {
+    if (item.second.mountpoint=="/haa-responder" && item.second.mount_class=="helper") ++found;
+    else if (HasPrefix(item.second.mountpoint,"/haa-responder/")) return false;
+  }
+  return found==1;
+}
+
 bool IsExactOCIBootstrapShellIdentity(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == "/usr/bin/dash" && message.execfn() == "/bin/sh" &&
       message.argv_size() == 3 && message.argv(0) == "/bin/sh" &&
-      message.argv(1) == "-ceu" && message.argv(2) == kOCIBootstrapCommand;
+      message.argv(1) == "-ceu" && (message.argv(2) == kOCIBootstrapCommand || message.argv(2) == ResponderBootstrapCommand());
 }
 
 bool IsExactOCIBootstrapContainerStart(const gvisor::container::Start& message) {
   return message.args_size() == 3 && message.args(0) == "/bin/sh" &&
-      message.args(1) == "-ceu" && message.args(2) == kOCIBootstrapCommand;
+      message.args(1) == "-ceu" && (message.args(2) == kOCIBootstrapCommand || message.args(2) == ResponderBootstrapCommand());
 }
 
 bool IsExactOCIBootstrapShell(const gvisor::sentry::ExecveInfo& message,
@@ -2337,6 +2373,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCargoTar: return "OTHER";
     case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kArtifact: return "ARTIFACT";
+    case ProcessClass::kResponder: return "OTHER";
     case ProcessClass::kSleep: return "SLEEP";
     case ProcessClass::kMkdir: return "MKDIR";
     case ProcessClass::kCat: return "CAT";
@@ -2380,6 +2417,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kBun:
     case ProcessClass::kCargoTar:
     case ProcessClass::kCargoRustc: return "OTHER";
+    case ProcessClass::kResponder:
     case ProcessClass::kSleep:
     case ProcessClass::kMkdir:
     case ProcessClass::kCat:
@@ -2459,6 +2497,7 @@ void RecordUnexpectedExec(ProcessState::UnexpectedExecDiagnostic* diag,
 }
 
 ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
+  if (path == kResponderPath) return ProcessClass::kResponder;
   if (path == "/bin/sh" || path == "sh" || path == "/usr/bin/dash") return ProcessClass::kShell;
   if (path == "/usr/bin/sleep" || path == "/bin/sleep" || path == "sleep") return ProcessClass::kSleep;
   if (path == "/usr/bin/mkdir" || path == "/bin/mkdir" || path == "mkdir") return ProcessClass::kMkdir;
@@ -3496,6 +3535,17 @@ bool IsPinnedNPMArtifactRuntimeRead(const gvisor::common::ContextData& context,
       group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
       context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
       state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
+  // The controller attests the synthetic loopback file before introducing a
+  // client. This grants no CONTROL network trust or other system-file reads.
+  if (state.responder_init && group->current_image_class == ProcessClass::kNode &&
+      (flags == 32768 || flags == 557056)) {
+    if (anchor->mount_class == "system" &&
+        (path == "/etc/resolv.conf" || path == "/etc/hosts") && anchor->mountpoint == path) return true;
+    // The same pinned image's libc/c-ares name-service inputs. These exact
+    // readonly files are already used by the fixed resolver transitions.
+    if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+        (path == "/etc/nsswitch.conf" || path == "/etc/host.conf" || path == "/etc/gai.conf")) return true;
+  }
   return group->current_image_class == ProcessClass::kNode ? IsNodeImageStartupRead(context,path,flags,anchor) :
       IsBunImageStartupRead(context,path,flags,anchor);
 }
@@ -4372,6 +4422,29 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   // This precedence is deliberately before every runtime/helper exception:
   // a decoy access is always actionable, irrespective of role or image.
   if (IsHoneytoken(path)) return FilesystemClass::kHoneytoken;
+  if (state.responder_init && state.bootstrap_group_set &&
+      message.context_data().thread_group_id()==state.bootstrap_group_id &&
+      message.context_data().thread_group_start_time_ns()==state.bootstrap_group_start_time_ns &&
+      !message.context_data().is_exec_session()) {
+    const auto* group=FindFilesystemGroup(message.context_data(),state);
+    const bool actor=group!=nullptr && group->role==ProcessState::Role::kControl &&
+        group->provenance==ProcessState::Provenance::kOCIRoot &&
+        group->oci_bootstrap_stage==ProcessState::OCIBootstrapStage::kComplete &&
+        group->current_image_class==ProcessClass::kResponder;
+    const bool readonly=(message.flags() & ~(kOpenLargefile|static_cast<uint64_t>(O_CLOEXEC)))==0;
+    const std::string proc="/proc/"+std::to_string(state.bootstrap_group_id)+"/";
+    const bool self_proc=path=="/proc/self/auxv" || path==proc+"auxv" ||
+        path=="/proc/self/cgroup" || path==proc+"cgroup" ||
+        path=="/proc/self/mountinfo" || path==proc+"mountinfo";
+    const bool cpu_limit=anchor!=nullptr && anchor->mountpoint=="/sys/fs/cgroup/cpu" &&
+        (path=="/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+         path=="/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+    if (actor && readonly && anchor!=nullptr && anchor->mount_class=="system" &&
+        (path=="/sys/kernel/mm/transparent_hugepage/hpage_pmd_size" ||
+         path=="/proc/sys/net/core/somaxconn" || self_proc || cpu_limit))
+      return FilesystemClass::kHelperOnly;
+  }
+
   if (FindFilesystemGroup(message.context_data(), state) == nullptr) {
     const auto& context = message.context_data();
     const bool exact_pre_sentry_loader = IsDirectExecLoaderProfile(profile) &&
@@ -4805,6 +4878,7 @@ bool ParseContainerStart(const char* payload, size_t payload_size, int output,
       IsExactOCIBootstrapContainerStart(message)
           ? ProcessState::OCIBootstrapStage::kAwaitingDemotion
           : ProcessState::OCIBootstrapStage::kAwaitingBootstrapShell;
+  state->responder_init = message.args_size()==3 && message.args(2)==ResponderBootstrapCommand();
   state->bootstrap_group_set = true;
   state->bootstrap_group_id = message.context_data().thread_group_id();
   state->bootstrap_group_start_time_ns = message.context_data().thread_group_start_time_ns();
@@ -5510,11 +5584,18 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
+    if (candidate.responder_init && (message.context_data().is_exec_session() || message.context_data().parent_thread_group_id()!=0)) {
+      *reason="PROCESS_PROVENANCE_UNKNOWN";return false;
+    }
     if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingBootstrapShell) {
       if (!IsExactOCIBootstrapShell(message, group->second, candidate)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }
+      const bool responder = message.argv(2)==ResponderBootstrapCommand();
+      if (responder && !HasResponderSupplyExpectation(topology)) { *reason="TOPOLOGY_INVALID";return false; }
+      candidate.responder_init=responder;
+      process_state->responder_init=responder;
       group->second.oci_bootstrap_stage = ProcessState::OCIBootstrapStage::kAwaitingDemotion;
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
@@ -5522,7 +5603,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingDemotion) {
-      if (!IsExactOCIBootstrapDemotion(message)) {
+      if (!IsExactOCIBootstrapDemotion(message,candidate.responder_init)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }
@@ -5533,7 +5614,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingSleep) {
-      if (!IsExactOCIBootstrapSleep(message)) {
+      const bool responder = candidate.responder_init;
+      const bool exact_responder = message.binary_path()==kResponderPath && message.execfn()==kResponderPath &&
+          message.argv_size()==2 && message.argv(0)==kResponderPath && message.argv(1)=="serve" && IsResponderImage(topology);
+      if (responder ? !exact_responder : !IsExactOCIBootstrapSleep(message)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
         return false;
       }
@@ -5544,7 +5628,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kComplete &&
-        (IsExactOCIBootstrapDemotion(message) || IsExactOCIBootstrapSleep(message))) {
+        (candidate.responder_init || IsExactOCIBootstrapDemotion(message) || IsExactOCIBootstrapSleep(message))) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
@@ -6737,6 +6821,9 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
       if (!ParseContainerStart(payload, payload_size, output, container_id, process_state, reason)) {
         set_fault_site(FaultSite::kContainerStart);
         return false;
+      }
+      if (process_state->responder_init && !HasResponderSupplyExpectation(topology)) {
+        *reason="TOPOLOGY_INVALID";set_fault_site(FaultSite::kContainerStart);return false;
       }
       return true;
     case gvisor::common::MESSAGE_SENTRY_CLONE:

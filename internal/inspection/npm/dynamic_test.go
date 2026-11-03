@@ -183,6 +183,7 @@ func TestDynamicInspectorRequiresFreshEnvironmentProfile(t *testing.T) {
 	for _, previous := range []struct{ name, descriptor string }{
 		{"npm-dynamic-lifecycle-v1", runtimeidentity.NodeImageReference},
 		{"npm-dynamic-lifecycle-environments-v2", runtimeidentity.NodeImageReference},
+		{"npm-dynamic-environment-state-v1", strings.TrimSuffix(dynamicCheckRuntimeDescriptor, "|"+runtimeidentity.SandboxResponderInspectionIdentity)},
 		{dynamicCheckProfileName, strings.Replace(dynamicCheckRuntimeDescriptor, domain.SandboxEnvironmentStateSchema, "workspace-state-v1", 1)},
 	} {
 		legacy, _ := domain.CheckProfileDigest(previous.name, previous.descriptor)

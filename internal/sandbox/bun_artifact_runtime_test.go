@@ -167,7 +167,7 @@ func TestBunArtifactRuntimeOwnsFreshNativeAndProjectVolumes(t *testing.T) {
 		}
 		sessions = append(sessions, result.SessionID().String())
 	}
-	if sessions[0] == sessions[1] || len(r.nativeNames) != 4 || r.nativeNames[0] == r.nativeNames[1] || r.nativeRemovals != 4 || r.volumeRemovals != 8 || r.removals != 8 || r.introductions != 4 || r.executions != 4 {
+	if sessions[0] == sessions[1] || len(r.nativeNames) != 4 || r.nativeNames[0] == r.nativeNames[1] || r.nativeRemovals != 4 || r.volumeRemovals != 10 || r.removals != 8 || r.introductions != 4 || r.executions != 4 {
 		t.Fatal("runtime/session reused or not finalized", r)
 	}
 	if slices.Index(r.events, "bun-tool") < 0 || slices.Index(r.events, "bun-tool") > slices.Index(r.events, "copy") {

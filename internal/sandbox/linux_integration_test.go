@@ -486,6 +486,16 @@ type integrationRunner struct {
 // the production-equivalent trusted Host command boundary.
 func (integrationRunner) RequiresDirectExecAdmission() {}
 
+func (r integrationRunner) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	r.t.Helper()
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		return err
+	}
+	defer executor.Close()
+	return executor.StartContainerInputOutput(ctx, input, output, id)
+}
+
 func integrationCapabilityProbe(executor Executor) CapabilityProbe {
 	return func(ctx context.Context) (Capability, error) {
 		return probe(ctx, runtime.GOOS, executor)

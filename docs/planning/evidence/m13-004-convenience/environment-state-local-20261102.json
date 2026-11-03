@@ -1353,5 +1353,295 @@
       "actual chain and tamper/timeout/spoof/egress negatives",
       "cross-ecosystem shared budgets/cancellation/cleanup and grouped final qualification"
     ]
+  },
+  "s02_responder_component_checkpoint": {
+    "scope": "component protocol/readonly supply/OCI role/controller and npm-instance-ELF owner candidate wiring; cross-ecosystem/installed qualification and whole S02 remain open",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-protocol-tests.json",
+        "sha256": "199e6a8a29c5b765b7c67ee3f3e63e158eb9870266ed19220fedd5b33c6c5ba1",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.729
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-protocol-current.json",
+        "sha256": "735e1ad228c6d60ca644f5a7051cde4027b2e672a009c460f47ccf4114662176",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.696
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-data-v1.json",
+        "sha256": "29e642722ed568cf6f80bad00b1d746628d80c81baa7de8f87b4ef0728011613",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.89
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-data-v2.json",
+        "sha256": "89b13e6185540a5d6e2e3792ec52ff6e5e9648ca4d45eda53b67dfecc5cc42d7",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.996
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-tmpfs-v1.json",
+        "sha256": "391c74331c969370d0b32f56dfa30e43e56bdcbaada31dc813ac7dfef25cee58",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.709
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-local-v1.json",
+        "sha256": "a77c2310a5f54747fa7d42a94c5fe45da08b8a86b0f03780d25f46cec656bb16",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.719
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-local-v2.json",
+        "sha256": "18701f37d9967c684815ea5b6eac2273fb706fed3eef9db62d81eebb9ee2d036",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 2.306
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-data-v1.json",
+        "sha256": "e7f0a0086fce4498ac89a4ecf10359e9c8126ded91bdbae9ab8deb6a1b9113e5",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 0.269
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-data-v2.json",
+        "sha256": "3e36179667919a2efc822a120cf1b26e9159980c1dbb938ecd37e8f5568bcf62",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 3.586
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-foundation.json",
+        "sha256": "9a1ae376dc808a8af9181010187a184c3759082169b1c6ae6dfa3b5081ff9a2f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 43.748
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-native-transport-regression.json",
+        "sha256": "a847c21f0b9514be9e2d894fe3170f63244934e8f81cc2cb7b5111040385cd74",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 13.994
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v4.json",
+        "sha256": "4fea561e12b324a4475fe38deeb64dc2f08a9d77d8031445c306b954aed42a52",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 40.051
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v5.json",
+        "sha256": "1b56d17841bb188b2d9e06311a146fcb2fc69ae7430160560705ae59cdfeef58",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 41.347
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v4.json",
+        "sha256": "dbbb753b5ad113be62706058b9b66a0e64442901e6dd8e1b9c1ac4b29591aeb8",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.47
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v5.json",
+        "sha256": "d9a7aae767336aa5000c888f2fc9f616b4fdf371916513a5961bc42ff02a616f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.185
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v6.json",
+        "sha256": "8dfbc8d33d818c7dc9e2f203b82733e2803f52d1b0d04eae8dc066ccfd236ae2",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.365
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-controller-current-race.json",
+        "sha256": "d463a3d9759d5321dfaa08a18a7b6f5743a98332c8669fb1aa69ec96d9c77fad",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 13.7
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v1.json",
+        "sha256": "29d3546fad55af76913b66b60989f64df4a0d011693c485c2b41f36d92bbfd77",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.995
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v2.json",
+        "sha256": "2544b309fe7eb5ffe98bb8ae9667fc567a56da4472ef14d22f5a56bcfa7d9184",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.522
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v3.json",
+        "sha256": "483178b8cb237f023bf980548c35e0703c2c5faba4f5c9da5d1f1bae93822ff5",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.548
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v6.json",
+        "sha256": "ffee130355217cc4bd6f436b4f8ab3391bed927787c4b5c98516f2d1cba8bc88",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 42.551
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-batch-v3.json",
+        "sha256": "750cef08c8da9797ad0785300f1204b44335450dde9c77b12d292da16308ead4",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 49.676
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v4.json",
+        "sha256": "29e5e8cf4499a7dd484784f468c4fafac8944c210e388e72782f743c65ea4e07",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.585
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v5.json",
+        "sha256": "651210ed23cbfc75823001ff3ff13b2ce9ba0798f68ce720927a4de44db822a1",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.036
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v6.json",
+        "sha256": "34666a84f0e78939119ec0fc4cb587b0789a95a90146446601c2db0265050a2f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.526
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v7.json",
+        "sha256": "2ae52eabc4279de0b82e8f1a9f2164726ec7a7154ab68adb99b9f375b02893c8",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.513
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-resolver-attestation-tests.json",
+        "sha256": "cf7a995d4158d253ac1f0789a6523914ea8e780d65efc75c5a01496e84d6c780",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 8.985
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-foundation.json",
+        "sha256": "fa4385e817194d06ea165d11ac13812a48634acff68c1ab69d5fc0504f453757",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 41.6
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-model-tests.json",
+        "sha256": "471a5394c327a1230440fad4c570e5c21ec8382ec40b9863977470a84bb98132",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 8.616
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-model-correction.json",
+        "sha256": "f2ab2f5705db5e277069b5ea6da02b232abe24e7ebfe5f6e915916619cfbccd6",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 8.599
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-race.json",
+        "sha256": "eadf885ea1f40e7da4579c3516562504c82fd0e6bbde90f3af585fefc67cf63f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 14.198
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v1.json",
+        "sha256": "999a79226004edee9c4586490b2c19b48e73d343357f163f13c6204983a54208",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 0.856
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v2.json",
+        "sha256": "c5e55d7967f22404c9afd065b3dd254fcf1be720fa2cdeb63d4fa4fab9262321",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 15.847
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v3.json",
+        "sha256": "8eb566556ca18cfa143ec39d79365b844aae55132bb3ea9f685f45eee2350b44",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 31.218
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-profile-race.json",
+        "sha256": "ffcebbaee778fab203bcac88fb523c4bffe36f758efeaabd3efa460f17a5fc87",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 17.356
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-current-static.json",
+        "sha256": "ae31e3108b160cc7f9973605048075182523f981fec3933a884a63f79bb761ac",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 16.43
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-vet.json",
+        "sha256": "32719066c1fcd90ec6ca6b8f6e367db2a9e9e9c7a7f17547c2326d361b48cf51",
+        "exit_code": 0,
+        "elapsed": 1.55
+      }
+    ],
+    "storage": "<=4MiB protected current HAA component; one bounded never-started RW stager, only readonly consumers afterwards; no third-party pin change",
+    "prerequisite_failure": "supply-data-v1 stopped before factory at old Host installed gVisor bundle mismatch; v2 supplied exact verified unchanged bundle in child private mount namespace only",
+    "remaining": [
+      "npm instances/ELF actual shared-path qualification and installed NativeInstallRoot path remain open; archive normal/fresh/synthetic chain scoped PASS",
+      "ordinary Python and Go/Cargo responder supply/controller integration; minimal synthetic resolver classification",
+      "check-profile/cache revisions, required condition/negative corpus and shared budgets",
+      "signed release/install/doctor/self-update and complete measured acceptance"
+    ],
+    "role_prerequisite": "focus-v5 and actual role-v6 PASS with independent termination/drain; GOMAXPROCS=1 cgroup avoidance refuted by role-v4",
+    "chain_preparation_errors": "v1 ran old per-mode binary despite new initial copy: EXCLUDED from chain proof; v2 direct Node stayed CONTROL and failed own maps: no classifier change; v3 invalid --handoff exited125: fixture correction only",
+    "owner_candidate": "canonical foundation41.600s, current targeted Race14.198s PASS; original Bun invalid-supply preflight failure corrected by validating/preparing once before common resource setup",
+    "actual_owner_failures": "v1 source fixture bind target /usr/lib/heliopause absent: client NOT_RUN; v2 integrationRunner lacked init method: first unavailable controller error preserved, no qualification; both restored/Host unchanged and copies removed",
+    "npm_owner_actual": "v3/31.218s: three named/no-skip cases normal+fresh+dormant synthetic chain PASS; two environments/external completion/network10, helperwait0/Host unchanged/exact restore and374902182B removed; test-owned protected-current source fixture, installed path/Policy remain unqualified",
+    "native_source_delta": "after native-v3, responderToolName literal moved to central native_paths owner with byte-identical value, inspection revisions gained common protocol/compiler identity and stale-profile refusal test; scoped profile Race17.356s and affected pinned Staticcheck16.430s PASS; no repeat native/kernel/CPP",
+    "completed_client_cleanup": {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s02-completed-role-chain-owner-cleanup.json",
+      "processes": 96,
+      "references": 0,
+      "query_errors": 0,
+      "deleted_bytes": 91714779
+    }
   }
 }

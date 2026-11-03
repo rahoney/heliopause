@@ -820,3 +820,149 @@ Observer-only C++135/54.556s와 exact profile/identity가 PASS다. 새 kernel/bu
 Host 동일/정확한 복원/helperwait0·370554440B 사본 정리를 확인했다. 미확인/LOCAL
 listener, guest 주소 위조·재사용·한도 회귀도 보존했다. 이는 transport primitive만이며
 독립 responder 역할/고정 DNS/행동 chain·S02 전체 완료는 계속 MISSING이다.
+
+
+### S02 고정 응답기 구현 범위
+
+현재 언어별 Artifact interpreter와 shell helper에는 공통 UDP/TCP server가 없다. 기존
+resolver service를 guest에 노출하지 않고 현재 work item에 필요한 작은 static Go
+`haa-sandbox-responder`를 추가한다. 별도 일반 서비스 framework/config/plugin은 만들지
+않는다. 고정 IPv4 loopback DNS53/HTTP80, 유한 이름/고정 body·상태, 합산 요청/byte/시간
+한도와 controller stdin STOP/stdout readiness만 처리한다. Artifact/Host 파일·환경·외부
+DNS/upstream을 읽지 않는다. Guest의 다른 UID1001·root 소유 코드와 기존 admission/관찰/
+resource/cleanup owner에 연결할 예정이며 프로토콜 단독 성공을 WIRED로 쓰지 않는다.
+새 공급물의 서명 release/설치/doctor/self-update와 버전 유지보수 연결도 필수 MISSING이다.
+
+
+응답기 실행은 stimulated writer의 기존 OCI init을 UID1001 응답기로 사용하고 Artifact
+UID1000 및 readonly keeper는 유지한다. 새 daemon/container/권한 예외는 만들지 않는다.
+고정 helper는 실행 전 root 소유0555 코드로 준비하고 stdin/stdout의 기존 Docker start
+attach에 controller 채널을 연결한다. 장기 direct exec는 기존 admission gate를 점유해
+Artifact 시작을 막으므로 사용하지 않는다. Stage/서명 공급물·고정 DNS·실제 role/정리
+검증은 아직 MISSING이며 이 연결 전에 전체 성공으로 기록하지 않는다.
+
+
+고정 응답기 프로토콜의 local Race1.696s는 PASS며 static build는3985568B다. 기존
+helper tmpfs1MiB에 들어간다고 가정하지 않는다. DATA staging-v1/1.890s는 시작 준비
+FAIL이고 v2/1.996s의 추가 stderr에서 첫 실제 start에 helper 경로가 없음을 확인했다
+(Node image entrypoint가 이를 module로 실행해 MODULE_NOT_FOUND). Never-started
+container의 cp 성공은 공급 유지 증거가 아니다. Tmpfs 수명/실제 readback을 먼저 대조하며
+포트 권한·CPP·role을 바꾸지 않는다. 두 시험 모두 자기 container/volume 제거·Docker
+원상태를 확인했다. 새 제품 응답기 연결 네 상태는 아직 NO다.
+
+
+Prestart readback은 tmpfs에서 root만 남았고(local과 구분), 일반 local에서는399만B를
+유지했지만 Config.User1001 시험이 파일 owner도1001로 만들었다. 기존 bootstrap처럼
+Root로 준비하고 기존3 capability를 모두 버린 UID1001 init으로 교정한 local-v2/2.306s만
+root0555 readback·DNS53/HTTP80·Artifact1000의 파일 write/chmod·signal 거부·정상 STOP
+종료가 PASS다. 둘 모두 실제 egress 없이 자기 container/volume을 제거했다. 제품 연결은
+고정 code-only local volume을 새 consumer에 readonly로만 붙이는 방식으로 좁힌다.
+현재 constructor는 기존 protected-current reader·native TAR transport/동일 readback을
+재사용한다. Third-party size/hash pin은 그대로 두고 HAA component의 GoVersion은 기존
+runtimeidentity의 compiler owner를 따른다. 실제 role/완료 원장·환경 공간 합산 budget,
+release 공급물/서명 설치·doctor/self-update와 final qualification은 아직 MISSING이다.
+
+
+Current supply-data-v1/0.269s는 factory 전 NewSystem에서 이전 Host bundle identity 불일치로
+NOT_REACHED였다. 같은 검증된 bundle을 child의 private mount namespace에만 공급한
+v2/3.586s는 실제 protected-current reader/고정 compiler·static metadata·root0555
+TAR readback, readonly 소비자·부착 중 삭제 거부와 전체 DATA 정리를 PASS했다. 전역
+런타임/설정은 바꾸지 않았고 private328572898B 사본도 제거했다. 새 code-only local 공급
+경로의 component IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다.
+기존 UV/PNPM/Bun 전송/pin 표적 Race13.994s와 canonical foundation43.748s도 PASS다.
+제품 observer role·controller 종료 및 모든 언어의 실제 검역/Policy·release 공급은 미완료다.
+
+
+### S02 OCI role와 controller — 아직 실제 종료 미완료
+
+새 role CPP-v1은 O_CLOEXEC의 표준 헤더 누락으로 compile10.913s/NOT_RUN이었다. v2는
+기존135 PASS·새 role1 FAIL/47.310s다. Focus-v1/40.444s의 phase1에서 새 latch가
+SENTRY_EXEC의 필수 profile registration을 null로 전달한 것을 확인했고 production
+wrapper를 사용한 focus-v2/39.398s만 PASS다. 권한 predicate를 완화하지 않았다.
+Go controller의 준비/STOP과 독립 종료 구분·취소/위조 frame 및 기존 pin 회귀13.553s도
+한정 PASS다. 이후 trailing frame fault 보존/readonly reader·역할 준비 시험은 새 후보다.
+
+Actual role-v1/5.435s는 fixture의 필수 closure digest label 부재로 resource Register
+FAIL이었다. Label만 교정한 v2/5.261s는 등록 후 observer incomplete였다. 진단을
+보존한 v3/6.352s의 최초 원인은 OPEN_RESULT_CLASSIFICATION_PROC/PROC_SELF_CGROUP,
+CONTROL/OCI_ROOT/OTHER·flags557056이다. Go1.27.3 runtime의 시작 전 기본 CPU/cgroup
+탐지와 대응하며 실제 종료/완료 성공은 아니다. 새 고정 init에만 GOMAXPROCS=1을 적용해
+Artifact Config 환경·파일 권한을 유지한다. 해당 명령의 CPP focus-v3/40.908s는 PASS고
+actual 확인은 다음이다. Source helper/policy는 go list -deps의 실제 production GoFiles와
+go.mod/go.sum을 대조해 재사용하고, 변한 시험 바이너리만 다시 만든다.
+
+모든 actual은 helperwait0/정확한 runtime·pod-init 복원/Host 동일이며 각각374758305B,
+374758393B,374765454B 사본을 회수했다. 아직 Artifact/DNS-client 행동 chain·Policy,
+실제 role 종료/전체 S02·지원 생태계 연결·release 공급물을 완료로 표시하지 않는다.
+
+
+Actual role-v4/5.470s는 GOMAXPROCS=1에도 같은 PROC_SELF_CGROUP에서 실패했다.
+고정 Go runtime의 defaultGOMAXPROCSInit는 설정 판정보다 먼저 OpenCPU를 호출하므로
+해당 설정은 cgroup 읽기 회피책에서 제외한다. Init CPU 수 고정의 의미만 유지한다.
+인증된 responder OCI init의 own cgroup/mountinfo readonly만 허용한 focus-v4/40.051s는
+PASS였고, actual-v5/6.185s는 다음 CGROUP_CPU_QUOTA에서 실패했다. 기존 consumer의
+정확한 CPU quota/period read와 같은 두 경로·system mount를 해당 역할에만 적용하는
+후보를 검증한다. Artifact/clone/write/다른 mount/비슷한 경로는 계속 거부한다.
+두 actual의 helperwait0/Host 동일/정확한 복원과374762110B,374763374B 정리는 확인했다.
+이전 완료 primitive 바이너리3개69133121B도95 process 무참조/query error0 뒤 제거했다.
+
+
+정확한 CPU quota/period·system mount의 authenticated responder read와 negative를
+추가한 focus-v5/41.347s 및 actual role-v6/5.365s는 PASS다. Root 소유 readonly 공급,
+OCI init1001/Artifact boundary1000 readiness, STOP prerequisite와 독립 resource 종료·
+observer SessionComplete를 확인했다. Helperwait0/Host 동일/정확한 복원·374763238B 회수다.
+이 표본은 Artifact/DNS-client/Policy가 없는 역할 선행조건이며 실제 행동 chain과
+기존 검사 owner·배포 공급물 연결/전체 S02 qualification은 여전히 MISSING이다.
+
+
+### S02 fixed resolver와 DATA chain — 한정 actual PASS
+
+Chain-v1은 per-mode 구형 client 재복사로 새 proof에서 제외했다. SHA equality를 강제한
+v2는 Node 직접 CONTROL 실행의 own maps 실패, v3는 잘못된 --handoff의 exit125였다.
+기존 npm -c handoff clone을 재사용한 v4/6.585s에서 NODE/ARTIFACT/CLONE_CHILD의
+정확한 /etc/resolv.conf(system/flags32768) 실패를 확인했다. v5/6.036s는 새 DATA
+attestation이 Docker의 neutral search . 행 생략을 거부했다. 별도 inert runc DATA는
+요청 metadata Search[.] 유지·실제 파일의 search 행 부재와 Root0:0/0644를 확인했다.
+다른 nameserver/domain/options/쓰기 권한/alias/추가 파일은 허용하지 않는다.
+v6/6.526s는 검증 후 immutable OCI /etc/nsswitch.conf의 읽기로 이동했다. 기존 locked
+name-service의 exact resolver/hosts system mounts와 NSS/host.conf/gai.conf OCI files만
+NODE Artifact clone에 적용했고 CONTROL/role/provenance/write/mount/비슷한 경로 거부를
+같은 기존 latch에 연결했다. Full CPP136/49.676s와 actual chain-v7/5.513s가 PASS다.
+후자는 UID1001 fixed responder와 UID1000 Node DATA client의 DNS→HTTP200→더미 파일→
+sink204, ARTIFACT network6·CONTROL network4·완전 drain/독립 종료를 확인했다.
+Host 동일·helperwait0·정확한 복원/374868109B 회수이며 실제 acquire/Policy/전체 S02
+qualification을 뜻하지 않는다. 같은 primitive를 반복하지 않고 다음은 기존 owner 연결이다.
+
+
+### S02 기존 owner 연결 — npm archive actual3 PASS / 나머지 계속 OPEN
+
+고정 code-only 공급은 기존 prepare/current reader를 재사용하며 전체 inspection에 하나다.
+Development writer만 readonly 공급·UID1001 init을 받고 keeper/minimal은 기존 init을 쓴다.
+기존 pythonPhaseRuntime의 stopAndCollect에 STOP prerequisite→독립 resource 종료→완전
+observer drain/제어 채널 종료를 같은7초 정리 context로 연결했다. 기존 CPU watch의 종료
+전이·공유 trace 원장·launch 한도는 유지한다. Npm/instance/ELF의 workspace ceiling에서
+4MiB를 예약하며 code SHA와 고정 DNS 인자를 FixtureDigest에 결합한다. 새 daemon/일반
+proxy/미래 소비자 구조나 third-party pin 예외는 만들지 않았다.
+
+첫 owner 모의 회귀8.616s는 invalid Bun supply 거부 전 responder 자원을 준비한 순서를
+검출했다. 동일 deadline 내 native 공급물을 자원 준비 전에 검증하고 두 환경에서 그
+immutable 준비 결과를 재사용한8.599s 및 current 표적 Race14.198s는 PASS다.
+Canonical foundation41.600s도 PASS지만 이후 profile/test-only 연결과 구분한다.
+Actual-v1/0.856s는 정식 /usr/lib/heliopause가 없는 Host의 bind 준비에서 NOT_RUN이다.
+Root fixture의 동일 factory를 test-only callback으로 주입한 v2/15.847s는 기존 raw
+integrationRunner의 새 init method 누락으로 실패했다. Test adapter에서 production
+Host executor의 동일 메서드를 전달한 v3/31.218s의 정상/fresh/조건부 DNS chain3개는
+PASS다. Network10을 Policy 입력에 보존하고 두 환경 완료/외부 종료를 확인했다.
+Helperwait0/정확한 복원/Host 동일과374902182B 회수를 확인했다. 정식 설치 경로·공급자
+acquire/Policy·instance/ELF 실제 검사·Python/Go/Cargo·전체 S02 qualification은 미완료다.
+
+이후 source delta는 동일 asset name을 기존 runtimeidentity owner로 옮기고 현재 연결한
+npm/instance/root·ELF/provider inspection revision과 공통 protocol/compiler identity를
+갱신한 것이다. Old state-v1 승인을 거부하는 검사와 관련3 inspection package 전체
+Race17.356s 및 영향 package pinned Staticcheck16.430s가 PASS다. 기존 GoVersion 한 곳의
+업데이트를 그대로 따르며 helper 동작 변경 시 이 공통 inspection revision을 갱신한다.
+동일 source의 kernel/bundle·CPP136을 다시 검증하지 않았다.
+
+영향 package go vet1.550s와 diff whitespace도 PASS다. 완료한 role/chain/owner 시험
+바이너리3개는96 process의 무참조/query error0 및 원본 SHA 확인 뒤91714779B를
+삭제했다. 재사용할 고정 helper/SDK/cache·원본 evidence는 유지한다. 새 CI/push/설치는 없다.
