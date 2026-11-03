@@ -232,3 +232,45 @@ func TestBatchLookupRejectsHTTPFailuresAndCancellation(t *testing.T) {
 		})
 	}
 }
+
+func TestLocalBuildQueriesKeepExactIdentityAndUpstreamBoundaryCandidates(t *testing.T) {
+	calls := 0
+	client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		calls++
+		var request struct {
+			Queries []batchQuery `json:"queries"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatal(err)
+		}
+		if len(request.Queries) != 3 || request.Queries[0].Version != "2.6.0+cpu" || request.Queries[1].Version != "2.6.0" || request.Queries[2].Version != "2.6.0+cu126" {
+			t.Fatalf("missing exact or upstream candidate: %+v", request.Queries)
+		}
+		return jsonResponse(`{"results":[{"vulns":[{"id":"GHSA-aaaa-bbbb-cccc","modified":"2026-01-01T00:00:00Z"}]},{"vulns":[{"id":"GHSA-aaaa-bbbb-cccc","modified":"2026-01-01T00:00:00Z"},{"id":"GHSA-dddd-eeee-ffff","modified":"2026-01-01T00:00:00Z"}]},{}]}`), nil
+	})}
+	queries := []osvPackage{{"PyPI", "torch", "2.6.0+cpu"}, {"PyPI", "torch", "2.6.0+cu126"}, {"PyPI", "torch", "2.6.0"}}
+	rows, facts, err := queryBatch(context.Background(), client, queries)
+	if err != nil || calls != 1 || len(facts) != 1 || len(rows) != 3 {
+		t.Fatal(rows, facts, err)
+	}
+	for _, row := range rows {
+		if len(row) != 2 || row[0].id != "GHSA-aaaa-bbbb-cccc" || row[1].id != "GHSA-dddd-eeee-ffff" {
+			t.Fatalf("lost or duplicated upstream evidence: %+v", row)
+		}
+	}
+	if queries[0].Version != "2.6.0+cpu" {
+		t.Fatal("artifact version projected onto public release")
+	}
+}
+
+func TestLocalBuildCompanionQueriesRetainOriginalKeyBudget(t *testing.T) {
+	calls := 0
+	client := &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) { calls++; return nil, errors.New("must not request") })}
+	packages := make([]osvPackage, maxLookupPackages)
+	for n := range packages {
+		packages[n] = osvPackage{"PyPI", fmt.Sprintf("fixture-%d", n), "1.0+cpu"}
+	}
+	if _, _, err := queryBatch(context.Background(), client, packages); err == nil || calls != 0 {
+		t.Fatal("companion query expanded original key budget", calls, err)
+	}
+}

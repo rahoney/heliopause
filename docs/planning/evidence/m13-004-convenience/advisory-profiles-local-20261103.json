@@ -1,0 +1,360 @@
+{
+  "baseline": "f8ce970",
+  "scope": "official named Python profile advisory mapping and conservative local-build boundary; local tests only",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "missing": [
+    "actual current production CLI/source-profile qualification and remaining public/binary consumers",
+    "whole S05 and final hosted acceptance"
+  ],
+  "changed_go_inputs": [
+    {
+      "path": "internal/artifact/pypi/reference.go",
+      "sha256": "8c487b60bb56d881a5d62a17aab265cd255df36f1db9fd737daf1b83773e7248"
+    },
+    {
+      "path": "internal/artifact/pypi/reference_test.go",
+      "sha256": "a8fc43c2f37d0614a7b2ef0441b031f9b6c1447c94be0a40b5c28a852a6ade48"
+    },
+    {
+      "path": "internal/artifact/pypi/source_profile.go",
+      "sha256": "bc3512a57d1f110f25f0e92a480e326f115a4a842b0306194effef4314141e02"
+    },
+    {
+      "path": "internal/inspection/advisory/cache_test.go",
+      "sha256": "8002697b2c70c2304d69430109622e46e3b69cc1d8503c8102cc4f6e9ca043cc"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "2b5331344fa4ded0b70aaa96fe4482b78617c6a0b02e1944fd354fe13339932d"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector_test.go",
+      "sha256": "38660d2a4531bd893be147caa6e85deac0cf1c613c7080dac91c07d38f59a94f"
+    },
+    {
+      "path": "internal/inspection/advisory/osv.go",
+      "sha256": "f4dae2940292c7d0c1f9a83c5b84fb2bba46ba91aeb8706122b2d4d74f01fa4e"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_impact.go",
+      "sha256": "77db74bb1497d30b6b39f562af0aaaebbfd4dca1857bb5eca5df297ea03d7a58"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_impact_test.go",
+      "sha256": "d5dac440d719ea5187f4bdf2b4121a509ea79822a2b988b2f1b6aa6bbe230ee5"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_test.go",
+      "sha256": "350f7175aec197f3301d0bd71d0a9d1df514799c8280adb775117041d41251df"
+    },
+    {
+      "path": "internal/inspection/advisory/report.go",
+      "sha256": "01012f8504def5f6281ca21167813101beb9d64754129ab20905b322b72c20ac"
+    }
+  ],
+  "checks": [
+    {
+      "label": "s05-local-profile-red",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/inspection/advisory",
+        "-run",
+        "TestLocalBuildQueries|TestLocalBuildCompanion|TestOfficialLocalBuild",
+        "-count=1"
+      ],
+      "exit_code": 1,
+      "elapsed": 1.322,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-target",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/artifact/pypi",
+        "./internal/inspection/advisory",
+        "-run",
+        "TestCompareInstalled|TestComparePublic|TestLocalBuild|TestOfficial|TestArtifactMapping|TestUnknownOrdering",
+        "-count=1"
+      ],
+      "exit_code": 1,
+      "elapsed": 5.544,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-target-v2",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/artifact/pypi",
+        "./internal/inspection/advisory",
+        "-run",
+        "TestCompareInstalled|TestComparePublic|TestLocalBuild|TestOfficial|TestArtifactMapping|TestUnknownOrdering",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 1.349,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-foundation",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "foundation"
+      ],
+      "exit_code": 0,
+      "elapsed": 78.777,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "elapsed": 33.63,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-race",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "./internal/artifact/pypi",
+        "./internal/inspection/advisory",
+        "./internal/bootstrap",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 33.251,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-local-profile-static",
+      "command": [
+        "/tmp/haa-full-audit-20261031/combined-final/quality-tools/bin/staticcheck",
+        "./internal/artifact/pypi",
+        "./internal/inspection/advisory",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 23.029,
+      "source_unchanged": true
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "./internal/artifact/pypi",
+        "./internal/inspection/advisory",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 2.668,
+      "source_unchanged": true,
+      "label": "s05-local-profile-vet"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "elapsed": 0.374,
+      "source_unchanged": true,
+      "label": "s05-local-profile-docs"
+    }
+  ],
+  "live_metadata_only": {
+    "scope": "metadata-only live API; no artifact acquisition/execution or product qualification",
+    "endpoint": "https://api.osv.dev/v1/querybatch",
+    "fetched_at": "2026-11-03T14:46:06.552772+00:00",
+    "elapsed": 0.812,
+    "request_sha256": "3ee2913767b06fc39513d5acb7a8c435e0045bdea47672af9c289d564cdc7e45",
+    "response_sha256": "e19378a7b5658d844079c7c38e2d954e87aa6b2f8d8cd62f0c8277d4337f19cc",
+    "rows": [
+      {
+        "version": "2.5.1",
+        "ids": [
+          "GHSA-3749-ghw9-m3mg",
+          "GHSA-53q9-r3pm-6pq6",
+          "GHSA-887c-mr87-cxwp",
+          "GHSA-c678-jfcj-6jmf",
+          "GHSA-f4hp-rmr7-r7v8",
+          "GHSA-qfhq-4f3w-5fph",
+          "GHSA-rrmf-rvhw-rf47",
+          "GHSA-vgrw-7cvw-pwgx",
+          "GHSA-x3gm-94wq-g975",
+          "PYSEC-2025-191",
+          "PYSEC-2025-198",
+          "PYSEC-2025-203",
+          "PYSEC-2025-204",
+          "PYSEC-2025-205",
+          "PYSEC-2025-206",
+          "PYSEC-2025-207",
+          "PYSEC-2025-208",
+          "PYSEC-2025-209",
+          "PYSEC-2025-41",
+          "PYSEC-2026-139",
+          "PYSEC-2026-1970",
+          "PYSEC-2026-2286"
+        ],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.5.1+cpu",
+        "ids": [
+          "GHSA-3749-ghw9-m3mg",
+          "GHSA-53q9-r3pm-6pq6",
+          "GHSA-887c-mr87-cxwp",
+          "GHSA-c678-jfcj-6jmf",
+          "GHSA-f4hp-rmr7-r7v8",
+          "GHSA-qfhq-4f3w-5fph",
+          "GHSA-rrmf-rvhw-rf47",
+          "GHSA-vgrw-7cvw-pwgx",
+          "GHSA-x3gm-94wq-g975",
+          "PYSEC-2025-191",
+          "PYSEC-2025-198",
+          "PYSEC-2025-203",
+          "PYSEC-2025-204",
+          "PYSEC-2025-205",
+          "PYSEC-2025-206",
+          "PYSEC-2025-207",
+          "PYSEC-2025-208",
+          "PYSEC-2025-209",
+          "PYSEC-2025-41",
+          "PYSEC-2026-139",
+          "PYSEC-2026-1970",
+          "PYSEC-2026-2286"
+        ],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.5.1+cu124",
+        "ids": [
+          "GHSA-3749-ghw9-m3mg",
+          "GHSA-53q9-r3pm-6pq6",
+          "GHSA-887c-mr87-cxwp",
+          "GHSA-c678-jfcj-6jmf",
+          "GHSA-f4hp-rmr7-r7v8",
+          "GHSA-qfhq-4f3w-5fph",
+          "GHSA-rrmf-rvhw-rf47",
+          "GHSA-vgrw-7cvw-pwgx",
+          "GHSA-x3gm-94wq-g975",
+          "PYSEC-2025-191",
+          "PYSEC-2025-198",
+          "PYSEC-2025-203",
+          "PYSEC-2025-204",
+          "PYSEC-2025-205",
+          "PYSEC-2025-206",
+          "PYSEC-2025-207",
+          "PYSEC-2025-208",
+          "PYSEC-2025-209",
+          "PYSEC-2025-41",
+          "PYSEC-2026-139",
+          "PYSEC-2026-1970",
+          "PYSEC-2026-2286"
+        ],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.6.0",
+        "ids": [
+          "GHSA-3749-ghw9-m3mg",
+          "GHSA-887c-mr87-cxwp",
+          "GHSA-c678-jfcj-6jmf",
+          "GHSA-f4hp-rmr7-r7v8",
+          "GHSA-qfhq-4f3w-5fph",
+          "GHSA-rrmf-rvhw-rf47",
+          "GHSA-vgrw-7cvw-pwgx",
+          "GHSA-x3gm-94wq-g975",
+          "PYSEC-2025-191",
+          "PYSEC-2025-198",
+          "PYSEC-2025-199",
+          "PYSEC-2025-200",
+          "PYSEC-2025-201",
+          "PYSEC-2025-202",
+          "PYSEC-2025-203",
+          "PYSEC-2025-204",
+          "PYSEC-2025-205",
+          "PYSEC-2025-206",
+          "PYSEC-2025-207",
+          "PYSEC-2025-208",
+          "PYSEC-2025-209",
+          "PYSEC-2026-139",
+          "PYSEC-2026-1970",
+          "PYSEC-2026-2286"
+        ],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.6.0+cpu",
+        "ids": [
+          "GHSA-3749-ghw9-m3mg",
+          "GHSA-887c-mr87-cxwp",
+          "GHSA-qfhq-4f3w-5fph",
+          "GHSA-rrmf-rvhw-rf47",
+          "GHSA-vgrw-7cvw-pwgx",
+          "PYSEC-2025-191",
+          "PYSEC-2025-198",
+          "PYSEC-2025-199",
+          "PYSEC-2025-200",
+          "PYSEC-2025-201",
+          "PYSEC-2025-202",
+          "PYSEC-2025-203",
+          "PYSEC-2025-204",
+          "PYSEC-2025-205",
+          "PYSEC-2025-206",
+          "PYSEC-2025-207",
+          "PYSEC-2025-208",
+          "PYSEC-2025-209",
+          "PYSEC-2026-139",
+          "PYSEC-2026-1970",
+          "PYSEC-2026-2286"
+        ],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.14.0+cpu",
+        "ids": [],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.14.0+cu126",
+        "ids": [],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.14.0+cu130",
+        "ids": [],
+        "next_page_token": ""
+      },
+      {
+        "version": "2.14.0+cu132",
+        "ids": [],
+        "next_page_token": ""
+      }
+    ]
+  },
+  "unchanged_contracts": [
+    "runtime lock and updater",
+    "artifact SourceID/full version/digest",
+    "required static/dynamic inspections",
+    "4096 keys / 8192 references / 64 requests / 16MiB / 30s",
+    "no CI or installation"
+  ]
+}

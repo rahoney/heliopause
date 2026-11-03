@@ -122,3 +122,31 @@ func FuzzParseReference(f *testing.F) {
 		}
 	})
 }
+
+func TestCompareInstalledVersionsPreservesLocalOrdering(t *testing.T) {
+	ordered := []string{"1.0rc1+cpu", "1.0", "1.0+abc", "1.0+abc.1", "1.0+abc.2", "1.0+abc.10", "1.0+cpu", "1.0+1", "1.0+2", "1.0.post1", "1.1"}
+	for i, left := range ordered {
+		for j, right := range ordered {
+			order, err := CompareInstalledVersions(left, right)
+			if err != nil || i < j && order >= 0 || i == j && order != 0 || i > j && order <= 0 {
+				t.Fatal(left, right, order, err)
+			}
+		}
+	}
+	for _, pair := range [][2]string{{"1.0+ABC-001", "1+abc.1"}, {"1.0+CPU", "1.0.0+cpu"}} {
+		if order, err := CompareInstalledVersions(pair[0], pair[1]); err != nil || order != 0 {
+			t.Fatal(pair, order, err)
+		}
+	}
+	for _, invalid := range []string{"1.0+cpu.", "1.0+cpu..1", "1.0+cpu-", "1.0+cpu+1", "1.0+?", "1.0+cpu\n", strings.Repeat("1", 257)} {
+		if _, err := CompareInstalledVersions(invalid, "1"); err == nil {
+			t.Fatal("invalid local version accepted", invalid)
+		}
+		if _, err := CompareInstalledVersions("1", invalid); err == nil {
+			t.Fatal("invalid right local version accepted", invalid)
+		}
+	}
+	if _, err := ComparePublicVersions("1+cpu", "1"); err == nil {
+		t.Fatal("public-only comparison contract widened")
+	}
+}

@@ -56,6 +56,11 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 		}
 	}
 	var findings []domain.Finding
+	if base, _, local := strings.Cut(query.Version, "+"); mapped && query.Ecosystem == "PyPI" && local {
+		if _, err := addFact("advisory-applicability", "Official named Python profile; exact version "+query.Version+" and upstream candidate "+base+" share the bounded lookup. Upstream-only affected evidence means UNKNOWN/manual review, not confirmed local impact or a clean build."); err != nil {
+			return domain.InspectionReport{}, err
+		}
+	}
 	var assessments []advisoryFinding
 	var assessmentErr error
 	if mapped && lookupErr == nil {

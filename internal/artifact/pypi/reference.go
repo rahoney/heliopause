@@ -152,6 +152,59 @@ func NormalizeInstalledVersion(value string) (string, error) {
 	return normalizeVersionForProfile(value, true)
 }
 
+// CompareInstalledVersions preserves local build labels in PEP 440 ordering.
+// Public reference parsing and ComparePublicVersions remain public-only.
+func CompareInstalledVersions(left, right string) (int, error) {
+	var parts [2][]string
+	for index, value := range []string{left, right} {
+		if len(value) > 256 {
+			return 0, errors.New("installed version comparison input exceeds bound")
+		}
+		canonical, err := NormalizeInstalledVersion(value)
+		if err != nil {
+			return 0, err
+		}
+		parts[index] = strings.SplitN(canonical, "+", 2)
+		if len(parts[index]) == 2 {
+			parts[index][1] = strings.ReplaceAll(parts[index][1], "-", ".")
+			for _, segment := range strings.Split(parts[index][1], ".") {
+				if segment == "" {
+					return 0, errors.New("local version contains an empty segment")
+				}
+			}
+		}
+	}
+	order, err := ComparePublicVersions(parts[0][0], parts[1][0])
+	if err != nil || order != 0 {
+		return order, err
+	}
+	if len(parts[0]) != len(parts[1]) {
+		return len(parts[0]) - len(parts[1]), nil
+	}
+	if len(parts[0]) == 1 {
+		return 0, nil
+	}
+	x, y := strings.Split(parts[0][1], "."), strings.Split(parts[1][1], ".")
+	for index := 0; index < min(len(x), len(y)); index++ {
+		xNumeric := strings.Trim(x[index], "0123456789") == ""
+		yNumeric := strings.Trim(y[index], "0123456789") == ""
+		switch {
+		case xNumeric && yNumeric:
+			order = compareVersionNumber(x[index], y[index])
+		case xNumeric:
+			order = 1
+		case yNumeric:
+			order = -1
+		default:
+			order = strings.Compare(x[index], y[index])
+		}
+		if order != 0 {
+			return order, nil
+		}
+	}
+	return len(x) - len(y), nil
+}
+
 // IsFinalVersion reports whether an already canonical public PEP 440 version
 // has no pre-release or development-release segment.
 func IsFinalVersion(value string) bool {

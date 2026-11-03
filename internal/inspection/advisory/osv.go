@@ -10,6 +10,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -52,18 +53,33 @@ func queryBatch(ctx context.Context, client *http.Client, packages []osvPackage)
 	defer cancel()
 	unique := make([]osvPackage, 0, len(packages))
 	byPackage := make(map[osvPackage]int, len(packages))
-	positions := make([]int, len(packages))
+	positions := make([][2]int, len(packages))
 	for index, p := range packages {
 		if !validPackage(p) {
 			return nil, nil, errResponse
 		}
-		position, exists := byPackage[p]
-		if !exists {
-			position = len(unique)
-			byPackage[p] = position
-			unique = append(unique, p)
+		candidates := []osvPackage{p}
+		if base, _, local := strings.Cut(p.Version, "+"); p.Ecosystem == "PyPI" && local {
+			upstream := p
+			upstream.Version = base
+			if !validPackage(upstream) {
+				return nil, nil, errResponse
+			}
+			candidates = append(candidates, upstream)
 		}
-		positions[index] = position
+		positions[index] = [2]int{-1, -1}
+		for candidate, query := range candidates {
+			position, exists := byPackage[query]
+			if !exists {
+				if len(unique) >= maxLookupPackages {
+					return nil, nil, errResponse
+				}
+				position = len(unique)
+				byPackage[query] = position
+				unique = append(unique, query)
+			}
+			positions[index][candidate] = position
+		}
 	}
 	results := make([][]advisoryReference, len(unique))
 	ids := make([]map[string]bool, len(unique))
@@ -133,12 +149,24 @@ func queryBatch(ctx context.Context, client *http.Client, packages []osvPackage)
 	}
 	ordered := make([][]advisoryReference, len(packages))
 	expanded := 0
-	for index, position := range positions {
-		if len(results[position]) > maxLookupIDs-expanded {
-			return nil, facts, errResponse
+	for index, candidates := range positions {
+		seen := make(map[string]bool)
+		for _, position := range candidates {
+			if position < 0 {
+				continue
+			}
+			for _, reference := range results[position] {
+				if seen[reference.id] {
+					continue
+				}
+				if expanded >= maxLookupIDs {
+					return nil, facts, errResponse
+				}
+				seen[reference.id] = true
+				ordered[index] = append(ordered[index], reference)
+				expanded++
+			}
 		}
-		expanded += len(results[position])
-		ordered[index] = append([]advisoryReference(nil), results[position]...)
 	}
 	return ordered, facts, nil
 }

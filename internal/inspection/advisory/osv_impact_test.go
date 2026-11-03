@@ -103,8 +103,8 @@ func TestRecordAssessmentRequiresMappedSubjectAndSeparatesUnknown(t *testing.T) 
 		t.Fatal("withdrawal collapsed into vulnerability or generic safe result", got, err)
 	}
 	query.Version = "1.0+cpu"
-	if got, err := assessRecord(query, record); err != nil || got != impactUnknown {
-		t.Fatal("local build silently treated as a public release", got, err)
+	if got, err := assessRecord(query, record); err != nil || got != impactWithdrawn {
+		t.Fatal("local build lost withdrawal", got, err)
 	}
 }
 
@@ -122,5 +122,33 @@ func TestPackageMatchingReusesPublicNameRules(t *testing.T) {
 		if got := samePackage(tc.query, tc.subject); got != tc.want {
 			t.Fatalf("subject mapping=%v want=%v query=%#v subject=%#v", got, tc.want, tc.query, tc.subject)
 		}
+	}
+}
+
+func TestOfficialLocalBuildDoesNotHideUpstreamEndpoint(t *testing.T) {
+	query := osvPackage{"PyPI", "torch", "2.6.0+cpu"}
+	for _, tc := range []struct {
+		name     string
+		versions []string
+		events   []osvEvent
+		want     versionImpact
+	}{
+		{"public last affected", nil, []osvEvent{{Introduced: "0"}, {LastAffected: "2.6.0"}}, impactUnknown},
+		{"public enumerated only", []string{"2.6.0"}, nil, impactUnknown},
+		{"exact local affected", nil, []osvEvent{{Introduced: "0"}, {Fixed: "2.7.0"}}, impactAffected},
+		{"local fix", nil, []osvEvent{{Introduced: "0"}, {Fixed: "2.6.0+cpu"}}, impactUnknown},
+		{"public fix", nil, []osvEvent{{Introduced: "0"}, {Fixed: "2.6.0"}}, impactUnaffected},
+		{"exact local enumerated", []string{"2.6.0+cpu"}, nil, impactAffected},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			entry := osvAffected{Package: osvPackage{Ecosystem: "PyPI", Name: "torch"}, Versions: tc.versions}
+			if tc.events != nil {
+				entry.Ranges = []osvRange{{Type: "ECOSYSTEM", Events: tc.events}}
+			}
+			record := osvRecord{ID: "GHSA-aaaa-bbbb-cccc", Affected: []osvAffected{entry}}
+			if got, err := assessRecord(query, record); err != nil || got != tc.want {
+				t.Fatal(got, tc.want, err)
+			}
+		})
 	}
 }

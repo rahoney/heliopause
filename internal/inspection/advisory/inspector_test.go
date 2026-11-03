@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -71,7 +72,7 @@ func (p *retainedInspector) ExpectedChecks(context.Context, domain.AcquiredArtif
 func TestArtifactMappingUsesExactExistingSourceAndVersionGrammar(t *testing.T) {
 	for _, tc := range []struct{ source, name, version, ecosystem string }{
 		{"npm", "@fixture/tool", "1.2.3", "npm"}, {"pypi", "jinja2", "2.10", "PyPI"}, {"go-proxy", "example.com/module", "v1.2.3", "Go"}, {"crates-io", "serde_json", "1.0.0", "crates.io"},
-		{"pytorch-cu126", "torch", "2.9.0+cu126", ""}, {"pypi", "jinja2", "2.10+local", ""}, {"pypi", "Jinja2", "2.10", ""}, {"npm", "fixture", "latest", ""}, {"go-proxy", "example.com/module", "1.2.3", ""}, {"cargo", "serde", "1.0.0", ""}, {"github-release", "jinja2", "2.10", ""}, {"terraform-provider", "jinja2", "2.10", ""},
+		{"pytorch-cu126", "torch", "2.9.0+cu126", "PyPI"}, {"pypi", "jinja2", "2.10+local", ""}, {"pypi", "Jinja2", "2.10", ""}, {"npm", "fixture", "latest", ""}, {"go-proxy", "example.com/module", "1.2.3", ""}, {"cargo", "serde", "1.0.0", ""}, {"github-release", "jinja2", "2.10", ""}, {"terraform-provider", "jinja2", "2.10", ""},
 	} {
 		t.Run(tc.source+tc.name+tc.version, func(t *testing.T) {
 			query, ok := packageForArtifact(advisoryArtifact(t, tc.source, tc.name, tc.version))
@@ -562,5 +563,30 @@ func TestAdvisoryRecordEvidenceUsesReadableImpactAndFixedProviderLink(t *testing
 				t.Fatal("normalized display contract differs", report.Evidence()[1].Summary())
 			}
 		})
+	}
+}
+
+func TestOfficialPythonProfileMappingUsesExistingOwnedProjectAndBuild(t *testing.T) {
+	for _, profile := range artifactpypi.AllSourceProfiles() {
+		if !artifactpypi.IsPyTorchSource(profile.Source()) {
+			continue
+		}
+		suffix := strings.TrimPrefix(profile.Name(), "pytorch:")
+		for _, project := range []string{"torch", "torchvision", "torchaudio"} {
+			for _, version := range []string{"1.0", "1.0+" + suffix} {
+				query, ok := packageForArtifact(advisoryArtifact(t, profile.Source().String(), project, version))
+				if !ok || query.Ecosystem != "PyPI" || query.Name != project || query.Version != version {
+					t.Fatal(profile.Name(), query, ok)
+				}
+			}
+		}
+		for _, pair := range [][2]string{{"jinja2", "1.0"}, {"Torch", "1.0+" + suffix}, {"torch", "1.0+untrusted"}, {"torch", "1.0+" + suffix + ".1"}} {
+			if _, ok := packageForArtifact(advisoryArtifact(t, profile.Source().String(), pair[0], pair[1])); ok {
+				t.Fatal("accepted wrong profile ownership/build", profile.Name(), pair)
+			}
+		}
+	}
+	if _, ok := packageForArtifact(advisoryArtifact(t, "pytorch-cu999", "torch", "1.0+cu999")); ok {
+		t.Fatal("unregistered source accepted")
 	}
 }

@@ -223,3 +223,59 @@ func TestAdvisoryCachePreservesQueryAndStorageFailureAxes(t *testing.T) {
 		})
 	}
 }
+
+func TestOfficialLocalProfileRetainsUpstreamReviewAcrossCacheAndRefreshFailure(t *testing.T) {
+	store := &advisoryCacheFixture{}
+	ctx := ports.WithStorage(context.Background(), store)
+	calls := 0
+	cause := errors.New("upstream candidate unavailable")
+	fail := false
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		calls++
+		if request.Method == "POST" {
+			var body struct {
+				Queries []batchQuery `json:"queries"`
+			}
+			if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
+				t.Fatal(err)
+			}
+			if len(body.Queries) != 2 || body.Queries[0].Version != "2.6.0+cpu" || body.Queries[1].Version != "2.6.0" {
+				t.Fatal("missing exact/upstream binding", body.Queries)
+			}
+			if fail {
+				return nil, cause
+			}
+			return jsonResponse(`{"results":[{},{"vulns":[{"id":"GHSA-aaaa-bbbb-cccc","modified":"2026-01-01T00:00:00Z"}]}]}`), nil
+		}
+		return jsonResponse(`{"schema_version":"1.7.3","id":"GHSA-aaaa-bbbb-cccc","modified":"2026-01-01T00:00:00Z","affected":[{"package":{"ecosystem":"PyPI","name":"torch"},"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"0"},{"last_affected":"2.6.0"}]}]}],"severity":[{"type":"CVSS_V3","score":"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}]}`), nil
+	})}
+	inner := &retainedInspector{}
+	inspector, err := newInspector(inner, client, calculatorBuildInfo())
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact := advisoryArtifact(t, "pytorch-cpu", "torch", "2.6.0+cpu")
+	for n := 0; n < 2; n++ {
+		report, err := inspector.Inspect(ctx, artifact)
+		if err != nil || len(report.Findings()) != 1 || report.Findings()[0].Code() != "M13_ADVISORY_REVIEW" || calls != 2 || len(inner.calls) != n+1 {
+			t.Fatal("upstream boundary lost or original inspection reused", report.Findings(), calls, inner.calls, err)
+		}
+		seen := false
+		for _, fact := range report.Evidence() {
+			if fact.Identity() != artifact.Identity() {
+				t.Fatal("evidence identity projected")
+			}
+			if fact.Kind() == "advisory-applicability" && strings.Contains(fact.Summary(), "2.6.0+cpu") {
+				seen = true
+			}
+		}
+		if !seen {
+			t.Fatal("exact/upstream applicability omitted")
+		}
+	}
+	fail = true
+	report, err := inspector.Inspect(ports.WithAdvisoryRefresh(ctx, true), artifact)
+	if !errors.Is(err, cause) || len(report.Executions()) != 2 || report.Executions()[1].Status() != domain.ExecutionIncomplete || len(inner.calls) != 3 || calls != 3 {
+		t.Fatal("failed companion refresh reused old clean/approval", report, err, calls)
+	}
+}

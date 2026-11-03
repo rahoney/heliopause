@@ -66,7 +66,7 @@ func newInspector(inner ports.Inspection, client *http.Client, info *debug.Build
 	if identity == "" {
 		return nil, errors.New("advisory calculator build identity is unavailable")
 	}
-	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v4", osvEndpoint+"|osv-1.x|base-score|"+identity)
+	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v5", osvEndpoint+"|osv-1.x|base-score|"+identity)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,23 @@ func packageForArtifact(artifact domain.AcquiredArtifact) (osvPackage, bool) {
 		query.Ecosystem = "crates.io"
 		_, err = artifactcargo.ParseReference(query.Name + "@" + query.Version)
 	default:
-		return osvPackage{}, false
+		profile, ok := artifactpypi.ProfileForSource(identity.Source())
+		if !ok || !artifactpypi.IsPyTorchSource(identity.Source()) || !profile.OwnsProject(query.Name) {
+			return osvPackage{}, false
+		}
+		if _, local, found := strings.Cut(query.Version, "+"); found && local != strings.TrimPrefix(profile.Name(), "pytorch:") {
+			return osvPackage{}, false
+		}
+		query.Ecosystem = "PyPI"
+		reference, parseErr := artifactpypi.ParseReferenceForSource(query.Name+"@"+query.Version, identity.Source())
+		if parseErr != nil {
+			return osvPackage{}, false
+		}
+		name, nameErr := artifactpypi.RequestedProject(reference)
+		version, present, versionErr := artifactpypi.RequestedVersion(reference)
+		if nameErr != nil || versionErr != nil || !present || name != query.Name || version != query.Version {
+			return osvPackage{}, false
+		}
 	}
 	if err != nil || !validPackage(query) {
 		return osvPackage{}, false

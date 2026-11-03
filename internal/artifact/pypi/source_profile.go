@@ -28,6 +28,12 @@ func (p SourceProfile) Source() domain.SourceID        { return p.source }
 func (p SourceProfile) IndexURL() string               { return p.indexURL }
 func (p SourceProfile) IndexHost() string              { return p.indexHost }
 func (p SourceProfile) ResourcePolicy() ResourcePolicy { return p.resourcePolicy }
+
+// OwnsProject reports membership in this named index's immutable project set.
+func (p SourceProfile) OwnsProject(project string) bool {
+	normalized, err := NormalizeProjectName(project)
+	return err == nil && p.ownedProjects[normalized]
+}
 func (p SourceProfile) DistributionHosts() []string {
 	return append([]string(nil), p.distributionHosts...)
 }
@@ -183,8 +189,7 @@ func validateDistributionURLForSource(rawURL, filename string, profile SourcePro
 
 func sourceOwnsProject(profile SourceProfile, source domain.SourceID, project string) bool {
 	if IsPyTorchSource(source) {
-		normalized, err := NormalizeProjectName(project)
-		return err == nil && profile.source == source && profile.ownedProjects[normalized]
+		return profile.source == source && profile.OwnsProject(project)
 	}
 	return source == publicPyPIProfile.source && !IsPyTorchOwnedProject(project)
 }

@@ -591,3 +591,45 @@ SourceID RED/현재 checks를 소유하며 QUALIFIED/ACCEPTANCE_CLOSED와 whole 
 현재 public consumer·text-only legacy 경로를 대조해 실제 확인을 모으며, 새로운 metadata의
 native 결과를 앞 v3 profile 결과로 표시하지 않는다. Known package mapping 미지원으로 기존
 지원 profile 전체를 뜻하지 않게 막지 않는지도 확인해야 한다. 새 CI/영구 Host 변경은 없다.
+
+## 열세 번째 단위 — 공식 Python profile/local build 적용성 (진행 중)
+
+기준 f8ce970. 기존 named SourceProfile/runtimeidentity lock·sourceOwnsProject·
+ParseReferenceForSource와 public PEP440 comparator는 IMPLEMENTED=YES/WIRED=YES다.
+그 owner를 재작성하지 않는다. Advisory의 official local profile mapping·경계 보존은
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO이며 MISSING은
+profile-owned project/full version 검증, local 순서, 유한 exact+public 후보 조회·보수적
+판정, 기존 public 소비자 및 cache/report 회귀다. Native/hosted qualification은 별도다.
+
+공식 OSV PyPI helper는 PEP440 version ordering을 사용한다
+([source](https://raw.githubusercontent.com/google/osv.dev/master/osv/ecosystems/pypi.py)).
+2026-11-03 metadata-only live batch는 torch2.5.1/public·cpu·cu124에22개씩,
+2.6.0에24개/2.6.0+cpu에21개, 현재 고정2.14.0의 네 local profile에는0개를 반환했다.
+이0은 당시 provider 응답이며 안전/검역 성공 증명이 아니다. Raw s05-local-versions-*
+및 s05-local-version-boundary-record.json을 보존한다. GHSA-c678-jfcj-6jmf의
+last_affected=2.6.0 때문에 local 순서상 그 뒤인2.6.0+cpu가 제외된다. Exact query만으로
+upstream 경계까지 검토했다고 할 수 없다.
+
+기존 공식 profile의 ownedProjects와 정확한 build suffix에만 namespace를 연결한다.
+Identity를 public 버전으로 바꾸지 않고 exact local query와 public-base candidate query를
+같은 bounded batch/예산에 넣어 union한다. Exact local 영향이 확인되면 기존 판정,
+public-base만 affected이고 exact local 영향은 확인되지 않으면 UNKNOWN/manual review다.
+후보 누락·실패는 incomplete이며 local tag를 제거한 단일 조회/자동 clean으로 대체하지 않는다.
+이 비교는 dependency specifier matching과 다르며
+[PEP440 local ordering](https://packaging.python.org/en/latest/specifications/version-specifiers/#local-version-identifiers)을 따른다.
+Cache/profile에는 새 의미를 결합하고 Evidence에 두 후보의 의미를 명시한다.
+Runtime pin/버전 updater·동적 검사·권한·CI 예산은 유지한다. 새 CI는 시작하지 않았다.
+
+현재 named local 단위는 IMPLEMENTED=YES/WIRED=YES이며 QUALIFIED/ACCEPTANCE_CLOSED는
+NO다. Existing SourceProfile membership/normalizer·public comparator를 재사용한 installed
+local comparator와 exact+upstream dedup/union만 연결했다. Public-only API는 그대로다.
+Upstream-only affected는 UNKNOWN/manual review, exact affected는 기존 strongest 판정,
+withdrawn/public fixed는 구분한다. Profile v5로 이전 cache와 의미를 분리한다.
+
+RED1.322s는 missing companion/dedup·예산/기존 local 해석 실패를 보존한다. 첫 target5.544s는
+RequestedVersion의3반환값을2개로 받는 compile 오류였고 getter를 실제 계약에 맞췄다.
+표적1.349s·영향3package fullRace33.251s·foundation78.777s/security33.630s·Staticcheck23.029s는
+PASS다. Cache review 재사용/강제 refresh 실패·정확한 subject 보존, 네 profile의 소유/다른
+build 거부와 기존 public comparator 회귀를 포함한다. Native PyTorch 전체/실제 새 UI/hosted는
+미도달이며 전체 S05는 계속 OPEN이다. [부분 원장](./advisory-profiles-local-20261103.json)이
+실제 입력과 범위를 소유한다. 새 패키지/DB/동적 권한/버전 pin·CI를 추가하지 않았다.

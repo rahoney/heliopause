@@ -76,6 +76,16 @@ func assessRecord(query osvPackage, record osvRecord) (versionImpact, error) {
 	if unknown {
 		return impactUnknown, nil
 	}
+	if base, _, local := strings.Cut(query.Version, "+"); query.Ecosystem == "PyPI" && local {
+		// An upstream advisory ending exactly at the public release can omit
+		// its later-sorting local builds. A possible inherited issue is review,
+		// never proof that this separately identified build is affected or clean.
+		query.Version = base
+		upstream, err := assessRecord(query, record)
+		if err != nil || upstream == impactAffected || upstream == impactUnknown {
+			return impactUnknown, err
+		}
+	}
 	return impactUnaffected, nil
 }
 
@@ -101,7 +111,7 @@ func samePackage(query, subject osvPackage) bool {
 
 func compareVersions(ecosystem, left, right string) (int, error) {
 	if ecosystem == "PyPI" {
-		return artifactpypi.ComparePublicVersions(left, right)
+		return artifactpypi.CompareInstalledVersions(left, right)
 	}
 	if ecosystem != "npm" && ecosystem != "Go" && ecosystem != "crates.io" {
 		return 0, errResponse
