@@ -45,6 +45,7 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
+		{ImportPath: modulePath + "/scripts/update-runtime", Imports: []string{modulePath + "/internal/hosttool"}},
 	}
 	if findings := validateCurrentImports(modulePath, packages); len(findings) != 0 {
 		t.Fatalf("validateCurrentImports findings = %v, want none", findings)

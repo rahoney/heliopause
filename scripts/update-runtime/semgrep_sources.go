@@ -148,7 +148,10 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 			return err
 		}
 		for _, member := range selected.Files {
-			if err := writeSemgrepSourceMember(root, archive, member, stamp); err != nil {
+			if err := archive.WriteHeader(&tar.Header{Name: member.Path, Mode: member.Mode, Size: member.Size, ModTime: stamp, Typeflag: tar.TypeReg, Format: tar.FormatUSTAR}); err != nil {
+				return err
+			}
+			if err := copySemgrepSourceMember(root, archive, member); err != nil {
 				return err
 			}
 		}
@@ -168,7 +171,7 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 	}{schema, selected.SourceCommit, hash(body), sourceManifestSHA256, hex.EncodeToString(digest.Sum(nil)), size, len(selected.Files), false})
 }
 
-func writeSemgrepSourceMember(root *os.Root, archive *tar.Writer, member semgrepSourcePackageFile, stamp time.Time) error {
+func copySemgrepSourceMember(root *os.Root, output io.Writer, member semgrepSourcePackageFile) error {
 	before, err := root.Lstat(member.Path)
 	if err != nil || !before.Mode().IsRegular() || before.Size() != member.Size {
 		return errors.New("semgrep source member is absent, a link or has changed size")
@@ -182,11 +185,8 @@ func writeSemgrepSourceMember(root *os.Root, archive *tar.Writer, member semgrep
 	if err != nil || !os.SameFile(before, held) || held.Size() != member.Size {
 		return errors.New("semgrep source member changed before opening")
 	}
-	if err := archive.WriteHeader(&tar.Header{Name: member.Path, Mode: member.Mode, Size: member.Size, ModTime: stamp, Typeflag: tar.TypeReg, Format: tar.FormatUSTAR}); err != nil {
-		return err
-	}
 	digest := sha256.New()
-	count, readErr := io.CopyN(io.MultiWriter(archive, digest), file, member.Size)
+	count, readErr := io.CopyN(io.MultiWriter(output, digest), file, member.Size)
 	var tail [1]byte
 	extra, endErr := file.Read(tail[:])
 	after, statErr := root.Lstat(member.Path)

@@ -246,3 +246,69 @@ copyright를 만들지 않으며 archive 생성은 법률·runtime 승인 판정
 자체11규칙과 실제 사용한3파일 patch는 `tools/semgrep`의 현재 공급 입력으로 보존했다.
 검증한 bytes와 같으므로 같은326-source scanner DATA는 반복하지 않는다. 다음은 현재
 소스/고지에 대응하는 canonical clean build/SDK 절차와 기존 유지보수/제품 연결이다.
+
+
+### Canonical clean build — 구현 전 대조
+
+Clean build는 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+현재 private worker는 구현/실행됐지만 compiled OPAM cache를 재사용했으며 canonical 개발
+명령이 아니다. 기존 source writer/held copier/native publisher와 실제 SDK 준비·source build
+절차를 재사용한다. Source/SDK bytes는 고정 입력만 읽고 Host에서 source를 실행하지 않으며
+SDK 서명 설치는 별도 container, compiler는 network-none/UID1000/read-only root에서 실행한다.
+기존 source+OPAM 작업 공간은 실제 약8.16GiB다. 새 clean compiler 공간은12GiB tmpfs/
+16GiB memory/2CPU로 유한하게 두며 output256MiB·log16MiB와 deadline/owned stop/wait를
+적용한다. 이 공급 개발 도구의 상한은 기존 Artifact runtime/관찰·검역 한도를 바꾸지 않는다.
+Language pin과 Host 설치를 바꾸거나 untraced runtime을 등록하지 않는다. 새 SDK/fresh
+compiler·dependencies와 기준 core의 대응 및 실제 결과/정리를 확인해야 다음 공급 연결을 닫는다.
+
+
+Host 실행은 기존 `hosttool.NewSystem`의 absolute identity/local endpoint/minimal env 검증을
+재사용하며 기존 runtime 준비가 선행조건이다. 새 developer build를 위해 production
+constructor를 우회하거나 새 untraced registration을 만들지 않는다. Source compiler의
+큰 stdout과 bounded stderr를 분리하는 작은 stream method만 같은 command owner에
+추가한다. 검증된 SDK 준비와 source 컴파일은 role이 별도이며 build 성공 자체는 Artifact
+검역/실제 runtime qualification이 아니다.
+
+첫 clean-build foundation38.483s는 production/test compile 뒤 architecture에서 새
+`update-runtime → hosttool` 재사용 edge 미등록을 검출했다. 직접 Docker 실행을 복제하지 않고
+기존 developer composition의 exact edge/positive fixture와 Directory 책임에 등록한다.
+Core/Application/Policy 경계와 Host constructor 검증은 유지하며 원본 실패를 보존한다.
+
+첫 actual0.323s(v1)는 기존 Host manifest/current source lock 차이를 시작 전 거부했다.
+설치본·runtime 정책을 바꾸지 않고 기존 검증 bundle을 private mount namespace에서만
+연결한 v2는44.765s/SDK168 packages 성공 뒤 worker의 jq 부재로 실패했다. Fixed SDK에
+Python3가 이미 있어 stdlib로 source hash/JSON projection을 한 번 수행하고 새 의존성은
+추가하지 않는다. Repo index 조회도 명시 빈 repository 목록으로 제거하며 APK 서명 검증은
+그대로다. Owned container/SDK 정리는 오류0, 설치 manifest는 불변이며 source compile은
+미도달이다. 실제 raw s04-canonical-build-v1/v2를 보존하고 다음 compiler 입력만 교정한다.
+
+V3 actual42.649s는 source hash/tag/lock를 통과하고 curl configure에서exit126이었다.
+Native archive의 configure0755와 inert tmpfs counterexample(default noexec126/explicit
+exec0)으로 원인을 확정했다. 공급 developer compiler의 /work tmpfs만 exec를 명시하며
+Artifact runtime·관찰 한도는 바꾸지 않는다. 정리 오류0/설치 manifest 불변이다.
+
+1026-file308335104B 소스의 independent TAR readback0.500s와 고지275-file 부분집합
+대조는PASS다. 현재 clean command는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO이며 fresh compiler/native 대응·최종 정리가 MISSING이다.
+V4 actual은 이 한 곳의 mount 옵션 교정 뒤 진행하며 source/rules/고지 bytes는 V3와 같다.
+
+V4 fresh actual275.883s는 curl build 뒤 OPAM pin 동기화에서 미사용 Windows/proto
+Gitlink fetch로 실패했다. 같은 Gitlink 이름을 pinned .gitmodules에서 읽어, source offer가
+Linux에서 미사용으로 기록한 항목의 update만 none으로 설정한다. 전체 submodule/update
+검증·네트워크를 완화하지 않는다. 별도 tree-sitter upstream test Makefile symlink의 rsync
+warning과 최초 compiler source fetch 실패는 구분한다. Cleanup 오류0/설치 manifest 불변이다.
+
+V5 dry-run95.580s는 pin-depends도 적용하지 않으므로 유효한 동기화 검사가 아니다.
+V6 download-only209.281s는 수정한 Git pins를 실제 동기화한 뒤 rresult0.7.0의 미포함 source
+하나에서 차단됐다. 고정 package metadata222개의 url 소유자와 source offer를 대조해
+이 한 gap을 확인했다. 기존 cache의8506B 원본이 official metadata SHA512와 일치하며,
+같은 archive의 ISC 원문741B도 추가했다. 기존 core link input에 rresult가 있으므로 이
+고지는 생략하지 않는다. Original failure와148-archive/173-component 이전 proof는 당시
+범위로 남기고 새149-archive/174-component source offer와 download-only를 재검증한다.
+
+V7 download-only206.516s는 fixed SDK/network-none/fresh OPAM에서 source sync와
+locked source 확보를 완료했다. Marker/exit0와 소유 container 제거를 확인했다.
+수정된1028-file308347904B source와276-file1982464B notice의 독립 readback0.519s도
+PASS다. Full fresh compiler/native는 V5 actual로 진행 중이며 이 선행 성공을 native
+재현·runtime/product qualification으로 확대하지 않는다. Canonical foundation26.188s
+(format/runtime drift/module/production/test compile/architecture/docs)도 PASS다.

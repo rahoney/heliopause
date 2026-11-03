@@ -705,3 +705,16 @@ Canonical clean build·Semgrep runtime owner/update/release 연결의 현재 미
 터미널에 출력하지 않는다. Notice 공급물은4MiB/원문1MiB/ordinary444이고 원문과 catalogue가
 필수다. Receipt의 source_manifest_sha256은 이번 생성 입력을 식별하며 notice archive의
 투영 manifest와 전체 source manifest를 같은 것으로 취급하지 않는다. Runtime 승인은 없다.
+
+
+`update-runtime rebuild-semgrep --input ABS_SOURCE_COLLECTION --sdk-apks ABS_APK_DIR
+--state ABS_NEW_DIR --output ABS_NEW_OUTPUT_DIR/semgrep-core-linux-amd64`는 Linux amd64
+offline 개발 빌드다. 기존 trusted Host runtime 준비가 선행조건이며 Host executor를
+우회하지 않는다. Frozen manifest의 exact worker/SDK recipe·APK SHA를 대조하고 APK
+서명을 검증한 임시 SDK를 만든다. UID1000/network-none/read-only root에서 새 compiler/
+dependencies를 만들며 기존 compiled cache를 재사용하지 않는다. SDK 1GiB, compiler
+16GiB/2CPU/12GiB scratch, native256MiB/log16MiB와2시간 deadline은 공급 도구만의
+유한 상한이다. Artifact 검역 예산은 그대로다. `--expected-sha256 REF`는 참조와 다른
+결과의 게시를 거부한다. Owned container 종료/제거와 SDK image 정리를 확인하고 성공 시
+임시 APK/native 사본을 제거하며 source offer/로그/결과만 보존한다. 성공 receipt는 정리
+완료 뒤 출력하고 실패는 첫 오류와 후보를 보존한다. Runtime qualification은 별도다.

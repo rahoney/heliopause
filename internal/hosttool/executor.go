@@ -261,6 +261,18 @@ func (e *Executor) RunOutput(ctx context.Context, output io.Writer, name string,
 	return command.Run()
 }
 
+// RunOutputStreams keeps data and diagnostics separate through the existing
+// validated executable, endpoint and minimal-environment boundary. Consumers
+// own the bounds and lifetime of both writers.
+func (e *Executor) RunOutputStreams(ctx context.Context, output, diagnostic io.Writer, name string, arguments ...string) error {
+	command, err := e.command(ctx, name, arguments...)
+	if err != nil {
+		return err
+	}
+	command.Stdout, command.Stderr = output, diagnostic
+	return command.Run()
+}
+
 // StartContainerInputOutput carries only the guest init responder control channel.
 func (e *Executor) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
 	command, err := e.command(ctx, "docker", "start", "--attach", "--interactive", "--", id)

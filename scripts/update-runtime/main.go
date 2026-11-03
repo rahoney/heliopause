@@ -81,6 +81,9 @@ func run(args []string, out io.Writer) error {
 	if args[0] == "package-semgrep-source" {
 		return packageSemgrepSource(args[1:], out)
 	}
+	if args[0] == "rebuild-semgrep" {
+		return rebuildSemgrep(args[1:], out)
+	}
 	if args[0] == "verify-uv-image" {
 		return verifyUVImage(args[1:], out)
 	}

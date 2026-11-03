@@ -210,6 +210,7 @@ sandbox     → Sandbox Port 구현 + core/domain
 - 특정 package 내부에서만 쓰는 schema는 해당 package 가까이에 둔다.
 - 사용자용 sanitized config와 output 예시는 `examples/`에 둔다.
 - build, generation, fixture 준비와 deterministic validation 보조 명령은 `scripts/`에 둔다.
+- `scripts/update-runtime`의 offline source-build composition은 기존 `internal/hosttool`의 검증된 Host executor를 재사용한다. Core/Application/Policy 의존 방향과 runtime 권한은 바꾸지 않는다.
 - 일반 workflow logic을 script에 숨기지 않는다. 제품 동작은 Go package와 `helox` command에 둔다.
 - generated file은 생성 원본과 가까이 두고 generated marker와 재생성 명령을 기록한다. 정확한 generation·commit 정책은 Step 9~10에서 정한다.
 

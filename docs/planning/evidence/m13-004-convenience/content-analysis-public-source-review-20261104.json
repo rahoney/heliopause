@@ -699,5 +699,55 @@
       }
     ],
     "remaining": "Canonical clean build/SDK reproduction, final corresponding source payload, maintenance/runtime/release/backend integration; whole S04 remains open"
+  },
+  "canonical_clean_build": {
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "implementation": "update-runtime rebuild-semgrep; existing Host executor, held source copier and no-replace native publisher reused; source worker embedded from one recipe",
+    "source_only_preflight": {
+      "raw": "s04-canonical-source-preflight-v7.json",
+      "elapsed": 206.516,
+      "exit_code": 0,
+      "container_removed": true,
+      "compiler_built": false,
+      "source_package_sha256": "cce4d6c2fb529605f9ce057a6e407a44ba3cfe3e5c00c341ae6069988a098150"
+    },
+    "source_projection_raw": "s04-canonical-source-projection-v2.json",
+    "source_input_correction_raw": "s04-source-offer-rresult-correction-v1.json",
+    "current_source_components": 174,
+    "current_notice_texts": 274,
+    "earlier_payload_scope": "Previous749/1026-file and173-component proofs retain their captured scope; actual fresh source retrieval found rresult missing from the collected archives and notices",
+    "checks_raw": [
+      "s04-clean-build-foundation-v5.json",
+      "s04-clean-build-race-v1.json",
+      "s04-clean-build-host-race-v2.json",
+      "s04-clean-build-security-final.json",
+      "s04-clean-build-vet-v1.json",
+      "s04-clean-build-static-final.json"
+    ],
+    "native_build": {
+      "status": "IN_PROGRESS",
+      "raw_when_terminal": "s04-canonical-build-v5.json",
+      "expected_reference_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+      "installed_host_activation": false
+    },
+    "missing": [
+      "Fresh compiler/dependency build and native reference comparison with terminal owned cleanup",
+      "Existing runtime-owner/update/release supply integration",
+      "Actual gVisor source transport/lifecycle and all product consumer/Evidence/Policy wiring"
+    ],
+    "first_failures_raw": [
+      "s04-canonical-build-v1.json",
+      "s04-canonical-build-v2.json",
+      "s04-canonical-build-v3.json",
+      "s04-canonical-build-v4.json",
+      "s04-canonical-build-tmpfs-diagnostic-v1.json",
+      "s04-canonical-source-preflight-v5.json",
+      "s04-canonical-source-preflight-v6.json"
+    ]
   }
 }
