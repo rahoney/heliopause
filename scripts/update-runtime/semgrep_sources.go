@@ -36,11 +36,16 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 	flags := flag.NewFlagSet("update-runtime package-semgrep-source", flag.ContinueOnError)
 	flags.SetOutput(out)
 	input := flags.String("input", "", "absolute frozen source input directory containing source-inputs.json")
-	output := flags.String("output", "", "absolute new external semgrep-SOURCES.tar")
+	output := flags.String("output", "", "absolute new external semgrep-SOURCES.tar or semgrep-NOTICES.tar")
+	notices := flags.Bool("notices", false, "package original notice bytes as passive semgrep-NOTICES.tar")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if flags.NArg() != 0 || !filepath.IsAbs(*input) || !filepath.IsAbs(*output) || filepath.Clean(*input) != *input || filepath.Clean(*output) != *output || filepath.Base(*output) != "semgrep-SOURCES.tar" {
+	asset := "semgrep-SOURCES.tar"
+	if *notices {
+		asset = "semgrep-NOTICES.tar"
+	}
+	if flags.NArg() != 0 || !filepath.IsAbs(*input) || !filepath.IsAbs(*output) || filepath.Clean(*input) != *input || filepath.Clean(*output) != *output || filepath.Base(*output) != asset {
 		return errors.New("semgrep source package requires explicit canonical input and new external output paths")
 	}
 	canonical, err := filepath.EvalSymlinks(*input)
@@ -86,6 +91,47 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 			return errors.New("semgrep source package exceeds its supply bound")
 		}
 	}
+	manifestName, schema, sourceManifestSHA256 := "SOURCE-MANIFEST.json", "helox.semgrep-source-package/v1", ""
+	if *notices {
+		sourceManifestSHA256 = hash(body)
+		var files []semgrepSourcePackageFile
+		catalogue, texts := false, 0
+		for _, member := range selected.Files {
+			if !strings.HasPrefix(member.Path, "notices/") {
+				continue
+			}
+			switch member.Path {
+			case "notices/catalogue.json":
+				catalogue = true
+			case "notices/README.txt":
+			default:
+				if member.Path != "notices/"+member.SHA256+".txt" {
+					return errors.New("semgrep notice has an undeclared text identity")
+				}
+				texts++
+			}
+			if member.Mode != 0444 || member.Size <= 0 || member.Size > 1<<20 {
+				return errors.New("semgrep notice is executable, empty or outside its supply bound")
+			}
+			files = append(files, member)
+		}
+		if !catalogue || texts == 0 {
+			return errors.New("semgrep notice catalogue or original texts are missing")
+		}
+		selected.Files, selected.Schema = files, "helox.semgrep-notice-inputs/v1"
+		body, err = json.Marshal(selected)
+		if err != nil {
+			return err
+		}
+		size = int64(1024 + 512 + (len(body)+511)/512*512)
+		for _, member := range selected.Files {
+			size += 512 + (member.Size+511)/512*512
+		}
+		if size > 4<<20 {
+			return errors.New("semgrep combined notices exceed their supply bound")
+		}
+		manifestName, schema = "NOTICE-MANIFEST.json", "helox.semgrep-notice-package/v1"
+	}
 	root, err := os.OpenRoot(canonical)
 	if err != nil {
 		return err
@@ -95,7 +141,7 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 	if err := publishNativeAssetWith(*output, size, 0444, func(output io.Writer) error {
 		archive := tar.NewWriter(io.MultiWriter(output, digest))
 		stamp := time.Unix(selected.SourceDateEpoch, 0).UTC()
-		if err := archive.WriteHeader(&tar.Header{Name: "SOURCE-MANIFEST.json", Mode: 0444, Size: int64(len(body)), ModTime: stamp, Typeflag: tar.TypeReg, Format: tar.FormatUSTAR}); err != nil {
+		if err := archive.WriteHeader(&tar.Header{Name: manifestName, Mode: 0444, Size: int64(len(body)), ModTime: stamp, Typeflag: tar.TypeReg, Format: tar.FormatUSTAR}); err != nil {
 			return err
 		}
 		if _, err := archive.Write(body); err != nil {
@@ -111,14 +157,15 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 		return err
 	}
 	return json.NewEncoder(out).Encode(struct {
-		Schema           string `json:"schema"`
-		SourceCommit     string `json:"source_commit"`
-		ManifestSHA256   string `json:"manifest_sha256"`
-		SHA256           string `json:"sha256"`
-		Size             int64  `json:"size"`
-		Files            int    `json:"files"`
-		RuntimeQualified bool   `json:"runtime_qualified"`
-	}{"helox.semgrep-source-package/v1", selected.SourceCommit, hash(body), hex.EncodeToString(digest.Sum(nil)), size, len(selected.Files), false})
+		Schema               string `json:"schema"`
+		SourceCommit         string `json:"source_commit"`
+		ManifestSHA256       string `json:"manifest_sha256"`
+		SourceManifestSHA256 string `json:"source_manifest_sha256,omitempty"`
+		SHA256               string `json:"sha256"`
+		Size                 int64  `json:"size"`
+		Files                int    `json:"files"`
+		RuntimeQualified     bool   `json:"runtime_qualified"`
+	}{schema, selected.SourceCommit, hash(body), sourceManifestSHA256, hex.EncodeToString(digest.Sum(nil)), size, len(selected.Files), false})
 }
 
 func writeSemgrepSourceMember(root *os.Root, archive *tar.Writer, member semgrepSourcePackageFile, stamp time.Time) error {

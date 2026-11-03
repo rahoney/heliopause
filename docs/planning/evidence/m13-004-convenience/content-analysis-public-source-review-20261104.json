@@ -627,5 +627,77 @@
       "product_source_changed_for_retry": false
     },
     "remaining": "Final source/notice payload incl own license, canonical clean build recipe/SDK reproduction and trust, runtime owner/maintenance/release/backend adoption; whole S04 still open"
+  },
+  "notice_package_writer": {
+    "implementation": "Existing package-semgrep-source --notices projection; no new renderer/charset engine or change to pipx notice contract",
+    "scope": "Passive supplied source/build notice superset, not a claim all173 components are linked or legal/runtime admission",
+    "checks": {
+      "s04-notice-package-foundation": {
+        "elapsed": 32.574,
+        "raw": "s04-notice-package-foundation.json"
+      },
+      "s04-notice-package-race": {
+        "elapsed": 4.976,
+        "raw": "s04-notice-package-race.json"
+      },
+      "s04-notice-package-security": {
+        "elapsed": 12.446,
+        "raw": "s04-notice-package-security.json"
+      },
+      "s04-notice-package-vet": {
+        "elapsed": 0.835,
+        "raw": "s04-notice-package-vet.json"
+      },
+      "s04-notice-package-staticcheck": {
+        "elapsed": 2.14,
+        "raw": "s04-notice-package-staticcheck.json"
+      }
+    },
+    "actual": {
+      "schema": "helox.semgrep-notice-package/v1",
+      "source_commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "manifest_sha256": "331cfa4e6b074edeb4c7101ecce600a34f4e04e0b42041688a9488470ba0dc6e",
+      "source_manifest_sha256": "54327d81a3ffb834769fff817a11260c60fcc189981f0d0cb06dc3b203cd9072",
+      "sha256": "6ea92e22369e12c22976080b2f41ed2cb48f82fbf4df0a187fedf69bbebefc0a",
+      "size": 1980416,
+      "files": 275,
+      "runtime_qualified": false,
+      "elapsed": 0.315,
+      "raw": "s04-notice-package-actual-v2.json",
+      "readback": "s04-notice-package-readback-1183.json"
+    },
+    "source_components": 173,
+    "original_texts": 273,
+    "source_encoding_preserved": {
+      "non_utf8_originals": 1,
+      "form_feeds": 133,
+      "no_text_reencoding": true
+    },
+    "supplier_trace_notice": {
+      "url": "https://semgrep.dev/cli-credits#shared-license-38",
+      "version": "1.183.0",
+      "applies_to": "trace v0.12",
+      "raw": "s04-supplier-credits-1183.json",
+      "scope": "Matching-version supplier-provided MIT text; original release source declarations retained, no invented copyright"
+    },
+    "declaration_only_git_fork": "opentelemetry c3a03bcc0afafea188b8aefa631788090f0b8fd4; exact README/opam declarations and full source preserved",
+    "first_failure": {
+      "raw": "s04-notice-package-actual.json",
+      "cause": "Two named source files were empty supplemental/test LICENSE files; curator had treated them as notice texts",
+      "correction": "s04-notice-package-empty-input-correction-1183.json",
+      "product_code_changed_for_retry": false,
+      "original_sources_unchanged": true
+    },
+    "canonical_inputs": [
+      {
+        "path": "tools/semgrep/rules.json",
+        "sha256": "7d4dc0345412d72000b596c08f2dcf8c53fd442bcba068a07d208d37f3305f22"
+      },
+      {
+        "path": "tools/semgrep/quarantine.patch",
+        "sha256": "f4628b965798f5482bfbc8967408e51ac9c823a693d2f764a2a6386a6d6bc2ad"
+      }
+    ],
+    "remaining": "Canonical clean build/SDK reproduction, final corresponding source payload, maintenance/runtime/release/backend integration; whole S04 remains open"
   }
 }

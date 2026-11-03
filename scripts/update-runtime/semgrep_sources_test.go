@@ -215,3 +215,127 @@ func TestNativeAssetWriterFailureCannotPublish(t *testing.T) {
 		})
 	}
 }
+
+func semgrepNoticeFixture(t *testing.T) (string, semgrepSourcePackageInput, []byte) {
+	t.Helper()
+	input, selected := semgrepSourceFixture(t)
+	if err := os.Mkdir(filepath.Join(input, "notices"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	// Copyright bytes and page separators must survive without charset guessing.
+	original := []byte("Copyright \xa9 source authors\n\fOriginal terms\n")
+	for name, body := range map[string][]byte{"catalogue.json": []byte("{}\n"), hash(original) + ".txt": original} {
+		name = "notices/" + name
+		if err := os.WriteFile(filepath.Join(input, name), body, 0600); err != nil {
+			t.Fatal(err)
+		}
+		selected.Files = append(selected.Files, semgrepSourcePackageFile{name, hash(body), int64(len(body)), 0444})
+	}
+	sort.Slice(selected.Files, func(i, j int) bool { return selected.Files[i].Path < selected.Files[j].Path })
+	return input, selected, original
+}
+
+func TestSemgrepNoticePackagePreservesOriginalBytes(t *testing.T) {
+	input, selected, original := semgrepNoticeFixture(t)
+	sourceManifest := writeSemgrepSourceFixture(t, input, selected)
+	output := filepath.Join(filepath.Dir(input), "semgrep-NOTICES.tar")
+	var receipt bytes.Buffer
+	if err := packageSemgrepSource([]string{"--notices", "--input", input, "--output", output}, &receipt); err != nil {
+		t.Fatal(err)
+	}
+	var fact struct {
+		Schema               string `json:"schema"`
+		SourceManifestSHA256 string `json:"source_manifest_sha256"`
+		ManifestSHA256       string `json:"manifest_sha256"`
+		RuntimeQualified     bool   `json:"runtime_qualified"`
+	}
+	if json.Unmarshal(receipt.Bytes(), &fact) != nil || fact.Schema != "helox.semgrep-notice-package/v1" || fact.SourceManifestSHA256 != hash(sourceManifest) || fact.RuntimeQualified {
+		t.Fatal("notice package lost its source binding or granted runtime admission")
+	}
+	body, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive := tar.NewReader(bytes.NewReader(body))
+	count, found := 0, false
+	for {
+		header, err := archive.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		contents, err := io.ReadAll(archive)
+		if err != nil || header.Typeflag != tar.TypeReg || header.Mode != 0444 {
+			t.Fatal("notice archive contains a non-passive member")
+		}
+		if count == 0 {
+			var projected semgrepSourcePackageInput
+			if header.Name != "NOTICE-MANIFEST.json" || hash(contents) != fact.ManifestSHA256 || json.Unmarshal(contents, &projected) != nil || projected.Schema != "helox.semgrep-notice-inputs/v1" || len(projected.Files) != 2 {
+				t.Fatal("notice projection manifest differs")
+			}
+		} else if header.Name == "notices/"+hash(original)+".txt" {
+			found = bytes.Equal(contents, original)
+		} else if header.Name != "notices/catalogue.json" {
+			t.Fatal("notice projection included unrelated source data")
+		}
+		count++
+	}
+	if count != 3 || !found {
+		t.Fatal("original notice bytes were lost or transformed")
+	}
+}
+
+func TestSemgrepNoticePackageRejectsMissingOrExecutableNotices(t *testing.T) {
+	for _, scenario := range []string{"catalogue", "text", "name", "mode", "entry-budget", "aggregate-budget"} {
+		t.Run(scenario, func(t *testing.T) {
+			input, selected, _ := semgrepNoticeFixture(t)
+			var files []semgrepSourcePackageFile
+			for _, member := range selected.Files {
+				if !strings.HasPrefix(member.Path, "notices/") {
+					files = append(files, member)
+					continue
+				}
+				catalogue := member.Path == "notices/catalogue.json"
+				if scenario == "catalogue" && catalogue || scenario == "text" && !catalogue {
+					continue
+				}
+				if !catalogue {
+					switch scenario {
+					case "name":
+						member.Path = "notices/foreign.txt"
+					case "mode":
+						member.Mode = 0555
+					case "entry-budget":
+						body := bytes.Repeat([]byte{'a'}, 1<<20+1)
+						member = semgrepSourcePackageFile{"notices/" + hash(body) + ".txt", hash(body), int64(len(body)), 0444}
+						if err := os.WriteFile(filepath.Join(input, member.Path), body, 0600); err != nil {
+							t.Fatal(err)
+						}
+					case "aggregate-budget":
+						for n := byte(0); n < 4; n++ {
+							body := bytes.Repeat([]byte{n}, 1<<20)
+							name := "notices/" + hash(body) + ".txt"
+							if err := os.WriteFile(filepath.Join(input, name), body, 0600); err != nil {
+								t.Fatal(err)
+							}
+							files = append(files, semgrepSourcePackageFile{name, hash(body), int64(len(body)), 0444})
+						}
+					}
+				}
+				files = append(files, member)
+			}
+			selected.Files = files
+			sort.Slice(selected.Files, func(i, j int) bool { return selected.Files[i].Path < selected.Files[j].Path })
+			writeSemgrepSourceFixture(t, input, selected)
+			output := filepath.Join(filepath.Dir(input), "semgrep-NOTICES.tar")
+			if err := packageSemgrepSource([]string{"--notices", "--input", input, "--output", output}, io.Discard); err == nil {
+				t.Fatal("invalid notice package succeeded")
+			}
+			if _, err := os.Lstat(output); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("invalid notice package published output")
+			}
+		})
+	}
+}

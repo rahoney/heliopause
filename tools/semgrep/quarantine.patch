@@ -1,0 +1,49 @@
+--- a/src/core_scan/Core_scan.ml
++++ b/src/core_scan/Core_scan.ml
+@@ -401,14 +401,21 @@
+ 
+ let parse_and_resolve_name (lang : Lang.t) (fpath : Fpath.t) :
+     AST_generic.program * Tok.location list =
+-  let { Parsing_result2.ast; skipped_tokens; _ } =
++  let { Parsing_result2.ast; skipped_tokens; inserted_tokens; tolerated_errors; _ } =
+     Logs_.with_debug_trace ~__FUNCTION__ (fun () ->
+         Logs.debug (fun m ->
+             m "Parsing (and naming) %s (with lang %s)" !!fpath
+               (Lang.to_string lang));
+         Parse_target.parse_and_resolve_name lang fpath)
+   in
+-  (ast, skipped_tokens)
++  (* Quarantine coverage retains missing and recovered tokens. *)
++  let tolerated_tokens =
++    List.map
++      (fun (Parsing_result2.Tree_sitter_error err) ->
++        Parsing_result2.loc_of_tree_sitter_error err)
++      tolerated_errors
++  in
++  (ast, skipped_tokens @ inserted_tokens @ tolerated_tokens)
+ 
+ (* Lang heuristic to determine if a rule is relevant or can be filtered out *)
+ let is_rule_used_by_targets (analyzer_set : Analyzer.Set.t) (rule : Rule.t) =
+--- a/libs/ocaml-tree-sitter-semgrep/core/dune
++++ b/libs/ocaml-tree-sitter-semgrep/core/dune
+@@ -5,6 +5,7 @@
+   (promote (until-clean)))
+  (deps
+   tree-sitter-version
++  (glob_files v*.tar.gz)
+   (source_tree scripts))
+  (target
+   (dir tree-sitter-repo))
+--- a/libs/ocaml-tree-sitter-semgrep/core/scripts/download-tree-sitter
++++ b/libs/ocaml-tree-sitter-semgrep/core/scripts/download-tree-sitter
+@@ -82,7 +82,9 @@
+ EOF
+ else
+   echo "Fetching tarball for tree-sitter-$version."
+-  curl -LO https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v"$version".tar.gz
++  if [[ ! -f "v${version}.tar.gz" ]]; then
++    curl -LO https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v"$version".tar.gz
++  fi
+ 
+   verify_checksum "v${version}.tar.gz" "$(expected_checksum "$version")"
+ 

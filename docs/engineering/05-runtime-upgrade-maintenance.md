@@ -697,3 +697,11 @@ USTAR로 묶으며 output은 덮어쓰지 않는0444다. 한 source member256MiB
 출력 `runtime_qualified=false`를 유지하며 기존 selected owner가 결과를 별도로 결합해야 한다.
 Canonical clean build·Semgrep runtime owner/update/release 연결의 현재 미완료 범위는
 [S04 baseline](../planning/evidence/m13-004-convenience/content-analysis-baseline-20261103.md)을 따른다.
+
+
+같은 명령의 `--notices --output ABS_NEW_DIR/semgrep-NOTICES.tar`는 source manifest에
+명시된 notices 원문·catalogue/README만 선택한다. 원문의 charset와 page separator를
+바꾸지 않고 notice manifest와 SHA-named 파일로 전달하며 code를 실행하거나 본문을
+터미널에 출력하지 않는다. Notice 공급물은4MiB/원문1MiB/ordinary444이고 원문과 catalogue가
+필수다. Receipt의 source_manifest_sha256은 이번 생성 입력을 식별하며 notice archive의
+투영 manifest와 전체 source manifest를 같은 것으로 취급하지 않는다. Runtime 승인은 없다.

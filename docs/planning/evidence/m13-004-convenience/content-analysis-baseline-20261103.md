@@ -223,3 +223,26 @@ APKBUILD 대응97개 파일도 Git blob으로 확인했다. SDK APK binary는 so
 않았다. 첫 실제 입력은 Python Path 구성요소 순서 때문에 전체 path byte 정렬과 달라 출력 전
 거부됐으며 입력 생성만 교정했다. 같은 Go source의 회귀를 반복하지 않았다. 기존 언어 pin/
 Host/CI는 불변이고 재배포 payload 마무리·canonical clean build/기존 유지보수 연결을 계속한다.
+
+
+### 원문 고지 payload — 기존 writer의 projection
+
+고지 writer는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(local named scope),
+ACCEPTANCE_CLOSED=NO다. 최종 source/clean build·trust/제품 공급은 계속 MISSING이다.
+기존 pipxNotices의 typed wheel/64KiB 계약을 바꾸지 않고 source-package writer에 작은
+`--notices` projection을 연결했다. 별도 renderer/class/charset 추정이나 재인코딩 없이
+passive USTAR로 전달하며 기존 source 상한은 유지하고 notices만4MiB/ordinary444/
+원문1MiB를 적용한다. 원문에는 UTF-8이 아닌 텍스트1개와 page separator133개가 있다.
+
+위 원장의 notice_package_writer가 foundation32.574s/security12.446s/해당 Semgrep
+Race4.976s·vet/staticcheck와 실제275파일1980416B/0.315s·독립 readback을 소유한다.
+173개 source/build superset의273개 원문을 보존했고 모두 링크됐다고 주장하지 않는다.
+첫 실제 실행의 empty 부가/test LICENSE2개는 고지 목록에서만 제외했다. 원래 source와
+첫 실패는 유지했으며 Go source나 검증 조건을 바꾸거나 같은 회귀를 반복하지 않았다.
+동일1.183 공식 supplier 고지는 trace0.12의 MIT 원문을 제공하므로 그 출처/스냅샷을 보존했다.
+Opentelemetry fork의 원래 README/opam 선언과 전체 source도 그대로 제공한다. 없는
+copyright를 만들지 않으며 archive 생성은 법률·runtime 승인 판정이 아니다.
+
+자체11규칙과 실제 사용한3파일 patch는 `tools/semgrep`의 현재 공급 입력으로 보존했다.
+검증한 bytes와 같으므로 같은326-source scanner DATA는 반복하지 않는다. 다음은 현재
+소스/고지에 대응하는 canonical clean build/SDK 절차와 기존 유지보수/제품 연결이다.
