@@ -50,7 +50,11 @@ func (r bunRunExecutionWorkflow) run(ctx context.Context, request application.Ex
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}
-	fresh, err := application.NewExecutionInspectService(r.source, verificationnpm.IntegrityVerifier{}, inspector, r.store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return application.ExecutionResult{}, err
+	}
+	fresh, err := application.NewExecutionInspectService(r.source, verificationnpm.IntegrityVerifier{}, checkedInspection, r.store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return application.ExecutionResult{}, err
 	}

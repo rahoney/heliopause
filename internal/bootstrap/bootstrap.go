@@ -394,11 +394,15 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
+		checkedInspection, err := newAdvisoryInspection(inspection)
+		if err != nil {
+			return err
+		}
 		evidence, err := local.NewStore(filepath.Join(root, "evidence"))
 		if err != nil {
 			return err
 		}
-		service, err := application.NewInspectService(artifact, verificationnpm.IntegrityVerifier{}, inspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
+		service, err := application.NewInspectService(artifact, verificationnpm.IntegrityVerifier{}, checkedInspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err
 		}
@@ -409,7 +413,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		installInspection, err := application.NewInstallInspectService(dependencyResolver, artifact, verificationnpm.IntegrityVerifier{}, inspection, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+		installInspection, err := application.NewInstallInspectService(dependencyResolver, artifact, verificationnpm.IntegrityVerifier{}, checkedInspection, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err
 		}
@@ -512,19 +516,23 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		nativeLookupResolver := resolver
 		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(readPrerequisite, resolver, intake))
+		checkedInspection, err := newAdvisoryInspection(inspection)
+		if err != nil {
+			return err
+		}
 		resolver = prerequisiteCheckingResolver{resolver: resolver, read: readPrerequisite}
 		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
 		if err != nil {
 			return err
 		}
-		directInspect, err := application.NewInspectService(directArtifact, verificationpypi.IntegrityVerifier{}, inspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
+		directInspect, err := application.NewInspectService(directArtifact, verificationpypi.IntegrityVerifier{}, checkedInspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err
 		}
 		if err := cli.AddPyPIInspect(command, directInspect); err != nil {
 			return err
 		}
-		installInspection, err := application.NewInstallInspectService(resolver, intake, verificationpypi.IntegrityVerifier{}, inspection, evidence, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
+		installInspection, err := application.NewInstallInspectService(resolver, intake, verificationpypi.IntegrityVerifier{}, checkedInspection, evidence, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err
 		}
@@ -556,7 +564,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake"), evidenceRoot: filepath.Join(root, "evidence"), stagingRoot: filepath.Join(root, "staging"), inspector: inspection, evidence: evidence}); err != nil {
+		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake"), evidenceRoot: filepath.Join(root, "evidence"), stagingRoot: filepath.Join(root, "staging"), inspector: checkedInspection, evidence: evidence}); err != nil {
 			return err
 		}
 	}

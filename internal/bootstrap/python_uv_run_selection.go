@@ -84,7 +84,11 @@ func newUVRunSelectionService(native *sandbox.UVResolver, command string, reques
 	if native == nil || intake == nil || inspector == nil || static == nil || backend == nil || store == nil || staging == nil || !request.Valid() || artifactpypi.ValidateConsoleExecutionCommand(command) != nil {
 		return nil, errors.New("UV root execution requires actual adapters and bounded public requests")
 	}
-	fresh, err := application.NewExecutionInspectService(intake, verificationpypi.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return nil, err
+	}
+	fresh, err := application.NewExecutionInspectService(intake, verificationpypi.IntegrityVerifier{}, checkedInspection, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, err
 	}

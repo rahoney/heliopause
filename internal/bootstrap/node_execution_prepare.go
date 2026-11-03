@@ -68,7 +68,11 @@ func newNPMExecutionPreparationService(resolver *sandbox.NPMResolver, source *ar
 	if err != nil {
 		return nil, err
 	}
-	fresh, err := application.NewExecutionInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return nil, err
+	}
+	fresh, err := application.NewExecutionInspectService(source, verificationnpm.IntegrityVerifier{}, checkedInspection, store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, err
 	}

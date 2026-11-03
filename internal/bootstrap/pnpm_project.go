@@ -113,7 +113,11 @@ func (s *pnpmProjectSession) ResolveProjectLockUpdate(ctx context.Context, insta
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
-	quarantine, err := application.NewProjectInspectService(s.bindings.source, verificationnpm.IntegrityVerifier{}, inspector, s.bindings.store, policy.M3{}, policy.M4{}, func() (domain.OperationID, error) { return s.operation, nil }, domain.NewRunID)
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return domain.ProjectDependencyUpdate{}, err
+	}
+	quarantine, err := application.NewProjectInspectService(s.bindings.source, verificationnpm.IntegrityVerifier{}, checkedInspection, s.bindings.store, policy.M3{}, policy.M4{}, func() (domain.OperationID, error) { return s.operation, nil }, domain.NewRunID)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}

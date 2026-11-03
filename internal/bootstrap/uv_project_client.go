@@ -83,6 +83,10 @@ func bindUVProjectClient(command *cobra.Command, executor uvProjectExecutor, obs
 	if err != nil {
 		return nil, err
 	}
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return nil, err
+	}
 	store, err := local.NewStore(evidenceRoot)
 	if err != nil {
 		return nil, err
@@ -103,7 +107,7 @@ func bindUVProjectClient(command *cobra.Command, executor uvProjectExecutor, obs
 	if err != nil {
 		return nil, errors.Join(err, resolver.Close())
 	}
-	if err := cli.AddUVProject(command, uvProjectCLIService{uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, resolver, native}}); err != nil {
+	if err := cli.AddUVProject(command, uvProjectCLIService{uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, checkedInspection, store, promoter, resolver, native}}); err != nil {
 		return nil, errors.Join(err, resolver.Close())
 	}
 	return resolver.Close, nil

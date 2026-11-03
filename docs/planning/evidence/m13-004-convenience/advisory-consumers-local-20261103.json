@@ -1,0 +1,177 @@
+{
+  "baseline_commit": "1f04d6d",
+  "scope": "reuse common advisory wrapper at existing public npm/Python install/project/execution composition points; not full S05 qualification",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "29932ec1e3b286f4a414b057521f0a13c27189ece0eadfe4fdfc25c8d979dd16"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_client.go",
+      "sha256": "1da8a6ad4d21da06c9d47cea93b2670f9d47ab785521af57f2fd67d506bc9cb5"
+    },
+    {
+      "path": "internal/bootstrap/npm_project.go",
+      "sha256": "6039322690db98bfe81d6dfacb44a7abdca28b623abb2cead38bcf2245c49097"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project.go",
+      "sha256": "14b252f247781a88a22e276a4de7c976e7284172ef7efe3f10422d717fb0c4e6"
+    },
+    {
+      "path": "internal/bootstrap/bun_project.go",
+      "sha256": "df04c58f49e53c8bb790434827728a2c6ce2e5357db26f281d9c0f588a563413"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare.go",
+      "sha256": "0cdeafdd049337da00d2f319c1d326ebe2173520a34a1e5375926e83e5644f0c"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_execution.go",
+      "sha256": "a1194055a36cff566b8bc7ae035d53e9ac609fa0e328d16a1fe6cdd67787cab1"
+    },
+    {
+      "path": "internal/bootstrap/python_uv_run_selection.go",
+      "sha256": "dce61e4d2b9cd1cf23a899805d2b0b652cd52383ddc411df92565fc1ad3ed452"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_run_execution.go",
+      "sha256": "41e8b73d19713b3e1cb887f53e24edd84c722be2fcbd03d3db4f296aedbe1be5"
+    },
+    {
+      "path": "internal/bootstrap/bun_run_execution.go",
+      "sha256": "ca93ec5ab5db32627220631f69d46c9450a98f4519b46aea576a00d98af44fc6"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": {
+        "raw_file": "s05-native-test-build-identity.json",
+        "sha256": "4d99f69874ae9cd44a7a2a4d312b0485a8a022871f8331d6745a2c7589030ae9",
+        "bytes": 96200
+      },
+      "log": {
+        "raw_file": "s05-native-test-build-identity.log",
+        "sha256": "2e0e956aa32f14c3f47f4bb11f42b3431decb30f6c5434173a17ee599edeba2b",
+        "bytes": 430
+      },
+      "exit_code": 0,
+      "elapsed": 1.01,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-consumers-format.json",
+        "sha256": "07faf9ebf0a94575e80f38352a237303e286b35c3d4eba9e0fab0e1143d624d5",
+        "bytes": 96885
+      },
+      "log": {
+        "raw_file": "s05-consumers-format.log",
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+        "bytes": 15
+      },
+      "exit_code": 0,
+      "elapsed": 0.836,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-consumers-unit.json",
+        "sha256": "76fe1a7945b4870cf07e5fe876f5087cea6231ac379c6d100da07e1e4862a652",
+        "bytes": 96893
+      },
+      "log": {
+        "raw_file": "s05-consumers-unit.log",
+        "sha256": "1cddba77478f7d5f9e36e33cc58cf69d21c8a8e8d63d86a2f6b4fa34e3cb2f7d",
+        "bytes": 61
+      },
+      "exit_code": 0,
+      "elapsed": 5.543,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-consumers-static.json",
+        "sha256": "9ed3ad42c463549597c81519325d64b661711522d612ffb185332234ceb9f187",
+        "bytes": 96909
+      },
+      "log": {
+        "raw_file": "s05-consumers-static.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 2.578,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-consumers-vet.json",
+        "sha256": "15fb2b7b1be8524d4539acae8beaa8f057a692f4def13b665b46d27b92ab476b",
+        "bytes": 96876
+      },
+      "log": {
+        "raw_file": "s05-consumers-vet.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 1.386,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-consumers-tagged-build.json",
+        "sha256": "05ea3d229151844d3ae0c0fc54de48197e4783688c40459dc88817dc5d979495",
+        "bytes": 96930
+      },
+      "log": {
+        "raw_file": "s05-consumers-tagged-build.log",
+        "sha256": "b086947a7e4a434d68c093c81df79c8e3bb71be2cf96816a606473bec6e2893a",
+        "bytes": 79
+      },
+      "exit_code": 0,
+      "elapsed": 5.316,
+      "source_unchanged": true
+    }
+  ],
+  "build_identity_review_source": {
+    "raw_file": "s05-native-test-build-identity-review.go.txt",
+    "sha256": "385645d0c74238b4cdcfaf3c9493e4d89088d62f0652de2dacf4d1b88410afd3",
+    "bytes": 472
+  },
+  "actual_test_binary_metadata": {
+    "go": "go1.27.3",
+    "dependency_count": 5,
+    "calculator_version": "v0.6.4",
+    "calculator_sum": "h1:9w2RCO/Q4UTiJyEgpCHRiVc6CfrsFEnkoX+OtATqKio=",
+    "replaced": false
+  },
+  "boundaries": [
+    "default bootstrap tests exercise existing unit composition, not real API/native/CLI installation",
+    "realcorpus run with ^$ is test build validity only: no tests run, no artifact executed",
+    "existing concrete layout/runtime-proof inspectors and Python prerequisite setup retained",
+    "shared Python bindings carry one wrapper; no second wrapper in requirements/sync/project workflows",
+    "legacy internal Python tool-install preparation has no current public caller and was left unchanged",
+    "local npm project root remains its local source; not guessed into public registry namespace",
+    "GitHub/Terraform/own release binary applicability still needs the existing bounded-support contract; not globally wrapped as required unsupported"
+  ],
+  "missing": [
+    "C01-owned bounded cache, freshness24h and refresh",
+    "explicit malicious advisory and alias acceptance",
+    "binary applicability and exact mapping limitations",
+    "actual public normal/refusal/incomplete CLI coverage and target preservation",
+    "CVSS NOTICE release/install/update distribution",
+    "grouped/final S05 qualification"
+  ],
+  "new_class_or_interface_added": false,
+  "runtime_lock_changed": false,
+  "host_installation_changed": false,
+  "ci_started": false
+}

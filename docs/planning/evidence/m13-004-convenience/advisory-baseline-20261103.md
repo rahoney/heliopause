@@ -227,3 +227,52 @@ Race5.211s·Staticcheck1.124s/vet0.457s·format no-op로 확인했으며 그 두
 references0/query errors0을 확인한 뒤 제거했다. 공용 cache/runtime은 보존했다.
 최종 사용자 CLI·모든 실제 소비자·cache/24h refresh·명시 악성/alias·NOTICE 공급과
 whole S05 qualification은 계속 MISSING이며 새 CI는 시작하지 않았다.
+
+
+## 여섯 번째 단위 시작 — 실제 소비자 연결 baseline
+
+기준 `1f04d6d`. 공통 transport/adapter/report/M3는 재사용한다. 현재 Go·Cargo의 구성은
+연결했지만 전체 S05 네 상태는 계속 NO다. 다음 기존 소비자의 advisory wiring만 MISSING이다.
+
+| 현재 연결 묶음 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| npm 기본 inspect/install | YES | NO | NO | NO | bootstrap의 기존 composite를 한 번 감싸 두 Application consumer에 전달 |
+| Python 기본 설치·requirements·UV pip sync·tool 공유 binding | YES | NO | NO | NO | 기존 prerequisite 설정 후 감싼 동일 Port를 direct/install/bindings에 전달 |
+| UV project add/sync/lock | YES | NO | NO | NO | 기존 standalone UV client의 inspector binding만 연결 |
+
+기존 resolver·static/dynamic·layout/프로젝트 입력을 다시 구현하지 않는다. NPM/PNPM/Bun의
+frozen layout 및 실행 선택/기타 소비자는 이 뒤의 별도 연결·실제 검증 대상이다. Local project
+root code를 공개 registry package 이름으로 추측해 조회하거나 두 번째 graph를 만들지 않는다.
+Binary의 매핑 불가는 설계 §4의 bounded 지원 유지/범위 한계 표시 계약을 먼저 적용하며
+전체 GitHub/자체 release를 무조건 required unsupported로 감싸지 않는다.
+
+고정 Go1.27.3의 실제 test binary에서도 go-cvss version/checksum이 존재함을 작은 review로
+확인했다(`s05-native-test-build-identity`,1.010s; review source는 raw에 보존 후 제거).
+이것은 metadata 존재 확인이고 실제 native/설치 성공이 아니다. 확인 없이 test binary에는
+BuildInfo가 없다고 가정해 generated version selector나 별도 build flag를 추가하지 않는다.
+
+
+이 묶음에서 frozen npm/PNPM/Bun project와 NPM/Python/UV/Pipx 실행 준비 소비자도
+동일한 기존 factory 경계에 연결한다(공통 구현 YES, advisory WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED는 시작 시 NO). 기존 concrete inspector는 layout cache·root dependency·
+실행 runtime proof의 owner로 그대로 사용하고, Application에 전달하는 Inspection Port만
+감싼다. 새 constructor/DI framework·두 번째 resolver·check 누락 fallback을 만들지 않는다.
+공개 advisory 사용 자체는 기존 fixture를 이용한 native/CLI 결과가 자동으로 새 기능 검증이
+되는 근거가 아니며, 전체 cache/freshness/실제 consumer acceptance는 후속으로 남는다.
+
+기존 내부 tool-install execution factory는 현재 공개 CLI 경로의 caller가 없음을 확인했다.
+이 경로를 미래 소비자 때문에 미리 변경하지 않고, 실제 공개 UV/Pipx native factory와
+supplemental selection 경계만 연결한다. NPM local project root는 별도 local source이며
+동일 이름의 공개 package를 추측 조회하지 않는다.
+
+
+현재 공개 npm 기본·Python 공유 binding/UV project 및 frozen npm/PNPM/Bun project와
+NPM/PNPM/Bun·UV/Pipx 실행 준비의 advisory wiring을 같은 기존 helper로 연결했다.
+별도 class/interface나 resolver는 추가하지 않았으며 각 concrete layout/runtime owner를
+유지했다. 위 세 경로의 현재 WIRED는 YES, QUALIFIED/ACCEPTANCE_CLOSED는 NO다.
+기본 bootstrap unit5.543s·Staticcheck2.578s/vet1.386s와 tagged build5.316s는 PASS다.
+Tagged `-run ^$`는 실제 test 미실행이며 native 성공이 아니다. 현재 module/test binary
+검토도 보존한 [소비자 연결 원장](./advisory-consumers-local-20261103.json)이 source와 범위를
+소유한다. 의미 있는 기존 입력/CPP/live API/전체 foundation을 다시 실행하지 않았다.
+다음은 C01 소유의 cache·24h freshness/refresh와 나머지 실제 CLI/판정·범위 한계다.
+Whole S05와 최종16번·새 CI/배포는 계속 미완료다.
