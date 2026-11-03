@@ -1085,3 +1085,50 @@ Bun Artifact 실행/Policy를 추가로 증명한 것은 아니다. 성공한 �
 완료 client4개와 이 시험용 PNPM/Bun archive/native/NOTICE6개는95process의 무참조/
 query error0 및 exact SHA 확인 뒤388443045B를 삭제했다. SDK/cache·원본·재사용할
 응답기/policy helper는 유지한다. `s02-completed-consumers-cleanup.json`이 원본이다.
+
+
+### S02 release 공급 연결 — local IMPLEMENTED/WIRED / qualification OPEN
+
+기존 workflow/manifest/SBOM/checksum·OS package·native payload 선택/보호 복사와 현재
+설치/업데이트 admission에 `sandbox-responder`를 연결했다. 크기 상한은 공통 identity의
+한 값이며 기존4MiB 예약을 늘리지 않았다. 같은 Go owner·CGO0/Linux amd64와 실제
+command buildinfo를 producer/준비 검사에서 대조한다. Source-built helper의 release version은
+기존 manifest/SBOM을 따른다. Doctor는 protected current를 읽기만 확인한다. 새 service,
+updater, version lock, 의존성 또는 public 공급 경로는 없다.
+
+Historical reader/기록/rollback은 기존 집합을 읽고 새 candidate의 source·Root provenance·
+최초 system installation은 helper 누락을 거부한다. Native14 또는 pipx DATA 포함16 asset
+형식과 기존 형식을 구분한다. 정식 producer는 항상 현재 전체16개를 요구하며 exact bundle
+목록은20개다. 기존 OS package `/releases/`와 native 등록 `/versions/`는 합치지 않는다.
+
+Foundation85.655s는 PASS다. 최초 targeted24.247s는 unstripped helper의 기존 크기 상한
+초과, per-user0700을 system0555로 기대한 시험 오류와 늘어난 native/payload 수의 stale
+assertion을 드러냈다. Producer/Workflow를 앞선 actual helper와 같은 `-s -w` 빌드로 맞추고
+기존 상한을 유지했다. 교정 targeted13.241s는4package PASS였으나 기존 pipeline fake가
+S01의 필수 두 환경 상태를 빠뜨려 incomplete였다. 제품의 coverage를 완화하지 않고 fake를
+현 계약에 맞춘 교정2.685s가 PASS다(31checks/45Evidence, 모델이며 native 증거 아님).
+Whole affected Race85.745s는5package PASS였고 producer의 기존19file assertion 하나만
+20file과 달랐다. 해당 단위만 source 입력 목록을 완성한5.067s Race로 PASS했다. 최초
+5.037s의 같은 단위는 수정 bundle_test가 inventory 밖이어서 완전 source proof로 쓰지 않는다.
+고정 Staticcheck12package24.800s/vet14.240s·현재 workflow2.285s는 PASS다. Foundation/
+5개 성공 package·CPP136/kernel을 반복하지 않았다.
+
+Native-v1/6.674s는 실제 default ELF argv가 무인수여서 `RESPONDER_INVOCATION_INVALID`로
+실패했고 뒤 DNS chain은 미도달이었다. 기존 generic probe는 무인수임을 확인해 그 기본
+호출은 사용법만 출력하고, 실제 서비스는 explicit serve와UID/GID1001을 계속 요구한다.
+같은 client/new guest의 v2/19.817s는 protected-current 준비 확인/ordinary Artifact 역할의
+실제 helper probe7.57s·두 상태 Record/ReadReference와 DNS→HTTP→dummy→sink9.72s/
+network10을 PASS했다. Helperwait0/정확한 원복/Host 동일,373139055B와 임시 빈 mountpoint
+제거를 확인했다. CLI doctor/guest protocol Race6.713s도 PASS다. Signed release activation/
+실제 self-update·whole S02·hosted qualification을 뜻하지 않는다. 해당 release-* raw가
+source/최초 실패와 각 교정·범위를 소유한다.
+
+이 단위 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 남은
+acceptance는 S02 shared 실패/cancel/미준비·변조·위장·실제 egress0의 묶음 corpus, S03의
+잠복·지연/자식·정상 대조와 동일 input/Finding/Policy/target 무변경 연결, grouped hosted와
+최종 signed 공급 qualification이다. 전체 보강 설계의 다른 미완료 항목은 그대로다.
+
+현재 guest의 마지막 무인수 분기는 pinned Staticcheck0.764s로 확인했다. 완료한 probe
+client 하나는96process 무참조/query error0와 원본 SHA 확인 뒤28890039B를 제거했다.
+응답기/policy helper·SDK/cache는 다음 corpus에 재사용한다. 원본은
+`s02-release-current-guest-static`과 `s02-completed-release-probe-cleanup.json`이다.

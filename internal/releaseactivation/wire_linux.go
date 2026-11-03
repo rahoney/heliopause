@@ -208,6 +208,9 @@ func (r wireRelease) verifyProvenance(ctx context.Context) ([]byte, error) {
 	if ctx == nil {
 		return nil, ErrUntrusted
 	}
+	if !r.manifest.HasSandboxResponder() {
+		return nil, ErrUntrusted
+	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

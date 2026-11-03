@@ -381,6 +381,10 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer`,
 		`--asset "$dist/haa-release-installer-linux-amd64" \`,
 	})...)
+	findings = append(findings, validateActiveJobCommands(contents, "build-and-attest", "Build deterministic native release assets", "sandbox responder", []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$dist/haa-sandbox-responder" ./cmd/haa-sandbox-responder`,
+		`--asset "$dist/haa-sandbox-responder" \`,
+	})...)
 	findings = append(findings, validatePNPMReleaseSupply(contents)...)
 	findings = append(findings, validateBunReleaseSupply(contents)...)
 	findings = append(findings, validatePipxReleaseSupply(contents)...)

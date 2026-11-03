@@ -56,7 +56,7 @@ func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpe
 		return nativeRuntimeToolSpec{name: "pipx-runtime.zip", guestPath: pipxToolGuestPath, sha256: runtimeidentity.PipxToolSHA256, size: runtimeidentity.PipxToolSize, installedName: runtimeidentity.PipxRuntimeAssetName, maxBytes: 8 << 20}, true
 	case nativeRuntimeResponder:
 		return nativeRuntimeToolSpec{name: responderToolName, guestPath: responderGuestPath,
-			installedName: responderToolName, maxBytes: responderSupplyCapacity - (64 << 10)}, true
+			installedName: responderToolName, maxBytes: runtimeidentity.SandboxResponderMaxBytes}, true
 	default:
 		return nativeRuntimeToolSpec{}, false
 	}

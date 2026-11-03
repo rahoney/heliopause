@@ -316,6 +316,26 @@ func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testi
 	}
 }
 
+func TestResponderReleaseRequiresActiveBuildAndManifestBinding(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", releaseWorkflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseline := string(body)
+	if findings := validateReleaseWorkflow(baseline, selectedGoForTest(t)); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, command := range []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$dist/haa-sandbox-responder" ./cmd/haa-sandbox-responder`,
+		`--asset "$dist/haa-sandbox-responder"`,
+	} {
+		candidate := strings.Replace(baseline, command, "# omitted responder", 1)
+		if candidate == baseline || len(validateReleaseWorkflow(candidate, selectedGoForTest(t))) == 0 {
+			t.Fatal("missing responder build/binding accepted")
+		}
+	}
+}
+
 func selectedGoForTest(t *testing.T) string {
 	t.Helper()
 	root, err := filepath.Abs("../..")

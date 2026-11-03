@@ -7,7 +7,73 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
+
+func TestResponderManifestPreservesHistoryAndBindsCurrentNativeRole(t *testing.T) {
+	var value manifest
+	if err := json.Unmarshal(publishedManifest(t), &value); err != nil {
+		t.Fatal(err)
+	}
+	for name, role := range nativeUpdateRoleSet() {
+		found := false
+		for _, file := range value.Assets {
+			found = found || file.Name == name
+		}
+		if !found {
+			value.Assets = append(value.Assets, asset{name, "linux/amd64", role, strings.Repeat("a", 64), 123})
+		}
+	}
+	for _, name := range []string{"pnpm-NOTICE.txt", "bun-NOTICE.txt"} {
+		value.Assets = append(value.Assets, asset{name, "linux/amd64", "release-metadata", strings.Repeat("b", 64), 123})
+	}
+	body, _ := json.Marshal(value)
+	legacy, err := ParseReleaseManifest(body)
+	if err != nil || legacy.HasSandboxResponder() {
+		t.Fatal("historical view changed", err)
+	}
+	if files, err := legacy.NativeUpdatePayloads(); err != nil || len(files) != 10 {
+		t.Fatal("historical rollback payload changed", err)
+	}
+	for _, scenario := range []string{"normal", "role", "platform", "size", "digest", "duplicate"} {
+		t.Run(scenario, func(t *testing.T) {
+			candidate := value
+			candidate.Assets = append([]asset(nil), value.Assets...)
+			file := asset{runtimeidentity.SandboxResponderAssetName, "linux/amd64", "sandbox-responder", strings.Repeat("c", 64), 123}
+			switch scenario {
+			case "role":
+				file.Role = "network-policy-helper"
+			case "platform":
+				file.Platform = "linux/arm64"
+			case "size":
+				file.Size = runtimeidentity.SandboxResponderMaxBytes + 1
+			case "digest":
+				file.SHA256 = strings.Repeat("C", 64)
+			case "duplicate":
+				candidate.Assets = append(candidate.Assets, file)
+			}
+			candidate.Assets = append(candidate.Assets, file)
+			body, _ := json.Marshal(candidate)
+			parsed, err := ParseReleaseManifest(body)
+			if scenario != "normal" {
+				if err == nil {
+					t.Fatal("invalid responder role accepted")
+				}
+				return
+			}
+			if err != nil || !parsed.HasSandboxResponder() {
+				t.Fatal("current responder missing", err)
+			}
+			if files, err := parsed.NativeUpdateFiles(); err != nil || len(files) != 7 {
+				t.Fatal("native responder missing", err)
+			}
+			if files, err := parsed.NativeUpdatePayloads(); err != nil || len(files) != 11 {
+				t.Fatal("copied responder missing", err)
+			}
+		})
+	}
+}
 
 func publishedManifest(t *testing.T) []byte {
 	t.Helper()

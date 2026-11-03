@@ -40,6 +40,10 @@ type responder struct {
 func main() {
 	os.Clearenv()
 	runtime.GOMAXPROCS(1)
+	if len(os.Args) == 1 || len(os.Args) == 2 && os.Args[1] == "--help" {
+		_, _ = fmt.Fprintln(os.Stdout, "haa-sandbox-responder serve: bounded guest-only DNS/HTTP stimulus")
+		return
+	}
 	if len(os.Args) != 2 || os.Args[1] != "serve" || os.Geteuid() != 1001 || os.Getegid() != 1001 {
 		_, _ = fmt.Fprintln(os.Stderr, "RESPONDER_INVOCATION_INVALID")
 		os.Exit(1)

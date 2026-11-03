@@ -39,7 +39,7 @@ type responderSupply struct {
 }
 
 func validResponderImage(body []byte) bool {
-	if len(body) == 0 || int64(len(body)) > responderSupplyCapacity-(64<<10) {
+	if len(body) == 0 || int64(len(body)) > runtimeidentity.SandboxResponderMaxBytes {
 		return false
 	}
 	info, err := buildinfo.Read(bytes.NewReader(body))
@@ -51,6 +51,16 @@ func validResponderImage(body []byte) bool {
 		settings[setting.Key] = setting.Value
 	}
 	return settings["CGO_ENABLED"] == "0" && settings["GOOS"] == "linux" && settings["GOARCH"] == runtime.GOARCH
+}
+
+// CheckResponderSource is a read-only readiness check at the fixed protected
+// installation. It never creates a volume or starts the supplied program.
+func CheckResponderSource(ctx context.Context) error {
+	body, err := readInstalledNativeTool(ctx, runtimeidentity.NativeInstallRoot, nativeRuntimeResponder)
+	if err != nil || !validResponderImage(body) {
+		return errors.Join(errResponderSupply, err)
+	}
+	return nil
 }
 
 func prepareResponderSupply(ctx context.Context, runner CommandRunner, installation string) (supply *responderSupply, resultErr error) {

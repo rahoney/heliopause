@@ -194,6 +194,9 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if _, err := strict.NativeUpdatePayloads(); err != nil {
 			return installationInput{}, err
 		}
+		if !existing && !strict.HasSandboxResponder() {
+			return installationInput{}, errors.New("current native installation requires the fixed sandbox responder")
+		}
 		for _, name := range append([]string{manifestName, sbomName, runtimeImagesName}, selectedNames(files)...) {
 			if err := verifySystemRegularFile(filepath.Join(bundle, name)); err != nil {
 				return installationInput{}, err
@@ -318,6 +321,9 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 		want["haa_gvisor_observer-linux-amd64"] = "gvisor-observer"
 		want["haa-network-policy-helper-linux-amd64"] = "network-policy-helper"
 		for _, item := range value.Assets {
+			if item.Name == runtimeidentity.SandboxResponderAssetName {
+				want[item.Name] = "sandbox-responder"
+			}
 			if item.Name == "pnpm-linux-amd64" || item.Name == "pnpm-NOTICE.txt" {
 				role := "pnpm"
 				if item.Name == "pnpm-NOTICE.txt" {

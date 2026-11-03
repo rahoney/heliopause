@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
@@ -53,6 +54,7 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 	assets = append(assets, map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
 	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
 	assets = append(assets, map[string]any{"name": "bun-linux-amd64", "platform": "linux/amd64", "role": "bun"}, map[string]any{"name": "bun-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	assets = append(assets, map[string]any{"name": runtimeidentity.SandboxResponderAssetName, "platform": "linux/amd64", "role": "sandbox-responder"})
 	noticeBody, noticeErr := os.ReadFile(filepath.Join("..", "..", "..", "tools", "pnpm", "NOTICE"))
 	if noticeErr != nil {
 		t.Fatal(noticeErr)
@@ -263,7 +265,7 @@ func TestHeliopauseSetConcurrentCopiesCloseAndUncertainOwnership(t *testing.T) {
 	}
 }
 
-func TestHeliopauseSetFreezesElevenMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
+func TestHeliopauseSetFreezesCurrentMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
 	f := newReleaseSetFixture(t, nil)
 	foreign := filepath.Join(f.client.intakeRoot, "unrelated")
 	if err := os.Mkdir(foreign, 0700); err != nil {
@@ -273,7 +275,7 @@ func TestHeliopauseSetFreezesElevenMembersAndCleansOnlyOwnedAcquisitions(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resolution.Graph().Nodes()) != 11 || len(resolution.Graph().Edges()) != 10 {
+	if len(resolution.Graph().Nodes()) != 12 || len(resolution.Graph().Edges()) != 11 {
 		t.Fatal("incomplete native/metadata set")
 	}
 	manifest, err := f.set.Manifest()
@@ -340,15 +342,19 @@ func TestHeliopauseSetFreezesElevenMembersAndCleansOnlyOwnedAcquisitions(t *test
 }
 
 func TestHeliopauseSetRejectsSelectionAndBindingGapsWithoutPayloadPromotion(t *testing.T) {
-	for _, name := range []string{"missing-installer", "runtime-lock", "manifest-api-digest", "asset-api-size", "mutable-release", "set-byte-limit", "cancelled"} {
+	for _, name := range []string{"missing-installer", "missing-responder", "runtime-lock", "manifest-api-digest", "asset-api-size", "mutable-release", "set-byte-limit", "cancelled"} {
 		t.Run(name, func(t *testing.T) {
 			var edit func(map[string]any)
-			if name == "missing-installer" {
+			if name == "missing-installer" || name == "missing-responder" {
+				missing := "haa-release-installer-linux-amd64"
+				if name == "missing-responder" {
+					missing = runtimeidentity.SandboxResponderAssetName
+				}
 				edit = func(m map[string]any) {
 					assets := m["assets"].([]any)
 					kept := make([]any, 0, len(assets))
 					for _, raw := range assets {
-						if raw.(map[string]any)["name"] != "haa-release-installer-linux-amd64" {
+						if raw.(map[string]any)["name"] != missing {
 							kept = append(kept, raw)
 						}
 					}

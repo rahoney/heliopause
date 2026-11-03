@@ -118,6 +118,9 @@ func (s *HeliopauseReleaseSet) ResolveDependencies(ctx context.Context, referenc
 	if err != nil {
 		return resolution, err
 	}
+	if !metadata.HasSandboxResponder() {
+		return resolution, errors.New("current native release requires the fixed sandbox responder")
+	}
 	if metadata.Version() != manifestResolved.Identity().Version() || metadata.RuntimeLockSHA256() != s.lockSHA256 || metadata.GVisorRelease() != runtimeidentity.GVisorRelease || metadata.GVisorCommit() != runtimeidentity.GVisorCommit {
 		return resolution, errors.New("release version or runtime lock differs from the active installation")
 	}

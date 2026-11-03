@@ -17,6 +17,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
@@ -279,21 +281,22 @@ func assetSpecs() map[string]struct {
 		platform string
 		role     string
 	}{
-		"helox-linux-amd64":                     {platform: "linux/amd64", role: "helox"},
-		"helox-linux-arm64":                     {platform: "linux/arm64", role: "helox"},
-		"helox-darwin-amd64":                    {platform: "darwin/amd64", role: "helox"},
-		"helox-darwin-arm64":                    {platform: "darwin/arm64", role: "helox"},
-		"haa_gvisor_observer-linux-amd64":       {platform: "linux/amd64", role: "gvisor-observer"},
-		"haa-network-policy-helper-linux-amd64": {platform: "linux/amd64", role: "network-policy-helper"},
-		"haa-release-installer-linux-amd64":     {platform: "linux/amd64", role: "release-installer"},
-		"pnpm-linux-amd64":                      {platform: "linux/amd64", role: "pnpm"},
-		"pnpm-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
-		"bun-linux-amd64":                       {platform: "linux/amd64", role: "bun"},
-		"bun-NOTICE.txt":                        {platform: "linux/amd64", role: "release-metadata"},
-		"pipx-runtime-linux-amd64.zip":          {platform: "linux/amd64", role: "pipx-runtime"},
-		"pipx-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
-		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
-		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
+		"helox-linux-amd64":                       {platform: "linux/amd64", role: "helox"},
+		"helox-linux-arm64":                       {platform: "linux/arm64", role: "helox"},
+		"helox-darwin-amd64":                      {platform: "darwin/amd64", role: "helox"},
+		"helox-darwin-arm64":                      {platform: "darwin/arm64", role: "helox"},
+		"haa_gvisor_observer-linux-amd64":         {platform: "linux/amd64", role: "gvisor-observer"},
+		"haa-network-policy-helper-linux-amd64":   {platform: "linux/amd64", role: "network-policy-helper"},
+		runtimeidentity.SandboxResponderAssetName: {platform: "linux/amd64", role: "sandbox-responder"},
+		"haa-release-installer-linux-amd64":       {platform: "linux/amd64", role: "release-installer"},
+		"pnpm-linux-amd64":                        {platform: "linux/amd64", role: "pnpm"},
+		"pnpm-NOTICE.txt":                         {platform: "linux/amd64", role: "release-metadata"},
+		"bun-linux-amd64":                         {platform: "linux/amd64", role: "bun"},
+		"bun-NOTICE.txt":                          {platform: "linux/amd64", role: "release-metadata"},
+		"pipx-runtime-linux-amd64.zip":            {platform: "linux/amd64", role: "pipx-runtime"},
+		"pipx-NOTICE.txt":                         {platform: "linux/amd64", role: "release-metadata"},
+		"helox-linux-amd64.deb":                   {platform: "linux/amd64", role: "os-package-deb"},
+		"helox-linux-amd64.rpm":                   {platform: "linux/amd64", role: "os-package-rpm"},
 	}
 }
 
@@ -305,6 +308,7 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 	seen := make(map[string]bool, len(expected))
 	assets := make([]releaseAsset, 0, len(expected))
 	primary := ""
+	responder := ""
 	for _, path := range paths {
 		name := filepath.Base(path)
 		identity, known := expected[name]
@@ -320,9 +324,26 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 		if name == "helox-linux-amd64" {
 			primary = path
 		}
+		if name == runtimeidentity.SandboxResponderAssetName {
+			if record.Size > runtimeidentity.SandboxResponderMaxBytes {
+				return nil, "", errors.New("sandbox responder exceeds its fixed supply")
+			}
+			responder = path
+		}
 	}
 	if len(seen) != len(expected) || primary == "" {
 		return nil, "", errors.New("release asset set is incomplete")
+	}
+	info, err := buildinfo.ReadFile(responder)
+	if err != nil || info.Path != "github.com/rahoney/heliopause/cmd/haa-sandbox-responder" || info.GoVersion != "go"+runtimeidentity.GoVersion {
+		return nil, "", errors.New("sandbox responder program or compiler differs from the current owner")
+	}
+	settings := make(map[string]string, len(info.Settings))
+	for _, setting := range info.Settings {
+		settings[setting.Key] = setting.Value
+	}
+	if settings["CGO_ENABLED"] != "0" || settings["GOOS"] != "linux" || settings["GOARCH"] != "amd64" {
+		return nil, "", errors.New("sandbox responder build settings differ from its guest role")
 	}
 	sort.Slice(assets, func(left, right int) bool { return assets[left].Name < assets[right].Name })
 	return assets, primary, nil
@@ -378,6 +399,7 @@ func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string, di
 	}
 	components = append(components, cyclonedxComponent{Type: "application", Name: "pnpm", Version: pnpmVersion})
 	components = append(components, cyclonedxComponent{Type: "application", Name: "bun", Version: bunVersion})
+	components = append(components, cyclonedxComponent{Type: "application", Name: runtimeidentity.SandboxResponderAssetName, Version: version})
 	for _, distribution := range distributions {
 		kind, name := "library", "pypi/"+distribution.Project
 		if distribution.Project == "pipx" {

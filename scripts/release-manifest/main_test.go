@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
@@ -33,7 +35,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 15 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 16 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -80,6 +82,24 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 	}
 }
 
+func TestResponderReleaseRefusesForeignOrOversizedProgram(t *testing.T) {
+	root := t.TempDir()
+	binary := filepath.Join(root, "helox-linux-amd64")
+	buildNativeHeloxTest(t, binary)
+	assets := releaseAssets(t, root, binary)
+	if _, _, err := collectAssets(assets); err != nil {
+		t.Fatal("actual fixed responder refused", err)
+	}
+	for _, body := range [][]byte{[]byte("foreign program"), make([]byte, runtimeidentity.SandboxResponderMaxBytes+1)} {
+		if err := os.WriteFile(filepath.Join(root, runtimeidentity.SandboxResponderAssetName), body, 0700); err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := collectAssets(assets); err == nil {
+			t.Fatal("invalid responder accepted by release producer")
+		}
+	}
+}
+
 func buildNativeHeloxTest(t *testing.T, output string) {
 	t.Helper()
 	root, err := filepath.Abs(filepath.Join("..", ".."))
@@ -102,6 +122,7 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"helox-darwin-arm64",
 		"haa_gvisor_observer-linux-amd64",
 		"haa-network-policy-helper-linux-amd64",
+		runtimeidentity.SandboxResponderAssetName,
 		"haa-release-installer-linux-amd64",
 		"pnpm-linux-amd64",
 		"pnpm-NOTICE.txt",
@@ -117,6 +138,15 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		path := filepath.Join(root, name)
 		if name == "helox-linux-amd64" {
 			paths = append(paths, binary)
+			continue
+		}
+		if name == runtimeidentity.SandboxResponderAssetName {
+			command := exec.Command("go", "build", "-trimpath", "-ldflags=-s -w", "-o", path, "../../cmd/haa-sandbox-responder")
+			command.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")
+			if output, err := command.CombinedOutput(); err != nil {
+				t.Fatalf("build fixed responder: %v\n%s", err, output)
+			}
+			paths = append(paths, path)
 			continue
 		}
 		body := []byte("fixture-" + name)

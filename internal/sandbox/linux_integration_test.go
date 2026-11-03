@@ -61,13 +61,28 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GITHUB_RELEASE_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor runtime for GitHub Release ELF")
 	}
+	runLinuxGitHubReleaseELFDynamicIntegration(t, "/bin/true")
+}
+
+func TestLinuxResponderReleaseProbeIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GITHUB_RELEASE_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor and protected responder source")
+	}
+	if err := CheckResponderSource(context.Background()); err != nil {
+		t.Fatal("fixed responder readiness", err)
+	}
+	runLinuxGitHubReleaseELFDynamicIntegration(t, filepath.Join(runtimeidentity.NativeInstallRoot, "current", runtimeidentity.SandboxResponderAssetName))
+}
+
+func runLinuxGitHubReleaseELFDynamicIntegration(t *testing.T, program string) {
+	t.Helper()
 	root := t.TempDir()
 	runID, _ := domain.NewRunID()
 	directory := filepath.Join(root, runID.String())
 	if err := os.MkdirAll(directory, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	content, err := os.ReadFile("/bin/true")
+	content, err := os.ReadFile(program)
 	if err != nil {
 		t.Fatal(err)
 	}

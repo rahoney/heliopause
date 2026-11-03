@@ -1829,5 +1829,118 @@
       "references": [],
       "query_errors": []
     }
+  },
+  "s02_release_component_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "S02 existing release/installed/doctor/update role wiring and local native helper probes only; not signed release activation or whole S02",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-foundation.json",
+        "sha256": "ccd409497d0320e5ba6d2e2d7424218b58382de0defd2ea0950234b7dcd8baa5",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 85.655
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-targeted.json",
+        "sha256": "aed29d958e3d3be806bef1bcb1522c52ebfa20323c104f625f487fc3ad6e442e",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 24.247
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-corrected-targeted.json",
+        "sha256": "39a31111d9542671237bd7b73a857a63277a08d8c832e43496ac8c04efac655f",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 13.241
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-pipeline-coverage-correction.json",
+        "sha256": "a3ddfbcd1df907fee1c2717905e764bc70648a3539848663a699ba266ecdfd05",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 2.685
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-affected-race.json",
+        "sha256": "9151d46a77656742de152efb9a2e572897fae8f9bb6411a2a579dcde5def0742",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 85.745
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-bundle-count-complete-input.json",
+        "sha256": "522b586b42d55179c94db473012f114e41f4ca57dd9031f6883282cca7283a94",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 5.067
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-corrected-workflow.json",
+        "sha256": "4c61deafaadfd88aa885b36d1036d76a3e8e737d0ab58e29a52e0a9bf1f4b829",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 2.285
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-static.json",
+        "sha256": "3065cac7cdf3004eb66507c5b79ab327141802f0fd7a41e3fc96343e8d6eae5a",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 24.8
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-vet.json",
+        "sha256": "fc4b5dc58794513a40f9381d2fb16e133383b8c9a02cddc556112706dd787edb",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 14.24
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-probe-native-v1.json",
+        "sha256": "6ef79498e5273800401e37286b7aedf8e68a7aa0312b5d3ce29a3e159dcc4e5a",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.674
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-probe-native-v2.json",
+        "sha256": "3b4c27c660c8ac4b1ecdde1649515e5f5ba396ea38fd66c5683977b04e043a15",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 19.817
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-cli-and-responder.json",
+        "sha256": "6a5aba55446fc530f2912c5e9553cc166fe58d700ebe44385d9ee6e1566cb608",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 6.713
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-current-guest-static.json",
+        "sha256": "c52da5df80af9545f3666fbb3eb43b863239c9fe80b01d044719174b57907dcf",
+        "exit_code": 0,
+        "elapsed": 0.764
+      }
+    ],
+    "reuse": "5 successful affected Race packages and current C++136/kernel retained; only failed bundle test corrected; scope of later guest no-argument branch closed by actual-v2/protocol Race",
+    "maintenance": "existing GoVersion owner, common component name/MaxBytes, same release version/SBOM, no independent updater/lock",
+    "remaining": [
+      "S02 grouped failure/cancel/tamper/forgery/zero real egress corpus",
+      "S03 conditional/delayed/child/normal full evidence-to-policy coverage",
+      "grouped hosted and signed release/update qualification"
+    ],
+    "completed_input_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s02-completed-release-probe-cleanup.json",
+      "sha256": "26c5be8dab11c2ef00a629f5bd09af88d9e53e6e93991e0372fd6e818b71cd3f",
+      "deleted_bytes": 28890039
+    }
   }
 }

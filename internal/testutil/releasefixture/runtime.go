@@ -61,7 +61,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 			return Materials{}, errors.New("synthetic SBOM component invalid")
 		}
 		name, _ := item["name"].(string)
-		if name != "pnpm" && name != "bun" && name != "pipx" {
+		if name != "pnpm" && name != "bun" && name != "pipx" && name != runtimeidentity.SandboxResponderAssetName {
 			kept = append(kept, raw)
 		}
 	}
@@ -109,12 +109,19 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	im["schema"] = "helox.runtime-image-manifest/v2"
 	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}, map[string]any{"name": "bun", "tool_version": runtimeidentity.BunVersion, "platform": "linux/amd64", "asset": runtimeidentity.BunNativeAssetName, "sha256": runtimeidentity.BunToolSHA256, "size": runtimeidentity.BunToolSize, "notices_asset": "bun-NOTICE.txt", "notices_sha256": runtimeidentity.BunNoticesSHA256, "notices_size": runtimeidentity.BunNoticesSize}}
 	hasData := false
+	hasResponder := false
 	if assets, ok := m["assets"].([]any); ok {
 		for _, raw := range assets {
+			if item, ok := raw.(map[string]any); ok && item["name"] == runtimeidentity.SandboxResponderAssetName {
+				hasResponder = true
+			}
 			if item, ok := raw.(map[string]any); ok && item["name"] == runtimeidentity.PipxRuntimeAssetName {
 				hasData = true
 			}
 		}
+	}
+	if hasResponder {
+		s["components"] = append(s["components"].([]any), map[string]any{"type": "application", "name": runtimeidentity.SandboxResponderAssetName, "version": m["version"]})
 	}
 	if hasData {
 		s["components"] = append(s["components"].([]any), map[string]any{"type": "application", "name": "pipx", "version": runtimeidentity.PipxVersion})
