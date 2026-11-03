@@ -47,11 +47,15 @@ sink.on("error",()=>{process.exitCode=93;});sink.end(body);
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, item := range []struct{ name, program string }{
-		{"normal", ""},
-		{"conditional-chain", gate + `{` + chain + `}`},
-		{"delayed-chain", gate + `{setTimeout(()=>{` + chain + `},50);}`},
-		{"detached-child", gate + `{const child=require("node:child_process").spawn(process.execPath,["-e",` + string(child) + `],{detached:true,stdio:"ignore"});child.unref();}`},
+	for _, item := range []struct {
+		name, program string
+		network       bool
+	}{
+		{"normal", "", false},
+		{"normal-config-read", gate + `{require("node:fs").readFileSync("/tmp/project/.env");}`, false},
+		{"conditional-chain", gate + `{` + chain + `}`, true},
+		{"delayed-chain", gate + `{setTimeout(()=>{` + chain + `},50);}`, true},
+		{"detached-child", gate + `{const child=require("node:child_process").spawn(process.execPath,["-e",` + string(child) + `],{detached:true,stdio:"ignore"});child.unref();}`, true},
 	} {
 		if !t.Run(item.name, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
@@ -103,6 +107,9 @@ sink.on("error",()=>{process.exitCode=93;});sink.end(body);
 					t.Fatal("conditional artifact gained approval or lost trusted refusal facts", inspectErr)
 				}
 				inspected = refused.Inspected()
+				if item.name == "normal-config-read" && refused.Decision().Decision() != domain.DecisionManualReview {
+					t.Fatal("normal configuration read became a malicious-file/canary BLOCK", refused.Decision().Reasons())
+				}
 			}
 			entries := inspected.Inspections()
 			if len(entries) != 1 {
@@ -134,7 +141,7 @@ sink.on("error",()=>{process.exitCode=93;});sink.end(body);
 					network += summary.Counts["NETWORK:network-attempt"]
 				}
 			}
-			if states != 2 || item.name != "normal" && network == 0 || item.name == "normal" && network != 0 {
+			if states != 2 || item.network != (network > 0) {
 				t.Fatal("required condition/late-child action not observed", states, network)
 			}
 			t.Logf("stimulus_node case=%s current_checks=%d stored_states=%d network=%d policy=%s approval=%t public_authenticity/install=NOT_CLAIMED", item.name, len(entry.Checks()), states, network, entry.PolicyDecision().Decision(), approved.Valid())
@@ -229,7 +236,7 @@ response.read()
 sink.close()
 `
 	const normal = "def main():\n    return 0\n"
-	for _, mode := range []string{"normal", "conditional-chain", "delayed-chain", "detached-child"} {
+	for _, mode := range []string{"normal", "normal-config-read", "conditional-chain", "delayed-chain", "detached-child"} {
 		if !t.Run(mode, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
@@ -238,6 +245,9 @@ sink.close()
 			program := normal
 			if mode != "normal" {
 				body := chain
+				if mode == "normal-config-read" {
+					body = "from pathlib import Path\nPath('/tmp/project/.env').read_bytes()\n"
+				}
 				if mode == "delayed-chain" {
 					body = "import time\ntime.sleep(0.05)\n" + body
 				}
@@ -275,7 +285,8 @@ sink.close()
 			approved, inspectErr := service.InspectResolved(ctx, resolution)
 			var refused *application.ExecutionPolicyFailure
 			var inspected domain.InspectedDependencySet
-			if mode == "normal" {
+			normalControl := mode == "normal" || mode == "normal-config-read"
+			if normalControl {
 				if inspectErr != nil || !approved.Valid() {
 					t.Fatal("normal Python control not approved", inspectErr)
 				}
@@ -316,7 +327,7 @@ sink.close()
 					network += summary.Counts["NETWORK:network-attempt"]
 				}
 			}
-			if states != 2 || mode != "normal" && network == 0 || mode == "normal" && network != 0 {
+			if states != 2 || normalControl && network != 0 || !normalControl && network == 0 {
 				t.Fatal("Python conditional/late-child action missing", states, network)
 			}
 			t.Logf("stimulus_python case=%s current_checks=%d stored_states=%d network=%d policy=%s approval=%t public_authenticity/install=NOT_CLAIMED", mode, len(entry.Checks()), states, network, entry.PolicyDecision().Decision(), approved.Valid())

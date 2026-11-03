@@ -2039,12 +2039,41 @@
         "exit_code": 0,
         "complete": true,
         "elapsed": 89.594
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-native-v1.json",
+        "sha256": "132427e986b52fe5db0d3df61598e50fd6f4b1bdde6c4ab1899c26f46ca46424",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 15.679
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-staticcheck.json",
+        "sha256": "4b620644b8bb3ee2781469c1fa5d491b058d7c746d039879a408242553172fd0",
+        "exit_code": 0,
+        "elapsed": 2.064,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-vet.json",
+        "sha256": "153ea3da256131c6799799edda94bc45f5de89006eeff1b566e4b4d4dfeeace2",
+        "exit_code": 0,
+        "elapsed": 4.023,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-docs.json",
+        "sha256": "41f5e823995897fc616045ce0ceaf9c54151fdb0dca463f6ea3f595217ef4907",
+        "exit_code": 0,
+        "elapsed": 0.338,
+        "source_unchanged": true
       }
     ],
     "first_failure": "detached child had not reached later behavior: authenticated pinned Node clone exact system /dev/null32768 first, then32770 standard-stream preparation classification; not evidence of early child termination",
     "reused_successes": "v6 current benign payload lifecycle normal11.64s ALLOW/network0; compound10.71s, delay10.77s, child10.90s each states2/network10/MANUAL_REVIEW/no approval. Current selected entry normal20.14s complete0 and activation20.21s actual network-attempt refusal/incomplete; both original archive unchanged. Whole operator89.594s PASS2 parents/6 cases.",
     "current_candidate": "Exact matching creator-exit fact, scoped Node Artifact NPM runtime reads passed CPP13649.128s and same-client child actual14.988s: 3 required checks, two persisted states, network10, MANUAL_REVIEW/no approval. Own maps v4 first fault corrected in this scope. Host restored/helperwait0/400260326B removed.",
-    "remaining": "Python actual Application/Policy corpus now next; other ecosystems, full target unchanged and supported-entry synthetic environment coverage, grouped hosted/final remain open. Runtime entry refusal/incomplete differs from a final inspection BLOCK. No public authenticity/Host installation claimed."
+    "remaining": "Python actual Application/Policy corpus now next; other ecosystems, full target unchanged and supported-entry synthetic environment coverage, grouped hosted/final remain open. Runtime entry refusal/incomplete differs from a final inspection BLOCK. No public authenticity/Host installation claimed.",
+    "normal_configuration_scope": "actual15.679s PASS: required checks3/states2/network0/no canary or malicious-file BLOCK; existing script process rule remains MANUAL_REVIEW/no approval, an operational benign refusal, not a clean ALLOW control or malware detection"
   },
   "s03_python_corpus_checkpoint": {
     "status": {
@@ -2110,13 +2139,42 @@
         "exit_code": 0,
         "elapsed": 0.353,
         "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-python-native-v1.json",
+        "sha256": "dcac090c55aa7e1c1dd6440980155b3a987ab6bdd8bfe1870e4c72f56e808cad",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 17.743
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-staticcheck.json",
+        "sha256": "4b620644b8bb3ee2781469c1fa5d491b058d7c746d039879a408242553172fd0",
+        "exit_code": 0,
+        "elapsed": 2.064,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-vet.json",
+        "sha256": "153ea3da256131c6799799edda94bc45f5de89006eeff1b566e4b4d4dfeeace2",
+        "exit_code": 0,
+        "elapsed": 4.023,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-docs.json",
+        "sha256": "41f5e823995897fc616045ce0ceaf9c54151fdb0dca463f6ea3f595217ef4907",
+        "exit_code": 0,
+        "elapsed": 0.338,
+        "source_unchanged": true
       }
     ],
     "reused_successes": "normal13.56s states2/network0/ALLOW; conditional13.10s and delay13.58s states2/network13/MANUAL_REVIEW/no approval",
     "first_failure": "fork own current PID stat32768 omission corrected: same diagnostic client v3/17.505s completed child13.48s checks3/states2/network13/MANUAL_REVIEW/no approval; full CPP13756.149s passed exact mount/image/identity/flags/path/profile negatives",
     "remaining": "S03 original install target unchanged/CLI goal linkage, other ecosystems/finite supported scenario census, selected-entry synthetic environment, hosted/final and whole S02 remain open",
     "current_candidate": "No temporary diagnostic wrapper remains; same backend forwarding only removed. Python entry-only activation/normal checks now next; current ordinary controlled wheel normal/compound/delay/child successes retained without repetition.",
-    "entry_scope": "current Python selected readonly entry actual45.010s PASS: normal20.71s complete/exit0, activate20.33s actual network-attempt refusal/incomplete; original wheel digest preserved, Host installation not performed; not final inspection BLOCK or synthetic entry environment proof"
+    "entry_scope": "current Python selected readonly entry actual45.010s PASS: normal20.71s complete/exit0, activate20.33s actual network-attempt refusal/incomplete; original wheel digest preserved, Host installation not performed; not final inspection BLOCK or synthetic entry environment proof",
+    "normal_configuration_scope": "actual17.743s PASS: required checks3/states2/network0/ALLOW with dummy .env read only in mock development; no public authenticity/Host install claim"
   },
   "s03_npm_cli_target_checkpoint": {
     "status": {

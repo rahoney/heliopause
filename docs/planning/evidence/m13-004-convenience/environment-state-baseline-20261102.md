@@ -1319,3 +1319,41 @@ mock에서만 활성화됐다. 기존 M3 첫 검토 사유 계약과 모든 제�
 Helperwait0/Host 원복·400280259B/임시 mountpoint 제거를 확인했다. 원본
 s03-npm-root-target-format-v2/build-v3/native-v3가 이 한정 scope를 소유한다. 전체 S03/다른
 생태계 및 선택 실행 모의 환경·정상 설정 읽기/hosted/final은 계속 OPEN이다.
+
+
+### S03 정상 설정 대조와 남은 연결 census
+
+정상 설정 읽기만 하는 Node actual15.679s는 checks3/states2/network0, canary/악성 파일
+BLOCK 없이 기존 script process 사유의 MANUAL_REVIEW다. 정상 표본의 자동 반입 거부로
+집계하며 malware 탐지나 정상 ALLOW로 바꾸어 보고하지 않는다. Python actual17.743s는
+checks3/states2/network0/ALLOW다. 두 실제 시험의 helperwait0/Host 원복 및 각400285427B/
+400288867B·임시 mountpoint 제거를 확인했다. 원본 s03-normal-config[-python]-native-v1과
+각 build/format이 scope를 소유한다. 전체 S03의 대표성/정상 오탐률 측정 완료는 아니다.
+
+| 현재 소비자 | 재사용 가능한 실제 범위 | 남은 acceptance |
+| --- | --- | --- |
+| npm archive·local-root CLI | Node 정상/설정 읽기/복합·지연·분리 child, 두 상태/Policy와 원래 target 보존 | 전 지원 client operation의 유한 목록/hosted 결합 |
+| Python wheel | 정상/설정 읽기/복합·지연·fork, 실제 Application/저장 Evidence/Policy | typed hook/entry의 자극 범위와 source/profile census·hosted |
+| 선택 Node/Python 실행 | controller가 고른 readonly entry의 정상/argv 활성화 거부·원본 보존 | Runtime DATA와 inspection entry 실험을 구분해 모의 환경 적용 위치를 대조; 사용자 명령을 근거 없이 두 번 실행하지 않음 |
+| Go/Cargo 관찰 build | 기존 정상 build·Cargo 모의 DNS/HTTP 연쇄 및 게시 거부 | 해당 실제 증거를 S03 source/profile 목록에 결합; application 실행으로 확대하지 않음 |
+| ELF/provider·PNPM/Bun | S01/S02 실제 상태/소비자 owner 연결 | 조건부 동작·지원된 entry 범위의 finite census와 최종 qualification |
+
+### S02 hosted 공급 baseline — 코드 수정 전
+
+CI의 고정 responder 공급은 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+기존 release 자산·source reader 및 각 native fixture owner는 IMPLEMENTED=YES이며 재구현하지
+않는다. 현재 workflow는 CLI/observer/policy helper만 설치하고 responder/current-version을
+준비하지 않는다. `ci-pnpm-runtime.sh`, `ci-bun-runtime.sh`는 root 부재를 확인한 뒤 자기
+version/current를 만들고 root 전체를 제거한다. `ci-pipx-tools.sh`는 같은 부재를 요구하고
+private /usr/lib overlay 안에 current를 만든다. Global responder root를 단순 추가하면
+세 기존 정상 소비자를 깨뜨리므로 그렇게 하지 않는다. 이 사실은 source 대조이며 hosted
+실패를 이미 실행했다고 쓰지 않는다. 실제 integration job timeout은150분이며 변경하지 않는다.
+
+수정 범위는 기존 CI 공급 owner에서 하나의 명시적인 CI 전용 base fixture와 native
+version/current 전환을 잇는 것이다. 각 current version에 동일한 보호된 responder 사본을
+포함하고, PNPM/Bun 정리는 자기 version만 제거한 뒤 base를 복원한다. Pipx는 기존 private
+overlay를 보존한다. Foreign installation은 계속 거부하며 artifact/development fallback·
+제품 source 경로/신뢰/버전 업데이트 owner는 바꾸지 않는다. 현재 세 caller에 필요한
+공유 shell 동작만 두고, 기존 canonical workflow validators의 foreign-root/cleanup negative를
+유지한다. CI를 시작하기 전에 이 준비와 같은 기존 native source reader의 실제 소비를
+묶어 검증한다. S02/S03의 나머지 census·hosted·서명 공급 및 전체 보강 gap은 계속 OPEN이다.
