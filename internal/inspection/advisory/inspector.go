@@ -2,6 +2,7 @@ package advisory
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"errors"
 	"net/http"
@@ -16,6 +17,12 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"golang.org/x/mod/semver"
 )
+
+// ThirdPartyNotices travels inside the same authenticated CLI binary through
+// release, installation and update; no external cache file is required.
+//
+//go:embed NOTICE
+var ThirdPartyNotices string
 
 // Inspector adds advisory facts to the existing inspection provider. Its batch
 // methods retain the provider's static-all, closure and frozen-selection entry

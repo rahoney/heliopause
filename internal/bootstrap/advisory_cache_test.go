@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -125,5 +126,15 @@ func TestAdvisoryCacheCompositionPersistsFactsAcrossStorageReopen(t *testing.T) 
 	entries, err := os.ReadDir(filepath.Join(root, "advisory-cache"))
 	if err != nil || len(entries) != 1 {
 		t.Fatal("refresh accumulated duplicate response copies", err, len(entries))
+	}
+}
+
+func TestEmbeddedAdvisoryNoticesDoNotRequireRuntimeOrExternalNoticeFile(t *testing.T) {
+	var out bytes.Buffer
+	if err := Run(context.Background(), []string{"licenses", "--output", "human", "--lang", "en"}, &out, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	if out.String() != advisory.ThirdPartyNotices || !strings.Contains(out.String(), "Copyright (c) 2022 Lucas TESSON") || !strings.Contains(out.String(), "Permission is hereby granted") {
+		t.Fatal("compiled dependency copyright/permission text was not supplied")
 	}
 }

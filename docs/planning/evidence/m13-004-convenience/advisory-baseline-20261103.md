@@ -420,3 +420,41 @@ Staticcheck2.795s/vet1.476s가 PASS다. [부분 원장](./advisory-binary-local-
 source·원본/범위를 소유하며 QUALIFIED/ACCEPTANCE_CLOSED는 actual/최종 조건이 남아 NO다.
 새 compiler/runtime version owner·guest 권한·CI·Host 변경은 없다. 다음은 NOTICE 실제 공급과
 의미 있는 공통 검사/actual CLI 묶음이다.
+
+
+## 열 번째 단위 시작 — CVSS NOTICE 실제 binary 공급 baseline
+
+기준 `3c0ec3f`. 고정 CVSS source NOTICE의 IMPLEMENTED=YES, WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED=NO다. 기존 release/install/update는 CLI binary 자체를 인증·배포하므로
+별도 passive asset/manifest schema/installer 역할을 늘리지 않는다. 같은 NOTICE bytes를
+`internal/inspection/advisory/NOTICE` 한 곳으로 옮겨 표준 go:embed로 해당 binary에 포함하고,
+기존 Root/CLI 등록 경계로 `helox licenses`의 human/JSON 출력에 연결한다. 상대 embed는
+package 밖 파일을 허용하지 않아 source owner와 colocation이 필요하며 payload/허가문은
+변경하지 않는다. 과거 evidence의 old path/hash는 역사 기록으로 보존한다.
+
+CLI는 Inspection을 직접 import하지 않고 composition root가 고지 text만 전달한다. 명령은
+runtime/network/storage 구성 전에 실행하며 실행 파일의 embedded bytes를 읽는다. 실제
+배포된 새 binary를 기존 install/update가 복사하면 고지 원문도 함께 이동한다. 개발 cache의
+외부 notice 경로에 의존하지 않으며 새 version selector·generated pin·duplicate NOTICE나
+release member를 만들지 않는다. 기존 고정 library/module checksum 검토는 재사용한다.
+
+표적 acceptance는 원본 bytes 동일성·실제 linked binary의 offline 출력, 추가 args/취소·출력
+오류·JSON 원문 보존과 help의 무구성이다. 이어 accumulated common foundation/security와
+영향 CLI/bootstrap 회귀를 묶는다. 이 방식은 새 library의 license 보존을 다루며 전체 signed
+release/protected installation/자체 update qualification을 완료로 바꾸지 않는다.
+
+
+NOTICE 단위의 IMPLEMENTED/WIRED는 YES다. 원래1217B/SHA256
+`a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a`를 변경 없이
+Inspection의 단일 NOTICE로 옮겨 binary에 포함했다. `helox licenses`는 runtime/network/
+storage 구성 전에 실행하며 human/JSON 모두 원문을 보존한다. 실제 linked CLI의 빈 cwd
+확인0.087s에서 human·JSON·help/추가 인수 거부와 작업 디렉터리 무변경을 확인했다.
+명령의 취소·출력 실패 원인도 표적5.214s와 전체 CLI/bootstrap Race34.490s가 확인한다.
+
+누적 후보의 canonical foundation27.020s/security15.422s·Staticcheck4.715s 및 vet는 PASS다.
+정확한 source·기존 source bytes/실제 binary와 원본은
+[고지 공급 원장](./advisory-notices-local-20261103.json)이 소유한다. 추가 release role·고지
+사본/핀·새 버전 owner는 만들지 않았다. 실제 서명 배포·보호 설치본/자체 update qualification은
+미수행이므로 QUALIFIED/ACCEPTANCE_CLOSED는 NO로 유지한다. 확인용 임시 cwd/단위 payload는
+제거했고, 실제 CLI 검역 묶음에 바로 사용할 current binary 한 벌만 유지한다. 다음은 S05
+실제 CLI 정상·차단/오류·cache/refresh와 원래 target 보존이다. 새 CI·Host 변경은 없다.

@@ -65,8 +65,10 @@ GitHub의 내부 `database_specific.severity` 문자열을 판정 authority로 �
 Go1.25.0 floor는 현재 고정 compiler에서 지원한다. Read-only offline package closure는
 네 CVSS package 외 추가 runtime module이 없음을 확인했다. Testify 등의 module requirements는
 upstream test용이다. [MIT license](https://github.com/pandatix/go-cvss/blob/8df5dbd1cdb98348548087af3157a7f96d7521ba/LICENSE)의
-copyright/허가문 보존은 제품 배포의 필수 조건이며 source NOTICE와 기존 release 공급에
-연결해 확인한다. Source 다운로드·metadata 조회만으로 scoring qualification을 선언하지 않는다.
+copyright/허가문 보존은 제품 배포의 필수 조건이다. 동일 원문은
+[NOTICE](../../internal/inspection/advisory/NOTICE) 한 곳에서 관리하고 표준 go:embed로
+실제 CLI binary에 포함한다. `helox licenses`는 human/JSON으로 원문을 제공하며 기존
+release/install/update가 인증하는 binary와 함께 전달된다. 외부 cache·추가 asset에 의존하지 않는다. Source 다운로드·metadata 조회만으로 scoring qualification을 선언하지 않는다.
 
 Upstream의 `unsafe` slice→string 변환은 `Vector()` 직렬화에 있고 이 adapter는 호출하지
 않는다. 자체 product source에 unsafe/cgo를 추가하지 않는다. Adapter는 bounded vector의

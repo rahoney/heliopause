@@ -4,6 +4,7 @@ package cli
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -53,6 +54,30 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 }
 
 type ReferenceParser func(string) (domain.ArtifactReference, error)
+
+// AddThirdPartyNotices binds passive compiled text without preparing a runtime.
+func AddThirdPartyNotices(root *cobra.Command, notices string) error {
+	if root == nil || notices == "" || len(notices) > 64<<10 {
+		return errors.New("third-party notices are unavailable or exceed their bound")
+	}
+	command := findRootCommand(root, "licenses")
+	if command == nil {
+		return errors.New("licenses command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, _ []string) error {
+		if err := command.Context().Err(); err != nil {
+			return err
+		}
+		if presentationFor(command.OutOrStdout()).output == "json" {
+			return json.NewEncoder(command.OutOrStdout()).Encode(struct {
+				Notices string `json:"notices"`
+			}{notices})
+		}
+		_, err := io.WriteString(command.OutOrStdout(), notices)
+		return err
+	}
+	return nil
+}
 
 // GoModuleResolver is the M12 application boundary used by `helox go get`.
 // The CLI only parses user input and renders the bounded resolution summary.
@@ -701,6 +726,7 @@ func currentGoProjectContext() (domain.InstallContext, error) {
 func initializeCommandTree(root *cobra.Command) {
 	root.AddCommand(newSelfUpdateCommand())
 	root.AddCommand(newBootstrapCommand())
+	root.AddCommand(&cobra.Command{Use: "licenses", Short: "Show embedded third-party notices", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("third-party notices are not configured") }})
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))

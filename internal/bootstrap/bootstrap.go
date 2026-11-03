@@ -20,6 +20,7 @@ import (
 	evidencerecord "github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/inspection/advisory"
 	inspectiongithub "github.com/rahoney/heliopause/internal/inspection/githubrelease"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
@@ -40,6 +41,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	outerFinalizersClosed := true
 	command, err := cli.New(stdout, stderr)
 	if err != nil {
+		return err
+	}
+	if err := cli.AddThirdPartyNotices(command, advisory.ThirdPartyNotices); err != nil {
 		return err
 	}
 	if err := cli.SetNPMClientVersion(command, runtimeidentity.NodeNPMVersion); err != nil {
@@ -77,7 +81,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		return command.ExecuteContext(ctx)
 	}
-	if source == "config" {
+	if source == "config" || source == "licenses" {
 		return command.ExecuteContext(ctx)
 	}
 	if source == "doctor" {

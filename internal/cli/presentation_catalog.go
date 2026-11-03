@@ -43,6 +43,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		"helox terraform":             {"Install public Terraform Providers", "공개 Terraform Provider 설치"},
 		"helox terraform init":        {"Inspect and install Terraform Providers", "Terraform Provider를 검사한 뒤 설치합니다"},
 		"helox doctor":                {"Check installed release and trusted Host runtime readiness", "설치와 격리 실행 환경의 준비 상태를 확인합니다"},
+		"helox licenses":              {"Show embedded third-party notices", "실행 파일에 포함된 제3자 라이선스 고지를 표시합니다"},
 		"helox config":                {"Manage CLI display settings", "CLI 표시 설정"},
 		"helox config language":       {"Show or save CLI language", "CLI 표시 언어 조회·저장"},
 	}

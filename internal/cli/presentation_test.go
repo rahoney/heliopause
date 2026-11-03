@@ -387,3 +387,67 @@ func TestPreflightAllowsParentsHelpAndLiteralProgramArguments(t *testing.T) {
 		})
 	}
 }
+
+func TestEmbeddedNoticesOutputKeepsBytesAndErrors(t *testing.T) {
+	const notices = "Third-party source\nMIT License\nCopyright retained\n"
+	for _, output := range []string{"human", "json"} {
+		var out bytes.Buffer
+		root, err := New(&out, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := AddThirdPartyNotices(root, notices); err != nil {
+			t.Fatal(err)
+		}
+		args := []string{"licenses", "--output", output, "--lang", "en"}
+		if source, err := PreparePresentation(root, args); err != nil || source != "licenses" {
+			t.Fatal(source, err)
+		}
+		root.SetArgs(args)
+		if err := root.ExecuteContext(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		actual := out.String()
+		if output == "json" {
+			var record struct {
+				Notices string `json:"notices"`
+			}
+			if err := json.Unmarshal(out.Bytes(), &record); err != nil {
+				t.Fatal(err)
+			}
+			actual = record.Notices
+		}
+		if actual != notices {
+			t.Fatal("license bytes changed")
+		}
+	}
+	for _, failure := range []string{"writer", "cancelled", "extra-args"} {
+		var out bytes.Buffer
+		var writer io.Writer = &out
+		if failure == "writer" {
+			writer = executionFailWriter{}
+		}
+		root, err := New(writer, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := AddThirdPartyNotices(root, notices); err != nil {
+			t.Fatal(err)
+		}
+		args := []string{"licenses", "--lang", "en"}
+		if failure == "extra-args" {
+			args = append(args, "unexpected")
+		}
+		root.SetArgs(args)
+		ctx := context.Background()
+		if failure == "cancelled" {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithCancel(ctx)
+			cancel()
+		}
+		err = root.ExecuteContext(ctx)
+		if err == nil || failure == "writer" && !errors.Is(err, io.ErrClosedPipe) || failure == "cancelled" && !errors.Is(err, context.Canceled) || out.Len() != 0 {
+			t.Fatal("notice output lost rejection or first cause", failure, err)
+		}
+	}
+}
