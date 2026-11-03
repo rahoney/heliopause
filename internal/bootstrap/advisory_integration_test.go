@@ -332,8 +332,14 @@ func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
 		{"npm", "npm", "npm", "is-number", "7.0.0", []string{"npm", "install", "is-number@7.0.0"}, map[string]string{"user-note.txt": "preserve user file\n", "package.json": `{ "name": "haa-advisory-fixture", "version": "1.0.0", "private": true, "dependencies": {} }`, "package-lock.json": `{"name":"haa-advisory-fixture","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{"":{"name":"haa-advisory-fixture","version":"1.0.0"}}}`}},
 		{"go", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "mod", "tidy", "--adopt"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n\nrequire github.com/google/uuid v1.6.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"tidy must not execute\")}\nfunc main(){}\n"}},
 		{"cargo", "crates-io", "crates.io", "itoa", "1.0.17", []string{"cargo", "fetch"}, map[string]string{"Cargo.toml": "[package]\nname='haa_advisory_fixture'\nversion='0.1.0'\nedition='2021'\n[dependencies]\nitoa='=1.0.17'\n", "src/main.rs": "fn main(){}\n", "build.rs": "fn main(){panic!(\"fetch must not execute\");}\n"}},
+		{"go-exact", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "get", "github.com/google/uuid@v1.6.0"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"get must not execute\")}\nfunc main(){}\n"}},
+		{"cargo-exact", "crates-io", "crates.io", "itoa", "1.0.17", []string{"cargo", "add", "itoa@1.0.17"}, map[string]string{"Cargo.toml": "[package]\nname='haa_advisory_fixture'\nversion='0.1.0'\nedition='2021'\n", "src/main.rs": "fn main(){}\n", "build.rs": "fn main(){panic!(\"add must not execute\");}\n"}},
 	} {
+		legacy := strings.HasSuffix(fixture.language, "-exact")
 		for _, malware := range []bool{false, true} {
+			if legacy && !malware {
+				continue
+			}
 			mode := fixture.language + map[bool]string{false: "-normal", true: "-controlled-malware"}[malware]
 			if !t.Run(mode, func(t *testing.T) {
 				started := time.Now()
@@ -397,12 +403,25 @@ func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
 					t.Fatal("controlled advisory seed", seedErr, closeErr, requests)
 				}
 				before := requirementsTargetTree(t, project)
-				args := append([]string{"--lang", "en", "--output", "json"}, fixture.args...)
+				outputMode := "json"
+				if legacy {
+					outputMode = "auto"
+				}
+				args := append([]string{"--lang", "en", "--output", outputMode}, fixture.args...)
 				command := exec.CommandContext(ctx, "/usr/libexec/heliopause/helox", args...)
 				command.Dir = project
 				var output, diagnostic bytes.Buffer
 				command.Stdout, command.Stderr = &output, &diagnostic
 				cause := command.Run()
+				if legacy {
+					t.Logf("advisory_legacy_cli case=%s text=%s diagnostic=%s", mode, bytes.TrimSpace(output.Bytes()), bytes.TrimSpace(diagnostic.Bytes()))
+					var exit *exec.ExitError
+					if !errors.As(cause, &exit) || exit.ExitCode() != 1 || !strings.Contains(output.String(), "M13_ADVISORY_MALICIOUS") || !strings.Contains(output.String(), "MAL-0000-helox-controlled") || !strings.Contains(output.String(), "dependency-advisory") || !reflect.DeepEqual(before, requirementsTargetTree(t, project)) {
+						t.Fatal("legacy current facts/first failure or target preservation lost", cause, output.String())
+					}
+					t.Logf("advisory_legacy_cli_complete case=%s policy=BLOCK target=PRESERVED exit=1 seconds=%.3f", mode, time.Since(started).Seconds())
+					return
+				}
 				t.Logf("advisory_public_cli case=%s json=%s diagnostic=%s", mode, bytes.TrimSpace(output.Bytes()), bytes.TrimSpace(diagnostic.Bytes()))
 				var report struct {
 					packageResult

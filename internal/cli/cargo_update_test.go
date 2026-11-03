@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rahoney/heliopause/internal/application"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -350,4 +351,89 @@ func TestCargoFetchRejectsUnsupportedInputBeforeUseCase(t *testing.T) {
 			t.Fatal("unsupported fetch input reached operation", args, err)
 		}
 	}
+}
+
+// The legacy project binders must expose existing trusted facts without
+// performing another selection or changing the original error contract.
+func TestLegacyExactProjectFailureKeepsRecordedFactsAndFirstCause(t *testing.T) {
+	for _, source := range []string{"go-proxy", "go-download", "crates-io", "terraform-registry"} {
+		for _, output := range []string{"human", "auto"} {
+			for _, withFacts := range []bool{true, false} {
+				t.Run(source+"/"+output+map[bool]string{true: "/recorded", false: "/early"}[withFacts], func(t *testing.T) {
+					factsSource := source
+					if source == "go-download" {
+						factsSource = "go-proxy"
+					}
+					inspected, decision := projectUpdateFactsForSource(t, domain.DecisionBlock, factsSource)
+					primary := errors.New("controlled project rejection")
+					resolver := &legacyProjectFailureResolver{failure: primary}
+					if withFacts {
+						resolver.failure = cargoFailedUpdateFacts{inspected, decision, primary}
+					}
+					var out, diag bytes.Buffer
+					root, err := cli.New(&out, &diag)
+					if err != nil {
+						t.Fatal(err)
+					}
+					var args []string
+					switch source {
+					case "go-proxy":
+						err = cli.AddGoModuleGet(root, resolver)
+						args = []string{"go", "get", "example.com/module@v1.2.3"}
+					case "go-download":
+						err = cli.AddGoModuleDownload(root, legacyDownloadFailureResolver{resolver})
+						args = []string{"go", "mod", "download"}
+					case "crates-io":
+						err = cli.AddCargoAdd(root, resolver)
+						args = []string{"cargo", "add", "itoa@1.0.17"}
+					case "terraform-registry":
+						err = cli.AddTerraformInit(root, resolver)
+						args = []string{"terraform", "init", "hashicorp/random@3.7.2"}
+					}
+					if err != nil {
+						t.Fatal(err)
+					}
+					root.SetArgs(append([]string{"--lang", "en", "--color", "never", "--output", output}, args...))
+					err = root.ExecuteContext(context.Background())
+					if !errors.Is(err, primary) || resolver.calls != 1 {
+						t.Fatal("lost primary cause or repeated selection", err, resolver.calls)
+					}
+					if withFacts {
+						entry := inspected.Inspections()[0]
+						for _, text := range []string{"FIXTURE_DECISION", entry.RunID().String(), entry.Artifact().Identity().Name()} {
+							if !strings.Contains(out.String(), text) {
+								t.Fatal("recorded project failure facts omitted", text, out.String())
+							}
+						}
+					} else if out.Len() != 0 {
+						t.Fatal("early error fabricated inspection facts", out.String())
+					}
+				})
+			}
+		}
+	}
+}
+
+type legacyProjectFailureResolver struct {
+	failure error
+	calls   int
+}
+
+func (r *legacyProjectFailureResolver) Get(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
+	r.calls++
+	return domain.DependencyResolution{}, r.failure
+}
+func (r *legacyProjectFailureResolver) Resolve(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (domain.DependencyResolution, error) {
+	return r.Get(ctx, reference, install)
+}
+func (r *legacyProjectFailureResolver) Init(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (application.TerraformInitResult, error) {
+	_, err := r.Get(ctx, reference, install)
+	return application.TerraformInitResult{}, err
+}
+
+type legacyDownloadFailureResolver struct{ *legacyProjectFailureResolver }
+
+func (r legacyDownloadFailureResolver) Resolve(ctx context.Context, install domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+	_, err := r.Get(ctx, domain.ArtifactReference{}, install)
+	return domain.ProjectDependencySnapshot{}, err
 }

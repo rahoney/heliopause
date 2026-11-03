@@ -569,7 +569,7 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		progressErr := finishProgress()
 		err = errors.Join(err, progressErr)
 		if err != nil {
-			return err
+			return errors.Join(err, presentationFor(command.OutOrStdout()).renderProjectFailure(err))
 		}
 		if p := presentationFor(command.OutOrStdout()); p.human() {
 			return p.renderProjectSummary(reference.Source().String(), "Modules", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
@@ -603,7 +603,7 @@ func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) 
 		progressErr := finishProgress()
 		err = errors.Join(err, progressErr)
 		if err != nil {
-			return err
+			return errors.Join(err, presentationFor(command.OutOrStdout()).renderProjectFailure(err))
 		}
 		if p := presentationFor(command.OutOrStdout()); p.human() {
 			return p.renderProjectSummary(snapshot.Source().String(), "Modules", len(snapshot.Dependencies()), snapshot.GraphDigest().String())
@@ -645,7 +645,7 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 		progressErr := finishProgress()
 		err = errors.Join(err, progressErr)
 		if err != nil {
-			return err
+			return errors.Join(err, presentationFor(command.OutOrStdout()).renderProjectFailure(err))
 		}
 		if p := presentationFor(command.OutOrStdout()); p.human() {
 			return p.renderProjectSummary(reference.Source().String(), "Crates", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
@@ -696,7 +696,7 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		progressErr := finishProgress()
 		err = errors.Join(err, progressErr)
 		if err != nil {
-			return err
+			return errors.Join(err, presentationFor(command.OutOrStdout()).renderProjectFailure(err))
 		}
 		if p := presentationFor(command.OutOrStdout()); p.human() {
 			return p.renderProjectSummary(reference.Source().String(), "Providers", result.ProviderCount, result.Resolution.LockfileDigest().String())

@@ -689,3 +689,36 @@ installMachineResult/freezeNPMProject와 이미 저장한 JSON을 대조해 시�
 같은 CI job/timeout을 유지한다. 이번 범위의 IMPLEMENTED/WIRED/로컬 native QUALIFIED는
 YES이며 전체 S05/hosted ACCEPTANCE_CLOSED는 NO다. 공유 CLI/test/helper 한 세트는
 후속 binary/consumer 확인에 재사용할 활성 입력으로 보존한다. 별도 CI는 시작하지 않았다.
+
+## 열여섯 번째 단위 — legacy 프로젝트 명령의 실패 사실 표시
+
+기준893522a. Go exact get/Cargo add/Terraform exact init의 guarded selection·기존
+ProjectPolicyFailure/ProjectUpdateFailure와 공통 partial-result/report/detail renderer는
+IMPLEMENTED/WIRED=YES다. Root의 기존 summary binder는 err 때 바로 반환해 이미 보존한
+검사·판정을 사용자에게 표시하지 않는다. 이 표시 연결의 네 상태는 NO이며 MISSING은
+기존 typed error facts→동일 bounded human renderer의 연결과 cause/exit·성공 응답 보존이다.
+별도 resolver/Domain DTO/재검사·새 machine success schema·JSON 지원 범위는 만들지 않는다.
+실제 세 caller가 공유하는 좁은 표시 조정만 두며 helper를 미래 consumer용으로 확장하지 않는다.
+
+기존 Go download도 검사 snapshot의 error facts를 표시하지 않아 같은 네 번째 caller에 포함한다.
+
+현재 네 caller의 IMPLEMENTED/WIRED는 YES, 전체 QUALIFIED/ACCEPTANCE_CLOSED는 NO다.
+같은 presentation owner의 좁은 coordinator가 기존 projectUpdateFacts/partial failure·
+check/reason/detail renderer를 호출한다. 새 DTO/다른 검사·resolver·mutable presentation
+mode 전환은 없다. Error-only before-inspection은 기존처럼 사실을 만들지 않으며, 성공
+summary/explicit JSON 미지원 계약과 primary cause/exit는 유지한다.
+
+RED1.392s(세 source·recorded6 실패/early6 통과) 뒤 표적3.941s와 초기3 caller의
+CLI/bootstrap fullRace34.640s가 PASS다. Download 포함4 caller의 최종16case Race8.170s와
+tagged Staticcheck10.411s/vet1.425s, actual driver compile8.906s/production build6.703s도 PASS다.
+서로 다른 source 경계를 하나의 full-frozen green으로 합치지 않는다.
+
+현재 CLI62fbe056의 실제 Go get/Cargo add 두 통제 MAL 거부는17.935/9.616s, parent27.56s/
+operator29.892s에 PASS했다. Native 선택/각 required3을 마치고 현재 stored ID/unknown
+severity·M13_ADVISORY_MALICIOUS와 exit1·대상 무변경을 확인했다. Helperwait0/Host 원복·
+381927030B 사본 정리도 PASS다. 이전 정상6case/Python/C++/helper/runtime는 재사용했으며
+Go download/Terraform native·전체 S05/hosted는 별도 OPEN이다.
+
+105process refs0/query errors0 뒤 교체된 이전 CLI/test/old helper의102652416B를 정리했다.
+현재 한 세트와 SDK·공유 cache는 다음 binary/consumer qualification의 활성 입력으로
+남긴다. [부분 원장](./advisory-legacy-failure-local-20261104.json)이 정확한 source·범위를 소유한다.

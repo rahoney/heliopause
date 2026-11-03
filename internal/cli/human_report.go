@@ -425,3 +425,33 @@ func (p *presentation) renderInspectionFailure(cause error) {
 		p.renderChecks(result.Checks())
 	}
 }
+
+// Legacy project commands keep their existing success summary and expose the
+// same frozen facts on failure, without another selection or Policy evaluation.
+func (p *presentation) renderProjectFailure(cause error) error {
+	var facts projectUpdateFacts
+	if errors.As(cause, &facts) {
+		inspected := facts.Inspected()
+		if inspected.Valid() {
+			p.line("%s", p.text("Project operation failed.", "프로젝트 작업이 실패했습니다."))
+			p.renderReasons(facts.Decision().Reasons())
+			entries := inspected.Inspections()
+			for index, entry := range entries {
+				if index >= 8 {
+					p.line("%s %d", p.text("Further dependency results not shown:", "표시하지 않은 추가 의존성 결과:"), len(entries)-index)
+					break
+				}
+				identity := entry.Artifact().Identity()
+				p.line("%s %s/%s@%s", p.text("Artifact:", "아티팩트:"), safeTerminal(identity.Source().String()), safeTerminal(identity.Name()), safeTerminal(identity.Version()))
+				p.line("Run: %s", entry.RunID().String())
+				p.renderCheckPlan(entry.CheckPlan(), entry.Checks())
+				p.renderChecks(entry.Checks())
+				p.renderReasons(entry.PolicyDecision().Reasons())
+				p.renderAdvisoryDetails(p.advisoryDetails(entry.CheckPlan(), entry.Checks(), entry.Evidence(), entry.PolicyDecision()))
+			}
+			return p.writeErr
+		}
+	}
+	p.renderInspectionFailure(cause)
+	return p.writeErr
+}
