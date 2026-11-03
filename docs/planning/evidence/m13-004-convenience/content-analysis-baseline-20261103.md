@@ -187,3 +187,19 @@ FD/maps 무참조/query error0 뒤 정리했다. 원본 후보·현재 source/SD
 표본·각 첫 실패/최종 결과는 보존한다. 같은 입력의 full/native/CPP/CI 반복은 없었고 새
 CI/push/제품 설치는 하지 않았다. 다음은 현재 입력을 기존 공급/유지보수 owner에 연결하는
 최소 범위 대조이며 S06을 선행 구현하지 않는다.
+
+
+### 공식1.183 후보로 파싱 보완을 수렴
+
+위 원장의 public_prefix_follow_up이 원본과 실제 범위를 소유한다. 기존 공개4wheel의279개
+source 중9개 rf-string 오류를10개 유효 prefix로 축소했다. 자체 mapper prototype의326개
+대조8.874s가 통과했지만 공식1.183에 같은 수정이 이미 있으므로 자체 Python 수정은 채택하지
+않는다. 고정 tag/commit·새 OPAM repository/lock을 확인하고 같은 compiler/SDK를 재사용했다.
+43개 tool dependency version 변경을 반영한 offline build890.291s와 같은326-source8.550s가
+PASS다. 기대29match/정상296·의도한 malformed2만 보고됐으며 기존9개 파싱 오류는 해소됐다.
+실행 파일은171648864B/SHAdeffa9a1·static ELF/stackRW다. Native flags는 기존과 같고 actual
+406archive/150package owner 모두 새 lock 안에 있다. Source archive148 중125는 재사용하고
+23개 변경분만 기존 cache의 ordinary object에서 strong hash로 검증했다. 새 vendor 고지61개
+중 기존49개는 그대로이며 나머지12개는 목록 확장이지 새 release에서 추가된 파일이 아니다.
+제품 runtime lock/Host 설치/CI는 불변이다. 최종 source/notice 공급 패키지·build trust와 기존
+유지보수 owner/제품 연결·gVisor qualification은 여전히 MISSING이며 S04 네 상태는 NO다.

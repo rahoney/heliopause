@@ -157,7 +157,13 @@
     "s04-rules-parser-v3-fixtures.json",
     "s04-boundary-copies-cleanup.json",
     "s04-own-rule-copies-cleanup.json",
-    "s04-source-build-progress-docs.json"
+    "s04-source-build-progress-docs.json",
+    "s04-builder-repository-origins.json",
+    "s04-registered-runtime-origins.json",
+    "s04-core-repro-v1-inputs.json",
+    "s04-core-repro-v1.json",
+    "s04-public-wheel-source-v1-inputs.json",
+    "s04-public-wheel-source-v1.json"
   ],
   "missing": [
     "Canonical runtime owner/update/release supply integration, reproducible fixed build recipe and complete source/notice redistribution package; local data build is not signed production admission",
@@ -412,5 +418,151 @@
     "own_core_copies": "s04-own-rule-copies-cleanup.json",
     "bytes_removed": 1703399648,
     "scope": "Only seven finished executable copies; current reference/source-build/stripped candidates, compiler/source/cache and small raw fixtures retained"
+  },
+  "source_core_reproducibility": {
+    "state": "SCOPED_CLEAN_CORE_REPRODUCED",
+    "inputs": "s04-core-repro-v1-inputs.json",
+    "scope": "Clean source and Dune outputs with same fixed compiled OPAM dependencies/SDK/static curl, source-commit epoch; not full SDK reproducibility",
+    "expected_stripped_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "elapsed": 387.467,
+    "output_bytes": 169609664,
+    "output_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "compiled_dependencies_unchanged": true,
+    "source_patch_unchanged": true,
+    "container_removed": true
+  },
+  "runtime_boundary": "Existing registered gVisor is runsc-trace only; use its existing typed helper/observation boundary, no new untraced runtime or generic role bypass.",
+  "public_wheel_source": {
+    "state": "INCOMPLETE",
+    "packages": 4,
+    "source_files": 279,
+    "source_bytes": 3305117,
+    "scanned": 279,
+    "findings": 0,
+    "parse_errors": 9,
+    "elapsed": 7.531,
+    "cause": "Original1.182 mapper mishandles seven of ten valid case-insensitive f/rf/fr prefixes; prototype reduced/combined DATA PASS; prefer released official1.183 fix. Original failure preserved.",
+    "scope": "Existing canonical corpus subset; source DATA only, no installation/binary coverage/representative FPR or product qualification",
+    "container_removed": true,
+    "inputs_unchanged": true
+  },
+  "public_prefix_follow_up": {
+    "scope": "Source DATA only; source files not executed; no product/gVisor/detection-rate claim",
+    "prefix_red": {
+      "source_files": 10,
+      "matches": 3,
+      "errors": 7,
+      "raw": "s04-python-prefix-red-v1.json"
+    },
+    "combined_prototype": {
+      "source_files": 326,
+      "expected_matches": 29,
+      "normal": 296,
+      "declared_malformed_errors": 2,
+      "complete": true,
+      "elapsed": 8.874,
+      "scanner_sha256": "0f099cf47c3bebc5ecd494c15a577bca4d98c19377d56ef7a40980f32fabbcf4",
+      "raw": "s04-combined-source-v7.json"
+    },
+    "official_candidate": {
+      "scope": "Separate fixed1.183 source candidate; preserve prior qualified1.182 source/SDK; reuse copied frozen compiler/native SDK/cache with identical guest prefixes; no Host installation",
+      "version": "1.183.0",
+      "commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "tag_object": "f4162666feb36c1f9d1788f9b331f6a59b5a83ec",
+      "compiler_commit": "4046c817ed2ed5c2431300902d1bd306230bf3dd",
+      "opam_repository": "922f67e068446a8d8e809a40251a259bd0549552",
+      "reason": "Reuse officially released exact f-string-prefix fix; own prototype parser change will not be adopted",
+      "changed_locked_packages": 43,
+      "acquisition": {
+        "complete": true,
+        "elapsed": 172.822,
+        "source_cache_files": 477,
+        "container_removed": true,
+        "original_container_ids_preserved": true,
+        "raw": "s04-source-download-1183-v1.json"
+      },
+      "source_notices": {
+        "locked_opam_packages": 236,
+        "external_archives": 148,
+        "unchanged_archives_reused": 125,
+        "changed_archives_reviewed_offline": 23,
+        "named_notice_archives": 146,
+        "declaration_follow_up": [
+          [
+            "ambient-context.0.2",
+            "ambient-context-eio.0.2",
+            "ambient-context-lwt.0.2"
+          ],
+          [
+            "trace.0.12"
+          ]
+        ],
+        "vendor_notices": 61,
+        "prior_vendor_notices_unchanged": 49,
+        "git_pin_repositories": 8,
+        "git_pin_notice_metadata_files": 35,
+        "raw": [
+          "s04-source-notice-review-1183-summary.json",
+          "s04-dependency-source-metadata-1183.json",
+          "s04-source-notice-catalogue-1183.json",
+          "s04-git-input-notices-1183.json"
+        ],
+        "scope": "Source notice inventory only; final source redistribution package/trust/adoption remains open"
+      },
+      "build": {
+        "complete": true,
+        "elapsed": 890.291,
+        "bytes": 171648864,
+        "sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+        "compiler_unchanged": true,
+        "source_patch_unchanged": true,
+        "static_elf": true,
+        "stack": "RW",
+        "raw": [
+          "s04-offline-build-1183-v1.json",
+          "s04-offline-build-1183-v1-inputs.json",
+          "s04-core-elf-1183.json",
+          "s04-installed-lock-binding-1183.json",
+          "s04-opam-installed-switch-1183.txt"
+        ],
+        "scope": "Official upstream prefix implementation; existing three-file strict-coverage/offline patch; same compiler/native SDK; changed exact tool dependency lock; not clean-full-SDK reproducibility or signed production admission"
+      },
+      "combined_source_data": {
+        "complete": true,
+        "elapsed": 8.55,
+        "source_files": 326,
+        "expected_matches": 29,
+        "normal": 296,
+        "declared_malformed_errors": 2,
+        "unexpected_matches": [],
+        "missing_matches": [],
+        "skipped_rules": [],
+        "container_removed": true,
+        "inputs_unchanged": true,
+        "raw": "s04-combined-source-1183-v1.json",
+        "scope": "Same frozen source326/own11 rules; source files unexecuted; runc DATA, no gVisor/product/detection-rate claim"
+      },
+      "link_inputs": {
+        "compiler_archives": 406,
+        "external_compiler_archives": 219,
+        "opam_input_packages": 150,
+        "unmapped": [],
+        "all_core_input_owners_locked": true,
+        "native_library_flags_unchanged": true,
+        "raw": [
+          "s04-own-core-link-inputs-1183.json",
+          "s04-own-core-native-link-metadata-1183.json"
+        ],
+        "scope": "Conservative actual archive input superset; unchanged flags/SDK allow prior15 native source notices; not every member/final symbol proof"
+      },
+      "retired_data_cleanup": {
+        "raw": "s04-superseded-source-copies-cleanup.json",
+        "removed_bytes": 508829312,
+        "removed_files": 3,
+        "references": [],
+        "query_errors": []
+      }
+    },
+    "next": "Use official1.183 source candidate; prototype Python edit is superseded by released upstream implementation. Continue canonical fixed build/source/notice supply and runtime-maintenance integration before product adoption."
   }
 }
