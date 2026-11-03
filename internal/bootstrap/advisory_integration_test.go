@@ -5,6 +5,8 @@ package bootstrap
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -503,5 +505,148 @@ func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
 				return
 			}
 		}
+	}
+}
+
+func TestAdvisoryGitHubOpaqueProductionCLIIntegration(t *testing.T) {
+	if os.Getenv("HELOX_ADVISORY_CLI_INTEGRATION") != "1" {
+		t.Skip("requires declared protected GitHub CLI qualification")
+	}
+	if os.Geteuid() == 0 {
+		t.Fatal("requires ordinary-user client")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(root, "config"))
+	t.Setenv("XDG_STATE_HOME", filepath.Join(root, "state"))
+	target := filepath.Join(root, "published")
+	const reference = "jqlang/jq@jq-1.8.1#jq-linux-amd64"
+	const expectedSHA = "020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d"
+	previousRun := ""
+	for attempt := 0; attempt < 2; attempt++ {
+		started := time.Now()
+		args := []string{"--lang", "en", "--output", "json", "github", "install", reference, "--target", target}
+		if attempt > 0 {
+			args = append(args, "--replace")
+		}
+		command := exec.CommandContext(ctx, "/usr/libexec/heliopause/helox", args...)
+		var output, diagnostic bytes.Buffer
+		command.Stdout, command.Stderr = &output, &diagnostic
+		cause := command.Run()
+		t.Logf("advisory_github_cli attempt=%d json=%s diagnostic=%s", attempt, bytes.TrimSpace(output.Bytes()), bytes.TrimSpace(diagnostic.Bytes()))
+		var report struct {
+			Status    string                    `json:"operation_status"`
+			Promotion string                    `json:"promotion_status"`
+			Policy    struct{ Decision string } `json:"policy"`
+			Plans     []struct {
+				Run     string `json:"run_id"`
+				Subject struct {
+					Source                 string `json:"source_id"`
+					Name, Version, Variant string
+				}
+				SHA string `json:"sha256"`
+			} `json:"check_plans"`
+			Checks []struct {
+				ID         string
+				Required   bool
+				Capability string
+				Status     string `json:"execution_status"`
+				Limitation string `json:"limitation_code"`
+			} `json:"checks"`
+			Evidence []struct{ ID, Handle string } `json:"evidence_references"`
+		}
+		decoder := json.NewDecoder(&output)
+		if err := decoder.Decode(&report); err != nil {
+			t.Fatal("GitHub CLI result missing", cause, err)
+		}
+		if decoder.Decode(new(any)) != io.EOF {
+			t.Fatal("multiple GitHub result documents")
+		}
+		if cause != nil || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || len(report.Plans) != 1 {
+			t.Fatal("original GitHub pipeline failed", cause, report)
+		}
+		plan := report.Plans[0]
+		if plan.Run == "" || plan.Run == previousRun || plan.SHA != expectedSHA || plan.Subject.Source != "github-release" || plan.Subject.Name != "jqlang-jq" || plan.Subject.Version != "jq-1.8.1" || plan.Subject.Variant != "jq-linux-amd64" {
+			t.Fatal("GitHub source/digest/fresh run binding lost", plan)
+		}
+		previousRun = plan.Run
+		required := 0
+		optional := false
+		for _, check := range report.Checks {
+			if check.Required {
+				required++
+				if check.Status != "COMPLETED" {
+					t.Fatal("required GitHub check incomplete", check)
+				}
+			}
+			if check.ID == "dependency-advisory" {
+				optional = true
+				if check.Required || check.Capability != "UNSUPPORTED" || check.Status != "NOT_EXECUTED" || check.Limitation != "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED" {
+					t.Fatal("opaque GitHub advisory scope changed", check)
+				}
+			}
+		}
+		if required != 3 || !optional {
+			t.Fatal("GitHub required coverage changed", report.Checks)
+		}
+		run, err := domain.ParseRunID(plan.Run)
+		if err != nil {
+			t.Fatal(err)
+		}
+		source, _ := domain.NewSourceID(plan.Subject.Source)
+		identity, err := domain.NewResolvedArtifactIdentity(source, plan.Subject.Name, plan.Subject.Version, plan.Subject.Variant)
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest, _ := domain.NewSHA256Digest(expectedSHA)
+		store, err := local.NewStore(filepath.Join(root, "cache", "heliopause", "evidence"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		scopeFacts := 0
+		for _, record := range report.Evidence {
+			id, err := domain.NewEvidenceID(record.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ref, err := domain.NewEvidenceReference(id, record.Handle)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fact, _, err := store.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil {
+				t.Fatal("GitHub exact-subject evidence missing", err)
+			}
+			if fact.Kind() == "advisory-applicability" {
+				scopeFacts++
+				if !strings.Contains(fact.Summary(), "No advisory query ran") || !strings.Contains(fact.Summary(), "not a vulnerability-free") {
+					t.Fatal("GitHub advisory limitation missing")
+				}
+			}
+			if fact.Kind() == "advisory-response" || fact.Kind() == "advisory-record" {
+				t.Fatal("GitHub asset guessed an advisory package")
+			}
+		}
+		if scopeFacts != 1 {
+			t.Fatal("missing GitHub applicability record", scopeFacts)
+		}
+		payload, err := os.ReadFile(filepath.Join(target, "jq-linux-amd64"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		sum := sha256.Sum256(payload)
+		if len(payload) != 2255816 || hex.EncodeToString(sum[:]) != expectedSHA {
+			t.Fatal("installed GitHub bytes differ from independent official metadata")
+		}
+		info, err := os.Lstat(filepath.Join(target, "jq-linux-amd64"))
+		if err != nil || info.Mode().Perm() != 0500 {
+			t.Fatal("GitHub executable mode changed", err)
+		}
+		t.Logf("advisory_github_cli_complete attempt=%d required_checks=3 optional=UNSUPPORTED query=NOT_RUN fresh_run=%s digest=VERIFIED seconds=%.3f", attempt, plan.Run, time.Since(started).Seconds())
 	}
 }

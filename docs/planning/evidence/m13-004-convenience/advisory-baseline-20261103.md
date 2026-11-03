@@ -768,3 +768,41 @@ Security17.686s는 새 두 executable SHA의 generic-api-key 오탐으로 FAIL�
 탐지 계약을 유지하며 PASS다. 새 전역 ignore/규칙 완화는 없다.105process refs0/errors0 뒤
 이전 CLI/test 사본150870441B도 정리했고 현재 한 세트·helper·SDK는 재사용한다.
 현재 official 한정 I/W/로컬 qualified는 YES, 전체 S05/hosted acceptance는 NO다.
+
+## 열여덟 번째 단위 — public GitHub ELF opaque applicability (진행 중)
+
+기준10e5558. 기존 GitHub exact metadata/acquisition·M6/격리 ELF·기록·host publication과
+공통 optional advisory 연결은 IMPLEMENTED/WIRED=YES이며 대체하지 않는다. Actual default
+Root의 optional unsupported/no-query와 원래 required3 보존·독립 digest/설치 확인이
+QUALIFIED/ACCEPTANCE_CLOSED=NO다. 기존 scoped supplies/current CLI/helper/C++를 재사용한다.
+공식 API metadata-only에서 jqlang/jq@jq-1.8.1#jq-linux-amd64의release229086848/
+asset268981484/2255816B/SHA256020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d를
+확인했다. Raw s05-github-opaque-metadata.json/원본release를 보존하며 이는 다운로드/실행 성공이나
+취약점 부재의 증명이 아니다. Source/Repo 유사성으로 OSV package를 추정하지 않는다.
+
+사전 consumer 대조에서 새 실제 자산을 실행할 필요 없이 같은 gap을 확인했다.
+`githubrelease_approval.go:approval`은 optional도 limitation이 있으면 무조건 거부하고,
+`verifyApproval`는 모든 check를 Supported/Completed로만 재구성한다. 보존 check에는
+limitation field도 없다. 새 optional scope를 삭제/필수 검사를 완화하지 않고 현재 check의
+한계 상태를 보존하는 additive 문서 표현과 좁은 known-scope 수용이 첫 MISSING이다.
+Schema1/2 legacy의 빈 값/기존 canonical bytes·변조/unknown 거부를 보존하며 표적
+counterexample을 먼저 둔다. 현재 GitHub metadata만 읽었고 실제 실행은 하지 않았다.
+
+
+같은 known optional positive의 actual product RED8.135s 뒤 기존 producer/reader가
+공유하는 좁은 predicate와 `limitation_code,omitempty` 하나를 연결했다. 원래 Supported/
+Completed·빈 limitation은 유지하고 dependency-advisory만 exact optional/unsupported/
+not-executed/code/profile 및 bound applicability Evidence를 요구한다. 과거 schema1/2
+빈 값 canonical bytes를 유지한다. Legacy·known-scope 정상과 unknown/required/capability/
+missing limitation/proof/profile/duplicate 거부를 기존 fixture에서 검증했다. 새 기본 정책이나
+이름 추정 mapping은 없다. Initial guessed-method 및 strings import compile 실패는 product
+RED와 구분해 원본에 보존했다. 최종 GitHub Race17.401s/tagged Staticcheck10.405s/vet8.470s,
+현재 production build6.009s/최종 tagged driver0.964s가 PASS다.
+
+Actual production CLI parent21.79s/operator24.319s는 public jq 최초 설치와 같은 tag 교체를
+모두 완료했다. 두 fresh run/required3 COMPLETED·ALLOW, optional scope1 UNSUPPORTED/
+NOT_EXECUTED와 no query, exact-subject Evidence와 independently pinned installed SHA/size/
+0500을 확인했다. Helperwait0/Host 동일·원복/381931126B 시험 사본 정리다. Raw
+s05-github-opaque-native-v1과 [한정 결과](./advisory-github-local-20261104.json)가 source와
+검사 범위를 소유한다. GitHub 한정 local qualification은 PASS이며 전체 S05/partner/다른
+profile/hosted의 QUALIFIED·ACCEPTANCE_CLOSED는 NO로 유지한다.

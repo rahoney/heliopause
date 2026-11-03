@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -43,7 +44,7 @@ func newGitHubOwnershipFixture(t *testing.T) githubOwnershipFixture {
 
 // Controlled normalized proof fixtures exercise ownership/transactions only.
 // They are not public source authentication or actual archive/ELF execution.
-func (f githubOwnershipFixture) bundle(t *testing.T, tag, asset string, payload []byte, managed bool) (domain.VerifiedBundle, domain.StagedSet, domain.InstallContext) {
+func (f githubOwnershipFixture) bundle(t *testing.T, tag, asset string, payload []byte, managed bool, advisoryLimit ...string) (domain.VerifiedBundle, domain.StagedSet, domain.InstallContext) {
 	t.Helper()
 	source, _ := domain.NewSourceID(artifactgithub.SourceName)
 	identity, _ := domain.NewResolvedArtifactIdentity(source, "owner-repo", tag, asset)
@@ -85,12 +86,38 @@ func (f githubOwnershipFixture) bundle(t *testing.T, tag, asset string, payload 
 		}
 		facts = append(facts, fact)
 	}
+	if len(advisoryLimit) > 0 {
+		id, _ := domain.NewCheckID("dependency-advisory")
+		check, err := domain.NewCheckExecution(id, domain.CheckInspection, false, domain.CapabilityUnsupported, domain.ExecutionNotExecuted, advisoryLimit[0], cacheFixtureProfile())
+		if err != nil {
+			t.Fatal(err)
+		}
+		eid, _ := domain.NewEvidenceID("dependency-advisory-0")
+		fact, err := domain.NewEvidence(eid, id, identity, digest, "advisory-applicability", "Opaque binary; no advisory query; not vulnerability-free.", cacheFixtureProfile())
+		if err != nil {
+			t.Fatal(err)
+		}
+		checks = append(checks, check)
+		facts = append(facts, fact)
+	}
 	refs, err := f.reader.Record(context.Background(), run, facts, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
 	decision, _ := domain.NewPolicyDecision(domain.DecisionAllow, "m6-github-release", policy.M6PolicyVersion, []string{"M6_REQUIRED_CHECKS_COMPLETED"})
-	inspection, err := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, decision, cacheFixturePlan(t, run, acquired, []string{"github-release-declared-sha256", "github-release-static"}))
+	plan := cacheFixturePlan(t, run, acquired, []string{"github-release-declared-sha256", "github-release-static"})
+	if len(advisoryLimit) > 0 {
+		c := checks[len(checks)-1]
+		requirement, err := domain.NewCheckRequirement(c.ID(), c.Kind(), c.Required(), c.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		plan, err = domain.NewCheckPlan(run, acquired, append(plan.Requirements(), requirement))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	inspection, err := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, decision, plan)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -603,5 +630,58 @@ func TestGitHubHistoricalApprovalCannotBecomeNewPolicyCoverage(t *testing.T) {
 	legacy.SetPolicyVersion = legacy.EntryPolicyVersion
 	if err := fixture.p.verifyApproval(context.Background(), legacy); err == nil {
 		t.Fatal("unknown future Policy was accepted")
+	}
+}
+
+func TestGitHubOwnershipRetainsOnlyKnownOptionalAdvisoryScope(t *testing.T) {
+	for _, mode := range []string{"legacy", "unsupported-scope", "unknown-limitation", "required", "wrong-capability", "missing-limitation", "missing-proof", "wrong-profile", "duplicate"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newGitHubOwnershipFixture(t)
+			var limits []string
+			if mode != "legacy" {
+				limits = []string{"M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED"}
+			}
+			if mode == "unknown-limitation" {
+				limits[0] = "UNKNOWN_OPTIONAL_LIMITATION"
+			}
+			bundle, staged, install := f.bundle(t, "v1", "tool.zip", []byte("controlled opaque archive"), false, limits...)
+			_, err := f.p.Promote(context.Background(), staged, bundle, install)
+			if mode == "unknown-limitation" {
+				if err == nil {
+					t.Fatal("unknown optional limitation accepted")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal("known optional scope blocked original approval", err)
+			}
+			body, err := os.ReadFile(filepath.Join(f.target, githubOwnershipMarker))
+			if err != nil {
+				t.Fatal(err)
+			}
+			document, err := decodeGitHubApproval(body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch mode {
+			case "required":
+				document.Checks[len(document.Checks)-1].Required = true
+			case "wrong-capability":
+				document.Checks[len(document.Checks)-1].Capability = domain.CapabilitySupported
+			case "missing-limitation":
+				document.Checks[len(document.Checks)-1].LimitationCode = ""
+			case "missing-proof":
+				document.Evidence = document.Evidence[:len(document.Evidence)-1]
+			case "wrong-profile":
+				document.Checks[len(document.Checks)-1].ProfileSHA256 = strings.Repeat("f", 64)
+			case "duplicate":
+				document.Checks = append(document.Checks, document.Checks[len(document.Checks)-1])
+			}
+			err = f.p.verifyApproval(context.Background(), document)
+			wanted := mode == "legacy" || mode == "unsupported-scope"
+			if (err == nil) != wanted {
+				t.Fatal("retained approval scope or tamper boundary changed", mode, err)
+			}
+		})
 	}
 }

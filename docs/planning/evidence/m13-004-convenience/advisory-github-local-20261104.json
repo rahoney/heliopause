@@ -1,0 +1,106 @@
+{
+  "baseline": "10e5558",
+  "scope": "Production CLI public GitHub jq1.8.1 first install and same-tag replacement; not a vulnerability-free or full S05/hosted qualification",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "local_qualification": "PASS for known optional opaque scope; original required3 preserved; two fresh runs, exact-subject evidence, installed hash and mode verified",
+  "cause_confirmed": "approval and verifyApproval rejected every limitation; persisted checks omitted limitation_code. Persist only exact known optional scope and bind applicability proof; legacy schema1/2 canonical empty values preserved.",
+  "actual": {
+    "elapsed": 24.319,
+    "complete": true,
+    "host_unchanged": true,
+    "restored": true,
+    "removed_copy_bytes": 381931126,
+    "large_test_copies_removed": true
+  },
+  "raw": "s05-github-opaque-native-v1.json",
+  "executable_digest": {
+    "algorithm": "sha256",
+    "value": "210dcc635fb26eb9450e1ecc73ef191fdab53df63810f64d1538c09782a93353"
+  },
+  "checks": [
+    {
+      "raw": "s05-github-optional-red.json",
+      "exit_code": 1,
+      "elapsed": 1.11,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-optional-red-v2.json",
+      "exit_code": 1,
+      "elapsed": 8.135,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-optional-green.json",
+      "exit_code": 0,
+      "elapsed": 8.023,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-optional-race.json",
+      "exit_code": 1,
+      "elapsed": 1.483,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-optional-race-v2.json",
+      "exit_code": 0,
+      "elapsed": 17.401,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-tagged-static.json",
+      "exit_code": 1,
+      "elapsed": 10.843,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-tagged-static-v2.json",
+      "exit_code": 0,
+      "elapsed": 10.405,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-tagged-vet.json",
+      "exit_code": 0,
+      "elapsed": 8.47,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-production-build.json",
+      "exit_code": 0,
+      "elapsed": 6.009,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-github-native-test-final-build.json",
+      "exit_code": 0,
+      "elapsed": 0.964,
+      "source_unchanged": true
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "internal/promotion/githubrelease_approval.go",
+      "sha256": "5278921e471696caf1d8b5762b207e77b41ea14927c4b4bc0b1817f3b5ba081f"
+    },
+    {
+      "path": "internal/promotion/githubrelease_update_test.go",
+      "sha256": "1773ce2285556d523729d634f1c2d54b75ac36773c3fbce6f4ae79e8fc2b286b"
+    },
+    {
+      "path": "internal/bootstrap/advisory_integration_test.go",
+      "sha256": "1f494d6a3c66634ac9d37a3de17ea17f8d5fbe32c3fbe6538e277a91070bf95f"
+    }
+  ],
+  "red_scope": "red first compile failed guessed method; red-v2 is actual known optional positive failure. Initial race/static compile failures from missing strings import are retained; final race/static/vet passed.",
+  "missing": [
+    "partner and remaining current public/native fixtures",
+    "named Python profiles and grouped hosted/full S05 acceptance"
+  ]
+}

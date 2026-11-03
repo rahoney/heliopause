@@ -17,12 +17,20 @@ const githubAssetLimit int64 = 512 << 20 // Existing M6 acquisition bound.
 const githubApprovalLimit int64 = 1 << 20
 
 type githubApprovalCheck struct {
-	ID            string                 `json:"id"`
-	Kind          domain.CheckKind       `json:"kind"`
-	Required      bool                   `json:"required"`
-	Capability    domain.Capability      `json:"capability"`
-	Status        domain.ExecutionStatus `json:"status"`
-	ProfileSHA256 string                 `json:"profile_sha256,omitempty"`
+	ID             string                 `json:"id"`
+	Kind           domain.CheckKind       `json:"kind"`
+	Required       bool                   `json:"required"`
+	Capability     domain.Capability      `json:"capability"`
+	Status         domain.ExecutionStatus `json:"status"`
+	ProfileSHA256  string                 `json:"profile_sha256,omitempty"`
+	LimitationCode string                 `json:"limitation_code,omitempty"`
+}
+
+func (c githubApprovalCheck) validForApproval() bool {
+	if c.ID == "dependency-advisory" {
+		return c.Kind == domain.CheckInspection && !c.Required && c.Capability == domain.CapabilityUnsupported && c.Status == domain.ExecutionNotExecuted && c.LimitationCode == "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED" && c.ProfileSHA256 != ""
+	}
+	return c.Capability == domain.CapabilitySupported && c.Status == domain.ExecutionCompleted && c.LimitationCode == ""
 }
 
 // The target copy is only a binding. Independent controller state and actual
@@ -72,10 +80,12 @@ func (p *GitHubReleasePromotion) approval(ctx context.Context, bundle domain.Ver
 	}
 	d := githubAssetApproval{Schema: 2, Target: install.Target().String(), Reference: selector.Locator(), Locator: node.Artifact().AcquisitionLocator(), Name: artifact.Identity().Name(), Version: artifact.Identity().Version(), Asset: artifact.Identity().Variant(), SHA256: artifact.Digest().String(), Size: size, Mode: 0o400, Manifest: bundle.ManifestID().String(), Run: inspection.RunID().String(), EntryPolicy: entry.PolicyID(), EntryPolicyVersion: entry.Version(), SetPolicy: set.PolicyID(), SetPolicyVersion: set.Version()}
 	for _, c := range inspection.Checks() {
-		if limitation, _ := c.LimitationCode(); limitation != "" {
+		limitation, _ := c.LimitationCode()
+		check := githubApprovalCheck{c.ID().String(), c.Kind(), c.Required(), c.Capability(), c.Status(), c.ProfileDigest().String(), limitation}
+		if !check.validForApproval() {
 			return empty, nil, errors.New("GitHub ownership check is incomplete")
 		}
-		d.Checks = append(d.Checks, githubApprovalCheck{c.ID().String(), c.Kind(), c.Required(), c.Capability(), c.Status(), c.ProfileDigest().String()})
+		d.Checks = append(d.Checks, check)
 		if c.ID().String() == "github-release-elf-dynamic" && c.Status() == domain.ExecutionCompleted {
 			d.Mode = 0o500
 		}
@@ -154,10 +164,10 @@ func (p *GitHubReleasePromotion) verifyApproval(ctx context.Context, d githubAss
 			binding = []domain.ContentDigest{profile}
 			profiles[c.ID] = profile
 		}
-		if _, err := domain.NewCheckExecution(id, c.Kind, c.Required, c.Capability, c.Status, "", binding...); err != nil {
+		if _, err := domain.NewCheckExecution(id, c.Kind, c.Required, c.Capability, c.Status, c.LimitationCode, binding...); err != nil {
 			return err
 		}
-		if checks[c.ID] || c.Status != domain.ExecutionCompleted || c.Capability != domain.CapabilitySupported {
+		if checks[c.ID] || !c.validForApproval() {
 			return errors.New("GitHub old checks are duplicated or incomplete")
 		}
 		checks[c.ID] = true
@@ -184,6 +194,12 @@ func (p *GitHubReleasePromotion) verifyApproval(ctx context.Context, d githubAss
 			return errors.New("GitHub approval Evidence is legacy or belongs to another profile")
 		}
 		proof[r.ID] = e
+	}
+	if checks["dependency-advisory"] {
+		fact := proof["dependency-advisory-0"]
+		if fact.CheckID().String() != "dependency-advisory" || fact.Kind() != "advisory-applicability" {
+			return errors.New("GitHub advisory applicability proof is missing or invalid")
+		}
 	}
 	for _, id := range []string{"github-release-declared-sha256", "github-release-static"} {
 		if !required[id] || proof[id+"-result"].CheckID().String() != id {
