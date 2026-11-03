@@ -741,6 +741,17 @@ func (r pythonSourceResolver) ResolveDependencyUpdate(ctx context.Context, refer
 	return resolver.ResolveDependencyUpdate(ctx, reference, install, controls)
 }
 
+// Requirements selection is the existing public-PyPI-only primary-free lane.
+// Keep its frozen-input validation in the native resolver and never select an
+// unrelated source when that capability is missing.
+func (r pythonSourceResolver) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
+	resolver, ok := r.routes[artifactpypi.PublicPyPIProfile().Source().String()].(ports.ProjectLockUpdateResolver)
+	if !ok {
+		return domain.ProjectDependencyUpdate{}, errors.New("public PyPI requirements selection is unavailable")
+	}
+	return resolver.ResolveProjectLockUpdate(ctx, install, controls, selector)
+}
+
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
 		policyService, err := newSystemResolverPolicyAdapter()

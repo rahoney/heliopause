@@ -458,3 +458,76 @@ storage 구성 전에 실행하며 human/JSON 모두 원문을 보존한다. 실
 미수행이므로 QUALIFIED/ACCEPTANCE_CLOSED는 NO로 유지한다. 확인용 임시 cwd/단위 payload는
 제거했고, 실제 CLI 검역 묶음에 바로 사용할 current binary 한 벌만 유지한다. 다음은 S05
 실제 CLI 정상·차단/오류·cache/refresh와 원래 target 보존이다. 새 CI·Host 변경은 없다.
+
+
+## 열한 번째 단위 시작 — 실제 production CLI·검역·target 경계
+
+기준 `312a987`. 공통 API/record/CVSS/report/Policy/cache·현재 소비자/고지의 부분 구현과 연결은
+재사용한다. 실제 CLI 정상/거부·미완료/캐시/refresh·target 보존의 QUALIFIED/
+ACCEPTANCE_CLOSED는 NO이며 이 acceptance만 시험한다. 현재 production CLI binary 한 벌과
+기존 고정 kernel/observer/responder/policy를 사용하며 불변 CPP를 다시 빌드하지 않는다.
+Go helper의 실제 dependency closure/입력은 현재 source와 대조해 필요한 것만 준비한다.
+
+같은 무해한 공개 `packaging==24.2` wheel의 실제 resolver/취득/무결성·static/dynamic·기록/
+Policy·격리 설치/target 경로를 `pip install -r`의 production CLI로 통과시킨다. 공격코드나
+실제 MAL package는 내려받지 않는다. Advisory의 deterministic 분기는 실제 Local cache에
+controlled HTTP로 complete DATA만 seed한다. 이 seed의 원래 검사는 명시적 synthetic이고,
+뒤 production CLI의 실제 Artifact 검사는 별개로 필수 수행해야 한다. Synthetic MAL record를
+해당 공개 package가 실제 악성이라는 주장으로 사용하지 않는다.
+
+Normal/동일 fresh cache 재사용, no-CVSS MAL fixture의 BLOCK/반입 전 거부, payload 변조의
+INCOMPLETE/거부, 강제 refresh의 실제 production API 새 응답·기존 malformed/악성 cache
+미사용을 확인한다. 타깃의 user marker/기존 파일은 매 실패에 동일해야 하며 success의 현재
+subject/check/Evidence·원래 fetch proof와2개 환경 state를 확인한다. API 시점 변화는 진짜
+조회 결과로 보존하고 고정 정상으로 억지 교정하지 않는다. 각 분기의 실제 CLI JSON/exit와
+원본을 기록한다. 이 한 cohort로 다른 언어/모든 binary·S04·C01/전체 보강·hosted를 닫지 않는다.
+
+시험은 기존 protected-source/private mount namespace·정확한 lifecycle/원복·helperwait0
+절차를 재사용하며 UNKNOWN/foreign 상태에는 재바인드·삭제하지 않는다. 태그 빌드는 준비
+확인일 뿐 실제 실행이 아니며 noSKIP/named census/원래 Host 및 시험 payload 정리까지
+결과에 포함한다. 새 CI/job/20분 타이머 중복이나150분 integration 한도 변경은 없다.
+
+
+열한 번째 최초 실제 결과는 FAIL이다. `s05-advisory-cli-native-v1`3.867s에서 production
+`pip install -r`의 첫 fresh-cache가1.40s에 `requirements installation lacks a complete
+native resolver`로 중단됐으며 Artifact 검사/새 advisory 판단에는 미도달이다. Helperwait0,
+Host 동일/원복과381,869,782B 시험 사본 정리를 확인했다. 이 실패를 advisory 추가의 인과로
+단정하지 않는다. 기존 B01 native 검증은 concrete PyPIResolver를 직접 bindings에 주입했고,
+production Root는 PyPI/PyTorch의 `pythonSourceResolver`를 전달한다. Router의 일반 install/
+update는 이미 구현됐지만 B01이 요구하는 `ProjectLockUpdateResolver` 전달은 빠져 있다.
+
+이 연결의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. Native PyPI의
+requirements resolver는 이미 YES이므로 재구현하지 않는다. 기존 router에 fixed public PyPI
+경로의 동일 Port 전달 한 메서드만 추가한다. Native 자체의 public venv/frozen input/selector
+검증을 유지하며 PyTorch/다른 source로 fallback하지 않는다. 기존 native enrollment의
+ResolveDependencies routing은 바꾸지 않는다. `pypi_update_test.go`의 기존 route fixture로
+frozen controls/install/ctx·cancel·원래 오류와 missing/unsupported/다른 source 거부를 확인한
+뒤 actual cohort를 계속한다. 새 framework·resolver·source/version selector는 없다.
+
+실행 전 한 번의 별도 INPUT_PREFLIGHT는 기존 부분 snapshot에 실제 compiled/embedded
+324개 입력이 없음을 검출했다. Host 변경/native 실행 전 중단한 근거와 실제1422개 repo
+compiler/test/embedded 입력의 root/scratch 동일성·complete build0.318s/test-build0.760s를
+raw input 원장에 남겼다. 그 교정은 guard 생략이 아니며 이전 부분 기록을 full snapshot으로
+전용하지 않는다. 이 준비 실패와 뒤 실제 router 연결 실패를 구분한다.
+
+
+기존 router의 public PyPI 전달 한 메서드만 보강한 bootstrap Race7.752s·Staticcheck3.869s/
+vet1.117s 및 realcorpus-tagged Staticcheck2.263s가 PASS다. Source/selector/frozen controls/
+install/ctx·cancel/원래 오류의 전달과 missing/unsupported/torch-only route의 미호출을 확인했다.
+실제 V2는 parent255.21s/operator258.093s에서5개 child/production CLI6회를 PASS했다.
+정상 fresh/cache2회는 ALLOW/실제 설치, synthetic no-CVSS MAL은 BLOCK/target 무변경,
+cache payload 변조는 required INCOMPLETE/거부·target 무변경, explicit refresh는 실제
+production OSV 응답의 새 취득 증거와 ALLOW를 확인했다. 해당 공개 packaging24.2를 악성이라고
+주장하지 않으며 controlled seed와 실제 API를 구분한다. 정상/차단의4개 필수 check·현재
+subject에 저장된2개 환경 state/원래 cache proof도 확인했다. 이 결과는 pip requirements의
+scoped 실제 consumer 증거이며 다른 언어·모든 profile/binary나 whole S05 성공은 아니다.
+
+NoSKIP/helperwait0/Host 동일·원복과381,873,878B 시험 사본 제거를 확인했다. 이어 Root의
+105process executable/FD/maps 조회에서 references0/query errors0을 확인하고 완료 CLI/test
+runner와 교체 전 helper102,449,863B를 제거했다. Current policy helper/responder/SDK는 한 벌만
+보존한다. [실제 Root 부분 원장](./advisory-root-cli-local-20261103.json)이 최초 준비/실제
+실패·현재 source와 원본/정리 범위를 소유한다. Source version selector는 불변이며 새 test의
+site-packages 경로도 고정 Python version에서 파생한다. Whole S05 네 상태·최종16번은 여전히
+OPEN이다. 다음은 user-visible advisory 상세 전달, source/profile의 적용 범위와 나머지 실제
+소비자 대조다. Root 결과는 현재 판정 code/check/Evidence references를 제공하지만 advisory
+ID/수정 경계/URL을 직접 표시하는 경로는 아직 대조·보강해야 한다. 새 CI/영구 Host 변경은 없다.
