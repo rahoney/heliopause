@@ -2117,5 +2117,67 @@
     "remaining": "S03 original install target unchanged/CLI goal linkage, other ecosystems/finite supported scenario census, selected-entry synthetic environment, hosted/final and whole S02 remain open",
     "current_candidate": "No temporary diagnostic wrapper remains; same backend forwarding only removed. Python entry-only activation/normal checks now next; current ordinary controlled wheel normal/compound/delay/child successes retained without repetition.",
     "entry_scope": "current Python selected readonly entry actual45.010s PASS: normal20.71s complete/exit0, activate20.33s actual network-attempt refusal/incomplete; original wheel digest preserved, Host installation not performed; not final inspection BLOCK or synthetic entry environment proof"
+  },
+  "s03_npm_cli_target_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "project-local conditional npm install CLI, actual observation/Policy/Evidence and original target preservation",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v1.json",
+        "sha256": "173c5bbd4c98778989f44cd1856200a9fdeb11e2b56bd97a67df2b44fc0b3c68",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 20.081
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v2.json",
+        "sha256": "a5580fb327b54762618ace1e2e97d90c2b10d4949b73a4b0799fb2ffef87e093",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 19.582
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v3.json",
+        "sha256": "b8dcfa4697b6e12e0e072b65c72ad514851dd26a6269b1917b996340abe0fbda",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 21.122
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-workflow.json",
+        "sha256": "93ca649a49e6d4c406d2e0654a6ce3d6c8b1ee538bdb8919e61efa4f060d04f1",
+        "exit_code": 0,
+        "elapsed": 1.985,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-staticcheck.json",
+        "sha256": "d51029306e4f86b264e3d2aaeededeb107ccf600e3274750609655f26c0f812a",
+        "exit_code": 0,
+        "elapsed": 2.208,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-vet.json",
+        "sha256": "6d018be4b7b91863abf0adb9535f057ddbbf431e1d49c82adce91506c09fd730",
+        "exit_code": 0,
+        "elapsed": 1.185,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-docs.json",
+        "sha256": "bfb2df5fe146f099ad6fea05037948012355b93bc3403ffdc0645368b71374fe",
+        "exit_code": 0,
+        "elapsed": 0.349,
+        "source_unchanged": true
+      }
+    ],
+    "first_failure": "v1 first-review-reason and v2 record-digest/profile test assumptions corrected without product change; v3 actual21.122s PASS: current stored states2/network>0/check-profile binding, required lifecycle COMPLETED/MANUAL_REVIEW, installation REFUSED and original manifest/hook/.env unchanged with no node_modules or lock publication",
+    "remaining": "Local new CLI case and CI parser list verified; broader S03 normal configuration-read control, finite supported scenario census, selected-entry synthetic environment and hosted/final stay open"
   }
 }

@@ -1292,3 +1292,30 @@ inspection BLOCK/악성 확정으로 부르지 않는다. 임시 진단 wrapper�
 helperwait0/Host 원복·400275331B/임시 mountpoint 제거를 확인했다. 원본
 s03-python-entry-format/build/native-v1이 범위를 소유한다. 전체 S03/선택 실행의 모의 환경·
 실제 설치 target/다른 생태계·hosted/final은 계속 OPEN이다.
+
+
+S03 npm local-root CLI actual-v1/20.081s는 Artifact network CONNECT1을 관찰했지만 시험이
+단일 Policy reason을 M3_NETWORK_ATTEMPT로 요구해 실패했다. 기존 policy/M3.Evaluate는
+검토 Finding의 첫 사유만 보존하므로 M3_UNEXPECTED_PROCESS는 올바른 계약이다. 제품
+정책/판정을 바꾸지 않고 같은 subject/check/profile의 저장 observation·상태2개에서 실제
+network를 확인하도록 시험만 교정한다. V1은 target readback 이전 실패이며 완료 증거가
+아니다. Helperwait0/Host 원복·400280459B와 임시 mountpoint 제거는 확인했다.
+완료 Python clients3개의96process 참조0/query errors0을 확인해168078082B를 제거했다.
+원본 s03-npm-root-target-native-v1과 s03-completed-python-clients-cleanup이 소유한다.
+
+
+Root CLI v2/19.582s는 현재 subject의 저장 record를 읽었지만 시험이 ReadReference의
+두 번째 반환인 파일 content digest를 검사 profile로 비교해 실패했다. 실제 profile은
+반환 Evidence.ProfileDigest다. API 본문과 root summary schema를 대조해 시험만 수정했다.
+제품/Policy/한도는 불변이며 target readback은 아직 미도달이다. Helperwait0/Host 원복·
+400282091B/임시 mountpoint 제거를 확인했고 v2 원본을 보존한다.
+
+
+Root CLI v3/21.122s는 새 조건부 한 사례를 PASS했다. 저장된 상태2개/실제 network>0의
+동일 subject/check/profile binding, 필수 lifecycle COMPLETED/MANUAL_REVIEW, 설치 REFUSED와
+원래 manifest/hook/.env byte 보존·node_modules/lock 미게시를 확인했다. Artifact network1은
+mock에서만 활성화됐다. 기존 M3 첫 검토 사유 계약과 모든 제품 코드는 그대로다. 새 사례는
+기존 npm project CI profile의 유한 목록/필수 marker에 연결했으며 새 job/CI는 실행하지 않았다.
+Helperwait0/Host 원복·400280259B/임시 mountpoint 제거를 확인했다. 원본
+s03-npm-root-target-format-v2/build-v3/native-v3가 이 한정 scope를 소유한다. 전체 S03/다른
+생태계 및 선택 실행 모의 환경·정상 설정 읽기/hosted/final은 계속 OPEN이다.

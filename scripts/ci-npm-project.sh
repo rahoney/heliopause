@@ -35,6 +35,7 @@ BEGIN {
  split("TestNPMPublicWholeProjectQuarantineIntegration TestNPMPublicProjectWorkflowIntegration TestNPMPublicProjectRootCLIIntegration TestNPMPublicProjectCLIIntegration", names, " "); for (i in names) expected[names[i]]=1
  quarantine["nested"]=3; quarantine["bin"]=1; quarantine["peer"]=3
  root["postinstall"]="COMPLETED"; root["dependencies"]="INCOMPLETE"; root["postprepare"]="INCOMPLETE"; root["empty-dependencies"]="COMPLETED"
+ root["conditional-network"]="COMPLETED"
 }
 /--- (SKIP|FAIL):/ { bad=1 }
 /^--- PASS:/ { if (!($3 in expected) || parents[$3]++) bad=1; parent_count++ }
@@ -52,12 +53,13 @@ BEGIN {
  if (!(name in root) || roots[name]++ || $4!="local_identity=true" || $5!="required_checks=3" || $6!="lifecycle=" root[name] || $7!="installation=REFUSED" || $8!="original_target=PRESERVED") bad=1
 }
 /npm_root_hook_exit=37 original_cause=PRESERVED/ { exits++ }
+/npm_root_conditional network=OBSERVED stored_states=2 original_target=PRESERVED/ { conditional++ }
 /npm_public_cli operation=/ {
  name=$3; sub(/^operation=/,"",name)
  if ((name!="install" && name!="ci") || public[name]++ || $4!="Policy=ALLOW" || $5!="publication=COMPLETED" || $6!="root=NOT_REQUIRED") bad=1
 }
 END {
- if (bad || parent_count!=4 || workflow!=4 || terminal!=1 || exits!=2 || public["install"]!=1 || public["ci"]!=1) exit 1
+ if (bad || parent_count!=4 || workflow!=4 || terminal!=1 || exits!=2 || conditional!=1 || public["install"]!=1 || public["ci"]!=1) exit 1
  for (name in expected) if (parents[name]!=1) exit 1
  for (name in quarantine) if (inspected[name]!=1) exit 1
  for (name in root) if (roots[name]!=1) exit 1
