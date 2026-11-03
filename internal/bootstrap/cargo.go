@@ -90,11 +90,15 @@ func newCargoServices(resolver *sandbox.CargoResolver, executor sandbox.TrustedE
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	advisory, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	evidence, err := local.NewStore(evidenceRoot)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	inspection, err := application.NewProjectInspectService(artifact, verifier, inspector, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	inspection, err := application.NewProjectInspectService(artifact, verifier, advisory, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, nil, nil, err
 	}

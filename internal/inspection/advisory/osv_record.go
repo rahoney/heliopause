@@ -58,7 +58,14 @@ func decodeRecord(body []byte, expected advisoryReference) (osvRecord, error) {
 		return osvRecord{}, errResponse
 	}
 	var result osvRecord
-	if json.Unmarshal(body, &result) != nil || result.ID != expected.id || !result.Modified.Equal(expected.modified) || result.Withdrawn != nil && result.Withdrawn.IsZero() {
+	if json.Unmarshal(body, &result) != nil || result.ID != expected.id || result.Withdrawn != nil && result.Withdrawn.IsZero() {
+		return osvRecord{}, errResponse
+	}
+	// OSV querybatch reads its index timestamp from Datastore (microseconds,
+	// rounded down); GetFull retains the record's original nanoseconds. Compare
+	// at that index precision only when the index is microsecond-aligned. A
+	// higher precision index must still match exactly. Keep Modified unchanged.
+	if !result.Modified.Equal(expected.modified) && !(expected.modified.Nanosecond()%1000 == 0 && result.Modified.Truncate(time.Microsecond).Equal(expected.modified)) {
 		return osvRecord{}, errResponse
 	}
 	// OSV 1.x changes are additive. Missing schema_version is defined as 1.0.0.

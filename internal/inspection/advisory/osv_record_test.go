@@ -7,12 +7,41 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
 )
 
 const recordFixture = `{"schema_version":"1.9.2","id":"OSV-1","modified":"2026-10-20T00:00:00Z","aliases":["CVE-2026-1000"],"affected":[{"package":{"ecosystem":"npm","name":"fixture"},"ranges":[{"type":"SEMVER","events":[{"introduced":"0"},{"fixed":"1.2.3"}]}]}],"database_specific":{"severity":"HIGH"},"details":"Untrusted text; never an execution input."}`
+
+func TestCapturedRecordMatchesOnlyTheProvidersAvailableModifiedPrecision(t *testing.T) {
+	body, err := os.ReadFile("testdata/ghsa-cpwx-vrp4-4pq7.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	indexed, err := time.Parse(time.RFC3339Nano, "2026-09-10T03:49:48.526758Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference := advisoryReference{"GHSA-cpwx-vrp4-4pq7", indexed}
+	record, err := decodeRecord(body, reference)
+	if err != nil || record.Modified.Nanosecond() != 526758681 {
+		t.Fatal("provider microsecond index rejected its unchanged nanosecond record", err)
+	}
+	// A nanosecond index, when supplied, remains exact. Do not truncate both
+	// operands or turn this into a general clock-skew/freshness tolerance.
+	for _, stamp := range []time.Time{indexed.Add(-time.Microsecond), indexed.Add(time.Microsecond), indexed.Add(time.Nanosecond), indexed.Add(680 * time.Nanosecond), indexed.Add(682 * time.Nanosecond)} {
+		reference.modified = stamp
+		if _, err := decodeRecord(body, reference); err == nil {
+			t.Fatal("changed record/index was accepted", stamp)
+		}
+	}
+	reference.modified = record.Modified
+	if _, err := decodeRecord(body, reference); err != nil {
+		t.Fatal("exact nanosecond index rejected", err)
+	}
+}
 
 func recordReference(t *testing.T) advisoryReference {
 	t.Helper()

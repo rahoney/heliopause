@@ -204,9 +204,9 @@ interpretation.
 없거나 일치하지 않으면 비적격이다. 일반 PyPI의 같은 Python runtime에도 동일하게
 적용하며 npm/GitHub ELF의 동작 허용 범위는 변경하지 않는다.
 
-## 5. M3 Policy v3 direction
+## 5. M3 Policy
 
-M3 Policy identity is `m3-npm-dynamic-inspect`, version 1.
+M3 Policy identity is `m3-npm-dynamic-inspect`, version 3.
 
 1. integrity mismatch or blocking static/dynamic Finding → `BLOCK`.
 2. required static, integrity or dynamic check unsupported/unavailable/failed/incomplete → `MANUAL_REVIEW / M3_REQUIRED_CHECK_INCOMPLETE`.
@@ -217,6 +217,15 @@ This does not change M2 results retroactively. M3 Policy is only wired when the 
 `M3_NETWORK_ATTEMPT` and `M3_UNEXPECTED_PROCESS` remain `MANUAL_REVIEW` reasons;
 this contract changes only the raw-observation-to-Finding and attribution
 conditions that may produce them.
+
+M13-004 S05 adds `M13_ADVISORY_REVIEW` for affected advisories below the
+confirmed HIGH threshold, missing/unsupported CVSS, or unknown version impact.
+It remains `MANUAL_REVIEW`; confirmed affected CVSS base scores at least7.0
+produce `M13_ADVISORY_HIGH` and `BLOCK`. Human severity labels alone are not
+authoritative. Any stronger integrity/static/dynamic/unknown blocking Finding
+still wins regardless of report order. Required advisory mapping/query/assessment
+incompleteness never permits automatic installation. Provider I/O and score
+normalization remain in Inspection, not Policy.
 
 ## 6. Fixtures, retention and exclusions
 

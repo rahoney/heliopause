@@ -196,8 +196,12 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":   true,
 		},
 		modulePath + "/internal/inspection/advisory": {
-			modulePath + "/internal/artifact/pypi":  true,
-			modulePath + "/internal/artifact/cargo": true,
+			modulePath + "/internal/core/domain":       true,
+			modulePath + "/internal/core/ports":        true,
+			modulePath + "/internal/artifact/npm":      true,
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/pypi":     true,
+			modulePath + "/internal/artifact/cargo":    true,
 		},
 		modulePath + "/internal/inspection/npm": {
 			modulePath + "/internal/artifact/npm":    true,

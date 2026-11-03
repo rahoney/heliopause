@@ -173,3 +173,57 @@ source/module·metadata와 check 범위를 연결한다.
 다음은 공개 OSV 전송 경계와 기존 graph/결과/판정·유한 cache 연결이다. 계산 profile과 cache는
 실제 linked CVSS version/checksum에 결합해 module update 후 예전 결과를 무조건 재사용하지
 않아야 한다. 별도 version selector를 만들지 않는다. 전체 S05와 최종16번은 계속 OPEN이다.
+
+
+## 다섯 번째 단위 — public transport와 기존 graph/report 연결
+
+`osv_http.go`는 고정 API의 typed POST/GET만 받고 proxy/cookie/auth/redirect를
+상속하지 않는다. TLS1.2 이상·정상 인증서/SNI를 사용하며 DNS의 모든 응답이 기존
+`networkpolicy.IsPublicIPv4` 규칙을 통과한 뒤 numeric IPv4로 연결한다. 같은 주소 규칙의
+기존 resolver 소비자는 유지하고 guest나 Root service에 새 operation을 주지 않는다.
+
+`Inspector`는 기존 Inspect/InspectGraph/InspectProject/InspectProjectSelection/
+InspectExecutionSelection과 CheckPlanner를 전달한다. Python의 static-all/closure·실제
+frozen control·supplemental root 입력을 per-artifact 호출로 바꾸지 않는다. Node의
+identity/declared integrity와 전체 acquired membership을 기존 검사 실행 전에 확인하고,
+고정 graph의 package/version만 한 번 조회해 각 원래 subject의 report에 합친다.
+실제 구성은 현재 Go·Cargo project inspector 두 경로에 연결했으며 다른 기존 consumer와
+cache/CLI 전체 연결은 아직 MISSING이다. 구현된 기존 inspector를 교체/재작성하지 않았다.
+
+Check profile은 `debug.ReadBuildInfo`의 실제 linked go-cvss version/검증 checksum에
+결합한다. go.mod 외의 새 version selector/lock은 없다. Missing/replaced/unchecksummed
+calculator는 거부한다. Response request/hash/time·record의 원래 modified/영향·base score를
+기존 bounded Evidence로 기록하며 provider 설명을 실행·최종 판정 입력으로 사용하지 않는다.
+M3 version3은 advisory 영향/심각도 평가 불명을 review로 받고, 확인된 affected base7.0
+이상은 기존 BLOCK 우선순위로 처리한다. 더 강한 integrity/static/dynamic/unknown Finding을
+가리지 않는다. 상세 계약은 기존 M3 Policy leaf가 소유한다.
+
+실제 HTTPS DATA v1/v2는 incomplete였다. Batch의 GHSA-cpwx-vrp4-4pq7 modified는
+`2026-09-10T03:49:48.526758Z`, 동일 상세 원본은 `.526758681Z`였다. 공식
+[querybatch 구현](https://raw.githubusercontent.com/google/osv.dev/master/go/internal/api/query_affected.go)은
+저장소의 GetModified를 사용하며 [Datastore timestamp 명세](https://docs.cloud.google.com/datastore/docs/concepts/entities)는
+microsecond 미만을 버린다. 상세 GetFull의 원본 protobuf는 더 높은 정밀도를 보존한다.
+확인한 공식3file은 immutable blob 해시로 raw 원장에 연결했다. Live 실패의 captured
+projection1048B를 repo testdata에 두고 RED1.065s를 확인한 뒤, **microsecond-aligned
+index만 그 정밀도로 비교**하도록 고쳤다. Nanosecond index·다른 microsecond는 계속
+거부하며 원래 상세 시각을 변경하지 않는다. 같은 microsecond 내부의 변경은 해당 index로
+구분할 수 없으므로 modified를 암호학적 snapshot이라고 주장하지 않는다. 실제 응답 해시도
+계속 보존한다. 다른 오류를 정밀도 차이로 포괄 수용하거나 일반 clock-skew를 허용하지 않는다.
+
+해당 advisory Race5.057s와 실제 production HTTP/linked calculator DATA v3/4.381s가
+PASS다. V3는 Jinja2 2.10의12개 record/affected findings와3.1.6의 당시 빈 결과를 확인했다.
+Synthetic original inspection을 사용했으므로 실제 package 검역/Policy/설치·CLI 성공이 아니다.
+Private 확인 command는 제거했고, frozen 공개 응답14개·작은 원장을 보존한다. 앞선 연결
+후보의 Race6.662s/static11.494s/vet7.671s와 networkpolicy0.342s도 범위별 증거이며,
+최종 공통 검사는 이 묶음에서 진행한다. Whole S05의 네 상태·최종16번은 여전히 OPEN이다.
+
+
+다섯 번째 묶음의 canonical foundation63.665s/security20.493s·bootstrap 전체
+Race29.521s는 PASS다. 마지막 optional capability 거부 한정 변경은 현재 advisory
+Race5.211s·Staticcheck1.124s/vet0.457s·format no-op로 확인했으며 그 두 줄 때문에
+불변 HTTP/live/CPP/전체 공통 검사를 반복하지 않았다. 각 정확한 source snapshot과
+검증 범위는 [연결 부분 원장](./advisory-connected-local-20261103.json)이 소유한다.
+완료된 확인용 binary와 보존된 응답 사본7,678,407B는 Root의99process FD/maps 조회에서
+references0/query errors0을 확인한 뒤 제거했다. 공용 cache/runtime은 보존했다.
+최종 사용자 CLI·모든 실제 소비자·cache/24h refresh·명시 악성/alias·NOTICE 공급과
+whole S05 qualification은 계속 MISSING이며 새 CI는 시작하지 않았다.
