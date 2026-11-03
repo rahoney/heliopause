@@ -81,6 +81,10 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 	if err != nil {
 		return nil, err
 	}
+	checkedNative, err := newAdvisoryInspection(native)
+	if err != nil {
+		return nil, err
+	}
 	pipxBackend, err := sandbox.NewLinuxPipxRuntimeBackendWithExecutor(executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return nil, err
@@ -93,7 +97,7 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 	if err != nil {
 		return nil, err
 	}
-	inspection, err := application.NewInstallInspectService(baseSource, baseSource, verificationgithub.IntegrityVerifier{}, native, store, policy.M6{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	inspection, err := application.NewInstallInspectService(baseSource, baseSource, verificationgithub.IntegrityVerifier{}, checkedNative, store, policy.M6{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +131,9 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 			return content, err
 		}
 		content.Inspection, err = inspectiongithub.NewReleaseSetInspector(intakeRoot, source.Manifest, native, pipxInspection)
+		if err == nil {
+			content.Inspection, err = newAdvisoryInspection(content.Inspection)
+		}
 		return content, err
 	}
 	var once sync.Once

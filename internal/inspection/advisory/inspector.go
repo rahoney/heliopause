@@ -57,7 +57,7 @@ func newInspector(inner ports.Inspection, client *http.Client, info *debug.Build
 	if identity == "" {
 		return nil, errors.New("advisory calculator build identity is unavailable")
 	}
-	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v2", osvEndpoint+"|osv-1.x|base-score|"+identity)
+	profile, err := domain.CheckProfileDigest("dependency-advisory-osv-v3", osvEndpoint+"|osv-1.x|base-score|"+identity)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (i *Inspector) ExpectedChecks(ctx context.Context, artifact domain.Acquired
 		return nil, err
 	}
 	id, _ := domain.NewCheckID("dependency-advisory")
-	check, err := domain.NewCheckRequirement(id, kind, true, i.profile)
+	check, err := domain.NewCheckRequirement(id, kind, advisoryRequired(artifact), i.profile)
 	return append(checks, check), err
 }
 
@@ -108,6 +108,18 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	}
 	combined, combineErr := domain.NewCompositeInspectionReport([]domain.InspectionReport{report, result})
 	return combined, errors.Join(err, reportErr, cacheWriteErr, combineErr)
+}
+
+// These existing opaque binary lanes have no authenticated package-component
+// map. Their explicit unsupported result is informational; failures in a public
+// package lane or an unknown source never enter this exception.
+func advisoryRequired(artifact domain.AcquiredArtifact) bool {
+	switch artifact.Identity().Source().String() {
+	case "github-release", "terraform-provider":
+		return false
+	default:
+		return true
+	}
 }
 
 func packageForArtifact(artifact domain.AcquiredArtifact) (osvPackage, bool) {

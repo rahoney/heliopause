@@ -233,3 +233,56 @@ func TestM6PreservesBlockPriorityAndRequiresDeclaredCoverage(t *testing.T) {
 		}
 	}
 }
+
+func TestM6KeepsExplicitBinaryAdvisoryLimitAndExistingRequiredChecks(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		required bool
+		dynamic  domain.ExecutionStatus
+		code     string
+		want     domain.Decision
+	}{
+		{"bounded normal binary", false, domain.ExecutionCompleted, "", domain.DecisionAllow},
+		{"required mapping unavailable", true, domain.ExecutionCompleted, "", domain.DecisionManualReview},
+		{"required dynamic incomplete", false, domain.ExecutionIncomplete, "", domain.DecisionManualReview},
+		{"existing blocker preserved", false, domain.ExecutionCompleted, "M3_HONEYTOKEN_ACCESS", domain.DecisionBlock},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			limitation := ""
+			if tc.dynamic != domain.ExecutionCompleted {
+				limitation = "DYNAMIC_INCOMPLETE"
+			}
+			input := policyInput(t, check(t, "npm-dynamic-lifecycle", tc.dynamic, limitation), tc.code, "github-release")
+			id, _ := domain.NewCheckID("dependency-advisory")
+			profile, _ := domain.CheckProfileDigest("binary-advisory-test", "fixed source applicability")
+			execution, err := domain.NewCheckExecution(id, domain.CheckInspection, tc.required, domain.CapabilityUnsupported, domain.ExecutionNotExecuted, "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED", profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			limit, err := domain.NewInspectionReport(execution, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{input.Inspection(), limit})
+			if err != nil {
+				t.Fatal(err)
+			}
+			requirement, err := domain.NewCheckRequirement(id, domain.CheckInspection, tc.required, profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			plan, err := domain.NewCheckPlan(input.RunID(), input.Artifact(), append(input.CheckPlan().Requirements(), requirement))
+			if err != nil {
+				t.Fatal(err)
+			}
+			selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), plan)
+			if err != nil {
+				t.Fatal(err)
+			}
+			decision, err := (M6{}).Evaluate(selected)
+			if err != nil || decision.Decision() != tc.want {
+				t.Fatal("binary limit changed required/blocking semantics", decision, err)
+			}
+		})
+	}
+}

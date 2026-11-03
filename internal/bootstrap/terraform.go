@@ -55,11 +55,15 @@ func newTerraformServices(executor sandbox.TrustedExecutor, observer sandbox.Tra
 	if err != nil {
 		return nil, err
 	}
+	checkedInspection, err := newAdvisoryInspection(inspector)
+	if err != nil {
+		return nil, err
+	}
 	evidence, err := local.NewStore(evidenceRoot)
 	if err != nil {
 		return nil, err
 	}
-	inspection, err := application.NewProjectInspectService(client, verifier, inspector, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	inspection, err := application.NewProjectInspectService(client, verifier, checkedInspection, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		return nil, err
 	}

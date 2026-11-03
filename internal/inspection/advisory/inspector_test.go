@@ -480,3 +480,49 @@ func TestInspectorBlocksExplicitMalwareAndDeduplicatesAliasFindings(t *testing.T
 		})
 	}
 }
+
+func TestAdvisoryApplicabilityKeepsBinaryLimitsExplicitAndPackageFailuresRequired(t *testing.T) {
+	calls := 0
+	inspector, err := newInspector(&retainedInspector{}, &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		calls++
+		return nil, errors.New("must not query an unmapped subject")
+	})}, calculatorBuildInfo())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		source, version string
+		required        bool
+	}{
+		{"github-release", "1.0.0", false},
+		{"terraform-provider", "1.0.0", false},
+		{"pypi", "1.0.0+local", true},
+		{"npm", "latest", true},
+		{"unknown", "1.0.0", true},
+	} {
+		t.Run(tc.source, func(t *testing.T) {
+			artifact := advisoryArtifact(t, tc.source, "fixture", tc.version)
+			plan, err := inspector.ExpectedChecks(context.Background(), artifact, domain.CheckInspection)
+			if err != nil || len(plan) != 2 || plan[1].Required() != tc.required {
+				t.Fatal("applicability declaration differs", plan, err)
+			}
+			report, err := inspector.Inspect(context.Background(), artifact)
+			if err != nil || len(report.Executions()) != 2 {
+				t.Fatal(err)
+			}
+			check := report.Executions()[1]
+			if check.Required() != tc.required || check.Capability() != domain.CapabilityUnsupported || check.Status() != domain.ExecutionNotExecuted || len(report.Findings()) != 0 {
+				t.Fatal("unmapped subject became completed/clean", check)
+			}
+			if !tc.required {
+				limitation, _ := check.LimitationCode()
+				if limitation != "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED" || len(report.Evidence()) != 2 || report.Evidence()[1].Kind() != "advisory-applicability" {
+					t.Fatal("binary limit was silently omitted", check, report.Evidence())
+				}
+			}
+		})
+	}
+	if calls != 0 {
+		t.Fatal("guessed a binary/public package mapping")
+	}
+}

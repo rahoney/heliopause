@@ -18,6 +18,9 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 	capability, status, limitation := domain.CapabilitySupported, domain.ExecutionCompleted, ""
 	if !mapped {
 		capability, status, limitation = domain.CapabilityUnsupported, domain.ExecutionNotExecuted, "M13_ADVISORY_MAPPING_UNSUPPORTED"
+		if !advisoryRequired(artifact) {
+			limitation = "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED"
+		}
 	} else if lookupErr != nil {
 		status, limitation = domain.ExecutionIncomplete, "M13_ADVISORY_LOOKUP_INCOMPLETE"
 		if errors.Is(lookupErr, errCachedResponse) {
@@ -35,6 +38,11 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 			evidence = append(evidence, fact)
 		}
 		return id, err
+	}
+	if !mapped && !advisoryRequired(artifact) {
+		if _, err := addFact("advisory-applicability", "Authenticated opaque binary: package/component versions cannot be mapped to OSV. No advisory query ran; this is not a vulnerability-free result. Existing integrity, structure and bounded dynamic requirements remain applicable."); err != nil {
+			return domain.InspectionReport{}, err
+		}
 	}
 	// At most 64 responses exist for a complete graph lookup. These are hashes
 	// and times, never provider descriptions, credentials or executable URLs.
@@ -127,7 +135,7 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 			return domain.InspectionReport{}, err
 		}
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, i.profile)
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, advisoryRequired(artifact), capability, status, limitation, i.profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

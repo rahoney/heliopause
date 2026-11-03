@@ -386,3 +386,37 @@ summary 배열 제거 전 source이며 최종 Race/gosec과 구분한다. 재현
 [부분 원장](./advisory-malware-alias-local-20261103.json)이 소유한다. QUALIFIED/
 ACCEPTANCE_CLOSED는 actual CLI/최종 조건이 남아 NO다. 공통 foundation/security·실제
 consumer 검증은 다음 binary 적용·NOTICE 공급과 의미 있는 묶음으로 모으며 새 CI는 없다.
+
+
+## 아홉 번째 단위 시작 — 기존 bounded binary 적용 범위 baseline
+
+기준 `a9fe065`. GitHub/자체 release·Terraform의 기존 구조/무결성/제한 동적 검사와 Policy는
+IMPLEMENTED/WIRED=YES이며 교체하지 않는다. S05의 binary 한계 표시/기존 연결은 네 상태가
+모두 NO다. 동일 공통 Inspector가 이미 unsupported mapping을 보고할 수 있지만 모든 source에
+required=true여서 그대로 연결하면 원래 bounded binary 지원 전체를 막는다.
+
+설계 §4의 고정 applicability에 따라 인증된 `github-release`·`terraform-provider` subject만
+component mapping 한계를 optional UNSUPPORTED/NOT_EXECUTED check와 bounded Evidence로
+명시한다. 공개 package ecosystem의 mapping 실패·조회 실패/미완료는 계속 required이고
+일반 unknown source도 required다. Artifact 출력·네트워크 실패·도구 부재로 optional로 바꾸지
+않는다. Binary가 취약점이 없거나 모든 내부 성분을 검사했다는 표현은 금지한다.
+
+수정 위치는 공통 `ExpectedChecks`/`report`의 동일 applicability helper와 기존 Root의 GitHub,
+Terraform, native self-update `InstallInspect`·release-set composition이다. 원래 concrete
+metadata/runtime owner를 유지하며 외부 Application Port만 한 번 감싼다. Alias/영향/조회/
+저장소를 복제하지 않고 새 source mapping을 이름으로 추측하지 않는다. 정상 bounded binary의
+종합 판정을 유지하고 required check 미완료·기존 BLOCK은 여전히 자동 허용을 막는 회귀를
+연결한다. 실제 binary native/CLI·전체 지원/최종 qualification은 별도 MISSING이다.
+
+
+Binary applicability 단위의 IMPLEMENTED/WIRED는 YES다. GitHub inspect/install/update,
+Terraform project 및 self-update base/release-set의 기존 owner에 공통 wrapper를 연결했다.
+Release-set은 outer Port만 감싸 concrete native/metadata/pipx dispatch를 중복 연결하지 않는다.
+고정 두 source만 optional UNSUPPORTED/NOT_EXECUTED와 `advisory-applicability` Evidence를
+남기며 profilev3로 선언한다. pypi local/invalid npm/unknown mapping은 계속 required다.
+정상 bounded M6 ALLOW·required 미완료 REVIEW·기존 BLOCK 보존을 확인했다. 최초 unit4.990s의
+새 incomplete fixture limitation 누락만 고쳤고, 전체 영향 advisory/Policy/bootstrap Race9.449s,
+Staticcheck2.795s/vet1.476s가 PASS다. [부분 원장](./advisory-binary-local-20261103.json)이
+source·원본/범위를 소유하며 QUALIFIED/ACCEPTANCE_CLOSED는 actual/최종 조건이 남아 NO다.
+새 compiler/runtime version owner·guest 권한·CI·Host 변경은 없다. 다음은 NOTICE 실제 공급과
+의미 있는 공통 검사/actual CLI 묶음이다.
