@@ -1,0 +1,79 @@
+{
+  "baseline_commit": "d30dcc1",
+  "scope": "exact subject/version impact, existing Python public normalization reuse, SemVer/PEP440 interval facts and one captured provider record projection; no final severity/Policy/production transport/CLI/cache",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/artifact/pypi/reference.go",
+      "sha256": "87ac280a7ae83fbc28af84b4aa11c9b664670b9e855234acba7a9e52e8c3db4f"
+    },
+    {
+      "path": "internal/artifact/pypi/reference_test.go",
+      "sha256": "c3af4eb8c43b8540060dadd91946aaa2e1b7f5de6a44c56fb64ffdae0b08bd2f"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_impact.go",
+      "sha256": "059880b07e1de578ea864c483bb6931e3e03e9f3d31fb27d71a952115e9bc47a"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_impact_test.go",
+      "sha256": "f0e10d0297ac45e4d37757db5a7f0644b08ad618c2b33b8bc9566d3fda73694f"
+    },
+    {
+      "path": "internal/inspection/advisory/testdata/ghsa-462w-v97r-4m45.json",
+      "sha256": "c443a4908b04ab70c8f3ff6a813ebf7ea5c3e8b0c027533b0e1c47473f99b672"
+    },
+    {
+      "path": "internal/inspection/advisory/testdata/README.md",
+      "sha256": "dc3e619d831cc2d8ca37d5c41e857978ee1cbfd97710f945973c37007106caf4"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "50f152f5cac3b5035515f41036d693a2597432fd1520de3a33af2a87be6d23b9"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "f44bbfc75cb178f4a43a0cac6e0c5e3474ba9ec0e1cec51afd83b2eef20e3f09"
+    }
+  ],
+  "checks": [
+    {
+      "raw_file": "s05-impact-captured-race.json",
+      "sha256": "ed9ecbb1f741a295a8b8123f5549106a84764240fc9775dab0f399ff4621a531",
+      "elapsed_seconds": 9.433,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-impact-final-static.json",
+      "sha256": "51c75b1f607fe5b47b7af416746fb1b122cd3a46c43ad19184b7a6373fe6eb28",
+      "elapsed_seconds": 0.902,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-impact-vet.json",
+      "sha256": "6ecec81520c8f07943694592b20fca1ce4781521154237fa6b72f1a860143a70",
+      "elapsed_seconds": 0.982,
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  ],
+  "capture": {
+    "source": "https://api.osv.dev/v1/vulns/GHSA-462w-v97r-4m45",
+    "captured_at": "2026-11-03T09:34:40.706759+00:00",
+    "raw_sha256": "aa699023804f4a5198a77e29158594b335b82f2e1c227788832fa5c22a9bb42c",
+    "raw_size": 4452,
+    "projection_sha256": "c443a4908b04ab70c8f3ff6a813ebf7ea5c3e8b0c027533b0e1c47473f99b672",
+    "scope": "one captured public provider record, not a DB snapshot, product transport or whole CLI test"
+  },
+  "ci_started": false,
+  "host_installation_changed": false,
+  "runtime_lock_changed": false,
+  "go_module_selection_changed": false
+}

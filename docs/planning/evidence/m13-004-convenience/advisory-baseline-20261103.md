@@ -115,3 +115,35 @@ node/3references의 확대를 거부하지 못해 실패했다. 현재 owner의 
 전용하지 않으며 다음 의미 있는 연결 묶음에서 필요한 검사를 모은다. **전체 S05의 네 상태는
 여전히 NO**다. Production public transport·실제 package/version mapping/영향 해석·
 check/Evidence/Policy/cache/CLI 연결과 실제 provider 검증은 계속 MISSING이다.
+
+## 세 번째 단위 — 정확한 package/version 영향 해석
+
+`osv_impact.go`는 namespace/name을 대조하고 explicit versions와 introduced/fixed/
+last_affected/limit의 포함·제외/재도입 구간을 평가한다. Unsupported ordering과 영향 정보
+부재는 UNKNOWN, provider subject 불일치·잘못된 구간은 incomplete다. Withdrawn은 별도
+상태이며 안전성/다른 advisory 부재의 증명이 아니다. PyPI local build를 public release로
+투영하지 않는다. 알려진 explicit match가 있는 경우와 평가 불명 데이터를 구분한다.
+
+Python은 기존 `artifact/pypi/reference.go`의 grammar/정규화를 그대로 재사용한
+`ComparePublicVersions`에서 [공개 PEP440 순서](https://packaging.python.org/en/latest/specifications/version-specifiers/#summary-of-permitted-suffixes-and-relative-ordering)를
+비교한다. Epoch/release zero padding·pre/post/dev·큰 정수 비교를 하며 다른 parser나
+Python 실행 의존성을 만들지 않았다. Cargo의 ASCII name 문법도 기존 ParseReference로
+검증하고 Unicode lookalike를 registry alias로 취급하지 않는다. Go/npm/Cargo SemVer는
+기존 고정 `golang.org/x/mod/semver`를 재사용하며 현재 consumer만 import guard에 등록했다.
+언어 runtime/compiler 버전 owner나 update-runtime 절차는 바꾸지 않았다.
+
+2026-11-03에 고정 URL에서 실제 취득한 GHSA-462w-v97r-4m45의 bounded projection1327B를
+default testdata로 고정했다. 원본 hash와 출처/CC-BY4.0·삭제한 descriptive fields는 fixture
+README에 기록했다. 실제 record schema→decoder→Jinja2 2.10 영향/동일 advisory의2.10.1
+경계 대조를 확인했다. 이는 한 개 provider record의 frozen 재생이며 전체 Jinja2 안전성이나
+제품 HTTP transport/CLI·전역 DB snapshot 검증이 아니다.
+
+현재 후보의 표적 Race9.433s·Staticcheck0.902s·vet0.982s는 PASS다.
+[영향 해석 부분 원장](./advisory-impact-local-20261103.json)이 정확한 source/fixture를
+연결한다. 앞서 통과한 batch/record의 불변 native/CPP/전체 CI를 반복하지 않았다.
+
+심각도는 다음 단위다. [GitHub의 공식 설명](https://github.com/github/advisory-database#database_specific-values)은
+database_specific의 내부 필드에 의존하지 말라고 명시한다. 현재 decoder가 읽는 HIGH 문자열은
+표시용 raw fact이며 Policy 입력으로 단독 채택하지 않는다. 실제 CVSS vector의 점수 해석을
+위해 고정 library 후보의 source/checksum/license·scoring 계약을 검토 중이다. 현재 후보를
+go.mod에 추가하거나 실행하지 않았다. 전체 S05의 네 상태와 최종16번은 계속 미완료다.

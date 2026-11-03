@@ -40,7 +40,7 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/verification/pypi", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/inspection/npm", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
-		{ImportPath: modulePath + "/internal/inspection/advisory", Imports: []string{"net/http", "encoding/json"}},
+		{ImportPath: modulePath + "/internal/inspection/advisory", Imports: []string{"net/http", "encoding/json", modulePath + "/internal/artifact/pypi", modulePath + "/internal/artifact/cargo", "golang.org/x/mod/semver"}},
 		{ImportPath: modulePath + "/internal/inspection/pypi", Imports: []string{modulePath + "/internal/artifact/pypi", modulePath + "/internal/core/domain", modulePath + "/internal/sandbox"}},
 		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},

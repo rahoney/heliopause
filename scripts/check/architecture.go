@@ -195,7 +195,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/pypi": true,
 			modulePath + "/internal/core/domain":   true,
 		},
-		modulePath + "/internal/inspection/advisory": {},
+		modulePath + "/internal/inspection/advisory": {
+			modulePath + "/internal/artifact/pypi":  true,
+			modulePath + "/internal/artifact/cargo": true,
+		},
 		modulePath + "/internal/inspection/npm": {
 			modulePath + "/internal/artifact/npm":    true,
 			modulePath + "/internal/core/domain":     true,
@@ -314,7 +317,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/npm":             {},
 		modulePath + "/internal/verification/pypi":            {},
 		modulePath + "/internal/inspection/npm":               {},
-		modulePath + "/internal/inspection/advisory":          {},
+		modulePath + "/internal/inspection/advisory":          {"golang.org/x/mod/semver": true},
 		modulePath + "/internal/evidence/local":               {},
 		modulePath + "/internal/storage":                      {},
 		modulePath + "/internal/sandbox":                      {},
