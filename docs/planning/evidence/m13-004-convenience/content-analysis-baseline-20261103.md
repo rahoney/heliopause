@@ -135,3 +135,55 @@ metadata의 원격 URL 단순 집합에는 본체 dev-repo가 섞였으므로 de
 완료 처리하지 않는다. Upstream OS 입력의 공개 선택 로그에는 Alpine base digest와 설치
 package version이 있지만 그 자체가 전체 재현 build 입력/암호 provenance의 완료는 아니다.
 다음은 exact source archive의 고지 확인과 영구 공급/build 경로이며 제품 파일/lock은 불변이다.
+
+
+### 고정 source build와 자체 규칙의 로컬 후속
+
+범위·원본은 위 public-source-review가 소유한다. 제품 도입과 S04 네 상태는 계속 NO다.
+
+- 고정 OPAM archive150묶음 중147의 named notice를 확인했다. Ambient-context의 exact
+  README에는 MIT 원문이 있고 trace는 MIT 선언을 보존한다. Bigstringaf cached archive의
+ 18개 Git blob/실행 bit를 exact public tree와 독립 대조했다. Opentelemetry fork의 선언과
+  전체 source/고지 제공 조건은 최종 공급 패키지에서 함께 다뤄야 한다.
+- OpenGrep 비교는 채택 없이 종료했다. 서명된 Python CLI와 unsigned core를 혼동하지
+  않는다. 같은 CE 공개 source를 유지하며 Host 설치·제품 version owner는 불변이다.
+- 원래 Alpine base digest와 signature-verified160 APK를 동결한 별도 SDK를 사용했다.
+  Source fetch의 Git history/file-size 실패는 같은 compiler commit의 depth1 준비로
+  교정했고 download-only V3가 완료됐다. Cache 유무와 실제 offline build는 구분한다.
+- 첫 offline V1은 compiler/static curl과240개 성공 설치 뒤 dev Git fetch로 실패했다.
+  `--skip-updates` 단독 V2는 반증됐다. Exact local bare5/file-only Git의 V3는 나머지
+  의존성·compiler pin을 통과하고 별도 tree-sitter source 부재에서 멈췄다. 기존 version/
+  checksum으로 그 archive를 고정했으며 성공한 compiler/의존성은 재설치하지 않았다.
+
+공개 참조 core의 자체11규칙은6언어/4행동 범주와 credential 파일·환경변수 전송을 대조했다.
+정상 credential header client/generated/minified/decode/file/command도 포함한다. 별도
+boundary V1–V3는 prefilter·parser flag만으로 missing-node 파싱 누락을 해결하지 못했다.
+고정 Core_scan의 공용 연결부가 inserted_tokens/tolerated_errors를 버리는 사실을 확인했다.
+
+동일 source에 그 연결부 한 곳과 offline archive 소비 두 곳만 고친 patch f4628b96을
+결합했다. Checksum 검사는 유지하며 새 AST·외부 syntax checker나 별도 언어 version
+selector는 만들지 않았다. Network-none/UID1000/read-only root의 실제 V4 core build는
+367.918s에 완료됐다. New core SHA83aa1847/255845624B와 strip 결과 SHAc3f43f96/
+169609664B는 기존 upstream artifact와 다른 계보다. Strip은86235960B를 줄였고 static ELF/
+INTERP·dynamic section 없음/non-executable stack을 확인했다. Private128MiB 예상은
+반증된 것으로 보존하며 기존 제품 예산을 올리지 않았다.
+
+실제 두 후보의34source DATA는1.556/0.972s에 각각 기대19match·정상14/경고0·malformed
+Python/JS의2개 오류 보고를 확인했다. Explicit artifact ignore/config는 설정으로 쓰이지
+않으며 nosemgrep은 결과의 is_ignored=true로 남으므로 제품이 이를 억제 권한으로 받아서는
+안 된다. Scanner exit0·scanned 목록·finding과 coverage 완결을 분리한다. 이는 runc의
+source DATA이고 Artifact 실행/대표 탐지율/제품 Policy/gVisor qualification은 아니다.
+
+완료한 실제 link의406 compiler archive와 OPAM package input150을 대조했고 external
+archive219개의 C autolink 선언을 같은 compiler로 읽었다. 이는 conservative 입력 집합이며
+모든 archive member가 실행 파일에 들어갔다는 뜻이 아니다. 그 native source15묶음은 모두
+고정 checksum에 맞고62개 고지568930B를 보존했다. Curl/tree-sitter는 재사용하고 추가
+source179687366B는 설치·실행·압축 사본 보관 없이 읽었다. 최종 source/notice 배포 패키지,
+정식 build trust·영구 공급·runtime owner/업데이트·실제 scanner backend와 모든 소비자 연결은
+아직 MISSING이다. 도구 빌드 성공으로 acceptance를 닫지 않는다.
+
+완료한 DATA 실행 파일 사본7개1703399648B는 각 batch의 정확한 신원·해시와 proc
+FD/maps 무참조/query error0 뒤 정리했다. 원본 후보·현재 source/SDK/cache·작은 규칙과
+표본·각 첫 실패/최종 결과는 보존한다. 같은 입력의 full/native/CPP/CI 반복은 없었고 새
+CI/push/제품 설치는 하지 않았다. 다음은 현재 입력을 기존 공급/유지보수 owner에 연결하는
+최소 범위 대조이며 S06을 선행 구현하지 않는다.

@@ -98,13 +98,72 @@
     "s04-public-source-runtime-v1.json",
     "s04-public-source-review-cleanup.json",
     "s04-dependency-source-metadata.json",
-    "s04-public-source-os-inputs-selected.log"
+    "s04-public-source-os-inputs-selected.log",
+    "s04-source-notice-archive-review-8.json",
+    "s04-source-notice-archive-review-150.json",
+    "s04-source-license-declarations.json",
+    "s04-source-license-header-review.json",
+    "s04-bigstringaf-source-license.json",
+    "s04-opengrep-comparison.json",
+    "s04-source-builder-apk-inputs.json",
+    "s04-source-builder-prepared.json",
+    "s04-source-builder-inventory.json",
+    "s04-source-download-v1.json",
+    "s04-source-preflight-observed.json",
+    "s04-source-download-v2.json",
+    "s04-failed-git-pack-cleanup.json",
+    "s04-source-download-v3.json",
+    "s04-bigstringaf-source-tree.json",
+    "s04-bigstringaf-source-binding.json",
+    "s04-builder-curl-package-origin.json",
+    "s04-curl-APKBUILD.txt",
+    "s04-static-curl-source.json",
+    "s04-offline-build-v1-inputs.json",
+    "s04-rules-prototype-v1.json",
+    "s04-rules-prototype-v1-rules.json",
+    "s04-rules-prototype-v1-fixtures.json",
+    "s04-rules-prototype-v2.json",
+    "s04-rules-prototype-v2-rules.json",
+    "s04-rules-prototype-v2-fixtures.json",
+    "s04-rule-copies-cleanup.json",
+    "s04-native-static-build-inputs.json",
+    "s04-native-apkbuild-metadata.json",
+    "s04-offline-build-v1.json",
+    "s04-builder-opam-install-help.txt",
+    "s04-offline-build-v2.json",
+    "s04-offline-build-v2-pin-preconditions.json",
+    "s04-offline-build-v3.json",
+    "s04-offline-build-v3-expected-local-git.json",
+    "s04-rules-boundary-v1.json",
+    "s04-rules-boundary-v2.json",
+    "s04-rules-parser-v3.json",
+    "s04-strict-parse-patch-candidate.json",
+    "s04-tree-sitter-source.json",
+    "s04-quarantine-source-candidate.json",
+    "s04-quarantine-build.patch",
+    "s04-offline-build-v4-inputs.json",
+    "s04-offline-build-v4.json",
+    "s04-rules-patched-core-v4.json",
+    "s04-own-core-stripped.json",
+    "s04-own-core-stripped-v2.json",
+    "s04-own-core-elf-metadata-v2.log",
+    "s04-own-core-stripped-characterization.json",
+    "s04-rules-stripped-core-v5.json",
+    "s04-own-core-link-inputs.json",
+    "s04-own-core-native-link-metadata.json",
+    "s04-native-apkbuild-additional.json",
+    "s04-native-source-archive-inputs.json",
+    "s04-native-source-notice-review-15.json",
+    "s04-rules-parser-v3-fixtures.json",
+    "s04-boundary-copies-cleanup.json",
+    "s04-own-rule-copies-cleanup.json",
+    "s04-source-build-progress-docs.json"
   ],
   "missing": [
-    "complete actual static-link dependency/source/notice closure; vendored catalogue is only one part",
-    "durable fixed supply/build inputs and trust verification; expiring upstream workflow artifact is not a permanent runtime distribution",
-    "gVisor lifetime/accounting/coverage and product scanner/rules/Evidence/Policy integration",
-    "whole S04 and design14 prerequisite-dependent S06 acceptance"
+    "Canonical runtime owner/update/release supply integration, reproducible fixed build recipe and complete source/notice redistribution package; local data build is not signed production admission",
+    "Actual gVisor transport/lifecycle/accounting and scanner output/control integrity qualification",
+    "Product source/binary capabilities, all ecosystem/composite/transitive wiring and bounded Evidence/Policy/promotion denial",
+    "Whole S04 and design14 prerequisite-dependent S06 acceptance; S05 profile/grouped hosted acceptance remains separate"
   ],
   "dependency_metadata": {
     "repository_packages": 225,
@@ -113,5 +172,245 @@
     "metadata_and_notices": 245,
     "bytes": 454777,
     "scope": "build dependency superset only; not necessarily linked or full copyright/source closure"
+  },
+  "exact_source_notice_review": {
+    "selected_archives": 150,
+    "total_archives": 150,
+    "downloaded_this_run": 25970188,
+    "elapsed": 46.899,
+    "completed": 147,
+    "failed": [
+      {
+        "packages": [
+          "ambient-context.0.2",
+          "ambient-context-eio.0.2",
+          "ambient-context-lwt.0.2"
+        ],
+        "failure": "NO_NAMED_SOURCE_NOTICE_FILE"
+      },
+      {
+        "packages": [
+          "bigstringaf.0.10.0"
+        ],
+        "failure": "PRIMARY_SOURCE_HAS_NO_STRONG_CHECKSUM"
+      },
+      {
+        "packages": [
+          "trace.0.12"
+        ],
+        "failure": "NO_NAMED_SOURCE_NOTICE_FILE"
+      }
+    ],
+    "scope": "build dependency superset; first8 reused; 147 named notice sources and two exact declaration follow-ups; no product/redistribution approval"
+  },
+  "declaration_follow_up": "ambient-context full MIT notice in exact README; trace MIT opam declaration; bigstringaf exact GitHub tree independently matches actual cached archive18 files/modes; complete static-link/C native and copyright closure remains open.",
+  "private_builder": {
+    "scope": "frozen source build preparation only; not product runtime or upstream attestation",
+    "apk_files": 160,
+    "apk_bytes": 163056936,
+    "base_image": "docker.io/library/alpine@sha256:85fe1e81d6758c208f3e1eed4338a1997e19d4be002d4dd32d3100c9a8c010a0",
+    "local_image_id": "sha256:c51621f9bc40a3f73776ba3bd49eb1d88c8f6edd1f44f2fb40b1770bf81b48bf",
+    "opam_version": "2.5.2",
+    "preparation_elapsed": 23.793,
+    "installed_package_rows": 168,
+    "installed_metadata_digest": {
+      "algorithm": "sha256",
+      "value": "11f5618c13608d4b5cb2d7ca8162fba20031a5f88aa91e191e35a938befe0879"
+    },
+    "first_metadata_query": "empty implicit query was not inventory proof; explicit wildcard read168 rows without reinstall",
+    "containers_removed": true
+  },
+  "alternative_comparison": "OpenGrep1.33.1 not selected: its signed Nuitka CLI is a different payload from the required core; no signature transfer or crypto qualification",
+  "source_download": "v1 preflight enum failure; v2 source acquisition135.742s/exit20 failed required compiler full-history fetch at256MiB per-file bound. Same4046c817 depth1 prefill resumed locked v3 in101.860s/exit0, source240da9/treea70 unchanged,429 cache files; no compiler installed. Own container removed/original IDs preserved.",
+  "failed_download_cleanup": {
+    "scope": "only two failed Git temporary pack files at the source-fetch file-size bound; retain all valid source, Git objects and source receipts",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "s04-source-build-work/opam/s04-review/.opam-switch/sources/ocaml-variants/.git/objects/pack/tmp_pack_cBVDEv",
+        "bytes": 268435456,
+        "sha256": "4e3b4f9bca14c7042c7b0373180c92107d7ece83c9397cc2635bb9f6a6b76d96"
+      },
+      {
+        "file": "s04-source-build-work/opam/s04-review/.opam-switch/sources/ocaml-variants/.git/objects/pack/tmp_pack_y3Yl8F",
+        "bytes": 268435456,
+        "sha256": "4e10d931372ec41f7ae92f621bd19678f8fda9c45e2d00d60c2b7cdabe6238cb"
+      }
+    ],
+    "retained_active_inputs": [
+      "s04-source-build-work",
+      "s04-source-builder-inputs",
+      "semgrep-core-1.182.0-public",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 536870912,
+    "complete": true
+  },
+  "bigstringaf_follow_up": {
+    "source_commit": "1f3c7638f394ca2fbb5b647a4a061c357e5e21d2",
+    "cached_archive_sha256": "ed92f5b05fbc11b9defcec734d59b1068f3717a9ae4f9705c16c7f7ac3729f28",
+    "bytes": 12175,
+    "all_18_git_blobs_and_modes_match": true,
+    "scope": "Independent exact public source comparison; old OPAM metadata remains MD5-only; no upstream build attestation or product admission"
+  },
+  "offline_build": {
+    "state": "SCOPED_LOCAL_SOURCE_BUILD_PASS",
+    "v1": {
+      "elapsed": 876.77,
+      "exit_code": 40,
+      "successful_installs": 240,
+      "cause": "Six source-pinned package fetches still attempted upstream in network-none; compiler/static curl and other installs retained"
+    },
+    "v2": {
+      "elapsed": 6.167,
+      "exit_code": 40,
+      "cause": "Documented --skip-updates does not suppress fetch of these source dependencies; not a working offline remedy"
+    },
+    "v3": {
+      "elapsed": 74.31,
+      "exit_code": 1,
+      "source_transport": "Five same-commit local bare mirrors; fsck and file-only Git transport; six packages retrieved with no changes",
+      "passed": "Remaining locked dependencies and compiler4046c817 validation",
+      "cause": "Core dune runtime recipe has separate tree-sitter0.26.3 archive download absent from source acquisition"
+    },
+    "scope": "No core produced yet; no Host installation or product adoption; preserve compiler/dependencies/cache instead of repeating prior successful stages",
+    "v4": {
+      "elapsed": 367.918,
+      "exit_code": 0,
+      "core_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+      "core_bytes": 255845624,
+      "source_patch_sha256": "f4628b965798f5482bfbc8967408e51ac9c823a693d2f764a2a6386a6d6bc2ad",
+      "compiler_dependencies_reused": true,
+      "network": "none",
+      "uid": 1000,
+      "container_removed": true,
+      "original_container_ids_preserved": true
+    }
+  },
+  "rule_prototype": {
+    "state": "SCOPED_REFERENCE_DATA_PASS",
+    "rules": 11,
+    "languages": 6,
+    "fixtures": 30,
+    "expected_matches": 16,
+    "normal_controls": 14,
+    "missing": 0,
+    "unexpected": 0,
+    "errors": 0,
+    "skipped_rules": 0,
+    "elapsed": 2.117,
+    "container_removed": true,
+    "inputs_unchanged": true,
+    "scope": "Four initial behavior categories plus literal credential file/lookup cases; normal credential headers/generated/minified/decode/command/file controls. Reference DATA only; not product/Policy/gVisor/transitive or representative detection-rate acceptance."
+  },
+  "rule_prototype_cleanup": {
+    "scope": "only two completed rule DATA executable copies; preserve active reference, source build inputs, tiny rule/fixture DATA and raw receipts",
+    "queried_processes": 119,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "s04-rules-prototype-v1/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      },
+      {
+        "file": "s04-rules-prototype-v2/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      }
+    ],
+    "retained_active_inputs": [
+      "semgrep-core-1.182.0-public",
+      "s04-source-notices",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "policy-helper-s05-public-languages",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 511177744,
+    "complete": true
+  },
+  "parse_boundary": {
+    "state": "SCOPED_PATCHED_AND_STRIPPED_DATA_PASS",
+    "v1": {
+      "elapsed": 2.631,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "v2": {
+      "elapsed": 2.671,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "v3": {
+      "elapsed": 3.979,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "observed": "Explicit config/ignore are not adopted; nosemgrep match survives with is_ignored=true; malformed JS reports PartialParsing while malformed Python missing-node recovery is not in errors. Prefilter/parser flags alone did not fix it.",
+    "source_cause": "Core_scan.parse_and_resolve_name returns only skipped_tokens, dropping inserted_tokens and tolerated_errors exposed by Parsing_result2",
+    "patch": "Existing Core_scan result bridge retains skipped/inserted/tolerated token locations; two checksum-preserving offline recipe changes. Patched and stripped core34-source DATA passed expected19 findings/normal14 and both malformed-source errors; no artifact suppression authority.",
+    "product_requirement": "Never accept artifact suppression as authority; errors/coverage distinct from tool exit and findings",
+    "actual_patched": {
+      "elapsed": 1.556,
+      "core_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+      "sources": 34,
+      "matches": 19,
+      "parse_errors_expected": 2,
+      "missing": 0,
+      "unexpected": 0,
+      "container_removed": true,
+      "inputs_unchanged": true
+    },
+    "actual_stripped": {
+      "elapsed": 0.972,
+      "core_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+      "sources": 34,
+      "matches": 19,
+      "parse_errors_expected": 2,
+      "missing": 0,
+      "unexpected": 0,
+      "container_removed": true,
+      "inputs_unchanged": true
+    }
+  },
+  "own_stripped_candidate": {
+    "bytes": 169609664,
+    "sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "parent_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+    "static_elf": true,
+    "stack_executable": false,
+    "bytes_saved": 86235960,
+    "scope": "Separate own source-build lineage; not upstream artifact hash or attestation; private128MiB estimate refuted, no product budget changed"
+  },
+  "actual_link_input_review": {
+    "compiler_archives": 406,
+    "external_opam_archives": 219,
+    "opam_package_inputs": 150,
+    "unmapped_library_directories": [],
+    "native_library_flags": 54,
+    "scope": "Completed actual link arguments plus C autolink declarations; conservative archive/package input superset, not every archive member or final native symbol proof"
+  },
+  "native_source_notices": {
+    "sources": 15,
+    "completed": 15,
+    "failed": [],
+    "downloaded_bytes": 179687366,
+    "elapsed": 71.259,
+    "copyright_texts": 62,
+    "unique_bytes": 568930,
+    "scope": "Exact SDK origin/source checksums, reused curl/tree-sitter; source never installed/executed and downloaded compressed bodies not persisted. Not full redistribution/signed product supply acceptance."
+  },
+  "additional_completed_data_cleanup": {
+    "first_rule_copies": "s04-rule-copies-cleanup.json",
+    "reference_boundary_copies": "s04-boundary-copies-cleanup.json",
+    "own_core_copies": "s04-own-rule-copies-cleanup.json",
+    "bytes_removed": 1703399648,
+    "scope": "Only seven finished executable copies; current reference/source-build/stripped candidates, compiler/source/cache and small raw fixtures retained"
   }
 }
