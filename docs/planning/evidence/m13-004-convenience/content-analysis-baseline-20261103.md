@@ -96,3 +96,42 @@ wheel metadata의 `LGPL-2.1-or-later` 표시만으로 bundled/linked dependency�
 규칙으로 수입하지 않고 기존 설계대로 직접 작성한 작은 규칙과 정상/의심 대조를 사용한다.
 이번 DATA marker는 제품 규칙이 아니다. Source-build 검토가 필요한 동안 독립적인 S05의
 baseline/규약 작업은 설계의 선행08–09 범위에서 가능하며 S04 완료를 전제로 삼지 않는다.
+
+
+## 2026-11-04 공개 CE source/build 한정 비교
+
+기준987545b. S05의 local consumer·CI 연결 묶음 뒤 S04 공급 검토를 계속한다. S06은
+설계14번의 선행12–13/inventory가 필요하므로 아직 source를 구현하지 않는다.
+[공개 source 검토](./content-analysis-public-source-review-20261104.json)가 아래 새 사실과
+원본을 소유한다. 이전 private-wheel 공급 BLOCKED와 S04 네 상태 NO는 유지한다.
+
+- 고정 source8개36849B를 Git blob identity/size로 확인했다. Linux opam lock은238개
+  dependency/원격 Git repository7개이며 compiler4046c817/opam repo78d29aba를 고정한다.
+  이는 실제 static-link 전부의 판정이나 OS package 불변 공급 완료가 아니다.
+- [Upstream run39486928566](https://github.com/semgrep/semgrep/actions/runs/39486928566)의
+  전체 결론은 cancelled지만 Linux job118849638246은 success이고 artifact12294769458을
+  남겼다. 실제 checkout은 PR merge d7359d1이다. Head/tag240da9와 같다고 추정하지 않고
+  두 commit API의 tree a70ab55160149f38c0bd17a8cd0d639a8c90cce0 동일을 확인했다.
+  API source/sha binding과 cryptographic build attestation을 혼동하지 않는다.
+- Artifact ZIP64018684B/SHA13eb21fc를 API 선언과 대조했다. Core255588872B/SHA32f30ee9는
+  static ELF64/x86-64·INTERP/dynamic section 없음이다. 이전 wheel core+26 공유 libraries와
+  다른 후보이며 원래 성공을 전용하지 않는다. Upstream artifact는2027-01-18 만료라서
+  영구 공급 경로로 채택하지 않는다. 정확한 durable 공급/build·trust 검증은 MISSING이다.
+- Core 관련 vendored source notice49개388966B를 고정 ref/Git blob으로 보존했다.
+  외부 static-link dependency closure/notices나 배포 조건의 완료 판정은 아니다.
+- 동일 작은 JS/TS/Python/Go/Rust/HCL marker DATA의 새 static binary 실행은 runc,
+  network-none/read-only/UID1000/512MiB에서0.959s/scanned12/matches6/errors0/skips0이다.
+  이는 파서/ABI 검토이며 악성 탐지·gVisor·제품 Policy/규칙 qualification이 아니다.
+  Own container 제거·원래 container IDs/입력 불변을 확인했다. ZIP과 DATA copy319607556B는
+  106proc refs0/query errors0/신원 대조 뒤 삭제하고 현재 reference core1개와 작은 고지를
+  보존했다. 실제 Host 설치·runtime/version owner·새 CI 변경은 없다.
+
+
+고정 opam repository의225 package metadata와13 pinned package의7개 원격 repository/
+local tree-sitter 경로를 대조했다. 관련 metadata/notices245개454777B의 Git blob을 보존했다.
+이는 build dependency superset이며238개가 모두 core에 링크됐다는 주장이 아니다. Source
+metadata의 원격 URL 단순 집합에는 본체 dev-repo가 섞였으므로 dependency repository는
+8개가 아닌7개다. API/notice counts만으로 실제 source copyright·정적 C library 고지를
+완료 처리하지 않는다. Upstream OS 입력의 공개 선택 로그에는 Alpine base digest와 설치
+package version이 있지만 그 자체가 전체 재현 build 입력/암호 provenance의 완료는 아니다.
+다음은 exact source archive의 고지 확인과 영구 공급/build 경로이며 제품 파일/lock은 불변이다.

@@ -1,0 +1,117 @@
+{
+  "baseline": "987545b",
+  "scope": "S04 fixed Semgrep1.182.0 public CE source/build comparison only; no product adoption or new runtime lock",
+  "states": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "source": {
+    "tag_commit": "240da9f30cd06fb4ee00c2c31c114c1c1f5ee0f4",
+    "actual_checkout": "d7359d1950da833cd8eff5b9a7b7a2088567df9c",
+    "tree": "a70ab55160149f38c0bd17a8cd0d639a8c90cce0",
+    "equal_tree": true,
+    "build_run": 39486928566,
+    "build_job": 118849638246,
+    "job_conclusion": "success",
+    "whole_run_conclusion": "cancelled",
+    "artifact_id": 12294769458,
+    "artifact_expires": "2027-01-18T19:50:53Z",
+    "cryptographic_build_attestation": "NOT_ESTABLISHED",
+    "archive_digest": {
+      "algorithm": "sha256",
+      "value": "13eb21fcf5ea262a23616b7a602543f06e998c5bf5db25fff40e5fda02e328ae"
+    }
+  },
+  "executable_digest": {
+    "algorithm": "sha256",
+    "value": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+  },
+  "executable_bytes": 255588872,
+  "elf": {
+    "format": "ELF64 x86-64",
+    "static": true,
+    "host_executed": false
+  },
+  "recipe": {
+    "files": 8,
+    "bytes": 36849,
+    "opam_repository": "78d29aba187e8362b8ab86c189790c0af9153d4b",
+    "compiler_fork": "4046c817ed2ed5c2431300902d1bd306230bf3dd",
+    "locked_opam_dependencies": 238,
+    "unique_remote_git_pins": 7
+  },
+  "vendored_notice_catalogue": {
+    "files": 49,
+    "bytes": 388966,
+    "scope": "Vendored core-source notice catalogue only; not the external static-link closure and not product redistribution approval"
+  },
+  "native_data": {
+    "elapsed": 0.959,
+    "exit_code": 0,
+    "parser_compatibility_pass": true,
+    "expected_targets": 12,
+    "expected_marker_matches": 6,
+    "container_removed": true,
+    "original_container_ids_preserved": true,
+    "inputs_unchanged": true
+  },
+  "cleanup": {
+    "scope": "only completed upstream artifact ZIP and isolated DATA executable copy; keep one active reference candidate and source notices; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 106,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "semgrep-core-1.182.0-public-source.zip",
+        "bytes": 64018684,
+        "sha256": "13eb21fcf5ea262a23616b7a602543f06e998c5bf5db25fff40e5fda02e328ae"
+      },
+      {
+        "file": "s04-public-source-runtime-v1/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      }
+    ],
+    "retained_active_inputs": [
+      "semgrep-core-1.182.0-public",
+      "s04-source-notices",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "policy-helper-s05-public-languages",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 319607556,
+    "complete": true
+  },
+  "raw": [
+    "s04-source-build-input-review.json",
+    "s04-public-source-artifacts.json",
+    "s04-public-source-jobs.json",
+    "s04-public-source-tag-commit.json",
+    "s04-public-source-merge-commit.json",
+    "s04-public-source-x86-selected.log",
+    "s04-public-source-binary-review.json",
+    "s04-public-source-elf-metadata.log",
+    "s04-source-notice-catalogue.json",
+    "s04-public-source-runtime-v1.json",
+    "s04-public-source-review-cleanup.json",
+    "s04-dependency-source-metadata.json",
+    "s04-public-source-os-inputs-selected.log"
+  ],
+  "missing": [
+    "complete actual static-link dependency/source/notice closure; vendored catalogue is only one part",
+    "durable fixed supply/build inputs and trust verification; expiring upstream workflow artifact is not a permanent runtime distribution",
+    "gVisor lifetime/accounting/coverage and product scanner/rules/Evidence/Policy integration",
+    "whole S04 and design14 prerequisite-dependent S06 acceptance"
+  ],
+  "dependency_metadata": {
+    "repository_packages": 225,
+    "pinned_packages": 13,
+    "remote_repositories": 7,
+    "metadata_and_notices": 245,
+    "bytes": 454777,
+    "scope": "build dependency superset only; not necessarily linked or full copyright/source closure"
+  }
+}
