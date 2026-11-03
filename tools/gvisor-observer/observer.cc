@@ -467,6 +467,8 @@ struct ProcessState {
     // used by exact kernel-owned runtime transitions.
     int32_t clone_creator_group_id = 0;
     int64_t clone_creator_group_start_time_ns = 0;
+    // Set only by the matching kernel exit event, never by a missing parent.
+    bool clone_creator_exited = false;
     // Kernel image-load evidence, retained across thread-name changes and
     // fork, replaced on every exec. This grants no CONTROL or network trust.
     ProcessClass current_image_class = ProcessClass::kUnknown;
@@ -3533,10 +3535,15 @@ bool IsPinnedNPMArtifactRuntimeRead(const gvisor::common::ContextData& context,
       FilesystemProcessClass(context, state) != group->current_image_class ||
       group->root_eligible || !group->root_consumed || group->trusted_control_network_active ||
       group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
-      context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
+      (!(group->current_image_class == ProcessClass::kNode && group->clone_creator_exited) &&
+       (context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state))) ||
       state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
   // Both network-none and synthetic clients need the pinned resolver inputs.
   // These readonly reads grant no CONTROL network trust or successful egress.
+  // libuv's ignored standard streams use only the fixed null device. This
+  // grants no other path or mount any writable filesystem access.
+  if (group->current_image_class == ProcessClass::kNode && (flags == 32768 || flags == 32770) &&
+      path == "/dev/null" && anchor->mount_class == "system" && anchor->mountpoint == "/dev") return true;
   if (group->current_image_class == ProcessClass::kNode &&
       (flags == 32768 || flags == 557056)) {
     if (anchor->mount_class == "system" &&
@@ -5053,6 +5060,14 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
       !RetainDirectExecTerminal(registration, context, message.exit_status())) {
     *reason = "PROCESS_EXIT_INVALID";
     return false;
+  }
+  // Keep only the exact exit fact on live children; do not retain historical
+  // groups or transfer any CONTROL, network or executable-transition authority.
+  for (auto& child : state->groups) {
+    if (child.second.clone_creator_group_id == group_id &&
+        child.second.clone_creator_group_start_time_ns == start_time_ns) {
+      child.second.clone_creator_exited = true;
+    }
   }
   state->groups.erase(group);
   return true;

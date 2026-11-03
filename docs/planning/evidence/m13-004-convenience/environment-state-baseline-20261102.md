@@ -1160,3 +1160,77 @@ known container/volume/trace를 정리했다. 제품 수정은 필요 없었으�
 현재 실패 주입만 확장했다. 이는 모델의 한정 qualification이며 native 위장/변조/timeout/
 실제 egress0와 S03 전체 acceptance를 닫지 않는다. 다음은 기존 actual fixture/정규화·
 Policy·Evidence owners를 재사용한 S03 corpus의 현재 빈 연결이다.
+
+
+### S03 Node actual-v1 — 첫 자식 사례 미완료 / 원인 미확정
+
+기존 nodeBoundarySource의 명시적 test transport/SRI/동결 graph를 재사용하고 lifecycle
+입력만 추가했다. 원래 caller의 nil scripts는 byte 의미를 유지하며 새 제품 adapter/API는
+없다. 실제 Application acquire/integrity/static/dynamic/Evidence/entry M3·set M4로 연결한
+native-v1/46.065s는 정상10.53s/3checks·2states/network0/ALLOW, 복합 조건10.56s와 실제
+50ms 지연10.74s/각 network10·2states/MANUAL_REVIEW/no approval을 확인했다. 무인증
+controlled source이며 public 공급자 인증·Host 설치/target 무변경의 완료 proof는 아니다.
+
+분리된 자식의50ms 후속 행동은 필수 dynamic check가 INCOMPLETE여서 실패했다. 최초
+limitation/backend 원인은 아직 기록되지 않았으므로 강제 종료·CPP 문제라고 추론하지
+않는다. 첫 세 사례는 재사용하고, test-only Sandbox Port 전달에서 실제 error를 함께
+기록하는 자식 한 사례만 다음에 조사한다. observer/runtime/한도·완료 기준은 바꾸지 않는다.
+Helperwait0/Host 동일·원복·400232175B 및 임시 빈 mountpoint 제거를 확인했다.
+`s03-node-corpus-native-v1`과 현재 tagged build/format 원본이 입력·범위를 소유한다.
+
+Node child-only diagnostic-v2/14.498s는 최초 원인을 보존했다: Node ARTIFACT/CLONE_CHILD의
+정확한 `/dev/null` readonly open(flags32768, system `/dev`)이
+OPEN_RESULT_CLASSIFICATION_OTHER/STREAM_FAULT였다. 아직 자식 지연 행동에 도달하지
+않았으므로 runtime의 조기 종료 문제로 쓰지 않는다. 기존
+`IsPinnedNPMArtifactRuntimeRead`의 image/creator/role 증명 안에 이 exact readonly
+형식만 연결하고, 쓰기/다른 profile/mount/role 거부를 기존 latch에 확인하는 것이
+다음 최소 후보다. C++/kernel 전체 구조·예산·CONTROL network 권위는 바꾸지 않는다.
+Helperwait0/Host 동일·원복·400260326B와 임시 빈 mountpoint 제거를 확인했다.
+원본 `s03-node-corpus-native-v2`가 source와 진단을 소유한다.
+
+Exact Node Artifact `/dev/null`32768 후보는 기존13개 역할/creator 변조 및 flags·
+다른 profile/mount 거부를 포함한 current CPP136/51.727s로 PASS했다. Kernel/bundle은
+재사용했고 실제 child 완료/후속 행동은 native-v3가 아직 확인 중이다. 성공한 세
+corpus 사례나 이전 CPP 입력을 반복하지 않았다. 원본
+`s03-node-null-observer-batch-v1`이 source와 named latches를 소유한다.
+
+Native-v3/14.931s가 readonly32768을 지난 뒤 같은 Node stdio 준비의 정확한
+`/dev/null`32770(O_RDWR|O_LARGEFILE)에서 최초 fault를 보였다. 쓰기 가능한 일반
+경로/NSS나 CONTROL 신뢰로 확대하지 않고 기존 검증된 Node clone의 system `/dev`
+null device 폐기 I/O에만 한정한 후보를 검토한다. 다른 flags/path/profile/role/mount는
+기존 부정 검사에 포함한다. 이전 수정의 원인으로 새 오류를 단정하지 않으며 실제
+자식 행동은 여전히 미도달이다. Helperwait0/Host 동일·복원·400260326B 정리를 확인했다.
+`s03-node-corpus-native-v3`가 원본이다.
+
+Current null stdio 두 형식의 CPP136/56.423s는 PASS다. Native-v4/15.147s는 두 번째
+Artifact Node exec까지 진행했지만 그 startup own maps에서 다음 최초 fault였다:
+PROC_SELF_MAPS/flags557056/system `/proc`·Node ARTIFACT/CLONE_CHILD·pinned image,
+locator66c365c3203fb992는 `/proc/38/maps`다. `IsNodeImageStartupRead`는 own maps를
+이미 지원하므로 다음 조사는 caller의 role/creator/parent 증명이다. 현재
+`IsPinnedNPMArtifactRuntimeRead`는 live creator와 현재 PPID 일치를 요구하고
+`ParseSentryExitNotifyParent`는 parent group을 지운다. 이것이 actual 원인인지는
+아직 직접 대조하지 않았으므로 가설로만 둔다. 글로벌 lineage/CONTROL 권위를
+완화하거나 새 구조를 추가하지 않는다. 같은 client의 성공3개는 계속 재사용한다.
+Helperwait0/Host 동일·원복·400260326B와 임시 빈 mountpoint 제거를 확인했다.
+원본 `s03-node-corpus-native-v4`가 source/진단을 소유한다.
+
+
+S03 parent-exit 표적 RED41.652s는 동일 Node/clone/own maps가 부모 생존 때는 허용되고,
+정확한 `ExitNotifyParent` 뒤 재부모화되면 거부됨을 재현했다. 빌드는 성공했으며 이
+표적은 전체136 실행이 아니다(operator의 상속된 scope 문구는 확대 근거로 쓰지 않는다).
+Actual-v4 인과는 다음 actual 비교 전까지 미확정이다. 기존 group에 exact creator
+ID/start와 일치한 kernel exit 사실 한 bit만 남기는 후보를 검사한다. Parent group은
+기존대로 삭제하고 전역 `HasExactCloneCreator`, exec/network/CONTROL 판정은 바꾸지
+않는다. Node Artifact NPM의 기존 고정 runtime-read 경계만 이 사실을 사용하며
+unknown missing-parent·위조 exit·다른 role/image/profile/path/mount·쓰기 거부를 유지한다.
+최대64 live group의 기존 exit owner에서 O(n) 순회하며 새 원장/역사 보관은 없다.
+원본 `s03-node-orphan-boundary-red`와 current candidate source가 범위를 소유한다.
+
+
+같은 후보의 CPP136/49.128s는 PASS다. Node orphan의 위조 exit/unknown parent/role·
+profile·path·mount·write 거부를 포함한다. 같은 client ec94f42b의 native-v5/14.988s는
+자식11.11s·필수 검사3개·저장된 상태2개·network10/MANUAL_REVIEW/no approval을 확인했다.
+V4 own maps fault는 parent-exit runtime-read owner의 이 차분으로 해소했다.
+Helperwait0/Host 동일·원복·400260326B와 임시 빈 mountpoint 제거를 확인했다.
+원본 s03-node-orphan-observer-batch-v1/native-v5가 범위를 소유한다. 기존 정상·조건부·
+지연 사례는 v1의 검증 범위를 재사용한다. 전체 S03/target 무변경/공개 인증·서명된 설치는 OPEN이다.

@@ -9015,7 +9015,8 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
       {"/proc/version_signature","/proc","system",557056},{"/proc/sys/vm/overcommit_memory","/proc","system",557056},
       {"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
       {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
-      {"/sys/devices/system/cpu/online","/sys","system",557056},{"/dev/null","/dev","system",557056}};
+      {"/sys/devices/system/cpu/online","/sys","system",557056},{"/dev/null","/dev","system",557056},
+      {"/dev/null","/dev","system",32768},{"/dev/null","/dev","system",32770}};
   auto reads=image == ProcessClass::kNode ? node_reads : bun_reads;
   if(image == ProcessClass::kNode) {
     for(uint64_t flags:{uint64_t{32768},uint64_t{557056}}) {
@@ -9031,13 +9032,14 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
     const bool resolver_read=image == ProcessClass::kNode && strncmp(read.path,"/etc/",5)==0 &&
         (strcmp(read.path,"/etc/resolv.conf")==0 || strcmp(read.path,"/etc/hosts")==0 ||
          strcmp(read.path,"/etc/nsswitch.conf")==0 || strcmp(read.path,"/etc/host.conf")==0 || strcmp(read.path,"/etc/gai.conf")==0);
+    const bool null_read=image == ProcessClass::kNode && strcmp(read.path,"/dev/null")==0;
     if(resolver_read) {
       state.responder_init=!synthetic_resolver;if(!allowed())return false;state.responder_init=synthetic_resolver;
     }
     if (IsExpectedProcess(image == ProcessClass::kNode ? kNodePath : kBunToolPath,*context,kProfileNPM,&state).expected ||
         state.groups[99].role != ProcessState::Role::kArtifact || !allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
-    for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
-      if (flags==read.flags || (resolver_read && (flags==32768 || flags==557056))) continue;
+    for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{32770},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
+      if (flags==read.flags || ((resolver_read || null_read) && (flags==32768 || flags==557056)) || (null_read && flags==32770)) continue;
       open.set_flags(flags); if (allowed()) return false;
     }
     open.set_flags(read.flags);
@@ -9072,6 +9074,62 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
       if (allowed()) return false;
     }
   }
+  return true;
+}
+
+bool VerifyNPMOrphanRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID);
+  parent.set_thread_group_id(98); parent.set_thread_group_start_time_ns(980);
+  if (!RegisterGroup(&state,parent,ProcessState::Role::kArtifact,ProcessState::Provenance::kCloneChild,false,true)) return false;
+  auto child=parent;
+  child.set_thread_group_id(99); child.set_thread_group_start_time_ns(990); child.set_parent_thread_group_id(98);
+  if (!RegisterGroup(&state,child,ProcessState::Role::kArtifact,ProcessState::Provenance::kCloneChild,false,true)) return false;
+  state.groups[99].current_image_class=ProcessClass::kNode;
+  state.groups[99].clone_creator_group_id=98; state.groups[99].clone_creator_group_start_time_ns=980;
+  MountAnchor anchor{10,"/proc","system"};
+  auto allowed=[&](const ProcessState& candidate) {
+    return IsPinnedNPMArtifactRuntimeRead(child,candidate,"/proc/99/maps",557056,kProfileNPM,&anchor);
+  };
+  if (!allowed(state)) return false;
+  auto unknown=state; unknown.groups.erase(98);
+  if (allowed(unknown)) return false;
+  gvisor::sentry::ExitNotifyParentInfo event;
+  *event.mutable_context_data()=parent;
+  std::string payload,container; const char* reason=nullptr;
+  auto invalid=event;
+  invalid.mutable_context_data()->set_thread_group_start_time_ns(981);
+  auto unchanged=state;
+  if (!invalid.SerializeToString(&payload) || ParseSentryExitNotifyParent(payload.data(),payload.size(),&container,&unchanged,&reason) ||
+      unchanged.groups[99].clone_creator_exited) return false;
+  if (!event.SerializeToString(&payload) || !ParseSentryExitNotifyParent(payload.data(),payload.size(),&container,&state,&reason)) return false;
+  child.set_parent_thread_group_id(1);
+  if (!allowed(state) || IsTrustedControlNetwork(child,state) || state.groups.count(98)!=0 || !state.expected_groups.empty()) return false;
+  for (int scenario=0;scenario<11;++scenario) {
+    auto changed=state; auto& group=changed.groups[99];
+    switch(scenario) {
+      case 0: group.role=ProcessState::Role::kControl; break;
+      case 1: group.provenance=ProcessState::Provenance::kDirectExecRoot; break;
+      case 2: group.current_image_class=ProcessClass::kBun; break;
+      case 3: group.root_eligible=true; break;
+      case 4: group.root_consumed=false; break;
+      case 5: group.trusted_control_network_active=true; break;
+      case 6: group.demotion_pending=true; break;
+      case 7: group.launch_target_pending=true; break;
+      case 8: group.handoff_target_pending=true; break;
+      case 9: group.start_time_ns++; break;
+      case 10: group.clone_creator_exited=false; break;
+    }
+    if (allowed(changed)) return false;
+  }
+  for (const char* path:{"/proc/98/maps","/proc/1/maps","/etc/passwd"}) {
+    if (IsPinnedNPMArtifactRuntimeRead(child,state,path,557056,kProfileNPM,&anchor)) return false;
+  }
+  if (IsPinnedNPMArtifactRuntimeRead(child,state,"/proc/99/maps",32770,kProfileNPM,&anchor) ||
+      IsPinnedNPMArtifactRuntimeRead(child,state,"/proc/99/maps",557056,kProfilePyPI,&anchor)) return false;
+  anchor.mount_class="workspace"; if (allowed(state)) return false;
+  anchor.mount_class="system"; anchor.mountpoint="/foreign"; if (allowed(state)) return false;
   return true;
 }
 
@@ -10046,7 +10104,7 @@ int main(int argc, char** argv) {
     return passed ? 0 : 1;
   }
   if (argc == 2 && strcmp(argv[1], "--responder-oci-only") == 0) {
-    const bool passed=VerifyResponderOCIIdentityAndRuntimeBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true);
+    const bool passed=VerifyResponderOCIIdentityAndRuntimeBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true) && VerifyNPMOrphanRuntimeReadBoundary();
     fprintf(stderr,"Responder OCI identity and runtime boundary: %s\n",passed?"PASS":"FAIL");
     return passed?0:1;
   }
@@ -10343,7 +10401,7 @@ int main(int argc, char** argv) {
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
   const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
-  const bool bun_artifact_reads = VerifyNPMArtifactRuntimeReadBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode) && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true);
+  const bool bun_artifact_reads = VerifyNPMArtifactRuntimeReadBoundary() && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode) && VerifyNPMArtifactRuntimeReadBoundary(ProcessClass::kNode,true) && VerifyNPMOrphanRuntimeReadBoundary();
   const bool bun_artifact_image = VerifyBunArtifactRuntimeImageAndCommandBoundary();
   const bool bun_target_shape = VerifyHoistedTargetLifecycleShapeBoundary(false) && VerifyHoistedTargetLifecycleShapeBoundary(true) && VerifyHoistedTargetLifecycleShapeBoundary(true, true);
   const bool bun_target_production = VerifyBunTargetLifecycleProductionPath() &&

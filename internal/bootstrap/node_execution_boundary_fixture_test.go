@@ -73,7 +73,16 @@ func (f nodeBoundaryTransport) RoundTrip(request *http.Request) (*http.Response,
 
 func nodeBoundarySource(t *testing.T, ctx context.Context, intake string) (*artifactnpm.Resolver, domain.DependencyResolution) {
 	t.Helper()
-	manifest, err := json.Marshal(map[string]any{"name": nodeBoundaryPackage, "version": "1.0.0", "bin": map[string]string{"haa-runtime-probe": "cli.js"}})
+	return nodeBoundarySourceWithLifecycle(t, ctx, intake, nil)
+}
+
+func nodeBoundarySourceWithLifecycle(t *testing.T, ctx context.Context, intake string, scripts map[string]string) (*artifactnpm.Resolver, domain.DependencyResolution) {
+	t.Helper()
+	metadataInput := map[string]any{"name": nodeBoundaryPackage, "version": "1.0.0", "bin": map[string]string{"haa-runtime-probe": "cli.js"}}
+	if len(scripts) != 0 {
+		metadataInput["scripts"] = scripts
+	}
+	manifest, err := json.Marshal(metadataInput)
 	if err != nil {
 		t.Fatal(err)
 	}

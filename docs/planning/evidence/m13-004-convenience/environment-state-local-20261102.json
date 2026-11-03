@@ -1960,5 +1960,83 @@
     },
     "product_changes": "none; existing termination/drain owner already correct",
     "remaining": "native failure/tamper/forgery/timeout and zero real egress; S03 complete same-input Findings/Policy/unchanged target corpus"
+  },
+  "s03_node_corpus_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "S03 Node controlled current Application/verification/inspection/Evidence/Policy corpus only, no upstream authenticity or Host installation",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v1.json",
+        "sha256": "760ae1f0baa9c9f8950808de857b026270ecd02376756c985cc77d2b53a785d1",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 46.065
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v2.json",
+        "sha256": "f2b80457d24129718aa445579eecb2abdca56e3fef12aa020bd76272577a2b42",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 14.498
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-null-observer-batch-v1.json",
+        "sha256": "3334390ff43aaa4ea38c776d5fe587f16073319fec1a3810005ab8fa74560c9d",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 51.727
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v3.json",
+        "sha256": "25f94e0e4d02f3f5d851fb75a2a72de481fb72f2867be9657267b7ee74552ccd",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 14.931
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-null-observer-batch-v2.json",
+        "sha256": "05667517d6516e4ac36276dcf3c42831192304462a24823873a9ef2796c75417",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 56.423
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v4.json",
+        "sha256": "586f37c3ce8ece4b5a5c943fcd5be507c3527d9d3faa28ba1fa7be8c31206c7f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 15.147
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-orphan-boundary-red.json",
+        "sha256": "51471a716bb4980c708af3f4ae7ce7037934293989a6dd97c4a899669b7279d0",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 41.652
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-orphan-observer-batch-v1.json",
+        "sha256": "e335b86e0d5563136aae18cd48ee3ad80362adef7875de0fb6cc48e5140d485e",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 49.128
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v5.json",
+        "sha256": "5d80c3cc07ae5309da6cb95dd198729f17f8fbd8efc749e345ab7bd6e644a147",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 14.988
+      }
+    ],
+    "first_failure": "detached child had not reached later behavior: authenticated pinned Node clone exact system /dev/null32768 first, then32770 standard-stream preparation classification; not evidence of early child termination",
+    "reused_successes": "v1 normal10.53s network0/two states/ALLOW; compound10.56s and delayed10.74s each network10/two states/MANUAL_REVIEW/no approval",
+    "current_candidate": "Exact matching creator-exit fact, scoped Node Artifact NPM runtime reads passed CPP13649.128s and same-client child actual14.988s: 3 required checks, two persisted states, network10, MANUAL_REVIEW/no approval. Own maps v4 first fault corrected in this scope. Host restored/helperwait0/400260326B removed.",
+    "remaining": "S03 pure benign normal corpus, supported execution-only activation, target unchanged and broader ecosystem goal chain remain open; public authenticity/Host installation not claimed."
   }
 }
