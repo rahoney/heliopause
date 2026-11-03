@@ -120,12 +120,12 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 
 func (i *Inspector) checkProfile() domain.ContentDigest {
 	image := runtimeidentity.GoImageReference
-	name := "project-build-observation-environments-v3"
+	name := "project-build-observation-environments-v4"
 	if i.kind == "cargo" {
 		image = runtimeidentity.RustImageReference
-		name = "project-build-observation-environments-v2"
+		name = "project-build-observation-environments-v3"
 	}
-	descriptor := image + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+	descriptor := image + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 	profile, _ := domain.CheckProfileDigest(name, descriptor)
 	return profile
 }

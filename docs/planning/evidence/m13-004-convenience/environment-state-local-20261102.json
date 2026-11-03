@@ -1643,5 +1643,191 @@
       "query_errors": 0,
       "deleted_bytes": 91714779
     }
+  },
+  "s02_python_and_build_consumer_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "ordinary Python and Go/Cargo scoped runtime proof, not all profiles/consumers/whole S02",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-targeted-race.json",
+        "sha256": "c4ba634f2d5077a2c76789d0ae45cb017f5f0de97bf467c8d66690d384ad12e5",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 20.397
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-native-v1.json",
+        "sha256": "6ab34b304009518f9731dad3173dfa941b43bd455232a3696ca9de0770eb19b7",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 26.089
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-observer-focus-v1.json",
+        "sha256": "291e90d3e67f9dafcb13b701a815a96fbbb10ba8e8ab7c6553720cea63d578e8",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 44.16
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-native-v2.json",
+        "sha256": "e5254bc53afa868f5522fa0361b6dda5a987bf0060a9cffd783d6e4c0751fadc",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 50.961
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-foundation.json",
+        "sha256": "8c15a46c7f61643c2f84c951881656bdd5de2765a99ea344e736c148b0dabee1",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 81.172
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-tests.json",
+        "sha256": "7addfd50b80ece00ba8bf82523aa808bba992de0e6482ffa1a21cc771250993e",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 10.766
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-native-v1.json",
+        "sha256": "afa26d1531cdeb5781a36f97f41042ca72e222d840abc0aa203aca34fd006311",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 41.581
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-observer-batch-v1.json",
+        "sha256": "3958297dcf6b0c531c50de90a54868daca37599260ec120b9d57103ec8764abb",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 53.896
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-native-v2.json",
+        "sha256": "938d12a5e73d457065b76cf3fd0f71252ab50e2b9dfcc58bf39e3e80e04ae63f",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 126.632
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-native-v1.json",
+        "sha256": "f8d6f3f505785261d68de2da007464f81621d619a0ccd03aac1b481dcd7ac6fc",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 7.355
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-observer-batch-v1.json",
+        "sha256": "4b0f9c363f985c544cfb83e9d3f482e96a137be365e7432a99920bb1c9a4e9b7",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 52.13
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-native-v2.json",
+        "sha256": "3dabb130c34a36d40bf95348bcff1e3fd149d5f214263ef09e350597fecedd3a",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 13.357
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-format.json",
+        "sha256": "72e9c6ac38fdfa2007c639dc73eb7032f7778fa4aceb78e06659ce46d3763175",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 0.849,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-race.json",
+        "sha256": "236b5941357f7a072aa0f38b5e899f6c42f0a5c6cbe936653710223e4bae1f19",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 36.109,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-sandbox-race.json",
+        "sha256": "bfd5fbf6e92d0b09326e409e6f7fc9f3dc6ee49819bed25613c360980cee28b2",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 25.063,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-static.json",
+        "sha256": "aacddb7fbdd4f826544954fdf22f85c0a15a84b40967cbde8de73d12e7f6337a",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 6.602,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-vet.json",
+        "sha256": "0616541bd717cba2a950526ca649fd130e388fa35a3c8d09e943922ce63ca427",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.882,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-docs.json",
+        "sha256": "c001630a7209db37fe54de74df8875d79322301e133ce19a4f654fd43eea6c9f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 0.414,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-remaining-consumers-native-v1-preflight.json",
+        "sha256": "558713915291ff8d18f2db7448af4d4dc697d39ca12e5ce3100f3bc2a4b67568",
+        "exit_code": null,
+        "complete": null,
+        "elapsed": null,
+        "status": "NOT_RUN"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-remaining-consumers-native-v2.json",
+        "sha256": "0ddf65ae58ee6751145381bdba4b5fa5055c866ed33f6becca8608e5401afa8f",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 106.8,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-native-bun-native-v1.json",
+        "sha256": "a16f3bf5f3bd1a433d702bbb1cbe30184a8d761cdd67e8e18e702ee7597ad946",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 73.809
+      }
+    ],
+    "first_failure": "new S02 responder expectation checked before first ContainerStart established ID/profile; initial Python actual-v1 failed before import; metadata-only/fresh/chain initially unpassed",
+    "correction": "only pre-profile ContainerStart expectation defers; registered/missing supply and sealed readonly final image proof remain mandatory; focus44.160s and same client Python4 actual50.961s PASS",
+    "reuse": "npm/Python and normal Cargo proofs retained; unchanged kernel/bundle; current full changed CPP136/53.896s passed",
+    "cleanup": "actual-v1/v2 restored Host/runtime/config, helperwait0 and each374988240B removed; build v1/v2 helperwait0, Host unchanged/restored,400296781B each and verified empty temporary NativeInstallRoot removed",
+    "maintenance": "same GoVersion owner; code digest + DNS arguments bind fixtures; Python profilev4 and Go/Cargo recipev5/current profile candidates include shared protocol/compiler identity",
+    "remaining": [
+      "grouped failure/cancel/negative corpus and hosted qualification",
+      "installed signed helper build/install/doctor/self-update, grouped and final security qualification"
+    ],
+    "build_consumers": "Cargo normal19.85s reused; exact Artifact Cargo NSS read correction passed CPP136/53.896s and chain22.54s/network15/MANUAL_REVIEW plus Go initial/rebuild101.50s; native-v2 total126.632s",
+    "minimal_dns": "Exact pinned Node Artifact clone resolver reads work in both environments; v1 reproduced responder_init overconstraint; CPP136/52.130s and same client actual13.357s PASS network5, both states, complete cleanup373236096B",
+    "other_consumers": "Bun public Node peer4, PNPM controlled normal/exit37, GitHub current persisted Evidence and provider four controlled cases PASS106.800s; no public PNPM full or Bun app claim",
+    "native_bun": "existing immutable native supply plus responder/Node lifecycle peer4 PASS73.809s; not Bun Artifact execution/Policy; helperwait0/Host restored/482294364B removed",
+    "completed_input_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s02-completed-consumers-cleanup.json",
+      "sha256": "ef19fd6b099e79a9d88376542dd9a92478ae37e10106244d5d66f06ebc482989",
+      "deleted_bytes": 388443045,
+      "references": [],
+      "query_errors": []
+    }
   }
 }

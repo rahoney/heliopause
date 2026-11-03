@@ -12,6 +12,7 @@ import (
 	"io"
 	"os/exec"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -183,6 +184,18 @@ func (s *responderSupply) mountArgument() (string, error) {
 		return "", errResponderSupply
 	}
 	return "type=volume,source=" + s.name + ",target=" + responderGuestRoot + ",volume-nocopy,readonly", nil
+}
+
+func (s *responderSupply) containerArguments(base []string, image string) ([]string, error) {
+	mount, err := s.mountArgument()
+	index := slices.Index(base, image)
+	if err != nil || index < 0 || index+4 != len(base) || base[index+1] != "/bin/sh" ||
+		base[index+2] != "-ceu" || base[index+3] != boundaryContainerCommand() {
+		return nil, errors.Join(errResponderSupply, err)
+	}
+	args := slices.Clone(base)
+	args[len(args)-1] = responderContainerCommand()
+	return append(append(append([]string{}, args[:index]...), "--interactive", "--mount", mount), args[index:]...), nil
 }
 
 func (s *responderSupply) close(ctx context.Context, runner CommandRunner) error {

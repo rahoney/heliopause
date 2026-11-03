@@ -11,13 +11,13 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-const projectBuildEnvironmentDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + environmentWorkspacePolicy
+const projectBuildEnvironmentDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + environmentWorkspacePolicy + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 
 // Matches the existing Go/Cargo private /tmp limit; experiments are sequential.
 const projectBuildWorkspaceCapacity int64 = 512 << 20
 
 type projectBuildEnvironmentObserver interface {
-	startProjectBuildEnvironmentProfile(context.Context, string, string, bool, bool, *observationTraceLedger) (TraceReader, error)
+	startProjectBuildEnvironmentProfile(context.Context, string, string, bool, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
 	AwaitMountAnchors(context.Context, string) error
 }
 
@@ -92,6 +92,9 @@ func (e *projectBuildEnvironment) begin(ctx context.Context, runner CommandRunne
 		return err
 	}
 	if err := verifyObservationRuntimeAlive(ctx, runner, id); err != nil {
+		return err
+	}
+	if err := verifyEnvironmentResolver(ctx, runner, id); err != nil {
 		return err
 	}
 	attachments := map[string]bool{writer: false, id: true}
@@ -183,10 +186,17 @@ func projectBuildEnvironmentExpectedTopology(kind string, output, reader bool) (
 	return nil, false
 }
 
-func (o *SharedObserver) startProjectBuildEnvironmentProfile(ctx context.Context, container, kind string, output, reader bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) startProjectBuildEnvironmentProfile(ctx context.Context, container, kind string, output, reader bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := projectBuildEnvironmentExpectedTopology(kind, output, reader)
-	if !ok || budget == nil {
+	if !ok || budget == nil || len(supplies) > 1 || len(supplies) == 1 && reader {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	profile := goBuildProfile
 	if kind == "cargo" {

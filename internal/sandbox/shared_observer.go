@@ -630,10 +630,17 @@ func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containe
 	return o.StartPythonClosureProfileWithBudget(ctx, containerID, profile, phase, nil)
 }
 
-func (o *SharedObserver) StartPythonClosureProfileWithBudget(ctx context.Context, containerID, profile string, phase pythonClosurePhase, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) StartPythonClosureProfileWithBudget(ctx context.Context, containerID, profile string, phase pythonClosurePhase, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := pythonClosureExpectedTopology(profile, phase)
-	if !ok {
+	if !ok || len(supplies) > 1 || len(supplies) == 1 && phase != pythonClosureEnvironmentObservation {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return o.startProfileWithBudget(ctx, containerID, profile, topology, budget)
 }

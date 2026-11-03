@@ -44,7 +44,7 @@ func pythonEnvironmentUnits(original []observationUnit) []observationUnit {
 func (t *pythonTransactionExecutor) createEnvironmentWorkspaces(ctx context.Context) error {
 	// Both profiles share the former writable scratch ceiling. They do not
 	// multiply the request's CPU, wall, trace, launch or retained tmpfs budget.
-	capacity := t.policy.RuntimeTmpfs() / 2
+	capacity := (t.policy.RuntimeTmpfs() - responderSupplyCapacity) / 2
 	if capacity <= 0 {
 		return errEnvironmentState
 	}
@@ -56,7 +56,7 @@ func (t *pythonTransactionExecutor) createEnvironmentWorkspaces(ctx context.Cont
 			return errors.Join(errEnvironmentState, err)
 		}
 		seen[session.String()] = true
-		profile, err := newInspectionEnvironmentProfile(kind, session)
+		profile, err := newInspectionEnvironmentProfile(kind, session, t.responder)
 		if err != nil {
 			return err
 		}

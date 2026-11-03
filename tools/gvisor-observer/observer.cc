@@ -3535,9 +3535,9 @@ bool IsPinnedNPMArtifactRuntimeRead(const gvisor::common::ContextData& context,
       group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
       context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
       state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
-  // The controller attests the synthetic loopback file before introducing a
-  // client. This grants no CONTROL network trust or other system-file reads.
-  if (state.responder_init && group->current_image_class == ProcessClass::kNode &&
+  // Both network-none and synthetic clients need the pinned resolver inputs.
+  // These readonly reads grant no CONTROL network trust or successful egress.
+  if (group->current_image_class == ProcessClass::kNode &&
       (flags == 32768 || flags == 557056)) {
     if (anchor->mount_class == "system" &&
         (path == "/etc/resolv.conf" || path == "/etc/hosts") && anchor->mountpoint == path) return true;
@@ -3946,6 +3946,13 @@ bool IsPinnedCargoBuildProgramRead(const gvisor::common::ContextData& context,
   const auto* group=FindFilesystemGroup(context,state);
   if(group==nullptr || group->current_image_class!=ProcessClass::kCargoBuildProgram || !group->cargo_build_program_active ||
      !HasExactCargoBuildDriverCreator(context,*group,state))return false;
+  // The fixed synthetic resolver is attested before this untrusted build
+  // script starts. Its ordinary libc reads confer no CONTROL network role.
+  if(state.responder_init && flags==557056) {
+    if(anchor->mount_class=="system" && (path=="/etc/resolv.conf" || path=="/etc/hosts") && anchor->mountpoint==path)return true;
+    if(anchor->mount_class=="oci-root" && anchor->mountpoint=="/" &&
+       (path=="/etc/nsswitch.conf" || path=="/etc/host.conf" || path=="/etc/gai.conf"))return true;
+  }
   if(anchor->mount_class=="system" && anchor->mountpoint=="/dev")
     return path=="/dev/null" && flags==557056;
   if(anchor->mount_class=="system" && anchor->mountpoint=="/proc")
@@ -6822,7 +6829,10 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
         set_fault_site(FaultSite::kContainerStart);
         return false;
       }
-      if (process_state->responder_init && !HasResponderSupplyExpectation(topology)) {
+      // This first event can establish the container ID. The main loop then
+      // binds its registered profile before the next event; final OCI exec
+      // still requires the sealed readonly responder image in every case.
+      if (process_state->responder_init && profile != nullptr && !HasResponderSupplyExpectation(topology)) {
         *reason="TOPOLOGY_INVALID";set_fault_site(FaultSite::kContainerStart);return false;
       }
       return true;

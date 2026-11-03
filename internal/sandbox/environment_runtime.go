@@ -388,12 +388,10 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 	activeResponder := profile.kind == developmentEnvironment && !readOnly
 	var supplies []*responderSupply
 	if activeResponder {
-		mount, err := n.responder.mountArgument()
-		if err != nil || args[len(args)-1] != boundaryContainerCommand() {
-			return nil, errors.Join(errResponderSupply, err)
+		args, err = n.responder.containerArguments(args, nodeImageReference)
+		if err != nil {
+			return nil, err
 		}
-		args[len(args)-1] = responderContainerCommand()
-		args = append(append(append([]string{}, args[:image]...), "--interactive", "--mount", mount), args[image:]...)
 		image = slices.Index(args, nodeImageReference)
 		supplies = []*responderSupply{n.responder}
 	}

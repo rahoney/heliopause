@@ -966,3 +966,122 @@ Race17.356s 및 영향 package pinned Staticcheck16.430s가 PASS다. 기존 GoVe
 영향 package go vet1.550s와 diff whitespace도 PASS다. 완료한 role/chain/owner 시험
 바이너리3개는96 process의 무참조/query error0 및 원본 SHA 확인 뒤91714779B를
 삭제했다. 재사용할 고정 helper/SDK/cache·원본 evidence는 유지한다. 새 CI/push/설치는 없다.
+
+
+### S02 Python baseline — f258669 / 다음 한정 연결
+
+Ordinary Python의 S01 closure/workspace·unit subpath·공유 CPU/trace와 기존 stopAndCollect는
+IMPLEMENTED=YES/WIRED=YES다. S02 responder의 Python 소비자는 IMPLEMENTED=NO,
+WIRED=NO, QUALIFIED=NO, ACCEPTANCE_CLOSED=NO였으며 MISSING은 같은 고정 공급·profile
+identity/기존 phase controller·readonly topology·DNS DATA 검증/예산 예약·actual와 거부
+검증이다. 기존 owner를 대체하지 않는다. 새 두 번째 소비자에 필요한 create 인자 연결은
+기존 responderSupply의 한 메서드로 재사용하고, npm의 같은 연결도 그 메서드를 쓴다.
+
+
+Python 후보의 표적 Race20.397s는 PASS지만 실제 native-v1/26.089s는 npm 공통 연쇄만
+PASS11.35s였다. 첫 Python wheel은 unit 실행 전 TOPOLOGY_INVALID/CONTAINER_START였다.
+새 S02 check가 최초 event에서 container ID를 세운 뒤 다음 event에서 profile을 찾는
+기존 main-loop 순서보다 먼저 responder expected mount를 요구한 후보 오류다. Node의
+이미지 entrypoint 경로에는 앞선 attribution이 있어 당시 표본에서 드러나지 않았다.
+미등록 첫 frame의 해당 검사를 profile binding 뒤로만 미루고, 실제 helper image의 sealed
+readonly supply/UID/역할은 계속 요구하는 최소 후보를 cold positive·누락 supply negative와
+기존 bound-profile negative로 검증한다. 아직 해결/qualification을 주장하지 않는다.
+모든 helperwait0/Host 동일·정확한 복원과374988240B 회수는 확인했다.
+
+Cold-start/registered·missing-supply와 기존 OCI/DNS negative를 함께 확인한 focus44.160s는
+PASS다. 같은 Go client의 actual-v2/50.961s는 미통과 Python4(일반 wheel/metadata-only/
+단위 격리/조건부 DNS·HTTP·더미 sink) 모두 PASS다. Artifact network9/Control4를 유지하며
+이전 v1의 npm PASS11.35s는 반복하지 않았다. Helperwait0/정확한 복원/Host 동일과
+374988240B 제거를 확인했다. 전체 S02/공급자 acquire·Policy·설치 경로·hosted는 별도다.
+
+### S02 Go/Cargo baseline — 기존 빌드 owner 재사용
+
+현재 readonly preparation/compiler/output·공유 trace/context와 Docker remove/observer drain은
+IMPLEMENTED=YES/WIRED=YES다. S02 responder의 Go/Cargo 소비자는 IMPLEMENTED=NO,
+WIRED=NO, QUALIFIED=NO, ACCEPTANCE_CLOSED=NO였으며 MISSING은 같은 단일 공급·readonly
+mount/고정 init·STOP 뒤 기존 Docker 종료/완전 drain·DNS DATA 검증·code 공간 예약·recipe/
+check profile 결합·actual/negative 검증이다. 기존 입력·출력·빌드 owner를 대체하지 않고
+승인된 Go40000과 다른 한도는 그대로 둔다.
+
+
+Go/Cargo 후보의 canonical foundation81.172s·표적 단위10.766s는 PASS다. Native-v1/41.581s는
+고정 NativeInstallRoot에 child-private Root 공급물을 연결해 Cargo dependency-free CLI를
+PASS19.85s 확인했다. 원래 없던 Host mountpoint는 빈 디렉터리로만 만들고 소유 inode/
+빈 상태·비mount 확인 뒤 제거했다. 실제 설치/asset 복사·원본 덮기는 하지 않았다.
+다음 Cargo 조건부 build-script는 ROLE=ARTIFACT/CLONE_CHILD·실제 target image/기존 Cargo
+creator 아래서 /etc/nsswitch.conf(고정 OCI,557056)를 분류하지 못했다. 정상 Cargo는 재사용하고
+미도달 Go·미통과 연쇄만 다음에 실행한다. 해당 역할의 exact NSS/hosts/resolver와
+flags/mount/creator/descendant negative를 기존 latch에 결합한 current CPP136/53.896s는
+PASS다. Kernel/bundle은 불변이다. Native-v1의 helperwait0/Host 동일·정확한 복원과
+400296781B 사본·임시 Host 디렉터리 제거를 확인했다. 실제 연쇄 성공은 아직 미확인이다.
+
+
+Cargo NSS 후보의 같은 build client/native-v2는126.632s에 미통과 연쇄22.54s와 미도달 Go
+초기/재빌드101.50s를 PASS했다. Cargo의 network15는 숨기지 않고 두 환경의 완료·상태
+저장 뒤 M3_NETWORK_ATTEMPT/MANUAL_REVIEW 및 게시 거부를 확인했다. 정상 Cargo19.85s는
+반복하지 않았다. Helperwait0/Host 동일·정확한 복원과400296781B 사본·임시 빈 Host
+mountpoint 제거를 확인했다. Python/Cargo/Go 소비자의 한정 IMPLEMENTED/WIRED는 YES이나
+전체 S02 QUALIFIED/ACCEPTANCE_CLOSED는 NO다. 다음은 최소 환경의 기본 DNS 실제 시도,
+남은 instance/ELF actual·negative와 정식 build/install/doctor/self-update 공급 연결이다.
+원본 s02-build-consumers-native-v1/v2와 observer-batch-v1이 source와 실패·성공을 소유한다.
+
+
+S02 최소 환경의 기본 DNS gap은 별도 actual-v1/7.355s로 재현했다. Node Artifact clone의
+/etc/resolv.conf32768 읽기를 responder_init에 묶어 network-none control까지 관찰 실패로
+만들었다. 고정 Node/실제 clone creator/정확 readonly 파일·mount 조건은 유지하고
+응답기 유무 조건만 제거했다. 새 권위나 control 연결은 없고 NETWORK는 계속 집계한다.
+Current CPP136/52.130s와 같은 client의 actual-v2/13.357s(사례10.83s)는 두 fresh 환경의
+기본 DNS 실패/모의 DNS 성공과 network5를 PASS했다. Helperwait0/Host 동일·복원과
+373236096B 제거를 확인했다. 기존 정상/Node synthetic/Go/Cargo 검사를 반복하지 않았다.
+원본 s02-default-resolver-native-v1/v2와 observer-batch-v1이 범위/실패/입력을 소유한다.
+
+
+### S02 공통 소비자 묶음 — current local 부분 검증
+
+Current full sandbox Race25.063s·inspection PyPI/ProjectBuild Race(최초 묶음의 성공한
+두 package)·고정 Staticcheck6.602s/vet1.882s·format0.849s/docs0.414s가 PASS다.
+최초36.109s 묶음의 sandbox Unix socket bind EPERM은 환경 제약으로 보존하며 해당
+package만 정상 권한에서 실행했다. Current CPP136/52.130s는 재사용한다.
+
+Remaining-consumers-v1은 이전에 정리된 PNPM 입력 부재로 mount/test 전 NOT_RUN이다.
+Host 동일을 확인해 준비된374985428B를 제거했다. JSON에 저장된 process tuple/list의
+표현 차이는 정규화해 비교하며 기존 helper PID/start는 그대로 보존했다. 필요한 두
+공식 고정 archive를 lock size/SHA256으로 다시 확보하고 기존 materialize 명령을 사용했다.
+필수 입력은 이후 private 사본 생성 전 확인한다. v2/106.800s는 Bun public Node lane의
+4인스턴스56.78s, GitHub ELF 현재 Record/ReadReference7.11s, PNPM controlled 정상/exit37
+보존19.64s, provider 정상/network/filesystem/unexpected-process20.66s 네 parent를 PASS했다.
+Provider filesystem/unexpected-process는 INCOMPLETE로 반입하지 않는 결과이며 악성 탐지
+성공률로 합치지 않는다. Native Bun 공급 경로·public PNPM 전체·signed 설치·whole S02는
+별도다. Helperwait0/Host 동일·원복·540116868B와 임시 빈 mountpoint 제거를 확인했다.
+원본 s02-remaining-consumers-native-v1-preflight/v2 및 consumer-final-*가 source/범위를 소유한다.
+
+### S02 release 공급 baseline — 기존 설치·업데이트 owner 확장 전
+
+검사 안의 fixed helper는 IMPLEMENTED=YES/WIRED=YES이나 정식 배포·설치·doctor·self-update
+연결은 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 실제 MISSING은
+새 공급물의 existing native build → exact manifest/SBOM/checksum → 설치 선택/보호 복사 →
+현재 버전/doctor/readiness와 업데이트 전체 payload 검증이다. Signed 실제 배포는 이 로컬
+연결과 별도이며 과거 릴리스의 읽기를 새 검사 지원으로 확대하지 않는다.
+
+기존 owner는 `.github/workflows/heliopause-release-build.yml` native build/attestation,
+`scripts/release-manifest`의 assetSpecs/collectAssets와 bundle verifier,
+`internal/releaseinstall`의 manifest NativeUpdateFiles/NativeUpdatePayloads·selectFiles·
+CheckInstallation, `internal/releaseactivation`의 installed/stage/health 및 기존 bootstrap
+doctor/runtime readiness다. `scripts/release-packages`는 기존 OS payload 표만 확장한다.
+같은 HAA component 이름·현재 Go owner/컴파일 조건과 signed manifest digest를 사용하며
+새 독립 version lock·updater·systemd service·public 공급 경로는 만들지 않는다.
+기존 reader/복사/activation을 재구현하지 않고 exact role과 필수 공급물만 등록한다.
+거부 기준은 누락/role-platform-size-digest 변조·실제 compiler/program 불일치·구버전
+검사 지원 오인·부분 설치/업데이트다. 표적 manifest/install/activation/workflow/유지보수
+검사를 한 묶음으로 확인하고, 이 단위만을 위한 새 CI는 시작하지 않는다.
+
+
+기존 Bun native 공급 경로도 같은 client의 별도 actual73.809s(사례71.22s)로 PASS했다.
+공개 peer4의 immutable Bun 공급과 현재 npm/Node lifecycle·공통 응답기 조합 범위이며
+Bun Artifact 실행/Policy를 추가로 증명한 것은 아니다. 성공한 네 소비자는 반복하지
+않았다. Helperwait0/Host 동일·원복·482294364B와 임시 빈 mountpoint 제거를 확인했다.
+원본 s02-native-bun-native-v1이 범위를 소유하며 다음은 위 release baseline의 MISSING이다.
+
+완료 client4개와 이 시험용 PNPM/Bun archive/native/NOTICE6개는95process의 무참조/
+query error0 및 exact SHA 확인 뒤388443045B를 삭제했다. SDK/cache·원본·재사용할
+응답기/policy helper는 유지한다. `s02-completed-consumers-cleanup.json`이 원본이다.

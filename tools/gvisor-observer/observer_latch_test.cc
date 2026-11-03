@@ -1669,10 +1669,10 @@ bool VerifyCargoBuildRustcChildBoundary() {
   close(output[0]);close(output[1]);return ok;
 }
 
-bool VerifyCargoBuildProgramBoundary(bool abi=false,bool maps=false,bool null_device=false) {
+bool VerifyCargoBuildProgramBoundary(bool abi=false,bool maps=false,bool null_device=false,bool synthetic_resolver=false) {
   int output[2];if(socketpair(AF_UNIX,SOCK_DGRAM,0,output)!=0)return false;
   auto run=[&](const char* scenario){
-    ProcessState state;gvisor::common::ContextData root;
+    ProcessState state;state.responder_init=synthetic_resolver;gvisor::common::ContextData root;
     root.set_container_id(kFirstID);root.set_thread_group_id(99);root.set_thread_group_start_time_ns(990);root.set_parent_thread_group_id(0);root.set_is_exec_session(true);root.set_process_name("arbitrary-root-name");
     if(!RegisterGroup(&state,root,ProcessState::Role::kArtifact,ProcessState::Provenance::kDirectExecRoot,false,true))return false;
     state.groups[99].current_image_class=ProcessClass::kCargo;
@@ -1718,6 +1718,19 @@ bool VerifyCargoBuildProgramBoundary(bool abi=false,bool maps=false,bool null_de
     gvisor::syscall::Open open;*open.mutable_context_data()=image.context_data();open.set_pathname("/etc/ld.so.cache");open.set_flags(557056);MountAnchor anchor{1,"/","oci-root"};
     auto readable=[&](){return ClassifyFilesystemOpen(open,state,profile,&anchor)==FilesystemClass::kHelperOnly;};
     if(readable()!=accepted || IsTrustedControlNetwork(image.context_data(),state) || state.groups[100].role!=ProcessState::Role::kArtifact)return false;
+    if(synthetic_resolver) {
+      for(const char* path:{"/etc/resolv.conf","/etc/hosts","/etc/nsswitch.conf","/etc/host.conf","/etc/gai.conf"}) {
+        open.set_pathname(path);anchor={3,(strcmp(path,"/etc/resolv.conf")==0 || strcmp(path,"/etc/hosts")==0)?path:"/",(strcmp(path,"/etc/resolv.conf")==0 || strcmp(path,"/etc/hosts")==0)?"system":"oci-root"};
+        if(readable()!=accepted)return false;
+        if(!accepted)continue;
+        state.responder_init=false;if(readable())return false;state.responder_init=true;
+        for(uint64_t flags:{0,1,2,64,32768}){open.set_flags(flags);if(readable())return false;}open.set_flags(557056);
+        open.set_pathname(std::string(path)+".evil");if(readable())return false;open.set_pathname(path);
+        const auto expected=anchor;anchor.mountpoint="/foreign";if(readable())return false;
+        anchor=expected;anchor.mount_class="workspace";if(readable())return false;anchor=expected;
+      }
+      open.set_pathname("/etc/ld.so.cache");anchor={1,"/","oci-root"};
+    }
     if(!accepted)return true;
     if(abi)for(const char* path:{"/usr/lib/x86_64-linux-gnu/libgcc_s.so.1","/usr/lib/x86_64-linux-gnu/libc.so.6","/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"}){open.set_pathname(path);if(!readable())return false;}
     for(const char* path:{"/etc/shadow","/usr/local/rustup/credentials","/usr/lib/x86_64-linux-gnu/libdl.so.2","/usr/local/go/src/runtime"}){open.set_pathname(path);if(readable())return false;}
@@ -3689,9 +3702,9 @@ bool VerifyResponderOCIIdentityAndRuntimeBoundary() {
   initial_topology.anchors.emplace(90,MountAnchor{90,"/haa-responder","helper"});
   initial_topology.snapshot_seen=true;initial_topology.sealed=true;
   std::string id=kFirstID;
-  auto consume=[&](const auto& message,uint32_t kind,ProcessState* state,TopologyState* topology){
+  auto consume=[&](const auto& message,uint32_t kind,ProcessState* state,TopologyState* topology,const char* selected_profile=kProfileNPM){
     std::string payload;NormalizedCounts counts;Header header{};header.message_type=kind;reason=nullptr;
-    return message.SerializeToString(&payload)&&Handle(header,payload.data(),payload.size(),output[0],&id,kProfileNPM,
+    return message.SerializeToString(&payload)&&Handle(header,payload.data(),payload.size(),output[0],&id,selected_profile,
         state,&counts,topology,&reason);
   };
   gvisor::container::Start start;
@@ -3703,6 +3716,23 @@ bool VerifyResponderOCIIdentityAndRuntimeBoundary() {
   gvisor::sentry::ExecveInfo target;
   *target.mutable_context_data()=context;target.set_binary_path(kResponderPath);target.set_execfn(kResponderPath);
   target.add_argv(kResponderPath);target.add_argv("serve");
+  // Python has no image entrypoint before this first event. Discover its ID
+  // before profile binding, but never accept the final image without supply.
+  phase=0;
+  for(bool supplied:{false,true}) {
+    ProcessState cold;TopologyState mounts;id.clear();
+    if(!consume(start,gvisor::common::MESSAGE_CONTAINER_START,&cold,&mounts,nullptr)||
+        id!=kFirstID||!ExpectRecordExact(output[1],kFirstID,"container-start",nullptr))return finish(false);
+    if(supplied)mounts=initial_topology;
+    if(!consume(demotion,gvisor::common::MESSAGE_SENTRY_EXEC,&cold,&mounts)||
+        !ExpectRecordExact(output[1],kFirstID,"process-exec-expected",nullptr))return finish(false);
+    const bool executed=consume(target,gvisor::common::MESSAGE_SENTRY_EXEC,&cold,&mounts);
+    if(executed!=supplied)return finish(false);
+    if(supplied) {
+      if(!ExpectRecordExact(output[1],kFirstID,"process-exec-expected",nullptr))return finish(false);
+    } else if(!ExpectNoRecord(output[1]))return finish(false);
+  }
+  id=kFirstID;
   ProcessState valid;TopologyState topology=initial_topology;
   phase=1;
   if (!consume(start,gvisor::common::MESSAGE_CONTAINER_START,&valid,&topology)||
@@ -8987,7 +9017,7 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
       {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
       {"/sys/devices/system/cpu/online","/sys","system",557056},{"/dev/null","/dev","system",557056}};
   auto reads=image == ProcessClass::kNode ? node_reads : bun_reads;
-  if(synthetic_resolver) {
+  if(image == ProcessClass::kNode) {
     for(uint64_t flags:{uint64_t{32768},uint64_t{557056}}) {
       reads.push_back({"/etc/resolv.conf","/etc/resolv.conf","system",flags});
       reads.push_back({"/etc/hosts","/etc/hosts","system",flags});
@@ -8998,11 +9028,11 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
     state = baseline; open.set_pathname(read.path); open.set_flags(read.flags);
     MountAnchor anchor{10,read.mount,read.kind};
     auto allowed = [&]() { return IsPinnedNPMArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
-    const bool resolver_read=synthetic_resolver && strncmp(read.path,"/etc/",5)==0 &&
+    const bool resolver_read=image == ProcessClass::kNode && strncmp(read.path,"/etc/",5)==0 &&
         (strcmp(read.path,"/etc/resolv.conf")==0 || strcmp(read.path,"/etc/hosts")==0 ||
          strcmp(read.path,"/etc/nsswitch.conf")==0 || strcmp(read.path,"/etc/host.conf")==0 || strcmp(read.path,"/etc/gai.conf")==0);
     if(resolver_read) {
-      state.responder_init=false;if(allowed())return false;state.responder_init=true;
+      state.responder_init=!synthetic_resolver;if(!allowed())return false;state.responder_init=synthetic_resolver;
     }
     if (IsExpectedProcess(image == ProcessClass::kNode ? kNodePath : kBunToolPath,*context,kProfileNPM,&state).expected ||
         state.groups[99].role != ProcessState::Role::kArtifact || !allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
@@ -10287,7 +10317,7 @@ int main(int argc, char** argv) {
   const bool cargo_build_rust_c_abi = VerifyCargoBuildNativeCCChildBoundary(6);
   const bool cargo_build_lld_entropy = VerifyCargoBuildNativeCCChildBoundary(7);
   const bool cargo_build_program = VerifyCargoBuildProgramBoundary();
-  const bool cargo_build_program_abi = VerifyCargoBuildProgramBoundary(true);
+  const bool cargo_build_program_abi = VerifyCargoBuildProgramBoundary(true) && VerifyCargoBuildProgramBoundary(true,false,false,true);
   const bool cargo_build_program_maps = VerifyCargoBuildProgramBoundary(true,true);
   const bool cargo_build_program_query = VerifyCargoBuildProgramRustcQueryBoundary();
   const bool cargo_build_program_null = VerifyCargoBuildProgramBoundary(true,true,true);

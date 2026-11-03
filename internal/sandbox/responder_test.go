@@ -136,6 +136,20 @@ func TestResponderSourceMetadataRefusesForeignCodeAndPins(t *testing.T) {
 	}
 }
 
+func TestResponderContainerRejectsChangedBootstrapWithoutMutatingInput(t *testing.T) {
+	owner := strings.Repeat("a", 64)
+	supply := &responderSupply{name: "haa-responder-" + owner, owner: owner, createdAt: "fixed", mountpoint: "/model/fixed"}
+	base := []string{"create", nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()}
+	args, err := supply.containerArguments(base, nodeImageReference)
+	if err != nil || args[len(args)-1] != responderContainerCommand() || base[len(base)-1] != boundaryContainerCommand() {
+		t.Fatal("fixed bootstrap or source isolation lost", err)
+	}
+	base[len(base)-1] = "exec /bin/sleep infinity"
+	if _, err := supply.containerArguments(base, nodeImageReference); err == nil {
+		t.Fatal("changed bootstrap accepted")
+	}
+}
+
 func TestResponderBootstrapPreservesArtifactDemotion(t *testing.T) {
 	command := responderContainerCommand()
 	if !strings.Contains(command, "; GOMAXPROCS=1 exec ") {
