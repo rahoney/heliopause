@@ -1132,3 +1132,31 @@ acceptance는 S02 shared 실패/cancel/미준비·변조·위장·실제 egress0
 client 하나는96process 무참조/query error0와 원본 SHA 확인 뒤28890039B를 제거했다.
 응답기/policy helper·SDK/cache는 다음 corpus에 재사용한다. 원본은
 `s02-release-current-guest-static`과 `s02-completed-release-probe-cleanup.json`이다.
+
+
+### S02 공통 실패/취소와 S03 corpus 착수 baseline — 7cf8adc
+
+기존 `responder_test.go`/guest cmd의 parser·요청/bytes 한도·잘못된 STOP·독립 종료는
+IMPLEMENTED=YES/WIRED=YES이며 이전 Race 근거를 재사용한다. 전체 runtime owner의
+responder 시작 실패/STOP 실패/호출자 취소를 잇는 한정 negative는 QUALIFIED=NO,
+ACCEPTANCE_CLOSED=NO다. Existing environmentBackendModel의 실제 executor seam에
+세 실패만 주입해 incomplete·독립 Terminate·observer drain·known owned volume 삭제를
+검사한다. 새 transport/interface/owner나 제품 구조를 만들지 않는다.
+
+S03 전체는 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+기존 npm/Python 조건부 chain·Cargo actual Policy 거부와 정상 Go/ELF/provider proof는
+있으나 완전한 bounded corpus는 아니다. 기존 npm environment Evidence/Application과
+Python wheel/ELF probe·Cargo fixtures를 재사용할 수 있으며, public execution hostile의
+readonly program 실행은 설치 전 잠복 검사와 구분한다. 미구현 acceptance는 실제 짧은
+지연/자식·복합 조건/미도달 limitation·정상 대조를 같은 input/profile→외부 관찰→Finding/
+Policy→target 무변경→owned cleanup으로 연결하는 것이다. 실제 sleep과 모델 시간을
+구분하고 현재 root 예산/검사·보안 경계를 유지한다. 해당 범위만 순차 보완하며 CI는
+새 단위마다 실행하지 않고 의미 있는 corpus/qualification 묶음에 모은다.
+
+세 owner negative와 기존 정상/준비 실패/독립 controller 회귀를 묶은
+`s02-lifecycle-negative-owner-race`14.404s는 PASS다. 시작/STOP 오류와 호출자 취소는
+INCOMPLETE를 유지하고 기존 관찰 사실·취소 원인을 보존하며 하나의 자원 승인 안에서
+known container/volume/trace를 정리했다. 제품 수정은 필요 없었으며 mock transport의
+현재 실패 주입만 확장했다. 이는 모델의 한정 qualification이며 native 위장/변조/timeout/
+실제 egress0와 S03 전체 acceptance를 닫지 않는다. 다음은 기존 actual fixture/정규화·
+Policy·Evidence owners를 재사용한 S03 corpus의 현재 빈 연결이다.

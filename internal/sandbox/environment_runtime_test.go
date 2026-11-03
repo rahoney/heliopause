@@ -52,6 +52,8 @@ type environmentBackendModel struct {
 	traceError                                                            error
 	order                                                                 []string
 	traces                                                                []*cleanupGatedTraceReader
+	cancel                                                                context.CancelFunc
+	terminations                                                          int
 }
 
 func newEnvironmentBackendState() *environmentBackendModel {
@@ -103,7 +105,26 @@ func (f *environmentBackendModel) StartContainerInputOutput(ctx context.Context,
 	}
 	c.started = true
 	model := responderControllerModel{terminate: c.done}
+	failure, cancel := f.failure, f.cancel
 	f.mu.Unlock()
+	switch failure {
+	case "responder-start":
+		_, err := io.WriteString(output, "INVALID\n")
+		return err
+	case "responder-stop":
+		if _, err := io.WriteString(output, "READY\n"); err != nil {
+			return err
+		}
+		if _, err := io.ReadAll(input); err != nil {
+			return err
+		}
+		_, err := io.WriteString(output, "INVALID\n")
+		return err
+	case "responder-cancel":
+		cancel()
+		<-ctx.Done()
+		return ctx.Err()
+	}
 	return model.StartContainerInputOutput(ctx, input, output, id)
 }
 
@@ -447,6 +468,7 @@ func (f *environmentBackendModel) Read(context.Context, string) (ObservationReso
 func (f *environmentBackendModel) Terminate(_ context.Context, _ string, id string) (ObservationResourceLease, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	f.terminations++
 	f.remove(id)
 	f.usage += 100
 	return f.lease(), nil
@@ -517,6 +539,44 @@ func TestNPMEnvironmentPreparationAndFinalStateFailuresCannotComplete(t *testing
 				if len(reader.records) != 0 {
 					t.Fatal("started observer was not drained")
 				}
+			}
+		})
+	}
+}
+
+func TestNPMResponderFailureAndCancellationCannotCompleteOrLeak(t *testing.T) {
+	for _, failure := range []string{"responder-start", "responder-stop", "responder-cancel"} {
+		t.Run(failure, func(t *testing.T) {
+			backend, model, request := newEnvironmentBackendModel(t)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			model.failure, model.cancel = failure, cancel
+			model.traceRecords = []TraceRecord{{Kind: "network-attempt", Bytes: 1}}
+			result, err := backend.Execute(ctx, request)
+			if err == nil || result.Status() != domain.SandboxIncomplete {
+				t.Fatal("failed responder became completed", result.Status(), err)
+			}
+			if failure == "responder-cancel" && !errors.Is(err, context.Canceled) {
+				t.Fatal("caller cancellation lost", err)
+			}
+			wantCommands := 1
+			if failure == "responder-stop" {
+				wantCommands = 2
+			}
+			if model.commands != wantCommands || model.terminations < 2 || model.creates != 1 || len(model.containers) != 0 || len(model.volumes) != 0 {
+				t.Fatal("failure replenished authorization, ran extra work or leaked owned resources", model.commands, model.terminations)
+			}
+			for _, trace := range model.traces {
+				if len(trace.records) != 0 {
+					t.Fatal("failed responder trace not drained")
+				}
+			}
+			found := false
+			for _, fact := range result.Observations() {
+				found = found || fact.Category() == domain.ObservationNetwork
+			}
+			if !found {
+				t.Fatal("observed network fact lost during failure cleanup")
 			}
 		})
 	}
