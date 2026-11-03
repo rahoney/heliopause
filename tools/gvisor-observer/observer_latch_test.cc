@@ -651,6 +651,11 @@ bool HasPinnedPodInitProfile() {
   const std::string result_context = "\"name\": \"syscall/open_result\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"thread_id\", \"task_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
   const std::string pair_entry_context = "\"name\": \"syscall/socketpair/enter\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"thread_id\", \"task_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
   const std::string pair_result_context = "\"name\": \"syscall/socketpair_result\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"thread_id\", \"task_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
+  for (const char* name : {"accept", "accept4"}) {
+    const std::string expected = std::string("\"name\": \"syscall/") + name +
+        "/exit\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
+    if (profile.find(expected) == std::string::npos) return false;
+  }
   return profile.find("syscall/execve/enter") != std::string::npos &&
       profile.find("syscall/openat/enter") != std::string::npos &&
       profile.find("syscall/connect/enter") != std::string::npos &&
@@ -3580,6 +3585,91 @@ bool VerifyFDMutationDiagnosticPreservesAuthority() {
   for (int i = 0; i < 100; ++i) RecordFDMutationDiagnostic(&state, 99, 990, 100 + i, "CLOSE", -1);
   if (state.fd_mutation_diagnostics.size() != 16 || !rejected() ||
       state.fault_raw_diagnostic.find("\"fd_last\"") != std::string::npos) return finish(false);
+  return finish(true);
+}
+
+bool VerifyAcceptNetworkTracking() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  const auto finish = [&](bool ok) { close(output[0]); close(output[1]); return ok; };
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID); context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990); context.set_is_exec_session(true);
+  context.set_process_name("untrusted-name");
+  ProcessState initial;
+  if (!RegisterGroup(&initial, context, ProcessState::Role::kArtifact,
+      ProcessState::Provenance::kDirectExecRoot, false, true)) return finish(false);
+  std::string id = kFirstID;
+  const char* reason = nullptr;
+  auto consume = [&](const auto& message, uint32_t kind, ProcessState* state) {
+    std::string payload; NormalizedCounts counts; TopologyState topology; Header header{};
+    header.message_type = kind; reason = nullptr;
+    return message.SerializeToString(&payload) && Handle(header, payload.data(), payload.size(), output[0],
+        &id, kProfilePyPI, nullptr, state, &counts, &topology, &reason);
+  };
+  gvisor::syscall::Accept accepted;
+  *accepted.mutable_context_data() = context; accepted.set_sysno(288); accepted.set_fd(4);
+  accepted.set_flags(SOCK_CLOEXEC | SOCK_NONBLOCK); accepted.mutable_exit()->set_result(5);
+  // Guest peer bytes cannot reclassify an Internet connection as LOCAL.
+  accepted.set_address(std::string(16, '\0'));
+  gvisor::syscall::Syscall raw;
+  *raw.mutable_context_data() = context; raw.set_sysno(kSyscallSendtoX86); raw.set_arg1(5);
+  for (int family : {AF_INET, AF_INET6}) {
+    for (int sysno : {43, 288, 202, 242}) {
+      ProcessState state = initial;
+      state.fd_states[99][4] = ProcessState::FDEntry{SocketClassification::kNetwork, family, false};
+      state.fd_states[99][5] = ProcessState::FDEntry{SocketClassification::kLocal, AF_UNIX, false};
+      auto message = accepted; message.set_sysno(sysno);
+      const bool cloexec = sysno == 288 || sysno == 242;
+      message.set_flags(cloexec ? SOCK_CLOEXEC | SOCK_NONBLOCK : 0);
+      if (!consume(message, gvisor::common::MESSAGE_SYSCALL_ACCEPT, &state) ||
+          state.fd_states[99].size() != 2 || state.fd_states[99].at(5).raw_family != family ||
+          state.fd_states[99].at(5).cloexec != cloexec ||
+          !consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW, &state) ||
+          !ExpectNetworkRecord(output[1], kFirstID, "SENDTO", family == AF_INET ? "INET" : "INET6", "ARTIFACT_GROUP", "OTHER")) return finish(false);
+      if (cloexec) {
+        ApplyExecCloexec(&state, 99);
+        if (state.fd_states[99].find(5) != state.fd_states[99].end()) return finish(false);
+      }
+    }
+  }
+  for (int variant = 0; variant < 14; ++variant) {
+    ProcessState state = initial;
+    state.fd_states[99][4] = ProcessState::FDEntry{SocketClassification::kNetwork, AF_INET, false};
+    auto bad = accepted;
+    if (variant == 0) bad.clear_exit();
+    if (variant == 1) bad.set_sysno(44);
+    if (variant == 2) bad.set_flags(1);
+    if (variant == 3) { bad.set_sysno(43); bad.set_flags(SOCK_CLOEXEC); }
+    if (variant == 4) bad.set_fd(-1);
+    if (variant == 5) bad.mutable_exit()->set_result(static_cast<int64_t>(INT_MAX) + 1);
+    if (variant == 6) bad.mutable_context_data()->set_container_id(kSecondID);
+    if (variant == 7) bad.mutable_context_data()->set_thread_group_id(100);
+    if (variant == 8) bad.mutable_context_data()->set_thread_group_start_time_ns(991);
+    if (variant == 9) { bad.mutable_exit()->set_result(-1); bad.mutable_exit()->set_errorno(11); }
+    if (variant == 10) state.fd_states[99].erase(4);
+    if (variant == 11) state.fd_states[99][4] = ProcessState::FDEntry{SocketClassification::kLocal, AF_UNIX, false};
+    if (variant == 12) state.fd_states[99][4] = ProcessState::FDEntry{SocketClassification::kSpecialKernelLocal, AF_NETLINK, false};
+    if (variant == 13) { bad.set_fd(5); state.fd_states[99][5] = state.fd_states[99][4]; }
+    // Unknown/local listeners must also revoke stale LOCAL result entries.
+    if (variant >= 10 && variant <= 12)
+      state.fd_states[99][5] = ProcessState::FDEntry{SocketClassification::kLocal, AF_UNIX, false};
+    const bool parsed = consume(bad, gvisor::common::MESSAGE_SYSCALL_ACCEPT, &state);
+    if (parsed != (variant >= 9) || state.fd_states[99].find(5) != state.fd_states[99].end()) return finish(false);
+    if (consume(raw, gvisor::common::MESSAGE_SYSCALL_RAW, &state) || reason == nullptr ||
+        strcmp(reason, "FD_STATE_UNKNOWN") != 0 || !ExpectNoRecord(output[1])) return finish(false);
+  }
+  ProcessState full = initial;
+  for (size_t fd = 0; fd < kMaxTrackedFileDescriptorsPerGroup; ++fd)
+    full.fd_states[99][fd] = ProcessState::FDEntry{SocketClassification::kNetwork, AF_INET, false};
+  auto overflow = accepted; overflow.mutable_exit()->set_result(kMaxTrackedFileDescriptorsPerGroup);
+  if (consume(overflow, gvisor::common::MESSAGE_SYSCALL_ACCEPT, &full) || reason == nullptr ||
+      strcmp(reason, "FD_STATE_LIMIT") != 0 || full.fd_states[99].size() != kMaxTrackedFileDescriptorsPerGroup) return finish(false);
+  // Replacing a stale result consumes no extra capacity.
+  if (!consume(accepted, gvisor::common::MESSAGE_SYSCALL_ACCEPT, &full) ||
+      full.fd_states[99].size() != kMaxTrackedFileDescriptorsPerGroup || !ExpectNoRecord(output[1])) return finish(false);
+  ProcessState malformed = initial;
+  if (ParseAcceptAndTrack("\xff", 1, &id, &malformed, &reason) || !malformed.fd_states.empty()) return finish(false);
   return finish(true);
 }
 
@@ -10020,6 +10110,7 @@ int main(int argc, char** argv) {
   const bool cargo_utc = VerifyCargoResolverRuntimeReadBoundary("/usr/share/zoneinfo/Etc/UTC");
   const bool socketpair_diagnostic = VerifySocketPairDiagnosticPreservesFDAuthority();
   const bool kernel_socketpair = VerifyKernelSocketPairTracking();
+  const bool accept_network = VerifyAcceptNetworkTracking();
   const bool fd_mutation_diagnostic = VerifyFDMutationDiagnosticPreservesAuthority();
   const bool cargo_rustc_zlib = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/libz.so.1.2.13");
   const bool cargo_rustc_abi = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/librt.so.1") &&
@@ -10141,7 +10232,7 @@ int main(int argc, char** argv) {
   const bool passed = filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
-      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
+      cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && accept_network && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && kernel_terminal_outcomes && kernel_target_load && python_execution_boundary && node_execution_boundary && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
@@ -10200,6 +10291,7 @@ int main(int argc, char** argv) {
       {"Cargo close-on-exec entropy boundary", cargo_cloexec_entropy},
       {"SocketPair diagnostic preserves FD authority", socketpair_diagnostic},
       {"Kernel SocketPair descriptor authority", kernel_socketpair},
+      {"Accept NETWORK-only descriptor tracking", accept_network},
       {"FD mutation diagnostic preserves authority", fd_mutation_diagnostic},
       {"Cargo Rustc Zlib ABI boundary", cargo_rustc_zlib},
       {"Cargo Rustc ABI boundary", cargo_rustc_abi},

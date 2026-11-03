@@ -763,3 +763,60 @@ query error0·exact hash/inode를 검증한 뒤 삭제했다. Source/SDK/cache/�
 Staticcheck27.494s·vet15.237s도 PASS다. Code는 native-v5 이후 불변이며 뒤 변경은 이
 검증의 기록뿐이다. 추가 full native/CPP/CI를 만들지 않고 같은 M13-004의 다음 missing을
 계속한다.
+
+
+### S02 연결 전 baseline — `db32813`
+
+| 항목 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| network-none·외부 observer·새 환경 원장 | YES | YES | NO | NO | 기존 한정 증거의 grouped/final qualification |
+| 제한 fake DNS/HTTP·실제 후속 자극 | NO | NO | NO | NO | pinned guest loopback 가능성, 별도 responder 역할/변조 방지·유한 응답, 현재 관찰/Policy·cleanup 연결 |
+
+[보강 설계 §5.4](../../21-goal-completion-design.md#54-s02--실제-외부-연결-없이-제한된-모의-응답을-제공한다),
+D-008, Architecture-005와 trusted-tooling D-012/D-015를 대조했다. 기존 resolver 허용망과
+Host service는 이 기능이 아니며 재사용해 인터넷을 열지 않는다. 현재 CPP는 CONNECT/
+SOCKET 사실을 분류하지만 모의 responder의 독립 역할·DNS/HTTP chain 증명은 없다.
+Process 이름/Artifact 출력으로 trusted role·완료를 만들지 않는다.
+
+먼저 새 제품 API/서비스·권한 예외 없이 고정 Node image/기존 network-none·boundary와
+observer만으로 inert DNS→HTTP loopback DATA primitive를 한 번 확인한다. Host listener/
+외부 DNS/upstream·credential·Artifact 입력은0이다. 이 시험의 controller 소유 Node가
+서버와 클라이언트를 모두 수행하는 사실은 별도 Artifact/responder 역할 분리나 악성 탐지,
+S02 구현/완료를 증명하지 않는다. 성공해도 네 상태는 NO를 유지한다. 실제 runtime/
+관찰 제약을 확인한 뒤 현재 두 환경·공유 resource owner에 필요한 최소 연결을 정한다.
+기본 network-none 실험과 budget을 보존하고 fixture/profile 계약의 변경을 먼저 기록한다.
+
+
+S02의 첫 compile0.757s는 좁은 CommandRunner를 Executor/RunBounded로 사용한 시험 오류로
+NOT_RUN이었다. 기존 typed port를 구분한 build9.646s 뒤 actual-v1/2.018s는 CONTROL Node
+직접 root의 PROC_SELF_MAPS 분류에서 STREAM_FAULT였다. DNS/HTTP는 미도달이며 transport
+불가로 판단하지 않는다. Host 동일/정확한 복원/362087297B 사본 정리, helper NOT_STARTED다.
+새 Control Node 권한을 넓히지 않고 기존 npm lifecycle의 고정 무해 fixture로 같은 loopback
+교환을 확인한다. 기존 원장/두 fresh 환경/observer와 isolation을 재사용하며 신뢰 responder
+역할의 증거로 사용하지 않는다. S02 네 상태는 계속 NO이고 실제 새 실행은 아직 미검증이다.
+
+
+S02 actual-v2/6.595s는 Node Artifact/clone의 readonly `/etc/resolv.conf` 읽기에서
+STREAM_FAULT였다(경로·mount FNV ba66dbef7df0a5a0 일치). 아직 교환 미도달이며 기존
+차단을 완화하지 않는다. Fixed DNS 설정·별도 responder 역할은 현재 구현 gap이다.
+같은 기존 Python Artifact/격리 원장에 literal IPv4·bounded UDP DNS-wire→HTTP 표본을
+연결해 resolver 기본 설정 읽기와 분리한 최소 transport 확인을 계속한다. 이 성공도
+Node 기본 DNS 지원이나 S02 완료를 의미하지 않는다. v2 test 원본과 source SHA를 별도로
+보존했고 Host 동일/정확한 복원·370552904B 사본 정리/helperwait0를 확인했다.
+
+
+S02 actual-v3/10.602s는 UDP DNS-wire 교환·TCP connect 뒤 accepted TCP fd5의 SENDTO에서
+FD_STATE_UNKNOWN으로 끝났다. 기존 observer는 socket/socketpair/dup/close를 추적하지만
+accept/accept4 결과를 구독·처리하지 않는다. Pinned kernel의 standard Accept Exit는 실제
+반환 FD를 제공하며 peer address는 guest buffer여서 신뢰하지 않는다. 기존 NETWORK
+리스너의 성공 결과만 같은 원장에 등록하고 LOCAL 권위를 만들지 않는 최소 교정을 진행한다.
+미확인/LOCAL 리스너와 잘못된 결과는 차단을 유지하며 kernel patch/bundle·권한은 불변이다.
+Host 동일/정확한 복원/helperwait0·370553952B 사본 정리를 확인했다. S02 네 상태는 NO다.
+
+
+Observer-only C++135/54.556s와 exact profile/identity가 PASS다. 새 kernel/bundle 빌드는
+하지 않았다. 같은 Python client/helper의 compiled 입력을 재사용한 actual-v4/13.290s는
+두 network-none 환경에서 UDP DNS-wire→HTTP 응답과 NETWORK 사실10개를 PASS했다.
+Host 동일/정확한 복원/helperwait0·370554440B 사본 정리를 확인했다. 미확인/LOCAL
+listener, guest 주소 위조·재사용·한도 회귀도 보존했다. 이는 transport primitive만이며
+독립 responder 역할/고정 DNS/행동 chain·S02 전체 완료는 계속 MISSING이다.

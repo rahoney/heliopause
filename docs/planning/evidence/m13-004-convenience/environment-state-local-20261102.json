@@ -1295,5 +1295,63 @@
         "elapsed": 15.237
       }
     ]
+  },
+  "s02_loopback_primitive_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "controlled harmless Python Artifact DATA only; two network-none environments; no product responder role/default resolver/Policy qualification",
+    "first_failures": [
+      "CONTROL Node PROC_SELF_MAPS before DATA",
+      "Node Artifact /etc/resolv.conf before exchange",
+      "Python accepted TCP fd5 SENDTO FD_STATE_UNKNOWN after UDP exchange and TCP connect"
+    ],
+    "correction": "existing FD owner tracks only known NETWORK accept/accept4 successful results; never trusts guest address bytes or grants LOCAL authority; kernel patch/runtime lock/bundle unchanged",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v1.json",
+        "sha256": "d71d04087d622a6ad2d47d2f75b219f53861233b46b20451d9c840636b425e78",
+        "complete": false,
+        "elapsed": 2.018,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v2.json",
+        "sha256": "3f7240788b3d34c8e716d67f0fc23846f00d48926e98ec32a45c8717390d7879",
+        "complete": false,
+        "elapsed": 6.595,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v3.json",
+        "sha256": "003cb460e9dbfd5f49084fe2efd8824f5661f9ba506606ac6088e3e680c04ce4",
+        "complete": false,
+        "elapsed": 10.602,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-accept-observer-batch-v1.json",
+        "sha256": "775e4da89b8594b66bd7fbd552e3ab8b0fb5668749dcc7d7d20b82ce491c03a3",
+        "complete": true,
+        "elapsed": 54.556,
+        "exit_code": 0
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v4.json",
+        "sha256": "7e8d0f73033b2819d757bef174bd7f98873c0a6dd923077e6cc9467282f51f3c",
+        "complete": true,
+        "elapsed": 13.29,
+        "exit_code": 0
+      }
+    ],
+    "remaining": [
+      "separate immutable responder role and protected code/config",
+      "synthetic DNS configuration and bounded protocol state",
+      "actual chain and tamper/timeout/spoof/egress negatives",
+      "cross-ecosystem shared budgets/cancellation/cleanup and grouped final qualification"
+    ]
   }
 }

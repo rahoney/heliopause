@@ -6221,6 +6221,44 @@ bool ParseSocketAndTrack(const char* payload, size_t payload_size, int output, s
   return true;
 }
 
+bool ParseAcceptAndTrack(const char* payload, size_t payload_size, std::string* container_id,
+                         ProcessState* state, const char** reason) {
+  gvisor::syscall::Accept message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason)) return false;
+  const auto& context = message.context_data();
+  const auto group = state->groups.find(context.thread_group_id());
+  if (!ValidProcessIdentity(context) || group == state->groups.end() || !SameGroup(group->second, context)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+  }
+  const bool accept = message.sysno() == 43 || message.sysno() == 202;
+  const bool accept4 = message.sysno() == 288 || message.sysno() == 242;
+  if (!message.has_exit() || (!accept && !accept4) || message.fd() < 0 ||
+      (accept && message.flags() != 0) || (message.flags() & ~(SOCK_CLOEXEC | SOCK_NONBLOCK)) != 0) {
+    *reason = "STREAM_FAULT"; return false;
+  }
+  if (message.exit().errorno() != 0 || message.exit().result() < 0) return true;
+  const int64_t result = message.exit().result();
+  if (result > INT_MAX) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  auto table = state->fd_states.find(context.thread_group_id());
+  if (table == state->fd_states.end()) return true;
+  const auto listener = table->second.find(message.fd());
+  // Peer address bytes come from guest memory. Only an already tracked
+  // NETWORK listener may classify the result; never grant LOCAL authority.
+  const bool network = listener != table->second.end() && listener->second.family == SocketClassification::kNetwork &&
+      (listener->second.raw_family == AF_INET || listener->second.raw_family == AF_INET6);
+  const int family = network ? listener->second.raw_family : 0;
+  const int32_t fd = static_cast<int32_t>(result);
+  table->second.erase(fd);  // Revoke any stale descriptor even for unknown listeners.
+  if (!network || fd == message.fd()) return true;
+  if (table->second.size() >= kMaxTrackedFileDescriptorsPerGroup) {
+    *reason = "FD_STATE_LIMIT"; return false;
+  }
+  table->second[fd] = ProcessState::FDEntry{SocketClassification::kNetwork, family,
+                                         (message.flags() & SOCK_CLOEXEC) != 0};
+  return true;
+}
+
 const char* FamilyName(SocketClassification classification, int raw_family) {
   if (classification != SocketClassification::kNetwork) return nullptr;
   if (raw_family == AF_INET) return "INET";
@@ -6769,6 +6807,12 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
     case gvisor::common::MESSAGE_SYSCALL_SOCKET:
       if (!ParseSocketAndTrack<gvisor::syscall::Socket>(payload, payload_size, output, container_id, profile, process_state, reason)) {
         set_fault_site(FaultSite::kSocket);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_ACCEPT:
+      if (!ParseAcceptAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
         return false;
       }
       return true;
