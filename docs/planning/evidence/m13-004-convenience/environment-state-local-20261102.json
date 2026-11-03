@@ -2032,11 +2032,90 @@
         "exit_code": 0,
         "complete": true,
         "elapsed": 14.988
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v6.json",
+        "sha256": "9839e0eac8e5ab769320427f05466900b703ea7ecfb14f6fda24dee453618ed4",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 89.594
       }
     ],
     "first_failure": "detached child had not reached later behavior: authenticated pinned Node clone exact system /dev/null32768 first, then32770 standard-stream preparation classification; not evidence of early child termination",
-    "reused_successes": "v1 normal10.53s network0/two states/ALLOW; compound10.56s and delayed10.74s each network10/two states/MANUAL_REVIEW/no approval",
+    "reused_successes": "v6 current benign payload lifecycle normal11.64s ALLOW/network0; compound10.71s, delay10.77s, child10.90s each states2/network10/MANUAL_REVIEW/no approval. Current selected entry normal20.14s complete0 and activation20.21s actual network-attempt refusal/incomplete; both original archive unchanged. Whole operator89.594s PASS2 parents/6 cases.",
     "current_candidate": "Exact matching creator-exit fact, scoped Node Artifact NPM runtime reads passed CPP13649.128s and same-client child actual14.988s: 3 required checks, two persisted states, network10, MANUAL_REVIEW/no approval. Own maps v4 first fault corrected in this scope. Host restored/helperwait0/400260326B removed.",
-    "remaining": "S03 pure benign normal corpus, supported execution-only activation, target unchanged and broader ecosystem goal chain remain open; public authenticity/Host installation not claimed."
+    "remaining": "Python actual Application/Policy corpus now next; other ecosystems, full target unchanged and supported-entry synthetic environment coverage, grouped hosted/final remain open. Runtime entry refusal/incomplete differs from a final inspection BLOCK. No public authenticity/Host installation claimed."
+  },
+  "s03_python_corpus_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "controlled actual Application/inspection/stored Evidence/Policy Python wheel corpus; no public authenticity/Host install",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v1.json",
+        "sha256": "42c1f255124aec50180362299e49bc6f10d119e33dc007689bb323f7f74c82b2",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 57.547
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v2.json",
+        "sha256": "35e086edd077d683313d8c4f8ebf0ad9e13bfc7847cc5ebce3cd8de620e67363",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 17.516
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-fork-observer-batch-v1.json",
+        "sha256": "effec5b0e1998f42df17215b59f0bfbfcdf53a2d5cc0a081ebcb72773f3af024",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 56.149
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v3.json",
+        "sha256": "6f9bcf1b900a5a8260c5c77b2a0d3a9313a245b1a2d26e7d468e37d47cdf7c19",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 17.505
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-native-v1.json",
+        "sha256": "1d2e6e379d805b250c18f310ac8d2477035244e26b94f5d89237e8d8bcdf318a",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 45.01
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-final-staticcheck.json",
+        "sha256": "0d70df858019cdc1d0d6e908d397789fbeab7548c9c32eac2405872ea9585f2c",
+        "exit_code": 0,
+        "elapsed": 2.318,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-final-vet.json",
+        "sha256": "5f966d8bf770d870809991163adea00a975aab78f3c0fd3fcea30987ba39eac9",
+        "exit_code": 0,
+        "elapsed": 1.159,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-python-checkpoint-docs.json",
+        "sha256": "508bf46d03fa565a6597703674e3b1390458cf5441465d61c37701af61a34573",
+        "exit_code": 0,
+        "elapsed": 0.353,
+        "source_unchanged": true
+      }
+    ],
+    "reused_successes": "normal13.56s states2/network0/ALLOW; conditional13.10s and delay13.58s states2/network13/MANUAL_REVIEW/no approval",
+    "first_failure": "fork own current PID stat32768 omission corrected: same diagnostic client v3/17.505s completed child13.48s checks3/states2/network13/MANUAL_REVIEW/no approval; full CPP13756.149s passed exact mount/image/identity/flags/path/profile negatives",
+    "remaining": "S03 original install target unchanged/CLI goal linkage, other ecosystems/finite supported scenario census, selected-entry synthetic environment, hosted/final and whole S02 remain open",
+    "current_candidate": "No temporary diagnostic wrapper remains; same backend forwarding only removed. Python entry-only activation/normal checks now next; current ordinary controlled wheel normal/compound/delay/child successes retained without repetition.",
+    "entry_scope": "current Python selected readonly entry actual45.010s PASS: normal20.71s complete/exit0, activate20.33s actual network-attempt refusal/incomplete; original wheel digest preserved, Host installation not performed; not final inspection BLOCK or synthetic entry environment proof"
   }
 }

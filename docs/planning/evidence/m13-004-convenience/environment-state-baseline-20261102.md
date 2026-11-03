@@ -1234,3 +1234,61 @@ V4 own maps fault는 parent-exit runtime-read owner의 이 차분으로 해소�
 Helperwait0/Host 동일·원복·400260326B와 임시 빈 mountpoint 제거를 확인했다.
 원본 s03-node-orphan-observer-batch-v1/native-v5가 범위를 소유한다. 기존 정상·조건부·
 지연 사례는 v1의 검증 범위를 재사용한다. 전체 S03/target 무변경/공개 인증·서명된 설치는 OPEN이다.
+
+
+S03 Node v6/89.594s는 순수 정상 cli payload를 사용하는 lifecycle4와 선택 진입점2를
+실제 실행해 두 parent/6case PASS다. 기존 boundary source wrapper의 원래 cli bytes는
+보존하고 현재 corpus만 명시한 program을 넣는다. 임시 backend 진단 wrapper는 제거했다.
+Lifecycle 정상11.64s/network0/ALLOW, 조건부10.71s·지연10.77s·자식10.90s는 각 상태2개/
+network10/MANUAL_REVIEW/no approval이다. Entry 정상20.14s는 complete/exit0이며, 같은
+artifact의 argv 선택으로만 활성화한20.21s는 실제 network-attempt에 의한 runtime 거부/
+incomplete다. 양쪽 원본 tarball digest는 보존됐다. Runtime 거부를 inspection BLOCK으로
+부르거나 이 두 normal을 일반 오탐률로 확대하지 않는다. 선택 실행의 모의 환경 배치는
+이 시험에서 추가하지 않았다. Helperwait0/Host 원복·400240697B 및 임시 mountpoint 제거를
+확인했다. 원본 s03-entry-fixtures-format/build와 s03-node-corpus-native-v6가 소유한다.
+Python과 다른 생태계·target 무변경·hosted/final·전체 S03은 계속 OPEN이다.
+
+
+S03 Python actual-v1/57.547s는 정상13.56s/network0/ALLOW, 조건부13.10s와 지연13.58s의
+각 상태2개/network13/MANUAL_REVIEW/no approval을 확인했다. 같은 모듈의 `os.fork`
+분리 자식13.35s는 M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE다. 최초 원인은 아직
+없으므로 Node와 동일 원인·조기 종료로 추정하지 않는다. 성공3개는 재사용하고 typed
+plan/closure marker를 모두 보존한 test-only 전달에서 원래 backend error를 수집한다.
+실제 공급자 인증/Host 설치는 미실행이며 전체 S03은 OPEN이다. Helperwait0/Host 원복·
+400264247B/임시 mountpoint 제거를 확인했고 원본 s03-python-corpus-native-v1이 소유한다.
+완료한 Node client2개는 전체107process의 FD/maps 참조0/query errors0과 digest/identity
+재확인 뒤112002991B를 제거했다(s03-completed-node-clients-cleanup).
+
+
+Python child-only diagnostic-v2/17.516s는 typed plan을 그대로 전달해 최초 오류를 보존했다:
+OPEN_RESULT_CLASSIFICATION_PROC/32768/system `/proc`, PYTHON ARTIFACT DIRECT_EXEC_ROOT,
+locator bb56e2fc9afda646은 bounded PID1..255/common proc catalogue에서 `/proc/13/stat`와
+일치했다. FNV 자체는 identity 권위가 아니다. [CPython3.14 posixmodule](https://raw.githubusercontent.com/python/cpython/3.14/Modules/posixmodule.c)의 fork 경로는
+자기 `/proc/self/stat`의 thread count를 읽는다. 이는 upstream 보조 근거이며 고정 설치
+바이너리의 전체 source 동일성 증명은 아니다. 실제 자기 PID 관계/원인은 다음 strict
+current-PID predicate와 same-client 비교로 확인한다. 기존 Python runtime-read owner에서
+Artifact/tracked Python image·정확한 current PID/32768/system proc만 후보로 추가한다.
+다른 프로세스·유사 경로·쓰기·역할/다른 profile/mount를 열거나 새 helper를 만들지 않는다.
+Helperwait0/Host 원복·400285592B/임시 mountpoint 제거를 확인했다.
+
+
+Python exact current-PID stat32768/system-proc 후보는 CPP137/56.149s와 같은 진단 client
+v3/17.505s에서 PASS다. 자기 PID 외·유사/alias 경로·쓰기·변조 image/identity/role·다른
+profile/mount negatives를 보존하며, 실제 자식13.48s의 필수 검사3/상태2/network13/
+MANUAL_REVIEW/no approval을 확인했다. 기존 코드의 자기 proc stat 누락을 이 한정 범위에서
+교정했고 새로운 언어 버전·PID·경로를 환경별로 하드코딩하지 않았다. 원래 root reader에
+기존 mount anchor만 전달해 정확한 `/proc`를 검증한다. Kernel/bundle/예산은 불변이다.
+Helperwait0/Host 원복·400285632B/임시 mountpoint 제거를 확인했다. 이전 정상·조건부·지연은
+v1의 증거를 재사용하며 임시 Python 진단 wrapper는 제거한다. 다음은 기존 Python 선택
+entry의 정상/argv 활성화 실제 실행과 원본 보존이다. 전체 S03/선택 실행 모의 환경/실제
+반입 target·공개 인증·hosted/final은 계속 OPEN이다.
+
+
+Python entry-only actual-v1/45.010s는 기존 wheel 준비·Application/저장 Evidence·entry binding과
+readonly 실행을 재사용해 정상20.71s complete/exit0 및 activate20.33s의 실제 network-attempt
+거부/incomplete를 PASS했다. 양쪽 원본 wheel digest는 보존됐다. Normal module import 때는
+활성화하지 않고 고정 argv에서만 무해한 loopback connect를 시도한다. Runtime 거부를
+inspection BLOCK/악성 확정으로 부르지 않는다. 임시 진단 wrapper는 제거된 현재 입력이며,
+helperwait0/Host 원복·400275331B/임시 mountpoint 제거를 확인했다. 원본
+s03-python-entry-format/build/native-v1이 범위를 소유한다. 전체 S03/선택 실행의 모의 환경·
+실제 설치 target/다른 생태계·hosted/final은 계속 OPEN이다.

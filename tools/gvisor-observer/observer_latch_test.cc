@@ -9077,6 +9077,39 @@ bool VerifyNPMArtifactRuntimeReadBoundary(ProcessClass image = ProcessClass::kBu
   return true;
 }
 
+bool VerifyPythonForkStatReadBoundary() {
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID); context.set_thread_group_id(13); context.set_thread_group_start_time_ns(130);
+  context.set_process_name("forged-comm");
+  MountAnchor anchor{10,"/proc","system"};
+  for (auto provenance:{ProcessState::Provenance::kDirectExecRoot,ProcessState::Provenance::kCloneChild}) {
+    ProcessState state;
+    if (!RegisterGroup(&state,context,ProcessState::Role::kArtifact,provenance,false,true)) return false;
+    state.groups[13].current_image_class=ProcessClass::kPython;
+    auto allowed=[&](const std::string& path,uint64_t flags,const char* profile=kProfilePyPI) {
+      return IsPinnedRuntimeRootRead(context,state,path,flags,profile,&anchor);
+    };
+    if (!allowed("/proc/13/stat",32768) || IsTrustedControlNetwork(context,state)) return false;
+    for (const char* path:{"/proc/1/stat","/proc/12/stat","/proc/14/stat","/proc/self/stat","/proc/13/stat.evil","/proc/13/../13/stat"}) {
+      if (allowed(path,32768)) return false;
+    }
+    for (uint64_t flags:{uint64_t{0},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
+      if (allowed("/proc/13/stat",flags)) return false;
+    }
+    for (const char* profile:{kProfileNPM,kProfileNodeExecution,kProfilePythonExecution,kProfileGitHub,kProfileGoBuild,kProfileCargoBuild}) {
+      if (allowed("/proc/13/stat",32768,profile)) return false;
+    }
+    anchor.mount_class="workspace"; if (allowed("/proc/13/stat",32768)) return false; anchor.mount_class="system";
+    anchor.mountpoint="/foreign"; if (allowed("/proc/13/stat",32768)) return false; anchor.mountpoint="/proc";
+    state.groups[13].current_image_class=ProcessClass::kNode; if (allowed("/proc/13/stat",32768)) return false;
+    state.groups[13].current_image_class=ProcessClass::kPython;
+    state.groups[13].role=ProcessState::Role::kControl; if (allowed("/proc/13/stat",32768)) return false;
+    state.groups[13].role=ProcessState::Role::kArtifact;
+    state.groups[13].start_time_ns++; if (allowed("/proc/13/stat",32768)) return false;
+  }
+  return true;
+}
+
 bool VerifyNPMOrphanRuntimeReadBoundary() {
   ProcessState state;
   gvisor::common::ContextData parent;
@@ -10465,7 +10498,8 @@ int main(int argc, char** argv) {
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool python_fork_stat = VerifyPythonForkStatReadBoundary();
+  const bool passed = python_fork_stat && filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && accept_network && responder_oci && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -10473,6 +10507,7 @@ int main(int argc, char** argv) {
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && kernel_terminal_outcomes && kernel_target_load && python_execution_boundary && node_execution_boundary && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"Python fork own stat read boundary", python_fork_stat},
       {"Pipx native fixed root and six-mount boundary",pipx_native_root},
       {"Pipx native ARTIFACT clone and query boundary",pipx_native_clone},
       {"Pipx native readonly inputs and query reexec boundary",pipx_native_read},

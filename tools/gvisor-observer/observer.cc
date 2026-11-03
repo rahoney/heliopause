@@ -3192,7 +3192,7 @@ bool IsExactPinnedPythonLoaderCandidate(const std::string& path) {
 bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
                              const ProcessState& state,
                              const std::string& path, uint64_t flags,
-                             const char* profile) {
+                             const char* profile, const MountAnchor* anchor) {
   if (profile == nullptr || strcmp(profile,kProfilePythonExecution) == 0) return false;
   std::string normalized;
   if (!NormalizeAbsolutePath(path, &normalized)) return false;
@@ -3244,6 +3244,11 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
       IsExactPinnedPythonSystemLibrary(normalized)) return true;
   const std::string pid_str = std::to_string(context.thread_group_id());
   const std::string proc_pid = "/proc/" + pid_str;
+  // CPython's fork thread-count query reads only its own kernel proc stat.
+  if (normalized == proc_pid + "/stat") {
+    return group->role == ProcessState::Role::kArtifact && flags == 32768 &&
+        anchor != nullptr && anchor->mount_class == "system" && anchor->mountpoint == "/proc";
+  }
   const bool exact_self_proc =
       normalized == "/proc/self/environ" || normalized == "/proc/self/maps" ||
       normalized == "/proc/self/status" || normalized == "/proc/self/mounts" ||
@@ -4657,11 +4662,11 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       IsExactDockerEtcHostsLockGenerationRead(message.context_data(), state, path,
                                               message.flags(), profile, anchor) ||
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
-                              message.flags(), profile) ||
+                              message.flags(), profile, anchor) ||
       IsPinnedNpmRuntimeRead(message.context_data(), state, path, message.flags(), profile)) {
     return profile != nullptr && IsPythonRuntimeProfile(profile) &&
             IsPinnedRuntimeRootRead(message.context_data(), state, path,
-                                    message.flags(), profile)
+                                    message.flags(), profile, anchor)
         ? FilesystemClass::kRuntimeRoot : FilesystemClass::kHelperOnly;
   }
   return FilesystemClass::kUnknown;
@@ -6253,7 +6258,7 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
       auto named_python = final_open.context_data();
       named_python.set_process_name("python");
       if (IsPythonProfile(profile) &&
-          IsPinnedRuntimeRootRead(named_python, *state, final_open.pathname(), final_open.flags(), profile)) {
+          IsPinnedRuntimeRootRead(named_python, *state, final_open.pathname(), final_open.flags(), profile, &anchor->second)) {
         detail(FaultSite::kOpenResultClassificationProcessName);
       } else if (HasPrefix(final_open.pathname(), "/proc/")) {
         detail(FaultSite::kOpenResultClassificationProc);
