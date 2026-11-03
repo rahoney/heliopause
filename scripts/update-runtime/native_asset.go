@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
+	"crypto/sha256"
 	"errors"
 	"io"
 	"os"
@@ -12,7 +14,16 @@ import (
 // publishNativeAsset reuses the no-replace PNPM publisher for verified native
 // data. It does not execute or register an installed/runtime role.
 func publishNativeAsset(output string, body []byte, mode os.FileMode) error {
-	if mode != 0555 && mode != 0444 || len(body) == 0 {
+	return publishNativeAssetWith(output, int64(len(body)), mode, func(output io.Writer) error {
+		_, err := io.Copy(output, bytes.NewReader(body))
+		return err
+	})
+}
+
+// The writer validates its frozen inputs before returning. Keeping the existing
+// publication owner permits large source bundles without retaining their bodies.
+func publishNativeAssetWith(output string, size int64, mode os.FileMode, write func(io.Writer) error) error {
+	if mode != 0555 && mode != 0444 || size <= 0 || write == nil {
 		return errors.New("native asset mode or body is invalid")
 	}
 	parent := filepath.Dir(output)
@@ -48,8 +59,13 @@ func publishNativeAsset(output string, body []byte, mode os.FileMode) error {
 			_ = directory.Remove(temporary)
 		}
 	}()
-	if count, err := file.Write(body); err != nil || count != len(body) {
+	digest := sha256.New()
+	if err := write(io.MultiWriter(file, digest)); err != nil {
 		return errors.Join(errors.New("native native asset write was incomplete"), err)
+	}
+	written, err := file.Stat()
+	if err != nil || written.Size() != size {
+		return errors.New("native native asset write size differs")
 	}
 	if err := errors.Join(file.Chmod(mode), file.Sync()); err != nil {
 		return err
@@ -59,9 +75,10 @@ func publishNativeAsset(output string, body []byte, mode os.FileMode) error {
 		return err
 	}
 	readInfo, statErr := readback.Stat()
-	readBody, readErr := io.ReadAll(io.LimitReader(readback, int64(len(body))+1))
+	readDigest := sha256.New()
+	count, readErr := io.Copy(readDigest, io.LimitReader(readback, size+1))
 	closeErr := readback.Close()
-	if statErr != nil || readErr != nil || closeErr != nil || !os.SameFile(created, readInfo) || len(readBody) != len(body) || hash(readBody) != hash(body) {
+	if statErr != nil || readErr != nil || closeErr != nil || !os.SameFile(created, readInfo) || count != size || !bytes.Equal(readDigest.Sum(nil), digest.Sum(nil)) {
 		return errors.New("native native asset readback differs from the authenticated bytes")
 	}
 	current, err := os.Lstat(parent)
@@ -78,7 +95,7 @@ func publishNativeAsset(output string, body []byte, mode os.FileMode) error {
 		return err
 	}
 	published, err := directory.Lstat(filepath.Base(output))
-	if err != nil || !os.SameFile(created, published) || published.Mode().Perm() != mode || published.Size() != int64(len(body)) {
+	if err != nil || !os.SameFile(created, published) || published.Mode().Perm() != mode || published.Size() != size {
 		return errors.New("native native asset publication changed")
 	}
 	if err := directory.Remove(temporary); err != nil {

@@ -564,5 +564,68 @@
       }
     },
     "next": "Use official1.183 source candidate; prototype Python edit is superseded by released upstream implementation. Continue canonical fixed build/source/notice supply and runtime-maintenance integration before product adoption."
+  },
+  "source_package_writer": {
+    "implementation": "scripts/update-runtime/semgrep_sources.go::packageSemgrepSource; existing native_asset.go publisher retains all callers through writer input",
+    "scope": "Developer source-package curation only; no artifact execution, runtime admission/Host installation; no language pin/schema change",
+    "checks": {
+      "s04-source-package-format-covered": {
+        "elapsed": 0.85,
+        "source_unchanged": true,
+        "raw": "s04-source-package-format-covered.json"
+      },
+      "s04-source-package-foundation": {
+        "elapsed": 40.393,
+        "source_unchanged": true,
+        "raw": "s04-source-package-foundation.json"
+      },
+      "s04-source-package-race": {
+        "elapsed": 34.64,
+        "source_unchanged": true,
+        "raw": "s04-source-package-race.json"
+      },
+      "s04-source-package-security": {
+        "elapsed": 13.456,
+        "source_unchanged": true,
+        "raw": "s04-source-package-security.json"
+      },
+      "s04-source-package-vet": {
+        "elapsed": 1.113,
+        "source_unchanged": true,
+        "raw": "s04-source-package-vet.json"
+      },
+      "s04-source-package-staticcheck": {
+        "elapsed": 2.39,
+        "source_unchanged": true,
+        "raw": "s04-source-package-staticcheck.json"
+      }
+    },
+    "actual": {
+      "raw": "s04-source-package-actual-v2.json",
+      "schema": "helox.semgrep-source-package/v1",
+      "source_commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "manifest_sha256": "cb08977805f411b873a79b0cb1cdbe9e49cab6ee844dd0a2cc6fb7f4c408a008",
+      "sha256": "72ff88618a91f48c1690aad7a613d1afb9792c4e14108d6cbca16fba88403db8",
+      "size": 306335744,
+      "files": 749,
+      "runtime_qualified": false,
+      "elapsed": 6.675,
+      "readback": "s04-source-package-readback-1183.json"
+    },
+    "inputs": {
+      "git_repositories": 9,
+      "opam_archives": 148,
+      "native_archives": 15,
+      "extra_source_files": 10,
+      "aports_recipe_files": 97,
+      "sdk_binary_packages_included": false
+    },
+    "first_failure": {
+      "raw": "s04-source-package-actual.json",
+      "cause": "Fixture pathlib-component sort differs from the required full-path byte order; rejected before output creation",
+      "correction": "s04-source-package-input-order-correction-1183.json",
+      "product_source_changed_for_retry": false
+    },
+    "remaining": "Final source/notice payload incl own license, canonical clean build recipe/SDK reproduction and trust, runtime owner/maintenance/release/backend adoption; whole S04 still open"
   }
 }

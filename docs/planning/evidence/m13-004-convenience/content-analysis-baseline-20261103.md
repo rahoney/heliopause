@@ -203,3 +203,23 @@ PASS다. 기대29match/정상296·의도한 malformed2만 보고됐으며 기존
 중 기존49개는 그대로이며 나머지12개는 목록 확장이지 새 release에서 추가된 파일이 아니다.
 제품 runtime lock/Host 설치/CI는 불변이다. 최종 source/notice 공급 패키지·build trust와 기존
 유지보수 owner/제품 연결·gVisor qualification은 여전히 MISSING이며 S04 네 상태는 NO다.
+
+
+### 소스 패키지 생성의 기존 구현 대조와 로컬 구현
+
+Source-package writer는 IMPLEMENTED=YES/WIRED=YES, QUALIFIED=YES(local named scope)/
+ACCEPTANCE_CLOSED=NO다. 최종 대응 source/notice payload·깨끗한 재빌드·trust와 제품 공급
+승인은 여전히 MISSING이다. 기존 `scripts/update-runtime/native_asset.go::publishNativeAsset`
+보안 게시 절차는 유지하고 writer 입력만 추가했다. 기존 byte 호출은 그대로 위임하며 source
+전체와 readback을 메모리에 동시에 올리지 않는다. Held parent/no-replace/신원·권한·fsync·
+foreign 보존은 그대로다. 새 `package-semgrep-source`는 명시된 ordinary file만 frozen SHA/
+크기로 읽고 정렬·경로/중복·JSON·총량을 검증한다. Signature/전체 source closure/런타임 승인
+검증기로 쓰지 않으며 출력 runtime_qualified는 항상false다.
+
+위 원장의 source_package_writer가 canonical format/foundation40.393s/security13.456s/
+update-runtime 전체 Race34.640s·vet/staticcheck와 원본을 소유한다. 실제749파일/306335744B
+생성6.675s와 독립 TAR readback이 PASS다. Git9/OPAM148/native15·extra-source10에 native
+APKBUILD 대응97개 파일도 Git blob으로 확인했다. SDK APK binary는 source 묶음에 넣지
+않았다. 첫 실제 입력은 Python Path 구성요소 순서 때문에 전체 path byte 정렬과 달라 출력 전
+거부됐으며 입력 생성만 교정했다. 같은 Go source의 회귀를 반복하지 않았다. 기존 언어 pin/
+Host/CI는 불변이고 재배포 payload 마무리·canonical clean build/기존 유지보수 연결을 계속한다.

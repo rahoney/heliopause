@@ -682,3 +682,18 @@ Frozen maintenance는 source-bound 고지 bytes도 계획에 고정하고 source
 재사용을 거부한다. 이는 reviewed passive source data이며 upstream archive 서명의 일부라고
 주장하지 않는다. Native asset은0555, 고지는0444로 출력하며 두 파일 모두 signed release set과
 OS package의 기존 설치/복구 범위에 포함한다. 전체 배포 qualification은 별도다.
+
+
+### Semgrep source 입력의 명시 패키징
+
+`update-runtime package-semgrep-source --input ABS_FROZEN_DIR --output ABS_NEW_DIR/semgrep-SOURCES.tar`
+는 source 입력을 묶는 개발 도구다. `source-inputs.json`은 schema
+`helox.semgrep-source-inputs/v1`, `source_commit`, `source_date_epoch`, 정렬된 `files`의
+path/SHA256/size/mode를 명시한다. SHA·ordinary file 신원·완전한 읽기를 대조하고 ordinary
+USTAR로 묶으며 output은 덮어쓰지 않는0444다. 한 source member256MiB/전체512MiB/
+4096개와 manifest2MiB는 이 공급 도구만의 상한이고 기존 Artifact 예산을 바꾸지 않는다.
+
+이 명령은 입력의 source closure·서명·실제 빌드를 검증하거나 tool/runtime을 실행하지 않는다.
+출력 `runtime_qualified=false`를 유지하며 기존 selected owner가 결과를 별도로 결합해야 한다.
+Canonical clean build·Semgrep runtime owner/update/release 연결의 현재 미완료 범위는
+[S04 baseline](../planning/evidence/m13-004-convenience/content-analysis-baseline-20261103.md)을 따른다.
