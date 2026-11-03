@@ -147,3 +147,29 @@ database_specific의 내부 필드에 의존하지 말라고 명시한다. 현�
 표시용 raw fact이며 Policy 입력으로 단독 채택하지 않는다. 실제 CVSS vector의 점수 해석을
 위해 고정 library 후보의 source/checksum/license·scoring 계약을 검토 중이다. 현재 후보를
 go.mod에 추가하거나 실행하지 않았다. 전체 S05의 네 상태와 최종16번은 계속 미완료다.
+
+## 네 번째 단위 — 고정 CVSS parser와 base score
+
+이전 문단의 후보 검토 이후 `go-cvss v0.6.4`를 채택했다. 공급·의존성·license·unsafe 호출
+범위의 단일 검토는 [Coding Rules](../../../engineering/02-coding-security-rules.md#m13-004-advisory-cvss-dependency-review)가
+소유한다. go.mod 한 줄과 검증된 go.sum 두 줄만 추가했고 기존 선택 version은 변경하지 않았다.
+Runtime/compiler pin과 update-runtime 절차도 그대로다. Source `tools/cvss/NOTICE`의 실제
+release/설치·업데이트 공급은 **아직 MISSING**이며 이번 수학 API 시험으로 닫지 않는다.
+
+`osv_severity.go`는512B 이하 CVSS2/3.0/3.1/4.0 vector를 검증하고 base score를 계산한다.
+추가 threat/environment 값으로 base 위험도를 낮추지 않는다. Malformed/unsupported vector,
+parser panic, NaN/Inf는 실패이며 정상0점이 아니다. `Vector()` 직렬화 API는 호출하지 않고
+자체 source에 unsafe/cgo를 추가하지 않는다. 단순 HIGH 문자열은 사용하지 않는다.
+Scoring fact는 최종 Policy Decision이 아니며 아직 report/Policy에 연결하지 않았다.
+
+실제 표적1.095s·Race2.543s·Staticcheck2.964s·vet0.560s,
+canonical foundation77.841s/security30.184s/vulnerability29.356s는 PASS다.
+Native Go fuzz는 seed4를 포함해 실제10,496회/6.024s PASS이며 operator43.887s에는 build가
+포함된다. 이는 retained corpus/해당 bounded wrapper의 검증이고 모든 vector의 수학적
+정확성이나 미공개 취약점 부재를 증명하지 않는다. 다른 profile/실제 설치·CLI·전체 S05
+성공으로 전용하지 않는다. [CVSS 부분 원장](./advisory-cvss-local-20261103.json)이 exact
+source/module·metadata와 check 범위를 연결한다.
+
+다음은 공개 OSV 전송 경계와 기존 graph/결과/판정·유한 cache 연결이다. 계산 profile과 cache는
+실제 linked CVSS version/checksum에 결합해 module update 후 예전 결과를 무조건 재사용하지
+않아야 한다. 별도 version selector를 만들지 않는다. 전체 S05와 최종16번은 계속 OPEN이다.

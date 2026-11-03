@@ -9,6 +9,7 @@ require (
 	github.com/goreleaser/nfpm/v2 v2.47.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/klauspost/compress v1.18.6
+	github.com/pandatix/go-cvss v0.6.4
 	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/sigstore/sigstore-go v1.3.0

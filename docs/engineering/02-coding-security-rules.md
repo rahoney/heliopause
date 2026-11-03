@@ -51,6 +51,31 @@ module path·release tag·checksum 신뢰성
 - Artifact가 제공한 Go module, executable 또는 script를 Heliopause product dependency로 동적 import·load하지 않는다.
 - MVP에 동적 Go plugin loading을 추가하지 않는다.
 
+### M13-004 advisory CVSS dependency review
+
+S05의 CVSS2/3.0/3.1/4.0 vector 해석에는 공개 source가 고정된
+`github.com/pandatix/go-cvss v0.6.4`를 채택한다. 복잡한4.0 scoring table을 자체 구현하거나
+GitHub의 내부 `database_specific.severity` 문자열을 판정 authority로 쓰지 않는다.
+선택 version의 owner는 go.mod 하나이며 go.sum이 module bytes를 검증한다.
+고정 upstream tag의 실제 commit은 `8df5dbd1cdb98348548087af3157a7f96d7521ba`이고
+공식 Go proxy/SumDB의 Origin/ZIP와 대조했다. Module sum은
+`h1:9w2RCO/Q4UTiJyEgpCHRiVc6CfrsFEnkoX+OtATqKio=`다.
+
+[고정 go.mod](https://github.com/pandatix/go-cvss/blob/8df5dbd1cdb98348548087af3157a7f96d7521ba/go.mod)의
+Go1.25.0 floor는 현재 고정 compiler에서 지원한다. Read-only offline package closure는
+네 CVSS package 외 추가 runtime module이 없음을 확인했다. Testify 등의 module requirements는
+upstream test용이다. [MIT license](https://github.com/pandatix/go-cvss/blob/8df5dbd1cdb98348548087af3157a7f96d7521ba/LICENSE)의
+copyright/허가문 보존은 제품 배포의 필수 조건이며 source NOTICE와 기존 release 공급에
+연결해 확인한다. Source 다운로드·metadata 조회만으로 scoring qualification을 선언하지 않는다.
+
+Upstream의 `unsafe` slice→string 변환은 `Vector()` 직렬화에 있고 이 adapter는 호출하지
+않는다. 자체 product source에 unsafe/cgo를 추가하지 않는다. Adapter는 bounded vector의
+ParseVector와 base score API만 사용하며 nil/error·panic·NaN/Inf를 실패로 처리한다.
+Malformed 입력을 정상0점으로 바꾸지 않는다. 4.0의 추가 threat/environment 값으로 base
+위험도를 낮추지 않으며 supported vector·경계 점수·잘못된 vector/중복 metric을 검증한다.
+이 범위의 실제 시험·NOTICE 배포·기존 module graph/취약점 검사는 S05 증거와 최종 묶음에서
+확인하고 whole S05 완료와 구분한다. Compiler/runtime lock과 기존 trusted-tool 정책은 불변이다.
+
 ### M13-004 Sigstore verifier dependency review
 
 2026-10-20에 production release provenance 검증용으로

@@ -1,0 +1,152 @@
+{
+  "baseline_commit": "801dbd3",
+  "scope": "fixed source CVSS parser adoption and bounded base-score wrapper only; not product advisory HTTP/graph/report/Policy/cache/CLI or NOTICE distribution",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "module": {
+    "Path": "github.com/pandatix/go-cvss",
+    "Version": "v0.6.4",
+    "Sum": "h1:9w2RCO/Q4UTiJyEgpCHRiVc6CfrsFEnkoX+OtATqKio=",
+    "GoModSum": "h1:/ukvQnYlrKl3o/DVp7/GO2UZyZheuo/maOK0U1nBEhQ=",
+    "Origin": {
+      "VCS": "git",
+      "URL": "https://github.com/pandatix/go-cvss",
+      "Hash": "8df5dbd1cdb98348548087af3157a7f96d7521ba",
+      "Ref": "refs/tags/v0.6.4"
+    }
+  },
+  "go_floor": "1.25.0",
+  "license": "MIT",
+  "source_notice": "tools/cvss/NOTICE",
+  "notice_distribution_qualified": false,
+  "source_files": [
+    {
+      "path": "go.mod",
+      "sha256": "2b92b49afcf7cf36f8bbf1cbfa0309a0aaeaad431940b636e7c25db4bdc4cff3"
+    },
+    {
+      "path": "go.sum",
+      "sha256": "2bc57f8821e66f45a0ae20a4b364819ba6cf4fa5e18b93c296d2d2d58f50a2e9"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_severity.go",
+      "sha256": "213d4008098b8d4fbe71f3ad46d0cfce47a7fe6c4beda5f957045f20d92894c7"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_severity_test.go",
+      "sha256": "a8f57a9e812ac588fbb6a21539f4c4fb593ef333dfddf9a3a145321461bbea48"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "978153a3b145c4564d590702f7a5a5132e9101f16cba1cdd799c2f8544d46b0a"
+    },
+    {
+      "path": "docs/engineering/02-coding-security-rules.md",
+      "sha256": "c4fb84fefd787b1db6c25f05f4994959e475a307217075393d9f4b04462206cd"
+    },
+    {
+      "path": "tools/cvss/NOTICE",
+      "sha256": "a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a"
+    }
+  ],
+  "checks": [
+    {
+      "raw_file": "s05-cvss-target.json",
+      "sha256": "0e9ea47ba52178ebe52238df6cee838a4739d25552dc829f0b7de2f45e70d609",
+      "elapsed_seconds": 1.095,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-race.json",
+      "sha256": "3f7275b3d536d053f2cfb7988dfebce40278c6a60680020e0c9b0913cbd65ede",
+      "elapsed_seconds": 2.543,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-fuzz.json",
+      "sha256": "8e657aaf7e26e2a43c6b68e11edd3bd1c9f8b9602fc149e373688de07dd0ec28",
+      "elapsed_seconds": 43.887,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-static.json",
+      "sha256": "291d04bfdbcee8e137a04c9d62e878f474b0e1dd1b32770223e3cdad7daef928",
+      "elapsed_seconds": 2.964,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-vet.json",
+      "sha256": "bb52d9668bea0afc5226dd69b46bb96f0c43c09cf54fc8a83340657eb8f34004",
+      "elapsed_seconds": 0.56,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-foundation.json",
+      "sha256": "5684b38f83261d73dec2308eaac168750c9d4bef02db7219cc25b54b7bd70db6",
+      "elapsed_seconds": 77.841,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-security.json",
+      "sha256": "05469da6d94968cba8355812b833d6bdd692a97f468906ea5832a47c10ed21f7",
+      "elapsed_seconds": 30.184,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-cvss-vulnerability.json",
+      "sha256": "d5e6bfe1c7e06e23e8a3ed4cf86431b3554db8be07f5b4aa1285f9124e336693",
+      "elapsed_seconds": 29.356,
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  ],
+  "metadata": [
+    {
+      "raw_file": "s05-cvss-module-download.json",
+      "sha256": "21ddf83dcf704f9a55dcb23fd97a397a9d867e54de3d909b8c451dc38e0ed722",
+      "size": 865
+    },
+    {
+      "raw_file": "s05-cvss-tag.json",
+      "sha256": "5d09d1bf23ba582917dbdb5a0832d9cd3b9d99e66daec090b0d4f81f321dc3a4",
+      "size": 366
+    },
+    {
+      "raw_file": "s05-cvss-tag-object.json",
+      "sha256": "2cec2268d43ff50d885c171844c80de4cb1d04da8609e0eff14be98963f6f3b3",
+      "size": 2653
+    },
+    {
+      "raw_file": "s05-cvss-advisory-query.json",
+      "sha256": "a695960dbd857a99b1fa5950f6b69013974aef100c8b9b4c2dbc4fe8c1fc42e9",
+      "size": 19
+    },
+    {
+      "raw_file": "s05-cvss-package-closure.json",
+      "sha256": "91b62e5ffc63e4b1347d9d4c0940a3e9bbe55d03876529f2d6006aac0e46b227",
+      "size": 114202
+    }
+  ],
+  "fuzz": {
+    "executions": 10496,
+    "elapsed_test_seconds": 6.024,
+    "operator_elapsed_seconds": 43.887,
+    "scope": "bounded wrapper/corpus, not exhaustive mathematical conformance"
+  },
+  "initial_preparation": "first env-i module data download omitted GOPATH; SumDB initialization stopped before adoption; corrected with task-local GOPATH and no verification bypass",
+  "runtime_lock_changed": false,
+  "existing_go_module_versions_changed": false,
+  "host_installation_changed": false,
+  "ci_started": false
+}
