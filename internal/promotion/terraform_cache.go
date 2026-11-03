@@ -352,7 +352,7 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 		if _, e := artifactterraform.IdentityReference(identity); e != nil {
 			return e
 		}
-		if seen[entry.Name] || entry.Policy == "" || entry.PolicyVersion == 0 || len(entry.Evidence) != len(expected) {
+		if seen[entry.Name] || entry.Policy == "" || entry.PolicyVersion == 0 || len(entry.Evidence) < len(expected) || len(entry.Evidence) > len(expected)+1 {
 			return errors.New("terraform retained entry approval is incomplete or ambiguous")
 		}
 		seen[entry.Name] = true
@@ -382,8 +382,18 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 				return e
 			}
 			item, hash, e := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if e != nil || hash.String() != record.SHA256 || seenEvidence[record.ID] || expected[record.ID] != item.CheckID().String() {
+			expectedCheck, required := expected[record.ID]
+			optionalAdvisory := record.ID == "dependency-advisory-0"
+			if optionalAdvisory {
+				expectedCheck = "dependency-advisory"
+			}
+			if e != nil || hash.String() != record.SHA256 || seenEvidence[record.ID] || !required && !optionalAdvisory || expectedCheck != item.CheckID().String() {
 				return errors.New("terraform retained Evidence changed, missing or duplicated")
+			}
+			// This supplemental scope fact cannot replace any required record or
+			// introduce provider responses/affected-version authority for a binary.
+			if optionalAdvisory && (item.Kind() != "advisory-applicability" || item.ProfileDigest().String() == "") {
+				return errors.New("terraform retained advisory applicability is invalid")
 			}
 			seenEvidence[record.ID] = true
 			if item.CheckID().String() == "terraform-provider-dynamic" {
@@ -393,6 +403,11 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 				dynamicProfile = item.ProfileDigest()
 			}
 			covered[item.CheckID().String()] = true
+		}
+		for id := range expected {
+			if !seenEvidence[id] {
+				return errors.New("terraform retained Evidence omits a required record")
+			}
 		}
 		if !covered["terraform-signed-package"] || !covered["terraform-provider-static"] || !covered["terraform-provider-dynamic"] {
 			return errors.New("terraform retained Evidence omits required coverage")

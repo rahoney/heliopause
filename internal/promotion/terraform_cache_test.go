@@ -57,7 +57,7 @@ func newTerraformPromotionFixture(t *testing.T) (*TerraformProjectPromotion, dom
 
 // Synthetic ALLOW/Evidence exercises the approval consumer, never public signer
 // qualification. Public source, real observation and CLI tests remain separate.
-func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *approvedTerraformProjectGuard) (domain.ProjectDependencyUpdate, domain.ProjectVerifiedSet, string) {
+func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *approvedTerraformProjectGuard, optionalFactKind ...string) (domain.ProjectDependencyUpdate, domain.ProjectVerifiedSet, string) {
 	t.Helper()
 	elf := make([]byte, 128)
 	copy(elf, []byte{0x7f, 'E', 'L', 'F', 2, 1, 1})
@@ -227,6 +227,21 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		}
 		evidence = append(evidence, ev)
 	}
+	if len(optionalFactKind) > 0 {
+		checkID, _ := domain.NewCheckID("dependency-advisory")
+		profile := cacheFixtureProfile()
+		check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, false, domain.CapabilityUnsupported, domain.ExecutionNotExecuted, "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED", profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		eid, _ := domain.NewEvidenceID("dependency-advisory-0")
+		fact, err := domain.NewEvidence(eid, checkID, identity, digest, optionalFactKind[0], "Opaque binary: no advisory query; not a vulnerability-free result.", profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checks = append(checks, check)
+		evidence = append(evidence, fact)
+	}
 	store, e := evidencelocal.NewStore(p.cache.evidenceRoot)
 	if e != nil {
 		t.Fatal(e)
@@ -235,7 +250,19 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 	if e != nil {
 		t.Fatal(e)
 	}
-	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow, cacheFixturePlan(t, run, acquired, []string{"terraform-signed-package", "terraform-provider-static", "terraform-provider-dynamic"}))
+	plan := cacheFixturePlan(t, run, acquired, []string{"terraform-signed-package", "terraform-provider-static", "terraform-provider-dynamic"})
+	if len(optionalFactKind) > 0 {
+		check := checks[len(checks)-1]
+		requirement, err := domain.NewCheckRequirement(check.ID(), check.Kind(), check.Required(), check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		plan, err = domain.NewCheckPlan(run, acquired, append(plan.Requirements(), requirement))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow, plan)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -737,5 +764,43 @@ func TestTerraformUpgradeRetainsIdenticalLock(t *testing.T) {
 	body, err := os.ReadFile(lock)
 	if err != nil || !os.SameFile(before, after) || before.Mode() != after.Mode() || !before.ModTime().Equal(after.ModTime()) || !bytes.Equal(body, original) {
 		t.Fatal("identical upgrade lock lost its identity, permission, timestamp or bytes", err)
+	}
+}
+
+func TestTerraformRetainedApprovalAllowsOnlyBoundOptionalAdvisoryFact(t *testing.T) {
+	for _, mode := range []string{"legacy-five", "optional", "missing-required", "duplicate", "unknown-id", "wrong-kind"} {
+		t.Run(mode, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			guard, err := p.Begin(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer guard.Close()
+			var kinds []string
+			if mode != "legacy-five" {
+				kinds = []string{"advisory-applicability"}
+			}
+			if mode == "wrong-kind" {
+				kinds[0] = "advisory-record"
+			}
+			_, set, _ := terraformApprovedFixture(t, p, guard, kinds...)
+			doc, err := p.cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch mode {
+			case "missing-required":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[1:]
+			case "duplicate":
+				doc.Entries[0].Evidence = append(doc.Entries[0].Evidence, doc.Entries[0].Evidence[5])
+			case "unknown-id":
+				doc.Entries[0].Evidence[5].ID = "unknown-optional-fact"
+			}
+			err = p.cache.verifyRecordedApproval(context.Background(), doc)
+			wantValid := mode == "legacy-five" || mode == "optional"
+			if (err == nil) != wantValid {
+				t.Fatalf("mode=%s valid=%t err=%v", mode, wantValid, err)
+			}
+		})
 	}
 }

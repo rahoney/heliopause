@@ -159,7 +159,6 @@
     "restored": true,
     "large_test_copies_removed": true,
     "removed_copy_bytes": 381927030,
-    "client_sha256": "62fbe0567e154e128b841c7eacb9a07b23fb3f36e91dbca549db8d9ba874ce0c",
     "helper_sha256": "8941e8a185f087a5e2debbf4668c3cbe880f5b556d458aa8565d2de6d9e71eca",
     "observer_sha256": "5c33c2015f771a5410f03d94ef155af29835aa2999b633887953f6eccd911417",
     "cases": [
@@ -181,7 +180,11 @@
         "target_preserved": true,
         "exit": 1
       }
-    ]
+    ],
+    "executable_digest": {
+      "algorithm": "sha256",
+      "value": "62fbe0567e154e128b841c7eacb9a07b23fb3f36e91dbca549db8d9ba874ce0c"
+    }
   },
   "cleanup": {
     "scope": "only completed current CLI/test runner and superseded scratch helper; no installed/runtime/Docker/shared cache removal",

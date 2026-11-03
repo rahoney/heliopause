@@ -722,3 +722,49 @@ Go download/Terraform native·전체 S05/hosted는 별도 OPEN이다.
 105process refs0/query errors0 뒤 교체된 이전 CLI/test/old helper의102652416B를 정리했다.
 현재 한 세트와 SDK·공유 cache는 다음 binary/consumer qualification의 활성 입력으로
 남긴다. [부분 원장](./advisory-legacy-failure-local-20261104.json)이 정확한 source·범위를 소유한다.
+
+## 열일곱 번째 단위 — 기존 opaque binary 소비자 qualification (진행 중)
+
+기준1fa8e84. 실제 Source()의 optional mapping/기존 Terraform client·검증·두 환경 probe·
+Project cache/publication·native fixture는 IMPLEMENTED/WIRED=YES다. Go/Cargo의 생성된
+local build output은 기존 observed build inspector가 따로 소유하며 새 registry lookup을
+덧대지 않는다. Terraform의 기존 native 기대는 required3/Evidence5인데 공통 advisory가
+추가하는 optional UNSUPPORTED/NOT_EXECUTED와 한계 fact1을 아직 확인하지 않는다.
+이 additive fixture/실제 binary applicability의 QUALIFIED/ACCEPTANCE_CLOSED는 NO이며
+MISSING은 원래 필수3 보존·미조회/미지원 한계 명시와 실제 installed probe/기록/반영이다.
+기존 작은 official random3.7.2의 최초/retained 두 실행을 재사용한다. 전용 scanner/새 규칙·
+M6/정책 예외·새 CI job을 만들지 않는다. Partner/GitHub/전체 source profile·hosted는 별도다.
+
+실제 first attempt는 parent12.93s/operator15.520s에 FAIL했다. required3은 COMPLETED,
+entry/set ALLOW, optional advisory는 올바른 UNSUPPORTED/NOT_EXECUTED였지만
+`promote exact Terraform graph: terraform retained entry approval is incomplete or ambiguous`로
+반영이 중단됐다. verifyRecordedApproval(terraform_cache.go)의 정확히5개 Evidence 수와
+고정5 ID map이 새 applicability fact1을 거부한다. 정책·동적/암호 검사를 완화하지 않고
+알려진 bound optional fact만 보존하는 최소 소비자 수정이 최초 MISSING이다. 기존5개
+모두의 완전성·중복/변조/unknown 거부와 legacy5 호환을 유지해야 한다. 현재 product는
+미수정이며 테스트 기대만 additive로 보강했다. Tagged Staticcheck0.974s/test build3.084s는
+PASS지만 native 성공이 아니다. Host 동일/원복/helperwait0·400957709B 사본 정리는 PASS다.
+[실패 원장](./advisory-binary-local-20261104.json)과 raw를 보존한다.
+
+Retained consumer의 최소 후보는5개 필수 ID를 모두 별도로 확인하고, bound
+`dependency-advisory-0`/`advisory-applicability`의 비어 있지 않은 profile만 추가1개 허용한다.
+기존5 legacy·추가1·필수 누락/중복/unknown ID/wrong kind의 표적을 추가했다. 최초 RED
+8.364s는 같은 immutable Run에 재기록하려던 시험 오류, v2/8.405s는 새 optional check를
+기존3 선언 plan에 넣지 않은 시험 오류다. Writer/Domain 계약은 고치지 않고 fixture의
+한 번의 Record와 정확한 optional 선언을 사용했다. 실제 product RED v3/8.239s는
+optional positive만 exact5 조건으로 실패했다. 후보의 표적/기존 환경-record negatives
+GREEN8.227s는 PASS이며 native 재검증은 아직 미완료다.
+
+같은 official의 v2는 parent29.67s/operator32.198s에 두 실행을 PASS해 required3/optional
+UNSUPPORTED·fresh Run/두 환경·서명/독립 binary pin·반영/기존 lock 보존을 확인했다.
+Host 동일/원복/helperwait0와400959901B 사본 정리도 PASS다. Product RED8.239s→
+GREEN8.227s와 Terraform scope Race30.823s/tagged Static19.490s/vet14.255s, 누적 후보의
+foundation53.559s가 PASS다. Legacy5 유지·추가1만 허용하며 모든 필수5 ID를 각각 확인한다.
+
+Security17.686s는 새 두 executable SHA의 generic-api-key 오탐으로 FAIL했다. Redacted
+위치/규칙과 실제 binary receipt를 대조했고 algorithm/value digest 구조로 표현을 바꿨다.
+첫 metadata 복사 SameFileError 뒤 private 입력이 갱신되지 않은 v2/10.610s FAIL도 보존한다.
+정확히 두 field를 올바르게 복사한 v3/11.163s가 기존2 public wheel MD5 처리/전체 규칙·
+탐지 계약을 유지하며 PASS다. 새 전역 ignore/규칙 완화는 없다.105process refs0/errors0 뒤
+이전 CLI/test 사본150870441B도 정리했고 현재 한 세트·helper·SDK는 재사용한다.
+현재 official 한정 I/W/로컬 qualified는 YES, 전체 S05/hosted acceptance는 NO다.

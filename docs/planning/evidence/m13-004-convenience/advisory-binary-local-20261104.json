@@ -1,0 +1,161 @@
+{
+  "baseline": "1fa8e84",
+  "scope": "compiled protected Root official Terraform random3.7.2; first attempt failed after required checks and ALLOW",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "primary_failure": "promote exact Terraform graph: terraform retained entry approval is incomplete or ambiguous",
+  "cause_confirmed": "internal/promotion/terraform_cache.go verifyRecordedApproval requires exactly five known Evidence IDs; new optional applicability fact makes six and is also rejected by its exact-ID map; minimal optional supplement candidate now tested",
+  "required_checks": 3,
+  "required_checks_completed": true,
+  "entry_and_set_policy": "ALLOW",
+  "optional_advisory": "UNSUPPORTED / NOT_EXECUTED / M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED",
+  "actual": {
+    "elapsed": 15.52,
+    "host_unchanged": true,
+    "restored": true,
+    "large_test_copies_removed": true,
+    "removed_copy_bytes": 400957709,
+    "executable_digest": {
+      "algorithm": "sha256",
+      "value": "4d5004f7862a8e21a5da229bcbcc3bcb896785977a501ff0ea69aed2760980b2"
+    }
+  },
+  "raw": "s05-terraform-binary-native-v1.json",
+  "missing": [
+    "GitHub/partner/other source-profile and broader consumer qualification",
+    "final hosted/full S05 acceptance"
+  ],
+  "resolution": {
+    "raw": "s05-terraform-binary-native-v2.json",
+    "complete": true,
+    "elapsed": 32.198,
+    "host_unchanged": true,
+    "restored": true,
+    "removed_copy_bytes": 400959901,
+    "protected_test_client_digest": {
+      "algorithm": "sha256",
+      "value": "9340a345de25122a8f8facdc14a851f1d824dc28e9d1cd825879f1518175b965"
+    },
+    "scope": "official provider first and retained; fresh runs/two environments/required3 plus explicit optional unsupported/no queries; signed package, independent installed binary pin, lock preserved"
+  },
+  "source_inputs": [
+    {
+      "path": "internal/promotion/terraform_cache.go",
+      "sha256": "d5afd75865a39d731e430e8be1a6bb36871c5946410c6fb3797c8fe1775b1642"
+    },
+    {
+      "path": "internal/promotion/terraform_cache_test.go",
+      "sha256": "5f2251565622b29ed50daaa653041eaab4735f73deae5e66cd90f0cb25501ed0"
+    },
+    {
+      "path": "internal/bootstrap/terraform_init_integration_linux_test.go",
+      "sha256": "3f2286dabb66d6c7cc7ee484b0c92f1c8b59e7194cfe04fa1ea60b32ec500f4d"
+    }
+  ],
+  "checks": [
+    {
+      "raw": "s05-terraform-optional-red.json",
+      "exit_code": 1,
+      "elapsed": 8.364,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-red-v2.json",
+      "exit_code": 1,
+      "elapsed": 8.405,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-red-v3.json",
+      "exit_code": 1,
+      "elapsed": 8.239,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-green.json",
+      "exit_code": 0,
+      "elapsed": 8.227,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-race.json",
+      "exit_code": 0,
+      "elapsed": 30.823,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-static.json",
+      "exit_code": 0,
+      "elapsed": 19.49,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-terraform-optional-vet.json",
+      "exit_code": 0,
+      "elapsed": 14.255,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-binary-candidate-foundation.json",
+      "exit_code": 0,
+      "elapsed": 53.559,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-binary-candidate-security.json",
+      "exit_code": 1,
+      "elapsed": 17.686,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-binary-candidate-security-v2.json",
+      "exit_code": 1,
+      "elapsed": 10.61,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-binary-candidate-security-v3.json",
+      "exit_code": 0,
+      "elapsed": 11.163,
+      "source_unchanged": true
+    }
+  ],
+  "red_scope": "first two RED attempts were test preparation failures (immutable Run then omitted optional declaration); only red-v3 is the product counterexample",
+  "security": "two generic-api-key findings were exact public executable SHA256 values, verified against build receipts; use algorithm/value digest structure without changing scanner rules. v2 repeated old private metadata after a SameFileError and is retained as failed; v3 PASS with original two exact public wheel MD5 handling.",
+  "cleanup": {
+    "scope": "only completed current CLI/test runner and superseded scratch helper; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "helox-s05-legacy-facts",
+        "bytes": 37605639,
+        "sha256": "62fbe0567e154e128b841c7eacb9a07b23fb3f36e91dbca549db8d9ba874ce0c"
+      },
+      {
+        "file": "bootstrap-s05-legacy-facts.test",
+        "bytes": 56628484,
+        "sha256": "1edb6cd2ad377a7707c32adf6ca6011dab9741e91945d4eb357b78f888689161"
+      },
+      {
+        "file": "bootstrap-s05-binary.test",
+        "bytes": 56636318,
+        "sha256": "4d5004f7862a8e21a5da229bcbcc3bcb896785977a501ff0ea69aed2760980b2"
+      }
+    ],
+    "retained_active_inputs": [
+      "helox-s05-current",
+      "bootstrap-s05-binary-fixed.test",
+      "policy-helper-s05-public-languages",
+      "haa-sandbox-responder",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 150870441,
+    "complete": true
+  }
+}

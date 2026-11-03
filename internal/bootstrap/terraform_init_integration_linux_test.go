@@ -27,6 +27,7 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 		name, reference, requirements, lock string
 		count                               int
 	}{
+		{"advisory-official", "", `random = { source = "hashicorp/random", version = "3.7.2" }`, "", 1},
 		{"official", "hashicorp/random@3.7.2", `random = { source = "hashicorp/random", version = "3.7.2" }`, "", 1},
 		{"partner", "integrations/github@6.6.0", `github = { source = "integrations/github", version = "6.6.0" }`, "", 1},
 		{"complete-project", "hashicorp/random@3.7.2", `random = { source = "hashicorp/random", version = "3.7.2" }
@@ -101,6 +102,7 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 					t.Fatalf("actual Terraform init attempt%d: %v stdout=%s stderr=%s", attempt, e, out.String(), errs.String())
 				}
 				if fixture.reference == "" {
+					t.Logf("terraform_advisory_result fixture=%s attempt=%d json=%s", fixture.name, attempt, bytes.TrimSpace(out.Bytes()))
 					var report struct {
 						Schema    string `json:"schema_version"`
 						Operation string `json:"operation"`
@@ -108,8 +110,11 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 						Promotion string `json:"promotion_status"`
 						Entries   []struct {
 							Checks []struct {
-								Required bool
-								Status   string `json:"execution_status"`
+								ID         string `json:"id"`
+								Capability string `json:"capability"`
+								Limitation string `json:"limitation_code"`
+								Required   bool
+								Status     string `json:"execution_status"`
 							} `json:"checks"`
 						} `json:"entries"`
 						Policy struct{ Decision string } `json:"policy"`
@@ -122,7 +127,14 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 					}
 					for _, entry := range report.Entries {
 						required := 0
+						optionalAdvisory := false
 						for _, check := range entry.Checks {
+							if check.ID == "dependency-advisory" {
+								if check.Required || check.Capability != "UNSUPPORTED" || check.Status != "NOT_EXECUTED" || check.Limitation != "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED" {
+									t.Fatal("opaque binary advisory scope changed", check)
+								}
+								optionalAdvisory = true
+							}
 							if check.Required {
 								required++
 								if check.Status != "COMPLETED" {
@@ -130,7 +142,7 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 								}
 							}
 						}
-						if required != 3 {
+						if required != 3 || !optionalAdvisory {
 							t.Fatal("provider inspection coverage differs", required)
 						}
 					}
@@ -184,10 +196,11 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 				}
 				runs := map[string]bool{}
 				for _, entry := range state.Approval.Entries {
-					if len(entry.Evidence) != 5 || entry.Run == "" || previousRuns[entry.Run] || runs[entry.Run] {
+					if len(entry.Evidence) != 6 || entry.Run == "" || previousRuns[entry.Run] || runs[entry.Run] {
 						t.Fatal("independent source/static/dynamic Evidence or Run binding missing")
 					}
 					profiles := map[domain.SandboxEnvironmentProfile]string{}
+					applicabilityFacts := 0
 					for _, record := range entry.Evidence {
 						body, err := os.ReadFile(filepath.Join(root, "cache", "heliopause", "evidence", entry.Run, record.ID+".json"))
 						if err != nil {
@@ -197,7 +210,30 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 						if hex.EncodeToString(hash[:]) != record.SHA256 {
 							t.Fatal("provider Evidence record substituted")
 						}
+						var fact struct {
+							Kind, Summary string
+							Check         string `json:"check_id"`
+							Run           string `json:"run_id"`
+							Source        string `json:"source_id"`
+							Digest        string `json:"sha256"`
+							Profile       string `json:"profile_sha256"`
+						}
+						if err := json.Unmarshal(body, &fact); err != nil {
+							t.Fatal(err)
+						}
+						if fact.Kind == "advisory-applicability" {
+							applicabilityFacts++
+							if fact.Check != "dependency-advisory" || fact.Run != entry.Run || fact.Source != "terraform-registry" || fact.Digest != entry.Envelope || len(fact.Profile) != 64 || !strings.Contains(fact.Summary, "No advisory query ran") || !strings.Contains(fact.Summary, "not a vulnerability-free") {
+								t.Fatal("opaque binary limitation lost its subject", fact)
+							}
+						}
+						if fact.Kind == "advisory-response" || fact.Kind == "advisory-record" {
+							t.Fatal("opaque provider guessed an advisory namespace", fact.Kind)
+						}
 						readWorkspaceEnvironmentEvidence(t, body, "terraform", entry.Run, entry.Envelope, profiles)
+					}
+					if applicabilityFacts != 1 {
+						t.Fatal("missing explicit advisory limitation", applicabilityFacts)
 					}
 					if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
 						t.Fatal("provider lost same-check two-environment records")
@@ -220,7 +256,7 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 				}
 				previousRuns = runs
 				if fixture.reference == "" {
-					t.Logf("terraform_default_init attempt=%d providers=2 required_checks=3 fresh_runs=2 signed_source/static/dynamic/Policy/cache/atomic=COMPLETE lock=PRESERVED", attempt)
+					t.Logf("terraform_default_init attempt=%d providers=%d required_checks=3 fresh_runs=%d signed_source/static/dynamic/Policy/cache/atomic=COMPLETE lock=PRESERVED optional_advisory=UNSUPPORTED", attempt, fixture.count, len(runs))
 				} else {
 					t.Logf("actual_terraform_init_attempt=%d %s", attempt, strings.TrimSpace(out.String()))
 				}
