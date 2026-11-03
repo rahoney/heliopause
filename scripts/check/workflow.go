@@ -13,6 +13,42 @@ import (
 const goTidyNativeCensus = `awk 'BEGIN { expected["imports-tests-tags"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyProjectResolverIntegration \(/ { parents++ } /actual_go_tidy=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyProjectResolverIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-resolver.log"`
 const goTidyCLICensus = `awk 'BEGIN { expected["adopt"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyCLIIntegration \(/ { parents++ } /actual_go_tidy_cli=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyCLIIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-cli.log"`
 
+const advisoryQualificationRun = `set -euo pipefail
+if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+  echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+  exit 0
+fi
+source scripts/ci-integration-cleanup.sh
+haa_ci_initialize
+cmp -- "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+haa_start_policy_helper
+umask 077
+HELOX_ADVISORY_CLI_INTEGRATION=1 "$RUNNER_TEMP/helox-pnpm-project-test" -test.v -test.failfast -test.timeout=15m -test.run '^TestAdvisory(ProductionCLIQuarantine|PublicLanguageProductionCLI|GitHubOpaqueProductionCLI)Integration$' | tee "$RUNNER_TEMP/haa-advisory-cli.log"
+awk '
+BEGIN {
+  split("TestAdvisoryProductionCLIQuarantineIntegration TestAdvisoryPublicLanguageProductionCLIIntegration TestAdvisoryGitHubOpaqueProductionCLIIntegration", names, " ")
+  for (i in names) parents[names[i]]=0
+  split("fresh-cache cache-reuse malware-block tampered-cache force-refresh malware-human", names, " ")
+  for (i in names) cases["TestAdvisoryProductionCLIQuarantineIntegration/" names[i]]=0
+  split("npm-normal npm-controlled-malware go-normal go-controlled-malware cargo-normal cargo-controlled-malware go-exact-controlled-malware go-download-exact-controlled-malware cargo-exact-controlled-malware", names, " ")
+  for (i in names) cases["TestAdvisoryPublicLanguageProductionCLIIntegration/" names[i]]=0
+}
+/no tests to run|--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS:/ { if (!($3 in parents) || parents[$3]++) bad=1 }
+/^[[:space:]]+--- PASS:/ { if (!($3 in cases) || cases[$3]++) bad=1 }
+/advisory_github_cli_complete attempt=/ {
+  value=$3; sub(/^attempt=/,"",value)
+  if (value !~ /^[01]$/ || attempts[value]++ || $4!="required_checks=3" || $5!="optional=UNSUPPORTED" || $6!="query=NOT_RUN" || $8!="digest=VERIFIED") bad=1
+}
+END {
+  if (bad || attempts[0]!=1 || attempts[1]!=1) exit 1
+  for (name in parents) if (parents[name]!=1) exit 1
+  for (name in cases) if (cases[name]!=1) exit 1
+}
+' "$RUNNER_TEMP/haa-advisory-cli.log"
+rm -- "$RUNNER_TEMP/haa-advisory-cli.log"
+`
+
 const workflowRelativePath = ".github/workflows/heliopause-ci.yml"
 const securityWorkflowRelativePath = ".github/workflows/heliopause-security.yml"
 const releaseWorkflowRelativePath = ".github/workflows/heliopause-release-build.yml"
@@ -174,6 +210,10 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	blocks, err := activeJobRunLines(contents, "gvisor-integration", "Qualify production advisory quarantine")
+	if err == nil && (len(blocks) != 1 || kernelQualificationLines(strings.Join(blocks[0], "\n")) != kernelQualificationLines(advisoryQualificationRun)) {
+		findings = append(findings, "advisory qualification requires the protected production client, existing tagged driver, exact parents/cases and no-SKIP/failure guard")
+	}
 	findings = append(findings, validateResponderSourceOrder(contents)...)
 	findings = append(findings, validateCUDAQualificationScope(contents)...)
 	findings = append(findings, validateKernelTerminalQualification(contents)...)
@@ -780,7 +820,7 @@ func validateCUDAQualificationScope(contents string) []string {
 			findings = append(findings, "CUDA-only scope must preserve common setup, client binding and full inputs")
 		}
 	}
-	for _, step := range []string{"Qualify production Node execution preparation", currentExecutionPreparationStep, kernelTerminalQualificationStep} {
+	for _, step := range []string{"Qualify production advisory quarantine", "Qualify production Node execution preparation", currentExecutionPreparationStep, kernelTerminalQualificationStep} {
 		blocks, _ := activeJobRunLines(contents, "gvisor-integration", step)
 		if len(blocks) != 1 || !strings.HasPrefix(kernelQualificationLines(strings.Join(blocks[0], "\n")), "set -euo pipefail\n"+cudaOnlyExecutionStepGuard+"\nsource scripts/ci-integration-cleanup.sh\n") {
 			findings = append(findings, "ordinary execution step requires exact manual-CUDA scope: "+step)

@@ -526,6 +526,43 @@ jobs:
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
           fi
 
+      - name: Qualify production advisory quarantine
+        run: |
+          set -euo pipefail
+          if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+            echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+            exit 0
+          fi
+          source scripts/ci-integration-cleanup.sh
+          haa_ci_initialize
+          cmp -- "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+          haa_start_policy_helper
+          umask 077
+          HELOX_ADVISORY_CLI_INTEGRATION=1 "$RUNNER_TEMP/helox-pnpm-project-test" -test.v -test.failfast -test.timeout=15m -test.run '^TestAdvisory(ProductionCLIQuarantine|PublicLanguageProductionCLI|GitHubOpaqueProductionCLI)Integration$' | tee "$RUNNER_TEMP/haa-advisory-cli.log"
+          awk '
+          BEGIN {
+            split("TestAdvisoryProductionCLIQuarantineIntegration TestAdvisoryPublicLanguageProductionCLIIntegration TestAdvisoryGitHubOpaqueProductionCLIIntegration", names, " ")
+            for (i in names) parents[names[i]]=0
+            split("fresh-cache cache-reuse malware-block tampered-cache force-refresh malware-human", names, " ")
+            for (i in names) cases["TestAdvisoryProductionCLIQuarantineIntegration/" names[i]]=0
+            split("npm-normal npm-controlled-malware go-normal go-controlled-malware cargo-normal cargo-controlled-malware go-exact-controlled-malware go-download-exact-controlled-malware cargo-exact-controlled-malware", names, " ")
+            for (i in names) cases["TestAdvisoryPublicLanguageProductionCLIIntegration/" names[i]]=0
+          }
+          /no tests to run|--- (SKIP|FAIL):/ { bad=1 }
+          /^--- PASS:/ { if (!($3 in parents) || parents[$3]++) bad=1 }
+          /^[[:space:]]+--- PASS:/ { if (!($3 in cases) || cases[$3]++) bad=1 }
+          /advisory_github_cli_complete attempt=/ {
+            value=$3; sub(/^attempt=/,"",value)
+            if (value !~ /^[01]$/ || attempts[value]++ || $4!="required_checks=3" || $5!="optional=UNSUPPORTED" || $6!="query=NOT_RUN" || $8!="digest=VERIFIED") bad=1
+          }
+          END {
+            if (bad || attempts[0]!=1 || attempts[1]!=1) exit 1
+            for (name in parents) if (parents[name]!=1) exit 1
+            for (name in cases) if (cases[name]!=1) exit 1
+          }
+          ' "$RUNNER_TEMP/haa-advisory-cli.log"
+          rm -- "$RUNNER_TEMP/haa-advisory-cli.log"
+
       - name: Qualify production Node execution preparation
         run: |
           set -euo pipefail

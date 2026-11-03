@@ -827,3 +827,37 @@ Official/partner의 first/retained4entries가 required3/ALLOW·optional no-query
 old driver2개94248245B는105proc refs0/errors0과 정확한 신원 확인 뒤 정리했고 현재
 GitHub CLI/driver와 공유 helper/SDK는 보존했다. Python named profile/hosted/full S05는
 OPEN이며 기존 성공을 전체 qualification으로 확대하지 않는다.
+
+
+## 스무 번째 단위 — 실제 advisory 소비자와 hosted 연결의 마무리
+
+기준866ef54. 기존 Go download의 typed failure facts/4caller 회귀와 production Go/Cargo
+거부는 구현/연결돼 있다. 같은 public CLI fixture에 Go download 거부만 추가하고 성공한
+다른 native 사례를 반복하지 않는다. 기존 native3 advisory parent는 로컬 actual이 있지만
+CI 연결은 아직 NO다. 현재 원래 helper가 보호 production CLI를 승인한 구간에서 기존
+bootstrap driver를 별도 호출해야 하며 test binary를 production client로 재설치하지 않는다.
+새 CI job/도구/버전 pin/권한·150min 한도는 추가하지 않는다. 필수 parent/case 누락·SKIP/
+중복 및 실패 은폐를 기존 workflow checker와 표적 log replay로 검증한다. Named Python
+profile의 기존 전체 검증은 누적 후보의 grouped qualification으로 확인하며 아직 미완료다.
+
+
+Go download의 v1은 unmanaged dependency 프로젝트를 기존 guard가 거부한 준비 오류였다.
+Actual get으로 소유 상태를 만든 v2는 앞선 정상 advisory cache를 재사용해 seed HTTP0으로
+실패했다. 통제 DATA seed의 기존 refresh flag만 명시한 v3는 parent29.22s/operator31.735s,
+required3/저장된 MAL 사유·상세/exit1·원본 project 보존을 PASS했다. 제품 guard/cache/Policy는
+변경하지 않았다. 세 실행 모두 helperwait0/Host 동일·원복/381931126B 시험 사본 정리다.
+
+기존 integration job의 production client와 helper를 그대로 사용하는 새 ordinary step에서
+기존 tagged driver3parent/15child·GitHub2attempt를 호출한다. Build/job/버전 owner는 늘리지
+않고 cmp로 실제 production 역할을 확인한다. 완성/누락/중복/SKIP/잘못된 client·env·scope의
+checker/log 반례를 확인했다. 첫 전체 checker Race134.851s는 새 첫 CUDA guard가 기존
+scope validator 목록 밖이어서 한 mutation이 실패했다. 같은 validator에 새 ordinary step을
+추가한 affected Race13.062s와 canonical workflow2.992s가 PASS이며 다른 통과 test는 반복하지
+않았다. 이 결과를 전체 Race green이라고 표시하지 않는다. Final tagged Staticcheck3.413s와
+누적 consumer bundle foundation34.993s/security16.823s는 PASS다. 실제 hosted는 시작하지
+않았다. [소비자 결과](./advisory-consumers-local-20261104.json)가 scope/최초 실패를 소유한다.
+S06은 설계14번의 선행12–13/S04 inventory가 필요하므로 source 구현을 선행하지 않는다.
+S05 named profile/grouped hosted와 S04 공급/내용 분석, 전체 보강은 계속 OPEN이다.
+
+완료된 이전 GitHub driver1개56657351B도105proc refs0/errors0/신원 대조 뒤 정리했다.
+현재 production CLI와 consumer driver1개·helper/C++/SDK를 보존하며 추가 CI는 없다.

@@ -335,6 +335,7 @@ func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
 		{"go", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "mod", "tidy", "--adopt"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n\nrequire github.com/google/uuid v1.6.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"tidy must not execute\")}\nfunc main(){}\n"}},
 		{"cargo", "crates-io", "crates.io", "itoa", "1.0.17", []string{"cargo", "fetch"}, map[string]string{"Cargo.toml": "[package]\nname='haa_advisory_fixture'\nversion='0.1.0'\nedition='2021'\n[dependencies]\nitoa='=1.0.17'\n", "src/main.rs": "fn main(){}\n", "build.rs": "fn main(){panic!(\"fetch must not execute\");}\n"}},
 		{"go-exact", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "get", "github.com/google/uuid@v1.6.0"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"get must not execute\")}\nfunc main(){}\n"}},
+		{"go-download-exact", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "mod", "download"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"download must not execute\")}\nfunc main(){}\n"}},
 		{"cargo-exact", "crates-io", "crates.io", "itoa", "1.0.17", []string{"cargo", "add", "itoa@1.0.17"}, map[string]string{"Cargo.toml": "[package]\nname='haa_advisory_fixture'\nversion='0.1.0'\nedition='2021'\n", "src/main.rs": "fn main(){}\n", "build.rs": "fn main(){panic!(\"add must not execute\");}\n"}},
 	} {
 		legacy := strings.HasSuffix(fixture.language, "-exact")
@@ -365,13 +366,23 @@ func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
 						t.Fatal(err)
 					}
 				}
+				if fixture.language == "go-download-exact" {
+					// Download accepts an existing owned selection. Establish it through
+					// the real get pipeline before seeding the later refusal.
+					prepare := exec.CommandContext(ctx, "/usr/libexec/heliopause/helox", "--lang", "en", "go", "get", fixture.name+"@"+fixture.version)
+					prepare.Dir = project
+					output, err := prepare.CombinedOutput()
+					if err != nil {
+						t.Fatal("establish actual owned Go selection", err, string(output))
+					}
+				}
 				cacheRoot := filepath.Join(root, "cache", "heliopause")
 				backend, err := storage.NewLocal(ctx, cacheRoot, domain.DefaultStoragePolicy())
 				if err != nil {
 					t.Fatal(err)
 				}
 				operation, _ := domain.NewOperationID()
-				seedContext := ports.WithStorage(ports.WithStorageOperation(ctx, operation), backend)
+				seedContext := ports.WithAdvisoryRefresh(ports.WithStorage(ports.WithStorageOperation(ctx, operation), backend), true)
 				requests := 0
 				seed, err := advisory.NewInspector(&advisoryCacheOriginal{}, &http.Client{Transport: advisoryCacheHTTP(func(request *http.Request) (*http.Response, error) {
 					requests++

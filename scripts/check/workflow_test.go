@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -380,5 +381,63 @@ func TestGoTidyWorkflowRequiresBothCohortsAndUniqueCaseCensus(t *testing.T) {
 				t.Fatal("incomplete tidy workflow accepted")
 			}
 		})
+	}
+}
+
+func TestAdvisoryQualificationKeepsClientRolesAndCoverage(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	selected := selectedGoForTest(t)
+	if findings := validateCIWorkflow(original, selected); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, change := range [][2]string{
+		{`cmp -- "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox`, "true"},
+		{`HELOX_ADVISORY_CLI_INTEGRATION=1`, `HELOX_ADVISORY_CLI_INTEGRATION=0`},
+		{`"$RUNNER_TEMP/helox-pnpm-project-test" -test.v`, `/usr/libexec/heliopause/helox -test.v`},
+		{`go-download-exact-controlled-malware `, ""},
+		{`/no tests to run|--- (SKIP|FAIL):/ { bad=1 }`, ""},
+		{`attempts[0]!=1 || attempts[1]!=1`, `attempts[0]!=1`},
+		{`      - name: Qualify production advisory quarantine`, "      - name: Qualify production advisory quarantine\n        if: false"},
+	} {
+		candidate := strings.Replace(original, change[0], change[1], 1)
+		if candidate == original || len(validateCIWorkflow(candidate, selected)) == 0 {
+			t.Fatal("missing client role or coverage accepted", change[0])
+		}
+	}
+	parts := strings.SplitN(advisoryQualificationRun, "awk '", 2)
+	program := strings.SplitN(parts[1], "' \"$RUNNER_TEMP/haa-advisory-cli.log\"", 2)[0]
+	var lines []string
+	for _, parent := range []string{"TestAdvisoryProductionCLIQuarantineIntegration", "TestAdvisoryPublicLanguageProductionCLIIntegration", "TestAdvisoryGitHubOpaqueProductionCLIIntegration"} {
+		lines = append(lines, "--- PASS: "+parent+" (1s)")
+	}
+	for _, name := range strings.Fields("fresh-cache cache-reuse malware-block tampered-cache force-refresh malware-human") {
+		lines = append(lines, "    --- PASS: TestAdvisoryProductionCLIQuarantineIntegration/"+name+" (1s)")
+	}
+	for _, name := range strings.Fields("npm-normal npm-controlled-malware go-normal go-controlled-malware cargo-normal cargo-controlled-malware go-exact-controlled-malware go-download-exact-controlled-malware cargo-exact-controlled-malware") {
+		lines = append(lines, "    --- PASS: TestAdvisoryPublicLanguageProductionCLIIntegration/"+name+" (1s)")
+	}
+	for _, attempt := range []string{"0", "1"} {
+		lines = append(lines, "    advisory_integration_test.go:1: advisory_github_cli_complete attempt="+attempt+" required_checks=3 optional=UNSUPPORTED query=NOT_RUN fresh_run=run_example digest=VERIFIED seconds=1")
+	}
+	valid := strings.Join(lines, "\n") + "\n"
+	for _, fixture := range []struct {
+		body string
+		pass bool
+	}{
+		{valid, true}, {"", false}, {strings.Join(lines[1:], "\n"), false},
+		{valid + lines[0] + "\n", false}, {valid + "--- SKIP: missing (0s)\n", false},
+		{strings.Replace(valid, "go-download-exact-controlled-malware", "unknown-case", 1), false},
+		{strings.Replace(valid, "attempt=1 ", "attempt=0 ", 1), false},
+	} {
+		command := exec.Command("awk", program)
+		command.Stdin = strings.NewReader(fixture.body)
+		output, err := command.CombinedOutput()
+		if (err == nil) != fixture.pass {
+			t.Fatal("advisory log census accepted missing/duplicate/skip or rejected complete", err, string(output))
+		}
 	}
 }

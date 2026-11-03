@@ -1,0 +1,125 @@
+{
+  "baseline": "866ef54",
+  "scope": "Existing production CLI advisory parents wired into existing ordinary integration job; exact client roles and parent/case census; actual Go mod download refusal after legitimate owned enrollment",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "native": {
+    "complete": true,
+    "elapsed": 31.735,
+    "host_unchanged": true,
+    "restored": true,
+    "removed_copy_bytes": 381931126
+  },
+  "raw": "s05-go-download-native-v3.json",
+  "executable_digest": {
+    "algorithm": "sha256",
+    "value": "210dcc635fb26eb9450e1ecc73ef191fdab53df63810f64d1538c09782a93353"
+  },
+  "checks": [
+    {
+      "raw": "s05-hosted-focused.json",
+      "exit_code": 0,
+      "elapsed": 2.144,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-hosted-checker-race.json",
+      "exit_code": 1,
+      "elapsed": 134.851,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-hosted-focused-v2.json",
+      "exit_code": 0,
+      "elapsed": 13.062,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-hosted-workflow.json",
+      "exit_code": 0,
+      "elapsed": 2.992,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-hosted-final-static.json",
+      "exit_code": 0,
+      "elapsed": 3.413,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-consumer-bundle-foundation.json",
+      "exit_code": 0,
+      "elapsed": 34.993,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-consumer-bundle-security.json",
+      "exit_code": 0,
+      "elapsed": 16.823,
+      "source_unchanged": true
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "e39c44ee2adbec8b58ff7a8b3dea34fbb8237ddd9f55adab42d79cfe8b8b8241"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "9d9d32431475ea7fadef3126175c44c32c396fcac28387f1dd6b8c35bafcd27f"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "d7e151fe79f0bbe3c58ed91f96c602eae094751849a08eaf8660259e101dab53"
+    },
+    {
+      "path": "internal/bootstrap/advisory_integration_test.go",
+      "sha256": "57f76300f45add14c9ca4089f3578e4a0e33effbab326265b83bd534748c0aac"
+    }
+  ],
+  "failure_scope": [
+    "v1 unmanaged nonempty project correctly rejected before inspection; fixture must enroll through actual get",
+    "v2 seed reused prior live normal response; explicit controlled refresh fixes DATA preparation",
+    "full checker Race134.851s failed one CUDA scope mutation: new ordinary guard was outside validator list; scoped affected Race13.062s corrects it; earlier other tests passed, full green is not claimed"
+  ],
+  "hosted": {
+    "new_jobs": 0,
+    "new_builds": 0,
+    "new_version_selectors": 0,
+    "parent_count": 3,
+    "child_count": 15,
+    "github_installs": 2,
+    "integration_timeout_minutes": 150,
+    "status": "NOT_RUN; grouped qualification pending"
+  },
+  "missing": [
+    "named Python profile/current-source hosted qualification",
+    "whole S05 and S04/prerequisite-dependent S06 acceptance"
+  ],
+  "cleanup": {
+    "scope": "only completed current CLI/test runner and superseded scratch helper; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "bootstrap-s05-github.test",
+        "bytes": 56657351,
+        "sha256": "600642236c629af9e9d19d0b1a4a4b3e11bfdbcd1a7115948e8099016c0676c4"
+      }
+    ],
+    "retained_active_inputs": [
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "policy-helper-s05-public-languages",
+      "haa-sandbox-responder",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 56657351,
+    "complete": true
+  }
+}
