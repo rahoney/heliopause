@@ -16,6 +16,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/testutil/fakeworkflow"
+	"github.com/spf13/cobra"
 )
 
 func TestMain(m *testing.M) {
@@ -76,6 +77,55 @@ func TestLanguageSelectionSettingsAndEnglishFallback(t *testing.T) {
 	}
 	if err := writeLanguageSettings("en"); err != nil {
 		t.Fatal("cannot repair malformed language preference", err)
+	}
+}
+
+func TestAdvisoryRefreshFlagReachesOnlyTheControllerContext(t *testing.T) {
+	for _, tc := range []struct {
+		args    []string
+		refresh bool
+		literal bool
+	}{
+		{[]string{"--refresh-advisories", "npm", "inspect", "fixture@1.0.0"}, true, false},
+		{[]string{"--refresh-advisories=false", "pip", "install", "fixture==1.0.0", "--target", "/advisory-fixture"}, false, false},
+		{[]string{"--refresh-advisories", "go", "mod", "download"}, true, false},
+		{[]string{"npx", "fixture@1.0.0", "--", "--refresh-advisories"}, false, true},
+	} {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			root, err := New(io.Discard, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := PreparePresentation(root, tc.args); err != nil {
+				t.Fatal("refresh option failed static preflight", err)
+			}
+			command, _, err := root.Find(tc.args)
+			if err != nil {
+				t.Fatal(err)
+			}
+			called := false
+			command.RunE = func(command *cobra.Command, args []string) error {
+				called = true
+				if ports.AdvisoryRefreshFromContext(command.Context()) != tc.refresh {
+					t.Fatal("refresh context was lost or guest argv selected it")
+				}
+				if tc.literal && (len(args) == 0 || args[len(args)-1] != "--refresh-advisories") {
+					t.Fatal("literal guest argument was consumed")
+				}
+				return nil
+			}
+			root.SetArgs(tc.args)
+			if err := root.ExecuteContext(context.Background()); err != nil || !called {
+				t.Fatal("refresh command did not reach its handler", err)
+			}
+		})
+	}
+	root, err := New(io.Discard, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := PreparePresentation(root, []string{"--refresh-advisories=invalid", "go", "mod", "download"}); err == nil {
+		t.Fatal("invalid refresh value passed preflight")
 	}
 }
 func TestSettingsRejectSymlinkAndUnsupportedLanguage(t *testing.T) {

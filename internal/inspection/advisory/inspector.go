@@ -94,8 +94,9 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	query, mapped := packageForArtifact(artifact)
 	var records [][]osvRecord
 	var facts []responseFact
+	var cacheWriteErr error
 	if mapped {
-		records, facts, err = lookupAdvisories(ctx, i.client, []osvPackage{query})
+		records, facts, err, cacheWriteErr = i.lookup(ctx, []osvPackage{query})
 	}
 	var selected []osvRecord
 	if len(records) == 1 {
@@ -103,10 +104,10 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	}
 	result, reportErr := i.report(artifact, query, mapped, selected, facts, err)
 	if reportErr != nil && len(result.Executions()) == 0 {
-		return report, errors.Join(err, reportErr)
+		return report, errors.Join(err, reportErr, cacheWriteErr)
 	}
 	combined, combineErr := domain.NewCompositeInspectionReport([]domain.InspectionReport{report, result})
-	return combined, errors.Join(err, reportErr, combineErr)
+	return combined, errors.Join(err, reportErr, cacheWriteErr, combineErr)
 }
 
 func packageForArtifact(artifact domain.AcquiredArtifact) (osvPackage, bool) {
@@ -294,8 +295,9 @@ func (i *Inspector) completeBatch(ctx context.Context, nodes []domain.LockedDepe
 	var records [][]osvRecord
 	var facts []responseFact
 	var lookupErr error
+	var cacheWriteErr error
 	if len(queries) != 0 {
-		records, facts, lookupErr = lookupAdvisories(ctx, i.client, queries)
+		records, facts, lookupErr, cacheWriteErr = i.lookup(ctx, queries)
 	}
 	var resultErr error
 	for _, node := range nodes {
@@ -322,7 +324,7 @@ func (i *Inspector) completeBatch(ctx context.Context, nodes []domain.LockedDepe
 		}
 		reports[node.Node()] = combined
 	}
-	return reports, errors.Join(lookupErr, resultErr)
+	return reports, errors.Join(lookupErr, resultErr, cacheWriteErr)
 }
 
 // Validate the complete frozen membership before invoking the wrapped provider.

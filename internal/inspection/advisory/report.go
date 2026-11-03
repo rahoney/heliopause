@@ -19,6 +19,9 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 		capability, status, limitation = domain.CapabilityUnsupported, domain.ExecutionNotExecuted, "M13_ADVISORY_MAPPING_UNSUPPORTED"
 	} else if lookupErr != nil {
 		status, limitation = domain.ExecutionIncomplete, "M13_ADVISORY_LOOKUP_INCOMPLETE"
+		if errors.Is(lookupErr, errCachedResponse) {
+			limitation = "M13_ADVISORY_CACHE_INCOMPLETE"
+		}
 	}
 	var evidence []domain.Evidence
 	addFact := func(kind, summary string) (domain.EvidenceID, error) {
@@ -35,10 +38,7 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, query osvPackage, m
 	// At most 64 responses exist for a complete graph lookup. These are hashes
 	// and times, never provider descriptions, credentials or executable URLs.
 	for _, response := range responses {
-		body, err := json.Marshal(struct {
-			Request, Response, Fetched string
-			Bytes                      int64
-		}{response.requestSHA256, response.responseSHA256, response.fetchedAt.UTC().Format(time.RFC3339Nano), response.responseBytes})
+		body, err := json.Marshal(responseProof{response.requestSHA256, response.responseSHA256, response.fetchedAt.UTC().Format(time.RFC3339Nano), response.responseBytes})
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}

@@ -49,6 +49,12 @@ type Local struct {
 	legacyBytes, legacyRuns, legacyIntake                      uint64
 	evidenceCharged, evidenceRuns                              uint64
 	now                                                        func() time.Time
+	advisory                                                   *os.Root
+	advisoryInfo                                               os.FileInfo
+	advisoryIndex                                              map[string]string
+	cacheCharged                                               uint64
+	advisorySweepOperation                                     string
+	advisoryCleanupErr                                         error
 }
 
 type fileIdentity struct {
@@ -62,6 +68,8 @@ type resourceRecord struct {
 	Operation     string       `json:"operation"`
 	Run           string       `json:"run"`
 	Kind          string       `json:"kind"`
+	CacheKey      string       `json:"cache_key,omitempty"`
+	CacheRoot     fileIdentity `json:"cache_root,omitzero"`
 	Temporary     string       `json:"temporary"`
 	Target        string       `json:"target"`
 	Identity      fileIdentity `json:"identity"`
@@ -79,9 +87,10 @@ type journalEvent struct {
 	Resource resourceRecord `json:"resource"`
 }
 type resourceLease struct {
-	store     *Local
-	directory *os.Root
-	record    resourceRecord
+	store            *Local
+	directory        *os.Root
+	record           resourceRecord
+	previousAdvisory string
 }
 
 // NewLocal configures an inert owned root and policy. Legacy Evidence contributes to admission
@@ -96,7 +105,7 @@ func NewLocal(ctx context.Context, path string, policy domain.StoragePolicy) (*L
 	if !filepath.IsAbs(path) || filepath.Clean(path) != path || path == "/" || !policy.Valid() {
 		return nil, errors.New("storage requires an absolute owned root and validated policy")
 	}
-	return &Local{path: path, policy: policy, entries: make(map[string]resourceRecord), owned: make(map[string]bool), inspected: make(map[domain.RunID]bool), now: time.Now}, nil
+	return &Local{path: path, policy: policy, entries: make(map[string]resourceRecord), owned: make(map[string]bool), inspected: make(map[domain.RunID]bool), advisoryIndex: make(map[string]string), now: time.Now}, nil
 }
 
 // Composition is inert. Only an actual reservation opens the private ledger;
@@ -216,7 +225,9 @@ func (s *Local) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.closed = true
-	return s.closeDescriptors()
+	cleanupErr := s.advisoryCleanupErr
+	s.advisoryCleanupErr = nil
+	return errors.Join(cleanupErr, s.closeDescriptors())
 }
 func (s *Local) closeDescriptors() error {
 	var errs []error
@@ -231,6 +242,10 @@ func (s *Local) closeDescriptors() error {
 	if s.intake != nil {
 		errs = append(errs, s.intake.Close())
 		s.intake = nil
+	}
+	if s.advisory != nil {
+		errs = append(errs, s.advisory.Close())
+		s.advisory = nil
 	}
 	if s.state != nil {
 		errs = append(errs, s.state.Close())
@@ -273,6 +288,12 @@ func (s *Local) locked(ctx context.Context, work func() error) (resultErr error)
 	current, err = s.root.Lstat("intake")
 	if err != nil || !privateDirectory(current) || !os.SameFile(current, s.intakeInfo) {
 		return errors.New("intake root changed")
+	}
+	if s.advisory != nil {
+		current, err = s.root.Lstat("advisory-cache")
+		if err != nil || !privateDirectory(current) || !os.SameFile(current, s.advisoryInfo) {
+			return errors.New("advisory cache root changed")
+		}
 	}
 	current, err = s.root.Lstat(".storage")
 	if err != nil || !privateDirectory(current) || !os.SameFile(current, s.stateInfo) {
@@ -327,6 +348,13 @@ func (s *Local) validate(event journalEvent) error {
 	if r.Schema != "helox.storage/v1" || !validResourceHandles(r.Kind, r.Temporary, r.Target, r.Run) || r.ReservedBytes == 0 || r.ReservedBytes > math.MaxInt64 || r.BaseBytes > r.ReservedBytes || r.ReservedFiles == 0 || r.ReservedFiles > 1<<20 || (r.Kind == "evidence" && r.BaseBytes != 0) || r.Created <= 0 || r.Expiry < r.Created || (r.Kind == "evidence" && r.Expiry == r.Created) || r.Identity.UID != uint32(os.Geteuid()) || r.Identity.Inode == 0 {
 		return errors.New("storage resource event does not match the active policy or trusted handle contract")
 	}
+	if r.Kind == "advisory" {
+		if _, err := domain.NewSHA256Digest(r.CacheKey); err != nil || r.Expiry == r.Created || r.BaseBytes != 0 || r.CacheRoot.Inode == 0 || r.CacheRoot.UID != uint32(os.Geteuid()) || r.CacheRoot.Mode != uint32(os.ModeDir|0700) {
+			return errors.New("advisory cache identity or expiry is invalid")
+		}
+	} else if r.CacheKey != "" || r.CacheRoot != (fileIdentity{}) {
+		return errors.New("non-cache resource has an advisory key")
+	}
 	if _, err := domain.NewSHA256Digest(r.Policy); err != nil {
 		return err
 	}
@@ -361,11 +389,11 @@ func (s *Local) validate(event journalEvent) error {
 		}
 
 	case "deleting":
-		if !exists || r.Kind != "intake" || before.Phase != "RETAINED" || r.Phase != "DELETING" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
+		if !exists || (r.Kind != "intake" && r.Kind != "advisory") || before.Phase != "RETAINED" || r.Phase != "DELETING" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
 			return errors.New("invalid intake deletion transition")
 		}
 	case "removed":
-		if !exists || r.Kind != "intake" || before.Phase != "DELETING" || r.Phase != "REMOVED" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
+		if !exists || (r.Kind != "intake" && r.Kind != "advisory") || before.Phase != "DELETING" || r.Phase != "REMOVED" || !sameAllocation(before, r) || before.Content != r.Content || before.LogicalBytes != r.LogicalBytes {
 			return errors.New("invalid intake removal completion")
 		}
 	case "abort":
@@ -386,6 +414,9 @@ func (s *Local) apply(event journalEvent) error {
 	r := event.Resource
 	switch event.Action {
 	case "reserve":
+		if r.Kind == "advisory" {
+			s.cacheCharged += r.ReservedBytes
+		}
 		if r.Kind == "evidence" {
 			s.evidenceCharged += r.ReservedBytes
 			s.evidenceRuns++
@@ -399,6 +430,11 @@ func (s *Local) apply(event journalEvent) error {
 		s.charged += r.ReservedBytes - r.BaseBytes
 		s.entries[resourceKey(r.Kind, r.Run)] = r
 	case "commit":
+		if r.Kind == "advisory" {
+			s.cacheCharged -= r.ReservedBytes
+			s.cacheCharged += r.LogicalBytes
+			s.advisoryIndex[r.CacheKey] = r.Run
+		}
 		if r.Kind == "evidence" {
 			s.evidenceCharged -= r.ReservedBytes
 			s.evidenceCharged += r.LogicalBytes
@@ -410,10 +446,19 @@ func (s *Local) apply(event journalEvent) error {
 	case "deleting":
 		s.entries[resourceKey(r.Kind, r.Run)] = r
 	case "removed":
+		if r.Kind == "advisory" {
+			s.cacheCharged -= r.LogicalBytes
+			if s.advisoryIndex[r.CacheKey] == r.Run {
+				delete(s.advisoryIndex, r.CacheKey)
+			}
+		}
 		s.charged -= r.LogicalBytes
 		s.runs--
 		delete(s.entries, resourceKey(r.Kind, r.Run))
 	case "abort":
+		if r.Kind == "advisory" {
+			s.cacheCharged -= r.ReservedBytes
+		}
 		if r.Kind == "evidence" {
 			s.evidenceCharged -= r.ReservedBytes
 			s.evidenceRuns--
@@ -463,6 +508,13 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 	if !validResourceHandles(request.Kind, request.Temporary, request.Target, request.Run.String()) || request.Operation.String() == "" || request.Run.String() == "" || request.Bytes == 0 || request.Files == 0 || request.Files > 1<<20 || request.Extend && request.Kind != "intake" {
 		return nil, errors.New("invalid storage reservation")
 	}
+	if request.Kind == "advisory" {
+		if request.CacheKey.String() == "" || request.Files != 1 {
+			return nil, errors.New("advisory reservation requires a key and one DATA file")
+		}
+	} else if request.CacheKey.String() != "" {
+		return nil, errors.New("non-cache reservation has an advisory key")
+	}
 	var directory *os.Root
 	defer func() {
 		if resultErr != nil && directory != nil {
@@ -470,6 +522,11 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		}
 	}()
 	resultErr = s.withLock(ctx, func() error {
+		if request.Kind == "advisory" {
+			if err := s.openAdvisoryRoot(); err != nil {
+				return err
+			}
+		}
 		payload := s.resourceRoot(request.Kind)
 		key := resourceKey(request.Kind, request.Run.String())
 		previous, exists := s.entries[key]
@@ -515,10 +572,16 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		// Existing unregistered runs are counted, never silently adopted/deleted.
 		legacyBytes, legacyRuns := s.legacyBytes, s.legacyRuns
 		limits := s.policy.Spec()
+		if request.Kind == "advisory" && (s.cacheCharged > limits.CacheBytes || request.Bytes > limits.CacheBytes-s.cacheCharged) {
+			return errAdvisoryCapacity
+		}
 		if request.Kind == "evidence" && (s.evidenceCharged > limits.EvidenceBytes || legacyBytes > limits.EvidenceBytes-s.evidenceCharged || request.Bytes > limits.EvidenceBytes-s.evidenceCharged-legacyBytes || s.evidenceRuns+legacyRuns >= uint64(limits.EvidenceRuns)) {
 			return errors.New("evidence retention quota is full; unexpired or unowned records are protected")
 		}
 		if s.charged > limits.TotalBytes || legacyBytes > limits.TotalBytes-s.charged || s.legacyIntake > limits.TotalBytes-s.charged-legacyBytes || request.Bytes > limits.TotalBytes-s.charged-legacyBytes-s.legacyIntake {
+			if request.Kind == "advisory" {
+				return errAdvisoryCapacity
+			}
 			return errors.New("managed storage quota is full")
 		}
 
@@ -531,6 +594,9 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		}
 		available := uint64(filesystem.Bavail) * uint64(filesystem.Bsize)
 		if s.pending > available || request.Bytes > available-s.pending || limits.MinimumFreeBytes > available-s.pending-request.Bytes {
+			if request.Kind == "advisory" {
+				return errAdvisoryCapacity
+			}
 			return errors.New("filesystem storage reserve would be exhausted")
 		}
 		stamp := s.now().Unix()
@@ -538,8 +604,15 @@ func (s *Local) Reserve(ctx context.Context, request ports.StorageRequest) (leas
 		expiry := stamp
 		if request.Kind == "evidence" {
 			expiry += int64(limits.EvidenceTTLSeconds)
+		} else if request.Kind == "advisory" {
+			expiry += int64(limits.AdvisoryTTLSeconds)
 		}
 		record := resourceRecord{Schema: "helox.storage/v1", Policy: s.policy.Digest().String(), Operation: request.Operation.String(), Run: request.Run.String(), Kind: request.Kind, Temporary: request.Temporary, Target: request.Target, Identity: fileIdentity{uint64(stat.Dev), uint64(stat.Ino), stat.Uid, uint32(info.Mode())}, ReservedBytes: request.Bytes, ReservedFiles: request.Files, Phase: "IN_USE", Created: stamp, Expiry: expiry}
+		record.CacheKey = request.CacheKey.String()
+		if request.Kind == "advisory" {
+			parent := s.advisoryInfo.Sys().(*syscall.Stat_t)
+			record.CacheRoot = fileIdentity{uint64(parent.Dev), uint64(parent.Ino), parent.Uid, uint32(s.advisoryInfo.Mode())}
+		}
 		action := "reserve"
 		if request.Extend {
 			record = previous
@@ -586,6 +659,9 @@ func (l *resourceLease) Commit(ctx context.Context) error {
 		committed.Phase = "RETAINED"
 		committed.LogicalBytes = bytes
 		committed.Content = digest
+		if committed.Kind == "advisory" {
+			l.previousAdvisory = l.store.advisoryIndex[committed.CacheKey]
+		}
 		if err := l.store.append(journalEvent{"commit", committed}); err != nil {
 			return err
 		}
@@ -689,7 +765,7 @@ func measureResource(ctx context.Context, root *os.Root, kind string, maxBytes, 
 			return 0, "", err
 		}
 		info, err := root.Lstat(entry.Name())
-		if err != nil || !privateResourceFile(info) || (kind == "evidence" && (!privateFile(info) || !strings.HasSuffix(entry.Name(), ".json"))) || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
+		if err != nil || !privateResourceFile(info) || (kind == "evidence" && (!privateFile(info) || !strings.HasSuffix(entry.Name(), ".json"))) || (kind == "advisory" && (!privateFile(info) || entry.Name() != "response.json")) || info.Size() < 0 || uint64(info.Size()) > maxBytes-total {
 			return 0, "", errors.New("evidence member exceeds ownership or byte reservation")
 		}
 		memberDigest, err := hashResourceMember(ctx, root, entry.Name(), info)
@@ -760,9 +836,12 @@ func validResourceHandles(kind, temporary, target, run string) bool {
 	if target != run || !plainHandle(temporary) {
 		return false
 	}
-	return kind == "evidence" && temporary != target || kind == "intake" && temporary == target
+	return (kind == "evidence" || kind == "advisory") && temporary != target || kind == "intake" && temporary == target
 }
 func (s *Local) resourceRoot(kind string) *os.Root {
+	if kind == "advisory" {
+		return s.advisory
+	}
 	if kind == "intake" {
 		return s.intake
 	}

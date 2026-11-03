@@ -87,6 +87,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			"color":                    {"Color: auto, always or never", "색상: auto(자동), always(사용), never(미사용)"},
 			"progress":                 {"Progress: auto, always or never", "진행 표시: auto(자동), always(사용), never(미사용)"},
 			"verbose":                  {"Show bounded runtime diagnostics", "제한된 진단 정보와 검사 기록 식별자를 표시합니다"},
+			"refresh-advisories":       {"Fetch current advisory data instead of reusing fresh cached responses", "아직 유효한 캐시 대신 최신 advisory 데이터를 다시 조회합니다"},
 			"target":                   {"Installation target path", "검증한 파일을 설치할 대상 경로"},
 			"replace":                  {"Replace only a proven HAA-managed asset after fresh inspection; requires --target", "독립 HAA 소유 기록이 있는 파일만 새 검사 후 교체합니다. --target을 명시해야 합니다"},
 			"package":                  {"Select one existing public crate by name or name@locked-version", "기존 공개 crate 하나를 이름 또는 이름@기존잠금버전으로 선택합니다"},

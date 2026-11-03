@@ -276,3 +276,68 @@ Tagged `-run ^$`는 실제 test 미실행이며 native 성공이 아니다. 현�
 소유한다. 의미 있는 기존 입력/CPP/live API/전체 foundation을 다시 실행하지 않았다.
 다음은 C01 소유의 cache·24h freshness/refresh와 나머지 실제 CLI/판정·범위 한계다.
 Whole S05와 최종16번·새 CI/배포는 계속 미완료다.
+
+
+## 일곱 번째 단위 시작 — C01 advisory cache baseline·수정 지도
+
+기준 `5bc81b8`. S05 cache의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 모두 NO다.
+`storage.Local`에는 indexed journal·예약/실제 bytes·소유권/파일 해시·durable 게시와 intake
+한정 삭제가 이미 있다. Cache를 같은 이름으로 다시 만들거나 별도 영구 ledger를 추가하지
+않는다. 현재 `validResourceHandles`는 evidence/intake만, `resourceRoot`도 해당 두 root만
+다루며, `StoragePolicySpec`의 CacheBytes/AdvisoryTTLSeconds는 cache 소비자에 미연결이다.
+
+현재 gap은 다음 범위에서 메운다.
+
+- `ports/storage.go`: 현재 advisory 소비자만 사용하는 opaque key/body read/write 계약.
+  Local은 OSV/CVSS/package·Policy를 해석하지 않는다. 임의 URL/path·실행 권한은 없다.
+- `storage.Local`: 같은 journal에 advisory kind/key·expiry/index와 quota를 연결하고
+  같은 root 아래 lazy private cache 영역을 소유한다. 새 cache payload에는 기존 생성
+  owner가 없으므로 이 Local adapter가 opaque bytes만 생성·검증·게시·회수한다. 기존
+  Artifact/Promotion/Evidence payload 알고리즘·소유권은 그대로다. 기존 RunID 형식은
+  cache allocation generation 식별에만 재사용하며 InspectionRun/Policy 완료 authority로
+  만들지 않는다. Root/UID/mode/link/inode/hash 대조와 사전 예약·실제 사용량 검사를 유지한다.
+- `inspection/advisory`: 고정 request/provider/schema/calculator profile의 content key와
+  bounded complete response bundle을 구성한다. ID별 record를 한 번만 직렬화해 중복 node
+  fanout으로 큰 body가 복제되지 않게 한다. 참조/결과 누락·변조·시각 역행·만료·현재 profile
+  불일치는 clean zero가 아니다. 오류/부분 응답은 cache에 넣지 않는다. 원래 취득 시각과
+  response hash를 보존하며 재사용 때 시각을 갱신하지 않는다.
+- API 응답 cache는 Artifact에 경로나 FD를 넘기지 않는 DATA다. Read는 ledger lock 안에서
+  읽고 닫은 bytes만 반환한다. 삭제도 같은 exclusive lock과 확인된 RETAINED ownership 아래
+  처리하며 network 동안 lock을 잡지 않는다. IN_USE/foreign/UNKNOWN은 삭제하지 않는다.
+  TTL/공간 수거와 crash의 DELETING/absence를 bounded하게 확인하고 최초 실패를 보존한다.
+- default freshness는 중앙 policy의24h를 사용한다. 강제 refresh는 기존 CLI/config 경계와
+  실제 lookup에 연결한다. 용량 때문에 cache를 남기지 못한 것을 악성/clean 판정으로
+  바꾸지 않으며 미완료 기록을 재사용하지 않는다. cache hit도 현재 report/Policy를 거친다.
+
+표적 acceptance는 fresh hit의 무조회·정확한 원래 사실, expiry/refresh의 새 조회,
+query/profile 분리·bundle 변조/부분 거부·동시 reader/writer와 quota/실제 bytes,
+소유권 교체·실패/cancel·DELETING 복구/UNKNOWN 보존이다. C01 전체 staging/cache/rollback·
+shared lease/crash/전체 retention·journal maintenance/설정·최종 qualification은 이 cache
+단위만으로 완료 처리하지 않는다. 기존 runtime/compiler version selector나 CI job은 늘리지 않는다.
+
+
+일곱 번째 단위의 cache 저장/조회·기존 CLI `--refresh-advisories` 연결은 구현했다.
+같은 Local 원장의 사전 예약·확정 byte 회계·인덱스를 재사용하며, 새 공개 응답은 private
+DATA로만 저장한다. 원래 static/dynamic 검사는 cache hit에서도 수행하고 이전 subject의
+승인이나 검사 완료를 재사용하지 않는다. 실제 Local을 닫고 다시 연 공통 Inspector 연결
+테스트12.170s가 원래 response hash/time과 현재 subject 재결합·강제 재조회를 확인했다.
+이는 controlled HTTP와 synthetic original 검사이며 실제 검역/설치 성공은 아니다.
+
+TTL·용량 회수/동시 갱신/DELETING 재생·foreign/UNKNOWN/IN_USE 보존을 검증했다.
+16KiB 안의 기존10KiB가80% 기준선 아래여도 새10KiB를 넣지 못한 첫 실패1.573s는
+회수 목표에 새 예약량을 반영해 교정했다. 새 용량이나 삭제 권한은 추가하지 않는다.
+원래 storage 전체 Race는 기존 httptest의 sandbox socket 거부로 실패했고 동일 검사만
+로컬 socket 권한으로 실행한3.759s는 PASS다. Advisory/CLI/bootstrap Race38.733s와
+Staticcheck10.050s·vet3.185s, canonical foundation87.817s도 PASS다.
+Gosec의 nested-loop index 지적은 suppression 없이 bounded query를 먼저 꺼내는 흐름으로
+교정했다. 두 slice 길이 일치와 반복문의 양쪽 상한을 명시한 표적 G6020.508s 및
+최종 canonical security13.286s·advisory Race6.048s가 PASS다. 최초 검사와 실패한 두
+guard-only 시도도 원본으로 보존한다. 마지막 이 좁은 변경은 앞선 foundation과
+정확히 같은 source로 표시하지 않고 후속 보안 검사에 별도로 연결한다.
+
+Cache 단위 IMPLEMENTED/WIRED는 YES다. QUALIFIED/ACCEPTANCE_CLOSED는 실제 CLI와
+전체 C01/final 조건이 남아 NO다. IN_USE를 expiry/Close/PID 부재로 지우지 않으며 generic
+writer generation/crash 회수·journal maintenance·전체 retention은 여전히 C01의 MISSING이다.
+응답 cache만으로 무제한 사본 문제 전체를 해결했다고 표시하지 않는다. 정확한 source와
+checks/최초 실패는 [cache 부분 원장](./advisory-cache-local-20261103.json)에 연결하며, 다음은 explicit malware/alias·binary 범위와
+실제 CLI/NOTICE 공급이다. Runtime/compiler version selector·CPP·Host는 변경하지 않았다.

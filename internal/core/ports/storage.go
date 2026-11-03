@@ -17,6 +17,32 @@ type StorageRequest struct {
 	// Extend reserves additional writes to this operation's already sealed intake.
 	// Bytes/Files are additional bounds; original bytes remain charged.
 	Extend bool
+	// CacheKey is used only by the controller's opaque advisory DATA cache.
+	CacheKey domain.ContentDigest
+}
+
+// AdvisoryStorage stores complete advisory DATA under the common storage
+// budget. It does not interpret provider records, Findings or approval. Reads
+// return closed, bounded bytes; paths and descriptors never reach an Artifact.
+type AdvisoryStorage interface {
+	ReadAdvisory(context.Context, domain.ContentDigest, uint64) ([]byte, bool, error)
+	// A capacity miss may return false, nil; incomplete writes are never hits.
+	WriteAdvisory(context.Context, domain.ContentDigest, []byte) (bool, error)
+}
+
+type advisoryRefreshKey struct{}
+
+// Refresh selects a new authenticated query; it never disables a required check.
+func WithAdvisoryRefresh(ctx context.Context, refresh bool) context.Context {
+	return context.WithValue(ctx, advisoryRefreshKey{}, refresh)
+}
+
+func AdvisoryRefreshFromContext(ctx context.Context) bool {
+	if ctx == nil {
+		return false
+	}
+	refresh, _ := ctx.Value(advisoryRefreshKey{}).(bool)
+	return refresh
 }
 
 // Storage accounts a reservation durably before the owner writes payloads.

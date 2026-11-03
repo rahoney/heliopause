@@ -1,0 +1,305 @@
+{
+  "baseline_commit": "5bc81b8",
+  "scope": "bounded advisory DATA cache via existing Local ledger and common Inspector; CLI refresh flag; controlled HTTP plus real backend composition, no native quarantine/installation qualification",
+  "cache_unit": {
+    "implemented": true,
+    "wired": true,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "whole_s05_closed": false,
+  "whole_c01_closed": false,
+  "source_files": [
+    {
+      "path": "internal/core/ports/storage.go",
+      "sha256": "c5012845df5c6c47c54db282bef7e18250a726623de035f0f5399299922d611d"
+    },
+    {
+      "path": "internal/storage/local.go",
+      "sha256": "544a8c738c0efb1aec283ecc25490be8ed45b8f8766fb4edb860fd5425255ba0"
+    },
+    {
+      "path": "internal/storage/advisory.go",
+      "sha256": "2569dc0793cac69b0633c59387b39352924c40b4869ceb73f387da46453649f8"
+    },
+    {
+      "path": "internal/storage/advisory_test.go",
+      "sha256": "e271993745706383c32a2c5f664ffbc490ca1a9af2de1c4eda1e61bfcc6a66ec"
+    },
+    {
+      "path": "internal/inspection/advisory/cache.go",
+      "sha256": "ef7ad8b51edf7eca2f10870b79162467274e61b416bb835b4e31dcde3e8a91d8"
+    },
+    {
+      "path": "internal/inspection/advisory/cache_test.go",
+      "sha256": "ff63476fe49741a190c79ab09774806913d3c54f699b7a8a54add917c9aa4a4b"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "828587e56cea662e1a9571b2c9873ee4455963ba8619c09a0307ae8a2ae49de5"
+    },
+    {
+      "path": "internal/inspection/advisory/report.go",
+      "sha256": "bba91284bd485091c267ee3d334d91852657e74736ad686387773e73ee88ead1"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "97aa699c61eee89ef2864bc1de13a0f12941a72b41cfec1f0b156a9fea6eacc0"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "sha256": "f76d42fdf6f9b73a960e29b6581f0834345ae01b17339e7e1f09f4928508b624"
+    },
+    {
+      "path": "internal/cli/presentation_test.go",
+      "sha256": "07aade40847848fb1d1acfefbfdf5789b0d4a579b97bba06ab9b1270be0301d5"
+    },
+    {
+      "path": "internal/bootstrap/advisory_cache_test.go",
+      "sha256": "0f8f9835cc340395fb23b257f385b3b638ff04cab935de602e2edcd05b8221ba"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": {
+        "raw_file": "s05-cache-storage-targeted.json",
+        "sha256": "1c7c8a0b1a7473e4b780678553866bcc2466bdeb06f41da3599217b121a2b580"
+      },
+      "log": {
+        "raw_file": "s05-cache-storage-targeted.log",
+        "sha256": "851168f062c92deccb80c5addae857fa47a5cefce6819b6603c55aa18b7087c5"
+      },
+      "exit_code": 0,
+      "elapsed": 3.682,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-wire-targeted.json",
+        "sha256": "e16a991796ea893ebdaa2d4c76000e9338f735b69311c7a7a1e46a4d86bda2f7"
+      },
+      "log": {
+        "raw_file": "s05-cache-wire-targeted.log",
+        "sha256": "5e9509fc6bdc2179e1c09a292724738775f7cc1b81cb62f8c8bf79bf73ff04be"
+      },
+      "exit_code": 0,
+      "elapsed": 3.786,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-refresh-cli.json",
+        "sha256": "80aaa5b46d2c972f0def2bb69c1628495fa2fab0621927c9da54c0d3d849169c"
+      },
+      "log": {
+        "raw_file": "s05-cache-refresh-cli.log",
+        "sha256": "686fea7230ff6530d935cdf9933b66468346f49b0c52357699e8ac296a1558c6"
+      },
+      "exit_code": 0,
+      "elapsed": 6.106,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-reclaim-targeted.json",
+        "sha256": "3d2d9f7c352303dbb8bb8d7cd57952ec3a1736abedf57a4889ae0c636ad03d13"
+      },
+      "log": {
+        "raw_file": "s05-cache-reclaim-targeted.log",
+        "sha256": "403db7f371994f11610d50fe810231e61823e0af8ac6c7b1eaccac7bf3d1f056"
+      },
+      "exit_code": 1,
+      "elapsed": 1.573,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-pressure-green.json",
+        "sha256": "1a75dea4f67736e0929ffcfc5fd8c533813608a5f4fc026cf6d74b40446bf37d"
+      },
+      "log": {
+        "raw_file": "s05-cache-pressure-green.log",
+        "sha256": "3d54510f692cfd267499f077735845dc070514b2dfa7ad0fb2c22da60c65b8ce"
+      },
+      "exit_code": 0,
+      "elapsed": 1.102,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-composition-targeted.json",
+        "sha256": "bf4ba10940d556cb05be339813823455a21446b3cf17147dcbc9ddb7db729233"
+      },
+      "log": {
+        "raw_file": "s05-cache-composition-targeted.log",
+        "sha256": "4fd79e46beaac290d6e694032c9737eabd35c351fe250373c5c1ec0e78af1507"
+      },
+      "exit_code": 0,
+      "elapsed": 12.17,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-storage-race.json",
+        "sha256": "b916ea24cd96206feab14063fb79352df7587403265a34bae42405a954872e4a"
+      },
+      "log": {
+        "raw_file": "s05-cache-storage-race.log",
+        "sha256": "60d562c6a421521b3b7b10fe4ee966372370c5e072cb48e336acc06aab8e3057"
+      },
+      "exit_code": 1,
+      "elapsed": 7.085,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-storage-race-unrestricted.json",
+        "sha256": "c62896c99c34911c40ebad3beaa6f33841d6372e3ea1a1a7aa4edf15503db212"
+      },
+      "log": {
+        "raw_file": "s05-cache-storage-race-unrestricted.log",
+        "sha256": "bbee6a85c8a79f1af14b1f7daa30e6f182aed1cd930eaa03aa4115b309692c75"
+      },
+      "exit_code": 0,
+      "elapsed": 3.759,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-advisory-cli-race.json",
+        "sha256": "6bd964e40bb5a3f7d6e07e50da2dccc4546143b31b212a909e48a1055076f092"
+      },
+      "log": {
+        "raw_file": "s05-cache-advisory-cli-race.log",
+        "sha256": "bf91ad0ca7f7da5f889f6999b2894f03cc0bba743cda802ca7b0cfe7d41234b5"
+      },
+      "exit_code": 0,
+      "elapsed": 38.733,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-static.json",
+        "sha256": "b8527ddd07bd5579975e73d0f87ae8bec4d1429ce7b8948bc89fce246e879961"
+      },
+      "log": {
+        "raw_file": "s05-cache-static.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit_code": 0,
+      "elapsed": 10.05,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-vet.json",
+        "sha256": "5ee66f67e0c6b180c9f7c234c93c02710eb4775a3d7768072890d47cbf6228e7"
+      },
+      "log": {
+        "raw_file": "s05-cache-vet.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit_code": 0,
+      "elapsed": 3.185,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-foundation.json",
+        "sha256": "2f30dd19665e3d71c46159ea704bc4b015c140bf602d6acaa59225bec6f7b92b"
+      },
+      "log": {
+        "raw_file": "s05-cache-foundation.log",
+        "sha256": "9a11ad5904339c8547661fe52e33b16752039a630a347111257b7ad07e69e7d3"
+      },
+      "exit_code": 0,
+      "elapsed": 87.817,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-security.json",
+        "sha256": "5a5cbb936c737b66b7a113c4afedbf24a67b140e4acb7ece99b6a3186c27a4ff"
+      },
+      "log": {
+        "raw_file": "s05-cache-security.log",
+        "sha256": "bfd263295a667d308ce5fd616f45666a8873a1f52916843bc5d85c965a37b7af"
+      },
+      "exit_code": 1,
+      "elapsed": 18.922,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-security-green.json",
+        "sha256": "c875c4ce66a64edf29911f03d4d88372a39e29cf898249c98f4354d4aa1f0591"
+      },
+      "log": {
+        "raw_file": "s05-cache-security-green.log",
+        "sha256": "0555d5d5efaf3d8884b2a31853c580dbca1bedaba0c73a9d3352d6690af84688"
+      },
+      "exit_code": 1,
+      "elapsed": 7.676,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-loop-security.json",
+        "sha256": "197ec8431462f5abd4f134701c3d74586f647d50bb2ae573b6b6cc1fa70d8625"
+      },
+      "log": {
+        "raw_file": "s05-cache-loop-security.log",
+        "sha256": "3e4cdbd0344aa57da24cbfaa1f93893a21a530d2d3ab951985ec5e3c24534ab4"
+      },
+      "exit_code": 1,
+      "elapsed": 7.32,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-explicit-bound-gosec.json",
+        "sha256": "dc050ac75d999dd92a48f2cc4480d750c35c6a6099f8d382769ff2dd03d7258c"
+      },
+      "log": {
+        "raw_file": "s05-cache-explicit-bound-gosec.log",
+        "sha256": "70096f4963d007d6328cdcf70d108799b094139e87443c492c2b54c499a2adb8"
+      },
+      "exit_code": 0,
+      "elapsed": 0.508,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-security-final.json",
+        "sha256": "374ddd867f57b1643c9115e73f2c3661c22219555952450c0081cc16efe19689"
+      },
+      "log": {
+        "raw_file": "s05-cache-security-final.log",
+        "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+      },
+      "exit_code": 0,
+      "elapsed": 13.286,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-cache-final-advisory-race.json",
+        "sha256": "2bb306bdd066debcb88a677497dcf6042c3cdb87adb9db436d2ff7fe27b3a617"
+      },
+      "log": {
+        "raw_file": "s05-cache-final-advisory-race.log",
+        "sha256": "f01dbf8fbbfafbe1fd21ce4a4f0ef1536fab07877c3ec11aff2f095e4a740f4b"
+      },
+      "exit_code": 0,
+      "elapsed": 6.048,
+      "source_unchanged": true
+    }
+  ],
+  "limitations": [
+    "Whole C01 writer-generation/crash reclamation and journal maintenance remain OPEN; IN_USE and UNKNOWN stay charged and preserved.",
+    "Foundation/static/vet and four-package Race precede the final bounded-loop-only source adjustment; final security and advisory Race cover that adjustment. No claim that earlier checks used identical final source.",
+    "Initial storage full Race was blocked by sandbox localhost socket permission; only the identical storage test was rerun unrestricted.",
+    "Initial G602 reports and two unsuccessful guard-only attempts are retained; explicit loop bounds passed the targeted analyzer and final canonical security without suppression.",
+    "No new CI, CPP rebuild, live API retry, Host installation, push or deployment."
+  ]
+}

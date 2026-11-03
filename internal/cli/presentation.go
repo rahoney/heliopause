@@ -31,6 +31,7 @@ type presentation struct {
 	tty, diagnosticTTY               bool
 	width                            int
 	verbose                          bool
+	refreshAdvisories                bool
 	localeExplicit, skipSaved        bool
 	warnedSettings                   bool
 	writeErr                         error
@@ -64,10 +65,15 @@ func attachPresentation(root *cobra.Command, stdout, stderr io.Writer) {
 	flags.StringVar(&p.color, "color", "auto", "Color: auto, always or never")
 	flags.StringVar(&p.progress, "progress", "auto", "Progress: auto, always or never")
 	flags.BoolVar(&p.verbose, "verbose", false, "Show bounded runtime diagnostics")
+	flags.BoolVar(&p.refreshAdvisories, "refresh-advisories", false, "Fetch current advisory data instead of reusing fresh cached responses")
 	root.PersistentPreRunE = func(command *cobra.Command, args []string) error {
 		p.localeExplicit = root.PersistentFlags().Changed("lang")
 		p.prepareLanguageSetting(command, args)
-		return p.configure()
+		if err := p.configure(); err != nil {
+			return err
+		}
+		command.SetContext(ports.WithAdvisoryRefresh(command.Context(), p.refreshAdvisories))
+		return nil
 	}
 	help := root.HelpFunc()
 	addLanguageSettings(root, p)
