@@ -81,6 +81,12 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
 	}
 	if relativePath == workflowRelativePath {
+		for _, name := range []string{"ci-responder-source.sh", "ci-stimulus-corpus.sh"} {
+			info, err := os.Lstat(filepath.Join(root, "scripts", name))
+			if err != nil || !info.Mode().IsRegular() || info.Size() > outputLimit {
+				findings = append(findings, "CI source/corpus module is unavailable or not a bounded regular file: "+name)
+			}
+		}
 		script, err := os.ReadFile(filepath.Join(root, "scripts", "ci-pnpm-runtime.sh"))
 		if err != nil {
 			findings = append(findings, "PNPM runtime qualification script is unavailable")
@@ -168,6 +174,7 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validateResponderSourceOrder(contents)...)
 	findings = append(findings, validateCUDAQualificationScope(contents)...)
 	findings = append(findings, validateKernelTerminalQualification(contents)...)
 	findings = append(findings, validatePlatformBuildCache(contents)...)
@@ -175,7 +182,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh", "bash scripts/ci-pnpm-runtime.sh project"})...)
-	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm project", []string{"bash scripts/ci-npm-project.sh native", "bash scripts/ci-npm-project.sh project"})...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm project and stimulus", []string{"bash scripts/ci-npm-project.sh native", "bash scripts/ci-npm-project.sh project", "bash scripts/ci-stimulus-corpus.sh"})...)
 	findings = append(findings, validatePNPMInspectionClientOrder(contents)...)
 	findings = append(findings, validatePNPMProjectClientOrder(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "Bun", []string{"bash scripts/ci-bun-runtime.sh", "bash scripts/ci-bun-runtime.sh project"})...)

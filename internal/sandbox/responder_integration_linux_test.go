@@ -18,6 +18,26 @@ import (
 	"time"
 )
 
+// Exercise the production protected current-version reader without starting
+// an artifact, Docker or a helper. The caller owns an explicit CI fixture.
+func TestCIResponderSourceIntegration(t *testing.T) {
+	if os.Getenv("HELOX_CI_RESPONDER_SOURCE_INTEGRATION") != "1" {
+		t.Skip("requires declared protected CI source fixture")
+	}
+	if os.Geteuid() == 0 {
+		t.Fatal("requires ordinary-user protected source reader")
+	}
+	expected := os.Getenv("HELOX_CI_RESPONDER_EXPECT")
+	if expected != "ready" && expected != "unavailable" {
+		t.Fatal("declare exact source expectation")
+	}
+	err := CheckResponderSource(context.Background())
+	if (err == nil) != (expected == "ready") {
+		t.Fatal("protected source expectation differs", err)
+	}
+	t.Logf("ci_responder_source expected=%s available=%t scope=SOURCE_DATA_ONLY", expected, err == nil)
+}
+
 // Literal-address, bounded DNS-wire and HTTP DATA only. The existing Python
 // Artifact lane supplies isolation/accounting; no trusted responder role is proven.
 func TestLoopbackResponderDATAIntegration(t *testing.T) {

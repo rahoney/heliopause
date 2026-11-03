@@ -82,6 +82,7 @@ func TestPNPMProjectActualRequiresMatchingClientAndParentRestoration(t *testing.
 		t.Fatal("no unique project return to sandbox client")
 	}
 	for name, candidate := range map[string]string{
+		"missing-stimulus":        strings.Replace(original, "          bash scripts/ci-stimulus-corpus.sh\n", "", 1),
 		"missing-npm-project":     strings.Replace(original, "          bash scripts/ci-npm-project.sh project\n", "", 1),
 		"missing-tag":             strings.Replace(original, pnpmBootstrapTestBuildCommand, strings.Replace(pnpmBootstrapTestBuildCommand, "-tags=realcorpus ", "", 1), 1),
 		"wrong-package":           strings.Replace(original, pnpmBootstrapTestBuildCommand, strings.Replace(pnpmBootstrapTestBuildCommand, "./internal/bootstrap", "./internal/sandbox", 1), 1),
@@ -109,6 +110,11 @@ func TestPNPMRuntimeHelperKeepsSupplyAndActualCoverage(t *testing.T) {
 	original := string(body)
 	if findings := validatePNPMRuntimeScript(original); len(findings) != 0 {
 		t.Fatal(findings)
+	}
+	for _, command := range []string{"haa_ci_require_responder_base", "if haa_ci_restore_responder_base v1.0.0-pnpm-ci; then", `sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/haa-sandbox-responder`} {
+		if len(validatePNPMRuntimeScript(strings.Replace(original, command, "true", 1))) == 0 {
+			t.Fatal("missing responder source/restore accepted", command)
+		}
 	}
 	for name, replacement := range map[string]string{
 		"comment":          "# " + pnpmRuntimeIntegrationCommand,

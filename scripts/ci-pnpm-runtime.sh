@@ -10,16 +10,18 @@ esac
 test "$(id -u)" != 0
 test -n "${RUNNER_TEMP:-}"
 test "${RUNNER_TEMP:0:1}" = /
-test ! -e /usr/lib/heliopause
-test ! -L /usr/lib/heliopause
+source scripts/ci-responder-source.sh
+haa_ci_require_responder_base
 pnpm_work=$(mktemp -d "$RUNNER_TEMP/haa-pnpm.XXXXXXXX")
-pnpm_root_created=0
+pnpm_version_created=0
 pnpm_cleanup() {
   local primary=$? cleanup_status=0
   trap - EXIT
-  if ((pnpm_root_created)); then
-    sudo -n rm -f -- /usr/lib/heliopause/current /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/pnpm-linux-amd64 || cleanup_status=1
-    sudo -n rmdir -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci /usr/lib/heliopause/versions /usr/lib/heliopause || cleanup_status=1
+  if ((pnpm_version_created)); then
+    if haa_ci_restore_responder_base v1.0.0-pnpm-ci; then
+      sudo -n rm -f -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/pnpm-linux-amd64 /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/haa-sandbox-responder || cleanup_status=1
+      sudo -n rmdir -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci || cleanup_status=1
+    else cleanup_status=1; fi
   fi
   rm -rf -- "$pnpm_work" || cleanup_status=1
   if ((cleanup_status)); then echo 'PNPM CI supply cleanup unproven' >&2; fi
@@ -33,12 +35,12 @@ pnpm_size=$(jq -er '.pnpm_tool.archive.size' scripts/runtimes.lock.json)
 curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$pnpm_size" --output "$pnpm_work/archive.tar.gz" "$pnpm_url"
 go run ./scripts/update-runtime materialize-pnpm --root "$PWD" --archive "$pnpm_work/archive.tar.gz" --output "$pnpm_work/pnpm-linux-amd64" --notices-output "$pnpm_work/pnpm-NOTICE.txt"
 rm -- "$pnpm_work/archive.tar.gz"
-# mkdir refuses an existing installation; cleanup removes only this CI layout.
-sudo -n mkdir -m 0755 -- /usr/lib/heliopause
-pnpm_root_created=1
-sudo -n install -d -m 0755 /usr/lib/heliopause/versions/v1.0.0-pnpm-ci
+# The base source is attested above; never replace a pre-existing version.
+sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci
+pnpm_version_created=1
 sudo -n install -m 0555 "$pnpm_work/pnpm-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/pnpm-linux-amd64
-sudo -n ln -s versions/v1.0.0-pnpm-ci /usr/lib/heliopause/current
+sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/haa-sandbox-responder
+sudo -n ln -sfnT versions/v1.0.0-pnpm-ci /usr/lib/heliopause/current
 # The owning parent installed the matching tagged bootstrap client and started
 # its authenticated helper. This child never replaces a client or owns rebind.
 if [[ "$pnpm_profile" == run ]]; then

@@ -93,15 +93,17 @@ func validatePNPMRuntimeScript(contents string) []string {
 	var findings []string
 	for _, command := range []string{
 		"set -euo pipefail",
-		"test ! -e /usr/lib/heliopause",
-		"test ! -L /usr/lib/heliopause",
+		"source scripts/ci-responder-source.sh",
+		"haa_ci_require_responder_base",
 		"trap pnpm_cleanup EXIT",
 		"go run ./scripts/generate-runtime-lock.go -check",
 		`pnpm_url=$(jq -er '.pnpm_tool.archive.url' scripts/runtimes.lock.json)`,
 		`pnpm_size=$(jq -er '.pnpm_tool.archive.size' scripts/runtimes.lock.json)`,
 		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$pnpm_size" --output "$pnpm_work/archive.tar.gz" "$pnpm_url"`,
 		`go run ./scripts/update-runtime materialize-pnpm --root "$PWD" --archive "$pnpm_work/archive.tar.gz" --output "$pnpm_work/pnpm-linux-amd64" --notices-output "$pnpm_work/pnpm-NOTICE.txt"`,
-		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause",
+		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci",
+		"if haa_ci_restore_responder_base v1.0.0-pnpm-ci; then",
+		`sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/haa-sandbox-responder`,
 		pnpmRuntimeIntegrationCommand,
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,
@@ -157,6 +159,7 @@ func validatePNPMProjectClientOrder(contents string) []string {
 	sequence := strings.Join([]string{
 		"bash scripts/ci-pnpm-runtime.sh", pnpmBootstrapTestBuildCommand,
 		`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, "haa_start_policy_helper",
+		"bash scripts/ci-stimulus-corpus.sh",
 		"bash scripts/ci-npm-project.sh project", "bash scripts/ci-pnpm-runtime.sh project", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper",
 	}, "\n")
 	for _, lines := range blocks {

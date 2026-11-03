@@ -153,15 +153,17 @@ func validateBunRuntimeScript(contents string) []string {
 	for _, command := range []string{
 		"set -euo pipefail", `case "$#:${1-}" in`, `0:|1:project) ;;`, `*) echo 'unsupported Bun CI profile' >&2; exit 2 ;;`, "esac", `bun_profile=${1:-sandbox}`, `test "$(id -u)" != 0`,
 		`test -n "${RUNNER_TEMP:-}"`, `test "${RUNNER_TEMP:0:1}" = /`,
-		"test ! -e /usr/lib/heliopause", "test ! -L /usr/lib/heliopause", "trap bun_cleanup EXIT",
+		"source scripts/ci-responder-source.sh", "haa_ci_require_responder_base", "trap bun_cleanup EXIT",
 		"go run ./scripts/generate-runtime-lock.go -check",
 		`bun_url=$(jq -er '.bun_tool.archive.url' scripts/runtimes.lock.json)`,
 		`bun_size=$(jq -er '.bun_tool.archive.size' scripts/runtimes.lock.json)`,
 		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_work/archive.zip" "$bun_url"`,
 		`go run ./scripts/update-runtime materialize-bun --root "$PWD" --archive "$bun_work/archive.zip" --output "$bun_work/bun-linux-amd64" --notices-output "$bun_work/bun-NOTICE.txt"`,
-		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause",
+		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-bun-ci",
+		"if haa_ci_restore_responder_base v1.0.0-bun-ci; then",
+		`sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder`,
 		`sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64`,
-		"sudo -n ln -s versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
+		"sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
 		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand,
 	} {
 		if counts[command] != 1 {

@@ -366,6 +366,9 @@ jobs:
           go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
           echo 'Building network-policy helper for gVisor integration'
           go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
+          CGO_ENABLED=0 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$RUNNER_TEMP/haa-sandbox-responder" ./cmd/haa-sandbox-responder
+          source scripts/ci-responder-source.sh
+          haa_ci_prepare_responder_base
           echo 'Installing network-policy helper and preparing its identity contract'
           sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
           sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
@@ -414,6 +417,7 @@ jobs:
           go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap
           haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
           haa_start_policy_helper
+          bash scripts/ci-stimulus-corpus.sh
           bash scripts/ci-npm-project.sh project
           bash scripts/ci-pnpm-runtime.sh project
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"

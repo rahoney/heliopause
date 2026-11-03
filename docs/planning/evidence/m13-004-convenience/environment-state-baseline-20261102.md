@@ -1357,3 +1357,34 @@ overlay를 보존한다. Foreign installation은 계속 거부하며 artifact/de
 공유 shell 동작만 두고, 기존 canonical workflow validators의 foreign-root/cleanup negative를
 유지한다. CI를 시작하기 전에 이 준비와 같은 기존 native source reader의 실제 소비를
 묶어 검증한다. S02/S03의 나머지 census·hosted·서명 공급 및 전체 보강 gap은 계속 OPEN이다.
+
+
+### S02 CI 공유 source 연결 — 현재 로컬 범위
+
+기존 workflow가 동일 Go owner로 CGO0/stripped responder를 만들고 CI 전용 보호 base를
+한 번 준비한다. Base는 job 전체에서 필요한 고정 실행 도구이며 하나의 유한 사본만
+보존하고 ephemeral runner 수명과 함께 폐기된다. 사용자 설치/서명 릴리스나 검역 payload
+보존 정책으로 바꾸지 않는다. PNPM/Bun은 기존 자기 version 생성·native 검증을 유지한 채
+그 version에 helper를 함께 복사하고 정상/실패 종료에서 base current를 복원한다. 복원이
+불명확하면 version 삭제도 보류한다. Pipx는 기존 private overlay 안의 version만 확장한다.
+Base owner/mode/single-link/hash·정확한 members/current를 공용 CI shell에서 확인하며
+foreign 설치/current·조회 오류를 허용으로 바꾸지 않는다. 제품 fallback/버전 owner/예산은
+변경하지 않았다. 기본 helper/current를 단순 전역 추가해 기존 세 소비자를 깨는 방식은 없다.
+
+첫 cheap checker1.970s는 새 substring order guard의 comment 우회를 잡았다. 기존 exact
+active-command count를 재사용한 targets1.935s, workflow1.889s/전체 checker17.298s는 PASS다.
+Shared shell의 실제 파일/실패 모델은 UID/GID만 모델링한 별도 범위다. 실제 private mount
+namespace0.672s는 일반 사용자·제품 CheckResponderSource의8cases(기본/세 version 모양,
+foreign current/누락/변조/mode 거부)와 foreign member 보존을 확인했다. Native tool binary,
+Docker/helper/Artifact/network 실행은0이며 전체 PNPM/Bun/Pipx script 검증이 아니다. Host와
+source 동일,95process refs0/query errors0 및38692299B 사본 삭제를 확인했다. 원본
+s02-ci-responder-source-native-v1이 소유한다.
+
+S03 corpus는 기존 tagged bootstrap/client/helper 부모에서 네 parent·14case를 호출한다.
+별도 CI job/한도는 추가하지 않았다. Parser 재생8모델은 기존 서로 다른 실제 원본의
+스키마 행을 조합해 정상·누락/중복/SKIP/외부case/상태/entry-complete 거부만 확인한
+consumer 계약 시험이다. 현재 source의 새 전체 native 실행으로 확대하지 않는다. 원본
+s02-ci-stimulus-parser-replay-v1과 원래 각 실제 receipt가 범위를 소유한다.
+완료 Root/정상 클라이언트5개는96process 참조0/query errors0 뒤280171823B를 제거했다
+(s03-completed-root-and-normal-clients-cleanup). Source reader client는 현재 qualification용으로
+보존한다. 실제 hosted/서명 공급·전체 S02/S03·유한 scenario/entry와 나머지 보강 gap은 OPEN이다.
