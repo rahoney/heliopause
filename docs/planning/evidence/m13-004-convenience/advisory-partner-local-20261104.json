@@ -1,0 +1,54 @@
+{
+  "baseline": "402bc2f",
+  "scope": "Current compiled protected Root Terraform whole graph random3.7.2 and partner integrations/github6.6.0 first/retained normal installation; each required3 plus optional opaque unsupported/no query, bound Evidence/two environment records/independent installed pins. Production main/all-profile/hosted not claimed.",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "local_qualification": "PASS: existing default whole project with official and partner provider, first plus retained; original source/static/dynamic checks and optional applicability facts; independent executable pins; two fresh environment records per entry; lock preserved",
+  "raw": "s05-terraform-partner-native-v1.json",
+  "actual": {
+    "complete": true,
+    "elapsed": 60.607,
+    "host_unchanged": true,
+    "restored": true,
+    "removed_copy_bytes": 400978742
+  },
+  "protected_test_client_digest": {
+    "algorithm": "sha256",
+    "value": "600642236c629af9e9d19d0b1a4a4b3e11bfdbcd1a7115948e8099016c0676c4"
+  },
+  "cleanup": {
+    "scope": "only completed current CLI/test runner and superseded scratch helper; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "helox-s05-current",
+        "bytes": 37609735,
+        "sha256": "039d0fbbc02872edbf28438facf4ccb78308399473c87c951ab3cd1deb58a79f"
+      },
+      {
+        "file": "bootstrap-s05-binary-fixed.test",
+        "bytes": 56638510,
+        "sha256": "9340a345de25122a8f8facdc14a851f1d824dc28e9d1cd825879f1518175b965"
+      }
+    ],
+    "retained_active_inputs": [
+      "helox-s05-github",
+      "bootstrap-s05-github.test",
+      "policy-helper-s05-public-languages",
+      "haa-sandbox-responder",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 94248245,
+    "complete": true
+  },
+  "missing": [
+    "named Python profile and grouped hosted qualification",
+    "whole S05 acceptance"
+  ]
+}

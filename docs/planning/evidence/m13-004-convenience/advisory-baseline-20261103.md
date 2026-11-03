@@ -806,3 +806,24 @@ NOT_EXECUTED와 no query, exact-subject Evidence와 independently pinned install
 s05-github-opaque-native-v1과 [한정 결과](./advisory-github-local-20261104.json)가 source와
 검사 범위를 소유한다. GitHub 한정 local qualification은 PASS이며 전체 S05/partner/다른
 profile/hosted의 QUALIFIED·ACCEPTANCE_CLOSED는 NO로 유지한다.
+
+
+## 열아홉 번째 단위 — 기존 Terraform partner whole-project 소비자 qualification
+
+기준402bc2f. `TestLinuxTerraformInitIntegration/default-complete-project`가 이미 official
+random3.7.2와 partner integrations/github6.6.0을 한 frozen graph로 최초/retained 설치하고,
+각 원본 필수3·optional scope·독립 실행 파일 pin·두 환경·기록/lock을 확인한다.
+IMPLEMENTED/WIRED=YES이며 재구현하지 않는다. 현재 후보의 해당 실제 qualification만
+MISSING, QUALIFIED/ACCEPTANCE_CLOSED=NO다. 현재 tagged bootstrap-s05-github.test와
+동일 helper/C++/SDK를 재사용하고 공식 단독 성공 사례·build·CPP를 반복하지 않는다.
+실행은 compiled protected Root이며 별도 production main 시험으로 확대하지 않는다.
+
+
+기존 default-complete-project의 actual parent58.03s/operator60.607s가 PASS다.
+Official/partner의 first/retained4entries가 required3/ALLOW·optional no-query scope,
+독립 실행 파일 pin·fresh run/각2환경의 Evidence·lock 보존을 확인했다. 제품·fixture source
+변경이나 재build/CPP 검증은 없다. Helperwait0/Host 동일·원복/400978742B 사본 정리다.
+[한정 결과](./advisory-partner-local-20261104.json)가 실제 범위를 소유한다. 완료된 구 CLI/
+old driver2개94248245B는105proc refs0/errors0과 정확한 신원 확인 뒤 정리했고 현재
+GitHub CLI/driver와 공유 helper/SDK는 보존했다. Python named profile/hosted/full S05는
+OPEN이며 기존 성공을 전체 qualification으로 확대하지 않는다.
