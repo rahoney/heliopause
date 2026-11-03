@@ -115,9 +115,14 @@ func WriteHumanResult(output io.Writer, result domain.OperationResult) error {
 			return err
 		}
 	}
+	p := presentationFor(output)
 	if decision, ok := result.PolicyDecision(); ok {
 		if _, err := fmt.Fprintf(output, "Policy: %s (%s v%d)\nReasons: %v\n", decision.Decision(), decision.PolicyID(), decision.Version(), decision.Reasons()); err != nil {
 			return fmt.Errorf("write human Policy Decision: %w", err)
+		}
+		p.renderAdvisoryDetails(p.advisoryDetails(result.CheckPlan(), result.Checks(), result.Evidence(), decision))
+		if p.writeErr != nil {
+			return p.writeErr
 		}
 	}
 	if operationError, ok := result.Error(); ok {
@@ -125,7 +130,7 @@ func WriteHumanResult(output io.Writer, result domain.OperationResult) error {
 			return fmt.Errorf("write human operational error: %w", err)
 		}
 	}
-	return nil
+	return p.writeErr
 }
 
 // WriteJSONResult emits one stable schema document and never serializes raw Go errors.

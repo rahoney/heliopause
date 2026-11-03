@@ -1,0 +1,92 @@
+{
+  "baseline": "4d6ae9b",
+  "scope": "existing auto/non-TTY text presenters reuse recorded advisory view; no new output schema or policy",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "missing": [
+    "actual production non-TTY install/detail qualification",
+    "remaining public and binary consumers; whole S05/final qualification"
+  ],
+  "inputs": [
+    {
+      "path": "internal/cli/result.go",
+      "sha256": "1a75adee0c511284f2753f2558808630530383040e9fcb840daf8558608dafc7"
+    },
+    {
+      "path": "internal/cli/install_result.go",
+      "sha256": "4f8a4d1798036e2177099081eff8c8a8bc6b7288c550c467cd099bcc7218e5d6"
+    },
+    {
+      "path": "internal/cli/advisory_test.go",
+      "sha256": "d8a4e2f181d0466837d87b05dab5ac9a3ccba0a949ce33aab29ab905d551c22f"
+    }
+  ],
+  "checks": [
+    {
+      "label": "s05-advisory-text-red",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/cli",
+        "-run",
+        "TestRecordedAdvisoryDetailsKeepSubjectFactsAndOriginalDecision/.*/text$",
+        "-count=1"
+      ],
+      "exit_code": 1,
+      "elapsed": 3.679,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-advisory-text-target",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/cli",
+        "-run",
+        "TestRecordedAdvisoryDetails|TestExecuteInstall|TestInstallFailure",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 3.534,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-advisory-text-race",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "./internal/cli",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 30.304,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-advisory-text-static",
+      "command": [
+        "/tmp/haa-full-audit-20261031/combined-final/quality-tools/bin/staticcheck",
+        "./internal/cli"
+      ],
+      "exit_code": 0,
+      "elapsed": 3.085,
+      "source_unchanged": true
+    },
+    {
+      "label": "s05-advisory-text-vet",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "./internal/cli"
+      ],
+      "exit_code": 0,
+      "elapsed": 0.785,
+      "source_unchanged": true
+    }
+  ]
+}

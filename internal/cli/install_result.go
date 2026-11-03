@@ -81,6 +81,7 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 			if index < 8 {
 				p.line("Run: %s", item.RunID().String())
 				p.renderCheckPlan(item.CheckPlan(), item.Checks())
+				p.renderAdvisoryDetails(p.advisoryDetails(item.CheckPlan(), item.Checks(), item.Evidence(), item.PolicyDecision()))
 			}
 		}
 		p.renderChecks(checks)

@@ -633,3 +633,22 @@ PASS다. Cache review 재사용/강제 refresh 실패·정확한 subject 보존,
 build 거부와 기존 public comparator 회귀를 포함한다. Native PyTorch 전체/실제 새 UI/hosted는
 미도달이며 전체 S05는 계속 OPEN이다. [부분 원장](./advisory-profiles-local-20261103.json)이
 실제 입력과 범위를 소유한다. 새 패키지/DB/동적 권한/버전 pin·CI를 추가하지 않았다.
+
+## 열네 번째 단위 — 기존 non-TTY 텍스트 결과 연결 (진행 중)
+
+기준4d6ae9b. 저장된 advisory reader/view·rich human/JSON renderer는 이미
+IMPLEMENTED=YES/WIRED=YES이며 재구현하지 않는다. `WriteHumanResult`와
+`WriteHumanInstallResult`의 기존 non-TTY/auto 텍스트 분기만 같은 view 호출이 빠져 있다.
+이 연결의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. MISSING은
+동일 reader/render 호출과 기존10상태 회귀의 텍스트 분기 대조다. 명령별 JSON 미지원은
+현재 preflight가 명시 거부하는 별도 계약이며 이번에 build/resolve schema를 확장하지 않는다.
+기존 exit/판정·출력 상한/정상 ALLOW의 추가 I/O 없음과 최초 오류 보존을 유지한다.
+
+Text 분기 RED3.679s는9상태에서 detail 누락을 검출했고 정상 ALLOW는 추가 I/O 없이
+통과했다. 두 기존 writer가 같은 reader/render를 호출하도록 연결한 표적3.534s와
+CLI fullRace30.304s/Staticcheck3.085s/vet0.785s는 PASS다. 기존10상태를 rich human/JSON/
+non-TTY text의30case로 확장했고 판정·exit20/10/0/누락·변조·취소·subject/profile 경계와
+ALLOW no-I/O를 보존한다. Writer의 첫 오류도 반환한다. IMPLEMENTED/WIRED=YES,
+QUALIFIED/ACCEPTANCE_CLOSED=NO이며 실제 install/detail 소비자는 다음 묶음에 남는다.
+[부분 원장](./advisory-text-local-20261103.json) 참조. 같은 입력의 foundation/native/CPP/CI는
+반복하지 않았다. 다음은 기존 public 언어 소비자의 실제 production CLI qualification이다.

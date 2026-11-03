@@ -80,6 +80,10 @@ are replayed. Strings are bounded and escaped for safe terminal rendering.
 
 ## Recorded advisory detail — M13-004 S05
 
+The existing auto/non-TTY text result and install summaries use the same recorded
+advisory detail view and bounds as rich human output. Missing/corrupt detail stays
+explicit; original decisions and exits remain authoritative.
+
 Completed review/block advisory checks expose optional `advisory_details` in
 standalone, installation, project-entry and execution JSON results. The same
 view supplies bounded human records: ID, assessed impact, known CVSS base score

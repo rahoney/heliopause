@@ -16,8 +16,9 @@ import (
 
 func TestRecordedAdvisoryDetailsKeepSubjectFactsAndOriginalDecision(t *testing.T) {
 	for _, mode := range []string{"record", "unknown-severity", "allowed", "missing", "corrupt", "foreign-subject", "foreign-profile", "legacy-impact", "cancelled", "unconfigured"} {
-		for _, machine := range []bool{false, true} {
-			t.Run(mode+map[bool]string{false: "/human", true: "/json"}[machine], func(t *testing.T) {
+		for _, outputMode := range []string{"human", "json", "text"} {
+			machine := outputMode == "json"
+			t.Run(mode+"/"+outputMode, func(t *testing.T) {
 				ctx := context.Background()
 				source, _ := domain.NewSourceID("pypi")
 				identity, _ := domain.NewResolvedArtifactIdentity(source, "fixture", "1.0.0", "wheel")
@@ -80,6 +81,10 @@ func TestRecordedAdvisoryDetailsKeepSubjectFactsAndOriginalDecision(t *testing.T
 				root.SetContext(ctx)
 				p := presentationFor(root.OutOrStdout())
 				p.output = "human"
+				if outputMode == "text" {
+					p.output = "auto"
+					p.tty = false
+				}
 				if mode != "unconfigured" {
 					if err := SetAdvisoryEvidenceReader(root, store); err != nil {
 						t.Fatal(err)
