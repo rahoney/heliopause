@@ -89,3 +89,29 @@ owner의 빈 import 허용 목록에 등록해 concrete backend/bootstrap/외부
 foundation55.335s와 security14.955s는 PASS다. 실제 network/provider 응답·전체 S05 검증은
 아니며 기존 CPP/native/CI를 반복하지 않았다. 작은
 [부분 구현 원장](./advisory-batch-local-20261103.json)이 정확한 source와 check 범위를 소유한다.
+
+## 두 번째 단위 — 상세 record와 공유 예산
+
+`osv_record.go`에서 고정 GET과 batch의 ID/modified 대조·OSV1.x schema·withdrawn/alias/
+affected package·version/range/severity의 bounded facts를 읽는다. 아직 해당 version의 실제
+영향 여부나 severity 판정을 만들지 않는다. Cookie/redirect/HTTP 읽기 제한은 POST와 GET이
+한 owner를 사용하고, 상세 record는 ID별 한 번만 읽어 원래 query에 돌려준다. 전체30초/
+64요청/16MiB를 공유하며 상세 조회마다 새 예산을 부여하지 않는다. 실패한 완전 응답의 hash도
+보존하며 변경된 modified·잘못된 subject·잘린/모호한 record는 complete 결과가 아니다.
+
+새 record decoder가 struct field를 해석하므로 JSON 중복 검사는 ASCII 소문자화 대신
+Go JSON과 동일한 Unicode simple-fold 동치도 거부한다. Alias와 range/event를 bounded
+facts로 유지하고 description의 자유 텍스트나 remote URL을 실행 입력으로 쓰지 않는다.
+
+또한 기존 첫 단위의 중복 조회 병합만으로는 노드별 결과 복사의 총량을 제한하지 못했다.
+현재 record 후보에서 이전 fanout 논리만 복원한 작은 counterexample0.743s는4096개 중복
+node/3references의 확대를 거부하지 못해 실패했다. 현재 owner의 원래 순서 환원에 기존
+8192 references 상한을 함께 적용했으며 더 큰 예산/별도 정리 owner는 추가하지 않았다.
+이는 실제 OOM/공개 provider 실행이 아니라 해당 메모리 상한의 controlled 직접 회귀다.
+
+해당 후보의 전체 advisory Race4.995s·Staticcheck0.624s·vet0.384s는 PASS다.
+[Record 부분 원장](./advisory-record-local-20261103.json)이 원본 counterexample/현재 source와
+검증 범위를 소유한다. 이전55.335s foundation/security를 새 record 소스의 전체 검사로
+전용하지 않으며 다음 의미 있는 연결 묶음에서 필요한 검사를 모은다. **전체 S05의 네 상태는
+여전히 NO**다. Production public transport·실제 package/version mapping/영향 해석·
+check/Evidence/Policy/cache/CLI 연결과 실제 provider 검증은 계속 MISSING이다.

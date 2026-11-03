@@ -32,6 +32,7 @@ type osvPackage struct {
 type responseFact struct {
 	requestSHA256, responseSHA256 string
 	fetchedAt                     time.Time
+	responseBytes                 int64
 }
 
 type batchQuery struct {
@@ -49,12 +50,6 @@ func queryBatch(ctx context.Context, client *http.Client, packages []osvPackage)
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	httpClient := *client
-	httpClient.Jar = nil
-	httpClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	if httpClient.Timeout <= 0 || httpClient.Timeout > 10*time.Second {
-		httpClient.Timeout = 10 * time.Second
-	}
 	unique := make([]osvPackage, 0, len(packages))
 	byPackage := make(map[osvPackage]int, len(packages))
 	positions := make([]int, len(packages))
@@ -99,13 +94,13 @@ func queryBatch(ctx context.Context, client *http.Client, packages []osvPackage)
 			if err != nil {
 				return nil, facts, err
 			}
-			body, err := postBatch(ctx, &httpClient, payload, min(int64(maxResponseBytes), remainingBytes))
+			body, err := postBatch(ctx, client, payload, min(int64(maxResponseBytes), remainingBytes))
 			if err != nil {
 				return nil, facts, err
 			}
 			remainingBytes -= int64(len(body))
 			requestHash, responseHash := sha256.Sum256(payload), sha256.Sum256(body)
-			facts = append(facts, responseFact{hex.EncodeToString(requestHash[:]), hex.EncodeToString(responseHash[:]), time.Now().UTC()})
+			facts = append(facts, responseFact{hex.EncodeToString(requestHash[:]), hex.EncodeToString(responseHash[:]), time.Now().UTC(), int64(len(body))})
 			page, err := decodeBatch(body, len(pending))
 			if err != nil {
 				return nil, facts, err
@@ -137,7 +132,12 @@ func queryBatch(ctx context.Context, client *http.Client, packages []osvPackage)
 		}
 	}
 	ordered := make([][]advisoryReference, len(packages))
+	expanded := 0
 	for index, position := range positions {
+		if len(results[position]) > maxLookupIDs-expanded {
+			return nil, facts, errResponse
+		}
+		expanded += len(results[position])
 		ordered[index] = append([]advisoryReference(nil), results[position]...)
 	}
 	return ordered, facts, nil
@@ -168,8 +168,24 @@ func postBatch(ctx context.Context, client *http.Client, payload []byte, limit i
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
+	return readResponse(ctx, client, request, limit)
+}
+
+func readResponse(ctx context.Context, client *http.Client, request *http.Request, limit int64) ([]byte, error) {
+	if ctx == nil || client == nil || client.Transport == nil || request == nil || limit <= 0 || limit > maxResponseBytes {
+		return nil, errResponse
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	httpClient := *client
+	httpClient.Jar = nil
+	httpClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	if httpClient.Timeout <= 0 || httpClient.Timeout > 10*time.Second {
+		httpClient.Timeout = 10 * time.Second
+	}
 	request.Header.Set("Accept", "application/json")
-	response, err := client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}

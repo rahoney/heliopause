@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -137,7 +138,7 @@ func jsonValue(d *json.Decoder, depth int) error {
 				return err
 			}
 			name, ok := key.(string)
-			folded := strings.ToLower(name)
+			folded := foldedJSONName(name)
 			if !ok || seen[folded] {
 				return errResponse
 			}
@@ -152,4 +153,19 @@ func jsonValue(d *json.Decoder, depth int) error {
 		return errResponse
 	}
 	return nil
+}
+
+func foldedJSONName(name string) string {
+	var folded strings.Builder
+	folded.Grow(len(name))
+	for _, ch := range name {
+		canonical := ch
+		for next := unicode.SimpleFold(ch); next != ch; next = unicode.SimpleFold(next) {
+			if next < canonical {
+				canonical = next
+			}
+		}
+		folded.WriteRune(canonical)
+	}
+	return folded.String()
 }
