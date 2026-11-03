@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -42,7 +43,7 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 		Status   string `json:"execution_status"`
 		Required bool   `json:"required"`
 	}
-	for _, mode := range []string{"fresh-cache", "cache-reuse", "malware-block", "tampered-cache", "force-refresh"} {
+	for _, mode := range []string{"fresh-cache", "cache-reuse", "malware-block", "tampered-cache", "force-refresh", "malware-human"} {
 		if !t.Run(mode, func(t *testing.T) {
 			started := time.Now()
 			root, err := filepath.EvalSymlinks(t.TempDir())
@@ -59,7 +60,7 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 			}
 			operation, _ := domain.NewOperationID()
 			seedContext := ports.WithStorage(ports.WithStorageOperation(ctx, operation), backend)
-			malware := mode == "malware-block" || mode == "force-refresh"
+			malware := mode == "malware-block" || mode == "force-refresh" || mode == "malware-human"
 			requests := 0
 			seed, err := advisory.NewInspector(&advisoryCacheOriginal{}, &http.Client{Transport: advisoryCacheHTTP(func(request *http.Request) (*http.Response, error) {
 				requests++
@@ -121,6 +122,22 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			if mode == "malware-human" {
+				before := requirementsTargetTree(t, venv)
+
+				textCommand := exec.CommandContext(ctx, "/usr/libexec/heliopause/helox", "--lang", "en", "--output", "human", "--color", "never", "pip", "install", "-r", filepath.Join(root, "requirements.txt"), "--target", venv)
+				var text, textDiagnostic bytes.Buffer
+				textCommand.Stdout, textCommand.Stderr = &text, &textDiagnostic
+				textErr := textCommand.Run()
+				t.Logf("advisory_cli_text case=%s text=%s diagnostic=%s", mode, bytes.TrimSpace(text.Bytes()), bytes.TrimSpace(textDiagnostic.Bytes()))
+				var exit *exec.ExitError
+				if !errors.As(textErr, &exit) || exit.ExitCode() != 1 || !strings.Contains(text.String(), "MAL-0000-helox-controlled") || !strings.Contains(text.String(), "unknown severity") || !reflect.DeepEqual(before, requirementsTargetTree(t, venv)) {
+					t.Fatal("actual explicit-human advisory detail/denial lost", textErr, text.String())
+				}
+
+				t.Logf("advisory_cli_human_complete case=%s target=PRESERVED exit=1 seconds=%.3f", mode, time.Since(started).Seconds())
+				return
+			}
 			count := 1
 			if mode == "cache-reuse" {
 				count = 2
@@ -154,7 +171,12 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 							Decision string
 							Reasons  []string
 						} `json:"policy"`
+						Detail *struct {
+							Status  string
+							Records []struct{ ID, Impact string }
+						} `json:"advisory_details"`
 					} `json:"entries"`
+
 					Failures []struct {
 						Checks []check `json:"checks"`
 					} `json:"inspection_results"`
@@ -206,6 +228,9 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 				if mode == "malware-block" {
 					if entry.Policy.Decision != "BLOCK" || !strings.Contains(fmt.Sprint(entry.Policy.Reasons), "M13_ADVISORY_MALICIOUS") {
 						t.Fatal("no-CVSS malware fixture did not block", entry.Policy)
+					}
+					if entry.Detail == nil || entry.Detail.Status != "AVAILABLE" || len(entry.Detail.Records) != 1 || entry.Detail.Records[0].ID != "MAL-0000-helox-controlled" || entry.Detail.Records[0].Impact != "AFFECTED" {
+						t.Fatal("actual recorded advisory detail missing", entry.Detail)
 					}
 				} else if entry.Policy.Decision != "ALLOW" {
 					t.Fatal("normal public package not allowed", entry.Policy)
@@ -263,6 +288,201 @@ func TestAdvisoryProductionCLIQuarantineIntegration(t *testing.T) {
 			t.Logf("advisory_cli_case=%s seconds=%.3f controlled_advisory=%t public_artifact=packaging@24.2", mode, time.Since(started).Seconds(), mode != "force-refresh")
 		}) {
 			t.FailNow()
+		}
+	}
+}
+
+// Reuse the production client, native selectors and cache owner. Only advisory
+// DATA is controlled; the small public packages are never represented as malware.
+func TestAdvisoryPublicLanguageProductionCLIIntegration(t *testing.T) {
+	if os.Getenv("HELOX_ADVISORY_CLI_INTEGRATION") != "1" {
+		t.Skip("requires declared protected production CLI advisory qualification")
+	}
+	if os.Geteuid() == 0 {
+		t.Fatal("requires ordinary-user client")
+	}
+	type advisoryDetail struct {
+		Status  string
+		Records []struct{ ID, Impact string }
+	}
+	type subject struct {
+		Source        string `json:"source_id"`
+		Name, Version string
+	}
+	type packageResult struct {
+		Identity subject `json:"identity"`
+		Checks   []struct {
+			ID       string `json:"id"`
+			Required bool   `json:"required"`
+			Status   string `json:"execution_status"`
+		} `json:"checks"`
+		Policy struct {
+			Decision string
+			Reasons  []string
+		} `json:"policy"`
+		Detail *advisoryDetail `json:"advisory_details"`
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
+	defer cancel()
+	for _, fixture := range []struct {
+		language, source, ecosystem, name, version string
+		args                                       []string
+		files                                      map[string]string
+	}{
+		{"npm", "npm", "npm", "is-number", "7.0.0", []string{"npm", "install", "is-number@7.0.0"}, map[string]string{"user-note.txt": "preserve user file\n", "package.json": `{ "name": "haa-advisory-fixture", "version": "1.0.0", "private": true, "dependencies": {} }`, "package-lock.json": `{"name":"haa-advisory-fixture","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{"":{"name":"haa-advisory-fixture","version":"1.0.0"}}}`}},
+		{"go", "go-proxy", "Go", "github.com/google/uuid", "v1.6.0", []string{"go", "mod", "tidy", "--adopt"}, map[string]string{"go.mod": "module example.com/haa_advisory_fixture\n\ngo 1.26.0\n\nrequire github.com/google/uuid v1.6.0\n", "main.go": "package main\nimport _ \"github.com/google/uuid\"\nfunc init(){panic(\"tidy must not execute\")}\nfunc main(){}\n"}},
+		{"cargo", "crates-io", "crates.io", "itoa", "1.0.17", []string{"cargo", "fetch"}, map[string]string{"Cargo.toml": "[package]\nname='haa_advisory_fixture'\nversion='0.1.0'\nedition='2021'\n[dependencies]\nitoa='=1.0.17'\n", "src/main.rs": "fn main(){}\n", "build.rs": "fn main(){panic!(\"fetch must not execute\");}\n"}},
+	} {
+		for _, malware := range []bool{false, true} {
+			mode := fixture.language + map[bool]string{false: "-normal", true: "-controlled-malware"}[malware]
+			if !t.Run(mode, func(t *testing.T) {
+				started := time.Now()
+				root, err := filepath.EvalSymlinks(t.TempDir())
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
+				t.Setenv("XDG_CONFIG_HOME", filepath.Join(root, "config"))
+				t.Setenv("XDG_STATE_HOME", filepath.Join(root, "state"))
+				project := filepath.Join(root, "project")
+				if err := os.Mkdir(project, 0700); err != nil {
+					t.Fatal(err)
+				}
+				for name, body := range fixture.files {
+					target := filepath.Join(project, name)
+					if err := os.MkdirAll(filepath.Dir(target), 0700); err != nil {
+						t.Fatal(err)
+					}
+					if err := os.WriteFile(target, []byte(body), 0600); err != nil {
+						t.Fatal(err)
+					}
+				}
+				cacheRoot := filepath.Join(root, "cache", "heliopause")
+				backend, err := storage.NewLocal(ctx, cacheRoot, domain.DefaultStoragePolicy())
+				if err != nil {
+					t.Fatal(err)
+				}
+				operation, _ := domain.NewOperationID()
+				seedContext := ports.WithStorage(ports.WithStorageOperation(ctx, operation), backend)
+				requests := 0
+				seed, err := advisory.NewInspector(&advisoryCacheOriginal{}, &http.Client{Transport: advisoryCacheHTTP(func(request *http.Request) (*http.Response, error) {
+					requests++
+					body := `{"results":[{}]}`
+					if malware {
+						body = `{"results":[{"vulns":[{"id":"MAL-0000-helox-controlled","modified":"2026-10-20T00:00:00Z"}]}]}`
+						if request.Method == http.MethodGet {
+							record := map[string]any{"schema_version": "1.9.2", "id": "MAL-0000-helox-controlled", "modified": "2026-10-20T00:00:00Z", "affected": []any{map[string]any{"package": map[string]string{"ecosystem": fixture.ecosystem, "name": fixture.name}, "versions": []string{fixture.version}}}}
+							encoded, err := json.Marshal(record)
+							if err != nil {
+								t.Fatal(err)
+							}
+							body = string(encoded)
+						}
+					}
+					return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": {"application/json"}}, Body: io.NopCloser(strings.NewReader(body)), Request: request}, nil
+				})})
+				if err != nil {
+					t.Fatal(err)
+				}
+				source, _ := domain.NewSourceID(fixture.source)
+				identity, _ := domain.NewResolvedArtifactIdentity(source, fixture.name, fixture.version, "controlled-seed")
+				digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+				artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:controlled:advisory-data", 1)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, seedErr := seed.Inspect(seedContext, artifact)
+				closeErr := backend.Close()
+				if seedErr != nil || closeErr != nil || requests != 1 && !malware || requests != 2 && malware {
+					t.Fatal("controlled advisory seed", seedErr, closeErr, requests)
+				}
+				before := requirementsTargetTree(t, project)
+				args := append([]string{"--lang", "en", "--output", "json"}, fixture.args...)
+				command := exec.CommandContext(ctx, "/usr/libexec/heliopause/helox", args...)
+				command.Dir = project
+				var output, diagnostic bytes.Buffer
+				command.Stdout, command.Stderr = &output, &diagnostic
+				cause := command.Run()
+				t.Logf("advisory_public_cli case=%s json=%s diagnostic=%s", mode, bytes.TrimSpace(output.Bytes()), bytes.TrimSpace(diagnostic.Bytes()))
+				var report struct {
+					packageResult
+					Schema    string           `json:"schema_version"`
+					Status    string           `json:"operation_status"`
+					Promotion string           `json:"promotion_status"`
+					Entries   []packageResult  `json:"entries"`
+					Details   []advisoryDetail `json:"advisory_details"`
+					Plans     []struct {
+						Subject subject `json:"subject"`
+					} `json:"check_plans"`
+					Attribution []struct {
+						Source, Package, Version string
+						Decision                 string   `json:"entry_policy_decision"`
+						Reasons                  []string `json:"entry_policy_reasons"`
+					} `json:"dependency_policy_attribution"`
+				}
+
+				decoder := json.NewDecoder(&output)
+				if err := decoder.Decode(&report); err != nil {
+					t.Fatal("production CLI result missing", cause, err)
+				}
+				if decoder.Decode(new(any)) != io.EOF {
+					t.Fatal("multiple result documents")
+				}
+				var entry packageResult
+				deniedPromotion := "NOT_COMPLETED"
+				if fixture.language == "npm" {
+					if report.Schema != "helox.operation-result/v2" || len(report.Plans) != 1 || len(report.Attribution) != 1 {
+						t.Fatal("incomplete npm install subject/attribution", report)
+					}
+					entry = report.packageResult
+					entry.Identity = report.Plans[0].Subject
+					attribution := report.Attribution[0]
+					if attribution.Source != entry.Identity.Source || attribution.Package != entry.Identity.Name || attribution.Version != entry.Identity.Version {
+						t.Fatal("npm attribution subject mismatch", attribution, entry.Identity)
+					}
+					entry.Policy.Decision, entry.Policy.Reasons = attribution.Decision, attribution.Reasons
+					deniedPromotion = "NOT_PERFORMED"
+				} else {
+					if len(report.Entries) != 1 {
+						t.Fatal("incomplete selected public graph", report)
+					}
+					entry = report.Entries[0]
+				}
+
+				if entry.Identity.Source != fixture.source || entry.Identity.Name != fixture.name || entry.Identity.Version != fixture.version {
+					t.Fatal("selected identity changed", entry.Identity)
+				}
+				required := 0
+				advisoryComplete := false
+				for _, check := range entry.Checks {
+					if check.Required {
+						required++
+						if check.Status != "COMPLETED" {
+							t.Fatal("required check incomplete", check)
+						}
+					}
+					advisoryComplete = advisoryComplete || check.ID == "dependency-advisory" && check.Required && check.Status == "COMPLETED"
+				}
+				if required < 3 || !advisoryComplete {
+					t.Fatal("native original/advisory checks missing", entry.Checks)
+				}
+				if malware {
+					if fixture.language != "npm" && entry.Detail != nil {
+						report.Details = []advisoryDetail{*entry.Detail}
+					}
+					if cause == nil || entry.Policy.Decision != "BLOCK" || !strings.Contains(fmt.Sprint(entry.Policy.Reasons), "M13_ADVISORY_MALICIOUS") || report.Promotion != deniedPromotion || !reflect.DeepEqual(before, requirementsTargetTree(t, project)) {
+						t.Fatal("controlled denial lost or target changed", cause, report)
+					}
+					if len(report.Details) != 1 || report.Details[0].Status != "AVAILABLE" || len(report.Details[0].Records) != 1 || report.Details[0].Records[0].ID != "MAL-0000-helox-controlled" || report.Details[0].Records[0].Impact != "AFFECTED" {
+						t.Fatal("recorded advisory detail missing", report.Details)
+					}
+				} else if cause != nil || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || entry.Policy.Decision != "ALLOW" {
+					t.Fatal("normal public dependency refused", cause, report)
+				}
+				t.Logf("advisory_public_cli_complete case=%s source=%s package=%s version=%s required_checks=%d policy=%s target_preserved=%t seconds=%.3f", mode, fixture.source, fixture.name, fixture.version, required, entry.Policy.Decision, reflect.DeepEqual(before, requirementsTargetTree(t, project)), time.Since(started).Seconds())
+			}) {
+				return
+			}
 		}
 	}
 }

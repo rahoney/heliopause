@@ -1,0 +1,326 @@
+{
+  "baseline": "fa15234",
+  "scope": "scoped actual public npm install/Go tidy/Cargo fetch normal and controlled advisory denial, Python recorded detail",
+  "recorded_at_utc": "2026-11-03T15:33:21.980197+00:00",
+  "whole_s05_acceptance_closed": false,
+  "actual_cases": [
+    {
+      "case": "npm-normal",
+      "schema": "helox.operation-result/v2",
+      "subject": {
+        "source_id": "npm",
+        "name": "is-number",
+        "version": "7.0.0",
+        "variant": "tarball"
+      },
+      "sha256": "7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e",
+      "required_checks": [
+        "npm-declared-integrity",
+        "npm-static-archive",
+        "npm-dynamic-lifecycle",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "ALLOW",
+      "operation_status": "COMPLETED",
+      "promotion_status": "COMPLETED",
+      "detail_statuses": []
+    },
+    {
+      "case": "npm-controlled-malware",
+      "schema": "helox.operation-result/v2",
+      "subject": {
+        "source_id": "npm",
+        "name": "is-number",
+        "version": "7.0.0",
+        "variant": "tarball"
+      },
+      "sha256": "7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e",
+      "required_checks": [
+        "npm-declared-integrity",
+        "npm-static-archive",
+        "npm-dynamic-lifecycle",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "BLOCK",
+      "operation_status": "NOT_PERFORMED",
+      "promotion_status": "NOT_PERFORMED",
+      "detail_statuses": [
+        "AVAILABLE"
+      ]
+    },
+    {
+      "case": "go-normal",
+      "schema": "helox.project-tidy-result/v1",
+      "subject": {
+        "source_id": "go-proxy",
+        "name": "github.com/google/uuid",
+        "version": "v1.6.0",
+        "variant": "module"
+      },
+      "sha256": "91bc2b91521a58609c5ea84cde827935a90f0de652f322d8ea8847a68cfbe281",
+      "required_checks": [
+        "go-module-sumdb",
+        "go-module-static",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "ALLOW",
+      "operation_status": "COMPLETED",
+      "promotion_status": "COMPLETED",
+      "detail_statuses": []
+    },
+    {
+      "case": "go-controlled-malware",
+      "schema": "helox.project-tidy-result/v1",
+      "subject": {
+        "source_id": "go-proxy",
+        "name": "github.com/google/uuid",
+        "version": "v1.6.0",
+        "variant": "module"
+      },
+      "sha256": "91bc2b91521a58609c5ea84cde827935a90f0de652f322d8ea8847a68cfbe281",
+      "required_checks": [
+        "go-module-sumdb",
+        "go-module-static",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "BLOCK",
+      "operation_status": "FAILED",
+      "promotion_status": "NOT_COMPLETED",
+      "detail_statuses": [
+        "AVAILABLE"
+      ]
+    },
+    {
+      "case": "cargo-normal",
+      "schema": "helox.project-fetch-result/v1",
+      "subject": {
+        "source_id": "crates-io",
+        "name": "itoa",
+        "version": "1.0.17",
+        "variant": "crate"
+      },
+      "sha256": "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2",
+      "required_checks": [
+        "cargo-registry-integrity",
+        "cargo-crate-static",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "ALLOW",
+      "operation_status": "COMPLETED",
+      "promotion_status": "COMPLETED",
+      "detail_statuses": []
+    },
+    {
+      "case": "cargo-controlled-malware",
+      "schema": "helox.project-fetch-result/v1",
+      "subject": {
+        "source_id": "crates-io",
+        "name": "itoa",
+        "version": "1.0.17",
+        "variant": "crate"
+      },
+      "sha256": "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2",
+      "required_checks": [
+        "cargo-registry-integrity",
+        "cargo-crate-static",
+        "dependency-advisory"
+      ],
+      "all_required_completed": true,
+      "policy": "BLOCK",
+      "operation_status": "FAILED",
+      "promotion_status": "NOT_COMPLETED",
+      "detail_statuses": [
+        "AVAILABLE"
+      ]
+    }
+  ],
+  "earlier_failures": [
+    {
+      "raw": "s05-public-language-input-preflight-v1.json",
+      "cause": "operator linked previous candidate binary hash; native not reached",
+      "cleanup": "s05-public-language-preflight-cleanup.json"
+    },
+    {
+      "raw": "s05-public-language-native-v2.json",
+      "cause": "test expected requirements project entry detail at document root; actual entry detail AVAILABLE"
+    },
+    {
+      "raw": "s05-public-language-native-v3.json",
+      "cause": "test assumed pip auto/non-TTY was text and generic project refusal exit20; actual auto is JSON, project refusal exit1"
+    },
+    {
+      "raw": "s05-public-language-native-v4.json",
+      "cause": "new npm fixture omitted required original package controls and used wrong standalone install JSON shape; native four checks/ALLOW completed before failed promotion"
+    }
+  ],
+  "operators": [
+    {
+      "raw": "s05-public-language-native-v2.json",
+      "complete": false,
+      "elapsed": 45.082,
+      "host_unchanged": true,
+      "restored": true,
+      "large_test_copies_removed": true,
+      "removed_copy_bytes": 381914742,
+      "cases": [
+        {
+          "mode": "loopback",
+          "exit_code": 1,
+          "named_pass_count": 0,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": false,
+          "named_advisory_children": 0,
+          "expected_advisory_children": 7
+        }
+      ]
+    },
+    {
+      "raw": "s05-public-language-native-v3.json",
+      "complete": false,
+      "elapsed": 85.829,
+      "host_unchanged": true,
+      "restored": true,
+      "large_test_copies_removed": true,
+      "removed_copy_bytes": 381914742,
+      "cases": [
+        {
+          "mode": "loopback",
+          "exit_code": 1,
+          "named_pass_count": 0,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": false,
+          "named_advisory_children": 0,
+          "expected_advisory_children": 7
+        }
+      ]
+    },
+    {
+      "raw": "s05-public-language-native-v4.json",
+      "complete": false,
+      "elapsed": 60.748,
+      "host_unchanged": true,
+      "restored": true,
+      "large_test_copies_removed": true,
+      "removed_copy_bytes": 381914742,
+      "cases": [
+        {
+          "mode": "loopback",
+          "exit_code": 1,
+          "named_pass_count": 1,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": false,
+          "named_advisory_children": 1,
+          "expected_advisory_children": 7
+        }
+      ]
+    },
+    {
+      "raw": "s05-public-language-native-v5.json",
+      "complete": true,
+      "elapsed": 102.67,
+      "host_unchanged": true,
+      "restored": true,
+      "large_test_copies_removed": true,
+      "removed_copy_bytes": 381914742,
+      "cases": [
+        {
+          "mode": "loopback",
+          "exit_code": 0,
+          "named_pass_count": 1,
+          "expected_count": 1,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true,
+          "named_advisory_children": 6,
+          "expected_advisory_children": 6
+        }
+      ]
+    }
+  ],
+  "python_human": {
+    "raw": "s05-public-language-native-v4-loopback.log",
+    "parent": "TestAdvisoryProductionCLIQuarantineIntegration",
+    "case": "malware-human",
+    "parent_passed": true,
+    "seconds": 41.257,
+    "explicit_output": "human",
+    "exit": 1,
+    "target_preserved": true,
+    "detail": "MAL-0000-helox-controlled / unknown severity",
+    "scope": "same production CLI; other failed parent is retained separately"
+  },
+  "python_json": {
+    "raw": "s05-public-language-native-v3-loopback.log",
+    "entry_detail_status": "AVAILABLE",
+    "policy": "BLOCK",
+    "required_checks": 4,
+    "target_preserved": true,
+    "scope": "actual recorded JSON positive facts before wrong human/exit assertion; parent FAIL is retained, not relabelled PASS"
+  },
+  "missing": [
+    "current PyTorch profile native/hosted qualification",
+    "opaque binary/current remaining public consumers and legacy exact get/add failure detail",
+    "whole S05/C01/S04 and final reinforcement/hosted acceptance"
+  ],
+  "final_source_inputs": [
+    {
+      "path": "internal/bootstrap/advisory_integration_test.go",
+      "sha256": "8068be6e39adaa10e844ed5ea0b9f103fa42c43977011835781f55a6b38c58b7"
+    },
+    {
+      "path": "internal/bootstrap/cargo_fetch_integration_test.go",
+      "sha256": "40980c888dba663d8cd46a47ff3061ad1af122f0d66559eea15e45e71ba2c758"
+    }
+  ],
+  "final_checks": [
+    {
+      "raw": "s05-public-language-final-tagged-static.json",
+      "command": [
+        "/tmp/haa-full-audit-20261031/combined-final/quality-tools/bin/staticcheck",
+        "-tags",
+        "realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 6.101,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-public-language-final-tagged-vet.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "-tags",
+        "realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 4.299,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-public-language-docs.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "elapsed": 0.514,
+      "source_unchanged": true
+    }
+  ],
+  "existing_cargo_fetch_fixture": "required ID/completion/count corrected to3 after actual current fetch proof; final tagged static/vet PASS. Existing full warm/tamper parent not rerun; grouped qualification remains OPEN."
+}

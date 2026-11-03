@@ -652,3 +652,40 @@ ALLOW no-I/O를 보존한다. Writer의 첫 오류도 반환한다. IMPLEMENTED/
 QUALIFIED/ACCEPTANCE_CLOSED=NO이며 실제 install/detail 소비자는 다음 묶음에 남는다.
 [부분 원장](./advisory-text-local-20261103.json) 참조. 같은 입력의 foundation/native/CPP/CI는
 반복하지 않았다. 다음은 기존 public 언어 소비자의 실제 production CLI qualification이다.
+
+## 열다섯 번째 단위 — 남은 공개 언어의 production CLI (진행 중)
+
+기준fa15234. 기존 npm install/Go tidy/Cargo fetch의 native 선택·공급 인증·검사·기록·
+Policy·반영과 S05 공통 연결은 IMPLEMENTED/WIRED=YES다. 새 resolver/pipeline을 만들지
+않는다. 이 후보의 세 실제 CLI 정상/통제 MAL 거부·target 보존·저장 상세 검증은
+QUALIFIED/ACCEPTANCE_CLOSED=NO이며 MISSING이다. 기존 protected-role/operator의
+일시 bind·helper wait·Host 원복과 동일 compiler 입력을 재사용해 작은 공개 package만
+검사한다. Seed는 통제된 advisory DATA이며 정상 공개 package가 악성이라는 주장이 아니다.
+실제 package 실행·검역과 통제 HTTP seed를 분리한다. Go tidy/Cargo fetch는 명시된
+의존성 준비 범위이며 application/build-script 실행 성공으로 확대하지 않는다.
+
+[현재 실제 원장](./advisory-public-cli-local-20261104.json)의 v5는 parent100.09s/operator102.670s,
+세 언어 정상/통제 MAL의6case/noSKIP/helperwait0/Host 동일·원복과381914742B 사본 정리를
+PASS했다. npm is-number7.0.0은 required4, Go uuidv1.6.0과 Cargo itoa1.0.17은 required3이다.
+정상은 ALLOW/반영 완료, MAL은 BLOCK/각 기존 대상 무변경이고 저장 상세는 AVAILABLE다.
+Go tidy/Cargo fetch는 의존성 준비이며 fixture init/build.rs는 실행하지 않았다.
+
+같은 CLI90ca83d3의 Python JSON entry 상세/required4/BLOCK은 v3 원본에서 보존한다.
+그 parent는 잘못된 human assertion 때문에 FAIL이며 PASS로 재명명하지 않는다. 별도
+malware-human의 parent는 v4에서41.257s에 PASS해 명시 human/exit1/unknown severity·
+MAL ID와 대상 보존을 확인했다. Auto/non-TTY는 JSON이므로 legacy text native 성공이라고
+확대하지 않는다. v4의 뒤 npm parent FAIL과 v5의 독립6case PASS를 구분한다.
+
+최초 준비 실패는 새 CLI와 이전 binary receipt의 비교였고 Host bind/native 전에 멈췄다.
+Current receipt로 연결하며 guard를 유지했고105process refs0/errors0·Host 동일 후
+381912840B만 정리했다. v2는 project entry detail을 root array로 가정했고 v3는 auto/exit20을
+추정했다. v4의 npm은 필수 원본 package.json/lock 없는 fixture와 standalone install JSON을
+project entries로 읽는 가정이 틀렸다. 실제 source의 machineOutput/installStatuses/
+installMachineResult/freezeNPMProject와 이미 저장한 JSON을 대조해 시험만 교정했다.
+제품·예산·보안 조건을 바꾸거나 성공한 Python/동일 CPP/runtime를 반복하지 않았다.
+
+실제 current Cargo required3에 맞춰 기존 hosted fetch fixture도 advisory ID·완료와3개를
+확인하도록 고쳤다. Direct injected static-only Cargo cache fixture의2개는 변경하지 않는다.
+같은 CI job/timeout을 유지한다. 이번 범위의 IMPLEMENTED/WIRED/로컬 native QUALIFIED는
+YES이며 전체 S05/hosted ACCEPTANCE_CLOSED는 NO다. 공유 CLI/test/helper 한 세트는
+후속 binary/consumer 확인에 재사용할 활성 입력으로 보존한다. 별도 CI는 시작하지 않았다.

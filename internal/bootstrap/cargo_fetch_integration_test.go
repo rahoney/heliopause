@@ -65,6 +65,7 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 			Entries   []struct {
 				Identity struct{ Name, Version string } `json:"identity"`
 				Checks   []struct {
+					ID       string `json:"id"`
 					Status   string `json:"execution_status"`
 					Required bool   `json:"required"`
 				} `json:"checks"`
@@ -82,15 +83,17 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 			t.Fatal("fetch lost actual whole preparation", report)
 		}
 		checks := 0
+		advisoryComplete := false
 		for _, check := range report.Entries[0].Checks {
 			if check.Required {
 				checks++
+				advisoryComplete = advisoryComplete || check.ID == "dependency-advisory"
 				if check.Status != "COMPLETED" {
 					t.Fatal("fetch omitted required inspection", check)
 				}
 			}
 		}
-		if checks != 2 {
+		if checks != 3 || !advisoryComplete {
 			t.Fatal("fetch integrity/static coverage changed", checks)
 		}
 		currentManifest, err := os.Lstat(filepath.Join(project, "Cargo.toml"))
@@ -114,7 +117,7 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 				t.Fatal("fetch created compiled output", name, err)
 			}
 		}
-		t.Logf("cargo_fetch_cli case=%s crates=1 required_checks=2 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=%.3f", stage, time.Since(started).Seconds())
+		t.Logf("cargo_fetch_cli case=%s crates=1 required_checks=3 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=%.3f", stage, time.Since(started).Seconds())
 	}
 	// Existing independent approval must reject a changed controller cache before
 	// either fetch or the later build can trust it. Restore only this owned fixture.
