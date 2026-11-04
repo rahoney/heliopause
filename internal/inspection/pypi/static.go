@@ -10,6 +10,8 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 const staticCheckProfileName = "pypi-static-archive-v2"
@@ -18,21 +20,41 @@ const staticCheckProfileName = "pypi-static-archive-v2"
 type StaticInspector struct {
 	intakeRoot string
 	target     artifactpypi.WheelTarget
+	analyzer   ports.SourceAnalysis
 }
 
-func NewStaticInspector(intakeRoot string, target artifactpypi.WheelTarget) (*StaticInspector, error) {
+func NewStaticInspector(intakeRoot string, target artifactpypi.WheelTarget, analyzers ...ports.SourceAnalysis) (*StaticInspector, error) {
 	if !filepath.IsAbs(intakeRoot) || target.Python == "" || target.ABI == "" || target.Platform == "" {
 		return nil, errors.New("PyPI static inspector configuration is invalid")
 	}
-	return &StaticInspector{intakeRoot: filepath.Clean(intakeRoot), target: target}, nil
+	if len(analyzers) > 1 || len(analyzers) == 1 && analyzers[0] == nil {
+		return nil, errors.New("PyPI content inspection requires one configured analyzer")
+	}
+	inspector := &StaticInspector{intakeRoot: filepath.Clean(intakeRoot), target: target}
+	if len(analyzers) == 1 {
+		inspector.analyzer = analyzers[0]
+	}
+	return inspector, nil
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if i != nil && i.analyzer != nil {
+		if artifact.Identity().Variant() == "sdist" {
+			_, _, report, err := i.InspectSdistContent(ctx, artifact)
+			return report, err
+		}
+		_, _, report, err := i.InspectWheelContent(ctx, artifact)
+		return report, err
+	}
 	_, report, err := i.inspect(ctx, artifact, nil)
 	return report, err
 }
 
 func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.WheelInspection, domain.InspectionReport, error) {
+	if i != nil && i.analyzer != nil {
+		wheel, _, report, err := i.InspectWheelContent(ctx, artifact)
+		return wheel, report, err
+	}
 	return i.inspectWheel(ctx, artifact, nil)
 }
 
@@ -242,7 +264,20 @@ func (i *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.Ac
 	}
 	id, _ := domain.NewCheckID("pypi-static-archive")
 	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile(ctx, artifact))
-	return []domain.CheckRequirement{requirement}, err
+	if err != nil {
+		return nil, err
+	}
+	result := []domain.CheckRequirement{requirement}
+	if i.analyzer != nil {
+		for _, declare := range []func() ([]domain.CheckRequirement, error){content.BinaryChecks, content.InventoryChecks, content.SourceChecks} {
+			checks, err := declare()
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, checks...)
+		}
+	}
+	return result, nil
 }
 
 // Controlled policy values and the root lane are configuration, not artifact

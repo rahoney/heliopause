@@ -1687,3 +1687,45 @@ security36.219s, PyPI/bootstrap/checker 전체 Race169.490s, vet13.706s, 고정 
 동일8경로만 반영했고 reviewed-file-map-v1이 해시를 연결한다. Existing CPP/canonical
 source build/cache/single native 성공은 반복하지 않았다. 아직 PyPI analyzer 구성과
 graph/cache/실제 승격, npm계열 execution/metadata/hosted·전체 S04가 남아 있다.
+
+### PyPI configured 내용 검사와 기존 graph — 착수 지도 (`319331c`)
+
+기존 StaticInspector의 typed content/census 부품은 로컬 연결됐지만 analyzer ctor와
+실제 Inspect/InspectWheel·ExpectedChecks에는 연결되지 않았다. Composite의 단일/graph/
+prerequisite 준비는 첫 Execution만 보며, graph static 오류 시 이미 확보한 reports를
+nil로 버린다. Sdist diagnostic의 primitive 재생성도 새 composite checks를 잃을 수 있다.
+따라서 이번 좁은 연결은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다.
+
+기존 StaticInspector ctor의 optional analyzer와 content.report에 같은 SourceAnalysis/
+SourceChecks/BinaryChecks/InventoryChecks를 연결한다. Unconfigured typed reader와
+builder의 recipe reader는 유지한다. Sdist diagnostic은 primitive static 결과일 때 붙인
+다음 기존 composite로 합쳐 child checks를 보존한다. Composite/prerequisite의 기존
+준비 predicate를 전체 required supported/completed로 바꾸고, 최초 static/graph 오류에도
+확보된 report와 원래 cause를 반환한다. Core 타입/새 analyzer·resolver·권한은 만들지 않는다.
+
+수정은 `inspection/pypi/{static,sources,composite,prerequisite}.go`와 같은 package의
+회귀에 한정한다. 기존 parser 포트의 입력/실패·선언 일치, static finding에서 analyzer
+미호출, source 미완료에서 dynamic 미호출, 원래 cause/partial checks·sdist diagnostic/
+metadata-only source 부재를 표적으로 확인한다. Factory/default/cache/promotion/큰 native/
+실제 PyPI·mixed pth는 다음 acceptance로 남긴다. 새 CI/Host 변경은 없다.
+
+구성 연결 표적1.493s와 확장 Race3.146s는 analyzer Port 입력/여섯 선언·실제 child
+일치, 오류 시 typed wheel/static·graph facts와 첫 cause 보존, malformed archive에서
+parser 미호출, partial parse에서 dynamic 미호출, sdist diagnostic+native Finding과
+child6 유지 등을 확인했다. Prerequisite parser 실패도 현재 requested graph의 검사
+결과를 보존하면서 errors.Is로 원래 cause를 전달한다. 새 Core API/검사기는 없다.
+
+Frozen source의 foundation22.854s/security16.640s/vet0.582s/pinned Static1.885s는
+PASS다. 전체 PyPI/bootstrap/application Race는 각2.559/1.969/1.758s PASS이며,
+같은 batch216.366s의 promotion은 기존 socket fixture가 sandbox setsockopt 권한에서
+미도달했다. 같은 입력의 socket 사례만 필요한 권한으로 Race3.458s/1.073s에 PASS했다.
+성공한 나머지 전체 사례를 반복하거나 최초 batch를 전부 성공으로 고쳐 쓰지 않는다.
+Configured core의 한정 구현/연결은 YES지만 default/native/cache/whole acceptance는 NO다.
+
+동일 Go 입력/CGO0의 current tagged client6.716s·policy0.538s·stripped responder0.375s를
+준비하고 기존138 observer/strict parser 공급으로 실제 npm execution CLI-v3를 확인했다.
+첫 명령37.09s/전체40.261s FAIL이고 일반 오류 뒤 intake-accounting 후속 메시지만
+남아 primary 실행 report는 미확보다. Refusal은 failfast 미도달이다. Host/source 동일/
+helperwait0·자기사본409566317B 정리를 확인했다. PyPI opt-in 연결이 원인이라고 단정하지
+않는다. 다음은 기존 gate가 이미 받은 bounded machine report를 실패 로그에 남겨 첫
+실패를 확인하는 최소 진단이다. 성공한 install/cache/CLI나 전체 CPP를 재실행하지 않는다.

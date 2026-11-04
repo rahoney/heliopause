@@ -62,8 +62,8 @@ func (i *CompositeInspector) preparePrerequisites(ctx context.Context, graph dom
 			return nil, errors.New("inspection prerequisite target is not in the requested graph")
 		}
 		wheel, report, err := i.static.InspectWheel(ctx, input.Artifact)
-		if err != nil || hasBlockingFinding(report) || report.Execution().Status() != domain.ExecutionCompleted {
-			return nil, errors.New("inspection prerequisite static validation is incomplete")
+		if err != nil || !staticReadyForDynamic(report) {
+			return nil, errors.Join(errors.New("inspection prerequisite static validation is incomplete"), err)
 		}
 		if _, err := artifactpypi.ValidateInspectionPrerequisite(wheel, originals, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
 			return nil, err

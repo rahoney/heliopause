@@ -62,6 +62,16 @@ func TestInspectWheelPreservesBlockingFindingAndCompositeSkipsDynamic(t *testing
 	if err != nil || len(combined.Findings()) != 1 || combined.Findings()[0].Code() != "M5_WHEEL_STATIC_INVALID" {
 		t.Fatalf("Composite Inspect() = %#v, %v", combined, err)
 	}
+	analyzer := &pypiSourceFixture{}
+	configured, err := NewStaticInspector(root, static.target, analyzer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, _ := NewCompositeInspector(configured, dynamic)
+	blocked, err := current.Inspect(context.Background(), artifact)
+	if err != nil || analyzer.calls != 0 || len(blocked.Findings()) != 1 || len(blocked.Executions()) != 2 || len(blocked.Diagnostics()) != 1 {
+		t.Fatal("invalid archive reached a parser or lost the original finding/diagnostic", err)
+	}
 }
 
 type panicWheelRunner struct{}

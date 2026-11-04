@@ -56,9 +56,9 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 	}
 	wheel, static, err := i.static.InspectWheel(ctx, artifact)
 	if err != nil {
-		return domain.InspectionReport{}, err
+		return static, err
 	}
-	if hasBlockingFinding(static) {
+	if !staticReadyForDynamic(static) {
 		skipped, err := skippedDynamicReport(ctx)
 		if err != nil {
 			return domain.InspectionReport{}, err
@@ -100,12 +100,14 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			return nil, errors.New("PyPI graph inspection acquired dependency binding is invalid")
 		}
 		state, report, err := i.inspectGraphStatic(ctx, artifact)
+		if len(report.Executions()) != 0 {
+			reports[dependency.Node()] = report
+		}
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		states[dependency.Node()] = state
-		reports[dependency.Node()] = report
-		if !state.dynamic || report.Execution().Status() != domain.ExecutionCompleted || len(report.Findings()) != 0 {
+		if !state.dynamic || !staticReadyForDynamic(report) {
 			staticReady = false
 		}
 	}
@@ -291,7 +293,17 @@ func validateRuntimeClosureNodes(ctx context.Context, closure []domain.AcquiredA
 	return nil
 }
 
-func hasBlockingFinding(report domain.InspectionReport) bool { return len(report.Findings()) != 0 }
+func staticReadyForDynamic(report domain.InspectionReport) bool {
+	if len(report.Executions()) == 0 || len(report.Findings()) != 0 {
+		return false
+	}
+	for _, execution := range report.Executions() {
+		if execution.Required() && (execution.Capability() != domain.CapabilitySupported || execution.Status() != domain.ExecutionCompleted) {
+			return false
+		}
+	}
+	return true
+}
 
 func (i *CompositeInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
 	if i == nil || i.static == nil || i.dynamic == nil {

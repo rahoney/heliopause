@@ -220,7 +220,7 @@ func (i *StaticInspector) InspectWheelContent(ctx context.Context, artifact doma
 		return artifactpypi.WheelInspection{}, nil, static, err
 	}
 	files, captureErr := capture.files(ctx)
-	report, contentErr := capture.report(ctx, artifact, static)
+	report, contentErr := capture.report(ctx, artifact, static, files, i.analyzer)
 	return wheel, files, report, errors.Join(captureErr, contentErr)
 }
 
@@ -240,11 +240,21 @@ func (i *StaticInspector) InspectSdistContent(ctx context.Context, artifact doma
 		return artifactpypi.SdistInspection{}, nil, static, errors.New("PyPI source distribution inspection is unavailable")
 	}
 	files, captureErr := capture.files(ctx)
-	report, contentErr := capture.report(ctx, artifact, static)
+	report, contentErr := capture.report(ctx, artifact, static, files, i.analyzer)
 	return sdist, files, report, errors.Join(captureErr, contentErr)
 }
 
-func (c *sourceCapture) report(ctx context.Context, artifact domain.AcquiredArtifact, static domain.InspectionReport) (domain.InspectionReport, error) {
+func (c *sourceCapture) report(ctx context.Context, artifact domain.AcquiredArtifact, static domain.InspectionReport, files []ports.SourceAnalysisFile, analyzer ports.SourceAnalysis) (domain.InspectionReport, error) {
+	if analyzer != nil && artifact.Identity().Variant() == "sdist" && len(static.Diagnostics()) == 0 && len(static.Findings()) == 0 {
+		diagnostic, err := domain.NewInspectionDiagnostic(domain.InspectionDiagnosticSdistDynamicUnavailable, "")
+		if err != nil {
+			return static, err
+		}
+		static, err = domain.NewInspectionReportWithDiagnostic(static.Execution(), static.Findings(), static.Evidence(), diagnostic)
+		if err != nil {
+			return static, err
+		}
+	}
 	inventory, err := content.NewInventory(artifact, c.facts, c.limits)
 	if err != nil {
 		return static, err
@@ -257,8 +267,17 @@ func (c *sourceCapture) report(ctx context.Context, artifact domain.AcquiredArti
 	if censusErr != nil {
 		return static, errors.Join(nativeErr, censusErr)
 	}
-	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native, census})
-	return report, errors.Join(nativeErr, err)
+	reports := []domain.InspectionReport{static, native, census}
+	var sourceErr error
+	if analyzer != nil {
+		var source domain.InspectionReport
+		source, sourceErr = content.InspectSources(ctx, analyzer, artifact, files, inventory)
+		if len(source.Executions()) != 0 {
+			reports = append(reports, source)
+		}
+	}
+	report, err := domain.NewCompositeInspectionReport(reports)
+	return report, errors.Join(nativeErr, sourceErr, err)
 }
 
 // wheelRoles reuses the authenticated installed surface. A second complete
