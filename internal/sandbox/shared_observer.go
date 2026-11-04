@@ -69,6 +69,10 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 		return nodeExecutionInputExpectedTopology(true)
 	case bunExecutionProfile:
 		return bunExecutionExpectedTopology()
+	case sourceAnalysisProfile:
+		supply := observerMountExpectation{semgrepRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		source := observerMountExpectation{sourceAnalysisRoot, "workspace", "/", "9p", true, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, supply, source}, true
 	case pipxObserverProfile:
 		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
 		return []observerMountExpectation{root, tmp, runtime, data}, true
@@ -134,7 +138,7 @@ type observationTraceLedger struct {
 const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
+	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != sourceAnalysisProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)

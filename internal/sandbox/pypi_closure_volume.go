@@ -68,7 +68,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != semgrepRuntimeRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot && project[0].destination != environmentWorkspaceRoot && project[0].destination != elfWriterWork && project[0].destination != elfReaderWork) || project[0].executable != (project[0].destination == cargoBuildGuestTarget || project[0].destination == semgrepRuntimeRoot || project[0].destination == elfWriterWork || project[0].destination == elfReaderWork))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot && project[0].destination != pipxRuntimeRoot && project[0].destination != semgrepRuntimeRoot && project[0].destination != sourceAnalysisRoot && project[0].destination != pipxNativeWheels && project[0].destination != nodeExecutionRoot && project[0].destination != environmentWorkspaceRoot && project[0].destination != elfWriterWork && project[0].destination != elfReaderWork) || project[0].executable != (project[0].destination == cargoBuildGuestTarget || project[0].destination == semgrepRuntimeRoot || project[0].destination == elfWriterWork || project[0].destination == elfReaderWork))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	if len(project) == 1 && project[0].destination == pipxRuntimeRoot && (capacity != pipxDataVolumeCapacity || manifestID != runtimeidentity.PipxToolSHA256) {
@@ -76,6 +76,9 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	}
 	if len(project) == 1 && project[0].destination == semgrepRuntimeRoot && (capacity != semgrepSupplyVolumeCapacity || manifestID != semgrepSupplyDigest()) {
 		return closureVolume{}, errors.New("semgrep supply requires the selected immutable identity")
+	}
+	if len(project) == 1 && project[0].destination == sourceAnalysisRoot && capacity != sourceAnalysisVolumeCapacity {
+		return closureVolume{}, errors.New("source analysis requires the fixed input volume capacity")
 	}
 	if len(project) == 1 && project[0].destination == pipxNativeWheels && capacity != pipxWheelInputCapacity {
 		return closureVolume{}, errors.New("pipx whole-wheel volume requires the fixed capacity")
@@ -104,7 +107,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		"--label", closureVolumeLabel+"="+transaction,
 		"--label", closureManifestLabel+"="+manifestID, name)
 	if err != nil || strings.TrimSpace(string(created)) != name {
-		if volume.destination() == pipxRuntimeRoot || volume.destination() == semgrepRuntimeRoot {
+		if volume.destination() == pipxRuntimeRoot || volume.destination() == semgrepRuntimeRoot || volume.destination() == sourceAnalysisRoot {
 			return volume, errors.New("pipx DATA volume creation outcome is unavailable")
 		}
 		if volume.destination() == nodeExecutionRoot {
@@ -116,7 +119,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
 	if err := volume.verify(ctx, runner); err != nil {
-		if volume.destination() == pipxRuntimeRoot || volume.destination() == semgrepRuntimeRoot || volume.destination() == nodeExecutionRoot || volume.destination() == environmentWorkspaceRoot || volume.destination() == elfWriterWork {
+		if volume.destination() == pipxRuntimeRoot || volume.destination() == semgrepRuntimeRoot || volume.destination() == sourceAnalysisRoot || volume.destination() == nodeExecutionRoot || volume.destination() == environmentWorkspaceRoot || volume.destination() == elfWriterWork {
 			return volume, err
 		}
 		// Never adopt a volume whose post-create identity is uncertain. The caller
@@ -131,7 +134,7 @@ func (v closureVolume) tmpfsOptions() string {
 	if v.destination() == semgrepRuntimeRoot {
 		return "size=" + strconv.FormatInt(v.capacity, 10) + ",nosuid,nodev,uid=0,gid=0,mode=0755"
 	}
-	if v.destination() == pipxRuntimeRoot || v.destination() == pipxNativeWheels {
+	if v.destination() == pipxRuntimeRoot || v.destination() == pipxNativeWheels || v.destination() == sourceAnalysisRoot {
 		return "size=" + strconv.FormatInt(v.capacity, 10) + ",nosuid,nodev,uid=0,gid=0,mode=0755,noexec"
 	}
 	options := "size=" + strconv.FormatInt(v.capacity, 10) + closureTmpfsOptions
@@ -255,12 +258,12 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 		return errors.New("python closure container mount identity is invalid")
 	}
 	for _, mount := range actual.Mounts {
-		if mount.Type == "bind" || ((v.destination() == pipxRuntimeRoot || v.destination() == semgrepRuntimeRoot) && (mount.Destination == "/" || strings.HasPrefix(mount.Destination, v.destination()+"/") || (mount.Name == v.name && mount.Destination != v.destination()))) {
+		if mount.Type == "bind" || ((v.destination() == pipxRuntimeRoot || v.destination() == semgrepRuntimeRoot || v.destination() == sourceAnalysisRoot) && (mount.Destination == "/" || strings.HasPrefix(mount.Destination, v.destination()+"/") || (mount.Name == v.name && mount.Destination != v.destination()))) {
 			return errors.New("python closure container has an unauthorized bind mount")
 		}
 	}
 	for _, mount := range actual.HostMounts {
-		if mount.Type == "bind" || ((v.destination() == pipxRuntimeRoot || v.destination() == semgrepRuntimeRoot) && (mount.Target == "/" || strings.HasPrefix(mount.Target, v.destination()+"/") || (mount.Source == v.name && mount.Target != v.destination()))) {
+		if mount.Type == "bind" || ((v.destination() == pipxRuntimeRoot || v.destination() == semgrepRuntimeRoot || v.destination() == sourceAnalysisRoot) && (mount.Target == "/" || strings.HasPrefix(mount.Target, v.destination()+"/") || (mount.Source == v.name && mount.Target != v.destination()))) {
 			return errors.New("python closure container requests an unauthorized bind mount")
 		}
 	}

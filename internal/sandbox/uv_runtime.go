@@ -28,7 +28,7 @@ func closeUVOutputVolume(ctx context.Context, runner CommandRunner, volume *clos
 }
 
 func closeWritableOutputVolume(ctx context.Context, runner CommandRunner, volume *closureVolume, destination string) error {
-	if destination != pythonSitePath && destination != pnpmProjectRoot && destination != bunProjectRoot && destination != pipxRuntimeRoot && destination != semgrepRuntimeRoot && destination != pipxNativeWheels && destination != nodeExecutionRoot && destination != environmentWorkspaceRoot && destination != goBuildGuestInput && destination != goBuildGuestOutput && destination != cargoBuildGuestInput && destination != cargoBuildGuestTarget && destination != elfWriterWork {
+	if destination != pythonSitePath && destination != pnpmProjectRoot && destination != bunProjectRoot && destination != pipxRuntimeRoot && destination != semgrepRuntimeRoot && destination != sourceAnalysisRoot && destination != pipxNativeWheels && destination != nodeExecutionRoot && destination != environmentWorkspaceRoot && destination != goBuildGuestInput && destination != goBuildGuestOutput && destination != cargoBuildGuestInput && destination != cargoBuildGuestTarget && destination != elfWriterWork {
 		return errors.New("unknown private output destination")
 	}
 	if ctx == nil || runner == nil || volume == nil || volume.destination() != destination || volume.verify(ctx, runner) != nil {

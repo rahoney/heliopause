@@ -18,7 +18,7 @@ type pipxWheelVolumeRunner struct {
 
 func (r *pipxWheelVolumeRunner) RunInput(_ context.Context, input io.Reader, name string, args ...string) error {
 	r.copies++
-	if name != "docker" || len(args) != 4 || args[0] != "cp" || args[1] != "--archive" || args[2] != "-" || !strings.HasSuffix(args[3], ":"+pipxNativeWheels) {
+	if name != "docker" || len(args) != 4 || args[0] != "cp" || args[1] != "--archive" || args[2] != "-" || !strings.HasSuffix(args[3], ":"+r.volume.destination()) {
 		return errors.New("unexpected wheel copy")
 	}
 	if r.copyError != nil {
@@ -29,7 +29,7 @@ func (r *pipxWheelVolumeRunner) RunInput(_ context.Context, input io.Reader, nam
 	return err
 }
 func (r *pipxWheelVolumeRunner) RunOutput(_ context.Context, output io.Writer, name string, args ...string) error {
-	if name != "docker" || len(args) != 3 || args[0] != "cp" || !strings.HasSuffix(args[1], ":"+pipxNativeWheels+"/.") || args[2] != "-" {
+	if name != "docker" || len(args) != 3 || args[0] != "cp" || !strings.HasSuffix(args[1], ":"+r.volume.destination()+"/.") || args[2] != "-" {
 		return errors.New("unexpected wheel readback")
 	}
 	if r.readError != nil {

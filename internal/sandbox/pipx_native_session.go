@@ -16,7 +16,7 @@ import (
 
 // This phase returns unapproved native metadata, never an inspection outcome.
 // The existing zero-unit ledger is used only for operational CPU accounting.
-type pipxNativeSession struct {
+type observedNativeSession struct {
 	runner                CommandRunner
 	observer              TraceObserver
 	resources             ObservationResourceClient
@@ -24,6 +24,7 @@ type pipxNativeSession struct {
 	lease                 ObservationResourceLease
 	ledger                *observationTransaction
 	watch                 *observationCPUWatch
+	analysisInput         *readonlyToolVolume
 	data                  *pipxDataVolume
 	wheels                *pipxWheelVolume
 	runtime               nativeRuntimeVolume
@@ -35,6 +36,9 @@ type pipxNativeSession struct {
 	resourceCreated       bool
 	trace                 TraceReader
 }
+
+// Keep existing Pipx/UV callers on the same qualified lifecycle implementation.
+type pipxNativeSession = observedNativeSession
 
 type pipxNativeKeeper struct {
 	name, owner, id    string
@@ -529,6 +533,9 @@ func (s *pipxNativeSession) close(ctx context.Context) error {
 	}
 	if s.data != nil {
 		joined = errors.Join(joined, s.data.close(ctx, s.runner))
+	}
+	if s.analysisInput != nil {
+		joined = errors.Join(joined, s.analysisInput.close(ctx, s.runner))
 	}
 	if s.watch != nil {
 		joined = errors.Join(joined, s.watch.stop())

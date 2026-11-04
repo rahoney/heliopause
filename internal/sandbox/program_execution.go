@@ -28,7 +28,7 @@ func captureAdmittedProgram(run context.Context, capture programCapturedRunner, 
 	if incompleteErr == nil {
 		return outcome, errors.New("program execution evidence is unavailable")
 	}
-	if run == nil || capture == nil || makeProgramError == nil || verify == nil || !exactObservationContainerID(containerID) || len(command) == 0 || (expectedMode != boundaryNodeHandoffMode && expectedMode != boundaryPythonHandoffMode && expectedMode != boundaryBunHandoffMode) {
+	if run == nil || capture == nil || makeProgramError == nil || verify == nil || !exactObservationContainerID(containerID) || len(command) == 0 || (expectedMode != boundaryNodeHandoffMode && expectedMode != boundaryPythonHandoffMode && expectedMode != boundaryBunHandoffMode && expectedMode != boundaryELFHandoffMode) {
 		return outcome, incompleteErr
 	}
 	session := activeObserverSession(containerID)

@@ -13,6 +13,7 @@ const pipxDataVolumeCapacity int64 = 8 << 20
 // This owner attests DATA transport and lifetime only. It cannot authorize
 // Python execution or supply external observation completion evidence.
 type readonlyToolVolume struct {
+	source  *sourceAnalysisPreparedInput
 	semgrep bool
 	volume  closureVolume
 	writer  string
@@ -34,6 +35,9 @@ func createPipxDataVolume(ctx context.Context, runner CommandRunner, transaction
 }
 
 func (v *readonlyToolVolume) valid() bool {
+	if v != nil && v.source != nil {
+		return !v.semgrep && len(v.source.manifestID) == 64 && v.volume.destination() == sourceAnalysisRoot && v.volume.manifestID == v.source.manifestID && v.volume.capacity == sourceAnalysisVolumeCapacity && !v.volume.goBuild && !v.volume.goBuildOutput && !v.volume.projectBuildExecutable
+	}
 	if v != nil && v.semgrep {
 		return v.volume.destination() == semgrepRuntimeRoot && v.volume.manifestID == semgrepSupplyDigest() && v.volume.capacity == semgrepSupplyVolumeCapacity && !v.volume.goBuild && !v.volume.goBuildOutput && v.volume.projectBuildExecutable
 	}
@@ -129,6 +133,9 @@ func (v *readonlyToolVolume) verifyReader(ctx context.Context, runner CommandRun
 func (v *readonlyToolVolume) verifyReaderBytes(ctx context.Context, runner CommandRunner, container string) error {
 	if !v.valid() {
 		return errPipxToolSupply
+	}
+	if v.source != nil {
+		return v.source.readback(ctx, runner, container)
 	}
 	if err := verifyObservationRuntimeAlive(ctx, runner, container); err != nil {
 		return err

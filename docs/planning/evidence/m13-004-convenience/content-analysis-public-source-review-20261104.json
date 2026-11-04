@@ -803,7 +803,7 @@
     "asset_count": 20,
     "bundle_file_count": 24,
     "runtime_manifest_schema": "helox.runtime-image-manifest/v4",
-    "legacy_readers_preserved": "8–16 assets, v2/v3 runtime metadata",
+    "legacy_readers_preserved": "8\u201316 assets, v2/v3 runtime metadata",
     "actual_copy_raw": "s04-release-copy-actual-v1.json",
     "actual_copy_elapsed": 11.266,
     "installed_manifest_unchanged": true,
@@ -959,6 +959,148 @@
       {
         "path": "internal/sandbox/uv_runtime.go",
         "sha256": "a34ecd38a412219679c46d798534f7d9f365ab426421dd7a16bb66a4b0bd53ed"
+      }
+    ]
+  },
+  "scanner_execution": {
+    "states": {
+      "IMPLEMENTED": "YES (bounded source input and fixed parser runtime)",
+      "WIRED": "YES (SourceAnalysis port/backend; production Inspection consumer pending)",
+      "QUALIFIED": "YES (named local runtime scope)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "actual_pass_raw": "s04-source-analysis-native-v9.json",
+    "actual_elapsed": 23.406,
+    "named_test_elapsed": 20.4,
+    "languages": [
+      "javascript",
+      "typescript",
+      "python",
+      "go",
+      "rust",
+      "hcl"
+    ],
+    "scanned": 7,
+    "findings": 1,
+    "parser_errors": 0,
+    "skipped_rules": 0,
+    "runtime": "traced gVisor; fixed core/rules and readonly noexec source DATA; no artifact installation/execution",
+    "resource_create_register_close": [
+      1,
+      1,
+      1
+    ],
+    "accounted_runtime_cpu_usec": 573885,
+    "host_unchanged": true,
+    "helper_wait_zero": true,
+    "actual_owned_resources_removed": true,
+    "actual_test_copies_removed_bytes": 214343077,
+    "cpp_raw": "s04-source-analysis-observer-batch-v8.json",
+    "cpp_passes": 138,
+    "cpp_elapsed": 49.676,
+    "go_scope": "Go source unchanged across observer-only deltas; each frozen receipt retains its own candidate inputs",
+    "checks_raw": [
+      "s04-scanner-execution-target-v2.json",
+      "s04-scanner-execution-foundation-v1.json",
+      "s04-scanner-execution-sandbox-race-v1.json",
+      "s04-scanner-execution-security-v1.json",
+      "s04-scanner-execution-vet-v1.json",
+      "s04-scanner-execution-static-v1.json"
+    ],
+    "first_failures_raw": [
+      "s04-source-analysis-native-v1.json",
+      "s04-source-analysis-native-v2.json",
+      "s04-source-analysis-native-v3.json",
+      "s04-source-analysis-native-v4.json",
+      "s04-source-analysis-native-v5.json",
+      "s04-source-analysis-native-v6.json",
+      "s04-source-analysis-native-v7.json",
+      "s04-source-analysis-native-v8.json"
+    ],
+    "diagnostic_scope": "SDK-only numeric query metadata, not production code/authority; canonical copy restored and temporary file deleted",
+    "missing": [
+      "Strict scanner JSON, complete target/rule/version binding and partial/incomplete interpretation",
+      "All inspection/transitive artifact/Evidence/Policy consumers",
+      "Remaining source runtime cancellation/fault/output-boundary qualification",
+      "Large graph/all PyTorch profiles/grouped hosted",
+      "Release current20 supply/current-only admission/official provenance/full self-quarantine and activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "db3a7070099caa0d4979b8d2530c4cde9e127ad0a7e90c5ce89a0e6be1da7a52"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume.go",
+        "sha256": "13a99223acf7458754a1d6f73e5f604fc856cf6226aed183a4953e20f5c1ccce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "fffffb43b6de2a809f5241c5f67f060bf63e9152e38bbdc7061f35bece3de99e"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "d98e6b78a3d2d83bd0caa6699c6f5881f754e973aa33dc3bb8e062d34e381ef5"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "6ff9f2e5f153b17fa8c5cd339c808db8c98d358a113ddc26d3f519e4279bb318"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "034b87bf4d1885f17ffa15cf196938fa999fb8877c0b6cf0d75f8734851615b1"
+      },
+      {
+        "path": "internal/sandbox/program_execution.go",
+        "sha256": "ec9ce7c76ea27b9e3957065dbaf0b65c57f6ed25525272fff462e618171816b5"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "9d124e76d41aab4f139f2dec631ef2892b1d204cb6318e5fc9f6ebcab979b29e"
+      },
+      {
+        "path": "internal/sandbox/readonly_input_tar.go",
+        "sha256": "0d04d18047e8152e820316354dbad6b86539c4e545033a37085580691f771fe2"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "191f3faf47156ff0490963486128a57bd782aab069b726ed34326b0ca9e4f51c"
+      },
+      {
+        "path": "internal/sandbox/source_analysis.go",
+        "sha256": "d6a89f6b12e104453e2db6dc4e7cd61d7f736142fb4b458f39691a99d4add789"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input.go",
+        "sha256": "2e93924346d408210b00115fb6bd164f7f1e4acd7985fd5e1d49ab519ecf287c"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input_test.go",
+        "sha256": "0c58f90fd7eac4376dc2a3b816e31bd2cba7aba56d0c8fe9c1a14e98929a030b"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_real_test.go",
+        "sha256": "fd27ada7b815d150b62c1aef94359b00f1dd625f5126abe1f725ee6fd7cd781e"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_runtime.go",
+        "sha256": "d64a0307336b0e1a981c509a6d385a567f0330ecf481f3c4766fea9d686de8b2"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_runtime_test.go",
+        "sha256": "b4cb4e10f9f752bef43fdac1d317713db80e07e2b9b4c80a9ee99b8918131834"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "2e241872d52bcdba346c2007c6427758bc0c858bc2930e57fe3beefbae6a7f75"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "331d637e56cc42eabb8e54f1a6e606d4fc76febfdb6de17acdefd0acf0cbd1a6"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "814e8ffddb45469434b9b25b362ae74c6778b355efa354ef98d4b1ca14256a8e"
       }
     ]
   }

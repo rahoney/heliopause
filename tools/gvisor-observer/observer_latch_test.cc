@@ -8105,6 +8105,215 @@ bool VerifyTerraformProviderProfileBoundary() {
 
 // Exercise the production request/result correlation and attested workspace
 // dispatch, rather than only invoking the filesystem predicate directly.
+bool VerifySourceAnalysisUnameBoundary() {
+  int sockets[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+  auto run = [&](const char* fault) {
+    ProcessState state;
+    gvisor::common::ContextData parent;
+    parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
+    parent.set_thread_group_start_time_ns(990); parent.set_parent_thread_group_id(0);
+    parent.set_is_exec_session(true); parent.set_process_name("parser");
+    if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kArtifact;
+    gvisor::sentry::CloneInfo clone; *clone.mutable_context_data() = parent;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload, id = kFirstID; const char* reason = nullptr;
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(), sockets[0], &id, &state, &reason)) return false;
+    TopologyState topology;
+    topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    gvisor::sentry::ExecveInfo image; *image.mutable_context_data() = parent;
+    auto* context = image.mutable_context_data();
+    context->set_thread_group_id(100); context->set_thread_group_start_time_ns(1000);
+    context->set_parent_thread_group_id(99); context->set_process_name("renamed-utility");
+    image.set_binary_path("/usr/bin/uname"); image.set_execfn("/usr/bin/uname");
+    image.add_argv("uname");
+    const std::string name = fault;
+    const bool expected = name == "plain" || name == "machine" || name == "kernel";
+    if (name == "machine") image.add_argv("-m");
+    if (name == "kernel") image.add_argv("-s");
+    if (name == "arguments") image.add_argv("-a");
+    if (name == "execfn") image.set_execfn("/tmp/uname");
+    if (name == "alias") image.set_binary_path("/tmp/uname");
+    if (name == "parent-role") state.groups[99].role = ProcessState::Role::kControl;
+    if (name == "parent-image") state.groups[99].current_image_class = ProcessClass::kShell;
+    if (name == "parent-start") state.groups[99].start_time_ns++;
+    if (name == "child-provenance") state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot;
+    if (name == "child-parent") context->set_parent_thread_group_id(98);
+    if (name == "shadow") topology.anchors.emplace(2, MountAnchor{2, "/usr/bin", "workspace"});
+    const char* profile = name == "profile" ? kProfileGitHub : kProfileSourceAnalysis;
+    ProfileRegistration registration;
+    const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(payload.data(), payload.size(), sockets[0], &id, profile, &registration, &state, &reason, &topology);
+    const bool accepted = parsed && state.groups[100].current_image_class == ProcessClass::kUname &&
+        ExpectRecordExact(sockets[1], kFirstID, "process-exec-expected");
+    if (!expected) { DrainDatagram(sockets[1]); return !accepted; }
+    if (!accepted || state.groups[100].role != ProcessState::Role::kArtifact ||
+        IsTrustedControlNetwork(image.context_data(), state) || state.expected_groups.count(100) != 0) return false;
+    const auto baseline = state;
+    gvisor::syscall::Open open; *open.mutable_context_data() = image.context_data(); open.set_flags(557056);
+    MountAnchor anchor{1, "/", "oci-root"};
+    auto readable = [&]() { return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kRuntimeRoot; };
+    for (const char* path : {"/etc/ld.so.cache", "/usr/lib/x86_64-linux-gnu/libc.so.6"}) {
+      open.set_pathname(path); if (!readable()) return false;
+    }
+    for (const char* path : {"/etc/passwd", "/proc/100/environ", "/usr/lib/x86_64-linux-gnu/libprivate.so", "/etc/ld.so.cache.backup"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/etc/ld.so.cache");
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, kOpenWriteOnly, kOpenReadWrite, kOpenCreate}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    open.set_flags(557056); anchor.mount_class = "workspace"; if (readable()) return false;
+    anchor.mount_class = "oci-root"; state.groups[99].start_time_ns++; if (readable()) return false;
+    state = baseline; state.groups[100].current_image_class = ProcessClass::kShell;
+    return !readable();
+  };
+  bool passed = true;
+  for (const char* fault : {"plain", "machine", "kernel", "arguments", "execfn", "alias", "parent-role", "parent-image", "parent-start", "child-provenance", "child-parent", "shadow", "profile"}) {
+    if (!run(fault)) { fprintf(stderr, "source uname boundary failed: %s\n", fault); passed = false; break; }
+  }
+  close(sockets[0]); close(sockets[1]); return passed;
+}
+
+bool VerifySourceAnalysisDemotionBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_thread_group_id(99); context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0); context.set_is_exec_session(true);
+  context.set_process_name("setpriv");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+      ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].handoff_target_pending = true;
+  auto allowed = [&](const ProcessState& candidate, const std::string& path,
+                     uint64_t flags, const char* profile) {
+    return IsExactHAAELFHandoffDemotionRead(context, candidate, path, flags, profile);
+  };
+  for (const char* path : {"/etc/ld.so.cache", "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libcap-ng.so.0.0.0", "/proc/sys/kernel/cap_last_cap",
+      "/etc/nsswitch.conf", "/etc/passwd", "/etc/group", "/proc/99/status"})
+    if (!allowed(state, path, 557056, kProfileSourceAnalysis)) return false;
+  for (const char* path : {"/etc/shadow", "/proc/98/status", "/etc/ld.so.cache.backup", "/haa-source/payload.py"})
+    if (allowed(state, path, 557056, kProfileSourceAnalysis)) return false;
+  for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend})
+    if (allowed(state, "/etc/ld.so.cache", flags, kProfileSourceAnalysis)) return false;
+  if (allowed(state, "/etc/ld.so.cache", 557056, kProfileNPM)) return false;
+  for (int fault = 0; fault < 5; ++fault) {
+    auto changed = state; auto& group = changed.groups[99];
+    if (fault == 0) group.role = ProcessState::Role::kControl;
+    if (fault == 1) group.provenance = ProcessState::Provenance::kCloneChild;
+    if (fault == 2) group.handoff_target_pending = false;
+    if (fault == 3) group.trusted_control_network_active = true;
+    if (fault == 4) group.root_consumed = false;
+    if (allowed(changed, "/etc/ld.so.cache", 557056, kProfileSourceAnalysis)) return false;
+  }
+  context.set_process_name("semgrep-core");
+  return !allowed(state, "/etc/ld.so.cache", 557056, kProfileSourceAnalysis);
+}
+
+bool VerifySourceAnalysisCommandBoundary() {
+  const char* const args[] = {"/haa-semgrep/semgrep-core-linux-amd64", "-json_nodots",
+      "-tree_sitter_only", "-no_filter_irrelevant_rules", "-no_filter_irrelevant_patterns",
+      "-j", "1", "-rules", "/haa-semgrep/semgrep-rules.json", "-targets",
+      "/haa-source/targets.json", "-timeout", "2", "-max_memory", "256",
+      "-max_match_per_file", "100"};
+  gvisor::sentry::ExecveInfo message;
+  message.set_binary_path(args[0]); message.set_execfn(args[0]);
+  for (const char* arg : args) message.add_argv(arg);
+  if (!IsExactSourceAnalysisCommand(message) || !IsCanonicalBootstrapProfile(kProfileSourceAnalysis) ||
+      ProcessClassForPath(args[0], kProfileSourceAnalysis) != ProcessClass::kArtifact ||
+      !IsBootstrapHandoffClass(ProcessClass::kArtifact, kProfileSourceAnalysis)) return false;
+  for (int index = 0; index < message.argv_size(); ++index) {
+    auto changed = message;
+    changed.set_argv(index, message.argv(index) + "-untrusted");
+    if (IsExactSourceAnalysisCommand(changed)) return false;
+  }
+  for (int fault = 0; fault < 4; ++fault) {
+    auto changed = message;
+    if (fault == 0) changed.set_binary_path("/work/artifact");
+    if (fault == 1) changed.set_execfn("/work/artifact");
+    if (fault == 2) changed.add_argv("--config=artifact");
+    if (fault == 3) changed.mutable_argv()->RemoveLast();
+    if (IsExactSourceAnalysisCommand(changed)) return false;
+  }
+  for (const char* profile : {kProfileGitHub, kProfileNPM, kProfilePyPI, kProfileGoBuild})
+    if (ProcessClassForPath(args[0], profile) != ProcessClass::kUnknown) return false;
+  for (const char* path : {"/work/artifact", "/bin/sh-untrusted", "/haa-source/source-00000.py"})
+    if (ProcessClassForPath(path, kProfileSourceAnalysis) != ProcessClass::kUnknown) return false;
+  if (!IsWorkspacePath("/haa-source/source-00000.py", kProfileSourceAnalysis) ||
+      !IsWorkspacePath("/haa-semgrep/semgrep-rules.json", kProfileSourceAnalysis) ||
+      IsWorkspacePath("/haa-semgrep/arbitrary", kProfileSourceAnalysis) ||
+      IsWorkspacePath("/etc/passwd", kProfileSourceAnalysis)) return false;
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_thread_group_id(99); context.set_thread_group_start_time_ns(990);
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+      ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kArtifact;
+  gvisor::syscall::Open open; *open.mutable_context_data() = context;
+  open.set_flags(kOpenLargefile);
+  MountAnchor anchor{10, "/sys/fs/cgroup/cpu", "system"};
+  auto allowed = [&]() {
+    return ClassifyFilesystemOpen(open, state, kProfileSourceAnalysis, &anchor) == FilesystemClass::kRuntimeRoot;
+  };
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us"}) {
+    open.set_pathname(path); if (!allowed()) return false;
+  }
+  const ProcessState baseline = state;
+  for (int fault = 0; fault < 9; ++fault) {
+    state = baseline; auto& group = state.groups[99];
+    if (fault == 0) group.role = ProcessState::Role::kControl;
+    if (fault == 1) group.provenance = ProcessState::Provenance::kCloneChild;
+    if (fault == 2) group.current_image_class = ProcessClass::kShell;
+    if (fault == 3) group.root_eligible = true;
+    if (fault == 4) group.root_consumed = false;
+    if (fault == 5) group.trusted_control_network_active = true;
+    if (fault == 6) group.demotion_pending = true;
+    if (fault == 7) group.handoff_target_pending = true;
+    if (fault == 8) group.start_time_ns++;
+    if (allowed()) return false;
+  }
+  state = baseline;
+  for (uint64_t flags : {uint64_t{0}, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenAppend}) {
+    open.set_flags(flags); if (allowed()) return false;
+  }
+  open.set_flags(kOpenLargefile);
+  anchor.mount_class = "workspace"; if (allowed()) return false;
+  anchor.mount_class = "system"; anchor.mountpoint = "/sys"; if (allowed()) return false;
+  anchor.mountpoint = "/sys/fs/cgroup/cpu";
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.shares", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/proc/99/environ", "/etc/shadow"}) {
+    open.set_pathname(path); if (allowed()) return false;
+  }
+  anchor = MountAnchor{1, "/", "oci-root"};
+  open.set_pathname("/usr/share/zoneinfo/Etc/UTC"); open.set_flags(559104);
+  if (!allowed()) return false;
+  for (const char* path : {"/etc/localtime", "/usr/share/zoneinfo/Europe/London", "/usr/share/zoneinfo/Etc/UTC.evil", "/tmp/usr/share/zoneinfo/Etc/UTC"}) {
+    open.set_pathname(path); if (allowed()) return false;
+  }
+  open.set_pathname("/usr/share/zoneinfo/Etc/UTC");
+  for (uint64_t flags : {uint64_t{0}, kOpenLargefile, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate}) {
+    open.set_flags(flags); if (allowed()) return false;
+  }
+  open.set_flags(559104);
+  anchor.mount_class = "system"; if (allowed()) return false;
+  anchor.mount_class = "oci-root"; anchor.mountpoint = "/usr/share/zoneinfo";
+  if (allowed()) return false;
+  anchor = MountAnchor{1, "/", "oci-root"};
+  open.set_pathname("/etc/ssl/certs/ca-certificates.crt"); open.set_flags(557056);
+  if (!allowed()) return false;
+  for (const char* path : {"/etc/ssl/openssl.cnf", "/etc/ssl/certs/other.crt", "/etc/ssl/certs", "/tmp/ca-certificates.crt"}) {
+    open.set_pathname(path); if (allowed()) return false;
+  }
+  open.set_pathname("/etc/ssl/certs/ca-certificates.crt");
+  for (uint64_t flags : {uint64_t{0}, kOpenLargefile, uint64_t{559104}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate}) {
+    open.set_flags(flags); if (allowed()) return false;
+  }
+  open.set_flags(557056); anchor.mount_class = "workspace"; if (allowed()) return false;
+  anchor.mount_class = "oci-root"; anchor.mountpoint = "/etc/ssl/certs";
+  return !allowed();
+}
+
 bool VerifyRestrictedWorkspaceOpen(const gvisor::common::ContextData& context,
     const ProcessState& baseline, const TopologyState& topology, const char* profile,
     int output, int input, const std::string& path, uint64_t mount_id,
@@ -10499,7 +10708,8 @@ int main(int argc, char** argv) {
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
   const bool python_fork_stat = VerifyPythonForkStatReadBoundary();
-  const bool passed = python_fork_stat && filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool source_analysis_command = VerifySourceAnalysisCommandBoundary() && VerifySourceAnalysisDemotionBoundary() && VerifySourceAnalysisUnameBoundary();
+  const bool passed = source_analysis_command && python_fork_stat && filesystem_mutation && pipx_native_root && pipx_native_clone && pipx_native_read && pipx_native_admission && pipx_runtime_read && pipx_runtime_admission && bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && accept_network && responder_oci && fd_mutation_diagnostic && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -10569,6 +10779,7 @@ int main(int argc, char** argv) {
       {"Cargo Rustc ABI boundary", cargo_rustc_abi},
       {"Go resolver runtime read boundary", go_runtime_read},
       {"GitHub artifact runtime read boundary", github_artifact_runtime_read},
+      {"Source analyzer exact command and profile isolation", source_analysis_command},
       {"Go build configuration read boundary", go_build_config_read},
       {"Go build handoff read boundary", go_build_handoff_read},
       {"Cargo build handoff read boundary", cargo_build_handoff_read},

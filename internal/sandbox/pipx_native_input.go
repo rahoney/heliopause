@@ -197,17 +197,11 @@ func (p *pipxNativeInput) nodes() []domain.LockedDependency {
 }
 
 func (p *pipxNativeInput) introduce(ctx context.Context, runner CommandRunner, container string) error {
-	input, ok := runner.(inputCommandRunner)
-	if ctx == nil || !ok || !exactObservationContainerID(container) || !p.valid() {
+	if !p.valid() {
 		return errPipxNativeInput
 	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	reader, writer := io.Pipe()
-	done := make(chan error, 1)
-	go func() {
-		archive := tar.NewWriter(writer)
+	return copyReadonlyInputTar(ctx, runner, container, pipxNativeWheels, func(output io.Writer) error {
+		archive := tar.NewWriter(output)
 		var err error
 		for _, file := range p.files {
 			err = archive.WriteHeader(&tar.Header{Name: file.name, Typeflag: tar.TypeReg, Mode: 0444, Uid: 0, Gid: 0, Size: int64(len(file.body))})
@@ -218,11 +212,6 @@ func (p *pipxNativeInput) introduce(ctx context.Context, runner CommandRunner, c
 				break
 			}
 		}
-		err = errors.Join(err, archive.Close())
-		_ = writer.CloseWithError(err)
-		done <- err
-	}()
-	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":"+pipxNativeWheels)
-	_ = reader.CloseWithError(commandErr)
-	return errors.Join(commandErr, <-done, ctx.Err())
+		return errors.Join(err, archive.Close())
+	}, errPipxNativeInput)
 }

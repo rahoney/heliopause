@@ -1,12 +1,8 @@
 package sandbox
 
 import (
-	"archive/tar"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"io"
 	"strings"
 )
@@ -149,66 +145,21 @@ func (v *pipxWheelVolume) verifyAttachments(ctx context.Context, runner CommandR
 }
 
 func (v *pipxWheelVolume) readback(ctx context.Context, runner CommandRunner, container string) error {
-	output, ok := runner.(streamingDockerOutput)
-	if !v.valid() || !ok || !exactObservationContainerID(container) {
+	if !v.valid() {
 		return errPipxNativeInput
 	}
-	if err := verifyObservationRuntimeAlive(ctx, runner, container); err != nil {
-		return err
-	}
-	reader, writer := io.Pipe()
-	done := make(chan error, 1)
-	go func() {
-		err := output.RunOutput(ctx, writer, "docker", "cp", container+":"+pipxNativeWheels+"/.", "-")
-		_ = writer.CloseWithError(err)
-		done <- err
-	}()
-	err := v.input.scanTar(reader)
-	_ = reader.CloseWithError(err)
-	return errors.Join(err, <-done, ctx.Err())
+	return readReadonlyInputTar(ctx, runner, container, pipxNativeWheels, v.input.scanTar, errPipxNativeInput)
 }
 
 func (p *pipxNativeInput) scanTar(input io.Reader) error {
 	if !p.valid() || input == nil {
 		return errPipxNativeInput
 	}
-	expected := map[string]pipxNativeInputFile{}
-	var total int64
-	for _, f := range p.files {
-		expected[f.name] = f
-		total += int64(len(f.body))
+	expected := make(map[string]readonlyInputFile, len(p.files))
+	for _, file := range p.files {
+		expected[file.name] = readonlyInputFile{int64(len(file.body)), file.digest}
 	}
-	bounded := &io.LimitedReader{R: input, N: total + int64(len(expected)+1)*2048 + 10240}
-	archive := tar.NewReader(bounded)
-	seen := map[string]bool{}
-	root := false
-	for {
-		h, err := archive.Next()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return errPipxNativeInput
-		}
-		name := strings.TrimPrefix(h.Name, "./")
-		if h.Typeflag == tar.TypeDir && (name == "" || name == ".") && !root && h.Uid == 0 && h.Gid == 0 && h.Mode == 0755 && h.Size == 0 {
-			root = true
-			continue
-		}
-		f, ok := expected[name]
-		if !ok || seen[name] || h.Typeflag != tar.TypeReg || h.Linkname != "" || h.Uid != 0 || h.Gid != 0 || h.Mode != 0444 || h.Size != int64(len(f.body)) {
-			return errPipxNativeInput
-		}
-		hash := sha256.New()
-		if n, err := io.CopyN(hash, archive, h.Size); err != nil || n != h.Size || hex.EncodeToString(hash.Sum(nil)) != f.digest {
-			return errPipxNativeInput
-		}
-		seen[name] = true
-	}
-	if len(seen) != len(expected) || bounded.N == 0 {
-		return errPipxNativeInput
-	}
-	return drainUVTarPadding(bounded)
+	return scanReadonlyInputTar(input, expected, errPipxNativeInput)
 }
 
 func (v *pipxWheelVolume) close(ctx context.Context, runner CommandRunner) error {

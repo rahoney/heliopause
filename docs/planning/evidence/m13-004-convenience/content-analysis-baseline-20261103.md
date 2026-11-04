@@ -508,3 +508,162 @@ readonly target source·유한 실행/출력/parse/coverage, 기존 inspection/E
 전이 artifact 연결이다. Hosted source 공급/current-only admission·whole self-quarantine/
 activation/recovery는 별도 MISSING으로 유지한다. `s04-scanner-*`·first-failure-cleanup과
 completed-test-binaries-cleanup raw가 source/입력·실패·정리의 실제 범위를 소유한다.
+
+### Traced scanner 실행/출력 — source 작성 전 대조 (9ae6ad3)
+
+기존 `Sandbox.Execute`는 Artifact의 설치/실행 요청이며 source parser 실행을 넣는 별도
+mode/config가 없다. 그 의미를 바꾸지 않고 현재 source-analysis 전용의 좁은 Ports 계약에
+기존 `AcquiredArtifact`, `SandboxResult`, `CapturedProcessOutput`을 재사용한다. 새 실행 상태/
+완료 영수증 체계는 만들지 않는다. Typed normalized source files만 전달하고 Host 경로,
+artifact command/config/plugin/rule 선택 입력은 받지 않는다. 아직 네 상태 모두 NO다.
+
+`SharedObserver.observerExpectedTopology/newObservationTraceLedger`와 C++ helper의 closed
+profile/classification 목록에 source-analysis가 없음을 확인했다. 기존 profile의 mount나
+실행 허용 범위를 넓히지 않고 고정 core path/argv·readonly supply/target 전용 profile을
+연결해야 한다. `boundaryHelper`·direct exec의 one-shot admission/실제 kernel terminal·
+resource lease·trace 수집·취소/cleanup과 bounded capture는 재사용한다. 새 untraced runtime
+등록, Host scanner 실행, stdout의 완료 authority는 허용하지 않는다. C++/Go 변경을 실제
+분석 명령과 묶은 다음 한 번 qualification하며 기존 language version owner는 불변이다.
+
+Inspection은 source source-name/language/body와 exact Artifact digest를 결합하며 기존
+archive/member 검사를 통과한 파일만 넘긴다. Semgrep 결과는 고정 version/rule digest와
+전 target inventory·rule ID/version/severity·유한 위치를 대조한다. Errors/skips/누락/중복/
+nonzero exit/timeout/truncation/일치하지 않는 target은 completed zero findings가 아니다.
+`nosemgrep` 표시도 무시한 finding을 지우는 권한이 아니다. Rule pack은 installed fixed
+bytes를 원본 hash로 검증해 읽고 raw source snippet·metavariable 값은 Evidence에 저장하지
+않는다. Policy는 기존 Finding/Evidence만 소비하고 의심 rule은 MANUAL_REVIEW다.
+
+기존 npm archiveCapture는 selectedPath 한 개를 재생하는 surface이므로 이를 파일마다
+호출해 O(n²)로 만들지 않는다. 같은 원래 inventory pass에서 source bytes를 수집하며,
+PyPI는 이미 검증한 wheel/member reader, Go CheckedFiles, Cargo ArchiveFiles를 재사용한다.
+기존 static 결과·graph budget charge를 두 번 실행하지 않는 연결을 우선한다. 먼저 실제
+scanner/출력 계약을 닫고 각 소비자를 연결한 뒤 전체 전이 graph·정상/의심/미완료와
+기존 네 PyTorch profile/큰 공개 graph는 해당 최종 묶음에서 qualification한다.
+
+Source input의 새 한도는 한 파일64MiB·source 합계512MiB·target10000개·generated target
+metadata8MiB 한 곳에서 관리한다. 기존 각 archive/profile budget을 늘리지 않고 그 검사를
+통과한 source만 별도로 제한한다. O(n)으로 opaque 순번 이름·언어·원래 상대 path·body SHA를
+결합하고 매체 전달 때 같은 bytes를 다시 hash한다. JSX/TSX 확장자는 보존한다. 표적 첫
+10.664s는 새 fixture의 빈 variant가 Domain 생성에서 실패한 준비 오류이며 source 거부
+회귀가 실행된 결과가 아니다. Product invariant 대신 fixture를 교정한다.
+
+Source target TAR readback은 기존 `pipxNativeInput.scanTar`의 ordinary-file/0444/owner/hash/
+전체 집합·padding 검증을 공유한다. 새 archive parser를 복제하지 않고 원래 callback의
+입력 기대값 작성 부분만 유지해 같은 scanner에 전달한다. Pipx의 p.valid/원래 error와
+범위는 보존하며, 현재 두 소비자만 쓰는 private streaming transport다.
+
+새 실행 consumer는 기존 `pipxNativeSession`의 raw lease/trace/keeper lifecycle을
+`observedNativeSession`으로 공유한다. 기존 type alias와 메서드 본문은 유지하며 별도의
+keeper/종료 상태 머신이나 wrapper를 복제하지 않는다. Source input의 같은 readonly
+owner를 닫는 슬롯만 추가한다. Opaque 기존 name/label·Python image·unknown-CREATE
+기록·authenticated 제거 순서와 원래 Pipx/UV run 호출은 유지한다. Source 실행은 DATA
+keeper와 별도의 traced profile이며 기존 Pipx 설치/선택 메서드를 호출하지 않는다.
+
+
+### Traced scanner 입력/실행 — 부분 연결과 최초 실제 실패
+
+`SourceAnalyzer`는 기존 protected tool reader·readonly writer/anchor/seal, Python image,
+`observedNativeSession`의 lease/keeper/trace/cleanup, 기존 ELF one-shot admission와 bounded
+capture를 연결한다. Node image probe가 아닌 실제 사용하는 Python probe를 사용한다.
+고정 argv17과 controller-generated targets만 실행 입력이며 별도 설치/Artifact 실행은 없다.
+Source DATA는 별도 noexec/readonly volume이다. 새 상태 머신/완료 token은 만들지 않는다.
+
+- 입력/기존 Pipx·Semgrep·새 offline args/topology 표적8.583s PASS.
+  `s04-scanner-execution-target-v2.json`이 입력/범위를 소유한다.
+- canonical foundation65.047s PASS: format/runtime lock·지원 freshness/module/build/test
+  validity/architecture/docs. `s04-scanner-execution-foundation-v1.json` 참조.
+- observer-only CPP V1/48.889s의138latch가 PASS했다. Actual V1/6.820s는 tool 이전의
+  resource peer 거부다. 시험 실행 inode와 등록 client inode가 달랐으며 기존
+  `PolicyPeerAuthorizer.AuthorizePeer`와 통합 harness를 대조해 시험만 교정했다.
+- Actual V2/20.113s는 setpriv의 pinned OCI `/etc/ld.so.cache`557056에서 STREAM_FAULT다.
+  기존 exact ELF demotion read predicate에 source profile만 연결했고 role/provenance/
+  pending/path/write 거부를 추가한 CPP V2/54.342s·138latch가 PASS했다.
+- Actual V3/20.240s는 실제 core handoff 뒤 system CPU quota32768에서 STREAM_FAULT다.
+  고정 core의 CPU quota/period 두 읽기를 기존 native predicate에 source 전용으로
+  연결하는 후보를 검증 중이다. GitHub의 library/proc surface는 source에 전용하지 않는다.
+
+원본 `s04-source-analysis-native-v1/v2/v3.json`과 같은 log 및
+`s04-source-analysis-observer-batch-v1/v2.json`은 최초 실패/서로 다른 도달점을 보존한다.
+각 actual은 helper wait0·원래 Host 파일/inode/Docker/endpoints/process 상태 동일을 확인했고
+시험 사본236590503/214342829/214342829B를 정리했다. 새로운 source profile의 실제 scanner
+완료·strict JSON 해석·모든 inspection/transitive consumer/Evidence/Policy는 아직 MISSING이다.
+기존 Go client/test/helper build는 Go 입력 동일성에 한해 재사용하며 observer delta만 새로
+검증한다. 실제 실패를 partial success나 검사 완료0건으로 바꾸지 않는다. CI/영구 설치/
+언어 version owner/권한·기존 예산은 변경하지 않았다.
+
+CPP V3/47.378s·138latch는 source만의 exact quota/period32768 및 role/image/flags/mount
+거부를 확인했다. Actual V4/18.607s는 그 지점을 지나 core의 OCI UTC read559104에서
+멈췄다. Locator07a7ea4562a20073의 bounded known-path 대조는
+`/usr/share/zoneinfo/Etc/UTC`와 일치한다. 이 path·flag·OCI-root mount만 후보에 연결하고
+다른 zone/alias/write/mount를 거부하도록 검증 중이다. Core ELF에 dynamic section은
+없으므로 GitHub의 일반 native library 허용 목록을 추가하지 않았다. Native V4는
+Host 동일/helperwait0/사본214342829B 정리이며 scanner 완료가 아니다. Raw
+`s04-source-analysis-native-v4.json`과 `s04-source-analysis-observer-batch-v3.json` 참조.
+
+UTC CPP V4/48.079s는 새 source positive 한 latch만 FAIL(기존137PASS)했다. 기존 앞단
+flag mask가559104의 O_NONBLOCK을 먼저 거부한 후보 누락이며 actual V5를 그 상태로
+실행하지 않았다. Source의 exact559104만 앞단에 연결한 CPP V5/48.314s·138latch PASS 뒤
+actual V5/19.344s는 다음 `uname` child exec까지 도달했다. 그 실행은 unexpected이고
+뒤 libc cache read에서 STREAM_FAULT이며 전체 완료가 아니다. Exact selected source
+`libs/commons/Platform.ml`의 `uname`/`uname -m` 호출과 kernel executable locator를
+대조했다. `SourceAnalysisUnameParent`는 실행 승인과 loader 읽기가 함께 소비하는 한
+private lineage 검사다. Accepted parser의 exact kernel clone/direct parent/start/image·
+ARTIFACT 유지·no CONTROL/network, pinned OCI uname/path/argv와 cache/libc 읽기만 연결한다.
+다른 args/alias/role/parent/PID/image/shadow/profile·loader write를 거부하는 실제 clone/exec
+parser 회귀를 포함한 CPP V6/48.332s·138latch가 PASS다. 새로운 active marker나 general
+child-exec 권한은 없다. 같은 Go source의 full sandbox Race40.198s도 PASS다.
+Actual V5는 Host 동일/helperwait0/사본214342965B 정리이며 actual V6는 아직 진행 중이다.
+Raw `s04-source-analysis-observer-batch-v4/v5/v6.json`, `s04-source-analysis-native-v5.json`,
+`s04-scanner-execution-sandbox-race-v1.json`이 scope를 소유한다. Foundation/Race와 Go
+native build를 observer-only delta마다 반복하지 않는다.
+
+Actual V6/20.720s는 CPP V6 후에도 같은 uname unexpected/cache read로 실패했다.
+따라서 위 lineage 후보는 **부분 검증/권장 제외**이며 실제 query 해결로 기록하지 않는다.
+Host 동일/helperwait0/사본214343093B 정리다. Next는 SDK 사본만의 bounded numeric
+query/parent/argv-shape 진단이며 제품 조건을 추측으로 넓히지 않는다. 저장소 C++에는
+진단을 넣지 않고 source·credential·argv 원문을 기록하지 않는다. 원본
+`s04-source-analysis-native-v6.json`은 최초 V5와 같은 실패를 보존한다.
+
+SDK-only numeric diagnostic CPP/47.527s 후 actual V7/20.632s는 parent_ok/clone_ok/
+parent_id_match=1, exact execfn/argv0=uname, argc2/arg1_s=1을 확인했다. 기존 후보는
+`uname -s`를 누락했다. 단순 Platform.ml의 `uname`/`-m` 대조를 실제 모든 startup query의
+전체 census로 확대하지 않는다. 부모/role/clone 조건을 풀지 않고 그 exact `-s`만 추가한
+제품 후보를 다시 검증한다. SDK-only overlay는 새 canonical copy에서 제거하며 root C++에
+진단을 넣지 않았다. Raw `s04-source-analysis-native-v7-uname-diagnostic.jsonl`은 숫자/
+boolean 한 행만 보존하고 argv·source 원문을 포함하지 않는다. Host 동일/helperwait0/
+사본214347293B와 임시 diagnostic 파일 정리를 확인했다. Actual 통과는 아직 아니다.
+
+Canonical CPP V7/47.162s·138latch는 numeric overlay를 제거한 제품 source와
+uname/-m/-s·exact lineage/loader 거부를 확인했다. Actual V8/21.501s는 그 query를
+expected로 수집(14 expected/unexpected0)한 뒤 core의 OCI read557056에서 멈췄다.
+Locator660afad21eb74b5c는 bounded fixed-path `/etc/ssl/certs/ca-certificates.crt`와
+일치한다. 고정 OCI CA bundle의 그 읽기만 source 전용에 추가해 검증하며 다른 certificate,
+config/alias/flag/mount를 허용하지 않는다. Network none과 generic Artifact/CONTROL
+경계는 유지한다. V8 Host 동일/helperwait0/사본214347189B 정리다. 다음 source scanner
+완료/JSON/consumer는 여전히 MISSING이며 원본은 `s04-source-analysis-native-v8.json`,
+`s04-source-analysis-observer-batch-v7.json`을 따른다.
+
+
+### Traced scanner — named local 실행 완료
+
+Canonical CPP V8/49.676s·138latch 뒤 actual V9/23.406s(test20.40s)가 PASS했다.
+여섯 언어의 정상6/JS 의심1을 같은 fixed core/rules와 readonly source volume으로 읽고
+scanned7/findings1/errors0/skipped0·SandboxCompleted를 확인했다. 기존 kernel target/terminal,
+observer stream completion과 resource create/register/close 각1·accounted CPU573885usec를
+확인했고 caller 이후 cleanup이 성공해야 출력이 반환된다. Helper wait0/own Docker resources0/
+Host 파일·inode·endpoints·process 동일이며 시험 사본214343077B를 정리했다.
+이것은 실제 parser runtime의 named local 검증이며 Artifact 코드를 설치/실행한 것이 아니다.
+
+Go candidate는 observer-only 변경 동안 불변이었다. Foundation65.047s/full sandbox
+Race40.198s/security21.974s/vet2.250s/pinned Staticcheck6.740s와 마지막 Go 표적8.583s를
+각 scope에 재사용한다. SDK-only numeric diagnostic는 canonical observer copy로 제거됐고
+임시 진단 파일도 삭제했다. CI/push/Host 영구 설치/runtime 등록/언어 version owner는
+변경하지 않았다. Raw `s04-source-analysis-native-v9.json`, CPP V8 및
+`s04-scanner-execution-{foundation,sandbox-race,security,vet,static}-v1.json` 참조.
+
+S04 전체 네 상태는 여전히 완료가 아니다. 다음은 scanner stdout의 strict JSON/target·rule/
+version binding과 partial errors/skips/limit/overflow의 required coverage, 여섯 생태계와
+transitive graph·Evidence/Policy의 실제 consumer다. Runtime failure/cancellation·변조/출력
+주입과 큰 graph/네 PyTorch profile·grouped hosted도 아직 전부 검증한 것으로 쓰지 않는다.
+기존 release workflow16/current20 공급·current-only admission/공식 self-quarantine/activation/
+recovery/provenance는 별도 MISSING을 유지한다.

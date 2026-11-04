@@ -120,6 +120,8 @@ constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
+constexpr char kProfileSourceAnalysis[] = "source-analysis";
+constexpr char kSourceAnalysisCore[] = "/haa-semgrep/semgrep-core-linux-amd64";
 constexpr char kProfilePipxRuntime[] = "github-pipx-runtime";
 constexpr char kProfilePipxNativeResolver[] = "pipx-native-resolver";
 constexpr char kPipxNativeProgramPrefix[] = "import importlib.machinery, sys\nversion = '";
@@ -814,6 +816,26 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+// Fixed Semgrep queries its platform with uname. The exact clone of the
+// accepted parser may make this read-only query without acquiring CONTROL.
+const ProcessState::GroupState* SourceAnalysisUnameParent(
+    const gvisor::common::ContextData& context,
+    const ProcessState::GroupState& group, const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      context.parent_thread_group_id() != group.clone_creator_group_id ||
+      !HasExactCloneCreator(group, state)) return nullptr;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  return parent.role == ProcessState::Role::kArtifact &&
+      parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      parent.current_image_class == ProcessClass::kArtifact &&
+      !parent.root_eligible && parent.root_consumed && !parent.trusted_control_network_active &&
+      !parent.demotion_pending && !parent.launch_target_pending && !parent.handoff_target_pending
+      ? &parent : nullptr;
 }
 
 // Only the kernel clone of a currently admitted bun x selector can run its
@@ -2545,6 +2567,8 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
+  if (strcmp(profile,kProfileSourceAnalysis) == 0 && path == kSourceAnalysisCore) return ProcessClass::kArtifact;
+  if (strcmp(profile,kProfileSourceAnalysis) == 0 && path == "/usr/bin/uname") return ProcessClass::kUname;
   if ((strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && path == "/work/artifact") return ProcessClass::kArtifact;
   if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kCargoBinary) return ProcessClass::kCargo;
@@ -2552,6 +2576,14 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileGoResolver) == 0) && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kRustcBinary) return ProcessClass::kCargoRustc;
   return ProcessClass::kUnknown;
+}
+
+bool IsExactSourceAnalysisCommand(const gvisor::sentry::ExecveInfo& message) {
+  const char* const expected[] = {kSourceAnalysisCore,"-json_nodots","-tree_sitter_only","-no_filter_irrelevant_rules","-no_filter_irrelevant_patterns","-j","1","-rules","/haa-semgrep/semgrep-rules.json","-targets","/haa-source/targets.json","-timeout","2","-max_memory","256","-max_match_per_file","100"};
+  if (message.binary_path() != kSourceAnalysisCore || message.execfn() != kSourceAnalysisCore ||
+      message.argv_size() != static_cast<int>(sizeof(expected)/sizeof(expected[0]))) return false;
+  for (int index=0; index<message.argv_size(); ++index) if (message.argv(index) != expected[index]) return false;
+  return true;
 }
 
 bool IsBootstrapRootClass(ProcessClass process_class) {
@@ -2565,7 +2597,7 @@ bool IsBootstrapChildClass(ProcessClass process_class) {
 
 bool IsBootstrapHandoffClass(ProcessClass process_class, const char* profile) {
   if (strcmp(profile, kProfileNPM) == 0) return process_class == ProcessClass::kNode || process_class == ProcessClass::kNpm;
-  return (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && process_class == ProcessClass::kArtifact;
+  return (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileSourceAnalysis) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && process_class == ProcessClass::kArtifact;
 }
 
 bool ValidProcessIdentity(const gvisor::common::ContextData& context) {
@@ -2809,6 +2841,10 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
+  if (strcmp(profile,kProfileSourceAnalysis) == 0) {
+    return path == "/tmp" || HasPrefix(path,"/tmp/") || path == "/haa-source" || HasPrefix(path,"/haa-source/") ||
+        path == "/haa-semgrep" || path == kSourceAnalysisCore || path == "/haa-semgrep/semgrep-rules.json";
+  }
   if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) return HasPrefix(path, "/work/");
   if (IsPipxNativeProfile(profile)) {
     return path == "/tmp" || HasPrefix(path,"/tmp/") || path == "/haa-site" || HasPrefix(path,"/haa-site/") ||
@@ -3140,16 +3176,33 @@ bool IsGitHubArtifactRuntimeRead(const gvisor::common::ContextData& context,
                                 const std::string& path, uint64_t flags,
                                 const char* profile, const MountAnchor* anchor) {
   constexpr uint64_t kReadOnlyFlags = kOpenLargefile | 02000000;  // O_CLOEXEC
-  if (profile == nullptr || strcmp(profile, kProfileGitHub) != 0 ||
-      anchor == nullptr || (flags & ~kReadOnlyFlags) != 0 ||
+  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileSourceAnalysis) != 0) ||
+      anchor == nullptr || ((flags & ~kReadOnlyFlags) != 0 &&
+        !(strcmp(profile, kProfileSourceAnalysis) == 0 && flags == 559104)) ||
       !IsAtOrBelowMountpoint(path, anchor->mountpoint)) return false;
   const auto* group = FindFilesystemGroup(context, state);
+  if (strcmp(profile, kProfileSourceAnalysis) == 0 && group != nullptr &&
+      group->current_image_class == ProcessClass::kUname &&
+      SourceAnalysisUnameParent(context, *group, state) != nullptr) {
+    return flags == 557056 && anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+        (path == "/etc/ld.so.cache" || IsExactLibc6(path));
+  }
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
       group->provenance != ProcessState::Provenance::kDirectExecRoot ||
       group->current_image_class != ProcessClass::kArtifact ||
       group->root_eligible || !group->root_consumed ||
       group->trusted_control_network_active || group->demotion_pending ||
       group->launch_target_pending || group->handoff_target_pending) return false;
+  if (strcmp(profile, kProfileSourceAnalysis) == 0) {
+    if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+      return (path == "/usr/share/zoneinfo/Etc/UTC" && flags == 559104) ||
+          (path == "/etc/ssl/certs/ca-certificates.crt" && flags == 557056);
+    }
+    return flags == kOpenLargefile && anchor->mount_class == "system" &&
+        anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
+        (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+         path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  }
   if (anchor->mount_class == "system") {
     const std::string self = "/proc/" + std::to_string(context.thread_group_id());
     if (anchor->mountpoint == "/proc") {
@@ -4052,7 +4105,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile,kProfilePythonExecution) == 0 || strcmp(profile,kProfileBunExecution)==0 || strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile,kProfileSourceAnalysis) == 0 || strcmp(profile,kProfilePythonExecution) == 0 || strcmp(profile,kProfileBunExecution)==0 || strcmp(profile, kProfileNodeExecution) == 0 || strcmp(profile, kProfileBunProjectResolver) == 0 || strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -4370,7 +4423,7 @@ bool IsPinnedProjectBuildHandoffRead(
 bool IsExactHAAELFHandoffDemotionRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile) {
-  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileTerraformProvider) != 0 && !IsPythonRuntimeProfile(profile)) ||
+  if (profile == nullptr || (strcmp(profile, kProfileSourceAnalysis) != 0 && strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileTerraformProvider) != 0 && !IsPythonRuntimeProfile(profile)) ||
       IsWriteCapableOpen(flags)) return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
@@ -4793,7 +4846,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfilePythonExecution && profile != kProfileNodeExecution && profile != kProfileBunExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfileSourceAnalysis && profile != kProfilePythonExecution && profile != kProfileNodeExecution && profile != kProfileBunExecution && profile != kProfileBunProjectResolver && profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfilePipxRuntime && profile != kProfilePipxNativeResolver && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -5493,6 +5546,22 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
        !IsPinnedReadOnlyRootPath(topology, "/etc/ld.so.cache"))) {
     group->second.current_image_class = ProcessClass::kUnknown;
   }
+  if (strcmp(profile, kProfileSourceAnalysis) == 0 &&
+      group->second.current_image_class == ProcessClass::kUname) {
+    const bool query = message.binary_path() == "/usr/bin/uname" &&
+        message.execfn() == "/usr/bin/uname" &&
+        (message.argv_size() == 1 || (message.argv_size() == 2 &&
+          (message.argv(1) == "-m" || message.argv(1) == "-s"))) &&
+        (message.argv(0) == "uname" || message.argv(0) == "/usr/bin/uname") &&
+        SourceAnalysisUnameParent(message.context_data(), group->second, candidate) != nullptr;
+    if (query) {
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+    group->second.current_image_class = ProcessClass::kUnknown;
+  }
   // The new build target remains ARTIFACT. A shadow of its locked SDK image
   // cannot obtain the GO classification or consume the one-shot handoff.
   if (strcmp(profile, kProfileGoBuild) == 0 &&
@@ -5958,6 +6027,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
         }
         group->second.python_execution_active=true;
         group->second.python_execution_target.clear();
+      }
+      if (strcmp(profile,kProfileSourceAnalysis) == 0 && !IsExactSourceAnalysisCommand(message)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN";
+        return false;
       }
       if (IsPipxNativeProfile(profile) && !ParsePipxNativeRoot(message,topology,&group->second)) {
         *reason = "PROCESS_PROVENANCE_UNKNOWN";
