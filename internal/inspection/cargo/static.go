@@ -4,6 +4,8 @@ package cargo
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"path/filepath"
 	"sort"
@@ -26,21 +28,38 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	return i.inspect(ctx, artifact, nil)
+	return i.inspect(ctx, artifact, nil, nil)
 }
 
 // InspectSources selects from the already validated bounded crate byte map;
 // it neither reparses the archive nor runs Rust or build scripts.
 func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
 	var sources []ports.SourceAnalysisFile
-	report, err := i.inspect(ctx, artifact, &sources)
+	report, err := i.inspect(ctx, artifact, &sources, nil)
 	if err != nil || len(report.Findings()) != 0 {
 		return nil, report, err
 	}
 	return sources, report, nil
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
+// InspectContent retains source DATA and inspects native members from the same
+// verified map. It does not run the source analyzer or prove zero-source scope.
+func (i *StaticInspector) InspectContent(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	var sources []ports.SourceAnalysisFile
+	var binaries []content.BinaryMember
+	static, err := i.inspect(ctx, artifact, &sources, &binaries)
+	if err != nil || len(static.Findings()) != 0 {
+		return nil, static, err
+	}
+	native, nativeErr := content.InspectBinaries(ctx, artifact, binaries)
+	if len(native.Executions()) == 0 {
+		return nil, static, nativeErr
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native})
+	return sources, report, errors.Join(nativeErr, err)
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile, binaries *[]content.BinaryMember) (domain.InspectionReport, error) {
 	if i == nil || ctx == nil {
 		return domain.InspectionReport{}, errors.New("cargo inspection request is invalid")
 	}
@@ -56,16 +75,24 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		return domain.InspectionReport{}, err
 	}
 	if archiveErr == nil && sources != nil {
-		// ArchiveFiles owns the validated map; order its selected keys only
-		// so the parser's input and coverage digest are deterministic.
+		// ArchiveFiles owns these bytes. Sort selected keys only; no second
+		// decompression, body copy or graph charge is needed.
 		var names []string
 		for name := range files {
-			if content.SourceLanguage(name, files[name]) != "" {
+			if content.SourceLanguage(name, files[name]) != "" || binaries != nil && content.IsBinary(name, files[name]) {
 				names = append(names, name)
 			}
 		}
 		sort.Strings(names)
 		for _, name := range names {
+			if binaries != nil && content.IsBinary(name, files[name]) {
+				sum := sha256.Sum256(files[name])
+				digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+				// ArchiveFiles does not retain permission bits. Zero records
+				// unavailable archive mode; ELF permissions are decoded inside.
+				*binaries = append(*binaries, content.BinaryMember{Path: name, Body: files[name], Digest: digest})
+				continue
+			}
 			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: content.SourceLanguage(name, files[name]), Body: files[name]})
 		}
 	}

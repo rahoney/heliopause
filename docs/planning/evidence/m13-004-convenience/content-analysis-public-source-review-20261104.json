@@ -1610,5 +1610,50 @@
         "sha256": "9fb7d6b5cad0262ee0bd6025a6275a18bfc40017c45a695f774c28e387656e7b"
       }
     ]
+  },
+  "binary_members": {
+    "baseline": "2e74bb0",
+    "implemented": true,
+    "wired": "Cargo InspectContent only; legacy source/static APIs unchanged",
+    "qualified": "named local unit/archive DATA scope",
+    "acceptance_closed": false,
+    "missing": [
+      "streaming native collection in other archive owners",
+      "complete source/no-source/unsupported inventory",
+      "production AST and all graph/cache/promotion/CLI consumers",
+      "grouped native/hosted qualification"
+    ],
+    "checks": {
+      "s04-binary-members-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-format.json",
+        "sha256": "528613a3f0a57fd50aafdba3e5e42a80709f3ced3db4a0cbbd0eea29ca6f9f8d",
+        "elapsed": 0.932
+      },
+      "s04-binary-members-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-target.json",
+        "sha256": "e2a797dc5d6ed09db97223c90361f369acda5e1afb1e25e31f16a4898a0b8f6e",
+        "elapsed": 0.841
+      },
+      "s04-binary-members-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-race.json",
+        "sha256": "bc6afa4188acfe1bbff999d5fb2c94569f2cdb96d5a629f7545e60c74e0e2d10",
+        "elapsed": 3.301
+      },
+      "s04-binary-members-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-security.json",
+        "sha256": "e34405882ff86054e45a947ec01bd7d0d3b0fa31b5b6c06ee1c21476ec235371",
+        "elapsed": 19.353
+      },
+      "s04-binary-members-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-vet.json",
+        "sha256": "685e2032a4e857eb07105215477e7bacc5f6eae4a8617f31b05d08c9b3154194",
+        "elapsed": 0.601
+      },
+      "s04-binary-members-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-staticcheck.json",
+        "sha256": "8f0a8d133039a53aa7b9e4747f6e9b60fcc6bdc9a2218fffaae3128e23d563e2",
+        "elapsed": 1.133
+      }
+    }
   }
 }

@@ -960,3 +960,37 @@ coverage 증명이 아니다. 이 작은 입력 gap부터 닫고 전체 inventor
   CPP/전체 foundation/CI는 반복하지 않았다. Unit 임시 입력은 회수하며 새 Host 설치나
   영구 설정 변경은 없다. Source selection만의 범위이며 metadata가 고른 비-shebang 파일,
   native 다중/streaming·전체 census/applicability·실제 AST 소비자는 여전히 미완료다.
+
+
+### 다중 native member 수집 — baseline `2e74bb0`
+
+| 작은 범위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 다중 binary 결과의 유한 집계 | NO | NO | NO | NO | 기존 InspectELF 재사용, member별 Evidence identity, 일부 미지원/오류 뒤 확정 신호 보존, 중복/초과/취소 거부 |
+| Cargo의 동일 archive pass native 반환 | NO | NO | NO | NO | 기존 ArchiveFiles map 재사용, source 반환과 native 결과 결합, archive 실패 시 미반환 |
+
+현재 `InspectELF`의 두 check/Evidence ID는 단일 member용이다. 이를 member별 composite로
+단순 연결하면 중복 check가 된다. 기존 layout 분석을 대체하지 않고, content에서 같은
+두 capability를 member별 bounded fact로 집계한다. Body는 기존 검증된 map에서 참조하고
+추가 추출/실행/graph charge를 만들지 않는다. Cargo의 기존 Inspect/InspectSources 계약은
+보존하고 명시적인 content 진입점만 추가한다. 같은 파일을 binary와 source로 중복 선정하지
+않도록 byte magic을 먼저 확인한다. Binary member가 0이라는 값만으로 N/A/완료를 만들지
+않는다. 전체 적용 inventory/streaming 및 production AST/cache/CLI 연결은 후속 gap이다.
+
+다중 native의 named local 결과:
+
+- `InspectBinaries`는 기존 단일 ELF decoder를 재사용하고 두 aggregate check 아래
+  member별 SHA/경로 hash·capability/status/limitation을 각각 보존한다. 중복 member·유한
+  count/bytes 초과·취소를 거부하며 unsupported/손상/digest 불일치/packed는 전체 완료가
+  아니다. 다른 member의 완료된 위험 신호와 근거는 남긴다. Native 선정은 ELF/PE/Mach-O/
+  WASM/ar magic과 확장자 힌트이며 지원 decoder는 기존 ELF64LE amd64뿐이다.
+- Cargo `InspectContent`는 같은 validated map을 재사용한다. Rust 이름으로 위장한 binary를
+  source로 중복 전달하지 않고 두 native member를 구분하며 CRC/second member/취소 때
+  내용 결과를 반환하지 않는다. Mode를 소유하지 않는 map에서 권한을 추측하지 않고0으로
+  기록한다. Binary0은 적용 제외 근거가 없으므로 INCOMPLETE다. 기존 Inspect/InspectSources
+  계약은 유지한다. 실제 AST 실행·source 완전성/생산 설치 경로는 아직 연결하지 않았다.
+- Target0.841s 후 최종 관련 Race3.301s/security19.353s/vet0.601s/Staticcheck1.133s PASS다.
+  Target은 후속 member 상태/Cargo fixture 추가 전 결과이며 최종 Race가 해당 변경을 포함한다.
+  Unit intake는 t.TempDir에서 정리하고 Host artifact 실행/새 binary 공급/CI/push는 없다.
+  집계와 Cargo DATA 진입점의 IMPLEMENTED/WIRED/QUALIFIED는 YES(명시된 로컬 범위),
+  ACCEPTANCE_CLOSED는 전체 inventory/streaming/생산 소비자가 남아 NO다.
