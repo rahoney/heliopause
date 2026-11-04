@@ -16,6 +16,8 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 const staticCheckProfileName = "npm-static-archive-v1"
@@ -28,18 +30,32 @@ const (
 )
 
 // Inspector reads only the controlled Intake root and never extracts an archive.
-type Inspector struct{ intakeRoot string }
+type Inspector struct {
+	intakeRoot string
+	analyzer   ports.SourceAnalysis
+}
 
 // NewInspector creates an npm static inspector for one explicit Intake root.
-func NewInspector(intakeRoot string) (*Inspector, error) {
+func NewInspector(intakeRoot string, analyzers ...ports.SourceAnalysis) (*Inspector, error) {
 	if !filepath.IsAbs(intakeRoot) {
 		return nil, errors.New("npm intake root must be absolute")
 	}
-	return &Inspector{intakeRoot: filepath.Clean(intakeRoot)}, nil
+	if len(analyzers) > 1 || len(analyzers) == 1 && analyzers[0] == nil {
+		return nil, errors.New("npm content inspection requires one configured analyzer")
+	}
+	inspector := &Inspector{intakeRoot: filepath.Clean(intakeRoot)}
+	if len(analyzers) == 1 {
+		inspector.analyzer = analyzers[0]
+	}
+	return inspector, nil
 }
 
 // Inspect validates archive structure and package manifest without executing or extracting content.
 func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if i != nil && i.analyzer != nil {
+		_, _, report, err := i.InspectArchiveContent(ctx, artifact)
+		return report, err
+	}
 	return i.inspect(ctx, artifact, nil)
 }
 
@@ -263,5 +279,15 @@ func (i *Inspector) ExpectedChecks(ctx context.Context, artifact domain.Acquired
 	if err != nil {
 		return nil, err
 	}
-	return []domain.CheckRequirement{requirement}, nil
+	result := []domain.CheckRequirement{requirement}
+	if i.analyzer != nil {
+		for _, declare := range []func() ([]domain.CheckRequirement, error){content.BinaryChecks, content.InventoryChecks, content.SourceChecks} {
+			checks, err := declare()
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, checks...)
+		}
+	}
+	return result, nil
 }

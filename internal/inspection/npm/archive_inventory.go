@@ -27,6 +27,10 @@ import (
 // and the complete compressed source. A finding or error yields no inventory.
 // The original Inspect API and its result semantics remain unchanged.
 func (i *Inspector) InspectArchive(ctx context.Context, artifact domain.AcquiredArtifact) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {
+	if i != nil && i.analyzer != nil {
+		inventory, _, report, err := i.InspectArchiveContent(ctx, artifact)
+		return inventory, report, err
+	}
 	capture := &archiveCapture{}
 	return i.captureArchive(ctx, artifact, capture)
 }
@@ -103,8 +107,17 @@ func (i *Inspector) InspectArchiveContent(ctx context.Context, artifact domain.A
 	if censusErr != nil {
 		return artifactnpm.ArchiveInventory{}, nil, static, errors.Join(nativeErr, censusErr)
 	}
-	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport, census})
-	return inventory, capture.sources, report, errors.Join(nativeErr, err)
+	reports := []domain.InspectionReport{static, nativeReport, census}
+	var sourceErr error
+	if i.analyzer != nil {
+		var source domain.InspectionReport
+		source, sourceErr = content.InspectSources(ctx, i.analyzer, artifact, capture.sources, inventoryFacts)
+		if len(source.Executions()) != 0 {
+			reports = append(reports, source)
+		}
+	}
+	report, err := domain.NewCompositeInspectionReport(reports)
+	return inventory, capture.sources, report, errors.Join(nativeErr, sourceErr, err)
 }
 
 func (i *Inspector) captureArchive(ctx context.Context, artifact domain.AcquiredArtifact, capture *archiveCapture) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {

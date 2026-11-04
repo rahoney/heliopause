@@ -1389,3 +1389,27 @@ bytes 초과를 포함한 최종 표적1.329s는 PASS다. 첫 RED는 후속 거�
 WIRED=YES(로컬 DATA)/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 실제 source analyzer/
 production/current cache와 묶음 profile·native/hosted가 남았다. 지금의 cheap 표적을
 전체 qualification으로 바꾸지 않고 같은 입력 full/native/CPP/CI를 반복하지 않는다.
+
+### npm configured source analysis — 착수 지도 `79a2ce3`
+
+DATA/metadata 수집은 구현됐지만 default Inspector/사전 선언/프로젝트 Archive 경로의
+실제 analyzer 소비는 NO/NO/NO/NO다. 기존 Inspector에 현재 Cargo와 동일한 선택적
+ports.SourceAnalysis 구성을 추가하고 Inspect와 InspectArchive가 같은 content 경로를
+사용하게 한다. 기존 source DATA API는 structural helper로 보존한다. 같은 최종 census와
+source bytes를 content.InspectSources에 전달하고 static/native/census/source의 여섯
+체크를 사전 선언한다. native 분석이 부분 실패해도 검증된 source/facts를 결합하며
+최초 오류는 보존한다. Configured collector가 없는 legacy default는 기존 계약을 유지한다.
+새 parser/추가 IO wrapper/Policy 해석은 만들지 않는다. 이번 단계의 직접 소비자는
+설정된 Inspector와 기존 npm/PNPM/Bun project의 InspectArchive/ExpectedChecks 경로다.
+실제 bootstrap 주입·현재 cache의 필수 근거/플랫폼 미준비 표시는 후속 연결이며, 이
+port 연결의 controlled unavailable scanner를 실제 native 성공으로 표시하지 않는다.
+두 진입점의 exact frozen6·한 번의 measured source 전달·실패 시 이전 근거 보존·legacy
+보존을 싼 표적으로 확인하고 production/cache까지 모은 뒤 넓은 검증을 진행한다.
+
+Configured Inspector/InspectArchive의 한정 연결과 표적1.341s는 PASS다. 실행 전 frozen6의
+정확한 ID/required 여부와 실제6의 profile 결합, measured JS/Python 전달1회, controlled
+scanner 실패의 원인/앞선 native+census 근거 보존을 확인했다. Source0은 전체 census에
+근거할 때만 no-applicable이고 scanner 호출0·runtime 완료 주장이 없다. Unknown shell의
+source0은 미완료로 유지한다. 이 모의 port는 실제 scanner가 아니며 production bootstrap/
+현재 cache·넓은 묶음 qualification이 남아 IMPLEMENTED/WIRED=YES(local configured)/
+QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. Native/CPP/CI·영구 Host 설치는 하지 않았다.

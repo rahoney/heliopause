@@ -2248,5 +2248,23 @@
       "configured source analyzer/frozen checks/current production/project/cache",
       "grouped canonical profiles/native/hosted and whole S04"
     ]
+  },
+  "npm_source_port": {
+    "baseline": "79a2ce3",
+    "implemented": "YES (configured port)",
+    "wired": "YES (Inspect and InspectArchive)",
+    "qualified": "NO",
+    "acceptance_closed": "NO",
+    "controlled_scanner": "unavailable synthetic port; not actual analysis",
+    "target": {
+      "exit_code": 0,
+      "elapsed": 1.341,
+      "source_unchanged": true
+    },
+    "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-source-target.json",
+    "missing": [
+      "default bootstrap/current approval/cache consumers",
+      "grouped checks/native/hosted and whole S04"
+    ]
   }
 }

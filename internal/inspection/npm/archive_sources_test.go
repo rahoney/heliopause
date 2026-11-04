@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -15,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestArchiveSourcesShareVerifiedInventoryAndPayload(t *testing.T) {
@@ -386,6 +388,120 @@ func TestArchiveContentBoundsCombinedMetadataPatterns(t *testing.T) {
 		archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
 		if err == nil || archive.Valid() || len(sources) != 0 || len(report.Executions()) > 1 {
 			t.Fatal("metadata expression budget was bypassed", bound, err)
+		}
+	}
+}
+
+type archiveSourceAnalyzer struct {
+	calls int
+	input ports.SourceAnalysisInput
+	err   error
+}
+
+func (a *archiveSourceAnalyzer) Analyze(_ context.Context, input ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+	a.calls++
+	a.input = input
+	return ports.SourceAnalysisOutput{}, a.err
+}
+
+func TestConfiguredArchiveInspectorFreezesContentAndKeepsPartialFacts(t *testing.T) {
+	for _, entryPoint := range []string{"inspect", "archive"} {
+		for _, native := range []bool{false, true} {
+			root := canonicalRoot(t)
+			entries := []tarEntry{
+				{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","main":"entry","bin":"entry"}`},
+				{name: "package/entry", body: "module.exports=1;\n"},
+				{name: "package/helper.py", body: "print('DATA')\n"},
+			}
+			if native {
+				entries = append(entries, tarEntry{name: "package/native", body: "MZ"})
+			}
+			subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+			legacy, _ := NewInspector(root)
+			_, sources, _, _ := legacy.InspectArchiveContent(context.Background(), subject)
+			unavailable := errors.New("controlled unavailable source scanner")
+			analyzer := &archiveSourceAnalyzer{err: unavailable}
+			inspector, err := NewInspector(root, analyzer)
+			if err != nil {
+				t.Fatal(err)
+			}
+			planned, err := inspector.ExpectedChecks(context.Background(), subject, domain.CheckInspection)
+			if err != nil || len(planned) != 6 || analyzer.calls != 0 {
+				t.Fatal("content checks were not frozen", err)
+			}
+			required := map[string]bool{"npm-static-archive": true, "binary-content": true, "binary-content-signals": false, "content-inventory": true, "source-content": true, "source-content-signals": false}
+			for _, check := range planned {
+				want, known := required[check.ID().String()]
+				if !known || check.Required() != want {
+					t.Fatal("wrong current content declaration", check)
+				}
+				delete(required, check.ID().String())
+			}
+			if len(required) != 0 {
+				t.Fatal("missing frozen content check", required)
+			}
+			run, _ := domain.NewRunID()
+			plan, err := domain.NewCheckPlan(run, subject, planned)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var report domain.InspectionReport
+			if entryPoint == "inspect" {
+				report, err = inspector.Inspect(context.Background(), subject)
+			} else {
+				var inventoryArtifact bool
+				inventory, gotReport, gotErr := inspector.InspectArchive(context.Background(), subject)
+				report, err = gotReport, gotErr
+				inventoryArtifact = inventory.Matches(subject)
+				if !inventoryArtifact {
+					t.Fatal("failed analyzer erased the authenticated archive")
+				}
+			}
+			if !errors.Is(err, unavailable) || analyzer.calls != 1 || analyzer.input.Artifact != subject || !reflect.DeepEqual(analyzer.input.Files, sources) || len(report.Executions()) != 6 || report.Executions()[4].Status() != domain.ExecutionIncomplete {
+				t.Fatal("source failure lost inputs/checks/earlier facts", entryPoint, native, err)
+			}
+			if err := plan.Validate(run, subject, report.Executions()); err != nil {
+				t.Fatal("actual content differs from frozen plan", err)
+			}
+			kinds := map[string]bool{}
+			for _, fact := range report.Evidence() {
+				kinds[fact.Kind()] = true
+			}
+			if !kinds["content-inventory"] || !kinds["source-content-coverage"] || !kinds["binary-content-inventory"] {
+				t.Fatal("partial analysis erased prior controller facts", kinds)
+			}
+			if _, err := NewInspector(root, nil); err == nil {
+				t.Fatal("nil analyzer configuration accepted")
+			}
+			if _, err := NewInspector(root, analyzer, analyzer); err == nil {
+				t.Fatal("multiple analyzer configuration accepted")
+			}
+		}
+	}
+}
+
+func TestConfiguredArchiveSourceApplicabilityRequiresItsCompleteCensus(t *testing.T) {
+	for _, unsupported := range []bool{false, true} {
+		root := canonicalRoot(t)
+		entries := []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`}, {name: "package/README.md", body: "DATA"}}
+		if unsupported {
+			entries = append(entries, tarEntry{name: "package/tool", body: "#!/bin/sh\necho DATA\n"})
+		}
+		subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+		analyzer := &archiveSourceAnalyzer{err: errors.New("must not be called without parser targets")}
+		inspector, _ := NewInspector(root, analyzer)
+		report, err := inspector.Inspect(context.Background(), subject)
+		if analyzer.calls != 0 || len(report.Executions()) != 6 || (err != nil) != unsupported {
+			t.Fatal("source applicability invoked scanner or hid incomplete inventory", unsupported, err)
+		}
+		completed := report.Executions()[4].Status() == domain.ExecutionCompleted
+		if completed == unsupported {
+			t.Fatal("unknown interpreter became absent source", unsupported)
+		}
+		for _, fact := range report.Evidence() {
+			if fact.Kind() == "source-content-coverage" && strings.Contains(fact.Summary(), `"no_applicable_source":true`) == unsupported {
+				t.Fatal("coverage claimed a false source absence", fact)
+			}
 		}
 	}
 }
