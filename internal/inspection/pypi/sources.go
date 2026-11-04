@@ -8,6 +8,7 @@ import (
 	"errors"
 	"hash"
 	"io"
+	"os"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -30,18 +31,26 @@ type sourceMember struct {
 }
 
 type sourceCapture struct {
-	members []*sourceMember
-	bytes   uint64
-	limited bool
-	targets int
-	native  *content.BinaryInspection
-	ctx     context.Context
-	facts   []content.MemberFact
-	limits  content.InventoryLimits
+	members  []*sourceMember
+	bytes    uint64
+	limited  bool
+	targets  int
+	native   *content.BinaryInspection
+	ctx      context.Context
+	facts    []content.MemberFact
+	limits   content.InventoryLimits
+	selected map[string]string
 }
 
 func (c *sourceCapture) member(name string, size uint64) io.Writer {
 	language := content.SourceLanguage(name)
+	if c.selected != nil {
+		var selected bool
+		language, selected = c.selected[name]
+		if !selected {
+			return nil
+		}
+	}
 	if c.native == nil && (c.limited || language == "" && size == 0) {
 		return nil
 	}
@@ -114,6 +123,9 @@ func (m *sourceMember) finish() {
 }
 
 func (m *sourceMember) Write(data []byte) (int, error) {
+	if m.owner.ctx != nil && m.owner.ctx.Err() != nil {
+		return 0, errors.Join(m.owner.ctx.Err(), context.Cause(m.owner.ctx))
+	}
 	written := len(data)
 	if uint64(written) > m.size-m.received {
 		return 0, errors.New("captured member exceeds its declared size")
@@ -204,6 +216,9 @@ func (i *StaticInspector) InspectWheelContent(ctx context.Context, artifact doma
 	if err != nil || len(static.Findings()) != 0 {
 		return artifactpypi.WheelInspection{}, nil, static, err
 	}
+	if err := capture.wheelRoles(ctx, i, artifact, wheel); err != nil {
+		return artifactpypi.WheelInspection{}, nil, static, err
+	}
 	files, captureErr := capture.files(ctx)
 	report, contentErr := capture.report(ctx, artifact, static)
 	return wheel, files, report, errors.Join(captureErr, contentErr)
@@ -244,4 +259,88 @@ func (c *sourceCapture) report(ctx context.Context, artifact domain.AcquiredArti
 	}
 	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native, census})
 	return report, errors.Join(nativeErr, err)
+}
+
+// wheelRoles reuses the authenticated installed surface. A second complete
+// wheel read retains only missing source bodies and never charges the graph.
+func (c *sourceCapture) wheelRoles(ctx context.Context, inspector *StaticInspector, artifact domain.AcquiredArtifact, wheel artifactpypi.WheelInspection) (err error) {
+	active := make(map[string]bool)
+	for _, line := range wheel.Surface.SiteHookLines {
+		if line.Statement != "" {
+			active[line.File] = true
+		}
+	}
+	indices := make(map[string]int, len(c.facts))
+	for index, fact := range c.facts {
+		indices[fact.Path] = index
+	}
+	missing := make(map[string]string)
+	for _, installed := range wheel.Surface.InstalledFiles {
+		index, exists := indices[installed.ArchivePath]
+		if !exists {
+			return errors.New("installed wheel role has no authenticated member")
+		}
+		fact := &c.facts[index]
+		if fact.Binary || fact.Language != "" {
+			continue
+		}
+		switch installed.Role {
+		case artifactpypi.RuntimeRoleSiteStartupHook:
+			if active[installed.Destination] {
+				missing[installed.ArchivePath] = "python"
+			}
+		case artifactpypi.RuntimeRoleScript, artifactpypi.RuntimeRoleUnresolved:
+			fact.UnsupportedSource = true
+		}
+	}
+	if len(missing) == 0 {
+		return ctx.Err()
+	}
+	if c.limited {
+		return errors.New("PyPI source selection exceeds fixed analysis bounds")
+	}
+	name, filename, err := inspector.artifactPath(artifact)
+	if err != nil {
+		return err
+	}
+	before, err := os.Lstat(name)
+	if err != nil || !before.Mode().IsRegular() || before.Size() < 0 || uint64(before.Size()) != artifact.SizeBytes() {
+		return errors.New("wheel source reread requires the original regular archive")
+	}
+	file, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, file.Close()) }()
+	opened, err := file.Stat()
+	if err != nil || !os.SameFile(before, opened) || !opened.Mode().IsRegular() || opened.Size() != before.Size() {
+		return errors.New("wheel source archive changed while opening")
+	}
+	additional := sourceCapture{selected: missing, bytes: c.bytes, targets: c.targets, ctx: ctx}
+	_, err = artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, artifact.Digest().String(), inspector.target, artifactpypi.ResourcePolicyFromContext(ctx).WheelLimits(), artifact.Identity().Source(), additional.member)
+	if err != nil {
+		return errors.Join(errors.New("installed wheel source reread is incomplete"), err)
+	}
+	files, err := additional.files(ctx)
+	if err != nil || len(files) != len(missing) {
+		return errors.Join(errors.New("installed wheel source selection is incomplete"), err)
+	}
+	after, err := os.Lstat(name)
+	if err != nil || !os.SameFile(before, after) || after.Size() != before.Size() || !after.ModTime().Equal(before.ModTime()) {
+		return errors.New("wheel source archive changed during reread")
+	}
+	for _, source := range files {
+		fact := c.facts[indices[source.Path]]
+		sum := sha256.Sum256(source.Body)
+		if fact.Size != uint64(len(source.Body)) || fact.Digest.String() != hex.EncodeToString(sum[:]) {
+			return errors.New("installed wheel source differs from its original member")
+		}
+	}
+	for _, source := range files {
+		fact := &c.facts[indices[source.Path]]
+		fact.Language, fact.UnsupportedSource = source.Language, false
+	}
+	c.members = append(c.members, additional.members...)
+	c.bytes, c.targets = additional.bytes, additional.targets
+	return nil
 }

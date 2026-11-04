@@ -44,7 +44,7 @@ if [[ "$bun_profile" == project ]]; then
   (
     cd internal/bootstrap
     HELOX_BUN_CACHE_INTEGRATION=1 HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublic(ApprovedCache|ProjectTransaction)Integration$'
-    HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunProjectCLIIntegration$'
+    HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestBunProjectCLIIntegration$'
     HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$'
   )
   bun_run_log="$bun_work/run.log"

@@ -1605,3 +1605,85 @@ promotion/updater 기존 소비자를 포함한다. Source-byte 수집·typed ar
 버전 owner나 native 권한 상향은 없다. 기존 successful CPP/native/canonical build를
 반복하지 않는다. 이 checkpoint 뒤에도 CLI/실행과 PyPI 실제 source/승격·큰 native 및
 나머지 보강 설계의 MISSING을 계속한다. 전체 기능 완료나 배포 준비 판정이 아니다.
+
+
+### 2026-11-04 PNPM/Bun 현재 CLI 검증 baseline
+
+Checkpoint ec1990d의 current content cache는 peer4/empty0를 실제로 검증했다. 제품의
+CLI composition/기존 install·frozen·add·update·adopt는 IMPLEMENTED/WIRED=YES지만
+현재 source-profilev3의 CLI QUALIFIED/ACCEPTANCE_CLOSED=NO다. 기존 CLI gate는
+check ID 없이 required 상태만 보므로 새 검사 누락 여부를 확인하지 못한다. 같은
+두 gate에서 현재 여섯 content ID/required 선언을 확인하고 명령 소요 시간을 기록한다.
+코드/새 검사기·새 test framework나 production budget은 변경하지 않는다. 먼저 기존
+4분 parent에서 single의5개 실제 operation·원본 inode/controls·거부를 한정 검증한다.
+Peer cache의151.19/135.40s를 full CLI batch 시간으로 추정해 상향하거나 재검증 결과로
+전용하지 않는다. Peer/empty CLI와 execution/negative flow는 계속 필수 MISSING이다.
+
+CLI-single-v1은 Bun의 install50.010/frozen46.895/add48.926/update46.852s가 완료됐으나
+마지막 adopt에서 전체5개 명령이 공유한4분 context가 만료되어243.782s(부모240.67)
+FAIL했다. Raw는 OPERATION_TIMED_OUT·후속 intake-accounting 메시지를 구분한다.
+Host/source 동일/helperwait0·자기copy409537761B 제거이며 PNPM은 failfast 미도달이다.
+이제 같은 gate의 독립 CLI 호출마다 기존4분 deadline을 적용하는 작은 local run closure를
+세 실제 호출 지점이 재사용한다. Production timeout/권한/검사 요구와 검증 case는 그대로다.
+Go test의 전체 harness 제한은 별도이며 현재 single 두 parent10분 내로 확인한다.
+
+CLI-single-v2/463.224s는 Bun238.89s와 PNPM221.09s 모두 PASS다. 각각5개의
+fresh operation/current content6·required flags·Policy/records/반입, frozen lock/
+원본 inode·사용자 파일 보존, implicit enrollment/unproven adoption 거부를 확인했다.
+Host/source 동일/noSKIP/helperwait0·자기사본409541732B 제거다. 개별 명령은
+Bun46.138–49.208s, PNPM43.177–44.206s이며 실제 단일 명령의4분 제한은 유지했다.
+전체 single 흐름의 합계와 command timeout을 구분한다. 이 범위의 구현/연결/한정
+qualification은 YES이며 전체 CLI acceptance는 peer/empty·실행/hosted가 남아 NO다.
+이미 성공한 single을 반복하지 않고 같은 compiled source의 peer/empty만 이어간다.
+두 client의 peer 두 번을 한10분 harness에 모으면 현재 cache 실측135–151s/회와
+CLI 추가 비용상 한계에 걸릴 수 있으므로 client별 기존10분 harness에서 순차 검증한다.
+Production/개별 command 한도·case 수와 필수검사는 그대로다.
+
+Bun peer/empty-v3는324.905s에 PASS했다. Peer 두 명령152.345/152.863s와 empty
+두 명령7.484/7.378s가 current content6·fresh Policy/records·frozen lock/원본 파일
+보존·무단 인계 거부를 확인했다. Host/source 동일/noSKIP/helperwait0이며 자기사본
+409541710B를 제거했다. 같은 빌드의 PNPM peer/empty만 이어서 검증한다.
+
+### PyPI 설치 역할과 source census — 다음 누락의 수정 지도 (`ec1990d`)
+
+기존 `StaticInspector.InspectWheelContent`/`sourceCapture`는 전체 regular member를
+인증하지만 source 선택은 suffix/shebang만 본다. `WheelInspection.Surface`의 기존
+`InstalledFiles`/`SiteHookLines`가 아는 active `.pth` import와 interpreter를 알 수 없는
+installed script가 현재 내용 역할에서 빠진다. 부품 IMPLEMENTED/WIRED=YES, 이 역할
+연결의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. 전체 S04는 계속 OPEN이다.
+
+기존 typed installed-role 결과로 누락 target을 고르고, 필요할 때만 기존 authenticated
+wheel reader를 한 번 더 사용한다. 기존 source body/graph charge를 중복하지 않고
+추가 body도 최초 census의 크기/해시와 대조한다. Active import가 있는 `.pth`는 원문
+전체를 Python source DATA로 보존하고 path-only/nested `.pth`는 자동 실행 source로
+승격하지 않는다. Path/import 혼합 원문의 parsing 한계는 숨기지 않고 current analyzer의
+미완료 규칙을 유지한다. Interpreter 불명 installed script/unresolved 역할은 unsupported로
+남기며 native와 알려진 interpreter 역할을 덮지 않는다. Source/target 합산 한도는 그대로다.
+
+수정은 기존 `inspection/pypi/sources.go`와 해당 회귀에 한정한다. Active/mapped/path-only/
+nested hook·알려진/불명 script·원문 body/해시·단일 graph charge·재읽기 변조/취소 거부를
+먼저 표적 검증하고 의미 있는 content 묶음에서 canonical 검사를 모은다. Default analyzer/
+graph/cache/promotion/실제 PyPI와 mixed `.pth` 호환 qualification은 후속 MISSING이다.
+진행 중 PNPM native가 소비하는 Root/private source는 바꾸지 않고 별도 임시 사본에서
+구현하며 해당 native 종료 후 기준 bytes를 대조해 정확한 수정만 반영한다. 새 CI는 없다.
+
+PNPM peer/empty-v4도319.550s에 PASS했다. Peer142.262/156.630s·empty8.652/7.372s,
+current content6/Policy/원본 보존·거부·Host/source 동일/noSKIP/helperwait0와 사본
+409541712B 제거를 확인했다. Single-v2와 합친 각 client의 전체 CLI 실측은5분을
+넘고10분 안이다. 두 기존 shell 명령과 그 canonical validator의 suite deadline만
+5→10분으로 맞췄으며 개별 command4분과 제품 예산/전체 case는 유지한다.
+
+Wheel 역할 표적 RED9.515s는 source2/expected4 누락을 재현했다. 기존 reader/capture
+수정의 GREEN1.229s·표적 Race15.163s는 active/mapped hook 원문·해시/known script/
+unknown script/native 구분·단일 graph charge와 archive/member 변조·부재·취소·기존
+합산 bytes/target 한도 거부를 확인했다. 첫 편집 명령의 치환 assertion이 source 저장 전에
+실패해 green-v1 이름의 실행도 old-source RED0.765s였다. 원본을 지우거나 성공으로
+해석하지 않는다. 실제 최초 GREEN은 v2다. Mixed `.pth` parsing 호환은 미검증이다.
+
+최종8개 source 경로는 private 사본에서 canonical format 후 foundation52.120s,
+security36.219s, PyPI/bootstrap/checker 전체 Race169.490s, vet13.706s, 고정 Staticcheck
+21.495s 모두 PASS/source unchanged다. Checker의 실제 누락/중복/명령 변조 거부도 기존
+전체 회귀에 포함된다. 종료한 native 이후 Root/private source의 원래 bytes를 확인해
+동일8경로만 반영했고 reviewed-file-map-v1이 해시를 연결한다. Existing CPP/canonical
+source build/cache/single native 성공은 반복하지 않았다. 아직 PyPI analyzer 구성과
+graph/cache/실제 승격, npm계열 execution/metadata/hosted·전체 S04가 남아 있다.

@@ -378,3 +378,133 @@ func TestWheelGraphAccountingIncludesSelfRecordBytes(t *testing.T) {
 		t.Fatal("self RECORD bytes were omitted from graph accounting")
 	}
 }
+
+func TestWheelContentUsesAuthenticatedInstalledRoles(t *testing.T) {
+	root := t.TempDir()
+	extras := map[string]string{
+		"active.pth":                          "# original hook\nimport os; os.environ.get('CONTENT_DATA')\n",
+		"example-1.0.data/purelib/mapped.pth": "import sys\n",
+		"declarative.pth":                     "example\n",
+		"example/nested.pth":                  "import os\n",
+		"example-1.0.data/scripts/unknown":    "opaque executable script\n",
+		"example-1.0.data/scripts/python":     "#!/usr/bin/env python3\nprint('DATA')\n",
+		"example-1.0.data/scripts/native":     string(sourceCaptureELF()),
+	}
+	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", extras, "")
+	inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), artifactpypi.PublicPyPIProfile())
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheel, files, report, err := inspector.InspectWheelContent(ctx, subject)
+	if err != nil || len(report.Findings()) != 1 {
+		t.Fatal("installed role content unavailable", err, report.Findings())
+	}
+	want := map[string]string{"example/__init__.py": "pass\n", "active.pth": extras["active.pth"], "example-1.0.data/purelib/mapped.pth": extras["example-1.0.data/purelib/mapped.pth"], "example-1.0.data/scripts/python": extras["example-1.0.data/scripts/python"]}
+	if len(files) != len(want) {
+		t.Fatalf("active installed source omitted or DATA promoted: got %d want %d", len(files), len(want))
+	}
+	measured := map[string]artifactpypi.WheelFile{}
+	for _, member := range wheel.Files {
+		measured[member.Path] = member
+	}
+	for _, file := range files {
+		body, exists := want[file.Path]
+		sum := sha256.Sum256(file.Body)
+		member := measured[file.Path]
+		if !exists || file.Language != "python" || string(file.Body) != body || member.Size != int64(len(file.Body)) || member.SHA256 != hex.EncodeToString(sum[:]) {
+			t.Fatal("hook source was transformed, mismapped or unauthenticated", file.Path)
+		}
+		delete(want, file.Path)
+	}
+	var census struct {
+		Sources     int `json:"sources"`
+		Unsupported int `json:"unsupported_sources"`
+		Binaries    int `json:"binaries"`
+	}
+	for _, fact := range report.Evidence() {
+		if fact.Kind() == "content-inventory" {
+			if err := json.Unmarshal([]byte(fact.Summary()), &census); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if census.Sources != 4 || census.Unsupported != 1 || census.Binaries != 1 {
+		t.Fatal("installed roles lost source/unknown/native distinction", census)
+	}
+	policy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, policy.MaxGraphUncompressed()-wheel.ArchiveUncompressedBytes); err != nil {
+		t.Fatal("hook reread charged bytes twice", err)
+	}
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, 1); err == nil {
+		t.Fatal("original archive was not charged")
+	}
+	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(wheel.ArchiveEntries)); err != nil {
+		t.Fatal("hook reread charged files twice", err)
+	}
+	if err := artifactpypi.ChargeFilesFromContext(ctx, 1); err == nil {
+		t.Fatal("original entry census was not charged")
+	}
+}
+
+func TestWheelRoleRereadRefusesChangesAndCombinedBounds(t *testing.T) {
+	for _, fault := range []string{"archive", "missing", "cancelled", "total", "targets", "member-digest"} {
+		t.Run(fault, func(t *testing.T) {
+			root := t.TempDir()
+			subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{"active.pth": "import os\n"}, "")
+			inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+			native, _ := content.NewBinaryInspection(subject)
+			ctx, cancel := context.WithCancelCause(context.Background())
+			defer cancel(nil)
+			capture := sourceCapture{native: native, ctx: ctx}
+			wheel, report, err := inspector.inspectWheel(ctx, subject, capture.member)
+			if err != nil || len(report.Findings()) != 0 {
+				t.Fatal("first authenticated read failed", err)
+			}
+			original := len(capture.members)
+			name, _, err := inspector.artifactPath(subject)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch fault {
+			case "archive":
+				body, err := os.ReadFile(name)
+				if err != nil {
+					t.Fatal(err)
+				}
+				body[len(body)-1] ^= 1
+				if err := os.WriteFile(name, body, 0600); err != nil {
+					t.Fatal(err)
+				}
+			case "missing":
+				if err := os.Remove(name); err != nil {
+					t.Fatal(err)
+				}
+			case "cancelled":
+				cancel(fmt.Errorf("role capture cancelled"))
+			case "total":
+				capture.bytes = ports.SourceAnalysisTotalLimit
+			case "targets":
+				capture.targets = ports.SourceAnalysisTargetLimit
+			case "member-digest":
+				wrong, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+				for index := range capture.facts {
+					if capture.facts[index].Path == "active.pth" {
+						capture.facts[index].Digest = wrong
+					}
+				}
+			}
+			if err := capture.wheelRoles(ctx, inspector, subject, wheel); err == nil {
+				t.Fatal("unauthenticated/partial/beyond-budget source was accepted", fault)
+			}
+			if len(capture.members) != original {
+				t.Fatal("failed second read exposed provisional source bodies")
+			}
+			for _, fact := range capture.facts {
+				if fact.Path == "active.pth" && fact.Language != "" {
+					t.Fatal("failed reread published hook coverage")
+				}
+			}
+		})
+	}
+}

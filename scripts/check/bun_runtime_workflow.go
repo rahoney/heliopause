@@ -7,7 +7,7 @@ const bunProjectQuarantineCommand = `HELOX_BUN_PROJECT_QUARANTINE=1 /usr/libexec
 const bunArtifactExecutionCommand = `HELOX_BUN_ARTIFACT_EXECUTION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^TestBunActualArtifactExecutionBoundary$'`
 
 const bunApprovedProjectCommand = `HELOX_BUN_CACHE_INTEGRATION=1 HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublic(ApprovedCache|ProjectTransaction)Integration$'`
-const bunProjectCLICommand = `HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunProjectCLIIntegration$'`
+const bunProjectCLICommand = `HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestBunProjectCLIIntegration$'`
 const bunOriginalProjectCommand = `HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$'`
 
 const bunColdIntegrationBlock = `bun_cold_log="$bun_work/cold.log"

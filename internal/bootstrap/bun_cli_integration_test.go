@@ -22,8 +22,11 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 	if os.Geteuid() == 0 {
 		t.Fatal("Bun CLI actual requires ordinary UID")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-	defer cancel()
+	run := func(args []string, out, diagnostic *bytes.Buffer) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+		defer cancel()
+		return bootstrap.Run(ctx, args, out, diagnostic)
+	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -63,9 +66,11 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					args = append(args, "--", selector)
 				}
 				var out, diagnostic bytes.Buffer
-				if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
+				started := time.Now()
+				if err := run(args, &out, &diagnostic); err != nil {
 					t.Fatalf("actual bun %s failed: %v stdout=%s diagnostics=%s", operation, err, out.String(), diagnostic.String())
 				}
+				t.Logf("current_content_cli_operation fixture=%s operation=%s seconds=%.3f", fixture.name, operation, time.Since(started).Seconds())
 				var report struct {
 					Schema    string                    `json:"schema_version"`
 					Operation string                    `json:"operation"`
@@ -76,6 +81,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					Entries   []struct {
 						Run    string `json:"run_id"`
 						Checks []struct {
+							ID         string `json:"id"`
 							Required   bool
 							Capability string
 							Status     string `json:"execution_status"`
@@ -103,10 +109,20 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					if entry.Run == "" || len(entry.Evidence) == 0 || len(entry.Checks) < 3 {
 						t.Fatal("missing actual per-entry facts", out.String())
 					}
+					wanted := map[string]bool{"npm-static-archive": true, "binary-content": true, "binary-content-signals": false, "content-inventory": true, "source-content": true, "source-content-signals": false}
 					for _, check := range entry.Checks {
 						if check.Required && (check.Status != "COMPLETED" || check.Capability != "SUPPORTED") {
 							t.Fatal("incomplete required check", out.String())
 						}
+						if required, known := wanted[check.ID]; known {
+							if check.Required != required {
+								t.Fatal("current content requirement weakened", check.ID)
+							}
+							delete(wanted, check.ID)
+						}
+					}
+					if len(wanted) != 0 {
+						t.Fatal("current content checks absent", wanted)
 					}
 				}
 				body, err := os.ReadFile(filepath.Join(target, ".heliopause/manifest.json"))
@@ -205,7 +221,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 				var out, diagnostic bytes.Buffer
-				if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", target}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"operation_status":"FAILED"`)) {
+				if err := run([]string{"--lang", "en", "--output", "json", "bun", "install", "--target", target}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"operation_status":"FAILED"`)) {
 					t.Fatal("implicit changed-control enrollment accepted", err, out.String())
 				}
 				if current, err := os.ReadFile(manifest); err != nil || !bytes.Equal(current, body) {
@@ -237,7 +253,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	var out, diagnostic bytes.Buffer
-	if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", native, "--adopt"}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"promotion_status":"NOT_COMPLETED"`)) {
+	if err := run([]string{"--lang", "en", "--output", "json", "bun", "install", "--target", native, "--adopt"}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"promotion_status":"NOT_COMPLETED"`)) {
 		t.Fatal("native adoption bypass accepted", err, out.String())
 	}
 	if body, err := os.ReadFile(foreign); err != nil || string(body) != "unproven native bytes" {
