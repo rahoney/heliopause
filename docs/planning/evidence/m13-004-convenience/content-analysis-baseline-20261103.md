@@ -312,3 +312,26 @@ locked source 확보를 완료했다. Marker/exit0와 소유 container 제거를
 PASS다. Full fresh compiler/native는 V5 actual로 진행 중이며 이 선행 성공을 native
 재현·runtime/product qualification으로 확대하지 않는다. Canonical foundation26.188s
 (format/runtime drift/module/production/test compile/architecture/docs)도 PASS다.
+
+V5 compiler 진행 중 완료된 V2/V3/V4의 source TAR·APK 중복 사본1414175096B를
+정리했다. State의 원본 source manifest/origins·recipe·bounded log/첫 실패를 보존했고
+current Docker2의 mount와121-process FD/maps에서 참조0/query 오류0을 확인했다.
+Primary source/cache와 현재 V5는 제외했으며, 이 수동 시험 정리를 C01 runtime 자동
+quota/retention의 완료로 쓰지 않는다. 원본 s04-failed-build-copies-cleanup-v1.json 참조.
+
+### Fresh source build — 로컬 재현 확인
+
+67fb9fe와 같은 source worker/SDK recipe의 V5 actual1453.045s는 PASS다. 새 SDK와
+fresh compiler/dependencies로 만든171648864B native의 SHA256은 기존1.183 후보
+`deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4`와
+bit-identical이다. 따라서 같은 byte의326-source DATA/29 matches/의도한 parse error2
+시험은 재실행하지 않고 그 범위를 재사용한다. 이 결과를 gVisor/runtime/제품 판정으로
+확대하지 않는다. 독립 terminal readback은 native0555/root 소유와 source308347904B의
+앞선 독립 projection SHA 일치, 소유 container2/SDK image 부재, 임시 APK/native 사본
+자동 제거를 확인했다. 설치된 manifest는 불변이고 cleanup 오류0다.
+
+Clean command는 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(local named scope)/
+ACCEPTANCE_CLOSED=NO다. 전체 S04 네 상태는 여전히 NO이며 다음 MISSING은 기존
+runtime owner/update/release supply 연결과 실제 gVisor transport/lifecycle, 전 source
+consumer/Evidence/Policy다. Go/Python/Node/Rust pin과 Artifact 예산을 바꾸지 않았다.
+원본 s04-canonical-build-v5.json·terminal-readback과 source-projection-v2가 범위를 소유한다.

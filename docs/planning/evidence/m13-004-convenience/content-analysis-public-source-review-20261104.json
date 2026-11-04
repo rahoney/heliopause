@@ -704,7 +704,7 @@
     "states": {
       "IMPLEMENTED": "YES",
       "WIRED": "YES",
-      "QUALIFIED": "NO",
+      "QUALIFIED": "YES (local source-build scope)",
       "ACCEPTANCE_CLOSED": "NO"
     },
     "implementation": "update-runtime rebuild-semgrep; existing Host executor, held source copier and no-replace native publisher reused; source worker embedded from one recipe",
@@ -727,16 +727,25 @@
       "s04-clean-build-host-race-v2.json",
       "s04-clean-build-security-final.json",
       "s04-clean-build-vet-v1.json",
-      "s04-clean-build-static-final.json"
+      "s04-clean-build-static-final.json",
+      "s04-clean-build-vet-checkpoint.json",
+      "s04-clean-build-race-checkpoint.json",
+      "s04-clean-build-checkpoint-docs.json"
     ],
     "native_build": {
-      "status": "IN_PROGRESS",
-      "raw_when_terminal": "s04-canonical-build-v5.json",
-      "expected_reference_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
-      "installed_host_activation": false
+      "status": "PASS",
+      "raw": "s04-canonical-build-v5.json",
+      "terminal_readback_raw": "s04-canonical-build-v5-terminal-readback.json",
+      "elapsed": 1453.045,
+      "native_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+      "native_bytes": 171648864,
+      "reference_bit_identical": true,
+      "installed_host_activation": false,
+      "installed_manifest_unchanged": true,
+      "owned_transient_cleanup_complete": true,
+      "runtime_qualified": false
     },
     "missing": [
-      "Fresh compiler/dependency build and native reference comparison with terminal owned cleanup",
       "Existing runtime-owner/update/release supply integration",
       "Actual gVisor source transport/lifecycle and all product consumer/Evidence/Policy wiring"
     ],
@@ -748,6 +757,13 @@
       "s04-canonical-build-tmpfs-diagnostic-v1.json",
       "s04-canonical-source-preflight-v5.json",
       "s04-canonical-source-preflight-v6.json"
-    ]
+    ],
+    "completed_failed_copy_cleanup": {
+      "removed_bytes": 1414175096,
+      "queried_processes": 121,
+      "checked_current_containers": 2,
+      "complete": true,
+      "raw": "s04-failed-build-copies-cleanup-v1.json"
+    }
   }
 }
