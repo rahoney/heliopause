@@ -1314,3 +1314,39 @@ Native magic은 source suffix보다 우선하며 unknown interpreter·uppercase 
 별도 artifact/Host 실행/CPP rebuild·CI는 없다. Census의 IMPLEMENTED/WIRED/QUALIFIED=YES는
 이 local DATA 범위고 ACCEPTANCE_CLOSED=NO다. 다음 metadata 역할·실제 AST/configuration/
 production/project/cache 연결과 최종 전 생태계 qualification은 계속 MISSING이다.
+
+### npm 명시 main/bin source 역할 — 착수 지도 `3df1dc5`
+
+현재 suffix/shebang 수집은 package.json의 확장자 없는 명시 main/bin을 놓친다.
+이 역할의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. 기존 artifact/npm의
+이미 npm/Bun 소비자가 공유하는 bunPackageBins와 validInventoryPath를 그대로 재사용한다.
+새 bin parser/실행 resolver나 이름 정리 리팩터링은 만들지 않는다. ArchiveInventory의
+검증된 manifest/regular entries로 명시 main/bin target 집합을 만들고, 기존 capture가
+이미 보유한 source/native는 재사용한다. 새로 필요한 대상이 있을 때만 동일 acquired
+SHA·전체 trailer를 다시 확인하는 기존 capture로 그 대상 bytes만 추가 수집한다.
+이 추가 읽기에는 graph 재계상·압축 해제/Host 파일 생성·기존 source body 재복사가 없다.
+Manifest가 archive 뒤에 있어도 같은 결과를 내며 source/native 중복·unknown interpreter의
+거짓 완료·late source 변경/불완전 읽기는 거부한다. 이미 capture한 source/native/census
+최종 결합 전까지 모든 사실은 private다. Lookup과 대상 합치기는 map/단일 순회로 한다.
+Main의 JSON DATA와 native 역할을 보존한다. 다른 export/import pattern·nested metadata/
+module/browser 역할과 configured AST/production 연결은 별도 MISSING으로 남긴다.
+[공식 npm package.json](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/)과
+[Node package entry](https://nodejs.org/api/packages.html)는 역할 의미의 근거이며, 직접
+경로 수집을 모든 Node/bundler resolution 구현으로 표시하지 않는다. Root main/bin과
+manifest first/last·중복 alias·JSON DATA·unknown shebang·없거나 unsafe target을 표적으로
+먼저 확인하고 의미 있는 source 묶음의 canonical checks를 모아서 수행한다.
+
+Npm root main/bin의 직접 역할은 같은 old source fixture RED1.132s 뒤 로컬 교정했다.
+기존 npm/Bun 공용 bunPackageBins를 그대로 재사용하고 새 parser/이름 변경은 없다.
+검증된 manifest에서 regular target을 O(n) map으로 합친 뒤 미수집 target이 있을 때만
+기존 전체 authenticated reader로 그 bytes를 보완한다. 기존 source body·graph budget은
+중복 계상하지 않으며 최종 census 생성도 이 수집 뒤 한 곳으로 이동해 두 번 만들지 않는다.
+정상 manifest first/last·alias dedup·명시 main/bin·JSON DATA/unknown shebang/native 역할·
+unsafe/missing/duplicate metadata의 사실 비노출을 확인했다. Canonical foundation64.850s/
+security29.178s·artifact+inspection 전체 Race62.535s/vet2.519s/고정 Staticcheck5.817s는
+PASS/source 불변이다. 추가된 거부 시험은 처음 RED 이후이며 그 RED의 입력으로 쓰지 않는다.
+시험 intake는 t.TempDir로 회수했고 Host/native/CPP/CI·pin/권한/예산은 변경하지 않았다.
+명시 root main/bin의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 DATA 범위이고 전체 metadata/
+source inspection ACCEPTANCE_CLOSED=NO다. Exports/imports pattern·nested package metadata/
+module/browser·directory bin과 configured 실제 analyzer/current cache/project/CLI는
+계속 MISSING이다. 다음에는 이 역할 범위를 먼저 명확히 연결하고 production을 활성화한다.

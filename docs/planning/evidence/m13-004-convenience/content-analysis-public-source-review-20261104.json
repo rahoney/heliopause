@@ -2154,5 +2154,55 @@
       "actual source analyzer/default/project/cache consumers",
       "transitive/CLI/native/hosted whole qualification"
     ]
+  },
+  "npm_declared_entries": {
+    "baseline": "3df1dc5",
+    "implemented": "YES (root explicit main/bin DATA)",
+    "wired": "YES (existing archive capture and npm/Bun bin parser)",
+    "qualified": "YES (named local)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-red.json",
+        "exit_code": 1,
+        "elapsed": 1.132,
+        "source_unchanged": true
+      },
+      "race": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-race.json",
+        "exit_code": 0,
+        "elapsed": 62.535,
+        "source_unchanged": true
+      },
+      "foundation": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-foundation.json",
+        "exit_code": 0,
+        "elapsed": 64.85,
+        "source_unchanged": true
+      },
+      "security": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-security.json",
+        "exit_code": 0,
+        "elapsed": 29.178,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-vet.json",
+        "exit_code": 0,
+        "elapsed": 2.519,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-static.json",
+        "exit_code": 0,
+        "elapsed": 5.817,
+        "source_unchanged": true
+      }
+    },
+    "missing": [
+      "exports/imports/nested metadata/module/browser/directory bin roles",
+      "configured actual AST/default/project/cache consumers",
+      "transitive/CLI/native/hosted whole qualification"
+    ]
   }
 }

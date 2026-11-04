@@ -119,3 +119,52 @@ func (i ArchiveInventory) Matches(artifact domain.AcquiredArtifact) bool {
 func (i ArchiveInventory) Artifact() domain.AcquiredArtifact { return i.artifact }
 func (i ArchiveInventory) Entries() []ArchiveEntry           { return append([]ArchiveEntry(nil), i.entries...) }
 func (i ArchiveInventory) Manifest() []byte                  { return append([]byte(nil), i.manifest...) }
+
+// DeclaredSourcePaths selects explicit root main/bin members from the measured
+// manifest. It does not resolve Node imports or authorize their execution.
+func (i ArchiveInventory) DeclaredSourcePaths() (map[string]bool, error) {
+	invalid := errors.New("npm source declarations are invalid or unsupported")
+	if !i.Valid() || strictControlJSON(i.manifest) != nil {
+		return nil, invalid
+	}
+	var manifest map[string]json.RawMessage
+	if json.Unmarshal(i.manifest, &manifest) != nil {
+		return nil, invalid
+	}
+	files := make(map[string]bool, len(i.entries))
+	for _, member := range i.entries {
+		files[member.Path] = !member.Directory
+	}
+	selected := map[string]bool{}
+	if raw, present := manifest["main"]; present && string(raw) != "null" {
+		var target string
+		if json.Unmarshal(raw, &target) != nil {
+			return nil, invalid
+		}
+		if target != "" {
+			target = strings.TrimPrefix(target, "./")
+			if target != "" && target != "." && !validInventoryPath(target) {
+				return nil, invalid
+			}
+			// Node's JSON module is DATA; native addons retain their byte
+			// format role in inspection. Default .js fallbacks are already
+			// selected by the source inventory.
+			if files[target] && path.Ext(target) != ".json" {
+				selected[target] = true
+			}
+		}
+	}
+	if raw, present := manifest["bin"]; present && string(raw) != "null" {
+		bins, err := bunPackageBins(raw, i.artifact.Identity().Name())
+		if err != nil {
+			return nil, invalid
+		}
+		for _, target := range bins {
+			if !files[target] {
+				return nil, invalid
+			}
+			selected[target] = true
+		}
+	}
+	return selected, nil
+}

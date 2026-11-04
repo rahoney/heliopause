@@ -55,11 +55,50 @@ func (i *Inspector) InspectArchiveContent(ctx context.Context, artifact domain.A
 	if err != nil || !inventory.Valid() {
 		return artifactnpm.ArchiveInventory{}, nil, static, err
 	}
-	nativeReport, nativeErr := native.Report(ctx, capture.census)
+	declared, err := inventory.DeclaredSourcePaths()
+	if err != nil {
+		return artifactnpm.ArchiveInventory{}, nil, static, err
+	}
+	missing := make(map[string]bool)
+	indices := make(map[string]int)
+	for index, member := range capture.members {
+		if declared[member.Path] && member.Language == "" && !member.Binary {
+			missing[member.Path] = true
+			indices[member.Path] = index
+		}
+	}
+	if len(missing) != 0 {
+		// A late manifest may name an earlier extensionless member. Reuse
+		// the complete authenticated reader, retaining only these targets;
+		// do not copy existing source bodies or charge the graph twice.
+		additional := &archiveCapture{sourceTargets: missing}
+		verified, _, readErr := i.captureArchive(ctx, artifact, additional)
+		if readErr != nil || !verified.Matches(artifact) {
+			return artifactnpm.ArchiveInventory{}, nil, static, errors.Join(errors.New("declared npm source read is incomplete"), readErr)
+		}
+		for _, source := range additional.sources {
+			index, present := indices[source.Path]
+			if !present {
+				return artifactnpm.ArchiveInventory{}, nil, static, errors.New("declared npm source is outside its original inventory")
+			}
+			member := &capture.members[index]
+			digest := sha256.Sum256(source.Body)
+			if member.Size != uint64(len(source.Body)) || member.Digest.String() != hex.EncodeToString(digest[:]) {
+				return artifactnpm.ArchiveInventory{}, nil, static, errors.New("declared npm source differs from its original member")
+			}
+			member.Language, member.UnsupportedSource = source.Language, false
+			capture.sources = append(capture.sources, source)
+		}
+	}
+	inventoryFacts, err := content.NewInventory(artifact, capture.members)
+	if err != nil {
+		return artifactnpm.ArchiveInventory{}, nil, static, err
+	}
+	nativeReport, nativeErr := native.Report(ctx, inventoryFacts)
 	if len(nativeReport.Executions()) == 0 {
 		return artifactnpm.ArchiveInventory{}, nil, static, nativeErr
 	}
-	census, censusErr := capture.census.Report(ctx)
+	census, censusErr := inventoryFacts.Report(ctx)
 	if censusErr != nil {
 		return artifactnpm.ArchiveInventory{}, nil, static, errors.Join(nativeErr, censusErr)
 	}
@@ -86,10 +125,10 @@ type archiveCapture struct {
 	selectedPath   string
 	selectedBody   []byte
 	captureSources bool
+	sourceTargets  map[string]bool
 	sources        []ports.SourceAnalysisFile
 	native         *content.BinaryInspection
 	members        []content.MemberFact
-	census         content.Inventory
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -143,7 +182,7 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		digest := sha256.New()
 		var prefix []byte
 		language := ""
-		if c.captureSources {
+		if c.captureSources || c.sourceTargets[item.Path] {
 			if manifest == nil {
 				prefix = make([]byte, min(header.Size, 512))
 				if _, err := io.ReadFull(reader, prefix); err != nil {
@@ -151,6 +190,9 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 				}
 			}
 			language = content.SourceLanguage(item.Path, prefix)
+			if language == "" && c.sourceTargets[item.Path] && !bytes.HasPrefix(prefix, []byte("#!")) {
+				language = "javascript"
+			}
 		}
 		// The existing npm limits (20MiB/file, 200MiB decoded, 10000
 		// entries including the manifest) already bound this subset more
@@ -161,6 +203,9 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		if manifest != nil {
 			_, _ = digest.Write(manifest) // hash.Hash.Write never fails.
 			c.manifest = append([]byte(nil), manifest...)
+			if retainSource {
+				c.sources = append(c.sources, ports.SourceAnalysisFile{Path: item.Path, Language: language, Body: c.manifest})
+			}
 			if item.Path == c.selectedPath {
 				c.selectedBody = bytes.Clone(manifest)
 			}
@@ -256,12 +301,6 @@ func (c *archiveCapture) finish(ctx context.Context, artifact domain.AcquiredArt
 	inventory, err := artifactnpm.NewArchiveInventory(artifact, c.entries, c.manifest)
 	if err != nil {
 		return err
-	}
-	if c.native != nil {
-		c.census, err = content.NewInventory(artifact, c.members)
-		if err != nil {
-			return err
-		}
 	}
 	c.inventory = inventory
 	return nil

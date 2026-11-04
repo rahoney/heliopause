@@ -173,3 +173,92 @@ func TestArchiveContentCensusPreservesUnsupportedSourceAndNativeRoles(t *testing
 		t.Fatal("complete archive did not publish exactly one census", count)
 	}
 }
+
+func TestArchiveContentSelectsDeclaredExtensionlessMainAndBins(t *testing.T) {
+	for _, manifestLast := range []bool{false, true} {
+		root := canonicalRoot(t)
+		manifest := tarEntry{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","main":"./lib/entry","bin":{"tiny":"./bin/tool","alias":"bin/tool"}}`}
+		entries := []tarEntry{
+			{name: "package/lib/entry", body: "module.exports = 1;\n"},
+			{name: "package/bin/tool", body: "console.log('DATA');\n"},
+			{name: "package/other.js", body: "module.exports = 2;\n"},
+			{name: "package/README", body: "unselected DATA"},
+		}
+		if manifestLast {
+			entries = append(entries, manifest)
+		} else {
+			entries = append([]tarEntry{manifest}, entries...)
+		}
+		subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+		inspector, _ := NewInspector(root)
+		archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+		if err != nil || !archive.Matches(subject) || len(sources) != 3 || len(report.Executions()) != 4 {
+			t.Fatal("declared entry source coverage incomplete", manifestLast, len(sources), err)
+		}
+		seen := map[string]bool{}
+		for _, source := range sources {
+			if seen[source.Path] || source.Language != "javascript" || len(source.Body) == 0 {
+				t.Fatal("source role was duplicated or lost", source.Path)
+			}
+			seen[source.Path] = true
+		}
+		if !seen["lib/entry"] || !seen["bin/tool"] || !seen["other.js"] || seen["README"] {
+			t.Fatal("metadata targets were omitted or DATA was guessed as source", seen)
+		}
+	}
+}
+
+func TestArchiveContentDeclaredJSONAndUnknownInterpreterKeepTheirRoles(t *testing.T) {
+	root := canonicalRoot(t)
+	subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","main":"./data.json","bin":"bin/tool"}`},
+		{name: "package/data.json", body: `{"value":1}`},
+		{name: "package/bin/tool", body: "#!/bin/sh\necho DATA\n"},
+	}))
+	inspector, _ := NewInspector(root)
+	_, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+	if err != nil || len(sources) != 0 {
+		t.Fatal("JSON DATA or unsupported shell was relabeled as JavaScript", err)
+	}
+	for _, fact := range report.Evidence() {
+		if fact.Kind() == "content-inventory" && !strings.Contains(fact.Summary(), `"unsupported_sources":1`) {
+			t.Fatal("unsupported declared interpreter disappeared", fact)
+		}
+	}
+}
+
+func TestArchiveContentRejectsUnsafeOrMissingDeclaredTargetsWithoutFacts(t *testing.T) {
+	for _, extra := range []string{
+		`"main":"../escape"`,
+		`"main":123`,
+		`"bin":"missing"`,
+		`"bin":"../escape"`,
+		`"bin":{"bad/name":"entry"}`,
+		`"bin":["entry"]`,
+		`"bin":"entry","bin":"other"`,
+	} {
+		root := canonicalRoot(t)
+		subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+			{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3",` + extra + `}`},
+			{name: "package/entry", body: "console.log('DATA');\n"},
+		}))
+		inspector, _ := NewInspector(root)
+		archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+		if err == nil || archive.Valid() || len(sources) != 0 || len(report.Executions()) > 1 {
+			t.Fatal("invalid metadata produced trusted content facts", extra, err)
+		}
+	}
+}
+
+func TestArchiveContentDeclaredNativeKeepsByteFormatPriority(t *testing.T) {
+	root := canonicalRoot(t)
+	subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","main":"native","bin":"native"}`},
+		{name: "package/native", body: "MZ"},
+	}))
+	inspector, _ := NewInspector(root)
+	archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+	if err == nil || !archive.Matches(subject) || len(sources) != 0 || len(report.Executions()) != 4 || report.Executions()[1].Status() != domain.ExecutionIncomplete {
+		t.Fatal("metadata disguised an unsupported native format as source", err)
+	}
+}
