@@ -779,3 +779,40 @@ identity 외 product 및 external dependency를 거부하도록 기존 architect
 - API 구현과 지정 회귀만 확인했으며 production scanner/Policy 연결은 미실시다.
   PyPI/GitHub/Terraform, native/packed/unsupported/no-source applicability는 미완료다.
   전체 S04는 계속 NO/NO/NO/NO이며 이름·배포 준비 완료가 아니다.
+
+
+### PyPI source member 연결 — baseline `715e457`
+
+기존 wheel `InspectWheelForSource`→`parseWheelMetadata`→`validateRecord`→
+`streamRecordFile`의 SHA/CRC 및 StaticInspector의 graph uncompressed/file charge는
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES인 기존 owner로 재사용한다.
+Source byte 반환은 NO/NO/NO/NO이며 MISSING은 같은 RECORD hash stream의 유한 source
+보관·전체 검증 뒤 반환·derived wheel과 graph accounting 유지·실패 시 폐기다.
+
+Sdist의 source 반환도 NO/NO/NO/NO다. 기존 `InspectSdist`는 bounded PAX/metadata와
+compressed digest를 검사하지만 tar EOF 뒤 gzip을 drain하지 않는다. 새 반례
+`s04-pypi-sdist-trailer-red`3.672s에서 CRC 변조·두 번째 gzip member·compressed tail·
+nonzero decoded tail 네 가지가 모두 잘못 수용됐다. Source 반환 전 같은 owner의
+trailer validation gap을 닫는다. 새 압축 해제기나 기존 byte/file 예산 확대는 하지 않는다.
+이 발견을 이전 모든 설치의 감염이나 source 내용 분석 완료로 확대하지 않는다.
+
+
+PyPI source 반환의 named local 수정·검증:
+
+- Wheel/derived-wheel은 같은 RECORD stream의 digest와 source buffer를 함께 쓰고, 기존
+  typed wheel과 graph uncompressed/file charge를 유지한다. 전체 검증이 실패하거나
+  source file64MiB/total512MiB/10000 bound를 넘으면 전체 선택을 폐기한다. 그 한도는
+  실제 수집자와 기존 backend가 같은 Port 상수를 소비하며 값/런타임 동작은 불변이다.
+- Sdist는 기존 PAX pass에서 선택 source를 보관하고 tar EOF 뒤 같은 bounded decoder를
+  drain해 CRC·zero padding·compressed exhaustion을 확인한다. 앞 RED 네 반례는 최종
+  Race에서 모두 거부된다. Sdist static profile만 v2로 바꾸어 과거 불완전 결과를 현재
+  requirement에 사용할 수 없게 했고 기존 wheel profile은 유지했다.
+- Targeted Race27.189s PASS 후 초기 foundation64.003s가 build/import/architecture/docs를
+  확인했다. 이후 sdist-only profile/derived-source test 추가를 포함한 최종 PyPI 두 owner의
+  전체 Race14.398s/security34.303s/vet13.395s/pinned Staticcheck30.339s가 PASS다.
+  Foundation 전체를 최종 source에서 재실행한 것으로 쓰지 않는다. Scanner 실제 실행/
+  CPP/runtime 값은 이번 source 수집 수정과 별개인 이전 scoped 결과를 재사용한다.
+- 정확한 source/raw는 public review의 `pypi_member_sources`가 소유한다. Unit 임시 입력은
+  t.TempDir에서 회수하며 새 native binary·Host 설치·CI/push는 없다. 현재 API 반환만
+  구현/검증했으므로 production analyzer/Policy와 전체 S04는 계속 미완료다. 다음은
+  GitHub/Terraform과 native/packed/unsupported/no-source 사실, 모든 소비자의 연결이다.

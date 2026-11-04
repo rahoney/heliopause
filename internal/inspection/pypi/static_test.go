@@ -100,6 +100,10 @@ func TestDerivedWheelStaticResultRemainsAvailableToDynamicPhase(t *testing.T) {
 	if err != nil || len(report.Findings()) != 0 || wheel.Project != identity.Name() || len(wheel.ImportNames) == 0 {
 		t.Fatalf("derived wheel static result lost: %q %v", wheel.Project, err)
 	}
+	collected, files, sourceReport, err := inspector.InspectWheelSources(context.Background(), artifact)
+	if err != nil || len(sourceReport.Findings()) != 0 || collected.Project != wheel.Project || len(files) == 0 {
+		t.Fatal("derived wheel source collection lost the typed result", err)
+	}
 }
 
 func TestCompositeRetainsStaticReportAfterDynamicFailure(t *testing.T) {

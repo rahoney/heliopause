@@ -222,11 +222,12 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/inspection/pypi": {
-			modulePath + "/internal/core/ports":      true,
-			modulePath + "/internal/artifact/pypi":   true,
-			modulePath + "/internal/core/domain":     true,
-			modulePath + "/internal/sandbox":         true,
-			modulePath + "/internal/runtimeidentity": true,
+			modulePath + "/internal/core/ports":         true,
+			modulePath + "/internal/artifact/pypi":      true,
+			modulePath + "/internal/core/domain":        true,
+			modulePath + "/internal/sandbox":            true,
+			modulePath + "/internal/runtimeidentity":    true,
+			modulePath + "/internal/inspection/content": true,
 		},
 		modulePath + "/internal/evidence/local": {
 			modulePath + "/internal/core/domain": true,

@@ -6,9 +6,54 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
 	"slices"
 	"testing"
 )
+
+func TestSdistRejectsUninspectedTrailer(t *testing.T) {
+	valid := makeSdist(t, map[string][]byte{
+		"example-1.0/PKG-INFO":            []byte("Name: example\nVersion: 1.0\n"),
+		"example-1.0/pyproject.toml":      []byte("[build-system]\nrequires = [\"wheel\"]\nbuild-backend = \"setuptools.build_meta\"\n"),
+		"example-1.0/example/__init__.py": []byte("raise RuntimeError('DATA only')\n"),
+	})
+	for _, fault := range []string{"crc", "second-member", "compressed-tail", "decoded-tail"} {
+		t.Run(fault, func(t *testing.T) {
+			body := bytes.Clone(valid)
+			switch fault {
+			case "crc":
+				body[len(body)-8] ^= 1
+			case "second-member":
+				body = append(body, valid...)
+			case "compressed-tail":
+				body = append(body, 1)
+			case "decoded-tail":
+				reader, err := gzip.NewReader(bytes.NewReader(valid))
+				if err != nil {
+					t.Fatal(err)
+				}
+				decoded, err := io.ReadAll(reader)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_ = reader.Close()
+				var out bytes.Buffer
+				writer := gzip.NewWriter(&out)
+				if _, err := writer.Write(append(decoded, []byte("hidden payload")...)); err != nil {
+					t.Fatal(err)
+				}
+				if err := writer.Close(); err != nil {
+					t.Fatal(err)
+				}
+				body = out.Bytes()
+			}
+			sum := sha256.Sum256(body)
+			if _, err := InspectSdist(bytes.NewReader(body), "example-1.0.tar.gz", hex.EncodeToString(sum[:]), DefaultSdistLimits()); err == nil {
+				t.Fatal("uninspected or invalid trailer accepted")
+			}
+		})
+	}
+}
 
 func TestInspectSdistAcceptsBoundedPEP517Source(t *testing.T) {
 	archive := makeSdist(t, map[string][]byte{

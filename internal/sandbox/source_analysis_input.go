@@ -21,9 +21,9 @@ import (
 const (
 	sourceAnalysisRoot           = "/haa-source"
 	sourceAnalysisTargetsName    = "targets.json"
-	sourceAnalysisFileLimit      = 64 << 20
-	sourceAnalysisTotalLimit     = 512 << 20
-	sourceAnalysisTargetLimit    = 10000
+	sourceAnalysisFileLimit      = ports.SourceAnalysisFileLimit
+	sourceAnalysisTotalLimit     = ports.SourceAnalysisTotalLimit
+	sourceAnalysisTargetLimit    = ports.SourceAnalysisTargetLimit
 	sourceAnalysisMetadataLimit  = 8 << 20
 	sourceAnalysisVolumeCapacity = sourceAnalysisTotalLimit + sourceAnalysisMetadataLimit
 )

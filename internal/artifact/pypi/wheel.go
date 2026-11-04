@@ -109,16 +109,28 @@ type WheelInspection struct {
 
 // InspectWheel validates one selected wheel without extracting or executing it.
 func InspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits) (WheelInspection, error) {
-	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, false)
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, false, nil)
 }
+
+// MemberCapture optionally copies bounded member DATA during the original
+// validation pass. Bytes remain provisional until the entire inspection succeeds.
+// Returning nil skips capture without skipping any integrity validation.
+type MemberCapture func(name string, size uint64) io.Writer
 
 // InspectWheelForSource permits PyTorch's canonical PEP 440 local build
 // suffixes while retaining the ordinary PyPI parser's stricter contract.
-func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, source domain.SourceID) (WheelInspection, error) {
-	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, IsPyTorchSource(source))
+func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, source domain.SourceID, captures ...MemberCapture) (WheelInspection, error) {
+	if len(captures) > 1 {
+		return WheelInspection{}, wheelValidation(WheelValidationOther)
+	}
+	var capture MemberCapture
+	if len(captures) == 1 {
+		capture = captures[0]
+	}
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, IsPyTorchSource(source), capture)
 }
 
-func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool) (WheelInspection, error) {
+func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool, capture MemberCapture) (WheelInspection, error) {
 	if reader == nil || size <= 0 || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationOther)
 	}
@@ -184,7 +196,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	if len(metadataFiles) != 3 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	info, err := parseWheelMetadata(project, version, filename, primaryDistInfo, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
+	info, err := parseWheelMetadata(project, version, filename, primaryDistInfo, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits, capture)
 	if err != nil {
 		return WheelInspection{}, err
 	}
@@ -197,7 +209,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	return info, nil
 }
 
-func parseWheelMetadata(project, version, filename, distInfo string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits) (WheelInspection, error) {
+func parseWheelMetadata(project, version, filename, distInfo string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits, capture MemberCapture) (WheelInspection, error) {
 	if len(metadata) == 0 || len(wheel) == 0 || len(record) == 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
@@ -247,7 +259,7 @@ func parseWheelMetadata(project, version, filename, distInfo string, metadata, w
 			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 	}
-	files, err := validateRecord(record, regular, entries, distInfo)
+	files, err := validateRecord(record, regular, entries, distInfo, capture)
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
@@ -1062,7 +1074,7 @@ func validEntryPointName(name string) bool {
 	return true
 }
 
-func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string) ([]WheelFile, error) {
+func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string, capture MemberCapture) ([]WheelFile, error) {
 	primaryRecord := primaryDistInfo + "/RECORD"
 	r := csv.NewReader(bytes.NewReader(body))
 	r.FieldsPerRecord = 3
@@ -1117,7 +1129,11 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 			continue
 		}
 		entry := entries[name]
-		actualSize, actualDigest, err := streamRecordFile(entry)
+		var destination io.Writer
+		if capture != nil && entry != nil {
+			destination = capture(name, entry.UncompressedSize64)
+		}
+		actualSize, actualDigest, err := streamRecordFile(entry, destination)
 		if err != nil || actualSize != file.Size {
 			return nil, errors.New("wheel RECORD size mismatch")
 		}
@@ -1143,7 +1159,7 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 	return files, nil
 }
 
-func streamRecordFile(file *zip.File) (int64, string, error) {
+func streamRecordFile(file *zip.File, destination io.Writer) (int64, string, error) {
 	if file == nil {
 		return 0, "", errors.New("wheel RECORD file is missing")
 	}
@@ -1156,7 +1172,11 @@ func streamRecordFile(file *zip.File) (int64, string, error) {
 	if file.UncompressedSize64 > uint64(1<<63-2) {
 		return 0, "", errors.New("wheel RECORD file exceeds streaming bound")
 	}
-	size, err := io.Copy(hash, io.LimitReader(r, int64(file.UncompressedSize64)+1))
+	var writer io.Writer = hash
+	if destination != nil {
+		writer = io.MultiWriter(hash, destination)
+	}
+	size, err := io.Copy(writer, io.LimitReader(r, int64(file.UncompressedSize64)+1))
 	if err != nil {
 		return 0, "", err
 	}

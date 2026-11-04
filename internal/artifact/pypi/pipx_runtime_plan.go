@@ -161,7 +161,7 @@ func pipxRuntimeDistributionImports(distribution PipxRuntimeDistribution, distIn
 	if err != nil {
 		return nil, err
 	}
-	files, err := validateRecord(record, regular, entries, distInfo)
+	files, err := validateRecord(record, regular, entries, distInfo, nil)
 	if err != nil {
 		return nil, err
 	}

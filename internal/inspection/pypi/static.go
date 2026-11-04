@@ -28,12 +28,16 @@ func NewStaticInspector(intakeRoot string, target artifactpypi.WheelTarget) (*St
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	_, report, err := i.inspect(ctx, artifact)
+	_, report, err := i.inspect(ctx, artifact, nil)
 	return report, err
 }
 
 func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.WheelInspection, domain.InspectionReport, error) {
-	inspection, report, err := i.inspect(ctx, artifact)
+	return i.inspectWheel(ctx, artifact, nil)
+}
+
+func (i *StaticInspector) inspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, capture artifactpypi.MemberCapture) (artifactpypi.WheelInspection, domain.InspectionReport, error) {
+	inspection, report, err := i.inspect(ctx, artifact, capture)
 	if err != nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") {
 		return artifactpypi.WheelInspection{}, report, err
 	}
@@ -51,7 +55,7 @@ func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.Acqu
 }
 
 func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.SdistInspection, error) {
-	inspection, _, err := i.inspect(ctx, artifact)
+	inspection, _, err := i.inspect(ctx, artifact, nil)
 	if err != nil || artifact.Identity().Variant() != "sdist" {
 		return artifactpypi.SdistInspection{}, err
 	}
@@ -62,7 +66,7 @@ func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.Acqu
 	return sdist, nil
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact) (any, domain.InspectionReport, error) {
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, capture artifactpypi.MemberCapture) (any, domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil {
 		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection request is invalid")
 	}
@@ -87,7 +91,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
 		resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
+		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source(), capture)
 		if inspectErr != nil {
 			cause, stage := wheelDiagnostic(inspectErr)
 			return nil, i.violation(ctx, artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil
@@ -108,7 +112,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))
 		return info, i.complete(ctx, artifact, "pypi-wheel-static", summary), nil
 	case "sdist":
-		info, inspectErr := artifactpypi.InspectSdist(file, filename, declared, artifactpypi.DefaultSdistLimits())
+		info, inspectErr := artifactpypi.InspectSdist(file, filename, declared, artifactpypi.DefaultSdistLimits(), capture)
 		if inspectErr != nil {
 			return nil, i.violation(ctx, artifact, "M5_SDIST_STATIC_INVALID", domain.InspectionDiagnosticStaticFinding, ""), nil
 		}
@@ -170,7 +174,7 @@ func pypiVariant(filename string) (string, bool) {
 
 func (i *StaticInspector) complete(ctx context.Context, artifact domain.AcquiredArtifact, kind, summary string) domain.InspectionReport {
 	checkID, _ := domain.NewCheckID("pypi-static-archive")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx))
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx, artifact))
 	evidenceID, _ := domain.NewEvidenceID("pypi-static-archive-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), kind, summary)
 	report, _ := domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
@@ -179,7 +183,7 @@ func (i *StaticInspector) complete(ctx context.Context, artifact domain.Acquired
 
 func (i *StaticInspector) violation(ctx context.Context, artifact domain.AcquiredArtifact, code string, cause domain.InspectionDiagnosticCause, stage domain.InspectionDiagnosticStage) domain.InspectionReport {
 	checkID, _ := domain.NewCheckID("pypi-static-archive")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx))
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx, artifact))
 	evidenceID, _ := domain.NewEvidenceID("pypi-static-archive-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-static-archive", "PyPI static archive inspection rejected the distribution.")
 	finding, _ := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
@@ -225,8 +229,14 @@ func wheelDiagnostic(err error) (domain.InspectionDiagnosticCause, domain.Inspec
 	}
 }
 
-func (i *StaticInspector) checkProfile(ctx context.Context) domain.ContentDigest {
-	profile, _ := domain.CheckProfileDigest(staticCheckProfileName, fmt.Sprintf("%q|%s", []string{i.target.Python, i.target.ABI, i.target.Platform}, pythonInspectionProfileDescriptor(ctx)))
+func (i *StaticInspector) checkProfile(ctx context.Context, artifact domain.AcquiredArtifact) domain.ContentDigest {
+	name := staticCheckProfileName
+	if artifact.Identity().Variant() == "sdist" {
+		// Older sdist results did not attest the complete gzip trailer.
+		// Keep the unchanged wheel profile and invalidate only that scope.
+		name = "pypi-static-sdist-v2"
+	}
+	profile, _ := domain.CheckProfileDigest(name, fmt.Sprintf("%q|%s", []string{i.target.Python, i.target.ABI, i.target.Platform}, pythonInspectionProfileDescriptor(ctx)))
 	return profile
 }
 
@@ -238,7 +248,7 @@ func (i *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.Ac
 		return nil, errors.New("pypi static source is unsupported")
 	}
 	id, _ := domain.NewCheckID("pypi-static-archive")
-	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile(ctx))
+	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile(ctx, artifact))
 	return []domain.CheckRequirement{requirement}, err
 }
 

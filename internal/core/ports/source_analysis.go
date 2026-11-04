@@ -6,6 +6,13 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+// Source DATA is bounded before retention and again at runtime admission.
+const (
+	SourceAnalysisFileLimit   = 64 << 20
+	SourceAnalysisTotalLimit  = 512 << 20
+	SourceAnalysisTargetLimit = 10000
+)
+
 // SourceAnalysisFile contains normalized, archive-checked DATA. It supplies
 // neither a Host path nor executable commands/configuration to the backend.
 type SourceAnalysisFile struct {

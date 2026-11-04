@@ -1253,5 +1253,89 @@
         "sha256": "c02a74f68eec2d80962f0bb0f0e5c02fea245d526602cd3ddd2ec0bbf780927d"
       }
     ]
+  },
+  "pypi_member_sources": {
+    "baseline": "715e457",
+    "scope": "Named local wheel/derived-wheel/sdist source-return APIs and sdist gzip integrity correction only; not production content/Policy qualification",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "raw": [
+      "s04-pypi-sources-owner-race-v1.json",
+      "s04-pypi-sources-security-v1.json",
+      "s04-pypi-sources-vet-v1.json",
+      "s04-pypi-sources-static-v1.json"
+    ],
+    "initial_foundation_raw": "s04-pypi-sources-foundation-v1.json",
+    "initial_foundation_elapsed": 64.003,
+    "initial_foundation_scope": "Before final sdist-only profile and derived-source test additions; final source covered by owner Race/security/vet/Staticcheck, not a repeated full foundation",
+    "target_raw": "s04-pypi-sources-target-v1.json",
+    "target_elapsed": 27.189,
+    "sdist_red_raw": "s04-pypi-sdist-trailer-red.json",
+    "sdist_red_elapsed": 3.672,
+    "sdist_red_cases": [
+      "CRC mismatch accepted",
+      "second gzip member accepted",
+      "compressed tail accepted",
+      "nonzero decoded tail accepted"
+    ],
+    "sdist_correction": "Drain zero padding within the original decoded bound, verify gzip CRC and exact compressed exhaustion; sdist-only profile v2; wheel v1 retained",
+    "accounting": "The original wheel graph byte/file census is charged exactly once; fixed source retention limits share Ports constants with unchanged runtime admission values",
+    "no_native_ci_host_changes": true,
+    "missing": [
+      "GitHub/Terraform member/native facts",
+      "Explicit no-source/unsupported/packed/native coverage",
+      "Production analyzer and all graph/cache/promotion/CLI consumers",
+      "M13_SOURCE_REVIEW Policy mapping and grouped hosted/final/release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/artifact/pypi/pipx_runtime_plan.go",
+        "sha256": "8615ab46da0532ba688df9498fa8fc00b51c87862e5bec9decf73ec1d66095fa"
+      },
+      {
+        "path": "internal/artifact/pypi/sdist.go",
+        "sha256": "27e8710604ed2d6114c8341a26a05a8fe106fb7acf38434091350685fbaf3132"
+      },
+      {
+        "path": "internal/artifact/pypi/sdist_test.go",
+        "sha256": "2c3834f2e0bb6d162d9cda5b01104625dd1dc5d4cfca5609759413fbc902beda"
+      },
+      {
+        "path": "internal/artifact/pypi/wheel.go",
+        "sha256": "e950bb526d68b00e7e56e80af2cc8f5eed9932c5e565e452e780bc53511e03b4"
+      },
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "918be868ccd09d0d56ca57edb995b47aac51fa999179770ee627e40c25f04eb3"
+      },
+      {
+        "path": "internal/inspection/pypi/sources.go",
+        "sha256": "9b7d7088a4db3700b21d3ae1a4f9bc1018a921c542dd4e0053d9fd3fb4776848"
+      },
+      {
+        "path": "internal/inspection/pypi/sources_test.go",
+        "sha256": "191f6821d958e316702e99d323530f10cdcb4ac83a82faa092c00b3e54b0a016"
+      },
+      {
+        "path": "internal/inspection/pypi/static.go",
+        "sha256": "e8b53efc0922f9d3a7c061d02ad25a8ce8166ec65a4a4b501e970cade0393a1d"
+      },
+      {
+        "path": "internal/inspection/pypi/static_test.go",
+        "sha256": "0d2c15b51621590f10480fb1b2c982a28b0f5affdeeeebd9d462d269edc9d664"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input.go",
+        "sha256": "974f483b70b0556b5866cecf166f38e994cb19b4cbbff989afe90666991396de"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "d5353e45ca38a2a8c03742e799dbf0586c53c766a03f95f79053b9dc2cb09ce5"
+      }
+    ]
   }
 }
