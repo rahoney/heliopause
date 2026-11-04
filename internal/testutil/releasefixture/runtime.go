@@ -61,7 +61,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 			return Materials{}, errors.New("synthetic SBOM component invalid")
 		}
 		name, _ := item["name"].(string)
-		if name != "pnpm" && name != "bun" && name != "pipx" && name != runtimeidentity.SandboxResponderAssetName {
+		if name != "pnpm" && name != "bun" && name != "pipx" && name != "semgrep-core" && name != runtimeidentity.SandboxResponderAssetName {
 			kept = append(kept, raw)
 		}
 	}
@@ -108,10 +108,14 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	im["images"] = append(rebased, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
 	im["schema"] = "helox.runtime-image-manifest/v2"
 	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}, map[string]any{"name": "bun", "tool_version": runtimeidentity.BunVersion, "platform": "linux/amd64", "asset": runtimeidentity.BunNativeAssetName, "sha256": runtimeidentity.BunToolSHA256, "size": runtimeidentity.BunToolSize, "notices_asset": "bun-NOTICE.txt", "notices_sha256": runtimeidentity.BunNoticesSHA256, "notices_size": runtimeidentity.BunNoticesSize}}
+	hasSemgrep := false
 	hasData := false
 	hasResponder := false
 	if assets, ok := m["assets"].([]any); ok {
 		for _, raw := range assets {
+			if item, ok := raw.(map[string]any); ok && item["name"] == runtimeidentity.SelectedSemgrepSupply().Tool.Path {
+				hasSemgrep = true
+			}
 			if item, ok := raw.(map[string]any); ok && item["name"] == runtimeidentity.SandboxResponderAssetName {
 				hasResponder = true
 			}
@@ -127,6 +131,12 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 		s["components"] = append(s["components"].([]any), map[string]any{"type": "application", "name": "pipx", "version": runtimeidentity.PipxVersion})
 		im["schema"] = "helox.runtime-image-manifest/v3"
 		im["tools"] = append(im["tools"].([]any), map[string]any{"name": "pipx", "tool_version": runtimeidentity.PipxVersion, "platform": "linux/amd64", "asset": runtimeidentity.PipxRuntimeAssetName, "sha256": runtimeidentity.PipxToolSHA256, "size": runtimeidentity.PipxToolSize, "notices_asset": "pipx-NOTICE.txt", "notices_sha256": runtimeidentity.PipxNoticesSHA256, "notices_size": runtimeidentity.PipxNoticesSize, "role": "pipx-runtime", "mode": "0444", "runtime_image": runtimeidentity.PythonImageReference})
+	}
+	delete(im, "semgrep")
+	if hasSemgrep {
+		s["components"] = append(s["components"].([]any), map[string]any{"type": "application", "name": "semgrep-core", "version": runtimeidentity.SelectedSemgrepSupply().Version})
+		im["schema"] = "helox.runtime-image-manifest/v4"
+		im["semgrep"] = runtimeidentity.SelectedSemgrepSupply()
 	}
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}

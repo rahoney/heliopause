@@ -89,6 +89,10 @@ func buildPackages(version string, epoch int64, assets, output, lock, license st
 		{filepath.Join(assets, "pipx-runtime-linux-amd64.zip"), versionRoot + "/pipx-runtime-linux-amd64.zip", 0o444},
 		{filepath.Join(assets, "pipx-NOTICE.txt"), versionRoot + "/pipx-NOTICE.txt", 0o444},
 		{filepath.Join(assets, "pipx-NOTICE.txt"), "/usr/share/doc/helox/pipx-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "semgrep-core-linux-amd64"), versionRoot + "/semgrep-core-linux-amd64", 0555},
+		{filepath.Join(assets, "semgrep-rules.json"), versionRoot + "/semgrep-rules.json", 0444},
+		{filepath.Join(assets, "semgrep-SOURCES.tar"), versionRoot + "/semgrep-SOURCES.tar", 0444},
+		{filepath.Join(assets, "semgrep-NOTICES.tar"), versionRoot + "/semgrep-NOTICES.tar", 0444},
 		{filepath.Join(assets, "helox-runtime-images.json"), versionRoot + "/helox-runtime-images.json", 0o444},
 		{lock, versionRoot + "/runtimes.lock.json", 0o444},
 		{license, "/usr/share/doc/helox/copyright", 0o444},
@@ -157,6 +161,9 @@ func regularInput(path string) error {
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > maxInputBytes {
 		return errors.New("package input must be a bounded nonempty regular file")
+	}
+	if maximum := runtimeidentity.SemgrepAssetMaximum(filepath.Base(path)); maximum != 0 && info.Size() > maximum {
+		return errors.New("semgrep package input exceeds its fixed supply bound")
 	}
 	return nil
 }

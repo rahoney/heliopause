@@ -71,6 +71,9 @@ func (m ReleaseManifest) Files() []ReleaseFile {
 // Historical releases lacking any current native role or its notices fail closed.
 func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 	roles := nativeUpdateRoleSet()
+	if m.HasSemgrep() {
+		roles[runtimeidentity.SelectedSemgrepSupply().Tool.Path] = "semgrep"
+	}
 	if m.HasSandboxResponder() {
 		roles[runtimeidentity.SandboxResponderAssetName] = "sandbox-responder"
 	}
@@ -117,12 +120,12 @@ func nativeUpdateRoleSet() map[string]string {
 // IsRuntimeData identifies the fixed nonexecutable transport role only.
 // It grants neither inspection completion nor permission to execute ZIP contents.
 func (f ReleaseFile) IsRuntimeData() bool {
-	return f.Name == runtimeidentity.PipxRuntimeAssetName && f.Platform == "linux/amd64" && f.Role == "pipx-runtime"
+	return f.Name == runtimeidentity.PipxRuntimeAssetName && f.Platform == "linux/amd64" && f.Role == "pipx-runtime" || f.IsSemgrepData()
 }
 
 func (m ReleaseManifest) HasPipxRuntime() bool {
 	for _, file := range m.Files() {
-		if file.IsRuntimeData() {
+		if file.Name == runtimeidentity.PipxRuntimeAssetName && file.IsRuntimeData() {
 			return true
 		}
 	}
@@ -148,6 +151,9 @@ func (m ReleaseManifest) NativeUpdatePayloads() ([]ReleaseFile, error) {
 	}
 	if m.HasSandboxResponder() {
 		expected++
+	}
+	if m.HasSemgrep() {
+		expected += 4
 	}
 	if len(files) != expected {
 		return nil, errors.New("native update payload set is incomplete")
@@ -203,7 +209,15 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		"pipx-NOTICE.txt":                         {"linux/amd64", "release-metadata"},
 		runtimeidentity.SandboxResponderAssetName: {"linux/amd64", "sandbox-responder"},
 	}
-	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 && len(value.Assets) != 14 && len(value.Assets) != 15 && len(value.Assets) != 16 {
+	semgrep := runtimeidentity.SelectedSemgrepSupply()
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(semgrep) {
+		role := "semgrep-data"
+		if asset.Path == semgrep.Tool.Path {
+			role = "semgrep"
+		}
+		want[asset.Path] = struct{ platform, role string }{"linux/amd64", role}
+	}
+	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 && len(value.Assets) != 14 && len(value.Assets) != 15 && len(value.Assets) != 16 && len(value.Assets) != 20 {
 		return ReleaseManifest{}, errors.New("release asset set is incomplete")
 	}
 	seen := make(map[string]bool, len(value.Assets))
@@ -224,6 +238,9 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		if item.Name == runtimeidentity.SandboxResponderAssetName && item.Size > runtimeidentity.SandboxResponderMaxBytes {
 			return ReleaseManifest{}, errors.New("sandbox responder exceeds its fixed supply")
 		}
+		if maximum := runtimeidentity.SemgrepAssetMaximum(item.Name); maximum != 0 && item.Size > maximum {
+			return ReleaseManifest{}, errors.New("semgrep asset exceeds its fixed transport bound")
+		}
 		seen[item.Name] = true
 	}
 	if seen["pnpm-linux-amd64"] != seen["pnpm-NOTICE.txt"] || seen["pnpm-linux-amd64"] && !seen["haa-release-installer-linux-amd64"] {
@@ -235,11 +252,20 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 	if seen[runtimeidentity.PipxRuntimeAssetName] != seen["pipx-NOTICE.txt"] || seen[runtimeidentity.PipxRuntimeAssetName] && !seen["bun-linux-amd64"] {
 		return ReleaseManifest{}, errors.New("pipx DATA and notices require the complete current release set")
 	}
-	if seen[runtimeidentity.SandboxResponderAssetName] && ((len(value.Assets) != 14 && len(value.Assets) != 16) || !seen["bun-linux-amd64"]) {
+	if seen[runtimeidentity.SandboxResponderAssetName] && ((len(value.Assets) != 14 && len(value.Assets) != 16 && len(value.Assets) != 20) || !seen["bun-linux-amd64"]) {
 		return ReleaseManifest{}, errors.New("sandbox responder requires the complete current release set")
 	}
+	semgrepCount := 0
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(semgrep) {
+		if seen[asset.Path] {
+			semgrepCount++
+		}
+	}
+	if semgrepCount != 0 && (semgrepCount != 4 || len(value.Assets) != 20 || !seen[runtimeidentity.SandboxResponderAssetName] || !seen[runtimeidentity.PipxRuntimeAssetName]) {
+		return ReleaseManifest{}, errors.New("semgrep requires the complete current native/data release set")
+	}
 	for name := range want {
-		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && name != runtimeidentity.PipxRuntimeAssetName && name != "pipx-NOTICE.txt" && name != runtimeidentity.SandboxResponderAssetName && !seen[name] {
+		if runtimeidentity.SemgrepAssetMaximum(name) == 0 && name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && name != runtimeidentity.PipxRuntimeAssetName && name != "pipx-NOTICE.txt" && name != runtimeidentity.SandboxResponderAssetName && !seen[name] {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}
@@ -304,4 +330,28 @@ func uniqueMetadataJSON(body []byte, canonicalKeys map[string]bool) bool {
 	}
 	_, err := decoder.Token()
 	return err == io.EOF
+}
+
+// IsSemgrepData never grants execution or inspection completion authority.
+func (f ReleaseFile) IsSemgrepData() bool {
+	if f.Platform != "linux/amd64" || f.Role != "semgrep-data" {
+		return false
+	}
+	pin := runtimeidentity.SelectedSemgrepSupply()
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(pin) {
+		if asset.Path != pin.Tool.Path && f.Name == asset.Path {
+			return true
+		}
+	}
+	return false
+}
+
+func (m ReleaseManifest) HasSemgrep() bool {
+	pin := runtimeidentity.SelectedSemgrepSupply()
+	for _, file := range m.Files() {
+		if file.Name == pin.Tool.Path && file.Platform == "linux/amd64" && file.Role == "semgrep" {
+			return true
+		}
+	}
+	return false
 }

@@ -43,8 +43,8 @@ func TestVerifyBundleBindsPackagesAndExactFileSet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(names) != 20 {
-		t.Fatalf("complete bundle has %d files, want 20", len(names))
+	if len(names) != 24 {
+		t.Fatalf("complete bundle has %d files, want 24", len(names))
 	}
 	for _, name := range []string{"haa-sandbox-responder", "haa-release-installer-linux-amd64", "helox-linux-amd64.deb", "helox-linux-amd64.rpm", manifestFileName, checksumFileName, sbomFileName, imageFileName} {
 		if !slices.Contains(names, name) {

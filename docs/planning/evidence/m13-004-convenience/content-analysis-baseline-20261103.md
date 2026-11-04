@@ -403,3 +403,52 @@ Foundation21.801s는 PASS. 첫 related에서 scripts1.298s/runtime-image0.024s/r
 Semgrep race15.674s도 PASS다. Runtime supply는 IMPLEMENTED=YES/WIRED=YES(developer)/
 QUALIFIED=YES(local named scope)/ACCEPTANCE_CLOSED=NO다. S04 전체는 미완료이며
 다음은 release/package/installed 소비자와 실제 scanner/모든 inspection consumer다.
+
+### Release/installed 소비자 — source 작성 전 대조 (2cf6666)
+
+기존 `release-manifest`·`runtime-image-manifest`·`release-packages`와
+`releaseinstall/manifest.go`·`metadata.go`·`installer.go`, releaseactivation의 installed/
+bootstrap copy 경로를 재사용한다. Semgrep 네 파일은 모두 IMPLEMENTED=NO/WIRED=NO/
+QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 기존 native/ZIP DATA/metadata copy·mode·rollback
+구현은 YES이며 대체하지 않는다. `IsRuntimeData`의 기존 pipx 전용 크기/identity 소비자를
+구분해서 고친다. Native core는 semgrep 실행 역할, rules/source/notices는 semgrep-data의
+고정 passive 역할로 전달하며 role 혼용을 거부한다. 기존8–16 asset record는 읽되 새
+공급 일부만 있으면 완전한4개/현재 release 집합을 요구한다. Runtime manifest v4에 같은
+immutable Semgrep tuple을 추가하고 v2/v3 legacy는 분리한다. 현재 language image5는 그대로다.
+
+완료는 producer/SBOM/checksums·package·설치/업데이트/doctor·rollback/중단 복구가 같은
+네 파일을 보존하고, data0444/core0555·크기/해시·구버전/누락/변조/역할 혼용 거부와
+원본 보호를 실제/표적 검사로 확인하는 것이다. Workflow 공급/실제 gVisor와 모든
+inspection consumer가 미연결이면 전체 S04 qualification은 계속 OPEN이다.
+
+### Release/installed 소비자 — 로컬 결합 검증
+
+기존 producer/package/native selection·DATA copy/recovery 경로에 core와 세 passive 파일을
+연결했다. Release는 현재20 assets·bundle24 files, runtime metadata는 v4의 동일 selected
+Semgrep tuple을 사용한다. Published8–16 assets/v2–v3 metadata를 읽는 경로는 유지하며,
+새 일부 집합·역할 혼용·과대 크기·selected SHA/size·tuple 불일치를 거부한다. SBOM에는
+supplied lock version을 쓰고 source 대형 파일 hash와 passive 검사에는 bounded stream을
+사용한다. 기존 Pipx 전용 identity/8MiB 제한은 exact Pipx 파일에만 적용한다.
+
+Foundation60.834s PASS 뒤 related64.118s에서 producer58.829s/package·activation/bootstrap/
+inspection은 PASS였고 새 install fixture의 같은 bundle 이름과 current schema 기대값 두
+실패를 보존했다. Fixture만 교정한 related3.737s, 새 Semgrep race7.589s,
+security31.252s/vet10.087s/pinned Staticcheck13.590s는 PASS다. Actual namespace11.266s는
+선택된481988570B 네 파일을 두 version에 복사/hash·root single-link0555/0444·doctor·rollback/
+변조 거부를 확인했고 tmpfs는 namespace 종료로 제거됐다. Verifier는 주입된 unsigned copy
+시험이며 source authenticity/새 hosted 성공은 아니다. Installed Host manifest는 동일하다.
+원본은 `goal-implementation-20261101/s04-release-*`와 별도 local receipt를 따른다.
+
+이 단위는 IMPLEMENTED=YES/WIRED=YES(local producer/installed consumers)/QUALIFIED=YES
+(named local scope)/ACCEPTANCE_CLOSED=NO다. Release workflow는 기존16개 입력만 공급하고
+새 core/source/notices의 hosted 원본 공급이 아직 없으므로 새 producer20개 요구를 만족하지
+못한다. 이를 current release qualification으로 숨기지 않는다. Current-only admission gate와
+공식 provenance·실제 whole self-quarantine/승인/activation 및 중단 복구의 새4개 actual은
+아직 MISSING이다. 다음은 이 hosted 공급의 exact 입력/소유자와 최종 gate 연결, 실제
+scanner/gVisor/모든 inspection consumer다. 같은 native SDK 전체 재빌드는 반복하지 않는다.
+
+추가 producer delta9.437s는 네 파일 변조 전 metadata 무작성·package 전체 내용/재현성·
+source512MiB 초과·v4 tuple 누락/잘못된 owner를 PASS했다. 단 operator가 실행 중 문서/
+inventory를 갱신해 raw의 source_unchanged=false다. 독립 scope 대조에서 변경/추가 항목은
+문서4개뿐이며 모든 Go 입력 hash는 동일했다. 전체 입력 불변 성공으로 쓰지 않고 해당
+Go 표적 범위만 인정하며 같은 full/native/CI 검사를 다시 돌리지 않는다.

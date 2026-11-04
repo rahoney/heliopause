@@ -71,6 +71,9 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 	if manifest.HasPipxRuntime() {
 		applications["pipx"] = runtimeidentity.PipxVersion
 	}
+	if manifest.HasSemgrep() {
+		applications["semgrep-core"] = runtimeidentity.SelectedSemgrepSupply().Version
+	}
 	for _, item := range value.Components {
 		if version, found := applications[item.Name]; found {
 			if item.Type != "application" || item.Version != version || len(item.Properties) != 0 || seen[item.Name] {
@@ -93,7 +96,7 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 
 // ValidateRuntimeImages compares the fixed passive runtime image records to
 // the running controller's lock. Artifact metadata never selects host tools.
-func ValidateRuntimeImages(body []byte) error { return validateRuntimeImages(body, nil) }
+func ValidateRuntimeImages(body []byte) error { return validateRuntimeImages(body, nil, nil) }
 
 // ValidateRuntimeImagesForRelease binds legacy/v3 metadata to the exact DATA
 // membership. Metadata never selects a runtime or bypasses acquired inspection.
@@ -101,15 +104,30 @@ func ValidateRuntimeImagesForRelease(body []byte, manifest ReleaseManifest) erro
 	expected := manifest.HasPipxRuntime()
 	if expected {
 		for _, file := range manifest.Files() {
-			if file.IsRuntimeData() && (file.SHA256 != runtimeidentity.PipxToolSHA256 || file.Size != runtimeidentity.PipxToolSize) || file.Name == "pipx-NOTICE.txt" && (file.SHA256 != runtimeidentity.PipxNoticesSHA256 || file.Size != runtimeidentity.PipxNoticesSize) {
+			if file.Name == runtimeidentity.PipxRuntimeAssetName && file.IsRuntimeData() && (file.SHA256 != runtimeidentity.PipxToolSHA256 || file.Size != runtimeidentity.PipxToolSize) || file.Name == "pipx-NOTICE.txt" && (file.SHA256 != runtimeidentity.PipxNoticesSHA256 || file.Size != runtimeidentity.PipxNoticesSize) {
 				return errors.New("release pipx DATA differs from current runtime owner")
 			}
 		}
 	}
-	return validateRuntimeImages(body, &expected)
+	if manifest.HasSemgrep() {
+		for _, expected := range runtimeidentity.SemgrepReleaseAssets(runtimeidentity.SelectedSemgrepSupply()) {
+			found := false
+			for _, file := range manifest.Files() {
+				if file.Name == expected.Path {
+					found = file.SHA256 == expected.SHA256 && file.Size == expected.Size
+					break
+				}
+			}
+			if !found {
+				return errors.New("release Semgrep asset differs from the current runtime owner")
+			}
+		}
+	}
+	semgrep := manifest.HasSemgrep()
+	return validateRuntimeImages(body, &expected, &semgrep)
 }
 
-func validateRuntimeImages(body []byte, expectedData *bool) error {
+func validateRuntimeImages(body []byte, expectedData, expectedSemgrep *bool) error {
 	type image struct {
 		Name       string `json:"name"`
 		Reference  string `json:"reference"`
@@ -132,9 +150,10 @@ func validateRuntimeImages(body []byte, expectedData *bool) error {
 		NoticesSize   int64  `json:"notices_size"`
 	}
 	var value struct {
-		Schema              string `json:"schema"`
-		CustomGHCRImage     *bool  `json:"custom_ghcr_image"`
-		CustomImageDecision string `json:"custom_image_decision"`
+		Semgrep             *runtimeidentity.SemgrepSupplyOwner `json:"semgrep,omitempty"`
+		Schema              string                              `json:"schema"`
+		CustomGHCRImage     *bool                               `json:"custom_ghcr_image"`
+		CustomImageDecision string                              `json:"custom_image_decision"`
 		Provenance          struct {
 			Required     bool   `json:"required"`
 			Verification string `json:"verification"`
@@ -145,7 +164,14 @@ func validateRuntimeImages(body []byte, expectedData *bool) error {
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
 	}
-	hasData := value.Schema == "helox.runtime-image-manifest/v3"
+	hasSemgrep := value.Schema == "helox.runtime-image-manifest/v4"
+	hasData := value.Schema == "helox.runtime-image-manifest/v3" || hasSemgrep
+	if (expectedSemgrep != nil && *expectedSemgrep != hasSemgrep) || hasSemgrep != (value.Semgrep != nil) {
+		return errors.New("runtime metadata and release Semgrep membership differ")
+	}
+	if hasSemgrep && (!runtimeidentity.ValidSemgrepSupplyOwner(*value.Semgrep) || *value.Semgrep != runtimeidentity.SelectedSemgrepSupply()) {
+		return errors.New("runtime Semgrep tuple differs from the active lock")
+	}
 	toolCount := 2
 	if hasData {
 		toolCount = 3

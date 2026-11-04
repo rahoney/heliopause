@@ -10,9 +10,11 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-const manifestSchema = "helox.runtime-image-manifest/v3"
+const manifestSchema = "helox.runtime-image-manifest/v4"
 
 var (
 	digestPattern        = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
@@ -21,7 +23,8 @@ var (
 )
 
 type runtimeLock struct {
-	PipxTool struct {
+	SemgrepTool runtimeidentity.SemgrepSupplyOwner `json:"semgrep_tool"`
+	PipxTool    struct {
 		Version      string `json:"pipx_version"`
 		Architecture string `json:"architecture"`
 		RuntimeImage string `json:"runtime_image"`
@@ -88,12 +91,13 @@ type runtimeLock struct {
 }
 
 type runtimeImageManifest struct {
-	Schema              string              `json:"schema"`
-	CustomGHCRImage     bool                `json:"custom_ghcr_image"`
-	CustomImageDecision string              `json:"custom_image_decision"`
-	Provenance          provenanceContract  `json:"provenance"`
-	Images              []runtimeImageEntry `json:"images"`
-	Tools               []runtimeToolEntry  `json:"tools"`
+	Semgrep             *runtimeidentity.SemgrepSupplyOwner `json:"semgrep,omitempty"`
+	Schema              string                              `json:"schema"`
+	CustomGHCRImage     bool                                `json:"custom_ghcr_image"`
+	CustomImageDecision string                              `json:"custom_image_decision"`
+	Provenance          provenanceContract                  `json:"provenance"`
+	Images              []runtimeImageEntry                 `json:"images"`
+	Tools               []runtimeToolEntry                  `json:"tools"`
 }
 
 type runtimeToolEntry struct {
@@ -186,6 +190,9 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if lock.SchemaVersion != 6 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
+	if !runtimeidentity.ValidSemgrepSupplyOwner(lock.SemgrepTool) {
+		return runtimeImageManifest{}, errors.New("semgrep runtime supply identity is invalid")
+	}
 	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)
 	if len(nodeMatch) != 2 || !versionPattern.MatchString(lock.NodeImage.NPMVersion) {
 		return runtimeImageManifest{}, errors.New("node runtime image identity is invalid")
@@ -225,6 +232,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 		return runtimeImageManifest{}, errors.New("pipx DATA runtime tool identity is invalid")
 	}
 	return runtimeImageManifest{
+		Semgrep:             &lock.SemgrepTool,
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
 		CustomImageDecision: "upstream official immutable images, including signed Astral uv supply; no HAA-owned image is published",

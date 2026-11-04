@@ -35,7 +35,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 16 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 20 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -132,6 +132,7 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"pipx-NOTICE.txt",
 		"helox-linux-amd64.deb",
 		"helox-linux-amd64.rpm",
+		"semgrep-core-linux-amd64", "semgrep-SOURCES.tar", "semgrep-NOTICES.tar", "semgrep-rules.json",
 	}
 	paths := make([]string, 0, len(names))
 	for _, name := range names {
@@ -180,11 +181,30 @@ func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 	if err := json.Unmarshal(actual, &source); err != nil {
 		t.Fatal(err)
 	}
+	lock.SemgrepTool = source.SemgrepTool
 	lock.PipxTool.Inputs = source.PipxTool.Inputs
 	for index, input := range lock.PipxTool.Inputs {
 		lock.PipxTool.Inputs[index].Path = strings.Replace(input.Path, "pipx/pipx-"+source.PipxTool.Version+"-", "pipx/pipx-1.2.3-", 1)
 	}
 	for _, path := range paths {
+		if runtimeidentity.SemgrepAssetMaximum(filepath.Base(path)) != 0 {
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var target *runtimeidentity.SemgrepSupplyAsset
+			switch record.Name {
+			case lock.SemgrepTool.Tool.Path:
+				target = &lock.SemgrepTool.Tool
+			case lock.SemgrepTool.Sources.Path:
+				target = &lock.SemgrepTool.Sources
+			case lock.SemgrepTool.Notices.Path:
+				target = &lock.SemgrepTool.Notices
+			case runtimeidentity.SemgrepRulesAssetName:
+				target = &lock.SemgrepTool.Rules
+			}
+			target.SHA256, target.Size = record.SHA256, record.Size
+		}
 		switch filepath.Base(path) {
 		case "pnpm-linux-amd64":
 			record, err := fileRecord(path)
@@ -325,6 +345,33 @@ func TestPipxReleaseDataMustMatchOwnerAndCensusBeforeMetadataWrites(t *testing.T
 			for _, path := range []string{output, sbom} {
 				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					t.Fatal("invalid DATA produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestSemgrepReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(runtimeidentity.SelectedSemgrepSupply()) {
+		t.Run(asset.Path, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			buildNativeHeloxTest(t, binary)
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, asset.Path), []byte("changed"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, output := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			if err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), output, assets); err == nil {
+				t.Fatal("changed supply accepted")
+			}
+			for _, path := range []string{sbom, output} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("metadata written before supply validation", path, err)
 				}
 			}
 		})

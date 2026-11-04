@@ -10,6 +10,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // ReleaseSetInspector selects fixed passive metadata checks or the existing
@@ -37,6 +38,11 @@ func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.Acqui
 	manifest, err := i.selectedManifest(ctx, artifact)
 	if err != nil {
 		return domain.InspectionReport{}, err
+	}
+	for _, file := range manifest.Files() {
+		if file.Name == artifact.Identity().Variant() && file.IsSemgrepData() {
+			return i.inspectSemgrepData(ctx, artifact)
+		}
 	}
 	switch artifact.Identity().Variant() {
 	case "helox-release-manifest.json":
@@ -109,8 +115,14 @@ func (i *ReleaseSetInspector) ExpectedChecks(ctx context.Context, a domain.Acqui
 	if kind != domain.CheckInspection {
 		return nil, errors.New("release declaration kind is invalid")
 	}
-	if _, err := i.selectedManifest(ctx, a); err != nil {
+	manifest, err := i.selectedManifest(ctx, a)
+	if err != nil {
 		return nil, err
+	}
+	for _, file := range manifest.Files() {
+		if file.Name == a.Identity().Variant() && file.IsSemgrepData() {
+			return i.metadata.static.ExpectedChecks(ctx, a, kind)
+		}
 	}
 	switch a.Identity().Variant() {
 	case "helox-release-manifest.json":
@@ -157,6 +169,9 @@ func (i *ReleaseSetInspector) selectedManifest(ctx context.Context, a domain.Acq
 	for _, file := range manifest.Files() {
 		if file.Name == name && file.SHA256 == a.Digest().String() && uint64(file.Size) == a.SizeBytes() {
 			present = true
+			if file.IsSemgrepData() {
+				return manifest, nil
+			}
 			break
 		}
 	}
@@ -177,4 +192,36 @@ func (i *ReleaseSetInspector) selectedManifest(ctx context.Context, a domain.Acq
 		}
 	}
 	return empty, errors.New("release subject is not selected for this platform")
+}
+
+// inspectSemgrepData authenticates passive bytes against the compiled supply owner.
+// It never extracts source archives or treats package-provided rules as configuration.
+func (i *ReleaseSetInspector) inspectSemgrepData(ctx context.Context, artifact domain.AcquiredArtifact) (report domain.InspectionReport, resultErr error) {
+	var selected runtimeidentity.SemgrepSupplyAsset
+	pin := runtimeidentity.SelectedSemgrepSupply()
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(pin) {
+		if asset.Path != pin.Tool.Path && asset.Path == artifact.Identity().Variant() {
+			selected = asset
+			break
+		}
+	}
+	if selected.Path == "" || artifact.SizeBytes() != uint64(selected.Size) || artifact.Digest().String() != selected.SHA256 {
+		return i.invalidMetadata(artifact)
+	}
+	file, err := i.metadata.static.openAsset(artifact)
+	if err != nil {
+		return report, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
+	digest := sha256.New()
+	count, err := io.CopyN(digest, ports.DownloadReader(ctx, file, selected.Size), selected.Size)
+	var tail [1]byte
+	extra, endErr := file.Read(tail[:])
+	if ctx.Err() != nil {
+		return report, ctx.Err()
+	}
+	if err != nil || count != selected.Size || extra != 0 || endErr != io.EOF || hex.EncodeToString(digest.Sum(nil)) != selected.SHA256 {
+		return i.invalidMetadata(artifact)
+	}
+	return i.metadata.static.report(artifact, "release-metadata-schema", "Fixed passive Semgrep supply bytes match the compiled owner; no archive extraction or execution was performed.", "")
 }

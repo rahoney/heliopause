@@ -349,6 +349,21 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 				want[item.Name] = "release-metadata"
 			}
 		}
+		pin := runtimeidentity.SelectedSemgrepSupply()
+		semgrepCount := 0
+		for _, item := range value.Assets {
+			if runtimeidentity.SemgrepAssetMaximum(item.Name) != 0 {
+				role := "semgrep-data"
+				if item.Name == pin.Tool.Path {
+					role = "semgrep"
+				}
+				want[item.Name] = role
+				semgrepCount++
+			}
+		}
+		if semgrepCount != 0 && (semgrepCount != 4 || len(value.Assets) != 20) {
+			return nil, errors.New("semgrep requires the complete release asset set")
+		}
 		for _, item := range value.Assets {
 			if item.Name == "haa-release-installer-linux-amd64" {
 				want[item.Name] = "release-installer"
@@ -383,8 +398,11 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 		if seen[item.Name] || item.Role != role || item.Platform != goos+"/"+goarch || !validRecord(record{Name: item.Name, SHA256: item.SHA256, Size: item.Size}, item.Name) {
 			return nil, errors.New("release asset binding is invalid")
 		}
-		if ReleaseFile(item).IsRuntimeData() && item.Size > 8<<20 || item.Name == "pipx-NOTICE.txt" && item.Size > 64<<10 {
+		if item.Name == runtimeidentity.PipxRuntimeAssetName && ReleaseFile(item).IsRuntimeData() && item.Size > 8<<20 || item.Name == "pipx-NOTICE.txt" && item.Size > 64<<10 {
 			return nil, errors.New("pipx DATA or notices exceed their fixed role")
+		}
+		if maximum := runtimeidentity.SemgrepAssetMaximum(item.Name); maximum != 0 && item.Size > maximum {
+			return nil, errors.New("semgrep asset exceeds its fixed transport bound")
 		}
 		seen[item.Name] = true
 		selected = append(selected, item)

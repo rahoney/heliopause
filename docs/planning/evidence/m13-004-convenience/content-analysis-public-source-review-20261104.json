@@ -788,9 +788,112 @@
       "s04-supply-unit-race.json"
     ],
     "missing": [
-      "Release producer/package/installer/doctor/self-update complete set",
+      "Hosted release supply/current-only admission and actual full self-quarantine/activation/recovery qualification",
       "Actual gVisor scanner transport/lifecycle",
       "All artifact consumers/Evidence/Policy and grouped profiles"
+    ]
+  },
+  "release_consumers": {
+    "states": {
+      "IMPLEMENTED": "YES (local producer/installed consumers)",
+      "WIRED": "YES (local named scope)",
+      "QUALIFIED": "YES (local named scope)",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "asset_count": 20,
+    "bundle_file_count": 24,
+    "runtime_manifest_schema": "helox.runtime-image-manifest/v4",
+    "legacy_readers_preserved": "8–16 assets, v2/v3 runtime metadata",
+    "actual_copy_raw": "s04-release-copy-actual-v1.json",
+    "actual_copy_elapsed": 11.266,
+    "installed_manifest_unchanged": true,
+    "ephemeral_copy_cleanup": "private namespace exited; tmpfs removed",
+    "checks_raw": [
+      "s04-release-foundation-v1.json",
+      "s04-release-related-v1.json",
+      "s04-release-corrected-v2.json",
+      "s04-release-race-v1.json",
+      "s04-release-security-v1.json",
+      "s04-release-vet-v1.json",
+      "s04-release-static-v1.json",
+      "s04-release-producer-delta-v1.json",
+      "s04-release-producer-delta-source-scope-v1.json"
+    ],
+    "missing": [
+      "Hosted source/native/notices supply for current release producer",
+      "Current-only admission gate and full self-quarantine/official provenance/activation/recovery actual",
+      "Actual gVisor scanner/all inspection consumers/Evidence/Policy/grouped profiles"
+    ],
+    "producer_delta_scope": "Named Go tests passed9.437s; whole-input stability false because operator changed documentation/inventory. Independent comparison confirms all Go inputs unchanged; no whole-tree stability claim.",
+    "source_files": [
+      {
+        "path": "internal/inspection/githubrelease/release_set.go",
+        "sha256": "6598260f11a731784dec6d4c7f927740d74f4c88d74cbb1eac98d21e1d8e7470"
+      },
+      {
+        "path": "internal/inspection/githubrelease/semgrep_release_route_test.go",
+        "sha256": "c925ddce6336ef8c91b1129ee29aa15fc070456c5aa93a9e5215411201e5b7fd"
+      },
+      {
+        "path": "internal/releaseactivation/semgrep_wire_linux_test.go",
+        "sha256": "a3397acb8c7ec3432b46f7b228d80f65b13d0700b222d9b0f11dfd8bd3a04e49"
+      },
+      {
+        "path": "internal/releaseinstall/installer.go",
+        "sha256": "9f9acf11828888c2413e7069f47d0333cbfaa3d6d59f881f1f21a2ea923a83f5"
+      },
+      {
+        "path": "internal/releaseinstall/manifest.go",
+        "sha256": "41e5feff68e5aa349f7a66ad6e4a4eaeb5e8debf657ca1406f1e471468265693"
+      },
+      {
+        "path": "internal/releaseinstall/metadata.go",
+        "sha256": "a40f2eb3f2826c2b4a5d1bf32e54f7117ca98bf67a4f34765c0b957ff3fbe712"
+      },
+      {
+        "path": "internal/releaseinstall/semgrep_namespace_linux_test.go",
+        "sha256": "7ec1d3d94bdb195fb9efc38248b91bead5d2a698c0a846cb8df4960546cdfa59"
+      },
+      {
+        "path": "internal/releaseinstall/semgrep_supply_test.go",
+        "sha256": "22410b6c7732176afc6eb0c3240029f73afaa7de91437894703f4a3d98de63d8"
+      },
+      {
+        "path": "internal/runtimeidentity/semgrep_supply.go",
+        "sha256": "e6c1d51f610dcb6c1dde782f7d0e4d7f8f51801e807ac32b5d4fe1abde1c2602"
+      },
+      {
+        "path": "internal/testutil/releasefixture/runtime.go",
+        "sha256": "3331c3a4deacb1ceec34d4e36d1f8da923fdb942a4fd2072894e62dcd024c377"
+      },
+      {
+        "path": "scripts/release-manifest/bundle_test.go",
+        "sha256": "10a9c031ddb058b13cce3e0fce91375bfac7cb48e67ad17f12114fe582550aef"
+      },
+      {
+        "path": "scripts/release-manifest/main.go",
+        "sha256": "90e15d6aefd0722a1624b36f9b6252b17ca31635f4f233e077d94bb68b41a335"
+      },
+      {
+        "path": "scripts/release-manifest/main_test.go",
+        "sha256": "7eb06550e6fecc57e8f24986b73ad2dafcbc8d1bafeec9bd566647dd5e42a0dc"
+      },
+      {
+        "path": "scripts/release-packages/main.go",
+        "sha256": "10c174e088acc2c3762eff6d12df06383202fb0098d06ac924d2da9a96d9bbc3"
+      },
+      {
+        "path": "scripts/release-packages/main_test.go",
+        "sha256": "0f8469a1dcc2520985534a0ef11b23c3dc74efe2e3beee482a8cfcf70905ddf0"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main.go",
+        "sha256": "ce2dee8acfcdbddd0b916e7c5b27f813c8bdafe1ac07f75f2f534477290093cd"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main_test.go",
+        "sha256": "d45240f934ac22c97c53fdd77bfa37739ccce03445226654a335599fee518588"
+      }
     ]
   }
 }

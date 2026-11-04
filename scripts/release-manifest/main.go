@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -42,7 +43,8 @@ func (values *stringList) Set(value string) error {
 }
 
 type runtimeLock struct {
-	PipxTool struct {
+	SemgrepTool runtimeidentity.SemgrepSupplyOwner `json:"semgrep_tool"`
+	PipxTool    struct {
 		Version      string `json:"pipx_version"`
 		Architecture string `json:"architecture"`
 		RuntimeImage string `json:"runtime_image"`
@@ -220,11 +222,14 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 	if err := checkNativeAssetBindings(lock, assets); err != nil {
 		return err
 	}
+	if !runtimeidentity.ValidSemgrepSupplyOwner(lock.SemgrepTool) {
+		return errors.New("semgrep selected release supply is invalid")
+	}
 	distributions, err := pipxSourceDistributions(lock)
 	if err != nil {
 		return err
 	}
-	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version, lock.BunTool.Version, distributions); err != nil {
+	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version, lock.BunTool.Version, lock.SemgrepTool.Version, distributions); err != nil {
 		return err
 	}
 	sbom, err := fileRecord(sbomPath)
@@ -258,7 +263,14 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 }
 
 func checkNativeAssetBindings(lock runtimeLock, assets []releaseAsset) error {
+	semgrep := map[string]runtimeidentity.SemgrepSupplyAsset{}
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(lock.SemgrepTool) {
+		semgrep[asset.Path] = asset
+	}
 	for _, asset := range assets {
+		if expected, ok := semgrep[asset.Name]; ok && (asset.SHA256 != expected.SHA256 || asset.Size != expected.Size) {
+			return errors.New("semgrep release asset differs from selected runtime owner")
+		}
 		if asset.Name == "pnpm-linux-amd64" && (asset.SHA256 != lock.PNPMTool.Tool.SHA256 || asset.Size != lock.PNPMTool.Tool.Size) || asset.Name == "pnpm-NOTICE.txt" && (asset.SHA256 != lock.PNPMTool.Notices.SHA256 || asset.Size != lock.PNPMTool.Notices.Size) {
 			return errors.New("pnpm release asset differs from its selected runtime owner")
 		}
@@ -281,6 +293,10 @@ func assetSpecs() map[string]struct {
 		platform string
 		role     string
 	}{
+		"semgrep-core-linux-amd64":                {platform: "linux/amd64", role: "semgrep"},
+		"semgrep-SOURCES.tar":                     {platform: "linux/amd64", role: "semgrep-data"},
+		"semgrep-NOTICES.tar":                     {platform: "linux/amd64", role: "semgrep-data"},
+		"semgrep-rules.json":                      {platform: "linux/amd64", role: "semgrep-data"},
 		"helox-linux-amd64":                       {platform: "linux/amd64", role: "helox"},
 		"helox-linux-arm64":                       {platform: "linux/arm64", role: "helox"},
 		"helox-darwin-amd64":                      {platform: "darwin/amd64", role: "helox"},
@@ -318,6 +334,9 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 		record, err := fileRecord(path)
 		if err != nil {
 			return nil, "", fmt.Errorf("read release asset %s: %w", name, err)
+		}
+		if maximum := runtimeidentity.SemgrepAssetMaximum(name); maximum != 0 && record.Size > maximum {
+			return nil, "", errors.New("semgrep asset exceeds its fixed supply bound")
 		}
 		seen[name] = true
 		assets = append(assets, releaseAsset{Name: record.Name, Platform: identity.platform, Role: identity.role, SHA256: record.SHA256, Size: record.Size})
@@ -385,7 +404,7 @@ func pipxSourceDistributions(lock runtimeLock) ([]artifactpypi.PipxRuntimeDistri
 	return distributions, nil
 }
 
-func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string, distributions []artifactpypi.PipxRuntimeDistribution) error {
+func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion, semgrepVersion string, distributions []artifactpypi.PipxRuntimeDistribution) error {
 	build, err := buildinfo.ReadFile(binary)
 	if err != nil || build.Main.Path == "" {
 		return errors.New("read native helox build information")
@@ -399,6 +418,7 @@ func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string, di
 	}
 	components = append(components, cyclonedxComponent{Type: "application", Name: "pnpm", Version: pnpmVersion})
 	components = append(components, cyclonedxComponent{Type: "application", Name: "bun", Version: bunVersion})
+	components = append(components, cyclonedxComponent{Type: "application", Name: "semgrep-core", Version: semgrepVersion})
 	components = append(components, cyclonedxComponent{Type: "application", Name: runtimeidentity.SandboxResponderAssetName, Version: version})
 	for _, distribution := range distributions {
 		kind, name := "library", "pypi/"+distribution.Project
@@ -437,12 +457,28 @@ func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string, di
 }
 
 func fileRecord(path string) (releaseRecord, error) {
-	body, err := readRegularFile(path)
+	before, err := os.Lstat(path)
+	if err != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > maxAssetBytes {
+		return releaseRecord{}, errors.New("release file is not a bounded regular input")
+	}
+	file, err := os.Open(path)
 	if err != nil {
 		return releaseRecord{}, err
 	}
-	sum := sha256.Sum256(body)
-	return releaseRecord{Name: filepath.Base(path), SHA256: hex.EncodeToString(sum[:]), Size: int64(len(body))}, nil
+	defer file.Close()
+	held, err := file.Stat()
+	if err != nil || !os.SameFile(before, held) {
+		return releaseRecord{}, errors.New("release file changed before opening")
+	}
+	digest := sha256.New()
+	count, err := io.CopyN(digest, file, before.Size())
+	var tail [1]byte
+	extra, endErr := file.Read(tail[:])
+	after, statErr := os.Lstat(path)
+	if err != nil || count != before.Size() || extra != 0 || endErr != io.EOF || statErr != nil || !os.SameFile(before, after) || before.Size() != after.Size() || before.Mode() != after.Mode() || !before.ModTime().Equal(after.ModTime()) {
+		return releaseRecord{}, errors.New("release file bytes or identity changed")
+	}
+	return releaseRecord{Name: filepath.Base(path), SHA256: hex.EncodeToString(digest.Sum(nil)), Size: before.Size()}, nil
 }
 
 func readRegularFile(path string) ([]byte, error) {

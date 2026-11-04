@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
-	lock := runtimeLock{SchemaVersion: 6}
+	lock := runtimeLock{SchemaVersion: 6, SemgrepTool: runtimeidentity.SelectedSemgrepSupply()}
 	bindSyntheticUV(&lock)
 	bindSyntheticPNPM(&lock)
 	bindSyntheticBun(&lock)
@@ -30,7 +31,7 @@ func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("buildManifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 5 {
+	if manifest.Schema != manifestSchema || manifest.Semgrep == nil || *manifest.Semgrep != lock.SemgrepTool || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 5 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.Images[0].Repository != "docker.io/library/node" || manifest.Images[1].Repository != "docker.io/library/python" || manifest.Images[2].Repository != "docker.io/library/golang" || manifest.Images[3].Repository != "docker.io/library/rust" {
@@ -54,6 +55,7 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	bindSyntheticPNPM(&input)
 	bindSyntheticBun(&input)
 	bindSyntheticPipx(&input)
+	input.SemgrepTool = runtimeidentity.SelectedSemgrepSupply()
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -79,6 +81,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	bindSyntheticPNPM(&input)
 	bindSyntheticBun(&input)
 	bindSyntheticPipx(&input)
+	input.SemgrepTool = runtimeidentity.SelectedSemgrepSupply()
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -310,7 +313,7 @@ func TestManifestRequiresExplicitPipxDataRoleAndPythonBinding(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := manifest.Tools[2]
-	if manifest.Schema != "helox.runtime-image-manifest/v3" || len(manifest.Tools) != 3 || data.Name != "pipx" || data.Role != "pipx-runtime" || data.Mode != "0444" || data.RuntimeImage != pinned.PythonImage.Reference || data.Asset != "pipx-runtime-linux-amd64.zip" || data.SHA256 != pinned.PipxTool.Tool.SHA256 {
+	if manifest.Schema != "helox.runtime-image-manifest/v4" || len(manifest.Tools) != 3 || data.Name != "pipx" || data.Role != "pipx-runtime" || data.Mode != "0444" || data.RuntimeImage != pinned.PythonImage.Reference || data.Asset != "pipx-runtime-linux-amd64.zip" || data.SHA256 != pinned.PipxTool.Tool.SHA256 {
 		t.Fatal("pipx DATA became executable or lost owner binding")
 	}
 	for name, mutate := range map[string]func(*runtimeLock){
@@ -325,6 +328,33 @@ func TestManifestRequiresExplicitPipxDataRoleAndPythonBinding(t *testing.T) {
 		mutate(&candidate)
 		if _, err := buildManifest(candidate); err == nil {
 			t.Fatal("invalid pipx DATA owner accepted", name)
+		}
+	}
+}
+
+func TestManifestRejectsMissingOrInvalidSemgrepSupply(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var selected runtimeLock
+	if err := json.Unmarshal(body, &selected); err != nil {
+		t.Fatal(err)
+	}
+	for _, mode := range []string{"missing", "source-identity", "data-bound", "runtime"} {
+		candidate := selected
+		switch mode {
+		case "missing":
+			candidate.SemgrepTool = runtimeidentity.SemgrepSupplyOwner{}
+		case "source-identity":
+			candidate.SemgrepTool.SourceCommit = "unknown"
+		case "data-bound":
+			candidate.SemgrepTool.Sources.Size = 512<<20 + 1
+		case "runtime":
+			candidate.SemgrepTool.RuntimeImage = "node_image"
+		}
+		if _, err := buildManifest(candidate); err == nil {
+			t.Fatal("invalid Semgrep owner accepted", mode)
 		}
 	}
 }

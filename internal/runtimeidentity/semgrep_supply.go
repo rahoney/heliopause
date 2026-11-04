@@ -61,3 +61,28 @@ func ValidSemgrepSupplyOwner(pin SemgrepSupplyOwner) bool {
 	}
 	return true
 }
+
+const SemgrepRulesAssetName = "semgrep-rules.json"
+
+// SemgrepReleaseAssets derives the fixed transport names from one selected tuple.
+func SemgrepReleaseAssets(pin SemgrepSupplyOwner) [4]SemgrepSupplyAsset {
+	rules := pin.Rules
+	rules.Path = SemgrepRulesAssetName
+	return [4]SemgrepSupplyAsset{pin.Tool, pin.Sources, pin.Notices, rules}
+}
+
+// SemgrepAssetMaximum is the fixed transport bound, not a selected version.
+func SemgrepAssetMaximum(name string) int64 {
+	switch name {
+	case "semgrep-core-linux-amd64":
+		return 256 << 20
+	case "semgrep-SOURCES.tar":
+		return 512 << 20
+	case "semgrep-NOTICES.tar":
+		return 4 << 20
+	case SemgrepRulesAssetName:
+		return 1 << 20
+	default:
+		return 0
+	}
+}

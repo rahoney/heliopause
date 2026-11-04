@@ -746,3 +746,10 @@ Plan에는 큰 native/source body를 넣지 않는다. `apply`/`verify`는 froze
 다시 전달하면 거부한다. 이 source identity는 plan 생성과 apply/render에서 모두 확인한다.
 다른 component의 same-version drift 거부는 그대로다. 공급·plan 성공은 required runtime/
 installed qualification을 닫지 않으며 구체 범위는 S04 baseline/Queue를 따른다.
+
+Release producer의 Semgrep 운송 파일은 core/SOURCES/NOTICES/semgrep-rules.json 네 개다.
+현재 manifest20 assets와 runtime-image manifest v4는 같은 selected tuple에 결합하고,
+installer/doctor/self-update copy는 core0555·passive0444를 보존한다. Source archive는
+설치 시 추출하지 않는다. 구8–16 asset/v2–v3 읽기는 rollback과 구버전 기록을 위해 유지한다.
+이 local consumer 연결과 hosted 공급/자가 검역의 qualification은 구분한다. 기존 release
+workflow의 공급 추가와 current-only gate가 열려 있으므로 아직 새 release 실행 단계가 아니다.
