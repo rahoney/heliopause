@@ -75,11 +75,18 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		return domain.InspectionReport{}, err
 	}
 	if archiveErr == nil && sources != nil {
+		declared := map[string]bool{}
+		if binaries != nil {
+			declared, err = artifactcargo.DeclaredSourcePaths(files)
+			if err != nil {
+				return domain.InspectionReport{}, err
+			}
+		}
 		// ArchiveFiles owns these bytes. Sort selected keys only; no second
 		// decompression, body copy or graph charge is needed.
 		var names []string
 		for name := range files {
-			if content.SourceLanguage(name, files[name]) != "" || binaries != nil && content.IsBinary(name, files[name]) {
+			if declared[name] || content.SourceLanguage(name, files[name]) != "" || binaries != nil && content.IsBinary(name, files[name]) {
 				names = append(names, name)
 			}
 		}
@@ -93,7 +100,11 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 				*binaries = append(*binaries, content.BinaryMember{Path: name, Body: files[name], Digest: digest})
 				continue
 			}
-			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: content.SourceLanguage(name, files[name]), Body: files[name]})
+			language := content.SourceLanguage(name, files[name])
+			if declared[name] {
+				language = "rust"
+			}
+			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: language, Body: files[name]})
 		}
 	}
 	checkID, _ := domain.NewCheckID("cargo-crate-static")

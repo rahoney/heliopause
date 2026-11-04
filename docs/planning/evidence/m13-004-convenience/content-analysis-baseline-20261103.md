@@ -1085,3 +1085,33 @@ GitHub native의 named local 결과:
 - 이 DATA 진입점의 IMPLEMENTED/WIRED/QUALIFIED=YES(명시된 범위),
   ACCEPTANCE_CLOSED=NO다. 모든 archive의 applicability census/metadata-selected source와
   실제 AST/전이 graph·cache/promotion/CLI 및 grouped native/hosted는 계속 MISSING이다.
+
+
+### Cargo metadata-selected source — baseline `c24e006`
+
+전체 applicability 증명 전에 normalized Cargo.toml의 명시 path/build도 선정해야 한다.
+현재 확장자/shebang만의 수집은 이 범위 NO/NO/NO/NO다. MISSING은 manifest가 지정한
+확장자 없는 Rust target/build script의 수집·기존 경로 검증·빠진/탈출 path 거부다.
+[공식 target path](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-path-field)와
+[build 필드](https://doc.rust-lang.org/cargo/reference/manifest.html#the-build-field)를 확인했다.
+기존 artifact/cargo의 TOML parser·validateManifestPath와 검증된 ArchiveFiles map을 재사용한다.
+Source metadata 해석을 inspection/content에 새 TOML 의존으로 넣지 않고 기존 owner에서
+한정된 선언만 돌려준다. Legacy static/source API와 프로젝트 source policy는 변경하지 않는다.
+
+Cargo 선언 source의 named local 결과:
+
+- `artifact/cargo.DeclaredSourcePaths`는 기존 TOML parser·validateManifestPath와 유한
+  manifest/target bounds를 재사용한다. 명시 lib/bin/example/test/bench path와 build script를
+  원래 검증된 map 안에서만 선정하며 omitted path와 명시 empty path를 구분한다. Bool build
+  값은 명시 path를 만들지 않고 잘못된 타입·탈출/부재 경로는 오류다. Cargo/Host 실행은 없다.
+- 현재 `InspectContent`가 이 선언을 source 선택에 합쳐 확장자/shebang 없는 target을 Rust
+  DATA로 반환한다. Native byte 선정은 우선하며 parser source로 중복 보존하지 않는다.
+  기존 Inspect/InspectSources와 프로젝트 source policy는 그대로다.
+- Old consumer + 새 fixture RED0.851s는 여섯 선언 source가 빠짐을 보였다. 새 consumer의
+  두 owner Race5.609s/security23.322s/vet1.001s/Staticcheck1.459s는 PASS다. 이후 test-only로
+  committed itoa1.0.17의 새 content 진입점 readback을 추가한 표적0.614s도 PASS다.
+  앞 Race를 후속 test source의 재실행으로 쓰지 않는다. Format0.916s는 해당 Go1 파일의
+  정규 변경이며 이후 검사 입력은 불변이다. Unit intakes는 t.TempDir로 회수했다.
+- 이 선언 경로의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 로컬 DATA 범위다. 전체
+  ACCEPTANCE_CLOSED=NO이며 다른 생태계 metadata/census·실제 AST/생산 cache/CLI/native/
+  hosted는 계속 MISSING이다. 새 CI/push·runtime pin/Host 변경은 없다.

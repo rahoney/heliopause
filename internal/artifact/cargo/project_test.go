@@ -11,6 +11,40 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+func TestDeclaredCargoSourcesIncludeExtensionlessTargetsAndBuildScript(t *testing.T) {
+	base := "[package]\nname='fixture'\nversion='1.2.3'\n"
+	manifest := base + "build='custom-build'\n[lib]\npath='./custom-lib'\n[[bin]]\npath='custom-bin'\n[[example]]\npath='custom-example'\n[[test]]\npath='custom-test'\n[[bench]]\npath='custom-bench'\n"
+	files := map[string][]byte{"Cargo.toml": []byte(manifest)}
+	expected := map[string]bool{}
+	for _, name := range []string{"custom-build", "custom-lib", "custom-bin", "custom-example", "custom-test", "custom-bench"} {
+		files[name], expected[name] = []byte("fn main() {}\n"), true
+	}
+	paths, err := DeclaredSourcePaths(files)
+	if err != nil || !reflect.DeepEqual(paths, expected) {
+		t.Fatal("manifest source roles were omitted or remapped", paths, err)
+	}
+	for _, changed := range []string{
+		base + "build=false\n", base + "build=true\n", base,
+	} {
+		files["Cargo.toml"] = []byte(changed)
+		paths, err := DeclaredSourcePaths(files)
+		if err != nil || len(paths) != 0 {
+			t.Fatal("default/disabled build invented an explicit source role", paths, err)
+		}
+	}
+	for _, invalid := range []string{
+		base + "build=''\n", base + "build=12\n", base + "build='../outside'\n",
+		base + "[lib]\npath=''\n", base + "[lib]\npath='missing'\n",
+		base + "[[bin]]\npath='/absolute'\n", base + "[[test]]\npath='..\\escape'\n",
+		base + "[[example]]\npath=1\n", "invalid [[",
+	} {
+		files["Cargo.toml"] = []byte(invalid)
+		if paths, err := DeclaredSourcePaths(files); err == nil || paths != nil {
+			t.Fatal("malformed, missing or escaping source role was accepted")
+		}
+	}
+}
+
 func TestCargoSelectedManifestsFollowWorkspaceAndPathDependencies(t *testing.T) {
 	root := []byte("[workspace]\nmembers=['crates/**']\nexclude=['crates/excluded']\n")
 	member := []byte("[package]\nname='member'\nversion='0.1.0'\n[dev-dependencies]\nlocal={path='../../../local'}\n")

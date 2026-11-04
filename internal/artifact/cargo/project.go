@@ -179,6 +179,71 @@ func validateManifestPath(manifest, value string) error {
 	return nil
 }
 
+// DeclaredSourcePaths selects explicit Rust source roles in one validated crate
+// map. Extensions and interpreter lines do not override Cargo's target path.
+// It does not follow dependencies, open Host files or invoke Cargo/rustc.
+func DeclaredSourcePaths(files map[string][]byte) (map[string]bool, error) {
+	body := files["Cargo.toml"]
+	if len(files) > MaxCrateFiles || len(body) == 0 || len(body) > MaxProjectControlBytes {
+		return nil, errors.New("cargo source manifest is unavailable or excessive")
+	}
+	var document struct {
+		Package struct{ Build any }      `toml:"package"`
+		Lib     struct{ Path *string }   `toml:"lib"`
+		Bin     []struct{ Path *string } `toml:"bin"`
+		Test    []struct{ Path *string } `toml:"test"`
+		Example []struct{ Path *string } `toml:"example"`
+		Bench   []struct{ Path *string } `toml:"bench"`
+	}
+	if err := toml.Unmarshal(body, &document); err != nil {
+		return nil, errors.New("cargo source target declarations are malformed")
+	}
+	if len(document.Bin)+len(document.Test)+len(document.Example)+len(document.Bench) > maxProjectPackages {
+		return nil, errors.New("cargo source target count exceeds bound")
+	}
+	paths := make(map[string]bool)
+	add := func(target *string) error {
+		if target == nil { // Omitted target paths use the usual .rs discovery.
+			return nil
+		}
+		value := *target
+		if validateManifestPath("Cargo.toml", value) != nil {
+			return errors.New("cargo source target path escapes the crate")
+		}
+		name := path.Clean(value)
+		if _, exists := files[name]; !exists {
+			return errors.New("cargo declared source target is absent from the crate")
+		}
+		paths[name] = true
+		return nil
+	}
+	switch build := document.Package.Build.(type) {
+	case nil, bool:
+		// Default/true build.rs already has the fixed Rust suffix. False
+		// disables execution discovery, not static inspection of other DATA.
+	case string:
+		if build == "" {
+			return nil, errors.New("cargo explicit build script path is empty")
+		}
+		if err := add(&build); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("cargo build script declaration is malformed")
+	}
+	if err := add(document.Lib.Path); err != nil {
+		return nil, err
+	}
+	for _, targets := range [][]struct{ Path *string }{document.Bin, document.Test, document.Example, document.Bench} {
+		for _, target := range targets {
+			if err := add(target.Path); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return paths, nil
+}
+
 // SelectedLocalManifests follows only declared workspace members and local
 // dependencies. Other Cargo.toml files remain opaque, authenticated source data;
 // a malformed test asset does not become a selected package by its filename.

@@ -71,6 +71,10 @@ func TestCrateSourcesUseCheckedArchiveAndDiscardLateFailure(t *testing.T) {
 			if err != nil || legacyErr != nil || !reflect.DeepEqual(legacy, report) || len(sources) == 0 {
 				t.Fatal("source capture changed the static report", err, legacyErr)
 			}
+			contentSources, contentReport, contentErr := inspector.InspectContent(ctx, subject)
+			if contentErr != nil || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+				t.Fatal("current content owner changed the committed public crate's sources", contentErr)
+			}
 			files, err := artifactcargo.ArchiveFiles(original, identity)
 			if err != nil {
 				t.Fatal(err)
@@ -94,8 +98,11 @@ func TestCrateContentUsesVerifiedBinaryBytesBeforeSourceNames(t *testing.T) {
 	identity, _ := domain.NewResolvedArtifactIdentity(artifactcargo.Source(), "fixture", "1.2.3", "crate")
 	for _, withBinaries := range []bool{false, true} {
 		files := map[string][]byte{
-			"Cargo.toml": []byte("[package]\nname=\"fixture\"\nversion=\"1.2.3\"\n"),
+			"Cargo.toml": []byte("[package]\nname=\"fixture\"\nversion=\"1.2.3\"\nbuild='custom-build'\n[lib]\npath='custom-lib'\n[[bin]]\npath='custom-bin'\n[[example]]\npath='custom-example'\n[[test]]\npath='custom-test'\n[[bench]]\npath='custom-bench'\n"),
 			"src/lib.rs": []byte("pub fn example() {}\n"),
+		}
+		for _, name := range []string{"custom-build", "custom-lib", "custom-bin", "custom-example", "custom-test", "custom-bench"} {
+			files[name] = []byte("fn main() {}\n")
 		}
 		if withBinaries {
 			files["hidden.rs"] = []byte("MZ")
@@ -141,8 +148,13 @@ func TestCrateContentUsesVerifiedBinaryBytesBeforeSourceNames(t *testing.T) {
 		subject, _ := domain.NewAcquiredArtifact(identity, digest, "intake:"+run.String()+":crate", uint64(len(body)))
 		inspector, _ := NewStaticInspector(root)
 		sources, report, err := inspector.InspectContent(context.Background(), subject)
-		if (err != nil) != withBinaries || len(sources) != 1 || sources[0].Path != "src/lib.rs" || len(report.Executions()) != 3 || report.Executions()[0].Status() != domain.ExecutionCompleted || report.Executions()[1].Status() != domain.ExecutionIncomplete {
+		if (err != nil) != withBinaries || len(sources) != 7 || len(report.Executions()) != 3 || report.Executions()[0].Status() != domain.ExecutionCompleted || report.Executions()[1].Status() != domain.ExecutionIncomplete {
 			t.Fatal("crate content changed static/source facts or invented coverage", err, report.Executions())
+		}
+		for _, source := range sources {
+			if source.Language != "rust" || !bytes.Equal(source.Body, files[source.Path]) {
+				t.Fatal("metadata-selected Rust source was dropped, remapped or altered")
+			}
 		}
 		binaryFacts := 0
 		for _, fact := range report.Evidence() {

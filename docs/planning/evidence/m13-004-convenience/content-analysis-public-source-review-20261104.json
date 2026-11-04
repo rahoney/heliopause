@@ -1773,5 +1773,56 @@
         "source_unchanged": true
       }
     }
+  },
+  "cargo_source_roles": {
+    "baseline": "c24e006",
+    "implemented": true,
+    "wired": "Cargo content DATA entry point; existing static/source/project validation contracts retained",
+    "qualified": "normalized manifest paths and committed itoa fixture, not native Cargo build",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-cargo-source-roles-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-red.json",
+        "sha256": "1edb934d05dcd5b966094d29d6dfa36fa17cbeb4014a36069f5e06ab9e844b83",
+        "elapsed": 0.851,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-format.json",
+        "sha256": "40d2b03066c1d85353312ae54d8be476b4a68a45003b59b6ff92a1dcdd9455a5",
+        "elapsed": 0.916,
+        "source_unchanged": false
+      },
+      "s04-cargo-source-roles-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-race.json",
+        "sha256": "e431288c4b6b0e981087c488028d1657dd372762cd86f10363dff5e762be64eb",
+        "elapsed": 5.609,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-security.json",
+        "sha256": "2d82bcbe714e44ba84b42e7eb8534fd0db6f6d8ca4b5bc9e98f0d03ce115aef9",
+        "elapsed": 23.322,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-vet.json",
+        "sha256": "88c979c72b21c92e91508c5d5700318771a05b948b030a939b847bf41ceb0a33",
+        "elapsed": 1.001,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-staticcheck.json",
+        "sha256": "29b6e2a1e38efce97e9f498366e223b8847aebb7da831260cf1055b008084506",
+        "elapsed": 1.459,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-public": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-public.json",
+        "sha256": "b93d160f7178cced4122d717f382a374b3de7581922f6d66360fb0b47de89815",
+        "elapsed": 0.614,
+        "source_unchanged": true
+      }
+    }
   }
 }
