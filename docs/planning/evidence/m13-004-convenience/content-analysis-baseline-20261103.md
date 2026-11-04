@@ -1155,3 +1155,45 @@ Cargo census/source 진입점의 named local 결과:
 - Census/Cargo DATA·호출 연결의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 로컬 범위다.
   ACCEPTANCE_CLOSED=NO이며 다른 archive census/metadata, 실제 positive AST·전체 전이 graph/
   cache/promotion/CLI·native/hosted와 release 공급 원본은 MISSING이다.
+
+
+### Cargo production/retained 연결 — 착수 지도
+
+현재 content census/InspectAnalyzed는 구현돼 있지만 default bootstrap·사전 expected check·현재
+승인 캐시의 필수 source/native/census 근거 검증은 NO/NO/NO/NO다. 기존 StaticInspector에
+명시 analyzer 구성을 전달하고 기존 ExpectedChecks에 동일 다섯 content check를 합친다.
+기존 Linux bootstrap의 executor/observer/resource adapter로 SourceAnalyzer를 생성하며 UI/
+타 platform의 무관한 준비 경로를 확장하지 않는다. Cache는 기존 Record/ReadReference와
+frozen plan을 유지하고 같은 현재 declaration의 필수 summary5/현재 profile·kind를 stage 전과
+current readback에 확인한다. Historical original 확인(requireProfiles=false)은 현재 승인으로
+승격하지 않으며 별도로 유지한다. 기존 fixture authority는 명시 synthetic이며 실제 scanner
+성공으로 표시하지 않는다. 버전 pin/한도·observer·Host 설치와 CI는 변경하지 않는다.
+
+
+### 공통 build fixture의 기존 환경 근거 누락 — 조사/최소 교정
+
+Current Cargo production 묶음 Race231.696s에서 content/Cargo/bootstrap은 PASS이고 promotion은
+Go/Cargo build fixture·Unix socket EPERM으로 FAIL이다. 처음 두 normal case를195b0d0의
+cache/fixture로 overlay해 재현한8.973s도 같은 environment observation incomplete다.
+따라서 새 Cargo cache 보강이 도입한 실패로 쓰지 않는다. 기존 shared goOutputBackend가
+환경 상태0을 반환하지만 현재 projectbuild Inspector는 두 profile/VFS coverage를 요구한다.
+Production invariant는 유지하고 이 synthetic backend에 두 상태를 공급하며 늘어난 workspace
+Evidence2를 기존 정상 assertion에 반영한다. Socket 거부는 별도 실행 환경 한계로 분리한다.
+
+공통 build fixture의 한정 교정 결과:
+
+- Shared synthetic backend에 minimal/development 상태와 VFS coverage를 추가하고 정상
+  operation의 Evidence3→5 assertion만 교정했다. Production/required 환경 판정은 변경하지
+  않았다. 모든 기존 Go/Cargo build output·원복·위험 Mode 표적15.317s는 PASS다.
+- Socket이 허용되는 정상 권한에서 promotion 전체 Race237.832s(Go test199.000s)가
+  PASS다. 첫 full231.696s의 실패와 socket EPERM을 보존하며 새 Cargo 내용 검사와
+  무관한 기존 fixture 누락의 대조 근거는 baseline-red8.973s다. 다른 세 package는 첫
+  Race에서 이미 PASS했으므로 같은 입력으로 재실행하지 않았다.
+- 이 두 test 파일의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES는 모의
+  계약 동기화 범위다. 실제 격리 build/전체 S01/S08·S04 qualification으로 확대하지 않는다.
+  별도 test artifact는 생성하지 않고 unit intake는 t.TempDir로 회수했다.
+
+현재 실제 최초 실패는 공개 Cargo의 단일 Rust AST에서 rule-engine-census다. Native-v1
+25.238s는 FAIL/검사 후 Policy·cache 미도달이며 noSKIP/helperwait0/Host 동일·own copy
+240578517B 제거를 확인했다. 여섯 언어 동시 시험을 단일 언어 완료로 전용하지 않고
+고정 도구의 actual engine 목록과 입력 언어를 대조한다. 전체 S04는 계속 OPEN이다.

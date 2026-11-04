@@ -1881,5 +1881,38 @@
         "source_unchanged": true
       }
     }
+  },
+  "build_environment_fixture": {
+    "baseline": "195b0d0",
+    "implemented": true,
+    "wired": "existing shared synthetic Go/Cargo build backend only",
+    "qualified": "affected full build tests and promotion Race with normal Unix socket permissions",
+    "acceptance_closed": true,
+    "checks": {
+      "s04-build-env-baseline-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-baseline-red.json",
+        "sha256": "11865e0a3089e2975aaa52983334fb0b619aadb6b5a91cf0c94136383856eee0",
+        "elapsed": 8.973,
+        "source_unchanged": true
+      },
+      "s04-build-env-fixture-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-fixture-format.json",
+        "sha256": "c8bf51046b8fcca06cd91624403d1097815d59ee6270e325764f5a67b6c9b2b9",
+        "elapsed": 0.906,
+        "source_unchanged": false
+      },
+      "s04-build-env-fixture-green": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-fixture-green.json",
+        "sha256": "9f983df21aa7bb545c53bc5d1dd3e55512014290bcd3aff8af612ba8c0c1f113",
+        "elapsed": 15.317,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-promotion-race-unrestricted": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-promotion-race-unrestricted.json",
+        "sha256": "130c013894d795819b96652d046b967a724c86ce24816b962fa4ada3fe0ec598",
+        "elapsed": 237.832,
+        "source_unchanged": true
+      }
+    }
   }
 }

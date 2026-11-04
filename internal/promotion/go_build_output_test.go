@@ -89,8 +89,17 @@ func (b *goOutputBackend) Build(ctx context.Context, inputs domain.ProjectBuildI
 	completed, _ := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
 	facts = append(facts, completed)
 	session, _ := domain.NewSandboxSessionID()
-	result, _ := domain.NewSandboxResult(session, domain.SandboxCompleted, "", facts)
 	recipe, _ := domain.NewSHA256Digest(strings.Repeat("f", 64))
+	// This backend is synthetic. Supply the two environment records now
+	// required by the shared inspector; no real VFS observation is claimed.
+	var states []domain.SandboxEnvironmentState
+	for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+		states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: recipe, Before: recipe, After: recipe, VFSOperationsCovered: true})
+	}
+	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", facts, states...)
+	if err != nil {
+		return domain.ProjectBuildObservation{}, err
+	}
 	binding, err := domain.NewDerivationBinding(inputs.Source().Digest(), []domain.ContentDigest{inputs.Cache().Digest(), inputs.Snapshot().GraphDigest()}, inputs.Kind()+"-build-linux-amd64", recipe)
 	if err != nil {
 		return domain.ProjectBuildObservation{}, err
@@ -187,7 +196,7 @@ func TestGoBuildApplicationPublishesOnlyRecordedBoundApproval(t *testing.T) {
 			}
 			result, published, err := service.Build(context.Background(), install, "./...")
 			if mode == "normal" {
-				if err != nil || !published.Valid() || result.Status() != domain.OperationCompleted || len(result.Checks()) != 2 || len(result.Evidence()) != 3 {
+				if err != nil || !published.Valid() || result.Status() != domain.OperationCompleted || len(result.Checks()) != 2 || len(result.Evidence()) != 5 {
 					t.Fatalf("normal guarded output: %v", err)
 				}
 				body, err := os.ReadFile(filepath.Join(project, published.RelativeDirectory(), "program"))
