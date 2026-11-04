@@ -9,7 +9,6 @@ import (
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
-	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/promotion"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	"github.com/spf13/cobra"
@@ -26,7 +25,7 @@ func runNPMExecution(ctx context.Context, command *cobra.Command, executor *host
 	if err != nil {
 		return err
 	}
-	static, err := inspectionnpm.NewInspector(intake)
+	static, err := newNPMStaticInspector(intake, executor, observer)
 	if err != nil {
 		return err
 	}

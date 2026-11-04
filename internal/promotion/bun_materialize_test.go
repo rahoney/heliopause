@@ -60,7 +60,7 @@ func TestBunPreparedProjectCopiesApprovedBytesAndKeepsTargetAbsent(t *testing.T)
 }
 
 func TestBunApprovedCopiesHaveIndependentHostInodes(t *testing.T) {
-	f := newBunCacheFixtureWithAliases(t, false, true)
+	f := newBunCacheFixtureWithAliases(t, false, true, true)
 	ctx := context.Background()
 	staged, err := f.cache.StageProject(ctx, f.set)
 	if err != nil {

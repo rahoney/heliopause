@@ -3,8 +3,10 @@ package promotion
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 // Both project caches re-read the same controller-owned Evidence records.
@@ -49,4 +51,42 @@ func projectCacheEvidenceFacts(ctx context.Context, reader ProjectEvidenceReader
 		}
 	}
 	return records, facts, nil
+}
+
+// Current approval requires the same readonly content declarations at Stage and
+// readback. Historical original inspection is not a current approval shortcut.
+func verifyArchiveContentEvidence(facts []domain.Evidence) error {
+	required, err := content.ArchiveEvidenceRequirements()
+	if err != nil {
+		return err
+	}
+	byCheck := make(map[domain.CheckID]content.EvidenceRequirement, len(required))
+	for _, requirement := range required {
+		byCheck[requirement.Check.ID()] = requirement
+	}
+	seen := make(map[domain.EvidenceID]bool, len(facts))
+	for _, fact := range facts {
+		if seen[fact.ID()] {
+			return errors.New("archive content approval contains duplicate Evidence")
+		}
+		seen[fact.ID()] = true
+		if requirement, known := byCheck[fact.CheckID()]; known {
+			if fact.ProfileDigest() != requirement.Check.ProfileDigest() || fact.ID() == requirement.ID && fact.Kind() != requirement.Kind || fact.ID() != requirement.ID && !slices.Contains(requirement.ExtraKinds, fact.Kind()) {
+				return errors.New("archive content Evidence differs from current profile or kind")
+			}
+		}
+	}
+	for _, requirement := range required {
+		found := false
+		for _, fact := range facts {
+			if fact.ID() == requirement.ID && fact.CheckID() == requirement.Check.ID() {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return errors.New("archive approval lacks current source/native/inventory Evidence")
+		}
+	}
+	return nil
 }

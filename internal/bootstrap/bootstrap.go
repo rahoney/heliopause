@@ -379,7 +379,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		staticInspection, err := inspectionnpm.NewInspector(filepath.Join(root, "intake"))
+		staticInspection, err := newNPMStaticInspector(filepath.Join(root, "intake"), trustedExecutor, processObserver)
 		if err != nil {
 			return err
 		}

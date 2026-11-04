@@ -1413,3 +1413,75 @@ scanner 실패의 원인/앞선 native+census 근거 보존을 확인했다. Sou
 source0은 미완료로 유지한다. 이 모의 port는 실제 scanner가 아니며 production bootstrap/
 현재 cache·넓은 묶음 qualification이 남아 IMPLEMENTED/WIRED=YES(local configured)/
 QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. Native/CPP/CI·영구 Host 설치는 하지 않았다.
+
+### npm 실제 구성·현재 승인 근거 — 착수 지도 `830b1aa`
+
+Configured port의 실제 default 주입·current cache 기준은 NO/NO/NO/NO다. 실제 생성
+지점은 bootstrap.go/npm_client.go/pnpm_client.go/bun_client.go/npm_execution.go 다섯
+곳이다. 같은 source analyzer/resource 구성과 platform 미준비 의미를 한 기존 bootstrap
+파일 안에서 공용 생성 책임으로 묶고 실제 다섯 소비자만 연결한다. Linux는 기존 보호된
+executor/observer/resource adapter를 사용한다. 다른 OS는 source 실행 미준비를 검사
+실패/미완료로 유지하며 UI/도움말 초기화에 runtime 준비를 추가하지 않는다.
+Npm/PNPM/Bun fresh Stage/Open은 이미 pnpm_cache_approval.go의
+npmProjectCacheApprovalEvidence/projectCacheEvidenceFacts를 공유한다. 이곳에서 현재
+content summary5/profile/kind를 요구한다. Cargo의 verifyCargoContentEvidence 본문을
+기존 project_cache_evidence.go로 옮겨 archive 중립 이름으로 그대로 재사용해 validator
+복제·새 Policy/검사 호출을 막는다. Cargo의 historical requireProfiles=false와 npm 계열
+pnpm_retained.go의 ownership-only 원본 확인은 유지한다. 새 Stage/Open에서 이 원본
+확인을 현재 approval로 전용하지 않는다. Existing frozen plan/identity/digest/Record·
+ReadReference와 graph/권한/예산은 불변이다.
+모의 정상 cache fixtures는 현재 check/evidence 계약만 반영하고 실제 scanner authority로
+표시하지 않는다. Old Stage의 현재 근거 누락 수용을 표적으로 재현하고 누락·중복·kind/
+profile 변조를 실제 재기록/재해시한 거부와 현재 CLI 정상·실패를 확인한다. Metadata/
+source/구성/cache 묶음이 고정된 뒤 canonical foundation/security·영향 Race/vet/
+Staticcheck 및 필요한 native 소비자를 모아 수행한다. 작은 helper CI는 만들지 않는다.
+
+Npm production 묶음의 canonical foundation83.575s/security29.304s·artifact/inspection/
+bootstrap 전체 Race72.054s·promotion 전체 Race204.707s(정상 socket)·vet5.533s/
+고정 Staticcheck14.506s는 PASS/source 불변이다. Tagged native build5.799s 이후에는
+gated CLI assertion 두 파일만 추가했고 앞의 full 결과를 그 새 시험 source에 전용하지 않는다.
+Actual npm-v1/49.152s(부모45.96s)는 FAIL이다. 실제 current required 검사는 모두 완료/
+M3·M4 ALLOW였지만 fresh cache에서 promotion이 거부됐다. Exact raw projection의
+binary-content-signals는 optional/SUPPORTED/NOT_EXECUTED/
+M13_BINARY_SIGNALS_UNAVAILABLE이며 native coverage와 census는 required/COMPLETED다.
+기존 cache가 모든 optional도 COMPLETED를 요구한 것이 직접 거부 원인이다. Synthetic
+fixture는 모든 content status를 완료로 만들어 이 실제 no-native 상태를 대표하지 않았다.
+Current summary5/profile/kind 확인을 유지한 상태에서 이 exact optional 상태만 허용하고,
+required native/census/source coverage를 명시적으로 요구한다. 다른 optional 미완료/
+wrong limitation/capability는 계속 거부한다. Producer를 억지 완료로 바꾸지 않는다.
+새 CLI assertion도 같은 optional 적용 제외 의미로 교정한다. Unit RED와 native-v1 원본은
+보존하며 최초 실패 후 inspect 두 번째 parent는 failfast로 미도달이다. Helperwait0/Host·
+source 동일·자기copy244627151B 제거를 확인했고 intake finalization 메시지는 후속
+정리 상태와 구분한다. 넓은 불변 consumer/CPP/CI를 반복하지 않고 이 거부 경계를 표적으로
+먼저 교정한 뒤 현재 CLI를 재검증한다. Whole S04는 계속 OPEN이다.
+
+Optional no-native의 동일 fixture RED-v2/8.894s 뒤 영향 cache/Cargo metadata Race
+19.037s가 PASS다. 최초 red1.033s는 잘못 쓴 enum/accessor의 compile 실패이므로 semantic
+RED로 쓰지 않는다. Exact optional native absence만 수용하고 required native/census/source
+플래그를 낮춘 입력과 wrong code/unsupported/다른 optional 미완료를 거부했다. 최종 좁은
+security19.946s/vet12.631s/Staticcheck17.485s도 PASS/source 불변이다.
+Actual npm-v2/120.525s는 install47.224s·ci39.884s의 부모87.11s를 PASS했다. 실제 source
+분석/현재 근거/cache/Policy·반입과 lock/동일 payload inode 보존을 확인했다. 이어 inspect
+30.32s는 operation COMPLETED/M3 ALLOW였지만 기존 gate가 schema v1을 기대해 FAIL했다.
+현재 presenter의 v2는 이번 production 변경 전부터 계약이며, 새 analyzer가 schema를
+변경한 원인으로 기록하지 않는다. Test expectation 하나만 v2로 교정하고 이미 통과한
+install/ci를 반복하지 않고 inspect parent만 후속 검증한다. V2도 Host/source 동일/
+helperwait0·자기copy244629616B 제거다. V2 whole FAIL 원본과 성공 부모를 구분해 보존한다.
+
+Npm inspect-only native-v3/34.557s(부모31.49s)는 PASS다. Current content 여섯 ID·
+필수 완료/optional no-native 의미, 실제 AST·두 환경 dynamic·advisory·M3 ALLOW·
+보존 Evidence를 확인했다. V2 install/ci87.11s를 반복하지 않았다. Source/Host 동일·
+noSKIP/helperwait0·자기copy244629579B 제거다. 현재 production 코드는 optional fix 이후
+불변이고 V3는 old schema 기대 한 줄만 교정한 gate다.
+Source 생성 책임은 기존 bootstrap 파일 한 곳/다섯 actual entry에서 공유하고, fresh
+cache의 current content validator는 Cargo/세 npm client가 기존 한 구현을 재사용한다.
+Historical ownership-only 원본 확인은 새 승인에 전용하지 않는다. 새 framework/port/
+package·별도 updater·버전/권한/한도 변경과 UI 초기화 준비는 없다. 모의 cache fixture
+세 소비자는 기존 한 synthetic facts helper를 재사용하며 실제 scanner authority로 쓰지
+않는다.
+이 production 연결의 IMPLEMENTED/WIRED/QUALIFIED=YES는 Npm 공개 is-number7의
+inspect/install/ci·한정 local checks 범위다. ACCEPTANCE_CLOSED=NO다. PNPM/Bun의
+실제 새 content 경로, transitive/실행/거부·metadata-specific actual, 다른 OS·hosted와
+다른 생태계/큰 native·release 공급/current-only/전체 S04·설계 completion은 MISSING이다.
+기존 성공과 새 실패·시험 교정의 원본을 나눠 보존하며 실제 root/local action 계약을
+registry Artifact 내용 검사 완료로 바꾸거나 Host script 실행 권한으로 승격하지 않는다.

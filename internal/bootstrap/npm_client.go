@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/cli"
@@ -49,7 +50,7 @@ func bindNPMProjectClient(command *cobra.Command, executor sandbox.TrustedExecut
 	if err != nil {
 		return err
 	}
-	static, err := inspectionnpm.NewInspector(intake)
+	static, err := newNPMStaticInspector(intake, executor, observer)
 	if err != nil {
 		return err
 	}
@@ -66,4 +67,18 @@ func bindNPMProjectClient(command *cobra.Command, executor sandbox.TrustedExecut
 		return err
 	}
 	return cli.AddNPMProject(command, npmProjectCLIService{npmProjectBindings{intake, evidenceRoot, cacheRoot, stateRoot, source, store, static, native, backend}})
+}
+
+// The zero SourceAnalyzer reports unavailable infrastructure on other platforms;
+// it cannot run a parser or complete source coverage. Linux uses the existing
+// protected runtime/observer and per-analysis resource lifecycle.
+func newNPMStaticInspector(intake string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (*inspectionnpm.Inspector, error) {
+	if runtime.GOOS != "linux" {
+		return inspectionnpm.NewInspector(intake, &sandbox.SourceAnalyzer{})
+	}
+	analyzer, err := sandbox.NewSourceAnalyzer(executor, observer, newObservationResourceAdapter())
+	if err != nil {
+		return nil, err
+	}
+	return inspectionnpm.NewInspector(intake, analyzer)
 }

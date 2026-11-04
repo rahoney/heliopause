@@ -44,21 +44,34 @@ func TestLinuxNPMInspectCLIIntegration(t *testing.T) {
 		} `json:"artifact"`
 		Policy struct{ Decision string } `json:"policy"`
 		Checks []struct {
-			Required bool
-			Status   string `json:"execution_status"`
+			ID         string `json:"id"`
+			Required   bool
+			Status     string `json:"execution_status"`
+			Limitation string `json:"limitation_code"`
 		} `json:"checks"`
 		Evidence []struct{ ID, Handle string } `json:"evidence_references"`
 	}
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if result.Schema != "helox.operation-result/v1" || result.Status != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Artifact.Identity.SourceID != "npm" || result.Artifact.Identity.Name != "is-number" || result.Artifact.Identity.Version != "7.0.0" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+	if result.Schema != "helox.operation-result/v2" || result.Status != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Artifact.Identity.SourceID != "npm" || result.Artifact.Identity.Name != "is-number" || result.Artifact.Identity.Version != "7.0.0" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
 		t.Fatalf("incomplete inspect result: %s", stdout.String())
 	}
+	wanted := map[string]bool{"npm-static-archive": true, "binary-content": true, "binary-content-signals": true, "content-inventory": true, "source-content": true, "source-content-signals": true}
 	for _, check := range result.Checks {
 		if check.Required && check.Status != "COMPLETED" {
 			t.Fatalf("required check is incomplete: %s", stdout.String())
 		}
+		if wanted[check.ID] {
+			absentNative := check.ID == "binary-content-signals" && !check.Required && check.Status == "NOT_EXECUTED" && check.Limitation == "M13_BINARY_SIGNALS_UNAVAILABLE"
+			if check.Status != "COMPLETED" && !absentNative {
+				t.Fatalf("content check is incomplete: %s", stdout.String())
+			}
+			delete(wanted, check.ID)
+		}
+	}
+	if len(wanted) != 0 {
+		t.Fatal("current content checks missing", wanted)
 	}
 	files, err := filepath.Glob(filepath.Join(root, "cache", "heliopause", "evidence", "*", "*.json"))
 	if err != nil || len(files) != len(result.Evidence) {

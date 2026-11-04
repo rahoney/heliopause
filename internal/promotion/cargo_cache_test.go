@@ -104,24 +104,10 @@ func cargoCacheFixture(t *testing.T, c *CargoVerifiedCache, project string, file
 		}
 		items = append(items, item)
 	}
-	// These are explicit controller/Policy fixtures, not parser execution.
-	contentFacts, err := content.ArchiveEvidenceRequirements()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, requirement := range contentFacts {
-		check, err := domain.NewCheckExecution(requirement.Check.ID(), domain.CheckInspection, requirement.Check.Required(), domain.CapabilitySupported, domain.ExecutionCompleted, "", requirement.Check.ProfileDigest())
-		if err != nil {
-			t.Fatal(err)
-		}
-		checks = append(checks, check)
-		requirements = append(requirements, requirement.Check)
-		item, err := domain.NewEvidence(requirement.ID, check.ID(), identity, digest, requirement.Kind, "Synthetic current content approval fixture; no scanner execution claimed.")
-		if err != nil {
-			t.Fatal(err)
-		}
-		items = append(items, item)
-	}
+	contentReport, contentRequirements := archiveContentApprovalFixture(t, artifact)
+	checks = append(checks, contentReport.Executions()...)
+	items = append(items, contentReport.Evidence()...)
+	requirements = append(requirements, contentRequirements...)
 	store, err := evidencelocal.NewStore(c.evidenceRoot)
 	if err != nil {
 		t.Fatal(err)
@@ -436,4 +422,37 @@ func TestCargoCacheRejectsMissingApprovalCancellationAndOverlappingRoots(t *test
 	if _, err := cache.StageProject(ctx, set); err == nil {
 		t.Fatal("cancelled staging succeeded")
 	}
+}
+
+// Explicit controller/Policy fixture for the shared approval gate. These facts
+// do not claim parser execution, public authentication or runtime completion.
+func archiveContentApprovalFixture(t *testing.T, artifact domain.AcquiredArtifact) (domain.InspectionReport, []domain.CheckRequirement) {
+	t.Helper()
+	declarations, err := content.ArchiveEvidenceRequirements()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reports []domain.InspectionReport
+	var requirements []domain.CheckRequirement
+	for _, declaration := range declarations {
+		check, err := domain.NewCheckExecution(declaration.Check.ID(), domain.CheckInspection, declaration.Check.Required(), domain.CapabilitySupported, domain.ExecutionCompleted, "", declaration.Check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		fact, err := domain.NewEvidence(declaration.ID, check.ID(), artifact.Identity(), artifact.Digest(), declaration.Kind, "Synthetic current content approval fixture; no scanner execution claimed.", check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		report, err := domain.NewInspectionReport(check, nil, []domain.Evidence{fact})
+		if err != nil {
+			t.Fatal(err)
+		}
+		reports = append(reports, report)
+		requirements = append(requirements, declaration.Check)
+	}
+	report, err := domain.NewCompositeInspectionReport(reports)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return report, requirements
 }

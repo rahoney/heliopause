@@ -2266,5 +2266,136 @@
       "default bootstrap/current approval/cache consumers",
       "grouped checks/native/hosted and whole S04"
     ]
+  },
+  "npm_production": {
+    "baseline": "830b1aa",
+    "implemented": "YES",
+    "wired": "YES (five composition sites/shared current cache gate)",
+    "qualified": "YES (named local npm inspect/install/ci); NO (whole scope)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "s04-npm-production-legacy-red": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-legacy-red.json",
+        "exit_code": 1,
+        "elapsed": 15.327,
+        "source_unchanged": true
+      },
+      "s04-npm-production-target": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-target.json",
+        "exit_code": 0,
+        "elapsed": 17.738,
+        "source_unchanged": true
+      },
+      "s04-npm-production-foundation": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-foundation.json",
+        "exit_code": 0,
+        "elapsed": 83.575,
+        "source_unchanged": true
+      },
+      "s04-npm-production-security": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-security.json",
+        "exit_code": 0,
+        "elapsed": 29.304,
+        "source_unchanged": true
+      },
+      "s04-npm-production-race": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-race.json",
+        "exit_code": 0,
+        "elapsed": 72.054,
+        "source_unchanged": true
+      },
+      "s04-npm-production-promotion-race": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-promotion-race.json",
+        "exit_code": 0,
+        "elapsed": 204.707,
+        "source_unchanged": true
+      },
+      "s04-npm-production-vet": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-vet.json",
+        "exit_code": 0,
+        "elapsed": 5.533,
+        "source_unchanged": true
+      },
+      "s04-npm-production-static": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-static.json",
+        "exit_code": 0,
+        "elapsed": 14.506,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-red": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-red.json",
+        "exit_code": 1,
+        "elapsed": 1.033,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-red-v2": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-red-v2.json",
+        "exit_code": 1,
+        "elapsed": 8.894,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-green": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-green.json",
+        "exit_code": 0,
+        "elapsed": 19.037,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-security": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-security.json",
+        "exit_code": 0,
+        "elapsed": 19.946,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-vet": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-vet.json",
+        "exit_code": 0,
+        "elapsed": 12.631,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-static": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-static.json",
+        "exit_code": 0,
+        "elapsed": 17.485,
+        "source_unchanged": true
+      }
+    },
+    "native": [
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-content-native-v1.json",
+        "exit_code": 1,
+        "elapsed": 49.152,
+        "complete": false,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244627151
+      },
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-content-native-v2.json",
+        "exit_code": 1,
+        "elapsed": 120.525,
+        "complete": false,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244629616
+      },
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-inspect-native-v3.json",
+        "exit_code": 0,
+        "elapsed": 34.557,
+        "complete": true,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244629579
+      }
+    ],
+    "source_reuse": "full promotion204.707s before exact optional no-native fix; targeted cache/Cargo Race19.037s and narrow final checks after fix; V3 changes test schema expectation only; V2 passed project parent reused",
+    "missing": [
+      "actual PNPM/Bun/transitive/execution/refusal/metadata-specific source paths",
+      "other platforms/hosted and whole S04/design",
+      "release supply/current-only/self-quarantine and other ecosystems/large native"
+    ]
   }
 }

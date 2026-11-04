@@ -89,6 +89,9 @@ func npmProjectCacheApprovalEvidence(ctx context.Context, set domain.ProjectVeri
 		if err != nil {
 			return pnpmCacheDocument{}, err
 		}
+		if err := verifyArchiveContentEvidence(facts); err != nil {
+			return pnpmCacheDocument{}, err
+		}
 		instances, err := instanceKeys(subject)
 		if err != nil {
 			return pnpmCacheDocument{}, err
@@ -99,7 +102,9 @@ func npmProjectCacheApprovalEvidence(ctx context.Context, set domain.ProjectVeri
 		}
 		checks := map[string]domain.CheckExecution{}
 		for _, check := range inspection.Checks() {
-			if check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted {
+			limitation, _ := check.LimitationCode()
+			optionalNativeAbsence := check.ID().String() == "binary-content-signals" && check.Kind() == domain.CheckInspection && !check.Required() && check.Capability() == domain.CapabilitySupported && check.Status() == domain.ExecutionNotExecuted && limitation == "M13_BINARY_SIGNALS_UNAVAILABLE"
+			if check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted && !optionalNativeAbsence {
 				return pnpmCacheDocument{}, invalid
 			}
 			if _, duplicate := checks[check.ID().String()]; duplicate {
@@ -107,8 +112,10 @@ func npmProjectCacheApprovalEvidence(ctx context.Context, set domain.ProjectVeri
 			}
 			checks[check.ID().String()] = check
 		}
-		if !checks["npm-static-archive"].Required() || !checks[spec.prefix+"-dynamic-lifecycle"].Required() {
-			return pnpmCacheDocument{}, invalid
+		for _, id := range []string{"npm-static-archive", spec.prefix + "-dynamic-lifecycle", "binary-content", "content-inventory", "source-content"} {
+			if !checks[id].Required() {
+				return pnpmCacheDocument{}, invalid
+			}
 		}
 		observations := map[string]domain.Evidence{}
 		coverage := 0

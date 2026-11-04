@@ -9,7 +9,6 @@ import (
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/evidence/local"
-	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +54,7 @@ func bindPNPMProjectClient(command *cobra.Command, executor sandbox.TrustedExecu
 	if err != nil {
 		return err
 	}
-	static, err := inspectionnpm.NewInspector(intake)
+	static, err := newNPMStaticInspector(intake, executor, observer)
 	if err != nil {
 		return err
 	}

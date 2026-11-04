@@ -50,10 +50,10 @@ type pnpmCacheFixture struct {
 // qualification is a separate bootstrap integration consumer.
 func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 	t.Helper()
-	return newPNPMCacheFixtureWithAliases(t, empty, false)
+	return newPNPMCacheFixtureWithAliases(t, empty, false, true)
 }
 
-func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCacheFixture {
+func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases, includeContent bool) pnpmCacheFixture {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -283,7 +283,14 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 		if err != nil {
 			t.Fatal(err)
 		}
-		combined, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{report, factReport, coverageReport})
+		reports := []domain.InspectionReport{report, factReport, coverageReport}
+		var contentRequirements []domain.CheckRequirement
+		if includeContent {
+			contentReport, declared := archiveContentApprovalFixture(t, subject)
+			reports = append(reports, contentReport)
+			contentRequirements = declared
+		}
+		combined, err := domain.NewCompositeInspectionReport(reports)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -303,6 +310,7 @@ func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCache
 		coverageRequirement, _ := domain.NewCheckRequirement(coverageID, domain.CheckInspection, true, experimentProfile)
 		requirements := append(declaredVerification, declaredStatic...)
 		requirements = append(requirements, factRequirement, coverageRequirement)
+		requirements = append(requirements, contentRequirements...)
 		plan, err := domain.NewCheckPlan(run, subject, requirements)
 		if err != nil {
 			t.Fatal(err)
@@ -634,5 +642,134 @@ func TestPNPMStagingRechecksRecordedCoverageBeforeAnyCacheWrites(t *testing.T) {
 				t.Fatal("invalid recorded approval wrote cache", err)
 			}
 		})
+	}
+}
+
+func TestNPMFamilyFreshCacheRequiresCurrentContentEvidence(t *testing.T) {
+	for _, client := range []string{"pnpm", "bun"} {
+		t.Run(client, func(t *testing.T) {
+			// These existing controller fixtures deliberately contain the original
+			// static/instance checks only. Ownership proof is not fresh content approval.
+			var set domain.ProjectVerifiedSet
+			var stage func(context.Context, domain.ProjectVerifiedSet) (domain.StagedProjectSet, error)
+			if client == "pnpm" {
+				fixture := newPNPMCacheFixtureWithAliases(t, false, false, false)
+				set, stage = fixture.set, fixture.cache.StageProject
+			} else {
+				fixture := newBunCacheFixtureWithAliases(t, false, false, false)
+				set, stage = fixture.set, fixture.cache.StageProject
+			}
+			staged, err := stage(context.Background(), set)
+			if err == nil || staged.Valid() {
+				t.Fatal("fresh approval accepted legacy records without required content Evidence")
+			}
+		})
+	}
+}
+
+func TestNPMFamilyCacheAcceptsOnlyBoundOptionalNativeAbsence(t *testing.T) {
+	for _, client := range []string{"pnpm", "bun"} {
+		for _, mode := range []string{"native-absent", "wrong-code", "unsupported", "other-signal", "instance", "native-optional", "inventory-optional", "source-optional"} {
+			t.Run(client+"/"+mode, func(t *testing.T) {
+				var set domain.ProjectVerifiedSet
+				var stage func(context.Context, domain.ProjectVerifiedSet) (domain.StagedProjectSet, error)
+				if client == "pnpm" {
+					f := newPNPMCacheFixture(t, false)
+					set, stage = f.set, f.cache.StageProject
+				} else {
+					f := newBunCacheFixture(t, false)
+					set, stage = f.set, f.cache.StageProject
+				}
+				inspections := set.Inspected().Inspections()
+				original := inspections[0]
+				checks := original.Checks()
+				changed := false
+				for i, check := range checks {
+					id := check.ID().String()
+					target := id == "binary-content-signals"
+					if mode == "other-signal" {
+						target = id == "source-content-signals"
+					}
+					if mode == "instance" {
+						target = strings.Contains(id, "-instance-facts-")
+					}
+					if mode == "native-optional" {
+						target = id == "binary-content"
+					}
+					if mode == "inventory-optional" {
+						target = id == "content-inventory"
+					}
+					if mode == "source-optional" {
+						target = id == "source-content"
+					}
+					if !target {
+						continue
+					}
+					status, limitation, required, capability := domain.ExecutionNotExecuted, "M13_BINARY_SIGNALS_UNAVAILABLE", check.Required(), check.Capability()
+					if mode == "wrong-code" {
+						limitation = "FIXTURE_OTHER_LIMITATION"
+					}
+					if mode == "unsupported" {
+						capability = domain.CapabilityUnsupported
+					}
+					if mode == "other-signal" {
+						limitation = "M13_SOURCE_SIGNALS_UNAVAILABLE"
+					}
+					if strings.HasSuffix(mode, "-optional") {
+						required, status, limitation = false, domain.ExecutionCompleted, ""
+					}
+					var err error
+					checks[i], err = domain.NewCheckExecution(check.ID(), check.Kind(), required, capability, status, limitation, check.ProfileDigest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					changed = true
+				}
+				if !changed {
+					t.Fatal("fixture did not reach targeted check")
+				}
+				var requirements []domain.CheckRequirement
+				for _, check := range checks {
+					requirement, err := domain.NewCheckRequirement(check.ID(), check.Kind(), check.Required(), check.ProfileDigest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					requirements = append(requirements, requirement)
+				}
+				plan, err := domain.NewCheckPlan(original.RunID(), original.Artifact(), requirements)
+				if err != nil {
+					t.Fatal(err)
+				}
+				replacement, err := domain.NewDependencyInspection(original.Node(), original.RunID(), original.Artifact(), checks, original.Evidence(), original.PolicyDecision(), plan)
+				if err != nil {
+					t.Fatal(err)
+				}
+				action, known := original.HostInstallActionEvidence()
+				if !known {
+					t.Fatal("fixture lost install action")
+				}
+				replacement, err = replacement.WithHostInstallActionEvidence([]domain.Evidence{action})
+				if err != nil {
+					t.Fatal(err)
+				}
+				inspections[0] = replacement
+				inspected, err := domain.NewInspectedProjectSet(set.Inspected().Snapshot(), inspections)
+				if err != nil {
+					t.Fatal(err)
+				}
+				candidate, err := domain.NewProjectVerifiedSet(inspected, set.Decision())
+				if err != nil {
+					t.Fatal(err)
+				}
+				staged, err := stage(context.Background(), candidate)
+				if mode == "native-absent" {
+					if err != nil || !staged.Valid() {
+						t.Fatal("bound native absence was rejected", err)
+					}
+				} else if err == nil || staged.Valid() {
+					t.Fatal("unrelated incomplete/unsupported or weakened required coverage accepted", mode)
+				}
+			})
+		}
 	}
 }

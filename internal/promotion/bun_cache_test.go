@@ -45,10 +45,10 @@ type bunCacheFixture struct {
 // qualification is a separate bootstrap integration consumer.
 func newBunCacheFixture(t *testing.T, empty bool) bunCacheFixture {
 	t.Helper()
-	return newBunCacheFixtureWithAliases(t, empty, false)
+	return newBunCacheFixtureWithAliases(t, empty, false, true)
 }
 
-func newBunCacheFixtureWithAliases(t *testing.T, empty, aliases bool) bunCacheFixture {
+func newBunCacheFixtureWithAliases(t *testing.T, empty, aliases, includeContent bool) bunCacheFixture {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -258,7 +258,14 @@ func newBunCacheFixtureWithAliases(t *testing.T, empty, aliases bool) bunCacheFi
 		if err != nil {
 			t.Fatal(err)
 		}
-		combined, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{report, factReport, coverageReport})
+		reports := []domain.InspectionReport{report, factReport, coverageReport}
+		var contentRequirements []domain.CheckRequirement
+		if includeContent {
+			contentReport, declared := archiveContentApprovalFixture(t, subject)
+			reports = append(reports, contentReport)
+			contentRequirements = declared
+		}
+		combined, err := domain.NewCompositeInspectionReport(reports)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -278,6 +285,7 @@ func newBunCacheFixtureWithAliases(t *testing.T, empty, aliases bool) bunCacheFi
 		coverageRequirement, _ := domain.NewCheckRequirement(coverageID, domain.CheckInspection, true, experimentProfile)
 		requirements := append(declaredVerification, declaredStatic...)
 		requirements = append(requirements, factRequirement, coverageRequirement)
+		requirements = append(requirements, contentRequirements...)
 		plan, err := domain.NewCheckPlan(run, subject, requirements)
 		if err != nil {
 			t.Fatal(err)

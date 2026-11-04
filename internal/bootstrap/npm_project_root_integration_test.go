@@ -297,7 +297,15 @@ func TestNPMPublicProjectCLIIntegration(t *testing.T) {
 				Checked, Required bool
 				Status            string `json:"inspection_status"`
 			} `json:"project_lifecycle"`
-			Policy struct{ Decision string } `json:"policy"`
+			Policy  struct{ Decision string } `json:"policy"`
+			Entries []struct {
+				Checks []struct {
+					ID         string `json:"id"`
+					Status     string `json:"execution_status"`
+					Required   bool   `json:"required"`
+					Limitation string `json:"limitation_code"`
+				} `json:"checks"`
+			} `json:"entries"`
 		}
 		decoder := json.NewDecoder(&output)
 		if err = decoder.Decode(&report); err != nil {
@@ -308,6 +316,22 @@ func TestNPMPublicProjectCLIIntegration(t *testing.T) {
 		}
 		if report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || !report.Lifecycle.Checked || report.Lifecycle.Required || report.Lifecycle.Status != "NOT_REQUIRED" {
 			t.Fatal("public npm completion/report mismatch", report)
+		}
+		if len(report.Entries) != 1 {
+			t.Fatal("current full project inspection missing", len(report.Entries))
+		}
+		wanted := map[string]bool{"npm-static-archive": true, "binary-content": true, "binary-content-signals": true, "content-inventory": true, "source-content": true, "source-content-signals": true}
+		for _, check := range report.Entries[0].Checks {
+			if wanted[check.ID] {
+				absentNative := check.ID == "binary-content-signals" && !check.Required && check.Status == "NOT_EXECUTED" && check.Limitation == "M13_BINARY_SIGNALS_UNAVAILABLE"
+				if check.Status != "COMPLETED" && !absentNative {
+					t.Fatal("project content check incomplete", check)
+				}
+				delete(wanted, check.ID)
+			}
+		}
+		if len(wanted) != 0 {
+			t.Fatal("project omitted current content checks", wanted)
 		}
 		current, err := os.ReadFile(filepath.Join(target, "package-lock.json"))
 		if err != nil {

@@ -58,7 +58,7 @@ func TestPNPMPreparedProjectCopiesApprovedBytesAndKeepsTargetAbsent(t *testing.T
 }
 
 func TestPNPMNativeHardlinkAliasesBecomeIndependentHostFiles(t *testing.T) {
-	f := newPNPMCacheFixtureWithAliases(t, false, true)
+	f := newPNPMCacheFixtureWithAliases(t, false, true, true)
 	ctx := context.Background()
 	staged, err := f.cache.StageProject(ctx, f.set)
 	if err != nil {
