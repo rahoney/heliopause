@@ -2066,5 +2066,43 @@
       "native-compile: tagged build validity only, no runtime invocation",
       "production-target: content/bootstrap packages selected no tests; real targeted tests ran in Cargo/promotion"
     ]
+  },
+  "cargo_cli": {
+    "baseline": "22d34ef",
+    "implemented": "YES",
+    "wired": "YES",
+    "qualified": "YES (named local fetch CLI only)",
+    "acceptance_closed": "YES (named fetch flow); NO (whole S04)",
+    "native": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v1.json",
+        "elapsed": 93.41,
+        "complete": false,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 240586362
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v2.json",
+        "elapsed": 89.251,
+        "complete": false,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 246538115
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v3.json",
+        "elapsed": 102.165,
+        "complete": true,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244586456
+      }
+    ],
+    "missing": [
+      "actual single/transitive add with current content checks",
+      "other ecosystem metadata/census/AST/production/cache paths",
+      "release supply/hosted/full S04 qualification"
+    ]
   }
 }

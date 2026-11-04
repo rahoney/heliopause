@@ -1248,3 +1248,56 @@ Cargo production/단일 언어 교정의 named local 결과:
   모든 cache/전이 graph/current-only/release 공급 및 grouped qualification이다. PyPI의 큰
   native member는 현재64MiB buffer capability로 전체 정상 지원을 주장하지 않으며 기존
   Artifact/profile 예산을 낮추거나 늘리지 않고 별도 bounded 접근을 마저 완성해야 한다.
+
+
+### Cargo CLI current acceptance — baseline `22d34ef`
+
+Production callback는 연결됐지만 기존 fetch/add native assertion은 이전 required3/Evidence2를
+기대한다. Current CLI의 source/native/census·advisory/integrity/static 집합과 cold/warm·원본
+보존·tampered cache 거부·후속 observed build는 NO/NO/NO/NO다. 기존 두 gate의 실제 계약
+assertion만 current 필수 ID 집합과 summary 수로 갱신하고 기존 script/8분 context·10분 test
+상한을 유지한다. Qualification은 이미 검증한 runtime/observer와 임시 staged tool을 재사용하며
+새 CPP/pin/budget·영구 Host 설치·별도 CI를 만들지 않는다.
+
+Cargo CLI actual-v1/93.410s는 cold31.784s/warm28.754s의 현재 필수6검사·ALLOW와
+cache 변조 거부/원본 보존까지 PASS했으나 후속 build의 관찰 결과 부재로 FAIL이다.
+Host 동일/helperwait0/자기 copy240586362B 제거를 확인했다. 준비 operator가 private
+current에 scanner 두 파일만 공급하고 build가 무조건 요구하는 고정 responder를 빠뜨린
+것을 source 대조로 확인했다. 이는 준비 누락이며 실제 실패 phase의 직접 진단은 아직 없다.
+기존 responder owner를 현재 source로 빌드해 같은 private current에 공급하고 기존
+--verbose를 build 시험에만 적용해 최초 실패를 보존한다. Product/권한/예산/CPP는 바꾸지 않는다.
+
+Actual-v2/89.251s도 fetch cold29.929s/warm28.688s·변조 거부 뒤 build에서 FAIL이다.
+추가 responder를 canonical stripped build 대신 일반 build로 만들어5971563B가 되었고,
+기존 max4128768B를 초과한다. Native reader는 초과 공급물을 격리 실행 전에 거부한다.
+이 준비 오류를 제품/관찰기 오류로 단정하지 않는다. 기존 release/CI의 CGO0·trimpath·
+ldflags=-s -w build를 적용하고, 큰 시험 전 기존 CheckResponderSource를 test preflight에
+추가한다. --verbose는 display-only이며 필수 검사·증거 권한은 불변이다. V2도 Host 동일/
+helperwait0/자기copy246538115B 제거를 확인했고 최초 원본은 보존한다.
+
+### 다음 npm census 연결 — 책임 지도 `22d34ef`
+
+기존 archiveCapture.entry/finish의 단일 해시·완전 gzip 검증과 source/native DATA 수집은
+IMPLEMENTED=YES다. 전체 content.Inventory/zero-native 근거 결합은
+IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. 기존
+entry가 regular member의 prefix/mode/digest를 소유하는 시점에 MemberFact를 만들고
+finish가 완전 archive 검증 뒤 immutable Inventory를 구성한다. Native Report에 같은
+census를 전달하고 기존 census Evidence를 합친다. InspectArchiveContent 시그니처와
+legacy 두 API는 보존한다. 새 wrapper/재압축해제/graph 재계상/body 사본은 필요 없다.
+직접 소비자는 archive_sources_test의 세 호출뿐이다. 정상 no-native 적용 제외·unknown
+실행/source hint의 census 보존·binary disguise 우선·late CRC/digest/path/cancel의 사실
+비노출을 확인한다. 기존20MiB/file·200MiB/total·10000 entry 한도는 불변이다.
+아직 metadata-declared extensionless/main/bin/exports, configured 실제 AST·production/
+project/cache 연결은 MISSING이며 이 단계에서 활성화/전체 npm 완료를 선언하지 않는다.
+묶음 source가 고정되면 canonical foundation/security와 영향 Race/vet/고정 Staticcheck를
+사용하고 작은 helper CI나 이미 불변인 CPP/native를 재실행하지 않는다.
+
+Cargo CLI actual-v3/102.165s(Go99.12s)는 PASS다. Canonical CGO0/trimpath/
+stripped4018336B responder의 사전 준비 검사 뒤 cold30.155s/warm28.997s의 필수6검사/
+ALLOW·fetch 미컴파일·manifest/lock 보존, 변조 cache 거부·원본 approval 보존,
+후속 observed build38.532s/승인 ELF publication을 확인했다. Source/Host 동일·noSKIP/
+helperwait0/자기copy244586456B 제거다. 같은 CPP138/고정 scanner 공급을 재사용했고
+제품 수정/권한/한도 완화 없이 준비 누락·잘못된 build 설정을 교정한 범위다.
+두 native 실패 원본은 보존한다. Add gate의 Evidence2→8은 compile만 확인했으며
+actual single/transitive add 재검증은 아직 MISSING이다. Fetch CLI의 네 상태 YES는
+이 exact 공개1crate 흐름에 한정하며 전 생태계/graph/hosted/전체 S04 완료가 아니다.

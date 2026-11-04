@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
 func TestCargoPublicFetchCLIIntegration(t *testing.T) {
@@ -25,6 +27,9 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
+	if err := sandbox.CheckResponderSource(ctx); err != nil {
+		t.Fatal("required fixed build responder is unavailable", err)
+	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -82,19 +87,18 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 		if report.Operation != "FETCH" || report.Scope != "DEPENDENCY_PREPARATION" || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || len(report.Entries) != 1 || report.Entries[0].Identity.Name != "itoa" || report.Entries[0].Identity.Version != "1.0.17" {
 			t.Fatal("fetch lost actual whole preparation", report)
 		}
-		checks := 0
-		advisoryComplete := false
+		wanted := map[string]bool{"cargo-registry-integrity": true, "cargo-crate-static": true, "binary-content": true, "content-inventory": true, "source-content": true, "dependency-advisory": true}
+		seen := make(map[string]bool, len(wanted))
 		for _, check := range report.Entries[0].Checks {
 			if check.Required {
-				checks++
-				advisoryComplete = advisoryComplete || check.ID == "dependency-advisory"
-				if check.Status != "COMPLETED" {
+				if !wanted[check.ID] || seen[check.ID] || check.Status != "COMPLETED" {
 					t.Fatal("fetch omitted required inspection", check)
 				}
+				seen[check.ID] = true
 			}
 		}
-		if checks != 3 || !advisoryComplete {
-			t.Fatal("fetch integrity/static coverage changed", checks)
+		if len(seen) != len(wanted) {
+			t.Fatal("fetch current content coverage is incomplete", seen)
 		}
 		currentManifest, err := os.Lstat(filepath.Join(project, "Cargo.toml"))
 		if err != nil || !os.SameFile(originalManifest, currentManifest) || originalManifest.Mode() != currentManifest.Mode() {
@@ -117,7 +121,7 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 				t.Fatal("fetch created compiled output", name, err)
 			}
 		}
-		t.Logf("cargo_fetch_cli case=%s crates=1 required_checks=3 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=%.3f", stage, time.Since(started).Seconds())
+		t.Logf("cargo_fetch_cli case=%s crates=1 required_checks=%d Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=%.3f", stage, len(wanted), time.Since(started).Seconds())
 	}
 	// Existing independent approval must reject a changed controller cache before
 	// either fetch or the later build can trust it. Restore only this owned fixture.
@@ -185,7 +189,7 @@ func TestCargoPublicFetchCLIIntegration(t *testing.T) {
 	output.Reset()
 	stderr.Reset()
 	started := time.Now()
-	if err = Run(ctx, []string{"--lang", "en", "--output", "human", "cargo", "build"}, &output, &stderr); err != nil {
+	if err = Run(ctx, []string{"--lang", "en", "--output", "human", "--verbose", "cargo", "build"}, &output, &stderr); err != nil {
 		t.Fatal("existing observed build after fetch", err, output.String(), stderr.String())
 	}
 	entries, err := os.ReadDir(filepath.Join(project, ".heliopause", "builds"))
