@@ -179,13 +179,17 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/inspection/terraformprovider": {modulePath + "/internal/artifact/terraformprovider": true, modulePath + "/internal/core/domain": true, modulePath + "/internal/core/ports": true, modulePath + "/internal/runtimeidentity": true},
 		modulePath + "/internal/inspection/cargo": {
-			modulePath + "/internal/artifact/cargo": true,
-			modulePath + "/internal/core/domain":    true,
+			modulePath + "/internal/artifact/cargo":     true,
+			modulePath + "/internal/core/domain":        true,
+			modulePath + "/internal/core/ports":         true,
+			modulePath + "/internal/inspection/content": true,
 		},
 		modulePath + "/internal/inspection/gomodule": {
 			modulePath + "/internal/artifact/gomodule":       true,
 			modulePath + "/internal/core/domain":             true,
 			modulePath + "/internal/inspection/projectbuild": true,
+			modulePath + "/internal/core/ports":              true,
+			modulePath + "/internal/inspection/content":      true,
 		},
 		modulePath + "/internal/inspection/projectbuild": {modulePath + "/internal/core/domain": true, modulePath + "/internal/runtimeidentity": true},
 		modulePath + "/internal/verification/npm": {
@@ -206,7 +210,13 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/terraformprovider": true,
 		},
 		modulePath + "/internal/inspection/npm": {
-			modulePath + "/internal/artifact/npm":    true,
+			modulePath + "/internal/artifact/npm":       true,
+			modulePath + "/internal/core/domain":        true,
+			modulePath + "/internal/core/ports":         true,
+			modulePath + "/internal/runtimeidentity":    true,
+			modulePath + "/internal/inspection/content": true,
+		},
+		modulePath + "/internal/inspection/content": {
 			modulePath + "/internal/core/domain":     true,
 			modulePath + "/internal/core/ports":      true,
 			modulePath + "/internal/runtimeidentity": true,
@@ -325,6 +335,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/npm":             {},
 		modulePath + "/internal/verification/pypi":            {},
 		modulePath + "/internal/inspection/npm":               {},
+		modulePath + "/internal/inspection/content":           {},
 		modulePath + "/internal/inspection/advisory": {
 			"golang.org/x/mod/semver":        true,
 			"github.com/pandatix/go-cvss/20": true,

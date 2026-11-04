@@ -5,6 +5,23 @@ import (
 	"testing"
 )
 
+func TestContentInspectionKeepsRuntimeBehindItsPort(t *testing.T) {
+	const module = "example.test/project"
+	for _, owner := range []string{"/internal/core/domain", "/internal/core/ports", "/internal/runtimeidentity"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/content", Imports: []string{module + owner}}}); len(findings) != 0 {
+			t.Fatal("content contract edge rejected", findings)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/npm", Imports: []string{module + "/internal/inspection/content"}}}); len(findings) != 0 {
+		t.Fatal("npm source selection cannot reuse content owner", findings)
+	}
+	for _, dependency := range []string{module + "/internal/sandbox", module + "/internal/bootstrap", module + "/internal/policy", "example.com/unreviewed-engine"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/content", Imports: []string{dependency}}}); len(findings) == 0 {
+			t.Fatal("content escaped inspection contract", dependency)
+		}
+	}
+}
+
 func TestBunCleartextCryptoHasOnlyReviewedCaller(t *testing.T) {
 	const module = "example.test/project"
 	imports := []string{"github.com/ProtonMail/go-crypto/openpgp/clearsign", "github.com/ProtonMail/go-crypto/openpgp/packet", "github.com/ProtonMail/go-crypto/openpgp/v2"}

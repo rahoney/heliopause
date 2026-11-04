@@ -6,9 +6,12 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"sort"
 
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 const checkProfileName = "cargo-crate-static-v1"
@@ -23,6 +26,21 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	return i.inspect(ctx, artifact, nil)
+}
+
+// InspectSources selects from the already validated bounded crate byte map;
+// it neither reparses the archive nor runs Rust or build scripts.
+func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	var sources []ports.SourceAnalysisFile
+	report, err := i.inspect(ctx, artifact, &sources)
+	if err != nil || len(report.Findings()) != 0 {
+		return nil, report, err
+	}
+	return sources, report, nil
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
 	if i == nil || ctx == nil {
 		return domain.InspectionReport{}, errors.New("cargo inspection request is invalid")
 	}
@@ -33,9 +51,23 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	_, archiveErr := artifactcargo.ArchiveFiles(body, artifact.Identity())
+	files, archiveErr := artifactcargo.ArchiveFiles(body, artifact.Identity())
 	if err := ctx.Err(); err != nil {
 		return domain.InspectionReport{}, err
+	}
+	if archiveErr == nil && sources != nil {
+		// ArchiveFiles owns the validated map; order its selected keys only
+		// so the parser's input and coverage digest are deterministic.
+		var names []string
+		for name := range files {
+			if content.SourceLanguage(name) != "" {
+				names = append(names, name)
+			}
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: content.SourceLanguage(name), Body: files[name]})
+		}
 	}
 	checkID, _ := domain.NewCheckID("cargo-crate-static")
 	profile, _ := domain.CheckProfileDigest(checkProfileName, "")

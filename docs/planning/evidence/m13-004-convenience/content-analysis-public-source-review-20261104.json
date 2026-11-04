@@ -803,7 +803,7 @@
     "asset_count": 20,
     "bundle_file_count": 24,
     "runtime_manifest_schema": "helox.runtime-image-manifest/v4",
-    "legacy_readers_preserved": "8\u201316 assets, v2/v3 runtime metadata",
+    "legacy_readers_preserved": "8–16 assets, v2/v3 runtime metadata",
     "actual_copy_raw": "s04-release-copy-actual-v1.json",
     "actual_copy_elapsed": 11.266,
     "installed_manifest_unchanged": true,
@@ -1182,6 +1182,75 @@
       {
         "path": "internal/sandbox/source_analysis_real_test.go",
         "sha256": "e1094a38d2cac5bda88f856875a1cf7847f6b9e51f7660df581b0c9f254b47b6"
+      }
+    ]
+  },
+  "member_sources": {
+    "baseline": "f8a9546",
+    "scope": "Named local source-return API and existing structure report preservation for npm, Go and Cargo only; production analyzer/Policy consumers are not wired",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "api_checks_pass": true,
+    "raw": [
+      "s04-member-sources-target-v2.json",
+      "s04-member-sources-architecture-v1.json",
+      "s04-member-sources-foundation-v2.json",
+      "s04-member-sources-security-v1.json",
+      "s04-member-sources-vet-v1.json",
+      "s04-member-sources-static-v1.json"
+    ],
+    "foundation_first_failure": "s04-member-sources-foundation-v1.json",
+    "foundation_first_failure_reason": "Existing architecture allowlist did not include the actual npm to content edge; added only current consumer edges and constrained content owner",
+    "boundedness": "Existing npm20MiB/file and npm/Go/Cargo200MiB decoded bounds retained; no new archive extraction or graph accounting",
+    "limitations": [
+      "Parser selection uses names only as language hints, not a safety verdict",
+      "No-source/unsupported/packed/native coverage and remaining PyPI/GitHub/Terraform capture are OPEN",
+      "Production scanner/transitive graph/cache/promotion/CLI and Policy remain OPEN"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/cargo/sources_test.go",
+        "sha256": "1d678ea59dd508810de942d267522c8fec1b281978070670f1723095334f99c7"
+      },
+      {
+        "path": "internal/inspection/cargo/static.go",
+        "sha256": "49c3e827d00b3c5d8f1acaee65c17529a22d6be991975ace9736adcb44605fd9"
+      },
+      {
+        "path": "internal/inspection/content/language.go",
+        "sha256": "3faaa7d924f3d371c7752de9eff618034a14b9963c70bfde7329c945dd11011d"
+      },
+      {
+        "path": "internal/inspection/content/language_test.go",
+        "sha256": "df9aea31143df27ed62ab7204b9eb416bc0e5bc64809e031fc5754a890f69ddf"
+      },
+      {
+        "path": "internal/inspection/gomodule/static.go",
+        "sha256": "af23aa5e391a0b46721ed3bf7f7d65fc45899238159f4b36374a1ea960c114b7"
+      },
+      {
+        "path": "internal/inspection/gomodule/static_test.go",
+        "sha256": "150c425676aec9ec8f8e89bd8da51343a4ebdad623ce2edc3fb870db0a3d39b0"
+      },
+      {
+        "path": "internal/inspection/npm/archive_inventory.go",
+        "sha256": "580293c3f1f48e79384431abb5e7739b65451801042744dcce1990c05da288d5"
+      },
+      {
+        "path": "internal/inspection/npm/archive_sources_test.go",
+        "sha256": "bd11af9664605b5f94a2553e754a1334a67008c36a5fe1e7e7462642db664440"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "1095ad3ea6a6efa7f25dfd1c81d1bb33a12c4f7700019924e528806612b6fb4b"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "c02a74f68eec2d80962f0bb0f0e5c02fea245d526602cd3ddd2ec0bbf780927d"
       }
     ]
   }

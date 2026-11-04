@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
@@ -23,8 +24,11 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 		duplicate, link, corrupt        bool
 		requiredMod                     string
 		want                            string
+		contentFinding                  string
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
+		{name: "python helper is content DATA", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n"},
+		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
 		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "malformed required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module (\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
@@ -124,6 +128,26 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			report, err := inspector.Inspect(context.Background(), acquired)
 			if err != nil {
 				t.Fatal(err)
+			}
+			sources, measured, sourceErr := inspector.InspectSources(context.Background(), acquired)
+			if sourceErr != nil {
+				t.Fatal(sourceErr)
+			}
+			if tc.contentFinding != "" {
+				if len(report.Findings()) != 0 || len(sources) != 0 || len(measured.Findings()) != 1 || measured.Findings()[0].Code() != tc.contentFinding {
+					t.Fatal("newly selected helper bytes did not receive independent ZIP integrity validation")
+				}
+				return
+			}
+			if !reflect.DeepEqual(report, measured) {
+				t.Fatal("source selection changed the existing static report")
+			}
+			if tc.want == "" {
+				if len(sources) != 1 || sources[0].Path != tc.file || !bytes.Equal(sources[0].Body, []byte(tc.body)) {
+					t.Fatal("validated source/testdata bytes were dropped or changed", sources)
+				}
+			} else if len(sources) != 0 {
+				t.Fatal("invalid module leaked partial sources")
 			}
 			if tc.want == "" {
 				if len(report.Findings()) != 0 {

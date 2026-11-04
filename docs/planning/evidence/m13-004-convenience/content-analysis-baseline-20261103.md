@@ -735,3 +735,47 @@ facts를 연결하는 일이다. Native/packed/미지원·source 없음의 appli
 최종 native/hosted를 닫아야 한다. 현재 함수/실제 시험 소비자는 연결됐지만 production
 생태계 consumer·전체 S04 acceptance는 여전히 OPEN이다. 새 CI/Host 영구 설치·언어 version
 owner 변경은 없으며 명명/배포 완료로 쓰지 않는다.
+
+
+### 기존 member pass의 source 연결 — 착수 대조 (`f8a9546`)
+
+| 이번 작은 범위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| npm 기존 archive pass의 검증된 source 반환 | NO | NO | NO | NO | 기존 `archiveCapture.entry/finish`에서 선택 source만 유한 보관; 같은 CRC/원본/경로 검증 성공 뒤 반환; 변조·한도·선택 파일 회귀 |
+| 전체 생태계 content 분석 소비 | NO | NO | NO | NO | 나머지 member owners, no-source/unsupported/packed/native applicability, 실제 scanner·Policy/cache/promotion/CLI/전이 graph 연결 |
+
+기존 `InspectArchive`/selected entry 재생 경로와 hash/copy loop는 재구현하지 않는다.
+npm 기존20MiB/file·200MiB decoded·manifest 포함10000-entry 한도는 source subset에도
+적용되며 backend64MiB/512MiB/10000보다 좁다. 추가 budget/owner를 만들지 않는다.
+Source suffix는 parser 선택 힌트이며 안전성·실행 역할 증명이 아니다. 이 범위에서는
+source 반환만 구현하고 source 없음·지원하지 않는 파일을 clean으로 판정하지 않는다.
+기존 구조 전용 consumers에 content 완료를 암묵적으로 부여하지 않는다.
+
+Go `CheckedFiles`의 정규화된 ZIP member와 현재 `.go` bounded read·CRC·syntax 검사는
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES로 보존한다. Cargo `ArchiveFiles`의
+전체 bounded byte map·manifest/CRC 검증도 같은 기존 상태다. 이 두 owner의 source 반환은
+별도 NO/NO/NO/NO이며 MISSING은 같은 입력 읽기의 parser 대상 subset 반환·실패 시 폐기·
+기존 report 동일성·선택 순서 회귀다. Go testdata의 syntax 적용 제외는 유지하지만
+그 bytes를 content 검사에서 삭제하지 않는다. 추가 해제/graph 예산 소비를 만들지 않는다.
+
+첫 foundation36.578s는 기존 build/format 단계를 지난 뒤 npm→content의 미등록 의존
+연결을 검출했다. 실제 사용하는 그 edge만 등록하고 content 자체도 Domain/Port/runtime
+identity 외 product 및 external dependency를 거부하도록 기존 architecture 검사에 명시한다.
+새 sandbox/policy/bootstrap 연결을 허용하는 변경이 아니다.
+
+
+다음은 source-return API만의 named local 결과다.
+
+- npm `InspectArchiveSources`는 기존 capture/hash/copy에 선택 body 보관만 추가하고,
+  전체 finish 성공 뒤에만 inventory/source를 반환한다. Go `InspectSources`는 기존
+  `.go` read를 재사용하며 추가 언어도 같은 checked ZIP member에서 CRC를 확인한다.
+  Testdata의 기존 syntax 제외는 유지하되 내용 검사용 bytes를 버리지 않는다. Cargo는
+  `ArchiveFiles`의 검증된 byte map을 선택하고 선택 key만 안정된 순서로 정렬한다.
+- Targeted Race15.389s/architecture1.918s/foundation29.860s/security13.965s/
+  vet0.808s/pinned Staticcheck2.664s PASS다. 같은 source hash와 원본 receipt는 public
+  review의 `member_sources`에 결합했다. 실패한 foundation36.578s도 보존한다.
+- Unit test의 임시 intake는 t.TempDir에서 회수하고 별도 native binary/입력 사본은
+  생성하지 않았다. 기존 qualified runtime/CPP/전체 CI를 재실행하지 않았다.
+- API 구현과 지정 회귀만 확인했으며 production scanner/Policy 연결은 미실시다.
+  PyPI/GitHub/Terraform, native/packed/unsupported/no-source applicability는 미완료다.
+  전체 S04는 계속 NO/NO/NO/NO이며 이름·배포 준비 완료가 아니다.

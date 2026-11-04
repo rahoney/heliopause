@@ -15,6 +15,8 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 const checkProfileName = "go-module-static-v1"
@@ -30,6 +32,21 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	return i.inspect(ctx, artifact, nil)
+}
+
+// InspectSources retains parser DATA in the existing checked member pass.
+// Successful structure inspection alone is not a content-analysis verdict.
+func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	var sources []ports.SourceAnalysisFile
+	report, err := i.inspect(ctx, artifact, &sources)
+	if err != nil || len(report.Findings()) != 0 {
+		return nil, report, err
+	}
+	return sources, report, nil
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil {
 		return domain.InspectionReport{}, errors.New("go module static inspection request is invalid")
 	}
@@ -59,7 +76,12 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		if err := ctx.Err(); err != nil {
 			return domain.InspectionReport{}, err
 		}
-		if !strings.HasSuffix(file.Name, ".go") {
+		language := ""
+		if sources != nil {
+			language = content.SourceLanguage(file.Name)
+		}
+		goSource := strings.HasSuffix(file.Name, ".go")
+		if !goSource && language == "" {
 			continue
 		}
 		r, err := file.Open()
@@ -77,7 +99,10 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		// an explicit package/import may select them and must pass the compiler
 		// in the observed build. No package or vendor name grants an exemption.
 		rel := strings.TrimPrefix(file.Name, artifact.Identity().Name()+"@"+artifact.Identity().Version()+"/")
-		if isTestData(rel) {
+		if sources != nil && language != "" {
+			*sources = append(*sources, ports.SourceAnalysisFile{Path: rel, Language: language, Body: body})
+		}
+		if !goSource || isTestData(rel) {
 			continue
 		}
 		// Parsing never imports or executes project code. Comments and directives

@@ -18,6 +18,8 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 // InspectArchive reuses static inspection and additionally measures every file
@@ -25,6 +27,23 @@ import (
 // The original Inspect API and its result semantics remain unchanged.
 func (i *Inspector) InspectArchive(ctx context.Context, artifact domain.AcquiredArtifact) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {
 	capture := &archiveCapture{}
+	return i.captureArchive(ctx, artifact, capture)
+}
+
+// InspectArchiveSources measures the same archive once and retains only bounded
+// source DATA for the fixed parsers. No files are returned before the complete
+// archive, compressed digest and all member identities have been verified.
+// An empty selection is not a completed content inspection.
+func (i *Inspector) InspectArchiveSources(ctx context.Context, artifact domain.AcquiredArtifact) (artifactnpm.ArchiveInventory, []ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	capture := &archiveCapture{captureSources: true}
+	inventory, report, err := i.captureArchive(ctx, artifact, capture)
+	if err != nil || !inventory.Valid() {
+		return artifactnpm.ArchiveInventory{}, nil, report, err
+	}
+	return inventory, capture.sources, report, nil
+}
+
+func (i *Inspector) captureArchive(ctx context.Context, artifact domain.AcquiredArtifact, capture *archiveCapture) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {
 	report, err := i.inspect(ctx, artifact, capture)
 	if err != nil || len(report.Findings()) != 0 {
 		return artifactnpm.ArchiveInventory{}, report, err
@@ -33,15 +52,17 @@ func (i *Inspector) InspectArchive(ctx context.Context, artifact domain.Acquired
 }
 
 type archiveCapture struct {
-	compressed   *io.LimitedReader
-	buffered     *bufio.Reader
-	decoded      *io.LimitedReader
-	digest       hash.Hash
-	entries      []artifactnpm.ArchiveEntry
-	manifest     []byte
-	inventory    artifactnpm.ArchiveInventory
-	selectedPath string
-	selectedBody []byte
+	compressed     *io.LimitedReader
+	buffered       *bufio.Reader
+	decoded        *io.LimitedReader
+	digest         hash.Hash
+	entries        []artifactnpm.ArchiveEntry
+	manifest       []byte
+	inventory      artifactnpm.ArchiveInventory
+	selectedPath   string
+	selectedBody   []byte
+	captureSources bool
+	sources        []ports.SourceAnalysisFile
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -93,6 +114,14 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 	item := artifactnpm.ArchiveEntry{Path: strings.TrimPrefix(name, "package/"), Directory: header.Typeflag == tar.TypeDir, Size: header.Size, Mode: header.Mode}
 	if !item.Directory {
 		digest := sha256.New()
+		language := ""
+		if c.captureSources {
+			language = content.SourceLanguage(item.Path)
+		}
+		// The existing npm limits (20MiB/file, 200MiB decoded, 10000
+		// entries including the manifest) already bound this subset more
+		// tightly than the parser input. Do not add a second archive budget.
+		retainSource := language != ""
 		if manifest != nil {
 			_, _ = digest.Write(manifest) // hash.Hash.Write never fails.
 			c.manifest = append([]byte(nil), manifest...)
@@ -102,7 +131,7 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		} else {
 			var selected bytes.Buffer
 			var writer io.Writer = digest
-			if item.Path == c.selectedPath {
+			if item.Path == c.selectedPath || retainSource {
 				writer = io.MultiWriter(digest, &selected)
 			}
 			if err := copyArchivePayload(ctx, writer, reader, header.Size); err != nil {
@@ -110,6 +139,9 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 			}
 			if item.Path == c.selectedPath {
 				c.selectedBody = selected.Bytes()
+			}
+			if retainSource {
+				c.sources = append(c.sources, ports.SourceAnalysisFile{Path: item.Path, Language: language, Body: selected.Bytes()})
 			}
 		}
 		var err error
