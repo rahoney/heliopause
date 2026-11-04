@@ -1031,3 +1031,29 @@ Release 공급 후속 확인: 현재 lock은 자체 build의 core/source/notices
 floating upstream wheel로 대체하지 않는다. 네 asset workflow 연결은 원격 frozen 공급을
 준비한 뒤 기존 materializer에서 검증해야 하므로 계속 MISSING이며 현재 검증을 배포/공식
 provenance 완료로 표시하지 않는다. 다른 로컬 구현 작업의 중단 사유는 아니다.
+
+
+### npm/Go native streaming — 착수 지도
+
+현재 두 owner의 구조/무결성/source 반환은 구현돼 있지만 native member 연결은 각각
+NO/NO/NO/NO다. MISSING은 기존 tar entry/checked ZIP pass의 prefix 선정·같은 body/digest
+재사용·파일별 분석 후 해제와 전체 검증 전 결과 미공개다. npm archiveCapture와 Go inspect에
+기존 BinaryInspection만 전달하며 별도 추출기·실행기·source/native 저장소를 만들지 않는다.
+기존 public static/source 계약과 Go parser/testdata 의미, 압축/파일/graph 한도를 유지한다.
+
+npm/Go native의 named local 결과:
+
+- npm `InspectArchiveContent`는 같은 prefix/entry body/hash를 증분 native owner에 넘기고
+  전체 gzip/압축 SHA/inventory 완료 뒤에만 반환한다. Member body를 추가 사본으로 보존하지
+  않고 native와 parser source를 중복 선정하지 않는다. 기존 selectedBody/manifest 의미와
+  20MiB/file·200MiB·10000 entries 한도는 유지한다.
+- Go `InspectContent`는 같은 checked ZIP read/CRC/body를 재사용한다. Go parser와
+  testdata의 기존 적용 규칙은 유지하며 native는 source 배열에 중복 보존하지 않는다.
+  Native 부재는 적용 제외가 아니고 필수 INCOMPLETE로 남긴다. 두 owner의 기존
+  Inspect/InspectSources 결과 계약을 보존했다.
+- 두 member/위장 source·분리된 SHA 근거, 기존 source inventory 보존, late CRC/압축
+  SHA/경로·취소/Go syntax·identity 실패의 내용 미공개와 ZIP helper CRC를 확인했다.
+  Related Race18.354s/security14.737s/vet0.590s/Staticcheck1.814s PASS다.
+  Unit 임시는 t.TempDir로 정리됐고 별도 native 실행/추출/공급·CI/push는 없다.
+  이 DATA 진입점 범위는 IMPLEMENTED/WIRED/QUALIFIED=YES지만 ACCEPTANCE_CLOSED=NO다.
+  GitHub native와 전체 census/AST·생산 graph/cache/promotion/CLI·hosted는 MISSING이다.

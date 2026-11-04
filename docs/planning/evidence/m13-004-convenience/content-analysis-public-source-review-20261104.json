@@ -1700,5 +1700,39 @@
         "source_unchanged": true
       }
     }
+  },
+  "npm_go_native_streaming": {
+    "baseline": "a02ec5f",
+    "implemented": true,
+    "wired": "npm archive and Go module content DATA entry points",
+    "qualified": "named local archive/member scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-npm-go-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-format.json",
+        "sha256": "be106dd0095639dd25c6dbe4f1d419930fab324dcf9febd019a0dc2a08e0b828",
+        "elapsed": 0.899
+      },
+      "s04-npm-go-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-race.json",
+        "sha256": "4128f3b0d2cd0b92c855eb42e2f88e50884b2e409c7991d2fff2d2be73250f2c",
+        "elapsed": 18.354
+      },
+      "s04-npm-go-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-security.json",
+        "sha256": "f420d36c976f25e5ec6234887c13f70c2469a4cd95ed40f0f4ec597356b9bb0d",
+        "elapsed": 14.737
+      },
+      "s04-npm-go-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-vet.json",
+        "sha256": "157c68c513209b26181952854f92478ce6af4f7370ab543ee93ea200c48c52f0",
+        "elapsed": 0.59
+      },
+      "s04-npm-go-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-staticcheck.json",
+        "sha256": "30ce4cc0c064da52c0d1a9b52356bbb43477cff3686d4f4bebeb14f3286dd60c",
+        "elapsed": 1.814
+      }
+    }
   }
 }

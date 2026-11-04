@@ -25,10 +25,12 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 		requiredMod                     string
 		want                            string
 		contentFinding                  string
+		native                          bool
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
 		{name: "python helper is content DATA", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n"},
 		{name: "extensionless helper", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n"},
+		{name: "native disguised as Python", mod: "example.com/module", file: "tools/helper.py", body: "MZ", native: true},
 		{name: "extensionless helper CRC", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
@@ -134,6 +136,18 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			sources, measured, sourceErr := inspector.InspectSources(context.Background(), acquired)
 			if sourceErr != nil {
 				t.Fatal(sourceErr)
+			}
+			contentSources, contentReport, contentErr := inspector.InspectContent(context.Background(), acquired)
+			if tc.want != "" || tc.contentFinding != "" {
+				if contentErr != nil || len(contentSources) != 0 || len(contentReport.Executions()) != 1 || len(contentReport.Findings()) != 1 {
+					t.Fatal("module validation failure exposed provisional content facts", contentErr)
+				}
+			} else if tc.native {
+				if contentErr == nil || len(contentSources) != 0 || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+					t.Fatal("native source disguise was dropped or became complete", contentErr)
+				}
+			} else if contentErr != nil || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+				t.Fatal("module content changed source DATA or invented binary applicability", contentErr)
 			}
 			if tc.contentFinding != "" {
 				if len(report.Findings()) != 0 || len(sources) != 0 || len(measured.Findings()) != 1 || measured.Findings()[0].Code() != tc.contentFinding {

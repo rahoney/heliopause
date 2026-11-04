@@ -43,6 +43,26 @@ func (i *Inspector) InspectArchiveSources(ctx context.Context, artifact domain.A
 	return inventory, capture.sources, report, nil
 }
 
+// InspectArchiveContent binds native facts to the same measured archive. Facts
+// remain private until its complete compressed digest/trailer is verified.
+func (i *Inspector) InspectArchiveContent(ctx context.Context, artifact domain.AcquiredArtifact) (artifactnpm.ArchiveInventory, []ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	native, err := content.NewBinaryInspection(artifact)
+	if err != nil {
+		return artifactnpm.ArchiveInventory{}, nil, domain.InspectionReport{}, err
+	}
+	capture := &archiveCapture{captureSources: true, native: native}
+	inventory, static, err := i.captureArchive(ctx, artifact, capture)
+	if err != nil || !inventory.Valid() {
+		return artifactnpm.ArchiveInventory{}, nil, static, err
+	}
+	nativeReport, nativeErr := native.Report(ctx)
+	if len(nativeReport.Executions()) == 0 {
+		return artifactnpm.ArchiveInventory{}, nil, static, nativeErr
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport})
+	return inventory, capture.sources, report, errors.Join(nativeErr, err)
+}
+
 func (i *Inspector) captureArchive(ctx context.Context, artifact domain.AcquiredArtifact, capture *archiveCapture) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {
 	report, err := i.inspect(ctx, artifact, capture)
 	if err != nil || len(report.Findings()) != 0 {
@@ -63,6 +83,7 @@ type archiveCapture struct {
 	selectedBody   []byte
 	captureSources bool
 	sources        []ports.SourceAnalysisFile
+	native         *content.BinaryInspection
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -128,7 +149,9 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		// The existing npm limits (20MiB/file, 200MiB decoded, 10000
 		// entries including the manifest) already bound this subset more
 		// tightly than the parser input. Do not add a second archive budget.
-		retainSource := language != ""
+		retainNative := c.native != nil && content.IsBinary(item.Path, prefix)
+		retainSource := language != "" && !retainNative
+		var nativeBody []byte
 		if manifest != nil {
 			_, _ = digest.Write(manifest) // hash.Hash.Write never fails.
 			c.manifest = append([]byte(nil), manifest...)
@@ -138,7 +161,7 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		} else {
 			var selected bytes.Buffer
 			var writer io.Writer = digest
-			if item.Path == c.selectedPath || retainSource {
+			if item.Path == c.selectedPath || retainSource || retainNative {
 				writer = io.MultiWriter(digest, &selected)
 			}
 			if _, err := writer.Write(prefix); err != nil {
@@ -153,11 +176,17 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 			if retainSource {
 				c.sources = append(c.sources, ports.SourceAnalysisFile{Path: item.Path, Language: language, Body: selected.Bytes()})
 			}
+			if retainNative {
+				nativeBody = selected.Bytes()
+			}
 		}
 		var err error
 		item.Digest, err = domain.NewSHA256Digest(hex.EncodeToString(digest.Sum(nil)))
 		if err != nil {
 			return err
+		}
+		if retainNative {
+			_ = c.native.Inspect(ctx, content.BinaryMember{Path: item.Path, Body: nativeBody, Mode: uint32(item.Mode), Digest: item.Digest})
 		}
 	}
 	c.entries = append(c.entries, item)

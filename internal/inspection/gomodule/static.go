@@ -4,6 +4,8 @@ package gomodule
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"go/parser"
 	"go/token"
@@ -33,21 +35,41 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	return i.inspect(ctx, artifact, nil)
+	return i.inspect(ctx, artifact, nil, nil)
 }
 
 // InspectSources retains parser DATA in the existing checked member pass.
 // Successful structure inspection alone is not a content-analysis verdict.
 func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
 	var sources []ports.SourceAnalysisFile
-	report, err := i.inspect(ctx, artifact, &sources)
+	report, err := i.inspect(ctx, artifact, &sources, nil)
 	if err != nil || len(report.Findings()) != 0 {
 		return nil, report, err
 	}
 	return sources, report, nil
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
+// InspectContent collects source DATA and native facts in the same checked ZIP
+// pass. Go syntax and archive validation remain prerequisites for publication.
+func (i *StaticInspector) InspectContent(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	native, err := content.NewBinaryInspection(artifact)
+	if err != nil {
+		return nil, domain.InspectionReport{}, err
+	}
+	var sources []ports.SourceAnalysisFile
+	static, err := i.inspect(ctx, artifact, &sources, native)
+	if err != nil || len(static.Findings()) != 0 {
+		return nil, static, err
+	}
+	nativeReport, nativeErr := native.Report(ctx)
+	if len(nativeReport.Executions()) == 0 {
+		return nil, static, nativeErr
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport})
+	return sources, report, errors.Join(nativeErr, err)
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile, native *content.BinaryInspection) (domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil {
 		return domain.InspectionReport{}, errors.New("go module static inspection request is invalid")
 	}
@@ -99,7 +121,8 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 			language = content.SourceLanguage(file.Name, prefix)
 		}
 		payload := io.MultiReader(bytes.NewReader(prefix), r)
-		if !goSource && language == "" {
+		binaryMember := native != nil && content.IsBinary(file.Name, prefix)
+		if !goSource && language == "" && !binaryMember {
 			n, readErr := io.Copy(io.Discard, io.LimitReader(payload, artifactgo.MaxModuleFileBytes+1))
 			closeErr := r.Close()
 			if readErr != nil || closeErr != nil || uint64(n) != file.UncompressedSize64 {
@@ -109,7 +132,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		}
 		body, readErr := io.ReadAll(io.LimitReader(payload, artifactgo.MaxModuleFileBytes+1))
 		closeErr := r.Close()
-		if readErr != nil || closeErr != nil || len(body) > artifactgo.MaxModuleFileBytes {
+		if readErr != nil || closeErr != nil || len(body) > artifactgo.MaxModuleFileBytes || uint64(len(body)) != file.UncompressedSize64 {
 			return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")
 		}
 		// Go's package discovery excludes directories named exactly testdata.
@@ -118,7 +141,12 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		// an explicit package/import may select them and must pass the compiler
 		// in the observed build. No package or vendor name grants an exemption.
 		rel := strings.TrimPrefix(file.Name, artifact.Identity().Name()+"@"+artifact.Identity().Version()+"/")
-		if sources != nil && language != "" {
+		if binaryMember {
+			sum := sha256.Sum256(body)
+			digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+			_ = native.Inspect(ctx, content.BinaryMember{Path: rel, Body: body, Mode: uint32(file.Mode().Perm()), Digest: digest})
+		}
+		if sources != nil && language != "" && !binaryMember {
 			*sources = append(*sources, ports.SourceAnalysisFile{Path: rel, Language: language, Body: body})
 		}
 		if !goSource || isTestData(rel) {
