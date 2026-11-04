@@ -170,9 +170,24 @@ func TestCrateContentUsesVerifiedBinaryBytesBeforeSourceNames(t *testing.T) {
 			}
 		}
 		analyzer := &crateAnalyzer{}
-		analyzed, analysisErr := inspector.InspectAnalyzed(context.Background(), subject, analyzer)
+		configured, err := NewStaticInspector(root, analyzer)
+		if err != nil {
+			t.Fatal(err)
+		}
+		planned, err := configured.ExpectedChecks(context.Background(), subject, domain.CheckInspection)
+		if err != nil || len(planned) != 6 || analyzer.calls != 0 {
+			t.Fatal("content checks were not frozen before execution", err)
+		}
+		plan, err := domain.NewCheckPlan(run, subject, planned)
+		if err != nil {
+			t.Fatal(err)
+		}
+		analyzed, analysisErr := configured.Inspect(context.Background(), subject)
 		if analysisErr == nil || analyzer.calls != 1 || analyzer.input.Artifact != subject || !reflect.DeepEqual(analyzer.input.Files, sources) || len(analyzed.Executions()) != 6 || analyzed.Executions()[4].Status() != domain.ExecutionIncomplete {
 			t.Fatal("content entry point skipped AST input or hid scanner failure", analysisErr)
+		}
+		if err := plan.Validate(run, subject, analyzed.Executions()); err != nil {
+			t.Fatal("configured content report differs from its frozen checks", err)
 		}
 		binaryFacts := 0
 		for _, fact := range report.Evidence() {

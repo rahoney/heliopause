@@ -1914,5 +1914,157 @@
         "source_unchanged": true
       }
     }
+  },
+  "cargo_production": {
+    "baseline": "195b0d0",
+    "implemented": true,
+    "wired": "production Cargo inspector/bootstrap/frozen checks/current Stage/readback; default CLI actual remains missing",
+    "qualified": "named local unit profiles and public itoa source-analysis/Policy/cache native scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-cargo-production-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-target.json",
+        "sha256": "10217f387a84ad2df177e66f6013e03e243bfe8e46e2c33b4738aeabeec2147a",
+        "exit_code": 0,
+        "elapsed": 16.393,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-retained-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-retained-red.json",
+        "sha256": "c48bb35fbd49d477b7ed3a6d0d872706e0bfe6256ae2bf6c563c590d2b914a82",
+        "exit_code": 1,
+        "elapsed": 9.456,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-format.json",
+        "sha256": "65dd337154b10cb3ff6d133288ab6d8e51991f2558c0d82fac594b342dfc0cfb",
+        "exit_code": 0,
+        "elapsed": 0.986,
+        "source_unchanged": false
+      },
+      "s04-cargo-production-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-race.json",
+        "sha256": "4c94cb1907e914878bd4008d34c59f86460037cb8ff19df7436b054aee3b1b1b",
+        "exit_code": 1,
+        "elapsed": 231.696,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-security.json",
+        "sha256": "f005d7b91999383580344bcd52c13085ffc1f469a3bcd0a386990d740a897814",
+        "exit_code": 0,
+        "elapsed": 35.71,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-vet.json",
+        "sha256": "da8231dc32d6e4c9357886b51aae35d653e8e287d1b237a3c267446599ead377",
+        "exit_code": 0,
+        "elapsed": 21.522,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-staticcheck.json",
+        "sha256": "86032fb64a4642c74293c4706e8d9c51ffaf7d56e9666495b86a6fe383b911f4",
+        "exit_code": 0,
+        "elapsed": 31.641,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-native-compile": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-native-compile.json",
+        "sha256": "36f5265b5c19fb06ddcd3526d2f4d4addfeda894ae8215be924ca04dc9f66832",
+        "exit_code": 0,
+        "elapsed": 22.085,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-architecture-v2": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-architecture-v2.json",
+        "sha256": "afab3d1547902227a3f09202f42df167ed4b75e0162dc5901a31097facf46c6b",
+        "exit_code": 0,
+        "elapsed": 0.615,
+        "source_unchanged": true
+      },
+      "s04-source-engine-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-red.json",
+        "sha256": "afa66e2912d03d61b5b3429e1dfea4a383d50fb05185395ce854e27373990c4d",
+        "exit_code": 1,
+        "elapsed": 0.897,
+        "source_unchanged": true
+      },
+      "s04-source-engine-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-format.json",
+        "sha256": "31e876124ea91adaf8f97c7c5df7022d62a02b0ea13737ba4463d0d3779f5ea9",
+        "exit_code": 0,
+        "elapsed": 0.887,
+        "source_unchanged": false
+      },
+      "s04-source-engine-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-race.json",
+        "sha256": "84f174d04c06a6b21bfb5a442aa59be2e49855c9965fe8b0004d3c11225bd716",
+        "exit_code": 0,
+        "elapsed": 3.926,
+        "source_unchanged": true
+      },
+      "s04-source-engine-retained": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-retained.json",
+        "sha256": "572ef1653d49fef5318060966885bb0e035c77072fd123858ba3bf0566331411",
+        "exit_code": 0,
+        "elapsed": 11.532,
+        "source_unchanged": true
+      },
+      "s04-source-engine-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-security.json",
+        "sha256": "35f618f6d85e824102541ad758ce58149ec62a93a359fc528457dd96e38d3221",
+        "exit_code": 0,
+        "elapsed": 18.305,
+        "source_unchanged": true
+      },
+      "s04-source-engine-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-vet.json",
+        "sha256": "ce47c6724ba0675c5da08640ac08988603fd9b8aa20d96decae88f06f5a29129",
+        "exit_code": 0,
+        "elapsed": 0.959,
+        "source_unchanged": true
+      },
+      "s04-source-engine-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-staticcheck.json",
+        "sha256": "6fe4044712518e5ac06c7f0a04f11d710ed0275fc37b9e8839d217a04ca278e6",
+        "exit_code": 0,
+        "elapsed": 1.576,
+        "source_unchanged": true
+      }
+    },
+    "native": {
+      "1": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v1.json",
+        "sha256": "731f93beae31e5f61825518b8f768ed6d24f7bb4e43978271b202ff1b101f141",
+        "elapsed": 25.238,
+        "complete": false,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240578517
+      },
+      "2": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v2.json",
+        "sha256": "96d0f4d1bb93213ffa69e14e8b60c17311145e25dc22d219616ca64202695909",
+        "elapsed": 23.762,
+        "complete": false,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240582870
+      },
+      "3": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v3.json",
+        "sha256": "5523c95724fd092af3c7c3c7efc0f0169f29248d1a016e3bb656f7bfa2e4145e",
+        "elapsed": 23.623,
+        "complete": true,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240591830
+      }
+    },
+    "not_validation": [
+      "s04-cargo-production-architecture: old TestArchitecture regex selected no tests",
+      "native-compile: tagged build validity only, no runtime invocation",
+      "production-target: content/bootstrap packages selected no tests; real targeted tests ran in Cargo/promotion"
+    ]
   }
 }

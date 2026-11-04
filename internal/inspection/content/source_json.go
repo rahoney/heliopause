@@ -210,6 +210,7 @@ func decodeSourceScan(input ports.SourceAnalysisInput, output ports.SourceAnalys
 	stage = "source-input-and-target-map"
 	originals := make(map[string]ports.SourceAnalysisFile, len(input.Files))
 	languages := map[string]bool{}
+	inputLanguages := map[string]bool{}
 	for _, rule := range rules {
 		for _, language := range rule.Languages {
 			languages[language] = true
@@ -219,6 +220,7 @@ func decodeSourceScan(input ports.SourceAnalysisInput, output ports.SourceAnalys
 		if !languages[file.Language] || !utf8.Valid(file.Body) {
 			return scan, errSourceOutput
 		}
+		inputLanguages[file.Language] = true
 		if _, found := originals[file.Path]; found {
 			return scan, errSourceOutput
 		}
@@ -260,8 +262,17 @@ func decodeSourceScan(input ports.SourceAnalysisInput, output ports.SourceAnalys
 		}
 	}
 	stage = "rule-engine-census"
+	expectedRules := make(map[string]bool)
+	for _, rule := range rules {
+		for _, language := range rule.Languages {
+			if inputLanguages[language] {
+				expectedRules[rule.ID] = true
+				break
+			}
+		}
+	}
 	engines, ok := root["rules_by_engine"].([]any)
-	if !ok || len(engines) != len(rules) {
+	if !ok || len(engines) != len(expectedRules) {
 		return scan, errSourceOutput
 	}
 	knownRules := map[string]bool{}
@@ -271,7 +282,7 @@ func decodeSourceScan(input ports.SourceAnalysisInput, output ports.SourceAnalys
 			return scan, errSourceOutput
 		}
 		id, ok := sourceString(row[0])
-		if !ok || rules[id].ID == "" || knownRules[id] {
+		if !ok || !expectedRules[id] || knownRules[id] {
 			return scan, errSourceOutput
 		}
 		knownRules[id] = true

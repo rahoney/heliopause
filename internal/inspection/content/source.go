@@ -41,7 +41,7 @@ func SourceChecks() ([]domain.CheckRequirement, error) {
 
 func sourceProfile() (domain.ContentDigest, error) {
 	pin := runtimeidentity.SelectedSemgrepSupply()
-	return domain.CheckProfileDigest("source-content-v1", pin.Version+"|"+pin.Tool.SHA256+"|"+pin.Rules.SHA256)
+	return domain.CheckProfileDigest("source-content-v2", pin.Version+"|"+pin.Tool.SHA256+"|"+pin.Rules.SHA256)
 }
 
 // InspectSources consumes only archive-checked source DATA. It does not read an
@@ -169,7 +169,7 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	coverageEvidenceID, _ := domain.NewEvidenceID("source-content-coverage")
+	coverageEvidenceID, _ := domain.NewEvidenceID(SourceCoverageEvidenceID)
 	fact, err := domain.NewEvidence(coverageEvidenceID, coverageID, artifact.Identity(), artifact.Digest(), "source-content-coverage", string(summary), profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -188,7 +188,7 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	signalSummaryID, _ := domain.NewEvidenceID("source-content-signals-summary")
+	signalSummaryID, _ := domain.NewEvidenceID(SourceSignalsEvidenceID)
 	signalFact, err := domain.NewEvidence(signalSummaryID, signalsID, artifact.Identity(), artifact.Digest(), "source-content-signals", string(signalSummary), profile)
 	if err != nil {
 		return domain.InspectionReport{}, err

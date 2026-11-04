@@ -86,7 +86,11 @@ func newCargoServices(resolver *sandbox.CargoResolver, executor sandbox.TrustedE
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	inspector, err := inspectioncargo.NewStaticInspector(intakeRoot)
+	sourceAnalyzer, err := sandbox.NewSourceAnalyzer(executor, observer, newObservationResourceAdapter())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	inspector, err := inspectioncargo.NewStaticInspector(intakeRoot, sourceAnalyzer)
 	if err != nil {
 		return nil, nil, nil, err
 	}

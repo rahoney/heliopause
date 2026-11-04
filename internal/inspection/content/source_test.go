@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -68,7 +69,9 @@ func sourceFixture(t *testing.T) (ports.SourceAnalysisInput, ports.SourceAnalysi
 	opaque := "/parser-input/source.js"
 	engines := []any{}
 	for _, value := range catalogue {
-		engines = append(engines, []any{value.ID, "OSS"})
+		if slices.Contains(value.Languages, "javascript") {
+			engines = append(engines, []any{value.ID, "OSS"})
+		}
 	}
 	timing := map[string]any{"rules": []any{}, "rules_parse_time": 0, "profiling_times": map[string]any{}, "parsing_time": map[string]any{}, "scanning_time": map[string]any{}, "matching_time": map[string]any{}, "tainting_time": map[string]any{}, "fixpoint_timeouts": []any{}, "prefiltering": map[string]any{}, "targets": []any{}, "total_bytes": 0, "max_memory_bytes": 0}
 	document := map[string]any{"version": runtimeidentity.SelectedSemgrepSupply().Version, "engine_requested": "OSS", "interfile_languages_used": []any{}, "profiling_results": []any{}, "skipped_rules": []any{}, "rules_by_engine": engines, "time": timing, "errors": []any{}, "paths": map[string]any{"scanned": []any{opaque}}, "results": []any{map[string]any{"check_id": id, "path": opaque, "start": map[string]any{"line": 1, "col": 1, "offset": 0}, "end": map[string]any{"line": 1, "col": 6, "offset": 5}, "extra": map[string]any{"metavars": map[string]any{"$SECRET": map[string]any{"abstract_content": "PRIVATE_METAVAR_SENTINEL"}}, "engine_kind": "OSS", "is_ignored": true, "message": rule.Message, "metadata": map[string]any{"rule_version": rule.Metadata.Version, "disposition": rule.Metadata.Disposition}, "severity": rule.Severity, "validation_state": "NO_VALIDATOR"}}}}
@@ -280,11 +283,71 @@ func TestSourceAllSelectedLanguagesShareCanonicalRuleAliases(t *testing.T) {
 	}
 	document["results"] = []any{}
 	document["paths"] = map[string]any{"scanned": paths}
+	catalogue, err := sourceRuleCatalogue(output.Rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	engines := []any{}
+	for _, rule := range catalogue {
+		engines = append(engines, []any{rule.ID, "OSS"})
+	}
+	document["rules_by_engine"] = engines
 	body, _ := json.Marshal(document)
 	output.Output = sourceCapture{body: body}
 	report, err := InspectSources(context.Background(), &sourceRuntime{output: output}, input.Artifact, input.Files)
 	if err != nil || len(report.Findings()) != 0 || report.Execution().Status() != domain.ExecutionCompleted {
 		t.Fatal("selected language alias rejected", err)
+	}
+}
+
+func TestSourceEngineCensusIsExactForInputLanguages(t *testing.T) {
+	for _, language := range []string{"javascript", "typescript", "python", "go", "rust", "hcl"} {
+		t.Run(language, func(t *testing.T) {
+			input, output, document := sourceFixture(t)
+			input.Files[0].Language = language
+			document["results"] = []any{}
+			catalogue, err := sourceRuleCatalogue(output.Rules)
+			if err != nil {
+				t.Fatal(err)
+			}
+			engines := []any{}
+			inactive := ""
+			for _, rule := range catalogue {
+				if slices.Contains(rule.Languages, language) {
+					engines = append(engines, []any{rule.ID, "OSS"})
+				} else {
+					inactive = rule.ID
+				}
+			}
+			for _, fault := range []string{"normal", "missing", "inactive-extra", "inactive-replacement", "duplicate", "wrong-engine"} {
+				t.Run(fault, func(t *testing.T) {
+					rows := append([]any(nil), engines...)
+					switch fault {
+					case "missing":
+						rows = rows[1:]
+					case "inactive-extra":
+						rows = append(rows, []any{inactive, "OSS"})
+					case "inactive-replacement":
+						rows[0] = []any{inactive, "OSS"}
+					case "duplicate":
+						rows = append(rows, rows[0])
+					case "wrong-engine":
+						rows[0] = []any{rows[0].([]any)[0], "PRO"}
+					}
+					document["rules_by_engine"] = rows
+					body, _ := json.Marshal(document)
+					output.Output = sourceCapture{body: body}
+					report, err := InspectSources(context.Background(), &sourceRuntime{output: output}, input.Artifact, input.Files)
+					if fault == "normal" {
+						if err != nil || report.Executions()[0].Status() != domain.ExecutionCompleted {
+							t.Fatal("applicable fixed-rule census rejected", err)
+						}
+					} else if err == nil || report.Executions()[0].Status() != domain.ExecutionIncomplete {
+						t.Fatal("missing/extra/foreign engine became completed coverage", fault)
+					}
+				})
+			}
+		})
 	}
 }
 

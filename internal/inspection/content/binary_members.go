@@ -196,7 +196,7 @@ func (b *BinaryInspection) Report(ctx context.Context, inventories ...Inventory)
 			status, limitation = domain.ExecutionNotExecuted, "M13_BINARY_SIGNALS_UNAVAILABLE"
 		}
 		execution, _ := domain.NewCheckExecution(check.ID(), domain.CheckInspection, check.Required(), domain.CapabilitySupported, status, limitation, check.ProfileDigest())
-		id, _ := domain.NewEvidenceID(fmt.Sprintf("binary-members-summary-%d", index))
+		id, _ := domain.NewEvidenceID([]string{ArchiveBinaryCoverageEvidenceID, ArchiveBinarySignalsEvidenceID}[index])
 		fact, err := domain.NewEvidence(id, check.ID(), b.artifact.Identity(), b.artifact.Digest(), "binary-content-inventory", fmt.Sprintf("Selected binary members: %d; inspected: %d; bytes: %d; coverage complete: %t; bound inventory: %s. Zero selection alone is not an applicability proof.", b.selected, len(b.seen), b.total, complete, inventoryDigest), check.ProfileDigest())
 		if err != nil {
 			return domain.InspectionReport{}, err

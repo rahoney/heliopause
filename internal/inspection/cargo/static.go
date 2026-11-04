@@ -18,16 +18,29 @@ import (
 
 const checkProfileName = "cargo-crate-static-v1"
 
-type StaticInspector struct{ intakeRoot string }
+type StaticInspector struct {
+	intakeRoot string
+	analyzer   ports.SourceAnalysis
+}
 
-func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
+func NewStaticInspector(intakeRoot string, analyzers ...ports.SourceAnalysis) (*StaticInspector, error) {
 	if !filepath.IsAbs(intakeRoot) || filepath.Clean(intakeRoot) != intakeRoot || intakeRoot == "/" {
 		return nil, errors.New("cargo inspector intake root is invalid")
 	}
-	return &StaticInspector{intakeRoot}, nil
+	if len(analyzers) > 1 || len(analyzers) == 1 && analyzers[0] == nil {
+		return nil, errors.New("cargo content inspection requires one configured analyzer")
+	}
+	inspector := &StaticInspector{intakeRoot: intakeRoot}
+	if len(analyzers) == 1 {
+		inspector.analyzer = analyzers[0]
+	}
+	return inspector, nil
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if i != nil && i.analyzer != nil {
+		return i.InspectAnalyzed(ctx, artifact, i.analyzer)
+	}
 	return i.inspect(ctx, artifact, nil, nil, nil)
 }
 
@@ -189,5 +202,15 @@ func (p *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.Ac
 	if err != nil {
 		return nil, err
 	}
-	return []domain.CheckRequirement{requirement}, nil
+	result := []domain.CheckRequirement{requirement}
+	if p.analyzer != nil {
+		for _, declare := range []func() ([]domain.CheckRequirement, error){content.BinaryChecks, content.InventoryChecks, content.SourceChecks} {
+			checks, err := declare()
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, checks...)
+		}
+	}
+	return result, nil
 }

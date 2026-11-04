@@ -27,6 +27,58 @@ type MemberFact struct {
 	UnsupportedSource bool
 }
 
+const (
+	SourceCoverageEvidenceID        = "source-content-coverage"
+	SourceSignalsEvidenceID         = "source-content-signals-summary"
+	ArchiveBinaryCoverageEvidenceID = "binary-members-summary-0"
+	ArchiveBinarySignalsEvidenceID  = "binary-members-summary-1"
+	InventoryEvidenceID             = "content-inventory-summary"
+)
+
+// EvidenceRequirement is a readonly declaration for current archive approval.
+// Consumers compare metadata; they do not run the analyzer or Policy.
+type EvidenceRequirement struct {
+	ID         domain.EvidenceID
+	Check      domain.CheckRequirement
+	Kind       string
+	ExtraKinds []string
+}
+
+func ArchiveEvidenceRequirements() ([]EvidenceRequirement, error) {
+	checks := make(map[string]domain.CheckRequirement)
+	for _, declare := range []func() ([]domain.CheckRequirement, error){SourceChecks, BinaryChecks, InventoryChecks} {
+		declared, err := declare()
+		if err != nil {
+			return nil, err
+		}
+		for _, check := range declared {
+			checks[check.ID().String()] = check
+		}
+	}
+	var result []EvidenceRequirement
+	for _, item := range []struct {
+		id, check, kind string
+		extras          []string
+	}{
+		{SourceCoverageEvidenceID, "source-content", "source-content-coverage", nil},
+		{SourceSignalsEvidenceID, "source-content-signals", "source-content-signals", []string{"source-content-signal"}},
+		{ArchiveBinaryCoverageEvidenceID, "binary-content", "binary-content-inventory", []string{"binary-content-coverage"}},
+		{ArchiveBinarySignalsEvidenceID, "binary-content-signals", "binary-content-inventory", []string{"binary-content-signals"}},
+		{InventoryEvidenceID, "content-inventory", "content-inventory", nil},
+	} {
+		id, err := domain.NewEvidenceID(item.id)
+		if err != nil {
+			return nil, err
+		}
+		check, known := checks[item.check]
+		if !known {
+			return nil, errors.New("archive Evidence declaration has no matching check")
+		}
+		result = append(result, EvidenceRequirement{id, check, item.kind, item.extras})
+	}
+	return result, nil
+}
+
 // Inventory is an immutable census for one exact acquired subject. Its
 // constructor validates facts; the archive owner still owns byte authenticity
 // and must supply every regular member only after whole-archive validation.
@@ -125,7 +177,7 @@ func (i Inventory) Report(ctx context.Context) (domain.InspectionReport, error) 
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	id, _ := domain.NewEvidenceID("content-inventory-summary")
+	id, _ := domain.NewEvidenceID(InventoryEvidenceID)
 	fact, err := domain.NewEvidence(id, check.ID(), i.artifact.Identity(), i.artifact.Digest(), "content-inventory", string(summary), check.ProfileDigest())
 	if err != nil {
 		return domain.InspectionReport{}, err

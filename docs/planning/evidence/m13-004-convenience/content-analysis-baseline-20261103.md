@@ -1197,3 +1197,54 @@ Evidence2를 기존 정상 assertion에 반영한다. Socket 거부는 별도 �
 25.238s는 FAIL/검사 후 Policy·cache 미도달이며 noSKIP/helperwait0/Host 동일·own copy
 240578517B 제거를 확인했다. 여섯 언어 동시 시험을 단일 언어 완료로 전용하지 않고
 고정 도구의 actual engine 목록과 입력 언어를 대조한다. 전체 S04는 계속 OPEN이다.
+
+
+### Actual 단일 언어 engine census — 원인 확정 / 수정 지도
+
+Cargo native-v2/23.762s의 bounded projection은 Rust4source에서 실제 engine row가 고정
+haa-s04-rust-download-shell/OSS 하나임을 보였다. 기존 decoder는 입력 언어와 무관하게
+rule pack 전체 row 수를 요구했고, JS 단일 언어 unit fixture도 모든 언어 row를 제조했다.
+따라서 실제 정상 입력을 incomplete로 거부했다. 입력의 검증된 언어 집합과 고정 catalogue
+교집합을 expected로 만들고 정확한 membership/중복/engine·누락/비적용 추가를 검사한다.
+새 scanner/규칙/pin/skip 예외를 만들지 않으며 source completion profile을 v2로 구분한다.
+이전 여섯 언어 집합은 교집합=전체라는 동등 범위를 유지한다. Native-v1/v2는 모두 Policy/
+cache 미도달 FAIL이며 Host 동일/helperwait0·자기 copy 정리를 확인했다.
+
+Cargo production/단일 언어 교정의 named local 결과:
+
+- Bootstrap은 기존 executor/observer/resource adapter의 고정 SourceAnalyzer를 구성하고
+  같은 Cargo Inspector에 주입한다. 설정된 Inspector는 실행 전 static+native2+census+
+  source2를 선언하며 기존 advisory/ProjectInspectService와 graph 전체 경로를 재사용한다.
+  Source 없는 structural reader는 기존 계약을 유지한다. 사용자 필수 검사를 옵션으로
+  내리거나 UI의 무관한 초기화에 새 runtime 준비를 추가하지 않았다.
+- Source/native/census의 필수 summary5와 현재 Check/Profile/Kind를 기존 cache stage 전과
+  current readback에서 확인한다. Summary ID는 producer/readonly declaration 한 곳의
+  constants를 공유한다. 기존 frozen plan/Record/ReadReference를 유지하고 analyzer/Policy를
+  cache에서 실행하지 않는다. Historical original(false)은 새 승인이 아니며 current(true)와
+  구분한다. Real Store로 재기록·재해시한 wrong profile/kind, source 누락/중복·legacy stage의
+  old cache RED9.456s 뒤 최종 current fixture/거부 검사가 PASS다. Fixture는 synthetic
+  controller/Policy authority이고 실제 scanner 검증으로 쓰지 않는다.
+- Actual 단일 Rust에서 확인한 engine census 차이를 고정 catalogue와 입력 언어의 정확한
+  교집합으로 교정했다. 누락/중복/다른 engine과 비적용 rule 추가·바꿔치기는 계속 거부한다.
+  Source profile만 v2로 구분해 이전 completion과 혼용하지 않는다. Rule/tool pin, Policy
+  분류 버전, observer/권한/예산은 불변이다. 여섯 언어 각각의 정상6과 실패30 case는 old
+  decoder RED0.897s→content/Cargo Race3.926s PASS이며 기존 all-six fixture도 보존했다.
+- Initial 묶음의 content/Cargo/bootstrap Race는 PASS였고 promotion의 기존 환경 fixture/
+  socket 실패는 별도 c8fe972와 앞 절이 소유한다. Current production의 security35.710s/
+  vet21.522s/Staticcheck31.641s·tagged compile22.085s는 PASS다. 최종 engine 교정의
+  security18.305s/vet0.959s/Staticcheck1.576s·current approval11.532s와 실제 import/port
+  검사0.615s도 PASS다. 첫 architecture regex는 no-tests였으므로 검증으로 쓰지 않는다.
+  Promotion 전체237.832s는 engine profile v2 전이며 이후 current Cargo approval 표적만
+  확인했다. 같은 불변 다른 consumer/full/CPP를 재실행하지 않았다.
+- Actual native-v1/25.238s·v2/23.762s는 engine census 실패로 Policy/cache에 미도달했다.
+  V2의 bounded log는 Rust4 source와 실제 고정 Rust rule1/OSS를 보였다. 수정한 동일 공개
+  itoa1.0.17의 V3/23.623s(Go test20.66s)는 acquisition/integrity·전체 census·실제 traced
+  AST·M3/M4 ALLOW·Evidence7·vendor14/current cache readback을 PASS했다. noSKIP/
+  helperwait0/Host 동일이며 각 own copy240578517/240582870/240591830B를 정리했다.
+  성공한 여섯 언어 native를 단일 언어 성공으로 전용하지 않았고 현재도 whole CLI/hosted나
+  악성 탐지율/모든 Cargo graph 성공은 아니다. SDK/CPP는 기존 qualification을 재사용했다.
+- 이 Cargo production 연결의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 한정 범위다.
+  ACCEPTANCE_CLOSED=NO다. 다음은 실제 CLI와 다른 archive의 metadata/census·AST,
+  모든 cache/전이 graph/current-only/release 공급 및 grouped qualification이다. PyPI의 큰
+  native member는 현재64MiB buffer capability로 전체 정상 지원을 주장하지 않으며 기존
+  Artifact/profile 예산을 낮추거나 늘리지 않고 별도 bounded 접근을 마저 완성해야 한다.
