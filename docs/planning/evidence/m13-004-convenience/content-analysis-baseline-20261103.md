@@ -816,3 +816,37 @@ PyPI source 반환의 named local 수정·검증:
   t.TempDir에서 회수하며 새 native binary·Host 설치·CI/push는 없다. 현재 API 반환만
   구현/검증했으므로 production analyzer/Policy와 전체 S04는 계속 미완료다. 다음은
   GitHub/Terraform과 native/packed/unsupported/no-source 사실, 모든 소비자의 연결이다.
+
+
+### GitHub Release·Terraform member 다음 baseline — `bd42c02`
+
+GitHub `StaticInspector`의 bytes-first format/header/path/type/개수/크기 검사는 기존
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES의 한정 범위를 보존한다. 하지만
+현재 ZIP pass는 member를 열지 않고 tar.gz는 tar EOF 뒤 gzip을 drain하지 않는다.
+CRC/전체 payload 검증·source 반환은 NO/NO/NO/NO이며 먼저 직접 반례로 확인한다.
+기존 `openAsset`/format 검사 pass를 수정하며 새 extract/Host 실행 경로를 만들지 않는다.
+
+Terraform `InspectPackage`는 이미 모든 ZIP member의 CRC/size와 flat layout·ELF bounds,
+표준 H1/ZH 및 실행 파일 digest를 검증하고 전체 bounded `Files` map을 반환한다. 이는
+기존 YES/YES/YES/YES 범위다. 여기서 source/native content facts·적용/미지원 범위의
+반환/Inspection/Evidence 연결은 NO/NO/NO/NO다. Map을 재사용하고 다시 ZIP을 풀거나
+동적 providerhelp·서명·기존 승인/graph 예산을 대체하지 않는다.
+
+
+GitHub Release source-return의 named local 결과:
+
+- 직접 RED0.840s는 ZIP CRC·gzip CRC·두 번째 gzip member·compressed tail 네 가지가
+  기존 header-only pass에서 잘못 수용됨을 보였다. 같은 pass에서 전체 regular member를
+  기존64MiB/file·200MiB/10000-entry 한도로 읽고 CRC와 bounded gzip padding/exhaustion을
+  확인한다. Source suffix는 parser 선택 힌트이며 그 subset만 보관한다.
+- Source API는 기존 held asset FD의 압축 SHA256을 acquired subject와 대조한다. 기존
+  openAsset에서 os.Root 범위의 nonblocking open과 inode/size 재검증을 사용해 symlink
+  ancestor 밖을 읽거나 다른 파일을 source로 반환하지 않는다. Static profile v2는 이전
+  header-only 결과가 현재 requirement를 만족하지 못하게 한다. 별도 추출/실행은 없다.
+- GitHub inspector 전체 Race3.250s, 설치/교체/rollback/과거 approval의 표적 promotion
+  Race22.379s, 현재 import 경계2.320s, canonical security16.779s/vet0.446s/
+  pinned Staticcheck1.369s가 PASS다. 같은 불변 runtime/CPP/전체 foundation/CI는 반복하지
+  않았다. Unit 임시 Intake는 t.TempDir로 회수하고 새 native binary/Host 설치는 없다.
+- Source-return만의 성공이며 production analyzer/Policy·native/packed/unsupported/
+  no-source applicability 및 Terraform 연결은 계속 미완료다. 정확한 source/raw는
+  public review의 `github_member_sources`가 소유한다. 전체 S04는 OPEN이다.

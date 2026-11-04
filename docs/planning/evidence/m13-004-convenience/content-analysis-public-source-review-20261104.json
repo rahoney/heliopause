@@ -1337,5 +1337,60 @@
         "sha256": "d5353e45ca38a2a8c03742e799dbf0586c53c766a03f95f79053b9dc2cb09ce5"
       }
     ]
+  },
+  "github_member_sources": {
+    "baseline": "bd42c02",
+    "scope": "Named local GitHub Release source-return and original archive integrity corrections, not production analyzer/Policy qualification",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "red_raw": "s04-github-archive-payload-red.json",
+    "red_elapsed": 0.84,
+    "red_cases": [
+      "ZIP member CRC not read",
+      "gzip CRC not completed",
+      "second gzip member accepted",
+      "compressed tail accepted"
+    ],
+    "raw": [
+      "s04-github-sources-owner-race-v1.json",
+      "s04-github-sources-promotion-v1.json",
+      "s04-github-sources-architecture-v1.json",
+      "s04-github-sources-security-v1.json",
+      "s04-github-sources-vet-v1.json",
+      "s04-github-sources-static-v1.json"
+    ],
+    "changes": [
+      "Read all ZIP/TAR regular payloads within original archive bounds; verify CRC and complete gzip trailer/exhaustion",
+      "Capture only selected source during that same member pass; no extraction",
+      "Source API binds compressed subject SHA256; Root-confined nonblocking open checks held inode/size",
+      "Static profile v2 invalidates old header-only coverage; existing raw format/path/type/count/size checks retained"
+    ],
+    "missing": [
+      "Terraform/native content facts and explicit no-source/unsupported/packed applicability",
+      "Production analyzer, Policy and every transitive/cache/promotion/CLI consumer",
+      "Grouped native/hosted and release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/githubrelease/static.go",
+        "sha256": "cc68518a1f8fe402132e64bf1d7515a4d3a57f78eca43da637abae2e30d22165"
+      },
+      {
+        "path": "internal/inspection/githubrelease/archive_sources_test.go",
+        "sha256": "92b3bc52ee72d42d3eabffe86faf6c83d587a48d9899e46755ee0dcb64a03dc9"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "9dd432d2422606253ecef6ed717e9fffc05156f03977516e8b4168e494d61257"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "8d70fe91bf5c62634ab4b0ea4cbccf66118c8ae5a06e0898f1fd569022b27a52"
+      }
+    ]
   }
 }

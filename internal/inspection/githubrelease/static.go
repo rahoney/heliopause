@@ -5,18 +5,24 @@ package githubrelease
 import (
 	"archive/tar"
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 const (
@@ -36,6 +42,25 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	return i.inspect(ctx, artifact, nil)
+}
+
+// InspectSources returns only bounded DATA bound to the acquired compressed
+// subject after every member and trailer has been checked. An empty selection
+// is not a source or binary content-analysis verdict.
+func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	var sources []ports.SourceAnalysisFile
+	report, err := i.inspect(ctx, artifact, &sources)
+	if err != nil || len(report.Findings()) != 0 {
+		return nil, report, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, report, err
+	}
+	return sources, report, nil
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil || artifact.Identity().Source().String() != "github-release" {
 		return domain.InspectionReport{}, errors.New("GitHub Release static inspection request is invalid")
 	}
@@ -44,6 +69,21 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		return domain.InspectionReport{}, err
 	}
 	defer file.Close()
+	if sources != nil {
+		digest := sha256.New()
+		info, err := file.Stat()
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		n, err := io.Copy(digest, io.NewSectionReader(file, 0, info.Size()))
+		after, statErr := file.Stat()
+		if err != nil || statErr != nil || n != info.Size() || after.Size() != info.Size() || after.ModTime() != info.ModTime() || hex.EncodeToString(digest.Sum(nil)) != artifact.Digest().String() {
+			return domain.InspectionReport{}, errors.New("GitHub Release source subject differs from acquired bytes")
+		}
+		if err := ctx.Err(); err != nil {
+			return domain.InspectionReport{}, err
+		}
+	}
 	header := make([]byte, 64)
 	n, _ := io.ReadFull(file, header)
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
@@ -63,7 +103,7 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		if !strings.HasSuffix(filename, ".zip") {
 			return i.finding(artifact, "M6_FORMAT_NAME_MISMATCH", "GitHub Release asset filename does not match ZIP bytes.")
 		}
-		if err := inspectZIP(file, int64(artifact.SizeBytes())); err != nil {
+		if err := inspectZIP(file, int64(artifact.SizeBytes()), sources); err != nil {
 			return i.finding(artifact, "M6_ARCHIVE_INVALID", "GitHub Release ZIP archive is unsafe or exceeds bounds.")
 		}
 		return i.complete(artifact, "github-release-zip-static", "GitHub Release ZIP static archive inspection completed.")
@@ -71,7 +111,7 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		if !strings.HasSuffix(filename, ".tar.gz") {
 			return i.finding(artifact, "M6_FORMAT_NAME_MISMATCH", "GitHub Release asset filename does not match tar.gz bytes.")
 		}
-		if err := inspectTarGZ(file); err != nil {
+		if err := inspectTarGZ(file, sources); err != nil {
 			return i.finding(artifact, "M6_ARCHIVE_INVALID", "GitHub Release tar.gz archive is unsafe or exceeds bounds.")
 		}
 		return i.complete(artifact, "github-release-targz-static", "GitHub Release tar.gz static archive inspection completed.")
@@ -89,12 +129,25 @@ func (i *StaticInspector) openAsset(artifact domain.AcquiredArtifact) (*os.File,
 	if err != nil {
 		return nil, errors.New("GitHub Release intake handle is invalid")
 	}
-	assetPath := filepath.Join(i.intakeRoot, runID.String(), "asset")
-	info, err := os.Lstat(assetPath)
+	root, err := os.OpenRoot(i.intakeRoot)
+	if err != nil {
+		return nil, err
+	}
+	defer root.Close()
+	assetPath := filepath.Join(runID.String(), "asset")
+	info, err := root.Lstat(assetPath)
 	if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 || uint64(info.Size()) != artifact.SizeBytes() {
 		return nil, errors.New("GitHub Release intake asset is invalid")
 	}
-	return os.Open(assetPath)
+	file, err := root.OpenFile(assetPath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, err
+	}
+	opened, err := file.Stat()
+	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(info, opened) || uint64(opened.Size()) != artifact.SizeBytes() {
+		return nil, errors.Join(errors.New("GitHub Release intake asset changed while opening"), err, file.Close())
+	}
+	return file, nil
 }
 
 func inspectELF(header []byte, size uint64) error {
@@ -108,7 +161,7 @@ func inspectELF(header []byte, size uint64) error {
 	return nil
 }
 
-func inspectZIP(file *os.File, size int64) error {
+func inspectZIP(file *os.File, size int64, sources *[]ports.SourceAnalysisFile) error {
 	reader, err := zip.NewReader(file, size)
 	if err != nil || len(reader.File) > archiveEntryLimit {
 		return errors.New("invalid ZIP")
@@ -125,17 +178,35 @@ func inspectZIP(file *os.File, size int64) error {
 		if total > archiveTotalLimit {
 			return errors.New("ZIP exceeds bounds")
 		}
+		if entry.FileInfo().IsDir() {
+			if entry.UncompressedSize64 != 0 {
+				return errors.New("ZIP directory has payload")
+			}
+			continue
+		}
+		stream, err := entry.Open()
+		if err != nil {
+			return err
+		}
+		readErr := readArchiveMember(stream, entry.Name, int64(entry.UncompressedSize64), sources)
+		closeErr := stream.Close()
+		if err := errors.Join(readErr, closeErr); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func inspectTarGZ(file *os.File) error {
-	gzipReader, err := gzip.NewReader(file)
+func inspectTarGZ(file *os.File, sources *[]ports.SourceAnalysisFile) error {
+	compressed := bufio.NewReader(file)
+	gzipReader, err := gzip.NewReader(compressed)
 	if err != nil {
 		return err
 	}
 	defer gzipReader.Close()
-	reader := tar.NewReader(io.LimitReader(gzipReader, archiveTotalLimit+1))
+	gzipReader.Multistream(false)
+	decoded := &io.LimitedReader{R: gzipReader, N: archiveTotalLimit + 1}
+	reader := tar.NewReader(decoded)
 	seen := map[string]bool{}
 	entries := 0
 	var total int64
@@ -156,6 +227,51 @@ func inspectTarGZ(file *os.File) error {
 			return errors.New("unsafe tar entry")
 		}
 		seen[header.Name] = true
+		if header.Typeflag == tar.TypeDir {
+			if header.Size != 0 {
+				return errors.New("tar directory has payload")
+			}
+		} else if err := readArchiveMember(reader, header.Name, header.Size, sources); err != nil {
+			return err
+		}
+	}
+	buffer := make([]byte, 32<<10)
+	for {
+		n, readErr := decoded.Read(buffer)
+		if len(bytes.Trim(buffer[:n], "\x00")) != 0 || decoded.N <= 0 {
+			return errors.New("tar has uninspected decoded content or exceeds bounds")
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return readErr
+		}
+	}
+	if _, err := compressed.Peek(1); err != io.EOF {
+		return errors.New("tar.gz has trailing compressed content")
+	}
+	return nil
+}
+
+// Existing archive bounds are tighter than the fixed parser's input bounds.
+// Integrity is checked for every member, whether or not its name selects a parser.
+func readArchiveMember(reader io.Reader, name string, size int64, sources *[]ports.SourceAnalysisFile) error {
+	language := ""
+	if sources != nil {
+		language = content.SourceLanguage(name)
+	}
+	var body bytes.Buffer
+	var destination io.Writer = io.Discard
+	if language != "" {
+		destination = &body
+	}
+	n, err := io.Copy(destination, io.LimitReader(reader, size+1))
+	if err != nil || n != size {
+		return errors.Join(errors.New("archive member size or integrity is invalid"), err)
+	}
+	if language != "" {
+		*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: language, Body: body.Bytes()})
 	}
 	return nil
 }
@@ -172,7 +288,7 @@ func (i *StaticInspector) finding(artifact domain.AcquiredArtifact, code, summar
 }
 func (i *StaticInspector) report(artifact domain.AcquiredArtifact, kind, summary, code string) (domain.InspectionReport, error) {
 	checkID, _ := domain.NewCheckID("github-release-static")
-	profile, _ := domain.CheckProfileDigest("github-release-static-v1", "")
+	profile, _ := domain.CheckProfileDigest("github-release-static-v2", "")
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("github-release-static-result")
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), kind, summary)
@@ -191,7 +307,7 @@ func (i *StaticInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredA
 		return nil, errors.New("github release static declaration is invalid")
 	}
 	id, _ := domain.NewCheckID("github-release-static")
-	profile, _ := domain.CheckProfileDigest("github-release-static-v1", "")
+	profile, _ := domain.CheckProfileDigest("github-release-static-v2", "")
 	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
 	return []domain.CheckRequirement{requirement}, err
 }
