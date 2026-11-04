@@ -994,3 +994,40 @@ coverage 증명이 아니다. 이 작은 입력 gap부터 닫고 전체 inventor
   Unit intake는 t.TempDir에서 정리하고 Host artifact 실행/새 binary 공급/CI/push는 없다.
   집계와 Cargo DATA 진입점의 IMPLEMENTED/WIRED/QUALIFIED는 YES(명시된 로컬 범위),
   ACCEPTANCE_CLOSED는 전체 inventory/streaming/생산 소비자가 남아 NO다.
+
+
+### PyPI native streaming — baseline `a27189b`
+
+다중 집계는 구현돼 있고 Cargo DATA 진입점에 연결됐다. PyPI의 기존 MemberCapture writer는
+source만 보존하므로 native 수집/연결/검증/완료는 NO/NO/NO/NO다. MISSING은 같은 RECORD/
+PAX pass에서 native 판별, 단일 파일 유한 buffer의 분석 직후 해제, whole archive 검증 전
+결과 미공개와 실패 근거 보존이다. `InspectELF`/다중 집계를 대체하지 않고 기존 집계 내부를
+증분 호출 가능하게 분리해 재사용한다. Source collector의 기존 경계/typed wheel·sdist와
+한 번의 graph charge를 유지하고 native로 위장한 source suffix는 content 진입점에서
+byte magic 우선으로 선정한다. 검사/Host 실행/SDK 재빌드/새 CI를 만들지 않는다.
+
+PyPI native의 named local 결과:
+
+- 기존 다중 집계 내부를 `BinaryInspection`의 증분 Inspect/Report로 공유한다. 기존
+  InspectBinaries는 같은 owner를 사용하며 단일 InspectELF/고정 capability는 유지한다.
+  Body를 해제/덮어쓴 뒤에도 사실과 신호가 남고 반복 readback은 중복 근거를 만들지 않는다.
+  후속 취소는 앞선 신호를 보존하면서 전체 coverage를 완료로 만들지 않는다.
+- `InspectWheelContent`/`InspectSdistContent`는 기존 RECORD/PAX callback과 typed 반환을
+  재사용한다. Native는 최대 한 파일 buffer로 분석한 뒤 즉시 비우고 source와 중복 보존하지
+  않는다. 파일/count/전체 선택 한도는 기존64MiB/10000/512MiB이며 archive/graph의 더 좁은
+  한도는 그대로다. Oversize를 버퍼링하지 않고 불완전/오류 및 이전 위험 사실을 남긴다.
+- 정상 wheel의 두 member/위장 .py, byte-split·버퍼 해제·초과, sdist native, CRC/second
+  member/취소·후반 metadata 실패의 미공개와 graph byte/file의 정확히 한 번 charge를
+  확인했다. Target1.834s는 후속 fixture 전이며 최종3 owner Race5.294s/security18.972s/
+  vet0.908s/Staticcheck2.349s PASS다. Formatter0.896s의 source_unchanged=false는
+  지정된 두 Go 파일의 정규 format 변경이고 이후 검증 입력은 모두 불변이다.
+- Incremental owner와 PyPI DATA 진입점은 해당 범위 IMPLEMENTED/WIRED/QUALIFIED=YES다.
+  ACCEPTANCE_CLOSED=NO이며 전체 census/적용 제외 근거·실제 AST/production 소비자,
+  나머지 npm/Go/GitHub native 연결과 grouped native/hosted는 MISSING이다. Unit 임시는
+  t.TempDir로 회수하고 실제 artifact/Host 실행이나 새 CI/push는 없다.
+
+Release 공급 후속 확인: 현재 lock은 자체 build의 core/source/notices 정확한 hash/size를
+소유하지만 hosted에서 획득할 원본 주소는 없다. 로컬 frozen /tmp를 hosted 입력으로 가정하거나
+floating upstream wheel로 대체하지 않는다. 네 asset workflow 연결은 원격 frozen 공급을
+준비한 뒤 기존 materializer에서 검증해야 하므로 계속 MISSING이며 현재 검증을 배포/공식
+provenance 완료로 표시하지 않는다. 다른 로컬 구현 작업의 중단 사유는 아니다.

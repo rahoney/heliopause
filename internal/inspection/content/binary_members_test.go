@@ -101,3 +101,36 @@ func TestBinarySelectionUsesBytesAndUnsupportedFormatHints(t *testing.T) {
 		}
 	}
 }
+
+func TestIncrementalBinaryInspectionRetainsFactsWithoutRetainingBodies(t *testing.T) {
+	input, _, _ := sourceFixture(t)
+	inspection, err := NewBinaryInspection(input.Artifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := binaryFixture()
+	binary.LittleEndian.PutUint32(body[68:], 7)
+	sum := sha256.Sum256(body)
+	digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+	if err := inspection.Inspect(context.Background(), BinaryMember{Path: "native.so", Body: body, Digest: digest}); err != nil {
+		t.Fatal(err)
+	}
+	clear(body) // The archive owner may release/reuse its buffer immediately.
+	first, err := inspection.Report(context.Background())
+	if err != nil || first.Executions()[0].Status() != domain.ExecutionCompleted || len(first.Findings()) != 1 {
+		t.Fatal("incremental facts depended on retained member bytes", err)
+	}
+	second, err := inspection.Report(context.Background())
+	if err != nil || len(second.Evidence()) != len(first.Evidence()) {
+		t.Fatal("report readback accumulated duplicate summaries", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := inspection.Inspect(ctx, BinaryMember{Path: "later.so"}); !errors.Is(err, context.Canceled) {
+		t.Fatal("incremental cancellation was lost", err)
+	}
+	report, err := inspection.Report(context.Background())
+	if !errors.Is(err, context.Canceled) || report.Executions()[0].Status() == domain.ExecutionCompleted || len(report.Findings()) != 1 {
+		t.Fatal("cancelled member became complete or hid earlier signals", err)
+	}
+}

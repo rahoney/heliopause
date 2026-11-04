@@ -1655,5 +1655,50 @@
         "elapsed": 1.133
       }
     }
+  },
+  "pypi_native_streaming": {
+    "baseline": "a27189b",
+    "implemented": true,
+    "wired": "PyPI wheel/sdist content entry points; production AST/cache/CLI remain missing",
+    "qualified": "named local DATA/member/graph-accounting scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-pypi-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-format.json",
+        "sha256": "85b62ea9ab7cf2b9d4768e880f997b8f04fea96d5cf8feb133fafdda554ec42f",
+        "elapsed": 0.896,
+        "source_unchanged": false
+      },
+      "s04-pypi-native-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-target.json",
+        "sha256": "f4621585d2e87656b496a78f1691858a22fbd2264d1cab80df72e4202cc818a4",
+        "elapsed": 1.834,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-race.json",
+        "sha256": "73e278b7e6d67ca0340e5740175597f1e3aeb847cf8d3809159dacd6b73115ae",
+        "elapsed": 5.294,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-security.json",
+        "sha256": "778e77264ece09387b2e6a7cc4f288434442a513e64dfacf0260408f6b471575",
+        "elapsed": 18.972,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-vet.json",
+        "sha256": "c4e441db74acc7b52391422b37d49bbcd98e769854651a9d2382de77529c2abb",
+        "elapsed": 0.908,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-staticcheck.json",
+        "sha256": "e931d157f73b8ed91450540b9754c958829e65ff7007eaee3abc28f0cd86728a",
+        "elapsed": 2.349,
+        "source_unchanged": true
+      }
+    }
   }
 }

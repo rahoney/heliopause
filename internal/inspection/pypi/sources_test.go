@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -17,6 +18,7 @@ import (
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 func TestWheelSourcesPreserveTypedResultAndSingleGraphCharge(t *testing.T) {
@@ -86,16 +88,109 @@ func TestSourceCaptureRetainsSplitPrefixAndBodyWithoutBufferingOpaqueData(t *tes
 	}
 }
 
+// Header-only DATA exercises layout facts; it is never an executable fixture.
+func sourceCaptureELF() []byte {
+	body := make([]byte, 128)
+	copy(body, []byte{0x7f, 'E', 'L', 'F', 2, 1, 1})
+	order := binary.LittleEndian
+	order.PutUint16(body[16:], 3)
+	order.PutUint16(body[18:], 62)
+	order.PutUint32(body[20:], 1)
+	order.PutUint64(body[32:], 64)
+	order.PutUint16(body[52:], 64)
+	order.PutUint16(body[54:], 56)
+	order.PutUint16(body[56:], 1)
+	order.PutUint32(body[64:], 1)
+	order.PutUint32(body[68:], 7)
+	order.PutUint64(body[96:], uint64(len(body)))
+	order.PutUint64(body[104:], uint64(len(body)))
+	return body
+}
+
+func TestContentCaptureStreamsNativeFactsAndReleasesMemberBuffer(t *testing.T) {
+	root := t.TempDir()
+	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", nil, "")
+	native, err := content.NewBinaryInspection(subject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	capture := sourceCapture{native: native, ctx: context.Background()}
+	body := sourceCaptureELF()
+	writer := capture.member("example/disguised.py", uint64(len(body)))
+	for _, character := range body {
+		if _, err := writer.Write([]byte{character}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if member := writer.(*sourceMember); member.body.Len() != 0 || member.native || len(capture.members) != 0 {
+		t.Fatal("native source disguise was retained as source or held after inspection")
+	}
+	report, err := native.Report(context.Background())
+	if err != nil || report.Executions()[0].Status() != domain.ExecutionCompleted || len(report.Findings()) != 1 {
+		t.Fatal("incremental native facts were not retained", err)
+	}
+	oversize := capture.member("oversize.so", ports.SourceAnalysisFileLimit+1)
+	if _, err := oversize.Write(bytes.Repeat([]byte{'x'}, 512)); err != nil {
+		t.Fatal(err)
+	}
+	if files, err := capture.files(context.Background()); err == nil || len(files) != 0 || oversize.(*sourceMember).body.Len() != 0 {
+		t.Fatal("oversized native body was allocated or partially accepted")
+	}
+	report, err = native.Report(context.Background())
+	if err == nil || report.Executions()[0].Status() == domain.ExecutionCompleted || len(report.Findings()) != 1 {
+		t.Fatal("native limit lost earlier signals or invented coverage", err)
+	}
+}
+
+func TestWheelContentKeepsTypedMetadataAndSingleGraphCharge(t *testing.T) {
+	root := t.TempDir()
+	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{
+		"example/disguised.py": string(sourceCaptureELF()),
+		"example/native-data":  string(sourceCaptureELF()),
+	}, "")
+	inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), artifactpypi.PublicPyPIProfile())
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheel, files, report, err := inspector.InspectWheelContent(ctx, subject)
+	if err != nil || wheel.Project != "example" || len(files) != 1 || files[0].Path != "example/__init__.py" || len(report.Executions()) != 3 || report.Executions()[1].Status() != domain.ExecutionCompleted || len(report.Findings()) != 2 {
+		t.Fatal("wheel content did not preserve typed/source/native facts", err, report.Executions(), files)
+	}
+	var total int64
+	for _, member := range wheel.Files {
+		total += member.Size
+	}
+	policy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, policy.MaxGraphUncompressed()-total); err != nil {
+		t.Fatal("native capture charged the graph twice", err)
+	}
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, 1); err == nil {
+		t.Fatal("native capture skipped graph accounting")
+	}
+	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(len(wheel.Files))); err != nil {
+		t.Fatal("native capture charged file census twice", err)
+	}
+	if err := artifactpypi.ChargeFilesFromContext(ctx, 1); err == nil {
+		t.Fatal("native capture skipped file census accounting")
+	}
+}
+
 func TestWheelSourcesDiscardBytesAfterLateMetadataFailure(t *testing.T) {
 	root := t.TempDir()
 	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{
 		"example-1.0.dist-info/WHEEL": "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: cp313-cp313-manylinux_2_36_x86_64\n",
+		"example/native-data":         string(sourceCaptureELF()),
 	}, "")
 	inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
 	wheel, files, report, err := inspector.InspectWheelSources(context.Background(), subject)
 	_, legacy, legacyErr := inspector.InspectWheel(context.Background(), subject)
 	if err != nil || legacyErr != nil || wheel.Project != "" || len(files) != 0 || len(report.Findings()) != 1 || !reflect.DeepEqual(legacy, report) {
 		t.Fatal("late wheel validation exposed provisional bytes or lost the finding", err, legacyErr)
+	}
+	contentWheel, contentFiles, contentReport, contentErr := inspector.InspectWheelContent(context.Background(), subject)
+	if contentErr != nil || contentWheel.Project != "" || len(contentFiles) != 0 || !reflect.DeepEqual(contentReport, legacy) {
+		t.Fatal("late metadata failure published provisional content facts", contentErr)
 	}
 }
 
@@ -133,6 +228,7 @@ func TestSdistSourcesReturnOnlyAfterWholeArchiveValidation(t *testing.T) {
 		{"PKG-INFO", "Name: example\nVersion: 1.0\n"},
 		{"pyproject.toml", "[build-system]\nrequires = [\"wheel\"]\nbuild-backend = \"setuptools.build_meta\"\n"},
 		{"example/__init__.py", "raise RuntimeError('must never execute')\n"},
+		{"example/native-data", string(sourceCaptureELF())},
 	} {
 		if err := tw.WriteHeader(&tar.Header{Name: "example-1.0/" + member.name, Mode: 0o644, Size: int64(len(member.body)), Typeflag: tar.TypeReg, Format: tar.FormatPAX, PAXRecords: map[string]string{"comment": "source DATA"}}); err != nil {
 			t.Fatal(err)
@@ -181,6 +277,10 @@ func TestSdistSourcesReturnOnlyAfterWholeArchiveValidation(t *testing.T) {
 				if info.Project != "" || len(files) != 0 || (err == nil && len(report.Findings()) == 0) {
 					t.Fatal("unverified sdist exposed source selection", err)
 				}
+				contentInfo, contentFiles, contentReport, contentErr := inspector.InspectSdistContent(ctx, subject)
+				if contentInfo.Project != "" || len(contentFiles) != 0 || len(contentReport.Executions()) > 1 || contentErr == nil && len(contentReport.Findings()) == 0 {
+					t.Fatal("unverified sdist exposed provisional native facts", contentErr)
+				}
 				return
 			}
 			if err != nil || info.Project != "example" || len(files) != 1 || files[0].Path != "example/__init__.py" || files[0].Language != "python" || !bytes.Contains(files[0].Body, []byte("must never execute")) {
@@ -190,6 +290,10 @@ func TestSdistSourcesReturnOnlyAfterWholeArchiveValidation(t *testing.T) {
 			planned, err := inspector.ExpectedChecks(ctx, subject, domain.CheckInspection)
 			if err != nil || len(planned) != 1 || planned[0].ProfileDigest() != report.Execution().ProfileDigest() || report.Execution().ProfileDigest() == oldProfile {
 				t.Fatal("source plan accepted a result without the new trailer validation", err)
+			}
+			contentInfo, contentFiles, contentReport, contentErr := inspector.InspectSdistContent(ctx, subject)
+			if contentErr != nil || contentInfo.Project != info.Project || !reflect.DeepEqual(contentFiles, files) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted || len(contentReport.Findings()) != 1 {
+				t.Fatal("sdist content lost typed metadata/source/native facts", contentErr)
 			}
 		})
 	}
