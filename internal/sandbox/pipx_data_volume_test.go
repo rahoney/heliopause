@@ -58,9 +58,9 @@ func pipxVolumeFixture() (*pipxDataVolume, *pipxVolumeRunner) {
 	return &pipxDataVolume{volume: v}, &pipxVolumeRunner{volume: v, mounts: make(map[string]dockerContainerMountInspection)}
 }
 func (r *pipxVolumeRunner) attach(id string, readOnly bool) {
-	host := dockerHostMountInspection{Type: "volume", Source: r.volume.name, Target: pipxRuntimeRoot, ReadOnly: readOnly}
+	host := dockerHostMountInspection{Type: "volume", Source: r.volume.name, Target: r.volume.destination(), ReadOnly: readOnly}
 	host.VolumeOptions.NoCopy = true
-	r.mounts[id] = dockerContainerMountInspection{ID: id, Mounts: []dockerMountInspection{{Type: "volume", Name: r.volume.name, Source: r.volume.mountpoint, Destination: pipxRuntimeRoot, Driver: "local", RW: !readOnly}}, HostMounts: []dockerHostMountInspection{host}}
+	r.mounts[id] = dockerContainerMountInspection{ID: id, Mounts: []dockerMountInspection{{Type: "volume", Name: r.volume.name, Source: r.volume.mountpoint, Destination: r.volume.destination(), Driver: "local", RW: !readOnly}}, HostMounts: []dockerHostMountInspection{host}}
 	r.inventory = append(r.inventory, id)
 }
 

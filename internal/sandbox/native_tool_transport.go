@@ -25,6 +25,9 @@ const (
 	// A project-owned guest component; its identity comes from the protected
 	// current installation, rather than a third-party runtime lock pin.
 	nativeRuntimeResponder
+	// Fixed static analyzer supply; neither kind admits a target execution.
+	nativeRuntimeSemgrep
+	nativeRuntimeSemgrepRules
 )
 
 type nativeRuntimeToolSpec struct {
@@ -36,7 +39,7 @@ type nativeRuntimeToolSpec struct {
 }
 
 func (s nativeRuntimeToolSpec) fileMode() int64 {
-	if s.installedName == runtimeidentity.PipxRuntimeAssetName {
+	if s.installedName == runtimeidentity.PipxRuntimeAssetName || s.installedName == runtimeidentity.SemgrepRulesAssetName {
 		return 0444
 	}
 	return 0555
@@ -54,6 +57,12 @@ func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpe
 		// DATA transport only. The existing single-writer native volume is
 		// unavailable for this kind; readonly lifecycle is a separate owner.
 		return nativeRuntimeToolSpec{name: "pipx-runtime.zip", guestPath: pipxToolGuestPath, sha256: runtimeidentity.PipxToolSHA256, size: runtimeidentity.PipxToolSize, installedName: runtimeidentity.PipxRuntimeAssetName, maxBytes: 8 << 20}, true
+	case nativeRuntimeSemgrep:
+		pin := runtimeidentity.SelectedSemgrepSupply()
+		return nativeRuntimeToolSpec{name: pin.Tool.Path, guestPath: "/haa-semgrep/" + pin.Tool.Path, sha256: pin.Tool.SHA256, size: pin.Tool.Size, installedName: pin.Tool.Path, maxBytes: runtimeidentity.SemgrepAssetMaximum(pin.Tool.Path)}, true
+	case nativeRuntimeSemgrepRules:
+		pin := runtimeidentity.SelectedSemgrepSupply()
+		return nativeRuntimeToolSpec{name: runtimeidentity.SemgrepRulesAssetName, guestPath: "/haa-semgrep/" + runtimeidentity.SemgrepRulesAssetName, sha256: pin.Rules.SHA256, size: pin.Rules.Size, installedName: runtimeidentity.SemgrepRulesAssetName, maxBytes: runtimeidentity.SemgrepAssetMaximum(runtimeidentity.SemgrepRulesAssetName)}, true
 	case nativeRuntimeResponder:
 		return nativeRuntimeToolSpec{name: responderToolName, guestPath: responderGuestPath,
 			installedName: responderToolName, maxBytes: runtimeidentity.SandboxResponderMaxBytes}, true
@@ -62,8 +71,12 @@ func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpe
 	}
 }
 
-func validPipxTransportIdentity(identity nativeToolFileIdentity, kind nativeRuntimeToolKind) bool {
-	return kind != nativeRuntimePipx || identity == (nativeToolFileIdentity{runtimeidentity.PipxToolSize, runtimeidentity.PipxToolSHA256, 0444})
+func validNativeTransportIdentity(identity nativeToolFileIdentity, kind nativeRuntimeToolKind) bool {
+	if kind == nativeRuntimePipx || kind == nativeRuntimeSemgrep || kind == nativeRuntimeSemgrepRules {
+		spec, known := nativeRuntimeToolIdentity(kind)
+		return known && identity == (nativeToolFileIdentity{spec.size, spec.sha256, spec.fileMode()})
+	}
+	return true
 }
 
 var errNativeToolTransport = errors.New("immutable native tool transport is unavailable or changed")
@@ -94,7 +107,7 @@ func (w *nativeToolArchiveOutput) Write(body []byte) (int, error) {
 func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutput, container, path string, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
 	validPath := path == spec.guestPath || kind == nativeRuntimeUV && path == runtimeidentity.UVToolPath
-	if ctx == nil || runner == nil || !known || !validPath || !validPipxTransportIdentity(identity, kind) || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > spec.maxBytes {
+	if ctx == nil || runner == nil || !known || !validPath || !validNativeTransportIdentity(identity, kind) || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > spec.maxBytes {
 		return nil, errNativeToolTransport
 	}
 	output := nativeToolArchiveOutput{limit: identity.size + 64<<10}
@@ -106,7 +119,7 @@ func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutp
 
 func scanNativeToolTar(body []byte, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
-	if !known || !validPipxTransportIdentity(identity, kind) || identity.size <= 0 || identity.size > spec.maxBytes || int64(len(body)) > identity.size+64<<10 {
+	if !known || !validNativeTransportIdentity(identity, kind) || identity.size <= 0 || identity.size > spec.maxBytes || int64(len(body)) > identity.size+64<<10 {
 		return nil, errNativeToolTransport
 	}
 	input := bytes.NewReader(body)

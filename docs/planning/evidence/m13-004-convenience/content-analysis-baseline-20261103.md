@@ -452,3 +452,59 @@ source512MiB 초과·v4 tuple 누락/잘못된 owner를 PASS했다. 단 operator
 inventory를 갱신해 raw의 source_unchanged=false다. 독립 scope 대조에서 변경/추가 항목은
 문서4개뿐이며 모든 Go 입력 hash는 동일했다. 전체 입력 불변 성공으로 쓰지 않고 해당
 Go 표적 범위만 인정하며 같은 full/native/CI 검사를 다시 돌리지 않는다.
+
+### Scanner runtime — source 작성 전 대조 (4deca33)
+
+| 단위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 재사용 / MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 고정 installed 도구 reader·tar transport | YES | YES(other tools) | YES(prior named scope) | NO(S04) | `native_installed_tool.go:readInstalledNativeTool`·`native_tool_transport.go` 재사용. Semgrep core0555/rules0444의 exact pin/guest role만 없음 |
+| readonly scanner supply/target lifecycle | NO | NO | NO | NO | `pipx_data_volume.go`의 sealed readonly 단계·`pypi_closure_volume.go:createInputVolume`의 identity/attachment/UNKNOWN refusal 재사용. 실행 core와 nonexec target 구분·새 current source reader 필요 |
+| 격리 scanner 실행·유한 출력 | NO | NO | NO | NO | 기존 CommandRunner/hosttool·gVisor start/stop/cleanup 재사용. 고정 arguments/네트워크 없음/출력·취소/identity 연결 필요. Untraced runtime 등록이나 Host artifact 실행 없음 |
+| JSON 해석·모든 artifact 소비자 | NO | NO | NO | NO | 원래 npm `InspectArchive`, PyPI `InspectWheel`/execution inventory, Go `CheckedFiles`, Cargo `ArchiveFiles`, GitHub format inventory를 재사용. Parsing/error/skip/모든 target·rule coverage·Evidence/Policy/전이 graph 미연결 |
+
+첫 최소 수정은 기존 typed installed-file/transport 경로의 두 exact role(core/rules)이다.
+새 source/notices archive를 runtime으로 복사하지 않고 기존 native tool reader를 바꾸거나
+대체하지 않는다. Core/rules는 같은 immutable tuple에 결합하고 rules는 DATA0444이며
+기존 mutable native runtime volume을 새 scanner에 주지 않는다. 이어 readonly lifecycle과
+실행 소비자를 같은 S04 범위에서 완성한다. 이 선행 공급 연결만으로 실제 scanner나 S04
+구현/qualification 완료를 표시하지 않는다. 현재 release hosted 공급/whole activation gap도
+그대로 남는다. Target/JSON 계약은 실제 고정 scanner 출력과 대조한 뒤 필요한 경계만 추가한다.
+
+Readonly supply의 writer→anchor→writer 제거→seal·attachment/UNKNOWN/cleanup 구현은
+`pipx_data_volume.go` 한 곳을 그대로 확장해 공유한다. 기존 Pipx type은 alias로 유지하고
+기존 호출·기본 flag·DATA noexec 계약을 보존한다. Semgrep의 두 고정 파일을 위한 공급
+identity/용량/허용 mount만 추가하며 동일 상태 머신을 복제하지 않는다. 실제 target data와
+실행 admission/관찰 profile은 이 공급 seal과 별도이고 아직 미구현이다.
+
+### Scanner core/rules 공급 — 실제 readonly lifetime 로컬 확인
+
+기존 typed installed-file/tar transport에 고정 core0555/rules0444를 연결했다. Identity는
+같은 generated tuple이며 caller hash/size/mode는 Docker 호출 전에 거부한다. 기존 UV/
+PNPM/Bun/Pipx 역할은 유지하고 scanner에는 mutable native volume을 주지 않는다.
+`readonlyToolVolume`은 원래 Pipx 상태 머신을 공유하며 기존 type alias/기본 DATA noexec와
+호출을 보존한다. Semgrep 공급만 별도 root/257MiB 고정 한도·core/rules digest를 사용하고
+source/notices나 Artifact target data를 이 executable supply에 넣지 않는다.
+
+Foundation48.107s·첫 표적8.563/readonly8.302s는 PASS였다. Actual V1/15.704s는 공급 bytes/
+seal·경쟁 writer 거부 뒤 `closeWritableOutputVolume`의 새 destination 누락으로 실패했다.
+또 createInputVolume의 새 역할은 CREATE/후속 identity query 실패에서 기존 protected
+candidate 보존 분기를 따라야 한다. 같은 허용 목록에 연결하고, 정상 idle 제거와 UNKNOWN
+생성·삭제 거부를 함께 표적8.899s로 확인했다. Test 거래 identity도 basename001 대신 기존
+SandboxSessionID를 사용한다. V1의 정확한 owner/pin/options/연결 부재를 확인해 남은 볼륨
+하나만 제거했다. 원본 실패를 성공으로 덮지 않는다.
+
+Actual V2/20.116s는 selected core/rules의 protected reader·Docker tar readback·readonly
+seal·writer 제거 선행조건·경쟁 writer 거부와 최종 own container/volume0을 PASS했다.
+설치된 manifest는 동일하고 only fixed runc sleep keeper만 실행했다. Scanner/Artifact를
+실행한 시험이나 gVisor source-analysis qualification은 아니다. Full sandbox Race42.526s,
+security25.538s/vet2.042s/pinned Staticcheck13.043s는 PASS다. 첫 foundation 뒤 교정은
+해당 destination/UNKNOWN 경계와 test identity만이며 새 full/native/CPP/CI는 없다.
+완료된 test binary3개68143541B도 exact receipt/hash를 대조해 제거했다. Active selected
+core/source/notices/rules 공급은 다음 실행 소비자를 위해 유지한다.
+
+이 공급 단위는 IMPLEMENTED=YES/WIRED=YES(existing supply/readonly lifecycle)/QUALIFIED=YES
+(named local scope)/ACCEPTANCE_CLOSED=NO(S04)다. 다음은 실제 traced gVisor scanner와
+readonly target source·유한 실행/출력/parse/coverage, 기존 inspection/Evidence/Policy와
+전이 artifact 연결이다. Hosted source 공급/current-only admission·whole self-quarantine/
+activation/recovery는 별도 MISSING으로 유지한다. `s04-scanner-*`·first-failure-cleanup과
+completed-test-binaries-cleanup raw가 source/입력·실패·정리의 실제 범위를 소유한다.

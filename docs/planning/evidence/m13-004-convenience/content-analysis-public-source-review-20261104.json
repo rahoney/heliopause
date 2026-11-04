@@ -895,5 +895,71 @@
         "sha256": "d45240f934ac22c97c53fdd77bfa37739ccce03445226654a335599fee518588"
       }
     ]
+  },
+  "scanner_supply": {
+    "states": {
+      "IMPLEMENTED": "YES (core/rules supply and shared readonly owner)",
+      "WIRED": "YES (existing reader/transport/readonly lifecycle)",
+      "QUALIFIED": "YES (named local scope)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "actual_first_failure_raw": "s04-scanner-supply-actual-v1.json",
+    "actual_first_failure_cleanup_raw": "s04-scanner-supply-first-failure-cleanup.json",
+    "actual_pass_raw": "s04-scanner-supply-actual-v2.json",
+    "actual_elapsed": 20.116,
+    "scope": "Only fixed runc sleep keepers executed; selected core/rules are DATA. No scanner/artifact execution or gVisor qualification.",
+    "installed_manifest_unchanged": true,
+    "owned_resources_removed": true,
+    "completed_test_binary_cleanup_raw": "s04-completed-test-binaries-cleanup.json",
+    "completed_test_binaries_removed_bytes": 68143541,
+    "checks_raw": [
+      "s04-scanner-supply-foundation-v1.json",
+      "s04-scanner-supply-target-v1.json",
+      "s04-scanner-readonly-target-v1.json",
+      "s04-scanner-readonly-corrected-v2.json",
+      "s04-scanner-supply-sandbox-race-v1.json",
+      "s04-scanner-supply-security-v1.json",
+      "s04-scanner-supply-vet-v1.json",
+      "s04-scanner-supply-static-v1.json"
+    ],
+    "missing": [
+      "Actual traced gVisor scanner and readonly targets/capture/complete parsing coverage",
+      "Every inspection/transitive graph/Evidence/Policy consumer",
+      "Hosted release supply/current-only admission/full self-quarantine and activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/sandbox/native_tool_transport.go",
+        "sha256": "3aa14d01068ab390cda56a94fc0c7f6c1f89eb6caee58f2e6e77d32308a631b2"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume.go",
+        "sha256": "7990ddc0840285eea0158c7474fca01eb30ebfb890f95a495efcfca28bdbf954"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume_test.go",
+        "sha256": "d422461086a8cfd42a50a77369ca434c433323934d6062f83d90af05b7d5bb2e"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "f34e828adfcd8d8322ac291866847b0e1df380026d2396a457a5a480a88c1361"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply.go",
+        "sha256": "ebe6855b2cc43a95c3eb0769afdc8ac7ea8f5dbe5858f51ce6addb923d51c761"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply_real_test.go",
+        "sha256": "04e85653c5f287c1c4ce807f35aa8bbeb2be8cf5cf1291b69bca95d6172d0a44"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply_test.go",
+        "sha256": "b888074b3a396d663d5127fd7f5418018c3180a29717ba97c1fbbd3478b1fc35"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "a34ecd38a412219679c46d798534f7d9f365ab426421dd7a16bb66a4b0bd53ed"
+      }
+    ]
   }
 }
