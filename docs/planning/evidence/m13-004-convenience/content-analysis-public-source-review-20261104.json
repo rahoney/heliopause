@@ -2104,5 +2104,55 @@
       "other ecosystem metadata/census/AST/production/cache paths",
       "release supply/hosted/full S04 qualification"
     ]
+  },
+  "npm_content_inventory": {
+    "baseline": "0964bf4",
+    "implemented": "YES (DATA)",
+    "wired": "YES (same verified member pass)",
+    "qualified": "YES (named local)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-red.json",
+        "exit_code": 1,
+        "elapsed": 1.008,
+        "source_unchanged": true
+      },
+      "race": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-race.json",
+        "exit_code": 0,
+        "elapsed": 19.114,
+        "source_unchanged": true
+      },
+      "foundation": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-foundation.json",
+        "exit_code": 0,
+        "elapsed": 61.845,
+        "source_unchanged": true
+      },
+      "security": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-security.json",
+        "exit_code": 0,
+        "elapsed": 15.682,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-vet.json",
+        "exit_code": 0,
+        "elapsed": 0.513,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-static.json",
+        "exit_code": 0,
+        "elapsed": 1.642,
+        "source_unchanged": true
+      }
+    },
+    "missing": [
+      "metadata-selected extensionless/main/bin/exports",
+      "actual source analyzer/default/project/cache consumers",
+      "transitive/CLI/native/hosted whole qualification"
+    ]
   }
 }

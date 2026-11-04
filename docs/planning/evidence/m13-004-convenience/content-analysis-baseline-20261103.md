@@ -1301,3 +1301,16 @@ helperwait0/자기copy244586456B 제거다. 같은 CPP138/고정 scanner 공급�
 두 native 실패 원본은 보존한다. Add gate의 Evidence2→8은 compile만 확인했으며
 actual single/transitive add 재검증은 아직 MISSING이다. Fetch CLI의 네 상태 YES는
 이 exact 공개1crate 흐름에 한정하며 전 생태계/graph/hosted/전체 S04 완료가 아니다.
+
+Npm census는 기존 byte/hash pass의 regular member facts로 동일 subject에 결합한다.
+Native magic은 source suffix보다 우선하며 unknown interpreter·uppercase source hint는
+검사 대상 부재로 사라지지 않는다. 완전 gzip/trailer·digest와 기존 ArchiveInventory
+검증 뒤에만 immutable census/필수 Evidence를 발행한다. Native 없는 경우도 실제 전체
+목록으로만 적용 제외를 확인한다. 시그니처/legacy source API·graph 예산은 유지했다.
+동일 세 표적의 old consumer RED1.008s 뒤 전체 npm Race19.114s·canonical foundation
+61.845s/security15.682s/vet0.513s/고정 Staticcheck1.642s는 PASS/source 불변이다.
+새 mixed fixture는 regular6/source1/native1/unsupported2·subject digest를 확인했고,
+기존 late CRC/digest/path/cancel 거부도 그대로 통과했다. Test intake는 t.TempDir로 회수했으며
+별도 artifact/Host 실행/CPP rebuild·CI는 없다. Census의 IMPLEMENTED/WIRED/QUALIFIED=YES는
+이 local DATA 범위고 ACCEPTANCE_CLOSED=NO다. 다음 metadata 역할·실제 AST/configuration/
+production/project/cache 연결과 최종 전 생태계 qualification은 계속 MISSING이다.

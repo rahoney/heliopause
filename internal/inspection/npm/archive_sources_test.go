@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -53,8 +54,8 @@ func TestArchiveSourcesShareVerifiedInventoryAndPayload(t *testing.T) {
 		}
 	}
 	contentInventory, contentSources, contentReport, contentErr := inspector.InspectArchiveContent(context.Background(), subject)
-	if contentErr != nil || !reflect.DeepEqual(contentInventory, inventory) || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
-		t.Fatal("content selection changed measured source facts or invented binary applicability", contentErr)
+	if contentErr != nil || !reflect.DeepEqual(contentInventory, inventory) || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted {
+		t.Fatal("content selection changed measured source facts or lost bound binary applicability", contentErr)
 	}
 	files, err := os.ReadDir(filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa"))
 	if err != nil || len(files) != 1 || files[0].Name() != "tarball.tgz" {
@@ -117,7 +118,7 @@ func TestArchiveContentPreservesNativeMemberInventoryWithoutSourceDuplication(t 
 	subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
 	inspector, _ := NewInspector(root)
 	inventory, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
-	if err == nil || !inventory.Valid() || len(sources) != 1 || sources[0].Path != "source.js" || len(report.Executions()) != 3 || report.Executions()[1].Status() != domain.ExecutionIncomplete {
+	if err == nil || !inventory.Valid() || len(sources) != 1 || sources[0].Path != "source.js" || len(report.Executions()) != 4 || report.Executions()[1].Status() != domain.ExecutionIncomplete {
 		t.Fatal("native selection lost verified inventory or overstated coverage", err)
 	}
 	coverageFacts := 0
@@ -131,5 +132,44 @@ func TestArchiveContentPreservesNativeMemberInventoryWithoutSourceDuplication(t 
 	}
 	if coverageFacts != 2 {
 		t.Fatal("native census does not match measured entries", coverageFacts)
+	}
+}
+
+func TestArchiveContentCensusPreservesUnsupportedSourceAndNativeRoles(t *testing.T) {
+	root := canonicalRoot(t)
+	entries := []tarEntry{
+		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`},
+		{name: "package/directory", typeflag: tar.TypeDir},
+		{name: "package/tool", body: "#!/bin/sh\necho DATA\n"},
+		{name: "package/UPPER.JS", body: "console.log('DATA');\n"},
+		{name: "package/disguised.js", body: "MZ"},
+		{name: "package/source.js", body: "console.log('DATA');\n"},
+		{name: "package/README.md", body: "DATA"},
+	}
+	subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+	inspector, _ := NewInspector(root)
+	archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+	if err == nil || !archive.Matches(subject) || len(sources) != 1 || sources[0].Path != "source.js" {
+		t.Fatal("unsupported native member was completed or source roles changed", err)
+	}
+	count := 0
+	for _, fact := range report.Evidence() {
+		if fact.Kind() != "content-inventory" {
+			continue
+		}
+		count++
+		var census struct {
+			Members     int    `json:"members"`
+			Sources     int    `json:"sources"`
+			Binaries    int    `json:"binaries"`
+			Unsupported int    `json:"unsupported_sources"`
+			Digest      string `json:"inventory_sha256"`
+		}
+		if json.Unmarshal([]byte(fact.Summary()), &census) != nil || census.Members != 6 || census.Sources != 1 || census.Binaries != 1 || census.Unsupported != 2 || len(census.Digest) != 64 || fact.Identity() != subject.Identity() || fact.Digest() != subject.Digest() {
+			t.Fatal("complete regular-member census lost source/native/unsupported/subject binding", fact)
+		}
+	}
+	if count != 1 {
+		t.Fatal("complete archive did not publish exactly one census", count)
 	}
 }

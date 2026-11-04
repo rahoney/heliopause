@@ -55,11 +55,15 @@ func (i *Inspector) InspectArchiveContent(ctx context.Context, artifact domain.A
 	if err != nil || !inventory.Valid() {
 		return artifactnpm.ArchiveInventory{}, nil, static, err
 	}
-	nativeReport, nativeErr := native.Report(ctx)
+	nativeReport, nativeErr := native.Report(ctx, capture.census)
 	if len(nativeReport.Executions()) == 0 {
 		return artifactnpm.ArchiveInventory{}, nil, static, nativeErr
 	}
-	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport})
+	census, censusErr := capture.census.Report(ctx)
+	if censusErr != nil {
+		return artifactnpm.ArchiveInventory{}, nil, static, errors.Join(nativeErr, censusErr)
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport, census})
 	return inventory, capture.sources, report, errors.Join(nativeErr, err)
 }
 
@@ -84,6 +88,8 @@ type archiveCapture struct {
 	captureSources bool
 	sources        []ports.SourceAnalysisFile
 	native         *content.BinaryInspection
+	members        []content.MemberFact
+	census         content.Inventory
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -188,6 +194,12 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		if retainNative {
 			_ = c.native.Inspect(ctx, content.BinaryMember{Path: item.Path, Body: nativeBody, Mode: uint32(item.Mode), Digest: item.Digest})
 		}
+		if c.native != nil {
+			if retainNative {
+				language = ""
+			}
+			c.members = append(c.members, content.MemberFact{Path: item.Path, Size: uint64(item.Size), Digest: item.Digest, Language: language, Binary: retainNative, UnsupportedSource: !retainNative && language == "" && content.UnsupportedSource(item.Path, prefix, uint32(item.Mode))})
+		}
 	}
 	c.entries = append(c.entries, item)
 	return nil
@@ -244,6 +256,12 @@ func (c *archiveCapture) finish(ctx context.Context, artifact domain.AcquiredArt
 	inventory, err := artifactnpm.NewArchiveInventory(artifact, c.entries, c.manifest)
 	if err != nil {
 		return err
+	}
+	if c.native != nil {
+		c.census, err = content.NewInventory(artifact, c.members)
+		if err != nil {
+			return err
+		}
 	}
 	c.inventory = inventory
 	return nil
