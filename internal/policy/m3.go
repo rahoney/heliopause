@@ -8,7 +8,7 @@ import (
 
 const (
 	m3PolicyID      = "m3-npm-dynamic-inspect"
-	m3PolicyVersion = 3
+	m3PolicyVersion = 4
 )
 
 // M3 requires completed integrity, static, and dynamic checks before allowing an npm Artifact.
@@ -28,7 +28,7 @@ func (M3) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 		switch finding.Code() {
 		case "M3_HONEYTOKEN_ACCESS", "M3_FILESYSTEM_VIOLATION":
 			return m3Decision(domain.DecisionBlock, finding.Code())
-		case "M3_NETWORK_ATTEMPT", "M3_UNEXPECTED_PROCESS", "M13_ADVISORY_REVIEW":
+		case "M3_NETWORK_ATTEMPT", "M3_UNEXPECTED_PROCESS", "M13_ADVISORY_REVIEW", "M13_SOURCE_REVIEW", "M13_BINARY_REVIEW":
 			if reviewReason == "" {
 				reviewReason = finding.Code()
 			}

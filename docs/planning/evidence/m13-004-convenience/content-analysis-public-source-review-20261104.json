@@ -1486,5 +1486,54 @@
         "sha256": "17dd2f629245666813ff076fd2653719099e73e581409c7becd0da562abf7435"
       }
     ]
+  },
+  "content_policy": {
+    "baseline": "c00dfc8",
+    "scope": "Existing M3/M6 explicit uncertain-source/native finding classification and existing set/promotion guards only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "states_scope": "Normalized Policy model plus affected GitHub retained/install/rollback consumers; not complete ecosystem content ingestion or S04 qualification",
+    "red_raw": "s04-content-policy-review-red.json",
+    "red_elapsed": 0.839,
+    "versions": {
+      "M3": 4,
+      "M6": 3
+    },
+    "checks_raw": [
+      "s04-content-policy-owner-race-v1.json",
+      "s04-content-policy-m6-ownership-v1.json",
+      "s04-content-policy-security-v1.json",
+      "s04-content-policy-vet-v1.json",
+      "s04-content-policy-static-v1.json"
+    ],
+    "preserved": [
+      "Unknown finding and strong finding BLOCK priority in both orders",
+      "Integrity mismatch BLOCK before review",
+      "Required incomplete and undeclared plans never ALLOW",
+      "M4/M5 propagate review; NewVerifiedSet refuses automatic promotion",
+      "Runtime/asset/language/tool-version owners unchanged"
+    ],
+    "missing": [
+      "Production AST/native multi-member/streaming and source applicability for every ecosystem",
+      "Live/native/CLI all-entry/final grouped qualification and release supply"
+    ],
+    "source_files": [
+      {
+        "path": "internal/policy/m3.go",
+        "sha256": "7a2177b6584284f5f19e0ea6bfaa137cc1dacb401b17d2c3dc242ad11eeb5f11"
+      },
+      {
+        "path": "internal/policy/m6.go",
+        "sha256": "1e8daa49e2cfe5e6f05b4aa0bc0ecf3b00d367db39ff4d792ff0242dd8b66bba"
+      },
+      {
+        "path": "internal/policy/m3_test.go",
+        "sha256": "07594f9169b99eda3aba7ed90f496425939cef33ee158e9cede188fac1c32fbf"
+      }
+    ]
   }
 }

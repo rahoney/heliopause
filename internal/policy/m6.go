@@ -10,7 +10,7 @@ import (
 // uncompleted required checks are reviewable; integrity and unsafe archive
 // findings are blocking.
 // M6PolicyVersion is injected into recorded ownership by the composition root.
-const M6PolicyVersion = 2
+const M6PolicyVersion = 3
 
 type M6 struct{}
 
@@ -40,7 +40,7 @@ func (M6) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	reviewReason := ""
 	for _, finding := range input.Inspection().Findings() {
 		switch finding.Code() {
-		case "M6_FORMAT_UNSUPPORTED", "M6_FORMAT_NAME_MISMATCH", "M6_ELF_PLATFORM_UNSUPPORTED":
+		case "M6_FORMAT_UNSUPPORTED", "M6_FORMAT_NAME_MISMATCH", "M6_ELF_PLATFORM_UNSUPPORTED", "M13_SOURCE_REVIEW", "M13_BINARY_REVIEW":
 			if reviewReason == "" {
 				reviewReason = finding.Code()
 			}

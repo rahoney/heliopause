@@ -4,8 +4,119 @@ import (
 	"strings"
 	"testing"
 
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+func TestContentReviewClassificationPreservesIncompleteAndUndeclaredGates(t *testing.T) {
+	// These are normalized entry-policy models using actual source identities,
+	// not acquisition, parser or public installer qualification.
+	sources := []string{"npm", artifactgo.Source().String(), artifactcargo.Source().String(), artifactterraform.Source().String(), "github-release"}
+	for _, profile := range artifactpypi.AllSourceProfiles() {
+		sources = append(sources, profile.Source().String())
+	}
+	for _, source := range sources {
+		for _, code := range []string{"M13_SOURCE_REVIEW", "M13_BINARY_REVIEW"} {
+			for _, state := range []string{"complete", "incomplete", "undeclared"} {
+				t.Run(source+"/"+code+"/"+state, func(t *testing.T) {
+					input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), code, source)
+					if state == "incomplete" {
+						profile, _ := domain.CheckProfileDigest("content-policy-fixture", "")
+						id, _ := domain.NewCheckID("content-required-coverage")
+						coverage, _ := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "CONTENT_FIXTURE_INCOMPLETE", profile)
+						missing, err := domain.NewInspectionReport(coverage, nil, nil)
+						if err != nil {
+							t.Fatal(err)
+						}
+						inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{input.Inspection(), missing})
+						if err != nil {
+							t.Fatal(err)
+						}
+						requirement, _ := domain.NewCheckRequirement(id, domain.CheckInspection, true, profile)
+						plan, err := domain.NewCheckPlan(input.RunID(), input.Artifact(), append(input.CheckPlan().Requirements(), requirement))
+						if err != nil {
+							t.Fatal(err)
+						}
+						input, err = domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), plan)
+						if err != nil {
+							t.Fatal(err)
+						}
+					} else if state == "undeclared" {
+						var err error
+						input, err = domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), input.Inspection(), input.Evidence())
+						if err != nil {
+							t.Fatal(err)
+						}
+					}
+					var decision domain.PolicyDecision
+					var err error
+					if source == "github-release" {
+						decision, err = (M6{}).Evaluate(input)
+					} else {
+						decision, err = (M3{}).Evaluate(input)
+					}
+					if err != nil || decision.Decision() != domain.DecisionManualReview {
+						t.Fatal("uncertain content finding was misclassified or allowed", decision, err)
+					}
+					if state != "undeclared" && (len(decision.Reasons()) != 1 || decision.Reasons()[0] != code) {
+						t.Fatal("content finding reason was lost", decision.Reasons())
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestContentReviewCannotOverrideIntegrityOrPromoteASet(t *testing.T) {
+	for _, code := range []string{"M13_SOURCE_REVIEW", "M13_BINARY_REVIEW"} {
+		for _, source := range []string{"npm", "github-release"} {
+			t.Run(source+"/"+code, func(t *testing.T) {
+				input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), code, source)
+				mismatch, err := domain.NewVerificationReport(input.Verification().Execution(), domain.VerificationMismatch, input.Verification().Evidence())
+				if err != nil {
+					t.Fatal(err)
+				}
+				blocked, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), mismatch, input.Inspection(), input.Evidence(), input.CheckPlan())
+				if err != nil {
+					t.Fatal(err)
+				}
+				var result domain.PolicyDecision
+				if source == "github-release" {
+					result, err = (M6{}).Evaluate(blocked)
+				} else {
+					result, err = (M3{}).Evaluate(blocked)
+				}
+				if err != nil || result.Decision() != domain.DecisionBlock {
+					t.Fatal("content review hid integrity mismatch", result, err)
+				}
+			})
+		}
+		input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), code)
+		entry, err := (M3{}).Evaluate(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, ecosystem := range []string{"npm", "pypi"} {
+			set := m4Set(t, domain.DecisionAllow, entry.Decision(), false)
+			var result domain.PolicyDecision
+			if ecosystem == "pypi" {
+				set, _ = m5SelectionFacts(t, "wheel", entry.Decision(), domain.ExecutionCompleted)
+				result, err = (M5{}).EvaluateSet(set)
+			} else {
+				result, err = (M4{}).EvaluateSet(set)
+			}
+			if err != nil || result.Decision() != domain.DecisionManualReview {
+				t.Fatal("set policy lost entry review", ecosystem, result, err)
+			}
+			if _, err := domain.NewVerifiedSet(set, result); err == nil {
+				t.Fatal("content review became automatic promotion", ecosystem)
+			}
+		}
+	}
+}
 
 func TestM3RequiresCompletedDynamicCheckAndInterpretsDynamicFindings(t *testing.T) {
 	tests := []struct {
@@ -131,6 +242,10 @@ func TestM3UsesStrongestFindingRegardlessOfReportOrder(t *testing.T) {
 		{"M13_ADVISORY_REVIEW", "M13_ADVISORY_HIGH"},
 		{"M13_ADVISORY_REVIEW", "M13_ADVISORY_MALICIOUS"},
 		{"M13_ADVISORY_REVIEW", "M3_HONEYTOKEN_ACCESS"},
+		{"M13_SOURCE_REVIEW", "M3_HONEYTOKEN_ACCESS"},
+		{"M13_SOURCE_REVIEW", "M13_ADVISORY_MALICIOUS"},
+		{"M13_BINARY_REVIEW", "M3_FILESYSTEM_VIOLATION"},
+		{"M13_BINARY_REVIEW", "UNKNOWN_SECURITY_FINDING"},
 	} {
 		for _, reverse := range []bool{false, true} {
 			ordered := codes
@@ -161,7 +276,7 @@ func TestM3UsesStrongestFindingRegardlessOfReportOrder(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence())
+				selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), input.CheckPlan())
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -187,49 +302,51 @@ func TestM3RefusesLegacyUndeclaredCheckCoverage(t *testing.T) {
 }
 
 func TestM6PreservesBlockPriorityAndRequiresDeclaredCoverage(t *testing.T) {
-	for _, reverse := range []bool{false, true} {
-		input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "", "github-release")
-		evidence := input.Inspection().Evidence()
-		executions := input.Inspection().Executions()
-		codes := []string{"M6_FORMAT_UNSUPPORTED", "M3_HONEYTOKEN_ACCESS"}
-		if reverse {
-			codes[0], codes[1] = codes[1], codes[0]
-		}
-		var findings []domain.Finding
-		for _, code := range codes {
-			finding, err := domain.NewFinding(code, []domain.EvidenceID{evidence[1].ID()})
+	for _, review := range []string{"M6_FORMAT_UNSUPPORTED", "M13_SOURCE_REVIEW", "M13_BINARY_REVIEW"} {
+		for _, reverse := range []bool{false, true} {
+			input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "", "github-release")
+			evidence := input.Inspection().Evidence()
+			executions := input.Inspection().Executions()
+			codes := []string{review, "M3_HONEYTOKEN_ACCESS"}
+			if reverse {
+				codes[0], codes[1] = codes[1], codes[0]
+			}
+			var findings []domain.Finding
+			for _, code := range codes {
+				finding, err := domain.NewFinding(code, []domain.EvidenceID{evidence[1].ID()})
+				if err != nil {
+					t.Fatal(err)
+				}
+				findings = append(findings, finding)
+			}
+			static, err := domain.NewInspectionReport(executions[0], nil, evidence[:1])
 			if err != nil {
 				t.Fatal(err)
 			}
-			findings = append(findings, finding)
-		}
-		static, err := domain.NewInspectionReport(executions[0], nil, evidence[:1])
-		if err != nil {
-			t.Fatal(err)
-		}
-		dynamic, err := domain.NewInspectionReport(executions[1], findings, evidence[1:])
-		if err != nil {
-			t.Fatal(err)
-		}
-		inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
-		if err != nil {
-			t.Fatal(err)
-		}
-		selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), input.CheckPlan())
-		if err != nil {
-			t.Fatal(err)
-		}
-		decision, err := (M6{}).Evaluate(selected)
-		if err != nil || decision.Decision() != domain.DecisionBlock {
-			t.Fatal("M6 format review hid later block", decision, err)
-		}
-		legacy, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), input.Inspection(), input.Evidence())
-		if err != nil {
-			t.Fatal(err)
-		}
-		decision, err = (M6{}).Evaluate(legacy)
-		if err != nil || decision.Decision() != domain.DecisionManualReview {
-			t.Fatal("M6 accepted undeclared legacy coverage", decision, err)
+			dynamic, err := domain.NewInspectionReport(executions[1], findings, evidence[1:])
+			if err != nil {
+				t.Fatal(err)
+			}
+			inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
+			if err != nil {
+				t.Fatal(err)
+			}
+			selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), input.CheckPlan())
+			if err != nil {
+				t.Fatal(err)
+			}
+			decision, err := (M6{}).Evaluate(selected)
+			if err != nil || decision.Decision() != domain.DecisionBlock {
+				t.Fatal("M6 format review hid later block", decision, err)
+			}
+			legacy, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), input.Inspection(), input.Evidence())
+			if err != nil {
+				t.Fatal(err)
+			}
+			decision, err = (M6{}).Evaluate(legacy)
+			if err != nil || decision.Decision() != domain.DecisionManualReview {
+				t.Fatal("M6 accepted undeclared legacy coverage", decision, err)
+			}
 		}
 	}
 }

@@ -907,3 +907,30 @@ Native/Terraform의 named local 결과:
   별도 native trial binary·Host 설치·CI/push를 만들지 않았다. 다음은 다중 native/나머지
   생태계의 byte facts와 source/no-source/unsupported/packed inventory, AST 생산 연결,
   Policy/캐시·전이 graph/CLI 및 grouped native·hosted다. 전체 S04는 계속 OPEN이다.
+
+
+### 현재 내용 신호의 Policy 분류 — baseline `c00dfc8`
+
+Native가 현재 Terraform 경로에 신호를 반환하기 시작했으므로 다른 생태계 확장 전에 그
+현재 call path의 분류 gap을 닫는다. 순서를 조정해도 전체 S04의 누락/필수 범위는 줄이지
+않는다. 기존 M3/M6 판정·필수 검사·strongest block과 M4/M5 set 전파는 기존
+YES/YES/YES/YES 범위로 재사용한다. `M13_SOURCE_REVIEW`/`M13_BINARY_REVIEW`의
+명시적 MANUAL_REVIEW 분류는 NO/NO/NO/NO다. 현재 unknown default가 BLOCK이다.
+MISSING은 설계 §6.1의 불확정 pattern 분류, 두 entry Policy의 version 갱신, shared
+생태계/부분 검사·미선언·무결성/강한 finding 우선·set 전파 회귀다. ALLOW 조건,
+unknown finding의 기본 차단, 동적/서명 필수 검사를 바꾸거나 정책 engine을 재작성하지 않는다.
+
+
+Policy 명시 분류의 named local 결과:
+
+- Shared M3의 실제 source IDs(여섯 생태계 및 별도 PyTorch profiles)와 M6에서 두 content
+  code/완료·required 불완전·미선언을 대조한 RED0.839s가 기존 unknown BLOCK 분류를
+  확인했다. 기존 switch에 두 review code만 등록하고 M3 version4/M6 version3으로
+  갱신했다. Unknown/default BLOCK·무결성·strongest finding·ALLOW 조건은 유지한다.
+- 전체 Policy Race3.145s, version이 주입되는 GitHub 설치/교체/복원 표적 Race20.665s,
+  canonical security14.625s/vet0.704s/Staticcheck1.246s PASS다. 강한 finding 두 순서,
+  무결성 우선, M4/M5 set 전파와 NewVerifiedSet의 review 승격 거부를 확인했다.
+- 이 작은 분류 범위만 YES/YES/YES/YES다. Source/native 입력 수집·다중 파일·streaming/
+  applicability와 전체 production/CLI/native/hosted는 여전히 MISSING이다. 다른
+  생태계 확장 전에 이미 작동하기 시작한 Terraform call path의 정확한 분류를 먼저
+  연결했으며 전체 요구나 필수 검사·런타임 예산·언어 버전 갱신 owner를 줄이지 않았다.
