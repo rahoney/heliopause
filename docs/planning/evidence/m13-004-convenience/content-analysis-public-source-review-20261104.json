@@ -1102,6 +1102,87 @@
         "path": "tools/gvisor-observer/observer_latch_test.cc",
         "sha256": "814e8ffddb45469434b9b25b362ae74c6778b355efa354ef98d4b1ca14256a8e"
       }
+    ],
+    "completed_binary_cleanup_raw": "s04-scanner-execution-binaries-cleanup-v1.json",
+    "completed_binary_cleanup_bytes": 92571760
+  },
+  "source_report": {
+    "states": {
+      "IMPLEMENTED": "YES (bounded strict output and Domain report helper)",
+      "WIRED": "YES (SourceAnalysis and actual runtime/report caller; production ecosystems pending)",
+      "QUALIFIED": "YES (named local cases only)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "scope": "UTF8 same-file AST for selected rule languages; source inventory/scanned/unscanned digests, exact rule/target/position bindings; no raw source/filename/metavars/dataflow persisted",
+    "actual_first_failure": "s04-content-report-native-v1.json",
+    "actual_clean_child": "s04-content-report-native-v2.json (whole parent FAIL; clean child only PASS)",
+    "actual_clean_child_elapsed": 18.06,
+    "actual_clean_counts": {
+      "scanned": 6,
+      "findings": 0,
+      "parse_errors": 0,
+      "skipped": 0,
+      "accounted_cpu_usec": 517873
+    },
+    "actual_changed_partial": "s04-content-report-native-v3.json",
+    "actual_changed_partial_elapsed": 24.096,
+    "actual_partial_counts": {
+      "scanned": 9,
+      "findings": 1,
+      "ignored_hit_preserved": true,
+      "parse_errors": 2,
+      "skipped": 0,
+      "required_status": "INCOMPLETE",
+      "signal_status": "COMPLETED",
+      "accounted_cpu_usec": 624221
+    },
+    "qualified_observer_runtime_reused": true,
+    "host_unchanged": true,
+    "helper_wait_zero": true,
+    "owned_resources_removed": true,
+    "checks_raw": [
+      "s04-content-report-target-v2.json",
+      "s04-content-report-target-v6.json",
+      "s04-content-report-foundation-v1.json",
+      "s04-content-report-security-v1.json",
+      "s04-content-report-vet-v1.json",
+      "s04-content-report-static-v1.json"
+    ],
+    "foundation_scope": "Initial new-package build/import/architecture scope; not a final whole-source rerun after narrow same-owner fixes",
+    "completed_binary_cleanup_raw": "s04-content-report-binaries-cleanup-v1.json",
+    "completed_binary_cleanup_bytes": 118493232,
+    "missing": [
+      "Source/native byte capture from every existing ecosystem inventory without duplicate archive/budget work",
+      "Explicit no-source/unsupported/packed applicability and coverage",
+      "Actual M13_SOURCE_REVIEW Policy mapping and every transitive/cache/promotion/CLI consumer",
+      "Remaining runtime failure/output/large graph and PyTorch qualification",
+      "Grouped hosted/release supply/current-only gate/full official activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "0c585111578635e1abffda56bc5bf38dc91eb319646a427335e16ff0ada2d6cd"
+      },
+      {
+        "path": "internal/inspection/content/source.go",
+        "sha256": "41ab5d7916515c12059418e14aa2a52dfb2c6b4f0790e9e1b6fbe05764ee7a18"
+      },
+      {
+        "path": "internal/inspection/content/source_json.go",
+        "sha256": "369191f4cca97842e50e19ffb8fb5520f2def98adb2617b2ad6f5a1eb62c2767"
+      },
+      {
+        "path": "internal/inspection/content/source_test.go",
+        "sha256": "55d402c6c3c59c69d274b7e523dd36f3cd529b17fc0b629307e48c69f848a941"
+      },
+      {
+        "path": "internal/sandbox/source_analysis.go",
+        "sha256": "54e710a30d1c87860185516dff68e88ebefe1439d460dd2dc94d2fa82daa9448"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_real_test.go",
+        "sha256": "e1094a38d2cac5bda88f856875a1cf7847f6b9e51f7660df581b0c9f254b47b6"
+      }
     ]
   }
 }

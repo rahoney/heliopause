@@ -667,3 +667,71 @@ transitive graph·Evidence/Policy의 실제 consumer다. Runtime failure/cancell
 주입과 큰 graph/네 PyTorch profile·grouped hosted도 아직 전부 검증한 것으로 쓰지 않는다.
 기존 release workflow16/current20 공급·current-only admission/공식 self-quarantine/activation/
 recovery/provenance는 별도 MISSING을 유지한다.
+
+
+### Scanner 출력 해석 — 구현 전 책임 대조 (4cbc9ec)
+
+기존 advisory의 strict JSON walker는 private·advisory response error/bounds를 소유한다.
+이를 content에서 직접 호출하려고 advisory를 import하거나 범용 JSON package로 전체
+재배치하지 않는다. Source parser는 실제 소비할 document를 한 번 token으로 구성하면서
+중복/case-fold key·UTF8/depth/size/trailing을 거부하고, 고정 Semgrep output의 의미를 같은
+owner에서 해석한다. 기존 Domain `CheckExecution`/Finding/Evidence와 composite를 재사용한다.
+Raw metavars/snippet/message는 보존하지 않으며 rule pack의 version/severity/disposition은
+고정 공급 해시와 결합한다. Runtime의 opaque path 생성 규칙을 Inspection에 복제하지 않고
+`SourceAnalysisOutput.Targets`의 controller-owned opaque→original mapping을 반환한다.
+그 map은 stdout과 분리되고 cleanup 실패 때 다른 output과 함께 폐기된다.
+
+완료된 이전 Go trial binary3/92571760B는 actual V9/Host 원복 이후 exact build receipt,
+SHA/owner/inode/nlink·미실행 상태로 확인하고 삭제했다. Active source/core/rules/SDK/bundle과
+global caches는 유지했다. `s04-scanner-execution-binaries-cleanup-v1.json` 참조.
+
+
+### Strict source 결과 — named local 해석 연결
+
+`content.InspectSources`는 기존 SourceAnalysis port를 한 번 호출하고, pinned rule bytes/
+version·전체 rule-engine census·controller-owned target map/scanned inventory·유한 byte 위치를
+대조한다. Duplicate/Unicode case-fold key·trailing/UTF8/depth/1MiB·외부 path/rule/언어/metadata/
+출력 overflow·실행 미완료를 거부한다. 현재 해석 범위는 rule catalogue에 있는 여섯 언어의
+UTF8 same-file AST다. 다른 언어/encoding을 empty clean으로 받지 않는다.
+
+기존 Domain invariant를 유지해 required source coverage와 optional completed signal
+interpretation을 분리한다. Parse/skip/timeout/missing target/retained512 초과는 required
+INCOMPLETE이며 유효한 bound hit는 별도 completed signal check에 남긴다. Inline nosemgrep
+표시도 hit를 지우지 않는다. Body hash는 file마다 한 번 계산해 모든 hit에서 재사용하고,
+byte 위치는 file마다 한 forward pass로 확인한다. 원래 ordered inventory와 actual
+scanned/unscanned subset digest·counts·고정 same-file scope를 기록한다. Source/filename/
+metavars/dataflow trace 원문은 Evidence에 저장하지 않는다.
+
+- First Race V2/1.162s는 새 zero-match case에서 completed signal check의 Evidence 누락을
+  검출했다. Domain의 completed 검사 증거 요구를 완화하지 않고 source signal summary를
+  추가했다. 최신 package Race V6/1.940s는 정상/0건·부분/error/skip/timeout·512 bound·위조/
+  변조·no-target·첫 runtime cause와 여섯 언어를 한정 확인한다.
+- Actual V1/23.059s는 runtime 완료 후 HCL alias 검증에서 거부됐다. 고정 rule pack의
+  terraform과 target protocol hcl 대응을 catalogue 한 곳에서만 정규화했다. Selected
+  source의 Language.ml/semgrep-hcl Main.ml과 실제 schema를 대조했다.
+- Actual V2/40.872s의 **전체 parent는 FAIL**이다. Clean child18.06s만 six languages6source/
+  findings0/errors0/skip0·coverage COMPLETED와 resource1/CPU517873usec를 PASS했다. Partial
+  child는 optional dataflow_trace를 닫힌 extra schema가 누락해 거부했다.
+- 고정 `Core_json_output.ml`의 optional match_dataflow_trace를 확인해 그 explanatory
+  object만 추가하고 원문을 버린다. Changed partial child만 실행한 actual V3/24.096s
+  (child19.21s)는 scanned9/hit1/errors2/skip0·required INCOMPLETE/optional signal COMPLETED,
+  ignored=true 보존·resource1/CPU624221usec를 PASS했다. Successful clean child는 재실행하지
+  않았고 기존 observer CPP138 V8와 gVisor 본체도 재사용했다.
+- New package의 foundation V1/61.260s는 당시 format/import/architecture/build/docs scope다.
+  이후 같은 owner의 좁은 수정은 최신 tagged build10.064s, package Race, security29.131s,
+  vet2.787s/pinned Staticcheck17.518s로 검증했다. Foundation 전체가 최신 source에서 다시
+  PASS했다고 확대하지 않는다. Runtime alias/TAR의 이전 full sandbox Race도 그 scope다.
+
+두 actual의 각 원본은 `s04-content-report-native-v1/v2/v3.json`, checks는
+`s04-content-report-{target-v2,target-v6,foundation-v1,security-v1,vet-v1,static-v1}.json`이다.
+모두 Host 동일/helperwait0/own resource 제거와 temp copies214436928/214441209/214441743B
+정리를 확인했다. 완료 trial binary/helper6개118493232B도 exact build/owner/SHA/inode/nlink·
+미실행 상태로 제거했다(`s04-content-report-binaries-cleanup-v1.json`).
+
+다음은 existing npm archiveCapture, PyPI verified member/graph budget, Go CheckedFiles,
+Cargo ArchiveFiles 및 GitHub/Terraform structure owners의 같은 pass에 source/native byte
+facts를 연결하는 일이다. Native/packed/미지원·source 없음의 applicability/coverage를
+분명히 구분하고 `M13_SOURCE_REVIEW`의 실제 Policy 매핑·전이 graph/cache/promotion/CLI와
+최종 native/hosted를 닫아야 한다. 현재 함수/실제 시험 소비자는 연결됐지만 production
+생태계 consumer·전체 S04 acceptance는 여전히 OPEN이다. 새 CI/Host 영구 설치·언어 version
+owner 변경은 없으며 명명/배포 완료로 쓰지 않는다.

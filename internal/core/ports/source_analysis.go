@@ -24,6 +24,9 @@ type SourceAnalysisOutput struct {
 	Runtime domain.SandboxResult
 	Output  domain.CapturedProcessOutput
 	Rules   []byte
+	// Targets binds each opaque parser path to the original checked source.
+	// It is controller metadata, never read from the parser's stdout.
+	Targets map[string]string
 }
 
 // SourceAnalysis executes only the selected static analyzer. Source DATA is

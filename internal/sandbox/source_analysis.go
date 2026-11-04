@@ -208,6 +208,10 @@ func (b *SourceAnalyzer) Analyze(ctx context.Context, input ports.SourceAnalysis
 	}
 	result.Output = captured.output
 	result.Rules = bytes.Clone(tool.rules)
+	result.Targets = make(map[string]string, len(prepared.targets))
+	for _, target := range prepared.targets {
+		result.Targets[sourceAnalysisRoot+"/"+target.name] = target.original
+	}
 	return result, nil
 }
 
