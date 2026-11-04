@@ -1392,5 +1392,99 @@
         "sha256": "8d70fe91bf5c62634ab4b0ea4cbccf66118c8ae5a06e0898f1fd569022b27a52"
       }
     ]
+  },
+  "native_content_terraform": {
+    "baseline": "f56bb86",
+    "scope": "Bounded ELF64LE amd64 layout/UPX marker and Terraform actual inspection/cache code path in controlled local models only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope_limits": [
+      "Layout/execution permission facts and UPX marker plus matching sections; no general decompilation, maliciousness proof or all-packer detection",
+      "Only Terraform currently consumes a single verified ELF member; other ecosystems, multiple native members, aggregate/source applicability and Policy mapping remain OPEN"
+    ],
+    "raw": [
+      "s04-native-content-owner-race-v1.json",
+      "s04-native-content-fuzz-v1.json",
+      "s04-native-content-security-v1.json",
+      "s04-native-content-vet-v1.json",
+      "s04-native-content-static-v1.json",
+      "s04-native-content-cache-green-v1.json",
+      "s04-native-content-inspector-wiring-v2.json",
+      "s04-native-content-architecture-v1.json"
+    ],
+    "fuzz": {
+      "elapsed": 23.142,
+      "budget_seconds": 20,
+      "executions": 168595,
+      "scope": "bounded layout parser robustness, not detection-rate measurement"
+    },
+    "first_failures": [
+      {
+        "raw": "s04-native-content-old-approval-red.json",
+        "elapsed": 1.805,
+        "reason": "Old synthetic five-record positive approval lacked new required native facts; updated only current fixture authority and retained a five-record rejection case"
+      },
+      {
+        "raw": "s04-native-content-compressed-red.json",
+        "elapsed": 0.562,
+        "reason": "Candidate used expanded Section.Size as file extent; standard ELF Section.FileSize is the bounded on-disk extent; corrected without inflating debug data"
+      },
+      {
+        "raw": "s04-native-content-inspector-wiring-v1.json",
+        "elapsed": 1.095,
+        "reason": "Controlled test intake root had default TempDir permissions; fixture alone now explicitly sets0700; product privacy guard retained"
+      }
+    ],
+    "initial_foundation": {
+      "raw": "s04-native-content-foundation-v1.json",
+      "elapsed": 41.171,
+      "scope": "Before FileSize/compressed-debug and later wiring-test additions; final production code covered by later owner Race/fuzz/security/vet/Staticcheck"
+    },
+    "retained_approval": "Requires seven exact records, including current native coverage and signal profile/kind; optional advisory remains separate; valid rehashed wrong-kind/profile records rejected",
+    "no_native_host_ci_changes": true,
+    "missing": [
+      "Other ecosystem native/multiple-member/streaming consumers",
+      "Source inventory no-source/unsupported/packed applicability and production AST execution",
+      "M13_SOURCE_REVIEW and M13_BINARY_REVIEW actual Policy mapping and CLI presentation",
+      "Grouped native/public normal/adversarial/large/PyTorch/hosted and release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/content/binary.go",
+        "sha256": "82c871deff6d312b000c8266e241872e126a8dc18cba657f713709f3f277a703"
+      },
+      {
+        "path": "internal/inspection/content/binary_test.go",
+        "sha256": "5d2cda050b1b9c21d83402ac0cc3326c9c8c2b6400f55aafd23beed6cbb18624"
+      },
+      {
+        "path": "internal/inspection/terraformprovider/inspection.go",
+        "sha256": "bfdd280571dfa6780a6983da817f30505d50ca421683b4c55e81b522a24181fc"
+      },
+      {
+        "path": "internal/inspection/terraformprovider/native_test.go",
+        "sha256": "ef9da157a0c8837688d46ec4f0401213abf5b77ccf59a6a5eb3705f5ce09ab0c"
+      },
+      {
+        "path": "internal/promotion/terraform_cache.go",
+        "sha256": "82d5d1b8a7be69d06f4d821750bc429b99c2e281e22f1b22235bbe4f85a6fc60"
+      },
+      {
+        "path": "internal/promotion/terraform_cache_test.go",
+        "sha256": "c2b6b35a4d34f645c05d4d7aac9e55f27ce9e796e4d090f89ed58cb095ae7f1f"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "df51f0fe3c6d0c7d4620e6a754c03a041a708c6f6a1a53f66fbfbfcd18c7ba3f"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "17dd2f629245666813ff076fd2653719099e73e581409c7becd0da562abf7435"
+      }
+    ]
   }
 }

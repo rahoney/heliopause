@@ -850,3 +850,60 @@ GitHub Release source-return의 named local 결과:
 - Source-return만의 성공이며 production analyzer/Policy·native/packed/unsupported/
   no-source applicability 및 Terraform 연결은 계속 미완료다. 정확한 source/raw는
   public review의 `github_member_sources`가 소유한다. 전체 S04는 OPEN이다.
+
+
+### Native capability·Terraform 첫 연결 — 착수 지도 (`f56bb86`)
+
+| 작은 범위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| ELF 내용 facts/packed limitation | NO | NO | NO | NO | 검증된 member의 digest·유한 ELF64LE amd64 layout/권한·UPX marker/section 사실·Evidence/미완료·정상/변조 회귀 |
+| Terraform 현재 검사·retained 소비 | NO | NO | NO | NO | 기존 validated Files map의 executable을 내용 검사에 전달, 사전 CheckPlan·report 합침, 과거5-record 승인 거부·현재 profile 결합 |
+
+기존 Terraform `InspectPackage`/`inspectProviderELF`는 구조 검증을 유지하며 대체하지 않는다.
+현재 반환형은 내용 분석 facts를 갖지 않는다. Inspection은 이미 메모리에 있는 검증된
+실행 파일 bytes에서 Go 표준 ELF reader로 유한 metadata만 읽는다. 압축 해제·서명 검증·
+graph charge·동적 실행을 반복하지 않는다. 디스어셈블러/디컴파일러를 만들지 않는다.
+Source AST와 다른 layout/byte-marker 범위이며 lifecycle section 자체는 악성이 아니다.
+허용하지 않는 metadata 크기/형식이나 packed 내용은 완료 0건으로 처리하지 않는다.
+
+현재 cache가 Evidence ID 다섯 개와 optional advisory 하나만 소비하므로 같은 연결에서
+native coverage/signal summary의 정확한 ID·현재 profile도 요구한다. Profile을 복제하지
+않고 content의 선언 helper만 재사용한다. Cache가 analyzer/Policy를 실행하는 연결은
+만들지 않는다. 나머지 생태계·전체 source applicability·Policy 최종 mapping·CLI/native/
+hosted qualification은 별도 MISSING으로 유지한다.
+
+
+Native/Terraform의 named local 결과:
+
+- `content.InspectELF`는 이미 검증된 member digest를 대조하고, 유한 ELF64LE amd64
+  program128/section4096/section-name1MiB 범위에서 권한/layout·lifecycle·UPX 표식을
+  기록한다. 단순 marker나 init/fini 자체를 악성으로 확정하지 않는다. 위험 layout은
+  `M13_BINARY_REVIEW`이며 marker+대응 section으로 인식한 UPX packed 내용은 required
+  INCOMPLETE와 별도의 completed signal을 남긴다. 다른 형식은 UNSUPPORTED/NOT_EXECUTED,
+  malformed/과다 metadata·digest 불일치는 완료 0건이 아니다. 디컴파일/모든 packer 탐지는
+  범위 밖이며 그보다 강한 안전성·탐지율로 표시하지 않는다.
+- Terraform은 기존 validated Files map의 실행 파일만 전달하며 static→native→기존 서명
+  prerequisite/동적 probe를 유지한다. Native 두 check를 사전 선언한다. Cache는 기존
+  required5 + native coverage/signal2를 요구하고 현재 선언 helper의 profile과 정확한
+  kind를 대조한다. Optional advisory는 필수 증거를 대체하지 않는다. Cache의 content
+  의존은 읽기 전용 선언에 한정하며 분석기/Policy 실행 연결은 없다.
+- Initial target2.328s/architecture1.863s/foundation41.171s 뒤, compressed-debug 회귀
+  RED0.562s가 후보의 Section.Size(확장 크기)/FileSize(파일 크기) 혼동을 검출했다.
+  실제 표준 ELF API의 FileSize로 범위를 확인하며 debug payload를 inflate하지 않는다.
+  최종 관련 owner Race38.177s/security27.394s/vet16.337s/Staticcheck22.905s PASS,
+  bounded fuzz23.142s(20초 예산/168595exec/no panic) PASS다. 초기 foundation은 이후
+  수정까지 재실행한 결과로 확대하지 않는다.
+- Old positive approval RED1.805s는 이전 synthetic5 증거가 새 요구를 충족하지 못한
+  fixture 갱신 지점이다. 원래 보호를 낮추지 않고 현재 fixture에 실제 parser 결과와
+  선언을 연결했다. Cache targeted16.691s는 누락/과거5·정상7/optional·실제 Store로
+  재작성·재해시한 wrong profile/kind 거부를 확인했다. 최초 cache-red9.296s는 원래
+  negative-only 검사여서 PASS였으며 제품 RED 증거로 쓰지 않는다.
+- 실제 Inspector 진입점의 controlled Data/port 모델은 runtime 미준비 때도 native
+  coverage/signal과 RWX Finding이 남고 required dynamic은 미완료임을 확인했다.
+  V1/1.095s는 test TempDir 권한이 private700 계약을 만족하지 않아 실행 전에 실패했다.
+  Fixture만 chmod700으로 고친 V2/1.918s는 두 case PASS다. 공개 서명/격리 실행 성공은
+  아니다. 이후 단순 fixture 권한 수정은 production code를 바꾸지 않았다.
+- Unit 임시 intake/승인 사본은 t.TempDir로 회수했고 native ELF를 Host에서 실행하거나
+  별도 native trial binary·Host 설치·CI/push를 만들지 않았다. 다음은 다중 native/나머지
+  생태계의 byte facts와 source/no-source/unsupported/packed inventory, AST 생산 연결,
+  Policy/캐시·전이 graph/CLI 및 grouped native·hosted다. 전체 S04는 계속 OPEN이다.

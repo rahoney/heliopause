@@ -12,10 +12,13 @@ func TestContentInspectionKeepsRuntimeBehindItsPort(t *testing.T) {
 			t.Fatal("content contract edge rejected", findings)
 		}
 	}
-	for _, owner := range []string{"npm", "gomodule", "cargo", "pypi", "githubrelease"} {
+	for _, owner := range []string{"npm", "gomodule", "cargo", "pypi", "githubrelease", "terraformprovider"} {
 		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/" + owner, Imports: []string{module + "/internal/inspection/content"}}}); len(findings) != 0 {
 			t.Fatal("current source selection cannot reuse content owner", owner, findings)
 		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/promotion", Imports: []string{module + "/internal/inspection/content"}}}); len(findings) != 0 {
+		t.Fatal("cache cannot reuse the current content declaration", findings)
 	}
 	for _, dependency := range []string{module + "/internal/sandbox", module + "/internal/bootstrap", module + "/internal/policy", "example.com/unreviewed-engine"} {
 		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/content", Imports: []string{dependency}}}); len(findings) == 0 {

@@ -17,6 +17,7 @@ import (
 
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 type terraformCacheEntry struct {
@@ -342,6 +343,17 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 		"terraform-provider-dynamic-result":                                   "terraform-provider-dynamic",
 		"terraform-workspace-" + string(domain.SandboxEnvironmentMinimal):     "terraform-provider-dynamic",
 		"terraform-workspace-" + string(domain.SandboxEnvironmentDevelopment): "terraform-provider-dynamic",
+		"binary-content-coverage":                                             "binary-content",
+		"binary-content-signals-summary":                                      "binary-content-signals",
+	}
+	// Reuse only the current declaration. Cache readback never runs analysis.
+	nativeChecks, err := content.BinaryChecks()
+	if err != nil {
+		return err
+	}
+	nativeProfiles := make(map[string]domain.ContentDigest, len(nativeChecks))
+	for _, check := range nativeChecks {
+		nativeProfiles[check.ID().String()] = check.ProfileDigest()
 	}
 	seen := map[string]bool{}
 	for _, entry := range doc.Entries {
@@ -394,6 +406,15 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 			// introduce provider responses/affected-version authority for a binary.
 			if optionalAdvisory && (item.Kind() != "advisory-applicability" || item.ProfileDigest().String() == "") {
 				return errors.New("terraform retained advisory applicability is invalid")
+			}
+			if profile, native := nativeProfiles[expectedCheck]; native {
+				kind := "binary-content-signals"
+				if expectedCheck == "binary-content" {
+					kind = "binary-content-coverage"
+				}
+				if item.ProfileDigest() != profile || item.Kind() != kind {
+					return errors.New("terraform retained binary Evidence differs from the current requirement")
+				}
 			}
 			seenEvidence[record.ID] = true
 			if item.CheckID().String() == "terraform-provider-dynamic" {

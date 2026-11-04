@@ -178,7 +178,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/terraformprovider": true,
 			modulePath + "/internal/core/domain":                true,
 		},
-		modulePath + "/internal/inspection/terraformprovider": {modulePath + "/internal/artifact/terraformprovider": true, modulePath + "/internal/core/domain": true, modulePath + "/internal/core/ports": true, modulePath + "/internal/runtimeidentity": true},
+		modulePath + "/internal/inspection/terraformprovider": {modulePath + "/internal/artifact/terraformprovider": true, modulePath + "/internal/core/domain": true, modulePath + "/internal/core/ports": true, modulePath + "/internal/runtimeidentity": true, modulePath + "/internal/inspection/content": true},
 		modulePath + "/internal/inspection/cargo": {
 			modulePath + "/internal/artifact/cargo":     true,
 			modulePath + "/internal/core/domain":        true,
@@ -250,6 +250,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity":            true,
 		},
 		modulePath + "/internal/promotion": {
+			// Read-only inspection declarations bind retained coverage profiles.
+			modulePath + "/internal/inspection/content":         true,
 			modulePath + "/internal/releaseactivation":          true,
 			modulePath + "/internal/releaseinstall":             true,
 			modulePath + "/internal/core/ports":                 true,

@@ -11,6 +11,7 @@ import (
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -71,6 +72,17 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 			return domain.InspectionReport{}, err
 		}
 		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
+	}
+	memberDigest, e := domain.NewSHA256Digest(contents.ExecutableDigest)
+	if e != nil {
+		return static, e
+	}
+	native, nativeErr := content.InspectELF(ctx, artifact, contents.Executable, contents.Files[contents.Executable], 0o755, memberDigest)
+	if len(native.Executions()) != 0 {
+		static, e = domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native})
+	}
+	if nativeErr != nil || e != nil {
+		return static, errors.Join(nativeErr, e)
 	}
 	verified, e := i.verification.Verify(ctx, artifact)
 	if e != nil {
@@ -234,5 +246,9 @@ func (i *Inspector) ExpectedChecks(ctx context.Context, artifact domain.Acquired
 		}
 		result = append(result, requirement)
 	}
-	return result, nil
+	native, err := content.BinaryChecks()
+	if err != nil {
+		return nil, err
+	}
+	return append(result, native...), nil
 }
