@@ -24,6 +24,26 @@
  
  (* Lang heuristic to determine if a rule is relevant or can be filtered out *)
  let is_rule_used_by_targets (analyzer_set : Analyzer.Set.t) (rule : Rule.t) =
+@@ -960,9 +967,19 @@
+   (* TODO: can we skip all of this if there are no applicable
+           rules? In particular, can we skip print_cli_progress? *)
+   let xtarget = Xtarget.resolve parse_and_resolve_name target in
++  (* Quarantine parses every selected source even when no rule is relevant.
++     Reuse the lazy AST and preserve its errors independently of matching. *)
++  let parse_errors =
++    match target.analyzer with
++    | Analyzer.L (_lang, []) ->
++        let _, skipped_tokens = Lazy_safe.force xtarget.lazy_ast_and_errors in
++        Parse_target.errors_from_skipped_tokens skipped_tokens
++    | _ -> ESet.empty
++  in
+   let matches : Core_result.matches_single_file =
+     match_rules ~matches_hook:Fun.id config prefilter_policy rules xtarget
+   in
++  let matches = { matches with errors = ESet.union matches.errors parse_errors } in
+   (* So we can display matches incrementally in osemgrep!
+           * Note that this is run in a child process of Parmap, so
+           * the hook should not rely on shared memory.
 --- a/libs/ocaml-tree-sitter-semgrep/core/dune
 +++ b/libs/ocaml-tree-sitter-semgrep/core/dune
 @@ -5,6 +5,7 @@

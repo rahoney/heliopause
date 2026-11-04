@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"hash"
 	"io"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -23,6 +24,9 @@ type sourceMember struct {
 	native         bool
 	received       uint64
 	body           bytes.Buffer
+	fact           content.MemberFact
+	digest         hash.Hash
+	finished       bool
 }
 
 type sourceCapture struct {
@@ -32,17 +36,23 @@ type sourceCapture struct {
 	targets int
 	native  *content.BinaryInspection
 	ctx     context.Context
+	facts   []content.MemberFact
+	limits  content.InventoryLimits
 }
 
 func (c *sourceCapture) member(name string, size uint64) io.Writer {
 	language := content.SourceLanguage(name)
-	if c.limited || language == "" && size == 0 && (c.native == nil || !content.IsBinary(name, nil)) {
+	if c.native == nil && (c.limited || language == "" && size == 0) {
 		return nil
 	}
 	member := &sourceMember{owner: c, name: name, size: size}
+	if c.native != nil {
+		member.fact = content.MemberFact{Path: name, Size: size}
+		member.digest = sha256.New()
+	}
 	if c.native != nil && size == 0 {
 		member.selectContent(nil)
-		member.finishNative()
+		member.finish()
 	} else if language != "" && c.native == nil {
 		member.selectLanguage(language)
 		if c.limited {
@@ -54,11 +64,12 @@ func (c *sourceCapture) member(name string, size uint64) io.Writer {
 
 func (m *sourceMember) selectLanguage(language string) {
 	m.ready, m.language = true, language
+	m.fact.Language = language
 	if language == "" {
 		return
 	}
 	c := m.owner
-	if m.size > ports.SourceAnalysisFileLimit || m.size > ports.SourceAnalysisTotalLimit-c.bytes || c.targets >= ports.SourceAnalysisTargetLimit {
+	if c.limited || m.size > ports.SourceAnalysisFileLimit || m.size > ports.SourceAnalysisTotalLimit-c.bytes || c.targets >= ports.SourceAnalysisTargetLimit {
 		c.limited, c.members, m.language = true, nil, ""
 		return
 	}
@@ -70,11 +81,13 @@ func (m *sourceMember) selectLanguage(language string) {
 func (m *sourceMember) selectContent(prefix []byte) {
 	if m.owner.native == nil || !content.IsBinary(m.name, prefix) {
 		m.selectLanguage(content.SourceLanguage(m.name, prefix))
+		m.fact.UnsupportedSource = m.fact.Language == "" && content.UnsupportedSource(m.name, prefix, 0)
 		return
 	}
 	m.ready, m.native = true, true
+	m.fact.Binary = true
 	c := m.owner
-	if m.size > ports.SourceAnalysisFileLimit || m.size > ports.SourceAnalysisTotalLimit-c.bytes || c.targets >= ports.SourceAnalysisTargetLimit {
+	if c.limited || m.size > ports.SourceAnalysisFileLimit || m.size > ports.SourceAnalysisTotalLimit-c.bytes || c.targets >= ports.SourceAnalysisTargetLimit {
 		c.limited, c.members, m.native = true, nil, false
 		// Record an invalid selected member without allocating its body.
 		// Report remains incomplete and keeps earlier validated signals.
@@ -85,17 +98,19 @@ func (m *sourceMember) selectContent(prefix []byte) {
 	c.targets++
 }
 
-func (m *sourceMember) finishNative() {
-	if !m.native || m.received != m.size {
+func (m *sourceMember) finish() {
+	if m.owner.native == nil || m.finished || m.received != m.size {
 		return
 	}
-	sum := sha256.Sum256(m.body.Bytes())
-	digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	// Provisional facts stay private until the enclosing RECORD/archive
-	// owner validates every byte. Neither this body nor its code is run.
-	_ = m.owner.native.Inspect(m.owner.ctx, content.BinaryMember{Path: m.name, Body: m.body.Bytes(), Digest: digest})
-	m.body = bytes.Buffer{}
-	m.native = false
+	m.fact.Digest, _ = domain.NewSHA256Digest(hex.EncodeToString(m.digest.Sum(nil)))
+	if m.native {
+		// Provisional facts stay private until the complete archive validates.
+		_ = m.owner.native.Inspect(m.owner.ctx, content.BinaryMember{Path: m.name, Body: m.body.Bytes(), Digest: m.fact.Digest})
+		m.body = bytes.Buffer{}
+		m.native = false
+	}
+	m.owner.facts = append(m.owner.facts, m.fact)
+	m.finished = true
 }
 
 func (m *sourceMember) Write(data []byte) (int, error) {
@@ -104,8 +119,8 @@ func (m *sourceMember) Write(data []byte) (int, error) {
 		return 0, errors.New("captured member exceeds its declared size")
 	}
 	m.received += uint64(written)
-	if m.owner.limited {
-		return written, nil
+	if m.digest != nil {
+		_, _ = m.digest.Write(data) // hash.Hash.Write never fails.
 	}
 	if !m.ready {
 		n := min(int(min(m.size, 512))-len(m.prefix), len(data))
@@ -115,15 +130,15 @@ func (m *sourceMember) Write(data []byte) (int, error) {
 			return written, nil
 		}
 		m.selectContent(m.prefix)
-		if m.language != "" || m.native {
+		if !m.owner.limited && (m.language != "" || m.native) {
 			_, _ = m.body.Write(m.prefix) // bytes.Buffer.Write never fails.
 		}
 		m.prefix = nil
 	}
-	if m.language != "" || m.native {
+	if !m.owner.limited && (m.language != "" || m.native) {
 		_, _ = m.body.Write(data)
 	}
-	m.finishNative()
+	m.finish()
 	return written, nil
 }
 
@@ -183,13 +198,14 @@ func (i *StaticInspector) InspectWheelContent(ctx context.Context, artifact doma
 	if err != nil {
 		return artifactpypi.WheelInspection{}, nil, domain.InspectionReport{}, err
 	}
-	capture := sourceCapture{native: native, ctx: ctx}
+	limits := artifactpypi.ResourcePolicyFromContext(ctx).WheelLimits()
+	capture := sourceCapture{native: native, ctx: ctx, limits: content.InventoryLimits{MaxMembers: int(limits.MaxFiles), MaxBytes: uint64(limits.MaxUncompressed)}}
 	wheel, static, err := i.inspectWheel(ctx, artifact, capture.member)
 	if err != nil || len(static.Findings()) != 0 {
 		return artifactpypi.WheelInspection{}, nil, static, err
 	}
 	files, captureErr := capture.files(ctx)
-	report, contentErr := capture.report(ctx, static)
+	report, contentErr := capture.report(ctx, artifact, static)
 	return wheel, files, report, errors.Join(captureErr, contentErr)
 }
 
@@ -198,7 +214,8 @@ func (i *StaticInspector) InspectSdistContent(ctx context.Context, artifact doma
 	if err != nil {
 		return artifactpypi.SdistInspection{}, nil, domain.InspectionReport{}, err
 	}
-	capture := sourceCapture{native: native, ctx: ctx}
+	limits := artifactpypi.DefaultSdistLimits()
+	capture := sourceCapture{native: native, ctx: ctx, limits: content.InventoryLimits{MaxMembers: int(limits.MaxFiles), MaxBytes: uint64(limits.MaxUncompressed)}}
 	inspection, static, err := i.inspect(ctx, artifact, capture.member)
 	if err != nil || len(static.Findings()) != 0 {
 		return artifactpypi.SdistInspection{}, nil, static, err
@@ -208,15 +225,23 @@ func (i *StaticInspector) InspectSdistContent(ctx context.Context, artifact doma
 		return artifactpypi.SdistInspection{}, nil, static, errors.New("PyPI source distribution inspection is unavailable")
 	}
 	files, captureErr := capture.files(ctx)
-	report, contentErr := capture.report(ctx, static)
+	report, contentErr := capture.report(ctx, artifact, static)
 	return sdist, files, report, errors.Join(captureErr, contentErr)
 }
 
-func (c *sourceCapture) report(ctx context.Context, static domain.InspectionReport) (domain.InspectionReport, error) {
-	native, nativeErr := c.native.Report(ctx)
+func (c *sourceCapture) report(ctx context.Context, artifact domain.AcquiredArtifact, static domain.InspectionReport) (domain.InspectionReport, error) {
+	inventory, err := content.NewInventory(artifact, c.facts, c.limits)
+	if err != nil {
+		return static, err
+	}
+	native, nativeErr := c.native.Report(ctx, inventory)
 	if len(native.Executions()) == 0 {
 		return static, nativeErr
 	}
-	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native})
+	census, censusErr := inventory.Report(ctx)
+	if censusErr != nil {
+		return static, errors.Join(nativeErr, censusErr)
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native, census})
 	return report, errors.Join(nativeErr, err)
 }

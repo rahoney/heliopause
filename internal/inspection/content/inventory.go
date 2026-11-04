@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"path"
 	"strings"
 
@@ -79,10 +78,18 @@ func ArchiveEvidenceRequirements() ([]EvidenceRequirement, error) {
 	return result, nil
 }
 
+// InventoryLimits are supplied by the archive owner, whose complete parser
+// already enforces them. They do not alter the separate source parser budgets.
+type InventoryLimits struct {
+	MaxMembers int
+	MaxBytes   uint64
+}
+
 // Inventory is an immutable census for one exact acquired subject. Its
-// constructor validates facts; the archive owner still owns byte authenticity
-// and must supply every regular member only after whole-archive validation.
+// constructor validates facts; the archive owner owns byte authenticity and
+// supplies every regular member only after whole-archive validation.
 type Inventory struct {
+	limits      InventoryLimits
 	artifact    domain.AcquiredArtifact
 	members     map[string]MemberFact
 	digest      string
@@ -91,16 +98,23 @@ type Inventory struct {
 	unsupported int
 }
 
-func NewInventory(artifact domain.AcquiredArtifact, members []MemberFact) (Inventory, error) {
-	if artifact.Digest().String() == "" || len(members) == 0 || len(members) > ports.SourceAnalysisTargetLimit {
+func NewInventory(artifact domain.AcquiredArtifact, members []MemberFact, limits ...InventoryLimits) (Inventory, error) {
+	selected := InventoryLimits{ports.SourceAnalysisTargetLimit, ports.SourceAnalysisTotalLimit}
+	if len(limits) > 1 {
+		return Inventory{}, errors.New("content inventory accepts one archive-owner bound")
+	}
+	if len(limits) == 1 {
+		selected = limits[0]
+	}
+	if artifact.Digest().String() == "" || selected.MaxMembers <= 0 || selected.MaxBytes == 0 || len(members) == 0 || len(members) > selected.MaxMembers {
 		return Inventory{}, errors.New("content inventory subject or member count is invalid")
 	}
-	result := Inventory{artifact: artifact, members: make(map[string]MemberFact, len(members))}
+	result := Inventory{artifact: artifact, limits: selected, members: make(map[string]MemberFact, len(members))}
 	var total uint64
 	digest := sha256.New()
 	for _, member := range members {
 		_, duplicate := result.members[member.Path]
-		if member.Path == "" || len(member.Path) > 4096 || member.Path != path.Clean(member.Path) || path.IsAbs(member.Path) || member.Path == "." || member.Path == ".." || strings.HasPrefix(member.Path, "../") || strings.ContainsAny(member.Path, "\\\x00\r\n") || duplicate || member.Digest.String() == "" || member.Size > ports.SourceAnalysisTotalLimit-total || member.Binary && (member.Language != "" || member.UnsupportedSource) || member.Language != "" && member.UnsupportedSource {
+		if member.Path == "" || len(member.Path) > 4096 || member.Path != path.Clean(member.Path) || path.IsAbs(member.Path) || member.Path == "." || member.Path == ".." || strings.HasPrefix(member.Path, "../") || strings.ContainsAny(member.Path, "\\\x00\r\n") || duplicate || member.Digest.String() == "" || member.Size > selected.MaxBytes-total || member.Binary && (member.Language != "" || member.UnsupportedSource) || member.Language != "" && member.UnsupportedSource {
 			return Inventory{}, errors.New("content inventory has invalid, duplicate or excessive member facts")
 		}
 		switch member.Language {
@@ -148,7 +162,7 @@ func (i Inventory) validateSources(artifact domain.AcquiredArtifact, files []por
 
 func InventoryChecks() ([]domain.CheckRequirement, error) {
 	id, _ := domain.NewCheckID("content-inventory")
-	profile, _ := domain.CheckProfileDigest("content-inventory-v1", fmt.Sprintf("source+native+unsupported+data;files=%d;bytes=%d", ports.SourceAnalysisTargetLimit, ports.SourceAnalysisTotalLimit))
+	profile, _ := domain.CheckProfileDigest("content-inventory-v2", "complete-source+native+unsupported+data;archive-owner-bounds;separate-source-budgets")
 	check, err := domain.NewCheckRequirement(id, domain.CheckInspection, true, profile)
 	return []domain.CheckRequirement{check}, err
 }
@@ -173,7 +187,9 @@ func (i Inventory) Report(ctx context.Context) (domain.InspectionReport, error) 
 		Sources     int    `json:"sources"`
 		Binaries    int    `json:"binaries"`
 		Unsupported int    `json:"unsupported_sources"`
-	}{"content-inventory-v1", i.digest, len(i.members), i.sources, i.binaries, i.unsupported})
+		MaxMembers  int    `json:"max_members"`
+		MaxBytes    uint64 `json:"max_bytes"`
+	}{"content-inventory-v2", i.digest, len(i.members), i.sources, i.binaries, i.unsupported, i.limits.MaxMembers, i.limits.MaxBytes})
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

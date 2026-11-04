@@ -8214,7 +8214,7 @@ bool VerifySourceAnalysisDemotionBoundary() {
 
 bool VerifySourceAnalysisCommandBoundary() {
   const char* const args[] = {"/haa-semgrep/semgrep-core-linux-amd64", "-json_nodots",
-      "-tree_sitter_only", "-no_filter_irrelevant_rules", "-no_filter_irrelevant_patterns",
+      "-tree_sitter_only", "-filter_irrelevant_rules", "-no_filter_irrelevant_patterns",
       "-j", "1", "-rules", "/haa-semgrep/semgrep-rules.json", "-targets",
       "/haa-source/targets.json", "-timeout", "2", "-max_memory", "256",
       "-max_match_per_file", "100"};
@@ -8229,12 +8229,13 @@ bool VerifySourceAnalysisCommandBoundary() {
     changed.set_argv(index, message.argv(index) + "-untrusted");
     if (IsExactSourceAnalysisCommand(changed)) return false;
   }
-  for (int fault = 0; fault < 4; ++fault) {
+  for (int fault = 0; fault < 5; ++fault) {
     auto changed = message;
     if (fault == 0) changed.set_binary_path("/work/artifact");
     if (fault == 1) changed.set_execfn("/work/artifact");
     if (fault == 2) changed.add_argv("--config=artifact");
     if (fault == 3) changed.mutable_argv()->RemoveLast();
+    if (fault == 4) changed.set_argv(3, "-no_filter_irrelevant_rules");
     if (IsExactSourceAnalysisCommand(changed)) return false;
   }
   for (const char* profile : {kProfileGitHub, kProfileNPM, kProfilePyPI, kProfileGoBuild})

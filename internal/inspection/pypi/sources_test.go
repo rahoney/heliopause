@@ -2,12 +2,14 @@ package pypi
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"bytes"
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -41,10 +43,9 @@ func TestWheelSourcesPreserveTypedResultAndSingleGraphCharge(t *testing.T) {
 	if report.Execution().ProfileDigest() != oldProfile {
 		t.Fatal("unchanged wheel validation unnecessarily invalidated the old profile")
 	}
-	var total int64
+	total := wheel.ArchiveUncompressedBytes
 	measured := map[string]artifactpypi.WheelFile{}
 	for _, member := range wheel.Files {
-		total += member.Size
 		measured[member.Path] = member
 	}
 	for _, file := range files {
@@ -61,7 +62,7 @@ func TestWheelSourcesPreserveTypedResultAndSingleGraphCharge(t *testing.T) {
 	if err := artifactpypi.ChargeUncompressedFromContext(ctx, 1); err == nil {
 		t.Fatal("source capture skipped original graph accounting")
 	}
-	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(len(wheel.Files))); err != nil {
+	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(wheel.ArchiveEntries)); err != nil {
 		t.Fatal("source capture charged file census twice", err)
 	}
 	if err := artifactpypi.ChargeFilesFromContext(ctx, 1); err == nil {
@@ -154,13 +155,10 @@ func TestWheelContentKeepsTypedMetadataAndSingleGraphCharge(t *testing.T) {
 		t.Fatal(err)
 	}
 	wheel, files, report, err := inspector.InspectWheelContent(ctx, subject)
-	if err != nil || wheel.Project != "example" || len(files) != 1 || files[0].Path != "example/__init__.py" || len(report.Executions()) != 3 || report.Executions()[1].Status() != domain.ExecutionCompleted || len(report.Findings()) != 2 {
+	if err != nil || wheel.Project != "example" || len(files) != 1 || files[0].Path != "example/__init__.py" || len(report.Executions()) != 4 || report.Executions()[1].Status() != domain.ExecutionCompleted || len(report.Findings()) != 2 {
 		t.Fatal("wheel content did not preserve typed/source/native facts", err, report.Executions(), files)
 	}
-	var total int64
-	for _, member := range wheel.Files {
-		total += member.Size
-	}
+	total := wheel.ArchiveUncompressedBytes
 	policy := artifactpypi.ResourcePolicyFromContext(ctx)
 	if err := artifactpypi.ChargeUncompressedFromContext(ctx, policy.MaxGraphUncompressed()-total); err != nil {
 		t.Fatal("native capture charged the graph twice", err)
@@ -168,7 +166,7 @@ func TestWheelContentKeepsTypedMetadataAndSingleGraphCharge(t *testing.T) {
 	if err := artifactpypi.ChargeUncompressedFromContext(ctx, 1); err == nil {
 		t.Fatal("native capture skipped graph accounting")
 	}
-	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(len(wheel.Files))); err != nil {
+	if err := artifactpypi.ChargeFilesFromContext(ctx, policy.MaxGraphFiles()-int64(wheel.ArchiveEntries)); err != nil {
 		t.Fatal("native capture charged file census twice", err)
 	}
 	if err := artifactpypi.ChargeFilesFromContext(ctx, 1); err == nil {
@@ -292,9 +290,91 @@ func TestSdistSourcesReturnOnlyAfterWholeArchiveValidation(t *testing.T) {
 				t.Fatal("source plan accepted a result without the new trailer validation", err)
 			}
 			contentInfo, contentFiles, contentReport, contentErr := inspector.InspectSdistContent(ctx, subject)
-			if contentErr != nil || contentInfo.Project != info.Project || !reflect.DeepEqual(contentFiles, files) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted || len(contentReport.Findings()) != 1 {
+			if contentErr != nil || contentInfo.Project != info.Project || !reflect.DeepEqual(contentFiles, files) || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted || len(contentReport.Findings()) != 1 {
 				t.Fatal("sdist content lost typed metadata/source/native facts", contentErr)
 			}
 		})
+	}
+}
+
+func TestWheelContentCensusIncludesEmptyOpaqueAndExemptMetadata(t *testing.T) {
+	for _, lane := range []string{"public", "cpu"} {
+		t.Run(lane, func(t *testing.T) {
+			root := t.TempDir()
+			subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{
+				"example/empty.txt": "", "example/opaque.dat": "DATA", "example/helper.sh": "#!/bin/sh\necho DATA\n",
+			}, "")
+			profile := artifactpypi.PublicPyPIProfile()
+			if lane == "cpu" {
+				var ok bool
+				profile, ok = artifactpypi.PyTorchProfile(lane)
+				if !ok {
+					t.Fatal("fixed CPU profile absent")
+				}
+			}
+			ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+			wheel, files, report, err := inspector.InspectWheelContent(ctx, subject)
+			if err != nil || len(files) != 1 || len(report.Executions()) != 4 {
+				t.Fatal("complete wheel census unavailable", err)
+			}
+			var census struct {
+				Members     int    `json:"members"`
+				Sources     int    `json:"sources"`
+				Binaries    int    `json:"binaries"`
+				Unsupported int    `json:"unsupported_sources"`
+				MaxMembers  int    `json:"max_members"`
+				MaxBytes    uint64 `json:"max_bytes"`
+			}
+			count := 0
+			for _, fact := range report.Evidence() {
+				if fact.Kind() == "content-inventory" {
+					count++
+					if err := json.Unmarshal([]byte(fact.Summary()), &census); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			limits := profile.ResourcePolicy().WheelLimits()
+			if count != 1 || census.Members != len(wheel.Files) || census.Sources != 1 || census.Binaries != 0 || census.Unsupported != 1 || census.MaxMembers != int(limits.MaxFiles) || census.MaxBytes != uint64(limits.MaxUncompressed) {
+				t.Fatal("census omitted regular DATA/RECORD or changed archive policy", census)
+			}
+		})
+	}
+}
+
+func TestWheelGraphAccountingIncludesSelfRecordBytes(t *testing.T) {
+	root := t.TempDir()
+	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", nil, "")
+	inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	name, _, err := inspector.artifactPath(subject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive, err := zip.OpenReader(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer archive.Close()
+	var actual int64
+	for _, member := range archive.File {
+		actual += int64(member.UncompressedSize64)
+	}
+	ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), artifactpypi.PublicPyPIProfile())
+	if err != nil {
+		t.Fatal(err)
+	}
+	policy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, policy.MaxGraphUncompressed()-actual); err != nil {
+		t.Fatal(err)
+	}
+	if _, report, err := inspector.InspectWheel(ctx, subject); err != nil || len(report.Findings()) != 0 {
+		t.Fatal("exact archive budget rejected", err)
+	}
+	if err := artifactpypi.ChargeUncompressedFromContext(ctx, 1); err == nil {
+		t.Fatal("self RECORD bytes were omitted from graph accounting")
 	}
 }

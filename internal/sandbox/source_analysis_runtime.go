@@ -14,7 +14,7 @@ const sourceAnalysisProfile = "source-analysis"
 func sourceAnalysisCommand() []string {
 	core, _ := nativeRuntimeToolIdentity(nativeRuntimeSemgrep)
 	rules, _ := nativeRuntimeToolIdentity(nativeRuntimeSemgrepRules)
-	return []string{core.guestPath, "-json_nodots", "-tree_sitter_only", "-no_filter_irrelevant_rules", "-no_filter_irrelevant_patterns", "-j", "1", "-rules", rules.guestPath, "-targets", sourceAnalysisRoot + "/" + sourceAnalysisTargetsName, "-timeout", "2", "-max_memory", "256", "-max_match_per_file", "100"}
+	return []string{core.guestPath, "-json_nodots", "-tree_sitter_only", "-filter_irrelevant_rules", "-no_filter_irrelevant_patterns", "-j", "1", "-rules", rules.guestPath, "-targets", sourceAnalysisRoot + "/" + sourceAnalysisTargetsName, "-timeout", "2", "-max_memory", "256", "-max_match_per_file", "100"}
 }
 
 func sourceAnalysisCreateArguments(supply, input *readonlyToolVolume, transaction string, lease ObservationResourceLease) ([]string, error) {

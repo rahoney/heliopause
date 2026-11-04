@@ -134,7 +134,7 @@ func (i *PNPMProjectInspector) inspectInput(ctx context.Context, bind func() (ar
 		if err != nil {
 			return finish(err)
 		}
-		if report.Execution().Status() != domain.ExecutionCompleted || len(report.Findings()) != 0 || !inventory.Matches(state.subject) {
+		if !archiveInspectionReady(report) || !inventory.Matches(state.subject) {
 			ready = false
 			continue
 		}

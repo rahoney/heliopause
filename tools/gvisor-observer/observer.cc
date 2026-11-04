@@ -2579,7 +2579,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
 }
 
 bool IsExactSourceAnalysisCommand(const gvisor::sentry::ExecveInfo& message) {
-  const char* const expected[] = {kSourceAnalysisCore,"-json_nodots","-tree_sitter_only","-no_filter_irrelevant_rules","-no_filter_irrelevant_patterns","-j","1","-rules","/haa-semgrep/semgrep-rules.json","-targets","/haa-source/targets.json","-timeout","2","-max_memory","256","-max_match_per_file","100"};
+  const char* const expected[] = {kSourceAnalysisCore,"-json_nodots","-tree_sitter_only","-filter_irrelevant_rules","-no_filter_irrelevant_patterns","-j","1","-rules","/haa-semgrep/semgrep-rules.json","-targets","/haa-source/targets.json","-timeout","2","-max_memory","256","-max_match_per_file","100"};
   if (message.binary_path() != kSourceAnalysisCore || message.execfn() != kSourceAnalysisCore ||
       message.argv_size() != static_cast<int>(sizeof(expected)/sizeof(expected[0]))) return false;
   for (int index=0; index<message.argv_size(); ++index) if (message.argv(index) != expected[index]) return false;

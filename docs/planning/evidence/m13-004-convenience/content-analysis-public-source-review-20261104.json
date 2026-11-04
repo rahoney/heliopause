@@ -2397,5 +2397,134 @@
       "other platforms/hosted and whole S04/design",
       "release supply/current-only/self-quarantine and other ecosystems/large native"
     ]
+  },
+  "npm_family_prefilter": {
+    "status": "IMPLEMENTED_WIRED_SCOPED_LOCAL_QUALIFIED_ACCEPTANCE_OPEN",
+    "baseline": "c0eea9e",
+    "actual_failures": [
+      "s04-npm-family-cache-native-v1",
+      "s04-npm-family-cache-native-v2"
+    ],
+    "cause": {
+      "artifact": "react18.3.1",
+      "source_targets": 17,
+      "scanned": 17,
+      "parse_errors": 0,
+      "fixpoint_timeouts": 3,
+      "internal_taint_timeout_seconds": 0.2
+    },
+    "readiness": {
+      "red": "s04-npm-static-readiness-red",
+      "race": "s04-npm-static-readiness-green"
+    },
+    "rejected_flag_only": "s04-prefilter-coverage-red-v1",
+    "candidate": {
+      "patch_sha256": "e59e5809a219ad70d7098815036e246ab9796dc19d7e2d591b198b00130dd493",
+      "core_sha256": "b095ce48effdf06dcff7240750d6d101bb3a667931326f37d20c445344a9ce18",
+      "core_bytes": 171649056,
+      "data": "s04-prefilter-coverage-green-v2",
+      "syntax": "s04-prefilter-parse-boundary-v3",
+      "cpp": "s04-source-analysis-observer-prefilter-v9",
+      "updater": "s04-prefilter-owner-update-v3",
+      "canonical_build": "s04-prefilter-canonical-build-v2",
+      "canonical_status": "SUCCESS_EXACT_NATIVE_DIGEST_1585.681S",
+      "runtime_status": "BUN_PNPM_PEER_EMPTY_CACHE_SUCCESS",
+      "runtime": "s04-npm-family-cache-native-v5",
+      "supply": "s04-supply-prefilter-v2"
+    },
+    "not_whole_completion": true,
+    "preparation_failures": [
+      "s04-npm-family-cache-native-v3",
+      "s04-npm-family-cache-native-v4-preflight"
+    ],
+    "cleanup": "s04-completed-prefilter-cleanup-v1",
+    "local_bundle_checks": [
+      {
+        "label": "s04-content-bundle-foundation-final",
+        "elapsed": 83.741,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-security-final",
+        "elapsed": 34.789,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-race-final",
+        "elapsed": 316.14,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-vet-final",
+        "elapsed": 11.557,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-static-final",
+        "elapsed": 25.478,
+        "exit_code": 0,
+        "source_unchanged": true
+      }
+    ]
+  },
+  "pypi_census": {
+    "status": "DATA_IMPLEMENTED_WIRED_SCOPED_QUALIFIED_DEFAULT_SOURCE_CTOR_AND_ACCEPTANCE_OPEN",
+    "target": "s04-pypi-census-target",
+    "related_race": "s04-pypi-census-race",
+    "owner_bounds": "current ResourcePolicy.WheelLimits/default SdistLimits; source parser limits unchanged",
+    "archive_accounting": {
+      "red": "s04-pypi-archive-accounting-red",
+      "green": "s04-pypi-archive-accounting-green",
+      "wheel_static_profile": "pypi-static-archive-v2",
+      "complete_metrics": [
+        "ArchiveUncompressedBytes",
+        "ArchiveEntries"
+      ],
+      "CRC": "self RECORD and exact primary signature sidecars verified with or without capture"
+    },
+    "missing": [
+      "runtime role/source handoff",
+      "configured/default source analyzer",
+      "current promotion/cache/CLI",
+      "large native",
+      "hosted/final"
+    ],
+    "local_bundle_checks": [
+      {
+        "label": "s04-content-bundle-foundation-final",
+        "elapsed": 83.741,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-security-final",
+        "elapsed": 34.789,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-race-final",
+        "elapsed": 316.14,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-vet-final",
+        "elapsed": 11.557,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-static-final",
+        "elapsed": 25.478,
+        "exit_code": 0,
+        "source_unchanged": true
+      }
+    ],
+    "qualification_scope": "All eight affected packages Race316.140s, canonical foundation/security, pinned vet/Staticcheck; no default PyPI source activation or actual PyPI qualification."
   }
 }

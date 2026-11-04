@@ -1485,3 +1485,123 @@ inspect/install/ci·한정 local checks 범위다. ACCEPTANCE_CLOSED=NO다. PNPM
 다른 생태계/큰 native·release 공급/current-only/전체 S04·설계 completion은 MISSING이다.
 기존 성공과 새 실패·시험 교정의 원본을 나눠 보존하며 실제 root/local action 계약을
 registry Artifact 내용 검사 완료로 바꾸거나 Host script 실행 권한으로 승격하지 않는다.
+
+
+### 2026-11-04 PNPM/Bun 기존 cache gate의 현재 내용 검사 연결
+
+Baseline c0eea9e: production의 두 client는 이미 공용 newNPMStaticInspector를
+사용한다(IMPLEMENTED=YES/WIRED=YES). 기존 실제 peer4/empty cache gate 두 개는
+legacy NewInspector(intake)를 직접 구성해 새 current content acceptance를 검증하지
+못한다(QUALIFIED=NO/ACCEPTANCE_CLOSED=NO). MISSING은 이 두 caller를 기존 공용
+factory로 바꾸고 고정 native tool·현재 scanner/규칙/observer에서 실제 Stage/Open,
+readback·변조/취소 거부·정리를 확인하는 것이다. 제품 재구현·새 검사기/수명 owner·
+버전/4분 parent 한도 변경은 없다. 전체 CLI/다른 생태계/hosted는 별도로 남는다.
+
+Actual cache-v1은 Bun peer에서 project Policy 거부로154.59s(전체157.632s) FAIL했다.
+PNPM/empty는 failfast 미도달이다. Source/Host 동일·helperwait0·자기사본409762431B
+제거를 확인했다. 최초 gate는 typed ProjectPolicyFailure의 entry/check/Evidence를
+출력하지 않아 구체 원인은 미확정이다. 실패 때 기존 Store의 신뢰된 facts를 로그에
+보존하도록 시험 진단만 보완한다. Parser/Policy 완화나 같은 가설 반복으로 해결하지 않는다.
+
+Bun peer diagnostic-v2/156.254s(부모153.24s)는 React18.3.1 source17/scanned17/
+parse_errors0/skipped0/fixpoint_timeouts3를 직접 보존했다. 나머지 세 subject는 현재
+검사·M3 ALLOW다. React의 required source 미완료에도 기존 npm/PNPM 준비 gate가
+첫 Execution만 보아 dynamic을 실행하는 연결 gap도 확인했다. 두 실제 consumer의
+공용 준비 판정은 모든 required check의 SUPPORTED/COMPLETED를 확인해야 한다.
+Optional no-native를 required로 바꾸지 않는다. 이 좁은 준비 판정은 구현·연결 gap이고
+전체 분석기 교체가 아니다.
+
+고정 upstream Core_error/Limits_semgrep에서 fixpoint는 함수별 taint0.2s 내부 제한임을
+확인했다. 단순 -timeout 상향은 이 원인을 해결하지 않는다. 기존 rule prefilter를 켠
+326개 DATA1.287s는 기대29 match를 유지했지만 malformed Python 오류를 누락했다.
+따라서 flag만 바꾸는 방법은 반증됐고 채택하지 않는다. 다음 최소 수정은 기존 고정
+source-build patch의 target handler에서 같은 lazy AST를 한 번 파싱하고 기존 skipped/
+inserted/tolerated 오류를 독립 합치는 것이다. 그 뒤 고정 rules의 upstream prefilter를
+써도 전체 source 파싱을 보존할 수 있다. 새 AST/규칙/지원 언어·시간/권한 상향 없이
+동일 source/notice·고정 tool 공급 owner와 generator를 사용한다. 실제 도입은 malformed/
+기존326 DATA·React·현재 native/observer·공급 drift가 검증된 뒤 판정한다.
+
+현재 준비 판정의 직접 RED1.013s는 required 미완료/미지원이 첫 COMPLETED에 가려짐을
+재현했고, 공용 작은 predicate를 두 실제 소비자가 재사용한 Race2.509s는 PASS다.
+기존 static-all/typed layout·optional no-native 의미와 실패한 handoff 초기화는 유지한다.
+후보 target handler의 같은 lazy AST 재사용/오류 합침은 동일 compiler의 incremental
+35.506s에서171649056B/SHA b095ce48을 만들었다. 기존326+공식 React17=343 DATA
+7.193s는 기대29match·오류2·skip0을 보존했고, 별도6언어의 source/sink 없는 정상/
+잘못된 문법12개1.873s도 정확한 오류6을 확인했다. CPP의 exact 새 argv/이전 argv
+거부·기존138 latch는52.688s PASS다. 모두 한정된 후보 증거이며 actual 새 gVisor
+scanner/Bun 정상·PNPM/전체 CLI·hosted와 final source qualification은 남는다.
+
+기존 current updater의 명시 same-engine plan/apply24.447s가 source checkout을
+보존한 external candidate에서 정확히 lock/generated/기존 patch3개만 만들었다.
+그 결과를 현재 작업 후보에 반영했다. Upstream1.183/tag/commit·SDK/compiler·다른
+언어 pin과 updater 경로는 불변이다. 이전 compiled builder-v5에는 semgrep-proof가
+없어 첫 plan은 인수 parsing에서 실패했으며 제품 updater 코드는 바꾸지 않았다.
+해당 core/source/notice/rules는 아직 canonical clean 재현 빌드와 실제 runtime 검증
+대기다. Source profilev3는 full-strict-ast+rule-prefilter 의미와 선택 tool/rules digest를
+결합한다. New lock이 runtime qualification/배포 권한을 뜻하지 않는다.
+
+
+### 2026-11-04 PyPI 전체 census와 archive 소유 한도 — baseline
+
+현재 pypi/sources.go는 기존 MemberCapture의 같은 RECORD/CRC·sdist digest pass에서
+source DATA와 작은 native 사실을 이미 수집한다(IMPLEMENTED/WIRED=YES, 범위 한정).
+전체 regular member census/0-source·0-native 근거는 NO이며 static 기본 조합/AST/현재
+promotion·CLI qualification도 NO다. Wheel의 RECORD/self·서명 sidecar는 capture에서
+제외되고, 공용 Inventory가 source parser의10000/512MiB 한도를 전체 archive 한도로
+혼용해 기존 PyTorch 정책20k/큰 native를 보존하지 못한다. MISSING: 기존 collector를
+모든 regular member의 hash/역할까지 확장하고 기존 archive 검증 완료 후만 census를
+공개하며, 명시 archive-owner bounds를 쓰고 source parser 한도는 따로 유지한다.
+기존 public DATA 메서드/typed wheel·sdist 결과/graph charge는 재사용한다.
+이번 부분은 constructor/production 활성화가 아니며 .pth 등 Python 실행 역할·큰 native
+streaming/기본 source port·승격/실제 CLI는 다음 필수 gap으로 남긴다. 전역 budget 상향·
+새 archive parser·임의 압축 해제나 body 전체 복사로 해결하지 않는다.
+
+PyPI 같은 수정 경로의 추가 accounting gap: static.go가 graph uncompressed/files를
+정규화 RECORD 목록에서 합산해 self RECORD의 실제 bytes와 제외된 서명 sidecar/ZIP
+directory entry를 세지 않는다. Archive parser는 전체 ZIP 크기/목록을 이미 한 번
+검증한다. 이 기존 측정값을 typed WheelInspection에 전달하고 전체 regular CRC를
+검증해 graph 한도에 적용해야 한다. 새 추출/통계 parser·한도 상향 없이 작은 실제 ZIP
+잔여 예산 회귀로 확인한다. Census 추가로 native/source 안전성을 자동 부여하지 않는다.
+
+Canonical clean 재현은1585.681s에 성공해 incremental 후보와 exact b095ce48/171649056B가
+일치했다. 기존 source1028·compiler/SDK/worker·원본 Host manifest를 보존했고 cleanup은
+성공이다. Updated tuple의 실제 materialize10.149s도 root0/single-link/555·444 네 공급물을
+확인했다. 이 build/materialize 자체의 runtime_qualified=false를 수정하지 않는다.
+
+Actual cache-v3/96.402s는 source-all 뒤 동적 준비에서 FAIL했다. 작업자가 responder
+빌드의 CGO_ENABLED=0을 빠뜨려4063495B/INTERP/CGO1을 만든 준비 오류였다. Product
+validResponderImage를 완화하지 않는다. CGO0/strip canonical 설정과 실제 buildinfo/ELF를
+확인하고 기존 CheckResponderSource를 두 gate의 public selection 이전에 호출한다.
+V4는 마지막 test-only 수정 전 helper receipt 때문에 엄격한 source preflight가 Host
+실행 전에 거부했다. 최종 frozen 입력으로 cached helper build0.592s/0.339s만 다시
+기록했고 현재 client build6.354s는 재사용했다. 원래 실패를 성공으로 바꾸지 않는다.
+
+Actual cache-v5/304.285s는 Bun158.55s(peer151.19/empty5.89)와 PNPM142.48s
+(peer135.40/empty5.61)를 모두 PASS했다. Current source-profilev3/전체 censusv2와
+필수 coverage·M3/M4 ALLOW·fresh Stage/Open·sealed records/native peer provenance·
+private 준비/readback/close·변조/취소 거부를 확인했다. Host/source 동일/noSKIP/
+helperwait0·자기사본409771057B 제거다. 이 source/runtime의 peer4와 empty0 cache
+범위는 IMPLEMENTED/WIRED/QUALIFIED=YES, ACCEPTANCE_CLOSED=NO다. Full CLI/
+실행·metadata-specific actual/다른 OS·hosted는 별도다.
+
+PyPI census의 표적8.880s와 content/pypi/artifact-pypi/Cargo 전체 Race21.730s는
+PASS다. 이후 같은 owner의 graph accounting 직접 RED1.288s가 self RECORD bytes
+누락을 확인했다. 기존 archive parser의 전체 ZIP bytes/entry 측정값 두 개를 typed
+WheelInspection에 전달해 graph budget에 사용하고, self/서명 CRC도 항상 검증한다.
+정규화 RECORD Files·서명 미제공 허용과 graph 한도는 유지한다. 달라진 wheel 검증은
+static profilev2로 구분하며 sdist profile은 유지한다. 해당 정상/예산 경계/세 CRC 거부·
+기존 source/native 단일 charge 표적 Race11.331s가 PASS다. 새 extraction/함수 계층·
+시간/공간 상향은 없고 source ctor/default/cache/promotion·큰 native는 아직 MISSING이다.
+
+Completed own prototype/test copies5개는110process의 exe/FD/maps 참조0·queryerror0
+확인 뒤629393528B를 제거했다. New supply/canonical originals/SDK·현재 native v5
+입력과 원본 로그는 보존했다. No CI/push/설치/배포/이름 변경은 없다.
+
+현재 의미 있는 source 묶음의 최종 frozen local checks는 foundation83.741s, security
+34.789s, 영향8개 package 전체 Race316.140s, vet11.557s, 고정 Staticcheck25.478s가
+모두 PASS/source unchanged다. Race는 Artifact PyPI/content/npm/PyPI/sandbox/bootstrap/
+promotion/updater 기존 소비자를 포함한다. Source-byte 수집·typed archive metrics·현재
+프로필/기존 updater·읽기 전용 공급 경계를 재검토했으며 새 public framework/package·
+버전 owner나 native 권한 상향은 없다. 기존 successful CPP/native/canonical build를
+반복하지 않는다. 이 checkpoint 뒤에도 CLI/실행과 PyPI 실제 source/승격·큰 native 및
+나머지 보강 설계의 MISSING을 계속한다. 전체 기능 완료나 배포 준비 판정이 아니다.

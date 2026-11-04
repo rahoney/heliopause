@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "912cabc0599a32ff70d2f2c4fdbe9bd7822c17ea44e80be3d2002a513af086de"
+	RuntimeLockSHA256            = "dd9b5243b048f6c4d1a57fd7134b103690235d9f66769486e36c0ee4bdbfa951"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -96,12 +96,12 @@ const (
 // SelectedSemgrepSupply returns the immutable lock-selected value.
 func SelectedSemgrepSupply() SemgrepSupplyOwner {
 	return SemgrepSupplyOwner{
-		Version: "1.183.0", Architecture: "amd64", RuntimeImage: "python_image", SourceCommit: "4fe07d805dd2a4b64fed486e95136923f08648d0", SourceTagObject: "f4162666feb36c1f9d1788f9b331f6a59b5a83ec", SourceManifestSHA256: "87f1cedb570c456c671906ce45f6e57519bf9bad779eec5237dac6776d1334ee", SourceDateEpoch: 1793297858,
-		Tool:    SemgrepSupplyAsset{Path: "semgrep-core-linux-amd64", SHA256: "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4", Size: 171648864},
-		Sources: SemgrepSupplyAsset{Path: "semgrep-SOURCES.tar", SHA256: "cce4d6c2fb529605f9ce057a6e407a44ba3cfe3e5c00c341ae6069988a098150", Size: 308347904},
+		Version: "1.183.0", Architecture: "amd64", RuntimeImage: "python_image", SourceCommit: "4fe07d805dd2a4b64fed486e95136923f08648d0", SourceTagObject: "f4162666feb36c1f9d1788f9b331f6a59b5a83ec", SourceManifestSHA256: "69c1a0a9c2307eeac4a28a790e61fc79c8d2104e15d2d3e1b7cac542e9ae89c0", SourceDateEpoch: 1793297858,
+		Tool:    SemgrepSupplyAsset{Path: "semgrep-core-linux-amd64", SHA256: "b095ce48effdf06dcff7240750d6d101bb3a667931326f37d20c445344a9ce18", Size: 171649056},
+		Sources: SemgrepSupplyAsset{Path: "semgrep-SOURCES.tar", SHA256: "89b643eb24858615d16e57ccaa499325fcbe6d384d72290c5a07b3c139a765de", Size: 308348928},
 		Notices: SemgrepSupplyAsset{Path: "semgrep-NOTICES.tar", SHA256: "066469f23a616cf245f98f156be59dcfb88f5f6f043bb4fd0fe4815fc0806f42", Size: 1982464},
 		Rules:   SemgrepSupplyAsset{Path: "tools/semgrep/rules.json", SHA256: "7d4dc0345412d72000b596c08f2dcf8c53fd442bcba068a07d208d37f3305f22", Size: 9338},
-		Patch:   SemgrepSupplyAsset{Path: "tools/semgrep/quarantine.patch", SHA256: "f4628b965798f5482bfbc8967408e51ac9c823a693d2f764a2a6386a6d6bc2ad", Size: 1880},
+		Patch:   SemgrepSupplyAsset{Path: "tools/semgrep/quarantine.patch", SHA256: "e59e5809a219ad70d7098815036e246ab9796dc19d7e2d591b198b00130dd493", Size: 2915},
 		Worker:  SemgrepSupplyAsset{Path: "scripts/update-runtime/semgrep_build_worker.sh", SHA256: "15e872b4f840108e899e4d9bd57bdf7143e58e3cd55dd5ac50bf2b400750f160", Size: 6881},
 	}
 }

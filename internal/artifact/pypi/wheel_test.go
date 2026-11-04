@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -717,6 +718,67 @@ func TestInspectWheelAllowsOnlyExactPrimaryRecordJWSOmission(t *testing.T) {
 	}, []string{"cp314-cp314-manylinux_2_36_x86_64"}, nil)
 	if _, err := inspectTestWheelResult(archive, "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl"); err != nil {
 		t.Fatalf("primary RECORD signature omission rejected: %v", err)
+	}
+	captured := map[string]*bytes.Buffer{}
+	sum := sha256.Sum256(archive)
+	info, err := InspectWheelForSource(bytes.NewReader(archive), int64(len(archive)), "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl", hex.EncodeToString(sum[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits(), PublicPyPIProfile().Source(), func(name string, _ uint64) io.Writer {
+		buffer := &bytes.Buffer{}
+		captured[name] = buffer
+		return buffer
+	})
+	if err != nil || len(captured) != 6 {
+		t.Fatal("content capture omitted primary RECORD/signature DATA", err, len(captured))
+	}
+	original, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var archiveBytes int64
+	for _, member := range original.File {
+		archiveBytes += int64(member.UncompressedSize64)
+		reader, err := member.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, readErr := io.ReadAll(reader)
+		closeErr := reader.Close()
+		buffer, exists := captured[member.Name]
+		if readErr != nil || closeErr != nil || !exists || !bytes.Equal(body, buffer.Bytes()) {
+			t.Fatal("captured regular member differs from original ZIP", member.Name, readErr, closeErr)
+		}
+	}
+	if info.ArchiveUncompressedBytes != archiveBytes || info.ArchiveEntries != len(original.File) {
+		t.Fatal("normalized RECORD totals hid exempt archive members", info.ArchiveUncompressedBytes, info.ArchiveEntries)
+	}
+	for _, name := range []string{"RECORD", "RECORD.jws", "RECORD.p7s"} {
+		t.Run("capture rejects corrupt "+name, func(t *testing.T) {
+			var altered bytes.Buffer
+			writer := zip.NewWriter(&altered)
+			for _, member := range original.File {
+				header := member.FileHeader
+				if header.Name == "packaging-25.0.dist-info/"+name {
+					header.CRC32 ^= 1
+				}
+				output, err := writer.CreateRaw(&header)
+				if err != nil {
+					t.Fatal(err)
+				}
+				input, err := member.OpenRaw()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := io.Copy(output, input); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := writer.Close(); err != nil {
+				t.Fatal(err)
+			}
+			sum := sha256.Sum256(altered.Bytes())
+			if _, err := InspectWheelForSource(bytes.NewReader(altered.Bytes()), int64(altered.Len()), "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl", hex.EncodeToString(sum[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits(), PublicPyPIProfile().Source(), func(string, uint64) io.Writer { return io.Discard }); err == nil {
+				t.Fatal("captured exempt metadata escaped CRC validation", name)
+			}
+		})
 	}
 }
 

@@ -95,7 +95,7 @@ func inspectNPMProjectPlan(ctx context.Context, plan npmProjectInspectionPlan) (
 		if err != nil {
 			return finish(err)
 		}
-		if report.Execution().Status() != domain.ExecutionCompleted || len(report.Findings()) != 0 || !inventory.Matches(state.subject) {
+		if !archiveInspectionReady(report) || !inventory.Matches(state.subject) {
 			ready = false
 			continue
 		}
@@ -154,4 +154,19 @@ func observeNPMProjectInstances(ctx context.Context, states []npmProjectInspecti
 		}
 	}
 	return nil
+}
+
+// The static archive report may contain multiple required content checks.
+// Its first execution alone cannot authorize preparation of artifact code.
+func archiveInspectionReady(report domain.InspectionReport) bool {
+	checks := report.Executions()
+	if len(checks) == 0 || len(report.Findings()) != 0 {
+		return false
+	}
+	for _, check := range checks {
+		if check.Required() && (check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted) {
+			return false
+		}
+	}
+	return true
 }

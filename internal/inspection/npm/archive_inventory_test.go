@@ -185,3 +185,51 @@ func (r *inventoryCancellingReader) Read(p []byte) (int, error) {
 	clear(p)
 	return len(p), nil
 }
+
+func TestNPMProjectStaticReadinessRequiresEveryRequiredCheck(t *testing.T) {
+	id, _ := domain.NewCheckID("npm-static-archive")
+	check, _ := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	eid, _ := domain.NewEvidenceID("static-result")
+	source, _ := domain.NewSourceID("npm")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "tiny", "1.2.3", "tarball")
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	fact, _ := domain.NewEvidence(eid, id, identity, digest, "static", "Static archive completed.")
+	static, err := domain.NewInspectionReport(check, nil, []domain.Evidence{fact})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range []struct {
+		name       string
+		required   bool
+		capability domain.Capability
+		status     domain.ExecutionStatus
+		want       bool
+	}{
+		{"required-complete", true, domain.CapabilitySupported, domain.ExecutionCompleted, true},
+		{"required-incomplete", true, domain.CapabilitySupported, domain.ExecutionIncomplete, false},
+		{"required-unsupported", true, domain.CapabilityUnsupported, domain.ExecutionNotExecuted, false},
+		{"optional-absent", false, domain.CapabilitySupported, domain.ExecutionNotExecuted, true},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			id, _ := domain.NewCheckID("source-content")
+			limitation := ""
+			if item.status != domain.ExecutionCompleted {
+				limitation = "M13_SOURCE_ANALYSIS_INCOMPLETE"
+			}
+			check, err := domain.NewCheckExecution(id, domain.CheckInspection, item.required, item.capability, item.status, limitation)
+			if err != nil {
+				t.Fatal(err)
+			}
+			eid, _ := domain.NewEvidenceID("content-result")
+			fact, _ := domain.NewEvidence(eid, id, identity, digest, "content", "Controlled content coverage.")
+			content, err := domain.NewInspectionReport(check, nil, []domain.Evidence{fact})
+			if err != nil {
+				t.Fatal(err)
+			}
+			report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, content})
+			if err != nil || archiveInspectionReady(report) != item.want {
+				t.Fatal("first completed execution masked a required content gap", err)
+			}
+		})
+	}
+}

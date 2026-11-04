@@ -34,6 +34,9 @@ func TestBunPublicApprovedCacheIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
+	if err := sandbox.CheckResponderSource(ctx); err != nil {
+		t.Fatal("fixed responder source before public selection", err)
+	}
 	executor, err := hosttool.NewSystem(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -111,7 +114,7 @@ func TestBunPublicApprovedCacheIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			static, err := inspectionnpm.NewInspector(intake)
+			static, err := newNPMStaticInspector(intake, executor, observer.Observer())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -141,6 +144,20 @@ func TestBunPublicApprovedCacheIntegration(t *testing.T) {
 			}
 			approved, err := quarantine.InspectProject(ctx, frozen.Snapshot())
 			if err != nil || !approved.Valid() || len(approved.Inspected().Inspections()) != item.count {
+				var refusal *application.ProjectPolicyFailure
+				if errors.As(err, &refusal) {
+					for _, entry := range refusal.Inspected().Inspections() {
+						t.Logf("refused_subject=%s policy=%s reasons=%q", entry.Artifact().Identity().Name(), entry.PolicyDecision().Decision(), entry.PolicyDecision().Reasons())
+						for _, check := range entry.Checks() {
+							limitation, _ := check.LimitationCode()
+							t.Logf("check=%s required=%t status=%s limitation=%s", check.ID().String(), check.Required(), check.Status(), limitation)
+						}
+						for _, reference := range entry.Evidence() {
+							fact, _, readErr := store.ReadReference(ctx, entry.RunID(), reference, entry.Artifact().Identity(), entry.Artifact().Digest())
+							t.Logf("evidence=%s summary=%s read_error=%v", reference.ID().String(), fact.Summary(), readErr)
+						}
+					}
+				}
 				t.Fatal("public inspection approval failed", err)
 			}
 			cache, err := promotion.NewBunVerifiedCache(intake, evidenceRoot, cacheRoot, frozen, store, inspector, evidence.Generator{}, operation)

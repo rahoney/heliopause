@@ -12,7 +12,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-const staticCheckProfileName = "pypi-static-archive-v1"
+const staticCheckProfileName = "pypi-static-archive-v2"
 
 // StaticInspector reads an acquired PyPI distribution only from trusted intake.
 type StaticInspector struct {
@@ -96,17 +96,10 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 			cause, stage := wheelDiagnostic(inspectErr)
 			return nil, i.violation(ctx, artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil
 		}
-		var uncompressed int64
-		for _, item := range info.Files {
-			if item.Size < 0 || uncompressed > resourcePolicy.WheelLimits().MaxUncompressed-item.Size {
-				return nil, i.violation(ctx, artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStagePerArtifactUncompressed), nil
-			}
-			uncompressed += item.Size
-		}
-		if artifactpypi.ChargeUncompressedFromContext(ctx, uncompressed) != nil {
+		if artifactpypi.ChargeUncompressedFromContext(ctx, info.ArchiveUncompressedBytes) != nil {
 			return nil, i.violation(ctx, artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
-		if artifactpypi.ChargeFilesFromContext(ctx, int64(len(info.Files))) != nil {
+		if artifactpypi.ChargeFilesFromContext(ctx, int64(info.ArchiveEntries)) != nil {
 			return nil, i.violation(ctx, artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))

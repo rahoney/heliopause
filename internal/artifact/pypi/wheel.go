@@ -92,8 +92,12 @@ type WheelInspection struct {
 	WheelVersion                      string
 	DeclaredSHA256, ObservedSHA256    string
 	Files                             []WheelFile
-	RequiresPython                    string
-	RequiresDist, ImportNames         []string
+	// Complete archive totals include RECORD, signature sidecars and directories;
+	// Files retains the distinct normalized RECORD contract.
+	ArchiveUncompressedBytes  int64
+	ArchiveEntries            int
+	RequiresPython            string
+	RequiresDist, ImportNames []string
 	// Retained for authenticated requested-extra and requirements binding. It is not
 	// serialized inspection authority or an installed tool receipt.
 	providesExtra []string
@@ -206,6 +210,8 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	}
 	info.ObservedSHA256 = observed
 	info.DeclaredSHA256 = declaredSHA256
+	info.ArchiveUncompressedBytes = uncompressed
+	info.ArchiveEntries = len(archive.File)
 	return info, nil
 }
 
@@ -1118,26 +1124,22 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		if name == "" {
 			continue
 		}
-		if name == primaryDistInfo+"/RECORD.jws" || name == primaryDistInfo+"/RECORD.p7s" {
-			continue
-		}
+		signature := name == primaryDistInfo+"/RECORD.jws" || name == primaryDistInfo+"/RECORD.p7s"
 		file, ok := recorded[name]
-		if !ok || file.Path == "" {
+		if !signature && (!ok || file.Path == "") {
 			return nil, errors.New("wheel contains unrecorded file")
 		}
-		if name == primaryRecord && file.Size == 0 && file.SHA256 == "" {
-			continue
-		}
+		exempt := signature || name == primaryRecord && file.Size == 0 && file.SHA256 == ""
 		entry := entries[name]
 		var destination io.Writer
 		if capture != nil && entry != nil {
 			destination = capture(name, entry.UncompressedSize64)
 		}
 		actualSize, actualDigest, err := streamRecordFile(entry, destination)
-		if err != nil || actualSize != file.Size {
+		if err != nil || !exempt && actualSize != file.Size {
 			return nil, errors.New("wheel RECORD size mismatch")
 		}
-		if actualDigest != file.SHA256 {
+		if !exempt && actualDigest != file.SHA256 {
 			return nil, errors.New("wheel RECORD digest mismatch")
 		}
 	}

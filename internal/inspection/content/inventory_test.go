@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -150,5 +151,41 @@ func TestInventoryRejectsMalformedOrExcessiveMemberCensus(t *testing.T) {
 				t.Fatal("invalid member census produced an applicability proof")
 			}
 		})
+	}
+}
+
+func TestInventoryUsesArchiveOwnerBoundsWithoutExpandingSourceBudgets(t *testing.T) {
+	input, _, _ := sourceFixture(t)
+	member := inventoryMember("opaque-data", "", nil)
+	member.Size = ports.SourceAnalysisTotalLimit + 1
+	if _, err := NewInventory(input.Artifact, []MemberFact{member}); err == nil {
+		t.Fatal("default census silently changed its bounds")
+	}
+	limits := InventoryLimits{MaxMembers: 20_000, MaxBytes: 2 << 30}
+	inventory, err := NewInventory(input.Artifact, []MemberFact{member}, limits)
+	if err != nil || !inventory.Matches(input.Artifact) {
+		t.Fatal("archive DATA was incorrectly charged against parser bytes", err)
+	}
+	for _, bad := range []InventoryLimits{{}, {MaxMembers: -1, MaxBytes: 1}, {MaxMembers: 1}, {MaxMembers: 1, MaxBytes: member.Size - 1}} {
+		if _, err := NewInventory(input.Artifact, []MemberFact{member}, bad); err == nil {
+			t.Fatal("invalid or exceeded archive bounds accepted", bad)
+		}
+	}
+	if _, err := NewInventory(input.Artifact, []MemberFact{member}, limits, limits); err == nil {
+		t.Fatal("ambiguous archive limits accepted")
+	}
+	members := make([]MemberFact, limits.MaxMembers)
+	for index := range members {
+		members[index] = inventoryMember(fmt.Sprintf("data-%d", index), "", nil)
+	}
+	if _, err := NewInventory(input.Artifact, members); err == nil {
+		t.Fatal("default census silently expanded its member bound")
+	}
+	if _, err := NewInventory(input.Artifact, members, limits); err != nil {
+		t.Fatal("archive member count was incorrectly charged against parser target count", err)
+	}
+	members = append(members, inventoryMember("over-limit", "", nil))
+	if _, err := NewInventory(input.Artifact, members, limits); err == nil {
+		t.Fatal("explicit archive member bound bypassed")
 	}
 }
