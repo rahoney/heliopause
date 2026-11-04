@@ -28,6 +28,8 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
 		{name: "python helper is content DATA", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n"},
+		{name: "extensionless helper", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n"},
+		{name: "extensionless helper CRC", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
 		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},

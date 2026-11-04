@@ -114,9 +114,16 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 	item := artifactnpm.ArchiveEntry{Path: strings.TrimPrefix(name, "package/"), Directory: header.Typeflag == tar.TypeDir, Size: header.Size, Mode: header.Mode}
 	if !item.Directory {
 		digest := sha256.New()
+		var prefix []byte
 		language := ""
 		if c.captureSources {
-			language = content.SourceLanguage(item.Path)
+			if manifest == nil {
+				prefix = make([]byte, min(header.Size, 512))
+				if _, err := io.ReadFull(reader, prefix); err != nil {
+					return err
+				}
+			}
+			language = content.SourceLanguage(item.Path, prefix)
 		}
 		// The existing npm limits (20MiB/file, 200MiB decoded, 10000
 		// entries including the manifest) already bound this subset more
@@ -134,7 +141,10 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 			if item.Path == c.selectedPath || retainSource {
 				writer = io.MultiWriter(digest, &selected)
 			}
-			if err := copyArchivePayload(ctx, writer, reader, header.Size); err != nil {
+			if _, err := writer.Write(prefix); err != nil {
+				return err
+			}
+			if err := copyArchivePayload(ctx, writer, reader, header.Size-int64(len(prefix))); err != nil {
 				return err
 			}
 			if item.Path == c.selectedPath {

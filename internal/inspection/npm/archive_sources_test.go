@@ -24,6 +24,8 @@ func TestArchiveSourcesShareVerifiedInventoryAndPayload(t *testing.T) {
 		{name: "package/bad.py", body: "\xff\x00unparsed source"},
 		{name: "package/README.md", body: "not a parser target"},
 		{name: "package/vendor.min.js", body: ""},
+		{name: "package/bin/cli", body: "#!/usr/bin/env node\nconsole.log('DATA');\n"},
+		{name: "package/helpers/python-tool", body: "#!/usr/bin/python3.15\nraise RuntimeError('DATA');\n"},
 	}
 	subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
 	inspector, _ := NewInspector(root)
@@ -35,7 +37,7 @@ func TestArchiveSourcesShareVerifiedInventoryAndPayload(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(legacy, inventory) || !reflect.DeepEqual(legacyReport, report) {
 		t.Fatal("source capture changed the measured inventory or static report", err)
 	}
-	if len(sources) != 3 || sources[0].Path != "src/component.tsx" || sources[0].Language != "typescript" || sources[1].Language != "python" || !bytes.Equal(sources[1].Body, []byte(entries[3].body)) || sources[2].Path != "vendor.min.js" || len(sources[2].Body) != 0 {
+	if len(sources) != 5 || sources[0].Path != "src/component.tsx" || sources[0].Language != "typescript" || sources[1].Language != "python" || !bytes.Equal(sources[1].Body, []byte(entries[3].body)) || sources[2].Path != "vendor.min.js" || len(sources[2].Body) != 0 || sources[3].Path != "bin/cli" || sources[3].Language != "javascript" || sources[4].Path != "helpers/python-tool" || sources[4].Language != "python" {
 		t.Fatal("source selection lost path, language, empty or invalid-encoding input", sources)
 	}
 	for _, source := range sources {

@@ -27,6 +27,13 @@ func releaseSourceArchives(t *testing.T) ([]byte, []byte) {
 	if _, err := member.Write([]byte("raise RuntimeError('DATA only')")); err != nil {
 		t.Fatal(err)
 	}
+	member, err = zw.Create("bin/tool")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := member.Write([]byte("#!/usr/bin/env node\nconsole.log('DATA');\n")); err != nil {
+		t.Fatal(err)
+	}
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -37,6 +44,13 @@ func releaseSourceArchives(t *testing.T) ([]byte, []byte) {
 		t.Fatal(err)
 	}
 	if _, err := tw.Write([]byte("pass")); err != nil {
+		t.Fatal(err)
+	}
+	script := "#!/usr/bin/env node\nconsole.log('DATA');\n"
+	if err := tw.WriteHeader(&tar.Header{Name: "bin/tool", Mode: 0o755, Size: int64(len(script)), Typeflag: tar.TypeReg}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write([]byte(script)); err != nil {
 		t.Fatal(err)
 	}
 	if err := tw.Close(); err != nil {
@@ -134,7 +148,7 @@ func TestReleaseSourcesBindOriginalAndDiscardInvalidArchive(t *testing.T) {
 				return
 			}
 			legacy, legacyErr := inspector.Inspect(ctx, subject)
-			if err != nil || legacyErr != nil || !reflect.DeepEqual(legacy, report) || len(files) != 1 || files[0].Path != "source.py" || files[0].Language != "python" {
+			if err != nil || legacyErr != nil || !reflect.DeepEqual(legacy, report) || len(files) != 2 || files[0].Path != "source.py" || files[0].Language != "python" || files[1].Path != "bin/tool" || files[1].Language != "javascript" {
 				t.Fatal("source selection changed static facts or parser DATA", err, legacyErr, files)
 			}
 			want := "raise RuntimeError('DATA only')"

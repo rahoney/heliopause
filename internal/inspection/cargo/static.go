@@ -60,13 +60,13 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		// so the parser's input and coverage digest are deterministic.
 		var names []string
 		for name := range files {
-			if content.SourceLanguage(name) != "" {
+			if content.SourceLanguage(name, files[name]) != "" {
 				names = append(names, name)
 			}
 		}
 		sort.Strings(names)
 		for _, name := range names {
-			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: content.SourceLanguage(name), Body: files[name]})
+			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: content.SourceLanguage(name, files[name]), Body: files[name]})
 		}
 	}
 	checkID, _ := domain.NewCheckID("cargo-crate-static")

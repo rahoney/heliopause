@@ -2,6 +2,7 @@
 package gomodule
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"go/parser"
@@ -81,14 +82,32 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 			language = content.SourceLanguage(file.Name)
 		}
 		goSource := strings.HasSuffix(file.Name, ".go")
-		if !goSource && language == "" {
+		if !goSource && language == "" && sources == nil {
 			continue
 		}
 		r, err := file.Open()
 		if err != nil {
 			return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")
 		}
-		body, readErr := io.ReadAll(io.LimitReader(r, artifactgo.MaxModuleFileBytes+1))
+		var prefix []byte
+		if sources != nil {
+			prefix = make([]byte, min(file.UncompressedSize64, 512))
+			if _, err := io.ReadFull(r, prefix); err != nil {
+				_ = r.Close()
+				return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")
+			}
+			language = content.SourceLanguage(file.Name, prefix)
+		}
+		payload := io.MultiReader(bytes.NewReader(prefix), r)
+		if !goSource && language == "" {
+			n, readErr := io.Copy(io.Discard, io.LimitReader(payload, artifactgo.MaxModuleFileBytes+1))
+			closeErr := r.Close()
+			if readErr != nil || closeErr != nil || uint64(n) != file.UncompressedSize64 {
+				return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")
+			}
+			continue
+		}
+		body, readErr := io.ReadAll(io.LimitReader(payload, artifactgo.MaxModuleFileBytes+1))
 		closeErr := r.Close()
 		if readErr != nil || closeErr != nil || len(body) > artifactgo.MaxModuleFileBytes {
 			return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")

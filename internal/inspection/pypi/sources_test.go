@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -20,14 +21,14 @@ import (
 
 func TestWheelSourcesPreserveTypedResultAndSingleGraphCharge(t *testing.T) {
 	root := t.TempDir()
-	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{"example/helper.js": "console.log('DATA');\n"}, "")
+	subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{"example/helper.js": "console.log('DATA');\n", "example/cli": "#!/usr/bin/env node\nconsole.log('DATA');\n"}, "")
 	inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
 	ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), artifactpypi.PublicPyPIProfile())
 	if err != nil {
 		t.Fatal(err)
 	}
 	wheel, files, report, err := inspector.InspectWheelSources(ctx, subject)
-	if err != nil || len(files) != 2 || wheel.Project != "example" || len(report.Findings()) != 0 {
+	if err != nil || len(files) != 3 || wheel.Project != "example" || len(report.Findings()) != 0 {
 		t.Fatal("typed source collection unavailable", err, files)
 	}
 	_, legacy, err := inspector.InspectWheel(context.Background(), subject)
@@ -63,6 +64,25 @@ func TestWheelSourcesPreserveTypedResultAndSingleGraphCharge(t *testing.T) {
 	}
 	if err := artifactpypi.ChargeFilesFromContext(ctx, 1); err == nil {
 		t.Fatal("source capture skipped file census accounting")
+	}
+}
+
+func TestSourceCaptureRetainsSplitPrefixAndBodyWithoutBufferingOpaqueData(t *testing.T) {
+	var capture sourceCapture
+	body := []byte("#!/usr/bin/env python3\n" + strings.Repeat("x", 700))
+	writer := capture.member("bin/tool", uint64(len(body)))
+	for _, character := range body {
+		if _, err := writer.Write([]byte{character}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	unknown := capture.member("data/blob", 4096)
+	if _, err := unknown.Write(bytes.Repeat([]byte{'x'}, 4096)); err != nil {
+		t.Fatal(err)
+	}
+	files, err := capture.files(context.Background())
+	if err != nil || len(files) != 1 || files[0].Language != "python" || !bytes.Equal(files[0].Body, body) || capture.bytes != uint64(len(body)) {
+		t.Fatal("split source prefix was dropped, duplicated or charged as opaque data", err)
 	}
 }
 

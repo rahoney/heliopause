@@ -257,17 +257,25 @@ func inspectTarGZ(file *os.File, sources *[]ports.SourceAnalysisFile) error {
 // Existing archive bounds are tighter than the fixed parser's input bounds.
 // Integrity is checked for every member, whether or not its name selects a parser.
 func readArchiveMember(reader io.Reader, name string, size int64, sources *[]ports.SourceAnalysisFile) error {
+	var prefix []byte
 	language := ""
 	if sources != nil {
-		language = content.SourceLanguage(name)
+		prefix = make([]byte, min(size, 512))
+		if _, err := io.ReadFull(reader, prefix); err != nil {
+			return err
+		}
+		language = content.SourceLanguage(name, prefix)
 	}
 	var body bytes.Buffer
 	var destination io.Writer = io.Discard
 	if language != "" {
 		destination = &body
 	}
-	n, err := io.Copy(destination, io.LimitReader(reader, size+1))
-	if err != nil || n != size {
+	if _, err := destination.Write(prefix); err != nil {
+		return err
+	}
+	n, err := io.Copy(destination, io.LimitReader(reader, size-int64(len(prefix))+1))
+	if err != nil || n+int64(len(prefix)) != size {
 		return errors.Join(errors.New("archive member size or integrity is invalid"), err)
 	}
 	if language != "" {

@@ -1535,5 +1535,80 @@
         "sha256": "07594f9169b99eda3aba7ed90f496425939cef33ee158e9cede188fac1c32fbf"
       }
     ]
+  },
+  "source_prefix": {
+    "baseline": "26ae2ba",
+    "scope": "Bounded source parser hints for extensionless Node/Python shebang files in existing source-return APIs only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "states_scope": "Local collector wiring/tests; full source applicability, non-shebang metadata entry hints and actual AST consumers remain OPEN",
+    "checks_raw": [
+      "s04-source-prefix-owners-v1.json",
+      "s04-source-prefix-security-v1.json",
+      "s04-source-prefix-vet-v1.json",
+      "s04-source-prefix-static-v1.json"
+    ],
+    "bounds": "At most512 prefix bytes; original source/graph/archive limits unchanged",
+    "changes": [
+      "Common parser hint does not confer execution role/authority; existing suffix syntax takes priority",
+      "npm and GitHub retain and hash exact prefix/body in the current member read",
+      "PyPI writer handles split prefixes with no whole-body retention for non-source DATA",
+      "Go capture mode validates remaining non-source CRC without retaining those bodies; Cargo uses its existing checked byte map"
+    ],
+    "missing": [
+      "Metadata-selected extensionless source without a shebang and honest unknown/unsupported applicability",
+      "Production AST/multiple native/streaming/all graph/cache/CLI consumers",
+      "Grouped actual native/hosted and final security metrics"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/cargo/static.go",
+        "sha256": "06ca767b270d0dc961c5e7fee89e4c890626ea10f59b5ea0fc8f3fc141dd5637"
+      },
+      {
+        "path": "internal/inspection/content/language.go",
+        "sha256": "61479fb0175aa179a64bcdd1ce1061981899d9633dbecf0dcbad5761a4c3eae5"
+      },
+      {
+        "path": "internal/inspection/content/language_test.go",
+        "sha256": "06c8e42700bcffa4f55d2ebca59d7f0ac490113362051c334ebcedc8c02e56e7"
+      },
+      {
+        "path": "internal/inspection/githubrelease/archive_sources_test.go",
+        "sha256": "9f4d6e62ee8006cc7a5e386a83442e70cd5dd5e4fae577f3ce4fa71ce6659eee"
+      },
+      {
+        "path": "internal/inspection/githubrelease/static.go",
+        "sha256": "dec5bf3a7cb6743871c1fccf59f1af99d0310fad694cafe42809d861aa65d396"
+      },
+      {
+        "path": "internal/inspection/gomodule/static.go",
+        "sha256": "59d44d9173d3c40552edef8de44de39b3699b8b417ca917dbd2317d34ac8f08d"
+      },
+      {
+        "path": "internal/inspection/gomodule/static_test.go",
+        "sha256": "c0eda026a1225db0cc644a7e5b775933fc98492f62ca4700f99a8bfd3d287835"
+      },
+      {
+        "path": "internal/inspection/npm/archive_inventory.go",
+        "sha256": "fe3eb59e1cf4a9f847f76dbf50f8939ea3eef009b56cbe414f4de11fad3e412e"
+      },
+      {
+        "path": "internal/inspection/npm/archive_sources_test.go",
+        "sha256": "0f1ebab4ed685352325e82844192d8ef3d70526b6af65b9d741c3ac284c9f909"
+      },
+      {
+        "path": "internal/inspection/pypi/sources.go",
+        "sha256": "965a868e52a88dce1df573fc1bb80ae63e49405d79471c3b433c3c2f5411d550"
+      },
+      {
+        "path": "internal/inspection/pypi/sources_test.go",
+        "sha256": "9fb7d6b5cad0262ee0bd6025a6275a18bfc40017c45a695f774c28e387656e7b"
+      }
+    ]
   }
 }

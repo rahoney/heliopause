@@ -13,29 +13,71 @@ import (
 )
 
 type sourceMember struct {
+	owner          *sourceCapture
 	name, language string
+	size           uint64
+	prefix         []byte
+	ready          bool
 	body           bytes.Buffer
 }
 
 type sourceCapture struct {
-	members []sourceMember
+	members []*sourceMember
 	bytes   uint64
 	limited bool
 }
 
 func (c *sourceCapture) member(name string, size uint64) io.Writer {
 	language := content.SourceLanguage(name)
-	if language == "" || c.limited {
+	if c.limited || language == "" && size == 0 {
 		return nil
 	}
-	if size > ports.SourceAnalysisFileLimit || size > ports.SourceAnalysisTotalLimit-c.bytes || len(c.members) >= ports.SourceAnalysisTargetLimit {
-		c.limited = true
-		c.members = nil
-		return nil
+	member := &sourceMember{owner: c, name: name, size: size}
+	if language != "" {
+		member.selectLanguage(language)
+		if c.limited {
+			return nil
+		}
 	}
-	c.bytes += size
-	c.members = append(c.members, sourceMember{name: name, language: language})
-	return &c.members[len(c.members)-1].body
+	return member
+}
+
+func (m *sourceMember) selectLanguage(language string) {
+	m.ready, m.language = true, language
+	if language == "" {
+		return
+	}
+	c := m.owner
+	if m.size > ports.SourceAnalysisFileLimit || m.size > ports.SourceAnalysisTotalLimit-c.bytes || len(c.members) >= ports.SourceAnalysisTargetLimit {
+		c.limited, c.members, m.language = true, nil, ""
+		return
+	}
+	c.bytes += m.size
+	c.members = append(c.members, m)
+}
+
+func (m *sourceMember) Write(data []byte) (int, error) {
+	written := len(data)
+	if m.owner.limited {
+		return written, nil
+	}
+	if !m.ready {
+		n := min(int(min(m.size, 512))-len(m.prefix), len(data))
+		m.prefix = append(m.prefix, data[:n]...)
+		data = data[n:]
+		if len(m.prefix) < int(min(m.size, 512)) {
+			return written, nil
+		}
+		m.selectLanguage(content.SourceLanguage(m.name, m.prefix))
+		if m.language != "" {
+			_, _ = m.body.Write(m.prefix) // bytes.Buffer.Write never fails.
+		}
+		m.prefix = nil
+	}
+	if m.language != "" {
+		_, _ = m.body.Write(data)
+	}
+	return written, nil
 }
 
 func (c *sourceCapture) files(ctx context.Context) ([]ports.SourceAnalysisFile, error) {

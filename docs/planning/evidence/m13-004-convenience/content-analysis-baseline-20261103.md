@@ -934,3 +934,29 @@ Policy 명시 분류의 named local 결과:
   applicability와 전체 production/CLI/native/hosted는 여전히 MISSING이다. 다른
   생태계 확장 전에 이미 작동하기 시작한 Terraform call path의 정확한 분류를 먼저
   연결했으며 전체 요구나 필수 검사·런타임 예산·언어 버전 갱신 owner를 줄이지 않았다.
+
+
+### 확장자 없는 source 선택 — 착수 대조
+
+현재 SourceLanguage/수집자는 suffix 힌트만 사용한다. 따라서 명시적인 Node/Python
+shebang을 가진 확장자 없는 CLI 파일도 source 반환 대상에서 누락된다. 해당 선택 범위는
+NO/NO/NO/NO이며 MISSING은 유한 prefix의 parser 힌트·기존 hash stream 재사용·원본
+byte/offset 보존·정상/unknown 대조다. 기존 suffix 처리/Source runtime·한도/설치 역할을
+대체하지 않는다. Shebang은 source parser 선택 정보이며 실행 승인·모든 entry surface의
+coverage 증명이 아니다. 이 작은 입력 gap부터 닫고 전체 inventory/applicability를 이어간다.
+
+
+유한 prefix 선택의 named local 결과:
+
+- 기존 source-return owner 다섯 개에 최대512B의 명시 Node/Python shebang 힌트를
+  연결했다. Suffix 문법(JSX/TSX 등)을 우선하며 Python 버전 숫자를 별도 고정하지 않는다.
+  Npm/GitHub는 읽은 prefix를 같은 hash/payload에 포함하고 Go는 non-source remainder를
+  저장하지 않고 CRC까지 소비한다. Cargo는 기존 검증 byte map을 그대로 사용한다.
+- PyPI는 기존 sourceMember를 writer로 사용해 여러 조각의 prefix도 정확히 모은다.
+  Source로 선정된 경우에만 기존64MiB/512MiB/10000 한도로 전체 body를 보관한다.
+  Opaque DATA는 최대512B 판단 후 추가 body를 저장하지 않는다. 기존 전체 검증 실패 뒤
+  폐기와 graph charge를 유지한다. 준비/검사 미완료를 source 없음으로 판정하지 않는다.
+- Related Race7.629s/security18.235s/vet1.028s/Staticcheck3.673s PASS다. Corpus/새 native/
+  CPP/전체 foundation/CI는 반복하지 않았다. Unit 임시 입력은 회수하며 새 Host 설치나
+  영구 설정 변경은 없다. Source selection만의 범위이며 metadata가 고른 비-shebang 파일,
+  native 다중/streaming·전체 census/applicability·실제 AST 소비자는 여전히 미완료다.
