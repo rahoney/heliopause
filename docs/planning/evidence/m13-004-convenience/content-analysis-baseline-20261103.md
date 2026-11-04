@@ -1115,3 +1115,43 @@ Cargo 선언 source의 named local 결과:
 - 이 선언 경로의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 로컬 DATA 범위다. 전체
   ACCEPTANCE_CLOSED=NO이며 다른 생태계 metadata/census·실제 AST/생산 cache/CLI/native/
   hosted는 계속 MISSING이다. 새 CI/push·runtime pin/Host 변경은 없다.
+
+
+### Cargo 전체 content census / source 분석 — 착수 지도
+
+파일 단위 source/native 입력은 구현돼 있지만 binary0/source0의 적용 근거와 실제 AST 연결은
+NO/NO/NO/NO다. 먼저 content에 immutable한 파일 사실 목록을 두고 Cargo의 기존 검증 map
+전체와 선언 source를 결합한다. 같은 subject·모든 file/digest/분류·선택 source 집합이 맞을
+때만 zero-target 근거를 사용할 수 있다. 불명/미지원 source는 완료0으로 바꾸지 않는다.
+기존 InspectELF/SourceAnalysis/검사 선언·Composite report를 재사용하며, 새 scanner/reader/
+workflow engine을 만들지 않는다. Legacy source/binary helper의 proof 없는 빈 입력은 계속
+INCOMPLETE다. 생산 bootstrap/cache·CLI 활성화는 같은 근거와 검사 목록이 완성된 뒤 연결한다.
+
+Cargo census/source 진입점의 named local 결과:
+
+- `content.Inventory`는 전체 regular file의 subject/path/size/digest/선언 parser·native/
+  unsupported/DATA 분류를 immutable하게 보존하며 body 사본은 갖지 않는다. 원래 archive
+  owner가 전부 검증한 사실만 공급하며 이 constructor가 새 reader/서명 authority가 되지
+  않는다. Source 선택은 수·중복·언어·바이트 SHA와 정확히 일치해야 한다. 고정 parser 밖
+  source/실행 힌트·case variant는 부재로 바꾸지 않는다. 이는 선언/format-hint census이며
+  모든 임의 runtime decoding/생성 코드를 발견한다는 증명이 아니다.
+- 기존 source/binary helper는 proof 없는 빈 입력을 계속 INCOMPLETE로 둔다. 정확한
+  전체 census가 zero를 증명할 때만 source/binary 대상 부재를 완료된 적용 판정으로 보존한다.
+  Source 요약에는 no_applicable_source와 runtime_complete=false/report_valid=false를
+  함께 적어 scanner 실행 성공으로 오인하지 않는다. Unknown/unsupported source는 이
+  부재 판정을 사용할 수 없다. Native는 count/개별 digest가 census와 달라도 완료가 아니다.
+- Cargo는 같은 validated map과 선언된 Rust source를 census에 결합하고 native/새 required
+  content-inventory 결과를 함께 반환한다. `InspectAnalyzed`는 같은 source DATA와 census를
+  기존 fixed analyzer/strict report 해석에 전달한다. Controlled unavailable scanner가 정확한
+  7source와 subject로1회 호출되고 source required는 INCOMPLETE이며 앞선 facts는 남는다.
+  이는 actual scanner/native 성공이 아니고 bootstrap/실제 cache·promotion/CLI는 미활성이다.
+- 이전 flat InspectBinaries는 증분 owner 전환 뒤 production caller가 사라져 제거했다.
+  같은 decoder/증분 owner를 테스트/소비자가 직접 재사용하며 사본 framework를 두지 않는다.
+- Target1.001s 후 format0.885s(지정7 Go의 정규 변경), foundation76.088s와 관련6 owner
+  Race25.816s/security24.704s/vet1.002s/Staticcheck1.412s PASS다. 이후 test-only로 native
+  digest 바꿔치기/신호 보존·unsupported source0 거부를 추가한 content 전체 표적0.716s도
+  PASS다. 앞 Race/foundation을 후속 test의 재실행으로 쓰지 않는다. 임시 intake는 t.TempDir로
+  회수했고 별도 artifact/Host 실행·SDK rebuild·CI/push는 없다.
+- Census/Cargo DATA·호출 연결의 IMPLEMENTED/WIRED/QUALIFIED=YES는 위 로컬 범위다.
+  ACCEPTANCE_CLOSED=NO이며 다른 archive census/metadata, 실제 positive AST·전체 전이 graph/
+  cache/promotion/CLI·native/hosted와 release 공급 원본은 MISSING이다.

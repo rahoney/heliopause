@@ -47,12 +47,26 @@ func sourceProfile() (domain.ContentDigest, error) {
 // InspectSources consumes only archive-checked source DATA. It does not read an
 // artifact again, execute its code or make a Policy decision. The existing
 // ecosystem inventory owns applicability and the other content capabilities.
-func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact domain.AcquiredArtifact, files []ports.SourceAnalysisFile) (domain.InspectionReport, error) {
-	if ctx == nil || analyzer == nil || artifact.Digest().String() == "" {
+func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact domain.AcquiredArtifact, files []ports.SourceAnalysisFile, inventories ...Inventory) (domain.InspectionReport, error) {
+	if ctx == nil || artifact.Digest().String() == "" || len(inventories) > 1 {
 		return domain.InspectionReport{}, errors.New("source inspection dependencies or subject are unavailable")
 	}
 	if err := ctx.Err(); err != nil {
 		return domain.InspectionReport{}, err
+	}
+	noSource, inventoryComplete := false, true
+	inventoryDigest, unsupportedSources := "", 0
+	if len(inventories) == 1 {
+		inventory := inventories[0]
+		if err := inventory.validateSources(artifact, files); err != nil {
+			return domain.InspectionReport{}, err
+		}
+		inventoryDigest, unsupportedSources = inventory.digest, inventory.unsupported
+		inventoryComplete = unsupportedSources == 0
+		noSource = inventory.sources == 0 && inventoryComplete
+	}
+	if analyzer == nil && !noSource {
+		return domain.InspectionReport{}, errors.New("source analyzer is unavailable")
 	}
 	profile, err := sourceProfile()
 	if err != nil {
@@ -67,7 +81,13 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 	if cancelled := ctx.Err(); cancelled != nil {
 		return domain.InspectionReport{}, errors.Join(runtimeErr, cancelled)
 	}
-	scan, decodeErr := decodeSourceScan(input, output)
+	var scan sourceScan
+	var decodeErr error
+	if noSource {
+		scan.complete = true
+	} else {
+		scan, decodeErr = decodeSourceScan(input, output)
+	}
 	valid := runtimeErr == nil && decodeErr == nil
 	if !valid {
 		scan = sourceScan{}
@@ -75,8 +95,11 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 	coverageID, _ := domain.NewCheckID("source-content")
 	signalsID, _ := domain.NewCheckID("source-content-signals")
 	status, limitation := domain.ExecutionCompleted, ""
-	if !valid || !scan.complete {
+	if !valid || !scan.complete || !inventoryComplete {
 		status, limitation = domain.ExecutionIncomplete, "M13_SOURCE_ANALYSIS_INCOMPLETE"
+		if !inventoryComplete {
+			limitation = "M13_SOURCE_UNSUPPORTED_CONTENT"
+		}
 	}
 	coverage, err := domain.NewCheckExecution(coverageID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, profile)
 	if err != nil {
@@ -139,7 +162,10 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 		ReportValid        bool   `json:"report_valid"`
 		CoverageComplete   bool   `json:"coverage_complete"`
 		RuntimeLimitation  string `json:"runtime_limitation,omitempty"`
-	}{"source-content-v1", pin.Version, pin.Tool.SHA256, pin.Rules.SHA256, hex.EncodeToString(inventory.Sum(nil)), scannedDigest, unscannedDigest, "same-file-utf8-ast", len(files), scan.scanned, scan.errors, scan.skipped, scan.timeouts, scan.matches, output.Runtime.Status() == domain.SandboxCompleted, valid, valid && scan.complete, runtimeCode})
+		ArchiveInventory   string `json:"archive_inventory_sha256,omitempty"`
+		UnsupportedSources int    `json:"unsupported_sources,omitempty"`
+		NoApplicableSource bool   `json:"no_applicable_source,omitempty"`
+	}{"source-content-v1", pin.Version, pin.Tool.SHA256, pin.Rules.SHA256, hex.EncodeToString(inventory.Sum(nil)), scannedDigest, unscannedDigest, "same-file-utf8-ast", len(files), scan.scanned, scan.errors, scan.skipped, scan.timeouts, scan.matches, output.Runtime.Status() == domain.SandboxCompleted, valid && !noSource, valid && scan.complete && inventoryComplete, runtimeCode, inventoryDigest, unsupportedSources, noSource})
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -153,11 +179,12 @@ func InspectSources(ctx context.Context, analyzer ports.SourceAnalysis, artifact
 		return domain.InspectionReport{}, err
 	}
 	signalSummary, err := json.Marshal(struct {
-		Valid    bool `json:"report_valid"`
-		Matched  int  `json:"matched"`
-		Retained int  `json:"retained"`
-		Limit    int  `json:"retained_limit"`
-	}{valid, scan.matches, len(scan.signals), sourceSignalLimit})
+		Valid              bool `json:"report_valid"`
+		Matched            int  `json:"matched"`
+		Retained           int  `json:"retained"`
+		Limit              int  `json:"retained_limit"`
+		NoApplicableSource bool `json:"no_applicable_source,omitempty"`
+	}{valid && !noSource, scan.matches, len(scan.signals), sourceSignalLimit, noSource})
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

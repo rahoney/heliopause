@@ -18,6 +18,23 @@ func TestSourceLanguageIsOnlyAParserSelection(t *testing.T) {
 	}
 }
 
+func TestUnsupportedSourceDoesNotBecomeAbsentSource(t *testing.T) {
+	for _, test := range []struct {
+		name, prefix string
+		mode         uint32
+		unsupported  bool
+	}{
+		{"helper.sh", "echo DATA", 0, true}, {"helper", "#!/bin/sh\n", 0, true},
+		{"program", "opaque text", 0o755, true}, {"native.c", "int x;", 0, true},
+		{"source.JS", "", 0, true}, {"README.md", "DATA", 0, false},
+		{"source.js", "", 0o755, false}, {"program", "#!/usr/bin/env node\n", 0o755, false},
+	} {
+		if UnsupportedSource(test.name, []byte(test.prefix), test.mode) != test.unsupported {
+			t.Fatal("source limitation classification was lost", test.name)
+		}
+	}
+}
+
 func TestSourceLanguageRecognizesOnlyBoundedInterpreterHints(t *testing.T) {
 	for prefix, language := range map[string]string{
 		"#!/usr/bin/env node\nconsole.log('x')":        "javascript",

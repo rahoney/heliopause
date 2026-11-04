@@ -48,14 +48,24 @@ func TestBinaryMembersPreserveSignalsAcrossPartialCoverage(t *testing.T) {
 			case "empty":
 				members, wantSignals, wantFindings = nil, false, 0
 			case "count-limit":
-				members = make([]BinaryMember, ports.SourceAnalysisTargetLimit+1)
+				members = []BinaryMember{member("over-count.so", binaryFixture())}
 				wantSignals, wantFindings = false, 0
 			case "unbuffered-oversize":
 				members = append(members, BinaryMember{Path: "oversize.so", Size: ports.SourceAnalysisFileLimit + 1})
 			case "unbuffered-incomplete":
 				members = append(members, BinaryMember{Path: "unread.so", Size: 128})
 			}
-			report, err := InspectBinaries(context.Background(), input.Artifact, members)
+			inspection, err := NewBinaryInspection(input.Artifact)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if scenario == "count-limit" {
+				inspection.selected = ports.SourceAnalysisTargetLimit
+			}
+			for _, input := range members {
+				_ = inspection.Inspect(context.Background(), input)
+			}
+			report, err := inspection.Report(context.Background())
 			checks := report.Executions()
 			if (err != nil) != wantError || len(checks) != 2 || (checks[0].Status() == domain.ExecutionCompleted) != wantComplete || (checks[1].Status() == domain.ExecutionCompleted) != wantSignals || len(report.Findings()) != wantFindings {
 				t.Fatal("aggregate coverage lost or overstated member facts", err, checks, len(report.Findings()))
@@ -83,7 +93,8 @@ func TestBinaryMembersPreserveSignalsAcrossPartialCoverage(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if report, err := InspectBinaries(ctx, input.Artifact, nil); !errors.Is(err, context.Canceled) || len(report.Executions()) != 0 {
+	inspection, _ := NewBinaryInspection(input.Artifact)
+	if report, err := inspection.Report(ctx); !errors.Is(err, context.Canceled) || len(report.Executions()) != 0 {
 		t.Fatal("cancelled analysis invented a result", err)
 	}
 }

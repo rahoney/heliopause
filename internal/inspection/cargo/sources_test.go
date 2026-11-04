@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -16,7 +17,19 @@ import (
 
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
+
+type crateAnalyzer struct {
+	calls int
+	input ports.SourceAnalysisInput
+}
+
+func (a *crateAnalyzer) Analyze(_ context.Context, input ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+	a.calls++
+	a.input = input
+	return ports.SourceAnalysisOutput{}, errors.New("controlled unavailable scanner")
+}
 
 func TestCrateSourcesUseCheckedArchiveAndDiscardLateFailure(t *testing.T) {
 	original, err := os.ReadFile("../../artifact/cargo/testdata/itoa-1.0.17.crate")
@@ -61,7 +74,7 @@ func TestCrateSourcesUseCheckedArchiveAndDiscardLateFailure(t *testing.T) {
 				if len(sources) != 0 || (err == nil && len(report.Findings()) == 0) {
 					t.Fatal("invalid or cancelled archive leaked source selection", err)
 				}
-				contentSources, contentReport, contentErr := inspector.InspectContent(ctx, subject)
+				_, contentSources, contentReport, contentErr := inspector.InspectContent(ctx, subject)
 				if len(contentSources) != 0 || len(contentReport.Executions()) > 1 || contentErr == nil && len(contentReport.Findings()) == 0 {
 					t.Fatal("invalid archive leaked native content facts", contentErr)
 				}
@@ -71,8 +84,8 @@ func TestCrateSourcesUseCheckedArchiveAndDiscardLateFailure(t *testing.T) {
 			if err != nil || legacyErr != nil || !reflect.DeepEqual(legacy, report) || len(sources) == 0 {
 				t.Fatal("source capture changed the static report", err, legacyErr)
 			}
-			contentSources, contentReport, contentErr := inspector.InspectContent(ctx, subject)
-			if contentErr != nil || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+			_, contentSources, contentReport, contentErr := inspector.InspectContent(ctx, subject)
+			if contentErr != nil || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted {
 				t.Fatal("current content owner changed the committed public crate's sources", contentErr)
 			}
 			files, err := artifactcargo.ArchiveFiles(original, identity)
@@ -147,14 +160,19 @@ func TestCrateContentUsesVerifiedBinaryBytesBeforeSourceNames(t *testing.T) {
 		digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
 		subject, _ := domain.NewAcquiredArtifact(identity, digest, "intake:"+run.String()+":crate", uint64(len(body)))
 		inspector, _ := NewStaticInspector(root)
-		sources, report, err := inspector.InspectContent(context.Background(), subject)
-		if (err != nil) != withBinaries || len(sources) != 7 || len(report.Executions()) != 3 || report.Executions()[0].Status() != domain.ExecutionCompleted || report.Executions()[1].Status() != domain.ExecutionIncomplete {
+		inventory, sources, report, err := inspector.InspectContent(context.Background(), subject)
+		if (err != nil) != withBinaries || len(sources) != 7 || !inventory.Matches(subject) || len(report.Executions()) != 4 || report.Executions()[0].Status() != domain.ExecutionCompleted || (report.Executions()[1].Status() == domain.ExecutionIncomplete) != withBinaries {
 			t.Fatal("crate content changed static/source facts or invented coverage", err, report.Executions())
 		}
 		for _, source := range sources {
 			if source.Language != "rust" || !bytes.Equal(source.Body, files[source.Path]) {
 				t.Fatal("metadata-selected Rust source was dropped, remapped or altered")
 			}
+		}
+		analyzer := &crateAnalyzer{}
+		analyzed, analysisErr := inspector.InspectAnalyzed(context.Background(), subject, analyzer)
+		if analysisErr == nil || analyzer.calls != 1 || analyzer.input.Artifact != subject || !reflect.DeepEqual(analyzer.input.Files, sources) || len(analyzed.Executions()) != 6 || analyzed.Executions()[4].Status() != domain.ExecutionIncomplete {
+			t.Fatal("content entry point skipped AST input or hid scanner failure", analysisErr)
 		}
 		binaryFacts := 0
 		for _, fact := range report.Evidence() {

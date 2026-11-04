@@ -54,7 +54,7 @@ type BinaryInspection struct {
 	checks            []domain.CheckRequirement
 	evidence          [2][]domain.Evidence
 	findings          []domain.Finding
-	seen              map[string]bool
+	seen              map[string]domain.ContentDigest
 	total             uint64
 	selected          int
 	complete, signals bool
@@ -69,7 +69,7 @@ func NewBinaryInspection(artifact domain.AcquiredArtifact) (*BinaryInspection, e
 	if err != nil {
 		return nil, err
 	}
-	return &BinaryInspection{artifact: artifact, checks: checks, seen: make(map[string]bool), complete: true}, nil
+	return &BinaryInspection{artifact: artifact, checks: checks, seen: make(map[string]domain.ContentDigest), complete: true}, nil
 }
 
 // Inspect retains the first error and every independently validated signal.
@@ -96,7 +96,8 @@ func (b *BinaryInspection) Inspect(ctx context.Context, member BinaryMember) err
 	if size == 0 {
 		size = uint64(len(member.Body))
 	}
-	if b.selected > ports.SourceAnalysisTargetLimit || b.seen[member.Path] || member.Path == "" || size > ports.SourceAnalysisFileLimit || size > ports.SourceAnalysisTotalLimit-b.total || size != uint64(len(member.Body)) {
+	_, duplicate := b.seen[member.Path]
+	if b.selected > ports.SourceAnalysisTargetLimit || duplicate || member.Path == "" || size > ports.SourceAnalysisFileLimit || size > ports.SourceAnalysisTotalLimit-b.total || size != uint64(len(member.Body)) {
 		b.complete = false
 		err := errors.New("binary member identity or size exceeds fixed analysis bounds")
 		if b.firstErr == nil {
@@ -104,7 +105,7 @@ func (b *BinaryInspection) Inspect(ctx context.Context, member BinaryMember) err
 		}
 		return err
 	}
-	b.seen[member.Path] = true
+	b.seen[member.Path] = member.Digest
 	b.total += uint64(len(member.Body))
 	report, memberErr := InspectELF(ctx, b.artifact, member.Path, member.Body, member.Mode, member.Digest)
 	if b.firstErr == nil {
@@ -156,7 +157,7 @@ func (b *BinaryInspection) Inspect(ctx context.Context, member BinaryMember) err
 	return memberErr
 }
 
-func (b *BinaryInspection) Report(ctx context.Context) (domain.InspectionReport, error) {
+func (b *BinaryInspection) Report(ctx context.Context, inventories ...Inventory) (domain.InspectionReport, error) {
 	if b == nil || ctx == nil || len(b.checks) != 2 {
 		return domain.InspectionReport{}, errors.New("binary inspection request is unavailable")
 	}
@@ -164,6 +165,28 @@ func (b *BinaryInspection) Report(ctx context.Context) (domain.InspectionReport,
 		return domain.InspectionReport{}, err
 	}
 	complete := b.complete && b.selected != 0
+	var scopeErr error
+	inventoryDigest := ""
+	if len(inventories) > 1 {
+		return domain.InspectionReport{}, errors.New("binary inspection accepts one complete inventory")
+	}
+	if len(inventories) == 1 {
+		inventory := inventories[0]
+		complete = b.complete && inventory.Matches(b.artifact) && b.selected == inventory.binaries && len(b.seen) == inventory.binaries
+		for name, digest := range b.seen {
+			member, exists := inventory.members[name]
+			if !exists || !member.Binary || member.Digest != digest {
+				complete = false
+				scopeErr = errors.New("binary member differs from complete content inventory")
+			}
+		}
+		if !inventory.Matches(b.artifact) || b.selected != inventory.binaries || len(b.seen) != inventory.binaries {
+			scopeErr = errors.New("binary selection differs from the complete content inventory")
+		}
+		if inventory.Matches(b.artifact) {
+			inventoryDigest = inventory.digest
+		}
+	}
 	var reports []domain.InspectionReport
 	for index, check := range b.checks {
 		status, limitation := domain.ExecutionCompleted, ""
@@ -174,7 +197,7 @@ func (b *BinaryInspection) Report(ctx context.Context) (domain.InspectionReport,
 		}
 		execution, _ := domain.NewCheckExecution(check.ID(), domain.CheckInspection, check.Required(), domain.CapabilitySupported, status, limitation, check.ProfileDigest())
 		id, _ := domain.NewEvidenceID(fmt.Sprintf("binary-members-summary-%d", index))
-		fact, err := domain.NewEvidence(id, check.ID(), b.artifact.Identity(), b.artifact.Digest(), "binary-content-inventory", fmt.Sprintf("Selected binary members: %d; inspected: %d; bytes: %d; coverage complete: %t. Zero selection alone is not an applicability proof.", b.selected, len(b.seen), b.total, complete), check.ProfileDigest())
+		fact, err := domain.NewEvidence(id, check.ID(), b.artifact.Identity(), b.artifact.Digest(), "binary-content-inventory", fmt.Sprintf("Selected binary members: %d; inspected: %d; bytes: %d; coverage complete: %t; bound inventory: %s. Zero selection alone is not an applicability proof.", b.selected, len(b.seen), b.total, complete, inventoryDigest), check.ProfileDigest())
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
@@ -193,24 +216,5 @@ func (b *BinaryInspection) Report(ctx context.Context) (domain.InspectionReport,
 		return domain.InspectionReport{}, err
 	}
 	report, err := domain.NewCompositeInspectionReport(reports)
-	return report, errors.Join(b.firstErr, err)
-}
-
-// InspectBinaries uses the same incremental owner for an already bounded map.
-// An empty selection is incomplete without a complete applicability census.
-func InspectBinaries(ctx context.Context, artifact domain.AcquiredArtifact, members []BinaryMember) (domain.InspectionReport, error) {
-	inspection, err := NewBinaryInspection(artifact)
-	if err != nil {
-		return domain.InspectionReport{}, err
-	}
-	if len(members) > ports.SourceAnalysisTargetLimit {
-		inspection.complete, inspection.selected, inspection.firstErr = false, len(members), errors.New("binary member count exceeds fixed analysis bounds")
-	} else {
-		for _, member := range members {
-			if err := inspection.Inspect(ctx, member); err != nil && ctx != nil && ctx.Err() != nil {
-				return domain.InspectionReport{}, err
-			}
-		}
-	}
-	return inspection.Report(ctx)
+	return report, errors.Join(b.firstErr, scopeErr, err)
 }

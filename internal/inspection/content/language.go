@@ -63,3 +63,22 @@ func SourceLanguage(name string, prefixes ...[]byte) string {
 	}
 	return ""
 }
+
+// UnsupportedSource identifies executable/source hints outside the fixed parser
+// set. Opaque DATA alone does not become a source target or a safety verdict.
+func UnsupportedSource(name string, prefix []byte, mode uint32) bool {
+	if SourceLanguage(name, prefix) != "" {
+		return false
+	}
+	if SourceLanguage(strings.ToLower(name), prefix) != "" {
+		return true // An unselected case variant is not proof of absent source.
+	}
+	if bytes.HasPrefix(prefix, []byte("#!")) || mode&0o111 != 0 {
+		return true
+	}
+	switch strings.ToLower(path.Ext(name)) {
+	case ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd", ".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".s", ".asm", ".rb", ".pl", ".php", ".lua", ".java":
+		return true
+	}
+	return false
+}

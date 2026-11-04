@@ -28,14 +28,14 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	return i.inspect(ctx, artifact, nil, nil)
+	return i.inspect(ctx, artifact, nil, nil, nil)
 }
 
 // InspectSources selects from the already validated bounded crate byte map;
 // it neither reparses the archive nor runs Rust or build scripts.
 func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
 	var sources []ports.SourceAnalysisFile
-	report, err := i.inspect(ctx, artifact, &sources, nil)
+	report, err := i.inspect(ctx, artifact, &sources, nil, nil)
 	if err != nil || len(report.Findings()) != 0 {
 		return nil, report, err
 	}
@@ -43,23 +43,50 @@ func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.Ac
 }
 
 // InspectContent retains source DATA and inspects native members from the same
-// verified map. It does not run the source analyzer or prove zero-source scope.
-func (i *StaticInspector) InspectContent(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+// verified map. It returns a complete census for the separate source analyzer.
+func (i *StaticInspector) InspectContent(ctx context.Context, artifact domain.AcquiredArtifact) (content.Inventory, []ports.SourceAnalysisFile, domain.InspectionReport, error) {
 	var sources []ports.SourceAnalysisFile
 	var binaries []content.BinaryMember
-	static, err := i.inspect(ctx, artifact, &sources, &binaries)
+	var inventory content.Inventory
+	static, err := i.inspect(ctx, artifact, &sources, &binaries, &inventory)
 	if err != nil || len(static.Findings()) != 0 {
-		return nil, static, err
+		return content.Inventory{}, nil, static, err
 	}
-	native, nativeErr := content.InspectBinaries(ctx, artifact, binaries)
+	inspection, err := content.NewBinaryInspection(artifact)
+	if err != nil {
+		return content.Inventory{}, nil, static, err
+	}
+	for _, member := range binaries {
+		_ = inspection.Inspect(ctx, member)
+	}
+	native, nativeErr := inspection.Report(ctx, inventory)
 	if len(native.Executions()) == 0 {
-		return nil, static, nativeErr
+		return content.Inventory{}, nil, static, nativeErr
 	}
-	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native})
-	return sources, report, errors.Join(nativeErr, err)
+	census, censusErr := inventory.Report(ctx)
+	if censusErr != nil {
+		return content.Inventory{}, nil, static, errors.Join(nativeErr, censusErr)
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native, census})
+	return inventory, sources, report, errors.Join(nativeErr, err)
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile, binaries *[]content.BinaryMember) (domain.InspectionReport, error) {
+// InspectAnalyzed runs the fixed source analyzer after the same checked census.
+// It is a content entry point; bootstrap/cache activation remains explicit.
+func (i *StaticInspector) InspectAnalyzed(ctx context.Context, artifact domain.AcquiredArtifact, analyzer ports.SourceAnalysis) (domain.InspectionReport, error) {
+	inventory, sources, report, contentErr := i.InspectContent(ctx, artifact)
+	if !inventory.Matches(artifact) {
+		return report, contentErr
+	}
+	source, sourceErr := content.InspectSources(ctx, analyzer, artifact, sources, inventory)
+	if len(source.Executions()) == 0 {
+		return report, errors.Join(contentErr, sourceErr)
+	}
+	combined, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{report, source})
+	return combined, errors.Join(contentErr, sourceErr, err)
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile, binaries *[]content.BinaryMember, inventory *content.Inventory) (domain.InspectionReport, error) {
 	if i == nil || ctx == nil {
 		return domain.InspectionReport{}, errors.New("cargo inspection request is invalid")
 	}
@@ -86,25 +113,44 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		// decompression, body copy or graph charge is needed.
 		var names []string
 		for name := range files {
-			if declared[name] || content.SourceLanguage(name, files[name]) != "" || binaries != nil && content.IsBinary(name, files[name]) {
+			if inventory != nil || declared[name] || content.SourceLanguage(name, files[name]) != "" || binaries != nil && content.IsBinary(name, files[name]) {
 				names = append(names, name)
 			}
 		}
 		sort.Strings(names)
+		var members []content.MemberFact
 		for _, name := range names {
-			if binaries != nil && content.IsBinary(name, files[name]) {
+			binary := binaries != nil && content.IsBinary(name, files[name])
+			language := content.SourceLanguage(name, files[name])
+			if declared[name] {
+				language = "rust"
+			}
+			if binary {
+				language = ""
+			}
+			var digest domain.ContentDigest
+			if binary || inventory != nil {
 				sum := sha256.Sum256(files[name])
-				digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+				digest, _ = domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+			}
+			if inventory != nil {
+				members = append(members, content.MemberFact{Path: name, Size: uint64(len(files[name])), Digest: digest, Language: language, Binary: binary, UnsupportedSource: !binary && language == "" && content.UnsupportedSource(name, files[name], 0)})
+			}
+			if binary {
 				// ArchiveFiles does not retain permission bits. Zero records
 				// unavailable archive mode; ELF permissions are decoded inside.
 				*binaries = append(*binaries, content.BinaryMember{Path: name, Body: files[name], Digest: digest})
 				continue
 			}
-			language := content.SourceLanguage(name, files[name])
-			if declared[name] {
-				language = "rust"
+			if language != "" {
+				*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: language, Body: files[name]})
 			}
-			*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: language, Body: files[name]})
+		}
+		if inventory != nil {
+			*inventory, err = content.NewInventory(artifact, members)
+			if err != nil {
+				return domain.InspectionReport{}, err
+			}
 		}
 	}
 	checkID, _ := domain.NewCheckID("cargo-crate-static")
