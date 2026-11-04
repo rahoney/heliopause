@@ -64,12 +64,14 @@ func (r bunProgramWorkflowRunner) Run(ctx context.Context, request application.E
 	return r.RunBun(ctx, request)
 }
 
+var typescriptExecutionFixture = nodeExecutionPublicFixture{
+	selector: "typescript@5.9.3", command: "tsc", name: "typescript", version: "5.9.3", member: "bin/tsc",
+	integrity: "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+	normal:    "Version 5.9.3", failure: "Unknown compiler option",
+}
+
 func runNodeExecutionWorkflowIntegration(t *testing.T, client string) {
-	runNodeExecutionFixtureIntegration(t, client, nodeExecutionPublicFixture{
-		selector: "typescript@5.9.3", command: "tsc", name: "typescript", version: "5.9.3", member: "bin/tsc",
-		integrity: "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
-		normal:    "Version 5.9.3", failure: "Unknown compiler option",
-	})
+	runNodeExecutionFixtureIntegration(t, client, typescriptExecutionFixture)
 }
 
 func runNodeExecutionFixtureIntegration(t *testing.T, client string, fixture nodeExecutionPublicFixture) {

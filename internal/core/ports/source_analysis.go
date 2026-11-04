@@ -11,6 +11,16 @@ const (
 	SourceAnalysisFileLimit   = 64 << 20
 	SourceAnalysisTotalLimit  = 512 << 20
 	SourceAnalysisTargetLimit = 10000
+
+	// Static analysis has its own bounded authorization. Large, valid compiler
+	// sources exceed the unrelated default Python execution budget.
+	SourceAnalysisResourceProfile          = "source-analysis"
+	SourceAnalysisMemoryLimit        int64 = 4 << 30
+	SourceAnalysisHeapLimitMiB             = 3072
+	SourceAnalysisRuleTimeoutSeconds       = 15
+	SourceAnalysisCPUSeconds               = 600
+	SourceAnalysisWallSeconds              = 15 * 60
+	SourceAnalysisMaxLaunches              = 4
 )
 
 // SourceAnalysisFile contains normalized, archive-checked DATA. It supplies

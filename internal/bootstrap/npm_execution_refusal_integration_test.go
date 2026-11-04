@@ -40,8 +40,6 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, client string) {
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user post-Policy CLI refusal qualification")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-	defer cancel()
 	cache, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +68,9 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, client string) {
 		}
 		args := append([]string{"--lang", "en", "--output", "json", "--progress", "never", "--color", "never"}, row.args...)
 		var out, diagnostic bytes.Buffer
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 		cause := Run(ctx, args, &out, &diagnostic)
+		cancel()
 		var code interface{ ExitCode() int }
 		var completed *sandbox.NodeProgramError
 		if cause == nil || !errors.As(cause, &code) || code.ExitCode() != 1 || errors.As(cause, &completed) {

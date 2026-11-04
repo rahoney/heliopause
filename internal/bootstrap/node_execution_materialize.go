@@ -27,7 +27,7 @@ func materializeNodeExecution(ctx context.Context, backend *sandbox.Backend, sta
 	}
 	var inventories []artifactnpm.ArchiveInventory
 	for _, inspection := range execution.Set().Inspected().Inspections() {
-		inventory, report, err := static.InspectArchive(ctx, inspection.Artifact())
+		inventory, report, err := static.ReadArchiveInventory(ctx, inspection.Artifact())
 		if err != nil {
 			return artifactnpm.NodeExecutionLayout{}, errors.Join(err, ctx.Err(), context.Cause(ctx))
 		}

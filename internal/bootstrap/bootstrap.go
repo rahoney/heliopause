@@ -478,8 +478,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		runtimeIdentity := sandbox.PinnedPythonRuntime()
-		static, err := inspectionpypi.NewStaticInspector(filepath.Join(root, "intake"), artifactpypi.WheelTarget{Python: runtimeIdentity.InterpreterTag, ABI: runtimeIdentity.ABITag, Platform: runtimeIdentity.PlatformTag})
+		static, err := newPyPIStaticInspector(filepath.Join(root, "intake"), trustedExecutor, processObserver)
 		if err != nil {
 			return err
 		}

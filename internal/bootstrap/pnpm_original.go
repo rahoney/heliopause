@@ -80,7 +80,7 @@ func (b pnpmProjectBindings) provePNPMOriginal(ctx context.Context, install doma
 	}
 	inventories := make([]artifactnpm.ArchiveInventory, 0, len(acquired))
 	for _, subject := range input.Artifacts() {
-		inventory, report, err := b.static.InspectArchive(ctx, subject)
+		inventory, report, err := b.static.ReadArchiveInventory(ctx, subject)
 		if err != nil {
 			return domain.ContentDigest{}, err
 		}

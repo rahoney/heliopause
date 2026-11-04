@@ -7,7 +7,6 @@ import (
 	"runtime"
 	"time"
 
-	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -68,9 +67,14 @@ func (b *SourceAnalyzer) Analyze(ctx context.Context, input ports.SourceAnalysis
 		return fail("S04_SOURCE_TOOL_UNAVAILABLE", err)
 	}
 	now := time.Now()
-	policy, err := observationPolicyForPython(artifactpypi.PublicPyPIProfile().ResourcePolicy(), sourceAnalysisProfile, 0, now)
-	if err != nil {
-		return fail("S04_SOURCE_RESOURCE_UNAVAILABLE", err)
+	budget := traceBudgetForProfile(sourceAnalysisProfile)
+	policy := observationResourcePolicy{
+		cpuCeilingUsec: ports.SourceAnalysisCPUSeconds * 1_000_000,
+		pollInterval:   time.Second, stopBound: 7 * time.Second,
+		uncertaintyUsec: 1_000_000, parallelism: 2,
+		maxEvents: uint64(budget.events), maxBytes: budget.bytes,
+		maxUnits: 0, maxLaunches: ports.SourceAnalysisMaxLaunches,
+		wallDeadline: now.Add(ports.SourceAnalysisWallSeconds * time.Second),
 	}
 	ledger, err := newObservationTransaction(policy, nil, now)
 	if err != nil {
@@ -94,7 +98,7 @@ func (b *SourceAnalyzer) Analyze(ctx context.Context, input ports.SourceAnalysis
 	// Retain the generated owner even when CREATE's response is lost. Cleanup
 	// remains mandatory and cannot turn an uncertain creation into success.
 	session.resourceCreated = true
-	session.lease, err = b.resources.Create(run, session.transaction, "pypi")
+	session.lease, err = b.resources.Create(run, session.transaction, sourceAnalysisProfile)
 	if err != nil || session.lease.CgroupParent == "" || session.lease.CPU < 0 {
 		return fail("S04_SOURCE_RESOURCE_UNAVAILABLE", err)
 	}

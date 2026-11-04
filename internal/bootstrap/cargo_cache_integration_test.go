@@ -24,13 +24,15 @@ import (
 
 // Keep only bounded rule IDs/language counts in the native qualification log.
 // Artifact source and parser metavariables never enter this diagnostic.
-type cargoParserDiagnostic struct {
+type sourceParserDiagnostic struct {
 	inner ports.SourceAnalysis
 	t     *testing.T
 }
 
-func (d cargoParserDiagnostic) Analyze(ctx context.Context, input ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+func (d sourceParserDiagnostic) Analyze(ctx context.Context, input ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
 	output, err := d.inner.Analyze(ctx, input)
+	limitation, _ := output.Runtime.LimitationCode()
+	d.t.Logf("source_parser_runtime status=%s limitation=%s targets=%d error=%v", output.Runtime.Status(), limitation, len(input.Files), err)
 	var document map[string]json.RawMessage
 	if output.Output != nil && json.Unmarshal(output.Output.Stdout(), &document) == nil && len(document["rules_by_engine"]) <= 8<<10 {
 		languages := map[string]int{}
@@ -70,7 +72,7 @@ func TestCargoPublicVerifiedCacheIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	inspector, err := inspectioncargo.NewStaticInspector(intake, cargoParserDiagnostic{analyzer, t})
+	inspector, err := inspectioncargo.NewStaticInspector(intake, sourceParserDiagnostic{analyzer, t})
 	if err != nil {
 		t.Fatal(err)
 	}

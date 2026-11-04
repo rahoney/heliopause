@@ -747,6 +747,19 @@ Plan에는 큰 native/source body를 넣지 않는다. `apply`/`verify`는 froze
 다른 component의 same-version drift 거부는 그대로다. 공급·plan 성공은 required runtime/
 installed qualification을 닫지 않으며 구체 범위는 S04 baseline/Queue를 따른다.
 
+TypeScript/TSX의 HAA 문법 보완도 같은 source offer와 updater를 사용한다. 작은 wrapper·
+merged CST·converter 변경은 `quarantine.patch`가 소유하고, 재생성한 parser/CST/Parse/
+Boilerplate8개는 source manifest의 `generated/{typescript,tsx}/` 아래 passive source로
+묶는다. 기존 worker는 검증된 이 source를 투영한다. 큰 generated C를 Git diff에 넣거나
+새 CLI/Node·별도 updater를 설치하지 않는다. 생성 도구·upstream registry·원형 byte 재현
+출처는 같은 `SOURCE-ORIGINS.json`에 남기고, source refresh 때 함께 검토·재생성한다.
+Qualification 상태와 실제 수정 범위는 [S04 baseline](../planning/evidence/m13-004-convenience/content-analysis-baseline-20261103.md)이 소유한다.
+
+정적 분석의 runtime 자원은 `ports.SourceAnalysis*` 계약에서 한 번 소유하며 controller와
+기존 privileged helper가 같은 profile을 사용한다. Python 실행용 resource policy를
+늘리거나 별도 언어별 version owner를 만들지 않는다. 명령·예산 변경은 source check
+profile, 기존 CPP exact-command guard와 소비자 qualification에 함께 반영한다.
+
 Release producer의 Semgrep 운송 파일은 core/SOURCES/NOTICES/semgrep-rules.json 네 개다.
 현재 manifest20 assets와 runtime-image manifest v4는 같은 selected tuple에 결합하고,
 installer/doctor/self-update copy는 core0555·passive0444를 보존한다. Source archive는

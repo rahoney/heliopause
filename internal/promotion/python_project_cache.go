@@ -95,8 +95,11 @@ func (c *PythonProjectCache) approval(ctx context.Context, set domain.ProjectVer
 		if !ok || id.Variant() != "wheel" || integrity != "sha256:"+a.Digest().String() {
 			return pythonProjectReceipt{}, errors.New("python project entry lacks exact wheel verification")
 		}
-		evidence, err := projectCacheEvidence(ctx, c.evidence, inspection)
+		evidence, facts, err := projectCacheEvidenceFacts(ctx, c.evidence, inspection)
 		if err != nil {
+			return pythonProjectReceipt{}, err
+		}
+		if err := verifyArchiveContentEvidence(facts); err != nil {
 			return pythonProjectReceipt{}, err
 		}
 		r := inspection.PolicyDecision().Reasons()

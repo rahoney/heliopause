@@ -46,7 +46,7 @@ func TestSourceAnalysisRuntimePinsOfflineExecutionAndSeparateReadonlyInputs(t *t
 			i++
 		}
 	}
-	for flag, want := range map[string]string{"--network": "none", "--runtime": gVisorRuntimeName, "--cpuset-cpus": "1", "--cgroup-parent": lease.CgroupParent, "--memory": "512m", "--ulimit": "cpu=60:60"} {
+	for flag, want := range map[string]string{"--network": "none", "--runtime": gVisorRuntimeName, "--cpuset-cpus": "1", "--cgroup-parent": lease.CgroupParent, "--memory": "4294967296", "--ulimit": "cpu=600:600"} {
 		if !reflect.DeepEqual(values[flag], []string{want}) {
 			t.Fatal(flag, values[flag])
 		}
@@ -81,7 +81,7 @@ func TestSourceAnalysisRuntimePinsOfflineExecutionAndSeparateReadonlyInputs(t *t
 		t.Fatal("source budget expanded", err)
 	}
 	command := sourceAnalysisCommand()
-	if len(command) != 17 || command[0] != semgrepRuntimeRoot+"/semgrep-core-linux-amd64" || command[8] != semgrepRuntimeRoot+"/semgrep-rules.json" || command[10] != sourceAnalysisRoot+"/targets.json" {
+	if len(command) != 18 || command[0] != semgrepRuntimeRoot+"/semgrep-core-linux-amd64" || command[9] != semgrepRuntimeRoot+"/semgrep-rules.json" || command[11] != sourceAnalysisRoot+"/targets.json" {
 		t.Fatal("fixed scanner input changed", command)
 	}
 	for _, arg := range command {

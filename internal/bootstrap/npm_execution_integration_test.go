@@ -13,6 +13,10 @@ import (
 	"testing"
 	"time"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
+	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -47,8 +51,6 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user actual npx/npm exec CLI qualification")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-	defer cancel()
 	cache, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -105,9 +107,11 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		}
 		args = append(args, selector, "--", arg)
 		var out, diagnostic bytes.Buffer
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 		cause := Run(ctx, args, &out, &diagnostic)
+		cancel()
 		if row.code == 0 && cause != nil {
-			t.Fatal("actual CLI zero failed", cause)
+			t.Fatalf("actual CLI zero failed: %v; result=%q; diagnostic=%q", cause, out.Bytes()[:min(out.Len(), 8192)], diagnostic.Bytes()[:min(diagnostic.Len(), 2048)])
 		}
 		if row.code != 0 {
 			var code interface{ ExitCode() int }
@@ -214,4 +218,66 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	if count != len(rows) || (client == "pnpm" || (client == "bun" || client == "bun-program")) && !multi {
 		t.Fatal("CLI requests reused execution storage records", count)
 	}
+}
+
+// The exact public CLI fixture must also pass its configured source boundary.
+// This isolates content failure before SDK selection, command preparation or run.
+func TestNPMExecutionSourceContentIntegration(t *testing.T) {
+	if os.Getenv("HELOX_NPM_EXECUTION_SOURCE_INTEGRATION") != "1" || os.Geteuid() == 0 {
+		t.Fatal("declare ordinary-user current npm source qualification")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(ports.SourceAnalysisWallSeconds+60)*time.Second)
+	defer cancel()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	intake := filepath.Join(root, "intake")
+	source, err := artifactnpm.NewPublicResolver(intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sourceID, _ := domain.NewSourceID("npm")
+	fixture := typescriptExecutionFixture
+	identity, err := domain.NewResolvedArtifactIdentity(sourceID, fixture.name, fixture.version, "tarball")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Reuse the qualified exact URL/integrity fixture. Whole-package metadata
+	// discovery is a separate boundary and is unnecessary for source readback.
+	resolved, err := domain.NewResolvedArtifact(identity, "https://registry.npmjs.org/"+fixture.name+"/-/"+fixture.name+"-"+fixture.version+".tgz", fixture.integrity)
+	if err != nil {
+		t.Fatal(err)
+	}
+	run, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, err := source.Acquire(ctx, run, resolved)
+	if err != nil || artifact.Digest().String() != "10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3" {
+		t.Fatal("exact public TypeScript bytes unavailable", err)
+	}
+	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
+	analyzer, err := sandbox.NewSourceAnalyzer(executor, observer.Observer(), newObservationResourceAdapter())
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := inspectionnpm.NewInspector(intake, sourceParserDiagnostic{analyzer, t})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inventory, files, report, err := inspector.InspectArchiveContent(ctx, artifact)
+	for _, check := range report.Executions() {
+		limitation, _ := check.LimitationCode()
+		t.Logf("typescript_content_check id=%s required=%t status=%s limitation=%s", check.ID(), check.Required(), check.Status(), limitation)
+	}
+	if err != nil || !inventory.Matches(artifact) || len(files) == 0 || len(report.Findings()) != 0 {
+		t.Fatal("exact TypeScript content failed", err)
+	}
+	for _, check := range report.Executions() {
+		if check.Required() && check.Status() != domain.ExecutionCompleted {
+			t.Fatal("TypeScript content remained incomplete", check.ID())
+		}
+	}
+	t.Logf("typescript_current_source targets=%d check_count=%d artifact_sha256=%s", len(files), len(report.Executions()), artifact.Digest())
 }

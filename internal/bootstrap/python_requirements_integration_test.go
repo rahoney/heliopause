@@ -78,8 +78,7 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			runtime := sandbox.PinnedPythonRuntime()
-			static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+			static, err := newPyPIStaticInspector(intakeRoot, executor, observer.Observer())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -125,7 +124,7 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			if err := os.WriteFile(filepath.Join(venv, "pyvenv.cfg"), []byte("version = "+runtime.PythonVersion+"\n"), 0600); err != nil {
+			if err := os.WriteFile(filepath.Join(venv, "pyvenv.cfg"), []byte("version = "+sandbox.PinnedPythonRuntime().PythonVersion+"\n"), 0600); err != nil {
 				t.Fatal(err)
 			}
 			if err := os.WriteFile(filepath.Join(site, "user-note.txt"), []byte("preserve"), 0600); err != nil {

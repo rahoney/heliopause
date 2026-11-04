@@ -505,3 +505,44 @@ func TestConfiguredArchiveSourceApplicabilityRequiresItsCompleteCensus(t *testin
 		}
 	}
 }
+
+func TestArchiveInventoryReadbackKeepsIntegrityWithoutRepeatingAnalyzer(t *testing.T) {
+	for _, changed := range []bool{false, true} {
+		t.Run(strconv.FormatBool(changed), func(t *testing.T) {
+			root := canonicalRoot(t)
+			subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+				{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`},
+				{name: "package/cli.js", body: "console.log('DATA');"},
+			}))
+			analyzer := &archiveSourceAnalyzer{}
+			inspector, err := NewInspector(root, analyzer)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if changed {
+				file := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
+				if err := os.WriteFile(file, []byte("changed archive"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			inventory, report, err := inspector.ReadArchiveInventory(context.Background(), subject)
+			if analyzer.calls != 0 {
+				t.Fatal("original readback repeated source analysis")
+			}
+			if changed {
+				if inventory.Valid() || err == nil && len(report.Findings()) == 0 {
+					t.Fatal("readback accepted a changed original")
+				}
+				return
+			}
+			if err != nil || !inventory.Matches(subject) || len(report.Executions()) != 1 || len(report.Findings()) != 0 {
+				t.Fatal("readback lost complete structural inventory", err)
+			}
+			// Initial quarantine still invokes the configured parser.
+			_, _, _, _ = inspector.InspectArchiveContent(context.Background(), subject)
+			if analyzer.calls != 1 {
+				t.Fatal("initial content inspection did not run its analyzer")
+			}
+		})
+	}
+}

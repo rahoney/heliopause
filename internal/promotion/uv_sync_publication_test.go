@@ -14,6 +14,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence"
 	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 type uvSyncPublicationFixture struct {
@@ -26,7 +27,7 @@ type uvSyncPublicationFixture struct {
 	seed        uvUpdateGuardFixture
 }
 
-func uvSyncApprovedFixture(t *testing.T, empty bool) uvSyncPublicationFixture {
+func uvSyncApprovedFixture(t *testing.T, empty bool, contentMode string) uvSyncPublicationFixture {
 	t.Helper()
 	f := newUVUpdateGuardFixture(t, artifactpypi.UVUpgradeSelection, false)
 	intake, evidenceRoot, staging := filepath.Join(f.records, "intake"), filepath.Join(f.records, "evidence"), filepath.Join(f.records, "staging")
@@ -96,11 +97,49 @@ func uvSyncApprovedFixture(t *testing.T, empty bool) uvSyncPublicationFixture {
 			}
 			items = append(items, item)
 		}
+		if contentMode != "legacy" {
+			report, _ := archiveContentApprovalFixture(t, a)
+			for _, fact := range report.Evidence() {
+				if fact.ID().String() == content.SourceCoverageEvidenceID {
+					if contentMode == "missing-source" {
+						continue
+					}
+					profile, kind := fact.ProfileDigest(), fact.Kind()
+					if contentMode == "wrong-profile" {
+						profile = cacheFixtureProfile()
+					}
+					if contentMode == "wrong-kind" {
+						kind = "unrelated-source-fact"
+					}
+					fact, err = domain.NewEvidence(fact.ID(), fact.CheckID(), fact.Identity(), fact.Digest(), kind, fact.Summary(), profile)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
+				check, err := domain.NewCheckExecution(fact.CheckID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", fact.ProfileDigest())
+				if err != nil {
+					t.Fatal(err)
+				}
+				items, checks = append(items, fact), append(checks, check)
+			}
+		}
+		var requirements []domain.CheckRequirement
+		for _, check := range checks {
+			requirement, err := domain.NewCheckRequirement(check.ID(), check.Kind(), check.Required(), check.ProfileDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			requirements = append(requirements, requirement)
+		}
+		plan, err := domain.NewCheckPlan(old.RunID(), a, requirements)
+		if err != nil {
+			t.Fatal(err)
+		}
 		refs, err := store.Record(context.Background(), old.RunID(), items, checks...)
 		if err != nil {
 			t.Fatal(err)
 		}
-		i, err := domain.NewDependencyInspection(node, old.RunID(), a, checks, refs, decision, cacheFixturePlan(t, old.RunID(), a, []string{"synthetic-verification", "synthetic-inspection"}))
+		i, err := domain.NewDependencyInspection(node, old.RunID(), a, checks, refs, decision, plan)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -123,7 +162,7 @@ func uvSyncApprovedFixture(t *testing.T, empty bool) uvSyncPublicationFixture {
 func TestUVSyncApprovedCompletePublicationAndExplicitEmpty(t *testing.T) {
 	for _, empty := range []bool{false, true} {
 		t.Run(map[bool]string{false: "exact-nonempty", true: "explicit-empty"}[empty], func(t *testing.T) {
-			f := uvSyncApprovedFixture(t, empty)
+			f := uvSyncApprovedFixture(t, empty, "current")
 			if _, _, _, ok := f.publication.PublishedRecords(); ok {
 				t.Fatal("unpublished records reported success")
 			}
@@ -191,7 +230,7 @@ func TestUVSyncApprovedCompletePublicationAndExplicitEmpty(t *testing.T) {
 func TestUVSyncCacheTamperAndLostEvidenceRefusePublication(t *testing.T) {
 	for _, mode := range []string{"receipt", "manifest", "sbom", "archive", "extra-file", "extra-root", "hardlink", "evidence", "source", "original", "foreign-staged", "cancel"} {
 		t.Run(mode, func(t *testing.T) {
-			f := uvSyncApprovedFixture(t, false)
+			f := uvSyncApprovedFixture(t, false, "current")
 			staged, err := f.publication.StageProject(context.Background(), f.set)
 			if err != nil {
 				t.Fatal(err)
@@ -274,7 +313,7 @@ func TestUVSyncCacheTamperAndLostEvidenceRefusePublication(t *testing.T) {
 func TestUVSyncStagingRequiresRecordedEvidenceAndExactSelectedSet(t *testing.T) {
 	for _, mode := range []string{"missing-evidence", "intake-filename", "intake-archive", "foreign-snapshot", "repeat"} {
 		t.Run(mode, func(t *testing.T) {
-			f := uvSyncApprovedFixture(t, false)
+			f := uvSyncApprovedFixture(t, false, "current")
 			i := f.set.Inspected().Inspections()[0]
 			switch mode {
 			case "missing-evidence":
@@ -325,7 +364,7 @@ func TestUVSyncStagingRequiresRecordedEvidenceAndExactSelectedSet(t *testing.T) 
 func TestUVSyncCompletePublicationRollsBackAndPreservesUserFiles(t *testing.T) {
 	for _, phase := range []string{"after-publish:site", "metadata", "sync", "reconcile"} {
 		t.Run(phase, func(t *testing.T) {
-			f := uvSyncApprovedFixture(t, false)
+			f := uvSyncApprovedFixture(t, false, "current")
 			user := filepath.Join(f.seed.root, "user.txt")
 			if err := os.WriteFile(user, []byte("user-owned"), 0o600); err != nil {
 				t.Fatal(err)
@@ -360,6 +399,29 @@ func TestUVSyncCompletePublicationRollsBackAndPreservesUserFiles(t *testing.T) {
 			}
 			if _, err := os.Stat(filepath.Join(f.seed.plan.site, "other.py")); err != nil {
 				t.Fatal("rollback lost excluded original", err)
+			}
+		})
+	}
+}
+
+// All records and declared profiles are self-consistent, including the invalid
+// cases; current scanner semantics must be checked independently of hashes.
+func TestPythonProjectCacheRequiresCurrentContentApproval(t *testing.T) {
+	for _, mode := range []string{"current", "legacy", "missing-source", "wrong-profile", "wrong-kind"} {
+		t.Run(mode, func(t *testing.T) {
+			f := uvSyncApprovedFixture(t, false, mode)
+			staged, err := f.publication.StageProject(context.Background(), f.set)
+			if mode != "current" {
+				if err == nil || staged.Valid() {
+					t.Fatal("Python cache accepted non-current content approval", mode)
+				}
+				return
+			}
+			if err != nil || !staged.Valid() {
+				t.Fatal("current Python content approval failed", err)
+			}
+			if _, _, err := f.cache.openProject(context.Background(), staged, f.update); err != nil {
+				t.Fatal("current Python content approval did not reopen", err)
 			}
 		})
 	}

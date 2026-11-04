@@ -23,7 +23,7 @@ func (fixedObservationKeeper) Verify(context.Context, string, string) error     
 func (fixedObservationKeeper) Close(context.Context, string, string) (uint64, error) { return 0, nil }
 
 func TestInspectionResourceAuthorizationIsSharedAndBounded(t *testing.T) {
-	for _, profile := range []string{"npm-lifecycle", "github-elf", "terraform-provider"} {
+	for _, profile := range []string{"npm-lifecycle", "github-elf", "terraform-provider", "source-analysis", "pypi"} {
 		t.Run(profile, func(t *testing.T) {
 			id, err := domain.NewSandboxSessionID()
 			if err != nil {
@@ -35,7 +35,14 @@ func TestInspectionResourceAuthorizationIsSharedAndBounded(t *testing.T) {
 				t.Fatal("inspection requires one root resource authorization", err)
 			}
 			session := engine.sessions[id.String()]
-			if lease.CgroupParent == "" || session.ceiling != 30_000_000 || session.maxLaunches != 4 {
+			wantCPU, wantLaunches := uint64(30_000_000), 4
+			if profile == "source-analysis" {
+				wantCPU = 600_000_000
+			}
+			if profile == "pypi" {
+				wantLaunches = 68
+			}
+			if lease.CgroupParent == "" || session.ceiling != wantCPU || session.maxLaunches != wantLaunches {
 				t.Fatalf("root CPU/launch allowance changed: lease=%+v ceiling=%d launches=%d", lease, session.ceiling, session.maxLaunches)
 			}
 			if _, err := engine.apply(context.Background(), 1000, observationResourceRequest{Operation: "create", Transaction: id.String(), Profile: profile}); err == nil {

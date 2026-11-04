@@ -41,7 +41,7 @@ func SourceChecks() ([]domain.CheckRequirement, error) {
 
 func sourceProfile() (domain.ContentDigest, error) {
 	pin := runtimeidentity.SelectedSemgrepSupply()
-	return domain.CheckProfileDigest("source-content-v3", pin.Version+"|"+pin.Tool.SHA256+"|"+pin.Rules.SHA256+"|full-strict-ast+rule-prefilter")
+	return domain.CheckProfileDigest("source-content-v5", fmt.Sprintf("%s|%s|%s|full-strict-ast+rule-prefilter+matched-sink+parmap|rule=%d|heap=%d|cpu=%d|wall=%d|memory=%d|launches=%d", pin.Version, pin.Tool.SHA256, pin.Rules.SHA256, ports.SourceAnalysisRuleTimeoutSeconds, ports.SourceAnalysisHeapLimitMiB, ports.SourceAnalysisCPUSeconds, ports.SourceAnalysisWallSeconds, ports.SourceAnalysisMemoryLimit, ports.SourceAnalysisMaxLaunches))
 }
 
 // InspectSources consumes only archive-checked source DATA. It does not read an

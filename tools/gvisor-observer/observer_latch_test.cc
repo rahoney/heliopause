@@ -8214,9 +8214,9 @@ bool VerifySourceAnalysisDemotionBoundary() {
 
 bool VerifySourceAnalysisCommandBoundary() {
   const char* const args[] = {"/haa-semgrep/semgrep-core-linux-amd64", "-json_nodots",
-      "-tree_sitter_only", "-filter_irrelevant_rules", "-no_filter_irrelevant_patterns",
+      "-use_parmap", "-tree_sitter_only", "-filter_irrelevant_rules", "-no_filter_irrelevant_patterns",
       "-j", "1", "-rules", "/haa-semgrep/semgrep-rules.json", "-targets",
-      "/haa-source/targets.json", "-timeout", "2", "-max_memory", "256",
+      "/haa-source/targets.json", "-timeout", "15", "-max_memory", "3072",
       "-max_match_per_file", "100"};
   gvisor::sentry::ExecveInfo message;
   message.set_binary_path(args[0]); message.set_execfn(args[0]);
@@ -8229,13 +8229,16 @@ bool VerifySourceAnalysisCommandBoundary() {
     changed.set_argv(index, message.argv(index) + "-untrusted");
     if (IsExactSourceAnalysisCommand(changed)) return false;
   }
-  for (int fault = 0; fault < 5; ++fault) {
+  for (int fault = 0; fault < 8; ++fault) {
     auto changed = message;
     if (fault == 0) changed.set_binary_path("/work/artifact");
     if (fault == 1) changed.set_execfn("/work/artifact");
     if (fault == 2) changed.add_argv("--config=artifact");
     if (fault == 3) changed.mutable_argv()->RemoveLast();
-    if (fault == 4) changed.set_argv(3, "-no_filter_irrelevant_rules");
+    if (fault == 4) changed.set_argv(4, "-no_filter_irrelevant_rules");
+    if (fault == 5) changed.set_argv(13, "2");
+    if (fault == 6) changed.set_argv(15, "256");
+    if (fault == 7) changed.mutable_argv()->DeleteSubrange(2, 1);
     if (IsExactSourceAnalysisCommand(changed)) return false;
   }
   for (const char* profile : {kProfileGitHub, kProfileNPM, kProfilePyPI, kProfileGoBuild})

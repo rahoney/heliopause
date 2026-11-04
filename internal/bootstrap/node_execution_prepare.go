@@ -44,7 +44,7 @@ func selectCurrentExecutionEntry(ctx context.Context, static *inspectionnpm.Insp
 			primary = entry.Artifact()
 		}
 	}
-	inventory, report, err := static.InspectArchive(ctx, primary)
+	inventory, report, err := static.ReadArchiveInventory(ctx, primary)
 	if err != nil {
 		return artifactnpm.ExecutionEntry{}, err
 	}

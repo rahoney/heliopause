@@ -1729,3 +1729,262 @@ Configured core의 한정 구현/연결은 YES지만 default/native/cache/whole 
 helperwait0·자기사본409566317B 정리를 확인했다. PyPI opt-in 연결이 원인이라고 단정하지
 않는다. 다음은 기존 gate가 이미 받은 bounded machine report를 실패 로그에 남겨 첫
 실패를 확인하는 최소 진단이다. 성공한 install/cache/CLI나 전체 CPP를 재실행하지 않는다.
+
+CLI-v4는 제품 변경 없이 bounded 실패 report 진단만 추가한 동일 입력에서41.172s
+FAIL했다. 현재 v2 machine report는 exact TypeScript digest10e108c9의 integrity/static/
+binary/census 완료, source-content INCOMPLETE/source signals NOT_EXECUTED를 보존하며
+quarantine/preparation 미완료·program NOT_STARTED다. Runtime 실패와 output decode 오류는
+아직 미구분이다. Host/source 동일/helperwait0·자기사본409569029B 제거를 확인했다.
+기존 Cargo parser diagnostic을 실제 두 caller가 공유하도록 이름을 정리하고, runtime
+상태/limitation/오류와 언어·rule ID 수만 남기는 narrow Port 진단에 같은 public TypeScript
+hash의 source-only gate를 연결한다. Source body/메타변수는 로그에 남기지 않는다.
+기존 core/규칙/CPP/제품 예산을 바꾸거나 CLI 전체·성공한 소비자를 반복하지 않는다.
+
+진단 v5는 작성한 시험이 Resolver에 없는 Source() 메서드를 가정해 compile0.891s에
+실패했고 native는 실행하지 않았다. 실제 source ID 생성 방식으로 교정했다. V6는 별도
+전체 npm metadata discovery가 기존2MiB 한도에서0.13s/operator3.198s 미도달했다.
+그 한도를 늘리지 않고 기존 workflow의 exact TypeScript URL/integrity fixture를 두
+실제 caller가 재사용하도록 했다. 원래 CLI resolve/전체 metadata 지원 완료와 구분한다.
+
+Source-only v7은32.97s/operator36.060s에 같은 archive hash/113 targets에서 FAIL이다.
+Port의 실제 runtime은 S04_SOURCE_EXECUTION_INCOMPLETE이고 최초 CPU authorization
+exhausted/cancel/typed termination 미완료 뒤 resource accounting 오류를 보존했다.
+현재 SourceAnalyzer는 PublicPyPI의30초 누적 CPU 정책을 재사용한다. Decoder나 기존
+React taint0.2s fixpoint 문제가 이번 원인이라고 단정하지 않는다. Host/source 동일/
+helperwait0·자기사본409581855B 정리다. 다음은 같은 고정 engine/rules/strict flags와
+512MiB memory,113개의 source DATA만 network-none/readonly runc에서 비용 측정한다.
+DATA의 유한120초 CPU 상한은 제품 승인/지원 예산 변경이나 gVisor qualification이 아니다.
+Python 공용 예산/필수 검사·입력/출력 완전성을 약화하지 않고 측정 뒤 수정 범위를 정한다.
+
+종료한 superseded client binary4개는110process의 exe/FD/maps 참조0·query errors0과
+원래 compile receipt/현재 hash·single-link를 대조해228361201B 제거했다. Current v7,
+공용 helpers/고정 supply/SDK/source와 모든 raw를 보존했다. 새 CI는 없다.
+
+동일113 source의 runc DATA 측정은14.327s에 종료했다. Core wall12.541s, user/system
+CPU10.478/2.019s이며 source113개·matches0·fixpoint0·skip0다. 다만 lib/_tsc.js6213092B와
+lib/typescript.js9112572B는 기존 per-target256MiB 한도로 Out of memory, 공식
+lib.es2015.symbol.wellknown.d.ts의 `[K in keyof readonly any[]]`는 PartialParsing이다.
+원래 source19,098,939B의 parser limits/grammar 문제와 traced 누적 CPU 소진을 구분한다.
+컨테이너 OOMKilled=false·원본 input/기존 container 집합 동일·자기 container 제거다.
+이 DATA는 정상 검사 PASS가 아니며 세 오류를 N/A로 바꾸지 않는다. 현재 원래 코드의
+TypeScript grammar index_type_query는 primary_type만 받고 readonly_type은 상위 type에
+있음을 확인했다. 기존 parser/tool 공급 owner에서 한정 grammar·비용 보완을 검토하고,
+필요한 변경을 모아 공급 재현/실제 검증을 진행한다. 아직 제품 예산/도구는 불변이다.
+
+메모리 DATA512MiB/1024MiB는 같은 두 Out-of-memory와 grammar 오류를 유지했고 각각
+CPU16.617/26.182s였다. 2048MiB도 유한120초 DATA deadline에서 미완료여서 상향만으로
+해결됐다고 볼 수 없다. 제품 예산은 계속 불변이다. 큰 두 JS에는 현재 rule sink의
+fetch/axios/eval/execSync가 없는데, 기존 patch는 rule prefilter보다 먼저 generic AST와
+이름 해석을 강제로 만든다. 기존 lazy parser가 실제 사용됐는지 기록하고, rule matching
+후 미사용 target만 같은 기존 parser의 syntax AST/오류를 확인하는 한정 후보를 검토한다.
+Parse_target의 기존 run/converter를 재사용하며 별도 언어별 parser/규칙/skip 경로를 만들지
+않는다. 모든 skipped/inserted/tolerated 오류는 유지하고 applicable rule의 AST/이름 해석은
+그대로다. 후보는 먼저 /tmp SDK에서 비교하며 원래 source는 빌드 뒤 복원한다.
+
+Grammar 원형은 기존 fixed SDK/generator와 upstream registry의 CLI0.26.3/ABI14에서
+원래 TS parser.c/CST/Parse와 exact byte 일치했다(13.246s). 같은 readonly_type 재사용
+후보는 한정 생성이 가능했지만 generated C table의 약284k line diff를 그대로 repository에
+넣지 않는다. 기존 Semgrep wrapper의 작은 override도 같은 candidate grammar JSON과
+byte 일치함을 확인했다. 필요하면 기존 source input manifest에 고정 CLI를 포함하고 기존
+worker에서 TS/TSX를 생성하는 경로를 재사용한다. 별도 updater/Host 설치·Node dependency는
+추가하지 않으며 전 후보 qualification 전까지 selected owner/도구/제품은 바꾸지 않는다.
+
+후보의 실제 비교는 해결로 판정하지 않는다. 첫 syntax 후보0cf38573은 full parser를
+per-rule deadline 안으로 옮겨 lib.dom의 Timeout2개를 더 만들었고 DATA v2의 오류는5개다.
+따라서 그 순서는 반증됐다. 같은 prefilter 뒤 parsing을 원래 deadline 밖에 두고,
+미사용 JS/TS에만 기존 native syntax tree/error extractor를 쓰는 후보54558010의 빌드는
+79.958s에 완료·원본6파일 복원·compiler/container 보존을 확인했다. 하지만 DATA v3의
+113source/13.314s/CPU13.216s도 기존 두 Out-of-memory와 readonly PartialParsing을 유지한다.
+큰 두 JS는 실제 applicable search2개(typescript.js에는 taint group1개도 있음)여서
+generic AST 생성을 피하지 못했다. 이 최적화는 현재 실패의 해결책으로 채택하지 않는다.
+SKIP/fixpoint0·matches0을 정상 검사 통과로 확대하지 않는다.
+
+다음 좁은 진단은 원래 selected parser의 Parse_target 한 파일에만 단계별 CPU/heap 수치를
+기록하고 원문/이름/값을 출력하지 않는 임시 빌드다. 파싱/이름 해석/타이핑/상수 분석의
+실제 최초 비용을 구분한 뒤 수정 범위를 정한다. 원래 의미·규칙·필수 검사/제품 한도를
+유지하고 종료 시 source를 복원한다. 또 다른 무근거 메모리 상향·전체 native/CI는 하지 않는다.
+
+기존 parser 단계 진단34926dbf는78.265s에 빌드·원본 한 파일 복원했다. 첫 DATA는
+semgrep.parsing 로그 source가 기본 비활성화라 단계 측정을 얻지 못했다. 기존 로그
+source만 활성화한 후속 DATA-v2는 같은 `_tsc.js` 한 파일을43.316s/CPU43.296s,
+최대RSS1,421,740KiB에 완료했다. 단계별 CPU는 parse17.096s·naming10.329s·typing/
+implicit0.250s·basic constant propagation8.204s·dataflow6.182s다. 오류/skip/fixpoint0이며
+기존 의미를 유지했다. 따라서 전체 파싱 비용 자체가 PublicPyPI30초/512MiB를 넘는다는
+직접 증거다. 어느 분석을 생략하거나 이름 해석만 버그라고 단정하지 않는다. 새 tool
+후보/전역 Python 한도 변경 대신 SourceAnalyzer의 현재 별도 profile과 공통 관찰 원장,
+고정 command/CPP 검증 owner 안에서 실측에 맞는 유한 source 전용 예산을 검토한다.
+아직 예산을 제품에 적용하지 않았으며 전체113source의 비용/정확성 확인이 선행이다.
+
+TSX도 원형 parser/CST/Parse의 exact byte 일치를15.613s에 확인했다. 최초 생성의
+출력 UID 누락은0.481s 미도달 실패로 보존했고 임시 출력 소유자만 맞췄다. 같은 wrapper
+변경으로 TS/TSX 후보를 생성했으며, 첫 core compile은 기존 수작업 merged CST/출력기
+결합 누락을 검출했다. 해당 두 owner도 같은 readonly tuple로 연결하는 후보를 빌드 중이다.
+큰 generated 파일을 제품에 넣거나 기존 버전 갱신 owner를 우회하지 않는다. 임시
+진단/실패한 syntax 최적화는 이 grammar 후보에 포함하지 않는다.
+
+자원 보완의 기존 연결 지도: `SourceAnalyzer.Analyze`는 현재 Python policy 변환과
+privileged resources.Create의 `pypi`를 함께 사용한다. Docker argv는
+`sourceAnalysisCreateArguments → pythonResolverCreateArguments`의512MiB/CPU60초를
+재사용하고, helper `hosttool.observationPolicy`도 같은30초 누적 권한을 부여한다.
+따라서 controller 값만 바꾸면 helper가 먼저 차단하며 해결되지 않는다. 실측 후 source
+전용 유한 CPU/메모리 값을 기존 SourceAnalysis 계약 한 곳에서 소유하고 기존 원장/
+helper selector/argv·CPP exact 검증을 함께 연결하는 범위만 검토한다. PublicPyPI/PyTorch/
+동적 실행 정책과 검사 완료 판정·부분 오류 거부·한도 초과 차단은 그대로 유지한다.
+다음 검증은 grammar 후보의 동일113source DATA, source 전용 경계/원래 profile 불변의
+표적 회귀, 변경된 공급·CPP 묶음과 실제 source/native 순서다. 같은 성공 입력의 unrelated
+full/CI 반복은 없다. 새 resource service·updater·generic configuration 계층은 필요 없다.
+
+Grammar-only3b83e890의113source DATA-v2는129.891s/CPU128.531s/RSS2,146,176KiB였다.
+기존 OOM2와 readonly 구문 오류는 사라졌지만 typescript.js의 credential-body rule
+Timeout1/내부 fixpoint3이 남아 정상 검사 통과가 아니다. 기존0.2초를2초로 바꾼 임시
+후보fa0af022도 같은 파일 하나96.631s에 Timeout1/fixpoint1을 유지해 해결로 채택하지 않는다.
+이 후보의 Limits 수정과 임시 단계 진단은 제품 공급에 넣지 않는다.
+
+관련 owner를 좁혀 보니 `OSS_match_tainting_mode.check_rule`은 기존
+`Match_taint_spec.taint_config_of_rule`로 모든 source/sink AST 일치를 확보한 뒤에도
+matched sink0인 rule의 모든 함수·class·top-level CFG를 분석한다. CE의 결과는 ToSink
+효과이므로 matched sink 부재가 확인되면 전파는 불필요하다. 그 raw_sinks 목록만 조건으로
+사용하고 원래 패턴 검사/parse errors/보고 profiling을 보존하는 최소 후보를 비교한다.
+새 parser·문자열 기반 sink 추정·taint engine 재작성·기존 시간 제한 확대는 하지 않는다.
+실제 sink가 있으면 원래 분석을 그대로 수행한다. 표적 actual과 기존 양성/악성·malformed
+corpus 대조 전까지 성능/전체 S04 해결을 주장하지 않는다.
+
+배포 입력은 더 단순한 기존 source offer를 우선한다. 원래 upstream도 generated C/CST를
+source로 공급하므로 재현을 확인한 TS/TSX generated8개를 같은 외부 SOURCES manifest의
+passive 입력으로 묶고 worker에서 투영하면 된다. 작은 wrapper/merged CST/converter
+수정은 기존 quarantine.patch가 소유한다. 새 CLI binary를 제품/SDK에 추가하거나 새로운
+grammar 생성 subsystem을 만들 필요가 없다. 고정 CLI/generator의 exact 원형 재현과
+생성 출처는 기존 SOURCE-ORIGINS와 원본 증거에 연결한다. 큰 generated C는 Git에 넣지 않는다.
+
+검증/비교가 끝난 임시 core 사본3개는 build receipt/hash·118process 참조0/query errors0을
+대조해514,952,928B 제거했다. Selected core/current grammar 후보/SDK와 모든 raw는 유지한다.
+
+### TypeScript source 최초 실패 — 최소 후보·별도 자원 경계 (`5026030` 후속)
+
+최소 sink 후보f2da5078은 typescript.js의 실제 AST source0/sink0을 확인하고71.308s에
+errors/fixpoint/skip0으로 완료했다. 최종33ae4500은 임시 진단을 제거하고 빈 결과의
+기존 matches_hook도 유지하며 내부0.2초 제한을 바꾸지 않는다. 기존343source의
+29matches/parse errors2·누락/추가0(7.222s), 여섯 언어와 readonly TS/TSX의16source/
+expected malformed8(0.570s), 원래113source의 errors0/fixpoint0/skip0·CPU115.631s/
+wall115.736s/RSS2,100,748KiB를 확인했다. 이는 Runc DATA이며 아직 gVisor/전체 S04 완료가 아니다.
+
+Source 전용 경계는 기존 Ports 계약의 한 상수 집합으로 소유한다. 전체 artifact의 누적
+CPU600초(기존 reserve 차감), wall15분, runtime4GiB·per-target heap3072MiB·rule15초와
+launch4개다. Controller·기존 privileged helper·Docker argv·check profile-v4를 같은 값에
+연결했다. Source input/trace/output/권한·부분 오류 거부는 유지한다. PublicPyPI와 원래
+동적 profile은 불변이며 source 전용 이름 외 caller-selected 한도는 받지 않는다.
+같은 profile/원래 Python 권한 보존 RED10.066s 후 경계·원래 PyTorch·argv 회귀13.009s는 PASS다.
+
+기존 CPP source 명령의 두 값만15/3072로 맞추고 old2/256도 거부한다. 다른 role·mount·
+program guard를 유지한 full138/53.005s가 PASS다. Source offer는1036개/328,022,528B이며
+원래1028개 중 patch/worker/출처/설명4개만 갱신하고 passive generated8개를 추가했다.
+NOTICES/rules/기존 dependency·SDK·compiler는 불변이다. 기존 same-version plan/apply는
+25.138s에 정확히4개 candidate 출력(lock/generated/patch/worker)을 만들었고 원래 checkout은
+변경하지 않았다. 검토 후 그 출력4개만 반영했으며 Semgrep 외 모든 runtime owner가 동일하다.
+
+Canonical foundation98.043s는 format/drift/integrity/build/architecture/docs를 PASS했다.
+Affected Race60.019s에서 hosttool4.608s/content2.061s/updater35.115s는 PASS이나 sandbox의
+Unix socket bind/보호 runtime 조회는 도구 제한 환경에서 미도달했다. 같은 source의 실패한
+45개 parent만 필요한 권한으로 Race7.872s(실제 sandbox6.565s)에 PASS했다. 최초 batch를
+전부 성공으로 덮거나 통과한 전체 tests를 반복하지 않는다. 현재 native client19.527s/
+policy3.418s/CGO0 stripped responder0.510s를 고정했고 기존 공급 검증기12.812s로 root-owned
+별도 supply를 확인했다(runtime_qualified=false). 같은113source의 actual gVisor 검증은
+진행 중이며 full CLI/refusal/cache와 fresh canonical build, PyPI·다른 소비자는 계속 OPEN이다.
+
+Actual source-only v8는622.94s/operator626.667s에 누적 CPU600초 소진으로 FAIL했다.
+기존 integrity/static/binary/census는 완료지만 source는 INCOMPLETE이며 required 거부를
+유지했다. Runtime kill/cancel·termination/accounting 후속 오류도 첫 원인과 함께 보존한다.
+Host/source 동일·helperwait0·자기 사본409,580,383B 제거를 확인했다. 따라서 현재 source
+전용 예산이나 Runc 성공을 actual 호환 해결로 권장하지 않는다. Source/core/CPP는 고정한
+채 동일한 전체 native를 반복하거나 CPU를 또 상향하지 않는다. Fresh canonical build와
+전체 CLI/CI는 보류하고 같은 큰 파일의 gVisor 자체/관찰 결합 비용을 분리하는 bounded
+DATA를 우선한다. Product의 필수 관찰·격리·권한은 변경하지 않는다.
+
+독립 OCI 진단은 parser 이전의 Rootfs mount/시스템 호출 thread 준비에서 실패해 비용
+비교 근거가 아니다. 임시 자원은 회수했으며 그 경로의 추가 조정은 중단했다. 기존 실제
+경로를 그대로 재사용한 임시 Go overlay는 reader ID만 기록하고 test context를180초로
+한정했다. Actual DATA-v11은10/35/70/120초의 read-only stack/ps4개를 확보하고185.004s에
+예정된 취소·Host/source 동일·helperwait0·409,580,811B 정리를 확인했다. 앞선 수집기의
+`/var/run` alias 거부도 원본으로 남겼고 realpath만 맞췄다. 이는 기능 qualification이 아니다.
+
+Samples의 실행자는 verifier가 아니라 semgrep 본체(4threads/CPU94–96%)였고 kernel
+frames는 Futex/Pause/Ppoll이며 Getrusage/ClockGettime은 없었다. `ps.time`은 SDK 구현상
+SysTime만 표시하므로20–50ms를 전체 CPU로 해석하지 않는다. 기존 execution owner의
+verify도 실행 전후 각 한 번이며 반복 검증을 지연 원인이라고 쓰지 않는다.
+
+동일33ae4500/_tsc.js의 runc에 실제와 같은 단일 물리 CPU를 고정해도43.530s에 완료해
+affinity 차이만으로 원인을 설명할 수 없다. 같은 고정 조건에서 엔진이 이미 제공하는
+`-use_parmap` 한 옵션은34.469s/errors·fixpoint·skip0, 구문16/expected malformed8은
+0.591s에 PASS다. 기존 검사/strict AST를 유지한 Process 실행의 실제 호환을 다음 후보로
+비교한다. Source command/profile·기존 CPP exact guard만 함께 맞추며 새 scheduler/engine/
+인터페이스·언어별 버전 owner나 CPU 상향은 만들지 않는다. Actual 성공 전에는 Eio가
+확정 원인이라고 단정하거나 Process 경로를 해결법으로 권장하지 않는다.
+
+같은343 corpus의 Process 비교는6.651s/29matches/expected errors2/누락·추가0으로
+PASS했다. Fixed argv/profile-v5와 old Eio/timeout/heap 거부를 연결한 Go 표적13.555s,
+기존 full CPP138/51.094s, canonical foundation71.036s/security29.271s도 PASS다.
+현재 세 binary receipt를 갱신한 actual-v12는 원래 TypeScript5.9.3/113source를
+175.69s(operator178.980s)에 필수 content6 완료로 통과했다. Optional no-native limitation은
+원래대로 보존하며 source 오류·findings는0이다. Host/source 동일/helperwait0/noSKIP과
+자기 사본409,822,080B 삭제를 확인했다. 이는 같은 engine/core/입력/한도에서 기존
+Process 옵션의 actual 호환을 확인한 결과다. Eio 내부의 정확한 지연 원인은 미확정이며
+모든 엔진/생태계 호환이나 탐지율로 일반화하지 않는다. 원본은
+`s04-parmap-coverage-v4`, `s04-source-analysis-observer-parmap-v11`,
+`s04-parmap-command-target-v1`, `s04-parmap-final-*`,
+`s04-npm-parmap-content-native-v12`가 소유한다. Fresh canonical 재현 빌드를 시작했으며
+full CLI/refusal/cache와 나머지 S04는 계속 OPEN이다.
+
+### PyPI 기본 연결과 현재 승인 — 다음 acceptance gap (`5026030` 후속)
+
+Configured `StaticInspector`/`CompositeInspector`의 내용 분석은 IMPLEMENTED/WIRED=YES,
+default 생성 세 곳의 연결과 current 승인 acceptance는 각각 NO/NO/NO/NO다.
+`bootstrap.go`의 pip/UV/pipx 설치, `uv_project_client.go`의 프로젝트,
+`python_uv_run_cli.go`의 UV/pipx 실행이 아직 analyzer 없이 같은 constructor를 호출한다.
+기존 `python_client.go`의 공통 조립에서 target pin과 source analyzer를 한 번 소유하고
+세 caller만 연결한다. Linux는 기존 protected executor/observer/resource adapter를 쓰며
+다른 플랫폼의 unavailable은 기존 npm처럼 명시한다. 별도 scanner/graph owner를 만들지 않는다.
+
+`PythonProjectCache.approval`은 현재 declared facts를 읽지만 content의 current profile/kind를
+요구하지 않는다. 이미 Cargo/npm이 쓰는 `projectCacheEvidenceFacts`와
+`verifyArchiveContentEvidence`를 재사용해 Stage/readback 모두 같은 기준으로 확인한다.
+기존 Python 승격/실행 소비자의 기대 check 선언과 Evidence 전달도 실제 사용 위치에서
+대조한다. Legacy·wrong profile/kind·missing coverage 거부와 기존 정상 selection을 먼저
+표적으로 검증한 뒤 실제 pip/UV 설치·업데이트/실행/프로젝트를 묶는다. Mixed pth/큰 native,
+다른 생태계·release 및 grouped hosted는 별도 MISSING이다. Native 빌드 중의 Go 작업은
+동결된 외부1036개 source/build 입력과 독립이며 lock/patch/worker/observer는 바꾸지 않는다.
+
+기존 UV sync fixture의 self-consistent legacy/missing-source/wrong-profile/wrong-kind 네
+승인 수용을 RED9.728s에 재현했다. 공통 facts/current content 검증기를 Python approval에
+연결한 표적13.531s와 Python/UV·관련 pypi/bootstrap/promotion Race63.408s는 PASS다.
+같은 approval을 Stage/readback에서 재사용하며 정상 nonempty/empty와 거부·원복을 보존한다.
+세 production 생성 지점은 같은 Python 조립 helper에서 기존 target pin과 analyzer를
+받는다. Source/runtime version owner는 불변이다. 실제 Python/전체 보강 완료는 아니다.
+
+### npm 실행의 목록 readback — 중복 분석 gap (`5026030` 후속)
+
+`Inspector.InspectArchive`의 current 내용 분석 연결은 IMPLEMENTED/WIRED=YES이며
+project inspection의 최초 검역에 필요하다. 그러나 bootstrap의 실행 entry 선택·Node 배치·
+PNPM/Bun layout과 original-layout 증명 여섯 caller도 같은 메서드를 사용한다. 이들은
+목록/원본 해시만 소비하면서 같은 analyzer를 다시 실행한다. Current source 검역을
+약화하지 않고 기존 `captureArchive`의 bounded 전체 구조/압축·member 무결성 측정을
+`ReadArchiveInventory`로 재사용한다. 최초 project/standalone 검역은 `InspectArchive`/
+`Inspect`의 내용 분석을 유지하고 위 여섯 DATA reader만 분리한다. 새 cache/graph/검사기나
+원본 검증 생략은 필요 없다. 이 중복 해소의 네 상태는 모두 NO이며 read-only no-analyzer/
+변조 거부·기존 layout 회귀와 actual 실행을 확인한 범위만 갱신한다.
+
+중복 연결의 표적4.118s와 관련 npm/bootstrap Race8.396s는 PASS다. 전체 source 분석을
+유지한 최초 검역과 무결성만 재측정하는 여섯 소비자를 구분했다. CLI 시험의 기존4분을
+각 요청에 적용하고 요청 종료 직후 cancel한다. 따라서 여러 요청이 앞 요청의 남은
+deadline을 나눠 쓰지 않으며 제품의 자원·실행 한도는 바꾸지 않는다. Local suite/hosted
+누적 deadline은 실제 whole CLI 비용을 확인한 뒤 기존 workflow guard와 함께 맞춘다.
+
+이 묶음의 canonical foundation53.776s/security26.477s는 PASS다. 뒤 tagged vet/Staticcheck는
+requirements 시험의 제거된 runtime 변수 잔류를 검출했다. 같은 pin owner의 단일 사용으로
+고친 태그 build-validity5.350s와 관련8package tagged vet2.055s/고정 Staticcheck3.399s는
+PASS다. Compile 실패에 동반된 U1000을 실제 불용 코드로 단정하거나 helper를 제거하지 않는다.
+Foundation/security의 실행 입력은 그 test-only 한 줄 교정 전이며 재현 원본을 유지한다.
+현재 source/kernel/CPP/도구 공급물과 product behavior는 그 교정으로 변하지 않는다.
+원본 `s04-python-cache-current-red-v1`/`green-v1`, `s04-python-current-race-v1`,
+`s04-npm-readback-target-v1`/`race-v1`, `s04-python-npm-current-*`,
+`s04-python-npm-tag-build-green-v2`가 정확한 source와 실행 범위를 소유한다.
+Actual Python·npm whole CLI/hosted와 전체 S04 acceptance는 계속 OPEN이다.

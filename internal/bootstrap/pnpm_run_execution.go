@@ -103,7 +103,7 @@ func (r pnpmRunExecutionRuntime) Execute(ctx context.Context, execution domain.E
 	if err != nil {
 		return nil, err
 	}
-	inventory, report, err := r.static.InspectArchive(ctx, execution.EntryArtifact())
+	inventory, report, err := r.static.ReadArchiveInventory(ctx, execution.EntryArtifact())
 	if err != nil || !inventory.Valid() || len(report.Findings()) != 0 {
 		return nil, errors.Join(errors.New("pnpm current primary has no complete measured original"), err)
 	}

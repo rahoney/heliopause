@@ -31,6 +31,12 @@ func (i *Inspector) InspectArchive(ctx context.Context, artifact domain.Acquired
 		inventory, _, report, err := i.InspectArchiveContent(ctx, artifact)
 		return inventory, report, err
 	}
+	return i.ReadArchiveInventory(ctx, artifact)
+}
+
+// ReadArchiveInventory remeasures the complete original archive for entry and
+// layout binding. It provides no content inspection or current Policy approval.
+func (i *Inspector) ReadArchiveInventory(ctx context.Context, artifact domain.AcquiredArtifact) (artifactnpm.ArchiveInventory, domain.InspectionReport, error) {
 	capture := &archiveCapture{}
 	return i.captureArchive(ctx, artifact, capture)
 }

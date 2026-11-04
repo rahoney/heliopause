@@ -82,6 +82,14 @@ test "$(git -C /work/source rev-parse HEAD)" = "$SOURCE_COMMIT"
 test "$(git -C /work/source rev-parse "refs/tags/$SOURCE_TAG")" = "$SOURCE_TAG_OBJECT"
 git -C /work/source apply --check /work/input/patches/quarantine.patch
 git -C /work/source apply /work/input/patches/quarantine.patch
+# The source offer carries regenerated source tables, not a new build tool.
+# Every member was authenticated above. Small grammar/converter changes remain
+# in the selected patch; generated C/CST stay out of the repository diff.
+for language in typescript tsx; do
+  for member in parser.c CST.ml Parse.ml Boilerplate.ml; do
+    cp "/work/input/generated/$language/$member" "/work/source/languages/typescript/tree-sitter/semgrep-$language/lib/$member"
+  done
+done
 cp /work/source/opam-lockfiles/semgrep.opam.linux-amd64.locked /work/source/semgrep.opam.locked
 printf '%s  %s\n' "$SOURCE_LOCK_SHA256" /work/source/semgrep.opam.locked | sha256sum -c -
 

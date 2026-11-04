@@ -66,8 +66,7 @@ func bindUVProjectClient(command *cobra.Command, executor uvProjectExecutor, obs
 	if err != nil {
 		return nil, err
 	}
-	runtime := sandbox.PinnedPythonRuntime()
-	static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	static, err := newPyPIStaticInspector(intakeRoot, executor, observer)
 	if err != nil {
 		return nil, err
 	}

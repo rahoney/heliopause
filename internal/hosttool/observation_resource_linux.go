@@ -22,6 +22,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"golang.org/x/sys/unix"
 )
 
@@ -244,20 +245,28 @@ func observationParent(transaction string) (string, error) {
 	return "haaobs" + hex.EncodeToString(digest[:12]) + ".slice", nil
 }
 
-func observationPolicy(name string) (artifactpypi.ResourcePolicy, error) {
+func observationPolicy(name string) (uint64, int, error) {
+	if name == ports.SourceAnalysisResourceProfile {
+		return ports.SourceAnalysisCPUSeconds * 1_000_000, ports.SourceAnalysisMaxLaunches, nil
+	}
 	// The existing default CPU authorization matches the npm lifecycle's
 	// unchanged 30-second ceiling. Environment experiments share this parent.
+	var policy artifactpypi.ResourcePolicy
 	if name == "pypi" || name == "npm-lifecycle" || name == "github-elf" || name == "terraform-provider" {
-		return artifactpypi.PublicPyPIProfile().ResourcePolicy(), nil
+		policy = artifactpypi.PublicPyPIProfile().ResourcePolicy()
+	} else {
+		profile, ok := artifactpypi.PyTorchProfile(strings.TrimPrefix(name, "pytorch:"))
+		if !strings.HasPrefix(name, "pytorch:") || !ok || profile.Name() != name {
+			return 0, 0, errors.New("unsupported observation resource policy")
+		}
+		policy = profile.ResourcePolicy()
 	}
-	if !strings.HasPrefix(name, "pytorch:") {
-		return artifactpypi.ResourcePolicy{}, errors.New("unsupported observation resource policy")
+	maxLaunches := 2*policy.MaxObservationImportsPerArtifact() + 4
+	if name == "npm-lifecycle" || name == "github-elf" || name == "terraform-provider" {
+		// Two fresh writers and their readonly keepers share one authorization.
+		maxLaunches = 4
 	}
-	profile, ok := artifactpypi.PyTorchProfile(strings.TrimPrefix(name, "pytorch:"))
-	if !ok || profile.Name() != name {
-		return artifactpypi.ResourcePolicy{}, errors.New("unsupported observation resource policy")
-	}
-	return profile.ResourcePolicy(), nil
+	return uint64(policy.RuntimeCPUSecs()) * 1_000_000, maxLaunches, nil
 }
 
 func firstAvailableCPU() (int, error) {
@@ -301,7 +310,7 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 		if session != nil || request.Container != "" || request.Role != "" {
 			return ObservationResourceLease{}, errors.New("observation resource transaction already exists")
 		}
-		policy, err := observationPolicy(request.Profile)
+		ceiling, maxLaunches, err := observationPolicy(request.Profile)
 		if err != nil {
 			return ObservationResourceLease{}, err
 		}
@@ -322,14 +331,8 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 		if err != nil {
 			return ObservationResourceLease{}, err
 		}
-		maxLaunches := 2*policy.MaxObservationImportsPerArtifact() + 4
-		if request.Profile == "npm-lifecycle" || request.Profile == "github-elf" || request.Profile == "terraform-provider" {
-			// Two fresh writers and their readonly keepers, never one
-			// replenished authorization per environment.
-			maxLaunches = 4
-		}
 		session = &observationResourceSession{peer: peer, parent: parent, cpu: cpu, path: path, keeperScope: keeperScope, usage: baseline,
-			ceiling:     uint64(policy.RuntimeCPUSecs()) * 1_000_000,
+			ceiling:     ceiling,
 			maxLaunches: maxLaunches,
 			containers:  make(map[string]string), scopes: make(map[string]string),
 			drainedScopes: make(map[string]struct{}), drainedContainers: make(map[string]string)}

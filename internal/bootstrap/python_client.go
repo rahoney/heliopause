@@ -2,15 +2,32 @@ package bootstrap
 
 import (
 	"errors"
+	"runtime"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/promotion"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	"github.com/spf13/cobra"
 )
+
+// All Python clients share the current archive content declaration and runtime
+// pin. An unavailable platform cannot silently fall back to metadata-only checks.
+func newPyPIStaticInspector(intake string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (*inspectionpypi.StaticInspector, error) {
+	var analyzer ports.SourceAnalysis = &sandbox.SourceAnalyzer{}
+	if runtime.GOOS == "linux" {
+		current, err := sandbox.NewSourceAnalyzer(executor, observer, newObservationResourceAdapter())
+		if err != nil {
+			return nil, err
+		}
+		analyzer = current
+	}
+	pin := sandbox.PinnedPythonRuntime()
+	return inspectionpypi.NewStaticInspector(intake, artifactpypi.WheelTarget{Python: pin.InterpreterTag, ABI: pin.ABITag, Platform: pin.PlatformTag}, analyzer)
+}
 
 // Client selection is composition data; it never changes registry SourceID or
 // the inspection/Policy/staging ordering owned by Application.
