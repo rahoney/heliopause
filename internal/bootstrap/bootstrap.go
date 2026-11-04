@@ -257,7 +257,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, projectService, upgradeService, serviceErr := newGoModuleServices(resolver)
+		service, projectService, upgradeService, serviceErr := newGoModuleServices(resolver, trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}

@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t *testing.T) {
@@ -25,7 +27,7 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 		requiredMod                     string
 		want                            string
 		contentFinding                  string
-		native                          bool
+		native, noSource                bool
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
 		{name: "python helper is content DATA", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n"},
@@ -33,6 +35,8 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 		{name: "native disguised as Python", mod: "example.com/module", file: "tools/helper.py", body: "MZ", native: true},
 		{name: "extensionless helper CRC", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
+		{name: "plain DATA", mod: "example.com/module", file: "README.md", body: "plain inert DATA", noSource: true},
+		{name: "unsupported executable", mod: "example.com/module", file: "tools/setup.sh", body: "#!/bin/sh\necho DATA\n", noSource: true},
 		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
 		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "malformed required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module (\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
@@ -137,17 +141,52 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			if sourceErr != nil {
 				t.Fatal(sourceErr)
 			}
-			contentSources, contentReport, contentErr := inspector.InspectContent(context.Background(), acquired)
+			census, contentSources, contentReport, contentErr := inspector.InspectContent(context.Background(), acquired)
 			if tc.want != "" || tc.contentFinding != "" {
-				if contentErr != nil || len(contentSources) != 0 || len(contentReport.Executions()) != 1 || len(contentReport.Findings()) != 1 {
+				if contentErr != nil || census.Matches(acquired) || len(contentSources) != 0 || len(contentReport.Executions()) != 1 || len(contentReport.Findings()) != 1 {
 					t.Fatal("module validation failure exposed provisional content facts", contentErr)
 				}
 			} else if tc.native {
-				if contentErr == nil || len(contentSources) != 0 || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+				if contentErr == nil || len(contentSources) != 0 || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
 					t.Fatal("native source disguise was dropped or became complete", contentErr)
 				}
-			} else if contentErr != nil || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 3 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+			} else if contentErr != nil || !census.Matches(acquired) || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted {
 				t.Fatal("module content changed source DATA or invented binary applicability", contentErr)
+			}
+			if census.Matches(acquired) {
+				var summary struct {
+					Members, Sources, Binaries int
+					Unsupported                int `json:"unsupported_sources"`
+				}
+				found := false
+				for _, fact := range contentReport.Evidence() {
+					if fact.Kind() != "content-inventory" {
+						continue
+					}
+					found = true
+					if err := json.Unmarshal([]byte(fact.Summary()), &summary); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if !found || summary.Members != 1 || summary.Sources != len(contentSources) || (summary.Binaries == 1) != tc.native || (summary.Unsupported == 1) != (tc.file == "tools/setup.sh") {
+					t.Fatal("Go census lost measured role or DATA", summary)
+				}
+			}
+			if tc.want == "" && tc.contentFinding == "" && !tc.native && !tc.noSource {
+				failure := errors.New("source runtime unavailable fixture")
+				analyzer := &moduleSourceFailure{err: failure}
+				configured, err := NewStaticInspector(root, analyzer)
+				if err != nil {
+					t.Fatal(err)
+				}
+				declared, err := configured.ExpectedChecks(context.Background(), acquired, domain.CheckInspection)
+				if err != nil || len(declared) != 6 || analyzer.calls != 0 {
+					t.Fatal("current Go checks not frozen before parsing", err)
+				}
+				partial, err := configured.Inspect(context.Background(), acquired)
+				if !errors.Is(err, failure) || analyzer.calls != 1 || len(partial.Executions()) != 6 || partial.Executions()[4].Status() != domain.ExecutionIncomplete {
+					t.Fatal("configured Go parser error lost earlier facts or became completed", err)
+				}
 			}
 			if tc.contentFinding != "" {
 				if len(report.Findings()) != 0 || len(sources) != 0 || len(measured.Findings()) != 1 || measured.Findings()[0].Code() != tc.contentFinding {
@@ -159,7 +198,7 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 				t.Fatal("source selection changed the existing static report")
 			}
 			if tc.want == "" {
-				if len(sources) != 1 || sources[0].Path != tc.file || !bytes.Equal(sources[0].Body, []byte(tc.body)) {
+				if tc.noSource && len(sources) != 0 || !tc.noSource && (len(sources) != 1 || sources[0].Path != tc.file || !bytes.Equal(sources[0].Body, []byte(tc.body))) {
 					t.Fatal("validated source/testdata bytes were dropped or changed", sources)
 				}
 			} else if len(sources) != 0 {
@@ -174,4 +213,14 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			}
 		})
 	}
+}
+
+type moduleSourceFailure struct {
+	calls int
+	err   error
+}
+
+func (a *moduleSourceFailure) Analyze(context.Context, ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+	a.calls++
+	return ports.SourceAnalysisOutput{}, a.err
 }

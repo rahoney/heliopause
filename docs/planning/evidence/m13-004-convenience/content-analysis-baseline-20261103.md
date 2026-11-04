@@ -1988,3 +1988,46 @@ Foundation/security의 실행 입력은 그 test-only 한 줄 교정 전이며 �
 `s04-npm-readback-target-v1`/`race-v1`, `s04-python-npm-current-*`,
 `s04-python-npm-tag-build-green-v2`가 정확한 source와 실행 범위를 소유한다.
 Actual Python·npm whole CLI/hosted와 전체 S04 acceptance는 계속 OPEN이다.
+
+### Go 내용 census — 기존 DATA의 다음 gap (`4857a61`)
+
+기존 `gomodule.StaticInspector.InspectSources`/`InspectContent`의 source/native DATA는
+IMPLEMENTED=YES/WIRED=YES이며, 전체 source/native/unsupported/DATA census와 analyzer
+구성·default·현재 승인 연결은 각각 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다.
+같은 checked ZIP reader의 original member 순서를 사용해 O(n)으로 모든 regular member의
+해시·역할을 측정한다. 비선택 DATA는 stream hash만 하고 source/native body 사본을 늘리지
+않는다. 기존 Go syntax/testdata 규칙과 CRC·파일/전체200MiB 한도를 유지한다. Census는
+전체 검증 뒤에만 반환하며 기존 content.Inventory/InspectSources를 그대로 재사용한다.
+우선 이 누락만 로컬 검증하고 default/cache/실제 Go는 다음 연결로 남긴다. 빌드 중인
+외부 scanner source/lock/worker와 독립이며 새 runtime owner·엔진·graph를 만들지 않는다.
+
+Census 표적0.846s는 plain DATA/unsupported script·native disguise·구문/testdata·CRC와
+원본 무결성 실패 뒤 provisional 사실 미반환을 확인했다. Configured ctor/사전 check6/
+기존 공통 source analyzer를 연결하고 default Go get/download/upgrade가 그 analyzer를
+주입한다. Go cache의 current Stage/readback은 기존 공통 내용 검증기를 사용하며 original의
+historical 증거 경계는 유지한다. 새 self-consistent legacy 시험을 이전 go_cache.go에만
+적용한 overlay RED8.972s는 Stage/current readback 둘 다 거부 누락을 검출했다. Current
+source의 Go inspection/promotion/bootstrap 표적29.977s는 PASS다. 구현/연결은 YES,
+QUALIFIED/ACCEPTANCE_CLOSED는 실제 Go/hosted/전체 대조 전까지 NO다. Synthetic current
+cache facts는 기존 Cargo fixture를 재사용하며 actual scanner 결과로 표시하지 않는다.
+Go source checksum/runtime pin·공통 version updater는 바꾸지 않았다.
+
+고정1036-member source offer의 fresh canonical 빌드는1,437.755s에 정확한33ae4500/
+171,651,104B를 재현했다. Host 설치 manifest는 동일하고 cleanup errors는 없으며
+`runtime_qualified=false`는 유지한다. 앞 actual-v12와 exact 같은 bytes의 재현이지 새로운
+제품 설치/whole CLI/전체 생태계 qualification이 아니다. 원본
+`s04-taint-sink-canonical-build-v3`가 source/worker/SDK·해시·정리 결과를 소유한다.
+기각된 DATA 진단 core 세 개는119process의 FD/maps/exe/mount 참조0과 hash/inode를
+확인해514,954,016B 삭제했다. 첫 cleanup-v4는 좀비8개의 mountinfo EINVAL을 UNKNOWN으로
+보존해 삭제하지 않았다. V5는 같은 세대 Z/FD0/maps empty/exe 부재를 모두 확인한 뒤
+정리했고 query errors0이다. 선택된 core/이전 qualified baseline/SDK/source offer/raw는
+유지한다. 최초 조회 실패를 성공으로 덮지 않는다. 원본 s04-superseded-core-cleanup-v4/v5 참조.
+
+동일 current Go 묶음의 Race84.088s(inspection1.181/promotion61.065/bootstrap1.064),
+canonical foundation49.426s/security18.915s, tagged vet10.666s/고정 Staticcheck16.388s는
+PASS/source unchanged다. Current tagged CLI8.256s와 helper의 cached fresh receipts를
+고정했다. Fresh core/CPP138을 반복하지 않고 같은 source supply로 npm whole execution/
+post-Policy refusal actual-v14를 시작했다. 진행 중 Go/lock/observer 입력은 변경하지 않는다.
+Raw `s04-go-census-target-v1`, `s04-go-cache-current-red-v1`, `s04-go-current-target-v2`,
+`s04-go-current-*`가 이전 overlay와 current source·검증 범위를 구분한다. Go/Python의
+실제 검역·설치/캐시와 hosted/whole S04는 여전히 MISSING이다.

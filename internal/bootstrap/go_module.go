@@ -89,7 +89,7 @@ func newGoModuleBuildService(executor sandbox.TrustedExecutor, observer sandbox.
 	return application.NewProjectBuildService(goProjectMutationAdapter{promoter}, verifier, inspector, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
 }
 
-func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.GoModuleGetService, download *application.GoModuleProjectResolutionService, upgrade *goUpgradeService, resultErr error) {
+func newGoModuleServices(resolver *sandbox.GoModuleResolver, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (get *application.GoModuleGetService, download *application.GoModuleProjectResolutionService, upgrade *goUpgradeService, resultErr error) {
 	cacheRoot, err := os.UserCacheDir()
 	if err != nil {
 		return nil, nil, nil, err
@@ -104,7 +104,11 @@ func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.G
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	inspector, err := inspectiongo.NewStaticInspector(intakeRoot)
+	analyzer, err := sandbox.NewSourceAnalyzer(executor, observer, newObservationResourceAdapter())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	inspector, err := inspectiongo.NewStaticInspector(intakeRoot, analyzer)
 	if err != nil {
 		return nil, nil, nil, err
 	}

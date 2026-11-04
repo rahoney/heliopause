@@ -374,11 +374,19 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		}
 		items = append(items, item)
 	}
+	contentReport, contentRequirements := archiveContentApprovalFixture(t, a)
+	checks = append(checks, contentReport.Executions()...)
+	items = append(items, contentReport.Evidence()...)
+	requirements := append(cacheFixturePlan(t, run, a, []string{"fixture-verification", "fixture-inspection"}).Requirements(), contentRequirements...)
+	plan, err := domain.NewCheckPlan(run, a, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
 	refs, err := store.Record(context.Background(), run, items, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
-	i, err := domain.NewDependencyInspection(node, run, a, checks, refs, decision, cacheFixturePlan(t, run, a, []string{"fixture-verification", "fixture-inspection"}))
+	i, err := domain.NewDependencyInspection(node, run, a, checks, refs, decision, plan)
 	if err != nil {
 		t.Fatal(err)
 	}

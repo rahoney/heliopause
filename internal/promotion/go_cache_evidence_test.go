@@ -110,3 +110,39 @@ func TestGoRetainedLegacyEvidenceIsOwnershipOnly(t *testing.T) {
 		t.Fatal("legacy ownership became current build approval")
 	}
 }
+
+func TestGoCacheRequiresCurrentContentAtBothBoundaries(t *testing.T) {
+	root := canonicalGoTestRoot(t)
+	cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "cache"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	set, _ := goCacheFixture(t, cache.intakeRoot, filepath.Join(root, "project"), "example.com/module", map[string]string{"go.mod": "module example.com/module\n", "module.go": "package module\n"})
+	original := set.Inspected().Inspections()[0]
+	legacy, err := domain.NewDependencyInspection(original.Node(), original.RunID(), original.Artifact(), original.Checks()[:2], original.Evidence()[:2], original.PolicyDecision(), cacheFixturePlan(t, original.RunID(), original.Artifact(), []string{"fixture-verification", "fixture-inspection"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspected, err := domain.NewInspectedProjectSet(set.Inspected().Snapshot(), []domain.DependencyInspection{legacy})
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacySet, err := domain.NewProjectVerifiedSet(inspected, set.Decision())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if staged, err := cache.StageProject(context.Background(), legacySet); err == nil || staged.Valid() {
+		t.Error("Go cache accepted legacy approval for a current staging request")
+	}
+	doc, err := cache.goCacheApproval(context.Background(), set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc.Entries[0].Evidence = doc.Entries[0].Evidence[:2]
+	if err := cache.verifyRecordedApproval(context.Background(), doc, false); err != nil {
+		t.Fatal("historical original proof was incorrectly promoted to current requirements", err)
+	}
+	if err := cache.verifyRecordedApproval(context.Background(), doc, true); err == nil {
+		t.Error("Go cache reopened legacy evidence as current content approval")
+	}
+}

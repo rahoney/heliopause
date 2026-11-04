@@ -102,11 +102,14 @@ func (c *GoVerifiedCache) goCacheApproval(ctx context.Context, set domain.Projec
 		p := inspection.PolicyDecision()
 		integrity, _ := a.DeclaredIntegrity()
 		e := goCacheEntry{Source: a.Identity().Source().String(), Module: a.Identity().Name(), Version: a.Identity().Version(), Digest: a.Digest().String(), Integrity: integrity, Run: inspection.RunID().String(), Policy: p.PolicyID(), PolicyVersion: p.Version()}
-		var err error
-		e.Evidence, err = projectCacheEvidence(ctx, c.evidence, inspection)
+		records, facts, err := projectCacheEvidenceFacts(ctx, c.evidence, inspection)
 		if err != nil {
 			return goCacheDocument{}, err
 		}
+		if err := verifyArchiveContentEvidence(facts); err != nil {
+			return goCacheDocument{}, err
+		}
+		e.Evidence = records
 		doc.Entries = append(doc.Entries, e)
 	}
 	return doc, nil
@@ -326,6 +329,7 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 		if err != nil {
 			return errors.New("go retained entry digest is invalid")
 		}
+		var facts []domain.Evidence
 		for _, recorded := range entry.Evidence {
 			id, err := domain.NewEvidenceID(recorded.ID)
 			if err != nil {
@@ -338,6 +342,14 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
 			if err != nil || hash.String() != recorded.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("go retained Evidence changed or is unavailable")
+			}
+			if requireProfiles {
+				facts = append(facts, fact)
+			}
+		}
+		if requireProfiles {
+			if err := verifyArchiveContentEvidence(facts); err != nil {
+				return err
 			}
 		}
 	}
