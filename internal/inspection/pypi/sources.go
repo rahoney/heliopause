@@ -78,7 +78,7 @@ func (m *sourceMember) selectContent(prefix []byte) {
 		c.limited, c.members, m.native = true, nil, false
 		// Record an invalid selected member without allocating its body.
 		// Report remains incomplete and keeps earlier validated signals.
-		_ = c.native.Inspect(c.ctx, content.BinaryMember{Path: m.name})
+		_ = c.native.Inspect(c.ctx, content.BinaryMember{Path: m.name, Size: m.size})
 		return
 	}
 	c.bytes += m.size

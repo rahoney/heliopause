@@ -42,7 +42,7 @@ func NewStaticInspector(intakeRoot string) (*StaticInspector, error) {
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	return i.inspect(ctx, artifact, nil)
+	return i.inspect(ctx, artifact, nil, nil)
 }
 
 // InspectSources returns only bounded DATA bound to the acquired compressed
@@ -50,7 +50,7 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 // is not a source or binary content-analysis verdict.
 func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
 	var sources []ports.SourceAnalysisFile
-	report, err := i.inspect(ctx, artifact, &sources)
+	report, err := i.inspect(ctx, artifact, &sources, nil)
 	if err != nil || len(report.Findings()) != 0 {
 		return nil, report, err
 	}
@@ -60,7 +60,27 @@ func (i *StaticInspector) InspectSources(ctx context.Context, artifact domain.Ac
 	return sources, report, nil
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile) (domain.InspectionReport, error) {
+// InspectContent adds native facts from the same held raw asset/member pass.
+// Source DATA remains input for the separate fixed analyzer, never executed.
+func (i *StaticInspector) InspectContent(ctx context.Context, artifact domain.AcquiredArtifact) ([]ports.SourceAnalysisFile, domain.InspectionReport, error) {
+	native, err := content.NewBinaryInspection(artifact)
+	if err != nil {
+		return nil, domain.InspectionReport{}, err
+	}
+	var sources []ports.SourceAnalysisFile
+	static, err := i.inspect(ctx, artifact, &sources, native)
+	if err != nil || len(static.Findings()) != 0 {
+		return nil, static, err
+	}
+	nativeReport, nativeErr := native.Report(ctx)
+	if len(nativeReport.Executions()) == 0 {
+		return nil, static, nativeErr
+	}
+	report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, nativeReport})
+	return sources, report, errors.Join(nativeErr, err)
+}
+
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, sources *[]ports.SourceAnalysisFile, native *content.BinaryInspection) (domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil || artifact.Identity().Source().String() != "github-release" {
 		return domain.InspectionReport{}, errors.New("GitHub Release static inspection request is invalid")
 	}
@@ -98,12 +118,24 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		if err := inspectELF(header[:n], artifact.SizeBytes()); err != nil {
 			return i.finding(artifact, "M6_ELF_PLATFORM_UNSUPPORTED", "GitHub Release ELF is not a supported Linux amd64 candidate.")
 		}
+		if native != nil {
+			var body []byte
+			if artifact.SizeBytes() <= archiveFileLimit {
+				body, err = io.ReadAll(io.LimitReader(file, archiveFileLimit+1))
+				if err != nil || uint64(len(body)) != artifact.SizeBytes() {
+					return domain.InspectionReport{}, errors.Join(errors.New("GitHub Release native asset read is incomplete"), err)
+				}
+			}
+			// A declared size above the fixed bound records unanalysed
+			// coverage without allocation or a false integrity accusation.
+			_ = native.Inspect(ctx, content.BinaryMember{Path: filename, Body: body, Size: artifact.SizeBytes(), Digest: artifact.Digest()})
+		}
 		return i.complete(artifact, "github-release-elf-static", "GitHub Release Linux amd64 ELF static header inspection completed.")
 	case n >= 4 && (bytes.Equal(header[:4], []byte{'P', 'K', 3, 4}) || bytes.Equal(header[:4], []byte{'P', 'K', 5, 6})):
 		if !strings.HasSuffix(filename, ".zip") {
 			return i.finding(artifact, "M6_FORMAT_NAME_MISMATCH", "GitHub Release asset filename does not match ZIP bytes.")
 		}
-		if err := inspectZIP(file, int64(artifact.SizeBytes()), sources); err != nil {
+		if err := inspectZIP(ctx, file, int64(artifact.SizeBytes()), sources, native); err != nil {
 			return i.finding(artifact, "M6_ARCHIVE_INVALID", "GitHub Release ZIP archive is unsafe or exceeds bounds.")
 		}
 		return i.complete(artifact, "github-release-zip-static", "GitHub Release ZIP static archive inspection completed.")
@@ -111,7 +143,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		if !strings.HasSuffix(filename, ".tar.gz") {
 			return i.finding(artifact, "M6_FORMAT_NAME_MISMATCH", "GitHub Release asset filename does not match tar.gz bytes.")
 		}
-		if err := inspectTarGZ(file, sources); err != nil {
+		if err := inspectTarGZ(ctx, file, sources, native); err != nil {
 			return i.finding(artifact, "M6_ARCHIVE_INVALID", "GitHub Release tar.gz archive is unsafe or exceeds bounds.")
 		}
 		return i.complete(artifact, "github-release-targz-static", "GitHub Release tar.gz static archive inspection completed.")
@@ -161,7 +193,7 @@ func inspectELF(header []byte, size uint64) error {
 	return nil
 }
 
-func inspectZIP(file *os.File, size int64, sources *[]ports.SourceAnalysisFile) error {
+func inspectZIP(ctx context.Context, file *os.File, size int64, sources *[]ports.SourceAnalysisFile, native *content.BinaryInspection) error {
 	reader, err := zip.NewReader(file, size)
 	if err != nil || len(reader.File) > archiveEntryLimit {
 		return errors.New("invalid ZIP")
@@ -188,7 +220,7 @@ func inspectZIP(file *os.File, size int64, sources *[]ports.SourceAnalysisFile) 
 		if err != nil {
 			return err
 		}
-		readErr := readArchiveMember(stream, entry.Name, int64(entry.UncompressedSize64), sources)
+		readErr := readArchiveMember(ctx, stream, entry.Name, int64(entry.UncompressedSize64), uint32(mode.Perm()), sources, native)
 		closeErr := stream.Close()
 		if err := errors.Join(readErr, closeErr); err != nil {
 			return err
@@ -197,7 +229,7 @@ func inspectZIP(file *os.File, size int64, sources *[]ports.SourceAnalysisFile) 
 	return nil
 }
 
-func inspectTarGZ(file *os.File, sources *[]ports.SourceAnalysisFile) error {
+func inspectTarGZ(ctx context.Context, file *os.File, sources *[]ports.SourceAnalysisFile, native *content.BinaryInspection) error {
 	compressed := bufio.NewReader(file)
 	gzipReader, err := gzip.NewReader(compressed)
 	if err != nil {
@@ -231,7 +263,7 @@ func inspectTarGZ(file *os.File, sources *[]ports.SourceAnalysisFile) error {
 			if header.Size != 0 {
 				return errors.New("tar directory has payload")
 			}
-		} else if err := readArchiveMember(reader, header.Name, header.Size, sources); err != nil {
+		} else if err := readArchiveMember(ctx, reader, header.Name, header.Size, uint32(header.Mode), sources, native); err != nil {
 			return err
 		}
 	}
@@ -256,19 +288,23 @@ func inspectTarGZ(file *os.File, sources *[]ports.SourceAnalysisFile) error {
 
 // Existing archive bounds are tighter than the fixed parser's input bounds.
 // Integrity is checked for every member, whether or not its name selects a parser.
-func readArchiveMember(reader io.Reader, name string, size int64, sources *[]ports.SourceAnalysisFile) error {
+func readArchiveMember(ctx context.Context, reader io.Reader, name string, size int64, mode uint32, sources *[]ports.SourceAnalysisFile, native *content.BinaryInspection) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	var prefix []byte
 	language := ""
-	if sources != nil {
+	if sources != nil || native != nil {
 		prefix = make([]byte, min(size, 512))
 		if _, err := io.ReadFull(reader, prefix); err != nil {
 			return err
 		}
 		language = content.SourceLanguage(name, prefix)
 	}
+	binaryMember := native != nil && content.IsBinary(name, prefix)
 	var body bytes.Buffer
 	var destination io.Writer = io.Discard
-	if language != "" {
+	if language != "" || binaryMember {
 		destination = &body
 	}
 	if _, err := destination.Write(prefix); err != nil {
@@ -278,10 +314,15 @@ func readArchiveMember(reader io.Reader, name string, size int64, sources *[]por
 	if err != nil || n+int64(len(prefix)) != size {
 		return errors.Join(errors.New("archive member size or integrity is invalid"), err)
 	}
-	if language != "" {
+	if sources != nil && language != "" && !binaryMember {
 		*sources = append(*sources, ports.SourceAnalysisFile{Path: name, Language: language, Body: body.Bytes()})
 	}
-	return nil
+	if binaryMember {
+		sum := sha256.Sum256(body.Bytes())
+		digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		_ = native.Inspect(ctx, content.BinaryMember{Path: name, Body: body.Bytes(), Mode: mode, Digest: digest})
+	}
+	return ctx.Err()
 }
 
 func safeArchivePath(value string) bool {

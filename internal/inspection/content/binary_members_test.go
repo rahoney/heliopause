@@ -22,7 +22,7 @@ func TestBinaryMembersPreserveSignalsAcrossPartialCoverage(t *testing.T) {
 		digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
 		return BinaryMember{Path: name, Body: body, Mode: 0o755, Digest: digest}
 	}
-	for _, scenario := range []string{"complete", "unsupported-first", "unsupported-last", "damaged-last", "digest-last", "packed-last", "duplicate", "empty", "count-limit"} {
+	for _, scenario := range []string{"complete", "unsupported-first", "unsupported-last", "damaged-last", "digest-last", "packed-last", "duplicate", "empty", "count-limit", "unbuffered-oversize", "unbuffered-incomplete"} {
 		t.Run(scenario, func(t *testing.T) {
 			members := []BinaryMember{member("normal.so", binaryFixture()), member("risky.so", risky)}
 			wantComplete, wantError, wantSignals, wantFindings := scenario == "complete", scenario != "complete" && scenario != "empty" && scenario != "packed-last", true, 1
@@ -50,6 +50,10 @@ func TestBinaryMembersPreserveSignalsAcrossPartialCoverage(t *testing.T) {
 			case "count-limit":
 				members = make([]BinaryMember, ports.SourceAnalysisTargetLimit+1)
 				wantSignals, wantFindings = false, 0
+			case "unbuffered-oversize":
+				members = append(members, BinaryMember{Path: "oversize.so", Size: ports.SourceAnalysisFileLimit + 1})
+			case "unbuffered-incomplete":
+				members = append(members, BinaryMember{Path: "unread.so", Size: 128})
 			}
 			report, err := InspectBinaries(context.Background(), input.Artifact, members)
 			checks := report.Executions()

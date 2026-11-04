@@ -19,6 +19,9 @@ type BinaryMember struct {
 	Body   []byte
 	Mode   uint32
 	Digest domain.ContentDigest
+	// Size may declare a checked member that could not be buffered. Zero
+	// defaults to len(Body); it never substitutes for the expected digest.
+	Size uint64
 }
 
 // IsBinary selects native/container formats by bytes first, including formats
@@ -89,7 +92,11 @@ func (b *BinaryInspection) Inspect(ctx context.Context, member BinaryMember) err
 	}
 	index := b.selected
 	b.selected++
-	if b.selected > ports.SourceAnalysisTargetLimit || b.seen[member.Path] || member.Path == "" || len(member.Body) > ports.SourceAnalysisFileLimit || uint64(len(member.Body)) > ports.SourceAnalysisTotalLimit-b.total {
+	size := member.Size
+	if size == 0 {
+		size = uint64(len(member.Body))
+	}
+	if b.selected > ports.SourceAnalysisTargetLimit || b.seen[member.Path] || member.Path == "" || size > ports.SourceAnalysisFileLimit || size > ports.SourceAnalysisTotalLimit-b.total || size != uint64(len(member.Body)) {
 		b.complete = false
 		err := errors.New("binary member identity or size exceeds fixed analysis bounds")
 		if b.firstErr == nil {

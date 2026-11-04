@@ -1057,3 +1057,31 @@ npm/Go native의 named local 결과:
   Unit 임시는 t.TempDir로 정리됐고 별도 native 실행/추출/공급·CI/push는 없다.
   이 DATA 진입점 범위는 IMPLEMENTED/WIRED/QUALIFIED=YES지만 ACCEPTANCE_CLOSED=NO다.
   GitHub native와 전체 census/AST·생산 graph/cache/promotion/CLI·hosted는 MISSING이다.
+
+
+### GitHub native streaming — 착수 지도
+
+기존 static v2의 held intake/전체 SHA·ZIP CRC/TAR payload/trailer/source 반환은 유지한다.
+Native 선정/분석은 NO/NO/NO/NO이며 MISSING은 같은 member body의 BinaryInspection 전달,
+ZIP/TAR mode facts·압축 subject 결합과 raw ELF의 유한 body 분석이다. 기존 Inspector/
+readArchiveMember에 같은 owner를 전달하고 새로운 archive reader/추출기/실행기를 만들지
+않는다. Raw ELF가 기존 내용 분석 파일 한도64MiB를 넘으면 완료를 주장하거나 한도를 늘리지
+않는다. Whole static failure/cancel 때 provisional native 결과를 공개하지 않는다.
+
+GitHub native의 named local 결과:
+
+- `InspectContent`는 기존 held asset SHA와 ZIP/TAR member read를 유지하고 파일별
+  native facts를 증분 수집한다. Source 배열에 binary를 중복 보존하지 않으며 raw ELF도
+  동일 held FD의 유한 body와 acquired digest로 분석한다. Static/legacy source API의
+  지원 형식/결과 계약은 유지한다. Member별 byte 수집 뒤 body를 추가로 보존하지 않는다.
+- Raw/선정 member의 선언 크기가 분석 한도를 넘으면 버퍼를 할당하거나 무결성 변조로
+  오인하지 않는다. BinaryMember의 선언 Size를 기존 증분 한도 검사에 전달하고 selected/
+  unanalysed 상태와 오류를 남긴다. PyPI의 같은 oversize 경로도 이 필드를 재사용한다.
+- ZIP/TAR 각각 두 member(위장 .py 포함), raw ELF·기존 source/census 보존, 마지막 CRC
+  실패 때 provisional 위험 사실 미반환, digest/run symlink/취소 거부를 확인했다.
+  최종 content/GitHub/PyPI Race7.315s/security17.285s/vet0.676s/Staticcheck2.647s PASS다.
+  Format0.901s는 지정 두 Go 파일의 정규 변경이며 이후 검사 입력은 불변이다. Unit intakes는
+  t.TempDir로 정리하고 Host artifact 실행/새 SDK·CI/push는 없다.
+- 이 DATA 진입점의 IMPLEMENTED/WIRED/QUALIFIED=YES(명시된 범위),
+  ACCEPTANCE_CLOSED=NO다. 모든 archive의 applicability census/metadata-selected source와
+  실제 AST/전이 graph·cache/promotion/CLI 및 grouped native/hosted는 계속 MISSING이다.

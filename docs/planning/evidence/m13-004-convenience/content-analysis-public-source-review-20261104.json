@@ -1734,5 +1734,44 @@
         "elapsed": 1.814
       }
     }
+  },
+  "github_native_streaming": {
+    "baseline": "154f046",
+    "implemented": true,
+    "wired": "GitHub ZIP/TAR/raw ELF content DATA entry point; archive source/static API unchanged",
+    "qualified": "named local held asset/member scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-github-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-format.json",
+        "sha256": "0aba13b372d33cb3b776431a250d5779003e309fc00c4a67d76e8d3453d4459c",
+        "elapsed": 0.901,
+        "source_unchanged": false
+      },
+      "s04-github-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-race.json",
+        "sha256": "95d0ef6f5f433013c1164089873b4e18c8ae7508c5f0023874ed43dcda971b79",
+        "elapsed": 7.315,
+        "source_unchanged": true
+      },
+      "s04-github-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-security.json",
+        "sha256": "66703e382ce4e05d126e249a7f40719cecfa302cd5e14d012f25f03fd25b0cef",
+        "elapsed": 17.285,
+        "source_unchanged": true
+      },
+      "s04-github-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-vet.json",
+        "sha256": "b524338470af87e9d140ed5c663299de28c601f433a52330b8b29b6a1dfcf198",
+        "elapsed": 0.676,
+        "source_unchanged": true
+      },
+      "s04-github-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-staticcheck.json",
+        "sha256": "b1dabb4eff0f3274c5a1a1171fe788edd93dd6a8706b40ce81bc311eb5a890fd",
+        "elapsed": 2.647,
+        "source_unchanged": true
+      }
+    }
   }
 }
