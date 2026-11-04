@@ -1350,3 +1350,42 @@ PASS/source 불변이다. 추가된 거부 시험은 처음 RED 이후이며 그
 source inspection ACCEPTANCE_CLOSED=NO다. Exports/imports pattern·nested package metadata/
 module/browser·directory bin과 configured 실제 analyzer/current cache/project/CLI는
 계속 MISSING이다. 다음에는 이 역할 범위를 먼저 명확히 연결하고 production을 활성화한다.
+
+### npm 나머지 metadata 역할 — 다음 구현 지도 `80e5f1e`
+
+Root main/bin의 DATA 수집은 재사용한다. 나머지 export/import 조건·패턴, nested
+package.json, module/browser·directory bin은 NO/NO/NO/NO다. 기존 capture에서 모든
+package.json body를 같은 buffer로 보유하고 ArchiveInventory의 measured path/size/SHA와
+결합해 기존 strictControlJSON(깊이/토큰/문서 한도)으로 읽는다. Artifact owner의 기존
+DeclaredSourcePaths 한 곳을 확장하고 기존 추가 reader 한 번으로 합친 미수집 대상만
+수집한다. 별도 Node resolver/Host lookup/실행 권한·graph charge·census 복제는 없다.
+조건/배열의 모든 local 후보를 보수적으로 수집하고 imports의 외부 package 이름은
+로컬 파일로 위장하지 않는다. URL 형태의 local export/import는 standard URL parser로
+경로를 구분한다. JSON DATA/unknown interpreter/native 우선과 whole archive escape
+거부를 유지한다. 패턴은 표준 RE2의 고정 literal+wildcard 합친 식으로 한 번 구성하고
+전체 regular 목록을 한 번 순회한다. 반복 *의 동일 capture를 Node 실행 계약으로
+확정하지 않고 안전한 source 후보 superset 수집으로만 표시한다. 식의 수/총 길이는
+기존 entry/metadata 문서 한도 안에 제한하며 초과는 metadata 미완료다. Directory bin은
+이미 검증한 경로 prefix로만 선택한다. 새로운 matcher framework·solver는 만들지 않는다.
+중첩/지연 metadata·조건/배열·패턴/URL·외부 이름·JSON·directory bin·경로 탈출/변조
+거부를 싼 표적부터 확인하고 actual analyzer/production 의미 묶음 전 불변 full/CI는
+반복하지 않는다. Source 후보 수집은 실제 Node resolution/실행 안전성 증명이 아니다.
+
+완료된 Cargo 시험 실행 파일7개의 전체 proc105 exe/fd/maps 조회 참조0/오류0 뒤
+348974674B를 제거했다. 원본 SHA·삭제목록은 s04-cargo-completed-binary-cleanup-v1.json에
+보존하며 current responder/policy·scanner 공급/SDK/cache/원본은 유지했다.
+
+나머지 metadata DATA collector를 기존 경로에 연결했다. 새 선언 parser/Node resolver가
+아니라 같은 ArchiveInventory.DeclaredSourcePaths가 measured nested body까지 확인한다.
+조건/배열·URL query/decoded path·local/import 외부 이름·module/browser·directory bin과
+slash를 포함한 wildcard source 후보를 한 번 합친다. 패턴은 표준 regex의 보수적 후보
+집합이며 실제 Node의 조건 선택/반복 capture resolution 성공을 주장하지 않는다.
+전체 메타 문서의 expression 수/길이는 기존 entry/ProjectControlLimit에 제한하고
+초과 시 사실을 발행하지 않는다. Same buffer/추가 reader/census owner를 재사용한다.
+Old conditional/nested 소비자 RED1.157s 뒤 positive target2.180s와 body 누락/추가/동일
+길이 바꿔치기·nested escape/encoded escape/duplicate/malformed·전체 pattern count/
+bytes 초과를 포함한 최종 표적1.329s는 PASS다. 첫 RED는 후속 거부 fixture의 입력이
+아니다. Vet0.715s·고정 Staticcheck 결과는 원장에 연결한다. 이 단계는 IMPLEMENTED=YES/
+WIRED=YES(로컬 DATA)/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 실제 source analyzer/
+production/current cache와 묶음 profile·native/hosted가 남았다. 지금의 cheap 표적을
+전체 qualification으로 바꾸지 않고 같은 입력 full/native/CPP/CI를 반복하지 않는다.

@@ -2204,5 +2204,49 @@
       "configured actual AST/default/project/cache consumers",
       "transitive/CLI/native/hosted whole qualification"
     ]
+  },
+  "npm_metadata": {
+    "baseline": "80e5f1e",
+    "implemented": "YES (DATA)",
+    "wired": "YES (existing measured archive pass)",
+    "qualified": "NO",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-red.json",
+        "exit_code": 1,
+        "elapsed": 1.157,
+        "source_unchanged": true
+      },
+      "target": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-target.json",
+        "exit_code": 0,
+        "elapsed": 2.18,
+        "source_unchanged": true
+      },
+      "target-v2": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-target-v2.json",
+        "exit_code": 0,
+        "elapsed": 1.329,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-vet.json",
+        "exit_code": 0,
+        "elapsed": 0.715,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-static.json",
+        "exit_code": 0,
+        "elapsed": 4.231,
+        "source_unchanged": true
+      }
+    },
+    "pattern_semantics": "conservative local candidate superset; no Node execution/resolution authority",
+    "missing": [
+      "configured source analyzer/frozen checks/current production/project/cache",
+      "grouped canonical profiles/native/hosted and whole S04"
+    ]
   }
 }

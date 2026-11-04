@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -260,5 +261,131 @@ func TestArchiveContentDeclaredNativeKeepsByteFormatPriority(t *testing.T) {
 	archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
 	if err == nil || !archive.Matches(subject) || len(sources) != 0 || len(report.Executions()) != 4 || report.Executions()[1].Status() != domain.ExecutionIncomplete {
 		t.Fatal("metadata disguised an unsupported native format as source", err)
+	}
+}
+
+func TestArchiveContentSelectsConditionalAndNestedMetadataSources(t *testing.T) {
+	root := canonicalRoot(t)
+	entries := []tarEntry{
+		{name: "package/export-node", body: "module.exports=1;\n"},
+		{name: "package/export-default", body: "module.exports=2;\n"},
+		{name: "package/src/a/b/entry", body: "module.exports=3;\n"},
+		{name: "package/import-local", body: "module.exports=4;\n"},
+		{name: "package/module-entry", body: "module.exports=5;\n"},
+		{name: "package/browser-entry", body: "module.exports=6;\n"},
+		{name: "package/bin/tool", body: "console.log('DATA');\n"},
+		{name: "package/bin/deep/tool", body: "console.log('DATA');\n"},
+		{name: "package/nested-entry", body: "module.exports=7;\n"},
+		{name: "package/nested/child", body: "module.exports=8;\n"},
+		{name: "package/external-name", body: "not local source"},
+		{name: "package/data.json", body: `{"value":1}`},
+		{name: "package/nested/package.json", body: `{"main":"../nested-entry","exports":"./child"}`},
+		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","exports":{".":{"node":"./export-node?mode=test","default":"./export-default"},"./feature/*":"./src/*/entry","./data":"./data.json"},"imports":{"#local":["external-package","./import-local"],"#external":"external-name"},"module":"./module-entry","browser":{"./server":"./browser-entry","fs":false},"directories":{"bin":"bin"}}`},
+	}
+	subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+	inspector, _ := NewInspector(root)
+	archive, sources, _, err := inspector.InspectArchiveContent(context.Background(), subject)
+	if err != nil || !archive.Matches(subject) {
+		t.Fatal("metadata source collection failed", err)
+	}
+	wanted := map[string]bool{"export-node": true, "export-default": true, "src/a/b/entry": true, "import-local": true, "module-entry": true, "browser-entry": true, "bin/tool": true, "bin/deep/tool": true, "nested-entry": true, "nested/child": true}
+	if len(sources) != len(wanted) {
+		t.Fatal("metadata source targets omitted or DATA guessed as source", len(sources))
+	}
+	for _, source := range sources {
+		if !wanted[source.Path] || source.Language != "javascript" {
+			t.Fatal("wrong source role", source.Path)
+		}
+		delete(wanted, source.Path)
+	}
+	if len(wanted) != 0 {
+		t.Fatal("metadata sources omitted or duplicated", wanted)
+	}
+}
+
+func TestDeclaredMetadataRequiresEveryMeasuredBody(t *testing.T) {
+	root := canonicalRoot(t)
+	manifest := `{"name":"tiny","version":"1.2.3"}`
+	nested := `{"main":"../entry"}`
+	subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+		{name: "package/package.json", body: manifest},
+		{name: "package/nested/package.json", body: nested},
+		{name: "package/entry", body: "module.exports=1;\n"},
+	}))
+	inspector, _ := NewInspector(root)
+	archive, _, err := inspector.InspectArchive(context.Background(), subject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, failure := range []string{"none", "missing", "extra", "substituted"} {
+		metadata := map[string][]byte{"package.json": []byte(manifest), "nested/package.json": []byte(nested)}
+		switch failure {
+		case "missing":
+			delete(metadata, "nested/package.json")
+		case "extra":
+			metadata["foreign/package.json"] = []byte(`{}`)
+		case "substituted":
+			metadata["nested/package.json"] = []byte(`{"main":"../other"}`)
+		}
+		targets, err := archive.DeclaredSourcePaths(metadata)
+		if failure == "none" {
+			if err != nil || !targets["entry"] || len(targets) != 1 {
+				t.Fatal("measured metadata did not bind", targets, err)
+			}
+		} else if err == nil || targets != nil {
+			t.Fatal("unmeasured metadata became source authority", failure)
+		}
+	}
+}
+
+func TestArchiveContentRejectsUnsafeNestedMetadataAndTargets(t *testing.T) {
+	for _, nested := range []string{
+		`{"main":"../../outside"}`,
+		`{"exports":"../../outside"}`,
+		`{"exports":"./../../outside?query"}`,
+		`{"imports":{"#local":"./%2e%2e/%2e%2e/outside"}}`,
+		`{"directories":{"bin":"../../outside"}}`,
+		`{"exports":123}`,
+		`{"exports":"./entry","exports":"./other"}`,
+		`{`,
+	} {
+		root := canonicalRoot(t)
+		subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
+			{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`},
+			{name: "package/nested/package.json", body: nested},
+		}))
+		inspector, _ := NewInspector(root)
+		archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+		if err == nil || archive.Valid() || len(sources) != 0 || len(report.Executions()) > 1 {
+			t.Fatal("unsafe nested metadata produced content facts", nested, err)
+		}
+	}
+}
+
+func TestArchiveContentBoundsCombinedMetadataPatterns(t *testing.T) {
+	for _, bound := range []string{"count", "bytes"} {
+		root := canonicalRoot(t)
+		entries := []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`}}
+		count, width := 6000, 0
+		if bound == "bytes" {
+			count, width = 1000, 2200
+		}
+		for document := 0; document < 2; document++ {
+			targets := make([]string, count)
+			for i := range targets {
+				targets[i] = "./" + strings.Repeat("a", width) + strconv.Itoa(i) + "*"
+			}
+			body, err := json.Marshal(map[string]any{"exports": targets})
+			if err != nil {
+				t.Fatal(err)
+			}
+			entries = append(entries, tarEntry{name: "package/nested" + strconv.Itoa(document) + "/package.json", body: string(body)})
+		}
+		subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
+		inspector, _ := NewInspector(root)
+		archive, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
+		if err == nil || archive.Valid() || len(sources) != 0 || len(report.Executions()) > 1 {
+			t.Fatal("metadata expression budget was bypassed", bound, err)
+		}
 	}
 }

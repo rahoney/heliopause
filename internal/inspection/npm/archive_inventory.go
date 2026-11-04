@@ -13,6 +13,7 @@ import (
 	"hash"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -50,12 +51,12 @@ func (i *Inspector) InspectArchiveContent(ctx context.Context, artifact domain.A
 	if err != nil {
 		return artifactnpm.ArchiveInventory{}, nil, domain.InspectionReport{}, err
 	}
-	capture := &archiveCapture{captureSources: true, native: native}
+	capture := &archiveCapture{captureSources: true, native: native, metadata: make(map[string][]byte)}
 	inventory, static, err := i.captureArchive(ctx, artifact, capture)
 	if err != nil || !inventory.Valid() {
 		return artifactnpm.ArchiveInventory{}, nil, static, err
 	}
-	declared, err := inventory.DeclaredSourcePaths()
+	declared, err := inventory.DeclaredSourcePaths(capture.metadata)
 	if err != nil {
 		return artifactnpm.ArchiveInventory{}, nil, static, err
 	}
@@ -129,6 +130,7 @@ type archiveCapture struct {
 	sources        []ports.SourceAnalysisFile
 	native         *content.BinaryInspection
 	members        []content.MemberFact
+	metadata       map[string][]byte
 }
 
 func (i *Inspector) openInventorySource(name string) (*os.File, error) {
@@ -199,10 +201,14 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		// tightly than the parser input. Do not add a second archive budget.
 		retainNative := c.native != nil && content.IsBinary(item.Path, prefix)
 		retainSource := language != "" && !retainNative
+		retainMetadata := c.metadata != nil && path.Base(item.Path) == "package.json"
 		var nativeBody []byte
 		if manifest != nil {
 			_, _ = digest.Write(manifest) // hash.Hash.Write never fails.
 			c.manifest = append([]byte(nil), manifest...)
+			if retainMetadata {
+				c.metadata[item.Path] = c.manifest
+			}
 			if retainSource {
 				c.sources = append(c.sources, ports.SourceAnalysisFile{Path: item.Path, Language: language, Body: c.manifest})
 			}
@@ -212,7 +218,7 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 		} else {
 			var selected bytes.Buffer
 			var writer io.Writer = digest
-			if item.Path == c.selectedPath || retainSource || retainNative {
+			if item.Path == c.selectedPath || retainSource || retainNative || retainMetadata {
 				writer = io.MultiWriter(digest, &selected)
 			}
 			if _, err := writer.Write(prefix); err != nil {
@@ -229,6 +235,9 @@ func (c *archiveCapture) entry(ctx context.Context, header *tar.Header, name str
 			}
 			if retainNative {
 				nativeBody = selected.Bytes()
+			}
+			if retainMetadata {
+				c.metadata[item.Path] = selected.Bytes()
 			}
 		}
 		var err error
