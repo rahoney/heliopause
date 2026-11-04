@@ -103,7 +103,7 @@ func TestCurrentNativeOwnerSchemaConsumers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	body = bytes.Replace(body, []byte(`"schema_version": 5`), []byte(`"schema_version": 4`), 1)
+	body = bytes.Replace(body, []byte(`"schema_version": 6`), []byte(`"schema_version": 5`), 1)
 	writeTest(t, filename, body)
 	if _, err := readPNPMMaterializationOwner(root); err == nil {
 		t.Fatal("pnpm accepted retired schema")

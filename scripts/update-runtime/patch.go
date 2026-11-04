@@ -21,6 +21,10 @@ func selectedVersion(root, component string) (string, error) {
 	if component == "terraform" || component == "github" {
 		return "inspection-subject", nil
 	}
+	if component == "semgrep" {
+		pin, err := readSemgrepMaterializationOwner(root)
+		return pin.Version, err
+	}
 	if component == "pipx" {
 		pin, err := readPipxMaterializationOwner(root)
 		return pin.Version, err
@@ -210,8 +214,21 @@ func renderChanges(p plan, state string) ([]change, error) {
 			return nil, err
 		}
 	}
-	if p.Version != p.Current && p.Component != "terraform" && p.Component != "github" {
-		if p.Component == "uv" {
+	if (p.Version != p.Current || p.Component == "semgrep" && p.Metadata.Semgrep != nil) && p.Component != "terraform" && p.Component != "github" {
+		if p.Component == "semgrep" {
+			if p.Current == p.Version {
+				current, err := readSemgrepMaterializationOwner(p.Root)
+				if err != nil {
+					return nil, err
+				}
+				if p.Metadata.Semgrep == nil || !sameSemgrepUpstream(p.Metadata.Semgrep.Owner, current) {
+					return nil, errors.New("same-engine Semgrep refresh cannot move the upstream source identity")
+				}
+			}
+			if err := verifyFrozenSemgrepSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
+		} else if p.Component == "uv" {
 			if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
 				return nil, err
 			}
@@ -232,7 +249,7 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
-		if p.Component == "pnpm" || p.Component == "bun" || p.Component == "pipx" {
+		if p.Component == "pnpm" || p.Component == "bun" || p.Component == "pipx" || p.Component == "semgrep" {
 			replacements = map[string]any{}
 		}
 		owners := map[string]string{}
@@ -265,6 +282,15 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
 			replacements["/uv_image/tool/size"] = u.ToolSize
 			owners["uv"] = p.Version
+		case "semgrep":
+			u := p.Metadata.Semgrep
+			replacements["/semgrep_tool"] = u.Owner
+			for path, body := range u.Documents {
+				files[path] = body
+			}
+			if p.Version != p.Current {
+				owners["Semgrep CE"] = p.Version
+			}
 		case "pipx":
 			u := p.Metadata.Pipx
 			replacements["/pipx_tool"] = u.Owner
@@ -427,7 +453,7 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 	}
 	sort.Slice(changes, func(i, j int) bool { return changes[i].Path < changes[j].Path })
-	if p.Current == p.Version && p.GvisorCapture == nil && len(changes) != 0 {
+	if p.Current == p.Version && p.GvisorCapture == nil && !(p.Component == "semgrep" && p.Metadata.Semgrep != nil) && len(changes) != 0 {
 		return nil, errors.New("same-version baseline has generated drift; reconcile it explicitly first")
 	}
 	return changes, nil

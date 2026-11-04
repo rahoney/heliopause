@@ -335,3 +335,71 @@ ACCEPTANCE_CLOSED=NO다. 전체 S04 네 상태는 여전히 NO이며 다음 MISS
 runtime owner/update/release supply 연결과 실제 gVisor transport/lifecycle, 전 source
 consumer/Evidence/Policy다. Go/Python/Node/Rust pin과 Artifact 예산을 바꾸지 않았다.
 원본 s04-canonical-build-v5.json·terminal-readback과 source-projection-v2가 범위를 소유한다.
+
+### Runtime supply 연결 — source 작성 전 baseline (419a7da)
+
+이번 표는 **Semgrep 공급 연결**만 판정한다. 기존 managed runtime 경로를 대체하지 않는다.
+S04 전체와 실제 scanner 실행/제품 판정은 별도 MISSING으로 계속 남긴다.
+
+| 단위 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 기존 재사용 / 실제 MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 고정 native/source/notice 생산 | YES | YES(developer) | YES(local) | NO(product) | `semgrep_build.go:rebuildSemgrep`, `semgrep_sources.go:packageSemgrepSource`, V5 actual/독립 readback; product owner 결합 없음 |
+| Semgrep 단일 version/identity owner | NO | NO | NO | NO | 기존 `scripts/runtimes.lock.json` schema5·`generate-runtime-lock.go:runtimeLock/validate/render`, `check/runtime_versions.go:runtimeVersionOwners` 재사용. 현재 semgrep field/constant/owner 없음 |
+| 선택 owner의 native/source/notices/rules 검증·materialization | NO | NO | NO | NO | 기존 `native_asset.go:publishNativeAssetWith`, held copier·manifest type 재사용. Passive source writer를 runtime admission으로 쓰지 않음 |
+| Semgrep plan/apply/verify·drift | NO | NO | NO | NO | 기존 `update-runtime/main.go:snapshot/qualification`, `patch.go:selectedVersion/renderChanges`, `apply.go` 재사용. Semgrep dispatch/supply binding/rollback·정상 무변경 및 불일치 거부 없음 |
+| release producer·installer·doctor·self-update | NO | NO | NO | NO | `release-manifest:checkNativeAssetBindings`, `release-packages:buildPackages`, `releaseinstall/manifest.go` asset map·`metadata.go` native tool bindings 재사용. 새 core/rules/source/notice의 role/mode/크기·전체 집합·설치/정리 소비자는 없음 |
+| 실제 gVisor scanner·inspection/Evidence/Policy | NO | NO | NO | NO | 기존 sandbox lifecycle/typed inspection·각 archive inventory 재사용. 공급 성공만으로 이 행을 YES로 바꾸지 않음 |
+
+수정 순서는 선택 owner와 실제 materialization/기존 updater 소비자를 함께 연결한 독립 단위,
+기존 release/installed 역할 소비자, 실제 scanner/모든 artifact 소비자 순이다. Product tool
+선택은 runtime lock 한 곳에 추가하고 기존 generator/drift 검사로 파생한다. Developer
+SDK만을 위한 product schema 확장은 하지 않는다. 새 Semgrep product field가 필요한
+명시 schema migration 때 기존 schema5 소비자/정상 fixture를 함께 대조하며 과거 증거와
+언어 version은 일괄 치환하지 않는다. 새 일반 runtime framework나 미래 placeholder는 없다.
+
+첫 단위의 완료는 native/source/notice/rules가 같은 선택 owner에 결합되고, changed/same
+version plan/apply/verify와 byte 변조/누락/역할 혼용/foreign output·원본 보호가 실제
+표적 검사에 연결되는 것이다. 기존 Go/Python/Node/Rust selector·metadata·생성 결과의
+변경 없음도 대조한다. Release/engine가 미연결이면 전체 S04 acceptance는 계속 열어 둔다.
+
+공급 연결 초안: schema6 selected tuple/readonly generated value와 기존 owner/drift 검사,
+materialize-semgrep의 native/source/notice/rules 스트리밍 결합을 구현했다. Actual30.049s는
+4개481988570B의 mode/hash·임시 입력 링크 제거를 확인했다. Runtime/Artifact 실행은 없다.
+기존 updater에 changed/same-engine 명시 proof·freeze/plan/apply/verify를 연결하며 원본
+보호와 중단 재개, version 불변 시 upstream tag/commit/epoch 이동 거부를 검사 중이다.
+Synthetic 첫 support record fixture의 누락 schema와 same-version generated drift guard는
+각각 교정했으며, verified Semgrep metadata가 있는 명시 갱신만 허용하고 legacy guard는
+유지한다. Source origin 조건은 plan 생성과 frozen apply/render에서 함께 확인한다.
+
+첫 related54.138s에서 scripts/generator·runtime-image·release-manifest는 PASS였고
+gvisor capture의 schema5 잔류, workflow의 semgrep runtime_image selector 오분류가
+실패했다. Runtimeidentity의 관찰 지점 실패는 installed 이전 runsc 자동 선택이며 current
+fixture 누락으로 보지 않는다. 기존 HELOX_RUNSC_BINARY에 current lock SHA512가 맞는
+기존 candidate를 명시한다. Security25.729s의 G110은 member.Size CopyN으로 제한하고
+vet의 cross-package unkeyed fixture·Staticcheck 미사용 대입도 수정했다. 원본
+s04-supply-unit-*와 current-runsc-input이 사실을 소유하며 최종 결합 검증은 진행 중이다.
+
+### Supply owner/materializer/updater — 로컬 결합 확인
+
+Root lock schema5→6의 Semgrep tuple은 기존 generator에서 immutable value로 파생한다.
+Generator·developer updater는 기존 runtimeidentity의 동일 typed supply 형식/검증을 쓴다.
+다른 language/image/tool/source-profile 값과 기존 support record는 의미상 모두 동일하다.
+Latest/EOL은 추정하지 않고 명시 선택1.183.0의 local qualification만 기록했다.
+
+Actual materialize30.049s는 core/source/notice/rules4개481988570B를 선택 SHA·mode에
+결합했고 temporary input links를 제거했다. Source/notice는 전부 stream으로 읽으며
+metadata 외 대형 body를 memory에 복제하지 않는다. 기존 held copier/native publisher와
+source/notice manifest 계약을 공유한다. 공급 receipt는 runtime_qualified=false다.
+
+기존 plan/apply/verify에 Semgrep frozen input을 연결했다. Changed version은 명시 review,
+same-engine rules/patch 변경은 명시 proof를 요구하고 upstream tag/commit/epoch 이동과
+동일 proof 반복을 거부한다. 원래 same-version drift guard는 다른 component에 유지한다.
+Synthetic tests는 중단/reapply·원본 보호·frozen file/document 변조·verify 실패를 확인한다.
+실제 full verification/배포 승인을 이 synthetic orchestration 성공으로 대체하지 않는다.
+
+Foundation21.801s는 PASS. 첫 related에서 scripts1.298s/runtime-image0.024s/release49.989s
+성공을 보존하고 교정된 updater/check/runtimeidentity만33.172s 재검증했다. Current runsc
+입력은 lock SHA512와 일치한다. Security15.162s/vet1.442s/Staticcheck4.819s 및 new
+Semgrep race15.674s도 PASS다. Runtime supply는 IMPLEMENTED=YES/WIRED=YES(developer)/
+QUALIFIED=YES(local named scope)/ACCEPTANCE_CLOSED=NO다. S04 전체는 미완료이며
+다음은 release/package/installed 소비자와 실제 scanner/모든 inspection consumer다.

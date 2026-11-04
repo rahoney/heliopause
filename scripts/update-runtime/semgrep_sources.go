@@ -59,37 +59,9 @@ func packageSemgrepSource(args []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if _, err := jsonSpans(body); err != nil {
+	selected, size, err := parseSemgrepPackageManifest(body, false)
+	if err != nil {
 		return err
-	}
-	var selected semgrepSourcePackageInput
-	decoder := json.NewDecoder(bytes.NewReader(body))
-	decoder.DisallowUnknownFields()
-	if decoder.Decode(&selected) != nil || decoder.Decode(new(any)) != io.EOF {
-		return errors.New("semgrep source manifest is malformed or has unknown fields")
-	}
-	commit, err := hex.DecodeString(selected.SourceCommit)
-	if err != nil || len(commit) != 20 || strings.ToLower(selected.SourceCommit) != selected.SourceCommit || selected.Schema != "helox.semgrep-source-inputs/v1" || selected.SourceDateEpoch < 0 || selected.SourceDateEpoch >= 1<<33 || len(selected.Files) == 0 || len(selected.Files) > 4096 {
-		return errors.New("semgrep source manifest identity or bounds differ")
-	}
-	// USTAR emits exactly one header and 512-byte padding per ordinary member.
-	// Requiring this format also rejects names needing additional PAX records.
-	size := int64(1024 + 512 + (len(body)+511)/512*512)
-	previous := ""
-	for _, file := range selected.Files {
-		if file.Path <= previous || file.Path == "SOURCE-MANIFEST.json" || file.Path == "." || file.Path == ".." || path.IsAbs(file.Path) || path.Clean(file.Path) != file.Path || strings.HasPrefix(file.Path, "../") || strings.ContainsAny(file.Path, "\\:") || len(file.Path) > 240 || !digestPattern.MatchString(file.SHA256) || file.Size < 0 || file.Size > 256<<20 || file.Mode != 0444 && file.Mode != 0555 {
-			return errors.New("semgrep source member is unsafe, duplicated or outside bounds")
-		}
-		for _, character := range file.Path {
-			if character < 33 || character > 126 {
-				return errors.New("semgrep source member path has unsupported characters")
-			}
-		}
-		previous = file.Path
-		size += 512 + (file.Size+511)/512*512
-		if size > 512<<20 {
-			return errors.New("semgrep source package exceeds its supply bound")
-		}
 	}
 	manifestName, schema, sourceManifestSHA256 := "SOURCE-MANIFEST.json", "helox.semgrep-source-package/v1", ""
 	if *notices {
@@ -194,4 +166,69 @@ func copySemgrepSourceMember(root *os.Root, output io.Writer, member semgrepSour
 		return errors.New("semgrep source member bytes or identity changed")
 	}
 	return nil
+}
+
+// The producer and clean builder share the same bounded input
+// contract; passive archive creation alone is never runtime admission.
+func parseSemgrepPackageManifest(body []byte, notices bool) (semgrepSourcePackageInput, int64, error) {
+	var selected semgrepSourcePackageInput
+	if len(body) == 0 || len(body) > 2<<20 {
+		return selected, 0, errors.New("semgrep source manifest exceeds its supply bound")
+	}
+	if _, err := jsonSpans(body); err != nil {
+		return selected, 0, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&selected) != nil || decoder.Decode(new(any)) != io.EOF {
+		return selected, 0, errors.New("semgrep source manifest is malformed or has unknown fields")
+	}
+	expectedSchema := "helox.semgrep-source-inputs/v1"
+	maximumSize := int64(512 << 20)
+	if notices {
+		expectedSchema, maximumSize = "helox.semgrep-notice-inputs/v1", 4<<20
+	}
+	commit, err := hex.DecodeString(selected.SourceCommit)
+	if err != nil || len(commit) != 20 || strings.ToLower(selected.SourceCommit) != selected.SourceCommit || selected.Schema != expectedSchema || selected.SourceDateEpoch < 0 || selected.SourceDateEpoch >= 1<<33 || len(selected.Files) == 0 || len(selected.Files) > 4096 {
+		return selected, 0, errors.New("semgrep source manifest identity or bounds differ")
+	}
+	// USTAR emits exactly one header and 512-byte padding per ordinary member.
+	// Requiring this format also rejects names needing additional PAX records.
+	size := int64(1024 + 512 + (len(body)+511)/512*512)
+	previous := ""
+	catalogue, texts := false, 0
+	for _, file := range selected.Files {
+		if file.Path <= previous || file.Path == "SOURCE-MANIFEST.json" || file.Path == "." || file.Path == ".." || path.IsAbs(file.Path) || path.Clean(file.Path) != file.Path || strings.HasPrefix(file.Path, "../") || strings.ContainsAny(file.Path, "\\:") || len(file.Path) > 240 || !digestPattern.MatchString(file.SHA256) || file.Size < 0 || file.Size > 256<<20 || file.Mode != 0444 && file.Mode != 0555 {
+			return selected, 0, errors.New("semgrep source member is unsafe, duplicated or outside bounds")
+		}
+		for _, character := range file.Path {
+			if character < 33 || character > 126 {
+				return selected, 0, errors.New("semgrep source member path has unsupported characters")
+			}
+		}
+		if notices {
+			if file.Mode != 0444 || file.Size <= 0 || file.Size > 1<<20 || !strings.HasPrefix(file.Path, "notices/") {
+				return selected, 0, errors.New("semgrep notice is empty, executable or outside bounds")
+			}
+			switch file.Path {
+			case "notices/catalogue.json":
+				catalogue = true
+			case "notices/README.txt":
+			default:
+				if file.Path != "notices/"+file.SHA256+".txt" {
+					return selected, 0, errors.New("semgrep notice name differs from its hash")
+				}
+				texts++
+			}
+		}
+		previous = file.Path
+		size += 512 + (file.Size+511)/512*512
+		if size > maximumSize {
+			return selected, 0, errors.New("semgrep source package exceeds its supply bound")
+		}
+	}
+	if notices && (!catalogue || texts == 0) {
+		return selected, 0, errors.New("semgrep notice catalogue or original texts are missing")
+	}
+	return selected, size, nil
 }

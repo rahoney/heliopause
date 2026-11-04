@@ -183,7 +183,7 @@ func run(arguments []string) error {
 }
 
 func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
-	if lock.SchemaVersion != 5 {
+	if lock.SchemaVersion != 6 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
 	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)

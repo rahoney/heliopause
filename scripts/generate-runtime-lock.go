@@ -16,6 +16,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const outputPath = "internal/runtimeidentity/runtime_lock_gen.go"
@@ -179,6 +181,7 @@ type runtimeLock struct {
 			Size   int64  `json:"size"`
 		} `json:"notices"`
 	} `json:"pipx_tool"`
+	SemgrepTool   runtimeidentity.SemgrepSupplyOwner `json:"semgrep_tool"`
 	PythonSources []struct {
 		Name              string   `json:"name"`
 		SourceID          string   `json:"source_id"`
@@ -531,7 +534,7 @@ func readLock(path string) (runtimeLock, error) {
 }
 
 func validate(lock runtimeLock) error {
-	if lock.SchemaVersion != 5 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
+	if lock.SchemaVersion != 6 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
 		return errors.New("gVisor or Bazel identity is invalid")
 	}
 	if lock.GVisor.Patch.Path == "" || !strings.HasPrefix(lock.GVisor.Patch.Path, "tools/gvisor/") || !strings.HasSuffix(lock.GVisor.Patch.Path, ".patch") || strings.Contains(lock.GVisor.Patch.Path, "..") || !hex256.MatchString(lock.GVisor.Patch.SHA256) {
@@ -585,6 +588,9 @@ func validate(lock runtimeLock) error {
 	pipx := lock.PipxTool
 	if !exactVersion.MatchString(pipx.Version) || pipx.Architecture != "amd64" || pipx.RuntimeImage != "python_image" || len(pipx.Inputs) != 42 || pipx.Tool.Path != "pipx-runtime.zip" || !hex256.MatchString(pipx.Tool.SHA256) || pipx.Tool.Size <= 0 || pipx.Tool.Size > 8<<20 || pipx.Notices.Path != "tools/pipx/NOTICE" || !hex256.MatchString(pipx.Notices.SHA256) || pipx.Notices.Size <= 0 || pipx.Notices.Size > 64<<10 {
 		return errors.New("pipx immutable supply owner is invalid")
+	}
+	if !runtimeidentity.ValidSemgrepSupplyOwner(lock.SemgrepTool) {
+		return errors.New("semgrep immutable supply owner is invalid")
 	}
 	pipxInputs := map[string]bool{}
 	for _, input := range pipx.Inputs {
@@ -696,7 +702,18 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	fmt.Fprintf(&output, "\tPNPMNoticesSize = %d\n", lock.PNPMTool.Notices.Size)
 	fmt.Fprintf(&output, "\tBunArchiveSize = %d\n\tBunToolSize = %d\n\tBunNoticesSize = %d\n", lock.BunTool.Archive.Size, lock.BunTool.Tool.Size, lock.BunTool.Notices.Size)
 	fmt.Fprintf(&output, "\tPipxToolSize = %d\n\tPipxNoticesSize = %d\n", lock.PipxTool.Tool.Size, lock.PipxTool.Notices.Size)
-	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
+	output.WriteString(")\n\n// SelectedSemgrepSupply returns the immutable lock-selected value.\nfunc SelectedSemgrepSupply() SemgrepSupplyOwner { return SemgrepSupplyOwner{\n")
+	semgrep := lock.SemgrepTool
+	fmt.Fprintf(&output, "Version:%q, Architecture:%q, RuntimeImage:%q, SourceCommit:%q, SourceTagObject:%q, SourceManifestSHA256:%q, SourceDateEpoch:%d,\n", semgrep.Version, semgrep.Architecture, semgrep.RuntimeImage, semgrep.SourceCommit, semgrep.SourceTagObject, semgrep.SourceManifestSHA256, semgrep.SourceDateEpoch)
+	for _, selected := range []struct {
+		name  string
+		asset runtimeidentity.SemgrepSupplyAsset
+	}{
+		{"Tool", semgrep.Tool}, {"Sources", semgrep.Sources}, {"Notices", semgrep.Notices}, {"Rules", semgrep.Rules}, {"Patch", semgrep.Patch}, {"Worker", semgrep.Worker},
+	} {
+		fmt.Fprintf(&output, "%s: SemgrepSupplyAsset{Path:%q,SHA256:%q,Size:%d},\n", selected.name, selected.asset.Path, selected.asset.SHA256, selected.asset.Size)
+	}
+	output.WriteString("} }\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)
 	}

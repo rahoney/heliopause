@@ -70,7 +70,7 @@ func selectedPipxOwner(body []byte) ([]byte, error) {
 	}
 	schema, ok := fields["/schema_version"]
 	var version int
-	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 5 || count != len(expected) {
+	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 6 || count != len(expected) {
 		return nil, errors.New("pipx runtime owner schema or fields differ")
 	}
 	owner := fields["/pipx_tool"]

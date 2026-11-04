@@ -85,7 +85,7 @@ func selectedBunOwner(body []byte) ([]byte, error) {
 	}
 	schema, ok := fields["/schema_version"]
 	var version int
-	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 5 {
+	if !ok || json.Unmarshal(body[schema.start:schema.end], &version) != nil || version != 6 {
 		return nil, errors.New("bun runtime owner schema is invalid")
 	}
 	owner := fields["/bun_tool"]

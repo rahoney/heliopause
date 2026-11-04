@@ -191,7 +191,7 @@ func runtimeLockStrings(value any) []string {
 				next := location + "/" + key
 				// These exact validated enum fields reference owner keys; they are not
 				// copied runtime identities. Other fields retain the literal check.
-				if next == "/pipx_tool/runtime_image" && child == "python_image" || next == "/bun_tool/runtime_image" && child == "node_image" {
+				if (next == "/pipx_tool/runtime_image" || next == "/semgrep_tool/runtime_image") && child == "python_image" || next == "/bun_tool/runtime_image" && child == "node_image" {
 					continue
 				}
 				visit(child, next)

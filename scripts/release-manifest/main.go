@@ -210,7 +210,7 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 5 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) || !releaseVersion.MatchString("v"+lock.PipxTool.Version) || lock.PipxTool.Architecture != "amd64" || lock.PipxTool.RuntimeImage != "python_image" {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 6 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) || !releaseVersion.MatchString("v"+lock.PipxTool.Version) || lock.PipxTool.Architecture != "amd64" || lock.PipxTool.RuntimeImage != "python_image" {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)

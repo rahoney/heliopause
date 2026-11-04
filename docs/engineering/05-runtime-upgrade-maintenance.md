@@ -35,6 +35,7 @@ owner는 하나이고, 다른 소비자는 그 값을 읽거나 검증 가능한
 | --- | --- | --- |
 | HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, README Build minimum/toolchain, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
 | Node/npm | runtime lock의 Node image와 bundled npm identity | Node tag/version과 실제 image contents 일치; resolver·probe·Promotion 공유 |
+| Semgrep CE | runtime lock schema6의 semgrep_tool, 기존 generator의 SelectedSemgrepSupply 값 | source/SDK recipe·native/source/notices/rules를 하나의 tuple로 결합; 기존 language pin과 독립; 실제 scanner/release qualification은 별도 |
 | uv | runtime lock schema2의 uv_image/version/provenance/native tool identity | 공식 signed proof·전체 layer를 고정하고 offline plan/apply에서 재검증; Python ABI는 독립 유지 |
 | Python/pip | runtime lock의 Python image, pip와 ABI/platform target | interpreter·pip·wheel tags·Promotion·PyTorch 지원 tuple 영향을 함께 계산 |
 | Rust/Cargo | runtime lock의 Rust image/version/target | resolver/build와 runtime image manifest의 누락 없는 연결 |
@@ -718,3 +719,30 @@ dependencies를 만들며 기존 compiled cache를 재사용하지 않는다. SD
 결과의 게시를 거부한다. Owned container 종료/제거와 SDK image 정리를 확인하고 성공 시
 임시 APK/native 사본을 제거하며 source offer/로그/결과만 보존한다. 성공 receipt는 정리
 완료 뒤 출력하고 실패는 첫 오류와 후보를 보존한다. Runtime qualification은 별도다.
+
+
+### Semgrep 선택 공급과 기존 updater
+
+Schema6의 `semgrep_tool`이 Semgrep version/commit·tag object·source manifest/epoch와
+core/source/notices/rules/patch/worker identity를 소유한다. 기존 generator와 공급 도구는
+`runtimeidentity.SemgrepSupplyOwner`를 공유하고 `SelectedSemgrepSupply()`는 값 복사를
+반환한다. 기존 Go/Python/Node/Rust와 다른 tool/source profile 선택은 변경하지 않는다.
+SDK 자체만을 관리하는 별도 product version owner는 만들지 않는다.
+
+`materialize-semgrep --root ABS_REPO --input ABS_FROZEN --output ABS_NEW_DIR`는
+선택된 core/SOURCES/NOTICES와 저장소 rule pack을 전체 검증한 뒤 새 공급 폴더에
+core0555/나머지0444로 게시한다. Source/notice는 ordinary USTAR·고정 manifest의 exact
+member/hash/size/mode 및 provenance·notice projection을 검사하며 추출·실행하지 않는다.
+`runtime_qualified=false`는 설치·검역 완료를 뜻하지 않는다는 기존 공급 경계다.
+
+기존 `plan --component semgrep --version X.Y.Z --semgrep-proof ABS_DIR --review JSON`은
+`owner.json`(schema6/semgrep_tool)과 native/source/notice를 읽고 state에 유한한 고정 사본을
+보존한다. Rule/patch/worker는 검증한 SOURCE 내부에서 취득하며 임의 경로를 받지 않는다.
+Plan에는 큰 native/source body를 넣지 않는다. `apply`/`verify`는 frozen tuple·문서·파일을
+재검증하며 기존 original snapshot·no-replace·복구·canonical check inventory를 유지한다.
+
+같은 version에서 proof를 생략하면 원래 무변경 경로다. 명시 proof의 HAA rule/patch 갱신은
+같은 upstream version/commit/tag object/epoch를 보존할 때만 허용하며 단순히 같은 공급물을
+다시 전달하면 거부한다. 이 source identity는 plan 생성과 apply/render에서 모두 확인한다.
+다른 component의 same-version drift 거부는 그대로다. 공급·plan 성공은 required runtime/
+installed qualification을 닫지 않으며 구체 범위는 S04 baseline/Queue를 따른다.

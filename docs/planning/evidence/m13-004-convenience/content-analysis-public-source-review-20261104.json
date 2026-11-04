@@ -765,5 +765,32 @@
       "complete": true,
       "raw": "s04-failed-build-copies-cleanup-v1.json"
     }
+  },
+  "runtime_supply": {
+    "states": {
+      "IMPLEMENTED": "YES (owner/materialize/updater)",
+      "WIRED": "YES (developer pipeline)",
+      "QUALIFIED": "YES (local named scope)",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "schema_migration": "5 to6, all preexisting component values and reviews unchanged",
+    "preservation_raw": "s04-supply-owner-preservation.json",
+    "selected_native_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+    "actual_materialization_raw": "s04-supply-actual-v1.json",
+    "actual_materialization_elapsed": 30.049,
+    "checks_raw": [
+      "s04-supply-unit-foundation.json",
+      "s04-supply-unit-related-test.json",
+      "s04-supply-unit-corrected-test.json",
+      "s04-supply-unit-security-v2.json",
+      "s04-supply-unit-vet-v2.json",
+      "s04-supply-unit-static-v2.json",
+      "s04-supply-unit-race.json"
+    ],
+    "missing": [
+      "Release producer/package/installer/doctor/self-update complete set",
+      "Actual gVisor scanner transport/lifecycle",
+      "All artifact consumers/Evidence/Policy and grouped profiles"
+    ]
   }
 }

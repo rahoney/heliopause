@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	"debug/elf"
 	_ "embed"
 	"encoding/hex"
 	"encoding/json"
@@ -153,9 +152,9 @@ func rebuildSemgrep(args []string, out io.Writer) (result error) {
 	if err != nil {
 		return err
 	}
-	var selected semgrepSourcePackageInput
-	if json.Unmarshal(body, &selected) != nil {
-		return errors.New("semgrep source input manifest is malformed")
+	selected, _, err := parseSemgrepPackageManifest(body, false)
+	if err != nil {
+		return err
 	}
 	root, err := os.OpenRoot(*input)
 	if err != nil {
@@ -439,22 +438,8 @@ func rebuildSemgrep(args []string, out io.Writer) (result error) {
 	if *expected != "" && checksum != *expected {
 		return errors.New("semgrep clean source build differs from the explicit reference; candidate retained")
 	}
-	format, err := elf.NewFile(native)
-	if err != nil {
-		return errors.New("semgrep source output is not a valid ELF")
-	}
-	defer format.Close()
-	stacks := 0
-	for _, program := range format.Progs {
-		if program.Type == elf.PT_INTERP || program.Type == elf.PT_DYNAMIC || program.Type == elf.PT_GNU_STACK && program.Flags != elf.PF_R|elf.PF_W {
-			return errors.New("semgrep source output has an unsupported dynamic/executable-stack profile")
-		}
-		if program.Type == elf.PT_GNU_STACK {
-			stacks++
-		}
-	}
-	if format.Class != elf.ELFCLASS64 || format.Machine != elf.EM_X86_64 || stacks != 1 {
-		return errors.New("semgrep source native architecture or stack profile differs")
+	if err := validateSemgrepNative(native); err != nil {
+		return err
 	}
 	if _, err := native.Seek(0, io.SeekStart); err != nil {
 		return err

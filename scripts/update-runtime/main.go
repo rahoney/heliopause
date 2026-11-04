@@ -73,13 +73,16 @@ func main() {
 
 func run(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|uv|pnpm|bun|pipx|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
+		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|uv|pnpm|bun|pipx|semgrep|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
 	}
 	if args[0] == "capture-gvisor" {
 		return captureGvisor(args[1:], out)
 	}
 	if args[0] == "package-semgrep-source" {
 		return packageSemgrepSource(args[1:], out)
+	}
+	if args[0] == "materialize-semgrep" {
+		return materializeSemgrep(args[1:], out)
 	}
 	if args[0] == "rebuild-semgrep" {
 		return rebuildSemgrep(args[1:], out)
@@ -129,6 +132,7 @@ func run(args []string, out io.Writer) error {
 	uvLayers := fs.String("uv-layers", "", "absolute complete UV layer directory; frozen into external state")
 	pnpmProof := fs.String("pnpm-proof", "", "absolute frozen PNPM identity/bundle/archive directory; only for changed pnpm version")
 	pipxProof := fs.String("pipx-proof", "", "absolute frozen full pipx closure; only for changed pipx version")
+	semgrepProof := fs.String("semgrep-proof", "", "absolute frozen native/source/notice owner set for explicit Semgrep supply changes")
 	bunProof := fs.String("bun-proof", "", "absolute frozen Bun identity/signed-checksums/archive/notices directory; only for changed bun version")
 	goPath := fs.String("go", "", "absolute target Go executable; verified against owner and official archive")
 	if err := fs.Parse(args[1:]); err != nil {
@@ -217,6 +221,14 @@ func run(args []string, out io.Writer) error {
 				return freezeBunSupply(version, *bunProof, absState)
 			}
 		}
+		if *semgrepProof != "" && *component != "semgrep" {
+			return errors.New("semgrep supply requires semgrep component")
+		}
+		if *component == "semgrep" {
+			resolve = func(component, version string) (metadata, error) {
+				return freezeSemgrepSupply(version, *semgrepProof, absState)
+			}
+		}
 		if *component == "pipx" {
 			current, err := selectedVersion(absRoot, "pipx")
 			if err != nil {
@@ -232,6 +244,34 @@ func run(args []string, out io.Writer) error {
 		p, err := makePlanResolving(absRoot, absState, *component, *version, *review, resolve)
 		if err != nil {
 			return err
+		}
+		// An explicit same-engine proof may refresh HAA rules/patches. It cannot
+		// silently move the upstream tag or rewrite any other runtime owner.
+		if p.Component == "semgrep" && p.Version == p.Current && *semgrepProof != "" {
+			current, err := readSemgrepMaterializationOwner(absRoot)
+			if err != nil {
+				return err
+			}
+			proposed, err := readSemgrepFrozenOwner(*semgrepProof)
+			if err != nil {
+				return err
+			}
+			if proposed == current {
+				return errors.New("same Semgrep supply is unchanged; omit the redundant proof")
+			}
+			if !sameSemgrepUpstream(proposed, current) {
+				return errors.New("same-engine Semgrep refresh cannot move the upstream source identity")
+			}
+			p.Metadata, err = freezeSemgrepSupply(p.Version, *semgrepProof, absState)
+			if err != nil {
+				return err
+			}
+			p.Changes, err = renderChanges(p, absState)
+			if err != nil {
+				return err
+			}
+			p.RequiredQualification = qualification("semgrep")
+			p.ID = planID(p)
 		}
 		if *gvisorCapture != "" {
 			if p.Component != "go" {
@@ -264,7 +304,7 @@ func run(args []string, out io.Writer) error {
 	if p.Root != absRoot || p.Schema != 2 || p.ID != planID(p) {
 		return errors.New("plan identity/root mismatch")
 	}
-	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" || *uvProof != "" || *uvLayers != "" || *pnpmProof != "" || *bunProof != "" || *pipxProof != "" {
+	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" || *uvProof != "" || *uvLayers != "" || *pnpmProof != "" || *bunProof != "" || *pipxProof != "" || *semgrepProof != "" {
 		return errors.New("apply/verify use frozen plan inputs only")
 	}
 	if args[0] == "apply" {
@@ -305,6 +345,9 @@ func makePlanResolving(root, state, component, version, reviewPath string, resol
 		if version != p.Current {
 			p.Metadata, err = resolve(component, version)
 			if err != nil {
+				if component == "semgrep" {
+					return p, fmt.Errorf("frozen Semgrep supply failed (source unchanged): %w", err)
+				}
 				return p, fmt.Errorf("official acquisition failed (source unchanged): %w", err)
 			}
 			if reviewPath == "" {
@@ -354,6 +397,8 @@ func qualification(component string) []string {
 		return []string{"quality-tool compiler/rebuild", "gVisor/observer rebuild", "installed npm/PyPI/GitHub/Go/Cargo/Terraform", "PyTorch CPU", "PyTorch cu126", "PyTorch cu130", "PyTorch cu132", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "uv":
 		return []string{"signed upstream supply/native bytes", "uv pip resolve/install/upgrade/sync", "observer exact admission and pip/npm regression", "PyTorch CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation"}
+	case "semgrep":
+		return []string{"fixed source/SDK recipe and native/source/notice/rule identities", "gVisor source-only scanner transport/lifecycle and all six language fixtures", "parse/skip/truncation and forged-output failure preservation", "all transitive inspection/Policy/promotion consumers", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "pipx":
 		return []string{"complete wheel closure/provided publisher proofs/immutable ZIP", "pipx install/upgrade and fixed UV backend", "gVisor observer/Artifact query admission and existing client regression", "Python CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "bun":
