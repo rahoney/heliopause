@@ -2391,3 +2391,7 @@ Npm 두 시험은 Ports의 단일 normalized aggregate40k와 물리 collector10k
 개발 사용자 Race-green-v2/15.315s는 PASS이며 Host socket·Go cleanup 코드는 수정하지
 않았다. 원본 s04-bash-owner-followup-target-green-v2 참조. 이는 기존 frozen owner-v2의
 실패를 소급 통과시키지 않으며 최신 호환 소스의 구성 검증은 별도로 수행한다.
+
+### 2026-11-05 실행 환경 중단 — 검증 결과의 경계
+
+User-v3는 최신5fd908b 기반의 clean clone에서 기존 plan/apply 성공31.079s·candidate 전체 tracked Root 동일까지 확인했다. 이후 bootstrap 중 ext4 emergency_ro/read-only·Bus error/segmentation fault와 operator exit135가 발생했다. Verify receipt는 IN_PROGRESS이며 통과로 바꾸지 않는다. 코드/검사 실패 원인으로 단정하지 않고 root filesystem 복구를 선행한다. Native는 그 전에 모두 종료·Host/source 동일·정리 완료했고 새 Docker 실행은 시작하지 않았다. Queue 최신 BLOCKED 항목과 host-emergency-ro-20261105.log가 정확한 재개 조건/현재 증거를 소유한다. Source input hosting/SDK acquisition은 계속 MISSING이며 추가 공급 구조·URL·workflow를 아직 구현하거나 결정하지 않았다.
