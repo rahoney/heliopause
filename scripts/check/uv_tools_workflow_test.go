@@ -416,6 +416,7 @@ func TestRequirementsCIRequiresCompleteOwnedCohort(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, changed := range map[string]string{
+		"suite too short":    strings.Replace(source, "-test.timeout=62m", "-test.timeout=42m", 1),
 		"missing cohort":     strings.Replace(source, pythonRequirementsCIScope, "", 1),
 		"duplicate cohort":   source + "\n" + pythonRequirementsCIScope,
 		"wrong count":        strings.Replace(source, "count!=32", "count!=31", 1),

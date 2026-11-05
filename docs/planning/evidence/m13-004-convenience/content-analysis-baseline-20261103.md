@@ -2255,3 +2255,39 @@ Host/source 동일·helperwait0·정리 오류0·own409851335B 삭제를 확인�
 21종 case/중복/parent/noSKIP도 검증한다. Full parent의32종 전체 성공으로 표시하지 않으며
 기존 pip 통과 범위와 새 미완료 범위를 각각 유지한다.20분 local monitor는 JSON report 전문을
 반복하지 않고 정해진 case 진행 줄만 기록한다. 새 CI는 없다.
+
+
+### Release supply 재개 전 확인된 연결 누락 (`3cca288`, Python Go 입력 동결 중)
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 기존 Semgrep package/materialize/rebuild | YES | YES(local CLI) | YES(named local cold/materialization) | NO(release) | 공개 clean CI runner의 입력 공급 연결 |
+| Manifest/current install reader의20 assets | YES | YES(local) | YES(previous named tests) | NO(release) | 실제 release20·provenance·current-only/activation/recovery |
+| Release workflow의 Semgrep4 공급 | NO | NO | NO | NO | frozen source collection/SDK APK 확보, 기존 builder/materializer,4 asset 바인딩·검증 |
+
+기존 `scripts/update-runtime/main.go`에는 package-semgrep-source/materialize-semgrep/
+rebuild-semgrep이 등록되어 있다. Rebuild는 명시 offline input/sdk-apks/state/output을
+요구하며 source-inputs.json의 검증된 파일 집합과 SDK APK별 name/bytes/SHA를 읽는다.
+Materialize도 기존 frozen core/source/notice 디렉터리를 요구한다. 현재 release-build workflow는
+그 입력을 확보하거나 Semgrep을 만들지 않고16개만 `release-manifest`에 넘긴다. Generator의
+expectedAssets/current install reader는 이미20개이므로 단순히 네 `--asset` 줄만 더해서는
+완결되지 않는다. 같은 기존 도구·pin/update owner를 재사용하고 누락된 입력 공급·CI 연결만
+구현해야 한다. 현재 release job의30분과 실제 Semgrep cold1437.755s의 구성 관계도 공급
+경로를 정한 뒤 대조한다. 이번 확인에서 source/workflow/한도 변경·추가 cold build/CI는 없다.
+
+
+Remaining requirements native-v2는 test1939.43s/operator1942.479s(timer1967.555s)에 PASS다.
+Pip seed+미완료5종439.49s, UV 전체16종1498.50s이며 정확21개 case/중복 없음·noSKIP/
+source·overlay·Host 동일·helperwait0·정리 오류0·own409857149B 삭제를 확인했다. 이전 pip의
+12개 통과와 이번 미완료4개(별도 seed 중복은 제외), UV16개의 의미상 범위를 대조했다.
+기존 full parent-v1 실패를 PASS로 고치거나 재구성된 pip prestate를 원래 전체 prestate와
+동일한 실행으로 기록하지 않는다. Grouped/hosted 원래32종은 여전히 별도 MISSING이다.
+
+실제로 완료된 case 시간 합계는 pip1479.897s/UV1498.325s, 합2978.222s(약49분38초)다.
+이 근거로 기존 test 전체 context40→60분, 기존 CI profile suite42→62분만 조정했다.
+제품 한도·32종 case·unique/FAIL/SKIP guard·현재 source/runtime/profile은 유지한다.
+기존 guard에 짧은 timeout 반례를 추가한2.064s와 parsed workflow3.199s는 PASS다.
+같은 native/CPP/cold build를 다시 실행하지 않는다. Fresh normal client/helper/current
+production CLI receipt-v6/v3를 준비하고 실제 기본 Root의 pip/UV -r 설치·업데이트 네 요청을
+20분 timer23812로 시작했다. 원본 requirements-remaining-native-v2/-timer.jsonl,
+requirements-suite-guard-v3/workflow-v3와 root-requirements-native-v1 참조.

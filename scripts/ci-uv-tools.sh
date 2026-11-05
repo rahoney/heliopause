@@ -64,7 +64,7 @@ test "${RUNNER_TEMP:0:1}" = /
 if [[ ${1-} == python-requirements ]]; then
 (
 cd internal/bootstrap
-HELOX_PYTHON_REQUIREMENTS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=42m -test.run '^TestPythonRequirementsPublicInstallationIntegration$' | tee "$RUNNER_TEMP/python-requirements.log"
+HELOX_PYTHON_REQUIREMENTS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=62m -test.run '^TestPythonRequirementsPublicInstallationIntegration$' | tee "$RUNNER_TEMP/python-requirements.log"
 )
 awk '
 BEGIN {

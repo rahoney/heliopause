@@ -45,7 +45,7 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 	if !t.Run("normalized-block-contract", TestRequirementsSyntheticBlockPreservesRealChecks) {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
 	defer cancel()
 	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
 	declarations, err := content.ArchiveEvidenceRequirements()
