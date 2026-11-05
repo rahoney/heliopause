@@ -84,3 +84,70 @@ Windows C:는 최초 약9.3GiB free, VHDX259012952064B였다. Linux 논리 정�
 준비/worker 시작은 압축 성공이 아니다. 실패/guard가 있으면 자동 반복하지 않는다.
 
 이번 원본은 `docs/github-logs/system-recovery-20261105`에 보존한다. 공개 push/CI/제품 변경은 없다.
+
+## 압축 결과 확인·터미널 종료 후 재개 준비
+
+2026-11-05 재개에서 실제 HEAD는 `a93615357d0120a5fad5344af46760dcd95abd91`이며,
+tracked 변경은 없었다. F:의 `result.json`은
+`COMPLETE_SOURCE_RUNTIME_NODE_VERIFIED_INPUT_RECONSTRUCTION_REQUIRED`,
+`restart-verification.json`은 exit0/errors=[]/같은 HEAD다. VHDX는
+259012952064B에서127814074368B로 줄어131198877696B(약122.2GiB)를 회수했다.
+C: free는141240803328B이며 virtual maximum1TiB는 유지됐다. 이는 해당 Windows
+worker의 완료 시점 값이며 현재 free 재측정이나 전체 WSL image backup을 뜻하지 않는다.
+두 원본의 exact bytes 사본은 기존 raw 폴더의 `windows-compaction-result.json`과
+`windows-restart-verification.json`에 보존했다. F: 원본/worker/guard는 수정·재실행하지 않았다.
+
+현재 Git full fsck는 exit0/출력 없음이다. Checkpoint JSON 자체의 SHA256
+`449680a5b42e826ac950c1d6c687ebc1fc720af9d7d0f847bc018ac600e394a9`와
+소스·로컬 규칙3494개/Node5개/backup7개의 파일 해시·backup 크기를 대조했다.
+설치 runtime은5개 해시가 일치했고 `/etc/heliopause/pod-init.json`은 현재 sandbox의
+읽기 권한 거부로 재대조하지 못했다. 최초 assessment의 `FAILED`/Permission denied는
+그대로 보존한다. 이를 runtime 변조나 전체 runtime 재검증 성공으로 바꾸지 않으며,
+이전 root 재시작 검증의 성공과 구분한다. 이 범위는 제품 검증이 아니다.
+
+재개용 clean clone을 다음 **저장소 내부의 기존 raw 영역**에 만들었다. `/tmp`와 달리
+터미널 종료/WSL 재부팅으로 자동 소실되는 위치가 아니다. `.git` 객체는 hardlink 없이
+복사했으며 HEAD는a936153/전체 tracked3488개 bytes가 checkpoint와 같다.
+
+```text
+docs/github-logs/system-recovery-20261105/resume-work/source
+```
+
+이 위치의 source를 updater의 `--root`로 사용한다. 같은 `resume-work` 아래의
+`source-input`, `sdk-apks`, `supply`, 새 `state`는 source clone과 분리해 실제 입력을
+복구할 때 만든다. 아직 이 디렉터리들에 공급물/state가 복구된 것은 아니다.
+원본 Root나 raw 전체 cwd에서 checker를 실행하지 않고 해당 clean source에서 실행한다.
+원본3494개 대조와 clone3488개 대조는 local rules6개 포함 여부가 다른 집합이다.
+
+다음 재개 순서는 다음과 같다.
+
+1. INDEX·관련 오답노트·Queue·이 문서를 읽고 실제 Git을 확인한다. 이 문서의 준비 commit은
+   a936153 위의 문서 변경이며 제품 source를 바꾸지 않는다. Clone의 HEAD/clean 상태와
+   현재 제품 source 변경 유무를 먼저 비교한다. 더 최신 제품 변경이 있으면 이전 clone을
+   최신 후보로 가장하지 않는다. 기존 assessment는 실행 당시의 고정 결과다.
+2. 위 표의 exact core/source/notice와 원래1036행 source collection·SDK APK 입력을
+   기존 owner로 복구한다. F archive는 source/증거 백업이며 이 세 공급물이나 frozen
+   state의 백업이 아니다. `s04-semgrep1183-source-inputs.json`도 upstream 검토 자료이며
+   소실된1036행 `source-inputs.json` 전체의 대체물로 취급하지 않는다.
+3. 기존 `scripts/update-runtime`을 고정 Go1.27.3으로 해당 clean source에서 build한다.
+   `package-semgrep-source`/`rebuild-semgrep`/`materialize-semgrep`을 재사용하고 위
+   bytes/hash를 확인한다. 복구를 위한 재생성을 기존 성공 qualification의 새 성공으로
+   세지 않는다. 원본 Bash/Go/CPP/native 검증은 반복하지 않는다.
+4. 기존 same-engine refresh를 재현하려면 별도 clean 후보에서 기존 reviewed projection의
+   **세 owner 파일만** 원래 preimage로 되돌려 versioned baseline을 만든다. 원본 Root와
+   준비된 checkpoint clone은 보존한다. Preimage/after 해시는
+   `s04-bash-owner-reviewed-projection-v1.json`이 소유하며 다른 runtime 값은 유지한다.
+   이미 최신 tuple인 clone에 같은 proof를 바로 plan하면 기존 owner가 unchanged로 거부한다.
+5. 개발 UID1000으로 기존 `plan --component semgrep --version 1.183.0 --semgrep-proof`
+   → `apply` → `verify --go ABSOLUTE_PINNED_GO`를 새 persistent state에 실행한다.
+   `--root`/`--state`를 모두 명시하고 state는 source 밖에 둔다. 새 plan ID·candidate 전체
+   bytes·journal·최초 실패/각 profile log를 기록한다. 옛plan ID/stdout로 state를 꾸미거나
+   root로 verify하지 않는다. 현재 verify는 계속 `NOT_COMPLETED`다.
+6. 각 단계의 입력/명령·exit/result·state 위치를 같은 raw와 이 leaf에 기록한 뒤 다음 단계로
+   간다. 터미널이 종료되면 먼저 기존 PID/journal/result의 실제 상태를 확인하고 살아 있는
+   실행을 중복 시작하지 않는다. 새 세션의 재개는 이 문서에서 가능하며 자동 실행 워커나
+   새 CI/타이머를 등록한 것은 아니다.
+
+재개 준비는 **완료**, 정확한 공급물·frozen state 복구와 updater verify는 **미완료**다.
+전체 S04/보강/hosted acceptance의 상태는 바뀌지 않는다. 최초 평가 원본과 최종 준비
+원장은 기존 raw의 `resume-assessment-*.json`/`resume-preparation.json`이 소유한다.
