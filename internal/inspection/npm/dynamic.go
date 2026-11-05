@@ -3,6 +3,7 @@ package npm
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -12,10 +13,9 @@ import (
 // DynamicInspector interprets raw Sandbox results; it never controls a runtime.
 // Required fresh experiments and state evidence are bound to the common
 // version owners; one-shot or earlier count-only evidence cannot satisfy them.
-const (
-	dynamicCheckProfileName       = "npm-dynamic-environment-state-v2"
-	dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|" + runtimeidentity.SandboxResponderInspectionIdentity
-)
+const dynamicCheckProfileName = "npm-dynamic-environment-state-v3"
+
+var dynamicCheckRuntimeDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|shared-normalized-events=" + strconv.Itoa(ports.NPMEnvironmentTraceEventLimit) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 
 type DynamicInspector struct{ sandbox ports.Sandbox }
 

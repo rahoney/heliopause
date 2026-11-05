@@ -29,6 +29,11 @@ type CheckPlanner interface {
 	ExpectedChecks(context.Context, domain.AcquiredArtifact, domain.CheckKind) ([]domain.CheckRequirement, error)
 }
 
+// NPMEnvironmentTraceEventLimit bounds the single normalized authorization for
+// two fresh writers and their readonly keepers. Physical stream limits remain
+// independent; opening another stream never replenishes this aggregate.
+const NPMEnvironmentTraceEventLimit = 40_000
+
 // Sandbox executes exact controlled content in one ephemeral Session and returns raw observations.
 type Sandbox interface {
 	Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error)

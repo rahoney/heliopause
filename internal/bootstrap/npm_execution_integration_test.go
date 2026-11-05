@@ -16,6 +16,7 @@ import (
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
@@ -135,15 +136,59 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 				ExitCode    *int   `json:"exit_code"`
 				Promotion   string `json:"output_promotion"`
 				Cleanup     string `json:"execution_guest_cleanup"`
-				Output      struct {
+				Checks      []struct {
+					ID, Node string
+					Required bool
+					Status   string `json:"execution_status"`
+					Profile  string `json:"profile_sha256"`
+				} `json:"checks"`
+				Output struct {
 					Untrusted   bool
 					Encoding    string
 					StdoutBytes int    `json:"stdout_bytes"`
 					Stdout      string `json:"stdout_escaped"`
 				} `json:"program_output"`
 			}
-			if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "COMPLETED" || report.Execution != "COMPLETED" || report.ExitCode == nil || *report.ExitCode != row.code || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "CONFIRMED" || !report.Output.Untrusted || report.Output.StdoutBytes == 0 {
+			if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v2" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "COMPLETED" || report.Execution != "COMPLETED" || report.ExitCode == nil || *report.ExitCode != row.code || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "CONFIRMED" || !report.Output.Untrusted || report.Output.StdoutBytes == 0 {
 				t.Fatal("actual separate execution JSON incomplete")
+			}
+			declarations, err := content.ArchiveEvidenceRequirements()
+			if err != nil {
+				t.Fatal(err)
+			}
+			expected := map[string]string{}
+			for _, declaration := range declarations {
+				if declaration.Check.Required() {
+					expected[declaration.Check.ID().String()] = declaration.Check.ProfileDigest().String()
+				}
+			}
+			seen := map[string]map[string]bool{}
+			for _, check := range report.Checks {
+				if check.Required && check.Status != "COMPLETED" {
+					t.Fatal("CLI lost completed required coverage", check.ID)
+				}
+				profile, known := expected[check.ID]
+				if !known {
+					continue
+				}
+				if check.Node == "" || !check.Required || check.Status != "COMPLETED" || check.Profile != profile {
+					t.Fatal("CLI lost current required source/native/census", check.ID)
+				}
+				if seen[check.Node] == nil {
+					seen[check.Node] = map[string]bool{}
+				}
+				if seen[check.Node][check.ID] {
+					t.Fatal("CLI duplicated a current content check")
+				}
+				seen[check.Node][check.ID] = true
+			}
+			if len(seen) == 0 {
+				t.Fatal("CLI omitted its current content checks")
+			}
+			for _, checks := range seen {
+				if len(checks) != len(expected) {
+					t.Fatal("CLI omitted source/native/census for a selected node")
+				}
 			}
 			if row.show != (report.Output.Encoding == "ASCII_QUOTED") || !row.show && report.Output.Stdout != "" {
 				t.Fatal("explicit output selection lost")

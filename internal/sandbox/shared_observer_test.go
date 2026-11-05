@@ -1080,3 +1080,33 @@ func TestFilesystemMutationRecordsAreBoundedNeutralFacts(t *testing.T) {
 		t.Fatal("operation aggregate replenished the shared budget")
 	}
 }
+
+func TestNPMEnvironmentLedgerBoundsAllFourSessionsWithoutReplenishment(t *testing.T) {
+	budget := traceBudgetForProfile("npm-lifecycle")
+	if budget.events != maximumTraceEvents || budget.bytes != maximumTraceBytes {
+		t.Fatal("physical collector budget changed")
+	}
+	ledger, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for session := 0; session < 4; session++ {
+		count := uint64(maximumTraceEvents)
+		if err := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &count}, 100); err != nil {
+			t.Fatalf("finite writer/readonly session %d exceeded the shared authorization: %v", session, err)
+		}
+	}
+	if ledger.events != 4*uint64(maximumTraceEvents) || ledger.bytes != 400 {
+		t.Fatal("normalized event counts were lost or double charged")
+	}
+	one := uint64(1)
+	if err := ledger.charge(helperRecord{Kind: "process-exec-expected", Count: &one}, 100); err == nil || ledger.events != 4*uint64(maximumTraceEvents) || ledger.bytes != 400 {
+		t.Fatal("fifth session replenished the aggregate or a refused batch changed counters")
+	}
+	for _, profile := range []string{"pypi-wheel", "github-elf", "terraform-provider", sourceAnalysisProfile} {
+		other, err := newObservationTraceLedger(profile)
+		if err != nil || other.maxEvents != uint64(maximumTraceEvents) || other.maxBytes != maximumTraceBytes {
+			t.Fatal("unrelated profile authorization changed", profile, err)
+		}
+	}
+}

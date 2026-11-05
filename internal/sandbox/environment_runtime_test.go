@@ -604,3 +604,22 @@ func TestNPMEnvironmentRejectsReusedSessionAndAbsentResourcePort(t *testing.T) {
 		})
 	}
 }
+
+func TestNPMEnvironmentResourceAndTraceOwnersShareOneFiniteAuthorization(t *testing.T) {
+	backend, observer, _ := newEnvironmentBackendModel(t)
+	for _, profile := range []string{"npm-lifecycle", "github-elf", "terraform-provider"} {
+		id, _ := domain.NewSandboxSessionID()
+		operation, _, err := backend.newEnvironmentInspection(id, observer, profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := uint64(maximumTraceEvents)
+		if profile == "npm-lifecycle" {
+			want *= 4
+		}
+		policy := operation.ledger.policy
+		if operation.traceBudget.maxEvents != want || policy.maxEvents != want || policy.maxBytes != maximumTraceBytes || policy.maxUnits != 2 || policy.maxLaunches != 4 || policy.cpuCeilingUsec != 30_000_000 {
+			t.Fatal("environment resource and trace owners disagree or original bounds changed", profile, policy)
+		}
+	}
+}

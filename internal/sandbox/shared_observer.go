@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // SharedObserver receives only the helper's normalized records over a trusted
@@ -147,6 +148,9 @@ func newObservationTraceLedger(profile string) (*observationTraceLedger, error) 
 	}
 
 	maxEvents := uint64(budget.events)
+	if profile == "npm-lifecycle" {
+		maxEvents = ports.NPMEnvironmentTraceEventLimit
+	}
 	if profile == goBuildProfile {
 		maxEvents = maximumGoBuildLedgerEvents
 	}

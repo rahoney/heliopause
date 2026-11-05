@@ -2031,3 +2031,70 @@ post-Policy refusal actual-v14를 시작했다. 진행 중 Go/lock/observer 입�
 Raw `s04-go-census-target-v1`, `s04-go-cache-current-red-v1`, `s04-go-current-target-v2`,
 `s04-go-current-*`가 이전 overlay와 current source·검증 범위를 구분한다. Go/Python의
 실제 검역·설치/캐시와 hosted/whole S04는 여전히 MISSING이다.
+
+Actual whole npm CLI-v14는 첫 요청172.69s(operator175.973s)에 FAIL했다. Exact TypeScript의
+source/native/census/static/advisory는 완료했으나 npm-dynamic-lifecycle이
+INCOMPLETE/M3_DYNAMIC_OBSERVER_FAILED여서 MANUAL_REVIEW와 실행 전 거부를 유지했다.
+나머지 CLI/refusal은 미도달이다. Host/source 동일/helperwait0·자기 사본409,839,061B 삭제와
+복원을 확인했다. 기존 CLI의 bounded 결과에는 정규화된 check code만 있고 backend의
+operational cause는 노출하지 않으므로 attribution count14만으로 원인을 단정하지 않는다.
+현재 source/core/CPP/budget 수정이 lifecycle 실패를 유발했다는 증거도 없다. 원본
+`s04-npm-execution-cli-native-v14`를 유지하고 같은 exact artifact의 dynamic-only 경로를
+임시 test overlay로 호출해 원래 backend 원인을 확보한다. 재검역/전체 CLI 반복이나 제품
+검사·격리·trace 필수 조건 완화는 하지 않는다. 이는 diagnostic이며 whole qualification이 아니다.
+
+Direct dynamic-only v15는16.00s(operator18.937s)에 aggregate EVENT_LIMIT를 재현했다.
+정규화 원장9675/10000에 새 counted batch1014가 들어와 거부됐고, bytes는9459/2MiB다.
+Source/native resolve/CLI 없이 같은 backend에서 재현했으므로 이를 source 수정의 인과로
+쓰지 않는다. Host/source/overlay 동일·helperwait0·자기 사본409,845,094B 정리를 확인했다.
+현재 `SharedObserver.receive`는 record당 원장 charge를 한 번 호출한다. TraceDiagnostic의
+physical records22와 counted workspace access993·원장events는 서로 다른 단위다.
+
+두 fresh writer와 두 readonly keeper가 한10k 정규화 원장을 공유한다. 기존 Go build에는
+같은 physical collector10k와 별도의 aggregate40k가 이미 있다. 제품 예산을 바로 바꾸지
+않고 임시 Go overlay-v16에서 npm aggregate만40k로 한정해 정상 총량을 측정한다.
+Per-connection collector/helper10k·bytes2MiB·CPU/memory/wall·charging·필수 관찰은 유지한다.
+결과를 얻기 전 최종 예산/해결로 채택하지 않는다. 원본
+`s04-npm-dynamic-diag-native-v15`, measurement overlay/build/native-v16이 범위를 소유한다.
+
+Measurement-v16는16.90s(operator19.919s)에 두 환경을 완료했다. 동일 artifact의 실제
+정규화 총량17,293events/10,478B이며 usage 오류0이다. Host/source/overlay 동일·helperwait0·
+자기 사본409,844,129B 삭제를 확인했다. 이는 유한 측정 ceiling의 진단 성공이지 제품 채택이나
+whole CLI qualification이 아니다. 원래 receive의 단일 charge를 바꾸거나 이벤트를 버리지 않는다.
+
+정식 수정 지도: 기존 네 세션 공유 원장·resource watch는 IMPLEMENTED/WIRED=YES지만
+정상 TypeScript의 aggregate capacity는 QUALIFIED/ACCEPTANCE_CLOSED=NO다. 기존
+Ports Sandbox 계약의 한 고정 상수40k를 정규화 원장과 environment resource owner가 함께
+사용한다. 네 physical collector는 각각 원래10k이며 한 transaction의 권한을 새 세션마다
+갱신하지 않는다. Bytes2MiB/CPU30초/memory/wall/launch4·다른 profile·CPP/syscall 권한은
+유지한다. Common npm dynamic descriptor에 이 aggregate bound를 포함해 npm/PNPM/Bun/
+project-root의 현재 증거와 이전10k 증거를 구분한다. 새 설정·엔진·별도 ledger를 만들지 않는다.
+Boundary RED8.997s는 원래 두 owner10k 및 두 번째10k batch의 거부를 직접 확인했다.
+같은 원장의 네 batch 수용/다음1개 거부·거부 시 counter 불변, 다른 profile/physical 불변과
+current declaration/profile 거부를 먼저 확인한 뒤 직접 dynamic와 전체 CLI를 차례로 검증한다.
+
+Product aggregate의 boundary GREEN11.542s는 resource/trace owner40k 일치, 네 counted
+batch 수용·추가1개 거부와 실패 시 counter 불변, 다른 profile/physical 한도 불변을 확인했다.
+기존 npm profile 사전 선언/결과와 이전 descriptor 거부도 PASS다. Descriptor는 실제
+공통 상수를 포함하므로 PNPM/Bun/프로젝트 root의 같은 환경 의미에도 hash가 연결된다.
+
+다음 actual의 알려진 fixture 전제도 원본과 대조했다. V14의 실제 JSON과 현재
+`newExecutionReport`는 checks가 있으면 execution-result/v2인데 old CLI 시험은 v1만
+기대했다. 제품 presenter를 바꾸지 않고 이 두 실행/거부 시험의 기대만 v2로 맞춘다.
+정상 JSON에는 selected node마다 current source/native/census required profile과 완료를
+확인한다. Manifest/SBOM schema와 실제 명령·case/4분 제한은 그대로다. 이 검증 추가를
+관찰 EVENT_LIMIT의 원인이나 whole 실행 성공으로 혼동하지 않는다.
+
+Product aggregate 묶음의 canonical foundation80.199s/security42.007s/tagged vet21.268s/
+고정 Staticcheck33.828s는 PASS/source unchanged다. 관련 Race27.355s의 npm1.060s와
+bootstrap1.418s는 PASS이며 sandbox는 기존 TestConsumedAdmissionPreservesOriginalTargetFailureAndSession의
+Unix socket bind 도구 제한 한 건만 실패했다. 같은 source의 그 parent만 필요한 권한으로
+Race2.341s에 PASS했다. 최초 batch를 모두 성공으로 덮거나 나머지를 반복하지 않는다.
+원본 s04-npm-aggregate-red-v1/green-v1/related-race-v1/socket-race-v2와 같은 묶음의
+foundation/security/vet/static-v1이 정확한 입력을 소유한다.
+
+Current product client-v17은7.208s에 test-only diagnostic append overlay로 빌드했고
+normal current product에는 측정 override가 없다. 기존 CPP138/core33ae/canonical proof를
+재사용해 exact dynamic 먼저, 이어서 whole npm CLI/refusal을 한 namespace lifecycle에서
+검증 중이다. Overlay·원본 Go/Host/정리를 각각 검증하며 전체 완료 전에는 actual-v17을
+성공으로 표시하지 않는다. Python/Go/Bun/PNPM과 whole S04/hosted는 이 실행 밖이다.

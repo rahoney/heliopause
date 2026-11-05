@@ -94,7 +94,7 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, client string) {
 				Stderr    int `json:"stderr_bytes"`
 			} `json:"program_output"`
 		}
-		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.Exit != nil || report.Signal != nil || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || !report.Output.Untrusted || report.Output.Encoding != "OMITTED" || report.Output.Stdout != 0 || report.Output.Stderr != 0 {
+		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v2" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.Exit != nil || report.Signal != nil || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || !report.Output.Untrusted || report.Output.Encoding != "OMITTED" || report.Output.Stdout != 0 || report.Output.Stderr != 0 {
 			t.Fatal("post-Policy entry refusal axes incorrect")
 		}
 		if strings.Contains(out.String(), "private-cli-argv") || strings.Contains(diagnostic.String(), "private-cli-argv") {

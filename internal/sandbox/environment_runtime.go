@@ -14,6 +14,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -97,6 +98,9 @@ func (b *Backend) newEnvironmentInspection(owner domain.SandboxSessionID, observ
 	}
 	accounting.maxUnits = len(units)
 	accounting.maxLaunches = 2 * len(units)
+	if profile == "npm-lifecycle" {
+		accounting.maxEvents = ports.NPMEnvironmentTraceEventLimit
+	}
 	accounting.wallDeadline = now.Add(b.wallTimeout)
 	ledger, err := newObservationTransaction(accounting, units, now)
 	if err != nil {
