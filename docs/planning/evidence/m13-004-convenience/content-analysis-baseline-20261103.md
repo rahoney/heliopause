@@ -2384,3 +2384,10 @@ owner 후보의 첫 실패는 socket fixture의 owner 거부이며 Go chmod clea
 구분 교정과 최신 source base에서의 기존 plan/apply/verify는 별도 후속으로 남긴다.
 전체53 package의 이전 실패 실행을 configuration PASS로 바꾸거나 불변 native를 반복하지 않는다.
 원본 s04-bash-owner-verify-v2 및 owner-followup-target-red-v1 참조.
+
+
+Npm 두 시험은 Ports의 단일 normalized aggregate40k와 물리 collector10k를 구분하도록
+기대값만 교정했다. 다른 profile의 원래 물리/전체 한도·byte 한도는 유지한다. 같은 네 시험의
+개발 사용자 Race-green-v2/15.315s는 PASS이며 Host socket·Go cleanup 코드는 수정하지
+않았다. 원본 s04-bash-owner-followup-target-green-v2 참조. 이는 기존 frozen owner-v2의
+실패를 소급 통과시키지 않으며 최신 호환 소스의 구성 검증은 별도로 수행한다.

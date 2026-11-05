@@ -11,6 +11,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestEnvironmentResolverRejectsAmbientOrWritableConfiguration(t *testing.T) {
@@ -301,7 +302,7 @@ func TestEnvironmentContainerKeepsExistingBoundaryAndAttestsOnlyFixedWorkspace(t
 		t.Fatal("guest topology changed base or omitted mandatory guest flags")
 	}
 	budget, err := newObservationTraceLedger("npm-lifecycle")
-	if err != nil || budget.maxEvents != uint64(defaultTraceBudget.events) || budget.maxBytes != defaultTraceBudget.bytes {
+	if err != nil || budget.maxEvents != ports.NPMEnvironmentTraceEventLimit || budget.maxBytes != defaultTraceBudget.bytes {
 		t.Fatal("workspace profile replenished or enlarged the trace budget", err)
 	}
 	if _, err := (&SharedObserver{}).StartEnvironmentProfile(context.Background(), strings.Repeat("a", 64), false, nil); err == nil {
