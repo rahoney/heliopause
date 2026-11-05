@@ -151,3 +151,28 @@ docs/github-logs/system-recovery-20261105/resume-work/source
 재개 준비는 **완료**, 정확한 공급물·frozen state 복구와 updater verify는 **미완료**다.
 전체 S04/보강/hosted acceptance의 상태는 바뀌지 않는다. 최초 평가 원본과 최종 준비
 원장은 기존 raw의 `resume-assessment-*.json`/`resume-preparation.json`이 소유한다.
+
+## 실행 전 Host 재검토 — 2026-11-05 09:46–09:48 UTC
+
+사용자 요청으로 실행 전 실제 Host를 읽기 전용으로 재검토했다. 이 시점 Root는f080e09/
+tracked clean이며 a936153 이후 변경은 위 문서 두 개뿐이다. 영속 clone은a936153/clean,
+선택 owner5파일은 Root와 같고 reviewed preimage3개도 기존 Git에서 정확히 확인했다.
+
+- 실제 Host의 root는 같은 UUID의 `rw`다. Sandbox의 root `ro`/가려진 proc·run을 Host
+  장애·자원 부재로 전용하지 않는다. WSL available916175630336B/C: free140437155840B다.
+- 보호된 runtime6파일 모두 bytes/mode/UID/GID가 checkpoint와 같다. 앞선 sandbox의
+  `pod-init.json` 읽기 제한은 이 실제 Host 조회에서 해소됐으며 과거 FAILED 원본은 유지한다.
+- Docker client/server29.9.2, 고정 runtime 이미지5개와 Semgrep cold SDK base의 정확한
+  digest/amd64 조회가 모두 성공했다. 정책 서비스는 active/enabled다. 단순 image 목록의
+  표시 수를 고정 digest의 부재로 판단하지 않는다.
+- Container0/관련 build·observer·runsc·updater process0/query errors0이다. 실제 Host의
+  `/run/heliopause-observer`는 부재다. 실제 동적 실행 전에 기존 부재/유휴 조건과 owner를
+  다시 확인하고 UID/GID1000·0700으로 복구해야 한다. 이번 검토에서는 만들지 않았다.
+- 공급물3개/source collection/SDK APK 입력/새 state와 이전 user-v3 state는 여전히 없다.
+  기존 same-engine plan의 unchanged 거부와 frozen plan/journal/candidate 검증 경로를
+  source에서 대조했다. 새 state의 apply 완료·candidate 확인 전에는 verify를 시작하지 않는다.
+
+판정: **입력 복구 단계 재개 가능 / updater verify 즉시 실행 불가**. 이번에는 build·복구·
+activation·cleanup·native 재시험·CI를 실행하지 않았다. 실제 원본은 기존 raw의
+`pre-resume-host-review-*.json`과 `pre-resume-images-*.json`이다. 복구 준비 완료와
+실행 준비 완료를 구분하며, 재부팅 뒤에는 위 volatile 조건을 다시 확인한다.
