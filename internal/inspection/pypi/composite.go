@@ -18,17 +18,10 @@ type graphStaticState struct {
 }
 
 func (s graphStaticState) footprint() (files, uncompressed int64, ok bool) {
-	if !s.dynamic {
+	if !s.dynamic || s.wheel.ArchiveEntries <= 0 || s.wheel.ArchiveUncompressedBytes <= 0 {
 		return 0, 0, false
 	}
-	for _, item := range s.wheel.Files {
-		if item.Size < 0 || uncompressed > int64(^uint64(0)>>1)-item.Size {
-			return 0, 0, false
-		}
-		files++
-		uncompressed += item.Size
-	}
-	return files, uncompressed, true
+	return int64(s.wheel.ArchiveEntries), s.wheel.ArchiveUncompressedBytes, true
 }
 
 // CompositeInspector keeps PyPI archive parsing before its dependent dynamic

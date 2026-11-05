@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
@@ -45,9 +46,19 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(venv, "pyvenv.cfg"), cfg, 0600); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 	var originalWheel []byte
+	declarations, err := content.ArchiveEvidenceRequirements()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedContent := map[string]string{}
+	for _, declaration := range declarations {
+		if declaration.Check.Required() {
+			expectedContent[declaration.Check.ID().String()] = declaration.Check.ProfileDigest().String()
+		}
+	}
 	userFile := filepath.Join(venv, "user-note.txt")
 	if err := os.WriteFile(userFile, []byte("preserve user data"), 0600); err != nil {
 		t.Fatal(err)
@@ -56,10 +67,10 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 		name, spec, version, operation, intent string
 		flags                                  []string
 	}{
-		{"fresh", "idna==3.10", "3.10", "INSTALL", "", nil},
-		{"retained", "idna", "3.10", "INSTALL", "install", nil},
-		{"root-upgrade", "idna==3.11", "3.11", "UPDATE", "upgrade-package", []string{"--upgrade-package", "idna"}},
-		{"closure-noop", "idna==3.11", "3.11", "UPDATE", "upgrade", []string{"-U"}},
+		{"fresh", "idna==3.15", "3.15", "INSTALL", "", nil},
+		{"retained", "idna", "3.15", "INSTALL", "install", nil},
+		{"root-upgrade", "idna==3.20", "3.20", "UPDATE", "upgrade-package", []string{"--upgrade-package", "idna"}},
+		{"closure-noop", "idna==3.20", "3.20", "UPDATE", "upgrade", []string{"-U"}},
 		{"new-root", "packaging==25.0", "25.0", "INSTALL", "install", nil},
 	} {
 		args := append([]string{"--output", "json", "--lang", "ko", "uv", "pip", "install", step.spec, "--target", venv}, step.flags...)
@@ -78,15 +89,17 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 				Count    int    `json:"entry_count"`
 			} `json:"verified_set"`
 			Checks []struct {
+				ID       string
 				Required bool
 				Status   string `json:"execution_status"`
+				Profile  string `json:"profile_sha256"`
 			} `json:"checks"`
 			Evidence []struct{ ID, Handle string } `json:"evidence_references"`
 		}
 		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
 			t.Fatal(err, stdout.String())
 		}
-		if result.Schema != "helox.operation-result/v1" || result.Operation != step.operation || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+		if result.Schema != "helox.operation-result/v2" || result.Operation != step.operation || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
 			t.Fatal("incomplete UV CLI operation", step.name, stdout.String())
 		}
 		if step.name == "fresh" {
@@ -104,10 +117,20 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 				t.Fatal("original staged wheel digest mismatch")
 			}
 		}
+		seenContent := map[string]bool{}
 		for _, check := range result.Checks {
 			if check.Required && check.Status != "COMPLETED" {
 				t.Fatal("required check incomplete", stdout.String())
 			}
+			if profile, known := expectedContent[check.ID]; known {
+				if !check.Required || check.Status != "COMPLETED" || check.Profile != profile || seenContent[check.ID] {
+					t.Fatal("UV CLI lost current required source/native/census", check.ID)
+				}
+				seenContent[check.ID] = true
+			}
+		}
+		if len(seenContent) != len(expectedContent) {
+			t.Fatal("UV CLI omitted current required content checks", step.name)
 		}
 		project := "idna"
 		if step.name == "new-root" {
@@ -163,12 +186,12 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 			t.Fatal("user file changed", err)
 		}
 		if step.name == "root-upgrade" {
-			if _, err := os.Lstat(filepath.Join(site, "idna-3.10.dist-info", "METADATA")); !os.IsNotExist(err) {
+			if _, err := os.Lstat(filepath.Join(site, "idna-3.15.dist-info", "METADATA")); !os.IsNotExist(err) {
 				t.Fatal("obsolete owned version retained", err)
 			}
 		}
 		if step.name == "new-root" {
-			if _, err := os.Stat(filepath.Join(site, "idna-3.11.dist-info", "METADATA")); err != nil {
+			if _, err := os.Stat(filepath.Join(site, "idna-3.20.dist-info", "METADATA")); err != nil {
 				t.Fatal("unrelated installed distribution removed", err)
 			}
 		}
@@ -204,7 +227,7 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 func uvNativeEnrollmentCLI(t *testing.T, ctx context.Context, root, cache string, wheel []byte) {
 	t.Helper()
 	venv := filepath.Join(root, "native-venv")
-	uvNativeOriginalFixture(t, ctx, wheel, venv)
+	uvNativeOriginalFixture(t, ctx, wheel, venv, "3.15")
 	version := strings.Split(sandbox.PinnedPythonRuntime().PythonVersion, ".")
 	site := filepath.Join(venv, "lib", "python"+version[0]+"."+version[1], "site-packages")
 	originalCfg, err := os.ReadFile(filepath.Join(venv, "pyvenv.cfg"))
@@ -227,7 +250,7 @@ func uvNativeEnrollmentCLI(t *testing.T, ctx context.Context, root, cache string
 	before := uvCLIRegularFiles(t, venv)
 	evidenceBefore := uvCLIRegularFiles(t, filepath.Join(cache, "heliopause", "evidence"))
 	var stdout, stderr bytes.Buffer
-	args := []string{"--output", "json", "uv", "pip", "install", "idna==3.11", "--upgrade", "--adopt", "--target", venv}
+	args := []string{"--output", "json", "uv", "pip", "install", "idna==3.20", "--upgrade", "--adopt", "--target", venv}
 	if err := bootstrap.Run(ctx, args, &stdout, &stderr); err == nil || !bytes.Contains(stdout.Bytes(), []byte("UPDATE_ORIGINAL_STATE_UNSUPPORTED")) {
 		t.Fatal("unrecorded native cache accepted or wrong refusal", err, stdout.String(), stderr.String())
 	}
@@ -238,7 +261,7 @@ func uvNativeEnrollmentCLI(t *testing.T, ctx context.Context, root, cache string
 		t.Fatal(err)
 	}
 	for _, adopt := range []bool{true, false} {
-		args := []string{"--output", "json", "uv", "pip", "install", "idna==3.11", "--upgrade", "--target", venv}
+		args := []string{"--output", "json", "uv", "pip", "install", "idna==3.20", "--upgrade", "--target", venv}
 		if adopt {
 			args = append(args, "--adopt")
 		}
@@ -292,10 +315,10 @@ func uvNativeEnrollmentCLI(t *testing.T, ctx context.Context, root, cache string
 		if len(manifest.Controls) != expected {
 			t.Fatal("native proof not bound to Manifest", string(body))
 		}
-		if _, err := os.Stat(filepath.Join(site, "idna-3.11.dist-info", "METADATA")); err != nil {
+		if _, err := os.Stat(filepath.Join(site, "idna-3.20.dist-info", "METADATA")); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := os.Lstat(filepath.Join(site, "idna-3.10.dist-info", "METADATA")); !os.IsNotExist(err) {
+		if _, err := os.Lstat(filepath.Join(site, "idna-3.15.dist-info", "METADATA")); !os.IsNotExist(err) {
 			t.Fatal("native old metadata retained", err)
 		}
 		if _, err := os.Stat(filepath.Join(venv, ".heliopause", "pypi-transaction.json")); err != nil {

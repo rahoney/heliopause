@@ -24,9 +24,9 @@ import (
 // This fixture creates foreign installed DATA with the exact native UV binary.
 // It never executes an artifact or a target interpreter on the host. Product
 // enrollment subsequently performs its own public old-wheel authentication.
-func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, target string) {
+func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, target, wheelVersion string) {
 	t.Helper()
-	uvNativeOriginalDataFixture(t, ctx, wheel, target, "", nil, "")
+	uvNativeOriginalDataFixture(t, ctx, wheel, target, "", nil, "", wheelVersion)
 }
 
 func uvNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin string, interpreter []byte, requirement string) {
@@ -34,11 +34,11 @@ func uvNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin 
 	if requirement != "cowsay==6.0" && requirement != "cowsay>=6.0,<=6.1" {
 		t.Fatal("unsupported native tool fixture requirement")
 	}
-	uvNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement)
+	uvNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement, "")
 }
 
-func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement string) {
-	createNativeOriginalDataFixture(t, ctx, wheel, target, toolBin, interpreter, toolRequirement, false)
+func uvNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement, wheelVersion string) {
+	createNativeOriginalDataFixture(t, ctx, wheel, target, toolBin, interpreter, toolRequirement, wheelVersion, false)
 }
 
 func pipxNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bin string, interpreter []byte, requirement string) {
@@ -46,12 +46,15 @@ func pipxNativeToolOriginalFixture(t *testing.T, ctx context.Context, target, bi
 	if requirement != "cowsay==6.0" && requirement != "cowsay>=6.0,<=6.1" {
 		t.Fatal("unsupported native pipx fixture requirement")
 	}
-	createNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement, true)
+	createNativeOriginalDataFixture(t, ctx, nil, target, bin, interpreter, requirement, "", true)
 }
 
-func createNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement string, pipx bool) {
+func createNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []byte, target, toolBin string, interpreter []byte, toolRequirement, wheelVersion string, pipx bool) {
 	t.Helper()
 	tool := toolBin != ""
+	if !tool && (wheelVersion == "" || strings.Trim(wheelVersion, "0123456789.") != "") {
+		t.Fatal("invalid native fixture wheel version")
+	}
 	const label = "io.heliopause.test.uv-native-original"
 	client := t.TempDir()
 	ownerDigest := sha256.Sum256([]byte(client))
@@ -193,7 +196,7 @@ func createNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []
 	checked(nil, 16<<10, "start", container)
 	// Only the verified UV binary is executable in this private tmpfs. The
 	// authentic wheel and local registry HTML are copied as inert input data.
-	const filename = "idna-3.10-py3-none-any.whl"
+	filename := "idna-" + wheelVersion + "-py3-none-any.whl"
 	wheelSum := sha256.Sum256(wheel)
 	guest := func(input []byte, limit int, args ...string) []byte {
 		t.Helper()
@@ -203,7 +206,7 @@ func createNativeOriginalDataFixture(t *testing.T, ctx context.Context, wheel []
 	// docker cp writes to a read-only container are refused even when its
 	// destination is a live tmpfs. Fixed Python data I/O accesses the guest
 	// mount directly, without relaxing the rootfs or executing artifact code.
-	const writeData = `import os,sys
+	writeData := strings.ReplaceAll(`import os,sys
 p=sys.argv[1]; remaining=int(sys.argv[2]); mode=int(sys.argv[3])
 assert p in ("/haa-fixture/uv","/haa-fixture/pipx-runtime.zip","/haa-fixture/index/packages/idna-3.10-py3-none-any.whl","/haa-fixture/index/simple/idna/index.html")
 assert 0 < remaining <= 64*1024*1024 and mode in (292,365)
@@ -215,7 +218,7 @@ with os.fdopen(fd,"wb") as f:
   if not b: raise RuntimeError("truncated fixture data")
   f.write(b); remaining-=len(b)
  if sys.stdin.buffer.read(1): raise RuntimeError("extra fixture data")
- f.flush(); os.fsync(f.fileno()); os.fchmod(f.fileno(),mode)`
+ f.flush(); os.fsync(f.fileno()); os.fchmod(f.fileno(),mode)`, "idna-3.10-py3-none-any.whl", filename)
 	for _, entry := range []struct {
 		name string
 		body []byte
@@ -289,7 +292,7 @@ for i in range(20):
   if i==19: raise
   time.sleep(0.05)`)
 	execute("/haa-fixture/uv", "venv", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--python", "/usr/local/bin/python", "/tmp/native-venv")
-	execute("/haa-fixture/uv", "pip", "install", "--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--index-url", "http://127.0.0.1:8123/simple/", "--python", "/tmp/native-venv/bin/python", "idna==3.10")
+	execute("/haa-fixture/uv", "pip", "install", "--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--index-url", "http://127.0.0.1:8123/simple/", "--python", "/tmp/native-venv/bin/python", "idna=="+wheelVersion)
 	cfg := execute("/usr/local/bin/python", "-I", "-B", "-c", `import pathlib,sys; sys.stdout.buffer.write(pathlib.Path("/tmp/native-venv/pyvenv.cfg").read_bytes())`)
 	version := strings.Split(runtimeidentity.PythonVersion, ".")
 	if len(version) != 3 {
@@ -358,11 +361,11 @@ with tarfile.open(fileobj=sys.stdout.buffer,mode="w|") as archive:
 			t.Fatal("unsupported native fixture file type", header.Name)
 		}
 	}
-	marker, err := os.ReadFile(filepath.Join(site, "idna-3.10.dist-info", "INSTALLER"))
+	marker, err := os.ReadFile(filepath.Join(site, "idna-"+wheelVersion+".dist-info", "INSTALLER"))
 	if err != nil || string(marker) != "uv" {
 		t.Fatal("actual UV installer format changed", err)
 	}
-	t.Logf("actual_uv_native_original version=3.10 files=%d uv=%s python=%s artifacts_executed=0", len(seen), runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
+	t.Logf("actual_uv_native_original version=%s files=%d uv=%s python=%s artifacts_executed=0", wheelVersion, len(seen), runtimeidentity.UVVersion, runtimeidentity.PythonVersion)
 }
 
 type uvFixtureOutput struct {

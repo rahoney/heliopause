@@ -295,13 +295,11 @@ func inspectSelectedWheelArchives(packages []UVLockedPackage, python string, inp
 			if err != nil {
 				return errors.New("uv selected wheel validation failed")
 			}
-			for _, file := range inspection.Files {
-				if files >= policy.MaxGraphFiles() || expanded > policy.MaxGraphUncompressed()-file.Size {
-					return errors.New("uv wheel graph exceeds public expansion budget")
-				}
-				files++
-				expanded += file.Size
+			if inspection.ArchiveEntries <= 0 || inspection.ArchiveUncompressedBytes <= 0 || int64(inspection.ArchiveEntries) > policy.MaxGraphFiles()-files || inspection.ArchiveUncompressedBytes > policy.MaxGraphUncompressed()-expanded {
+				return errors.New("uv wheel graph exceeds public expansion budget")
 			}
+			files += int64(inspection.ArchiveEntries)
+			expanded += inspection.ArchiveUncompressedBytes
 			if err := collect(item, wheel, inspection); err != nil {
 				return err
 			}

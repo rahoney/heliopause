@@ -157,3 +157,17 @@ func mustDeclaredIntegrity(t *testing.T, artifact domain.AcquiredArtifact) strin
 	}
 	return declared
 }
+
+// Real authenticated wheel totals and normalized RECORD rows have distinct
+// meanings; runtime capacity must account for the complete archive.
+func TestRuntimeClosureFootprintUsesAuthenticatedWholeArchive(t *testing.T) {
+	inspector, artifact, _ := consoleIntakeFixture(t)
+	wheel, report, err := inspector.InspectWheel(context.Background(), artifact)
+	if err != nil || len(report.Findings()) != 0 || wheel.ArchiveUncompressedBytes <= 0 || wheel.ArchiveEntries <= 0 {
+		t.Fatal("real validated wheel fixture unavailable", err)
+	}
+	count, bytes, ok := (graphStaticState{wheel: wheel, dynamic: true}).footprint()
+	if !ok || bytes != wheel.ArchiveUncompressedBytes || count != int64(wheel.ArchiveEntries) {
+		t.Fatalf("runtime closure undercounted authenticated archive: got files=%d bytes=%d valid=%t; want files=%d bytes=%d", count, bytes, ok, wheel.ArchiveEntries, wheel.ArchiveUncompressedBytes)
+	}
+}

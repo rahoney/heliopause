@@ -215,7 +215,7 @@ func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
 	}
 	// A genuine UV original excluded from the desired set must be proved too.
 	native := filepath.Join(root, "native")
-	uvNativeOriginalFixture(t, ctx, oldWheel, native)
+	uvNativeOriginalFixture(t, ctx, oldWheel, native, "3.10")
 	write("packaging==25.0\n")
 	before = uvCLIRegularFiles(t, native)
 	evidenceBefore = uvCLIRegularFiles(t, filepath.Join(cache, "heliopause", "evidence"))

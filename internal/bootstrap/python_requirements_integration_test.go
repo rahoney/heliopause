@@ -27,6 +27,7 @@ import (
 	evidencerecord "github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
@@ -47,6 +48,16 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
 	defer cancel()
 	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
+	declarations, err := content.ArchiveEvidenceRequirements()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedContent := map[string]string{}
+	for _, declaration := range declarations {
+		if declaration.Check.Required() {
+			expectedContent[declaration.Check.ID().String()] = declaration.Check.ProfileDigest().String()
+		}
+	}
 	for _, client := range []string{"pip", "uv"} {
 		t.Run(client, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
@@ -140,18 +151,18 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 				minimum             int
 			}{
 				{"initial-empty", "# empty\n", false, true, false, 0},
-				{"two-roots", "packaging==24.2\nidna==3.11\n", false, false, false, 2},
-				{"retained-compatible", "requests==2.32.5\npackaging>=24\n", false, false, false, 6},
-				{"update-roots", "packaging==25.0\nidna==3.11\n", true, false, false, 2},
+				{"two-roots", "packaging==24.2\nidna==3.20\n", false, false, false, 2},
+				{"retained-compatible", "requests==2.34.2\npackaging>=24\n", false, false, false, 6},
+				{"update-roots", "packaging==25.0\nidna==3.20\n", true, false, false, 2},
 				{"joint-conflict", "packaging==24.2\npackaging==25.0\n", false, false, true, 0},
 				{"invalid-grammar", "packaging>=\n", false, false, true, 0},
 				{"excluded-marker", "absent-project==0 ; python_version < '3.0'\n", false, true, false, 0},
 				{"include-extra", "-r nested/extra.txt\n-c constraints.txt\npackaging>=24\n", false, false, false, 7},
-				{"shared-transitive", "requests==2.32.5\nhttpcore==1.0.9\n", false, false, false, 7},
+				{"shared-transitive", "requests==2.34.2\nhttpcore==1.0.9\n", false, false, false, 7},
 				{"hash-match", "--require-hashes\npackaging==25.0 --hash=sha256:PACKAGE_HASH\n", false, false, false, 1},
 				{"hash-missing", "--require-hashes\npackaging==25.0\n", false, false, true, 0},
 				{"hash-mismatch", "packaging==25.0 --hash=sha256:" + strings.Repeat("0", 64) + "\n", false, false, true, 0},
-				{"transitive-block", "requests==2.32.5\n", false, false, true, 0},
+				{"transitive-block", "requests==2.34.2\n", false, false, true, 0},
 				{"installation-failure", "packaging==25.0\n", false, false, true, 0},
 				{"source-drift", "packaging==25.0\n", false, false, true, 0},
 				{"final-empty", "# empty after installation\n", false, true, false, 0},
@@ -168,7 +179,7 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 					if err := os.Mkdir(filepath.Join(root, "nested"), 0700); err != nil {
 						t.Fatal(err)
 					}
-					for name, body := range map[string]string{"nested/extra.txt": "requests[socks]>=2.32,<3 ; python_version >= '3.14'\n", "constraints.txt": "packaging==25.0\nrequests==2.32.5\n"} {
+					for name, body := range map[string]string{"nested/extra.txt": "requests[socks]>=2.32,<3 ; python_version >= '3.14'\n", "constraints.txt": "packaging==25.0\nrequests==2.34.2\n"} {
 						if err := os.WriteFile(filepath.Join(root, name), []byte(body), 0600); err != nil {
 							t.Fatal(err)
 						}
@@ -259,8 +270,13 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 						Digest struct {
 							Value string `json:"value"`
 						} `json:"digest"`
-						Run      string            `json:"run_id"`
-						Checks   []json.RawMessage `json:"checks"`
+						Run    string `json:"run_id"`
+						Checks []struct {
+							ID       string
+							Required bool
+							Status   string `json:"execution_status"`
+							Profile  string `json:"profile_sha256"`
+						} `json:"checks"`
 						Evidence []json.RawMessage `json:"evidence_references"`
 					} `json:"entries"`
 				}
@@ -281,6 +297,21 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 							t.Fatal("missing fresh required checks/Evidence")
 						}
 						seen[item.Run] = true
+						seenContent := map[string]bool{}
+						for _, check := range item.Checks {
+							if check.Required && check.Status != "COMPLETED" {
+								t.Fatal("requirements member has incomplete required check", item.Identity.Name, check.ID)
+							}
+							if profile, known := expectedContent[check.ID]; known {
+								if !check.Required || check.Status != "COMPLETED" || check.Profile != profile || seenContent[check.ID] {
+									t.Fatal("requirements lost current required source/native/census", item.Identity.Name, check.ID)
+								}
+								seenContent[check.ID] = true
+							}
+						}
+						if len(seenContent) != len(expectedContent) {
+							t.Fatal("requirements omitted current content checks", item.Identity.Name)
+						}
 						if members[item.Identity.Name] {
 							t.Fatal("repeated whole-set dependency", item.Identity.Name)
 						}

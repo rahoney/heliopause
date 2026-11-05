@@ -2096,5 +2096,115 @@ foundation/security/vet/static-v1이 정확한 입력을 소유한다.
 Current product client-v17은7.208s에 test-only diagnostic append overlay로 빌드했고
 normal current product에는 측정 override가 없다. 기존 CPP138/core33ae/canonical proof를
 재사용해 exact dynamic 먼저, 이어서 whole npm CLI/refusal을 한 namespace lifecycle에서
-검증 중이다. Overlay·원본 Go/Host/정리를 각각 검증하며 전체 완료 전에는 actual-v17을
-성공으로 표시하지 않는다. Python/Go/Bun/PNPM과 whole S04/hosted는 이 실행 밖이다.
+검증했다. Direct17.59s·정상 whole CLI 네 경우764.42s·post-Policy refusal 두 경우356.58s가
+모두 PASS다(operator1142.690s). NoSKIP/helperwait0/source·overlay·Host 동일과 own 사본
+409,850,236B 삭제를 확인했다. 실제 JSON의 current source/native/census assertions와
+refusal의 no execution/no manifest를 통과했다. 이 npm 범위의 QUALIFIED=YES이며
+Python/Go/Bun/PNPM과 whole S04/hosted는 이 실행 밖이다. 원본 product-native-v17 참조.
+
+### Python 전체 archive 합산의 남은 두 소비자 (`c8ffe4e`, npm source 동결 중)
+
+이전 whole archive metadata/global static graph charge는 IMPLEMENTED/WIRED=YES이고
+그 범위의 검증을 유지한다. 그러나 `graphStaticState.footprint`의 runtime closure와
+`inspectSelectedWheelArchives`의 사전 selected-wheel graph는 아직 normalized RECORD
+Files를 합산한다. 두 연결의 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. 새 archive
+검사기를 만들 필요 없이 기존 authenticated ArchiveEntries/ArchiveUncompressedBytes를
+각 같은 소비자에서 O(1)로 사용하면 된다. 기존 한도·source profile·version owner는 유지한다.
+
+Root/private Go를 바꾸지 않은 test overlay-v1의 실제 validated wheel은 파일5개/전체518B인데
+runtime 합산은154B만 보고했다(RED1.512s). 두 번째 overlay-v2는 각각 기존 per-wheel 한도
+안인 작은 ZIP 두 개(각5001 empty directory와4 regular member)의 합계10,010 entry를
+whole graph10,000 한도 밖인데도 수용함을 재현했다. 두 RED4.487s는 callback이 두 번째
+wheel까지 도달했고 첫 정상 single-wheel은 통과했다는 것도 확인했다. Artifact code는 실행하지 않았다.
+
+임시 후보는 두 기존 합산 loop만 이미 검증된 archive totals로 대체한다. 실제 wheel의
+원래 hash/RECORD/CRC/내용 읽기는 그대로고 normalized Files의 설치 역할 의미는 바꾸지
+않는다. 그 후보+두 회귀의 artifact/pypi·inspection/pypi 전체 Race17.810s(7.656/2.613s)는
+PASS다. Npm-v17 종료/복원 후 원래 네 파일의 build receipt hash와 후보 hash를 대조하고
+Root/private source에 이 두 제품 변경·두 회귀만 반영했다. 이 두 합산 owner의
+IMPLEMENTED/WIRED=YES, QUALIFIED=YES(named local scope), ACCEPTANCE_CLOSED=NO
+(whole S04)이며 실제 Python/다른 소비자·grouped 검증을 이어간다. 원본 s04-python-footprint-existing-red-v1,
+s04-python-whole-footprint-red-v2/candidate-race-v2 및 별도 overlay inputs가 범위를 소유한다.
+
+
+### 측정된 npm suite deadline과 다음 Python actual 준비
+
+실제 네 npm CLI 요청764.42s/두 refusal356.58s는 기존 두 suite5분보다 길다. 각 요청의
+4분 제한·필수 case·ordinary/CUDA scope·Required를 유지하고 기존 workflow의 두 suite만
+18분/10분으로 맞췄다. 새 job/profile은 없다. 기존 exact command validator에 normal
+command를 연결하고 omission/comment/ignored/too-short 반례를 추가했다. Old guard의
+normal 세 반례 수용 RED2.896s → GREEN2.891s, current parsed workflow2.607s 및 해당
+checker Race24.452s는 PASS다. 원본 ci-deadline-guard-*/python-current-workflow-v1/
+python-current-checker-race-v1 참조. 새 CI는 실행하지 않았다.
+
+다음 기존 TestLinuxUVInstallCLIIntegration은 current presenter의 operation-result/v2를
+기대하고, fresh/retained/root-upgrade/noop/new-root 각 결과의 current required content
+profiles까지 확인한다. 제품 renderer/권한/한도는 바꾸지 않는다. Fresh tagged client와
+policy/CGO0 stripped responder를 빌드했고 실제 namespace 검증/정리는 아직 미완료다.
+
+Current Python 묶음의 canonical foundation76.803s/security21.330s/docs0.349s,
+tagged affected vet2.806s/pinned Staticcheck9.950s는 모두 PASS/source unchanged다.
+앞선 candidate full PyPI Race17.810s와 current checker Race24.452s의 정확한 범위를
+유지한다. Source/runtime pin·observer CPP 입력은 바꾸지 않았다. Fresh client18.573s/
+policy0.517s/responder0.381s receipt로 기존 namespace actual UV install 검증을 시작했다.
+이 actual이 끝나기 전 Go 입력 변경·추가 Docker 시험은 하지 않는다. 원본
+s04-python-current-{foundation,security,docs,vet,static,build,policy,responder,native}-v1 참조.
+
+
+Python actual-v1의 첫 fresh UV 설치는56.13s/operator59.146s에 정당한 advisory review로
+멈췄다. Idna3.10 exact946d195a의 required integrity/static/source/native/census/dynamic/
+advisory는 전부 COMPLETED지만 GHSA-65pc-fj4g-8rjx/PYSEC-2026-215 AFFECTED 때문에
+M13_ADVISORY_REVIEW → M5_DISTRIBUTION_REVIEW_REQUIRED/MANUAL_REVIEW이며 반입은
+NOT_PERFORMED다. Cleanup/Host/source 동일·helperwait0·own409851050B 삭제를 확인했다.
+이 결과를 scanner 오류나 Python 전체 성공으로 쓰지 않는다. 정렬된 출력은 advisory_details가
+먼저이므로 schema_version이 첫 필드라고 가정하지 않고 원래 stdout JSON을 보존했다.
+
+동일 actual 묶음의 public fixture를 OSV/PyPI로 한번에 대조했다. Idna3.15/3.16/3.19/3.20,
+packaging24.2/25.0, httpcore1.0.9는 조회상 advisory0이고 requests2.32.5는 현재
+GHSA-gc5v-m9x4-r6x2/PYSEC-2026-2275 대상이다. 공식 fixed2.33.0을 확인하고 public
+requests2.34.2의 개별 조회도0임을 보존했다. 이것은 안전성 증명/검역 대체가 아니다.
+정상 UV 시험만 idna3.19→3.20으로, requirements actual의 idna/requests만3.20/2.34.2로
+조정한다. 제품 Policy/임계값/OSV 조회·cache는 유지한다. 기존 native original fixture에
+명시 wheel version을 전달하고 파일명·guest install·원본 readback이 같은 값을 사용하게
+맞췄다. 다른 기존 두 소비자는3.10을 그대로 명시한다. 새 helper/class는 없다.
+
+첫 local test regex가 선언이 필요한 native integration 부모까지 선택해9개 준비 거부를
+일으켰다. 이는 actual runtime 실행/제품 회귀가 아니며 원본 positive-fixtures-v2에 남긴다.
+기존 synthetic contract 한 parent만 정확히 선택하고 tagged whole compile로 정정한다.
+Requirements actual은 각 member의 current required content profiles도 확인하도록 보강했다.
+원본 python-current-native-v1/first-failure 및 public-fixture-advisory-preflight-v1 참조.
+
+
+UV actual-v2는 다섯 install 단계 전부 COMPLETED/ALLOW/반입 완료와 current content
+profiles를 확인했다. 이후 native enrollment는 inspection 전
+UPDATE_ORIGINAL_STATE_UNSUPPORTED로 멈췄다(test279.25s/operator282.250s).
+Host/source 동일·helperwait0·own409851306B 삭제를 확인했다. Passive 공식 wheel 대조에서
+3.19/3.16은 idna console entry를 선언하지만3.15는 선언하지 않는다. 기존 native DATA
+producer는 site-packages만 tar 복사하므로3.19의 bin script를 원본으로 재현하지 않는다.
+이 exact 제품 거부의 내부 cause는 아직 직접 노출하지 않았고 metadata/producer 범위의
+불일치를 확인한 단계다. 제품 판정은 완화하지 않는다. 다음 후보는 기존 no-script
+원본 fixture에 맞는 OSV 대조 완료 idna3.15→3.20을 사용한다. 원본
+python-current-native-v2/idna-native-fixture-entry-points-v1을 보존하며 full actual은 미완료다.
+
+
+UV actual-v3도 다섯 install/update/retained/new-root 단계를 모두 통과했다. 이후 no-script
+native3.15 원본을 실제 UV로 만들었지만 첫 adoption 중 test300.95s/operator303.887s에
+전체 test context5분 경계와 함께 registered runsc-trace source-built version mismatch가
+나왔다. Host/source 동일·helperwait0·own409851306B 삭제를 확인했다. Existing
+hosttool.validateDaemon은 version probe의 실행 오류와 invalid output을 같은 문자열로
+반환한다. 이 결과만으로 보호된 runtime bytes가 다르다고 해석하지 않는다. 정확한 내부
+probe error는 원래 로그에 없으므로 과거 인과는 미확정으로 보존한다.
+
+다섯 CLI와 두 native operation을 합친 시험의 aggregate context만10분, 기존 workflow
+suite만12분으로 맞췄다. 제품 검사·실행 한도는 바꾸지 않았다. 기존 exact command 목록과
+짧은 suite 반례를 같은 변경에서 갱신한 guard3.019s/parsed workflow2.385s는 PASS다.
+Current normal build-v4는3.207s에 통과했으며 full parent-v4는 실행하지 않았다. 불변인
+다섯 case를 또 실행하지 않고 test-only append overlay-v1/v2로 기존 uvNativeEnrollmentCLI의
+미도달 adoption/replay·unrecorded-cache refusal만 선택한다. 별도 Public idna3.15는
+공식 metadata/digest/size와 고정 exact SHA를 대조한 DATA이며 자체 사본 정리 대상이다.
+첫 selector-v1은4.58s/operator7.488s에 기존 helper가 기대하는 빈 Evidence directory가
+없어 멈췄다. 이는 제품 오류가 아니고 source/overlay/Host 동일·helperwait0·사본409931457B
+삭제까지 확인했다. V2는 그 사전조건만 보완했고 현재 실행 중이다. Normal product override는
+없다. Current policy/responder-v4를 재사용하며 최초 실패/미실행 parent를 성공으로 덮지 않는다.
+원본 python-current-native-v3/uv-ci-deadline-guard-v4/uv-current-workflow-v4 및
+python-native-adoption-v1/v2가 정확한 범위를 소유한다.

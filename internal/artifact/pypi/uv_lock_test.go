@@ -253,3 +253,32 @@ func TestUVWheelBindingParenthesizedMetadataConstraints(t *testing.T) {
 		})
 	}
 }
+
+func TestSelectedWheelGraphCountsExplicitDirectoryEntries(t *testing.T) {
+	limits := DefaultWheelLimits()
+	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
+	var packages []UVLockedPackage
+	var inputs []UVWheelInput
+	for _, name := range []string{"parent", "child"} {
+		var directories []wheelTestEntry
+		for index := int64(0); index <= limits.MaxFiles/2; index++ {
+			directories = append(directories, wheelTestEntry{name: fmt.Sprintf("%s/data/%05d/", name, index), mode: os.ModeDir | 0o755})
+		}
+		body := validWheelArchive(t, name, "1.0", name+"/__init__.py", name+"-1.0.dist-info", directories...)
+		sum := sha256.Sum256(body)
+		filename := name + "-1.0-cp314-cp314-manylinux_2_36_x86_64.whl"
+		url := "https://files.pythonhosted.org/packages/" + filename
+		packages = append(packages, UVLockedPackage{Name: name, Version: "1.0", Wheels: []UVLockedWheel{{URL: url, Filename: filename, SHA256: hex.EncodeToString(sum[:]), Size: int64(len(body))}}})
+		inputs = append(inputs, UVWheelInput{URL: url, Reader: bytes.NewReader(body), Size: int64(len(body))})
+	}
+	for _, count := range []int{1, 2} {
+		collected := 0
+		err := inspectSelectedWheelArchives(packages[:count], "3.14.7", inputs[:count], target, limits, func(_ UVLockedPackage, _ UVLockedWheel, _ WheelInspection) error { collected++; return nil })
+		if count == 1 && (err != nil || collected != 1) {
+			t.Fatal("bounded single archive was rejected", err, collected)
+		}
+		if count == 2 && (err == nil || collected != 1) {
+			t.Fatal("graph accepted more than the existing total member limit", err, collected)
+		}
+	}
+}

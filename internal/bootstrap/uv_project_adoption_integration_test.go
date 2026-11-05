@@ -45,7 +45,7 @@ func TestLinuxUVProjectNativeAdoptionCLIIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			venv := filepath.Join(project, ".venv")
-			uvNativeOriginalFixture(t, ctx, wheel, venv)
+			uvNativeOriginalFixture(t, ctx, wheel, venv, "3.10")
 			deps := "[]"
 			if operation == "sync" {
 				deps = "['packaging==25.0']"
