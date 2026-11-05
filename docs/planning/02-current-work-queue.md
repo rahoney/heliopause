@@ -26,6 +26,12 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 
 현재 작업 기준: 필요한 변경만 수행하고 기존 모듈·단순한 호출 흐름을 유지한다. 불필요한 함수·추상화·연결·파일 분할을 늘리지 않으며, 로컬 변경·검증을 모아 필수 시점에만 CI를 실행한다. 기존 20분 타이머를 재사용하고 새 CI나 타이머를 중복 등록하지 않는다.
 
+2026-11-05 사용자 승인 개발 작업 정리 보완은 named local 범위로 연결·검증했다.
+scripts/check-workspace.py의 영속 원장/개발 UID 실행/전용 cache·tmp/종료 수거와 재시작
+미완료 차단, Host 회귀7개11.064s 및 실제 canonical docs exit0/수거를 확인했다.
+기존 누락 사본2개111374336B도 전체 입력/신원·참조 대조 후 수거했다. 최종 후보 검사는
+같은 wrapper로 기록하며 제품 C01/C02 전체 완료와 구분한다. 상세·범위는 복구 leaf가 소유한다.
+
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 
 [Baseline·수정 지도·부분 구현](./evidence/m13-004-convenience/advisory-baseline-20261103.md)은 기존 graph/report/판정 owner를 재사용한다. 중복 key 조회 합침·원래 순서 환원·유한 pagination/응답 예산·모호/부분 JSON·HTTP 실패·취소 거부를 구현하고 Race4.501s·canonical foundation55.335s/security14.955s 및 static/vet를 확인했다. 현재는 controlled HTTP 모델이며 record/영향 해석·production transport·graph/결과/판정·cache/CLI 연결은 MISSING이다. 전체 S05 네 상태는 NO이고 실제 live 응답·native·CI 성공으로 확대하지 않는다. M13-004 하나만 IN_PROGRESS다.

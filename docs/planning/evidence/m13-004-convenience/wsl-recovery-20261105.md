@@ -176,3 +176,54 @@ tracked clean이며 a936153 이후 변경은 위 문서 두 개뿐이다. 영속
 activation·cleanup·native 재시험·CI를 실행하지 않았다. 실제 원본은 기존 raw의
 `pre-resume-host-review-*.json`과 `pre-resume-images-*.json`이다. 복구 준비 완료와
 실행 준비 완료를 구분하며, 재부팅 뒤에는 위 volatile 조건을 다시 확인한다.
+
+## 개발 작업의 정리 보완 — baseline e0fbde8
+
+사용자가 작업용 스크립트 보완을 승인했다. 기존 CI별 EXIT handler와 제품 C01 Finish는
+각자의 owner를 유지한다. 로컬 raw-free 문서 검사 operator에는 공용 생성 원장·종료 정리·
+재시작 미완료 확인이 없다. 해당 개발 실행 경로의 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED는 시작 시 NO다. 기존 원본 operator/log는 편집하지 않는다.
+수정 범위는 로컬 검사 workspace 실행 스크립트 하나와 해당 실패/중단/삭제 거부 검증,
+이 문서/Queue의 사용 경로다. 제품·CI·Host 설정은 별도다. 생성 source/cache/tmp를 한
+전용 workspace에 모으고 외부 영속 원장·로그를 남긴다. 정리 미완료는 실행 성공과
+분리해 비정상 종료하며, 재시작 시 유휴/신원/참조가 확인된 자체 workspace만 회수한다.
+
+### 현재 개발 검사 실행 경로
+
+`scripts/check-workspace.py`는 기존 `scripts/check`를 임시 source projection에서 실행하는
+개발용 wrapper다. 실행 전 Git 관리 파일의 현재 bytes를 복사하고 전용 GOCACHE/TMPDIR를
+사용한다. 새로 추가한 파일은 검사 전에 명시적으로 stage해야 포함된다. 로그/result와
+PID/start/boot·workspace 신원은 아래 영속 state에 남는다. 이 경로에서 검증한 소비자는
+canonical docs이며, Git history/native/Host fixtures가 필요한 검사는 기존 전용 owner를 따른다.
+
+저장소 루트에서 다음 순서로 실행한다. `status`가 실패하면 `recover`로 이전 자료를
+확인·수거하고 다시 status를 확인한다. 활성/불확실한 자료는 보존돼 계속 실패한다.
+
+```sh
+sudo -n python3 scripts/check-workspace.py status --state "$PWD/docs/github-logs/system-recovery-20261105/check-state"
+sudo -n python3 scripts/check-workspace.py recover --state "$PWD/docs/github-logs/system-recovery-20261105/check-state"
+sudo -n python3 scripts/check-workspace.py run --state "$PWD/docs/github-logs/system-recovery-20261105/check-state" -- /home/winamp/.local/bin/go run ./scripts/check docs
+```
+
+Host 전체 참조 조회를 위해 wrapper만 root로 실행하며 검사 명령은 source 소유 개발
+사용자로 실행한다. 성공·실패·SIGTERM/SIGINT 모두 child 종료 후 같은 정리 경로를 거친다.
+SIGKILL/재부팅에서는 영속 원장을 다음 시작에 검사한다. 정리 미완료는 새 실행을 차단하고
+명령의 최초 nonzero exit는 보존한다. 명령 성공 후 정리 실패도 wrapper exit1이다.
+결과의 command_exit와 cleanup을 함께 확인해야 완료다. 직접 명령이나 workspace 밖에
+생성한 파일/Docker 자원까지 관리하는 강제 보안 경계는 아니며, 기존 runtime 정리 owner와
+고정 SDK/모듈·재개 clone은 보존한다. 전역 Go cache는 자동 삭제하지 않는다.
+
+Host 회귀7개는 성공/exit7·개발 UID·로그 보존, 열린 참조의 수거/새 실행 거부,
+symlink/hardlink/신원 교체 거부, 조회 실패/불완전 원장 거부, SIGTERM143/수거,
+SIGKILL 뒤 살아 있는 child 보호와 종료 뒤 복구, 정리 실패 시 exit1/원래 exit7 보존과
+입력 파일 지문 기록을 검증했다. 첫 hardlink 시험의 EXDEV는
+OneDrive→ext4 시험 준비 오류로 보존했고 같은 ext4의 두 링크로 교정한7.473s는 PASS다.
+후속 최종7개11.064s도 PASS다. 실제 canonical docs는 첫 wrapper 실행에서 exit0/
+CONFIRMED_REMOVED였다. 이전 누락 사본2개는 기존 신원·Git 전체3488개 파일+검사 문서
+지문·참조/mount 부재/query error0을 대조한 뒤111374336B allocated를 수거했다.
+영속 clone/원본/공유 cache는 보존했다. 이 경로의 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED=YES는 위 개발 workspace·회귀·docs 소비자 한정이다. 제품 C01/C02
+전체 및 모든 임의 명령/외부 자원 정리 완료로 확대하지 않는다. 개발 명령도 wrapper를
+우회하면 자동 관리되지 않는다. 코드·원본·최종 검사·정리 증거는 같은 raw의 workspace-* /
+completed-doc-copies-collection.json 및 check-state가 소유한다. 다음 updater 재개 때는
+이번 개발 스크립트 변경도 최신 versioned baseline 대조에 포함하고 기존a936 clone은 보존한다.
