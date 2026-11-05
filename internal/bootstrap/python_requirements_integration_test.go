@@ -432,13 +432,12 @@ func (i *requirementsBlockInspector) InspectProjectSelection(ctx context.Context
 }
 
 func requirementsBlockReport(a domain.AcquiredArtifact, original domain.InspectionReport) (domain.InspectionReport, error) {
-	checkID, _ := domain.NewCheckID("synthetic-req-block")
-	check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
-	if err != nil {
-		return domain.InspectionReport{}, err
+	if len(original.Executions()) == 0 || len(original.Findings()) != 0 || len(original.Diagnostics()) != 0 {
+		return domain.InspectionReport{}, errors.New("synthetic block needs complete clean fixture checks")
 	}
+	check := original.Executions()[0]
 	evidenceID, _ := domain.NewEvidenceID("synthetic-req-block")
-	item, err := domain.NewEvidence(evidenceID, checkID, a.Identity(), a.Digest(), "synthetic", "Synthetic transitive refusal for transaction qualification only.")
+	item, err := domain.NewEvidence(evidenceID, check.ID(), a.Identity(), a.Digest(), "synthetic", "Synthetic transitive refusal for transaction qualification only.", check.ProfileDigest())
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -446,28 +445,25 @@ func requirementsBlockReport(a domain.AcquiredArtifact, original domain.Inspecti
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	report, err := domain.NewInspectionReport(check, []domain.Finding{finding}, []domain.Evidence{item})
-	if err != nil {
-		return domain.InspectionReport{}, err
-	}
-	if len(original.Executions()) == 0 || len(original.Findings()) != 0 || len(original.Diagnostics()) != 0 {
-		return domain.InspectionReport{}, errors.New("synthetic block needs complete clean fixture checks")
-	}
 	// Domain combines primitive check reports. Preserve every actual check and
-	// its own Evidence before adding the synthetic optional Finding.
+	// its profile/membership. Only the explicitly synthetic fixture fact is added.
 	byCheck := map[domain.CheckID][]domain.Evidence{}
 	for _, item := range original.Evidence() {
 		byCheck[item.CheckID()] = append(byCheck[item.CheckID()], item)
 	}
-	components := make([]domain.InspectionReport, 0, len(original.Executions())+1)
+	byCheck[check.ID()] = append(byCheck[check.ID()], item)
+	components := make([]domain.InspectionReport, 0, len(original.Executions()))
 	for _, execution := range original.Executions() {
-		component, err := domain.NewInspectionReport(execution, nil, byCheck[execution.ID()])
+		var findings []domain.Finding
+		if execution.ID() == check.ID() {
+			findings = []domain.Finding{finding}
+		}
+		component, err := domain.NewInspectionReport(execution, findings, byCheck[execution.ID()])
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
 		components = append(components, component)
 	}
-	components = append(components, report)
 	return domain.NewCompositeInspectionReport(components)
 }
 
@@ -480,14 +476,21 @@ func TestRequirementsSyntheticBlockPreservesRealChecks(t *testing.T) {
 		t.Fatal(err)
 	}
 	var components []domain.InspectionReport
+	var declarations []domain.CheckRequirement
 	for _, name := range []string{"static", "dynamic"} {
 		id, _ := domain.NewCheckID(name)
-		check, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		profile, _ := domain.CheckProfileDigest("requirements-fixture-"+name, "frozen-real-check-membership")
+		declaration, err := domain.NewCheckRequirement(id, domain.CheckInspection, true, profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		declarations = append(declarations, declaration)
+		check, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 		if err != nil {
 			t.Fatal(err)
 		}
 		evidenceID, _ := domain.NewEvidenceID(name + "-result")
-		item, err := domain.NewEvidence(evidenceID, id, identity, digest, "synthetic", "Normalized fixture facts.")
+		item, err := domain.NewEvidence(evidenceID, id, identity, digest, "synthetic", "Normalized fixture facts.", profile)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -505,7 +508,18 @@ func TestRequirementsSyntheticBlockPreservesRealChecks(t *testing.T) {
 	if err != nil {
 		t.Fatal("synthetic block lost normalized real-check evidence", err)
 	}
-	if len(decorated.Executions()) != 3 || len(decorated.Evidence()) != 3 || len(decorated.Findings()) != 1 || decorated.Findings()[0].Code() != "SYNTHETIC_TRANSITIVE_BLOCK" {
+	run, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	plan, err := domain.NewCheckPlan(run, a, declarations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.Validate(run, a, decorated.Executions()); err != nil {
+		t.Fatal("synthetic Finding changed the frozen real-check plan", err)
+	}
+	if len(decorated.Executions()) != 2 || len(decorated.Evidence()) != 3 || len(decorated.Findings()) != 1 || decorated.Findings()[0].Code() != "SYNTHETIC_TRANSITIVE_BLOCK" {
 		t.Fatal("synthetic block omitted real check facts")
 	}
 	for index, check := range original.Executions() {

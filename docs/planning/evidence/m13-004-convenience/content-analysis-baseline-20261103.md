@@ -2208,3 +2208,50 @@ Current normal build-v4는3.207s에 통과했으며 full parent-v4는 실행하�
 없다. Current policy/responder-v4를 재사용하며 최초 실패/미실행 parent를 성공으로 덮지 않는다.
 원본 python-current-native-v3/uv-ci-deadline-guard-v4/uv-current-workflow-v4 및
 python-native-adoption-v1/v2가 정확한 범위를 소유한다.
+
+
+Remaining native selector-v2는162.56s/operator165.529s에 PASS했다. Actual no-script3.15
+원본 생성·unrecorded cache의 사전 거부·adopt=true current update(controls5)·이후 managed
+replay(controls4), user config/files 보존을 기존 helper에서 확인했다. Source/overlay/Host
+동일·noSKIP/helperwait0·정리 오류0·own409930361B 삭제다. V3의 다섯 실제 설치 성공과
+이 남은 범위를 결합하되, 시간 제한으로 실패한 원래 full parent-v3 또는 미실행 v4를 PASS로
+바꾸지 않는다. 같은 CPP/core의 재검증은 하지 않았다. 원본 python-native-adoption-v2 참조.
+
+현재 제품/fixture/연결/필수 content assertions·UV deadline/guard 변경은2b02eeb에 보존했다.
+바로 이어 normal current build/helper-v4의 불변 Go 소스로 pip·UV requirements full actual을
+시작했다. 이 시험은 기존 native resolver·전체 content/dynamic/Policy·반입과 CLI binding의
+component composition을 사용하고 test-only synthetic normalized block/after-materialization
+failure/source-drift seam을 명시한다. 별도 default Root 전체/advisory·모든 S04 완료로
+확대하지 않는다.20분 간격 local native monitor79320은 자동 상태/종료 receipt를 기록하며
+CI는 실행하지 않았다. 원본 python-requirements-native-v1/timer.jsonl/operator.log 참조.
+
+완료된 superseded Python 시험 client 네 사본은 기존 cleanup-v5의 같은 identity/FD/maps/
+mount·동일 세대 terminal 판정으로 참조0/query오류0을 확인한 뒤229221469B 삭제했다.
+현재 normal-v4/helper/최신 focused-v2/production Root CLI와 모든 원본은 보존했다.
+이는 이 네 시험 사본의 정리이며 제품 C01/C02 전체 완료가 아니다.
+원본 s04-completed-python-clients-cleanup-v1.json 참조.
+
+
+Requirements native-v1의20분 타이머는1200.012s/2026-11-05T04:29:41.924646Z에 RUNNING을
+직접 기록했다. 이후 timer1377.391s/native1352.748s/test1349.84s에 실패 종료했고,
+Host/source 동일·helperwait0·정리 오류0·own409851335B 삭제를 확인했다. Pip의 정상6종/
+문법·충돌·해시 거부는 통과했으나 transitive-block에서 기존 합성 주입기가 frozen plan에
+없는 synthetic-req-block check(프로필 없음)를 추가해 idna의 POLICY_INPUT_INVALID가
+발생했다. 다른 후속 미처리 항목의 같은 오류를 별도 원인으로 합치지 않는다. 실제 실패는
+정당한 domain 계획 검증이며 제품 Policy를 완화하지 않는다. UV와 마지막 pip 실패 경우는
+미도달이다. 원본 python-requirements-native-v1/-timer.jsonl/-operator.log 참조.
+
+같은 기존 unit에 실제 profiled check 두 개의 frozen plan 검증을 추가하니 RED5.030s에
+동일 membership 오류가 재현됐다. 기존 test-only requirementsBlockReport는 실제 check와
+프로필/원래 증거를 보존하고, 명시 synthetic Evidence/Finding만 그 실제 check에 붙인다.
+새 check/helper/type/declaration/runtime 권한은 추가하지 않는다. 고정 plan·원본 불변성과
+기존 finding 회귀의 Race16.932s는 PASS다. 실제 전체 차단은 아직 native 미완료다.
+원본 requirements-block-plan-red/green-v2 참조.
+
+다음 local selector는 통과한 pip 정상/문법/해시 cases를 반복하지 않는다. Pip은 현재 승인된
+최소 두 root(packaging25.0/idna3.20)를 한 번 만들고 미완료 transitive block/실제 materialization
+실패 원복/source drift/final-empty만 확인한다. UV는 기존16종을 전부 수행한다. 제품이나
+검사 override는 없고 test-only selector만 별도 hash로 묶는다. Trusted native logger의 정확한
+21종 case/중복/parent/noSKIP도 검증한다. Full parent의32종 전체 성공으로 표시하지 않으며
+기존 pip 통과 범위와 새 미완료 범위를 각각 유지한다.20분 local monitor는 JSON report 전문을
+반복하지 않고 정해진 case 진행 줄만 기록한다. 새 CI는 없다.
