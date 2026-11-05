@@ -232,6 +232,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV tools", []string{"bash scripts/ci-uv-tools.sh", "bash scripts/ci-uv-tools.sh bootstrap"})...)
 	findings = append(findings, validateUVToolsClientOrder(contents)...)
 	findings = append(findings, validateCurrentExecutionPreparationQualification(contents)...)
+	findings = append(findings, validateActiveJobCommands(contents, "gvisor-integration", "Qualify production Node execution preparation", "npm execution CLI", []string{"HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'"})...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{

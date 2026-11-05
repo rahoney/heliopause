@@ -103,20 +103,21 @@ func TestCurrentExecutionPreparationQualificationRejectsMissingOrWeakenedScope(t
 	end := start + 1 + tail
 	owned := original[start:end]
 	for name, changed := range map[string]string{
-		"ignored readonly error": strings.Replace(owned, "if ((python_inputs_status)); then exit", "if ((0)); then exit", 1),
-		"wrong readonly profile": strings.Replace(owned, "ci-uv-tools.sh python-execution-inputs", "ci-uv-tools.sh bootstrap", 1),
-		"wrong readonly count":   strings.Replace(owned, "cases != 4", "cases != 3", 1),
-		"wrong readonly IDs":     strings.Replace(owned, "1 2 3 4", "1 2 3 3", 1),
-		"conditional":            strings.Replace(owned, "        run: |", "        if: false\n        run: |", 1),
-		"wrong protected client": strings.Replace(owned, "helox-pnpm-project-test", "helox-bootstrap-test", 1),
-		"missing helper":         strings.Replace(owned, "          haa_start_policy_helper\n", "", 1),
-		"missing Node flag":      strings.Replace(owned, "HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=1", "HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=0", 1),
-		"ignored Node error":     strings.Replace(owned, "if ((node_refusal_status)); then exit", "if ((0)); then exit", 1),
-		"ignored Python error":   strings.Replace(owned, "if ((python_preparation_status)); then exit", "if ((0)); then exit", 1),
-		"wrong Python profile":   strings.Replace(owned, "ci-uv-tools.sh python-execution-preparation", "ci-uv-tools.sh bootstrap", 1),
-		"missing noSkip":         strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
-		"missing uniqueness":     strings.Replace(owned, " || accepted[case_name]++", "", 1),
-		"wrong case count":       strings.Replace(owned, "cases != 3", "cases != 2", 1),
+		"Node refusal suite too short": strings.Replace(owned, "-test.timeout=10m -test.run '^TestLinuxNPMExecutionCLIRefusalIntegration$'", "-test.timeout=5m -test.run '^TestLinuxNPMExecutionCLIRefusalIntegration$'", 1),
+		"ignored readonly error":       strings.Replace(owned, "if ((python_inputs_status)); then exit", "if ((0)); then exit", 1),
+		"wrong readonly profile":       strings.Replace(owned, "ci-uv-tools.sh python-execution-inputs", "ci-uv-tools.sh bootstrap", 1),
+		"wrong readonly count":         strings.Replace(owned, "cases != 4", "cases != 3", 1),
+		"wrong readonly IDs":           strings.Replace(owned, "1 2 3 4", "1 2 3 3", 1),
+		"conditional":                  strings.Replace(owned, "        run: |", "        if: false\n        run: |", 1),
+		"wrong protected client":       strings.Replace(owned, "helox-pnpm-project-test", "helox-bootstrap-test", 1),
+		"missing helper":               strings.Replace(owned, "          haa_start_policy_helper\n", "", 1),
+		"missing Node flag":            strings.Replace(owned, "HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=1", "HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=0", 1),
+		"ignored Node error":           strings.Replace(owned, "if ((node_refusal_status)); then exit", "if ((0)); then exit", 1),
+		"ignored Python error":         strings.Replace(owned, "if ((python_preparation_status)); then exit", "if ((0)); then exit", 1),
+		"wrong Python profile":         strings.Replace(owned, "ci-uv-tools.sh python-execution-preparation", "ci-uv-tools.sh bootstrap", 1),
+		"missing noSkip":               strings.Replace(owned, "/--- SKIP:/ { bad=1 }", "", 1),
+		"missing uniqueness":           strings.Replace(owned, " || accepted[case_name]++", "", 1),
+		"wrong case count":             strings.Replace(owned, "cases != 3", "cases != 2", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if changed == owned {

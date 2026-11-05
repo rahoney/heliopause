@@ -148,7 +148,7 @@ node_refusal_log="$RUNNER_TEMP/haa-node-refusal.log"
 node_refusal_status=0
 (
   cd internal/bootstrap
-  HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxNPMExecutionCLIRefusalIntegration$'
+  HELOX_NPM_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxNPMExecutionCLIRefusalIntegration$'
 ) >"$node_refusal_log" 2>&1 || node_refusal_status=$?
 node_refusal_log_status=0
 cat -- "$node_refusal_log" || node_refusal_log_status=$?

@@ -171,6 +171,9 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
+		"npm execution suite too short":                strings.Replace(string(contents), "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", "-test.timeout=5m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", 1),
+		"npm execution omitted":                        strings.Replace(string(contents), "HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox", "# HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox", 1),
+		"npm execution ignored":                        strings.Replace(string(contents), "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$' || true", 1),
 		"PNPM runtime omitted":                         strings.Replace(string(contents), "bash scripts/ci-pnpm-runtime.sh", "# bash scripts/ci-pnpm-runtime.sh", 1),
 		"floating action":                              strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
 		"missing always":                               strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
