@@ -340,6 +340,107 @@
           }
         }
       ]
+    },
+    {
+      "id": "haa-s04-bash-network-execution",
+      "languages": [
+        "bash"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "pattern-either": [
+        {
+          "pattern": "curl ... | sh"
+        },
+        {
+          "pattern": "curl ... | bash"
+        },
+        {
+          "pattern": "wget ... | sh"
+        },
+        {
+          "pattern": "wget ... | bash"
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-bash-credential-body",
+      "languages": [
+        "bash"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "mode": "taint",
+      "pattern-sources": [
+        {
+          "patterns": [
+            {
+              "pattern": "$CREDENTIAL"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$CREDENTIAL",
+                "regex": "(?i)^\"?\\$\\{?[A-Z0-9_]+_(token|secret|password|private_?key|access_?key|api_?key)(?:_id)?\\}?\"?$"
+              }
+            }
+          ]
+        },
+        {
+          "patterns": [
+            {
+              "pattern": "cat $PATH"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$PATH",
+                "regex": "(?i).*(?:\\.npmrc|\\.pypirc|\\.env(?:\\.[^/]*)?|\\.aws/credentials|\\.ssh/id_[^/]*).*"
+              }
+            }
+          ]
+        }
+      ],
+      "pattern-sinks": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "curl ... --data $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --data-raw $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --data-binary $DATA ..."
+                },
+                {
+                  "pattern": "curl ... -d $DATA ..."
+                },
+                {
+                  "pattern": "curl ... -H $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --header $DATA ..."
+                },
+                {
+                  "pattern": "wget ... --post-data=$DATA ..."
+                }
+              ]
+            },
+            {
+              "focus-metavariable": "$DATA"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

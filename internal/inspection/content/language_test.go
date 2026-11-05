@@ -10,7 +10,8 @@ func TestSourceLanguageIsOnlyAParserSelection(t *testing.T) {
 		"src/a.js": "javascript", "a.mjs": "javascript", "a.cjs": "javascript", "a.jsx": "javascript",
 		"a.ts": "typescript", "a.mts": "typescript", "a.cts": "typescript", "a.tsx": "typescript",
 		"a.py": "python", "a.pyi": "python", "a.go": "go", "a.rs": "rust", "a.tf": "hcl", "a.hcl": "hcl",
-		"a.tf.json": "", "a.py.gz": "", "a.js.map": "", "a.so": "", "a.sh": "", "a": "",
+		"a.sh": "bash", "a.bash": "bash",
+		"a.tf.json": "", "a.py.gz": "", "a.js.map": "", "a.so": "", "a.zsh": "", "a": "",
 	} {
 		if got := SourceLanguage(name); got != want {
 			t.Errorf("%q: got %q, want %q", name, got, want)
@@ -24,7 +25,8 @@ func TestUnsupportedSourceDoesNotBecomeAbsentSource(t *testing.T) {
 		mode         uint32
 		unsupported  bool
 	}{
-		{"helper.sh", "echo DATA", 0, true}, {"helper", "#!/bin/sh\n", 0, true},
+		{"helper.sh", "echo DATA", 0, false}, {"helper", "#!/bin/sh\n", 0, false},
+		{"helper.zsh", "echo DATA", 0, true}, {"helper", "#!/usr/bin/fish\n", 0, true},
 		{"program", "opaque text", 0o755, true}, {"native.c", "int x;", 0, true},
 		{"source.JS", "", 0, true}, {"README.md", "DATA", 0, false},
 		{"source.js", "", 0o755, false}, {"program", "#!/usr/bin/env node\n", 0o755, false},
@@ -48,7 +50,11 @@ func TestSourceLanguageRecognizesOnlyBoundedInterpreterHints(t *testing.T) {
 		"#!/usr/bin/python.\n":                         "",
 		"#!/usr/bin/env\n":                             "",
 		"#!/usr/bin/env -S\n":                          "",
-		"#!/bin/sh\n":                                  "",
+		"#!/bin/sh\n":                                  "bash",
+		"#!/bin/bash\n":                                "bash",
+		"#!/usr/bin/env -S bash -eu\n":                 "bash",
+		"#!/bin/dash\n":                                "bash",
+		"#!/usr/bin/fish\n":                            "",
 		"#!\n":                                         "",
 		"plain data\n#!/usr/bin/node":                  "",
 		strings.Repeat(" ", 512) + "#!/usr/bin/node\n": "",

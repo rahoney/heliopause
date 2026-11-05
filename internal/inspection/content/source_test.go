@@ -274,7 +274,7 @@ func TestSourceAllSelectedLanguagesShareCanonicalRuleAliases(t *testing.T) {
 	input.Files = nil
 	output.Targets = map[string]string{}
 	paths := []any{}
-	for index, language := range []string{"javascript", "typescript", "python", "go", "rust", "hcl"} {
+	for index, language := range []string{"javascript", "typescript", "python", "go", "rust", "hcl", "bash"} {
 		name := language + "-fixture"
 		opaque := strings.Repeat("/source", index+1)
 		input.Files = append(input.Files, ports.SourceAnalysisFile{Path: name, Language: language, Body: []byte("fixture\n")})
@@ -301,7 +301,7 @@ func TestSourceAllSelectedLanguagesShareCanonicalRuleAliases(t *testing.T) {
 }
 
 func TestSourceEngineCensusIsExactForInputLanguages(t *testing.T) {
-	for _, language := range []string{"javascript", "typescript", "python", "go", "rust", "hcl"} {
+	for _, language := range []string{"javascript", "typescript", "python", "go", "rust", "hcl", "bash"} {
 		t.Run(language, func(t *testing.T) {
 			input, output, document := sourceFixture(t)
 			input.Files[0].Language = language

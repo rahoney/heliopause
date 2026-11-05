@@ -143,7 +143,7 @@ func TestArchiveContentCensusPreservesUnsupportedSourceAndNativeRoles(t *testing
 	entries := []tarEntry{
 		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`},
 		{name: "package/directory", typeflag: tar.TypeDir},
-		{name: "package/tool", body: "#!/bin/sh\necho DATA\n"},
+		{name: "package/tool", body: "#!/bin/fish\necho DATA\n"},
 		{name: "package/UPPER.JS", body: "console.log('DATA');\n"},
 		{name: "package/disguised.js", body: "MZ"},
 		{name: "package/source.js", body: "console.log('DATA');\n"},
@@ -216,7 +216,7 @@ func TestArchiveContentDeclaredJSONAndUnknownInterpreterKeepTheirRoles(t *testin
 	subject := measuredInventorySubject(t, root, writeArtifact(t, root, []tarEntry{
 		{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","main":"./data.json","bin":"bin/tool"}`},
 		{name: "package/data.json", body: `{"value":1}`},
-		{name: "package/bin/tool", body: "#!/bin/sh\necho DATA\n"},
+		{name: "package/bin/tool", body: "#!/bin/fish\necho DATA\n"},
 	}))
 	inspector, _ := NewInspector(root)
 	_, sources, report, err := inspector.InspectArchiveContent(context.Background(), subject)
@@ -485,7 +485,7 @@ func TestConfiguredArchiveSourceApplicabilityRequiresItsCompleteCensus(t *testin
 		root := canonicalRoot(t)
 		entries := []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`}, {name: "package/README.md", body: "DATA"}}
 		if unsupported {
-			entries = append(entries, tarEntry{name: "package/tool", body: "#!/bin/sh\necho DATA\n"})
+			entries = append(entries, tarEntry{name: "package/tool", body: "#!/bin/fish\necho DATA\n"})
 		}
 		subject := measuredInventorySubject(t, root, writeArtifact(t, root, entries))
 		analyzer := &archiveSourceAnalyzer{err: errors.New("must not be called without parser targets")}

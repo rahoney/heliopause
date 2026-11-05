@@ -2291,3 +2291,96 @@ source·overlay·Host 동일·helperwait0·정리 오류0·own409857149B 삭제�
 production CLI receipt-v6/v3를 준비하고 실제 기본 Root의 pip/UV -r 설치·업데이트 네 요청을
 20분 timer23812로 시작했다. 원본 requirements-remaining-native-v2/-timer.jsonl,
 requirements-suite-guard-v3/workflow-v3와 root-requirements-native-v1 참조.
+
+
+기본 production helox executable의 Root requirements-v1도 네 요청 전부 PASS다. Manual
+port 조립이나 합성 seam 없이 pip install96.334s/update102.712s, UV install98.160s/
+update96.718s에 두 root를 실제 검역·반입했다. 모든 member의 current source/native/census
+profile과 required advisory COMPLETED/ALLOW, obsolete metadata 제거·다른 의존성·사용자
+파일·입력 보존을 확인했다. Controller/baseline/source·Host 동일·helperwait0·정리 오류0,
+own408220670B 삭제다(operator396.899s/timer420.712s). 이는 개발 namespace의 실제
+기본 CLI 흐름이며 정식 release 설치나 전체 S04/hosted의 완료로 확대하지 않는다.
+원본 s04-root-requirements-native-v1/-cases.json/-timer.jsonl 및 각 stdout/stderr 참조.
+바로 이어 같은 normal test/helper-v6 소스로 Go get/retained download/public build를 시작했다.
+Go operator의 전체 제한은20분 이내다. 새 CI/추가 cold build/CPP 실행은 없다.
+
+
+### Go 실제 최초 실패와 Bash 내용 지원 gap (`128504a`)
+
+Go actual-v1은 pflag1.0.9 get39.28s/operator42.371s에 source-content INCOMPLETE/
+M13_SOURCE_UNSUPPORTED_CONTENT → M3_REQUIRED_CHECK_INCOMPLETE →
+M4_DEPENDENCY_REVIEW_REQUIRED로 반입을 보류했다. 나머지 required는 완료됐고 독립
+SumDB 무결성도 통과했다. Secondary intake accounting의 consumer finalization active/unproven
+문구는 별도 보존한다. Get 실패 후 build는 미도달이다. Host/source 동일·noSKIP/helperwait0·
+정리 오류0·own409858021B 삭제 확인. Passive exact ZIP107658B/SHA83910188…/86members에서
+verify/all.sh·gofmt.sh·golint.sh가 Bash shebang을 가진 실제 소스임을 확인했다. Current
+content.SourceLanguage 및 SourceAnalyzer input은6언어만 허용하고 이 셋을 unsupported로
+정확히 분류한다. DATA 면제로 바꾸지 않는다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Go 전체 census/current content/cache | YES | YES | YES(local unit/Race) | NO(actual) | Bash 포함 실제 get/download/build |
+| 고정 core의 Bash parser | YES | YES(engine) | YES(passive DATA only) | NO(product) | 기존 classifier/input/rules/current pin 연결 |
+| 제품 Bash coverage/rules | NO | NO | NO | NO | 동일 SourceAnalyzer의 Bash 구문·신호·누락 거부와 current evidence |
+
+기존33ae core는 rebuild 없이 Bash DATA7개를0.605s에 정상3실제/normal/local-exec,
+network-to-shell1finding, malformed1error로 읽었다. 두 규칙 후보의 DATA10개도0.652s에
+credential alias→curl1와 network-to-shell1만 검출하고 malformed1을 유지했다. Core/container/
+입력 동일·자체 container 제거 확인이다. 제품/native 지원이나 완성된 탐지율로 확대하지
+않는다. 기존 엔진/모듈을 재사용해 Bash 지원만 연결하고 rule digest·source package는 기존
+Semgrep plan→apply→verify로 갱신한다. 기존 언어·SDK/runtime version owner는 유지한다.
+원본 go-current-native-v1/go-pflag-archive-passive-preflight-v1/bash-parser-data-v1/
+bash-rules-data-v2 참조. 공식 parser 지원 자료는 Semgrep의 shell scripts 문서다.
+
+
+### Bash 기존 owner 연결·한정 실제 검증 (2026-11-05)
+
+기존 classifier·inventory parser 목록·opaque input의 세 경로에 Bash를 연결했다.
+새 scanner/모듈/권한/버전 lock은 없다. 미지원 fish/zsh 거부를 유지하고 기존 Go/Python
+census에 Bash 정상 소스를 포함했다. 첫 affected 소비자는 inventory parser 목록 누락과
+6언어 rule census 잔류를 검출했으며 두 기존 목록을 갱신했다. 교정 후 영향 inspection
+전체/Go artifact Race36.196s, foundation94.891s, security30.163s는 PASS다.
+
+기존 core의 combined passive DATA360은6.931s에35신호/예상3구문 오류/skip0,
+missing/extra0을 확인했다. 첫 credential 후보의 ordinary local `$secret` 오탐은 v3에
+보존하고 환경변수 이름 경계 교정 v4의17입력/6신호/예상1구문 오류로 대조했다.
+기존 원래343입력·규칙 객체·core는 불변이다. 이 결과는 공개 악성코드 탐지율이 아니다.
+
+기존 Semgrep plan/apply가 확정한3파일(rules, runtime lock, generated identity)만
+Root/private에 old-base 비교 후 반영했다. 나머지 runtime 값은 동일하다. Source offer는
+기존1036행 중 rules와 manifest만 갱신하고 compiler/SDK/patch/worker는 유지했다.
+Rules SHA256=671f488c3b5edf32e6c7b07e644870e3a8154683fa307c14fe14ec1656114d97,
+source tar=d8b45712778330c21b9b4733e56b8c726cec76b0d1f7baf008b221d29a045536이다.
+Materialize6.414s는 네 공급물 bytes/hash/mode를 확인했으며 runtime_qualified=false다.
+새 source archive 자체의 cold proof/정식 provenance·activation은 기존 proof로 대체하지 않는다.
+
+실제 traced parser47.32s/operator50.790s는 clean7개 coverage COMPLETED/신호0/오류0과
+partial12개 신호2/오류3/coverage INCOMPLETE·skip0을 확인했다. Bash `nosemgrep`로
+신호를 숨기지 못하고 malformed 입력이 정상 판정되지 않았다. Host/source 동일,
+helperwait0/CONFIRMED_STOPPED·정리 오류0·자체214596608B 삭제다.
+제품 Bash의 IMPLEMENTED/WIRED=YES, QUALIFIED=YES(해당 로컬 parser/소비자 범위),
+ACCEPTANCE_CLOSED=NO(Go actual·최종 grouped/hosted·release supply 남음)다.
+Updater verify는 독립 frozen 구성 후보에서 진행 중이며 전체 보강/S04는 OPEN이다.
+원본 s04-bash-{combined-coverage-v1,affected-consumers-v1/v2,go-census-green-v3,
+affected-race-v1,foundation-v1,security-v1,owner-update-v2,owner-reviewed-projection-v1,
+source-native-v1}, s04-supply-bash-v1 및 passive v3/v4가 각 범위를 소유한다.
+
+
+같은 current 후보의 Go actual-v2도 get/retained download81.96s와 public pflag build
+150.16s/operator235.215s로 PASS다. Source/full census/native/현재 승인 cache와
+정상 ELF·두 환경 Evidence를 기존 실제 시험에서 확인했다. Source/Host 동일,
+noSKIP/helperwait0/CONFIRMED_STOPPED·정리 오류0·자체409885297B 삭제다.
+최초 Bash unsupported 실패는 이 범위에서 해결 검증됐다. 전체 transitive Go/hosted/
+새 signed release/S04는 별도다. 원본 s04-go-current-native-v2 참조.
+Tagged vet3.928s/고정 Staticcheck13.195s 및 current docs0.361s도 PASS다.
+
+
+별도 updater verify-v2는863.464s에 configuration FAIL로 끝났다. Root로 실행한 frozen
+owner 후보의 첫 실패는 socket fixture의 owner 거부이며 Go chmod cleanup 경우도 root
+환경에서 실패했다. 후보에는 기존6언어 rule census와 npm physical/aggregate 혼동 시험도
+남았다. 원본/plan은 수정하지 않는다. 현재 소스의 동일 네 시험을 개발 사용자 UID1000으로
+실행한 targeted-red-v1/8.896s는 Host socket·Go cleanup을 통과하고 npm 두 기대값만
+재현했다. 제품 권한/cleanup/한도를 바꾸지 않는다. 두 시험의 기존 aggregate40k/physical10k
+구분 교정과 최신 source base에서의 기존 plan/apply/verify는 별도 후속으로 남긴다.
+전체53 package의 이전 실패 실행을 configuration PASS로 바꾸거나 불변 native를 반복하지 않는다.
+원본 s04-bash-owner-verify-v2 및 owner-followup-target-red-v1 참조.

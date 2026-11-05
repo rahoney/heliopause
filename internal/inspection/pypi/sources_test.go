@@ -314,7 +314,7 @@ func TestWheelContentCensusIncludesEmptyOpaqueAndExemptMetadata(t *testing.T) {
 		t.Run(lane, func(t *testing.T) {
 			root := t.TempDir()
 			subject := prerequisiteFixtureWheel(t, root, "example", "py3-none-any", map[string]string{
-				"example/empty.txt": "", "example/opaque.dat": "DATA", "example/helper.sh": "#!/bin/sh\necho DATA\n",
+				"example/empty.txt": "", "example/opaque.dat": "DATA", "example/helper.fish": "#!/bin/fish\necho DATA\n", "example/verify.sh": "#!/bin/bash\necho DATA\n",
 			}, "")
 			profile := artifactpypi.PublicPyPIProfile()
 			if lane == "cpu" {
@@ -330,7 +330,7 @@ func TestWheelContentCensusIncludesEmptyOpaqueAndExemptMetadata(t *testing.T) {
 			}
 			inspector, _ := NewStaticInspector(root, artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
 			wheel, files, report, err := inspector.InspectWheelContent(ctx, subject)
-			if err != nil || len(files) != 1 || len(report.Executions()) != 4 {
+			if err != nil || len(files) != 2 || len(report.Executions()) != 4 {
 				t.Fatal("complete wheel census unavailable", err)
 			}
 			var census struct {
@@ -351,7 +351,7 @@ func TestWheelContentCensusIncludesEmptyOpaqueAndExemptMetadata(t *testing.T) {
 				}
 			}
 			limits := profile.ResourcePolicy().WheelLimits()
-			if count != 1 || census.Members != len(wheel.Files) || census.Sources != 1 || census.Binaries != 0 || census.Unsupported != 1 || census.MaxMembers != int(limits.MaxFiles) || census.MaxBytes != uint64(limits.MaxUncompressed) {
+			if count != 1 || census.Members != len(wheel.Files) || census.Sources != 2 || census.Binaries != 0 || census.Unsupported != 1 || census.MaxMembers != int(limits.MaxFiles) || census.MaxBytes != uint64(limits.MaxUncompressed) {
 				t.Fatal("census omitted regular DATA/RECORD or changed archive policy", census)
 			}
 		})

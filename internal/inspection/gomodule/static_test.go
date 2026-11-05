@@ -36,7 +36,8 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 		{name: "extensionless helper CRC", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
 		{name: "plain DATA", mod: "example.com/module", file: "README.md", body: "plain inert DATA", noSource: true},
-		{name: "unsupported executable", mod: "example.com/module", file: "tools/setup.sh", body: "#!/bin/sh\necho DATA\n", noSource: true},
+		{name: "unsupported executable", mod: "example.com/module", file: "tools/setup.fish", body: "#!/bin/fish\necho DATA\n", noSource: true},
+		{name: "Bash verification script", mod: "example.com/module", file: "verify/all.sh", body: "#!/bin/bash\necho DATA\n"},
 		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
 		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "malformed required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module (\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
@@ -168,7 +169,7 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 						t.Fatal(err)
 					}
 				}
-				if !found || summary.Members != 1 || summary.Sources != len(contentSources) || (summary.Binaries == 1) != tc.native || (summary.Unsupported == 1) != (tc.file == "tools/setup.sh") {
+				if !found || summary.Members != 1 || summary.Sources != len(contentSources) || (summary.Binaries == 1) != tc.native || (summary.Unsupported == 1) != (tc.file == "tools/setup.fish") {
 					t.Fatal("Go census lost measured role or DATA", summary)
 				}
 			}

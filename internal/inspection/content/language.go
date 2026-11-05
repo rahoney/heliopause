@@ -22,6 +22,8 @@ func SourceLanguage(name string, prefixes ...[]byte) string {
 		return "rust"
 	case ".tf", ".hcl":
 		return "hcl"
+	case ".sh", ".bash":
+		return "bash"
 	}
 	if len(prefixes) != 1 {
 		return ""
@@ -51,6 +53,9 @@ func SourceLanguage(name string, prefixes ...[]byte) string {
 	if command == "node" || command == "nodejs" {
 		return "javascript"
 	}
+	if command == "sh" || command == "bash" || command == "dash" {
+		return "bash"
+	}
 	if suffix, ok := strings.CutPrefix(command, "python"); ok {
 		for index, character := range suffix {
 			if character < '0' || character > '9' {
@@ -77,7 +82,7 @@ func UnsupportedSource(name string, prefix []byte, mode uint32) bool {
 		return true
 	}
 	switch strings.ToLower(path.Ext(name)) {
-	case ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd", ".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".s", ".asm", ".rb", ".pl", ".php", ".lua", ".java":
+	case ".zsh", ".fish", ".ps1", ".bat", ".cmd", ".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".s", ".asm", ".rb", ".pl", ".php", ".lua", ".java":
 		return true
 	}
 	return false

@@ -101,7 +101,7 @@ func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
 	var stdout, stderr bytes.Buffer
-	getErr := bootstrap.Run(ctx, []string{"go", "get", reference}, &stdout, &stderr)
+	getErr := bootstrap.Run(ctx, []string{"--lang", "en", "go", "get", reference}, &stdout, &stderr)
 	if getErr != nil {
 		got, readErr := os.ReadFile(filepath.Join(project, "go.mod"))
 		_, sumErr := os.Lstat(filepath.Join(project, "go.sum"))
@@ -122,7 +122,7 @@ func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if err := bootstrap.Run(ctx, []string{"go", "mod", "download"}, &stdout, &stderr); err != nil {
+	if err := bootstrap.Run(ctx, []string{"--lang", "en", "go", "mod", "download"}, &stdout, &stderr); err != nil {
 		t.Fatalf("actual retained managed download failed: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
 	}
 	if !strings.Contains(stdout.String(), expected) {

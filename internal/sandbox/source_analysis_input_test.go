@@ -29,10 +29,10 @@ func sourceAnalysisInputFixture(t *testing.T) ports.SourceAnalysisInput {
 	return ports.SourceAnalysisInput{Artifact: artifact, Files: []ports.SourceAnalysisFile{{Path: "lib/main.py", Language: "python", Body: []byte("print('DATA only')\n")}}}
 }
 
-func TestSourceAnalysisInputBindsAllSixLanguagesAndOpaqueTransportPaths(t *testing.T) {
+func TestSourceAnalysisInputBindsDeclaredLanguagesAndOpaqueTransportPaths(t *testing.T) {
 	input := sourceAnalysisInputFixture(t)
 	input.Files = nil
-	for _, item := range []struct{ path, language string }{{"lib/entry.jsx", "javascript"}, {"ui/view.tsx", "typescript"}, {"lib/main.py", "python"}, {"pkg/main.go", "go"}, {"src/main.rs", "rust"}, {"main.tf", "hcl"}, {"literal ;$(not-a-command) 'quoted'.py", "python"}} {
+	for _, item := range []struct{ path, language string }{{"lib/entry.jsx", "javascript"}, {"ui/view.tsx", "typescript"}, {"lib/main.py", "python"}, {"pkg/main.go", "go"}, {"src/main.rs", "rust"}, {"main.tf", "hcl"}, {"verify/all.sh", "bash"}, {"literal ;$(not-a-command) 'quoted'.py", "python"}} {
 		input.Files = append(input.Files, ports.SourceAnalysisFile{Path: item.path, Language: item.language, Body: []byte("source DATA: " + item.path)})
 	}
 	prepared, err := prepareSourceAnalysisInput(context.Background(), input)

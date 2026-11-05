@@ -119,7 +119,7 @@ func NewInventory(artifact domain.AcquiredArtifact, members []MemberFact, limits
 		}
 		switch member.Language {
 		case "":
-		case "javascript", "typescript", "python", "go", "rust", "hcl":
+		case "javascript", "typescript", "python", "go", "rust", "hcl", "bash":
 			result.sources++
 		default:
 			return Inventory{}, errors.New("content inventory parser is undeclared")
