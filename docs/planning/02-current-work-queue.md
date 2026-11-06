@@ -32,6 +32,12 @@ scripts/check-workspace.py의 영속 원장/개발 UID 실행/전용 cache·tmp/
 기존 누락 사본2개111374336B도 전체 입력/신원·참조 대조 후 수거했다. 최종 후보 검사는
 같은 wrapper로 기록하며 제품 C01/C02 전체 완료와 구분한다. 상세·범위는 복구 leaf가 소유한다.
 
+2026-11-06 후속 순서는 보강 기능·필수 검증 완료 → 보강 설계 §11.2의 배포 자료
+노출 억제 최종 검토 → §13의 저장소 운영 방식 검토 → 기존 명명·채널·배포 마무리로
+기록했다. 내장/바이너리화/난독화·암호화 및 비공개 개발+공개 안내·배포 저장소는 검토
+후보이며 아직 채택하지 않았다. 현재 입력 복구·updater verify의 재개 순서와 기존20개
+gap·16개 작업 순서는 유지한다. 상세 결정 기준은 보강 설계가 소유한다.
+
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 
 [Baseline·수정 지도·부분 구현](./evidence/m13-004-convenience/advisory-baseline-20261103.md)은 기존 graph/report/판정 owner를 재사용한다. 중복 key 조회 합침·원래 순서 환원·유한 pagination/응답 예산·모호/부분 JSON·HTTP 실패·취소 거부를 구현하고 Race4.501s·canonical foundation55.335s/security14.955s 및 static/vet를 확인했다. 현재는 controlled HTTP 모델이며 record/영향 해석·production transport·graph/결과/판정·cache/CLI 연결은 MISSING이다. 전체 S05 네 상태는 NO이고 실제 live 응답·native·CI 성공으로 확대하지 않는다. M13-004 하나만 IN_PROGRESS다.
