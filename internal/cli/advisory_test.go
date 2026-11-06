@@ -58,7 +58,11 @@ func TestRecordedAdvisoryDetailsKeepSubjectFactsAndOriginalDecision(t *testing.T
 				if err != nil {
 					t.Fatal(err)
 				}
-				path := filepath.Join(t.TempDir(), "evidence")
+				base, resolveErr := filepath.EvalSymlinks(t.TempDir())
+				if resolveErr != nil {
+					t.Fatal(resolveErr)
+				}
+				path := filepath.Join(base, "evidence")
 				store, err := local.NewStore(path)
 				if err != nil {
 					t.Fatal(err)

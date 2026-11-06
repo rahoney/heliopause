@@ -234,7 +234,10 @@ func TestSemgrepFrozenSupplyBindsPlanDocumentsAndFiles(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(input, "owner.json"), owner, 0600); err != nil {
 		t.Fatal(err)
 	}
-	state := t.TempDir()
+	state, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	m, err := freezeSemgrepSupply(pin.Version, input, state)
 	if err != nil {
 		t.Fatal(err)

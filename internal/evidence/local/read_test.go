@@ -76,7 +76,11 @@ func TestReadReferenceRejectsMissingCorruptOrForeignEvidence(t *testing.T) {
 
 func TestEvidenceProfilesRemainExplicitAcrossStorage(t *testing.T) {
 	for _, current := range []bool{false, true} {
-		store, err := NewStore(t.TempDir())
+		base, resolveErr := filepath.EvalSymlinks(t.TempDir())
+		if resolveErr != nil {
+			t.Fatal(resolveErr)
+		}
+		store, err := NewStore(base)
 		if err != nil {
 			t.Fatal(err)
 		}

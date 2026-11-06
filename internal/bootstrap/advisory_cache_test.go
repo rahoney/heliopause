@@ -56,7 +56,11 @@ func TestAdvisoryCacheCompositionPersistsFactsAcrossStorageReopen(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	root := filepath.Join(t.TempDir(), "haa")
+	base, resolveErr := filepath.EvalSymlinks(t.TempDir())
+	if resolveErr != nil {
+		t.Fatal(resolveErr)
+	}
+	root := filepath.Join(base, "haa")
 	backend, err := storage.NewLocal(context.Background(), root, policy)
 	if err != nil {
 		t.Fatal(err)
