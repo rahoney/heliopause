@@ -288,3 +288,22 @@ GitHub ELF 두 시험도 PASS로 바뀌어 CI452 세 교정이 hosted에서 확�
    닫을 수 없다. Hosted ordinary·CUDA qualification은 이 결정 전까지 **BLOCKED**다. 같은 실패를
    확인하려고 CI나 CUDA dispatch를 반복하지 않는다.
 
+### Semgrep 공급 재수집 — 선택 A 진행 계획(2026-11-07)
+
+사용자가 자체 build 공급을 같은 저장소 Release asset으로 운송하는 A를 선택했다. 저장소 공개 여부는
+보류하며 Release 게시는 실행 직전 별도 승인을 받는다. 사라진 최종 1036행 `source-inputs.json`은
+없고 lock은 그 hash만 소유한다. Git pack·직접 쓴 README/SOURCE-ORIGINS는 byte 재현이 불가능하므로
+SOURCES/NOTICES hash는 같은 upstream identity의 기존 same-engine refresh(plan/apply)로 갱신한다.
+Core는 같은 의미 입력이면 기존 `--expected-sha256 33ae4500…`으로 재현을 검증한다.
+
+복원 근거는 `docs/github-logs/goal-implementation-20261101`의 보존 원본이다. 1025행
+`s04-notice-package-first-inputs-1183.json`(member path/hash), APK160
+`s04-source-builder-apk-inputs.json`(v3.23에서 160개 모두 HTTP200 확인), native15
+`s04-native-source-archive-inputs.json`, Git pin8 `s04-git-input-notices-1183.json`,
+최종 변경4·generated8 hash `s04-taint-sink-source-package-v3.json`, patch/rules 원문이다.
+
+단계: ① 보존 기록과 고정 upstream으로 origins spec을 재구성해 저장소에 추적한다. ② 기존
+`scripts/update-runtime`에 그 spec만 읽어 받고 hash를 검증하는 수집 명령을 추가한다(재부팅 재발
+방지). ③ 기존 package/rebuild로 core 재현을 확인한다. ④ same-engine plan/apply와 S04 영향
+qualification. ⑤ 승인 뒤 Release 운송·CI 연결·한 번의 CI와 CUDA 순차 실행.
+

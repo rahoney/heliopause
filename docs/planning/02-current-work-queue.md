@@ -44,6 +44,7 @@ source/SDK 수집 owner가 저장소에 없고 공급 구조가 미결정이라 
 해제 조건: 수집 경로 결정 또는 원본 supply 제공. 상세는 복구 leaf가 소유한다.
 CI452(9ca552e)는 6 SUCCESS/3 FAILURE였다. compress 취약점·macOS test compile·lifecycle client 신원의 세 원인을 최소 교정했고 로컬 canonical4가 PASS다. 다음 hosted 결과는 복구 leaf가 소유한다.
 CI453(ab63980)에서 세 교정은 hosted로 확인됐다. 남은 hosted 실패는 CI에 Semgrep 공급이 없어 생기며, S04 공급 결정 전까지 hosted ordinary·CUDA qualification은 **BLOCKED**다. macOS temp symlink 시험 교정은 로컬 검증 후 다음 CI에 묶는다.
+2026-11-07 사용자가 Semgrep 공급 A(자체 build→같은 저장소 Release 운송)를 선택했다. 사라진 source offer를 보존 원본과 고정 upstream으로 재수집하는 단계 계획은 복구 leaf가 소유하며 Release 게시는 실행 직전 별도 승인이다.
 
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 
