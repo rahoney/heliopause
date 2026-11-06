@@ -270,3 +270,21 @@ gVisor Linux Integration·macOS·Required는 FAILURE다. 세 최초 실패는 �
 security(130s)가 wrapper에서 PASS다. 원본 job log 3개와 poll 기록은 `docs/github-logs/ci452-20261107`이
 소유한다. 실제 hosted 통과는 다음 CI에서 확인한다.
 
+### CI453 — 교정 확인과 hosted Semgrep 공급 차단
+
+ab63980의 [CI453](https://github.com/rahoney/heliopause/actions/runs/42287744483)은 GET3(21:02:33Z)에서
+terminal failure였다. Worker는 자연 종료했다. 7 SUCCESS에는 Vulnerability가 포함되고, Linux lifecycle·
+GitHub ELF 두 시험도 PASS로 바뀌어 CI452 세 교정이 hosted에서 확인됐다. 남은 실패는 둘이다.
+
+1. macOS: compile 문제가 풀리자 darwin `t.TempDir()`의 `/var`→`/private/var` symlink가 새 storage/
+   evidence의 symlink 거부 경계에 걸린 5개 package 시험이 드러났다(CI452에서는 compile 오류에 가려져
+   있었다). 제품 경계는 그대로 두고 기존 관례인 `filepath.EvalSymlinks(t.TempDir())`만 다섯 시험에
+   적용했다. Linux의 symlink TMPDIR로 RED5→GREEN5와 일반 TMPDIR GREEN5, darwin vet을 확인했다.
+   같은 조건의 전체 실행에서 나온 promotion 실패는 `_linux_test.go`만 해당하고 macOS promotion은
+   hosted ok여서 이번 범위가 아니다.
+2. Linux integration: 실제 `helox npm install`/`pip install`이 `immutable installed native tool supply is
+   unavailable or changed`로 실패했다. S04 내용 분석이 production 설치 경로의 필수 검사인데 CI에는
+   Semgrep core/rules 공급이 없다. 이는 위 S04 BLOCKED와 같은 공급 구조 미결정이며 CI 수정만으로
+   닫을 수 없다. Hosted ordinary·CUDA qualification은 이 결정 전까지 **BLOCKED**다. 같은 실패를
+   확인하려고 CI나 CUDA dispatch를 반복하지 않는다.
+
