@@ -221,7 +221,7 @@ func (c *checker) runProfile(profile string) error {
 	case "fuzz":
 		return c.runFuzz()
 	case "docs":
-		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
+		return c.runStep("documentation", c.checkDocs)
 	case "freshness":
 		return c.runStep("version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) })
 	case "qualification-freshness":
@@ -276,7 +276,7 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"architecture", c.checkArchitecture},
 	}
 	if includeDocs {
-		steps = append(steps, checkStep{"documentation", func() error { return checkMarkdownTree(c.root) }})
+		steps = append(steps, checkStep{"documentation", c.checkDocs})
 	}
 	return steps
 }
@@ -461,4 +461,9 @@ func validateCorpusTestExecution(output string) error {
 		}
 	}
 	return nil
+}
+
+func (c *checker) checkDocs() error {
+	warnOversizedDocs(c.root, c.stdout)
+	return checkMarkdownTree(c.root)
 }
