@@ -112,7 +112,9 @@ func TestPipxCIClientLifetimeOrder(t *testing.T) {
 			return strings.Replace(s, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        if: false", 1)
 		},
 		"missing-production-restore": func(s string) string {
-			return strings.Replace(s, "          haa_install_ci_client \"$RUNNER_TEMP/helox\"\n", "", 1)
+			// Target the pipx restore; an earlier lifecycle restore is a separate owner.
+			restore := "          # Restore the production client before leaving the integration step.\n          haa_install_ci_client \"$RUNNER_TEMP/helox\"\n"
+			return strings.Replace(s, restore, "          # Restore the production client before leaving the integration step.\n", 1)
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

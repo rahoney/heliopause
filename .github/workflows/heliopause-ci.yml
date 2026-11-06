@@ -384,8 +384,18 @@ jobs:
           go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
           HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'
-          HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
-          HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
+          # Both experiments use the observation resource service, which admits
+          # only the configured client inode; run them as that client, then restore.
+          go test -c -o "$RUNNER_TEMP/helox-lifecycle-test" ./internal/sandbox
+          haa_install_ci_client "$RUNNER_TEMP/helox-lifecycle-test"
+          haa_start_policy_helper
+          (
+            cd internal/sandbox
+            HELOX_GVISOR_INTEGRATION=1 /usr/libexec/heliopause/helox -test.timeout=5m -test.run '^TestLinuxGVisorLifecycleIntegration$'
+            HELOX_GITHUB_RELEASE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.timeout=5m -test.run '^TestLinuxGitHubReleaseELFDynamicIntegration$'
+          )
+          haa_install_ci_client "$RUNNER_TEMP/helox"
+          haa_start_policy_helper
           # The typed-helper ordinary-user path is exercised for both npm and pip.
           # npm installs is-number@7.0.0 with complete ALLOW inspection and atomic
           # offline promotion (exit 0).
