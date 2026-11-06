@@ -248,3 +248,25 @@ Workspace를 `/tmp/hcw-<16hex>`로 줄였고 Host 회귀7개8.468s와 같은 tes
 `s04-{opam,native,extra}-source-offer-staging-1183.json`은 출처·checksum 자료이며 원래 입력의
 대체물이 아니다.
 
+### CI452 — 119 commit 묶음의 첫 hosted 결과와 최소 교정
+
+9ca552e를 정상 push해 PR #38의 [CI452](https://github.com/rahoney/heliopause/actions/runs/42279560971)를
+실행했다. 단일 20분 worker의 GET2(19:48:36Z)가 terminal failure를 소비했고 worker는 자연 종료했다.
+Quick·Docs·Security·Minimum Go·gVisor Observer·Wheel Corpus 6개는 SUCCESS, Vulnerability·
+gVisor Linux Integration·macOS·Required는 FAILURE다. 세 최초 실패는 서로 독립이다.
+
+1. Vulnerability: GO-2026-6865(klauspost/compress1.18.6 two-block frame panic)가
+   `CaptureBuildOutput→tar.Writer.Close` 경로로 reachable이다. 공식 fixed1.20.2로 해당 module만
+   올리고 clean clone에서 tidy했다. Suppression은 없다.
+2. macOS: OS 제약 없는 `linux_integration_test.go`가 db32813부터 Linux 전용 adapter를 호출해
+   Darwin test compile이 깨졌다. 해당 3함수만 byte 동일하게 `github_release_integration_linux_test.go`로
+   옮겼다. darwin arm64/amd64·linux vet가 통과했다.
+3. Linux integration: npm lifecycle과 GitHub ELF 시험이 243dbfb·db32813 뒤 observation resource
+   서비스를 쓰지만 CI는 plain `go test` binary로 실행했다. 서비스는 client_path inode만 승인한다.
+   기존 `haa_install_ci_client`→`helox -test.run`→실제 helox 복원 방식으로 두 줄만 옮겼다.
+   그로 인해 첫 restore 줄을 지우던 pipx negative 시험의 mutation 대상을 pipx 복원 위치로 좁혔다.
+
+교정 후보의 canonical quick(380s, 재구성 runsc 명시)·vulnerability(120s)·workflow(107s)·
+security(130s)가 wrapper에서 PASS다. 원본 job log 3개와 poll 기록은 `docs/github-logs/ci452-20261107`이
+소유한다. 실제 hosted 통과는 다음 CI에서 확인한다.
+

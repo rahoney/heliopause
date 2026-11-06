@@ -42,6 +42,7 @@ gap·16개 작업 순서는 유지한다. 상세 결정 기준은 보강 설계�
 8m19s 재현했다(6 member 모두 lock 일치). S04 Semgrep updater verify는 **BLOCKED**다. 1036행
 source/SDK 수집 owner가 저장소에 없고 공급 구조가 미결정이라 새 수집 도구 없이 복구할 수 없다.
 해제 조건: 수집 경로 결정 또는 원본 supply 제공. 상세는 복구 leaf가 소유한다.
+CI452(9ca552e)는 6 SUCCESS/3 FAILURE였다. compress 취약점·macOS test compile·lifecycle client 신원의 세 원인을 최소 교정했고 로컬 canonical4가 PASS다. 다음 hosted 결과는 복구 leaf가 소유한다.
 
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 
