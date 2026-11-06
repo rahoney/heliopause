@@ -66,9 +66,9 @@ class WorkspaceChecks(unittest.TestCase):
         return receipt, record
 
     def seeded(self):
-        task = self.state / uuid.uuid4().hex
+        task = self.state / uuid.uuid4().hex[:16]
         task.mkdir()
-        root = Path('/tmp') / ('haa-work-check-' + task.name)
+        root = Path('/tmp') / ('hcw-' + task.name)
         root.mkdir(mode=0o700)
         os.chown(root, 1000, 1000)
         (root / 'payload').write_text('owned bytes')

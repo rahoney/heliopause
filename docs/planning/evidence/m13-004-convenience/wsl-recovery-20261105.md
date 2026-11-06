@@ -227,3 +227,13 @@ ACCEPTANCE_CLOSED=YES는 위 개발 workspace·회귀·docs 소비자 한정이�
 우회하면 자동 관리되지 않는다. 코드·원본·최종 검사·정리 증거는 같은 raw의 workspace-* /
 completed-doc-copies-collection.json 및 check-state가 소유한다. 다음 updater 재개 때는
 이번 개발 스크립트 변경도 최신 versioned baseline 대조에 포함하고 기존a936 clone은 보존한다.
+
+2026-11-07 wrapper의 첫 canonical quick(7m37s)은 exit1/CONFIRMED_REMOVED였다. 최초 실패는
+runtimeidentity PatchDrift의 실제 runsc 분기다. Host 설치 gVisor patch588adad4는 현재 lock
+c8a546d0보다 이전이라 `sentry/filesystem_mutation`이 없고, lock SHA512 일치 후보는 `/tmp`
+소실로 Host·F:에 없다. Assertion을 끄거나 존재하지 않는 HELOX_RUNSC_BINARY로 우회하지 않으며
+현재 bundle 재구성 전까지 이 분기는 입력 MISSING이다. 두 번째 promotion socket 실패는 긴
+`/tmp/haa-work-check-<32hex>/tmp` TMPDIR로 unix socket 108byte를 넘긴 wrapper 환경 오류다.
+Workspace를 `/tmp/hcw-<16hex>`로 줄였고 Host 회귀7개8.468s와 같은 test(0.067s)가 PASS다.
+이미 완료된 이전 이름 receipt는 재수거 대상이 아니다. Docs는 exit0과 tracked 두 문서의 크기
+경고를 출력했다. 다른 quick 패키지는 같은 실행에서 ok였고 vet/Staticcheck가 앞서 통과했다.

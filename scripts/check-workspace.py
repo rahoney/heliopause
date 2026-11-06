@@ -97,7 +97,7 @@ def inventory(root, uid):
 def collect(record, receipt):
     root = Path(record['workspace'])
     try:
-        if root.parent != Path('/tmp') or root.name != 'haa-work-check-' + receipt.parent.name:
+        if root.parent != Path('/tmp') or root.name != 'hcw-' + receipt.parent.name:
             raise RuntimeError('workspace path differs from registered task')
         if record['boot'] == Path('/proc/sys/kernel/random/boot_id').read_text().strip():
             if record['pid'] != os.getpid() and process_identity(record['pid']) == record['start']:
@@ -161,14 +161,15 @@ def execute(args, state):
         raise RuntimeError('source must belong to a development user, not root')
     if not args.command:
         raise RuntimeError('check command is required after --')
-    task = state / uuid.uuid4().hex
+    # Short names keep TMPDIR-based unix socket paths in tests below the 108-byte limit.
+    task = state / uuid.uuid4().hex[:16]
     task.mkdir(mode=0o700)
     fd = os.open(state, os.O_RDONLY | os.O_DIRECTORY)
     try:
         os.fsync(fd)
     finally:
         os.close(fd)
-    workspace = Path('/tmp') / ('haa-work-check-' + task.name)
+    workspace = Path('/tmp') / ('hcw-' + task.name)
     record = {'schema': 1, 'workspace': str(workspace), 'uid': uid, 'pid': os.getpid(),
               'start': process_identity(os.getpid()), 'boot': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
               'command': args.command, 'source': str(repo), 'cleanup': 'ALLOCATING', 'command_exit': None}
