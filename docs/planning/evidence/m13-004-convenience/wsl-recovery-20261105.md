@@ -237,3 +237,14 @@ c8a546d0보다 이전이라 `sentry/filesystem_mutation`이 없고, lock SHA512 
 Workspace를 `/tmp/hcw-<16hex>`로 줄였고 Host 회귀7개8.468s와 같은 test(0.067s)가 PASS다.
 이미 완료된 이전 이름 receipt는 재수거 대상이 아니다. Docs는 exit0과 tracked 두 문서의 크기
 경고를 출력했다. 다른 quick 패키지는 같은 실행에서 ok였고 vet/Staticcheck가 앞서 통과했다.
+
+같은 날 현재 lock의 gVisor bundle을 clean clone(f8de8d6)과 기존 `build-gvisor-runtime-bundle.sh`로
+`/var/tmp/haa-resume-20261107/gvisor-bundle`에 재구성했다. 고정 builder image와 Bazel 빌드가
+8m19s/exit0이며 6 member size/SHA512가 모두 lock과 같다. 이 runsc를 HELOX_RUNSC_BINARY로
+명시한 runtimeidentity 전체가 PASS다. Host 설치 runtime은 바꾸지 않았다. `/var/tmp`는 재부팅에도
+남지만 전체 백업은 아니다. Semgrep 공급물 3개와 1036행 source collection·SDK APK는 Host와 F:에
+없다. 이를 만드는 수집 owner가 tracked source에 없고 기존 원장도 공급 구조를 미결정 MISSING으로
+기록하므로, 새 수집 도구 없이 updater verify를 재개할 수 없다(BLOCKED). staging 기록
+`s04-{opam,native,extra}-source-offer-staging-1183.json`은 출처·checksum 자료이며 원래 입력의
+대체물이 아니다.
+

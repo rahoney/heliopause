@@ -38,6 +38,11 @@ scripts/check-workspace.py의 영속 원장/개발 UID 실행/전용 cache·tmp/
 후보이며 아직 채택하지 않았다. 현재 입력 복구·updater verify의 재개 순서와 기존20개
 gap·16개 작업 순서는 유지한다. 상세 결정 기준은 보강 설계가 소유한다.
 
+2026-11-07 무인 재개: 현재 lock gVisor bundle을 기존 build script로 `/var/tmp/haa-resume-20261107`에
+8m19s 재현했다(6 member 모두 lock 일치). S04 Semgrep updater verify는 **BLOCKED**다. 1036행
+source/SDK 수집 owner가 저장소에 없고 공급 구조가 미결정이라 새 수집 도구 없이 복구할 수 없다.
+해제 조건: 수집 경로 결정 또는 원본 supply 제공. 상세는 복구 leaf가 소유한다.
+
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 
 [Baseline·수정 지도·부분 구현](./evidence/m13-004-convenience/advisory-baseline-20261103.md)은 기존 graph/report/판정 owner를 재사용한다. 중복 key 조회 합침·원래 순서 환원·유한 pagination/응답 예산·모호/부분 JSON·HTTP 실패·취소 거부를 구현하고 Race4.501s·canonical foundation55.335s/security14.955s 및 static/vet를 확인했다. 현재는 controlled HTTP 모델이며 record/영향 해석·production transport·graph/결과/판정·cache/CLI 연결은 MISSING이다. 전체 S05 네 상태는 NO이고 실제 live 응답·native·CI 성공으로 확대하지 않는다. M13-004 하나만 IN_PROGRESS다.
