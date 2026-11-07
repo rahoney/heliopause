@@ -18,7 +18,6 @@ import (
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
-	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
@@ -262,7 +261,7 @@ func bunNativeOriginalFixture(t *testing.T, ctx context.Context, manifestBody, t
 	if err != nil {
 		t.Fatal(err)
 	}
-	static, err := inspectionnpm.NewInspector(intake)
+	static, err := newNPMStaticInspector(intake, executor, observer.Observer())
 	if err != nil {
 		t.Fatal(err)
 	}

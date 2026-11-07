@@ -490,3 +490,12 @@ npm whole-project(required_per_archive=6, 191s)·workflow(191s)·root CLI(134s)�
 경로에 들어가 시험이 실제로 길어진 것이다. 개별 한도 값은 바꾸지 않고 같은 9m 실행 두 번(검역·workflow / root CLI·CLI)으로
 나눠 validator가 두 출력을 함께 읽게 했다(사용자 사후 확인 대상). macOS는 승인된 Mac 한도(build 4m·test 9m)가 job
 `timeout-minutes: 15`(설치 약 5m 포함) 안에 들어가지 못해 platform 단계 10.4m에서 취소됐다. Job 한도만 25m로 맞췄다.
+
+### CI465 — npm project 전부 통과와 PNPM 거래 시험의 같은 생성자 누락
+
+2798c6f의 [CI465](https://github.com/rahoney/heliopause/actions/runs/42401970695)는 GET3(19:14:46Z)에서 Linux·Required FAILURE, 나머지 8개(macOS
+포함) SUCCESS다. 분할한 npm project 5개 시험이 모두 PASS했다(CLI 40.8s). 다음 실패는 `TestPNPMPublicProjectTransactionIntegration/single`의
+같은 staging 거부다. 이 시험은 bindings를 통해 production pnpm project 거래가 staging하므로 이전 grep(직접 Stage 호출)에 잡히지 않았다.
+production cache staging(bun/pnpm/npm project·Python requirements/uv)으로 가는 realcorpus 시험을 전수 대조해 pnpm project·bun
+transaction·pnpm/bun original·UV project publication·UV tool install 6개를 production 생성자로 맞췄다. 이들의 check 단정은 required만
+보거나 `< 3`이라 내용 검사 추가와 맞는다. 제품 변경은 없다.

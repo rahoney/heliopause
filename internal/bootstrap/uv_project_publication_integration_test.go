@@ -102,8 +102,7 @@ func TestUVPublicProjectApprovedPublicationIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	runtime := sandbox.PinnedPythonRuntime()
-	static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	static, err := newPyPIStaticInspector(intakeRoot, executor, observer.Observer())
 	if err != nil {
 		t.Fatal(err)
 	}
