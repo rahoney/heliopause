@@ -446,3 +446,18 @@ v5/v6 PASS는 이 시간차 안의 결과였다. 계획 21 §5.5는 "부모 종�
 (build 120s·default test 6m)를 넘었다. 성공 run은 build 약 1분이고 실패 run은 약 2분이다. Mac 한도는 사용자 규칙상
 바꾸지 않았다. 원본은 `docs/github-logs/ci461-20261107`이다.
 
+
+### 후속 교정 — 분리 후손 관찰 대기와 macOS 한도(사용자 승인)
+
+사용자는 CI461 뒤 두 결정을 내렸다: 후손 대기는 설계대로(observer 방식) 구현하고, Mac 한도는 build 240s·default
+test 9m(go test 8m)으로 올린다(Mac만, `scripts/check/runner.go`의 `darwinLimit`). Runsc `ps`/`debug --ps`는 비수확
+PID1 아래 종료된 고아를 계속 나열해 살아 있는 후손과 구분하지 못하고, Host cgroup은 sentry만 보인다(로컬 probe 확인).
+그래서 판단 근거를 observer의 처리된 clone/exit 원장으로 한정했다. Observer는 bound stream의 각 수락 event 뒤
+OCI root 외 live thread group 수를 등록 정보에 반영하고, 새 control `processes`가 `unknown/running/drained`를
+답한다(stream 종료 뒤·바인딩 전은 unknown). Go `awaitObservedProcessDrain`은 lifecycle 성공 뒤 기존 wall deadline 안에서
+drained를 기다리며 만료는 `M3_DYNAMIC_TIMEOUT`, 원장 상실은 `M3_DYNAMIC_OBSERVER_FAILED`(Python은
+`M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE`)로 INCOMPLETE다. npm 환경·PNPM/Bun/npm-project instance·Python unit 세 경로에
+연결했다. 로컬 검증: 단위(drained/한도 만료/unknown/세션 없음)·pinned bazel observer build와 전체 latch(새 drain
+control 포함, 6m54s) PASS, security·docs PASS다. Quick은 vet/Staticcheck와 sandbox 포함 49개 package가 PASS지만
+Host 부하(load 10~14)에서 `internal/promotion`이 전체 병렬 5분 한도를 넘었다(단독 174s PASS, 최장 test 9s, drain 경로
+미사용). 설치된 Host observer는 교체하지 않았으므로 실제 분리 자식 관찰과 promotion은 hosted CI가 판정한다.

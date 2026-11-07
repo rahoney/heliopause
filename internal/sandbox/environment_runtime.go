@@ -251,6 +251,8 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 		if ctx.Err() != nil {
 			primaryCode = "M3_DYNAMIC_TIMEOUT"
 		}
+	} else {
+		primaryCode, commandErr = awaitLifecycleDescendants(ctx, n.backend.runner, writer.id)
 	}
 	if err := n.stop(writer.id); err != nil {
 		if primaryCode != "" {
@@ -262,6 +264,24 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 		return primaryCode, commandErr
 	}
 	return n.completeEnvironment(ctx, profile, writer, anchor, before, limits)
+}
+
+// awaitLifecycleDescendants maps a failed observed drain after a successful
+// lifecycle to INCOMPLETE: expiry of the existing wall limit is a timeout and
+// any other loss of the observer's exit ledger is an observer failure.
+func awaitLifecycleDescendants(ctx context.Context, runner CommandRunner, container string) (string, error) {
+	if !observedDrainRequired(runner, container) {
+		return "", nil
+	}
+	err := awaitObservedProcessDrain(ctx, container)
+	switch {
+	case err == nil:
+		return "", nil
+	case errors.Is(err, context.DeadlineExceeded):
+		return "M3_DYNAMIC_TIMEOUT", err
+	default:
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
 }
 
 // Both current npm archive and instance experiments snapshot only after their

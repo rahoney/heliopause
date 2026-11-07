@@ -543,6 +543,10 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 			arguments = append(arguments, unit.candidate)
 		}
 		commandErr := discardCommand(runCtx, b.runner, "docker", arguments...)
+		var drainErr error
+		if commandErr == nil && observedDrainRequired(b.runner, probe.id) {
+			drainErr = awaitObservedProcessDrain(runCtx, probe.id)
+		}
 		transaction.commandReason = pythonCommandErrorReason(commandErr)
 		outcome := observationZeroExit
 		if commandErr != nil {
@@ -555,6 +559,10 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 		if err := transaction.terminatePhase(probe.id); err != nil {
 			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
 			return failed, errors.Join(failureErr, transaction.diagnostic("unit-termination", err))
+		}
+		if drainErr != nil {
+			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-descendants", drainErr))
 		}
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")

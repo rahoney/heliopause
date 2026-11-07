@@ -7239,6 +7239,81 @@ bool VerifyDirectExecAdmissionBound(int output, const std::string& remote, const
   return ExpectRecordExact(output, kSixtyFifthID, "stream-end");
 }
 
+// The drain query reports only the processed clone/exit ledger of the bound
+// stream: unknown before binding and after stream end, running while a
+// detached descendant outlives its exited launch root, drained only after
+// every non-OCI-root group exit was processed, and nothing to a foreign peer.
+bool VerifyObservedProcessDrainControl() {
+  const std::string id = "aabbccddeeff0303";
+  const std::string generation(64, 'e');
+  int sockets[2];
+  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, sockets) != 0) return false;
+  ControlPeer peer{sockets[0], false, false, false, "", ""};
+  std::map<std::string, ProfileRegistration> profiles;
+  auto parse = [&](const std::string& request, const std::string& expected) {
+    if (!ParseControlRecord(request.data(), request.size(), &peer, &profiles)) return false;
+    char reply[kMaxControlRecordBytes];
+    const ssize_t size = recv(sockets[1], reply, sizeof(reply), MSG_TRUNC);
+    return size == static_cast<ssize_t>(expected.size()) &&
+        std::string(reply, static_cast<size_t>(size)) == expected;
+  };
+  const std::string topology = "/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0";
+  const std::string query = "{\"op\":\"processes\",\"container_id\":\"" + id + "\",\"session_generation\":\"" + generation + "\"}";
+  const auto ack = [&](const char* status, const std::string& item_generation) {
+    return std::string("{\"op\":\"ack\",\"ack_op\":\"processes\",\"status\":\"") + status +
+        "\",\"container_id\":\"" + id + "\",\"session_generation\":\"" + item_generation + "\"}";
+  };
+  bool ok = parse("{\"op\":\"profile\",\"container_id\":\"" + id + "\",\"profile\":\"npm-lifecycle\",\"expected_topology\":\"" +
+                  topology + "\",\"session_generation\":\"" + generation + "\"}",
+                  "{\"op\":\"ack\",\"ack_op\":\"profile\",\"status\":\"registered\",\"container_id\":\"" + id +
+                  "\",\"profile\":\"npm-lifecycle\",\"expected_topology\":\"" + topology +
+                  "\",\"session_generation\":\"" + generation + "\"}") &&
+      parse(query, ack("unknown", generation));
+  auto registration = profiles.find(id);
+  if (!ok || registration == profiles.end()) { close(sockets[0]); close(sockets[1]); return false; }
+  auto context_for = [&](int32_t group_id, int64_t start_time_ns, int32_t parent_group_id, bool exec_session) {
+    gvisor::common::ContextData context;
+    context.set_container_id(id);
+    context.set_thread_group_id(group_id);
+    context.set_thread_group_start_time_ns(start_time_ns);
+    context.set_parent_thread_group_id(parent_group_id);
+    context.set_is_exec_session(exec_session);
+    context.set_process_name("node");
+    return context;
+  };
+  auto exit_group = [&](const gvisor::common::ContextData& context, ProcessState* state) {
+    gvisor::sentry::ExitNotifyParentInfo event;
+    *event.mutable_context_data() = context;
+    std::string payload, container;
+    const char* reason = nullptr;
+    return event.SerializeToString(&payload) &&
+        ParseSentryExitNotifyParent(payload.data(), payload.size(), &container, state, &reason);
+  };
+  ProcessState state;
+  const auto init = context_for(1, 100, 0, false);
+  const auto root = context_for(800, 8000, 0, true);
+  const auto detached = context_for(801, 8010, 800, false);
+  ok = RegisterGroup(&state, init, ProcessState::Role::kControl, ProcessState::Provenance::kOCIRoot, false, true) &&
+      RegisterGroup(&state, root, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, true, false) &&
+      RegisterGroup(&state, detached, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, false);
+  RecordProcessDrainLedger(&registration->second, state);
+  ok = ok && parse(query, ack("running", generation)) && exit_group(root, &state);
+  RecordProcessDrainLedger(&registration->second, state);
+  ok = ok && parse(query, ack("running", generation)) && exit_group(detached, &state);
+  RecordProcessDrainLedger(&registration->second, state);
+  ok = ok && state.groups.size() == 1 && parse(query, ack("drained", generation));
+  const std::string foreign(64, 'f');
+  const std::string extra = query.substr(0, query.size() - 1) + ",\"nonce\":\"x\"}";
+  ok = ok && parse("{\"op\":\"processes\",\"container_id\":\"" + id + "\",\"session_generation\":\"" + foreign + "\"}",
+                   ack("rejected", foreign)) &&
+      !ParseControlRecord(extra.data(), extra.size(), &peer, &profiles);
+  registration->second.process_count_known = false;
+  ok = ok && parse(query, ack("unknown", generation));
+  close(sockets[0]);
+  close(sockets[1]);
+  return ok;
+}
+
 bool VerifyStrictControlParser() {
   const std::string id = "aabbccddeeff0011";
   const std::string generation(64, 'a');
@@ -10476,7 +10551,7 @@ int main(int argc, char** argv) {
         VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() &&
         VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() &&
         VerifyResolverLockGenerationProductionPath("update") && VerifyResolverLockGenerationProductionPath("ci") &&
-        VerifyAuthoritativeProcessGroupLifecycle() && VerifyDirectExecAdmission() &&
+        VerifyAuthoritativeProcessGroupLifecycle() && VerifyObservedProcessDrainControl() && VerifyDirectExecAdmission() &&
         VerifyAdmissionTerminalControlProtocol() && VerifyKernelTerminalOutcomes() && VerifyStrictControlParser() ? 0 : 1;
   }
   if (argc != 1) return 2;
@@ -10671,7 +10746,7 @@ int main(int argc, char** argv) {
   const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath() &&
       VerifyResolverLockGenerationProductionPath("update") && VerifyResolverLockGenerationProductionPath("ci");
   fprintf(stderr, "STARTING process_group_lifecycle\n");
-  const bool process_group_lifecycle = VerifyAuthoritativeProcessGroupLifecycle();
+  const bool process_group_lifecycle = VerifyAuthoritativeProcessGroupLifecycle() && VerifyObservedProcessDrainControl();
   fprintf(stderr, "STARTING direct_exec_admission\n");
   const bool direct_exec_admission = VerifyDirectExecAdmission();
 	const bool admission_terminal_protocol = VerifyAdmissionTerminalControlProtocol();

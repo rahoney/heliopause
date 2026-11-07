@@ -787,6 +787,11 @@ struct ProfileRegistration {
     uint32_t terminal_wait_status = 0;
   };
   std::vector<PendingAdmission> pending_admissions;
+  // Mirrors the bound remote stream's kernel clone/exit ledger: live thread
+  // groups other than the OCI root. Unknown before binding and after the
+  // stream ends, so it never reports a drain the observer did not process.
+  bool process_count_known = false;
+  size_t live_process_groups = 0;
 };
 
 struct ControlPeer {
@@ -4834,6 +4839,18 @@ bool ExactControlFields(const std::map<std::string, std::string>& fields,
   return true;
 }
 
+// Called after every accepted event of a bound stream: the drain answer is
+// exactly the processed clone/exit ledger, never a runsc or guest listing.
+void RecordProcessDrainLedger(ProfileRegistration* registration, const ProcessState& state) {
+  if (registration == nullptr) return;
+  size_t live = 0;
+  for (const auto& group : state.groups) {
+    if (group.second.provenance != ProcessState::Provenance::kOCIRoot) ++live;
+  }
+  registration->process_count_known = true;
+  registration->live_process_groups = live;
+}
+
 bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
                         std::map<std::string, ProfileRegistration>* profiles) {
   if (peer == nullptr || peer->fd < 0 || profiles == nullptr) return false;
@@ -4875,6 +4892,21 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
       status = "invalidated";
     }
     return SendInvalidateAck(peer->fd, id, generation, status);
+  }
+  if (op->second == "processes") {
+    if (!ExactControlFields(fields, {"op", "container_id", "session_generation"})) return false;
+    const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
+    if (!ValidContainerID(id) || !ValidSessionGeneration(generation)) return false;
+    peer->request_seen = true;
+    auto profile = profiles->find(id); const char* status = "rejected";
+    if (peer->registered && !peer->terminal && peer->container_id == id &&
+        peer->session_generation == generation && profile != profiles->end() &&
+        profile->second.session_generation == generation && profile->second.control_fd == peer->fd) {
+      status = !profile->second.process_count_known ? "unknown" :
+          (profile->second.live_process_groups == 0 ? "drained" : "running");
+    }
+    return SendControlBody(peer->fd, "{\"op\":\"ack\",\"ack_op\":\"processes\",\"status\":\"" +
+        std::string(status) + "\",\"container_id\":\"" + id + "\",\"session_generation\":\"" + generation + "\"}");
   }
   if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete" && op->second != "outcome" && op->second != "target") return false;
   if (!ExactControlFields(fields, {"op", "container_id", "session_generation", "mode", "nonce"})) return false;
@@ -7150,6 +7182,7 @@ int main(int argc, char** argv) {
         (stream.registration_generation.empty() || current->second.session_generation == stream.registration_generation)) {
       registration = &current->second;
     }
+    if (registration != nullptr) registration->process_count_known = false;
     if (!stream.fault && registration == nullptr) {
       stream.fault = true;
       stream.fault_reason = "PROFILE_LOOKUP_FAILURE";
@@ -7332,6 +7365,7 @@ int main(int argc, char** argv) {
             if (stream.fault_reason == nullptr) stream.fault_reason = "STREAM_FAULT";
             terminal = true;
           }
+          if (!terminal) RecordProcessDrainLedger(registration, stream.process_state);
           if (!terminal && header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN &&
               header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT) {
             ++stream.normalized_records;

@@ -234,6 +234,8 @@ func (n *environmentInspection) instanceExperiment(ctx context.Context, session 
 			primary = "M3_DYNAMIC_TIMEOUT"
 		}
 		commandErr = errors.Join(commandErr, ctx.Err(), context.Cause(ctx))
+	} else {
+		primary, commandErr = awaitLifecycleDescendants(ctx, b.runner, container)
 	}
 	if err := n.stop(container); err != nil {
 		if primary != "" {
