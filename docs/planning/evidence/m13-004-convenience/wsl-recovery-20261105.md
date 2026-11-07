@@ -507,3 +507,14 @@ production 생성자로 바꾼 PNPM approved cache(81.6s)와 거래 `single`(97.
 공동 실행의 기존 5m에 닿았다. 개별 한도는 바꾸지 않고 PNPM·Bun 모두 cache와 거래 `single`/`peer`/`empty`를 각각 별도 5m 실행으로
 나눴다. 기존 validator는 정확한 한 줄 명령을 소유하므로 고정 명령을 줄 목록으로 바꾸고 변형 반례도 개별 줄에 적용했다
 (`go test ./scripts/check` PASS). `peer` 한 실행이 5m를 넘으면 시험 한도 변경은 사용자 결정 대상으로 남긴다.
+
+### CI467 — PNPM project 전부 통과, Bun Artifact 실행 시험 wrapper 누락·macOS 시간 변동
+
+a46f166의 [CI467](https://github.com/rahoney/heliopause/actions/runs/42409367653)은 GET4(21:05:57Z)에서 Linux·macOS·Required FAILURE, 7개 SUCCESS다.
+사례별로 나눈 PNPM cache(69.6s)·거래 single/peer/empty(85.8/135.1/6.9s)·CLI(246.2s)·original(179.8s)이 모두 PASS했다.
+다음 실패 `TestBunActualArtifactExecutionBoundary/normal`은 0.96s에 INCOMPLETE였다. 8293b20(2026-11-03)이 instance backend에
+`discardCommandRunner` 조건을 추가했으나 이 시험의 출력 capture wrapper는 `RunDiscard`를 전달하지 않아 accounting 조건에서
+멈췄다. wrapper에 기존 runner로의 `RunDiscard` 전달만 추가했다(제품 변경 없음). 관찰 대기는 활성 session으로 그대로 요구된다.
+macOS는 같은 source 계열의 CI466에서 default test 5.6m이었으나 이번에는 production build 2m7s 뒤 default test가 승인된 9m에
+닿았다. 모든 package가 `ok`를 출력했고 promotion 340s·update-runtime 194s가 마지막이었다. 하위 원인은 UNKNOWN(runner 속도
+변동 후보)이며 한도는 바꾸지 않고 다음 실행에서 재관찰한다.

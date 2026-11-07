@@ -91,6 +91,9 @@ func (r *bunArtifactExecutionCapture) RunInput(ctx context.Context, input io.Rea
 func (r *bunArtifactExecutionCapture) RunOutput(ctx context.Context, output io.Writer, binary string, args ...string) error {
 	return r.CommandRunner.(streamingDockerOutput).RunOutput(ctx, output, binary, args...)
 }
+func (r *bunArtifactExecutionCapture) RunDiscard(ctx context.Context, binary string, args ...string) error {
+	return r.CommandRunner.(discardCommandRunner).RunDiscard(ctx, binary, args...)
+}
 
 func TestBunActualArtifactExecutionBoundary(t *testing.T) {
 	if os.Geteuid() == 0 || os.Getenv("HELOX_BUN_ARTIFACT_EXECUTION") != "1" {
