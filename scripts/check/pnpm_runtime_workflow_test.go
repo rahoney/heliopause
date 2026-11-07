@@ -117,15 +117,27 @@ func TestPNPMRuntimeHelperKeepsSupplyAndActualCoverage(t *testing.T) {
 		}
 	}
 	for name, replacement := range map[string]string{
-		"comment":          "# " + pnpmRuntimeIntegrationCommand,
-		"skip":             strings.Replace(pnpmRuntimeIntegrationCommand, "RUNTIME=1", "RUNTIME=0", 1),
-		"missing-node":     strings.Replace(pnpmRuntimeIntegrationCommand, "|NodeQuery", "", 1),
-		"missing-artifact": strings.Replace(pnpmRuntimeIntegrationCommand, "|ReleaseArtifactProbe", "", 1),
-		"duplicate":        pnpmRuntimeIntegrationCommand + "\n" + pnpmRuntimeIntegrationCommand,
+		"comment":       "# " + pnpmRuntimeIntegrationCommand,
+		"skip":          strings.Replace(pnpmRuntimeIntegrationCommand, "RUNTIME=1", "RUNTIME=0", 1),
+		"missing-node":  strings.Replace(pnpmRuntimeIntegrationCommand, "|NodeQuery", "", 1),
+		"missing-start": strings.Replace(pnpmRuntimeIntegrationCommand, "NativeStartup|", "", 1),
+		"duplicate":     pnpmRuntimeIntegrationCommand + "\n" + pnpmRuntimeIntegrationCommand,
 	} {
 		t.Run(name, func(t *testing.T) {
 			if findings := validatePNPMRuntimeScript(strings.Replace(original, pnpmRuntimeIntegrationCommand, replacement, 1)); len(findings) == 0 {
 				t.Fatal("PNPM actual coverage was omitted")
+			}
+		})
+	}
+	for name, replacement := range map[string]string{
+		"comment":      "# " + pnpmArtifactProbeCommand,
+		"skip":         strings.Replace(pnpmArtifactProbeCommand, "RUNTIME=1", "RUNTIME=0", 1),
+		"plain-client": "HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActualReleaseArtifactProbe$'",
+		"duplicate":    pnpmArtifactProbeCommand + "\n" + pnpmArtifactProbeCommand,
+	} {
+		t.Run("artifact-"+name, func(t *testing.T) {
+			if findings := validatePNPMRuntimeScript(strings.Replace(original, pnpmArtifactProbeCommand, replacement, 1)); len(findings) == 0 {
+				t.Fatal("PNPM artifact probe left the configured client")
 			}
 		})
 	}

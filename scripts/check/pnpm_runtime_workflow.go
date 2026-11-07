@@ -2,7 +2,9 @@ package main
 
 import "strings"
 
-const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActual(Isolated(NativeStartup|EmptyLock|NodeQuery)|ReleaseArtifactProbe)$'`
+const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActualIsolated(NativeStartup|EmptyLock|NodeQuery)$'`
+
+const pnpmArtifactProbeCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestPNPMActualReleaseArtifactProbe$'`
 
 const pnpmProjectIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionProjectInspection$'`
 const pnpmControlledIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionInstanceExecution$/^controlled-(success|exit37|long-name)$'`
@@ -107,6 +109,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		`sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/semgrep-core-linux-amd64`,
 		`sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/semgrep-rules.json`,
 		pnpmRuntimeIntegrationCommand,
+		pnpmArtifactProbeCommand,
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,
 		pnpmPublicQuarantineCommand,
