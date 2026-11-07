@@ -366,3 +366,13 @@ Linux에서는 Release 공급 core/rules로 `helox npm install`·`pip install`�
 같은 key인지 확인하고 partner/community 규칙은 바꾸지 않았다. 실제 재인증 armor 고정 fixture의 회귀가
 이전 코드 RED, 수정 후 GREEN이고 public 시험 두 provider도 로컬 PASS다. 원본은 `docs/github-logs/ci454-20261107`이다.
 
+### CI455 — Terraform 교정 확인과 PNPM probe client 교정
+
+020473c의 [CI455](https://github.com/rahoney/heliopause/actions/runs/42350029595)는 GET3(07:50:13Z)에서
+terminal failure였다(8 SUCCESS·Linux와 Required FAILURE). public Terraform 시험 두 provider는 hosted PASS다.
+다음 최초 실패는 `TestPNPMActualReleaseArtifactProbe`의 `observation resource response is untrusted`다.
+CI452 교정과 같은 원인이다. 이 시험은 observation resource 서비스를 쓰지만 `ci-pnpm-runtime.sh`가
+plain `go test` binary로 실행했다. 서비스는 설치된 client inode만 승인한다. 이전 CI에서는 앞선 실패가
+이 지점을 가렸다. probe 하나만 이미 설치된 realcorpus client(`/usr/libexec/heliopause/helox -test.run`)로
+옮기고 validator 상수와 negative(plain client·skip·주석·중복)를 더했다. 원본은 `docs/github-logs/ci455-20261107`이다.
+
