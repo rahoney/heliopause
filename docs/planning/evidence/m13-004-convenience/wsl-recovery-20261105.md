@@ -398,3 +398,13 @@ trace 4개를 남기며 형제 시험 `TestPNPMActualProductionInstanceExecution
 macOS에서 컴파일되는 source는 CI456과 같다. platform step은 이전 성공 394/407/320s, 이번 469s다. 하위 원인은
 UNKNOWN(hosted 시간 변동)으로 보존하고 한도는 바꾸지 않았다. 원본은 `docs/github-logs/ci457-20261107`이다.
 
+### CI458 — trace 교정 확인과 resolver·Bun project 시험 resource 누락
+
+9285c7d의 [CI458](https://github.com/rahoney/heliopause/actions/runs/42364554565)은 GET3(11:16:44Z)에서
+terminal failure였다(8 SUCCESS·Linux와 Required FAILURE). macOS는 SUCCESS다. PNPM project inspection과
+instance execution 시험은 hosted PASS다. 다음 최초 실패는 `TestPNPMPublicNativeResolverIntegration/single`의
+instance coverage incomplete다. 시험이 `NewLinuxBackendWithExecutor(..., nil)`로 resource client 없이
+backend를 만들었다. CI456 대조는 출력 절단으로 이 생성자 호출을 놓쳤다. 전체 생성자 호출을 다시 대조해
+nil인 실제 시험 두 곳(이 시험과 `TestBunPublicProjectQuarantineIntegration`)에만 기존 adapter를 넣었다.
+나머지 nil은 생성자 거부 단위 시험이다. 원본은 `docs/github-logs/ci458-20261107`이다.
+
