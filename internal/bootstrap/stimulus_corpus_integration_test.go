@@ -26,6 +26,21 @@ import (
 	verificationpypi "github.com/rahoney/heliopause/internal/verification/pypi"
 )
 
+// stimulusSandboxCause keeps the first sandbox error, which the dynamic
+// inspector intentionally folds into an INCOMPLETE limitation code.
+type stimulusSandboxCause struct {
+	*sandbox.Backend
+	err error
+}
+
+func (s *stimulusSandboxCause) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {
+	result, err := s.Backend.Execute(ctx, request)
+	if s.err == nil {
+		s.err = err
+	}
+	return result, err
+}
+
 // Controlled source bytes use the existing explicit test transport. Inspection,
 // stored Evidence and Policy are real; public authenticity/install are not claimed.
 func TestLinuxStimulusNodePolicyCorpusIntegration(t *testing.T) {
@@ -78,7 +93,8 @@ sink.on("error",()=>{process.exitCode=93;});sink.end(body);
 			if err != nil {
 				t.Fatal(err)
 			}
-			dynamic, err := inspectionnpm.NewDynamicInspector(backend)
+			cause := &stimulusSandboxCause{Backend: backend}
+			dynamic, err := inspectionnpm.NewDynamicInspector(cause)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -119,7 +135,7 @@ sink.on("error",()=>{process.exitCode=93;});sink.end(body);
 			for _, check := range entry.Checks() {
 				if check.Required() && (check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted) {
 					code, _ := check.LimitationCode()
-					t.Fatal("stimulus coverage incomplete", check.ID(), check.Status(), code)
+					t.Fatal("stimulus coverage incomplete", check.ID(), check.Status(), code, cause.err)
 				}
 			}
 			states, network := 0, uint64(0)
