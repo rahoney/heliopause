@@ -3,17 +3,17 @@
 # This bounded runtime source lives for the job; it is not a release install.
 haa_ci_semgrep_lock=$(cd -- "${BASH_SOURCE[0]%/*}" && pwd -P)/runtimes.lock.json
 
-# Self-built Semgrep core travels as a Release asset named by the selected lock
-# owner; rules come from the checkout. Both are pinned by that same owner.
+# Self-built Semgrep core travels in an immutable Release named by the selected
+# lock owner's source package; rules come from the checkout. Both are pinned.
 haa_ci_fetch_semgrep_supply() {
   [[ $# == 0 && ${RUNNER_TEMP-} == /* && ${GITHUB_REPOSITORY-} == */* ]] || return 1
-  local version core_sha core_size
+  local version sources_sha core_size
   version=$(jq -er '.semgrep_tool.semgrep_version' "$haa_ci_semgrep_lock") || return 1
-  core_sha=$(jq -er '.semgrep_tool.tool.sha256' "$haa_ci_semgrep_lock") || return 1
+  sources_sha=$(jq -er '.semgrep_tool.sources.sha256' "$haa_ci_semgrep_lock") || return 1
   core_size=$(jq -er '.semgrep_tool.tool.size' "$haa_ci_semgrep_lock") || return 1
   curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 300 --max-filesize "$core_size" \
     --output "$RUNNER_TEMP/semgrep-core-linux-amd64" \
-    "https://github.com/$GITHUB_REPOSITORY/releases/download/semgrep-$version-${core_sha:0:12}/semgrep-core-linux-amd64" || return 1
+    "https://github.com/$GITHUB_REPOSITORY/releases/download/semgrep-$version-${sources_sha:0:12}/semgrep-core-linux-amd64" || return 1
   install -m 0444 -- "${haa_ci_semgrep_lock%/scripts/*}/tools/semgrep/rules.json" "$RUNNER_TEMP/semgrep-rules.json"
 }
 

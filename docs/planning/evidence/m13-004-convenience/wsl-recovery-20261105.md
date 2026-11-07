@@ -337,10 +337,14 @@ Git pack·직접 쓴 문서는 새 bytes가 되므로 SOURCES hash 갱신 판단
   CI 변경을 더한 작업 트리의 canonical security는 wrapper에서 PASS(215s)다. 원인은 자원 경합으로 추정하며
   확정하지 않았다. 2차는 실패 test 없이 quick default test 6분 예산 초과였다. 같은 verify를 반복하지 않고
   작업 트리 canonical profile로 대체 확인한다.
-- CI 연결: `haa_ci_fetch_semgrep_supply`가 lock에서 도출한 tag `semgrep-<version>-<core sha 12자>`의
+- CI 연결: `haa_ci_fetch_semgrep_supply`가 lock에서 도출한 tag `semgrep-<version>-<SOURCES sha 12자>`의
   Release asset core를 받고 rules는 checkout에서 가져온다. `haa_ci_semgrep_source`가 lock size/SHA·
   root 0555/0444를 확인하며 responder base와 pnpm/bun/pipx fixture version에 같은 파일을 설치한다.
-  Release 생성은 사용자 승인 전이며 그 전까지 hosted CI는 이 단계에서 실패한다.
+- 사용자 승인 후 Release [semgrep-1.183.0-f36d91990edb](https://github.com/rahoney/heliopause/releases/tag/semgrep-1.183.0-f36d91990edb)
+  (prerelease·not latest·immutable, target ab63980)에 core/SOURCES/NOTICES를 올렸다. GitHub digest와 익명 다운로드
+  core SHA가 lock과 같다. 첫 시도는 저장소의 immutable release 설정을 확인하지 않고 즉시 공개해 asset 업로드가
+  422로 거부됐다. 승인받아 빈 Release는 삭제(204)했으나 tag `semgrep-1.183.0-33ae45003cb9`는 보호되어 남는다.
+  그래서 tag 도출을 core hash에서 SOURCES hash로 바꿨다. 이후 Release는 draft→upload→digest 대조→공개 순서만 쓴다.
 
 계획 ①②의 저장소 추적 spec·수집 명령은 추가하지 않았다. Release asset이 SOURCES의 영속 보관소가 되고,
 이번 재수집은 보존 hash로 검증한 개발 스크립트로 충분하다. 제품/updater에 미래 소비자 없는 수집 owner를 만들지 않는다.
