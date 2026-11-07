@@ -481,3 +481,12 @@ FAILURE다. Production 정적 검사기를 쓰자 staging 앞 검사에서 "inco
 `binary-content-signals`의 NOT_EXECUTED/`M13_BINARY_SIGNALS_UNAVAILABLE`을 허용한다. 같은 규칙만 허용하고 실패 메시지에
 check/상태/제한 코드를 남겼다. Required 수는 integrity/static/lifecycle 3개와 필수 내용 검사 3개(source-content·binary-content·
 content-inventory)를 합친 6이며, log와 `scripts/ci-npm-project.sh` 기대값을 실제 값으로 맞췄다. 제품 변경은 없다.
+
+### CI464 — npm project 4개 시험 통과와 단일 실행 9m 초과·macOS job 한도
+
+c7fddfc의 [CI464](https://github.com/rahoney/heliopause/actions/runs/42396833731)는 GET4(18:32:53Z)에서 Linux FAILURE·macOS CANCELLED였다.
+npm whole-project(required_per_archive=6, 191s)·workflow(191s)·root CLI(134s)가 PASS했으나 같은 실행의 마지막
+`TestNPMPublicProjectCLIIntegration`이 기존 `-test.timeout=9m` 안에 끝나지 못했다. 필수 source analysis가 production
+경로에 들어가 시험이 실제로 길어진 것이다. 개별 한도 값은 바꾸지 않고 같은 9m 실행 두 번(검역·workflow / root CLI·CLI)으로
+나눠 validator가 두 출력을 함께 읽게 했다(사용자 사후 확인 대상). macOS는 승인된 Mac 한도(build 4m·test 9m)가 job
+`timeout-minutes: 15`(설치 약 5m 포함) 안에 들어가지 못해 platform 단계 10.4m에서 취소됐다. Job 한도만 25m로 맞췄다.

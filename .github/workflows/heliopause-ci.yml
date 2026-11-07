@@ -199,7 +199,8 @@ jobs:
   macos:
     name: macOS
     runs-on: macos-26-intel
-    timeout-minutes: 15
+    # Setup (~5m) plus the approved Mac platform limits (build 4m, tests 9m).
+    timeout-minutes: 25
     env:
       GOTOOLCHAIN: local
     steps:

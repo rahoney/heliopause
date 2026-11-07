@@ -28,7 +28,10 @@ END { if (bad || parents!=1 || count!=7) exit 1; for (name in expected) if (seen
   project)
     (
       cd internal/bootstrap
-      HELOX_NPM_PROJECT_QUARANTINE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=9m -test.run '^TestNPMPublic(WholeProjectQuarantine|ProjectWorkflow|ProjectRootCLI|ProjectCLI)Integration$'
+      # Two runs keep the existing per-run 9m limit after required source analysis
+      # made the four tests longer than one run; the validator reads both.
+      HELOX_NPM_PROJECT_QUARANTINE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=9m -test.run '^TestNPMPublic(WholeProjectQuarantine|ProjectWorkflow)Integration$'
+      HELOX_NPM_PROJECT_QUARANTINE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=9m -test.run '^TestNPMPublicProject(RootCLI|CLI)Integration$'
     ) | tee "$RUNNER_TEMP/npm-project-workflow.log"
     awk '
 BEGIN {
