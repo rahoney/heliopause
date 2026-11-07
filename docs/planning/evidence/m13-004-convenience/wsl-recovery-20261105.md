@@ -376,3 +376,14 @@ plain `go test` binary로 실행했다. 서비스는 설치된 client inode만 �
 이 지점을 가렸다. probe 하나만 이미 설치된 realcorpus client(`/usr/libexec/heliopause/helox -test.run`)로
 옮기고 validator 상수와 negative(plain client·skip·주석·중복)를 더했다. 원본은 `docs/github-logs/ci455-20261107`이다.
 
+### CI456 — PNPM probe 교정 확인과 instance 시험 resource adapter 누락
+
+cc3f711의 [CI456](https://github.com/rahoney/heliopause/actions/runs/42354232529)은 GET3(08:50:27Z)에서
+terminal failure였다(8 SUCCESS·Linux와 Required FAILURE). `TestPNPMActualReleaseArtifactProbe`는 hosted PASS다.
+다음 최초 실패는 `TestPNPMActualProductionProjectInspection/transitive`의 instance coverage incomplete다.
+instance 실행은 `Backend.resources`(observation resource client)가 없으면 `M3_DYNAMIC_ACCOUNTING_UNAVAILABLE`로
+끝난다. 8293b20에서 instance real 시험에는 adapter를 붙였지만 이 시험과 `TestBunActualArtifactExecutionBoundary`는
+`NewBackend`만 써 빠졌다. NewBackend를 쓰는 realcorpus 시험 전체를 대조해 두 곳에만 기존
+`integrationObservationResourceAdapter(t)` 한 줄을 더했다. 로컬은 tagged vet·gofmt만 확인했다. 두 시험은 설치 client
+교체가 필요해 hosted에서 확인한다. 원본은 `docs/github-logs/ci456-20261107`이다.
+
