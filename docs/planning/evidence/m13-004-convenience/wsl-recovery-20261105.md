@@ -408,3 +408,14 @@ backend를 만들었다. CI456 대조는 출력 절단으로 이 생성자 호�
 nil인 실제 시험 두 곳(이 시험과 `TestBunPublicProjectQuarantineIntegration`)에만 기존 adapter를 넣었다.
 나머지 nil은 생성자 거부 단위 시험이다. 원본은 `docs/github-logs/ci458-20261107`이다.
 
+### CI459 — resolver quarantine 완료와 workspace evidence 기대값 교정
+
+db608e1의 [CI459](https://github.com/rahoney/heliopause/actions/runs/42367949113)는 GET2(11:44:17Z)에서
+terminal failure였다(7 SUCCESS·Linux·macOS·Required FAILURE). PNPM resolver quarantine 자체는 이제 ALLOW로 끝난다.
+남은 Linux 실패는 시험의 evidence 수 단언이다. 8293b20부터 `npmProjectInstanceFacts`가 instance마다 환경별
+`workspace-state` evidence 2개를 더한다(PNPM·Bun 공용). 그래서 `4+2*instances`를 `4+4*instances`로 고쳤다.
+같은 단언을 가진 `TestBunPublicProjectQuarantineIntegration`도 함께 고쳤다. check 수(`3+instances`)는 analyzer가 없는
+시험 구성이라 그대로다. 실패 시 실제 수를 출력하게 했다. macOS는 CI457과 같이 quick 실행 중 `internal/promotion`에서
+test deadline을 넘었다(3회 중 2회). macOS source는 CI456과 같고 Mac 한도는 사용자 규칙상 바꾸지 않는다.
+하위 원인은 UNKNOWN이다. 원본은 `docs/github-logs/ci459-20261107`이다.
+
