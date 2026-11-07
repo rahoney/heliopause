@@ -351,3 +351,18 @@ Git pack·직접 쓴 문서는 새 bytes가 되므로 SOURCES hash 갱신 판단
 
 재수집 스크립트·build/plan/verify 원본·요약은 `docs/github-logs/system-recovery-20261105/semgrep-recollect-20261107/`이 소유한다.
 
+### CI454 — Semgrep 공급 hosted 확인과 Terraform 서명 재인증 교정
+
+32cba86의 [CI454](https://github.com/rahoney/heliopause/actions/runs/42345891672)는 GET2(06:32:50Z)에서
+terminal failure였다(8 SUCCESS·Linux와 Required FAILURE). macOS 다섯 시험 교정은 hosted로 확인됐다.
+Linux에서는 Release 공급 core/rules로 `helox npm install`·`pip install`이 모두 COMPLETED여서 Semgrep 공급
+연결이 hosted로 확인됐다. 그다음 public Terraform 시험의 `hashicorp/random@3.7.2`만 서명 검증에 실패했다.
+
+원인: HashiCorp가 공식 key를 2026-02-18에 다시 서명(만료 2030)하면서 registry가 2021년 self-signature를
+뺀 armor를 제공한다. 10월 보존 registry 응답은 2021년 self-signature를 가졌다. 검증기는 서명 시점
+(2025-04-22)의 binding을 registry key로 요구해 실패했다. gpg와 고정 인증서로는 같은 서명이 유효하다.
+사용자 승인으로 gpg/Terraform CLI와 같은 기준을 택했다. 고정 공식 인증서의 subkey가 현재 유효·비폐기이고
+서명이 그 subkey로 검증되며 서명이 subkey 생성 이후이면 허용한다. 서명 시점 binding이 있으면 기존처럼
+같은 key인지 확인하고 partner/community 규칙은 바꾸지 않았다. 실제 재인증 armor 고정 fixture의 회귀가
+이전 코드 RED, 수정 후 GREEN이고 public 시험 두 provider도 로컬 PASS다. 원본은 `docs/github-logs/ci454-20261107`이다.
+
