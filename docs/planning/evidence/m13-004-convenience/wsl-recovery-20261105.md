@@ -387,3 +387,14 @@ instance 실행은 `Backend.resources`(observation resource client)가 없으면
 `integrationObservationResourceAdapter(t)` 한 줄을 더했다. 로컬은 tagged vet·gofmt만 확인했다. 두 시험은 설치 client
 교체가 필요해 hosted에서 확인한다. 원본은 `docs/github-logs/ci456-20261107`이다.
 
+### CI457 — adapter 교정 확인과 instance trace 기대값 교정
+
+67396b0의 [CI457](https://github.com/rahoney/heliopause/actions/runs/42361309449)은 GET3(10:30:35Z)에서
+terminal failure였다(7 SUCCESS·Linux·macOS·Required FAILURE). PNPM project inspection 자체는 이제 완료된다.
+남은 Linux 실패는 시험의 trace 수 단언(`expected 2, observed 9`)이다. 8293b20부터 instance 하나가 두 환경에서
+trace 4개를 남기며 형제 시험 `TestPNPMActualProductionInstanceExecution`은 `before+4`로 갱신됐다. 이 시험은
+앞선 실패에 가려 `before+expected+1`로 남았다. prepare 1 + instance당 4로만 고쳤다. prepare 전용 시험의
+`before+1`은 instance 환경과 무관해 그대로다. macOS는 quick의 `internal/promotion` 실행 중 test deadline을 넘었다.
+macOS에서 컴파일되는 source는 CI456과 같다. platform step은 이전 성공 394/407/320s, 이번 469s다. 하위 원인은
+UNKNOWN(hosted 시간 변동)으로 보존하고 한도는 바꾸지 않았다. 원본은 `docs/github-logs/ci457-20261107`이다.
+
