@@ -41,7 +41,7 @@ BEGIN {
 /^--- PASS:/ { if (!($3 in expected) || parents[$3]++) bad=1; parent_count++ }
 /npm_project_quarantine case=/ {
  name=$3; sub(/^case=/,"",name)
- if (!(name in quarantine) || inspected[name]++ || $4!="archives=" quarantine[name] || $6!="required_per_archive=3" || $7!="whole_source/trace/evidence/Policy=COMPLETE" || $9!="cache/atomic_temp_target/retained_approval/tamper_refusal=COMPLETE") bad=1
+ if (!(name in quarantine) || inspected[name]++ || $4!="archives=" quarantine[name] || $6!="required_per_archive=6" || $7!="whole_source/trace/evidence/Policy=COMPLETE" || $9!="cache/atomic_temp_target/retained_approval/tamper_refusal=COMPLETE") bad=1
 }
 /npm_workflow intent=/ {
  workflow++; expected_intent=(workflow%2 ? "install" : "ci"); expected_count=(workflow<=2 ? 1 : 3)

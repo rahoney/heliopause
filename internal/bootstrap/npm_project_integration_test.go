@@ -150,8 +150,11 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 					if check.Required() {
 						required++
 					}
-					if check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted {
-						t.Fatal("incomplete npm quarantine check")
+					// Same optional native-signal absence as the project cache approval.
+					limitation, _ := check.LimitationCode()
+					absentNative := check.ID().String() == "binary-content-signals" && !check.Required() && check.Status() == domain.ExecutionNotExecuted && limitation == "M13_BINARY_SIGNALS_UNAVAILABLE"
+					if check.Capability() != domain.CapabilitySupported || (check.Status() != domain.ExecutionCompleted && !absentNative) {
+						t.Fatal("incomplete npm quarantine check", check.ID(), check.Status(), limitation)
 					}
 				}
 				if required != 3+contentRequired {
@@ -284,7 +287,7 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			if _, err := inspector.PreparedLayoutFor(snapshot, acquired); err == nil {
 				t.Fatal("partial request reused complete layout")
 			}
-			t.Logf("npm_project_quarantine case=%s archives=%d placements=%d required_per_archive=3 whole_source/trace/evidence/Policy=COMPLETE primary=NONE cache/atomic_temp_target/retained_approval/tamper_refusal=COMPLETE root_lifecycle/CLI=NOT_EXERCISED seconds=%.3f", tc.name, len(approved.Inspected().Inspections()), count, time.Since(started).Seconds())
+			t.Logf("npm_project_quarantine case=%s archives=%d placements=%d required_per_archive=%d whole_source/trace/evidence/Policy=COMPLETE primary=NONE cache/atomic_temp_target/retained_approval/tamper_refusal=COMPLETE root_lifecycle/CLI=NOT_EXERCISED seconds=%.3f", tc.name, len(approved.Inspected().Inspections()), count, 3+contentRequired, time.Since(started).Seconds())
 		}) {
 			return
 		}

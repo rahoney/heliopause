@@ -472,3 +472,12 @@ Evidence")다. 4857a61이 project cache staging에 내용 검사 증거를 요�
 `inspectionnpm.NewInspector(intake)`를 써서 제품이 정상 거부한 것이다. 같은 형태로 staging하는 npm workflow·UV project cache
 시험도 production 생성자(`newNPMStaticInspector`·`newPyPIStaticInspector`)로 맞추고 required 수를 내용 선언에서 계산했다.
 제품 변경은 없다. 원본은 `docs/github-logs/ci462-20261108`이다.
+
+### CI463 — 내용 검사 연결 뒤 선택적 native 신호 미실행
+
+590bb6d의 [CI463](https://github.com/rahoney/heliopause/actions/runs/42393326279)은 GET3(17:31:01Z)에서 같은 8 SUCCESS·Linux·Required
+FAILURE다. Production 정적 검사기를 쓰자 staging 앞 검사에서 "incomplete npm quarantine check"가 났다. 이 시험은 선택 검사까지
+모두 COMPLETED를 요구했지만, 제품의 cache 승인(`pnpm_cache_approval.go`)과 root CLI 시험은 native binary가 없을 때 선택
+`binary-content-signals`의 NOT_EXECUTED/`M13_BINARY_SIGNALS_UNAVAILABLE`을 허용한다. 같은 규칙만 허용하고 실패 메시지에
+check/상태/제한 코드를 남겼다. Required 수는 integrity/static/lifecycle 3개와 필수 내용 검사 3개(source-content·binary-content·
+content-inventory)를 합친 6이며, log와 `scripts/ci-npm-project.sh` 기대값을 실제 값으로 맞췄다. 제품 변경은 없다.
