@@ -237,12 +237,28 @@ func verifyDetachedWithCurrent(entity, current *openpgp.Entity, body, signature 
 	if !valid || fingerprint(current.PrimaryKey) != fingerprint(entity.PrimaryKey) {
 		return "", errors.New("openpgp signing key is expired, revoked or unbound")
 	}
-	historical, valid := entity.SigningKeyById(sig.CreationTime, *sig.IssuerKeyId, config)
-	if !valid || fingerprint(historical.PublicKey) != fingerprint(key.PublicKey) {
-		return "", errors.New("openpgp historical and current signing keys differ")
+	// A publisher may re-certify a still-current subkey (for example to extend
+	// its expiry) and drop older self-signatures. Then the currently valid,
+	// unrevoked binding carries trust, as in gpg and the Terraform CLI; a
+	// binding that was valid at signing time must still name the same key.
+	if historical, valid := entity.SigningKeyById(sig.CreationTime, *sig.IssuerKeyId, config); valid {
+		if fingerprint(historical.PublicKey) != fingerprint(key.PublicKey) {
+			return "", errors.New("openpgp historical and current signing keys differ")
+		}
+	} else if sig.CreationTime.Before(key.PublicKey.CreationTime) {
+		return "", errors.New("openpgp signature predates its signing key")
 	}
-	_, signer, err := openpgp.VerifyDetachedSignature(openpgp.EntityList{entity}, bytes.NewReader(body), bytes.NewReader(signature), config)
-	if err != nil || signer != entity {
+	for _, notation := range sig.Notations {
+		if notation.IsCritical {
+			return "", errors.New("openpgp signature carries an unsupported critical notation")
+		}
+	}
+	hasher, err := sig.PrepareVerify()
+	if err != nil {
+		return "", errors.New("openpgp signature hash is unsupported")
+	}
+	_, _ = hasher.Write(body)
+	if err := key.PublicKey.VerifySignature(hasher, sig); err != nil || sig.SigExpired(config.Now()) {
 		return "", errors.New("openpgp detached signature does not verify")
 	}
 	return fingerprint(key.PublicKey), nil
