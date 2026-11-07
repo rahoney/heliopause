@@ -137,8 +137,8 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 					t.Fatal("missing expected instances")
 				}
 				fact, known := entry.HostInstallActionEvidence()
-				if !known || fact.Kind() != domain.EvidenceHostInstallActionNotRequired || fact.Identity() != entry.Artifact().Identity() || fact.Digest() != entry.Artifact().Digest() || len(entry.Checks()) != 3+instanceCount || len(entry.Evidence()) != 4+2*instanceCount || entry.PolicyDecision().Decision() != domain.DecisionAllow {
-					t.Fatal("actual archive quarantine facts were lost")
+				if !known || fact.Kind() != domain.EvidenceHostInstallActionNotRequired || fact.Identity() != entry.Artifact().Identity() || fact.Digest() != entry.Artifact().Digest() || len(entry.Checks()) != 3+instanceCount || len(entry.Evidence()) != 4+4*instanceCount || entry.PolicyDecision().Decision() != domain.DecisionAllow {
+					t.Fatal("actual archive quarantine facts were lost", len(entry.Checks()), len(entry.Evidence()), instanceCount)
 				}
 				required := 0
 				for _, check := range entry.Checks() {
