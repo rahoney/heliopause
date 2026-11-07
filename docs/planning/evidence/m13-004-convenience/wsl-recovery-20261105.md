@@ -315,3 +315,35 @@ archive/Git 파일과 완전히 같았다. 남은 것은 직접 쓴 README·cata
 대조 결과는 `docs/github-logs/system-recovery-20261105/semgrep-recollect-notice-match-20261107.json`이다.
 Git pack·직접 쓴 문서는 새 bytes가 되므로 SOURCES hash 갱신 판단은 위와 같다.
 
+재수집 결과(2026-11-07, 공급 재구성 완료·hosted 미검증):
+
+- 보존 1025행은 원래 V6 교정 전 시점이라 opam 설치가 `rresult.0.7.0`에서 멈췄다(원래 V6와 같은 지점).
+  공식 sha512의 8506B archive와 ISC 원문을 원래 교정대로 더했고, lock 236개 의존성과 대조해 다른 누락은 없다.
+- 보존 SDK builder image `c51621f9`에서 같은 worker로 만든 grammar 생성기가 원래와 같은 `412cf8c9`였다.
+  CLI 0.26.3으로 생성한 TypeScript/TSX generated 8개 hash가 기록과 모두 같다.
+- 마지막 미확인 고지 `c70946fa`(11347B)는 이 저장소의 Apache-2.0 `LICENSE`다(HAA patch/rules/worker 고지).
+  `e1d65ebd`는 ocaml-trace `f57744fe`의 `LICENSE`, 빈 고지는 원래 정리대로 제외했다.
+- 최종 SOURCES 1036 files `f36d9199…`(327986176B, manifest `ffd27630…`), NOTICES 276 members
+  `c30784ef…`(1997312B)로 원래 개수와 같다. 보존 행과 다른 것은 Git pack/config·직접 쓴 문서·
+  최종 patch/rules/worker·generated8·rresult뿐이다.
+- `rebuild-semgrep`의 첫 시도는 Host 설치 gVisor bundle(patch `588adad4`)이 현재 lock과 달라 executor가
+  3초 만에 거부했다. 원래 S04 방식대로 private mount namespace에서만 lock 일치 bundle을 runtime 경로에
+  bind했다(Host manifest 불변·잔여 mount 0). 재수집 입력과 최종 입력 모두 core `33ae4500…`을 정확히
+  재현했다(1594s/1584s).
+- Clean clone same-engine plan `6727a905…`/apply는 lock과 생성 Go 상수 두 파일만 바꿨고 upstream·core·
+  rules·patch·worker는 불변이다.
+- Updater verify 1차는 bootstrap/quick PASS, security FAIL이었다. gosec가 `encoding/base64` metadata와
+  sandbox type 정보를 얻지 못했는데, 같은 시각 16GB 제한 core 재빌드가 동시에 실행 중이었다. 같은 source에
+  CI 변경을 더한 작업 트리의 canonical security는 wrapper에서 PASS(215s)다. 원인은 자원 경합으로 추정하며
+  확정하지 않았다. 2차는 실패 test 없이 quick default test 6분 예산 초과였다. 같은 verify를 반복하지 않고
+  작업 트리 canonical profile로 대체 확인한다.
+- CI 연결: `haa_ci_fetch_semgrep_supply`가 lock에서 도출한 tag `semgrep-<version>-<core sha 12자>`의
+  Release asset core를 받고 rules는 checkout에서 가져온다. `haa_ci_semgrep_source`가 lock size/SHA·
+  root 0555/0444를 확인하며 responder base와 pnpm/bun/pipx fixture version에 같은 파일을 설치한다.
+  Release 생성은 사용자 승인 전이며 그 전까지 hosted CI는 이 단계에서 실패한다.
+
+계획 ①②의 저장소 추적 spec·수집 명령은 추가하지 않았다. Release asset이 SOURCES의 영속 보관소가 되고,
+이번 재수집은 보존 hash로 검증한 개발 스크립트로 충분하다. 제품/updater에 미래 소비자 없는 수집 owner를 만들지 않는다.
+
+재수집 스크립트·build/plan/verify 원본·요약은 `docs/github-logs/system-recovery-20261105/semgrep-recollect-20261107/`이 소유한다.
+
