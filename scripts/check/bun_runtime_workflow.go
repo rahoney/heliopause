@@ -6,7 +6,11 @@ const bunNativeIntegrationCommand = `HELOX_BUN_NATIVE_RESOLVER_INTEGRATION=1 /us
 const bunProjectQuarantineCommand = `HELOX_BUN_PROJECT_QUARANTINE=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectQuarantineIntegration$'`
 const bunArtifactExecutionCommand = `HELOX_BUN_ARTIFACT_EXECUTION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^TestBunActualArtifactExecutionBoundary$'`
 
-const bunApprovedProjectCommand = `HELOX_BUN_CACHE_INTEGRATION=1 HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublic(ApprovedCache|ProjectTransaction)Integration$'`
+// Separate runs keep the existing 5m limit after required source analysis lengthened them.
+const bunApprovedProjectCommand = `HELOX_BUN_CACHE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicApprovedCacheIntegration$'` + "\n" +
+	`HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectTransactionIntegration$/^single$'` + "\n" +
+	`HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectTransactionIntegration$/^peer$'` + "\n" +
+	`HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectTransactionIntegration$/^empty$'`
 const bunProjectCLICommand = `HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestBunProjectCLIIntegration$'`
 const bunOriginalProjectCommand = `HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$'`
 
@@ -150,7 +154,7 @@ func validateBunRuntimeScript(contents string) []string {
 		}
 	}
 	var findings []string
-	for _, command := range []string{
+	for _, command := range append([]string{
 		"set -euo pipefail", `case "$#:${1-}" in`, `0:|1:project) ;;`, `*) echo 'unsupported Bun CI profile' >&2; exit 2 ;;`, "esac", `bun_profile=${1:-sandbox}`, `test "$(id -u)" != 0`,
 		`test -n "${RUNNER_TEMP:-}"`, `test "${RUNNER_TEMP:0:1}" = /`,
 		"source scripts/ci-responder-source.sh", "haa_ci_require_responder_base", "trap bun_cleanup EXIT",
@@ -166,8 +170,8 @@ func validateBunRuntimeScript(contents string) []string {
 		`sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json`,
 		`sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64`,
 		"sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
-		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand,
-	} {
+		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunProjectCLICommand, bunOriginalProjectCommand,
+	}, strings.Split(bunApprovedProjectCommand, "\n")...) {
 		if counts[command] != 1 {
 			findings = append(findings, "Bun runtime helper requires one command: "+command)
 		}

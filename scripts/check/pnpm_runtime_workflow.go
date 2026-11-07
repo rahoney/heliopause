@@ -11,7 +11,12 @@ const pnpmControlledIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM
 const pnpmPublicQuarantineCommand = `HELOX_PNPM_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicNativeResolverIntegration$'`
 const pnpmSandboxTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox`
 const pnpmBootstrapTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap`
-const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublic(ApprovedCache|ProjectTransaction)Integration$'`
+
+// Separate runs keep the existing 5m limit after required source analysis lengthened them.
+const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicApprovedCacheIntegration$'` + "\n" +
+	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicProjectTransactionIntegration$/^single$'` + "\n" +
+	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicProjectTransactionIntegration$/^peer$'` + "\n" +
+	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicProjectTransactionIntegration$/^empty$'`
 const pnpmCLIIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestPNPMProjectCLIIntegration$'`
 const pnpmOriginalIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$'`
 
@@ -93,7 +98,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		counts[strings.TrimSpace(line)]++
 	}
 	var findings []string
-	for _, command := range []string{
+	for _, command := range append([]string{
 		"set -euo pipefail",
 		"source scripts/ci-responder-source.sh",
 		"haa_ci_require_responder_base",
@@ -113,14 +118,13 @@ func validatePNPMRuntimeScript(contents string) []string {
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,
 		pnpmPublicQuarantineCommand,
-		pnpmBootstrapIntegrationCommand,
 		pnpmCLIIntegrationCommand,
 		pnpmOriginalIntegrationCommand,
 		pnpmRunIntegrationCommand,
 		pnpmColdIntegrationCommand,
 		`test "$#" -le 1`,
 		`pnpm_profile=${1:-sandbox}`,
-	} {
+	}, strings.Split(pnpmBootstrapIntegrationCommand, "\n")...) {
 		if counts[command] != 1 {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
 		}

@@ -14,16 +14,18 @@ func TestPNPMProjectProfileBindsActualConsumerAndRejectsInvalidInput(t *testing.
 		t.Fatal(err)
 	}
 	original := string(body)
-	for name, replacement := range map[string]string{
-		"comment":                 "# " + pnpmBootstrapIntegrationCommand,
-		"missing-transaction-env": strings.Replace(pnpmBootstrapIntegrationCommand, "HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 ", "", 1),
-		"missing-cache-env":       strings.Replace(pnpmBootstrapIntegrationCommand, "HELOX_PNPM_CACHE_INTEGRATION=1 ", "", 1),
-		"wrong-filter":            strings.Replace(pnpmBootstrapIntegrationCommand, "ApprovedCache|ProjectTransaction", "Missing", 1),
-		"ignore-failure":          pnpmBootstrapIntegrationCommand + " || true",
-		"duplicate":               pnpmBootstrapIntegrationCommand + "\n" + pnpmBootstrapIntegrationCommand,
+	lines := strings.Split(pnpmBootstrapIntegrationCommand, "\n")
+	cache, peer := lines[0], lines[2]
+	for name, mutation := range map[string][2]string{
+		"comment":                 {peer, "# " + peer},
+		"missing-transaction-env": {peer, strings.Replace(peer, "HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 ", "", 1)},
+		"missing-cache-env":       {cache, strings.Replace(cache, "HELOX_PNPM_CACHE_INTEGRATION=1 ", "", 1)},
+		"wrong-filter":            {peer, strings.Replace(peer, "/^peer$", "/^Missing$", 1)},
+		"ignore-failure":          {cache, cache + " || true"},
+		"duplicate":               {peer, peer + "\n" + peer},
 	} {
 		t.Run(name, func(t *testing.T) {
-			if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmBootstrapIntegrationCommand, replacement, 1))) == 0 {
+			if !strings.Contains(original, mutation[0]) || len(validatePNPMRuntimeScript(strings.Replace(original, mutation[0], mutation[1], 1))) == 0 {
 				t.Fatal("missing actual bootstrap coverage accepted")
 			}
 		})

@@ -499,3 +499,11 @@ npm whole-project(required_per_archive=6, 191s)·workflow(191s)·root CLI(134s)�
 production cache staging(bun/pnpm/npm project·Python requirements/uv)으로 가는 realcorpus 시험을 전수 대조해 pnpm project·bun
 transaction·pnpm/bun original·UV project publication·UV tool install 6개를 production 생성자로 맞췄다. 이들의 check 단정은 required만
 보거나 `< 3`이라 내용 검사 추가와 맞는다. 제품 변경은 없다.
+
+### CI466 — PNPM 거래 시험 통과 시작과 단일 실행 5m 초과
+
+f77544c의 [CI466](https://github.com/rahoney/heliopause/actions/runs/42405482298)은 GET3(19:57:42Z)에서 Linux·Required FAILURE, 나머지 8개 SUCCESS다.
+production 생성자로 바꾼 PNPM approved cache(81.6s)와 거래 `single`(97.3s, Policy=ALLOW)이 PASS했고 `peer`가 진행 중 cache·거래
+공동 실행의 기존 5m에 닿았다. 개별 한도는 바꾸지 않고 PNPM·Bun 모두 cache와 거래 `single`/`peer`/`empty`를 각각 별도 5m 실행으로
+나눴다. 기존 validator는 정확한 한 줄 명령을 소유하므로 고정 명령을 줄 목록으로 바꾸고 변형 반례도 개별 줄에 적용했다
+(`go test ./scripts/check` PASS). `peer` 한 실행이 5m를 넘으면 시험 한도 변경은 사용자 결정 대상으로 남긴다.
