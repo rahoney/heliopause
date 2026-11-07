@@ -60,6 +60,7 @@ func TestPNPMActualProductionProjectInspection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			backend.resources = integrationObservationResourceAdapter(t)
 			inspector, err := inspectionnpm.NewPNPMProjectInspector(data.inspection.Context(), static, prepare, backend)
 			if err != nil {
 				t.Fatal(err)

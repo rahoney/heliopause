@@ -124,6 +124,7 @@ func TestBunActualArtifactExecutionBoundary(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			backend.resources = integrationObservationResourceAdapter(t)
 			capture := &bunArtifactExecutionCapture{CommandRunner: backend.runner}
 			backend.runner = capture
 			result, err := backend.ExecuteBunRuntimeInstance(ctx, layout, subject, instance)
