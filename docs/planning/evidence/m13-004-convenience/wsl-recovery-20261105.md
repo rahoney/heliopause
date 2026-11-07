@@ -419,3 +419,15 @@ terminal failure였다(7 SUCCESS·Linux·macOS·Required FAILURE). PNPM resolver
 test deadline을 넘었다(3회 중 2회). macOS source는 CI456과 같고 Mac 한도는 사용자 규칙상 바꾸지 않는다.
 하위 원인은 UNKNOWN이다. 원본은 `docs/github-logs/ci459-20261107`이다.
 
+### CI460 — PNPM·Bun evidence 교정 확인과 Node 지연 자극 미완료
+
+183faa7의 [CI460](https://github.com/rahoney/heliopause/actions/runs/42369821766)은 GET3(12:31:54Z)에서
+terminal failure였다(7 SUCCESS·Linux·macOS·Required FAILURE). PNPM resolver 시험은 hosted PASS다.
+다음 최초 실패는 `TestLinuxStimulusNodePolicyCorpusIntegration/delayed-chain`이다. dynamic lifecycle이
+`M3_DYNAMIC_EXECUTION_FAILED`로 끝났다. normal·config-read·conditional-chain은 같은 host에서 PASS다. 첫 환경 trace는
+완료됐고 두 번째(모의 개발환경) trace 출력 전에 끝났다. 11-03 로컬 v1/v6에서는 같은 case가 network=10으로 PASS였다.
+sandbox 오류는 dynamic inspector가 INCOMPLETE 코드로 접는 설계라 시험에서 원인이 보이지 않는다. 그래서 Node 시험에만
+`Execute` 첫 오류를 보존해 실패 메시지에 붙이는 시험 측 wrapper를 더했다. 원인은 다음 hosted 결과로 확정한다.
+macOS는 이번에 production build 120s 한도를 넘었다(CI450과 같은 형태). Mac 한도는 바꾸지 않았고 하위 원인은
+UNKNOWN이다. 원본은 `docs/github-logs/ci460-20261107`이다.
+
