@@ -59,7 +59,7 @@ func TestBunPublicProjectQuarantineIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), nil)
+			backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), integrationObservationResourceAdapter(t))
 			if err != nil {
 				t.Fatal(err)
 			}
