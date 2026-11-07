@@ -307,3 +307,11 @@ Core는 같은 의미 입력이면 기존 `--expected-sha256 33ae4500…`으로 
 방지). ③ 기존 package/rebuild로 core 재현을 확인한다. ④ same-engine plan/apply와 S04 영향
 qualification. ⑤ 승인 뒤 Release 운송·CI 연결·한 번의 CI와 CUDA 순차 실행.
 
+재수집 시험(`/var/tmp/haa-semgrep-recollect-20261107/probe`, 제품·lock 불변): 1025행 기준으로
+opam-repository 223개는 기록된 두 번째 고정 commit `922f67e0`에서 223/223 byte 일치했다(`78d29aba`만으로는
+161/223). opam archive·extra source 158/158, native 15/15(gmp는 원 주소 연결 거부로 GNU mirror에서 받아
+sha512·크기 대조), aports 97/97(보존 원문 84개+aports Git 13개), notice 원문은 275개 중 272개가 고정
+archive/Git 파일과 완전히 같았다. 남은 것은 직접 쓴 README·catalogue와 원문 두 개(11347B·1076B)다.
+대조 결과는 `docs/github-logs/system-recovery-20261105/semgrep-recollect-notice-match-20261107.json`이다.
+Git pack·직접 쓴 문서는 새 bytes가 되므로 SOURCES hash 갱신 판단은 위와 같다.
+
