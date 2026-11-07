@@ -368,6 +368,7 @@ jobs:
           go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
           CGO_ENABLED=0 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$RUNNER_TEMP/haa-sandbox-responder" ./cmd/haa-sandbox-responder
           source scripts/ci-responder-source.sh
+          haa_ci_fetch_semgrep_supply
           haa_ci_prepare_responder_base
           echo 'Installing network-policy helper and preparing its identity contract'
           sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox

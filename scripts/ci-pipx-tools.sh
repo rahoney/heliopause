@@ -71,6 +71,8 @@ mount -t overlay overlay -o "lowerdir=/usr/lib,upperdir=$work/upper,workdir=$wor
 test "$(stat -c '%a' /usr/lib)" = 755
 mkdir -m 0755 /usr/lib/heliopause/versions/v0.0.0-ci-fixture
 install -m 0555 -o 0 -g 0 -- "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/haa-sandbox-responder
+install -m 0555 -o 0 -g 0 -- "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/semgrep-core-linux-amd64
+install -m 0444 -o 0 -g 0 -- "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/semgrep-rules.json
 ln -sfnT versions/v0.0.0-ci-fixture /usr/lib/heliopause/current
 installed=/usr/lib/heliopause/versions/v0.0.0-ci-fixture/pipx-runtime-linux-amd64.zip
 install -m 0444 -o 0 -g 0 -- "$input" "$installed"

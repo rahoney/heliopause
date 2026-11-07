@@ -18,7 +18,7 @@ bun_cleanup() {
   trap - EXIT
   if ((bun_version_created)); then
     if haa_ci_restore_responder_base v1.0.0-bun-ci; then
-      sudo -n rm -f -- /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64 /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder || cleanup_status=1
+      sudo -n rm -f -- /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64 /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-core-linux-amd64 /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json || cleanup_status=1
       sudo -n rmdir -- /usr/lib/heliopause/versions/v1.0.0-bun-ci || cleanup_status=1
     else cleanup_status=1; fi
   fi
@@ -38,6 +38,8 @@ sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-bun-ci
 bun_version_created=1
 sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64
 sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder
+sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-core-linux-amd64
+sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json
 sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current
 # The owning parent installed this tagged client and started its policy helper.
 if [[ "$bun_profile" == project ]]; then

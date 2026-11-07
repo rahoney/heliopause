@@ -41,6 +41,7 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		"commented-quarantine":          strings.Replace(original, bunProjectQuarantineCommand, "# "+bunProjectQuarantineCommand, 1),
 		"wrong-cwd":                     strings.Replace(original, "cd internal/sandbox", "cd internal/bootstrap", 1),
 		"foreign-root":                  strings.Replace(original, "haa_ci_require_responder_base", "echo existing-ok", 1),
+		"missing-semgrep-core":          strings.Replace(original, `sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-core-linux-amd64`, "true", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if len(validateBunRuntimeScript(candidate)) == 0 {

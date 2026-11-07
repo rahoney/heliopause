@@ -25,6 +25,8 @@ func validatePipxInstalledToolsScript(contents string) []string {
 		`test -f "$input"`, `test ! -L "$input"`, `test "$(stat -c '%h' "$input")" = 1`, `test "$(stat -c '%u' "$input")" = "$user_id"`,
 		`source "$repo/scripts/ci-responder-source.sh"`, `haa_ci_require_responder_base`,
 		`install -m 0555 -o 0 -g 0 -- "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/haa-sandbox-responder`,
+		`install -m 0555 -o 0 -g 0 -- "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/semgrep-core-linux-amd64`,
+		`install -m 0444 -o 0 -g 0 -- "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/semgrep-rules.json`,
 		`ln -sfnT versions/v0.0.0-ci-fixture /usr/lib/heliopause/current`,
 		`expected_sha=$(jq -er '.pipx_tool.tool.sha256' "$repo/scripts/runtimes.lock.json")`,
 		`expected_size=$(jq -er '.pipx_tool.tool.size' "$repo/scripts/runtimes.lock.json")`,

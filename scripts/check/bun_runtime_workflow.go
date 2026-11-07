@@ -162,6 +162,8 @@ func validateBunRuntimeScript(contents string) []string {
 		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-bun-ci",
 		"if haa_ci_restore_responder_base v1.0.0-bun-ci; then",
 		`sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder`,
+		`sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-core-linux-amd64`,
+		`sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json`,
 		`sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64`,
 		"sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
 		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand,

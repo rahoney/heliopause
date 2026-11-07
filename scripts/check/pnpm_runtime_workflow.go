@@ -104,6 +104,8 @@ func validatePNPMRuntimeScript(contents string) []string {
 		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-pnpm-ci",
 		"if haa_ci_restore_responder_base v1.0.0-pnpm-ci; then",
 		`sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/haa-sandbox-responder`,
+		`sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/semgrep-core-linux-amd64`,
+		`sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/semgrep-rules.json`,
 		pnpmRuntimeIntegrationCommand,
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,

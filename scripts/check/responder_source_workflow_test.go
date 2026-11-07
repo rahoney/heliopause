@@ -19,7 +19,7 @@ func TestResponderSourceRequiresCurrentBuildAndEarlyPreparation(t *testing.T) {
 	if findings := validateResponderSourceOrder(original); len(findings) != 0 {
 		t.Fatal(findings)
 	}
-	for _, command := range []string{ciResponderBuild, "source scripts/ci-responder-source.sh", "haa_ci_prepare_responder_base"} {
+	for _, command := range []string{ciResponderBuild, "source scripts/ci-responder-source.sh", "haa_ci_fetch_semgrep_supply", "haa_ci_prepare_responder_base"} {
 		for _, replacement := range []string{"# " + command, "echo " + command, command + " || true", command + "\n          " + command} {
 			candidate := strings.Replace(original, command, replacement, 1)
 			if candidate == original || len(validateResponderSourceOrder(candidate)) == 0 {
@@ -50,6 +50,10 @@ source "$1"
 export RUNNER_TEMP=$2/run
 mkdir "$RUNNER_TEMP"
 printf 'model-only-source\n' > "$RUNNER_TEMP/haa-sandbox-responder"
+printf 'model-core\n' > "$RUNNER_TEMP/semgrep-core-linux-amd64"
+printf 'model-rules\n' > "$RUNNER_TEMP/semgrep-rules.json"
+jq -n --arg c "$(sha256sum < "$RUNNER_TEMP/semgrep-core-linux-amd64" | cut -d ' ' -f 1)" --arg r "$(sha256sum < "$RUNNER_TEMP/semgrep-rules.json" | cut -d ' ' -f 1)" \
+  '{semgrep_tool: {tool: {sha256: $c, size: 11}, rules: {sha256: $r, size: 12}}}' > "$2/runtimes.lock.json"
 sudo() { [[ $1 == -n ]] || return 1; shift; "$@"; }
 stat() {
   local value
@@ -93,6 +97,15 @@ cp "$RUNNER_TEMP/haa-sandbox-responder" "$base"
 chmod 0555 "$base"
 if (stat() { printf '0:0:755\n'; return 1; }; haa_ci_responder_source); then exit 17; fi
 if (find() { command find "$@"; return 1; }; haa_ci_require_responder_base); then exit 18; fi
+core="${base%/*}/semgrep-core-linux-amd64"
+chmod 0755 "$core"
+printf 'model-cor2\n' > "$core"
+chmod 0555 "$core"
+if haa_ci_semgrep_source core || haa_ci_require_responder_base; then exit 19; fi
+chmod 0755 "$core"
+cp "$RUNNER_TEMP/semgrep-core-linux-amd64" "$core"
+chmod 0555 "$core"
+if haa_ci_semgrep_source other; then exit 20; fi
 haa_ci_require_responder_base
 printf 'CI_RESPONDER_SOURCE_MODEL_OK\n'
 `

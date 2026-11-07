@@ -21,6 +21,7 @@ func TestPipxInstalledToolsConcreteNamespaceAndOrdinaryConsumers(t *testing.T) {
 	for name, candidate := range map[string]string{
 		"foreign-root":                      strings.Replace(original, "haa_ci_require_responder_base", "echo existing-ok", 1),
 		"missing-responder":                 strings.Replace(original, `install -m 0555 -o 0 -g 0 -- "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/haa-sandbox-responder`, "true", 1),
+		"missing-semgrep-rules":             strings.Replace(original, `install -m 0444 -o 0 -g 0 -- "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/semgrep-rules.json`, "true", 1),
 		"host namespace":                    strings.Replace(original, `test "$(readlink /proc/self/ns/mnt)" != "$(readlink /proc/1/ns/mnt)"`, "true", 1),
 		"root child":                        strings.Replace(original, `--reuid="$user_id"`, `--reuid=0`, 1),
 		"writable supply":                   strings.Replace(original, "remount,bind,ro,noexec,nosuid,nodev", "remount,bind,rw", 1),
