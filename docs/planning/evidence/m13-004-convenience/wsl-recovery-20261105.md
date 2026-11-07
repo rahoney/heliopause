@@ -518,3 +518,12 @@ a46f166의 [CI467](https://github.com/rahoney/heliopause/actions/runs/4240936765
 macOS는 같은 source 계열의 CI466에서 default test 5.6m이었으나 이번에는 production build 2m7s 뒤 default test가 승인된 9m에
 닿았다. 모든 package가 `ok`를 출력했고 promotion 340s·update-runtime 194s가 마지막이었다. 하위 원인은 UNKNOWN(runner 속도
 변동 후보)이며 한도는 바꾸지 않고 다음 실행에서 재관찰한다.
+
+### CI468 — macOS 재관찰 SUCCESS, PNPM original 공유 4m context 초과
+
+095fbd9의 [CI468](https://github.com/rahoney/heliopause/actions/runs/42414388980)은 GET4(22:08:42Z)에서 Linux·Required FAILURE, macOS 포함 8개 SUCCESS다.
+CI467 macOS 시간 초과는 같은 한도에서 재현되지 않았다. 이번 Linux runner는 같은 시험 전반이 약 1.5배 느렸다(PNPM native resolver
+87.7→132.6s, CLI 246→366s). `TestPNPMNativeOriginalIntegration`은 세 사례가 시험 전체의 4m context 하나를 공유하는데
+single 63.1s·native-update 56.8s 뒤 peer가 240.17s 시점에 deadline에 닿았다(CI467 합계 179.8s). 한도 값은 바꾸지 않고
+PNPM·Bun original을 사례별(`single`/`native-update`/`peer`) 5m 실행으로 나눠 각 사례가 자기 4m context를 갖게 했다.
+CLI 시험은 이미 사례별 4m context다. validator 줄 목록·변형 반례를 갱신했고 `go test ./scripts/check` PASS다.

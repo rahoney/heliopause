@@ -18,7 +18,9 @@ const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_
 	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicProjectTransactionIntegration$/^peer$'` + "\n" +
 	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicProjectTransactionIntegration$/^empty$'`
 const pnpmCLIIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestPNPMProjectCLIIntegration$'`
-const pnpmOriginalIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$'`
+const pnpmOriginalIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$/^single$'` + "\n" +
+	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$/^native-update$'` + "\n" +
+	`HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$/^peer$'`
 
 const pnpmRunIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLI(Refusal)?)Integration$'`
 const pnpmColdIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_TOOL_RUN_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^TestPNPMPublicColdToolRunSelectionIntegration$'`
@@ -119,12 +121,11 @@ func validatePNPMRuntimeScript(contents string) []string {
 		pnpmControlledIntegrationCommand,
 		pnpmPublicQuarantineCommand,
 		pnpmCLIIntegrationCommand,
-		pnpmOriginalIntegrationCommand,
 		pnpmRunIntegrationCommand,
 		pnpmColdIntegrationCommand,
 		`test "$#" -le 1`,
 		`pnpm_profile=${1:-sandbox}`,
-	}, strings.Split(pnpmBootstrapIntegrationCommand, "\n")...) {
+	}, append(strings.Split(pnpmBootstrapIntegrationCommand, "\n"), strings.Split(pnpmOriginalIntegrationCommand, "\n")...)...) {
 		if counts[command] != 1 {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
 		}

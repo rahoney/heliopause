@@ -12,7 +12,9 @@ const bunApprovedProjectCommand = `HELOX_BUN_CACHE_INTEGRATION=1 /usr/libexec/he
 	`HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectTransactionIntegration$/^peer$'` + "\n" +
 	`HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectTransactionIntegration$/^empty$'`
 const bunProjectCLICommand = `HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestBunProjectCLIIntegration$'`
-const bunOriginalProjectCommand = `HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$'`
+const bunOriginalProjectCommand = `HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$/^single$'` + "\n" +
+	`HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$/^native-update$'` + "\n" +
+	`HELOX_BUN_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunNativeOriginalIntegration$/^peer$'`
 
 const bunColdIntegrationBlock = `bun_cold_log="$bun_work/cold.log"
 bun_cold_status=0
@@ -170,8 +172,8 @@ func validateBunRuntimeScript(contents string) []string {
 		`sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json`,
 		`sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64`,
 		"sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
-		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunProjectCLICommand, bunOriginalProjectCommand,
-	}, strings.Split(bunApprovedProjectCommand, "\n")...) {
+		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunProjectCLICommand,
+	}, append(strings.Split(bunApprovedProjectCommand, "\n"), strings.Split(bunOriginalProjectCommand, "\n")...)...) {
 		if counts[command] != 1 {
 			findings = append(findings, "Bun runtime helper requires one command: "+command)
 		}

@@ -131,12 +131,13 @@ func TestBunProjectSupplyRequiresAllCurrentConsumersAndExactMode(t *testing.T) {
 		t.Fatal(err)
 	}
 	original := string(body)
+	originalPeer := strings.Split(bunOriginalProjectCommand, "\n")[2]
 	for name, candidate := range map[string]string{
 		"missing-cache":            strings.Replace(original, "HELOX_BUN_CACHE_INTEGRATION=1 ", "", 1),
 		"missing-transaction":      strings.Replace(original, "HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 ", "", 1),
 		"missing-cli":              strings.Replace(original, bunProjectCLICommand, "echo skipped", 1),
-		"missing-original":         strings.Replace(original, bunOriginalProjectCommand, "echo skipped", 1),
-		"ignored-original-failure": strings.Replace(original, bunOriginalProjectCommand, bunOriginalProjectCommand+" || true", 1),
+		"missing-original":         strings.Replace(original, originalPeer, "echo skipped", 1),
+		"ignored-original-failure": strings.Replace(original, originalPeer, originalPeer+" || true", 1),
 		"duplicate-cli":            strings.Replace(original, bunProjectCLICommand, bunProjectCLICommand+"\n"+bunProjectCLICommand, 1),
 		"wrong-project-cwd":        strings.Replace(original, "cd internal/bootstrap", "cd internal/sandbox", 1),
 		"wrong-mode":               strings.Replace(original, `if [[ "$bun_profile" == project ]]; then`, `if [[ "$bun_profile" == missing ]]; then`, 1),

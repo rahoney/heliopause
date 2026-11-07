@@ -15,6 +15,7 @@ func TestPNPMProjectProfileBindsActualConsumerAndRejectsInvalidInput(t *testing.
 	}
 	original := string(body)
 	lines := strings.Split(pnpmBootstrapIntegrationCommand, "\n")
+	originalPeer := strings.Split(pnpmOriginalIntegrationCommand, "\n")[2]
 	cache, peer := lines[0], lines[2]
 	for name, mutation := range map[string][2]string{
 		"comment":                 {peer, "# " + peer},
@@ -30,7 +31,7 @@ func TestPNPMProjectProfileBindsActualConsumerAndRejectsInvalidInput(t *testing.
 			}
 		})
 	}
-	for _, candidate := range []string{strings.Replace(original, `test "$#" -le 1`, `test "$#" -le 2`, 1), strings.Replace(original, "sandbox|project|run) ;;", "*) ;;", 1), strings.Replace(original, "if [[ \"$pnpm_profile\" == project ]]; then", "if true; then", 1), strings.Replace(original, pnpmOriginalIntegrationCommand+"\n  exit 0\nfi", pnpmOriginalIntegrationCommand+"\nfi", 1)} {
+	for _, candidate := range []string{strings.Replace(original, `test "$#" -le 1`, `test "$#" -le 2`, 1), strings.Replace(original, "sandbox|project|run) ;;", "*) ;;", 1), strings.Replace(original, "if [[ \"$pnpm_profile\" == project ]]; then", "if true; then", 1), strings.Replace(original, "native-update$'\n  "+originalPeer+"\n  exit 0\nfi", "native-update$'\n  "+originalPeer+"\nfi", 1)} {
 		if len(validatePNPMRuntimeScript(candidate)) == 0 {
 			t.Fatal("unbounded or nonexclusive project profile accepted")
 		}
@@ -210,16 +211,17 @@ func TestPNPMOriginalActualCannotLoseAuthenticatedCommandOrCoverage(t *testing.T
 		t.Fatal(err)
 	}
 	original := string(body)
+	peer := strings.Split(pnpmOriginalIntegrationCommand, "\n")[2]
 	for name, replacement := range map[string]string{
-		"comment":         "# " + pnpmOriginalIntegrationCommand,
-		"wrong-env":       strings.Replace(pnpmOriginalIntegrationCommand, "ORIGINAL_INTEGRATION=1", "ORIGINAL_INTEGRATION=0", 1),
-		"wrong-test":      strings.Replace(pnpmOriginalIntegrationCommand, "TestPNPMNativeOriginalIntegration", "TestMissingCLIIntegration", 1),
-		"wrong-client":    strings.Replace(pnpmOriginalIntegrationCommand, "/usr/libexec/heliopause/helox", "go test ./internal/bootstrap", 1),
-		"ignored-failure": pnpmOriginalIntegrationCommand + " || true",
-		"duplicate":       pnpmOriginalIntegrationCommand + "\n" + pnpmOriginalIntegrationCommand,
+		"comment":         "# " + peer,
+		"wrong-env":       strings.Replace(peer, "ORIGINAL_INTEGRATION=1", "ORIGINAL_INTEGRATION=0", 1),
+		"wrong-test":      strings.Replace(peer, "TestPNPMNativeOriginalIntegration", "TestMissingCLIIntegration", 1),
+		"wrong-client":    strings.Replace(peer, "/usr/libexec/heliopause/helox", "go test ./internal/bootstrap", 1),
+		"ignored-failure": peer + " || true",
+		"duplicate":       peer + "\n" + peer,
 	} {
 		t.Run(name, func(t *testing.T) {
-			if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmOriginalIntegrationCommand, replacement, 1))) == 0 {
+			if len(validatePNPMRuntimeScript(strings.Replace(original, peer, replacement, 1))) == 0 {
 				t.Fatal("Native original actual missing or untrusted execution accepted")
 			}
 		})
