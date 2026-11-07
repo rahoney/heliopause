@@ -18,6 +18,7 @@ import (
 	"github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
@@ -89,7 +90,9 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			static, err := inspectionnpm.NewInspector(intake)
+			// Staging requires the current source/native/inventory Evidence, so
+			// this uses the production static inspector with its source analyzer.
+			static, err := newNPMStaticInspector(intake, executor, supervisor.Observer())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -119,6 +122,17 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 				t.Fatal("complete npm dependency quarantine", err)
 			}
 			requireNPMProjectEnvironmentEvidence(t, ctx, store, "npm-project", approved.Inspected().Inspections())
+			declarations, err := content.ArchiveEvidenceRequirements()
+			if err != nil {
+				t.Fatal(err)
+			}
+			contentChecks := map[domain.CheckID]bool{}
+			for _, declaration := range declarations {
+				if declaration.Check.Required() {
+					contentChecks[declaration.Check.ID()] = true
+				}
+			}
+			contentRequired := len(contentChecks)
 			acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
 			count := 0
 			for _, entry := range approved.Inspected().Inspections() {
@@ -140,8 +154,8 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 						t.Fatal("incomplete npm quarantine check")
 					}
 				}
-				if required != 3 {
-					t.Fatal("required integrity/static/lifecycle coverage lost")
+				if required != 3+contentRequired {
+					t.Fatal("required integrity/static/lifecycle/content coverage lost", required, contentRequired)
 				}
 			}
 			acquiredInput, err := frozen.BindAcquired(snapshot, acquired)
@@ -410,7 +424,7 @@ func TestNPMPublicProjectWorkflowIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	static, err := inspectionnpm.NewInspector(filepath.Join(root, "intake"))
+	static, err := newNPMStaticInspector(filepath.Join(root, "intake"), executor, observer.Observer())
 	if err != nil {
 		t.Fatal(err)
 	}

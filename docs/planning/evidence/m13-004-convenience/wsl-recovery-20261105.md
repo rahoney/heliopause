@@ -461,3 +461,14 @@ drained를 기다리며 만료는 `M3_DYNAMIC_TIMEOUT`, 원장 상실은 `M3_DYN
 control 포함, 6m54s) PASS, security·docs PASS다. Quick은 vet/Staticcheck와 sandbox 포함 49개 package가 PASS지만
 Host 부하(load 10~14)에서 `internal/promotion`이 전체 병렬 5분 한도를 넘었다(단독 174s PASS, 최장 test 9s, drain 경로
 미사용). 설치된 Host observer는 교체하지 않았으므로 실제 분리 자식 관찰과 promotion은 hosted CI가 판정한다.
+
+### CI462 — 분리 후손 교정 확인과 staging 시험의 내용 검사 누락
+
+8df8500의 [CI462](https://github.com/rahoney/heliopause/actions/runs/42389595817)는 GET3(16:46:55Z)에서 8 SUCCESS·Linux·Required
+FAILURE였다. macOS(새 한도)·Quick·observer helper(새 latch 포함)는 SUCCESS다. Node·Python `detached-child`는 각각 network=10·13,
+MANUAL_REVIEW·approval=false로 PASS해 후손 대기 교정이 hosted에서 확인됐다. 다음 최초 실패는
+`TestNPMPublicWholeProjectQuarantineIntegration/nested`의 staging 거부("archive approval lacks current source/native/inventory
+Evidence")다. 4857a61이 project cache staging에 내용 검사 증거를 요구했지만 이 시험은 source analyzer 없는
+`inspectionnpm.NewInspector(intake)`를 써서 제품이 정상 거부한 것이다. 같은 형태로 staging하는 npm workflow·UV project cache
+시험도 production 생성자(`newNPMStaticInspector`·`newPyPIStaticInspector`)로 맞추고 required 수를 내용 선언에서 계산했다.
+제품 변경은 없다. 원본은 `docs/github-logs/ci462-20261108`이다.

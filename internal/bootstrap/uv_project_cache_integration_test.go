@@ -125,8 +125,9 @@ func TestUVPublicProjectApprovedCacheIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			runtime := sandbox.PinnedPythonRuntime()
-			static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+			// Staging requires current content Evidence: use the production
+			// static inspector with its source analyzer.
+			static, err := newPyPIStaticInspector(intakeRoot, executor, observer.Observer())
 			if err != nil {
 				t.Fatal(err)
 			}
