@@ -431,3 +431,18 @@ sandbox 오류는 dynamic inspector가 INCOMPLETE 코드로 접는 설계라 시
 macOS는 이번에 production build 120s 한도를 넘었다(CI450과 같은 형태). Mac 한도는 바꾸지 않았고 하위 원인은
 UNKNOWN이다. 원본은 `docs/github-logs/ci460-20261107`이다.
 
+### CI461 — 분리 자식 후속 행동 미관찰(설계 gap)과 macOS 반복 시간 초과
+
+3694dc5의 [CI461](https://github.com/rahoney/heliopause/actions/runs/42373505608)은 GET3(13:22:26Z)에서
+terminal failure였다(7 SUCCESS·Linux·macOS·Required FAILURE). 이번에는 `delayed-chain`이 network=10으로 PASS다.
+CI460의 `M3_DYNAMIC_EXECUTION_FAILED`는 같은 source에서 재현되지 않아 하위 원인 UNKNOWN(간헐)으로 둔다.
+최초 실패는 `detached-child`다. dynamic check는 COMPLETED·states=2인데 분리 자식의 50ms 뒤 network가 0이다.
+현재 lifecycle은 `npm install` 반환 뒤 남은 후손을 기다리지 않고 writer를 종료한다. 후손이 남았는지 Go 쪽에서
+보는 신호(trace diagnostic·종료 lease)도 없다. 그래서 자식 행동의 관찰 여부가 시간차에 달렸고 11-03 로컬
+v5/v6 PASS는 이 시간차 안의 결과였다. 계획 21 §5.5는 "부모 종료 뒤 자식 행동 포함·descendant 완료·관찰"과
+"한도 밖 지연은 incomplete/자동 ALLOW 없음"을 요구한다. 현재 결과(COMPLETED·행동 미관찰)는 이를 충족하지
+않는 제품 gap이다. 교정은 sandbox 종료 경로(필요 시 observer)의 후손 대기/미완료 판정이다. 범위가 커서 사용자
+확인 전에는 착수하지 않는다. macOS는 같은 image(macos-26-intel 20260824)에서 5회 중 4회 Mac 한도
+(build 120s·default test 6m)를 넘었다. 성공 run은 build 약 1분이고 실패 run은 약 2분이다. Mac 한도는 사용자 규칙상
+바꾸지 않았다. 원본은 `docs/github-logs/ci461-20261107`이다.
+
