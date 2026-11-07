@@ -115,7 +115,9 @@ func TestPNPMActualProductionProjectInspection(t *testing.T) {
 					t.Fatal("peer instance coverage collapsed")
 				}
 			}
-			if observed != expected || len(observer.traces) != before+expected+1 {
+			// One prepare trace plus the four traces of each instance's two
+			// environments, as in TestPNPMActualProductionInstanceExecution.
+			if observed != expected || len(observer.traces) != before+4*expected+1 {
 				t.Fatal("prepare/instance actual trace coverage mismatch", expected, len(observer.traces)-before)
 			}
 			for _, trace := range observer.traces[before:] {
