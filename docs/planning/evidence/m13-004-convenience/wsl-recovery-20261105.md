@@ -539,3 +539,29 @@ STREAM_FAULT, CI466–468 PASS·입력 불변)가 서로 무관하게 실패했�
 `RunDiscard`로 실행해 출력을 버리므로 기존 `native-Bun:` 출력 oracle(CI448 PASS 당시 `Output` 경로)이 볼 수 없다. wrapper가
 `StartContainerInputOutput`을 전달하고, 정확한 Bun lifecycle 명령만 같은 admission 소유 `Output`으로 실행해 기록하게 했다
 (제품 변경 없음).
+
+### CI470 — Bun Artifact 시험 PASS, 결과 schema 기대값 누락과 분할 기록 정정
+
+66a25f4의 [CI470](https://github.com/rahoney/heliopause/actions/runs/42428092357)은 GET4(01:04:54Z)에서 Linux·Required FAILURE, Quick·macOS 포함
+8개 SUCCESS다. Linux job은 00:04:37–00:59:47Z(55m)로 step 4 Bun 구간에서 멈췄다. Node·Python `detached-child`는 이번에도
+network=10·MANUAL_REVIEW·approval=false로 PASS했다(해당 사례만의 관찰이며 전체 qualification이 아니다). Bun Artifact
+`normal`/`script-failure`·cache·거래·CLI·original이 PASS했다. 최초 실패는 `TestLinuxBunDeclaredEntryCLIIntegration`의
+결과 축 단정이다. 9e9260f(2026-11-02)가 검사 목록이 있는 실행 결과를 `helox.execution-result/v2`로 바꾸고 npm 실행 시험만
+갱신했으며, 이 시험과 `TestLinuxUVRunSupplementalExecutionCLIIntegration`(완료 사례), UV/pipx tool CLI의
+`operation-result/v1` 기대가 남았다(10/31 이후 순차 마스킹 구간). 완료 사례는 v2와 비어 있지 않은 필수 검사 완료를, 준비 거부
+사례는 기존 v1·거부 축을 그대로 요구하도록 맞췄다. 실패 메시지에는 축 값만 넣고 프로그램 출력·argv는 넣지 않는다. 제품 변경은 없다.
+
+분할 기록 정정: CI464–468의 분할을 "한도 불변"으로 적은 것은 부정확했다. 각 실행의 제한값은 유지했지만 실행 단위와 전체 허용
+예산이 바뀌었다 — npm project 9m×1→9m×2, PNPM·Bun cache+거래 5m×1→5m×4, PNPM·Bun original 5m×1(시험 내부 4m 공유)→5m×3
+(사례별 4m). 제품의 wall·resource·observer·cleanup 한도와 Linux job 150m은 바꾸지 않았다. CI470 원본에서 분할된 16개 하위
+사례와 npm 4개 시험이 각각 정확히 한 번 PASS했고 `no tests to run`은 0건이다. 거래 시험은 사례별 TempDir, original 시험은
+공유 cache를 쓰되 사례별 target 키로만 상태를 읽으며 사례 간 단정이 없어 분할로 사라진 상호작용은 없다(달라진 점은 뒤 사례가
+앞 사례 cache를 보지 않는 것뿐이다). 이후 추가·개명된 사례가 조용히 빠지지 않도록 마지막 실행을 "이미 실행한 사례만
+`-test.skip`하고 나머지 전부"로 바꿨다(로컬 probe로 의미 확인, `go test ./scripts/check` PASS). macOS 25m은 승인된 내부
+build/test 한도와 별개인 macOS job 전체 예산 변경이다. CI467 macOS 시간 초과 원인은 여전히 UNKNOWN이다.
+
+간헐 실패 보존: CI467 macOS default test 9m 초과, CI469 Quick PTY 준비 시간 초과·macOS DNS 시간 초과·Linux sink
+`dropped_count`는 각각 원인 UNKNOWN이며 뒤 실행의 성공은 앞 실패의 해결 증거가 아니다. `dropped_count` 실행은 PNPM 거래
+`single`의 세 번째 적용이 검사 단계(`inspect complete selected pnpm project`)에서 INCOMPLETE 오류로 끝나 승인 집합이 생기지
+않았고 게시 기록도 없다(승격 차단 확인). Bun 시험 wrapper가 출력 oracle용으로 정확한 lifecycle 명령의 출력을 메모리에 받는 것은
+시험 연결 보완이며 production의 출력 폐기 계약은 그대로다.

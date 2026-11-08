@@ -86,7 +86,7 @@ func runPublicToolInstallCLIIntegration(t *testing.T, pipx bool) {
 				Evidence []struct{ ID, Handle string } `json:"evidence_references"`
 			}
 			if step.output == "json" {
-				if json.Unmarshal(out.Bytes(), &result) != nil || result.Schema != "helox.operation-result/v1" || result.Operation != "INSTALL" || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+				if json.Unmarshal(out.Bytes(), &result) != nil || result.Schema != "helox.operation-result/v2" || result.Operation != "INSTALL" || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
 					t.Fatal("incomplete tool operation result", out.String())
 				}
 				for _, check := range result.Checks {

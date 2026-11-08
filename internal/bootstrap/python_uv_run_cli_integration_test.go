@@ -155,8 +155,13 @@ func runPythonNativeExecutionCLICohort(t *testing.T, pipx, supplemental bool) {
 						Stderr      string `json:"stderr_escaped"`
 					} `json:"program_output"`
 				}
-				if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || !report.Output.Untrusted || report.Promotion != "NOT_REQUESTED" {
-					t.Fatal("actual separate native report missing")
+				// Completed quarantine reports its checks (v2); a preparation refusal has none (v1).
+				wantSchema := "helox.execution-result/v2"
+				if row.refused {
+					wantSchema = "helox.execution-result/v1"
+				}
+				if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != wantSchema || !report.Output.Untrusted || report.Promotion != "NOT_REQUESTED" {
+					t.Fatalf("actual separate native report missing: schema=%s want=%s quarantine=%s", report.Schema, wantSchema, report.Quarantine)
 				}
 				if row.refused {
 					if report.Quarantine != "INCOMPLETE" || report.Policy != "NOT_AVAILABLE" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.ExitCode != nil || report.Signal != nil || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || report.Output.StdoutBytes != 0 || report.Output.StderrBytes != 0 {

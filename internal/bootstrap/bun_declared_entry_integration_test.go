@@ -62,13 +62,22 @@ func TestLinuxBunDeclaredEntryCLIIntegration(t *testing.T) {
 			ExitCode                                           *int   `json:"exit_code"`
 			Promotion                                          string `json:"output_promotion"`
 			Cleanup                                            string `json:"execution_guest_cleanup"`
-			Output                                             struct {
+			Checks                                             []struct {
+				Required bool
+				Status   string `json:"execution_status"`
+			} `json:"checks"`
+			Output struct {
 				Untrusted bool
 				Encoding  string
 			} `json:"program_output"`
 		}
-		if json.Unmarshal(output.Bytes(), &result) != nil || result.Schema != "helox.execution-result/v1" || result.Quarantine != "COMPLETED" || result.Policy != "ALLOW" || result.Preparation != "COMPLETED" || result.Execution != "COMPLETED" || result.ExitCode == nil || *result.ExitCode != row.code || result.Promotion != "NOT_REQUESTED" || result.Cleanup != "CONFIRMED" || !result.Output.Untrusted || result.Output.Encoding != "ASCII_QUOTED" {
-			t.Fatal("Bun TS CLI lacks separate current result/cleanup axes")
+		if json.Unmarshal(output.Bytes(), &result) != nil || result.Schema != "helox.execution-result/v2" || len(result.Checks) == 0 || result.Quarantine != "COMPLETED" || result.Policy != "ALLOW" || result.Preparation != "COMPLETED" || result.Execution != "COMPLETED" || result.ExitCode == nil || *result.ExitCode != row.code || result.Promotion != "NOT_REQUESTED" || result.Cleanup != "CONFIRMED" || !result.Output.Untrusted || result.Output.Encoding != "ASCII_QUOTED" {
+			t.Fatalf("Bun TS CLI lacks separate current result/cleanup axes: schema=%s quarantine=%s policy=%s preparation=%s execution=%s promotion=%s cleanup=%s checks=%d encoding=%s", result.Schema, result.Quarantine, result.Policy, result.Preparation, result.Execution, result.Promotion, result.Cleanup, len(result.Checks), result.Output.Encoding)
+		}
+		for _, check := range result.Checks {
+			if check.Required && check.Status != "COMPLETED" {
+				t.Fatal("Bun TS CLI lost completed required coverage")
+			}
 		}
 		t.Logf("production_bun_declared_entry_cli case=%d alias=%s forced=%t exit_code=%d current_policy=ALLOW guest_cleanup=CONFIRMED", i+1, row.path[len(row.path)-1], row.force, row.code)
 	}
