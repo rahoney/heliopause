@@ -59,7 +59,8 @@ if [[ "$bun_profile" == project ]]; then
   bun_run_status=0
   (
     cd internal/bootstrap
-    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBun(RunExecution(Workflow|CLI(Refusal)?)|DeclaredEntry(Workflow|CLI))Integration$'
+    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBun(RunExecution(Workflow|CLIRefusal)|DeclaredEntry(Workflow|CLI))Integration$' &&
+    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunRunExecutionCLIIntegration$'
   ) >"$bun_run_log" 2>&1 || bun_run_status=$?
   bun_run_log_status=0
   cat -- "$bun_run_log" || bun_run_log_status=$?
@@ -120,7 +121,8 @@ if [[ "$bun_profile" == project ]]; then
   bun_program_status=0
   (
     cd internal/bootstrap
-    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_PROGRAM_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunProgramExecution(Workflow|CLI|Boundary)Integration$'
+    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_PROGRAM_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_CLI_INTEGRATION=1 HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunProgramExecution(Workflow|Boundary)Integration$' &&
+    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_PROGRAM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunProgramExecutionCLIIntegration$'
   ) >"$bun_program_log" 2>&1 || bun_program_status=$?
   bun_program_log_status=0
   cat -- "$bun_program_log" || bun_program_log_status=$?

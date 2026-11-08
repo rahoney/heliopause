@@ -565,3 +565,20 @@ build/test 한도와 별개인 macOS job 전체 예산 변경이다. CI467 macOS
 `single`의 세 번째 적용이 검사 단계(`inspect complete selected pnpm project`)에서 INCOMPLETE 오류로 끝나 승인 집합이 생기지
 않았고 게시 기록도 없다(승격 차단 확인). Bun 시험 wrapper가 출력 oracle용으로 정확한 lifecycle 명령의 출력을 메모리에 받는 것은
 시험 연결 보완이며 production의 출력 폐기 계약은 그대로다.
+
+### CI471 — Bun 실행 CLI 프로세스 한도와 Linux job 예산
+
+94a5b48의 [CI471](https://github.com/rahoney/heliopause/actions/runs/42437417300)은 GET5(03:31:16Z)에서 Linux·Required FAILURE, 나머지 8개
+SUCCESS다. CI470의 schema 교정으로 Bun 선언 entry CLI가 PASS했고, 분할된 PNPM·Bun cache·거래·original 하위 사례도 모두 PASS했다.
+실패는 Linux job 한도(당시 77분 시점)가 아니라 Bun run 블록 **프로세스** `-test.timeout=10m`이다. 5개 시험(선언 entry CLI
+99.96s·두 workflow 47.93s/45.02s·RunCLI·거부)이 한 프로세스의 10m을 공유했고, RunCLI는 6m47s에 사례 1–2(typescript)를 끝내고
+사례 3(`bunx rimraf@3.0.2`, 의존성 다수) 준비 중 gVisor bundle 검증을 실행하고 있었다(goroutine stack, 교착 아님). RunCLI는
+CI446 76.76s·CI448 125.05s였다. 사례마다 시험 내부 4m context가 이미 있으므로 사례 한도는 바꾸지 않고, 같은 helper
+(`testNodeExecutionCLIIntegration`)와 같은 package를 쓰는 Bun run·Bun program·PNPM run 블록의 CLI 시험만 각자 10m 프로세스로
+분리했다(각 블록 10m×1→10m×2, `&&`로 연결해 앞 프로세스 실패를 가리지 않음). 출력이 파일에 모였다가 출력돼 사례별 시각은 없다.
+
+전체 예산: 같은 시험 지점의 step 4 경과가 CI448 대비 26→36(PNPM cache)·32→46(PNPM original)·42→64(Bun original)·47→77분
+(Bun 선언 entry CLI)으로 1.38–1.63×다. CI448 Linux job은 134분(step 4 101분)이었으므로 같은 비율이면 약 190–215분이다. 필수
+내용 검사 추가 뒤의 전체 증가로 보고, 사용자 승인으로 Linux job 한도만 150→240분으로 올렸다(제품·개별 시험 한도 불변, 값을
+고정하는 검증기는 없음). 다음 CI에서 단계별·전체 시간을 기록해 240분 적정성, 특정 단계의 비정상 지연, 중복 실행 여부를 본다.
+계속 210분을 넘으면 독립 job 분할을 검토하고 추가 상향은 자동으로 하지 않는다. 원본은 `docs/github-logs/ci471-20261108`이다.

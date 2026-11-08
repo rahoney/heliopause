@@ -126,6 +126,11 @@ push를 묶으며, 최종 candidate에는 canonical Quick/security/docs/workflow
 150분으로 조정한다. [CI441 비교와 검토안](./evidence/package-client-quarantine/ci441-job-budget-proposal-20261031.md)이
 113개 통과 뒤 실제2h 한도 소진·남은 workload·승인 근거를 소유한다. 제품·개별 test 한도,
 필수 검사/전체 coverage·Required aggregate와20분 실제 조회는 그대로 적용한다.
+2026-11-08 사용자가 같은 전체 job 한도만 150분에서 240분으로 다시 상향 승인했다. 필수 내용 검사가 붙은 뒤
+CI471의 같은 시험 지점이 CI448 대비 1.4–1.6× 늦어(26→36·32→46·42→64·47→77분) 134분 job이 약 190–215분으로
+예상됐다([근거](./evidence/m13-004-convenience/wsl-recovery-20261105.md#ci471--bun-실행-cli-프로세스-한도와-linux-job-예산)).
+제품·개별 test 한도는 유지하며, 실행 시간이 계속 210분을 넘거나 240분에 가까워지면 독립 job 분할을 검토하고
+추가 상향은 자동으로 하지 않는다.
 
 
 공통 observer/runtime/회계 변경, 로컬에서 확인할 수 없는 새 native 동작, 재현된 공통 회귀가

@@ -237,7 +237,8 @@ func TestPNPMRunProfileKeepsExactDispatchAndPrimaryFailure(t *testing.T) {
 	for _, change := range []string{
 		strings.Replace(pnpmRunIntegrationBlock, pnpmRunIntegrationCommand, "# "+pnpmRunIntegrationCommand, 1),
 		strings.Replace(pnpmRunIntegrationBlock, "WORKFLOW_INTEGRATION=1", "WORKFLOW_INTEGRATION=0", 1),
-		strings.Replace(pnpmRunIntegrationBlock, "Workflow|CLI(Refusal)?", "Missing", 1),
+		strings.Replace(pnpmRunIntegrationBlock, "Workflow|CLIRefusal", "Missing", 1),
+		strings.Replace(pnpmRunIntegrationBlock, "TestLinuxPNPMRunExecutionCLIIntegration$", "TestLinuxPNPMRunExecutionMissing$", 1),
 		strings.Replace(pnpmRunIntegrationBlock, `if ((pnpm_run_status)); then exit "$pnpm_run_status"; fi`, "", 1),
 		strings.Replace(pnpmRunIntegrationBlock, "exit 0\nfi", "fi", 1),
 	} {
