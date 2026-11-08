@@ -527,3 +527,15 @@ CI467 macOS 시간 초과는 같은 한도에서 재현되지 않았다. 이번 
 single 63.1s·native-update 56.8s 뒤 peer가 240.17s 시점에 deadline에 닿았다(CI467 합계 179.8s). 한도 값은 바꾸지 않고
 PNPM·Bun original을 사례별(`single`/`native-update`/`peer`) 5m 실행으로 나눠 각 사례가 자기 4m context를 갖게 했다.
 CLI 시험은 이미 사례별 4m context다. validator 줄 목록·변형 반례를 갱신했고 `go test ./scripts/check` PASS다.
+
+### CI469 — 간헐 실패 3건 재실행, Bun Artifact 시험의 남은 wrapper 누락
+
+4d93544의 [CI469](https://github.com/rahoney/heliopause/actions/runs/42419501621) attempt1은 Quick(`TestLauncherNativePTY/ko` PTY 준비 시간 초과,
+internal/cli 불변)·macOS(proxy.golang.org DNS i/o timeout)·Linux(PNPM 거래 `single`의 gVisor header `dropped_count!=0`
+STREAM_FAULT, CI466–468 PASS·입력 불변)가 서로 무관하게 실패했다. 세 하위 원인은 UNKNOWN이며 코드 변경 없이 실패 job만 한 번
+재실행했다(CI450 선례). attempt2에서 Quick·macOS SUCCESS, PNPM 전 사례·original 사례별 실행 PASS로 간헐임을 확인했다.
+다음 Linux 실패 `TestBunActualArtifactExecutionBoundary/normal`은 minimal 환경 완료 뒤 development 환경에서 responder init이
+`StartContainerInputOutput`을 요구하는데 시험 capture wrapper가 전달하지 않아 생겼다. 또 8293b20 뒤 production은 lifecycle을
+`RunDiscard`로 실행해 출력을 버리므로 기존 `native-Bun:` 출력 oracle(CI448 PASS 당시 `Output` 경로)이 볼 수 없다. wrapper가
+`StartContainerInputOutput`을 전달하고, 정확한 Bun lifecycle 명령만 같은 admission 소유 `Output`으로 실행해 기록하게 했다
+(제품 변경 없음).

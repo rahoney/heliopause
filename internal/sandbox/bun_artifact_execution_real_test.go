@@ -91,8 +91,22 @@ func (r *bunArtifactExecutionCapture) RunInput(ctx context.Context, input io.Rea
 func (r *bunArtifactExecutionCapture) RunOutput(ctx context.Context, output io.Writer, binary string, args ...string) error {
 	return r.CommandRunner.(streamingDockerOutput).RunOutput(ctx, output, binary, args...)
 }
+
+// Production discards lifecycle output. Only the exact controller lifecycle
+// command uses the same admission-owning Output path so this oracle sees it.
 func (r *bunArtifactExecutionCapture) RunDiscard(ctx context.Context, binary string, args ...string) error {
+	for _, arg := range args {
+		if arg == bunTargetLifecycleCommand || arg == bunRuntimeTargetLifecycleCommand {
+			_, err := r.Output(ctx, binary, args...)
+			return err
+		}
+	}
 	return r.CommandRunner.(discardCommandRunner).RunDiscard(ctx, binary, args...)
+}
+func (r *bunArtifactExecutionCapture) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	return r.CommandRunner.(interface {
+		StartContainerInputOutput(context.Context, io.Reader, io.Writer, string) error
+	}).StartContainerInputOutput(ctx, input, output, id)
 }
 
 func TestBunActualArtifactExecutionBoundary(t *testing.T) {
