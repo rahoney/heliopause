@@ -145,7 +145,7 @@ func TestUVPublicProjectApprovedPublicationIntegration(t *testing.T) {
 		{"fresh exact add", artifactpypi.UVProjectAdd, "packaging==24.2", 1},
 		{"version change", artifactpypi.UVProjectAdd, "packaging==25.0", 1},
 		{"same version sync", artifactpypi.UVProjectSync, "", 1},
-		{"second root", artifactpypi.UVProjectAdd, "idna==3.10", 2},
+		{"second root", artifactpypi.UVProjectAdd, "idna==3.15", 2},
 		{"edited empty sync", artifactpypi.UVProjectSync, "", 0},
 	} {
 		if !t.Run(step.name, func(t *testing.T) {

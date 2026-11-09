@@ -643,3 +643,8 @@ CI476([run 42612413657](https://github.com/rahoney/heliopause/actions/runs/42612
 실행 단위: 12분 프로세스가 native 시험 전까지 457.57s를 썼고 native 전체 추정치 약 230s를 더하면 688s(추정)다. CI471과 같은 프로세스 만료를 막기 위해 `TestLinuxUVToolNativeAdoptionCLIIntegration`만 같은 12분의 별도 프로세스로 분리했다. 개별 한도·Linux 240분·검사 범위는 그대로다. pipx 묶음은 4개 시험 약 611s(추정)라 유지한다.
 로컬 검증: docs·security PASS. `quick`은 같은 Host의 다른 Codex 샌드박스가 `/tmp/.git`을 잠깐 만드는 간섭으로 빌드 시험이 `VCS status 128`로 흔들렸다. 마지막 전체 실행에서 실패는 `cmd/helox` 한 패키지(VCS 1건)뿐이고, 같은 workspace에서 그 패키지만 다시 실행해 PASS다. 전체 `quick` 한 번의 완전 통과는 이 후보에서 얻지 못했고 hosted Quick으로 확인한다.
 
+CI477([run 42641261062](https://github.com/rahoney/heliopause/actions/runs/42641261062), `00f6c88`): 8 job SUCCESS, Linux·Required FAIL(135.4분). 504는 0건이다. native 인계는 PASS(211.91s, 별도 12분 프로세스)이며 실제 Evidence 거부와 원본 불변을 함께 확인했다. 실패는 `TestLinuxUVProjectSelectionCLIIntegration`의 `extra` 사례다. `idna 3.10`이 실제 advisory(GHSA-65pc-fj4g-8rjx/CVE-2026-45409, 3.15에서 수정)로 `M13_ADVISORY_REVIEW`→`MANUAL_REVIEW`가 되어 Policy가 올바르게 거부했다. 제품 결함이 아니라 시험 고정값이 live OSV와 맞지 않는 문제다.
+같은 유형의 뒤쪽 경로를 OSV로 한 번에 대조했다(원본 `docs/github-logs/ci477-20261110/analysis`). Python: ALLOW를 기대하는 UV 시험의 `idna 3.10/3.11`을 기존 선례인 `3.15/3.20`으로 바꿨다(UV sync·project CLI·publication·cache). 3.15는 console entry가 없어 native 원본 fixture에 그대로 쓴다. 다른 고정값(`packaging 25.0`, `six 1.17.0`, `requests 2.34.2`, serde 7개 노드)은 조회 0건이다.
+Go(미해결, 사용자 결정 필요): `TestLinuxGoTransitiveGetDownload`·`TransitiveBuildCLI`·관찰 시험이 쓰는 `grpc v1.76.0`은 41노드 중 9개, 최신 공개판 `v1.85.0`도 39노드 중 3개(`x/net`, `x/crypto`, `go-jose`)에 advisory가 있다. Go 경로도 advisory 검사를 쓰므로(`internal/bootstrap/go_module.go`) 같은 정지가 예상되지만 아직 실행으로 도달하지 않았다. grpc 버전 올리기만으로는 ALLOW 경로를 복구할 수 없다.
+live OSV 의존: ALLOW를 기대하는 공개 fixture는 새 advisory 공개만으로 깨질 수 있다. 제품 Policy·임계값·OSV 조회는 바꾸지 않는다.
+

@@ -141,7 +141,7 @@ func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	write("idna==3.10\npackaging==25.0\n")
+	write("idna==3.15\npackaging==25.0\n")
 	first := runActualUVSync(t, ctx, source, venv)
 	if len(first.Entries) != 2 {
 		t.Fatal("disconnected root missing")
@@ -175,12 +175,12 @@ func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
 			}
 		}
 	}
-	write("idna==3.11\n")
+	write("idna==3.20\n")
 	replaced := runActualUVSync(t, ctx, source, venv)
 	if len(replaced.Entries) != 1 {
 		t.Fatal("removed package retained")
 	}
-	for _, path := range []string{filepath.Join(site, "packaging-25.0.dist-info", "METADATA"), filepath.Join(site, "idna-3.10.dist-info", "METADATA")} {
+	for _, path := range []string{filepath.Join(site, "packaging-25.0.dist-info", "METADATA"), filepath.Join(site, "idna-3.15.dist-info", "METADATA")} {
 		if _, err := os.Lstat(path); !os.IsNotExist(err) {
 			t.Fatal("obsolete original retained", path, err)
 		}
@@ -215,7 +215,7 @@ func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
 	}
 	// A genuine UV original excluded from the desired set must be proved too.
 	native := filepath.Join(root, "native")
-	uvNativeOriginalFixture(t, ctx, oldWheel, native, "3.10")
+	uvNativeOriginalFixture(t, ctx, oldWheel, native, "3.15")
 	write("packaging==25.0\n")
 	before = uvCLIRegularFiles(t, native)
 	evidenceBefore = uvCLIRegularFiles(t, filepath.Join(cache, "heliopause", "evidence"))
@@ -229,7 +229,7 @@ func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
 	}
 	adopted := runActualUVSync(t, ctx, source, native, "--adopt")
 	actualUVSyncPayload(t, cache, adopted)
-	if _, err := os.Lstat(filepath.Join(native, "lib", "python3.14", "site-packages", "idna-3.10.dist-info", "METADATA")); !os.IsNotExist(err) {
+	if _, err := os.Lstat(filepath.Join(native, "lib", "python3.14", "site-packages", "idna-3.15.dist-info", "METADATA")); !os.IsNotExist(err) {
 		t.Fatal("excluded proven native owner remained", err)
 	}
 }

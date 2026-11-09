@@ -101,7 +101,7 @@ func TestLinuxUVProjectCLIIntegration(t *testing.T) {
 	apply("add", "packaging==24.2", 1)
 	apply("add", "packaging==25.0", 1)
 	apply("sync", "", 1)
-	apply("add", "idna==3.10", 2)
+	apply("add", "idna==3.15", 2)
 	// Same current-directory/default target route, with human presentation.
 	{
 		t.Chdir(project)
@@ -177,7 +177,7 @@ func TestLinuxUVProjectSelectionCLIIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	manifest := filepath.Join(project, "pyproject.toml")
-	body := []byte("[project]\nname='haa-cli-selection'\nversion='0.1.0'\nrequires-python='==" + sandbox.PinnedPythonRuntime().PythonVersion + "'\ndependencies=[\"packaging==25.0; sys_platform == 'linux'\"]\n[project.optional-dependencies]\nnet=['idna==3.10']\n[dependency-groups]\ndev=['six==1.17.0']\nempty=[]\n[tool.uv]\npackage=false\n")
+	body := []byte("[project]\nname='haa-cli-selection'\nversion='0.1.0'\nrequires-python='==" + sandbox.PinnedPythonRuntime().PythonVersion + "'\ndependencies=[\"packaging==25.0; sys_platform == 'linux'\"]\n[project.optional-dependencies]\nnet=['idna==3.15']\n[dependency-groups]\ndev=['six==1.17.0']\nempty=[]\n[tool.uv]\npackage=false\n")
 	if err := os.WriteFile(manifest, body, 0o640); err != nil {
 		t.Fatal(err)
 	}

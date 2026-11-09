@@ -91,7 +91,7 @@ func TestUVPublicProjectApprovedCacheIntegration(t *testing.T) {
 		name, dependencies string
 		count              int
 	}{
-		{"two roots", `["idna==3.10","packaging==25.0"]`, 2},
+		{"two roots", `["idna==3.15","packaging==25.0"]`, 2},
 		{"explicit empty", `[]`, 0},
 	} {
 		if !t.Run(item.name, func(t *testing.T) {
