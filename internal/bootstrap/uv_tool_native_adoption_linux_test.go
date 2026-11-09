@@ -19,6 +19,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 type uvNativeToolFile struct {
@@ -204,13 +205,26 @@ func nativeToolAdoptionCLIIntegration(t *testing.T, pipx bool) {
 		t.Fatal(err)
 	}
 	beforeEvidenceFailure := uvNativeToolFiles(t, native)
-	if err := os.Chmod(evidenceRoot, 0500); err != nil {
+	// Shared storage refuses a non-private root before the first intake, so fill
+	// the real retention quota: ownership proof and inspection still run first.
+	quotaRun, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	quotaFiller := filepath.Join(evidenceRoot, quotaRun.String())
+	if err := os.Mkdir(quotaFiller, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(quotaFiller, "quota.json"), nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Truncate(filepath.Join(quotaFiller, "quota.json"), int64(domain.DefaultStoragePolicy().Spec().EvidenceBytes)); err != nil {
 		t.Fatal(err)
 	}
 	var rejected, diagnostic bytes.Buffer
 	currentErr := bootstrap.Run(ctx, append(append([]string{}, args...), "--adopt"), &rejected, &diagnostic)
-	restoreErr := os.Chmod(evidenceRoot, 0700)
-	if restoreErr != nil || currentErr == nil || !errors.Is(currentErr, fs.ErrPermission) || !strings.Contains(currentErr.Error(), "Evidence") || !reflect.DeepEqual(beforeEvidenceFailure, uvNativeToolFiles(t, native)) {
+	restoreErr := os.RemoveAll(quotaFiller)
+	if restoreErr != nil || currentErr == nil || !strings.Contains(currentErr.Error(), "Evidence") || !strings.Contains(currentErr.Error(), "evidence retention quota is full") || !reflect.DeepEqual(beforeEvidenceFailure, uvNativeToolFiles(t, native)) {
 		t.Fatal("native current Evidence failure bypassed or changed original", currentErr, restoreErr, rejected.String(), diagnostic.String())
 	}
 	if _, err := os.Lstat(filepath.Join(target, ".heliopause", "pypi-transaction.json")); !errors.Is(err, os.ErrNotExist) {

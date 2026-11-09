@@ -622,6 +622,18 @@ Attempt 2는 step 4 88분에 `TestLinuxBunRunExecutionCLIIntegration`(510.08s)�
 ### CI475 — 조정 후보, 시험 전 Bazel 다운로드 504로 미검증
 
 128779e의 [CI475](https://github.com/rahoney/heliopause/actions/runs/42565698323)는 8개 job SUCCESS, Linux·Required FAILURE다. Attempt 1–3 모두 시험 전 Bazel의 GitHub 다운로드가 `504 Gateway Time-out`으로 끝났다(`rules_java`, `bazel-skylib`, `protobuf`). CI472 attempt 2의 `grpc` 504를 포함하면 같은 유형이 4회이고,
-CI474 attempt 1의 apt 연결 실패는 별개 유형이다. 05:53Z에 GitHub status는 정상이고 로컬에서 같은 URL 2개가 200이어서 hosted runner 구간의 간헐 오류로 보이나 원인은 UNKNOWN이다. 재실행을 기본 해결책으로 쓰지 않으려고 attempt 3 뒤 중단했다.
+CI474 attempt 1의 apt 연결 실패는 별개 유형이다. 재실행을 기본 해결책으로 쓰지 않으려고 attempt 3 뒤 중단했다.
 따라서 사례 context 6분·프로세스 12분의 수정 후 실측과 Bun run 블록 뒤 Linux 구간은 미검증이다. CI474 attempt 2는 Bun run CLI 실패 시점이 step 4의 88분으로 CI448의 같은 지점(47.2분) 대비 약 1.9배여서 전체 시간이 240분에 근접하거나 넘을 위험이 있다(추정).
+
+Bazel 504 분석(2026-11-09, 코드·workflow·릴리스 스크립트 불변): 고정 builder의 Bazel 8.3.1(lock sha512 일치)을 `--network none`으로 조회한 기본값은 `--experimental_repository_downloader_retries=5`, `--http_connector_attempts=8`, `--http_connector_retry_max_timeout=0s`이고 스크립트는 이 옵션들을 지정하지 않는다. 같은 값을 명시하는 변경은 효과가 없어 하지 않는다.
+실패 4회는 모두 컴파일 전 `Computing main repo mapping` 단계이며, Bazel server 시작 뒤 32–65초에 URL마다 다른 archive에서 끝났다(`grpc`, `rules_java`, `bazel-skylib`, `protobuf`). 로그는 URL별 WARNING 1줄만 남기므로 실제 시도 횟수와 504를 낸 hop은 알 수 없다(UNKNOWN). 릴리스 스크립트의 `docker run`에는 proxy 설정이 없다.
+로컬 재시도 경로는 `github.com` 302 → `release-assets.githubusercontent.com`(archive는 `codeload.github.com`) 200이고 protobuf·rules_java·skylib의 SHA-256이 BCR `source.json` integrity와 일치한다(local vantage는 hosted runner 경로의 대체 증거가 아니다).
+GitHub status 공지와 시간·증상이 일치한다. [11-08 10:36–12:32 비인증 사용자 timeout](https://www.githubstatus.com/incidents/pyynvrm1vskw)은 CI472 attempt 2(10:46Z)와, [11-09 05:59 게시 anonymous traffic surge](https://www.githubstatus.com/incidents/c9px7cw2ghrs)는 CI475 attempt 1–3(05:23–05:56Z)과 겹치며 후자는 "CI jobs and release downloads may fail with a 504 … if they make anonymous calls"라고 명시한다. 앞서 05:53Z에 본 "status 정상"은 공지 게시(05:59Z) 이전 값이었다. 개별 요청의 직접 원인은 확정할 수 없어 "공지 장애와 일치, 요청별 경로 UNKNOWN"으로 둔다.
+원본은 `docs/github-logs/ci475-20261109/recovery`다. 재실행 조건은 장애 종료 확인과 URL 재확인이고 허용 횟수는 1회다. 같은 504가 재발하면 중단하고 고정 integrity로 검증하는 사전 확보·`repository_cache`/`distdir` 최소안을 제시한다. 릴리스 스크립트 수정은 승인되지 않았다.
+
+CI475 attempt 4(승인 1회, 09:21:58Z 시작): GitHub 장애 종료(09:09:56Z)와 URL 3회 확인(12건 200, 재시도 대상 3개 integrity 일치) 뒤 실행했고 504는 0건이다. Linux는 104.3분에 `TestLinuxUVToolNativeAdoptionCLIIntegration`에서 실패했다. Required는 이 실패를 따라 실패다. 원본은 `docs/github-logs/ci475-20261109/attempt4`다.
+12노드 한도 실측: Bun 239.177s, Bun program 240.488s 모두 6분 안에 통과했다(`deadline_expired=false`). 프로세스는 478.97s/483.79s로 12분 안이다. Bun program 240.488s는 이전 4분 한도를 넘는 값이라 조정 근거를 뒷받침한다. 다른 사례는 119–122s다.
+240분 예산은 미검증이다. Bun RunCLI 종료 지점이 81.3분으로 CI448의 47.2분 대비 1.72배이며, 같은 배율이면 전체는 약 231분이다(추정). 210분 초과 시 job 분할을 검토하고 한도는 올리지 않는다.
+실패 원인: 시험이 Evidence root를 0500으로 바꿔 쓰기 실패를 주입하는데, `c573120`(11-02)부터 공유 저장소가 첫 intake 예약에서 root를 먼저 검사해 원본 wheel 획득 단계에서 거부한다. 로컬 재현 결과는 `storage child is not an owned private directory`다. selectOwnership이 이를 `UPDATE_ORIGINAL_STATE_UNSUPPORTED`로 감싸 hosted 로그의 내부 문구는 가려졌으나, 두 observer 세션 뒤 첫 예약이라는 순서가 일치한다. 원본은 불변이었고 fail-closed 자체는 정상이며 ledger도 남지 않았다. 앞선 단계 실패에 가려 이번에 처음 드러났다.
+교정: `TestLinuxUVToolNativeAdoptionCLIIntegration`과 pipx 공용 helper에서 결함 주입만 실제 Evidence quota 소진(256MiB sparse 미등록 run)으로 바꿨다. 소유권 증명과 검사를 지난 뒤 실제 Store 기록이 거부되고, 원본 불변·ledger 없음 단정은 유지한다. 임시 검증(실제 `Store`+`Local`)은 intake 허용, `evidence retention quota is full`, temp/run 미잔존, filler 제거 뒤 기록 성공이다. 같은 유형 sweep에서 Evidence root 권한 변경 시험은 이 1개뿐이었다. 제품 코드는 불변이다. hosted 경로의 교정 결과는 미검증이다.
 
