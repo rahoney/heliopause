@@ -612,3 +612,10 @@ CI472 attempt 3은 job 후반의 같은 시험이 사례 1–2 합 약 248s(이�
 정리 합 1.1s, 동적 컨테이너 26개 실행 합 50.1s, 나머지는 세션 간 간격·resolver 등이다. 노드당 Semgrep 공급 재준비 비중은 volume 준비 약 1.2s와 세션 사이 미측정 구간(약 1.8s, 공급 읽기·해시·probe 포함)을 합쳐 상한 약 3s, 12노드 합 약 36s(사례 3의 약 19%)다. 비중이 작아 제품 공급 재사용 변경은 제안하지 않는다.
 세션당 약 4s 스캔의 내부(규칙 적재 등)는 이 계측으로 나뉘지 않아 미확정이다. 큰 패키지의 스캔 시간이 지배적이며 이는 필수 검사 자체의 비용이다.
 
+### CI474 — 사례 4분 만료 직접 확인과 조건부 시험 예산 적용
+
+54016c8의 [CI474](https://github.com/rahoney/heliopause/actions/runs/42553746750) attempt 1은 Linux step 4 시작 22초에 `archive.ubuntu.com` 연결 실패(apt exit 100)로 시험 전 종료했고, 실패 job만 재실행했다.
+Attempt 2는 step 4 88분에 `TestLinuxBunRunExecutionCLIIntegration`(510.08s)이 FAIL했다. 계측 줄이 사례 1 134.470s·사례 2 134.761s·사례 3 240.822s, `context_err=context deadline exceeded`·`context_cause` 동일·`deadline_expired=true`·`run_error_deadline=true`를 보여 사례 4m 만료가 직접 확인됐다.
+결과 9437B 전체에서 부분 검사 노드 8개(7개는 그래프 단위 advisory만 누락, 8번째 `wrappy@1.0.2`는 `bun-dynamic-lifecycle` 진행 중)이고 12노드 중 나머지 4개는 동적 검사 전이다. 앞 노드가 순서대로 끝나고 있어 정체가 아닌 시간 부족으로 판단했다. CI473(job 초반) 대비 사례 1·2가 약 1.3배 느렸다.
+사용자 조건부 승인에 따라 공용 helper 사례 context만 4→6분, Bun run·Bun program·PNPM run CLI 프로세스만 10→12분으로 올렸다(사례 합계 추정 약 134+134+310s에 준비·정리 여유). 제품 한도·검사 범위·거부 시험·앞 프로세스 10m·Linux job 240분은 유지한다. npm 프로세스는 기존 18m이다.
+

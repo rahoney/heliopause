@@ -163,7 +163,8 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		args = append(args, selector, "--", arg)
 		var out, diagnostic bytes.Buffer
 		started := time.Now()
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+		// CI474: the 12-node case exceeded 4m on a late-job runner with every node still progressing.
+		ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 		cause := Run(ctx, args, &out, &diagnostic)
 		elapsed := time.Since(started)
 		contextErr, contextCause := ctx.Err(), context.Cause(ctx)

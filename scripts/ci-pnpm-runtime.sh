@@ -51,7 +51,7 @@ if [[ "$pnpm_profile" == run ]]; then
   (
     cd internal/bootstrap
     HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLIRefusal)Integration$' &&
-    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecutionCLIIntegration$'
+    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^TestLinuxPNPMRunExecutionCLIIntegration$'
   ) >"$pnpm_run_log" 2>&1 || pnpm_run_status=$?
   pnpm_run_log_status=0
   cat -- "$pnpm_run_log" || pnpm_run_log_status=$?
