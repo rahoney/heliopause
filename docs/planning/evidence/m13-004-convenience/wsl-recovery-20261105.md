@@ -619,3 +619,9 @@ Attempt 2는 step 4 88분에 `TestLinuxBunRunExecutionCLIIntegration`(510.08s)�
 결과 9437B 전체에서 부분 검사 노드 8개(7개는 그래프 단위 advisory만 누락, 8번째 `wrappy@1.0.2`는 `bun-dynamic-lifecycle` 진행 중)이고 12노드 중 나머지 4개는 동적 검사 전이다. 앞 노드가 순서대로 끝나고 있어 정체가 아닌 시간 부족으로 판단했다. CI473(job 초반) 대비 사례 1·2가 약 1.3배 느렸다.
 사용자 조건부 승인에 따라 공용 helper 사례 context만 4→6분, Bun run·Bun program·PNPM run CLI 프로세스만 10→12분으로 올렸다(사례 합계 추정 약 134+134+310s에 준비·정리 여유). 제품 한도·검사 범위·거부 시험·앞 프로세스 10m·Linux job 240분은 유지한다. npm 프로세스는 기존 18m이다.
 
+### CI475 — 조정 후보, 시험 전 Bazel 다운로드 504로 미검증
+
+128779e의 [CI475](https://github.com/rahoney/heliopause/actions/runs/42565698323)는 8개 job SUCCESS, Linux·Required FAILURE다. Attempt 1–3 모두 시험 전 Bazel의 GitHub 다운로드가 `504 Gateway Time-out`으로 끝났다(`rules_java`, `bazel-skylib`, `protobuf`). CI472 attempt 2의 `grpc` 504를 포함하면 같은 유형이 4회이고,
+CI474 attempt 1의 apt 연결 실패는 별개 유형이다. 05:53Z에 GitHub status는 정상이고 로컬에서 같은 URL 2개가 200이어서 hosted runner 구간의 간헐 오류로 보이나 원인은 UNKNOWN이다. 재실행을 기본 해결책으로 쓰지 않으려고 attempt 3 뒤 중단했다.
+따라서 사례 context 6분·프로세스 12분의 수정 후 실측과 Bun run 블록 뒤 Linux 구간은 미검증이다. CI474 attempt 2는 Bun run CLI 실패 시점이 step 4의 88분으로 CI448의 같은 지점(47.2분) 대비 약 1.9배여서 전체 시간이 240분에 근접하거나 넘을 위험이 있다(추정).
+
