@@ -637,3 +637,9 @@ CI475 attempt 4(승인 1회, 09:21:58Z 시작): GitHub 장애 종료(09:09:56Z)�
 실패 원인: 시험이 Evidence root를 0500으로 바꿔 쓰기 실패를 주입하는데, `c573120`(11-02)부터 공유 저장소가 첫 intake 예약에서 root를 먼저 검사해 원본 wheel 획득 단계에서 거부한다. 로컬 재현 결과는 `storage child is not an owned private directory`다. selectOwnership이 이를 `UPDATE_ORIGINAL_STATE_UNSUPPORTED`로 감싸 hosted 로그의 내부 문구는 가려졌으나, 두 observer 세션 뒤 첫 예약이라는 순서가 일치한다. 원본은 불변이었고 fail-closed 자체는 정상이며 ledger도 남지 않았다. 앞선 단계 실패에 가려 이번에 처음 드러났다.
 교정: `TestLinuxUVToolNativeAdoptionCLIIntegration`과 pipx 공용 helper에서 결함 주입만 실제 Evidence quota 소진(256MiB sparse 미등록 run)으로 바꿨다. 소유권 증명과 검사를 지난 뒤 실제 Store 기록이 거부되고, 원본 불변·ledger 없음 단정은 유지한다. 임시 검증(실제 `Store`+`Local`)은 intake 허용, `evidence retention quota is full`, temp/run 미잔존, filler 제거 뒤 기록 성공이다. 같은 유형 sweep에서 Evidence root 권한 변경 시험은 이 1개뿐이었다. 제품 코드는 불변이다. hosted 경로의 교정 결과는 미검증이다.
 
+CI476([run 42612413657](https://github.com/rahoney/heliopause/actions/runs/42612413657), `8db697b`): 8 job SUCCESS, Linux·Required FAIL(122.2분). 504는 0건이다. 교정한 주입은 의도한 지점에 도달했다: 9개 검사가 끝난 뒤 실제 Store가 `evidence retention quota is full`로 거부했고 보고서 코드는 `EVIDENCE_RECORD_FAILED`다. 실패는 앞 수정에서 내가 그대로 남긴 대문자 `"Evidence"` 문구 단정 때문이었다. 이 경로의 오류에는 해당 wrapper가 없다. 단정을 quota 문구와 보고서 코드로 바꿨다.
+12노드 한도는 이번에도 통과했다: Bun 277.524s, Bun program 273.554s(6분 안, 프로세스 550.31s/551.25s, 12분 안). 같은 지점이 attempt 4보다 16% 느려 runner 편차가 크다. 240분 예산은 여전히 미검증이다.
+동반된 `intake remains accounted`는 결함이 아니라 현재 설계다. 실패한 소비 경로는 `finishUse(cause)`로 intake를 보수적으로 남기고 재시작 회수로 넘긴다.
+실행 단위: 12분 프로세스가 native 시험 전까지 457.57s를 썼고 native 전체 추정치 약 230s를 더하면 688s(추정)다. CI471과 같은 프로세스 만료를 막기 위해 `TestLinuxUVToolNativeAdoptionCLIIntegration`만 같은 12분의 별도 프로세스로 분리했다. 개별 한도·Linux 240분·검사 범위는 그대로다. pipx 묶음은 4개 시험 약 611s(추정)라 유지한다.
+로컬 검증: docs·security PASS. `quick`은 같은 Host의 다른 Codex 샌드박스가 `/tmp/.git`을 잠깐 만드는 간섭으로 빌드 시험이 `VCS status 128`로 흔들렸다. 마지막 전체 실행에서 실패는 `cmd/helox` 한 패키지(VCS 1건)뿐이고, 같은 workspace에서 그 패키지만 다시 실행해 PASS다. 전체 `quick` 한 번의 완전 통과는 이 후보에서 얻지 못했고 hosted Quick으로 확인한다.
+

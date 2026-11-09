@@ -224,7 +224,7 @@ func nativeToolAdoptionCLIIntegration(t *testing.T, pipx bool) {
 	var rejected, diagnostic bytes.Buffer
 	currentErr := bootstrap.Run(ctx, append(append([]string{}, args...), "--adopt"), &rejected, &diagnostic)
 	restoreErr := os.RemoveAll(quotaFiller)
-	if restoreErr != nil || currentErr == nil || !strings.Contains(currentErr.Error(), "Evidence") || !strings.Contains(currentErr.Error(), "evidence retention quota is full") || !reflect.DeepEqual(beforeEvidenceFailure, uvNativeToolFiles(t, native)) {
+	if restoreErr != nil || currentErr == nil || !strings.Contains(currentErr.Error(), "evidence retention quota is full") || !bytes.Contains(rejected.Bytes(), []byte("EVIDENCE_RECORD_FAILED")) || !reflect.DeepEqual(beforeEvidenceFailure, uvNativeToolFiles(t, native)) {
 		t.Fatal("native current Evidence failure bypassed or changed original", currentErr, restoreErr, rejected.String(), diagnostic.String())
 	}
 	if _, err := os.Lstat(filepath.Join(target, ".heliopause", "pypi-transaction.json")); !errors.Is(err, os.ErrNotExist) {
