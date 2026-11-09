@@ -582,3 +582,21 @@ CI446 76.76s·CI448 125.05s였다. 사례마다 시험 내부 4m context가 이�
 내용 검사 추가 뒤의 전체 증가로 보고, 사용자 승인으로 Linux job 한도만 150→240분으로 올렸다(제품·개별 시험 한도 불변, 값을
 고정하는 검증기는 없음). 다음 CI에서 단계별·전체 시간을 기록해 240분 적정성, 특정 단계의 비정상 지연, 중복 실행 여부를 본다.
 계속 210분을 넘으면 독립 job 분할을 검토하고 추가 상향은 자동으로 하지 않는다. 원본은 `docs/github-logs/ci471-20261108`이다.
+
+### CI472 — Linux 240분 첫 실행, Bun 거래 `peer` CPU 표본 지연(원인 UNKNOWN)
+
+3447cd8의 [CI472](https://github.com/rahoney/heliopause/actions/runs/42453714452) attempt 1은 8개 SUCCESS, Linux·Required FAILURE다(step 4가 60분에
+종료). `TestBunPublicProjectTransactionIntegration/peer`의 세 번째 적용이 Bun instance 검사 중 Python 관찰 CPU 표본 지연
+(`gap_ns=12660981331`, poll 1s, 읽기 자체 7.9ms·직전 대기 12.65s)과 관찰 lifecycle stop bound 초과로 INCOMPLETE가 되어 승인 집합·게시
+없이 실패했다(fail-closed 정상 동작). 같은 source의 같은 사례는 CI471에서 PASS했고 이번 변경은 이 경로를 바꾸지 않았다. 로그에 메모리
+계측이 없어 runner 정지·메모리 압박 등 원인은 UNKNOWN이며, CI469 `dropped_count`와 같은 원인이라고 합치지 않는다. 가려진 뒤 구간을
+확인하려고 실패 job만 재실행했다(재실행 성공은 이 실패의 해결 증거가 아니다). Attempt 2는 step 4 시작 약 2.5분 뒤 gVisor Bazel 공급의
+`github.com/grpc/grpc` v1.75.0 다운로드가 504로 끝나 시험에 도달하지 못했으므로(exit 37) 검증 정보가 없고, attempt 3을 실행했다.
+
+CI472 attempt 3(15:41–17:06Z, Linux·Required FAILURE, step 4 85분에 종료)은 attempt 1에서 실패한 `peer`를 포함해 분할 사례를 통과하고 Bun run
+블록의 앞 프로세스(선언 entry CLI 103.21s·workflow 50.15s/46.86s·거부 239.19s)도 PASS했다. `TestLinuxBunRunExecutionCLIIntegration`이 488.82s에서
+FAIL했다: 사례 1–2 PASS 뒤 사례 3(`bunx rimraf@3.0.2`, CI448 기준 12노드)이 실패했다. 로그의 결과는 시험이 앞 8192B만 남겨 부분 검사 노드 8개까지만 보인다(7개는
+그래프 단위 `dependency-advisory`만 누락, 8번째 `wrappy@1.0.2`는 `bun-dynamic-lifecycle` INCOMPLETE). 처음에 적은 "12노드 중 11개 완료·마지막 노드 중단"은 잘린 출력에서 잘못 추정한 것이라 철회한다.
+4m context 소진도 시간 계산에서 나온 추정일 뿐 미확인이다. fail-closed로 승격은 없다. 프로세스 분리(10m)는 작동했다.
+CI448 대비 거부 시험(typescript 2건) 35.73→239.19s, 12노드 사례 >240s다. 코드상 `SourceAnalyzer.Analyze`가 노드마다 설치된 Semgrep core·rules를 다시 읽고 입력 volume을 새로 만들어
+도입한다(`internal/sandbox/source_analysis.go:65,105`). 노드당 고정비 후보이나 실측은 없고 격리 경계라 변경하지 않았다.

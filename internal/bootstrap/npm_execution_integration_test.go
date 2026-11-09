@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,6 +36,59 @@ func TestLinuxBunRunExecutionCLIIntegration(t *testing.T) {
 
 func TestLinuxBunProgramExecutionCLIIntegration(t *testing.T) {
 	testNodeExecutionCLIIntegration(t, "bun-program")
+}
+
+// nodeExecutionFailureSummary reports inspection axes and per-node gaps for a
+// failed CLI case. It parses report structure only and never echoes the raw
+// result, so program output cannot reach the failure message.
+func nodeExecutionFailureSummary(body []byte) string {
+	const maxSummary = 2048
+	bounded := func(text string) string { return text[:min(len(text), maxSummary)] }
+	var report struct {
+		Schema, Quarantine, Policy, Preparation, Execution string
+		Cleanup                                            string `json:"execution_guest_cleanup"`
+		Checks                                             []struct {
+			ID, Node string
+			Required bool
+			Status   string `json:"execution_status"`
+		} `json:"checks"`
+	}
+	if json.Unmarshal(body, &report) == nil {
+		var missing []string
+		for _, check := range report.Checks {
+			if check.Required && check.Status != "COMPLETED" {
+				missing = append(missing, check.Node+"/"+check.ID+"="+check.Status)
+			}
+		}
+		return bounded(fmt.Sprintf("result_bytes=%d schema=%s quarantine=%s policy=%s preparation=%s execution=%s cleanup=%s checks=%d required_gaps=%v", len(body), report.Schema, report.Quarantine, report.Policy, report.Preparation, report.Execution, report.Cleanup, len(report.Checks), missing))
+	}
+	var nodes []string
+	gaps := map[string][]string{}
+	current := ""
+	for _, line := range strings.Split(string(body), "\n") {
+		for _, header := range []string{"Partial inspection: ", "중단 시점 검사: "} {
+			if name, found := strings.CutPrefix(line, header); found {
+				current = name
+				nodes = append(nodes, name)
+			}
+		}
+		check, found := strings.CutPrefix(line, "  ! ")
+		if !found || current == "" || strings.Contains(check, "[선택]") || strings.Contains(check, "[optional]") {
+			continue
+		}
+		if id, _, ok := strings.Cut(check, " "); ok {
+			gaps[current] = append(gaps[current], id)
+		}
+	}
+	last, completed, parts := "", 0, []string{}
+	for _, node := range nodes {
+		last = node
+		if len(gaps[node]) == 1 && gaps[node][0] == "dependency-advisory" {
+			completed++
+		}
+		parts = append(parts, node+":"+strings.Join(gaps[node], ","))
+	}
+	return bounded(fmt.Sprintf("result_bytes=%d partial_nodes=%d nodes_missing_only_graph_advisory=%d last_node=%s node_gaps=%v", len(body), len(nodes), completed, last, parts))
 }
 
 func testNodeExecutionCLIIntegration(t *testing.T, client string) {
@@ -108,11 +162,15 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		}
 		args = append(args, selector, "--", arg)
 		var out, diagnostic bytes.Buffer
+		started := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 		cause := Run(ctx, args, &out, &diagnostic)
+		elapsed := time.Since(started)
+		contextErr, contextCause := ctx.Err(), context.Cause(ctx)
 		cancel()
+		t.Logf("node_execution_cli_timing client=%s case=%d seconds=%.3f context_err=%v context_cause=%v deadline_expired=%t run_failed=%t run_error_deadline=%t", client, i+1, elapsed.Seconds(), contextErr, contextCause, errors.Is(contextErr, context.DeadlineExceeded), cause != nil, errors.Is(cause, context.DeadlineExceeded))
 		if row.code == 0 && cause != nil {
-			t.Fatalf("actual CLI zero failed: %v; result=%q; diagnostic=%q", cause, out.Bytes()[:min(out.Len(), 8192)], diagnostic.Bytes()[:min(diagnostic.Len(), 2048)])
+			t.Fatalf("actual CLI zero failed: %v; %s; diagnostic=%q", cause, nodeExecutionFailureSummary(out.Bytes()), diagnostic.Bytes()[:min(diagnostic.Len(), 2048)])
 		}
 		if row.code != 0 {
 			var code interface{ ExitCode() int }
@@ -123,7 +181,7 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 				typed = errors.As(cause, &bun)
 			}
 			if !errors.As(cause, &code) || code.ExitCode() != row.code || !typed {
-				t.Fatal("actual guest nonzero lost typed cause or process exit", cause)
+				t.Fatal("actual guest nonzero lost typed cause or process exit", cause, nodeExecutionFailureSummary(out.Bytes()))
 			}
 		}
 		if row.output == "json" {
