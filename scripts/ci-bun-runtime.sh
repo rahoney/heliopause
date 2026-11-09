@@ -2,7 +2,7 @@
 # Hosted-CI-only native supply; Bun executes only inside gVisor as UID1000.
 set -euo pipefail
 case "$#:${1-}" in
-  0:|1:project|1:timing) ;;
+  0:|1:project) ;;
   *) echo 'unsupported Bun CI profile' >&2; exit 2 ;;
 esac
 bun_profile=${1:-sandbox}
@@ -42,22 +42,6 @@ sudo -n install -m 0555 "$(haa_ci_semgrep_source core)" /usr/lib/heliopause/vers
 sudo -n install -m 0444 "$(haa_ci_semgrep_source rules)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/semgrep-rules.json
 sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current
 # The owning parent installed this tagged client and started its policy helper.
-if [[ "$bun_profile" == timing ]]; then
-  # TEMPORARY diagnostic: phase timing comes from outside the product.
-  sudo -n docker events --filter type=container --filter type=volume --filter event=create --filter event=start --filter event=die --filter event=destroy --format '{{.TimeNano}} {{.Type}} {{.Action}} {{.Actor.ID}} {{index .Actor.Attributes "name"}}' >"$bun_work/docker-events.log" &
-  bun_events_pid=$!
-  bun_timing_status=0
-  (
-    cd internal/bootstrap
-    HELOX_BUN_NATIVE_RUNTIME=1 HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxBunRunExecutionCLIIntegration$'
-  ) || bun_timing_status=$?
-  sudo -n kill -TERM "$bun_events_pid" || true
-  wait "$bun_events_pid" || true
-  echo "docker_events_begin lines=$(wc -l <"$bun_work/docker-events.log")"
-  cat -- "$bun_work/docker-events.log"
-  echo docker_events_end
-  exit "$bun_timing_status"
-fi
 if [[ "$bun_profile" == project ]]; then
   (
     cd internal/bootstrap

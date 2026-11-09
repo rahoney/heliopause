@@ -600,3 +600,15 @@ FAIL했다: 사례 1–2 PASS 뒤 사례 3(`bunx rimraf@3.0.2`, CI448 기준 12�
 4m context 소진도 시간 계산에서 나온 추정일 뿐 미확인이다. fail-closed로 승격은 없다. 프로세스 분리(10m)는 작동했다.
 CI448 대비 거부 시험(typescript 2건) 35.73→239.19s, 12노드 사례 >240s다. 코드상 `SourceAnalyzer.Analyze`가 노드마다 설치된 Semgrep core·rules를 다시 읽고 입력 volume을 새로 만들어
 도입한다(`internal/sandbox/source_analysis.go:65,105`). 노드당 고정비 후보이나 실측은 없고 격리 경계라 변경하지 않았다.
+
+### CI473 — Bun 실행 CLI 목표 경로 재현과 단계별 실측
+
+cb88d21(임시 `[skip ci]` 진단, 준비 뒤 목표 시험만 실행)의 [CI473](https://github.com/rahoney/heliopause/actions/runs/42549208273)에서
+`TestLinuxBunRunExecutionCLIIntegration`이 393.02s PASS했다. 사례 1 107.554s·사례 2 100.327s·사례 3(12노드) 185.112s이고 `context_err=<nil>`·`deadline_expired=false`다. 즉
+사례 4m 만료는 이번에 재현되지 않았고 CI472 attempt 3의 실패 원인이 deadline이라는 직접 증거도 없다. 사용자 조건에 따라 시험 context 4→6분·프로세스 10→12분은 적용하지 않는다.
+CI472 attempt 3은 job 후반의 같은 시험이 사례 1–2 합 약 248s(이번 208s, 약 1.2배, 사례 3 실패 시간까지 포함한 차분이므로 미확정)였다. 다음 전체 CI에서 재발하면 추가한 `node_execution_cli_timing` 줄과 원문 없는 요약이 만료 여부를 직접 보여 준다.
+
+단계별(`docker events`, 시작→종료, 제품 변경 없음): typescript 사례의 Semgrep 스캔 81.7s·78.3s(사례 시간의 약 76%·78%). 12노드 사례는 Semgrep 세션 12개가 약 7.1s 간격으로 이어지며 volume 준비→스캔 시작 합 14.6s(세션당 약 1.2s), 스캔 합 48.7s(세션당 약 4s),
+정리 합 1.1s, 동적 컨테이너 26개 실행 합 50.1s, 나머지는 세션 간 간격·resolver 등이다. 노드당 Semgrep 공급 재준비 비중은 volume 준비 약 1.2s와 세션 사이 미측정 구간(약 1.8s, 공급 읽기·해시·probe 포함)을 합쳐 상한 약 3s, 12노드 합 약 36s(사례 3의 약 19%)다. 비중이 작아 제품 공급 재사용 변경은 제안하지 않는다.
+세션당 약 4s 스캔의 내부(규칙 적재 등)는 이 계측으로 나뉘지 않아 미확정이다. 큰 패키지의 스캔 시간이 지배적이며 이는 필수 검사 자체의 비용이다.
+
