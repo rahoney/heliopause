@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "source_commit": "35c0f2dfeaf646d8bbe47b47babed86a112c855b",
+  "source_tree": "4243951494b36e0d24adac102760c50df45f4c6e",
+  "run_id": 39728010281,
+  "run_number": 376,
+  "status": "completed",
+  "conclusion": "success",
+  "checkout": {
+    "sha": "6611edd8e0c9ebebdf02520146e0127c00fdf3f7",
+    "tree": "4243951494b36e0d24adac102760c50df45f4c6e",
+    "equals_source_tree": true,
+    "raw_verified_jobs": [
+      "gVisor Linux Integration",
+      "macOS"
+    ]
+  },
+  "jobs": [
+    {
+      "id": 119656314045,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314202,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314208,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314245,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314270,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314307,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314313,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314316,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119656314355,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119670145814,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "public_uv": {
+    "test": "TestUVPublicNativeResolverIntegration",
+    "seconds": 22.75,
+    "runtime_identity": "uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "results": [
+      {
+        "reference": "idna@3.11",
+        "nodes": 1,
+        "edges": 0,
+        "native_network_connects": 3,
+        "independent_python_network_connects": 10
+      },
+      {
+        "reference": "requests@2.32.5",
+        "nodes": 5,
+        "edges": 4,
+        "native_network_connects": 7,
+        "independent_python_network_connects": 50
+      }
+    ],
+    "native_and_independent_archive_binding": "PASS; authenticated installed CI client, typed network and complete native/Python observation required by resolver before returning graph",
+    "scope": "single-root public PyPI producer; no guarded client/application/CLI support claim"
+  },
+  "linux": {
+    "latch_passes": 106,
+    "top_level_integration_passes": 49,
+    "native_startup_seconds": 3.59,
+    "native_query_seconds": 3.45,
+    "native_output_seconds": 3.92,
+    "native_trace_events": [
+      29,
+      31,
+      35
+    ],
+    "native_traces_complete": true,
+    "existing_integration": "PASS; includes Go/Cargo/Terraform/npm/GitHub/Python consumers and expected hostile-denial fixtures",
+    "pytorch_cpu_full_seconds": 295.93,
+    "helper_waits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    },
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci376-linux.log"
+  },
+  "macos": {
+    "go": "1.26.10 darwin/amd64",
+    "production_build_seconds": 86.314,
+    "default_test_envelope_seconds_upper_bound": 228.543,
+    "status": "PASS",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci376-macos.log"
+  },
+  "required_pass": true,
+  "c2_single_root_producer_acceptance_closed": true,
+  "p1_acceptance_closed": false,
+  "missing": [
+    "guarded UV install/upgrade/sync and client routing",
+    "native UV ownership/retention and complete/empty transaction adapters",
+    "application/CLI end-to-end and final P1 qualification"
+  ]
+}

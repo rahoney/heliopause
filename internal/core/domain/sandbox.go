@@ -87,6 +87,80 @@ func (o SandboxObservation) Category() ObservationCategory { return o.category }
 func (o SandboxObservation) Subject() string               { return o.subject }
 func (o SandboxObservation) Count() uint64                 { return o.count }
 
+// SandboxEnvironmentProfile identifies the common, versioned synthetic input.
+type SandboxEnvironmentProfile string
+
+const (
+	SandboxEnvironmentMinimal     SandboxEnvironmentProfile = "minimal-v1"
+	SandboxEnvironmentDevelopment SandboxEnvironmentProfile = "mock-development-v1"
+	SandboxEnvironmentStateSchema                           = "workspace-state-v2"
+)
+
+// SandboxEnvironmentState retains only controller-owned snapshot identities
+// and exact change counts. Paths and file contents remain transient.
+type SandboxEnvironmentState struct {
+	Profile                      SandboxEnvironmentProfile
+	FixtureDigest, Before, After ContentDigest
+	Created, Deleted, Modified   uint64
+	VFSOperationsCovered         bool
+}
+
+func (s SandboxEnvironmentState) validate() error {
+	if (s.Profile != SandboxEnvironmentMinimal && s.Profile != SandboxEnvironmentDevelopment) ||
+		s.FixtureDigest.String() == "" || s.Before.String() == "" || s.After.String() == "" ||
+		s.Created > MaximumObservationSummaryCount || s.Deleted > MaximumObservationSummaryCount ||
+		s.Modified > MaximumObservationSummaryCount ||
+		s.Created+s.Modified > MaximumObservationSummaryCount || s.Deleted+s.Modified > MaximumObservationSummaryCount ||
+		(s.Before == s.After) != (s.Created+s.Deleted+s.Modified == 0) {
+		return errors.New("sandbox environment state is invalid")
+	}
+	return nil
+}
+
+// Summary is a separate bounded Evidence value, so snapshots cannot crowd out
+// the existing observation summary or enlarge its byte limit.
+func (s SandboxEnvironmentState) Summary() (string, error) {
+	if err := s.validate(); err != nil {
+		return "", err
+	}
+	value := struct {
+		Schema     string                    `json:"schema"`
+		Profile    SandboxEnvironmentProfile `json:"profile"`
+		Fixture    string                    `json:"fixture_digest"`
+		Before     string                    `json:"baseline_digest"`
+		After      string                    `json:"final_digest"`
+		Scope      string                    `json:"scope"`
+		Transient  string                    `json:"transient_changes"`
+		Operations string                    `json:"operation_scope,omitempty"`
+		Created    uint64                    `json:"created"`
+		Deleted    uint64                    `json:"deleted"`
+		Modified   uint64                    `json:"modified"`
+	}{
+		Schema:    SandboxEnvironmentStateSchema,
+		Profile:   s.Profile,
+		Fixture:   s.FixtureDigest.String(),
+		Before:    s.Before.String(),
+		After:     s.After.String(),
+		Scope:     "MUTABLE_WORKSPACE",
+		Transient: "NOT_COVERED",
+		Created:   s.Created,
+		Deleted:   s.Deleted,
+		Modified:  s.Modified,
+	}
+	if s.VFSOperationsCovered {
+		value.Transient = "SESSION_VFS_OPERATIONS"
+		value.Operations = "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE"
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return "", err
+	}
+	if len(encoded) > maxEvidenceSummaryLength {
+		return "", errors.New("sandbox environment summary byte bound exceeded")
+	}
+	return string(encoded), nil
+}
+
 // SandboxRequest gives a backend only the exact acquired content subject to execute.
 type SandboxRequest struct{ artifact AcquiredArtifact }
 
@@ -102,14 +176,15 @@ func (r SandboxRequest) Artifact() AcquiredArtifact { return r.artifact }
 
 // SandboxResult captures one disposed Session's bounded raw observations.
 type SandboxResult struct {
-	sessionID  SandboxSessionID
-	status     SandboxStatus
-	limitation string
-	observed   []SandboxObservation
+	sessionID    SandboxSessionID
+	status       SandboxStatus
+	limitation   string
+	observed     []SandboxObservation
+	environments []SandboxEnvironmentState
 }
 
 // NewSandboxResult constructs an immutable result from one ephemeral Sandbox Session.
-func NewSandboxResult(sessionID SandboxSessionID, status SandboxStatus, limitationCode string, observations []SandboxObservation) (SandboxResult, error) {
+func NewSandboxResult(sessionID SandboxSessionID, status SandboxStatus, limitationCode string, observations []SandboxObservation, environments ...SandboxEnvironmentState) (SandboxResult, error) {
 	if sessionID.value == "" {
 		return SandboxResult{}, errors.New("sandbox result requires a Session ID")
 	}
@@ -124,6 +199,19 @@ func NewSandboxResult(sessionID SandboxSessionID, status SandboxStatus, limitati
 		}
 	default:
 		return SandboxResult{}, fmt.Errorf("invalid sandbox status %q", status)
+	}
+	if len(environments) > 2 {
+		return SandboxResult{}, errors.New("sandbox environment state bound exceeded")
+	}
+	seen := make(map[SandboxEnvironmentProfile]bool, len(environments))
+	for _, state := range environments {
+		if err := state.validate(); err != nil {
+			return SandboxResult{}, err
+		}
+		if seen[state.Profile] {
+			return SandboxResult{}, errors.New("sandbox environment state is repeated")
+		}
+		seen[state.Profile] = true
 	}
 	owned := make([]SandboxObservation, 0, len(observations))
 	indices := make(map[string]int)
@@ -148,7 +236,7 @@ func NewSandboxResult(sessionID SandboxSessionID, status SandboxStatus, limitati
 		indices[key] = len(owned)
 		owned = append(owned, observation)
 	}
-	return SandboxResult{sessionID: sessionID, status: status, limitation: limitationCode, observed: owned}, nil
+	return SandboxResult{sessionID: sessionID, status: status, limitation: limitationCode, observed: owned, environments: append([]SandboxEnvironmentState(nil), environments...)}, nil
 }
 
 func (r SandboxResult) SessionID() SandboxSessionID    { return r.sessionID }
@@ -156,6 +244,10 @@ func (r SandboxResult) Status() SandboxStatus          { return r.status }
 func (r SandboxResult) LimitationCode() (string, bool) { return r.limitation, r.limitation != "" }
 func (r SandboxResult) Observations() []SandboxObservation {
 	return append([]SandboxObservation(nil), r.observed...)
+}
+
+func (r SandboxResult) EnvironmentStates() []SandboxEnvironmentState {
+	return append([]SandboxEnvironmentState(nil), r.environments...)
 }
 
 // ObservationSummary returns the bounded, normalized representation retained by

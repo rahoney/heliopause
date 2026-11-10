@@ -1,0 +1,2338 @@
+{
+  "baseline_commit": "b085058",
+  "scope": "S01/S08 incremental common foundation and npm wiring; global qualification/acceptance OPEN",
+  "status": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-workspace-data-actual-v1.json",
+      "sha256": "06f09b964f6756164a94ee2103c406d9a8c3ff4e34cead1f0d425f8e97d73f24",
+      "exit_code": 0,
+      "elapsed": 16.81,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-first.json",
+      "sha256": "4557efc861b6b03d10563a1853fa76291e84342df1dce59bd6a9e6b7dbfee33b",
+      "exit_code": 0,
+      "elapsed": 8.723,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-profile-data-v2.json",
+      "sha256": "2196a1724bcfd20a48e08b1e89d7316cc8bd2805b5adbabcb4bcf29812352ed0",
+      "exit_code": 0,
+      "elapsed": 13.773,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-race.json",
+      "sha256": "c81c496b0392ce81eacb9616003a88d44437914afac797d6bc5f1409c5647986",
+      "exit_code": 0,
+      "elapsed": 35.371,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-static.json",
+      "sha256": "e7943b159893d381c0d629eb4cb7fca7e71e129a5d3822f4a09dd614b8794aa1",
+      "exit_code": 1,
+      "elapsed": 8.355,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-transport-tests.json",
+      "sha256": "e3c3d792d2c648ea01fff9268d5bebe2f96d895d2f063465a8bd6fbad8291579",
+      "exit_code": 0,
+      "elapsed": 11.935,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-current-static.json",
+      "sha256": "33546c61323534dadd92530f0b499d4c33c22276530c2500ca56ef7a4f90ce15",
+      "exit_code": 0,
+      "elapsed": 18.725,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-vet.json",
+      "sha256": "157739a4945850b45b6db02832ecc00420b9a26f46f3348c424a9fca8eba6d81",
+      "exit_code": 0,
+      "elapsed": 1.736,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-docs.json",
+      "sha256": "3260b52e3d091a5f83827f1d7c9ae5d92c8651f2b8680d5eaa5c25c5bb029fc3",
+      "exit_code": 0,
+      "elapsed": 0.394,
+      "source_unchanged": true
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-state-security.json",
+      "sha256": "2602ed69adbc7257ff643c01e8242ba6f19fc2ad2d2f7ef481dd2511494df73e",
+      "exit_code": 0,
+      "elapsed": 19.085,
+      "source_unchanged": true
+    }
+  ],
+  "facts": [
+    "controller synthetic profile and normal-config/canary role separation",
+    "content/mode/uid/gid/type/hash comparison; bounded TAR, logical bytes, entries, relative links; no path or content in comparison counts",
+    "same existing Python closure DATA transport reused; original schema and manifest guard retained",
+    "actual runc DATA placement verified; readonly keeper preserves snapshot after writer disposal; gVisor/Artifact/observer NOT_TESTED"
+  ],
+  "original_static_failure": "default-build capture consumer missing (U1000), deprecated TypeRegA (SA1019); retained without relabeling",
+  "remaining": [
+    "existing sandbox runtime/observer mount connection",
+    "independent fresh minimal/development Artifact experiments within one total resource authorization",
+    "all descendants terminated and observer drained before final snapshot",
+    "create-then-delete syscall coverage and normalized Evidence/Policy/S09 connection",
+    "all ecosystem owners and grouped native/hosted qualification"
+  ],
+  "static_correction": "legacy NUL file type is handled without deprecated TypeRegA; default-build producer-completion regression now exercises capture; no runtime two-experiment wiring claimed",
+  "workspace_runtime_attempt": {
+    "checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-runtime-construction.json",
+        "sha256": "b784a286bf471188a672f6c192728bc156bb69c19430f3dc625acab9e1848a60",
+        "exit_code": 1,
+        "elapsed": 0.799,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-runtime-construction-fixed.json",
+        "sha256": "3b2e644ceb618c4af1562551aa6fa25adeca12ec7121d195848c8afd852c5f54",
+        "exit_code": 0,
+        "elapsed": 9.748,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-data-v1.json",
+        "sha256": "2066abff5698900fd34124a85ca71343b4cac0d64ebeaf3d5936b7fa3f0b7bc5",
+        "exit_code": 0,
+        "elapsed": 4.425,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-data-v2.json",
+        "sha256": "85179a1a5950a69758c4344b5530397da14c05e722a5b9bdd144b7433654fd46",
+        "exit_code": 0,
+        "elapsed": 13.522,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v3.json",
+        "sha256": "d5532efd9fd00f5a7a0b4310d0dbd92a39a2b7b6e80d35b397ac8254960b1759",
+        "exit_code": 1,
+        "elapsed": 13.054,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v4.json",
+        "sha256": "6752aaf04b9b50917a4a6bcfc8e535194571f18349c8d1066cc3604856f2c897",
+        "exit_code": 1,
+        "elapsed": 12.591,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-v5-diagnostic.json",
+        "sha256": "3e31f5cebd1a68f1495418ababe61f2886793bb78989c63b5f7f44841d6227ff",
+        "exit_code": 1,
+        "elapsed": 12.448,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-gvisor-noexec-script-v6.json",
+        "sha256": "53fe3ef168e7f31516c8f841e2aa336fa4af4b119ab87d6fbc815cbbf55d67eb",
+        "exit_code": 1,
+        "elapsed": 13.303,
+        "source_unchanged": true
+      }
+    ],
+    "data_result": "gVisor DATA transport and complete expected trace locally PASS; no artifact experiment/qualification",
+    "noexec_counterexample": "fixed shebang directly executed and returned99 instead of execution refusal126; current unguarded /tmp named-volume candidate REJECTED",
+    "original_failures": "first construction build failure was a test interface mismatch; ELF first did not reach execution, later139 is not noexec proof; original errors retained",
+    "current_guard": "observer requires actual guest NoExec and NoSUID before artifact launch; no fallback to backing tmpfs flags",
+    "runtime_candidate": "scoped upstream9 named cases and coherent bundle PASS; private OCI flags/EACCES PASS; Docker/observer/two-experiment wiring remain OPEN",
+    "maintenance": "same source commit, same selected Go1.27.3/Bazel/builder and existing runtime update/capture/verify owners; no new updater/Host installation/CI"
+  },
+  "runtime_boundary_checkpoint": {
+    "checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-race.json",
+        "sha256": "356328ba741adac1ec173a7f58ee95950eeb6731455936715477f1c9b268e6d9",
+        "elapsed": 55.323,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-static.json",
+        "sha256": "ba4c1cc0a4a7cc726fa8b55f604aac060bee17159cebc722a2f4bc9eed6a4f00",
+        "elapsed": 24.857,
+        "exit_code": 1,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-current-static.json",
+        "sha256": "7b1eb722646a595778d766db409971aead9596c9a8ce543b812189dd154e87b1",
+        "elapsed": 16.103,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-environment-guest-policy-vet.json",
+        "sha256": "f6c77a8599683504d5a780ad8eddc89b91220ec0c9c22d8fb19f6acbd03748b5",
+        "elapsed": 3.377,
+        "exit_code": 0,
+        "scope": "Go sandbox checks"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-workspace-policy-named-tests.json",
+        "sha256": "6978e00be2e88f14d04bd3eea7731af405e72197345c17b3304303955ba3e9e9",
+        "elapsed": 19.001,
+        "exit_code": 0,
+        "scope": "focused pinned upstream boot policy regression; no Host installation/CI"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-coherent-bundle.json",
+        "sha256": "458734d42a2129cfe7058332ae7c1a9de5d6e0b4e567b0041b125a569192ac32",
+        "elapsed": 88.444,
+        "exit_code": 0,
+        "scope": "same prepared source/SDK/cache as named upstream tests; canonical capture-gvisor and strict six-member verifier; no Host installation/CI",
+        "exit_code_scope": "build/capture/strict-verifier aggregate observed terminal"
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-oci-noexec-v2.json",
+        "sha256": "a90c2cdc34073b47319c849b951ad052368493d9bcfb6557eb66803f08d8f4c5",
+        "elapsed": 1.696,
+        "exit_code": 0,
+        "scope": "same verified six-member candidate; fixed static Go DATA probe in private PID/mount namespace; no installed Host/Docker configuration changes"
+      }
+    ],
+    "upstream_named_cases": 9,
+    "coherent_bundle": "six members verified; five Go binaries all Go1.27.3; existing required trace capabilities retained",
+    "runtime_owner_change": "observed capture lock adopted through existing generator; only patch/member identities changed, source commit/Go/SDK/images/Bazel/builder unchanged",
+    "actual_native": "private direct OCI DATA: unannotated fixed script exit99 and guest flags false; annotated flags noexec/nosuid true and syscall Exec EACCES/exit0; private namespace reaped, copies removed",
+    "not_qualified": [
+      "Docker production observer with new bundle",
+      "actual two-environment artifact flow and shared CPU/wall/event accounting",
+      "all ecosystem consumers and hosted/final qualification"
+    ],
+    "operator_failures": "first Bazel XML empty named census caused operator assertion; named cached rerun closed9 cases. Direct OCI v1 cleanup null handling masked cases; prep PermissionError unintentionally reran v1 and overwrote its receipt; separate interpretation retains known/missing facts. v2 kept primary/cleanup independent and passed. No product fix inferred from operator errors.",
+    "grouped_checks": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-foundation.json",
+        "sha256": "fa4bf04f28798c23c5bd871995565c1bc71761391ca3bad9b6e7fcdb296c98bc",
+        "exit_code": 1,
+        "elapsed": 83.085,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-foundation-fixed.json",
+        "sha256": "89b1d0d33705c755bc0953383797e8cb54caa6d21b4dcd5a35c5661e3c27001a",
+        "exit_code": 0,
+        "elapsed": 25.164,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-boundary-security.json",
+        "sha256": "fdcb0586a489138a836360f8ec7aaf4cb1f1c8496604f8151489d39aab110f9b",
+        "exit_code": 0,
+        "elapsed": 34.484,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-owner-tests.json",
+        "sha256": "7608460b6e87fa38ea7e8c90bb8394de81b2546a0f9ba1ef93f5f389ab2a326e",
+        "exit_code": 0,
+        "elapsed": 37.155,
+        "source_unchanged": true
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s01-runtime-storage-port-boundary.json",
+        "sha256": "f3dd4eee6ab93cdb236645713a75b7efe2c58623caa846980519c91b479e4e7d",
+        "exit_code": 0,
+        "elapsed": 1.596,
+        "source_unchanged": true
+      }
+    ],
+    "foundation_interpretation": "original foundation83.085s passed all compile stages then found the pre-existing C01 derived-wheel sandbox→Core/Ports import missing from the checker. Existing Architecture-001 permits backend→opaque Ports; exact edge and concrete-storage/bootstrap negatives registered. Boundary test1.596s and corrected foundation25.164s PASS. No runtime-patch causation claimed."
+  },
+  "npm_environment_checkpoint": {
+    "baseline_commit": "bdb488c",
+    "date": "2026-11-03",
+    "scope": "existing npm archive Backend.Execute only; shared resource/trace/wall accounting, two fresh workspaces and readonly final inventory; not all ecosystem/S01/S08 completion",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-root-resource-red.json",
+        "sha256": "7944c792a07a08cbdab88e4c8dea83f0606f191dbee474e9e455329f4833874f"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-root-resource-green.json",
+        "sha256": "7c0a6417290cce6361dc36f1464abad67491eb1295fe9e2e239780f93e05953a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-model-first.json",
+        "sha256": "b701f7fa21f1a820d69a06d3368131bfdf32ca073bcdd9105516c814f6599bfd"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-negative.json",
+        "sha256": "a78e0f04ea66d547e00c61192adc371dbec756003e449f733f04782a231ee59d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-negative-fixed.json",
+        "sha256": "a6492395db2d17ebd1058df03be298d3279e1ab4f03db13cd8ec053a5c035b41"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-race.json",
+        "sha256": "fb3476f3ff648bb689d987097f9bfff7eb283d7bf804b7247174c02b6ca09f7e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-sandbox-race-unrestricted.json",
+        "sha256": "648783177cd1c22de4815353a693104f3905ff2efbbb6d461db43e0a85feea0d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-static.json",
+        "sha256": "75a8f42ff63a5527c8c2e39c51e1c239109cb2736f7a1cdeab9e9e4ec09317fa"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-profile-check.json",
+        "sha256": "9c26ede016806c3ccc45d5999b55f50bec2bc6b37b0962373c019f47354d4bca"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-build.json",
+        "sha256": "9a606fcbeda5b8626b6534553450149e6f66549de997986ee9e8c3c6bd1e8fbf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-helper-build.json",
+        "sha256": "31bfadb47f7a757a3a01f06432707fae6055cbcce64700009e149ec67a296f80"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v1-preflight.json",
+        "sha256": "6fef0923fd17989cc7b803414560775725093ea85aff4d900cd0791cb4525e9a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v2.json",
+        "sha256": "43811b3f036429c569b4c20823ffe57eadd08a5f765246c7a62cef05f400189d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-foundation.json",
+        "sha256": "2e94776df2343fa1b5ccd376fca5ee1c1901647413c7e53cb8f8e65be780b56b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-security.json",
+        "sha256": "a29807c6e48bb182e19a4bb0b01d26b55c16b66c012e4038a8621f355efdd72f"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-owner-vet.json",
+        "sha256": "cf6ced0a87b082a4e1494cb3e3c8fe9a1912c219f38acb2115620c240a98b0fe"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-original-binaries-cleanup.json",
+        "sha256": "55ea294d048909933ff3ec71721f3b739a7feefc59cd27c69bf8109e190652a4"
+      }
+    ],
+    "native": {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s01-npm-environment-native-v2.json",
+      "named_cases": 3,
+      "elapsed_seconds": 31.307,
+      "scope": "controlled npm lifecycle, inherited Host synthetic test values not leaked, fresh minimal/development cues and no prior marker",
+      "installation_restored": true,
+      "helper_wait_zero": true,
+      "temporary_copy_bytes_removed": 370078511,
+      "original_test_binaries_removed_bytes": 38421834
+    },
+    "first_failures": [
+      "new candidate timeout fallback dereferenced a runtime removed by stop before returning lifecycle-accounting error; exact regression fixed and retained",
+      "first grouped Race had sandbox socket permission failures; other three packages PASS; only sandbox repeated unrestricted",
+      "native operator v1 incorrectly required mountpoint non-mount status 1; aborted before resource creation; v2 uses actual mountinfo"
+    ],
+    "profile": "npm-dynamic-lifecycle-environments-v2; existing ExpectedChecks/CheckPlan rejects legacy one-shot profile",
+    "remaining": [
+      "typed state digest/scope in persisted evidence",
+      "transient file event coverage and privacy",
+      "remaining ecosystem experiment consumers and matching native cases",
+      "grouped whole qualification and remaining S01/S08 acceptance"
+    ],
+    "local_checkpoint_checks": "canonical foundation70.578s/security24.750s/affected vet4.769s PASS; earlier owner Race/static retain their exact source scope"
+  },
+  "typed_state_checkpoint": {
+    "baseline_commit": "243dbfb",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "existing npm two-environment Backend.Execute -> typed SandboxResult -> same-subject workspace-state Evidence; other consumers unchanged",
+    "profile": "npm-dynamic-environment-state-v1",
+    "version_binding": [
+      "locked Node image",
+      "locked gVisor patch",
+      "common environment profile versions",
+      "workspace-state schema"
+    ],
+    "evidence_limit_bytes": 1024,
+    "workspace_evidence_per_completed_npm_check": 2,
+    "retained": [
+      "opaque fixture/baseline/final SHA256",
+      "file type/mode/owner/size/content change counts",
+      "MUTABLE_WORKSPACE scope",
+      "transient_changes NOT_COVERED"
+    ],
+    "excluded": [
+      "raw names/paths",
+      "raw contents/env/argv",
+      "Host identifiers"
+    ],
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-targeted.json",
+        "sha256": "8cb1d067fecb64a19664f018905038f0b3bd257922e0565b70d8d22c0f4df17c",
+        "elapsed": 13.121
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-owner-race.json",
+        "sha256": "eedb8e1a7c1a039c69e7077d78219eab10f83cf401cf1a09e0c12d68eee8ddb5",
+        "elapsed": 50.882
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-owner-static.json",
+        "sha256": "cba12e1c019ac4342b4a4fda5b6fe797cb2fe15161d2751c2952d0d6bd2b2591",
+        "elapsed": 24.263
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-state-evidence-foundation.json",
+        "sha256": "bf861c3e195f19e95ac139b7a529361000f75735a6a715b7cb715b740c44f7b6",
+        "elapsed": 70.534
+      }
+    ],
+    "remaining": [
+      "grouped native persisted state evidence subject/profile/cleanup verification",
+      "transient create/write/rename/unlink/permission-change event coverage",
+      "other ecosystem profile/state consumers and whole S01/S08 acceptance"
+    ]
+  },
+  "filesystem_operation_checkpoint": {
+    "baseline_commit": "6bac0e8",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "existing mounted VFS success -> pinned remote sink -> sealed helper -> bounded neutral facts -> npm typed environment coverage",
+    "schema": "workspace-state-v2",
+    "coverage": "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE",
+    "identity": "filesystem-mutation=v1",
+    "patch_sha256": "c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68",
+    "runtime_lock_sha256": "fc8f145832bde0bb872b988c5b14b54948ec5a9633bff628b63f6595511b5182",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-tests-v1.json",
+        "sha256": "8a741fff4f1ec324b5d483806b8653b10497639f06424fff8e80c0b2ec5ac92f",
+        "elapsed": 285.348
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-tests-v2.json",
+        "sha256": "21f95cec8ef40962e119d7a979ecbaaaf97a364f7c7eccf0974b543c82969a0a",
+        "elapsed": 33.658
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-observer-targeted-v1.json",
+        "sha256": "77d71aa9917b9143789e5644a46ffcd1ca81481c3a36fff4097a5f426e883188",
+        "elapsed": 218.249
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-source-preparation-v4.json",
+        "sha256": "a7440a50b63d03a25a8d9cb2d68d2627604c17d93bf3c09c15e9ce83e2ef10df",
+        "elapsed": 2.225
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-kernel-observer-batch-v4.json",
+        "sha256": "39f1eab7fb1b8528d6d485e56744c02007ee01430148a85f008bb9a3f0fc5835",
+        "elapsed": 254.002
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-runtime-coherent-bundle-v4.json",
+        "sha256": "86b0714ed5956bb5adce39bf19bea30e8a12c8b13752ea7ab14d78884a3eb8c1",
+        "elapsed": 86.563
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-candidate-adoption.json",
+        "sha256": "1bc085f949ada8ff058d9195c7cdb991afdf04bcda4393f25638ef7b2bb3ba2e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-go-targets.json",
+        "sha256": "a04f3b347be6ec4580e57edef305e1962421af1e2f08ac5465cdb3149a7b67bf",
+        "elapsed": 18.086
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-build.json",
+        "sha256": "2690a61fa1f26af036f5b75f6a035b60507da3ab0a6728060e5cf7ef0cce2e0b",
+        "elapsed": 12.237
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-helper-build.json",
+        "sha256": "00c9626f0c50a9b2ff409fb4413aebeb77eb868653042521072344341f50061d",
+        "elapsed": 3.242
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-v1-preflight.json",
+        "sha256": "2a43e2c25ed034eb7992d255602448504a63519a99a802ff6d9a40ddb86f76aa"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-native-v2.json",
+        "sha256": "ab7dcbf84aef1269b7499eb12045e3dfc3e4b58b2f43cfcc7fd57bc21df6259f",
+        "elapsed": 42.637
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-foundation.json",
+        "sha256": "8caf21a5ce232958f841097d0a7657952d4d62216c398285d471b0270a271b77",
+        "elapsed": 89.877
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-owner-race.json",
+        "sha256": "8fcd391de9c45ad7238b6f5dbfa5f2907c95f16e3c518d369b54bb7f01c20614",
+        "elapsed": 47.879
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-staticcheck.json",
+        "sha256": "046ec1564fd82398f4c2450a95b3c245900e4f4965f5aa35d371a1aaf0532707",
+        "elapsed": 17.88
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-security.json",
+        "sha256": "f6617af7a98f0978b4516d3b091222baeb612714718b4fb19be4280fb3653cbc",
+        "elapsed": 24.569
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-legacy-profile-regression.json",
+        "sha256": "e1c4e3c2bcea2d86c76b39119be2916965d82bdd900bb7cbed0030897a0df527",
+        "elapsed": 1.035
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-filesystem-original-binaries-cleanup.json",
+        "sha256": "8a2bc83dbc2507c579ee189f866838c22687d1c36ceb7a608803cd957c0a8811"
+      }
+    ],
+    "limitations": [
+      "session includes setup/installer; not artifact-only actions",
+      "no per-path transient pairing; raw paths/contents excluded",
+      "all mmap stores not covered",
+      "actual transient fixture retains existing unexpected Artifact exec observations; not a Policy ALLOW claim"
+    ],
+    "missing": [
+      "persisted native Evidence",
+      "remaining ecosystem environment consumers",
+      "whole S01/S08/C01 grouped and final qualification"
+    ],
+    "host": "exact hash/inode/Docker restored; helper waits zero; temporary protected copies 368462440B removed",
+    "original_failures": [
+      "kernel v1 oldParentVD struct compile error; corrected .Mount()",
+      "native operator v1 BUILD basename filter selected unrelated files; pre-resource NOT_RUN"
+    ],
+    "test_output_cleanup_bytes": 36621774
+  },
+  "persisted_evidence_checkpoint": {
+    "baseline_commit": "22927b4",
+    "date": "2026-11-03",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "scope": "one exact pinned public npm artifact, actual two fresh profiles and active VFS facts through existing Application/local store readback and Policy ALLOW only",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-build.json",
+        "sha256": "35564c61159bf847d1dd61f4bb8eb8b52efc38b079a013279ede4d403b9269a7"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-helper-build.json",
+        "sha256": "9dca32edd7d868ae5337aa66d7711112137303ee95b005fa64eaa29958af0c58"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-native-v1.json",
+        "sha256": "f4d30e8da7b58f82b788179f6aaa19cc59aab8d2f63429b2a246f97b2af82495"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s08-environment-evidence-cleanup.json",
+        "sha256": "dfdd450dfe25df34b70e56e804f3b938877643bf5007d977a9000e6156d05c93"
+      }
+    ],
+    "host": "exact original restored; temporary protected copies 395388457B removed",
+    "original_compiler_output_cleanup_bytes": 63547791,
+    "missing": [
+      "remaining ecosystem consumers",
+      "whole S01/S08/C01 and grouped/final qualification"
+    ]
+  },
+  "python_subpath_primitive_checkpoint": {
+    "baseline_commit": "66fbdd5",
+    "scope": "inert runc DATA and exact existing mount identity validation only; no Python/gVisor workspace wiring yet",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "receipts": [
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-data-v1.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-unrequested-subpath-red.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-identity-green.json",
+      "docs/github-logs/goal-implementation-20261101/s01-python-subpath-complete-input-green.json"
+    ],
+    "input_boundary": "first RED/partial GREEN omit changed test from selected hash list; retained, not full-input proof; complete-input green includes 419 files",
+    "missing": [
+      "actual Python environment wiring",
+      "gVisor authority and source topology",
+      "full affected-consumer checks with completed Python bundle"
+    ],
+    "superseded_by": "ordinary_python_environment_checkpoint for current consumer wiring"
+  },
+  "ordinary_python_environment_checkpoint": {
+    "baseline_commit": "66fbdd5",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "ordinary wheel inspection, same trusted transaction; two profiles and isolated unit subpaths; other consumers and full qualification open",
+    "physical_launches": "2*N+4 within original 2*MaxObservationImportsPerArtifact+4",
+    "workspace_capacity": "two profiles share original writable tmpfs capacity",
+    "required_profile": "pypi-dynamic-environments-v3",
+    "supplemented_metadata": "m5-inspection-environment/v2 with separate observation ID and summary SHA256",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-subpath-data-v1.json",
+        "sha256": "89c8d6d6c5cabfdf4bca6a505ed7b6c28423dba690c8de443463c88bbf6b1805"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-connected-compile-primitives.json",
+        "sha256": "51bdffabed3e73c3e87acabcbfc610234045c06200118c1a6a6f6664d5fd0219"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-connected-targets-v2.json",
+        "sha256": "fbc5044e54d2c15a318a0e6049f7b51f498f741d75a047324482753841714954"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-affected-package-regressions.json",
+        "sha256": "f9316b812bbc99058b018fc5d847b97ef9c42c9d733d7f92ae1ef5a4b0da5730"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-consumer-green.json",
+        "sha256": "f6f7e400f05d9a7a0ee1a2d6a2119a170509b7b903d7db2fb98e70078a15e8f4"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-input-boundary.json",
+        "sha256": "efdd828691892e6ff810a2cb313d4bbafd215e7abbc6c89dec1791ec8075a9e4"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-native-build-v2.json",
+        "sha256": "b90f661168130c9704a5249e2374ebe8e9ee2b339e4a59f9a481127b6ea706e3"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-helper-build-v2.json",
+        "sha256": "35eeca2da74b7f4b1f9ed584e1bd3064accbe0a785c6c0ad3fdbc15068535f3b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-native-v1.json",
+        "sha256": "90bc6242afce4f915c7a8587b60bf7b6b0dce943c1c19bd8ce0a26491e88d8a6"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-summary-budget-red.json",
+        "sha256": "9b7175b65d01da88d9a97bf9ae36c7696d3692677b68de0e1b462c29692ac383"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-separated-evidence-green.json",
+        "sha256": "5d3a39cb9ba8ffbab09f945f46b14a9707ac75abb54491c869d405ed0584788e"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-original-binaries-cleanup.json",
+        "sha256": "65311693e36fdf9380b2794336ddef70f54389fa7e1614bc4beafd1c013e66e8"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-foundation.json",
+        "sha256": "8df8b8e797aebe97c694f334f61b45511bd3be74da132c124203adfa6ebe5dba"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-owner-race.json",
+        "sha256": "f94c0b40d9dd8e78bf22717335a7f766c0540a397445683d66531d0259473c52"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-staticcheck.json",
+        "sha256": "d2eae1051ad1b336c31f040be0566a389998fbc9c6033b326671018b20dca381"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-environment-security.json",
+        "sha256": "3f5b04b9f099215b028d4d3bf3ce2502cfe4b296ddf8516e32060acea01bca5d"
+      }
+    ],
+    "missing": [
+      "remaining ecosystem consumers and shared failure/cancel/security acceptance",
+      "ordinary Six1.17 source-binding compatibility investigation (actual report not captured)",
+      "whole S01/S08/C01/final qualification"
+    ],
+    "scoped_acceptance_evidence": "ordinary_python_acceptance_checkpoint"
+  },
+  "ordinary_python_acceptance_checkpoint": {
+    "product_commit": "559c900",
+    "scope": "ordinary Python current normalization/store, metadata-only/no-import, selected optional/prerequisite root-profile boundaries only; other consumers and final qualification open",
+    "scoped_status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "public_and_supplemented_record": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v4.json",
+      "sha256": "81acdbd2e26f0e11607d15d2bfacd48b2be87441a98735e02fd94cf762e88e04"
+    },
+    "independent_native_cases": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v3.json",
+        "sha256": "cda9fa71f4451c42646871dc129c518e4459ebc25e3e7eeedb60ba4beb3a56a3"
+      },
+      "overall": "FAIL; only metadata and profile-sequences cases PASS",
+      "reuse": "unchanged production/kernel/CPP and exact sandbox test source; later changes only bootstrap test and unrelated tagged PNPM comparator",
+      "passed_top_level": [
+        "TestLinuxPythonMetadataOnlyEnvironmentIntegration",
+        "TestLinuxPythonCommandSequenceIntegration",
+        "TestLinuxInspectionPrerequisiteSequenceIntegration"
+      ],
+      "selected_profiles": [
+        "cpu",
+        "cu126",
+        "cu130",
+        "cu132"
+      ],
+      "large_torch_closure": "NOT_TESTED"
+    },
+    "tagged_consumer_comparator": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-tagged-consumer-native-v1.json",
+      "sha256": "dda285ba6e5952d64f1a6c33bc33564ae0a7c0924e3efe59a6d3183567a4347a"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-foundation.json",
+        "sha256": "f08f067c3040b216f8d819133aac4bb012ce3795a9ba736ece8e2f903c80cded"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-tagged-staticcheck-v2.json",
+        "sha256": "b01aac1fee6e05f935c9ce64cc946ebab80a1384f117dbabbad4031dbc75f070"
+      }
+    ],
+    "originals": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-persisted-build.json",
+        "sha256": "326fb837a8b3267977d66fafb5db86590f8e9f6f903f571d0bd11c2e758cc04c"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-persisted-native-v1.json",
+        "sha256": "cbfadbfea88709d08afb38936ea1ad539bd63068e99db49e8fd3c4085aa26660"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v1.json",
+        "sha256": "b95de3bbd141b3c71abfa718f596ca648c8a4b4cc6c2aff428c22372c4ac1693"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-native-v2.json",
+        "sha256": "0857f149381c5be624a3a84e4ff6bd85dc29d50668bfc1d26060692ba2db337b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-six-metadata-comparison.json",
+        "sha256": "e6da9d9699b5f65dfe5138356393d999c22d6dc4aaaff468ce2eaa52ea7a4ec1"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-prerequisite-fixture-metadata.json",
+        "sha256": "f59b094feb46c6bad4adda7f09d152273012b362fdcfbe546bb59fb1d75c4866"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-tagged-staticcheck.json",
+        "sha256": "2e2705d969d23ef693313a2cc4cd8fda1a1a378addd0cb4d8b72f81b86dbc36b"
+      }
+    ],
+    "original_binaries_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-python-acceptance-cleanup.json",
+      "sha256": "5edbac24f8d8dfe7868362d60d95a34c9d8c6076895befd13a28d96f2c99aa0d"
+    },
+    "missing": [
+      "whole S01/S08 ecosystem wiring and shared failure/cancel/security matrix",
+      "ordinary Six1.17 source-binding refusal; exact pip report comparison not captured",
+      "B01 Anyio/large-public-catalog compatibility",
+      "C01 and grouped hosted/final qualification"
+    ],
+    "no_new_ci_or_permanent_host_change": true
+  },
+  "npm_instance_environment_baseline": {
+    "commit": "a0637df",
+    "existing_execution": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "new_two_environment_gap": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "data_primitive": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-nested-data-v1.json",
+      "sha256": "fe26714b515f9eddf6667377daecaaf344b02b3599c9a41dd87de4a498105f93",
+      "scope": "runc inert nested volume DATA only"
+    },
+    "missing": [
+      "fresh two-environment instance lifecycle with shared unchanged resource ceilings",
+      "existing typed topology adaptation and readonly whole-workspace snapshot",
+      "profile-bound normalized Evidence and actual consumer/failure/cancel/cleanup checks"
+    ]
+  },
+  "npm_instance_environment_checkpoint": {
+    "baseline_commit": "a0637df",
+    "scope": "current npm/PNPM/Bun instance and npm local-root two-environment runtime, normalized Evidence and selected actual Application/store/publication flows; whole S01/S08 acceptance remains open",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "implementation": [
+      "existing environmentInspection owns shared root CPU/wall/trace/launch and termination/snapshot for archive and current project instances",
+      "original frozen payload, target command, native Bun supply and null-network boundaries preserved",
+      "one writer and readonly whole-workspace reader per fresh profile; nested project captured only after writer/drain",
+      "instance/root Evidence uses existing check/subject/profile and bounded workspace-state-v2 summaries",
+      "same-tree already-seen regular hardlinks inventoried without extraction; forward/external/nonregular or mode/owner disagreement rejected"
+    ],
+    "native_initial": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v1.json",
+        "sha256": "3dd407eb062a711a748d35b19719593336964183abebb4229cece96c0ed16efd"
+      },
+      "overall": "FAIL; scoped archive, npm nested/root, public PNPM transitive and both Bun instance lanes PASS; controlled-success FAIL and later controlled cases NOT_REACHED",
+      "reuse": "unchanged kernel/CPP and passed consumer source; later common scanner accepts bounded regular inode aliases and adds negative tests"
+    },
+    "hardlink_correction": {
+      "red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-inventory-red.json",
+        "sha256": "33ed91d75daf80fee367d4b01ff28cf89adaa8d60d7c2f3a768cc92e89e66c62"
+      },
+      "green": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-inventory-green.json",
+        "sha256": "c5eeb63e7bc67e9c9beefe7823f5333f18c101ce0ffca3397557a47e271fb7a0"
+      },
+      "actual": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v2.json",
+        "sha256": "7aec334683ee831ec3fc380bb49ced34ffe46060457bff174eb797e6d99a7f7b"
+      },
+      "scope": "only failed controlled-success and previously unreached controlled-exit37/controlled-long-name; original shared-inode payload retained"
+    },
+    "application_store": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-native-v3.json",
+      "sha256": "134d95ac53d994db1ff021abd0bfd2d498ea59543451655611a156afcfe94273"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-foundation.json",
+        "sha256": "b01c3597129fa47f90e00cf71fd586761582dd0d2c9e85ed2248f83714dd9cc3"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-sandbox-regressions-v2.json",
+        "sha256": "22b6d60312c3401c9109d20d8bb787f0443cf197ce8e804aee4af8f323159502"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-normalization-green.json",
+        "sha256": "ada59765dc89f435cf343792e5566ab9a591554fe914dfdc9e8f432f35c8cd74"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-race.json",
+        "sha256": "87f82e506e9d1927deaaa2e03929dfc6ebd04a8cfb408420625a74b1c5c85550"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-tagged-staticcheck-v2.json",
+        "sha256": "f35405156cc7724479e6be12c01520d2f9cb13a54c9d15a389fbb55921c162db"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-tagged-staticcheck.json",
+        "sha256": "42254978a2076c9768c33938c7d4a331b3f9583501aaa042d7c0918b96b24e36"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-hardlink-race.json",
+        "sha256": "10ca7b257dd4dbc080806ccd7d4a48afb2a531e0ab2dbd8e29ad72015baf0568"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-store-tagged-staticcheck.json",
+        "sha256": "d92dd04966a5636e82089030e86ab063a9e96685e78cec538ead74be6560fbbf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-final-security.json",
+        "sha256": "9f0189f176459511fe82b389bb3dc6760b86e0ffc9b9161377dc7bc58f6e0af9"
+      }
+    ],
+    "original_failures": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-existing-consumers-red.json",
+        "sha256": "44fe6c0621d2c573fc3e32693d9609af123766a8266b9c9ad673a46f99a7363b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-model-first-tests.json",
+        "sha256": "9eb342c41a4fbd418c1c5a510b0b699feaaa0b2dbe0a1cedcc364b776f6c98f6"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-model-tests-v2.json",
+        "sha256": "f4be74cc523e0f50d0c92e70718e272227c4d17220a7cbf4c5c9f49889e832e9"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-normalization-red.json",
+        "sha256": "c4300e62cd95ca53e27e42be8766ede72901d8f396c4a1a77a7afbffc3f5e7b1"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-owner-regressions.json",
+        "sha256": "5bb8f68b1efe169c6890d6fd2ad1df74f8a9d493a27797a605bbaf4e6b6ef05b"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-tagged-staticcheck.json",
+        "sha256": "96dccb6872b598ad44a4734f4780674b4dd6bf319b94db0fc785af411980b293"
+      }
+    ],
+    "native_supply": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-fixed-tool-acquisition.json",
+        "sha256": "6100b3bf2024ecce632591c6bd3634bc06d9da34d5a17fc266d026ef649f51bf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-pnpm-materialize.json",
+        "sha256": "30d458c504449e2784d33a7dccd2c6d2814e7fe36213f3d0ade42dd5b61ff6d0"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-node-bun-materialize.json",
+        "sha256": "70ab9887deb332fcd77fefc620fa27a740ab78836c68fe6925596d4b3ec7757d"
+      }
+    ],
+    "cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-node-instance-cleanup.json",
+      "sha256": "6c8946b5fbcabd073c88e9e7dc96ae74f054330a82a83236606d7239b3227f11"
+    },
+    "remaining": [
+      "other ecosystem build/probe consumers",
+      "whole S01/S08 failure/dormant corpus and grouped/hosted/final qualification",
+      "B01 Anyio/large-catalog and ordinary Six source-binding follow-up remain separate"
+    ]
+  },
+  "project_build_environment_baseline": {
+    "commit": "8293b20",
+    "existing": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "new_environment_gap": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "owners": [
+      "internal/sandbox/gomodule_observed_build.go",
+      "internal/sandbox/cargo_observed_build.go",
+      "internal/inspection/projectbuild/build.go"
+    ],
+    "reuse": [
+      "current immutable input/graph/compiler/output and cleanup owners",
+      "same per-call 3-minute context and trace ledger across fresh sequential profiles",
+      "existing synthetic profiles, owned volume, fixed Node DATA keeper and bounded inventory"
+    ],
+    "missing": [
+      "fixed Go/Rust env preserving workspace args and typed writer/reader topology",
+      "fresh mutable workspaces/output and post-termination inventory without copying immutable inputs",
+      "both experiments required, first output returned only after second success/cleanup",
+      "profile/recipe-bound normalized Evidence and targeted negative/actual consumers"
+    ]
+  },
+  "project_build_environment_candidate_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "Go/Cargo two-environment source connection; scoped local native matrix qualified, whole S01/S08 and grouped/final acceptance open",
+    "changes": [
+      "existing per-call 3-minute context and trace ledger reused across two sequential fresh experiments",
+      "existing frozen input handles and preparation/writer overlap replayed per profile; at most two active containers",
+      "fixed Node readonly DATA keeper omits immutable input/cache and preserves output after writer drain",
+      "secondary output uses existing bounded parser without another intake directory/copy",
+      "required two covered states and same-check bounded Evidence/profile/recipe connection"
+    ],
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-current-targets.json",
+        "sha256": "4a17335b3be7ca69856998a2ee0f870b2ad11cb5fc3129b0a686ba1079a2a5e0"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-foundation.json",
+        "sha256": "5a8fb5d992bf5b5c1e3ba57ccd78b659f3b570b69c33433844a7ac10b6e42043"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-tagged-staticcheck.json",
+        "sha256": "81b449551fbf100fbde2a6e1ed036f4dc48eb99dd1a18bdeb8641e8ef648edaf"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-vet.json",
+        "sha256": "145caca3010c46f596159c2284e8d0b105104c75ca675fb4c68a3cb5d203efea"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-security.json",
+        "sha256": "004dd5867ffecc91bed57852aec9bd69c79c74aa973d1c184cf26f3d83752942"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-race.json",
+        "sha256": "2d9861b4a08c65b0bd3060e3bdf9c15c3f92829d2cc3990e7243ce2eec99908a"
+      }
+    ],
+    "first_failure": {
+      "receipts": [
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v1.json",
+          "sha256": "6eada74481b92021ea56e50415d91a961072bff74a8b9ad5794f16470891b48b"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v2.json",
+          "sha256": "0088114b2e61f6ca97b78252eaad08a66809614fb38fe0b96dc551e10de3fb4f"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v3.json",
+          "sha256": "0cf8b5e5b1216c27b931b1c6184383a6aae561b9abf906ede8c6ccdc1dd870cc"
+        }
+      ],
+      "phase": "PREPARATION",
+      "original_cause": "python closure volume identity already exists",
+      "owner": "createInputVolume derives the name solely from transaction; current connection reused the experiment transaction for input and workspace",
+      "diagnostic_scope": "v1 CLI FAIL; v2 integration-only CLI unwrap returned nil, removed; v3 direct guarded output Build exposes original primary cause; Cargo NOT_RUN",
+      "minimum_correction": "workspace uses existing outer Sandbox result owner; input keeps fresh experiment identity; global naming/absence guard unchanged",
+      "correction_qualification": "SCOPED_PASS_NATIVE_V4",
+      "diagnostic_boundary": "firstDiagnostic default zero fields are not total trace execution counts"
+    },
+    "remaining": [
+      "ELF/Terraform probe two-environment consumers",
+      "whole S01/S08 failure/dormancy corpus and grouped/hosted/final acceptance"
+    ],
+    "owner_correction": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v4.json",
+        "sha256": "aa65b1faf878741f782345b3af88c0041d7ee21bbcfc4688abbc73e3d2d4adbc"
+      },
+      "targets": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-owner-targets.json",
+        "sha256": "0b9d5fdbf88bd1ac6d4366a0a50fca9ebff004e7610a72269281f273bec9d793"
+      },
+      "changed_go_files": [
+        "internal/sandbox/cargo_observed_build.go",
+        "internal/sandbox/gomodule_observed_build.go"
+      ],
+      "scope": "direct guarded Go retained output, Go CLI two complete operations and same-check state Evidence readback, Cargo dependency-free original CLI only; no library/public/negative corpus yet"
+    },
+    "next_failure": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v5.json",
+        "sha256": "5b01e858ba9d8884659d99d9c7724f56fa67a839abb20bc35639f6862f2439ed"
+      },
+      "case": "TestLinuxGoPublicBuildCLIIntegration",
+      "phase": "ENVIRONMENT_FINAL",
+      "code": "EVENT_LIMIT",
+      "ledger_events": 16924,
+      "limit": 20000,
+      "requested_events": 3700,
+      "requested_bytes": 133,
+      "remaining_matrix": "NOT_REACHED after first failure",
+      "correction_under_test": "Go-only one shared40000 total; complete counts retained, no stream replenishment; exact boundary/cross-stream checks, quota-bound recipe and revised Go check profile",
+      "correction_status": "SCOPED_PASS_NATIVE_V7",
+      "role_find_comparison": {
+        "receipt": {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v6.json",
+          "sha256": "83a193fddbe7e0f5cc69a458b68357f5caf10212a37655b100befdeefa71f790"
+        },
+        "status": "FAIL; not a quota solution; source flag reverted",
+        "events": 16920,
+        "requested": 3696,
+        "total_at_rejection": 20616,
+        "unchanged_limit": 20000
+      }
+    },
+    "budget_proposal": {
+      "status": "OWNER_APPROVED_2026-11-03; implemented and scoped local qualification passed",
+      "existing_canonical": 20000,
+      "proposed_go_transaction_total": 40000,
+      "scope": "one aggregate for both mandatory environments including all preparation/compiler/reader counted summaries; no per-profile replenishment",
+      "unchanged": [
+        "250000 helper charged records per connection",
+        "10000 physical records per collector",
+        "10000 summary saturation",
+        "2MiB transaction bytes",
+        "1CPU/512MiB/3minute transaction and current mount/role/network/required coverage"
+      ],
+      "planned_changes": [
+        "canonical Go budget leaf and S01 design rationale",
+        "single Go host-ledger cap plus exact boundary/cross-stream tests",
+        "bind changed Go budget to recipe/check profile",
+        "rerun first failed pflag and then unreached matrix; keep prior basic native successes scoped"
+      ],
+      "approval": "User explicitly replied 조정해도되 to the concrete Go-only40000 shared-total proposal"
+    },
+    "scoped_qualification": {
+      "native": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-native-v7.json",
+        "sha256": "2563525cdc7fd0f61e0b8bfae13ecc90b87464f4eb06cb004a0537f81a92f42e"
+      },
+      "checks": [
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-format.json",
+          "sha256": "b767aa85e6d0080e644d1b4a656dc00d9d338f79e783c1549499e4988a2fab50"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-targets.json",
+          "sha256": "aad0f7c53b409bcd2c8266dd15802e1e995252b9529fd5acd8d24be9a88a91a6"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-budget-approved-staticcheck.json",
+          "sha256": "2835fd99a21ad97678723709d6bf00cbb726e02b13b1b83ba8fd2a2e2bdf0cb5"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-approved-final-race.json",
+          "sha256": "d7a40829a4172b35a25bb4578add0fa0d5c77b2d1750c1a9eadbbbe3d43577c8"
+        },
+        {
+          "path": "docs/github-logs/goal-implementation-20261101/s01-build-approved-normalization-race.json",
+          "sha256": "048d5083a98dd280bc6a741f4c0390089e4a080f9f35abd35ff09bb5d865580d"
+        }
+      ],
+      "cleanup": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-build-environment-cleanup.json",
+        "sha256": "61d5eb784bd561c1d26406eb854812379f28d1d279c26354b87f0f74db47eb61"
+      },
+      "cases": [
+        {
+          "mode": "go-values",
+          "exit_code": 0,
+          "named_pass_count": 2,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "go-guards",
+          "exit_code": 0,
+          "named_pass_count": 2,
+          "expected_count": 2,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "cargo-values",
+          "exit_code": 0,
+          "named_pass_count": 3,
+          "expected_count": 3,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        },
+        {
+          "mode": "cargo-guards",
+          "exit_code": 0,
+          "named_pass_count": 4,
+          "expected_count": 4,
+          "no_skip": true,
+          "helper_wait_zero": true,
+          "complete": true
+        }
+      ],
+      "elapsed": 382.694,
+      "go_source_files_match_current": 397,
+      "scope": [
+        "Go pflag and library actual CLI, persisted current same-check two-state Evidence",
+        "Go selected invalid testdata and mixed invalid packages preserve compiler failures",
+        "Cargo public/library/build.rs actual CLI and persisted same-check two-state Evidence",
+        "Cargo FS refusal; minimal-dormant/mock-only network attempt exactly1, publication refused",
+        "Cargo second-environment failure retires first provisional output; invalid source refused"
+      ],
+      "race_scope_note": "first final Race selected sandbox cap/topology only (projectbuild no tests); exact TestBuildEnvironmentCoverageAndEvidence separately selected and passed",
+      "unchanged_runtime_cpp": true,
+      "host_unchanged": true,
+      "all_helpers_wait_zero": true,
+      "large_copies_removed_bytes": 395555292,
+      "completed_original_binaries_removed_bytes": 63714626
+    }
+  },
+  "elf_environment_candidate_checkpoint": {
+    "baseline_commit": "72a7a02",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "first_failure": {
+      "receipt": {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v1.json",
+        "sha256": "5f2776cdef9f3b93e9e80e7318dd4e6834bf4ebfba08e3767aec73a99baff2f4"
+      },
+      "cause": "new preparation-only MKDIR CONTROL/DIRECT_EXEC_ROOT PROC open classification STREAM_FAULT before artifact handoff",
+      "next": "use existing Docker DATA TAR for fixed empty mountpoint; no observer authority expansion",
+      "remaining_matrix": "NOT_REACHED",
+      "restored": true,
+      "host_unchanged": true,
+      "test_copy_bytes_removed": 370502496,
+      "correction": "SCOPED_PASS_NATIVE_V2: fixed DATA TAR mountpoint replaces unnecessary MKDIR executable; no CPP/authority exception"
+    },
+    "remaining": [
+      "S02 responder primitive and S03 dormant/normal/failure corpus",
+      "native PNPM fixed --version and whole shared failure/cancel/cleanup grouped qualification",
+      "whole S01/S08/C01 and hosted/final acceptance"
+    ],
+    "scope": "Current fixed ELF/provider two environments implemented/wired; scoped native consumers and store/CLI acceptance passed; whole S01/S08 and grouped/final remain open",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-current-targets.json",
+        "sha256": "b6e044268f6d5b9785d254af8e78ae5f8643fb852b7736621267cfe72a038f58"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-foundation.json",
+        "sha256": "feb626d112e14838c4d44e18da5fe3493424d88eccf9e557a304cf96a3e0aaed"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-security.json",
+        "sha256": "6eaa8ed7627931ea6314c8086760271d2edd6eec45bcb319317bf3585e88d3db"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-current-race.json",
+        "sha256": "9964ad39a6aeff935d07c7ab71783288edba4a1233f0e0b8441e327c2171d4da"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-sandbox-race.json",
+        "sha256": "08e6d3fcac9de463877c6fdeed84aae6afd95b65e8a341c620b28f8fd8614f93"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-corrected-staticcheck.json",
+        "sha256": "12d09f5bb40fb31f651e102a5fd9fffaf053f1fe4559d5944855ec14295e2f00"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-terraform-consumer-targets.json",
+        "sha256": "530fb28ab9847e826519c9e91b5889c43cbaa7aceadb67b382a00fd0f15a3c2d"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-terraform-last-use-race.json",
+        "sha256": "6805061305c6097796854ea5b25ffdf52b5bebe090d4474282f485e2491b9e99"
+      }
+    ],
+    "actual": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v2.json",
+        "sha256": "4d58cb88b071f21fe42aad7e870be094b6f33e5b6e7cbadccda302a243328f6a"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v3.json",
+        "sha256": "49784a2085f7033faa6a545ff3fda4876f16e3c158545c3cb3dbc5190ba0c0b7"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v4.json",
+        "sha256": "4070fb41bedfe0130df5025d284641d6fa35a59d311256e2a4a2c65b5d33ed47"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-native-v5.json",
+        "sha256": "8a5517aba2e4eb61e61d7d5a7efcb7de1f619a74a9eda65f91a8d097b64be207"
+      }
+    ],
+    "qualification_scopes": {
+      "native_v2": "seven normal/FS/network/process/public-provider probes; unchanged runtime/CPP",
+      "native_v3": "overall FAIL: GitHub actual current normalizer Record/ReadReference PASS; Terraform initial reservation missing operation ID",
+      "native_v4": "overall FAIL: source/dynamic/Policy/cache/atomic publication completed; outer selection-DATA last-use unrecorded; not whole command success",
+      "native_v5": "default whole-provider CLI initial/reinstall with current same-check two states per provider and retained-lock identity, four refusals; final cleanup complete",
+      "go_source_files_match_native_v5": 409,
+      "race_scope": "initial current-race sandbox compile failed on removed helper refs, other3 packages PASS; corrected sandbox-only PASS; latest Terraform artifact/promotion/bootstrap focused Race PASS"
+    },
+    "cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s01-elf-environment-cleanup.json",
+      "sha256": "a4ca71ce1b71ddcc90f0d6f553e4a7b232af6145e1a683ebee17f786bd5990f4"
+    },
+    "final_checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-foundation.json",
+        "sha256": "9536e4c5bf6ccfd9480647c7535514c19d3e992c2d26e6e33bcbe1553593a1ed",
+        "elapsed": 52.328
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-security.json",
+        "sha256": "db001ba69a423e049c5e583923032154118fe6a698a6a32633ea9f83c70f2cda",
+        "elapsed": 23.725
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-staticcheck.json",
+        "sha256": "31730d2f6e6c86b678f3380820b360f47dcfd5f24ff62a22376ca3b86d9b3806",
+        "elapsed": 27.494
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s01-elf-final-vet.json",
+        "sha256": "86c4da68a1024a594dfb1fad5aa5b4b0cd66084d806e35c8d1d494bec22c9f3e",
+        "elapsed": 15.237
+      }
+    ]
+  },
+  "s02_loopback_primitive_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "controlled harmless Python Artifact DATA only; two network-none environments; no product responder role/default resolver/Policy qualification",
+    "first_failures": [
+      "CONTROL Node PROC_SELF_MAPS before DATA",
+      "Node Artifact /etc/resolv.conf before exchange",
+      "Python accepted TCP fd5 SENDTO FD_STATE_UNKNOWN after UDP exchange and TCP connect"
+    ],
+    "correction": "existing FD owner tracks only known NETWORK accept/accept4 successful results; never trusts guest address bytes or grants LOCAL authority; kernel patch/runtime lock/bundle unchanged",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v1.json",
+        "sha256": "d71d04087d622a6ad2d47d2f75b219f53861233b46b20451d9c840636b425e78",
+        "complete": false,
+        "elapsed": 2.018,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v2.json",
+        "sha256": "3f7240788b3d34c8e716d67f0fc23846f00d48926e98ec32a45c8717390d7879",
+        "complete": false,
+        "elapsed": 6.595,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v3.json",
+        "sha256": "003cb460e9dbfd5f49084fe2efd8824f5661f9ba506606ac6088e3e680c04ce4",
+        "complete": false,
+        "elapsed": 10.602,
+        "exit_code": 1
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-accept-observer-batch-v1.json",
+        "sha256": "775e4da89b8594b66bd7fbd552e3ab8b0fb5668749dcc7d7d20b82ce491c03a3",
+        "complete": true,
+        "elapsed": 54.556,
+        "exit_code": 0
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-loopback-data-native-v4.json",
+        "sha256": "7e8d0f73033b2819d757bef174bd7f98873c0a6dd923077e6cc9467282f51f3c",
+        "complete": true,
+        "elapsed": 13.29,
+        "exit_code": 0
+      }
+    ],
+    "remaining": [
+      "separate immutable responder role and protected code/config",
+      "synthetic DNS configuration and bounded protocol state",
+      "actual chain and tamper/timeout/spoof/egress negatives",
+      "cross-ecosystem shared budgets/cancellation/cleanup and grouped final qualification"
+    ]
+  },
+  "s02_responder_component_checkpoint": {
+    "scope": "component protocol/readonly supply/OCI role/controller and npm-instance-ELF owner candidate wiring; cross-ecosystem/installed qualification and whole S02 remain open",
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-protocol-tests.json",
+        "sha256": "199e6a8a29c5b765b7c67ee3f3e63e158eb9870266ed19220fedd5b33c6c5ba1",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.729
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-protocol-current.json",
+        "sha256": "735e1ad228c6d60ca644f5a7051cde4027b2e672a009c460f47ccf4114662176",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.696
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-data-v1.json",
+        "sha256": "29e642722ed568cf6f80bad00b1d746628d80c81baa7de8f87b4ef0728011613",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.89
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-data-v2.json",
+        "sha256": "89b13e6185540a5d6e2e3792ec52ff6e5e9648ca4d45eda53b67dfecc5cc42d7",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.996
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-tmpfs-v1.json",
+        "sha256": "391c74331c969370d0b32f56dfa30e43e56bdcbaada31dc813ac7dfef25cee58",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.709
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-local-v1.json",
+        "sha256": "a77c2310a5f54747fa7d42a94c5fe45da08b8a86b0f03780d25f46cec656bb16",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 1.719
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-staging-readback-local-v2.json",
+        "sha256": "18701f37d9967c684815ea5b6eac2273fb706fed3eef9db62d81eebb9ee2d036",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 2.306
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-data-v1.json",
+        "sha256": "e7f0a0086fce4498ac89a4ecf10359e9c8126ded91bdbae9ab8deb6a1b9113e5",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 0.269
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-data-v2.json",
+        "sha256": "3e36179667919a2efc822a120cf1b26e9159980c1dbb938ecd37e8f5568bcf62",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 3.586
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-supply-foundation.json",
+        "sha256": "9a1ae376dc808a8af9181010187a184c3759082169b1c6ae6dfa3b5081ff9a2f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 43.748
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-native-transport-regression.json",
+        "sha256": "a847c21f0b9514be9e2d894fe3170f63244934e8f81cc2cb7b5111040385cd74",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 13.994
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v4.json",
+        "sha256": "4fea561e12b324a4475fe38deeb64dc2f08a9d77d8031445c306b954aed42a52",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 40.051
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v5.json",
+        "sha256": "1b56d17841bb188b2d9e06311a146fcb2fc69ae7430160560705ae59cdfeef58",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 41.347
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v4.json",
+        "sha256": "dbbb753b5ad113be62706058b9b66a0e64442901e6dd8e1b9c1ac4b29591aeb8",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.47
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v5.json",
+        "sha256": "d9a7aae767336aa5000c888f2fc9f616b4fdf371916513a5961bc42ff02a616f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.185
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-role-native-v6.json",
+        "sha256": "8dfbc8d33d818c7dc9e2f203b82733e2803f52d1b0d04eae8dc066ccfd236ae2",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.365
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-controller-current-race.json",
+        "sha256": "d463a3d9759d5321dfaa08a18a7b6f5743a98332c8669fb1aa69ec96d9c77fad",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 13.7
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v1.json",
+        "sha256": "29d3546fad55af76913b66b60989f64df4a0d011693c485c2b41f36d92bbfd77",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.995
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v2.json",
+        "sha256": "2544b309fe7eb5ffe98bb8ae9667fc567a56da4472ef14d22f5a56bcfa7d9184",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.522
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v3.json",
+        "sha256": "483178b8cb237f023bf980548c35e0703c2c5faba4f5c9da5d1f1bae93822ff5",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 5.548
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-focus-v6.json",
+        "sha256": "ffee130355217cc4bd6f436b4f8ab3391bed927787c4b5c98516f2d1cba8bc88",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 42.551
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-observer-batch-v3.json",
+        "sha256": "750cef08c8da9797ad0785300f1204b44335450dde9c77b12d292da16308ead4",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 49.676
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v4.json",
+        "sha256": "29e5e8cf4499a7dd484784f468c4fafac8944c210e388e72782f743c65ea4e07",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.585
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v5.json",
+        "sha256": "651210ed23cbfc75823001ff3ff13b2ce9ba0798f68ce720927a4de44db822a1",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.036
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v6.json",
+        "sha256": "34666a84f0e78939119ec0fc4cb587b0789a95a90146446601c2db0265050a2f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.526
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-responder-chain-native-v7.json",
+        "sha256": "2ae52eabc4279de0b82e8f1a9f2164726ec7a7154ab68adb99b9f375b02893c8",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 5.513
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-resolver-attestation-tests.json",
+        "sha256": "cf7a995d4158d253ac1f0789a6523914ea8e780d65efc75c5a01496e84d6c780",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 8.985
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-foundation.json",
+        "sha256": "fa4385e817194d06ea165d11ac13812a48634acff68c1ab69d5fc0504f453757",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 41.6
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-model-tests.json",
+        "sha256": "471a5394c327a1230440fad4c570e5c21ec8382ec40b9863977470a84bb98132",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 8.616
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-model-correction.json",
+        "sha256": "f2ab2f5705db5e277069b5ea6da02b232abe24e7ebfe5f6e915916619cfbccd6",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 8.599
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-race.json",
+        "sha256": "eadf885ea1f40e7da4579c3516562504c82fd0e6bbde90f3af585fefc67cf63f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 14.198
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v1.json",
+        "sha256": "999a79226004edee9c4586490b2c19b48e73d343357f163f13c6204983a54208",
+        "exit_code": null,
+        "complete": false,
+        "elapsed": 0.856
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v2.json",
+        "sha256": "c5e55d7967f22404c9afd065b3dd254fcf1be720fa2cdeb63d4fa4fab9262321",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 15.847
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-native-v3.json",
+        "sha256": "8eb566556ca18cfa143ec39d79365b844aae55132bb3ea9f685f45eee2350b44",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 31.218
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-profile-race.json",
+        "sha256": "ffcebbaee778fab203bcac88fb523c4bffe36f758efeaabd3efa460f17a5fc87",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 17.356
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-current-static.json",
+        "sha256": "ae31e3108b160cc7f9973605048075182523f981fec3933a884a63f79bb761ac",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 16.43
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-owner-vet.json",
+        "sha256": "32719066c1fcd90ec6ca6b8f6e367db2a9e9e9c7a7f17547c2326d361b48cf51",
+        "exit_code": 0,
+        "elapsed": 1.55
+      }
+    ],
+    "storage": "<=4MiB protected current HAA component; one bounded never-started RW stager, only readonly consumers afterwards; no third-party pin change",
+    "prerequisite_failure": "supply-data-v1 stopped before factory at old Host installed gVisor bundle mismatch; v2 supplied exact verified unchanged bundle in child private mount namespace only",
+    "remaining": [
+      "npm instances/ELF actual shared-path qualification and installed NativeInstallRoot path remain open; archive normal/fresh/synthetic chain scoped PASS",
+      "ordinary Python and Go/Cargo responder supply/controller integration; minimal synthetic resolver classification",
+      "check-profile/cache revisions, required condition/negative corpus and shared budgets",
+      "signed release/install/doctor/self-update and complete measured acceptance"
+    ],
+    "role_prerequisite": "focus-v5 and actual role-v6 PASS with independent termination/drain; GOMAXPROCS=1 cgroup avoidance refuted by role-v4",
+    "chain_preparation_errors": "v1 ran old per-mode binary despite new initial copy: EXCLUDED from chain proof; v2 direct Node stayed CONTROL and failed own maps: no classifier change; v3 invalid --handoff exited125: fixture correction only",
+    "owner_candidate": "canonical foundation41.600s, current targeted Race14.198s PASS; original Bun invalid-supply preflight failure corrected by validating/preparing once before common resource setup",
+    "actual_owner_failures": "v1 source fixture bind target /usr/lib/heliopause absent: client NOT_RUN; v2 integrationRunner lacked init method: first unavailable controller error preserved, no qualification; both restored/Host unchanged and copies removed",
+    "npm_owner_actual": "v3/31.218s: three named/no-skip cases normal+fresh+dormant synthetic chain PASS; two environments/external completion/network10, helperwait0/Host unchanged/exact restore and374902182B removed; test-owned protected-current source fixture, installed path/Policy remain unqualified",
+    "native_source_delta": "after native-v3, responderToolName literal moved to central native_paths owner with byte-identical value, inspection revisions gained common protocol/compiler identity and stale-profile refusal test; scoped profile Race17.356s and affected pinned Staticcheck16.430s PASS; no repeat native/kernel/CPP",
+    "completed_client_cleanup": {
+      "receipt": "docs/github-logs/goal-implementation-20261101/s02-completed-role-chain-owner-cleanup.json",
+      "processes": 96,
+      "references": 0,
+      "query_errors": 0,
+      "deleted_bytes": 91714779
+    }
+  },
+  "s02_python_and_build_consumer_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "ordinary Python and Go/Cargo scoped runtime proof, not all profiles/consumers/whole S02",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-targeted-race.json",
+        "sha256": "c4ba634f2d5077a2c76789d0ae45cb017f5f0de97bf467c8d66690d384ad12e5",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 20.397
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-native-v1.json",
+        "sha256": "6ab34b304009518f9731dad3173dfa941b43bd455232a3696ca9de0770eb19b7",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 26.089
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-observer-focus-v1.json",
+        "sha256": "291e90d3e67f9dafcb13b701a815a96fbbb10ba8e8ab7c6553720cea63d578e8",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 44.16
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-python-native-v2.json",
+        "sha256": "e5254bc53afa868f5522fa0361b6dda5a987bf0060a9cffd783d6e4c0751fadc",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 50.961
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-foundation.json",
+        "sha256": "8c15a46c7f61643c2f84c951881656bdd5de2765a99ea344e736c148b0dabee1",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 81.172
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-tests.json",
+        "sha256": "7addfd50b80ece00ba8bf82523aa808bba992de0e6482ffa1a21cc771250993e",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 10.766
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-native-v1.json",
+        "sha256": "afa26d1531cdeb5781a36f97f41042ca72e222d840abc0aa203aca34fd006311",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 41.581
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-observer-batch-v1.json",
+        "sha256": "3958297dcf6b0c531c50de90a54868daca37599260ec120b9d57103ec8764abb",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 53.896
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-build-consumers-native-v2.json",
+        "sha256": "938d12a5e73d457065b76cf3fd0f71252ab50e2b9dfcc58bf39e3e80e04ae63f",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 126.632
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-native-v1.json",
+        "sha256": "f8d6f3f505785261d68de2da007464f81621d619a0ccd03aac1b481dcd7ac6fc",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 7.355
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-observer-batch-v1.json",
+        "sha256": "4b0f9c363f985c544cfb83e9d3f482e96a137be365e7432a99920bb1c9a4e9b7",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 52.13
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-default-resolver-native-v2.json",
+        "sha256": "3dabb130c34a36d40bf95348bcff1e3fd149d5f214263ef09e350597fecedd3a",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 13.357
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-format.json",
+        "sha256": "72e9c6ac38fdfa2007c639dc73eb7032f7778fa4aceb78e06659ce46d3763175",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 0.849,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-race.json",
+        "sha256": "236b5941357f7a072aa0f38b5e899f6c42f0a5c6cbe936653710223e4bae1f19",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 36.109,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-sandbox-race.json",
+        "sha256": "bfd5fbf6e92d0b09326e409e6f7fc9f3dc6ee49819bed25613c360980cee28b2",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 25.063,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-static.json",
+        "sha256": "aacddb7fbdd4f826544954fdf22f85c0a15a84b40967cbde8de73d12e7f6337a",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 6.602,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-vet.json",
+        "sha256": "0616541bd717cba2a950526ca649fd130e388fa35a3c8d09e943922ce63ca427",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.882,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-consumer-final-docs.json",
+        "sha256": "c001630a7209db37fe54de74df8875d79322301e133ce19a4f654fd43eea6c9f",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 0.414,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-remaining-consumers-native-v1-preflight.json",
+        "sha256": "558713915291ff8d18f2db7448af4d4dc697d39ca12e5ce3100f3bc2a4b67568",
+        "exit_code": null,
+        "complete": null,
+        "elapsed": null,
+        "status": "NOT_RUN"
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-remaining-consumers-native-v2.json",
+        "sha256": "0ddf65ae58ee6751145381bdba4b5fa5055c866ed33f6becca8608e5401afa8f",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 106.8,
+        "status": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-native-bun-native-v1.json",
+        "sha256": "a16f3bf5f3bd1a433d702bbb1cbe30184a8d761cdd67e8e18e702ee7597ad946",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 73.809
+      }
+    ],
+    "first_failure": "new S02 responder expectation checked before first ContainerStart established ID/profile; initial Python actual-v1 failed before import; metadata-only/fresh/chain initially unpassed",
+    "correction": "only pre-profile ContainerStart expectation defers; registered/missing supply and sealed readonly final image proof remain mandatory; focus44.160s and same client Python4 actual50.961s PASS",
+    "reuse": "npm/Python and normal Cargo proofs retained; unchanged kernel/bundle; current full changed CPP136/53.896s passed",
+    "cleanup": "actual-v1/v2 restored Host/runtime/config, helperwait0 and each374988240B removed; build v1/v2 helperwait0, Host unchanged/restored,400296781B each and verified empty temporary NativeInstallRoot removed",
+    "maintenance": "same GoVersion owner; code digest + DNS arguments bind fixtures; Python profilev4 and Go/Cargo recipev5/current profile candidates include shared protocol/compiler identity",
+    "remaining": [
+      "grouped failure/cancel/negative corpus and hosted qualification",
+      "installed signed helper build/install/doctor/self-update, grouped and final security qualification"
+    ],
+    "build_consumers": "Cargo normal19.85s reused; exact Artifact Cargo NSS read correction passed CPP136/53.896s and chain22.54s/network15/MANUAL_REVIEW plus Go initial/rebuild101.50s; native-v2 total126.632s",
+    "minimal_dns": "Exact pinned Node Artifact clone resolver reads work in both environments; v1 reproduced responder_init overconstraint; CPP136/52.130s and same client actual13.357s PASS network5, both states, complete cleanup373236096B",
+    "other_consumers": "Bun public Node peer4, PNPM controlled normal/exit37, GitHub current persisted Evidence and provider four controlled cases PASS106.800s; no public PNPM full or Bun app claim",
+    "native_bun": "existing immutable native supply plus responder/Node lifecycle peer4 PASS73.809s; not Bun Artifact execution/Policy; helperwait0/Host restored/482294364B removed",
+    "completed_input_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s02-completed-consumers-cleanup.json",
+      "sha256": "ef19fd6b099e79a9d88376542dd9a92478ae37e10106244d5d66f06ebc482989",
+      "deleted_bytes": 388443045,
+      "references": [],
+      "query_errors": []
+    }
+  },
+  "s02_release_component_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "S02 existing release/installed/doctor/update role wiring and local native helper probes only; not signed release activation or whole S02",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-foundation.json",
+        "sha256": "ccd409497d0320e5ba6d2e2d7424218b58382de0defd2ea0950234b7dcd8baa5",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 85.655
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-targeted.json",
+        "sha256": "aed29d958e3d3be806bef1bcb1522c52ebfa20323c104f625f487fc3ad6e442e",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 24.247
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-corrected-targeted.json",
+        "sha256": "39a31111d9542671237bd7b73a857a63277a08d8c832e43496ac8c04efac655f",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 13.241
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-pipeline-coverage-correction.json",
+        "sha256": "a3ddfbcd1df907fee1c2717905e764bc70648a3539848663a699ba266ecdfd05",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 2.685
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-affected-race.json",
+        "sha256": "9151d46a77656742de152efb9a2e572897fae8f9bb6411a2a579dcde5def0742",
+        "exit_code": 1,
+        "complete": null,
+        "elapsed": 85.745
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-bundle-count-complete-input.json",
+        "sha256": "522b586b42d55179c94db473012f114e41f4ca57dd9031f6883282cca7283a94",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 5.067
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-corrected-workflow.json",
+        "sha256": "4c61deafaadfd88aa885b36d1036d76a3e8e737d0ab58e29a52e0a9bf1f4b829",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 2.285
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-static.json",
+        "sha256": "3065cac7cdf3004eb66507c5b79ab327141802f0fd7a41e3fc96343e8d6eae5a",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 24.8
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-vet.json",
+        "sha256": "fc4b5dc58794513a40f9381d2fb16e133383b8c9a02cddc556112706dd787edb",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 14.24
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-probe-native-v1.json",
+        "sha256": "6ef79498e5273800401e37286b7aedf8e68a7aa0312b5d3ce29a3e159dcc4e5a",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 6.674
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-probe-native-v2.json",
+        "sha256": "3b4c27c660c8ac4b1ecdde1649515e5f5ba396ea38fd66c5683977b04e043a15",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 19.817
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-cli-and-responder.json",
+        "sha256": "6a5aba55446fc530f2912c5e9553cc166fe58d700ebe44385d9ee6e1566cb608",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 6.713
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-release-current-guest-static.json",
+        "sha256": "c52da5df80af9545f3666fbb3eb43b863239c9fe80b01d044719174b57907dcf",
+        "exit_code": 0,
+        "elapsed": 0.764
+      }
+    ],
+    "reuse": "5 successful affected Race packages and current C++136/kernel retained; only failed bundle test corrected; scope of later guest no-argument branch closed by actual-v2/protocol Race",
+    "maintenance": "existing GoVersion owner, common component name/MaxBytes, same release version/SBOM, no independent updater/lock",
+    "remaining": [
+      "S02 grouped failure/cancel/tamper/forgery/zero real egress corpus",
+      "S03 conditional/delayed/child/normal full evidence-to-policy coverage",
+      "grouped hosted and signed release/update qualification"
+    ],
+    "completed_input_cleanup": {
+      "path": "docs/github-logs/goal-implementation-20261101/s02-completed-release-probe-cleanup.json",
+      "sha256": "26c5be8dab11c2ef00a629f5bd09af88d9e53e6e93991e0372fd6e818b71cd3f",
+      "deleted_bytes": 28890039
+    }
+  },
+  "s02_common_owner_negative_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "scope": "model-only three current responder owner failure/cancel paths plus coupled normal/preparation/controller regression; not native/whole S02",
+    "check": {
+      "path": "docs/github-logs/goal-implementation-20261101/s02-lifecycle-negative-owner-race.json",
+      "sha256": "e7439ec07fa73a16b71bef6450054bbf091488b1ddc479d46ecf254c361f2dde",
+      "exit_code": 0,
+      "elapsed": 14.404,
+      "source_unchanged": true
+    },
+    "product_changes": "none; existing termination/drain owner already correct",
+    "remaining": "native failure/tamper/forgery/timeout and zero real egress; S03 complete same-input Findings/Policy/unchanged target corpus"
+  },
+  "s03_node_corpus_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "S03 Node controlled current Application/verification/inspection/Evidence/Policy corpus only, no upstream authenticity or Host installation",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v1.json",
+        "sha256": "760ae1f0baa9c9f8950808de857b026270ecd02376756c985cc77d2b53a785d1",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 46.065
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v2.json",
+        "sha256": "f2b80457d24129718aa445579eecb2abdca56e3fef12aa020bd76272577a2b42",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 14.498
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-null-observer-batch-v1.json",
+        "sha256": "3334390ff43aaa4ea38c776d5fe587f16073319fec1a3810005ab8fa74560c9d",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 51.727
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v3.json",
+        "sha256": "25f94e0e4d02f3f5d851fb75a2a72de481fb72f2867be9657267b7ee74552ccd",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 14.931
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-null-observer-batch-v2.json",
+        "sha256": "05667517d6516e4ac36276dcf3c42831192304462a24823873a9ef2796c75417",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 56.423
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v4.json",
+        "sha256": "586f37c3ce8ece4b5a5c943fcd5be507c3527d9d3faa28ba1fa7be8c31206c7f",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 15.147
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-orphan-boundary-red.json",
+        "sha256": "51471a716bb4980c708af3f4ae7ce7037934293989a6dd97c4a899669b7279d0",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 41.652
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-orphan-observer-batch-v1.json",
+        "sha256": "e335b86e0d5563136aae18cd48ee3ad80362adef7875de0fb6cc48e5140d485e",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 49.128
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v5.json",
+        "sha256": "5d80c3cc07ae5309da6cb95dd198729f17f8fbd8efc749e345ab7bd6e644a147",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 14.988
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-corpus-native-v6.json",
+        "sha256": "9839e0eac8e5ab769320427f05466900b703ea7ecfb14f6fda24dee453618ed4",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 89.594
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-native-v1.json",
+        "sha256": "132427e986b52fe5db0d3df61598e50fd6f4b1bdde6c4ab1899c26f46ca46424",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 15.679
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-staticcheck.json",
+        "sha256": "4b620644b8bb3ee2781469c1fa5d491b058d7c746d039879a408242553172fd0",
+        "exit_code": 0,
+        "elapsed": 2.064,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-vet.json",
+        "sha256": "153ea3da256131c6799799edda94bc45f5de89006eeff1b566e4b4d4dfeeace2",
+        "exit_code": 0,
+        "elapsed": 4.023,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-docs.json",
+        "sha256": "41f5e823995897fc616045ce0ceaf9c54151fdb0dca463f6ea3f595217ef4907",
+        "exit_code": 0,
+        "elapsed": 0.338,
+        "source_unchanged": true
+      }
+    ],
+    "first_failure": "detached child had not reached later behavior: authenticated pinned Node clone exact system /dev/null32768 first, then32770 standard-stream preparation classification; not evidence of early child termination",
+    "reused_successes": "v6 current benign payload lifecycle normal11.64s ALLOW/network0; compound10.71s, delay10.77s, child10.90s each states2/network10/MANUAL_REVIEW/no approval. Current selected entry normal20.14s complete0 and activation20.21s actual network-attempt refusal/incomplete; both original archive unchanged. Whole operator89.594s PASS2 parents/6 cases.",
+    "current_candidate": "Exact matching creator-exit fact, scoped Node Artifact NPM runtime reads passed CPP13649.128s and same-client child actual14.988s: 3 required checks, two persisted states, network10, MANUAL_REVIEW/no approval. Own maps v4 first fault corrected in this scope. Host restored/helperwait0/400260326B removed.",
+    "remaining": "Python actual Application/Policy corpus now next; other ecosystems, full target unchanged and supported-entry synthetic environment coverage, grouped hosted/final remain open. Runtime entry refusal/incomplete differs from a final inspection BLOCK. No public authenticity/Host installation claimed.",
+    "normal_configuration_scope": "actual15.679s PASS: required checks3/states2/network0/no canary or malicious-file BLOCK; existing script process rule remains MANUAL_REVIEW/no approval, an operational benign refusal, not a clean ALLOW control or malware detection"
+  },
+  "s03_python_corpus_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "controlled actual Application/inspection/stored Evidence/Policy Python wheel corpus; no public authenticity/Host install",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v1.json",
+        "sha256": "42c1f255124aec50180362299e49bc6f10d119e33dc007689bb323f7f74c82b2",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 57.547
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v2.json",
+        "sha256": "35e086edd077d683313d8c4f8ebf0ad9e13bfc7847cc5ebce3cd8de620e67363",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 17.516
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-fork-observer-batch-v1.json",
+        "sha256": "effec5b0e1998f42df17215b59f0bfbfcdf53a2d5cc0a081ebcb72773f3af024",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 56.149
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-corpus-native-v3.json",
+        "sha256": "6f9bcf1b900a5a8260c5c77b2a0d3a9313a245b1a2d26e7d468e37d47cdf7c19",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 17.505
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-native-v1.json",
+        "sha256": "1d2e6e379d805b250c18f310ac8d2477035244e26b94f5d89237e8d8bcdf318a",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 45.01
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-final-staticcheck.json",
+        "sha256": "0d70df858019cdc1d0d6e908d397789fbeab7548c9c32eac2405872ea9585f2c",
+        "exit_code": 0,
+        "elapsed": 2.318,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-python-entry-final-vet.json",
+        "sha256": "5f966d8bf770d870809991163adea00a975aab78f3c0fd3fcea30987ba39eac9",
+        "exit_code": 0,
+        "elapsed": 1.159,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-node-python-checkpoint-docs.json",
+        "sha256": "508bf46d03fa565a6597703674e3b1390458cf5441465d61c37701af61a34573",
+        "exit_code": 0,
+        "elapsed": 0.353,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-python-native-v1.json",
+        "sha256": "dcac090c55aa7e1c1dd6440980155b3a987ab6bdd8bfe1870e4c72f56e808cad",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 17.743
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-staticcheck.json",
+        "sha256": "4b620644b8bb3ee2781469c1fa5d491b058d7c746d039879a408242553172fd0",
+        "exit_code": 0,
+        "elapsed": 2.064,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-vet.json",
+        "sha256": "153ea3da256131c6799799edda94bc45f5de89006eeff1b566e4b4d4dfeeace2",
+        "exit_code": 0,
+        "elapsed": 4.023,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-normal-config-final-docs.json",
+        "sha256": "41f5e823995897fc616045ce0ceaf9c54151fdb0dca463f6ea3f595217ef4907",
+        "exit_code": 0,
+        "elapsed": 0.338,
+        "source_unchanged": true
+      }
+    ],
+    "reused_successes": "normal13.56s states2/network0/ALLOW; conditional13.10s and delay13.58s states2/network13/MANUAL_REVIEW/no approval",
+    "first_failure": "fork own current PID stat32768 omission corrected: same diagnostic client v3/17.505s completed child13.48s checks3/states2/network13/MANUAL_REVIEW/no approval; full CPP13756.149s passed exact mount/image/identity/flags/path/profile negatives",
+    "remaining": "S03 original install target unchanged/CLI goal linkage, other ecosystems/finite supported scenario census, selected-entry synthetic environment, hosted/final and whole S02 remain open",
+    "current_candidate": "No temporary diagnostic wrapper remains; same backend forwarding only removed. Python entry-only activation/normal checks now next; current ordinary controlled wheel normal/compound/delay/child successes retained without repetition.",
+    "entry_scope": "current Python selected readonly entry actual45.010s PASS: normal20.71s complete/exit0, activate20.33s actual network-attempt refusal/incomplete; original wheel digest preserved, Host installation not performed; not final inspection BLOCK or synthetic entry environment proof",
+    "normal_configuration_scope": "actual17.743s PASS: required checks3/states2/network0/ALLOW with dummy .env read only in mock development; no public authenticity/Host install claim"
+  },
+  "s03_npm_cli_target_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope": "project-local conditional npm install CLI, actual observation/Policy/Evidence and original target preservation",
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v1.json",
+        "sha256": "173c5bbd4c98778989f44cd1856200a9fdeb11e2b56bd97a67df2b44fc0b3c68",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 20.081
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v2.json",
+        "sha256": "a5580fb327b54762618ace1e2e97d90c2b10d4949b73a4b0799fb2ffef87e093",
+        "exit_code": 1,
+        "complete": false,
+        "elapsed": 19.582
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-native-v3.json",
+        "sha256": "b8dcfa4697b6e12e0e072b65c72ad514851dd26a6269b1917b996340abe0fbda",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 21.122
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-workflow.json",
+        "sha256": "93ca649a49e6d4c406d2e0654a6ce3d6c8b1ee538bdb8919e61efa4f060d04f1",
+        "exit_code": 0,
+        "elapsed": 1.985,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-staticcheck.json",
+        "sha256": "d51029306e4f86b264e3d2aaeededeb107ccf600e3274750609655f26c0f812a",
+        "exit_code": 0,
+        "elapsed": 2.208,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-vet.json",
+        "sha256": "6d018be4b7b91863abf0adb9535f057ddbbf431e1d49c82adce91506c09fd730",
+        "exit_code": 0,
+        "elapsed": 1.185,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s03-npm-root-target-docs.json",
+        "sha256": "bfb2df5fe146f099ad6fea05037948012355b93bc3403ffdc0645368b71374fe",
+        "exit_code": 0,
+        "elapsed": 0.349,
+        "source_unchanged": true
+      }
+    ],
+    "first_failure": "v1 first-review-reason and v2 record-digest/profile test assumptions corrected without product change; v3 actual21.122s PASS: current stored states2/network>0/check-profile binding, required lifecycle COMPLETED/MANUAL_REVIEW, installation REFUSED and original manifest/hook/.env unchanged with no node_modules or lock publication",
+    "remaining": "Local new CLI case and CI parser list verified; broader S03 normal configuration-read control, finite supported scenario census, selected-entry synthetic environment and hosted/final stay open"
+  },
+  "s02_ci_responder_source_checkpoint": {
+    "status": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "checks": [
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-workflow.json",
+        "sha256": "7237df648d3eee50eec0af91e0c454b8e57c890b4acc134768a5ffcffb58ba80",
+        "exit_code": 0,
+        "elapsed": 2.827,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-checker-targets.json",
+        "sha256": "622b70be0300784187fb3bba8d580b19fce733ea52631c63ea07dfed4cfee187",
+        "exit_code": 1,
+        "elapsed": 1.97,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-checker-targets-v2.json",
+        "sha256": "c8eb66443182ccd16fe054efa4cc2d28803d6689a3e409499d49b48e21f98241",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.935,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-source-native-v1.json",
+        "sha256": "ead69cdd3b18ba278cb82a8f4443372d9ee8a740f38a73b8a06189cb025bfaf6",
+        "exit_code": 0,
+        "complete": true,
+        "elapsed": 0.672,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-stimulus-parser-replay-v1.json",
+        "sha256": "cbc7c9516b2cdcee195798e55cc873874fe75c487207c1742eb114828a4ae26f",
+        "exit_code": null,
+        "complete": true,
+        "elapsed": null,
+        "source_unchanged": null
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-cohort-workflow.json",
+        "sha256": "7b2d645b73c9ba23372db00c1f18c6c29ad9ba725832a77fe641b82f88503fc7",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 1.889,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-checker-package.json",
+        "sha256": "431b16ff8c0ca573992e24786182f7e351c11d62b454dfa02049774870669c4e",
+        "exit_code": 0,
+        "complete": null,
+        "elapsed": 17.298,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-staticcheck.json",
+        "sha256": "3ac94c56d548c1e45d1223a11b265c1319802189ea90b103c29528aced597970",
+        "exit_code": 0,
+        "elapsed": 7.793,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-vet.json",
+        "sha256": "f4c764523f801b6709e76b2b98a8f8814d02c4e12ec704a0b927a9eedd5260a8",
+        "exit_code": 0,
+        "elapsed": 1.552,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-security.json",
+        "sha256": "bcf2acb4314cdd0153316da1a68cf0d41dc66516aa97a619dec3e0e0463be444",
+        "exit_code": 0,
+        "elapsed": 20.442,
+        "source_unchanged": true
+      },
+      {
+        "path": "docs/github-logs/goal-implementation-20261101/s02-ci-responder-docs.json",
+        "sha256": "7709467cd3ea61857a2f59ac6a7455e10711afd398a7a32a61b0de8e8a4a3f26",
+        "exit_code": 0,
+        "elapsed": 0.343,
+        "source_unchanged": true
+      }
+    ],
+    "scope": "hosted CI fixed protected responder base shared by ordinary and PNPM/Bun/Pipx native fixtures; not a verified release or product runtime change",
+    "first_failure": "new substring order guard comment bypass corrected by reusing existing exact active-command counts and ordered exact lines; focused targets1.935s/full checker17.298s PASS",
+    "remaining": "Local source/CI assembly checkpoint complete; no full real PNPM/Bun/Pipx script rerun or hosted qualification claimed. Whole S02/S03, finite scenario/entry census, signed supply and other reinforcement acceptance remain OPEN. No CI started.",
+    "native_scope": "private mount namespace actual shared shell/production source reader8 cases0.672s PASS, source and Host unchanged, refs0/query errors0/38692299B removed; four layout shapes and invalid source negatives only, not real native tools/programs or whole hosted scripts",
+    "cohort_scope": "existing tagged bootstrap parent/helper dispatches four S03 parents and14cases; parser replay8 models passed assembled recorded schemas, not fresh whole runtime qualification; no new CI job or timeout/version update change"
+  }
+}

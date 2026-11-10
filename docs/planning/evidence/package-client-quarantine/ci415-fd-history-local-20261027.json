@@ -1,0 +1,151 @@
+{
+  "scope": "BOUNDED_RAW_FAILURE_DIAGNOSTIC_ONLY; CI415 failure cause and repair remain OPEN",
+  "baseline": "693ba4afb70bbf1ebea4afbd0fece87aa3bc05e2",
+  "implemented": true,
+  "wired": true,
+  "named_local_qualified": true,
+  "historical_ci_failure_acceptance_closed": false,
+  "checks": {
+    "quick": {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 113.572,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    "security": {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.362,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "docs": {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.276,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "full-sandbox-race": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 31.703,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "9c07e86c289a59c5af4a0feb016440f1c70925cb52a9d23373c856b1717751e9"
+    }
+  },
+  "observer": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/hpr-bx53162k/fd-history-observer-canonical-v2"
+    ],
+    "exit": 0,
+    "seconds": 237.312,
+    "source": "/tmp/hpr-bx53162k/source",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "7d6374e26f290dadd6ea631b4eea61f532f0b186b7ae4719650b02b3a07f770a"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "f459361da729fc62de396af05eed669c36f6d83e013b2c42b95c99d88189f005"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+      }
+    ],
+    "log_sha256": "91a57b1de9aaabb071c37ee70955b37b42d950134c814107b7cd47a51b4d1166",
+    "latches_pass": 122,
+    "latches_fail": 0,
+    "observer": {
+      "path": "/tmp/hpr-bx53162k/fd-history-observer-canonical-v2",
+      "sha256": "a83e7416877552280e6e129e40c91bda14f704fb19f453284ebfc46e7f644dd3",
+      "size": 3155160
+    }
+  },
+  "actual": {
+    "scope": "CI415 bounded failure diagnostic changed-source PNPM peer regression; historical cause OPEN",
+    "operator_errors": [],
+    "command": [
+      "/usr/bin/unshare",
+      "--mount",
+      "--propagation",
+      "private",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "/usr/bin/python3",
+      "/tmp/hpr-bx53162k/fd-history-pnpm-peer-v1/namespace.py"
+    ],
+    "exit": 0,
+    "namespace": {
+      "mount_namespace": "mnt:[4026532225]",
+      "host_mount_namespace": "mnt:[4026532210]",
+      "network_namespace": "net:[4026531833]",
+      "host_network_namespace": "net:[4026531833]",
+      "private_daemon_started": false,
+      "scope": "existing Host Docker + canonical owning-shell typed helper; protected client/native/observer bind visible only in this mount namespace",
+      "exit": 0,
+      "seconds": 80.05
+    },
+    "remaining_containers": "",
+    "remaining_volumes": "",
+    "remaining_observer_endpoints": [],
+    "remaining_policy_endpoints": [],
+    "canonical_helper_confirmed_stopped": true,
+    "runtime_directory_cleanup": [
+      {
+        "path": "/run/heliopause-network-policy",
+        "owned_identity_removed": true
+      },
+      {
+        "path": "/run/heliopause-observer",
+        "owned_identity_removed": true
+      }
+    ],
+    "host_before_after_identical": true,
+    "final_exit": 0,
+    "seconds": 80.832
+  },
+  "authorization_bytes_proof": "ci415-fd-history-v1-authorization-preserved.json",
+  "first_failure_preserved": "ci415-fd-history-first-latch-assessment.json",
+  "later_test_only_delta": "exact CLOEXEC JSON now requires existing EXEC/-1 and SOCKET/AF_INET history; production Go/C++ unchanged since successful Quick/Race",
+  "missing": [
+    "CI415 exact FD lifetime/interleaving cause",
+    "next necessary grouped hosted result and diagnostic consumption if failure repeats",
+    "remaining UV native adoption/pipx/final CPU and CUDA matrix"
+  ]
+}

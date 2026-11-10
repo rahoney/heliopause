@@ -1,0 +1,109 @@
+package ports
+
+import (
+	"context"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
+)
+
+// StorageRequest identifies controller-created storage using opaque root and
+// relative handles. Concrete owners retain creation, publication and deletion.
+type StorageRequest struct {
+	Operation         domain.OperationID
+	Run               domain.RunID
+	Kind              string
+	Temporary, Target string
+	Bytes, Files      uint64
+	// Extend reserves additional writes to this operation's already sealed intake.
+	// Bytes/Files are additional bounds; original bytes remain charged.
+	Extend bool
+	// CacheKey is used only by the controller's opaque advisory DATA cache.
+	CacheKey domain.ContentDigest
+}
+
+// AdvisoryStorage stores complete advisory DATA under the common storage
+// budget. It does not interpret provider records, Findings or approval. Reads
+// return closed, bounded bytes; paths and descriptors never reach an Artifact.
+type AdvisoryStorage interface {
+	ReadAdvisory(context.Context, domain.ContentDigest, uint64) ([]byte, bool, error)
+	// A capacity miss may return false, nil; incomplete writes are never hits.
+	WriteAdvisory(context.Context, domain.ContentDigest, []byte) (bool, error)
+}
+
+type advisoryRefreshKey struct{}
+
+// Refresh selects a new authenticated query; it never disables a required check.
+func WithAdvisoryRefresh(ctx context.Context, refresh bool) context.Context {
+	return context.WithValue(ctx, advisoryRefreshKey{}, refresh)
+}
+
+func AdvisoryRefreshFromContext(ctx context.Context) bool {
+	if ctx == nil {
+		return false
+	}
+	refresh, _ := ctx.Value(advisoryRefreshKey{}).(bool)
+	return refresh
+}
+
+// Storage accounts a reservation durably before the owner writes payloads.
+type Storage interface {
+	Policy() domain.StoragePolicy
+	Reserve(context.Context, StorageRequest) (StorageLease, error)
+}
+
+type StorageLease interface {
+	Commit(context.Context) error
+	// Abort releases accounting only after the owner has removed both names.
+	// Failure retains the reservation for recovery; Close/PID absence is no proof.
+	Abort(context.Context) error
+	// Close releases descriptors, preserving all durable accounting.
+	Close() error
+}
+
+// InspectionStorage records a trusted caller's input-specific completed-check
+// boundary, including static original-layout proofs and supporting inspection
+// inputs. It never approves installation; outer finalization waits for all
+// shared consumers and their guards/runtime closes.
+type InspectionStorage interface {
+	NoteInspection(context.Context, domain.RunID, bool) error
+}
+
+// StorageUse tracks the existing command's guards and execution consumers. The
+// returned function records their final close/outcome once; an error protects
+// the command's inputs and never changes their security or installation result.
+type StorageUse interface {
+	TrackUse(context.Context) (func(error), error)
+}
+
+// TrackStorageUse keeps optional storage composition out of workflow owners.
+// The existing owner still closes its guard/runtime and preserves every error.
+func TrackStorageUse(ctx context.Context) (func(error), error) {
+	if tracker, ok := StorageFromContext(ctx).(StorageUse); ok {
+		return tracker.TrackUse(ctx)
+	}
+	return func(error) {}, nil
+}
+
+type storageContextKey struct{}
+type storageOperationKey struct{}
+
+func WithStorage(ctx context.Context, storage Storage) context.Context {
+	return context.WithValue(ctx, storageContextKey{}, storage)
+}
+func StorageFromContext(ctx context.Context) Storage {
+	if ctx == nil {
+		return nil
+	}
+	storage, _ := ctx.Value(storageContextKey{}).(Storage)
+	return storage
+}
+func WithStorageOperation(ctx context.Context, operation domain.OperationID) context.Context {
+	return context.WithValue(ctx, storageOperationKey{}, operation)
+}
+func StorageOperationFromContext(ctx context.Context) domain.OperationID {
+	if ctx == nil {
+		return domain.OperationID{}
+	}
+	operation, _ := ctx.Value(storageOperationKey{}).(domain.OperationID)
+	return operation
+}

@@ -1,0 +1,394 @@
+{
+  "schema": "helox.local-checkpoint/v1",
+  "baseline": "9e9260f",
+  "scope": "C01 failure-fact preservation and Evidence reservation/ownership foundation only",
+  "c01_status": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "implemented": [
+    "preserve completed verification/static facts on provider failure without Policy/partial approval",
+    "preserve declaration cancellation cause",
+    "central finite storage policy and digest",
+    "inert composition with bounded first-use initialization; actual Evidence and operation/Run binding",
+    "durable indexed append reservations, concurrent admission, confirmed/durable absence release",
+    "reuse confined root checks in writer/reader/explicit retention; protect replacement/unknown failure-cleanup members"
+  ],
+  "missing": [
+    "intake/derived/staging/cache/rollback lifetime registration",
+    "all managed-storage accounting and operation peak reservations",
+    "runtime drain/reference pins, automatic expiry/sweep and crash reclamation",
+    "settings and separate cleanup/result axes",
+    "100-repeat and final native/hosted qualification"
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-finalization-facts-red.json",
+      "sha256": "df125ae636d8e5e9309495d13df5afbb449c3a83470fbead281bdb4944fa7f53",
+      "exit_code": 1,
+      "elapsed_seconds": 1.511,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-finalization-facts-consumers-v2.json",
+      "sha256": "ce6f891ba2adf678081511686fcee12853103252a93d08f64caa4eb5d15ebdc5",
+      "exit_code": 0,
+      "elapsed_seconds": 3.977,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-finalization-boundary-regressions.json",
+      "sha256": "b94a06b91bd3eddd590f9f5e58247b21c3f1be64e87e929c631760612d9fcab5",
+      "exit_code": 0,
+      "elapsed_seconds": 4.751,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-ledger-first-tests.json",
+      "sha256": "195d7d813315922a021755f3263086fe30bdc260e8a046eceb96bc3900721682",
+      "exit_code": 1,
+      "elapsed_seconds": 1.521,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-ledger-owner-tests-v2.json",
+      "sha256": "ec203e065f0978eb1f289f4c486ebb4c6523702b715bd9f7fbb7bfc00e4b772d",
+      "exit_code": 0,
+      "elapsed_seconds": 0.72,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-foundation-current.json",
+      "sha256": "73fe824c9cecc2f0e869fbe88034a0bb01604eb6b2cf4d05afb30add35270496",
+      "exit_code": 0,
+      "elapsed_seconds": 92.597,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-storage-current-race.json",
+      "sha256": "05fef08b5419bd8a95bf6a676985aa2df9b193be6f9eae5cbdadd7c5016e34e8",
+      "exit_code": 0,
+      "elapsed_seconds": 26.628,
+      "source_unchanged": true,
+      "environment": {}
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-evidence-root-replacement-red.json",
+      "sha256": "f09489fe83695cf59ab55bbbbfd43769f3f92cc0f00125110164380e7986fefd",
+      "exit_code": 1,
+      "elapsed_seconds": 0.899,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-evidence-root-replacement-green.json",
+      "sha256": "7c2fa2094501cede60909204d456f68aee3a72d4fe53f7cf49ab28e45b596dd6",
+      "exit_code": 1,
+      "elapsed_seconds": 0.31,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-evidence-root-replacement-green-v2.json",
+      "sha256": "6c702add979d8c666931c1131a4a3fec0b88fb8b848c12ef8b67a3899ece334a",
+      "exit_code": 0,
+      "elapsed_seconds": 1.183,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-s09-grouped-quick.json",
+      "sha256": "46bb685878c9c679729d687f5f2e9c7498b16842863b83352ab8564860c4bba0",
+      "exit_code": 1,
+      "elapsed_seconds": 106.534,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-staticcheck-first-failure-green.json",
+      "sha256": "e3c987b2be5d653e4848efdbf7a1879345a6afd871600848920d12a5ed94c72a",
+      "exit_code": 0,
+      "elapsed_seconds": 14.263,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-s09-default-test-remainder.json",
+      "sha256": "799777b7ce5ccf6eb9396576ed25a8f2099731f049900c40bafc8527a9e54716",
+      "exit_code": 1,
+      "elapsed_seconds": 221.983,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-inert-preflight-first-failures.json",
+      "sha256": "4ded45ca5f2ea41b4514e0e0605d3631bc61c300377783040e5f84e1059462ed",
+      "exit_code": 0,
+      "elapsed_seconds": 5.703,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-inert-owner-final-race.json",
+      "sha256": "d39a1d718c9ae5f4d437ec763b0a1c16bbc35833f55376f64d99e2e76f4ba6ed",
+      "exit_code": 0,
+      "elapsed_seconds": 3.137,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-inert-owner-final-staticcheck.json",
+      "sha256": "e70d3d117b5cb8e2a1c6db5e8970383bb444c1d97731343d1e356cfb443a5048",
+      "exit_code": 0,
+      "elapsed_seconds": 4.621,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-inert-owner-final-security.json",
+      "sha256": "8ac262c3f9db924d687db3bc13b5a8aa86c5ae5a556948ea516e309c409363eb",
+      "exit_code": 0,
+      "elapsed_seconds": 12.788,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "",
+        "GOARCH": "",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/c01-confined-inert-darwin-build.json",
+      "sha256": "83338b0560356ea9e89fe4db26419be3cab80fd9de5c888b4f1147b6b00acab5",
+      "exit_code": 0,
+      "elapsed_seconds": 1.523,
+      "source_unchanged": true,
+      "environment": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "GOTOOLCHAIN": "local",
+        "GOPROXY": "off",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOMAXPROCS": "2"
+      }
+    }
+  ],
+  "qualification_limits": {
+    "quick": "106.534s exit1 at ST1005; earlier static steps passed, default NOT_REACHED",
+    "static_followup": "14.263s fixed pinned Staticcheck PASS",
+    "default": "canonical platform221.983s exit1; all50 packages terminal; bootstrap2 inert-preflight failures",
+    "default_followup": "exact failures and owner5.703s PASS; full default not repeated after lazy-init fix",
+    "current": "affected owner Race3.137s, Staticcheck4.621s, security12.788s PASS",
+    "darwin": "current amd64 build1.523s PASS; native execution NOT_RUN",
+    "runtime": "no CPP/runtime/helper/Host changes or CI start"
+  },
+  "source_files": [
+    {
+      "path": "docs/engineering/01-directory-structure.md",
+      "sha256": "49bac87f71b09ca3fe5865161a5c46f972b5b0e9f6553451a173264764ec75af"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "sha256": "09313edfc1dcea365b1448eb8f5322b58ada3deb5d06c5399857ef4615ab8116"
+    },
+    {
+      "path": "docs/planning/evidence/m13-004-convenience/storage-lifetime-baseline-20261102.md",
+      "sha256": "97f89657acf56fdfef6e3fb9c9cae615c4473e2242baf6c6c71794351893b854"
+    },
+    {
+      "path": "internal/application/check_plan_test.go",
+      "sha256": "180158b3bb62c79c591104923d30ea1f973fabceb2d2e3e3a1cf1f38b070e41d"
+    },
+    {
+      "path": "internal/application/dependency_batch_inspect.go",
+      "sha256": "39864a495bf7c4155ec67e158151cbbbb8ee0aa315103bcd7aca8618bb99e62d"
+    },
+    {
+      "path": "internal/application/execution_inspect.go",
+      "sha256": "a5d490b7c55fcda73469ae9f9c8b58f46545881d42ea78c1bd24f2c692589943"
+    },
+    {
+      "path": "internal/application/execution_inspect_test.go",
+      "sha256": "70fd59d887218dfc0ac983f15231c95015a9798075d5425f024388873899f213"
+    },
+    {
+      "path": "internal/application/execution_selection_inspect.go",
+      "sha256": "cf1da709c68afef3ce355dd16926a001a5b2863d4565e65e92be35471987c616"
+    },
+    {
+      "path": "internal/application/inspect.go",
+      "sha256": "60563bafc5655d349642a474d45a69cfa098584d4ec32e596db93278692c11b0"
+    },
+    {
+      "path": "internal/application/inspect_test.go",
+      "sha256": "e9c1858cf6eca281322a8680bfb6a89f7e21fbfb77b63f89e2a75ad413a5ec3d"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "sha256": "9301c2e04dcdd22e9882ea1ec583b463e58abee856feaab9ef36a19614bc6c74"
+    },
+    {
+      "path": "internal/application/install_prepared.go",
+      "sha256": "47ab21efa6d0857db2e7bef660e27f0d9486edce52176e780b8d44feb72a1017"
+    },
+    {
+      "path": "internal/application/install_update.go",
+      "sha256": "1f0315ec226f6644a34f0e71075c170df2913115010847eec44ba70ce662a23a"
+    },
+    {
+      "path": "internal/application/project_batch_inspect_test.go",
+      "sha256": "c85dd1ad6030b543eff561334afa16e48b16272346b8e3e0af2cfb26f47fd6fb"
+    },
+    {
+      "path": "internal/application/project_build.go",
+      "sha256": "cc92bab99f52453def7acb5096a95e3f37ac7b1334784bae5357b289e5fb19b2"
+    },
+    {
+      "path": "internal/application/project_inspect.go",
+      "sha256": "f90ffd5b608ec3ab299c816c1df9445166bfb842aaf12a616e17de0770b90ffb"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "0495f9f172dfdf357a625e9bddaf6e581861f74e3f37e9d3a24ce85e2d3d2823"
+    },
+    {
+      "path": "internal/core/domain/storage.go",
+      "sha256": "1d6735740ea1ad194f515439fbaa91602e038a70068e9a03a5f02ff371ba7ee2"
+    },
+    {
+      "path": "internal/core/domain/storage_test.go",
+      "sha256": "e701c452138a88ac723cc91923c663037e6b8ba4af3ee657d84cf5fa81d008a6"
+    },
+    {
+      "path": "internal/core/ports/storage.go",
+      "sha256": "f25e06f431cb9e6dd691f5134212578b6fa0727b8ba586c2499d82d0595b2563"
+    },
+    {
+      "path": "internal/evidence/local/read.go",
+      "sha256": "fe42bd9ffff957a7908db0fd85936467ca8dd8395312221a6c3a4a21442f967e"
+    },
+    {
+      "path": "internal/evidence/local/store.go",
+      "sha256": "56c9e1cd1048fcdb3dba53b8ad1d2f20e7229d0d7bed815f7f9fb65627d634f9"
+    },
+    {
+      "path": "internal/inspection/npm/composite.go",
+      "sha256": "1ba248ff20ff4c8526957e406c297f1e6956563620430121b7b513b3de2b81f7"
+    },
+    {
+      "path": "internal/inspection/npm/composite_test.go",
+      "sha256": "e53db72102ac2549524018c707ec68cee8a09ecedde060d35a0789cbc778fb12"
+    },
+    {
+      "path": "internal/inspection/pypi/command_observation_test.go",
+      "sha256": "89ff8e0a5b71f3e18a46b00cc56c7c2dcbe8054e2e42b7aa5e8ce471b73b20e6"
+    },
+    {
+      "path": "internal/inspection/pypi/composite.go",
+      "sha256": "03c9fc07b8dd2299decd7b00e079f341a46ba465040843781992379050a656eb"
+    },
+    {
+      "path": "internal/inspection/pypi/static_test.go",
+      "sha256": "f35085798f2a22e595e04ca2f21d2d1d6863256020ec8fb8cffd61717106d843"
+    },
+    {
+      "path": "internal/storage/local.go",
+      "sha256": "8c29f31eca5b8b5920f35cb93034499009bb1dcb8dee1467b4d140c07de3dc27"
+    },
+    {
+      "path": "internal/storage/local_test.go",
+      "sha256": "a5c27c608af5238304434286685906b31f3a1c846424440cbed4bb0370470889"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "006d3aa1dff389a55eeb57447068c264b2d7ad0d63dd10bb9717589080371789"
+    }
+  ],
+  "ci_started": false,
+  "host_installation_changed": false,
+  "runtime_locks_changed": false
+}

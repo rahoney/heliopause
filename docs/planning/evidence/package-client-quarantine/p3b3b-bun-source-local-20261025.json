@@ -1,0 +1,247 @@
+{
+  "work_item": "M13-004/P3-B3b",
+  "baseline": "b658670d315a0dc234b62cdd651ad19fc973be69",
+  "status": {
+    "IMPLEMENTED": "YES (reviewed bounded parser/source/snapshot subset)",
+    "WIRED": "YES (actual frozen native controls -> independent HTTPS -> Domain snapshot); public native selection/CLI not wired",
+    "QUALIFIED": "YES (named local subset)",
+    "ACCEPTANCE_CLOSED": "NO (whole Bun/P2 remote gate)",
+    "MISSING": [
+      "Bun typed preflight and native install/add/update/frozen output connector",
+      "exact native layout/lifecycle/quarantine/cache/transaction/CLI",
+      "unsupported tag/nonexact prerelease/optional/bundled/platform/ambiguous peer semantics and whole Bun acceptance",
+      "next meaningful remote macOS/Required checkpoint; no blind CI411 rerun"
+    ]
+  },
+  "scope": "Actual schema2/config1, explicit empty absence, scoped tree locations and single matching peer version; source binding never approves archives, native script flags, lifecycle, Policy or promotion.",
+  "sources": [
+    {
+      "path": "go.mod",
+      "sha256": "e8cb001329749ed27808b074ec6ffb12af510a394ac461413975ae2c737af3d8"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "edd3b801e24886b56b4f8e88b65acb1c18c9a0bc37a8a8efa40cd660624c0f75"
+    },
+    {
+      "path": "scripts/check/workflow_structure_test.go",
+      "sha256": "47bc4eb9bc274a255671976ab6d512e6328b463f7d02c33cacfb2baf87291751"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_json.go",
+      "sha256": "e7cf76da5dbd11018556c883d426313a666828683fa3f79b7ec2a6d6b2c6696a"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_json_test.go",
+      "sha256": "e8bea7fb623fb9b40744cea69499a9c0b0e777ba99ee74605c8e83a861a304c2"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock.go",
+      "sha256": "73f3bde857da315c04d85f96b733efc43057ede1fa3f467882b28c50895f4090"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_package.go",
+      "sha256": "1173d52c8aecc78053200e5b53b1a8f79bae4c7e13c9e0308e1996f09350609d"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_tree.go",
+      "sha256": "c35168ac613bdec59df0631797fc2c81f7d520b3a938f24bf720c38edd1d19c1"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_test.go",
+      "sha256": "2f5125301e63019c3987c285088bec08b5f630d4ddcbb84ffddb5dd838f630d2"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/single.bun.lock",
+      "sha256": "9950c54c33555f33a0144513408b074e94a766ec953a45be777a217efa7bda48"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/transitive.bun.lock",
+      "sha256": "120423a1ac3729fe91bbcd0c5c35e8d1a7d96263bf5ab76d7e0a35f3007ab95a"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/peer.bun.lock",
+      "sha256": "eadd5b3b9aefe42e018f609bcc87567307301c2d864909055491d85806beb7e0"
+    },
+    {
+      "path": "internal/artifact/npm/bun_selection.go",
+      "sha256": "8926a17ccb89fd41e3021f3740e1cf4292306f7650764b1e5cbc747044f7d35f"
+    },
+    {
+      "path": "internal/artifact/npm/bun_project_snapshot.go",
+      "sha256": "605f4d02b890e01132dd614124cb1fc405deb17ed9f2dcbfba837ea7e5608b20"
+    },
+    {
+      "path": "internal/artifact/npm/bun_selection_test.go",
+      "sha256": "4d44465123d59c5aa193ee0c4d91345b82b660a002bbf6365f0236a5a323260e"
+    },
+    {
+      "path": "internal/artifact/npm/bun_project_snapshot_test.go",
+      "sha256": "a9343958e00a6b332afdca82d7e881f41bf96ee5402f32a253744078f3f4816e"
+    },
+    {
+      "path": "internal/artifact/npm/bun_selection_real_test.go",
+      "sha256": "6a3aeec4c0d6d3b1b7815fb22c2c38e8f3ab5cf4fe68a25540756698c5b48770"
+    },
+    {
+      "path": "internal/artifact/npm/bun_lock_budget_test.go",
+      "sha256": "c00389aa662b06ec092437d8c8931477f4c7947f537038ab7857b2b6f336328e"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/empty.package.json",
+      "sha256": "1aaefac85fddde427846d78e118bf75617f538dcade66db36a4dd141b391775e"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/single.package.json",
+      "sha256": "dd2971e843232efadc6a213816e168f87cd3611a1efd5e5ef398277ba87e8852"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/transitive.package.json",
+      "sha256": "73612de716bc89d2b91365f6afd6954f53ac298f3dcdeb8f67d36071a2023383"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/bun-lock/peer.package.json",
+      "sha256": "695b726c26aeda845d6eeadf0dd7b64b5ab5cdb808607a8d35d4934b4a3d7468"
+    }
+  ],
+  "unchanged_existing_owners": [
+    {
+      "path": "internal/artifact/npm/resolver.go",
+      "sha256": "9d2adc36e5a41a1a4eecf33d2bc88e732677ec6f30d07fcc3438da2f727f6c11"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_lock.go",
+      "sha256": "d68154464fb4db457e0f234159fabbd1d152617037ec102f1c7566ec6b954b6d"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection.go",
+      "sha256": "014edaf1bb7f985e40d3cb0b769d2b4c73691a5bc3d3dc684c87b944559afb31"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_project_snapshot.go",
+      "sha256": "60a6232b38c2a1728f8d0d6160ec0dc0e7f562ad2fb3c052df0ea6168b0fd063"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b3b3-bun-source-final-quick.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 101.552,
+      "log_sha256": "3de8b3c30f8063e6630e3785046fcda0f26f975c2744482d9e67022a27b1036d"
+    },
+    {
+      "receipt": "p3b3b3-bun-source-final-security.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.795,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p3b3b3-bun-source-final-docs.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.288,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p3b3b3-bun-final-full-npm-race.json",
+      "command_display": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/npm",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 50.962,
+      "log_sha256": "fd9fe5fc9b784caef60b64db6505446edf93986fb4a7d156de3bdcc242b87321"
+    },
+    {
+      "receipt": "p3b3b3-bun-final-vulnerability.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "vulnerability"
+      ],
+      "exit": 0,
+      "seconds": 18.94,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b3b3-bun-source-tagged-vet.json",
+      "command_display": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/artifact/npm"
+      ],
+      "exit": 0,
+      "seconds": 0.52,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "checker_race_reuse": {
+    "receipt": "p3b3b3-bun-full-related-race.json",
+    "checker_package_seconds": 32.512,
+    "reason": "checker production and test bytes unchanged after this PASS; final npm Race replaces the earlier npm portion after the type counterexample"
+  },
+  "actual_source": {
+    "receipt": "p3b3b3-bun-source-final-real.json",
+    "command_display": "HELOX_BUN_PUBLIC_SOURCE=1 npm.test -test.v -test.timeout=3m -test.run ^TestBunPublicLockSourceBinding$",
+    "operator_seconds": 1.172,
+    "test_seconds": 1.13,
+    "cases": 4,
+    "unique_archive_counts": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "native_runtime_archives_policy_host_install": "NOT_EXERCISED",
+    "inputs": "exact manifests verified against B3a original fixture manifest SHA; lock bytes match B3a canonical output"
+  },
+  "dependency": {
+    "module": "github.com/Masterminds/semver/v3",
+    "version": "v3.5.0",
+    "version_or_sum_changed": false,
+    "direct_annotation_changed": true,
+    "review": "p3b3b-semver-cache-review.json",
+    "license": "MIT; existing copyright/permission notice obligation retained",
+    "verification": "all modules verified, GOPROXY=off,7.539s; no latest/release-note/whole Bun/npm equivalence claim"
+  },
+  "counterexample": {
+    "status": "UNCOMMITTED_CANDIDATE_REFUTED_THEN_NARROWLY_CORRECTED",
+    "red_cases": 14,
+    "metadata_red_seconds": 1.63,
+    "manifest_red_seconds": 1.73,
+    "evidence": [
+      "p3b3b3-bun-metadata-types-red.json",
+      "p3b3b3-bun-manifest-types-red.json",
+      "p3b3b3-bun-metadata-types-green.json",
+      "p3b3b3-bun-manifest-types-green.json"
+    ],
+    "correction": "field-specific object/array/allowed false with valid JSON whitespace preserved; final default/Race/actual include corrected source",
+    "not_claimed": "No shipped/B3a/PNPM defect or Policy bypass; previous green does not qualify the new malformed-type cases"
+  },
+  "final_candidate": "Final evidence/Queue/plan docs and security checks plus all-index/blob/mode/disk/tree agreement are required before commit; raw p3b3b-final-* owns those records.",
+  "remote": "No push or CI; remote9410 unchanged. Continue native selection locally, then group the meaningful backend/end-to-end checkpoint; timers must be consumed while turn stays active."
+}

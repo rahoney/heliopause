@@ -1,0 +1,158 @@
+{
+  "schema": "p3b2b2a-bun-production-supply-local/v1",
+  "baseline": "03d4870b0c439ad5e8fb9359b35dde593661b574",
+  "status": {
+    "IMPLEMENTED": "YES (source-owner bound production materializer)",
+    "WIRED": "YES (materialize-bun plus selectedVersion/common owner parser)",
+    "QUALIFIED": "YES (named local production bytes only)",
+    "ACCEPTANCE_CLOSED": "NO (release/installed tuple and whole P3 remain)"
+  },
+  "scope": "Source schema4 exact Bun owner, publisher proof and archive/native/notices bytes validated before exclusive external native0555/notices0444 output; no network, Host Bun execution or installed/guest authority.",
+  "source_inventory": [
+    {
+      "path": "scripts/update-runtime/bun_owner.go",
+      "sha256": "c21e4f85fa187af271a756a54381ba37079a8f2a69f7446b0952e8ba5fca814b"
+    },
+    {
+      "path": "scripts/update-runtime/bun_production_materialize.go",
+      "sha256": "413ff6057c89eee00ed31566264a1a0ce9ab8184a0e5acd3ef95f626a1acbdd7"
+    },
+    {
+      "path": "scripts/update-runtime/bun_production_materialize_test.go",
+      "sha256": "87426ffc3ed2e2cc5781d6c2dd6bcd94f95f71e306644697ff91712496623aca"
+    },
+    {
+      "path": "scripts/update-runtime/bun_production_materialize_real_test.go",
+      "sha256": "f9e48a0217812254ab289df694ecd85e6f57d20981bb4873545c6f1ea93a3afa"
+    },
+    {
+      "path": "scripts/update-runtime/bun_release.go",
+      "sha256": "3e3c60b8c6e6d5bdf03cc66b8577bad30c83a9ff46d17639507be6589056a7f4"
+    },
+    {
+      "path": "scripts/update-runtime/bun_supply.go",
+      "sha256": "9e9012ad81e429f9cbb403991009c778d8b1af4b0867d78a5b5e98dd94ef519c"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "08094779fcaf46e9fcbd37c58677014badba01a51b036bb2bc8642e2af6e11c9"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "dd4cb24a77f090a157569cca7af45ee8507e2dc584611f6efa5bc5b3b175ec65"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-first-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 178.761,
+      "log_sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-first-security.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 9.287,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-first-docs.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.249,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-full-race.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/update-runtime",
+        "./scripts/check",
+        "./internal/verification/releaseprovenance",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 32.354,
+      "log_sha256": "4ca27ae9b62e0c06d4fcc4e66b470279285ed6e7c4d732f7878e4792db71569d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-production-corrected-actual.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-tags",
+        "realcorpus",
+        "./scripts/update-runtime",
+        "-run",
+        "^TestBunProductionMaterializationFromOfficialArchive$",
+        "-count=1",
+        "-v",
+        "-timeout",
+        "2m"
+      ],
+      "exit": 0,
+      "seconds": 5.633,
+      "log_sha256": "7f0079dcc5178b8b2f801b9cae9f606add995c924a43184c5d2bd77d59178838"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-frozen-maintenance-regression.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-tags",
+        "realcorpus",
+        "./scripts/update-runtime",
+        "-run",
+        "^TestBunFrozenActualSupplyPlanAndInterruptedApply$",
+        "-count=1",
+        "-v",
+        "-timeout",
+        "2m"
+      ],
+      "exit": 0,
+      "seconds": 10.096,
+      "log_sha256": "9a70e7783041139054a44752b6edf039ddc0e6e81a1034665b076ef93ac7965a"
+    }
+  ],
+  "first_actual_failure": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-bun-production-actual.json",
+    "cause": "new realcorpus fixture retained PNPM-only pin.Provenance.BundlePath; Bun owner uses pin.Publisher.ChecksumsPath; build stopped before product execution",
+    "default_scope_proof": "docs/github-logs/package-client-quarantine-20261021/p3b2b2a-default-profile-scope.json",
+    "interpretation": "only excluded realcorpus fixture changed after default Quick; same production/default Go sources; corrected actual build/run and final all-source format required"
+  },
+  "boundaries": [
+    "same read bytes for strict owner census/typed decoding",
+    "publisher checksum/native expected bytes come from source owner, not flags",
+    "exact own native/notice output names; no-replace owned protected parent/readback preserved",
+    "version/source remain adopted observed metadata rather than checksum-signed build provenance",
+    "existing Bun candidate/frozen maintenance and PNPM publisher remain; common parser negative/default regression passed"
+  ],
+  "missing": [
+    "B2b2-B release manifest/SBOM/packages/workflow and installed/bootstrap/activation complete tuple",
+    "B2c exact gVisor role and actual startup/version/lock",
+    "Bun lock/public graph/layout/full current Policy/cache/records/transaction/CLI",
+    "whole P3 qualification/support"
+  ],
+  "ci": "No new push/CI. Frozen source9410 cu132411 pending; actual timer04:22:46UTC active; independent local work continues."
+}

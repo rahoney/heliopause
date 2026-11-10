@@ -1,0 +1,620 @@
+package sandbox
+
+import (
+	"archive/tar"
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
+)
+
+type environmentTraceObserver interface {
+	observationPhaseObserver
+	StartEnvironmentProfile(context.Context, string, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
+}
+
+type npmInstanceEnvironmentTraceObserver interface {
+	startNPMInstanceEnvironmentProfile(context.Context, string, nativeRuntimeToolKind, bool, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
+}
+
+// This is the existing npm lifecycle's resource owner, extended to two fresh
+// workspaces. CPU, wall and trace accounting are the existing common owners.
+// Artifact output cannot complete an experiment or replenish a budget.
+type environmentInspection struct {
+	backend       *Backend
+	observer      environmentTraceObserver
+	owner         domain.SandboxSessionID
+	profileName   string
+	work          closureVolume
+	lease         ObservationResourceLease
+	ledger        *observationTransaction
+	traceBudget   *observationTraceLedger
+	watch         *observationCPUWatch
+	policy        artifactpypi.ResourcePolicy
+	mu            sync.Mutex
+	runtimes      map[string]*pythonPhaseRuntime
+	volume        closureVolume
+	project       closureVolume
+	projectKind   nativeRuntimeToolKind
+	native        nativeRuntimeVolume
+	responder     *responderSupply
+	uncertain     bool
+	attempted     bool
+	finalCPU      uint64
+	events, bytes uint64
+	observed      []domain.SandboxObservation
+	states        []domain.SandboxEnvironmentState
+}
+
+func (b *Backend) executeEnvironmentInspection(ctx context.Context, request domain.SandboxRequest, owner domain.SandboxSessionID) (domain.SandboxResult, error) {
+	observer, ok := b.observer.(environmentTraceObserver)
+	_, inputOK := b.runner.(inputCommandRunner)
+	_, streamOK := b.runner.(streamingDockerOutput)
+	_, discardOK := b.runner.(discardCommandRunner)
+	if !ok || !inputOK || !streamOK || !discardOK || b.resources == nil {
+		return incomplete(owner, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE")
+	}
+	if request.Artifact().Identity().Source().String() != "npm" {
+		return incomplete(owner, "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
+	}
+	if err := ctx.Err(); err != nil {
+		result, e := incomplete(owner, "M3_DYNAMIC_EXECUTION_FAILED")
+		return result, errors.Join(e, err)
+	}
+	operation, code, err := b.newEnvironmentInspection(owner, observer, "npm-lifecycle")
+	if err != nil {
+		result, resultErr := incomplete(owner, code)
+		return result, errors.Join(resultErr, err)
+	}
+	run, cancel := context.WithDeadline(ctx, operation.ledger.policy.wallDeadline)
+	defer cancel()
+	code, cause := operation.inspect(run, cancel, request.Artifact())
+	return operation.finish(ctx, run, code, cause)
+}
+
+func (b *Backend) newEnvironmentInspection(owner domain.SandboxSessionID, observer environmentTraceObserver, profile string) (*environmentInspection, string, error) {
+	if profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
+		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", errEnvironmentState
+	}
+	now := time.Now()
+	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
+	units := []observationUnit{
+		{id: string(minimalEnvironment), kind: observationLifecycle, candidate: string(minimalEnvironment), coverage: artifactpypi.RequiredObservation},
+		{id: string(developmentEnvironment), kind: observationLifecycle, candidate: string(developmentEnvironment), coverage: artifactpypi.RequiredObservation},
+	}
+	accounting, err := observationPolicyForPython(policy, profile, len(units), now)
+	if err != nil {
+		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err
+	}
+	accounting.maxUnits = len(units)
+	accounting.maxLaunches = 2 * len(units)
+	if profile == "npm-lifecycle" {
+		accounting.maxEvents = ports.NPMEnvironmentTraceEventLimit
+	}
+	accounting.wallDeadline = now.Add(b.wallTimeout)
+	ledger, err := newObservationTransaction(accounting, units, now)
+	if err != nil {
+		return nil, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err
+	}
+	budget, err := newObservationTraceLedger(profile)
+	if err != nil {
+		return nil, "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+	return &environmentInspection{backend: b, observer: observer, owner: owner, profileName: profile, ledger: ledger, traceBudget: budget, policy: policy, runtimes: make(map[string]*pythonPhaseRuntime)}, "", nil
+}
+
+func (n *environmentInspection) finish(ctx, run context.Context, code string, cause error) (domain.SandboxResult, error) {
+	// stop() intentionally cancels its private context. Preserve genuine causes
+	// before that normal stop, and also retain a late caller cancellation.
+	runCause := run.Err()
+	cleanupErr := n.close()
+	if cause == nil {
+		cause = runCause
+	}
+	cause = errors.Join(cause, ctx.Err(), cleanupErr)
+	if code == "" && (runCause != nil || ctx.Err() != nil) {
+		code = "M3_DYNAMIC_TIMEOUT"
+	}
+	if code == "" && cleanupErr != nil {
+		code = "M3_DYNAMIC_CLEANUP_FAILED"
+	}
+	if code == "" {
+		n.ledger.mu.Lock()
+		n.ledger.cleanupOK = true
+		n.ledger.anchorAlive = false
+		n.ledger.mu.Unlock()
+		if err := n.ledger.finalize(n.finalCPU, time.Now()); err != nil {
+			code = "M3_DYNAMIC_ACCOUNTING_INCOMPLETE"
+			cause = errors.Join(cause, err)
+		}
+	}
+	status := domain.SandboxCompleted
+	if code != "" {
+		status = domain.SandboxIncomplete
+	}
+	result, resultErr := domain.NewSandboxResult(n.owner, status, code, n.observed, n.states...)
+	return result, errors.Join(resultErr, cause)
+}
+
+func (n *environmentInspection) initialize(ctx context.Context, cancel context.CancelFunc) error {
+	n.attempted = true
+	lease, err := n.backend.resources.Create(ctx, n.owner.String(), n.profileName)
+	if err != nil || lease.CgroupParent == "" || lease.CPU < 0 {
+		return errors.Join(errEnvironmentState, err)
+	}
+	n.lease = lease
+	prepare := n.backend.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
+	}
+	n.responder, err = prepare(ctx, n.backend.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || n.responder == nil {
+		return errors.Join(errResponderSupply, err)
+	}
+	n.watch, err = startObservationCPUWatch(ctx, n.backend.resources, n.owner.String(), n.ledger, cancel, n.abort)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (n *environmentInspection) inspect(ctx context.Context, cancel context.CancelFunc, artifact domain.AcquiredArtifact) (string, error) {
+	if err := n.initialize(ctx, cancel); err != nil {
+		return "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", err
+	}
+	seen := map[string]bool{n.owner.String(): true}
+	for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+		session, err := n.backend.newSessionID()
+		if err != nil || session.String() == "" || seen[session.String()] {
+			return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+		}
+		seen[session.String()] = true
+		profile, err := newInspectionEnvironmentProfile(kind, session, n.responder)
+		if err != nil {
+			return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+		}
+		if code, err := n.experiment(ctx, artifact, session, profile); code != "" || err != nil {
+			return code, err
+		}
+	}
+	fact, err := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
+	if err != nil {
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+	n.observed = append(n.observed, fact)
+	return "", nil
+}
+
+func (n *environmentInspection) experiment(ctx context.Context, artifact domain.AcquiredArtifact, session domain.SandboxSessionID, profile inspectionEnvironmentProfile) (string, error) {
+	volume, err := createEnvironmentWorkspace(ctx, n.backend.runner, n.owner, profile, n.policy.RuntimeTmpfs()-responderSupplyCapacity)
+	n.volume = volume
+	if err != nil {
+		n.uncertain = volume.name != ""
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	writer, err := n.start(ctx, session, profile, false)
+	if err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
+	}
+	payload, err := profile.payload()
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	input := n.backend.runner.(inputCommandRunner)
+	if err := input.RunInput(ctx, bytes.NewReader(payload), "docker", "cp", "--archive", "-", writer.id+":/tmp"); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	if err := n.backend.introducer.Introduce(ctx, writer.id, artifact); err != nil {
+		return "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err
+	}
+	anchor, err := n.start(ctx, session, profile, true)
+	if err != nil {
+		return "M3_DYNAMIC_SETUP_FAILED", err
+	}
+	if err := n.volume.verifyAttachments(ctx, n.backend.runner, map[string]bool{writer.id: false, anchor.id: true}); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	// Keep each reported change count exact within the existing summary bound.
+	limits := environmentStateLimits{entries: int(domain.MaximumObservationSummaryCount), bytes: n.policy.RuntimeTmpfs(), archiveBytes: 2 * n.policy.RuntimeTmpfs()}
+	before, err := captureEnvironmentState(ctx, n.backend.runner, anchor.id, limits)
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	if err := profile.verifyPlacement(before); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
+	}
+	original, ok := before.files["artifact.tgz"]
+	if !ok || original.kind != tar.TypeReg || original.digest != artifact.Digest().String() || original.size != int64(artifact.SizeBytes()) {
+		return "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", errEnvironmentState
+	}
+	n.ledger.mu.Lock()
+	n.ledger.preparationOK = true
+	n.ledger.anchorAlive = true
+	n.ledger.mu.Unlock()
+	if err := n.ledger.beginUnit(string(profile.kind), writer.id, time.Now()); err != nil {
+		return "M3_DYNAMIC_ACCOUNTING_INCOMPLETE", err
+	}
+	commandErr := discardCommand(ctx, n.backend.runner, "docker", boundaryExecArguments(writer.id, boundaryLaunchMode, "/bin/sh", "-ceu", npmLifecycleCommand)...)
+	primaryCode := ""
+	if commandErr != nil {
+		primaryCode = "M3_DYNAMIC_EXECUTION_FAILED"
+		if ctx.Err() != nil {
+			primaryCode = "M3_DYNAMIC_TIMEOUT"
+		}
+	} else {
+		primaryCode, commandErr = awaitLifecycleDescendants(ctx, n.backend.runner, writer.id)
+	}
+	if err := n.stop(writer.id); err != nil {
+		if primaryCode != "" {
+			return primaryCode, errors.Join(commandErr, err)
+		}
+		return "M3_DYNAMIC_OBSERVER_FAILED", errors.Join(commandErr, err)
+	}
+	if primaryCode != "" {
+		return primaryCode, commandErr
+	}
+	return n.completeEnvironment(ctx, profile, writer, anchor, before, limits)
+}
+
+// awaitLifecycleDescendants maps a failed observed drain after a successful
+// lifecycle to INCOMPLETE: expiry of the existing wall limit is a timeout and
+// any other loss of the observer's exit ledger is an observer failure.
+func awaitLifecycleDescendants(ctx context.Context, runner CommandRunner, container string) (string, error) {
+	if !observedDrainRequired(runner, container) {
+		return "", nil
+	}
+	err := awaitObservedProcessDrain(ctx, container)
+	switch {
+	case err == nil:
+		return "", nil
+	case errors.Is(err, context.DeadlineExceeded):
+		return "M3_DYNAMIC_TIMEOUT", err
+	default:
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+}
+
+// Both current npm archive and instance experiments snapshot only after their
+// writer has terminated and drained. One ledger and trace budget span profiles.
+func (n *environmentInspection) completeEnvironment(ctx context.Context, profile inspectionEnvironmentProfile, writer, anchor *pythonPhaseRuntime, before environmentState, limits environmentStateLimits) (string, error) {
+	if err := n.volume.verifyAttachments(ctx, n.backend.runner, map[string]bool{anchor.id: true}); err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+	}
+	if n.work.name != "" {
+		if err := n.work.verifyAttachments(ctx, n.backend.runner, map[string]bool{anchor.id: true}); err != nil {
+			return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+		}
+	}
+	after, err := captureEnvironmentState(ctx, n.backend.runner, anchor.id, limits)
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+	}
+	if n.project.name == "" && n.work.name == "" && after.files["artifact.tgz"] != before.files["artifact.tgz"] {
+		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", errEnvironmentState
+	}
+	changes, err := compareEnvironmentStates(before, after)
+	if err != nil {
+		return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+	}
+	if err := n.stop(anchor.id); err != nil {
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+	n.ledger.mu.Lock()
+	n.ledger.anchorAlive = false
+	n.ledger.mu.Unlock()
+	events, bytes, err := n.observer.observationUsage(n.traceBudget)
+	if err != nil || events < n.events || bytes < n.bytes {
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+	_, err = n.watch.finishUnit(ctx, externalUnitEvidence{unitID: string(profile.kind), containerID: writer.id, terminalOutcome: observationZeroExit, observerComplete: true, containerGone: true, cgroupDrained: true, closureUnchanged: true, events: events - n.events, bytes: bytes - n.bytes})
+	if err != nil {
+		return "M3_DYNAMIC_EXECUTION_FAILED", err
+	}
+	n.events, n.bytes = events, bytes
+	fixtureDigest, _ := domain.NewSHA256Digest(profile.identity)
+	beforeDigest, _ := domain.NewSHA256Digest(before.digest)
+	afterDigest, _ := domain.NewSHA256Digest(after.digest)
+	n.states = append(n.states, domain.SandboxEnvironmentState{Profile: profile.kind, FixtureDigest: fixtureDigest, Before: beforeDigest, After: afterDigest, Created: changes.created, Deleted: changes.deleted, Modified: changes.modified, VFSOperationsCovered: true})
+	for _, change := range []struct {
+		subject string
+		count   uint64
+	}{{"workspace-created", changes.created}, {"workspace-deleted", changes.deleted}, {"workspace-modified", changes.modified}} {
+		if change.count == 0 {
+			continue
+		}
+		fact, err := domain.NewCountedSandboxObservation(domain.ObservationFilesystem, change.subject, change.count)
+		if err != nil {
+			return "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", err
+		}
+		n.observed = append(n.observed, fact)
+	}
+	fact, err := domain.NewSandboxObservation(domain.ObservationProcess, "environment-"+string(profile.kind)+"-completed")
+	if err != nil {
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
+	n.observed = append(n.observed, fact)
+	if err := closeWritableOutputVolume(ctx, n.backend.runner, &n.volume, environmentWorkspaceRoot); err != nil {
+		return "M3_DYNAMIC_CLEANUP_FAILED", err
+	}
+	n.volume = closureVolume{}
+	if n.work.name != "" {
+		if err := closeWritableOutputVolume(ctx, n.backend.runner, &n.work, elfWriterWork); err != nil {
+			return "M3_DYNAMIC_CLEANUP_FAILED", err
+		}
+		n.work = closureVolume{}
+	}
+	if n.project.name != "" {
+		if err := closeWritableOutputVolume(ctx, n.backend.runner, &n.project, n.project.destination()); err != nil {
+			return "M3_DYNAMIC_CLEANUP_FAILED", err
+		}
+		n.project = closureVolume{}
+	}
+	if n.native.name != "" {
+		if err := n.native.close(ctx, n.backend.runner); err != nil {
+			return "M3_DYNAMIC_CLEANUP_FAILED", err
+		}
+		n.native = nativeRuntimeVolume{}
+	}
+	return "", nil
+}
+
+func (n *environmentInspection) start(ctx context.Context, session domain.SandboxSessionID, profile inspectionEnvironmentProfile, readOnly bool) (runtime *pythonPhaseRuntime, resultErr error) {
+	if err := n.watch.beginTransition(ctx); err != nil {
+		return nil, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, n.watch.endTransition(context.Background())) }()
+	args, err := environmentContainerArguments(session, profile, n.volume, readOnly)
+	if n.work.name != "" && err == nil {
+		args, err = n.elfContainerArguments(session, profile, readOnly)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if n.project.name != "" {
+		spec, known := nativeProjectIdentity(n.projectKind)
+		if !known || n.project.destination() != spec.root || n.project.projectBuildExecutable || n.native.name != "" && n.projectKind != nativeRuntimeBun {
+			return nil, errEnvironmentState
+		}
+		mount, err := n.project.mountArgument(readOnly)
+		if err != nil {
+			return nil, err
+		}
+		image := slices.Index(args, nodeImageReference)
+		if image < 0 {
+			return nil, errEnvironmentState
+		}
+		args = append(append(append([]string{}, args[:image]...), "--mount", mount), args[image:]...)
+		if n.native.name != "" && !readOnly {
+			args, err = bunArtifactRuntimeCreateArguments(args, n.native)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	image := slices.Index(args, nodeImageReference)
+	if image < 0 {
+		return nil, errEnvironmentState
+	}
+	phase := phaseObservation
+	if readOnly {
+		phase = phaseAnchor
+	}
+	activeResponder := profile.kind == developmentEnvironment && !readOnly
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = n.responder.containerArguments(args, nodeImageReference)
+		if err != nil {
+			return nil, err
+		}
+		image = slices.Index(args, nodeImageReference)
+		supplies = []*responderSupply{n.responder}
+	}
+	extra := []string{"--cpuset-cpus", strconv.Itoa(n.lease.CPU), "--cgroup-parent", n.lease.CgroupParent, "--label", "io.heliopause.observation-phase=" + string(phase)}
+	args = append(append(append([]string{}, args[:image]...), extra...), args[image:]...)
+	created, err := n.backend.runner.Output(ctx, "docker", args...)
+	id := strings.TrimSpace(string(created))
+	if err != nil || !exactObservationContainerID(id) {
+		n.uncertain = true
+		return nil, errors.Join(errEnvironmentState, err)
+	}
+	runtime = &pythonPhaseRuntime{id: id, phase: phase}
+	n.mu.Lock()
+	n.runtimes[id] = runtime
+	n.mu.Unlock()
+	if err := n.volume.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
+		return nil, err
+	}
+	if activeResponder {
+		if err := n.responder.verifyReader(ctx, n.backend.runner, id); err != nil {
+			return nil, err
+		}
+	}
+	if n.work.name != "" {
+		work := n.work
+		if readOnly {
+			work.projectBuildDestination = elfReaderWork
+		}
+		if err := work.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
+			return nil, err
+		}
+		observer, ok := n.observer.(elfEnvironmentTraceObserver)
+		if !ok {
+			return nil, errEnvironmentState
+		}
+		runtime.trace, err = observer.startELFEnvironmentProfile(ctx, id, n.profileName, readOnly, n.traceBudget, supplies...)
+	} else if n.project.name != "" {
+		if err := n.project.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
+			return nil, err
+		}
+		observer, ok := n.observer.(npmInstanceEnvironmentTraceObserver)
+		if !ok {
+			return nil, errEnvironmentState
+		}
+		runtime.trace, err = observer.startNPMInstanceEnvironmentProfile(ctx, id, n.projectKind, n.native.name != "" && !readOnly, readOnly, n.traceBudget, supplies...)
+	} else {
+		runtime.trace, err = n.observer.StartEnvironmentProfile(ctx, id, readOnly, n.traceBudget, supplies...)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, n.backend.runner, id)
+	} else {
+		err = discardCommand(ctx, n.backend.runner, "docker", "start", id)
+	}
+	if err != nil {
+		return nil, err
+	}
+	lease, err := n.backend.resources.Register(ctx, n.owner.String(), id, string(phase))
+	if err != nil || lease.CgroupParent != n.lease.CgroupParent || lease.CPU != n.lease.CPU {
+		return nil, errors.Join(errEnvironmentState, err)
+	}
+	runtime.registered = true
+	if err := awaitBoundaryHelper(ctx, n.backend.runner, id, activeResponder); err != nil {
+		return nil, err
+	}
+	if err := n.observer.AwaitMountAnchors(ctx, id); err != nil {
+		return nil, err
+	}
+	if err := verifyEnvironmentResolver(ctx, n.backend.runner, id); err != nil {
+		return nil, err
+	}
+	if err := verifyObservationRuntimeAlive(ctx, n.backend.runner, id); err != nil {
+		return nil, err
+	}
+	return runtime, nil
+}
+
+func (n *environmentInspection) stop(id string) (resultErr error) {
+	if err := n.watch.beginTermination(context.Background()); err != nil {
+		resultErr = err
+	} else {
+		defer func() { resultErr = errors.Join(resultErr, n.watch.endTermination(context.Background())) }()
+	}
+	n.mu.Lock()
+	runtime := n.runtimes[id]
+	n.mu.Unlock()
+	if runtime == nil || runtime.collected || runtime.trace == nil || !runtime.registered {
+		return errors.Join(resultErr, errEnvironmentState)
+	}
+	lease, trace, err := runtime.stopAndCollect(n.backend.resources, n.owner.String())
+	facts := trace.observations
+	if trace.limitation != "" {
+		facts = retainedSuspiciousTraceFacts(trace.diagnostic.KindCounts)
+	}
+	n.observed = append(n.observed, facts...)
+	n.mu.Lock()
+	runtime.collected = true
+	n.mu.Unlock()
+	if err != nil || trace.limitation != "" || !trace.diagnostic.SessionComplete || lease.CgroupParent != n.lease.CgroupParent {
+		return errors.Join(resultErr, errEnvironmentState, err, fmt.Errorf("environment trace: %s", trace.diagnostic.String()))
+	}
+	n.mu.Lock()
+	runtime.collected = true
+	delete(n.runtimes, id)
+	n.mu.Unlock()
+	return resultErr
+}
+
+func (n *environmentInspection) ids() []string {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	ids := make([]string, 0, len(n.runtimes))
+	for id := range n.runtimes {
+		ids = append(ids, id)
+	}
+	slices.Sort(ids)
+	return ids
+}
+
+func (n *environmentInspection) abort(ctx context.Context) error {
+	var failure error
+	for _, id := range n.ids() {
+		done := make(chan error, 1)
+		go func() { _, err := n.backend.resources.Terminate(ctx, n.owner.String(), id); done <- err }()
+		removeErr := discardCommand(ctx, n.backend.runner, "docker", "rm", "--force", id)
+		remaining, queryErr := n.backend.runner.Output(ctx, "docker", "ps", "--all", "--no-trunc", "--filter", "id="+id, "--format", "{{.ID}}")
+		helperErr := <-done
+		if helperErr != nil || queryErr != nil || len(remaining) > 1024 || strings.TrimSpace(string(remaining)) != "" {
+			failure = errors.Join(failure, errEnvironmentState, helperErr, queryErr, removeErr)
+		}
+	}
+	return failure
+}
+
+func (n *environmentInspection) close() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	var failure error
+	if n.watch != nil {
+		failure = errors.Join(failure, n.watch.stop())
+	}
+	for _, id := range n.ids() {
+		n.mu.Lock()
+		runtime := n.runtimes[id]
+		n.mu.Unlock()
+		if err := n.stop(id); err != nil {
+			failure = errors.Join(failure, err)
+			// A failed registration/trace never becomes completion. Independently
+			// remove the exact controller-created ID, and preserve unknown outcomes.
+			if err := discardCommand(ctx, n.backend.runner, "docker", "rm", "--force", id); err != nil {
+				failure = errors.Join(failure, err)
+			}
+			remaining, err := n.backend.runner.Output(ctx, "docker", "ps", "--all", "--no-trunc", "--filter", "id="+id, "--format", "{{.ID}}")
+			if err != nil || len(remaining) > 1024 || strings.TrimSpace(string(remaining)) != "" {
+				n.uncertain = true
+				failure = errors.Join(failure, errEnvironmentState, err)
+			}
+			if runtime != nil && runtime.trace != nil && !runtime.collected {
+				trace := runtime.collect()
+				facts := trace.observations
+				if trace.limitation != "" {
+					facts = retainedSuspiciousTraceFacts(trace.diagnostic.KindCounts)
+				}
+				n.observed = append(n.observed, facts...)
+				runtime.collected = true
+				if trace.limitation != "" || !trace.diagnostic.SessionComplete {
+					failure = errors.Join(failure, errEnvironmentState)
+				}
+			}
+		}
+	}
+	if n.attempted {
+		lease, err := n.backend.resources.Close(ctx, n.owner.String())
+		failure = errors.Join(failure, err)
+		if err == nil && lease.CgroupParent == n.lease.CgroupParent {
+			n.finalCPU = lease.UsageUsec
+		} else if err == nil {
+			failure = errors.Join(failure, errEnvironmentState)
+		}
+	}
+	if n.volume.name != "" && !n.uncertain {
+		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.volume, environmentWorkspaceRoot))
+	}
+	if n.work.name != "" && !n.uncertain {
+		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.work, elfWriterWork))
+	}
+	if n.project.name != "" && !n.uncertain {
+		failure = errors.Join(failure, closeWritableOutputVolume(ctx, n.backend.runner, &n.project, n.project.destination()))
+	}
+	if n.native.name != "" && !n.uncertain {
+		failure = errors.Join(failure, n.native.close(ctx, n.backend.runner))
+	}
+	if n.responder != nil {
+		failure = errors.Join(failure, n.responder.close(ctx, n.backend.runner))
+	}
+	if n.uncertain {
+		failure = errors.Join(failure, errors.New("uncertain environment ownership retained"))
+	}
+	return failure
+}

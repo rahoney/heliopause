@@ -58,7 +58,23 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 	if s == nil || !bundle.Valid() {
 		return domain.StagedSet{}, errors.New("staging requires a configured adapter and valid verified bundle")
 	}
-	if err := verifyDocuments(bundle); err != nil {
+	return s.stageDocuments(ctx, bundle.ManifestID(), bundle.Set().Inspected().Inspections(), bundle.ManifestDocument(), bundle.SBOMDocument())
+}
+
+// StageExecutionSelection persists the complete approved roots through the
+// same rehash, sealing and atomic publication boundary as other verified sets.
+func (s *LocalStaging) StageExecutionSelection(ctx context.Context, bundle domain.ExecutionSelectionBundle) (domain.StagedSet, error) {
+	if ctx == nil || s == nil || !bundle.Valid() {
+		return domain.StagedSet{}, errors.New("execution staging requires a context and whole approved selection")
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.StagedSet{}, err
+	}
+	return s.stageDocuments(ctx, bundle.ManifestID(), bundle.Set().Inspected().Inspections(), bundle.ManifestDocument(), bundle.SBOMDocument())
+}
+
+func (s *LocalStaging) stageDocuments(ctx context.Context, id domain.ContentDigest, inspections []domain.DependencyInspection, manifest, sbom []byte) (staged domain.StagedSet, resultErr error) {
+	if err := verifyStagingDocuments(id, manifest, sbom); err != nil {
 		return domain.StagedSet{}, err
 	}
 	if err := ensureTrustedRoot(s.stagingRoot); err != nil {
@@ -67,7 +83,7 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 	if err := artifactpypi.CheckTemporaryDisk(s.stagingRoot, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
 		return domain.StagedSet{}, err
 	}
-	final := filepath.Join(s.stagingRoot, bundle.ManifestID().String())
+	final := filepath.Join(s.stagingRoot, id.String())
 	if filepath.Dir(final) != s.stagingRoot {
 		return domain.StagedSet{}, errors.New("staging destination escapes root")
 	}
@@ -94,7 +110,7 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 		return domain.StagedSet{}, fmt.Errorf("create staged artifact directory: %w", err)
 	}
 	written := make(map[string]bool)
-	for _, inspection := range bundle.Set().Inspected().Inspections() {
+	for _, inspection := range inspections {
 		if err := ctx.Err(); err != nil {
 			return domain.StagedSet{}, err
 		}
@@ -102,10 +118,10 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 			return domain.StagedSet{}, err
 		}
 	}
-	if err := writeRecord(temporary, manifestFilename, bundle.ManifestDocument()); err != nil {
+	if err := writeRecord(temporary, manifestFilename, manifest); err != nil {
 		return domain.StagedSet{}, err
 	}
-	if err := writeRecord(temporary, sbomFilename, bundle.SBOMDocument()); err != nil {
+	if err := writeRecord(temporary, sbomFilename, sbom); err != nil {
 		return domain.StagedSet{}, err
 	}
 	if err := sealFiles(temporary); err != nil {
@@ -128,7 +144,7 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 		}
 		return domain.StagedSet{}, err
 	}
-	return domain.NewStagedSet(bundle.ManifestID(), "staging:"+bundle.ManifestID().String())
+	return domain.NewStagedSet(id, "staging:"+id.String())
 }
 
 func (s *LocalStaging) stageArtifact(directory string, inspection domain.DependencyInspection, written map[string]bool) error {
@@ -186,8 +202,10 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 }
 
 func verifyDocuments(bundle domain.VerifiedBundle) error {
-	manifest := bundle.ManifestDocument()
-	sbom := bundle.SBOMDocument()
+	return verifyStagingDocuments(bundle.ManifestID(), bundle.ManifestDocument(), bundle.SBOMDocument())
+}
+
+func verifyStagingDocuments(manifestID domain.ContentDigest, manifest, sbom []byte) error {
 	var manifestObject map[string]any
 	decoder := json.NewDecoder(bytes.NewReader(manifest))
 	decoder.UseNumber()
@@ -195,7 +213,7 @@ func verifyDocuments(bundle domain.VerifiedBundle) error {
 		return errors.New("verified Manifest document is invalid")
 	}
 	id, ok := manifestObject["manifest_id"].(string)
-	if !ok || id != bundle.ManifestID().String() {
+	if !ok || id != manifestID.String() {
 		return errors.New("verified Manifest identity does not match bundle")
 	}
 	delete(manifestObject, "manifest_id")
@@ -325,11 +343,21 @@ func walkPath(path string, allowMissing bool) error {
 }
 
 func writeRecord(directory, name string, document []byte) error {
+	return writeRecordFile(directory, name, document, true)
+}
+
+// Only for members of an unpublished private tree. Its owner must sync the
+// complete sealed tree before publication; this write alone is not durable.
+func writePrivateRecord(directory, name string, document []byte) error {
+	return writeRecordFile(directory, name, document, false)
+}
+
+func writeRecordFile(directory, name string, document []byte, syncFile bool) error {
 	file, err := os.OpenFile(filepath.Join(directory, name), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return fmt.Errorf("create staged record: %w", err)
 	}
-	if _, err = file.Write(document); err == nil {
+	if _, err = file.Write(document); err == nil && syncFile {
 		err = file.Sync()
 	}
 	if closeErr := file.Close(); err == nil {

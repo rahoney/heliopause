@@ -11,6 +11,40 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+func TestDeclaredCargoSourcesIncludeExtensionlessTargetsAndBuildScript(t *testing.T) {
+	base := "[package]\nname='fixture'\nversion='1.2.3'\n"
+	manifest := base + "build='custom-build'\n[lib]\npath='./custom-lib'\n[[bin]]\npath='custom-bin'\n[[example]]\npath='custom-example'\n[[test]]\npath='custom-test'\n[[bench]]\npath='custom-bench'\n"
+	files := map[string][]byte{"Cargo.toml": []byte(manifest)}
+	expected := map[string]bool{}
+	for _, name := range []string{"custom-build", "custom-lib", "custom-bin", "custom-example", "custom-test", "custom-bench"} {
+		files[name], expected[name] = []byte("fn main() {}\n"), true
+	}
+	paths, err := DeclaredSourcePaths(files)
+	if err != nil || !reflect.DeepEqual(paths, expected) {
+		t.Fatal("manifest source roles were omitted or remapped", paths, err)
+	}
+	for _, changed := range []string{
+		base + "build=false\n", base + "build=true\n", base,
+	} {
+		files["Cargo.toml"] = []byte(changed)
+		paths, err := DeclaredSourcePaths(files)
+		if err != nil || len(paths) != 0 {
+			t.Fatal("default/disabled build invented an explicit source role", paths, err)
+		}
+	}
+	for _, invalid := range []string{
+		base + "build=''\n", base + "build=12\n", base + "build='../outside'\n",
+		base + "[lib]\npath=''\n", base + "[lib]\npath='missing'\n",
+		base + "[[bin]]\npath='/absolute'\n", base + "[[test]]\npath='..\\escape'\n",
+		base + "[[example]]\npath=1\n", "invalid [[",
+	} {
+		files["Cargo.toml"] = []byte(invalid)
+		if paths, err := DeclaredSourcePaths(files); err == nil || paths != nil {
+			t.Fatal("malformed, missing or escaping source role was accepted")
+		}
+	}
+}
+
 func TestCargoSelectedManifestsFollowWorkspaceAndPathDependencies(t *testing.T) {
 	root := []byte("[workspace]\nmembers=['crates/**']\nexclude=['crates/excluded']\n")
 	member := []byte("[package]\nname='member'\nversion='0.1.0'\n[dev-dependencies]\nlocal={path='../../../local'}\n")
@@ -162,5 +196,51 @@ func TestCargoCompleteProjectSnapshotBindsLocalManifestsFeaturesAndRuntime(t *te
 	complete, err := BuildProjectSnapshot(install, metadata, manifest, extraLock, "/fixture", "fixed-runtime", files)
 	if err != nil || len(complete.Dependencies()) != 2 {
 		t.Fatalf("complete project dropped unrelated package %v", err)
+	}
+}
+
+func TestFetchLockCoverageIsCompleteWithoutChangingBuildSubsets(t *testing.T) {
+	metadata, lock := cargoActualMetadataFixture(t)
+	manifest := []byte("[package]\nname='haa_schema_fixture'\nversion='0.1.0'\nedition='2021'\n[dependencies]\nitoa='=1.0.17'\n")
+	target, _ := domain.NewInstallTarget("/project")
+	install, _ := domain.NewInstallContext(target)
+	build := func(lock []byte) domain.ProjectDependencySnapshot {
+		t.Helper()
+		snapshot, err := BuildProjectSnapshot(install, metadata, manifest, lock, "/fixture", "fixed-runtime", map[string][]byte{"Cargo.toml": manifest, "Cargo.lock": lock})
+		if err != nil {
+			t.Fatal("existing build graph was changed", err)
+		}
+		return snapshot
+	}
+	snapshot := build(lock)
+	if err := ValidateFetchLockCoverage(snapshot, lock); err != nil {
+		t.Fatal("complete lock rejected", err)
+	}
+	extra := append(bytes.Clone(lock), []byte("\n[[package]]\nname='unselected_optional'\nversion='1.0.0'\nsource='"+registrySourceURL+"'\nchecksum='"+strings.Repeat("a", 64)+"'\n")...)
+	subset := build(extra) // A build may legitimately select a subset of locked optional packages.
+	if len(subset.Dependencies()) != 1 {
+		t.Fatal("build feature subset was expanded")
+	}
+	if err := ValidateFetchLockCoverage(subset, extra); err == nil {
+		t.Fatal("fetch silently omitted a locked registry package")
+	}
+	if err := ValidateFetchLockCoverage(snapshot, extra); err == nil {
+		t.Fatal("fetch accepted a different lock envelope")
+	}
+	if err := ValidateFetchLockCoverage(domain.ProjectDependencySnapshot{}, lock); err == nil {
+		t.Fatal("fetch accepted zero snapshot")
+	}
+	artifacts := snapshot.Dependencies()
+	original := artifacts[0]
+	changed, err := domain.NewResolvedArtifact(original.Identity(), original.AcquisitionLocator(), "sha256="+strings.Repeat("b", 64))
+	if err != nil {
+		t.Fatal(err)
+	}
+	forged, err := domain.NewProjectDependencySnapshot(snapshot.Context(), snapshot.Source(), snapshot.ControlDigests(), []domain.ResolvedArtifact{changed}, snapshot.GraphDigest())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateFetchLockCoverage(forged, lock); err == nil {
+		t.Fatal("fetch accepted a changed locked checksum")
 	}
 }

@@ -15,6 +15,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const MaxProviderArchiveBytes = 64 << 20
@@ -55,6 +56,21 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
+	return c.freezeRegistrySelection(snapshot, artifact)
+}
+
+func (c *Client) resolveUpgrade(ctx context.Context, requirement Requirement) (domain.ResolvedArtifact, error) {
+	if c == nil || c.resolver == nil || ctx == nil {
+		return domain.ResolvedArtifact{}, errors.New("terraform upgrade selection request is invalid")
+	}
+	snapshot, artifact, err := c.resolver.resolveSnapshot(ctx, domain.ArtifactReference{}, &requirement)
+	if err != nil {
+		return domain.ResolvedArtifact{}, err
+	}
+	return c.freezeRegistrySelection(snapshot, artifact)
+}
+
+func (c *Client) freezeRegistrySelection(snapshot RegistrySnapshot, artifact ProviderArtifact) (domain.ResolvedArtifact, error) {
 	encoded, err := encodeParts(registryHeader, registryParts(snapshot), registryLimits)
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
@@ -126,6 +142,71 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err != nil || artifact.SHA256 != archiveDigest {
 		return result, errors.New("terraform acquisition differs from selected package")
 	}
+	if err := os.MkdirAll(c.intakeRoot, 0o700); err != nil {
+		return result, err
+	}
+	root, err := openPrivateRoot(c.intakeRoot)
+	if err != nil {
+		return result, err
+	}
+	defer root.Close()
+	if err := root.Mkdir(run.String(), 0o700); err != nil {
+		return result, err
+	}
+
+	allocation, err := root.Lstat(run.String())
+	if err != nil {
+		return result, err
+	}
+	directory, err := root.OpenRoot(run.String())
+	if err != nil {
+		return result, err
+	}
+	defer directory.Close()
+	opened, err := directory.Stat(".")
+	if err != nil || !os.SameFile(allocation, opened) {
+		return result, errors.New("intake directory changed")
+	}
+	var lease ports.StorageLease
+	defer func() {
+		if resultErr != nil {
+			current, cleanupErr := root.Lstat(run.String())
+			if cleanupErr == nil && os.SameFile(allocation, current) {
+				// Never recursively remove members whose completed ownership
+				// and last-use have not been established.
+				cleanupErr = root.Remove(run.String())
+				if cleanupErr == nil {
+					parent, err := root.Open(".")
+					cleanupErr = err
+					if err == nil {
+						cleanupErr = errors.Join(parent.Sync(), parent.Close())
+					}
+				}
+			} else {
+				cleanupErr = errors.Join(errors.New("intake cleanup ownership is unknown"), cleanupErr)
+			}
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				cleanupErr = lease.Abort(cleanupCtx)
+				cancel()
+			}
+			resultErr = errors.Join(resultErr, cleanupErr)
+			result = domain.AcquiredArtifact{}
+		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
+	}()
+	maximumBytes := uint64(len(bundleHeader) + 8*len(bundleLimits))
+	for _, limit := range bundleLimits {
+		maximumBytes += uint64(limit)
+	}
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: maximumBytes, Files: 1})
+		if err != nil {
+			return result, err
+		}
+	}
 	c.mu.Lock()
 	body := append([]byte(nil), c.prepared[key]...)
 	c.mu.Unlock()
@@ -149,28 +230,6 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 			return result, err
 		}
 	}
-	if err := os.MkdirAll(c.intakeRoot, 0o700); err != nil {
-		return result, err
-	}
-	root, err := openPrivateRoot(c.intakeRoot)
-	if err != nil {
-		return result, err
-	}
-	defer root.Close()
-	if err := root.Mkdir(run.String(), 0o700); err != nil {
-		return result, err
-	}
-	defer func() {
-		if resultErr != nil {
-			resultErr = errors.Join(resultErr, root.RemoveAll(run.String()))
-			result = domain.AcquiredArtifact{}
-		}
-	}()
-	directory, err := root.OpenRoot(run.String())
-	if err != nil {
-		return result, err
-	}
-	defer directory.Close()
 	file, err := directory.OpenFile("provider.bundle", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return result, err
@@ -181,7 +240,16 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 		return result, err
 	}
 	digest, _ := domain.NewSHA256Digest(sha256Hex(body))
-	return domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), digest, "intake:"+run.String()+":"+resolved.Identity().Variant(), uint64(len(body)), resolved.DeclaredIntegrity())
+	result, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), digest, "intake:"+run.String()+":"+resolved.Identity().Variant(), uint64(len(body)), resolved.DeclaredIntegrity())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	return result, nil
 }
 
 func (c *Client) download(ctx context.Context, endpoint string, limit int64) ([]byte, error) {

@@ -16,6 +16,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -268,7 +269,7 @@ func (b *PythonSdistBuilder) remove(containerID string) error {
 	return discardCommand(ctx, b.runner, "docker", "rm", "--force", containerID)
 }
 
-func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID string, source domain.AcquiredArtifact, filename string, recipe artifactpypi.SdistInspection, buildWheels []domain.AcquiredArtifact) (DerivedWheel, error) {
+func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID string, source domain.AcquiredArtifact, filename string, recipe artifactpypi.SdistInspection, buildWheels []domain.AcquiredArtifact) (derived DerivedWheel, resultErr error) {
 	output, ok := b.runner.(interface {
 		RunOutput(context.Context, io.Writer, string, ...string) error
 	})
@@ -283,16 +284,28 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	if runErr != nil {
 		return DerivedWheel{}, errors.New("source content handle is invalid")
 	}
-	directory := filepath.Join(b.introducer.intakeRoot, runID.String())
-	if _, existsErr := os.Lstat(filepath.Join(directory, "derived.whl")); existsErr == nil || !errors.Is(existsErr, os.ErrNotExist) {
-		return DerivedWheel{}, errors.New("derived wheel destination is unavailable")
-	}
-	temporary, err := os.OpenFile(filepath.Join(directory, ".derived-wheel.tmp"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	directory, err := os.OpenRoot(filepath.Join(b.introducer.intakeRoot, runID.String()))
 	if err != nil {
 		return DerivedWheel{}, err
 	}
-	temporaryPath := temporary.Name()
-	defer os.Remove(temporaryPath)
+	defer func() { resultErr = errors.Join(resultErr, directory.Close()) }()
+	if _, existsErr := directory.Lstat("derived.whl"); existsErr == nil || !errors.Is(existsErr, os.ErrNotExist) {
+		return DerivedWheel{}, errors.New("derived wheel destination is unavailable")
+	}
+	var lease ports.StorageLease
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: runID, Kind: "intake", Temporary: runID.String(), Target: runID.String(), Bytes: uint64(derivedWheelLimit) + uint64(len(filename)), Files: 2, Extend: true})
+		if err != nil {
+			return DerivedWheel{}, err
+		}
+		defer func() { resultErr = errors.Join(resultErr, lease.Close()) }()
+	}
+	temporary, err := directory.OpenFile(".derived-wheel.tmp", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return DerivedWheel{}, err
+	}
+	temporaryPath := ".derived-wheel.tmp"
+	defer directory.Remove(temporaryPath)
 	writer := &limitedFileWriter{writer: temporary, limit: derivedWheelLimit, hasher: sha256.New()}
 	err = output.RunOutput(ctx, writer, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonStreamFileScript, pythonDerivedPath+"/"+filename)...)
 	syncErr := temporary.Sync()
@@ -300,7 +313,7 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	if err != nil || writer.exceeded || syncErr != nil || closeErr != nil {
 		return DerivedWheel{}, errors.New("derived wheel output is invalid")
 	}
-	if err := os.Rename(temporaryPath, filepath.Join(directory, "derived.whl")); err != nil {
+	if err := directory.Rename(temporaryPath, "derived.whl"); err != nil {
 		return DerivedWheel{}, err
 	}
 	digest, err := domain.NewSHA256Digest(hex.EncodeToString(writer.hasher.Sum(nil)))
@@ -311,7 +324,12 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	if err != nil {
 		return DerivedWheel{}, err
 	}
-	if err := os.WriteFile(filepath.Join(directory, "derived-filename"), []byte(filename), 0o400); err != nil {
+	name, err := directory.OpenFile("derived-filename", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0400)
+	if err != nil {
+		return DerivedWheel{}, err
+	}
+	_, nameErr := name.WriteString(filename)
+	if err := errors.Join(nameErr, name.Sync(), name.Close()); err != nil {
 		return DerivedWheel{}, err
 	}
 	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, digest, "intake:"+runID.String()+":derived-wheel", uint64(writer.size), "sha256:"+digest.String())
@@ -323,6 +341,11 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 		requirementDigests = append(requirementDigests, wheel.Digest())
 	}
 	sort.Slice(requirementDigests, func(i, j int) bool { return requirementDigests[i].String() < requirementDigests[j].String() })
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return DerivedWheel{}, err
+		}
+	}
 	return DerivedWheel{Artifact: artifact, Filename: filename, SourceDigest: source.Digest(), BuildRequirementDigests: requirementDigests, BuildBackend: recipe.BuildBackend, BuildConfigSHA256: recipe.BuildConfigSHA256}, nil
 }
 

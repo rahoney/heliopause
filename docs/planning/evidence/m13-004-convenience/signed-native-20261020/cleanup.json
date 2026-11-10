@@ -1,0 +1,28 @@
+{
+  "completed_trial_resources": {
+    "containers_absent": true,
+    "dedicated_volume_absent": true,
+    "owned_labeled_images_absent": true,
+    "own_base_reference_absent": true,
+    "global_prune_used": false,
+    "force_used": false
+  },
+  "completed_files": {
+    "deleted_top_level_entries": 62,
+    "deleted_entries": 37051,
+    "regular_unique_logical_bytes": 1163651761,
+    "shared_paths_followed": false,
+    "payloads_and_observer_build_cache_removed": true
+  },
+  "host_preserved": {
+    "protected_identities_same": true,
+    "runtime_bundle_members_match_lock": 6,
+    "pod_init_matches": true,
+    "shared_runtime_images_preserved": 4
+  },
+  "remaining_local_environment": "retained through final docs/security only; final removal is owned by the raw receipt below",
+  "public_evidence_preserved": true,
+  "tag_refs_preserved": true,
+  "phase_at_capture": "completed native tests; final CI documentation checks not yet retired",
+  "last_environment_retirement_receipt": "docs/github-logs/self-update-signed-20261020/final-retained-environment-cleanup.json"
+}

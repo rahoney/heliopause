@@ -1,0 +1,172 @@
+{
+  "schema": "goal-reinforcement-local-checkpoint/v1",
+  "unit": "B04",
+  "base_commit": "05c1bfd00b8c9e291ebd83dc295832a09f50247d",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "NO",
+  "acceptance_closed": "NO",
+  "checks": [
+    {
+      "id": "b04-first-format",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-first-format.json",
+      "sha256": "c23e9d85d3692ab827a493202ad1858742ee27b11f5c8753bbb4f38caf7b447c",
+      "exit_code": 0,
+      "elapsed": 0.746,
+      "source_unchanged": false
+    },
+    {
+      "id": "b04-first-targeted",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-first-targeted.json",
+      "sha256": "8d176c415c5d0f6c08a0c20614a4ff6bf5d0a4ec9022216b1f3646182237cdb4",
+      "exit_code": 1,
+      "elapsed": 19.776,
+      "source_unchanged": true
+    },
+    {
+      "id": "b04-application-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-application-green.json",
+      "sha256": "e076597b36d452918e7cdff2c499cd76ab940eacc6986fbc6e2bda15b34674d4",
+      "exit_code": 0,
+      "elapsed": 1.41,
+      "source_unchanged": true
+    },
+    {
+      "id": "b04-default-init-build-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-default-init-build-v1.json",
+      "sha256": "3fd6842bbdd7ce42812494171effc48ba74a4c4f687edca68ee36c611182a38c",
+      "exit_code": 0,
+      "elapsed": 4.914,
+      "source_unchanged": true
+    },
+    {
+      "id": "b04-default-init-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-default-init-v1.json",
+      "sha256": "039dd558203ac2fde06410689b961eda99d8c08fe45c6fe232df56dde34f4684",
+      "exit_code": 0,
+      "seconds": 35.004,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b04-empty-lock-red",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-empty-lock-red.json",
+      "sha256": "8de4dc57a5081aadfe5ffd66c8083899f1f7cde7810c854a3b621d2e606576e6",
+      "exit_code": 1,
+      "elapsed": 1.048,
+      "source_unchanged": true
+    },
+    {
+      "id": "b04-final-format",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-final-format.json",
+      "sha256": "9d8315ece0c8858c24b5462352e648d40581279dc2b53f8446d8a613bcd0766a",
+      "exit_code": 0,
+      "elapsed": 0.734,
+      "source_unchanged": false
+    },
+    {
+      "id": "b04-terraform-race",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-terraform-race.json",
+      "sha256": "36fdd70d2b9d52ec32c9b4ab082fea1769aad5079ee24a98afebb0193b05a264",
+      "exit_code": 0,
+      "elapsed": 27.434,
+      "source_unchanged": true
+    },
+    {
+      "id": "b04-owned-clients-cleanup",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b04-owned-clients-cleanup.json",
+      "sha256": "96636516913c8206ef7563f012915f43ba713b7361559e5faa533fd1e088d5e1",
+      "deleted_bytes": 57363170
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/application/terraform.go",
+      "sha256": "abf1b399d0dfaa948275f64254d374f8969dc40144ee68625a60cfe354b2ab1f"
+    },
+    {
+      "path": "internal/application/terraform_upgrade_test.go",
+      "sha256": "e3a29fd20dd22b325e2cfeebf2abd83f978af5629e75adb6f84e620c9e828a8f"
+    },
+    {
+      "path": "internal/artifact/terraformprovider/project_resolver.go",
+      "sha256": "dcf884638cb42af06edf229274082a7c419a6f6379ddd92d9547869691725070"
+    },
+    {
+      "path": "internal/artifact/terraformprovider/project_upgrade_linux_test.go",
+      "sha256": "722b8699a88f80318c0dc60a5d87aa592442ddfc6da133d5b918bdfab3179b57"
+    },
+    {
+      "path": "internal/bootstrap/terraform.go",
+      "sha256": "c8f610d6d2d79730ebb207d0a3b75ba4283750484ecd4004cd7226adf72871d1"
+    },
+    {
+      "path": "internal/bootstrap/terraform_init_integration_linux_test.go",
+      "sha256": "c7a7a47fe70d153426943e81a8ceca8b356560d60a231213ab7ef258f7dcc1d7"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "6fddf4dd792d26c937a087f9cb1cb0eccf1f09852c21fca3cd74243cb06d0ae3"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "7b7763795af950382b5a43fc58da0c0fe1ec3568f30b728b5894769aaf59f357"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "4e82f3e499bf9cecef802cb84af189ab56ea7d6cffedd323aac6901018d6ed3c"
+    },
+    {
+      "path": "internal/cli/terraform_upgrade.go",
+      "sha256": "d108b8260cd57abd4433d5be9390f11ff898fd40ad73b0b5e92b193f40595137"
+    },
+    {
+      "path": "internal/cli/terraform_upgrade_test.go",
+      "sha256": "57ec608ac4f10b2499d9ed89bcb434ee9539990633f9ad13c8e228d59ebe24d8"
+    },
+    {
+      "path": "internal/promotion/terraform_approved_transaction.go",
+      "sha256": "437802fcd46b904eb049a21e77915859b407eb58ca15c24cc0ba21d4e600837c"
+    },
+    {
+      "path": "internal/promotion/terraform_transaction.go",
+      "sha256": "d6fb836818991f97a0a86a1542c42e8ce0c13c84641159cd14e4f91cd6973951"
+    },
+    {
+      "path": "internal/promotion/terraform_upgrade_test.go",
+      "sha256": "6e17c05ca92eeb4a5a2c3b5940940123d7d2757dad08840c39491cc5f69f6371"
+    }
+  ],
+  "actual_cases": {
+    "selection": "Structural first two-provider selection; newer available version does not change retained selection or lock formatting. Incompatible, empty and partial existing locks are refused before public requests.",
+    "workflow": "Existing guarded workflow; fresh complete independent-provider inspection, no fabricated primary, all guard/resolve/verify/inspect/stage/commit/close failure boundaries and each unsafe independent root covered.",
+    "public_cli": "Existing TestLinuxTerraformInitIntegration gains default-complete-project subcase. Actual official random3.7.2 and partner github6.6.0 first/retained two calls pass with required3 per provider, fresh runs, signed source/static/dynamic/Evidence/ALLOW/cache/atomic installation and public executable pins. Existing lock inode/mode preserved.",
+    "rollback": "Five first-install failure phases restore original providerless project and first cause. Existing explicit init and upgrade remain covered by targeted current regressions.",
+    "ci": "New subcase belongs to existing required Terraform CLI integration parent; no duplicate test pipeline/job or CI command added."
+  },
+  "verification_interpretation": {
+    "initial_target": "19.776s FAIL: application test redeclared err; other four targeted packages PASS. Test variable fixed; application targeted1.410s PASS. No production compile failure.",
+    "empty_lock": "New narrow negative1.048s FAIL confirms empty present lock caused six fake public requests before rejection. Presence-aware preflight corrects it; current four-package targeted Terraform/preflight/guard Race27.434s PASS.",
+    "actual_source": "Actual CLI35.004s precedes final empty-lock presence/nonempty-set fail-closed refinements. Current positive/negative structural/Race tests cover refinements; exact final-source grouped hosted acceptance remains open.",
+    "checks": "No B04 full/native/CPP or broad canonical rerun. Common canonical/security/hosted qualification is batched with following meaningful changes; prior B03 passing stages are not claimed for new B04 source."
+  },
+  "cleanup": {
+    "protected_test_copies": 2,
+    "deleted_bytes": 57363170,
+    "receipt": "docs/github-logs/goal-implementation-20261101/b04-owned-clients-cleanup.json",
+    "process_references": 0,
+    "query_errors": 0,
+    "shared_tools_retained": true
+  },
+  "missing": [
+    "Grouped canonical/static/security and hosted/four-profile/final exact-source qualification.",
+    "B06 and later reinforcement units; B01 Anyio plugin compatibility remains open."
+  ],
+  "runtime_lock_sha256": "e7c3032907570d508cf0dcdc3bb49b8d079b735b48bd855e900b605f13b4a0b1",
+  "runtime_maintenance_changed": false,
+  "ci_started": false,
+  "host_installation_changed": false,
+  "ai_generated_execution": "v2 DEFERRED"
+}

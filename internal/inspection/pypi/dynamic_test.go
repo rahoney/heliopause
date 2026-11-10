@@ -7,6 +7,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestDynamicInspectorUsesOnlyStaticImportNames(t *testing.T) {
@@ -33,7 +34,7 @@ func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
 	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true,
 		Surface: artifactpypi.RuntimeSurface{InstalledFiles: []artifactpypi.InstalledFile{{ArchivePath: "example-1.0.dist-info/METADATA", Scheme: artifactpypi.SchemeDistInfo, Destination: "example-1.0.dist-info/METADATA", Role: artifactpypi.RuntimeRoleMetadata}}}}
 	report, err := inspector.InspectWheel(context.Background(), artifact, static)
-	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
+	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import" || report.Evidence()[0].Kind() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 3 {
 		t.Fatalf("proven no-import report = %#v, %v; runner = %#v", report, err, runner)
 	}
 	static.NoImportSurface = false
@@ -90,7 +91,7 @@ func TestDynamicInspectorNormalizesFindingsAndBoundedSummary(t *testing.T) {
 		t.Fatal(err)
 	}
 	report, err := inspector.InspectWheel(context.Background(), artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
-	if err != nil || report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 1 {
+	if err != nil || report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 3 {
 		t.Fatalf("report = %#v, %v", report, err)
 	}
 	if summary := report.Evidence()[0].Summary(); !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":4`) {
@@ -185,7 +186,12 @@ func completedResultWithObservations(t *testing.T, observations []domain.Sandbox
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", observations)
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	states := []domain.SandboxEnvironmentState{}
+	for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+		states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
+	}
+	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", observations, states...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,4 +216,81 @@ func observation(t *testing.T, category domain.ObservationCategory, subject stri
 		t.Fatal(err)
 	}
 	return value
+}
+
+func TestPythonChecksBindConfiguredRootProfileBeforeExecution(t *testing.T) {
+	artifact := pypiWheelArtifact(t)
+	static, err := NewStaticInspector(t.TempDir(), artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	dynamic, err := NewDynamicInspector(&wheelRunner{result: completedResult(t)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seenStatic := map[domain.ContentDigest]bool{}
+	seenDynamic := map[domain.ContentDigest]bool{}
+	for _, name := range []string{"pypi", "cpu", "cu126", "cu130", "cu132"} {
+		selected := artifactpypi.PublicPyPIProfile()
+		if name != "pypi" {
+			var ok bool
+			selected, ok = artifactpypi.PyTorchProfile(name)
+			if !ok {
+				t.Fatal(name)
+			}
+		}
+		ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), selected)
+		if err != nil {
+			t.Fatal(err)
+		}
+		declaredStatic, err := static.ExpectedChecks(ctx, artifact, domain.CheckInspection)
+		if err != nil {
+			t.Fatal(err)
+		}
+		declaredDynamic, err := dynamic.ExpectedChecks(ctx, artifact, domain.CheckInspection)
+		if err != nil {
+			t.Fatal(err)
+		}
+		staticProfile, dynamicProfile := declaredStatic[0].ProfileDigest(), declaredDynamic[0].ProfileDigest()
+		if seenStatic[staticProfile] || seenDynamic[dynamicProfile] {
+			t.Fatal("different configured root lanes collapsed", name)
+		}
+		seenStatic[staticProfile] = true
+		seenDynamic[dynamicProfile] = true
+		report, err := dynamic.InspectWheel(ctx, artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
+		if err != nil || report.Execution().ProfileDigest() != dynamicProfile {
+			t.Fatal("actual execution differs from declaration", name, err)
+		}
+		oldDescriptor := runtimeidentity.PythonImageReference + "|" + pythonInspectionProfileDescriptor(ctx) + "|" + strings.TrimSuffix(dynamicEnvironmentDescriptor, "|"+runtimeidentity.SandboxResponderInspectionIdentity)
+		oldProfile, _ := domain.CheckProfileDigest("pypi-dynamic-environments-v3", oldDescriptor)
+		oldCheck, err := domain.NewCheckExecution(declaredDynamic[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", oldProfile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		run, _ := domain.NewRunID()
+		plan, err := domain.NewCheckPlan(run, artifact, declaredDynamic)
+		if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{oldCheck}) == nil {
+			t.Fatal("pre-responder approval accepted", name, err)
+		}
+	}
+}
+
+func TestDynamicInspectorRequiresTwoActiveEnvironmentStates(t *testing.T) {
+	full := completedResult(t)
+	for _, count := range []int{0, 1, 2} {
+		states := full.EnvironmentStates()[:count]
+		if count == 2 {
+			states[1].VFSOperationsCovered = false
+		}
+		result, err := domain.NewSandboxResult(full.SessionID(), domain.SandboxCompleted, "", nil, states...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inspector, _ := NewDynamicInspector(&wheelRunner{result: result})
+		report, err := inspector.InspectWheel(context.Background(), pypiWheelArtifact(t), artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
+		code, _ := report.Execution().LimitationCode()
+		if err != nil || report.Execution().Status() != domain.ExecutionIncomplete || code != "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE" || len(report.Evidence()) != 0 {
+			t.Fatalf("missing environment coverage accepted: count=%d err=%v", count, err)
+		}
+	}
 }

@@ -1,0 +1,81 @@
+{
+  "work_item": "M13-004/P7 final source qualification",
+  "status": "EXACT_SOURCE_FOUR_PROFILES_QUALIFIED_CURRENT_SUPPORT_CHECKPOINT_COMPLETE",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES (exact-source ordinary/CPU and3CUDA/current documented lanes)",
+  "ACCEPTANCE_CLOSED": "YES (original bounded P2..P7 functional scope via retained scoped evidence and CI446 followup); NO (M13 channels/publication)",
+  "MISSING": [
+    "M13-004 official channel names/publisher binding, channel implementation/qualification and new signed distribution/publication"
+  ],
+  "profiles": [
+    {
+      "receipt": "ci442-ordinary-cpu-qualification-20261031.json",
+      "profile": "ordinary/CPU",
+      "run_id": 41094467995,
+      "all10_success": true,
+      "qualified": true
+    },
+    {
+      "receipt": "p7-cu126-final-qualification-20261031.json",
+      "profile": "cu126",
+      "run_id": 41115499227,
+      "all10_success": true,
+      "qualified": true
+    },
+    {
+      "receipt": "p7-cu130-final-qualification-20261031.json",
+      "profile": "cu130",
+      "run_id": 41129501671,
+      "all10_success": true,
+      "qualified": true
+    },
+    {
+      "receipt": "p7-cu132-final-qualification-20261031.json",
+      "profile": "cu132",
+      "run_id": 41139233912,
+      "all10_success": true,
+      "qualified": true
+    }
+  ],
+  "ordinary_full_clients_required": true,
+  "cuda_only_does_not_replace_ordinary": true,
+  "limits": {
+    "whole_linux_minutes": 150,
+    "CPU_minutes": 15,
+    "selected_CUDA_minutes": 40,
+    "required_jobs": 10,
+    "max_selected_CUDA": 1
+  },
+  "first_failure_causes_not_claimed_fixed": [
+    "CI443 CPU Read/helper engine delay",
+    "CI443 Mac production deadline",
+    "CI444 Mac wholejob deadline and unavailable original log"
+  ],
+  "future_scope_not_closed": [
+    "stdin/TTY/generated-file export: separate acceptance outside initial stdout/stderr lane",
+    "arbitrary child/held pipe support: currently refused or incomplete, no new grant",
+    "official signed distribution assets",
+    "channel namespace/publisher binding and publication"
+  ],
+  "channel_name_choice": "PENDING owner choice after completed functional acceptance",
+  "new_profile_runs_required": false,
+  "current_checkpoint": {
+    "status": "COMPLETE",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES (current source/profile/support-record checkpoint only)",
+    "MISSING": [],
+    "checks": "p7-final-documentation-checks-20261031.json"
+  },
+  "documentation_checks": "p7-final-documentation-checks-20261031.json",
+  "no_active_CI_or_timer": true,
+  "next_owner_decision": "owner considering names; continue name-independent incomplete/unreviewed M13 review meanwhile",
+  "checkpoint_delivery": "local documentation-only commit4d7c6e3; not pushed separately to avoid docs-only CI",
+  "functional_followup": "COMPLETE original bounded client/runner scope; CI446 e3b2b70 ordinary all10/126parents/new app2/CLI3 and cleanup; ec1 four-profile receipt remains scoped to ec1",
+  "original_scope_boundary": "client09 does not promise all native option/runtime equivalence; explicit exclusions/separate extensions are not required missing implementation",
+  "functional_followup_receipt": "ci446-bun-declared-entry-hosted-qualification-20261031.json"
+}

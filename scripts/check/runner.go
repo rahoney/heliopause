@@ -221,7 +221,7 @@ func (c *checker) runProfile(profile string) error {
 	case "fuzz":
 		return c.runFuzz()
 	case "docs":
-		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
+		return c.runStep("documentation", c.checkDocs)
 	case "freshness":
 		return c.runStep("version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) })
 	case "qualification-freshness":
@@ -235,11 +235,22 @@ func (c *checker) runProfile(profile string) error {
 	}
 }
 
+// Hosted Intel macOS runners vary about twofold in speed; only Darwin gets the
+// user-approved wider build and default-test limits (2026-11-07).
+func darwinLimit(standard, darwin time.Duration) time.Duration {
+	if runtime.GOOS == "darwin" {
+		return darwin
+	}
+	return standard
+}
+
 func (c *checker) platformSteps() []checkStep {
 	return []checkStep{
-		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
+		{"production build", func() error {
+			return c.runGoWithTimeout("production build", darwinLimit(commandTimeout, 4*time.Minute), "build", "-v", "-trimpath", "./...")
+		}},
 		{"default test", func() error {
-			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+			return c.runDefaultTests()
 		}},
 	}
 }
@@ -251,7 +262,7 @@ func (c *checker) quickSteps() []checkStep {
 		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
 		checkStep{"Staticcheck", c.runStaticcheck},
 		checkStep{"default test", func() error {
-			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+			return c.runDefaultTests()
 		}},
 	)
 }
@@ -271,12 +282,12 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
-		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
-		{"test build validity", func() error { return c.runGo("test build validity", "test", "-run", "^$", "./...") }},
+		{"production build", func() error { return c.runGo("production build", "build", "-v", "-trimpath", "./...") }},
+		{"test build validity", func() error { return c.runGo("test build validity", "test", "-trimpath", "-run", "^$", "./...") }},
 		{"architecture", c.checkArchitecture},
 	}
 	if includeDocs {
-		steps = append(steps, checkStep{"documentation", func() error { return checkMarkdownTree(c.root) }})
+		steps = append(steps, checkStep{"documentation", c.checkDocs})
 	}
 	return steps
 }
@@ -326,6 +337,23 @@ func (c *checker) runCommand(step, executable string, args ...string) (string, e
 }
 
 func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, environment []string, executable string, args ...string) (string, error) {
+	output := boundedBuffer{limit: outputLimit}
+	return c.runCapturedCommand(step, timeout, environment, executable, &output, &output, output.String, args...)
+}
+
+func (c *checker) runDefaultTests() error {
+	output := newGoTestCapture(time.Now)
+	_, err := c.runCapturedCommand("default test", darwinLimit(6*time.Minute, 9*time.Minute), c.offlineEnvironment(), c.goExecutable,
+		output, goTestStderr{output}, output.String, "test", "-trimpath", "-json", "-timeout="+darwinLimit(5*time.Minute, 8*time.Minute).String(), "./...")
+	if err != nil && output.offlineMissing {
+		return &checkFailure{class: unavailable, step: "default test", detail: "offline module cache prerequisite is missing", cause: err}
+	}
+	return err
+}
+
+// Both capture modes retain this same executable, context, status and first
+// error owner. Test-event metadata cannot turn a failed process into success.
+func (c *checker) runCapturedCommand(step string, timeout time.Duration, environment []string, executable string, stdout, stderr io.Writer, captured func() string, args ...string) (string, error) {
 	if !filepath.IsAbs(executable) {
 		return "", &checkFailure{class: unavailable, step: step, detail: "executable path is not absolute"}
 	}
@@ -336,24 +364,33 @@ func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, envi
 	command := exec.CommandContext(ctx, executable, args...)
 	command.Dir = c.root
 	command.Env = environment
-	var output boundedBuffer
-	output.limit = outputLimit
-	command.Stdout = &output
-	command.Stderr = &output
+	command.Stdout = stdout
+	command.Stderr = stderr
 
 	err := command.Run()
+	output := captured()
 	if ctx.Err() != nil {
-		return output.String(), &checkFailure{class: executionFailure, step: step, detail: "command timed out", cause: ctx.Err()}
+		detail := "command timed out"
+		if state := command.ProcessState; state != nil {
+			detail += fmt.Sprintf("\n[command terminal available=true exited=%t success=%t exit_code=%d user_ms=%d system_ms=%d]",
+				state.Exited(), state.Success(), state.ExitCode(), state.UserTime().Milliseconds(), state.SystemTime().Milliseconds())
+		} else {
+			detail += "\n[command terminal available=false]"
+		}
+		if text := strings.TrimSpace(output); text != "" {
+			detail += "\n" + text
+		}
+		return output, &checkFailure{class: executionFailure, step: step, detail: detail, cause: ctx.Err()}
 	}
 	if err != nil {
 		detail := fmt.Sprintf("%s %s", executable, strings.Join(args, " "))
-		if text := strings.TrimSpace(output.String()); text != "" {
+		if text := strings.TrimSpace(output); text != "" {
 			detail += "\n" + text
 		}
-		return output.String(), &checkFailure{class: executionFailure, step: step, detail: detail, cause: err}
+		return output, &checkFailure{class: executionFailure, step: step, detail: detail, cause: err}
 	}
 
-	return output.String(), nil
+	return output, nil
 }
 
 func (c *checker) offlineEnvironment() []string {
@@ -435,4 +472,9 @@ func validateCorpusTestExecution(output string) error {
 		}
 	}
 	return nil
+}
+
+func (c *checker) checkDocs() error {
+	warnOversizedDocs(c.root, c.stdout)
+	return checkMarkdownTree(c.root)
 }

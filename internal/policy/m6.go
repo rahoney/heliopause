@@ -9,7 +9,12 @@ import (
 // M6 evaluates one standalone GitHub Release asset. Unsupported formats and
 // uncompleted required checks are reviewable; integrity and unsafe archive
 // findings are blocking.
+// M6PolicyVersion is injected into recorded ownership by the composition root.
+const M6PolicyVersion = 3
+
 type M6 struct{}
+
+func (M6) RequiresCheckPlan() bool { return true }
 
 func (M6) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision, error) {
 	if !set.Valid() || len(set.Graph().Nodes()) != 1 {
@@ -32,13 +37,22 @@ func (M6) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	if input.Verification().Outcome() == domain.VerificationMismatch {
 		return m6Decision(domain.DecisionBlock, "M6_INTEGRITY_MISMATCH")
 	}
+	reviewReason := ""
 	for _, finding := range input.Inspection().Findings() {
 		switch finding.Code() {
-		case "M6_FORMAT_UNSUPPORTED", "M6_FORMAT_NAME_MISMATCH", "M6_ELF_PLATFORM_UNSUPPORTED":
-			return m6Decision(domain.DecisionManualReview, finding.Code())
+		case "M6_FORMAT_UNSUPPORTED", "M6_FORMAT_NAME_MISMATCH", "M6_ELF_PLATFORM_UNSUPPORTED", "M13_SOURCE_REVIEW", "M13_BINARY_REVIEW":
+			if reviewReason == "" {
+				reviewReason = finding.Code()
+			}
 		default:
 			return m6Decision(domain.DecisionBlock, finding.Code())
 		}
+	}
+	if !input.CheckPlan().Valid() {
+		return m6Decision(domain.DecisionManualReview, "M6_CHECK_PLAN_UNDECLARED")
+	}
+	if reviewReason != "" {
+		return m6Decision(domain.DecisionManualReview, reviewReason)
 	}
 	for _, check := range append([]domain.CheckExecution{input.Verification().Execution()}, input.Inspection().Executions()...) {
 		if check.Required() && (check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted) {
@@ -57,5 +71,5 @@ func (M6) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 }
 
 func m6Decision(decision domain.Decision, reason string) (domain.PolicyDecision, error) {
-	return domain.NewPolicyDecision(decision, "m6-github-release", 1, []string{reason})
+	return domain.NewPolicyDecision(decision, "m6-github-release", M6PolicyVersion, []string{reason})
 }

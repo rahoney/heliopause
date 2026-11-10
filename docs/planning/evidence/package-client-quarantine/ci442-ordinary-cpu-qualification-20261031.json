@@ -1,0 +1,82 @@
+{
+  "work_item": "M13-004/P7 ordinary/CPU",
+  "status": "QUALIFIED_CURRENT_ORDINARY_CPU_SAME_SOURCE_CUDA_MATRIX_COMPLETE",
+  "run_id": 41094467995,
+  "run_number": 442,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41094467995",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "checkout": "581dc94f378e21d13c0847356824c5d1db508755",
+  "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "all10_success": true,
+  "full_source_log_proof": "docs/github-logs/package-client-quarantine-20261021/ci442-full-source-log-proof.json",
+  "decoded_log_bytes": 1422924,
+  "first8_reused_without_refetch": true,
+  "last2_fetched_once": true,
+  "linux": {
+    "started_at": "2026-10-30T16:57:05Z",
+    "completed_at": "2026-10-30T19:15:50Z",
+    "seconds": 8325.0,
+    "whole_job_limit_minutes": 150,
+    "unique_top_parents": 124,
+    "failures": 0,
+    "skips": 0,
+    "selected_parents": {
+      "TestBunPublicNativeResolverIntegration": "47.16s",
+      "TestBunActualNativeProjectSelectionBoundary": "25.01s",
+      "TestBunPublicProjectQuarantineIntegration": "46.01s",
+      "TestBunActualArtifactExecutionBoundary": "12.91s",
+      "TestBunPublicColdToolRunSelectionIntegration": "7.18s",
+      "TestBunPublicApprovedCacheIntegration": "39.71s",
+      "TestBunPublicProjectTransactionIntegration": "139.56s",
+      "TestBunProjectCLIIntegration": "168.44s",
+      "TestBunNativeOriginalIntegration": "115.15s",
+      "TestLinuxBunRunExecutionWorkflowIntegration": "47.19s",
+      "TestLinuxBunRunExecutionCLIIntegration": "132.76s",
+      "TestLinuxBunRunExecutionCLIRefusalIntegration": "38.02s",
+      "TestLinuxBunProgramExecutionBoundaryIntegration": "187.37s",
+      "TestLinuxBunProgramExecutionWorkflowIntegration": "48.82s",
+      "TestLinuxBunProgramExecutionCLIIntegration": "134.45s",
+      "TestLinuxPyTorchFullIntegration": "302.91s",
+      "TestLinuxPythonUVRunExecutionWorkflowIntegration": "98.97s",
+      "TestLinuxUVRunExecutionCLIIntegration": "300.66s",
+      "TestLinuxUVRunSupplementalExecutionCLIIntegration": "123.29s",
+      "TestUVPublicToolRunResolverIntegration": "42.01s",
+      "TestUVPublicToolRunSupplementalResolverIntegration": "47.68s"
+    },
+    "h1_single_full_cli_cases": 8,
+    "h2_single_full_cli_cases": 3,
+    "helper_reaped_wait0": 18,
+    "final_cleanup_reports": [
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=721887",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=722594",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=969677",
+      "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=985989"
+    ]
+  },
+  "cpp_scope": {
+    "local_CPP133_source_unchanged_reused": true,
+    "current_hosted_exact_helper_build": "SUCCESS",
+    "fresh_standalone_CPP133_log_count_not_inferred": true
+  },
+  "timer": {
+    "state": "COMPLETED",
+    "actual_queries": 7,
+    "next_due_at": null,
+    "host_process": "ORIGINAL_PROCESS_ABSENT",
+    "signal_sent": false,
+    "session_readback": "Unknown process id 75370; session already closed",
+    "exact_session_exit_code": null,
+    "limitation": "bridge printed worker output but did not retain the terminal exec metadata; do not claim a witnessed exit0",
+    "source_control_flow": "worker completion branch breaks after terminal GET, no next query scheduled",
+    "at": "2026-10-30T19:24:40.540573+00:00"
+  },
+  "previous_failure_disposition": "CI441 official120min timeout was addressed only by explicitly approved150min whole-job budget; this run completes138m45s. Current macOS/Corpus SUCCESS does not establish the historical lower causes.",
+  "same_source_final_profiles": {
+    "cpu": "PASS TestLinuxPyTorchFullIntegration302.91s",
+    "cu126": "QUALIFIED CI443 attempt2; p7-cu126-final-qualification-20261031.json",
+    "cu130": "QUALIFIED CI444 attempt2; p7-cu130-final-qualification-20261031.json",
+    "cu132": "QUALIFIED CI445; p7-cu132-final-qualification-20261031.json"
+  },
+  "whole_acceptance_closed": false,
+  "next": "current profile matrix and support/docs checkpoint complete; broader capability/channel acceptance remains open; no same-source rerun"
+}

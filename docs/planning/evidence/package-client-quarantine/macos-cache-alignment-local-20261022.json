@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "baseline": "344a93d6bbfe83c9e17166718484080d5e5ccb55",
+  "scope": "same-job ephemeral compiler cache/trimpath alignment; native macOS result still required",
+  "sources": [
+    {
+      "path": "scripts/check/runner.go",
+      "sha256": "9f7fb368a4ea4c639f071ef24c0f9bfaad0dc3dfec0606da8265b89da3f39009"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "ed0a3d40589edb6dd8cf7b86b5010f20ef5a3f5d8c21bc926374e3afe7e9a8e3"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "9886da95fdb567e5d5e949c3d8829c0bc0c570bd14934cece3c26787acade402"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper_test.go",
+      "sha256": "42eb5b726de668f7f3fa63bd6dae0a588a5e20005157be5a19a50365ec4f23e2"
+    },
+    {
+      "path": "internal/sandbox/collector_test.go",
+      "sha256": "ca0db775972776eea5d8b87eb02c2645dee091b3007bb9ad8f32b2b4efe56c42"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "5b3b6968af53fcabbeb3592659129eae27857d132226a8de47f954f57f5db513"
+    }
+  ],
+  "compiler_mechanism": {
+    "go": "1.26.10",
+    "platform": "local linux/amd64; not native macOS timing",
+    "results": [
+      {
+        "flags": [],
+        "package": "errors",
+        "build_id": "W3W5ogPMWgHPL2sm6vT3/xFT_bOb_17iyZ2qfrV_a",
+        "export_sha256": "6d0a76d4a3cfa7653f14f8818a06690e1956ea650d2ee2f347a8d2a0ea27e8bf",
+        "seconds": 0.148
+      },
+      {
+        "flags": [
+          "-trimpath"
+        ],
+        "package": "errors",
+        "build_id": "rGDHgKn85KpHzfn0gbtY/m5FD2925YbRzwnO3AGR_",
+        "export_sha256": "ea02a0bebb76bb5c7f14aa0c37db5d53f3f86eb8c94c533e7da8a395e28505d5",
+        "seconds": 0.124
+      }
+    ],
+    "same_build_id": false
+  },
+  "shared_dependencies": {
+    "go": "1.26.10",
+    "platform": "local linux/amd64 dependency structure; not native timing",
+    "checker_packages": 211,
+    "cli_packages": 700,
+    "common_packages": 205,
+    "common_sigstore_packages": []
+  },
+  "sdk_source": {
+    "path": "src/cmd/go/internal/work/exec.go",
+    "sha256": "7f3f0ddd8b29ca2cb5dcc7cca5396bc66bfb9f9e2d743b549eaf5555c943eae2"
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.955,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 124.093,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.587,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.23,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.712,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "platform",
+      "exit": 0,
+      "seconds": 16.417,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "targeted": [
+    {
+      "step": "race",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=2m",
+        "./scripts/check"
+      ],
+      "exit": 0,
+      "seconds": 36.76
+    },
+    {
+      "step": "darwin-compile",
+      "command": [
+        "test",
+        "-trimpath",
+        "-c",
+        "-o",
+        "/tmp/haa-uv-runtime-0_e6zmn4/tmp/macos-cache-check.test",
+        "./scripts/check"
+      ],
+      "exit": 0,
+      "seconds": 11.016,
+      "binary": {
+        "sha256": "b457707808675ccfef619d13e8bb5da04c5d1e2464e4eb7e3570baa6fd9f4e36",
+        "bytes": 12598304
+      }
+    }
+  ],
+  "cache_policy": {
+    "reuse": "same job, checkout, fixed SDK only",
+    "remote_actions_cache": false,
+    "setup_go_cache": false,
+    "new_prep_or_warmup_steps": false,
+    "test_selection_or_timeout_changed": false,
+    "source_fixture_comparisons_preserved": true
+  },
+  "cleanup": {
+    "files": 7,
+    "bytes": 12607903,
+    "root_references": 0,
+    "query_errors": 0,
+    "all_absent": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/macos-cache-completed-cleanup.json"
+  },
+  "native_baseline": {
+    "run_id": 39716854958,
+    "source": "9b0da57130ee2012bfe6bddf1fffa59ef15b9389",
+    "macos_build": "PASS,94.05s",
+    "macos_default_test": "FAIL,360s; packages47started/46finished/one active",
+    "cause": "UNCONFIRMED; cache input split established, not proof of every historical timeout cause",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci373-macos-failed.log"
+  },
+  "implemented": true,
+  "wired": true,
+  "qualified": "local canonical6, checker Race and Darwin compile only; platform run used existing local cache",
+  "acceptance_closed": false,
+  "missing": [
+    "new source actual native macOS build/default test",
+    "same-candidate Required and existing Linux/native UV consumers"
+  ]
+}

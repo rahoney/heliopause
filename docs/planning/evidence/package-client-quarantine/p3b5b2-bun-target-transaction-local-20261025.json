@@ -1,0 +1,140 @@
+{
+  "work_item": "M13-004/P3-B5b2",
+  "baseline": "74102c8",
+  "status": {
+    "IMPLEMENTED": "YES (typed Bun promotion/request-local guarded Application/bootstrap)",
+    "WIRED": "YES (shared target guard, native selection, fresh quarantine/Policy/cache/private copy, transaction, independent state)",
+    "QUALIFIED": "YES (named local managed scope)",
+    "ACCEPTANCE_CLOSED": "YES (local managed target transaction); NO (whole P3)",
+    "MISSING": [
+      "Bun add/install/update public CLI and native ownership handoff",
+      "explicit Bun runtime lane",
+      "whole support/affected profile and remote qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/core/domain/project_update.go",
+      "sha256": "4c00f6624cb7daafc97664c862556042d183b1d92f58494faa1275322aa30525",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/core/domain/project_update_test.go",
+      "sha256": "383037b33bc016f712471f3e174a2e99b08c71ad46e77f50d3432f7f49c2832e",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "sha256": "6ba589032fdbc1adaaea83d2174620ea5e29959998fb334d297ec5d86fe05615",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction_profile.go",
+      "sha256": "0036bbf10fbfe61402952d5acd8cafef6ba9cc552dbaf0791881eb6aab1114f7",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/pnpm_approved_transaction.go",
+      "sha256": "ad12692cf3d49b37b5271dcc6b1fc115e442d84c65d433feac8e1cb6821f1248",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/npm_transaction.go",
+      "sha256": "dc7e04d263ef9b992aaaffaf5fb7000bcaf4018a9ff61530bc8a8bc8233f4915",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_transaction.go",
+      "sha256": "c8ced96581ca6527440d3ff5b6a4f6053b8c4a05c2385a9fc4225f854f9c8ac6",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/promotion/bun_transaction_test.go",
+      "sha256": "eeedc070bdc55c2f5203b624484d912c4d1032736e5ab5d495e7f1b30cd308cc",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/application/bun_project.go",
+      "sha256": "1955b9f40fa52f5bd5093d8e7e19e0f4cee4fb9ab57da31437321507dc43a65a",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_project.go",
+      "sha256": "76bc9aeb9bba148671787e8a70ebd2ccfdb7974b4e54e2f62e212e8b53f8a87a",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_project_test.go",
+      "sha256": "e16ef99b2ea643c9577e8903e4e572df9d6f26a4d7ea787fcfdec6e7cce7f06c",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/bun_transaction_integration_test.go",
+      "sha256": "365066edb03cb7cd2ad2b1f3e44d08d908689ea4b912a9c7608f4de056f9f290",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b5b2-census-quick.json",
+      "exit": 0,
+      "seconds": 216.022,
+      "receipt_sha256": "dbb2e0cb7e8f4c2d0fbf15de73df11f67abc4101d2bbf8bfaaa54ad6db528933"
+    },
+    {
+      "receipt": "p3b5b2-census-security.json",
+      "exit": 0,
+      "seconds": 19.348,
+      "receipt_sha256": "9f1e18f0287da3354adbd25a0c90f78d54899f1610bc000ed25e7420ca279f12"
+    },
+    {
+      "receipt": "p3b5b2-census-docs.json",
+      "exit": 0,
+      "seconds": 0.307,
+      "receipt_sha256": "0ab57ddd1d88223b4f72ee8af385e510eb92b133a55eace25a4fe59801523295"
+    },
+    {
+      "receipt": "p3b5b2-transaction-full-race.json",
+      "exit": 0,
+      "seconds": 231.114,
+      "receipt_sha256": "24ca0d4d442e1fc73df6ab38607b80d3a428e3008b6be7cfca412f41d2dab321"
+    },
+    {
+      "receipt": "p3b5b2-bun-transaction-v2-result.json",
+      "exit": 0,
+      "seconds": 335.161,
+      "receipt_sha256": "260d7401c7588b4b668d132b62459aaa09ec451a597693c627390f7248621740"
+    }
+  ],
+  "reuse": {
+    "receipt": "p3b5b2-transaction-mechanical-reuse.json",
+    "eight_existing_owner_transaction_bodies_normalized_identical": true,
+    "engine": "existing PNPM owning guard/profile and npm backup/publish/rollback; two closed client choices; PNPM present-only constructors and original proof behavior retained"
+  },
+  "actual": {
+    "seconds": 335.161,
+    "tests_seconds": {
+      "Bun": 176.12,
+      "PNPM": 156.24
+    },
+    "each_client_cases": [
+      "single install and repeat fresh no-op",
+      "single add6\u21927 and selected update",
+      "peer4 install and repeat fresh no-op",
+      "explicit empty install and repeat fresh no-op"
+    ],
+    "Bun": "all8 actual operations use new operation, nonempty repeated inspection run IDs are fresh; published control mode/inode and payload no-op inode retained; absent lock stays absent; independent state/current Policy/full operation records/user notes preserved; root script NOT_EXECUTED",
+    "PNPM": "same original production transaction integration retained",
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL",
+    "native_adoption": "NOT_SUPPORTED in this new Bun constructor"
+  },
+  "first_failures": {
+    "receipt": "p3b5b2-first-failures-assessment.json",
+    "compile": "first Quick42.633s unused test import; meaningful empty-state regression uses JSON reader",
+    "actual": "v1 failed43.340s on fresh no-op payload inode, later cases NOT_EXECUTED; helperwait0/Host unchanged",
+    "RED": "same approved payload with different bound layout6.788s FAIL at intended inode assertion",
+    "GREEN": "complete approved Host census equality6.587s PASS; original acquired handle binding stays in layout digest"
+  },
+  "scope": "Node-compatible npm lifecycle lane; actual task-owned targets only, no Host native runtime activation; local later source is outside frozen CI4127544; no new push/CI"
+}

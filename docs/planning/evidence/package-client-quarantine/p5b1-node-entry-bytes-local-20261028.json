@@ -1,0 +1,98 @@
+{
+  "scope": "P5-B1 immutable selected bin bytes / closed Node entrypoint declaration only",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO (P5 application/run/CLI consumer absent)",
+    "QUALIFIED": "YES (named local API/tests)",
+    "ACCEPTANCE_CLOSED": "YES (B1 value only); NO (whole P5)"
+  },
+  "source_base": "6dd313660bc2e0f9f68b5718568070be92bdb32b",
+  "prior1283_source_unchanged_each": true,
+  "current_source_files_each": 1285,
+  "new_source": [
+    {
+      "path": "internal/artifact/npm/node_execution_entry.go",
+      "sha256": "a5fcccbe80a53636ac12c95ca1314367b42c07e41e43053202aaae41df2b7667",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/npm/node_execution_entry_test.go",
+      "sha256": "edc10fab027b7e5ebce5fd655c3153ce953a3235cc3a1662000f1b46fd2f6078",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 256.332
+    },
+    {
+      "step": "npm-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/npm"
+      ],
+      "exit_code": 0,
+      "seconds": 49.546
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.379
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.967
+    }
+  ],
+  "existing_owners_reused": [
+    "ExecutionEntry/ArchiveInventory",
+    "pnpmNodeBinTarget",
+    "ArchiveFileLimit20MiB"
+  ],
+  "proof": [
+    "bounded copy before SHA256/size validation",
+    "original full inventory binding retained",
+    "existing closed shebang/JS extension rules",
+    "caller/returned byte mutations do not alter retained bytes",
+    "changed/truncated/extra/oversize bytes and wrong interpreter/options/zero binding rejected",
+    "empty JS supported only with matching original size/digest"
+  ],
+  "first_architecture_failure": {
+    "quick_seconds": 43.383,
+    "scope": "unadopted new npm->runtimeidentity import; not pre-existing production failure",
+    "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p5-node-first-",
+    "correction": "remove disallowed product import; retain Node facts only; exact runtime binding belongs in composition execution context; architecture allowlist unchanged"
+  },
+  "runtime_pin_binding": "MISSING (B2); type declares Node interpreter, not runtime provisioning or authority",
+  "no_host_file_open_or_execution": true,
+  "ci423_payload_excludes_this_source": true,
+  "missing": [
+    "full graph/argv/runtime/source-policy execution context",
+    "fresh current whole inspection/Evidence/Policy binding",
+    "staging/fresh sandbox run/output/exit/cancel/cleanup",
+    "CLI/npx and whole P5 actual qualification"
+  ]
+}

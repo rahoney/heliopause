@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-22 08:47:25 UTC",
+  "run_id": 39742380565,
+  "source_commit": "8ec8de707c1b3a5f452edfb9a40d4f8e15db8354",
+  "checkout": "334918feb4acad6d3471f83dfc35e7c12d6dd960",
+  "tree": "5ffc240b80eb079de99fe404c1e4e486f1a29514",
+  "jobs": [
+    {
+      "id": 119702508255,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508383,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508419,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508494,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508533,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508538,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508545,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508550,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119702508599,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119720205905,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/39742380565",
+  "conclusion": "success",
+  "source_and_checkout_tree_equal": true,
+  "scope": "C3b empty-existing-venv UV install actual CLI qualification; whole P1 install/upgrade/sync still open",
+  "compiler": "go1.26.10",
+  "uv_install": {
+    "test": "TestLinuxUVInstallCLIIntegration",
+    "seconds": 25.5,
+    "operation": "INSTALL",
+    "status": "COMPLETED",
+    "promotion": "COMPLETED",
+    "entries": 1,
+    "solver_runtime": "uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "nonempty_repeat": "REFUSED before selection; target and Evidence unchanged"
+  },
+  "public_uv": {
+    "seconds": 20.05,
+    "idna_nodes": 1,
+    "requests_nodes": 5,
+    "requests_edges": 4
+  },
+  "linux": {
+    "top_level_passed": 50,
+    "cpu_full_seconds": 283.72,
+    "helper_reaped_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED"
+  },
+  "macos": {
+    "native_platform": "darwin/amd64",
+    "conclusion": "success",
+    "compiler": "go1.26.10"
+  },
+  "vulnerability": {
+    "conclusion": "success",
+    "compiler": "go1.26.10",
+    "meaning": "current canonical reachable-vulnerability gate passed; no suppression or universal absence claim"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci377-linux.log",
+      "sha256": "bdc077e7ae1d65bbec971a3491b278b66d39236ab5ca7a3cebce244dcf32a4f1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci377-macos.log",
+      "sha256": "c0d0ec8c59923f63bdb3343dc2b24e4423a435b126ca6f14e39c473b52d7ed0d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci377-vulnerability.log",
+      "sha256": "cd64b8970e01e432e5beaf94a4d79b1f083f4bf0e26c00362f7514e7730caee1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci377-final-jobs.json",
+      "sha256": "0e377cf276395a76826c5be0da34b2ca71017755b9419df5386ebf80176ab1f6"
+    }
+  ],
+  "implemented": true,
+  "wired": true,
+  "qualified": true,
+  "acceptance_closed": "YES for C3b empty-venv installation only",
+  "missing": [
+    "installed-aware UV install/upgrade and native ownership",
+    "complete/multi-root/empty sync; full P1 qualification"
+  ],
+  "not_in_scope": [
+    "CUDA full qualification of this exact candidate",
+    "existing Host/preview activation",
+    "Go1.27.3 adoption"
+  ]
+}

@@ -113,7 +113,7 @@ func TestCargoBuildApplicationPublishesOnlyRecordedBoundApproval(t *testing.T) {
 			}
 			result, published, err := service.Build(context.Background(), install, "default")
 			if mode == "normal" {
-				if err != nil || !published.Valid() || result.Status() != domain.OperationCompleted || len(result.Checks()) != 2 || len(result.Evidence()) != 3 {
+				if err != nil || !published.Valid() || result.Status() != domain.OperationCompleted || len(result.Checks()) != 2 || len(result.Evidence()) != 5 {
 					t.Fatalf("normal guarded output: %v", err)
 				}
 				body, err := os.ReadFile(filepath.Join(project, published.RelativeDirectory(), "program"))

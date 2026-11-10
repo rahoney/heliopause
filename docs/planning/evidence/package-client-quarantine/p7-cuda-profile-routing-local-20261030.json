@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P7-A",
+  "status": "NAMED_LOCAL_QUALIFIED_EXPLICIT_CUDA_MANUAL_DISPATCH_ONLY",
+  "source_base": "684a6df3a2b6689354abdf100a05de1eff4d37c3",
+  "baseline": "p7-final-profile-baseline-20261030.md",
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "bb27d53daf23bc82751c3d9a90fff2b2f07ad9364c64a1e2a2836dec07c986fe"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "16dbf62a4ad65defe0601d0e4fe5669b221e5177094041199807ef6c4ab13713"
+    },
+    {
+      "path": "scripts/check/pytorch_qualification_test.go",
+      "sha256": "ebf3998e1b83942f15f690a068ca3f3b79567da9725749b54e4650009d0fc17c"
+    },
+    {
+      "path": "scripts/check/kernel_terminal_workflow.go",
+      "sha256": "640e51478325a06d7cb0fce3b3cdaa7402f99d138043b0f1ab75c268e02660b9"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "7ca277f91c6fbedbd3c9b817cc62424b985eb019c6a47e3eda9078bd90d3f199"
+    },
+    {
+      "path": "scripts/check/kernel_terminal_workflow_test.go",
+      "sha256": "1decf2c734ff7ca695acdd265bf23e4b990ac07c7abb55076d380c5d3d6c513d"
+    }
+  ],
+  "audit": {
+    "existing_CPU_CUDA_probe_implementation_reused": true,
+    "existing_closed_profile_inputs_unchanged": true,
+    "ordinary_existing_commands_preserved_in_order": true,
+    "product_and_observer_source_diff": 0,
+    "workflow_added_lines": 19,
+    "new_CI_jobs_helpers_or_protocol": 0
+  },
+  "boundary": {
+    "ordinary": "All existing consumers plus G3 new3; expected122 parents/CPP133/Required10",
+    "CUDA_manual": "Explicit workflow_dispatch with one selected boolean only; common protected setup/runtime checks and CPU+selected CUDA full; unrelated clients require separate same-source ordinary qualification",
+    "all_four_same_source_results_required_before_whole_acceptance": true,
+    "Linux_job_minutes": 120,
+    "CUDA_full_test_minutes": 40,
+    "source_Runtime_Core_Policy_or_product_budgets_changed": false,
+    "scope_step_override": "REJECTED",
+    "CPU_augmentation": "NONE",
+    "CUDA_existing_plan": "cuda-bindings-numpy",
+    "CUDA_existing_not_attested_module": "triton.profiler.viewer"
+  },
+  "cheap": [
+    {
+      "name": "format",
+      "exit_code": 0,
+      "seconds": 0.73
+    },
+    {
+      "name": "workflow",
+      "exit_code": 0,
+      "seconds": 1.89
+    },
+    {
+      "name": "focused",
+      "exit_code": 0,
+      "seconds": 14.583
+    }
+  ],
+  "grouped_checks": [
+    {
+      "name": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 63.797
+    },
+    {
+      "name": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./scripts/check",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 84.552
+    }
+  ],
+  "strict_qualification_freshness": {
+    "command": [
+      "go",
+      "run",
+      "./scripts/check",
+      "qualification-freshness"
+    ],
+    "exit_code": 0,
+    "seconds": 0.141
+  },
+  "first_failures": [
+    {
+      "scope": "cheap workflow",
+      "seconds": 0.176,
+      "reason": "Two existing exact qualification owners had not included the new closed guard; corrected same prefix, no weakening",
+      "raw": "p7-cuda-routing-first-v1"
+    },
+    {
+      "scope": "first Quick",
+      "seconds": 72.365,
+      "reason": "Existing actual Bash fixture omitted new required job env; added ordinary=false; original0/37 and bad cohort denials retained",
+      "raw": "p7-first-quick-profile-input"
+    }
+  ],
+  "documentation_security_evidence": "docs/github-logs/package-client-quarantine-20261021/p7-final-checks/documentation-security-checks.json",
+  "active_CI": "NONE; CI440 ended FAILURE/worker natural0/next none",
+  "CI440_first_failure_disposition": "See ci440-go-proxy-first-failure-20261030.json; existing current real Go41 get/download PASS196.03s with no Go/HTTP/retry changes; historical cause remains UNKNOWN",
+  "still_open": [
+    "one new grouped source ordinary hosted run",
+    "same frozen source cu126/cu130/cu132 actual selected qualification",
+    "supported command/options matrix, remaining gaps and final handoff",
+    "Bun-only automatic entry/native general equivalence and whole M13 release/channel scope are not newly completed"
+  ]
+}

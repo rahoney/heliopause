@@ -31,10 +31,6 @@ const (
 	canonicalRunscPodInitConfigArg = "--pod-init-config=/etc/heliopause/pod-init.json"
 )
 
-var (
-	minimumDockerEngine = runtimeidentity.DockerMinimumEngine
-)
-
 // Config is trusted installation configuration, not user request data. Paths
 // are absolute and the Docker endpoint must use a local Unix socket.
 type Config struct {
@@ -173,7 +169,7 @@ func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Exe
 
 func (e *Executor) validateDaemon(ctx context.Context) error {
 	version, err := e.output(ctx, "docker", "version", "--format", "{{.Server.Version}}")
-	if err != nil || !atLeastVersion(strings.TrimSpace(string(version)), minimumDockerEngine) {
+	if err != nil || !runtimeidentity.DockerEngineSupported(strings.TrimSpace(string(version))) {
 		return errors.New("local Docker daemon version is unavailable or unsupported")
 	}
 	registration, err := e.output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
@@ -265,6 +261,28 @@ func (e *Executor) RunOutput(ctx context.Context, output io.Writer, name string,
 	return command.Run()
 }
 
+// RunOutputStreams keeps data and diagnostics separate through the existing
+// validated executable, endpoint and minimal-environment boundary. Consumers
+// own the bounds and lifetime of both writers.
+func (e *Executor) RunOutputStreams(ctx context.Context, output, diagnostic io.Writer, name string, arguments ...string) error {
+	command, err := e.command(ctx, name, arguments...)
+	if err != nil {
+		return err
+	}
+	command.Stdout, command.Stderr = output, diagnostic
+	return command.Run()
+}
+
+// StartContainerInputOutput carries only the guest init responder control channel.
+func (e *Executor) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	command, err := e.command(ctx, "docker", "start", "--attach", "--interactive", "--", id)
+	if err != nil {
+		return err
+	}
+	command.Stdin, command.Stdout = input, output
+	return command.Run()
+}
+
 // RunDiscard executes while discarding both bounded diagnostic streams.
 func (e *Executor) RunDiscard(ctx context.Context, name string, arguments ...string) error {
 	command, err := e.command(ctx, name, arguments...)
@@ -316,7 +334,7 @@ func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error 
 	if err != nil {
 		return err
 	}
-	if _, err := command.CombinedOutput(); err != nil {
+	if err := command.Run(); err != nil {
 		return errors.New("trusted Docker command failed")
 	}
 	return nil
@@ -666,15 +684,4 @@ func firstExisting(paths ...string) string {
 		}
 	}
 	return ""
-}
-
-func atLeastVersion(actual, minimum string) bool {
-	var a, b, c, x, y, z int
-	if _, err := fmt.Sscanf(actual, "%d.%d.%d", &a, &b, &c); err != nil {
-		return false
-	}
-	if _, err := fmt.Sscanf(minimum, "%d.%d.%d", &x, &y, &z); err != nil {
-		return false
-	}
-	return a > x || a == x && (b > y || b == y && c >= z)
 }

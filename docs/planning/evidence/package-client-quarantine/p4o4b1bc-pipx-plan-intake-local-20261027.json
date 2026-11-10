@@ -1,0 +1,393 @@
+{
+  "scope": "P4-O4-B1b/c immutable static ZIP plan and controlled intake binding; runtime completion remains open",
+  "baseline": "294b70b",
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.676
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 44.492
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/inspection/githubrelease",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 39.114
+    },
+    {
+      "step": "actual",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-run",
+        "^TestPipxRuntime(ZIPActual|InputActual)",
+        "-v",
+        "./internal/artifact/pypi",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 0.895
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.27
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.769
+    }
+  ],
+  "prior_static_plan_checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.709
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestPipxRuntimePlan",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 2.786
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 36.493
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 9.334
+    },
+    {
+      "step": "actual",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-run",
+        "^TestPipxRuntimeZIPActual",
+        "-v",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 2.703
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.247
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.357
+    }
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_plan.go",
+      "sha256": "59a396ce6b52b29a8b18379f438776e6b75aac7d908dea878ab938447c854da3"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_plan_test.go",
+      "sha256": "a3dba28e152c7d5377de15e6e4fb73be901019f0fc27d19a8a6f3533e6ccef94"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip_realcorpus_test.go",
+      "sha256": "e1f5f5390721b0cd47b8fa3bd76a04badf29ef7f1f724ebb56167a7ddd3a4664"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_input.go",
+      "sha256": "ef18e05b59ea3e3b2cf35e151746decd605af22eea2ddb5fcc51a3d4d4ca7f07"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_input_test.go",
+      "sha256": "50b24cd1c313c2e9f61b2cea6e6b9c5cb6c2dbf4aa15e2bcbd6c8a22dc8d3d34"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_input_realcorpus_test.go",
+      "sha256": "5cdd754a73d9f6706c4915f3271b7e4b7f110231a05bda7e1fdf9ec9b9efbe89"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "22aeca696c8dfdcc253003fa336bd63d1052c28a2129e5d9d303393205f9e042"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "ca8344f2db44ce7e7ff04ea605dfda8a6b9833746a8b683a2c77e413245e34be"
+    }
+  ],
+  "actual_static": {
+    "bytes": 2505814,
+    "files": 190,
+    "distributions": 7,
+    "required_units": 9,
+    "post_install_command_units": 3,
+    "original_HAA_identity_handle_preserved": true,
+    "fixture_HAA_version": "v9.8.7 synthetic; not a signed HAA release qualification",
+    "growth_during_read_refused_at_selected_size_plus_one": true,
+    "inflight_cancellation_preserved": true,
+    "post_read_mutation_isolated": true
+  },
+  "runtime_diagnostic": {
+    "scope": "fixed Python runc import diagnostic only; not gVisor, external observer, Policy or inspection completion",
+    "image_id": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191",
+    "results": [
+      {
+        "step": "loader",
+        "module": "pipx.__main__",
+        "cli_exit": 0,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-27T12:40:35.520937786Z",
+          "FinishedAt": "2026-10-27T12:40:36.504280829Z"
+        },
+        "seconds": 1.208
+      },
+      {
+        "step": "platformdirs",
+        "module": "platformdirs",
+        "cli_exit": 0,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-27T12:40:36.904143262Z",
+          "FinishedAt": "2026-10-27T12:40:37.248258262Z"
+        },
+        "seconds": 0.495
+      },
+      {
+        "step": "plugin",
+        "module": "platformdirs.pytest_plugin",
+        "cli_exit": 1,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 1,
+          "Error": "",
+          "StartedAt": "2026-10-27T12:40:37.581665909Z",
+          "FinishedAt": "2026-10-27T12:40:38.02074117Z"
+        },
+        "seconds": 0.6
+      }
+    ],
+    "failure": null,
+    "host_unchanged": true,
+    "input_unchanged": true
+  },
+  "runtime_diagnostic_inventory": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-import-diagnostic/inventory.json",
+  "first_failures": [
+    {
+      "scope": "B1b Quick",
+      "seconds": 230.844,
+      "cause": "new synthetic WHEEL omitted Root-Is-Purelib; fixture override added before RECORD construction",
+      "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-first-"
+    },
+    {
+      "scope": "B1c Quick",
+      "seconds": 34.181,
+      "cause": "SA1012 rejected literal nil Context in new test; invalid call removed without changing guard/lint",
+      "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-first-"
+    }
+  ],
+  "user_decision": {
+    "approved": "retain required coverage; explicitly add pytest and its dependencies to the fixed runtime supply and qualify the new bytes",
+    "not_approved": [
+      "runtime-driven dependency addition",
+      "optional downgrade of plugin coverage",
+      "reuse of old ZIP qualification for new supply"
+    ]
+  },
+  "missing": [
+    "explicit expanded runtime supply and whole authentication/owner/maintenance qualification",
+    "external observer/backend and required release composite",
+    "release complete set and native pipx/CLI/final profiles"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-focused.log",
+      "bytes": 65,
+      "sha256": "8676abdaa23558bab5df46a9a33fd5c99f9e822014929ffe83b30408f729f6e2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-quick.log",
+      "bytes": 1354,
+      "sha256": "c70b881af74acbe5e7de8cb8412becb2347149551df3c99daeb6e930370126e3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-race.log",
+      "bytes": 65,
+      "sha256": "02d402c2a01e48d3063807db3394da4af27ab4f704dcb975c62910c9c576a8cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-actual.log",
+      "bytes": 1562,
+      "sha256": "e138df31281f5d505c7bec8d4c098f038c2da26453c98c49f12916a043c8f92d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-checks.json",
+      "bytes": 1311,
+      "sha256": "df85cfce4383edc78a2233f27b237d5a9758b934fea6f28ffc195f1863e66f5b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1b-v2-source.json",
+      "bytes": 470,
+      "sha256": "59885785511b65c48f1604d9db30f5ccbea46853d9e7c48ab6e4eec34ab49a77"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-quick.log",
+      "bytes": 1354,
+      "sha256": "0fa18d6da0e4c726e76dcca6b212d2ed18dbc706582f1aa0bee51ab5d9aad031"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-race.log",
+      "bytes": 198,
+      "sha256": "f567a7fc64d9003db2a5c864cde16cc987af4e1929e8869ae94d94d24623256b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-actual.log",
+      "bytes": 2357,
+      "sha256": "5c82935760a9842ec0526efba278f2a2bb61dd429cb9fff939843878bdb9c6d2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-checks.json",
+      "bytes": 1221,
+      "sha256": "372314901c4e38f6a2365d041e63df13cf3e63e84ece7bc1cf8879752e1c24fe"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1c-v2-source.json",
+      "bytes": 1249,
+      "sha256": "d6a8a949e47268777bab01718645092530f36b04b505b4f2ae977ed60320a56e"
+    }
+  ]
+}

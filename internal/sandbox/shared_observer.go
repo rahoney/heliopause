@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // SharedObserver receives only the helper's normalized records over a trusted
@@ -62,6 +64,42 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case pythonExecutionProfile:
+		return pythonClosureExpectedTopology("pypi-wheel", pythonClosureObservation)
+	case nodeExecutionProfile:
+		return nodeExecutionInputExpectedTopology(true)
+	case bunExecutionProfile:
+		return bunExecutionExpectedTopology()
+	case sourceAnalysisProfile:
+		supply := observerMountExpectation{semgrepRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		source := observerMountExpectation{sourceAnalysisRoot, "workspace", "/", "9p", true, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, supply, source}, true
+	case pipxObserverProfile:
+		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, data}, true
+	case pipxNativeResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		data := observerMountExpectation{pipxRuntimeRoot, "workspace", "/", "9p", true, false, false, false}
+		wheels := observerMountExpectation{pipxNativeWheels, "workspace", "/", "9p", true, false, false, false}
+		site := observerMountExpectation{pythonSitePath, "workspace", "/", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, runtime, data, wheels, site}, true
+	case bunProjectResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		project := observerMountExpectation{bunProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, project, runtime}, true
+	case bunResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		return []observerMountExpectation{root, tmp, runtime}, true
+	case pnpmResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		project := observerMountExpectation{pnpmProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, project, runtime}, true
+	case uvResolverProfile:
+		// Named tmpfs is separately verified on the Host and exposed as 9p by
+		// the pinned runtime. Guest flags do not assert its Host tmpfs flags.
+		runtime.FSType, runtime.NoSUID = "9p", false
+		site := observerMountExpectation{"/haa-site", "workspace", "/", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, site, runtime}, true
 	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver", "cargo-build":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
@@ -78,9 +116,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 type pythonClosurePhase string
 
 const (
-	pythonClosurePreparation pythonClosurePhase = "PREPARATION"
-	pythonClosureAnchor      pythonClosurePhase = "ANCHOR"
-	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
+	pythonClosurePreparation            pythonClosurePhase = "PREPARATION"
+	pythonClosureAnchor                 pythonClosurePhase = "ANCHOR"
+	pythonClosureObservation            pythonClosurePhase = "OBSERVATION"
+	pythonClosureEnvironmentPreparation pythonClosurePhase = "ENVIRONMENT_PREPARATION"
+	pythonClosureEnvironmentAnchor      pythonClosurePhase = "ENVIRONMENT_ANCHOR"
+	pythonClosureEnvironmentObservation pythonClosurePhase = "ENVIRONMENT_OBSERVATION"
 )
 
 // observationTraceLedger is shared by every phase of one observation
@@ -93,12 +134,12 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
-// The Go build ledger aggregates preparation and compiler streams, including
-// counted workspace summaries. This does not increase physical collector limits.
-const maximumGoBuildLedgerEvents = 20000
+// Both required Go environments share this one preparation/compiler/keeper
+// ledger, including counted summaries. Physical collector limits are unchanged.
+const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != goBuildProfile && profile != cargoBuildProfile {
+	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != sourceAnalysisProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)
@@ -107,6 +148,9 @@ func newObservationTraceLedger(profile string) (*observationTraceLedger, error) 
 	}
 
 	maxEvents := uint64(budget.events)
+	if profile == "npm-lifecycle" {
+		maxEvents = ports.NPMEnvironmentTraceEventLimit
+	}
 	if profile == goBuildProfile {
 		maxEvents = maximumGoBuildLedgerEvents
 	}
@@ -183,17 +227,38 @@ func pythonClosureExpectedTopology(profile string, phase pythonClosurePhase) ([]
 	if !ok {
 		return nil, false
 	}
-	readOnly := phase == pythonClosureAnchor || phase == pythonClosureObservation
-	if phase != pythonClosurePreparation && !readOnly {
+	var readOnly bool
+	switch phase {
+	case pythonClosurePreparation, pythonClosureEnvironmentPreparation:
+	case pythonClosureAnchor, pythonClosureObservation, pythonClosureEnvironmentAnchor, pythonClosureEnvironmentObservation:
+		readOnly = true
+	default:
 		return nil, false
 	}
-	for index := range base {
-		if base[index].Mountpoint == pythonSitePath {
-			base[index] = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
-			return base, true
+	result := make([]observerMountExpectation, 0, len(base)+2)
+	site := false
+	for _, mount := range base {
+		if mount.Mountpoint == pythonSitePath {
+			site = true
+			if phase == pythonClosureEnvironmentAnchor {
+				continue
+			}
+			mount = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
+		}
+		if mount.Mountpoint == environmentWorkspaceRoot && (phase == pythonClosureEnvironmentAnchor || phase == pythonClosureEnvironmentObservation) {
+			mount = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", phase == pythonClosureEnvironmentAnchor, true, true, false}
+		}
+		result = append(result, mount)
+	}
+	if !site {
+		return nil, false
+	}
+	if phase == pythonClosureEnvironmentPreparation {
+		for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+			result = append(result, observerMountExpectation{pythonEnvironmentPreparationPrefix + string(kind), "workspace", environmentWorkspaceRoot, "9p", false, false, false, false})
 		}
 	}
-	return nil, false
+	return result, true
 }
 
 func isPythonObserverProfile(profile string) bool {
@@ -253,6 +318,18 @@ const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 // exposing any test seam outside this package.
 var observerControlEndpoint = ObserverControlEndpoint
 
+func (d *FaultOutsideDiagnostic) UnmarshalJSON(payload []byte) error {
+	type compact FaultOutsideDiagnostic
+	var decoded compact
+	decoder := json.NewDecoder(bytes.NewReader(payload))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&decoded); err != nil {
+		return err
+	}
+	*d = FaultOutsideDiagnostic(decoded)
+	return nil
+}
+
 type helperRecord struct {
 	ContainerID          string                 `json:"container_id"`
 	Kind                 string                 `json:"kind"`
@@ -272,22 +349,24 @@ type helperRecord struct {
 }
 
 type observerFault struct {
-	reason, site string
-	imageLocator uint64
-	open         FaultOpenDiagnostic
-	budget       FaultBudgetDiagnostic
-	raw          FaultRawDiagnostic
-	ledger       FaultLedgerDiagnostic
+	reason, site     string
+	imageLocator     uint64
+	firstOutsideOpen FaultOpenDiagnostic
+	open             FaultOpenDiagnostic
+	budget           FaultBudgetDiagnostic
+	raw              FaultRawDiagnostic
+	ledger           FaultLedgerDiagnostic
 }
 
-func (e observerFault) Error() string                           { return "observer stream is incomplete" }
-func (e observerFault) TraceFaultReason() string                { return e.reason }
-func (e observerFault) TraceFaultSite() string                  { return e.site }
-func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
-func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
-func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
-func (e observerFault) TraceFaultRaw() FaultRawDiagnostic       { return e.raw }
-func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic { return e.ledger }
+func (e observerFault) Error() string                                   { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string                        { return e.reason }
+func (e observerFault) TraceFaultSite() string                          { return e.site }
+func (e observerFault) TraceFaultImageLocator() uint64                  { return e.imageLocator }
+func (e observerFault) TraceFaultFirstOutsideOpen() FaultOpenDiagnostic { return e.firstOutsideOpen }
+func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic             { return e.open }
+func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic         { return e.budget }
+func (e observerFault) TraceFaultRaw() FaultRawDiagnostic               { return e.raw }
+func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic         { return e.ledger }
 
 const maximumHelperRecordBytes = 1024
 
@@ -306,11 +385,11 @@ func decodeHelperRecord(payload []byte) (helperRecord, error) {
 
 func validRecordCount(record helperRecord) bool {
 	switch record.Kind {
-	case "container-start", "stream-end", "stream-fault", "trusted-control-network":
+	case "container-start", "stream-end", "stream-fault", "trusted-control-network", "trusted-bun-install-network":
 		return record.Count == nil
 	case "mount-anchors-ready":
 		return record.Count == nil
-	case "filesystem-workspace-access":
+	case "filesystem-workspace-access", "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation":
 		return record.Count != nil && *record.Count >= 1 && *record.Count <= domain.MaximumObservationSummaryCount
 	case "process-exec", "process-exec-expected", "process-exec-unexpected", "filesystem-outside-workspace", "network-attempt", "honeytoken-access":
 		return record.Count == nil || (*record.Count == 1)
@@ -329,6 +408,9 @@ func validAttribution(record helperRecord) bool {
 	case "trusted-control-network":
 		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
 			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+	case "trusted-bun-install-network":
+		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
+			record.ProcessRelation == "ARTIFACT_GROUP" && record.ProcessClass == "OTHER" && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "process-exec-unexpected":
 		return record.EventSource == "SENTRY_EXEC" && record.Family == "" && record.ProcessRelation == "" &&
 			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
@@ -350,7 +432,7 @@ func validFixed(value string, allowed ...string) bool {
 
 func validObserverReason(reason string) bool {
 	switch reason {
-	case "EVENT_LIMIT", "BYTE_LIMIT", "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "ATTRIBUTION_FAILURE", "FINALIZATION_TIMEOUT", "UNKNOWN_EVENT_KIND", "CHANNEL_OVERFLOW", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "TOPOLOGY_INVALID", "TOPOLOGY_MISMATCH", "TOPOLOGY_MUTATION", "TOPOLOGY_NOT_READY", "SOCKET_AF_UNSPEC", "SOCKET_AF_NETLINK", "SOCKET_AF_PACKET", "SOCKET_OTHER_FAMILY", "CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH", "CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_AF_NETLINK_INVALID_LENGTH", "CONNECT_AF_PACKET_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY", "RAW_SYSCALL_INVALID", "FD_STATE_UNKNOWN", "FD_STATE_LIMIT", "EXEC_CORRELATION_INVALID", "PROCESS_PROVENANCE_UNKNOWN", "PROCESS_IDENTITY_REUSED", "CLONE_PROVENANCE_INVALID", "PROCESS_STATE_LIMIT", "CONTAINER_ROOT_INVALID", "CONTAINER_ROOT_DUPLICATE":
+	case "OBSERVATION_PROFILE_INCOMPLETE", "EVENT_LIMIT", "BYTE_LIMIT", "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "ATTRIBUTION_FAILURE", "FINALIZATION_TIMEOUT", "UNKNOWN_EVENT_KIND", "CHANNEL_OVERFLOW", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "TOPOLOGY_INVALID", "TOPOLOGY_MISMATCH", "TOPOLOGY_MUTATION", "TOPOLOGY_NOT_READY", "SOCKET_AF_UNSPEC", "SOCKET_AF_NETLINK", "SOCKET_AF_PACKET", "SOCKET_OTHER_FAMILY", "CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH", "CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_AF_NETLINK_INVALID_LENGTH", "CONNECT_AF_PACKET_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY", "RAW_SYSCALL_INVALID", "FD_STATE_UNKNOWN", "FD_STATE_LIMIT", "EXEC_CORRELATION_INVALID", "PROCESS_PROVENANCE_UNKNOWN", "PROCESS_IDENTITY_REUSED", "CLONE_PROVENANCE_INVALID", "PROCESS_STATE_LIMIT", "CONTAINER_ROOT_INVALID", "CONTAINER_ROOT_DUPLICATE":
 		return true
 	default:
 		return false
@@ -386,6 +468,10 @@ func newSharedObserver(endpoint string, removeStale bool) (*SharedObserver, erro
 	listener, err := net.ListenUnixgram("unixgram", &net.UnixAddr{Name: endpoint, Net: "unixgram"})
 	if err != nil {
 		return nil, err
+	}
+	if err := os.Chmod(endpoint, 0o600); err != nil {
+		_ = listener.Close()
+		return nil, errors.New("protect observer output endpoint")
 	}
 	endpointID, err := os.Lstat(endpoint)
 	if err != nil {
@@ -482,6 +568,45 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	return o.startProfile(ctx, containerID, profile, nil)
 }
 
+// StartPNPMTargetLifecycleProfile admits only the fixed separately attested
+// project mount. Ordinary npm lifecycle callers retain their original topology.
+func (o *SharedObserver) StartPNPMTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := pnpmTargetLifecycleExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
+// StartBunTargetLifecycleProfile adds only the separately attested Bun project.
+func (o *SharedObserver) StartBunTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := bunTargetLifecycleExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
+// StartNPMProjectTargetLifecycleProfile adds only the separately attested
+// Node project workspace used by this complete npm inspection request.
+func (o *SharedObserver) StartNPMProjectTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := nodeMaterializationExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
+// StartBunRuntimeTargetLifecycleProfile uses the separately attested native
+// runtime volume. Ordinary Node-only Bun and PNPM sessions keep their topology.
+func (o *SharedObserver) StartBunRuntimeTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := bunRuntimeTargetLifecycleExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
 func (o *SharedObserver) StartGoBuildInputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
 	if budget == nil {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
@@ -513,10 +638,17 @@ func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containe
 	return o.StartPythonClosureProfileWithBudget(ctx, containerID, profile, phase, nil)
 }
 
-func (o *SharedObserver) StartPythonClosureProfileWithBudget(ctx context.Context, containerID, profile string, phase pythonClosurePhase, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) StartPythonClosureProfileWithBudget(ctx context.Context, containerID, profile string, phase pythonClosurePhase, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := pythonClosureExpectedTopology(profile, phase)
-	if !ok {
+	if !ok || len(supplies) > 1 || len(supplies) == 1 && phase != pythonClosureEnvironmentObservation {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return o.startProfileWithBudget(ctx, containerID, profile, topology, budget)
 }
@@ -624,6 +756,11 @@ func (o *SharedObserver) receive() {
 			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
 			return
 		}
+		if record.Kind == "trusted-bun-install-network" && reader.profile != bunProjectResolverProfile {
+			o.mu.Unlock()
+			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
+			return
+		}
 		if reader.transactionBudget != nil {
 			if budgetErr := reader.transactionBudget.charge(record, uint64(size)); budgetErr != nil {
 				o.mu.Unlock()
@@ -642,6 +779,9 @@ func (o *SharedObserver) receive() {
 				fault := observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
 				if record.FaultOpen != nil {
 					fault.open = *record.FaultOpen
+				}
+				if record.FaultOpen != nil && record.FaultOpen.FirstOutside != nil {
+					fault.firstOutsideOpen = record.FaultOpen.FirstOutside.openDiagnostic()
 				}
 				if record.FaultBudget != nil {
 					fault.budget = *record.FaultBudget
@@ -693,7 +833,7 @@ func (o *SharedObserver) receive() {
 			o.mu.Unlock()
 			continue
 		}
-		if record.Kind == "trusted-control-network" {
+		if record.Kind == "trusted-control-network" || record.Kind == "trusted-bun-install-network" {
 			if key := attributionKey(record); key != "" {
 				reader.attributionCounts[key]++
 			}
@@ -880,6 +1020,8 @@ func attributionKey(record helperRecord) string {
 		return strings.Join([]string{"NETWORK", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
 	case "trusted-control-network":
 		return strings.Join([]string{"NETWORK", "TRUSTED_CONTROL", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
+	case "trusted-bun-install-network":
+		return strings.Join([]string{"NETWORK", "TRUSTED_BUN_INSTALL", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
 	case "process-exec-unexpected":
 		return strings.Join([]string{"PROCESS", record.EventSource, record.ProcessClass, record.ClassificationReason, record.ParentRelation}, "/")
 	default:
@@ -938,6 +1080,15 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 func validFaultSite(record helperRecord) bool {
 	if record.FaultRaw != nil {
 		r := record.FaultRaw
+		for _, operation := range []string{r.FDLastOperation, r.FDPreviousOperation} {
+			if operation != "" && !validFixed(operation, "SOCKET", "SOCKETPAIR", "CLOSE", "DUP", "FCNTL", "CLONE", "EXEC", "CLOSE_RANGE") {
+				return false
+			}
+		}
+		if (r.FDLastOperation == "" && (r.FDLastFamily != 0 || r.FDPreviousOperation != "")) ||
+			(r.FDPreviousOperation == "" && r.FDPreviousFamily != 0) {
+			return false
+		}
 		if (r.SocketpairObserved && r.SocketpairSource != "GUEST_RETURN_BUFFER") ||
 			(!r.SocketpairObserved && (r.SocketpairFDMatch || r.SocketpairDomain != 0 || r.SocketpairType != 0 || r.SocketpairSource != "")) {
 			return false
@@ -957,17 +1108,26 @@ func validFaultSite(record helperRecord) bool {
 		}
 	}
 	if record.FaultOpen != nil {
-		open := record.FaultOpen
-		if open.RustcArgc > 33 {
-			return false
+		opens := []*FaultOpenDiagnostic{record.FaultOpen}
+		if first := record.FaultOpen.FirstOutside; first != nil {
+			if record.Kind != "stream-fault" || record.Reason != "STREAM_FAULT" || record.FaultBudget != nil || record.FaultRaw != nil || first.PathLocator == 0 {
+				return false
+			}
+			compact := first.openDiagnostic()
+			opens = append(opens, &compact)
 		}
-		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
-			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
-			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
-			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
-			!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
-			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
-			return false
+		for _, open := range opens {
+			if open.RustcArgc > 33 {
+				return false
+			}
+			if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
+				!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
+				(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
+				!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
+				!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_COMM", "PROC_THREAD_COMM", "PROC_PARENT_COMM", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+				!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
+				return false
+			}
 		}
 	}
 	if record.FaultImageLocator != 0 && (record.Kind != "stream-fault" || record.FaultSite != "OPEN_RESULT_CLASSIFICATION_IMAGE") {
@@ -980,7 +1140,7 @@ func validFaultSite(record helperRecord) bool {
 		return false
 	}
 	switch record.FaultSite {
-	case "NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND":
+	case "FILESYSTEM_MUTATION", "NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND":
 		return true
 	default:
 		return false

@@ -73,3 +73,81 @@ func TestReadReferenceRejectsMissingCorruptOrForeignEvidence(t *testing.T) {
 		})
 	}
 }
+
+func TestEvidenceProfilesRemainExplicitAcrossStorage(t *testing.T) {
+	for _, current := range []bool{false, true} {
+		base, resolveErr := filepath.EvalSymlinks(t.TempDir())
+		if resolveErr != nil {
+			t.Fatal(resolveErr)
+		}
+		store, err := NewStore(base)
+		if err != nil {
+			t.Fatal(err)
+		}
+		run, item := storeFixture(t)
+		profile, _ := domain.CheckProfileDigest("record-fixture-v1", "pinned-runtime")
+		var checks []domain.CheckExecution
+		if current {
+			check, err := domain.NewCheckExecution(item.CheckID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			checks = append(checks, check)
+		}
+		refs, err := store.Record(context.Background(), run, []domain.Evidence{item}, checks...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		recorded, _, err := store.ReadReference(context.Background(), run, refs[0], item.Identity(), item.Digest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if current && recorded.ProfileDigest() != profile || !current && recorded.ProfileDigest().String() != "" {
+			t.Fatal("stored legacy/current profile changed")
+		}
+	}
+}
+
+func TestEvidenceRecordingRefusesForeignOrDuplicateActualCheck(t *testing.T) {
+	for _, duplicate := range []bool{false, true} {
+		store, err := NewStore(t.TempDir())
+		if err != nil {
+			t.Fatal(err)
+		}
+		run, item := storeFixture(t)
+		profile, _ := domain.CheckProfileDigest("record-fixture-v1", "pinned-runtime")
+		id := item.CheckID()
+		if !duplicate {
+			id, _ = domain.NewCheckID("foreign-check")
+		}
+		check, _ := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+		checks := []domain.CheckExecution{check}
+		if duplicate {
+			checks = append(checks, check)
+		}
+		if _, err := store.Record(context.Background(), run, []domain.Evidence{item}, checks...); err == nil {
+			t.Fatal("foreign/duplicate check recorded")
+		}
+		if _, err := os.Stat(filepath.Join(store.root, run.String())); !os.IsNotExist(err) {
+			t.Fatal("invalid batch created a run")
+		}
+	}
+}
+
+func TestEvidenceRecordingCannotRelabelAnExistingProfile(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	run, item := storeFixture(t)
+	profile, _ := domain.CheckProfileDigest("record-fixture-v1", "")
+	foreign, _ := domain.CheckProfileDigest("foreign-profile-v1", "")
+	bound, err := domain.NewEvidence(item.ID(), item.CheckID(), item.Identity(), item.Digest(), item.Kind(), item.Summary(), foreign)
+	if err != nil {
+		t.Fatal(err)
+	}
+	check, _ := domain.NewCheckExecution(item.CheckID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+	if _, err := store.Record(context.Background(), run, []domain.Evidence{bound}, check); err == nil {
+		t.Fatal("foreign profile was relabelled as current")
+	}
+}

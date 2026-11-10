@@ -2,9 +2,12 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestRepositoryCIWorkflow(t *testing.T) {
@@ -57,7 +60,7 @@ func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fixture := string(contents) + "\n# node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa\n"
+	fixture := string(contents) + "\n# " + runtimeidentity.NodeImageReference + "\n"
 	if findings := validateRuntimeLockWorkflow(root, fixture); len(findings) == 0 {
 		t.Fatal("hand-copied runtime identity was accepted")
 	}
@@ -85,7 +88,23 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"conditional package build":   strings.Replace(string(contents), "      - name: Build deterministic native release assets\n", "      - name: Build deterministic native release assets\n        if: false\n", 1),
 		"missing package build":       strings.Replace(string(contents), "go run ./scripts/release-packages", "echo skipped", 1),
 		"missing package identity":    strings.Replace(string(contents), "--asset \"$dist/helox-linux-amd64.deb\"", "--asset \"$dist/unbound.deb\"", 1),
-		"missing release gate":        strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
+
+		"missing pnpm materialization":   strings.Replace(string(contents), "go run ./scripts/update-runtime materialize-pnpm", "echo skipped materialization", 1),
+		"commented pnpm materialization": strings.Replace(string(contents), "          go run ./scripts/update-runtime materialize-pnpm", "          # go run ./scripts/update-runtime materialize-pnpm", 1),
+		"missing pnpm native binding":    strings.Replace(string(contents), `--asset "$dist/pnpm-linux-amd64"`, `--asset "$dist/foreign-pnpm"`, 1),
+		"missing passive notices":        strings.Replace(string(contents), `--asset "$dist/pnpm-NOTICE.txt"`, `--asset "$dist/foreign-notices"`, 1),
+		"unbounded pnpm acquisition":     strings.Replace(string(contents), `--max-filesize "$pnpm_size"`, ``, 1),
+		"wrong pnpm production owner":    strings.Replace(string(contents), `--root "$GITHUB_WORKSPACE"`, `--root "$RUNNER_TEMP"`, 1),
+		"missing release gate":           strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
+		"missing uv image inspection":    strings.Replace(string(contents), `          docker buildx imagetools inspect "$uv_image" >/dev/null`, "", 1),
+		"wrong uv image source":          strings.Replace(string(contents), ".uv_image.reference", ".node_image.reference", 1),
+		"uv inspection before selection": strings.Replace(strings.Replace(string(contents), "          docker buildx imagetools inspect \"$uv_image\" >/dev/null\n", "", 1), `          uv_image="$(jq -er '.uv_image.reference' scripts/runtimes.lock.json)"`, "          docker buildx imagetools inspect \"$uv_image\" >/dev/null\n"+`          uv_image="$(jq -er '.uv_image.reference' scripts/runtimes.lock.json)"`, 1),
+		"commented uv image inspection":  strings.Replace(string(contents), `          docker buildx imagetools inspect "$uv_image" >/dev/null`, `          # docker buildx imagetools inspect "$uv_image" >/dev/null`, 1),
+		"echoed uv image inspection":     strings.Replace(string(contents), `          docker buildx imagetools inspect "$uv_image" >/dev/null`, `          echo docker buildx imagetools inspect "$uv_image" >/dev/null`, 1),
+		"duplicate uv image inspection":  strings.Replace(string(contents), `          docker buildx imagetools inspect "$uv_image" >/dev/null`, "          docker buildx imagetools inspect \"$uv_image\" >/dev/null\n          docker buildx imagetools inspect \"$uv_image\" >/dev/null", 1),
+		"commented installer build":      strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          # CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
+		"missing installer identity":     strings.Replace(string(contents), `--asset "$dist/haa-release-installer-linux-amd64"`, `--asset "$dist/unbound-installer"`, 1),
+		"echoed installer build":         strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          echo CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -152,25 +171,43 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":                             strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"missing always":                              strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":                                 strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"moving macOS runner":                         strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"unpatched Go":                                strings.ReplaceAll(string(contents), "go-version: '"+selectedGoForTest(t)+"'", "go-version: '1.26.8'"),
-		"missing pinned Go image":                     strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
-		"Go build integration silently skipped":       strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
-		"Go source integration silently skipped":      strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
-		"missing pinned Rust image":                   strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
-		"Cargo resolver integration silently skipped": strings.ReplaceAll(string(contents), "HELOX_CARGO_RESOLVER_INTEGRATION=1", "HELOX_CARGO_RESOLVER_INTEGRATION=0"),
-		"Cargo add integration silently skipped":      strings.Replace(string(contents), "HELOX_CARGO_ADD_INTEGRATION=1", "HELOX_CARGO_ADD_INTEGRATION=0", 1),
-		"Cargo build integration silently skipped":    strings.Replace(string(contents), "HELOX_CARGO_BUILD_CLI_INTEGRATION=1", "HELOX_CARGO_BUILD_CLI_INTEGRATION=0", 1),
-		"missing platform check":                      strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
-		"missing CUDA single-selection guard":         strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
-		"missing CUDA strict freshness gate":          strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
-		"legacy CUDA profile":                         string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
-		"sidecar fallback":                            strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
-		"permissive sidecar download":                 strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
-		"extra job":                                   string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"npm execution suite too short":                strings.Replace(string(contents), "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", "-test.timeout=5m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", 1),
+		"npm execution omitted":                        strings.Replace(string(contents), "HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox", "# HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox", 1),
+		"npm execution ignored":                        strings.Replace(string(contents), "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'", "-test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$' || true", 1),
+		"PNPM runtime omitted":                         strings.Replace(string(contents), "bash scripts/ci-pnpm-runtime.sh", "# bash scripts/ci-pnpm-runtime.sh", 1),
+		"floating action":                              strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"missing always":                               strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":                                  strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":                          strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"unpatched Go":                                 strings.ReplaceAll(string(contents), "go-version: '"+selectedGoForTest(t)+"'", "go-version: '1.26.8'"),
+		"missing pinned Go image":                      strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
+		"Go build integration silently skipped":        strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
+		"Go source integration silently skipped":       strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
+		"missing pinned Rust image":                    strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
+		"missing pinned UV image":                      strings.Replace(string(contents), `docker pull "$uv_image"`, `echo skipped`, 1),
+		"UV startup integration silently skipped":      strings.Replace(string(contents), "HELOX_UV_NATIVE_RUNTIME=1", "HELOX_UV_NATIVE_RUNTIME=0", 1),
+		"UV CLI installation suite too short":          strings.Replace(string(contents), "-test.timeout=12m -test.run '^TestLinuxUVInstallCLIIntegration$'", "-test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'", 1),
+		"UV CLI installation silently skipped":         strings.Replace(string(contents), "HELOX_UV_INSTALL_CLI_INTEGRATION=1", "HELOX_UV_INSTALL_CLI_INTEGRATION=0", 1),
+		"UV installed-aware resolver silently skipped": strings.Replace(string(contents), "HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1", "HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=0", 1),
+		"UV public resolver silently skipped":          strings.Replace(string(contents), "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1", "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=0", 1),
+		"UV interpreter query silently omitted":        strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|NativeLockCollection)", 1),
+		"UV native output collection silently omitted": strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|EmptyTargetQuery)", 1),
+		"Cargo resolver integration silently skipped":  strings.ReplaceAll(string(contents), "HELOX_CARGO_RESOLVER_INTEGRATION=1", "HELOX_CARGO_RESOLVER_INTEGRATION=0"),
+		"Cargo add integration silently skipped":       strings.Replace(string(contents), "HELOX_CARGO_ADD_INTEGRATION=1", "HELOX_CARGO_ADD_INTEGRATION=0", 1),
+		"Cargo build integration silently skipped":     strings.Replace(string(contents), "HELOX_CARGO_BUILD_CLI_INTEGRATION=1", "HELOX_CARGO_BUILD_CLI_INTEGRATION=0", 1),
+		"missing platform check":                       strings.ReplaceAll(string(contents), "run: go run -trimpath ./scripts/check platform", "run: go test ./..."),
+		"untrimmed platform bootstrap":                 strings.Replace(string(contents), "run: go run -trimpath ./scripts/check bootstrap-modules", "run: go run ./scripts/check bootstrap-modules", 1),
+		"missing platform cache":                       strings.Replace(string(contents), "          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build\n", "", 1),
+		"different platform cache":                     strings.Replace(string(contents), "GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build", "GOCACHE: ${{ runner.temp }}/other-go-build", 1),
+		"implicit platform flags":                      strings.Replace(string(contents), "          GOFLAGS: ''\n", "", 1),
+		"extra platform flags":                         strings.Replace(string(contents), "GOFLAGS: ''", "GOFLAGS: -race", 1),
+		"conditional platform profile":                 strings.Replace(string(contents), "        run: go run -trimpath ./scripts/check platform", "        if: false\n        run: go run -trimpath ./scripts/check platform", 1),
+		"missing CUDA single-selection guard":          strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
+		"missing CUDA strict freshness gate":           strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
+		"legacy CUDA profile":                          string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
+		"sidecar fallback":                             strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
+		"permissive sidecar download":                  strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
+		"extra job":                                    string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -222,6 +259,39 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 	}
 }
 
+func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"} {
+		scope := "          (\n            cd " + directory + "\n            " + command + "\n          )"
+		if strings.Count(source, scope) != 1 {
+			t.Fatal("canonical fixture command has no unique package scope")
+		}
+		for name, replacement := range map[string]string{
+			"missing cd":        "          (\n            " + command + "\n          )",
+			"wrong cd":          strings.Replace(scope, "cd "+directory, "cd internal/cli", 1),
+			"commented cd":      strings.Replace(scope, "cd "+directory, "# cd "+directory, 1),
+			"outside subshell":  "          cd " + directory + "\n          (\n            " + command + "\n          )",
+			"unscoped command":  "          " + command,
+			"commented command": strings.Replace(scope, command, "# "+command, 1),
+			"duplicate scope":   scope + "\n" + scope,
+		} {
+			t.Run(name+command, func(t *testing.T) {
+				fixture := strings.Replace(source, scope, replacement, 1)
+				if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
+					t.Fatal("incorrect fixture cwd scope accepted")
+				}
+			})
+		}
+	}
+}
+
 func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testing.T) {
 	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
 	if err != nil {
@@ -251,6 +321,26 @@ func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testi
 	}
 }
 
+func TestResponderReleaseRequiresActiveBuildAndManifestBinding(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", releaseWorkflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseline := string(body)
+	if findings := validateReleaseWorkflow(baseline, selectedGoForTest(t)); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, command := range []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$dist/haa-sandbox-responder" ./cmd/haa-sandbox-responder`,
+		`--asset "$dist/haa-sandbox-responder"`,
+	} {
+		candidate := strings.Replace(baseline, command, "# omitted responder", 1)
+		if candidate == baseline || len(validateReleaseWorkflow(candidate, selectedGoForTest(t))) == 0 {
+			t.Fatal("missing responder build/binding accepted")
+		}
+	}
+}
+
 func selectedGoForTest(t *testing.T) string {
 	t.Helper()
 	root, err := filepath.Abs("../..")
@@ -266,4 +356,92 @@ func selectedGoForTest(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return owners["Go"]
+}
+
+func TestGoTidyWorkflowRequiresBothCohortsAndUniqueCaseCensus(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(root, workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	selected := selectedGoForTest(t)
+	if findings := validateCIWorkflow(original, selected); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for name, fixture := range map[string]string{
+		"missing native parent":     strings.Replace(original, "|TidyProjectResolver)", ")", 1),
+		"missing CLI parent":        strings.Replace(original, "|TidyCLI)", ")", 1),
+		"native census missing":     strings.Replace(original, goTidyNativeCensus, "echo missing native census", 1),
+		"CLI census missing":        strings.Replace(original, goTidyCLICensus, "echo missing CLI census", 1),
+		"native duplicate accepted": strings.Replace(original, goTidyNativeCensus, strings.Replace(goTidyNativeCensus, "seen[fields[1]]++", "0", 1), 1),
+		"CLI partial accepted":      strings.Replace(original, goTidyCLICensus, strings.Replace(goTidyCLICensus, "cases != 3", "cases != 2", 1), 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validateCIWorkflow(fixture, selected)) == 0 {
+				t.Fatal("incomplete tidy workflow accepted")
+			}
+		})
+	}
+}
+
+func TestAdvisoryQualificationKeepsClientRolesAndCoverage(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	selected := selectedGoForTest(t)
+	if findings := validateCIWorkflow(original, selected); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, change := range [][2]string{
+		{`cmp -- "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox`, "true"},
+		{`HELOX_ADVISORY_CLI_INTEGRATION=1`, `HELOX_ADVISORY_CLI_INTEGRATION=0`},
+		{`"$RUNNER_TEMP/helox-pnpm-project-test" -test.v`, `/usr/libexec/heliopause/helox -test.v`},
+		{`go-download-exact-controlled-malware `, ""},
+		{`/no tests to run|--- (SKIP|FAIL):/ { bad=1 }`, ""},
+		{`attempts[0]!=1 || attempts[1]!=1`, `attempts[0]!=1`},
+		{`      - name: Qualify production advisory quarantine`, "      - name: Qualify production advisory quarantine\n        if: false"},
+	} {
+		candidate := strings.Replace(original, change[0], change[1], 1)
+		if candidate == original || len(validateCIWorkflow(candidate, selected)) == 0 {
+			t.Fatal("missing client role or coverage accepted", change[0])
+		}
+	}
+	parts := strings.SplitN(advisoryQualificationRun, "awk '", 2)
+	program := strings.SplitN(parts[1], "' \"$RUNNER_TEMP/haa-advisory-cli.log\"", 2)[0]
+	var lines []string
+	for _, parent := range []string{"TestAdvisoryProductionCLIQuarantineIntegration", "TestAdvisoryPublicLanguageProductionCLIIntegration", "TestAdvisoryGitHubOpaqueProductionCLIIntegration"} {
+		lines = append(lines, "--- PASS: "+parent+" (1s)")
+	}
+	for _, name := range strings.Fields("fresh-cache cache-reuse malware-block tampered-cache force-refresh malware-human") {
+		lines = append(lines, "    --- PASS: TestAdvisoryProductionCLIQuarantineIntegration/"+name+" (1s)")
+	}
+	for _, name := range strings.Fields("npm-normal npm-controlled-malware go-normal go-controlled-malware cargo-normal cargo-controlled-malware go-exact-controlled-malware go-download-exact-controlled-malware cargo-exact-controlled-malware") {
+		lines = append(lines, "    --- PASS: TestAdvisoryPublicLanguageProductionCLIIntegration/"+name+" (1s)")
+	}
+	for _, attempt := range []string{"0", "1"} {
+		lines = append(lines, "    advisory_integration_test.go:1: advisory_github_cli_complete attempt="+attempt+" required_checks=3 optional=UNSUPPORTED query=NOT_RUN fresh_run=run_example digest=VERIFIED seconds=1")
+	}
+	valid := strings.Join(lines, "\n") + "\n"
+	for _, fixture := range []struct {
+		body string
+		pass bool
+	}{
+		{valid, true}, {"", false}, {strings.Join(lines[1:], "\n"), false},
+		{valid + lines[0] + "\n", false}, {valid + "--- SKIP: missing (0s)\n", false},
+		{strings.Replace(valid, "go-download-exact-controlled-malware", "unknown-case", 1), false},
+		{strings.Replace(valid, "attempt=1 ", "attempt=0 ", 1), false},
+	} {
+		command := exec.Command("awk", program)
+		command.Stdin = strings.NewReader(fixture.body)
+		output, err := command.CombinedOutput()
+		if (err == nil) != fixture.pass {
+			t.Fatal("advisory log census accepted missing/duplicate/skip or rejected complete", err, string(output))
+		}
+	}
 }

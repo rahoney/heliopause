@@ -1,0 +1,330 @@
+{
+  "baseline_commit": "7f4439a",
+  "status": "PREBUILT_ADOPTION_BLOCKED",
+  "implemented": false,
+  "wired": false,
+  "qualified": false,
+  "acceptance_closed": false,
+  "candidate": {
+    "name": "Semgrep CE",
+    "version": "1.182.0",
+    "public_source_commit": "240da9f30cd06fb4ee00c2c31c114c1c1f5ee0f4",
+    "wheel_sha256": "19a82868830389c039bb71bfc0aeebb28385e5b65740120710eff050324ad14f",
+    "wheel_size": 71826876,
+    "direct_python_dependencies": 27,
+    "selected_core_and_libraries": [
+      {
+        "path": "semgrep-core",
+        "size": 264463264,
+        "sha256": "a4a028bf4f12fcc9340868c545f7f5b5564266ff6b1f8c292b3c58d7c694b5d8"
+      },
+      {
+        "path": "libs/libbz2.so.1",
+        "size": 79568,
+        "sha256": "bfbfcdf5306531d7b2a0167ce92a31d9aeac2c433376df9036e97e82852cbf70"
+      },
+      {
+        "path": "libs/libcom_err.so.2",
+        "size": 26088,
+        "sha256": "380eaefae7b198294c6b0873476036e1834cb9abd3a56cea9648b36f06f53258"
+      },
+      {
+        "path": "libs/libcrypto.so.3",
+        "size": 6338824,
+        "sha256": "911855a9f53d709f05208638ee96e3369111d449bb1d9efc16f96db4215d9a54"
+      },
+      {
+        "path": "libs/libcurl.so.4",
+        "size": 529104,
+        "sha256": "713a0761c9a59fd8c4c2160f9d7cde13277fa4f32476aa98fa4be9dc7b217073"
+      },
+      {
+        "path": "libs/libdw.so.1",
+        "size": 706680,
+        "sha256": "0235527783235a19574bd039da593b70db4c04ae5abf29b2b810b8c64444f4d4"
+      },
+      {
+        "path": "libs/libelf.so.1",
+        "size": 118720,
+        "sha256": "524b8218e0ea837fa429c623aa46b88144cb2b3e9e3da17806ddd5fb05e55a9b"
+      },
+      {
+        "path": "libs/libev.so.4",
+        "size": 77504,
+        "sha256": "45d8ade6463eb2cf75810e01f86df23745dea47398d202c3e2d16e1948ef85cd"
+      },
+      {
+        "path": "libs/libgcc_s.so.1",
+        "size": 122984,
+        "sha256": "54e2e322fa795060d8c5a1c4d56382a96bf123b8787a16b640eda9e948137788"
+      },
+      {
+        "path": "libs/libgmp.so.10",
+        "size": 704584,
+        "sha256": "a7154a5e29bc3ac9c1799996635cbb86fb75ba4f02cb08ce01457bc6c3957937"
+      },
+      {
+        "path": "libs/libgssapi_krb5.so.2",
+        "size": 372368,
+        "sha256": "9274e5961d72284cd39377fc9f2007a33bda4ca890b1c2dc7d268efea6c96b29"
+      },
+      {
+        "path": "libs/libk5crypto.so.3",
+        "size": 107672,
+        "sha256": "74db02ce6b688fb3a9528ccfa0fdc6002735bd105db93d3ab6b11f48c7ab113e"
+      },
+      {
+        "path": "libs/libkeyutils.so.1",
+        "size": 26968,
+        "sha256": "338049f8e2686318fdeb35ed5eaa6f4609d3712bb6e25b4bd4af72ab3fcc9f89"
+      },
+      {
+        "path": "libs/libkrb5.so.3",
+        "size": 934528,
+        "sha256": "9774b400ae75ac1fb5da3fe39c7f18621ab70596c31b1e6a76b93bdc58ecc048"
+      },
+      {
+        "path": "libs/libkrb5support.so.0",
+        "size": 74400,
+        "sha256": "97a35fb97535bbaafeaed4265326244a1ff2ec72d1429b5c642e9e29201075f8"
+      },
+      {
+        "path": "libs/liblzma.so.5",
+        "size": 184520,
+        "sha256": "f59b472dfa908d85b8d29db7dcfc0dca53f215c2591b04e53e22c6d99401a782"
+      },
+      {
+        "path": "libs/libm.so.6",
+        "size": 932688,
+        "sha256": "1c39d5359f21d9f39890301b324403d30a86b38097e4d01629be684e571fd5c0"
+      },
+      {
+        "path": "libs/libnghttp2.so.14",
+        "size": 179632,
+        "sha256": "97845cf43088276e2a902c0faa361abc7d67ae3c287a31a3d28c8f986ed478a8"
+      },
+      {
+        "path": "libs/libpcre2-8.so.0",
+        "size": 642520,
+        "sha256": "d42e101fe9d94c517da72d44b48f3cd4264d9337040adfb14a4b569acbe8e00c"
+      },
+      {
+        "path": "libs/libresolv.so.2",
+        "size": 77000,
+        "sha256": "143719c422b982c6847bbf71d35254e1be1a44004c4e6e4d114ef5e6763cbfac"
+      },
+      {
+        "path": "libs/libselinux.so.1",
+        "size": 185704,
+        "sha256": "1da7979dddc35e8408577e9349c046b1d6f696b877528a2ca8f033d433fdfd8c"
+      },
+      {
+        "path": "libs/libssl.so.3",
+        "size": 1071280,
+        "sha256": "e8b3d8e0380f75f2766ac639cae3cc23b1f00b194bf37f175d7a6f88104fda43"
+      },
+      {
+        "path": "libs/libstdc++.so.6",
+        "size": 2656680,
+        "sha256": "f500e57dde683cc1ca31c6b2fb6d8959bfdbbac77f36efc84501ee3fcac8427b"
+      },
+      {
+        "path": "libs/libtree-sitter.so.0.26",
+        "size": 247472,
+        "sha256": "9eae85a7bb175a174048370c29e085a7d9b38c928b8ea56785761b9465198544"
+      },
+      {
+        "path": "libs/libunwind.so.8",
+        "size": 67912,
+        "sha256": "5c82cb252136b475bcb68f78ff61575538a36a43161b276df8a774f1899c4596"
+      },
+      {
+        "path": "libs/libz.so.1",
+        "size": 109472,
+        "sha256": "18fed02c1fd62a46482150b38fb2ca93cd36d17c7a660dd79c8012251a5d941c"
+      },
+      {
+        "path": "libs/libzstd.so.1",
+        "size": 764680,
+        "sha256": "75b4f41a07135b9ab5e94ee660f8efddd8037f7350e7c952a04c06d26f2a29dc"
+      }
+    ],
+    "selected_tool_bytes": 281802816
+  },
+  "publish_verification": {
+    "exit_code": 0,
+    "elapsed_seconds": 2.401,
+    "scope": "offline SCT/transparency log/timestamp and exact private publisher/commit/subject; public source correspondence not proven; no product policy change",
+    "publisher": "https://github.com/semgrep/semgrep-proprietary/.github/workflows/pro-release.yml@refs/heads/develop",
+    "commit": "e7523e61f523ab23b6a295fd04884df46b882f1b",
+    "run": "39486195151",
+    "attempt": 1
+  },
+  "runtime_review": {
+    "scope": "DATA-only isolated Semgrep core parser compatibility on pinned Python image with runc, network none and readonly own inputs; no artifact execution, product policy, scanner adoption or gVisor qualification",
+    "image_id": "sha256:96c10b1906ce7ac6bdce9f94228a5730f200e571e7d1e158dd91945c85df6715",
+    "expected_targets": 12,
+    "expected_marker_matches": 6,
+    "exit_code": 0,
+    "elapsed": 1.517,
+    "output_bytes": 3740,
+    "stderr_bytes": 0,
+    "errors": [],
+    "paths": {
+      "scanned": [
+        "/review/javascript-normal.js",
+        "/review/javascript-marked.js",
+        "/review/typescript-normal.ts",
+        "/review/typescript-marked.ts",
+        "/review/python-normal.py",
+        "/review/python-marked.py",
+        "/review/go-normal.go",
+        "/review/go-marked.go",
+        "/review/rust-normal.rs",
+        "/review/rust-marked.rs",
+        "/review/terraform-normal.tf",
+        "/review/terraform-marked.tf"
+      ]
+    },
+    "matches": [
+      {
+        "rule_id": "review-go",
+        "path": "/review/go-marked.go"
+      },
+      {
+        "rule_id": "review-javascript",
+        "path": "/review/javascript-marked.js"
+      },
+      {
+        "rule_id": "review-python",
+        "path": "/review/python-marked.py"
+      },
+      {
+        "rule_id": "review-rust",
+        "path": "/review/rust-marked.rs"
+      },
+      {
+        "rule_id": "review-terraform",
+        "path": "/review/terraform-marked.tf"
+      },
+      {
+        "rule_id": "review-typescript",
+        "path": "/review/typescript-marked.ts"
+      }
+    ],
+    "parser_compatibility_pass": true,
+    "container_removed": true,
+    "original_container_ids_preserved": true,
+    "inputs_unchanged": true
+  },
+  "first_failure": {
+    "raw": "s04-core-runtime-review-v1.json",
+    "scope": "scanner exit0 with 12 progress dots and JSON; review operator JSON framing failed; not a scanner execution failure",
+    "correction": "official -json_nodots, no arbitrary prefix stripping"
+  },
+  "cleanup": {
+    "scope": "completed S04 review wheel and selected native DATA copies only; preserves metadata, receipts, operators, shared runtime/images and user artifacts",
+    "processes": 98,
+    "references": [],
+    "query_errors": [],
+    "removed": true,
+    "removed_bytes": 899904010
+  },
+  "evidence": [
+    {
+      "raw_file": "s04-adoption-review.json",
+      "size": 3039,
+      "sha256": "c6294638279f6552d0c7d6c22c5506fca2c597cf76b569f863ac10d8711a6cd0"
+    },
+    {
+      "raw_file": "s04-publish-proof-review.json",
+      "size": 90777,
+      "sha256": "88bdc2e77cc58302751645706f5d48db38126207d531251cf043c1d5ec81c809"
+    },
+    {
+      "raw_file": "s04-core-runtime-review-v1.json",
+      "size": 6201,
+      "sha256": "f01fa61ad71bffb5f48ccd3947982af3197ef05d2e850464306bff8c8017a277"
+    },
+    {
+      "raw_file": "s04-core-runtime-review-v1.stdout",
+      "size": 3765,
+      "sha256": "85cfc1b9f71dde12b142a3f6414b68ac56c7e2fb6e08407eabc08b0bb8ebfd42"
+    },
+    {
+      "raw_file": "s04-core-runtime-review-v2.json",
+      "size": 7497,
+      "sha256": "adfc479a0be77e72e4d0d12785cfe8e285da7eaa8b67966dd017aee374df74e0"
+    },
+    {
+      "raw_file": "s04-core-runtime-review-v2.stdout",
+      "size": 3740,
+      "sha256": "2424873c7d9897ed6384a7fd387ca64964b08912d105fe5d23fa10025c2108fb"
+    },
+    {
+      "raw_file": "s04-review-payload-cleanup.json",
+      "size": 24148,
+      "sha256": "77c037215873e812490c8106fdd33e1b838fd68cbdd15c8451b468f02bf65be0"
+    },
+    {
+      "raw_file": "s04-publish-proof-review.go.txt",
+      "size": 4391,
+      "sha256": "fa2306bf615a0a916661b0f5f52bc296850c77d2e1d8e1dc9f4827dab99105e8"
+    },
+    {
+      "raw_file": "s04_runtime_review.py",
+      "size": 6445,
+      "sha256": "c2f10319bb69eb6153e118fa75f06b48c97f7fa2928fad53f6e6caf80841ed62"
+    },
+    {
+      "raw_file": "s04_runtime_review_v2.py",
+      "size": 7033,
+      "sha256": "935069f45a3d4e34d61c26d65eb293919abd8886a58fa6355d32565010ffd76a"
+    }
+  ],
+  "metadata": [
+    {
+      "size": 1960,
+      "sha256": "5d2b4f5c8fe0dcd9461f71a81da6f5787efc7a60501ad04afb4f07f1cd9bf411",
+      "raw_file": "semgrep-1.182.0-build-workflow.txt"
+    },
+    {
+      "size": 20142,
+      "sha256": "3e652845bad6453f4583c843be19cc883fc44a995d53830903ab0127da35c981",
+      "raw_file": "semgrep-1.182.0-dockerfile.txt"
+    },
+    {
+      "size": 5378,
+      "sha256": "d2eea03f6e1609994f09dcba3ecfa89de9f31aba540d5fa249cb6f290bd7dcea",
+      "raw_file": "semgrep-1.182.0-github-release.json"
+    },
+    {
+      "size": 122,
+      "sha256": "495f08433c8ce76ddce3dc6d6e3443f4af775c5fe2dddd2a0059ebc4a93e30a0",
+      "raw_file": "semgrep-1.182.0-gitmodules.txt"
+    },
+    {
+      "size": 30814,
+      "sha256": "3eefd333d59af82e78c99cf39a178205b4ee97b7c0e5929448c2665bb04afe0f",
+      "raw_file": "semgrep-1.182.0-metadata.json"
+    },
+    {
+      "size": 6401,
+      "sha256": "b1d904441c9dea021963dd9d6d321cfaf88458e9b7b65c3a87bf8c61a6c3bfda",
+      "raw_file": "semgrep-1.182.0-opam.txt"
+    },
+    {
+      "size": 9968,
+      "sha256": "7d1dd65f20177db4f87015ec8a3005a606e6bea737181bdffe2eec55f7b06a8e",
+      "raw_file": "semgrep-1.182.0-provenance.json"
+    },
+    {
+      "size": 380,
+      "sha256": "67396ec23aa3db3550e4117ae5684c5fa51aa4498f5492ef6e73660aa42ff0d9",
+      "raw_file": "semgrep-1.182.0-tag.json"
+    }
+  ],
+  "ci_started": false,
+  "host_installation_changed": false,
+  "runtime_lock_changed": false
+}

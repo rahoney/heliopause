@@ -1,0 +1,105 @@
+{
+  "scope": "CI425 macOS native platform default-test deadline observation only; whole Linux run still active",
+  "status": "FAILURE (macOS); DIRECT_CAUSE_OPEN",
+  "source_commit": "418a2768b0da76a70ce2a2f637f7c6b74ac16e0e",
+  "checkout_commit": "3cc28f9e0094cd17956bf9d14a2916f8139d754a",
+  "whole_tree": "016df83d57e1224c07637e4c8282c3f0d4cb29f3",
+  "tracked_files": 2926,
+  "same_whole_source_tree": true,
+  "run_id": 40739100696,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40739100696",
+  "job_id": 122995523113,
+  "last_actual_query_at": "2026-10-28T18:08:03Z",
+  "other_jobs_at_query": {
+    "success": 7,
+    "Linux": "IN_PROGRESS",
+    "Required": "NOT_CREATED"
+  },
+  "canonical_command": [
+    "go",
+    "test",
+    "-trimpath",
+    "-json",
+    "-timeout=5m",
+    "./..."
+  ],
+  "outer_deadline_seconds": 360,
+  "default_test_started_at": "2026-10-28T17:52:29.2780550Z",
+  "deadline_error_at": "2026-10-28T17:58:29.6935820Z",
+  "terminal": {
+    "available": true,
+    "exited": false,
+    "success": false,
+    "exit_code": -1,
+    "user_ms": 507825,
+    "system_ms": 371003
+  },
+  "go_test_progress": {
+    "started_packages": 47,
+    "finished_packages": 45,
+    "active": 2,
+    "unavailable": false,
+    "truncated": false
+  },
+  "active_packages": [
+    {
+      "package": "github.com/rahoney/heliopause/internal/promotion",
+      "test": "",
+      "state": "running",
+      "elapsed_ms": 277709
+    },
+    {
+      "package": "github.com/rahoney/heliopause/scripts/update-runtime",
+      "test": "",
+      "state": "running",
+      "elapsed_ms": 151259
+    }
+  ],
+  "individual_test_fail_events": 0,
+  "reported_ok_package_seconds": {
+    "hosttool": 2.658,
+    "promotion": 215.96,
+    "update-runtime": 137.413
+  },
+  "unchanged_since_green_ci424": [
+    {
+      "path": "scripts/check/runner.go",
+      "ci424_and_ci425_blob": "861d38d4274b301b08018dc8a0ad01f48385bd16",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/check/go_test_capture.go",
+      "ci424_and_ci425_blob": "fa16a7fbd05df6e7a23d2d5a51246e9da372202c",
+      "unchanged": true
+    },
+    {
+      "path": "internal/promotion/go_cache_test.go",
+      "ci424_and_ci425_blob": "81b8d3491fa7d3bdae8b1a63b145351500e87968",
+      "unchanged": true
+    }
+  ],
+  "historical_comparison": "same observed47/45 package-active/no-root/ok-output class as CI369 in existing macos-default-test-diagnostic-plan-20261022.md; direct native syscall/cache/SDK/pipe cause remains OPEN",
+  "interpretation_limits": [
+    "ok package output/individual PASS is not command completion",
+    "parallel root elapsed includes pause/scheduling/output delivery; not a CPU attribution",
+    "high command user/system time does not identify a particular syscall/cache/SDK cause",
+    "source-owner equality does not prove whole-source/runtime equivalence or causality",
+    "new Hosttool package completed; do not invent a new execution-transport fault from this deadline alone"
+  ],
+  "actions": [
+    "preserve decoded8logs/checkout and both prior source inputs",
+    "retain package5m/whole6m/coverage/offline/Required contracts",
+    "retain Linux run; no cancel/new push or blind rerun",
+    "continue independent C3b with next meaningful grouped macOS/Required as an open gate"
+  ],
+  "missing": [
+    "final Linux/new Node production preparation result and all10 logs",
+    "whole CI425 final conclusion/Required",
+    "direct native deadline cause",
+    "new candidate native macOS/Required qualification"
+  ],
+  "raw_log": "ci425-job-122995523113.log",
+  "partial_decoded_logs_bytes": 535093,
+  "next_query_at": "2026-10-28T18:28:03Z",
+  "timer_session": 56538
+}

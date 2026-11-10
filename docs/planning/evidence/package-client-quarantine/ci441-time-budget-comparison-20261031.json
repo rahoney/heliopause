@@ -1,0 +1,200 @@
+{
+  "date": "2026-10-31",
+  "work_item": "M13-004/CI441-first-failures",
+  "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+  "tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+  "run_id": 41060068858,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/41060068858",
+  "result": "COMPLETED FAILURE:6success/macOS+Corpus+Required failure/Linux cancelled by 120min job timeout",
+  "actual20min_GET": {
+    "queries": 6,
+    "last": "2026-10-30T15:03:26.442991+00:00",
+    "terminal_verified_externally": true,
+    "worker_exit_code": 143,
+    "stop": "owned GET worker SIGTERM after external terminal query, not natural0 or CI cancellation",
+    "next_due_at": null
+  },
+  "whole_log_readback": {
+    "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+    "all10_checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+    "jobs": [
+      {
+        "job_id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 279382,
+        "sha256": "aa128445e21597228e02ffbe982bcaca14fe2ba30435cab1bf0ef56e84634144"
+      },
+      {
+        "job_id": 124077272164,
+        "name": "Docs",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 20519,
+        "sha256": "6ce147b9eec4b4278ec45c60905cd9160e44e8fd87172b76a5671a4763c13e36"
+      },
+      {
+        "job_id": 124077272254,
+        "name": "macOS",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 115075,
+        "sha256": "f721db06cea20c0804539cf843639c910ed8ec06124825539ebe528a230aaa0d"
+      },
+      {
+        "job_id": 124077272282,
+        "name": "Security",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21964,
+        "sha256": "7f5721c67d28bdd9938e68cd18df81edb5d168846312bc53bbdaaba29c40263f"
+      },
+      {
+        "job_id": 124077272290,
+        "name": "Minimum Go",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21503,
+        "sha256": "f9e1888b2d411d6bef6a63abfae8019a378deb74d63b30a54b7510b482f17230"
+      },
+      {
+        "job_id": 124077272318,
+        "name": "Quick",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 23839,
+        "sha256": "4d277a9fe3c521b2ff747b4eaffbaf534869081df7ffb2f959d4ac341371416e"
+      },
+      {
+        "job_id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21937,
+        "sha256": "218afce174a4177a2a4a0d06bc0086f38099cdece0a51ca6c59022dc0df46d9a"
+      },
+      {
+        "job_id": 124077272390,
+        "name": "Vulnerability",
+        "conclusion": "success",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 21705,
+        "sha256": "caf8a7c8b9e3b29c753ca0c24095ee41c4a4bb5af8958516fe022e6d447c2e3c"
+      },
+      {
+        "job_id": 124077272398,
+        "name": "gVisor Linux Integration",
+        "conclusion": "cancelled",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 890065,
+        "sha256": "aa1168ef153ed87a8cdb92dc618b6a06447be1cd093c3dc65602f6aad1e6833e"
+      },
+      {
+        "job_id": 124136518136,
+        "name": "Required",
+        "conclusion": "failure",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+        "bytes": 22501,
+        "sha256": "eb85d9bd3a1d9a39a9d629c7637f0ba9eadaac19bb92a86c1510f2e880cc4507"
+      }
+    ],
+    "bytes": 1438490,
+    "completed8_not_refetched": true,
+    "last2_fetched_once": true
+  },
+  "Linux": {
+    "cause_status": "CONFIRMED administrative job-time budget exhaustion",
+    "official_annotation": "The job has exceeded the maximum execution time of 2h0m0s",
+    "started_at": "2026-10-30T13:03:24Z",
+    "completed_at": "2026-10-30T15:03:53Z",
+    "top_level_pass": 113,
+    "top_level_fail": 0,
+    "skipped": 0,
+    "new_G1_G2_G3_named_hosted": "all7 new parents PASS; Bun program controlled full12 parent PASS177.40s",
+    "baseline_run": 439,
+    "comparison": {
+      "common": 106,
+      "common_seconds_delta": 674.07,
+      "added_count": 7,
+      "added_seconds": 563.79,
+      "missing_count": 9
+    },
+    "not_completed": [
+      "TestLinuxDirectExecKernelTerminalIntegration",
+      "TestLinuxPNPMRunExecutionCLIIntegration",
+      "TestLinuxPNPMRunExecutionCLIRefusalIntegration",
+      "TestLinuxPNPMRunExecutionWorkflowIntegration",
+      "TestLinuxPipxRunExecutionCLIIntegration",
+      "TestLinuxPythonPipxRunExecutionWorkflowIntegration",
+      "TestUVActualPublicToolRunNativeCensus",
+      "TestUVActualPublicToolRunSourceBinding",
+      "TestUVPublicToolRunResolverIntegration"
+    ],
+    "baseline_seconds_for_missing": 520.73,
+    "estimated_full_using_old_remaining_seconds": 7749.73,
+    "estimate_not_actual_completion": true,
+    "baseline_audit": {
+      "IMPLEMENTED": "YES existing bounded job",
+      "WIRED": "YES Required child8",
+      "QUALIFIED": "NO current122 whole",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "fit current122 plus completed H1 source into a finite whole-job budget",
+        "preserve all parent/required/profile/cleanup checks",
+        "qualify next meaningful frozen source, not retry unchanged CI441"
+      ]
+    },
+    "proposed_job_budget_minutes": 150,
+    "reason": "113 passing parents consumed120min; remaining9 baseline521s plus current H1 new cases180s exceeds old job bound.150min leaves a bounded margin. Product and per-test limits unchanged; no new job/profile/skip."
+  },
+  "macOS": {
+    "cause_status": "outer6min default-test timeout confirmed; lower cause UNKNOWN",
+    "comparison": [
+      {
+        "run": 439,
+        "job_id": 123978679498,
+        "build_seconds": 50.027,
+        "default_seconds_to_result": 198.157,
+        "cache_enabled": false
+      },
+      {
+        "run": 440,
+        "job_id": 124039907206,
+        "build_seconds": 52.798,
+        "default_seconds_to_result": 207.694,
+        "cache_enabled": false
+      },
+      {
+        "run": 441,
+        "job_id": 124077272254,
+        "build_seconds": 97.403,
+        "default_seconds_to_result": 360.237,
+        "cache_enabled": false
+      }
+    ],
+    "same_runner_image": "macos-26 20260824.0517.1",
+    "all_cache_false": true,
+    "slow_owner_source_diff_439_to_441": [],
+    "unchanged_slow_owners": [
+      "internal/promotion",
+      "scripts/update-runtime",
+      "scripts/release-manifest"
+    ],
+    "no_test_failure_before_outer_timeout": true,
+    "current_action": "preserve limits/checks; do not infer cold-cache or G3 causation from elapsed time alone"
+  },
+  "Corpus": {
+    "phase": "bootstrap-modules, before corpus acquisition/test",
+    "cause_status": "HTTP2 peer INTERNAL_ERROR confirmed; service/network cause UNKNOWN",
+    "current_action": "no dependency/checksum/network-policy/retry changes; keep first setup failure"
+  },
+  "raw": [
+    "docs/github-logs/package-client-quarantine-20261021/ci441-linux-annotations.json",
+    "docs/github-logs/package-client-quarantine-20261021/ci441-ci439-parent-comparison.json",
+    "docs/github-logs/package-client-quarantine-20261021/ci441-full-source-log-proof.json"
+  ],
+  "H1_outside_source": true,
+  "new_CI_started": false
+}

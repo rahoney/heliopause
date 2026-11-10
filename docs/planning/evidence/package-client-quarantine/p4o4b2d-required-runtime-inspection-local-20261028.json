@@ -1,0 +1,265 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B2d",
+  "baseline_commit": "548946ad2637e089f3ffb409bf55848062fec69d",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES(required inspector/real factory); NO(complete release DATA membership)",
+    "QUALIFIED": "YES(named local required inspection)",
+    "ACCEPTANCE_CLOSED": "YES(named inspector scope only)",
+    "MISSING": [
+      "complete release DATA graph/manifest/SBOM/build/sign/install/recovery membership",
+      "native pipx install/upgrade/tool CLI",
+      "grouped hosted/common consumers",
+      "final full CPU/three CUDA support matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/inspection/githubrelease/dynamic.go",
+      "sha256": "0af4780c915dc390e693b7288bc95419f3401e24a0073f53959a72b65a7fed67"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime.go",
+      "sha256": "a93433f8b8c8845d79de3377461162c1e92101ba62c705fe020b333c4f04d284"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_test.go",
+      "sha256": "66e38a786b3d15312f6b245fb34127c224e519da46dbd40a8c519a3784185847"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime_realcorpus_test.go",
+      "sha256": "e83e1de845c91f1318b94e8f5938cae522e25b60f7d58b4115d08c1261c35b2a"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "e92a301c74349265207d15e645b310bd92ccff7f73a064abab418f0609db7b64"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_integration_unix_test.go",
+      "sha256": "6e244ff6639e4d33ccc24787b859bad320b79a02e755e9f8d6237cfbc6169633"
+    },
+    {
+      "path": "internal/bootstrap/self_update_linux.go",
+      "sha256": "2a0328db3776058813ff9add6b09c4813897f4847186283750a07a0245cd1af5"
+    },
+    {
+      "path": "internal/bootstrap/pipx_runtime_inspection_integration_test.go",
+      "sha256": "91e11f5c68f8ae60044bf25bbcf7e49beb5778893c3b02397a6a2060699ab996"
+    },
+    {
+      "path": "internal/sandbox/pipx_dynamic_real_test.go",
+      "sha256": "2f1e6fbf3e544e3a87b3dfc76f98288bcf2a98ea9fb16d3280aa0949a7f0bd45"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "22aeca696c8dfdcc253003fa336bd63d1052c28a2129e5d9d303393205f9e042"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "ca8344f2db44ce7e7ff04ea605dfda8a6b9833746a8b683a2c77e413245e34be"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.67
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 0.752
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 42.543
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 2.132
+    },
+    {
+      "step": "tagged-compile",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-c",
+        "-o",
+        "/tmp/haa-p4o4b2d-v5-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.014
+    },
+    {
+      "step": "selected-input",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestPipxRuntimeSelectedIntakeAndRequiredReport$",
+        "./internal/inspection/githubrelease"
+      ],
+      "exit_code": 0,
+      "seconds": 1.308
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.23
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.336
+    }
+  ],
+  "affected_full_race_before_final_capability_guard": {
+    "step": "race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/inspection/githubrelease",
+      "./internal/artifact/githubrelease",
+      "./internal/bootstrap",
+      "./scripts/check"
+    ],
+    "exit_code": 0,
+    "seconds": 51.296
+  },
+  "actual": {
+    "exit": 0,
+    "seconds": 41.606,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "f2a088b1f0c12db5e5b8081034b2e0d75c36bf878d90eb15a95e9ae71fe3d843",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4b2d-actual-v1/protected-client",
+        "sha256": "6ffe64a12d840eece282a22378809519203c8c4745c3e7c34fb68baa73fd5875"
+      },
+      {
+        "path": "/tmp/haa-p4o4b2d-actual-v1/observer",
+        "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/bootstrap/pipx_runtime_inspection_integration_test.go",
+        "sha256": "91e11f5c68f8ae60044bf25bbcf7e49beb5778893c3b02397a6a2060699ab996"
+      }
+    ],
+    "passed_named_tests": [
+      "TestPipxAcquiredRuntimeRequiredInspectionIntegration"
+    ],
+    "named_pass": true
+  },
+  "observed": {
+    "required_check": "github-release-pipx-runtime",
+    "status": "COMPLETED",
+    "findings": 0,
+    "evidence": 6,
+    "command_rows": 5,
+    "all_dispositions": "ATTESTED",
+    "functionality_attested": false,
+    "later_execution_enforced": false,
+    "subject": "original synthetic HAA v9.8.7/github-release identity and selected acquired digest; not published release",
+    "tampered_intake_reinspection": "REFUSED before runtime",
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "host_protected5files_and_docker_unchanged": true,
+    "selected_zip_unchanged": true
+  },
+  "preserved_failures": [
+    {
+      "name": "first",
+      "seconds": 18.859,
+      "owner": "test import graph",
+      "cause": "inspector -> sandbox -> terraformprovider -> artifact/githubrelease forms cycle with internal artifact test",
+      "correction": "consumer-owned bounded result plus composition adapter; no new architecture edge"
+    },
+    {
+      "name": "second",
+      "seconds": 58.828,
+      "owner": "new aggregate command Evidence",
+      "cause": "five rows exceed existing1024B summary bound",
+      "correction": "existing command-per-Evidence pattern; bound unchanged"
+    },
+    {
+      "name": "third",
+      "seconds": 42.413,
+      "owner": "new Evidence identifier",
+      "cause": "long new prefix exceeds existing64B ID bound",
+      "correction": "short pipx-command prefix; full unit in summary; bound unchanged"
+    },
+    {
+      "name": "capability-red",
+      "owner": "shared normalization",
+      "cause": "new P4 unavailable code changed native unknown-code capability",
+      "correction": "new code mapped only for exact pipx required check; native SUPPORTED/INCOMPLETE preserved"
+    }
+  ],
+  "invariants": [
+    "same native summary/findings/check identities; no Core/Application concrete imports",
+    "original HAA identity/digest/handle and selected immutable ZIP plan",
+    "required incomplete/resource/invalid/missing/extra/duplicate/substituted command outcomes emit no completion Evidence",
+    "post-install nonzero remains NOT_ATTESTED; findings preserved; bounded import is not functionality proof",
+    "default resource/boundary/observer budget unchanged",
+    "private mount namespace only; no permanent activation/merge/publication"
+  ],
+  "evidence_inventory": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b2d-final-evidence-inventory.json",
+    "files": 85,
+    "sha256": "311fdc222e2069a5d45893ddda842d0de6a5d0cf4d83c025df0f1ee592f8f1dc"
+  }
+}

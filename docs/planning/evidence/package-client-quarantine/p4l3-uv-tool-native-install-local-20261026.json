@@ -1,0 +1,105 @@
+{
+  "scope": "P4-L3 fresh UV tool install native/source/whole graph/receipt selection only",
+  "baseline": "623925f832075bcd9bc1c93d965893a1147c954b",
+  "implemented": "YES (fresh native selector and bounded whole output census)",
+  "wired": "YES (fixed native session and independent complete archive/source binder); NO (public tool CLI/current Policy/Host)",
+  "qualified": "YES (named local default checks/full PyPI+Sandbox Race/canonical observer and actual)",
+  "acceptance_closed": "NO (persistent tool feature)",
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 106.295,
+      "raw_receipt": "p4l3-native-install-v2-quick.json",
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "profile": "full-affected-race",
+      "exit": 0,
+      "seconds": 23.383,
+      "raw_receipt": "p4l3-native-install-v2-full-affected-race.json",
+      "log_sha256": "6b189856fbc62b2f0ae728855c50a7e8bfc2a7069de54af6638210bc0b056c0d"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.328,
+      "raw_receipt": "p4l3-native-install-v3-docs.json",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 11.155,
+      "raw_receipt": "p4l3-native-install-v3-security.json",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    }
+  ],
+  "observer": {
+    "raw_receipt": "p4l3-uv-tool-directory-observer-canonical-v1.json",
+    "exit": 0,
+    "seconds": 227.363,
+    "latches_pass": 121,
+    "latches_fail": 0,
+    "binary": {
+      "role": "canonical observer",
+      "sha256": "5564f3f99c52542f03f4d65bded5f6536f7dbb6cc55ce2a652a5331102077066",
+      "size": 3141184
+    },
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "d23438546af3e400f0a260fb933364c0bb255312a65fabd213b84b337cc7a1b5"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "47dbd1e029dc40da29a756bec0b66928b7ecff86228f6664727d965c05304803"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+      }
+    ]
+  },
+  "actual": {
+    "raw_receipt": "p4l3-tool-install-native-v3-result.json",
+    "operator_seconds": 92.114,
+    "new_tool_seconds": 15.88,
+    "existing_uv_seconds": 73.76,
+    "tool": "cowsay==6.1",
+    "nodes": 1,
+    "commands": 1,
+    "controls": 4,
+    "no_command_package": "idna==3.11 rejected without result",
+    "existing_uv": [
+      "idna/requests public graph",
+      "two roots/whole closure",
+      "missing independent dependency rejection",
+      "explicit empty requirements/native pylock"
+    ],
+    "helper_wait": 0,
+    "host_before_after_identical": true,
+    "no_skip": true
+  },
+  "first_failures": [
+    "p4l3-first-native-admission-assessment.json",
+    "p4l3-second-native-runtime-read-assessment.json"
+  ],
+  "source_reuse": [
+    "p4l3-session-mechanical-reuse-v2.json",
+    "p4l3-observer-mechanical-reuse-v1.json",
+    "p4l3-v2-v3-go-binary-reuse.json"
+  ],
+  "native_recipe": "p4l3-tool-recipe-query-v1-result.json (offline synthetic index option shape only)",
+  "read_boundary": "four exact immutable canonical PATH directories; UV/direct consumed CONTROL/profile/flags557056/OCI-root only; no file-prefix/write/exec/Artifact/clone grant",
+  "runtime_static_source": "p4l3-uv-tool-shell-source-v1.json: finalize warning uses Shell::contains_path/same_file directory identity; no shell update or tool command execution",
+  "missing": [
+    "existing original tool pre-query guard/native upgrade",
+    "current complete inspection/Policy and approved cache binding",
+    "held environment/receipt/exposed command ownership and rollback",
+    "public UV tool install/upgrade CLI",
+    "pipx supply/runtime/native/public flows",
+    "grouped/final affected profile qualification"
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

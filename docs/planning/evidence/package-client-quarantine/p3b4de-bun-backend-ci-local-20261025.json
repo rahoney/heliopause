@@ -1,0 +1,101 @@
+{
+  "work_item": "M13-004/P3-B4d-e",
+  "baseline": "37fec98dba795c27d72845b0a219abb5940ed4d1",
+  "status": {
+    "IMPLEMENTED": "YES (frozen hosted CI native supply plus actual commands and active workflow validator)",
+    "WIRED": "YES (existing owning lifecycle after PNPM project sandbox restoration/helper start)",
+    "QUALIFIED": "YES (same CI script actual under private namespace and local canonical checks)",
+    "ACCEPTANCE_CLOSED": "NO (remote backend and whole Bun)",
+    "MISSING": [
+      "push grouped backend commits and qualify exact-source ordinary CI including macOS/Required; consume actual timer",
+      "explicit Bun runtime and approved cache/transaction/CLI/native handoff",
+      "whole affected-profile qualification"
+    ]
+  },
+  "sources": [
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "39a0b40d00ee46c4432ed8e4a8a5aee464527268011251747af35738a1852207",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "e76a9ff70f24fd80e65d23df88e781ae29b393c80c3ff28285f12f0bfcdc1339",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "35e0b4ea667c6b83981c08919a360b73dfb828afa3625e31565658376183b41a",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "decf1577325fcb54f16a2edac4e7062af31b4ca31acd45698f0c7da789e5028b",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "07f79e2be9dce413b14b0162eb4acebc796a77b3b0b9729af3f34c4b9f23d378",
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "fba5b5342567da71c2b288fbb5626edddd2fdb3a9a157fb7ce30d524918b57e1",
+      "mode": "100644"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4de-reviewed-workflow.json",
+      "exit": 0,
+      "seconds": 2.407,
+      "receipt_sha256": "9cbb59d6f89c1340f05e59005cc22f1354c40f5fc64d382527f4583ab2ba03b1"
+    },
+    {
+      "receipt": "p3b4de-reviewed-quick.json",
+      "exit": 0,
+      "seconds": 78.075,
+      "receipt_sha256": "75c541d84c732211f23e9d61b34da0aa5ef908762a08744d05cd33657ddf56cd"
+    },
+    {
+      "receipt": "p3b4de-checker-full-race.json",
+      "exit": 0,
+      "seconds": 33.607,
+      "receipt_sha256": "7bab7303db40b6bb3dbe81f03f56f5ba46a3dbae31127f8d29f1ae63a7fe20de"
+    },
+    {
+      "receipt": "p3b4de-backend-vulnerability.json",
+      "exit": 0,
+      "seconds": 14.984,
+      "receipt_sha256": "8b7197ae0231179e408679e0fb3ad6dfe687569d4246283b2153d47cdff7af33"
+    },
+    {
+      "receipt": "p3b4de-ci-supply-v1-result.json",
+      "exit": 0,
+      "seconds": 142.666,
+      "receipt_sha256": "fa76caa340bf043dcecfe4646c0d0732dbfe3d3dde4fe4a3183ec3aa4d0fdf9a"
+    }
+  ],
+  "actual_ci_script": {
+    "receipt": "p3b4de-ci-supply-v1-result.json",
+    "frozen_archive": "repository Bun archive/publisher/native pins, existing materialize-bun",
+    "native_selection_cases": 9,
+    "native_boundary_cases": 5,
+    "whole_quarantine_cases": 2,
+    "native_seconds": 57.84,
+    "boundary_seconds": 29.64,
+    "quarantine_seconds": 44.27,
+    "supplied_installation_absent_after_child": true,
+    "owned_supply_work_absent_after_child": true,
+    "helper": "CONFIRMED_STOPPED wait=0",
+    "Host_before_after": "IDENTICAL",
+    "scope": "private mount namespace, no Host activation; Node-lane quarantine only"
+  },
+  "first_failure": "p3b4de-first-quick.json (78.954s temporary runtime owner fixture omitted new script); exact fixture inventory extended, validators/negative cases retained",
+  "unchanged": [
+    "existing jobs/Required/timeouts",
+    "existing PNPM client/helper sequence",
+    "runtime versions/pins, Policy and observer FS/network grants"
+  ],
+  "ci_plan": "one grouped backend push/ordinary CI; record run/head/time and actual timer; continue independent cache/transaction/CLI without cancelling candidate"
+}

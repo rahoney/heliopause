@@ -1,0 +1,91 @@
+{
+  "scope": "P4-L1 inert native UV tool/pipx receipt parsers; not public tool support",
+  "baseline": "42424fc",
+  "implemented": "YES (named parsers/layout claims/upgrade semantics)",
+  "wired": "YES (native fixtures/parser consumers); NO (public CLI/supply/ownership)",
+  "qualified": "YES (named local canonical and whole PyPI Race)",
+  "acceptance_closed": "NO (whole persistent tools)",
+  "checks": [
+    {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 221.564,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.252,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.261,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 6.086,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "c57a4dc0ed831a32c3439003d0fcc1d42d75a39597487602946b48e93f9ce00d"
+    }
+  ],
+  "native_diagnostic": {
+    "uv_layout": "p4l-persistent-tool-layout-query-v1-result.json (UV two commands PASS; pipx first argv refusal)",
+    "pipx_layout": "p4l-persistent-tool-layout-query-v2-result.json (affected pipx two commands PASS/6.460s)",
+    "host_unchanged": true,
+    "synthetic_only": true,
+    "command_entrypoint_not_executed": true
+  },
+  "fixture_provenance": "p4l-native-receipt-fixture-provenance-v1.json",
+  "mechanical_reuse": "p4l1-json-walker-mechanical-reuse.json",
+  "semantics": {
+    "uv_upgrade": "retains original numeric requirement",
+    "pipx_upgrade": "native strips version specifiers",
+    "uv_receipt_version": "absent; independent archive/inventory required",
+    "pipx_external_bin_root": "absent; independent exposed-link census required"
+  },
+  "missing": [
+    "independent complete archive/source/graph and command binding",
+    "single-owner runtime supply/pin/admission (pipx includes post-install Python startup)",
+    "held original metadata/environment/exposed command ownership",
+    "atomic environment/receipt/exposed command publication/rollback",
+    "actual public CLI install/upgrade/current Policy",
+    "grouped/final affected-profile qualification"
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

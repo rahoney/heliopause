@@ -1,0 +1,62 @@
+{
+  "checked_at_utc": "2026-10-21T07:06:44.266068+00:00",
+  "baseline": "72a90760bb3c46987642b5d0b3eda450a60310a0",
+  "purpose": "Official latest stable discovery only; no asset fetched, digest qualified, pin changed or tool executed",
+  "records": [
+    {
+      "name": "uv",
+      "url": "https://api.github.com/repos/astral-sh/uv/releases/latest",
+      "status": 200,
+      "tag": "0.13.4",
+      "published_at": "2026-10-20T15:24:59Z",
+      "release_url": "https://github.com/astral-sh/uv/releases/tag/0.13.4",
+      "draft": false,
+      "prerelease": false,
+      "response_sha256": "24b03a86f62c8ec35d2602104f030f26cc4fd2f6d07bede9d7671c6226448012"
+    },
+    {
+      "name": "pnpm",
+      "url": "https://api.github.com/repos/pnpm/pnpm/releases/latest",
+      "status": 200,
+      "tag": "v12.14.0",
+      "published_at": "2026-10-15T13:42:33Z",
+      "release_url": "https://github.com/pnpm/pnpm/releases/tag/v12.14.0",
+      "draft": false,
+      "prerelease": false,
+      "response_sha256": "f275c5031eb41454f9777c23753b10dda5c5d873703aefa7c03d6c534b3fd4e2"
+    },
+    {
+      "name": "bun",
+      "url": "https://api.github.com/repos/oven-sh/bun/releases/latest",
+      "status": 200,
+      "tag": "bun-v1.4.3",
+      "published_at": "2026-10-10T05:24:54Z",
+      "release_url": "https://github.com/oven-sh/bun/releases/tag/bun-v1.4.3",
+      "draft": false,
+      "prerelease": false,
+      "response_sha256": "7f61817b77535aeaf50f84f072b1790cb07edc616d7c05234a28e81979fd1435"
+    },
+    {
+      "name": "pipx",
+      "url": "https://api.github.com/repos/pypa/pipx/releases/latest",
+      "status": 200,
+      "tag": "1.18.4",
+      "published_at": "2026-10-18T06:38:50Z",
+      "release_url": "https://github.com/pypa/pipx/releases/tag/1.18.4",
+      "draft": false,
+      "prerelease": false,
+      "response_sha256": "2d4d570e3c8b73b3c21018477db35e13b0b7b47fab3e9aa55370c26075ce109e"
+    },
+    {
+      "name": "npm",
+      "url": "https://api.github.com/repos/npm/cli/releases/latest",
+      "status": 200,
+      "tag": "v12.2.1",
+      "published_at": "2026-10-15T17:46:52Z",
+      "release_url": "https://github.com/npm/cli/releases/tag/v12.2.1",
+      "draft": false,
+      "prerelease": false,
+      "response_sha256": "576fdbe3375d1b3bc08a5ac5e4ebc4ffb50764a68b6be967090714d4b9cd0b4b"
+    }
+  ]
+}

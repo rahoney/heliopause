@@ -1,0 +1,428 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "7e1e4c6",
+  "scope": "UV pip complete sync Application/CLI/bootstrap, exact complete-project batch inspection shared with existing pip graph, and native CI wiring; local qualification only",
+  "implemented": true,
+  "wired": true,
+  "qualified": "LOCAL ONLY",
+  "acceptance_closed": false,
+  "sources": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "bytes": 26242,
+      "sha256": "8f6aa3eaae52b3bd5675328e22c7b6b4815d57331ff27c10495f93335a30e2d7"
+    },
+    {
+      "path": "internal/application/dependency_batch_inspect.go",
+      "bytes": 5143,
+      "sha256": "f86577cc47d0627a1f39df5dccbd1009e023be57d12526a2941a6452bce958eb"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "bytes": 20470,
+      "sha256": "f5f05ff6982a56000ac9820b306af23d15b1fc5ff014a6ca75a091caad22741d"
+    },
+    {
+      "path": "internal/application/project_batch_inspect_test.go",
+      "bytes": 2738,
+      "sha256": "23f47f54fae79ae1bb2f849356a6f0ed6c239f5e456c67a7738388ef109439f5"
+    },
+    {
+      "path": "internal/application/project_inspect.go",
+      "bytes": 4997,
+      "sha256": "52477eb86e78dac2bf10cd0a3684770f90c58e7cffbb89d8267eb9dcb9bf49a0"
+    },
+    {
+      "path": "internal/application/uv_pip_sync.go",
+      "bytes": 1792,
+      "sha256": "8d076a88212a58f125d9b0b5ba9e69c0e8ddbdb5116c12b0e63e771bd5414a5d"
+    },
+    {
+      "path": "internal/application/uv_pip_sync_test.go",
+      "bytes": 3863,
+      "sha256": "ba4f6af40d0344889d00ddd56fb32035201bbe6923798e288303ef5879a4943d"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "bytes": 15201,
+      "sha256": "aca44cef6d241d9d140375d9da4e447dab17ea472b23f5bb13b0a487ce3b4768"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_records.go",
+      "bytes": 5130,
+      "sha256": "f320bf1a6064d76ff460ee4ab099fc39366807e733fd4922f87e1dfe1430ea0a"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_sync_input.go",
+      "bytes": 6688,
+      "sha256": "859aacf1e6823e89eb3e5f147b0a03acece757df6eda7443e8a6874f9acd39e6"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "bytes": 23564,
+      "sha256": "18d7fb165799a1ef1ed16f68e8e894bbb67dcce845ed6fcd52d4f6ad1b0d517d"
+    },
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "bytes": 5588,
+      "sha256": "15e8f95171374c46b5793e536420ca708e582dd9ccc30e4300324cb90fccef47"
+    },
+    {
+      "path": "internal/bootstrap/uv_pip_sync.go",
+      "bytes": 3202,
+      "sha256": "ee33e0486dd3d303553aa1b1d44b6ba3b1b45b35be4a87b8a8ec7eae9f098507"
+    },
+    {
+      "path": "internal/bootstrap/uv_pip_sync_test.go",
+      "bytes": 1832,
+      "sha256": "265845f537945101d35c78ad74ba08b67f448363faf43011016dd2269fe44928"
+    },
+    {
+      "path": "internal/bootstrap/uv_sync_integration_test.go",
+      "bytes": 11516,
+      "sha256": "d5463692cf8dececfcb44cffe8e02fc04ef9548d6dc715031c30d1fbdc89742b"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "bytes": 11938,
+      "sha256": "599758aebc787a473e27351cda07ab4b20d2f9ff9882fb243e7d68c06cb615c2"
+    },
+    {
+      "path": "internal/cli/cargo_update_test.go",
+      "bytes": 9600,
+      "sha256": "c4a03aacdadb302978a0f95848b2ef530c10738820ceef265814d6f782390db4"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "bytes": 20995,
+      "sha256": "b9976327b7ec4b0376aac2cad34b843e3d57216ad809e4586164ef401c49fd4b"
+    },
+    {
+      "path": "internal/cli/launcher_examples.go",
+      "bytes": 2376,
+      "sha256": "3720799ebb220b02af58cf295ec7d9ac5698c7c80660cb77ec364104f7b7bf68"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "bytes": 14908,
+      "sha256": "b5f33833ed0338d70d452973f17d1758a84898f40c2cc0960fa904c21e299dc6"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "bytes": 15561,
+      "sha256": "84e664990ba8a38a499be65444cefba82dc8e7c25d3f2827df763826bb2b80e0"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "bytes": 14991,
+      "sha256": "64cdb42b40f8b359dde1153de83d019032f61a40512a8dc58dd6a6f6a3eda323"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "bytes": 31615,
+      "sha256": "8f931aafe93eae967388acb1606bca9ff91678ad68ed3a8aec0fc3607e7207bf"
+    },
+    {
+      "path": "internal/cli/uv_pip_sync.go",
+      "bytes": 10106,
+      "sha256": "49d92090cc4a8058c5a4b1458d43b21f3ca802a45ad671ec3c6afe99eac8f3bc"
+    },
+    {
+      "path": "internal/cli/uv_pip_sync_test.go",
+      "bytes": 8061,
+      "sha256": "87fa191b9f910ba759e8d1e46982bfa93b1bb598287a57eb6ad420f584a00613"
+    },
+    {
+      "path": "internal/inspection/pypi/composite.go",
+      "bytes": 10207,
+      "sha256": "8ae8a0fcce7e22b9f5cef6231faa4810e48e12b44fbdde2910c2af2c04f938b0"
+    },
+    {
+      "path": "internal/inspection/pypi/composite_graph_test.go",
+      "bytes": 6446,
+      "sha256": "c2e3bd772327dabb97ef986c1e91ef9f3ebb83dd0074b97346943660c3ac34df"
+    },
+    {
+      "path": "internal/inspection/pypi/project.go",
+      "bytes": 2188,
+      "sha256": "f17158b9d36362ddd2206a64fa9cc8d11a200cd665f56d55564218a123ef37ee"
+    },
+    {
+      "path": "internal/inspection/pypi/project_test.go",
+      "bytes": 4152,
+      "sha256": "dfb038865fb8d0323dde54fba95ef5ffcc544889524b21fd0e3a55f637976126"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "bytes": 30920,
+      "sha256": "403c7ef5aea3988b2206d0c893a324b93d39c6fcdfdff54a426dd9fb66825a51"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "bytes": 19107,
+      "sha256": "0d4e5b48f542c4c52c5b3203a590bf65b2c9dd02f381b6c4c69086b08d2106e3"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.81,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 47.175,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.494,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.216,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.701,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "platform_compile": {
+    "profile": "platform",
+    "exit": 0,
+    "seconds": 21.973,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+  },
+  "race": {
+    "command": [
+      "test",
+      "-trimpath",
+      "-race",
+      "-count=1",
+      "-timeout=5m",
+      "./internal/cli",
+      "./internal/bootstrap",
+      "./internal/application",
+      "./internal/artifact/pypi",
+      "./internal/inspection/pypi",
+      "./internal/promotion",
+      "./scripts/check"
+    ],
+    "exit": 0,
+    "seconds": 138.116,
+    "source_hashes_verified": true
+  },
+  "controlled_regression": {
+    "before": {
+      "exit": 1,
+      "seconds": 1.033
+    },
+    "after": {
+      "exit": 0,
+      "seconds": 1.563
+    },
+    "same_preformat_test": {
+      "path": "internal/application/project_batch_inspect_test.go",
+      "sha256": "e007f34a535e9baa015dd483c7f1b74ef79d6956d28553237c786351d9946501"
+    },
+    "original_production_owners_match_baseline_commit": true,
+    "boundary": "same pre-format test before and after; final formatted source has its own hash and canonical/full Race proof; no native requests failure was observed"
+  },
+  "actual_binary_smoke": {
+    "cases": 21,
+    "languages": [
+      "en",
+      "ko",
+      "de",
+      "fr",
+      "es",
+      "pt-BR",
+      "ja"
+    ],
+    "scope": "help, blank human/JSON skip; no positive native execution",
+    "exit": 0,
+    "seconds": 3.24,
+    "binary": {
+      "sha256": "436105a8ac80a61c0ce7db41db13616bee984f0b93392570808060a46530f559",
+      "bytes": 43499128
+    },
+    "cache_created": false,
+    "target_created": false,
+    "cleanup": {
+      "removed_bytes": 43581079,
+      "workroot_absent": true
+    }
+  },
+  "first_failures": [
+    {
+      "cause": "new CLI test originally used internal package and could not access existing external test helper",
+      "correction": "use cli_test package and existing public command/test helper"
+    },
+    {
+      "cause": "CLI preflight initially failed to reject pylock with --allow-empty-requirements before binding",
+      "correction": "reject the requirements-only option before runtime; parser semantics unchanged"
+    },
+    {
+      "cause": "project per-entry inspection omitted complete dependency context",
+      "correction": "share the existing InstallInspect batch lifecycle and PyPI static-all/per-target closure implementation; exact metadata-derived edges, no fake primary"
+    }
+  ],
+  "review": {
+    "pass": 2,
+    "existing_paths_compared": [
+      "InstallInspectService.inspectGraphAware",
+      "CompositeInspector.InspectGraph",
+      "existing graph prerequisite preparation and resource bounds",
+      "existing explicit-empty binder semantics from CI390"
+    ],
+    "checked": [
+      "all acquire/verify before batch inspection and exact report coverage",
+      "static finding/incomplete means dynamic zero",
+      "per-target transitive closure excludes disconnected roots",
+      "missing/unsatisfied dependency rejected before dynamic",
+      "existing pip graph and other project consumers retain original behavior",
+      "blank skip produces no fabricated Run/Evidence/Policy/target/cache",
+      "actual positive same-set/removal/adopt/empty/closure tests wired with bounded command and correct fixture cwd"
+    ]
+  },
+  "cleanup": {
+    "owned_go_tmp_entries": 0,
+    "new_native_resources": 0,
+    "shared_active_sdk_and_cache": "retained until P1/G127 transition; not finished test payload"
+  },
+  "missing": [
+    "actual native complete-sync and closure CLI tests on exact new source",
+    "fresh common Linux/CPU/macOS/Required CI",
+    "same-source cu126/cu130/cu132 actual common qualification before P1 acceptance"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-first-20261023-quick.log",
+      "bytes": 4705,
+      "sha256": "b4d2be2f89f55385ad554705a26f774d2d6a6f954e4e59f96687178d8e23804d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-first-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "42338f53f344fd25d9e19ae4999c79c8358a51c9e9cee79888150a0f5161033c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-corrected-20261023-quick.log",
+      "bytes": 25086,
+      "sha256": "cb947211d537b3b43e0f173713b55b272b677e9374ac3348a6996147961a5717"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-corrected-20261023-quick.json",
+      "bytes": 111,
+      "sha256": "a588ae8247e035043e4bb583e98b6347b87cc3173a13c088b809b601c63e7705"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-batch-before-20261023.log",
+      "bytes": 335,
+      "sha256": "db25243c25842ed80bdd39ce10eef6659e0801391006071dbdcc7db769499a00"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-batch-before-20261023.json",
+      "bytes": 901,
+      "sha256": "11b1bc416ff5ef4c79767d065d156edaa536da9fcedfff8c8aede9fbce377cc1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-batch-after-20261023.log",
+      "bytes": 63,
+      "sha256": "96d12fd9c1457bad7820456a6f03d13d2e9fe7f87ad31950a0079d4119a189eb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-project-batch-after-20261023.json",
+      "bytes": 900,
+      "sha256": "081c824f47b93a5fe02d54b3fb56cbd1fef0c5c75e7288bbb72e8b62940bd492"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-project-batch-race-20261023.log",
+      "bytes": 432,
+      "sha256": "721755db1cf987a056ef73cd80787dcf988a53c1b6c4153df8d5153debc5456b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-project-batch-race-20261023.json",
+      "bytes": 5228,
+      "sha256": "8b9a15e4d6035e9a6fdfa59dd38ed507a8307b9e282d7b2a73a8edd69ec15180"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-binary-smoke-20261023.log",
+      "bytes": 18478,
+      "sha256": "cde630b070d8c62001564e638bab7432a530d5bcbd9bbd7a76419f6bfaa48070"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-cli-binary-smoke-20261023.json",
+      "bytes": 4575,
+      "sha256": "a744c322e6b72e02d1f988f5ca270df7aa6b0a689bf751a5e9997a4891d73eb0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-format.json",
+      "bytes": 109,
+      "sha256": "9165469df914a8e83dcb0a9584da9ed76a9a8e8f599ec918394fd490152e3773"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "e37a1e791b118615f22ae94843ca12a8065fc5f1fa8cc394248a22421b0eaf1f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-security.json",
+      "bytes": 112,
+      "sha256": "ae29e292912e3c711ebefa5234215f4b9b57245b29aa4fe0236b0576fe670b11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-docs.json",
+      "bytes": 108,
+      "sha256": "5ea95b12192a27f1ec9dbebba0a45fb4e58e21311f703c4cc684f08ee1942c7e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-workflow.log",
+      "bytes": 1071,
+      "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-final-candidate-20261023-workflow.json",
+      "bytes": 112,
+      "sha256": "73233fd340725c3aabaf1d8e53178c89f6fc175d1aaa1a31e635d91eb0554350"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-project-batch-20261023-platform.log",
+      "bytes": 46,
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-project-batch-20261023-platform.json",
+      "bytes": 113,
+      "sha256": "9188d1a79b24349ffd7823c36e1651cfe8e4042816282f85ec5236be9fc077f4"
+    }
+  ]
+}

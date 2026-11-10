@@ -1,0 +1,225 @@
+{
+  "work_item": "M13-004/P3 grouped backend/cache/transaction/CLI/native runtime checkpoint",
+  "status": "NAMED_REMOTE_QUALIFIED; whole P2/P3/final affected-profile acceptance OPEN",
+  "run_id": 40209998926,
+  "number": 413,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40209998926",
+  "source": "50fd3b2964669f27793c30caa0b2b61113df3e00",
+  "tree": "d6a63abdc426da4065fdfa248151ad64323a29dc",
+  "files": 2475,
+  "actual_checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93",
+  "parents": [
+    "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "50fd3b2964669f27793c30caa0b2b61113df3e00"
+  ],
+  "all10_checkout_source_tree_match": true,
+  "jobs": [
+    {
+      "id": 121218983332,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983420,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983441,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983479,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983482,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983483,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983490,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983510,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121218983526,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 121232568806,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "created_at": "2026-10-25T16:05:16Z",
+  "updated_at": "2026-10-25T17:02:30Z",
+  "elapsed_seconds": 3434,
+  "timer": {
+    "due": "2026-10-25T17:20:16Z",
+    "actual_observed": "2026-10-25T17:20:16Z",
+    "basis": "75min from run creation; prior53m51 plus new project519.694s and margin",
+    "consumed": true,
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/ci413-timer-consumed-20261026.json",
+    "continued_work": "P4-A/B/C committed and P4-D implemented/actual qualification continued while this frozen source ran; no new push canceled it"
+  },
+  "logs": {
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/ci413-log-capture-inventory.json",
+    "total_bytes": 1123173,
+    "chunks_read_back": 64,
+    "format": "all10 exact decoded MCP text UTF8/BOM; not HTTP ZIP bytes",
+    "entries": [
+      {
+        "job_id": 121218983332,
+        "name": "quick",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-quick.log",
+        "bytes": 23839,
+        "sha256": "c7aaec1311aa1ea1585af99536e563641d25d1d2fb004b89a798c11cbe5b5e6e",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983420,
+        "name": "docs",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-docs.log",
+        "bytes": 20517,
+        "sha256": "8276b65a2dd69e8b656934e9f07bf59770f48b797c6f0ad6c104d7c261d397e0",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983441,
+        "name": "security",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-security.log",
+        "bytes": 21852,
+        "sha256": "e37b0b0bc8db24dba3d4e8c078474939e5ff4aff8a326d30d86d87f6fd9969ba",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983479,
+        "name": "observer-helper",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-observer-helper.log",
+        "bytes": 270448,
+        "sha256": "c00bde535615aa2a317bca543fcf1c41c889c3ce5f2ede8088098b32e54f98ff",
+        "chunks": 14,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983482,
+        "name": "linux",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-linux.log",
+        "bytes": 660631,
+        "sha256": "99d92eac2a9e7b870974975073a27e76100847d8f18ce678d95678c5ddbd2176",
+        "chunks": 34,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983483,
+        "name": "vulnerability",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-vulnerability.log",
+        "bytes": 21697,
+        "sha256": "87c8fd068a878c7147e318ea29d058221465c3561af1b92d3e1ce9aa6ec935cc",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983490,
+        "name": "macos",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-macos.log",
+        "bytes": 25020,
+        "sha256": "f1958d32521a431d12798d1a4ff1f730ed8d2981830e7b1a2d67e9059417fcd3",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983510,
+        "name": "minimum-go",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-minimum-go.log",
+        "bytes": 21505,
+        "sha256": "83860c93edbc8ce27d36f52939c13a5073093d668aeea08bfc9aeea6e80035bf",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121218983526,
+        "name": "wheel-corpus",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-wheel-corpus.log",
+        "bytes": 35361,
+        "sha256": "359d18eec46d453708bee47b535d758a255d4a1f3bc1f04a35ec01d0649ab2f1",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      },
+      {
+        "job_id": 121232568806,
+        "name": "required",
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci413-required.log",
+        "bytes": 22303,
+        "sha256": "a84eafbed345a9fbac40c12daedf653c56ea8df3428635304d780dbb9d874f77",
+        "chunks": 2,
+        "format": "exact decoded MCP log text UTF8/BOM; every chunk readback matched; not HTTP ZIP bytes",
+        "checkout": "38e27d80484697736b61772f1e5fc8a8a7b30c93"
+      }
+    ]
+  },
+  "actual": {
+    "linux_top_level_pass": 72,
+    "observer_helper_latches": 121,
+    "observer_linux_latches": 121,
+    "bun_native_selection_seconds": 37.66,
+    "bun_selection_boundary_seconds": 18.61,
+    "bun_whole_quarantine_seconds": 35.43,
+    "bun_actual_js_seconds": 9.33,
+    "bun_cache_seconds": 30.08,
+    "bun_transaction_seconds": 101.99,
+    "bun_cli_seconds": 128.25,
+    "bun_cli_fresh_operations": 9,
+    "bun_native_original_seconds": 86.91,
+    "pnpm_cli_seconds": 121.01,
+    "pnpm_cli_fresh_operations": 9,
+    "pnpm_native_original_seconds": 84.85,
+    "cpu_full_seconds": 232.73,
+    "helper_reaped_wait0": 9,
+    "final_cleanup": "original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0",
+    "macos_native_go": "1.27.3 darwin/amd64"
+  },
+  "limits": [
+    "P4 local sources are outside source50fd and this CI",
+    "Explicit Bun JS fixture checks external completion/typed failure and Artifact observations; Policy/Host install NOT_RUN in that fixture; public script-free whole inspector separately has current Evidence/Policy",
+    "Remaining affected CPU/CUDA full matrix is grouped at final affected-source checkpoint/P7; no helper-by-helper full CI",
+    "No public release/main merge/whole milestone acceptance claimed; old CI411 timeout cause not inferred from success"
+  ],
+  "elapsed_basis": "run created_at to completed run updated_at metadata (57m14); job terminal timestamps preserved separately"
+}

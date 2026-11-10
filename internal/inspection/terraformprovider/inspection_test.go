@@ -33,6 +33,9 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 	}{
 		{"help-zero", domain.SandboxCompleted, "", true, "", "", "", domain.ExecutionCompleted},
 		{"missing-terminal", domain.SandboxCompleted, "", false, "", "", "", domain.ExecutionIncomplete},
+		{"missing-environments", domain.SandboxCompleted, "", true, "", "", "", domain.ExecutionIncomplete},
+		{"one-environment", domain.SandboxCompleted, "", true, "", "", "", domain.ExecutionIncomplete},
+		{"missing-vfs", domain.SandboxCompleted, "", true, "", "", "", domain.ExecutionIncomplete},
 		{"network", domain.SandboxCompleted, "", true, domain.ObservationNetwork, "network-attempt", "M3_NETWORK_ATTEMPT", domain.ExecutionCompleted},
 		{"outside-filesystem", domain.SandboxCompleted, "", true, domain.ObservationFilesystem, "filesystem-outside-workspace", "M3_FILESYSTEM_VIOLATION", domain.ExecutionCompleted},
 		{"unexpected-process", domain.SandboxCompleted, "", true, domain.ObservationProcess, "process-exec-unexpected", "M3_UNEXPECTED_PROCESS", domain.ExecutionCompleted},
@@ -51,6 +54,7 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 			}
 			if tc.terminal {
 				add(domain.ObservationProcess, "terraform-help-exit-0")
+				add(domain.ObservationProcess, "terraform-help-exit-0")
 				add(domain.ObservationProcess, "lifecycle-completed")
 			}
 			if tc.category != "" {
@@ -60,7 +64,21 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 			if e != nil {
 				t.Fatal(e)
 			}
-			result, e := domain.NewSandboxResult(session, tc.status, tc.limit, observations)
+			var states []domain.SandboxEnvironmentState
+			if tc.status == domain.SandboxCompleted {
+				for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+					states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
+				}
+			}
+			switch tc.name {
+			case "missing-environments":
+				states = nil
+			case "one-environment":
+				states = states[:1]
+			case "missing-vfs":
+				states[1].VFSOperationsCovered = false
+			}
+			result, e := domain.NewSandboxResult(session, tc.status, tc.limit, observations, states...)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -85,7 +103,8 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 				t.Fatal("required probe coverage lost")
 			}
 			signedID, _ := domain.NewCheckID("fixture-signed-source")
-			signedCheck, _ := domain.NewCheckExecution(signedID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			signedProfile, _ := domain.CheckProfileDigest("fixture-signed-v1", "")
+			signedCheck, _ := domain.NewCheckExecution(signedID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", signedProfile)
 			signedEvidenceID, _ := domain.NewEvidenceID("fixture-signed-evidence")
 			signedEvidence, e := domain.NewEvidence(signedEvidenceID, signedID, artifact.Identity(), artifact.Digest(), "fixture", "Synthetic verification for Policy composition only.")
 			if e != nil {
@@ -104,7 +123,21 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 				refs = append(refs, ref)
 			}
 			run, _ := domain.NewRunID()
-			input, e := domain.NewPolicyInput(run, artifact, verification, report, refs)
+			signedRequirement, _ := domain.NewCheckRequirement(signedID, domain.CheckVerification, true, signedProfile)
+			requirements := []domain.CheckRequirement{signedRequirement}
+			for _, name := range []string{"terraform-provider-dynamic", "terraform-provider-observed-facts"} {
+				id, _ := domain.NewCheckID(name)
+				requirement, err := domain.NewCheckRequirement(id, domain.CheckInspection, name != "terraform-provider-observed-facts", providerCheckProfile(name))
+				if err != nil {
+					t.Fatal(err)
+				}
+				requirements = append(requirements, requirement)
+			}
+			plan, err := domain.NewCheckPlan(run, artifact, requirements)
+			if err != nil {
+				t.Fatal(err)
+			}
+			input, e := domain.NewPolicyInput(run, artifact, verification, report, refs, plan)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -122,7 +155,8 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 			if decision.Decision() != wantPolicy {
 				t.Fatalf("unexpected Policy %s", decision.Decision())
 			}
-			if len(report.Evidence()) != 1 {
+			expectedEvidence := 1 + len(states)
+			if len(report.Evidence()) != expectedEvidence {
 				t.Fatal("observed facts lost on incomplete outcome")
 			}
 			if tc.code != "" {

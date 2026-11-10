@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-22 10:21:52 UTC",
+  "run_id": 39755867564,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/39755867564",
+  "source_commit": "a7755ca992cd3876c5c4ab4e7af96886168d45c4",
+  "checkout": "aa8b28cd6885468306615ae58d530c54400124c8",
+  "tree": "37a92f5711fe67ea4a151adbea5687b6e4dca77f",
+  "source_and_checkout_tree_equal": true,
+  "jobs": [
+    {
+      "id": 119747596373,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596673,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596677,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596762,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596823,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596871,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596879,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747596906,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119747597074,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119762894356,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "conclusion": "success",
+  "scope": "C3c1 installed-aware native UV selection producer; guarded target promotion, client update, native ownership and complete sync remain",
+  "compiler": "go1.26.10",
+  "native_update": {
+    "test": "TestUVPublicNativeUpdateResolverIntegration",
+    "seconds": 19.6,
+    "cases": [
+      {
+        "intent": "install",
+        "version": "24.2"
+      },
+      {
+        "intent": "upgrade-package",
+        "version": "25.0"
+      },
+      {
+        "intent": "upgrade",
+        "version": "25.0"
+      }
+    ],
+    "nodes_each": 1,
+    "controls_each": 4,
+    "runtime": "uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi"
+  },
+  "public_uv_seconds": 15.91,
+  "cli_empty_install_seconds": 19.69,
+  "linux_top_level_passes": 51,
+  "cpu_full_seconds": 231.72,
+  "helpers": {
+    "reaped": 5,
+    "wait": 0
+  },
+  "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+  "macos": "PASS; actual Go1.26.10 darwin/amd64",
+  "vulnerability": "PASS; actual Go1.26.10 linux/amd64",
+  "cuda_full": "NOT_RUN",
+  "local_cleanup": "No native Docker resources created for C3c1 local checks; task TMPDIR empty; active pinned SDK/source/cache/bundle retained for next consumer",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci378-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "57cacfb133dc01b15ca647dbf9c630578cb17f722ada183e3c317286446fe7c1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci378-linux.log",
+      "bytes": 593860,
+      "sha256": "d48221653ac509aa7ad0ed3a7aacb85a7801a374aff22964f0943f2660460944"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci378-macos.log",
+      "bytes": 21053,
+      "sha256": "587c5207afbbda9832947b740b740de5a8177fddaa64ac4b423808908ccd1072"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci378-vulnerability.log",
+      "bytes": 21643,
+      "sha256": "f1728d87166c577b259150debd4f0127d1cd36bb073d4206591840d92d8370e7"
+    }
+  ]
+}

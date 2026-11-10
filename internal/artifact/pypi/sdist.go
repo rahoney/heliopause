@@ -45,9 +45,13 @@ type SdistInspection struct {
 
 // InspectSdist validates a public PEP 517 .tar.gz source distribution without
 // extracting it to the Host filesystem or invoking its build backend.
-func InspectSdist(reader io.Reader, filename, declaredSHA256 string, limits SdistLimits) (SdistInspection, error) {
-	if reader == nil || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 {
+func InspectSdist(reader io.Reader, filename, declaredSHA256 string, limits SdistLimits, captures ...MemberCapture) (SdistInspection, error) {
+	if reader == nil || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 || len(captures) > 1 {
 		return SdistInspection{}, errors.New("sdist intake input is invalid")
+	}
+	var capture MemberCapture
+	if len(captures) == 1 {
+		capture = captures[0]
 	}
 	project, version, err := parseSdistFilename(filename)
 	if err != nil {
@@ -57,12 +61,15 @@ func InspectSdist(reader io.Reader, filename, declaredSHA256 string, limits Sdis
 	if readErr != nil || int64(len(compressed)) > limits.MaxCompressed {
 		return SdistInspection{}, errors.New("sdist compressed size exceeds bound")
 	}
-	gzipReader, err := gzip.NewReader(bytes.NewReader(compressed))
+	compressedReader := bytes.NewReader(compressed)
+	gzipReader, err := gzip.NewReader(compressedReader)
 	if err != nil {
 		return SdistInspection{}, errors.New("sdist gzip structure is invalid")
 	}
 	defer gzipReader.Close()
-	archive := tar.NewReader(io.LimitReader(gzipReader, limits.MaxUncompressed+1))
+	gzipReader.Multistream(false)
+	decoded := &io.LimitedReader{R: gzipReader, N: limits.MaxUncompressed + 1}
+	archive := tar.NewReader(decoded)
 	seen := map[string]bool{}
 	var root string
 	var files, uncompressed int64
@@ -104,19 +111,47 @@ func InspectSdist(reader io.Reader, filename, declaredSHA256 string, limits Sdis
 			}
 		case tar.TypeReg:
 			uncompressed += header.Size
+			var member io.Reader = archive
+			if capture != nil {
+				if destination := capture(strings.TrimPrefix(name, root+"/"), uint64(header.Size)); destination != nil {
+					member = io.TeeReader(archive, destination)
+				}
+			}
 			if name == root+"/PKG-INFO" || name == root+"/pyproject.toml" {
 				if header.Size > limits.MaxMetadata {
 					return SdistInspection{}, errors.New("sdist metadata exceeds bound")
 				}
-				body, readErr := io.ReadAll(io.LimitReader(archive, limits.MaxMetadata+1))
+				body, readErr := io.ReadAll(io.LimitReader(member, limits.MaxMetadata+1))
 				if readErr != nil || int64(len(body)) != header.Size {
 					return SdistInspection{}, errors.New("sdist metadata is unreadable")
 				}
 				metadata[path.Base(name)] = body
+			} else if capture != nil {
+				if n, err := io.Copy(io.Discard, member); err != nil || n != header.Size {
+					return SdistInspection{}, errors.New("sdist member is incomplete")
+				}
 			}
 		default:
 			return SdistInspection{}, errors.New("sdist contains unsupported file type")
 		}
+	}
+	// tar EOF does not prove gzip CRC/size or exhaustion of the compressed
+	// subject. Drain only zero padding within the original decoded bound.
+	buffer := make([]byte, 32<<10)
+	for {
+		n, readErr := decoded.Read(buffer)
+		if len(bytes.Trim(buffer[:n], "\x00")) != 0 || decoded.N <= 0 {
+			return SdistInspection{}, errors.New("sdist has uninspected decoded content or exceeds bounds")
+		}
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			return SdistInspection{}, errors.New("sdist gzip integrity is invalid")
+		}
+	}
+	if compressedReader.Len() != 0 {
+		return SdistInspection{}, errors.New("sdist has trailing compressed content")
 	}
 	if root != project+"-"+version || len(metadata["PKG-INFO"]) == 0 || len(metadata["pyproject.toml"]) == 0 {
 		return SdistInspection{}, errors.New("sdist metadata does not match filename")

@@ -6,16 +6,16 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestCollectTraceNormalizesKindsWithoutPayload(t *testing.T) {
-	observations, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{{Kind: "process-exec", Bytes: 12}, {Kind: "network-attempt", Bytes: 16}}})
+	observations, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{{Kind: "process-exec", Bytes: 12}, {Kind: "network-attempt", Bytes: 16}}})
 	if limitation != "" || len(observations) != 2 {
 		t.Fatalf("collectTrace() = (%d observations, %q)", len(observations), limitation)
 	}
@@ -65,24 +65,29 @@ func TestAggregateLedgerDiagnosticSeparatesNormalizedCountFromRecords(t *testing
 
 func TestGoBuildAggregateLedgerNeverReplenishesAcrossStreams(t *testing.T) {
 	ledger, err := newObservationTraceLedger(goBuildProfile)
-	if err != nil || ledger.maxEvents != 20000 || ledger.maxBytes != 2<<20 {
+	if err != nil || ledger.maxEvents != 40000 || ledger.maxBytes != 2<<20 {
 		t.Fatalf("build ledger = %+v, %v", ledger, err)
 	}
-	// Preparation and build share one authorization; summary counts consume it.
-	for _, events := range []uint64{619, 10000, 9381} {
+	// Both experiments' preparation/compiler/keeper streams share one
+	// authorization; each counted summary consumes the remaining total.
+	for _, events := range []uint64{619, 10000, 9381, 619, 10000, 9381} {
 		if err := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &events}, 134); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if ledger.events != 20000 {
+	if ledger.events != 40000 {
 		t.Fatal("exact aggregate bound was not charged")
 	}
 	err = ledger.charge(helperRecord{Kind: "process-exec-expected"}, 134)
 	var fault observerFault
-	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 20000 || ledger.bytes != 402 {
+	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 40000 || ledger.bytes != 804 {
 		t.Fatal("overflow succeeded or changed the remaining authorization")
 	}
-	for _, profile := range []string{"pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
+	npm, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil || npm.maxEvents != ports.NPMEnvironmentTraceEventLimit || npm.maxBytes != defaultTraceBudget.bytes || traceBudgetForProfile("npm-lifecycle").events != 10000 {
+		t.Fatal("npm aggregate or physical collector budget changed", err)
+	}
+	for _, profile := range []string{cargoBuildProfile, "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
 		other, err := newObservationTraceLedger(profile)
 		if err != nil || other.maxEvents != uint64(traceBudgetForProfile(profile).events) {
 			t.Fatalf("existing profile budget changed: %q", profile)
@@ -105,7 +110,7 @@ func TestCollectTraceFailsClosedOnUntrustedOrOversizedInput(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, limitation := collectTrace(context.Background(), test.reader)
+			_, limitation, _ := collectTraceDiagnostic(context.Background(), test.reader)
 			if limitation != test.want {
 				t.Fatalf("limitation = %q, want %q", limitation, test.want)
 			}
@@ -295,7 +300,7 @@ func TestCollectTraceDiagnosticDeterministicFormatting(t *testing.T) {
 }
 
 func TestCollectTraceRetainsUniqueSubjectsWithSaturatingCounts(t *testing.T) {
-	observations, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{
+	observations, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{
 		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
 		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
 		{Kind: "network-attempt", Bytes: 10},
@@ -313,7 +318,7 @@ func TestCollectTraceRetainsUniqueSubjectsWithSaturatingCounts(t *testing.T) {
 
 func TestCollectTraceFailsClosedOnInvalidAggregateCount(t *testing.T) {
 	for _, count := range []uint64{domain.MaximumObservationSummaryCount + 1, ^uint64(0)} {
-		_, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{{Kind: "filesystem-workspace-access", Bytes: 1, Count: count}}})
+		_, limitation, _ := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{{Kind: "filesystem-workspace-access", Bytes: 1, Count: count}}})
 		if limitation != "M3_DYNAMIC_OBSERVER_FAILED" {
 			t.Fatalf("count %d limitation = %q", count, limitation)
 		}
@@ -336,11 +341,7 @@ func TestTraceBudgetsAreProfileBoundedAndFailClosed(t *testing.T) {
 }
 
 func TestPyTorchCPUHelperRecordLimitDoesNotUndercutCollectorBudget(t *testing.T) {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("locate collector test source")
-	}
-	helperSource, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	helperSource, err := os.ReadFile(filepath.Join("..", "..", "tools", "gvisor-observer", "observer.cc"))
 	if err != nil {
 		t.Fatalf("read observer helper source: %v", err)
 	}

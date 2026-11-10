@@ -50,6 +50,24 @@ func (c timedAccountingClient) Read(context.Context, string) (ObservationResourc
 	return c.lease, c.err
 }
 
+func TestPythonCPUSampleDoesNotUseTransportTimingForAuthorization(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		now := time.Now()
+		ledger, err := newObservationTransaction(testObservationPolicy(now), nil, now)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := ledger.sampleCPU(100, now); err != nil {
+			t.Fatal(err)
+		}
+		client := terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101, ReadTiming: ObservationResourceReadTiming{StartedUnixNS: -1, IdentityNS: -1, ResponseNS: 1 << 62, TotalNS: 1 << 62}}}
+		watch := observationCPUWatch{client: client, transaction: "transaction", ledger: ledger}
+		if err := watch.sampleAccountingLocked(context.Background(), false, false); err != nil || ledger.failed || ledger.usageUsec != 101 {
+			t.Fatal("diagnostic changed valid accounting", err)
+		}
+	})
+}
+
 func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 	for _, test := range []struct {
 		name             string
@@ -70,7 +88,7 @@ func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 				if err := ledger.sampleCPU(100, now); err != nil {
 					t.Fatal(err)
 				}
-				client := timedAccountingClient{terminationDiagnosticClient: terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101}}, delay: test.read, readReturned: make(chan struct{})}
+				client := timedAccountingClient{terminationDiagnosticClient: terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101, ReadTiming: ObservationResourceReadTiming{StartedUnixNS: 12345, ResponseNS: 589410876, TotalNS: 589500000}}}, delay: test.read, readReturned: make(chan struct{})}
 				watch := &observationCPUWatch{client: client, transaction: "transaction", ledger: ledger}
 				time.Sleep(test.beforeRead)
 				err = watch.sampleAccountingLocked(context.Background(), false, false)
@@ -81,6 +99,7 @@ func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
 					"failed_before=false", "poll_ns=1000000000",
 					fmt.Sprintf("read_ns=%d", test.read.Nanoseconds()),
 					"ledger_lock_ns=0",
+					"transport_started_unix_ns=12345", "response_ns=589410876", "transport_total_ns=589500000",
 					fmt.Sprintf("before_read_gap_ns=%d", test.beforeRead.Nanoseconds()),
 				} {
 					if !strings.Contains(err.Error(), operand) {

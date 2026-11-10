@@ -36,6 +36,11 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err := ctx.Err(); err != nil {
 		return result, published, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return result, published, err
+	}
+	defer func() { finishUse(resultErr) }()
 	guard, err := s.mutation.BeginBuild(ctx, install)
 	if err != nil {
 		return result, published, err
@@ -53,6 +58,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err != nil {
 		return result, published, err
 	}
+	ctx = ports.WithStorageOperation(ctx, operationID)
 	runID, err := s.newRun()
 	if err != nil {
 		return result, published, err
@@ -72,9 +78,12 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err != nil {
 		return result, published, err
 	}
+	var plans []domain.CheckPlan
+	var checks []domain.CheckExecution
+	var refs []domain.EvidenceReference
 	fail := func(code string, cause error) (domain.OperationResult, domain.PublishedProjectBuild, error) {
 		code = strings.Replace(code, "M12_GO_", "M12_"+strings.ToUpper(inputs.Kind())+"_", 1)
-		r, e := failRun(run, reference, inputs.Source(), nil, nil, code, "Project build did not complete.", cause)
+		r, e := failRun(run, reference, inputs.Source(), checks, refs, code, "Project build did not complete.", cause, plans...)
 		return r, domain.PublishedProjectBuild{}, e
 	}
 	if err := run.Activate(); err != nil {
@@ -83,10 +92,17 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err := run.BindAcquiredArtifact(inputs.Source()); err != nil {
 		return fail("M12_GO_BUILD_INPUT_FAILED", err)
 	}
+	plans, err = freezeCheckPlan(ctx, runID, inputs.Source(), s.verification, s.inspection, s.policy)
+	if err != nil {
+		return fail("CHECK_PLAN_UNAVAILABLE", err)
+	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, inputs.Source())
 	if err != nil {
 		return fail("M12_GO_BUILD_VERIFICATION_FAILED", err)
 	}
+	checks = []domain.CheckExecution{verification.Execution()}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "build"})
 	report, err := s.inspection.InspectBuild(ctx, inputs)
 	if err != nil {
 		return fail("M12_GO_BUILD_OBSERVATION_FAILED", err)
@@ -94,27 +110,28 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if !reflect.DeepEqual(report.Inputs(), inputs) {
 		return fail("M12_GO_BUILD_BINDING_FAILED", errors.New("project build inspection returned substituted inputs"))
 	}
-	checks := append([]domain.CheckExecution{verification.Execution()}, report.Inspection().Executions()...)
+	checks = append([]domain.CheckExecution{verification.Execution()}, report.Inspection().Executions()...)
 	facts := append(verification.Evidence(), report.Inspection().Evidence()...)
-	refs, err := s.evidence.Record(ctx, runID, facts)
+	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
+	refs, err = recordInspectionEvidence(ctx, s.evidence, runID, facts, checks...)
 	if err != nil {
-		r, e := failRun(run, reference, inputs.Source(), checks, nil, "EVIDENCE_RECORD_FAILED", "Build Evidence recording failed.", err)
+		r, e := failRun(run, reference, inputs.Source(), checks, nil, "EVIDENCE_RECORD_FAILED", "Build Evidence recording failed.", err, plans...)
 		return r, published, e
 	}
-	input, err := domain.NewPolicyInput(runID, inputs.Source(), verification, report.Inspection(), refs)
+	input, err := domain.NewPolicyInput(runID, inputs.Source(), verification, report.Inspection(), refs, plans...)
 	if err != nil {
-		r, e := failRun(run, reference, inputs.Source(), checks, refs, "POLICY_INPUT_INVALID", "Build Policy input is invalid.", err)
+		r, e := failRun(run, reference, inputs.Source(), checks, refs, "POLICY_INPUT_INVALID", "Build Policy input is invalid.", err, plans...)
 		return r, published, e
 	}
 	decision, err := s.policy.Evaluate(input)
 	if err != nil {
-		r, e := failRun(run, reference, inputs.Source(), checks, refs, "POLICY_EVALUATION_FAILED", "Build Policy evaluation failed.", err)
+		r, e := failRun(run, reference, inputs.Source(), checks, refs, "POLICY_EVALUATION_FAILED", "Build Policy evaluation failed.", err, plans...)
 		return r, published, e
 	}
 	if err := run.FinalizeCompleted(decision); err != nil {
 		return result, published, err
 	}
-	result, err = domain.NewInspectOperationResult(domain.OperationResultData{OperationID: operationID, Status: domain.OperationCompleted, Reference: reference, ResolvedIdentity: inputs.Source().Identity(), Digest: inputs.Source().Digest(), RunID: runID, RunOutcome: domain.RunCompleted, Checks: checks, Evidence: refs, PolicyDecision: decision})
+	result, err = domain.NewInspectOperationResult(domain.OperationResultData{OperationID: operationID, Status: domain.OperationCompleted, Reference: reference, ResolvedIdentity: inputs.Source().Identity(), Digest: inputs.Source().Digest(), RunID: runID, RunOutcome: domain.RunCompleted, Checks: checks, CheckPlan: input.CheckPlan(), Evidence: refs, PolicyDecision: decision})
 	if err != nil {
 		return result, published, err
 	}

@@ -1,0 +1,492 @@
+{
+  "schema": "helox.qualification-receipt/v1",
+  "scope": "M13-004 corrected installed caller; Linux/WSL2 amd64 same-runtime native self-quarantine update",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "source": "4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25",
+  "source_tree": "6a81838e30f509c37c4e9089bfd34f1bfc9f9196",
+  "source_qualification": "https://github.com/rahoney/heliopause/actions/runs/39461816815",
+  "tag": "refs/tags/v0.1.1-rc.6",
+  "official_build": "https://github.com/rahoney/heliopause/actions/runs/39519718710",
+  "official_job": 118960299129,
+  "attestation_id": 58010264,
+  "download": {
+    "zip_bytes": 232000782,
+    "zip_sha256": "525bfb70034a249b3fae09950d5779e8677d06e78936bc32679da2ff5126fc2f",
+    "seconds": 303.8199808500358,
+    "files": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "size": 7201108,
+        "sha256": "f83d5af0fa9cec5de61a0a5484a0e63cd7c551b51e146abf3e7b6dc05ef111f1"
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "size": 27274678,
+        "sha256": "c57c768b4f30f46bfba80ecd1cda7823723d94dade702898bb95c88fa3b9e403"
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "size": 3089496,
+        "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0"
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "size": 20224928,
+        "sha256": "2b2b14dceb08dc30e0e67b3046acea164f91b41ee46085344db2e2ebd8c94d8e"
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "size": 18726818,
+        "sha256": "de92426e2650dc32a87154322568e6459941b058bf02647409f63bf40a1d6f34"
+      },
+      {
+        "name": "helox-linux-amd64",
+        "size": 42451677,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78"
+      },
+      {
+        "name": "helox-linux-amd64.deb",
+        "size": 39930760,
+        "sha256": "beedc4519b4aad2f11fb6d6eff939a0070d66728c1cc38c9fd83107556d27ba2"
+      },
+      {
+        "name": "helox-linux-amd64.rpm",
+        "size": 39894232,
+        "sha256": "fd61e54c33a9f375db16ddb4bdfbd2f7f9fdd5b3fa0e9020222a15d921e93742"
+      },
+      {
+        "name": "helox-linux-arm64",
+        "size": 33189766,
+        "sha256": "0e08f8f2e4e04949e1c64e60de53c31001475c9d233c20a4bc28a92ccaea91b6"
+      },
+      {
+        "name": "helox-release-checksums.txt",
+        "size": 1096,
+        "sha256": "7915ce4c0b2feec16ffb0762c9d8e171038270bda3716f167774c72cd4dcec47"
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "size": 2793,
+        "sha256": "729f6349b6cd2e707c610f41ba500c132255e2aa4b0a40fc02fa2f638fbdc357"
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "size": 9908,
+        "sha256": "dc11b3a7901081baf63aaa17106a9288de87e477559bf7049890410e6743b1bd"
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "size": 1666,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+      }
+    ]
+  },
+  "verification": {
+    "uid": 1000,
+    "network_namespace": "offline",
+    "source": "4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25",
+    "official_run": 39519718710,
+    "independent": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "exit": 0,
+        "sha256": "f83d5af0fa9cec5de61a0a5484a0e63cd7c551b51e146abf3e7b6dc05ef111f1"
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "exit": 0,
+        "sha256": "c57c768b4f30f46bfba80ecd1cda7823723d94dade702898bb95c88fa3b9e403"
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "exit": 0,
+        "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0"
+      },
+      {
+        "name": "helox-darwin-amd64",
+        "exit": 0,
+        "sha256": "2b2b14dceb08dc30e0e67b3046acea164f91b41ee46085344db2e2ebd8c94d8e"
+      },
+      {
+        "name": "helox-darwin-arm64",
+        "exit": 0,
+        "sha256": "de92426e2650dc32a87154322568e6459941b058bf02647409f63bf40a1d6f34"
+      },
+      {
+        "name": "helox-linux-amd64",
+        "exit": 0,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78"
+      },
+      {
+        "name": "helox-linux-amd64.deb",
+        "exit": 0,
+        "sha256": "beedc4519b4aad2f11fb6d6eff939a0070d66728c1cc38c9fd83107556d27ba2"
+      },
+      {
+        "name": "helox-linux-amd64.rpm",
+        "exit": 0,
+        "sha256": "fd61e54c33a9f375db16ddb4bdfbd2f7f9fdd5b3fa0e9020222a15d921e93742"
+      },
+      {
+        "name": "helox-linux-arm64",
+        "exit": 0,
+        "sha256": "0e08f8f2e4e04949e1c64e60de53c31001475c9d233c20a4bc28a92ccaea91b6"
+      },
+      {
+        "name": "helox-release-checksums.txt",
+        "exit": 0,
+        "sha256": "7915ce4c0b2feec16ffb0762c9d8e171038270bda3716f167774c72cd4dcec47"
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "exit": 0,
+        "sha256": "729f6349b6cd2e707c610f41ba500c132255e2aa4b0a40fc02fa2f638fbdc357"
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "exit": 0,
+        "sha256": "dc11b3a7901081baf63aaa17106a9288de87e477559bf7049890410e6743b1bd"
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "exit": 0,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+      }
+    ],
+    "canonical_exit": 0
+  },
+  "identities": [
+    {
+      "role": "release-manifest",
+      "sha256": "729f6349b6cd2e707c610f41ba500c132255e2aa4b0a40fc02fa2f638fbdc357"
+    },
+    {
+      "role": "public-sigstore-proof",
+      "sha256": "3ede2181e6ec961c89cd0568ce8c56071f2ca60b79f904ec4e1682cf1eade9a6"
+    }
+  ],
+  "normal_rc3_to_rc6": {
+    "raw_prefix": "rc6-normal",
+    "exit": 0,
+    "seconds": 35.183264514955226,
+    "required_completed": 18,
+    "authenticity": 7,
+    "static": 7,
+    "native_dynamic": 4,
+    "decision": "ALLOW",
+    "promotion": "COMPLETED",
+    "history": "COMMITTED",
+    "current": "versions/v0.1.1-rc.6",
+    "active_journal_absent": true,
+    "protected_copies": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "bytes": 7201108,
+        "sha256": "f83d5af0fa9cec5de61a0a5484a0e63cd7c551b51e146abf3e7b6dc05ef111f1",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "bytes": 27274678,
+        "sha256": "c57c768b4f30f46bfba80ecd1cda7823723d94dade702898bb95c88fa3b9e403",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "bytes": 3089496,
+        "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-linux-amd64",
+        "bytes": 42451677,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "bytes": 2793,
+        "sha256": "729f6349b6cd2e707c610f41ba500c132255e2aa4b0a40fc02fa2f638fbdc357",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "bytes": 9908,
+        "sha256": "dc11b3a7901081baf63aaa17106a9288de87e477559bf7049890410e6743b1bd",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "bytes": 1666,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      }
+    ],
+    "doctor5_npm3_allow": true
+  },
+  "cancellations": [
+    {
+      "raw_prefix": "rc6-cancel-acquisition",
+      "mode": "acquisition",
+      "exit": 1,
+      "seconds": 2.0013126470148563,
+      "error": "INSTALL_INSPECTION_FAILED",
+      "original_cancellation_preserved": true,
+      "signal": "SIGINT",
+      "actual_identity": {
+        "pid": 3912,
+        "exe": "/usr/lib/heliopause/versions/v0.1.1-rc.6/helox-linux-amd64",
+        "starttime": "32747728",
+        "uid": [
+          "1000",
+          "1000",
+          "1000",
+          "1000"
+        ],
+        "inode": 120670,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78",
+        "cgroup": "0::/init.scope\n"
+      },
+      "observer": [
+        {
+          "pid": 3969,
+          "exe": "/usr/lib/heliopause/versions/v0.1.1-rc.6/haa_gvisor_observer-linux-amd64",
+          "starttime": "32747878",
+          "cgroup": "0::/init.scope\n",
+          "uid": "1000\t1000\t1000\t1000"
+        }
+      ],
+      "trigger": {
+        "actual_acquisition": {
+          "path": "/repos/rahoney/heliopause/releases/assets/6103",
+          "asset": "helox-linux-amd64",
+          "sha256": "sha256:948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78",
+          "prefix_bytes": 65536,
+          "monotonic": 327479.119666117
+        }
+      },
+      "current_registration_history_configs_unchanged": true,
+      "new_root_transaction": false,
+      "observer_container_slice_drained": true,
+      "endpoints_and_supervisor_lock_absent": true,
+      "next_doctor5_npm3_allow": true
+    },
+    {
+      "raw_prefix": "rc6-cancel-dynamic-corrected",
+      "mode": "dynamic",
+      "exit": 1,
+      "seconds": 6.248306440014858,
+      "error": "INSTALL_INSPECTION_FAILED",
+      "original_cancellation_preserved": true,
+      "signal": "SIGINT",
+      "actual_identity": {
+        "pid": 5977,
+        "exe": "/usr/lib/heliopause/versions/v0.1.1-rc.6/helox-linux-amd64",
+        "starttime": "32755279",
+        "uid": [
+          "1000",
+          "1000",
+          "1000",
+          "1000"
+        ],
+        "inode": 120670,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78",
+        "cgroup": "0::/init.scope\n"
+      },
+      "observer": [
+        {
+          "pid": 6034,
+          "exe": "/usr/lib/heliopause/versions/v0.1.1-rc.6/haa_gvisor_observer-linux-amd64",
+          "starttime": "32755434",
+          "cgroup": "0::/init.scope\n",
+          "uid": "1000\t1000\t1000\t1000"
+        }
+      ],
+      "trigger": {
+        "docker_event": "exec_start",
+        "native_handoff": "/haa-runtime/haa-boundary --origin-handoff-elf <admission> /work/artifact",
+        "container_id": "32623be17e4084bd91a9e191e6394d46daccd3fb5748b28176a9a499e018b53d",
+        "container_name": "/heliopause-github-elf-sbx_tcbv5hhguju67r7kvedvkrlp3u",
+        "runtime": "runsc-trace",
+        "container_running_at_readback": true,
+        "evidence_limit": "native dynamic handoff observed; instruction-level timing not claimed"
+      },
+      "current_registration_history_configs_unchanged": true,
+      "new_root_transaction": false,
+      "observer_container_slice_drained": true,
+      "endpoints_and_supervisor_lock_absent": true,
+      "next_doctor5_npm3_allow": true
+    }
+  ],
+  "same_version_fresh_replay": {
+    "raw_prefix": "rc6-final-replay",
+    "exit": 0,
+    "seconds": 30.902110250957776,
+    "required_completed": 18,
+    "authenticity": 7,
+    "static": 7,
+    "native_dynamic": 4,
+    "decision": "ALLOW",
+    "promotion": "COMPLETED",
+    "history": "COMMITTED",
+    "current": "versions/v0.1.1-rc.6",
+    "active_journal_absent": true,
+    "protected_copies": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "bytes": 7201108,
+        "sha256": "f83d5af0fa9cec5de61a0a5484a0e63cd7c551b51e146abf3e7b6dc05ef111f1",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "bytes": 27274678,
+        "sha256": "c57c768b4f30f46bfba80ecd1cda7823723d94dade702898bb95c88fa3b9e403",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "bytes": 3089496,
+        "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-linux-amd64",
+        "bytes": 42451677,
+        "sha256": "948c4e4ec54212ee4ffd714c8cdc6376a5f75b32abe3a773f4f51034c22e4a78",
+        "mode": 365,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "bytes": 2793,
+        "sha256": "729f6349b6cd2e707c610f41ba500c132255e2aa4b0a40fc02fa2f638fbdc357",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "bytes": 9908,
+        "sha256": "dc11b3a7901081baf63aaa17106a9288de87e477559bf7049890410e6743b1bd",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "bytes": 1666,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054",
+        "mode": 292,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      }
+    ],
+    "doctor5_npm3_allow": true
+  },
+  "operator_failures": [
+    {
+      "raw": "rc6-host-reader-path-failure.json",
+      "classification": "read-only reader guessed executable path; corrected to prior canonical /etc/heliopause/pod-init.json; no Host mutation"
+    },
+    {
+      "raw": "rc6-dynamic-watch-failure-assessment.json",
+      "classification": "watcher expected runsc instead of canonical runsc-trace; no SIGINT sent; not cancellation qualification; original result preserved"
+    }
+  ],
+  "retirement": {
+    "container": "c94b021b0eb3a06852b69bc6eb44741f2bf1d073668a2be4a2a3327dceefe48e",
+    "volume": "haa-selfupdate-retest-20261020-inner",
+    "images": [
+      "sha256:952e4277be3b45f4adef4477de9efe9b51a5366bd09e7a57c44f372660ed3d22",
+      "sha256:25c3bff6c6899977b1002f657a7723631f17f613abe7064cbd3eb5369b3d0a65"
+    ],
+    "drain_confirmed": true,
+    "stopped_pid": 0,
+    "no_force_no_global_prune": true,
+    "qualification_consumers_complete": true,
+    "labelled_resources_absent": true,
+    "host10_runtime6_images4_unchanged": true,
+    "completed_materials": [
+      {
+        "raw": "rc6-completed-six-cleanup.json",
+        "removed": {
+          "removed": [
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-darwin-amd64",
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-darwin-arm64",
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-linux-arm64",
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-linux-amd64.deb",
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-linux-amd64.rpm",
+            "/tmp/haa-rc6-20261021.hQTho3/payload/helox-release-checksums.txt"
+          ],
+          "entries": 6,
+          "unique_regular_bytes": 151967600,
+          "absent_confirmed": true
+        }
+      },
+      {
+        "raw": "rc6-completed-payload-verifier-cleanup.json",
+        "removed": {
+          "removed": [
+            "/tmp/haa-rc6-20261021.hQTho3/payload",
+            "/tmp/haa-rc6-20261021.hQTho3/gh",
+            "/tmp/haa-rc6-20261021.hQTho3/proof",
+            "/tmp/haa-rc6-20261021.hQTho3/home",
+            "/tmp/haa-rc6-20261021.hQTho3/release-manifest"
+          ],
+          "entries": 19,
+          "unique_regular_bytes": 126756055,
+          "absent_confirmed": true
+        }
+      }
+    ]
+  },
+  "limits": [
+    "HTTPS release metadata delivery uses guest-only fixture; actual signatures/provenance/native quarantine/Policy/Root lifecycle remain mandatory",
+    "same-version fresh replay is not rc6 to a future release qualification",
+    "historical rc5 OS authentication/concurrency/service rollback/Root interruption/guest cold recovery retained; not rerun or relabelled as rc6 fault runs",
+    "no Host kernel/WSL reboot, new CUDA full, public Release, main merge or permanent Host migration",
+    "M13-004 convenience channel names/publisher bindings and M13-005 publication remain separate; expanded Sandbox Race baseline7 remains unresolved"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "source_commit": "3623d1ecc51320084e8556aa86d9bff45d2ad029",
+  "source_tree": "9d798af0032a083eb3aeefc0da65afbbc7f618a1",
+  "run_id": 39701970016,
+  "run_number": 371,
+  "status": "completed",
+  "conclusion": "failure",
+  "checkout": {
+    "sha": "e89b68a4d9f27d7e42c2df33cbb59c8ba303061e",
+    "tree": "9d798af0032a083eb3aeefc0da65afbbc7f618a1",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "name": "gVisor Observer Helper",
+      "id": 119573087069,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 119573087082,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 119573087113,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "id": 119573087157,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 119573087191,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 119573087206,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Security",
+      "id": 119573087214,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 119573087324,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 119573087335,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 119583045628,
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "linux": {
+    "native_uv_startup_seconds": 3.67,
+    "trace_events": 29,
+    "trace_bytes": 3306,
+    "session_complete": true,
+    "existing_tests": 45,
+    "cpu_full_seconds": 196.37,
+    "helper_wait_statuses": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "final_original_status": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "client_restore": 0,
+    "restore_result": "NOT_REQUIRED"
+  },
+  "macos": {
+    "default_test": "FAIL",
+    "command_deadline_seconds": 360,
+    "started_packages": 47,
+    "finished_packages": 47,
+    "active": 0,
+    "unavailable": false,
+    "truncated": false,
+    "cause": "command context deadline exceeded; underlying native root cause not confirmed"
+  },
+  "scope": "fixed UV read checkpoint source3623 only; later interpreter query candidate not covered; production resolver/CLI still missing",
+  "raw_linux": "docs/github-logs/package-client-quarantine-20261021/ci371-linux.log",
+  "raw_macos": "docs/github-logs/package-client-quarantine-20261021/ci371-macos-failed.log"
+}

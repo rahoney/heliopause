@@ -14,6 +14,7 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
 type goProjectApproval struct {
@@ -44,12 +45,22 @@ type approvedGoProjectGuard struct {
 	originalStateInfo os.FileInfo
 	closed            bool
 	committed         bool
-	buildSource       *goBuildSourcePlan
+	tidySource        *sandbox.GoProjectSource
+	buildSource       *projectSourcePlan
 	buildCache        *domain.AcquiredArtifact
 	buildInputs       *domain.ProjectBuildInputs
 }
 
 func (p *GoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedGoProjectGuard, resultErr error) {
+	return p.begin(ctx, install, false, false)
+}
+
+// BeginUpgrade permits explicit control enrollment; old Begin/build stay strict.
+func (p *GoProjectPromotion) BeginUpgrade(ctx context.Context, install domain.InstallContext, adopt bool) (*approvedGoProjectGuard, error) {
+	return p.begin(ctx, install, true, adopt)
+}
+
+func (p *GoProjectPromotion) begin(ctx context.Context, install domain.InstallContext, upgrade, adopt bool) (result *approvedGoProjectGuard, resultErr error) {
 	if ctx == nil || p == nil || p.cache == nil || p.stateRoot == "" || !install.Valid() {
 		return nil, errors.New("go project mutation requires configured approval boundaries")
 	}
@@ -78,6 +89,10 @@ func (p *GoProjectPromotion) Begin(ctx context.Context, install domain.InstallCo
 	if err != nil {
 		return nil, err
 	}
+	g.plan.upgrade = upgrade
+	if err := g.plan.validateUpgradeControls(); err != nil {
+		return nil, err
+	}
 	if err := ensureTrustedRoot(p.stateRoot); err != nil {
 		return nil, err
 	}
@@ -97,13 +112,24 @@ func (p *GoProjectPromotion) Begin(ctx context.Context, install domain.InstallCo
 	g.stateName = hex.EncodeToString(projectHash[:]) + ".json"
 	g.originalState, g.originalStateInfo, err = readGoTransactionControl(g.state, g.stateName)
 	if errors.Is(err, os.ErrNotExist) {
-		free, parseErr := artifactgo.ProjectDependencyFree(g.plan.controls[0].Body())
-		if parseErr != nil || !free || len(g.plan.controls[1].Body()) != 0 {
-			return nil, errors.New("unmanaged Go adoption requires a dependency-free project")
+		if upgrade {
+			if _, markerErr := g.guard.root.Lstat(goTransactionMetadata); !errors.Is(markerErr, os.ErrNotExist) {
+				return nil, errors.New("go marker has no independent retained approval")
+			}
+			if !adopt {
+				return nil, errors.New("go upgrade requires current HAA approval or explicit --adopt")
+			}
+		} else {
+			free, parseErr := artifactgo.ProjectDependencyFree(g.plan.controls[0].Body())
+			if parseErr != nil || !free || len(g.plan.controls[1].Body()) != 0 {
+				return nil, errors.New("unmanaged Go adoption requires a dependency-free project")
+			}
 		}
 	} else if err != nil {
 		return nil, errors.New("go retained approval is unavailable")
-	} else if err := g.verifyRetainedApproval(ctx); err != nil {
+	} else if upgrade && !pypiSingleLink(g.originalStateInfo) {
+		return nil, errors.New("go upgrade retained approval is aliased")
+	} else if err := g.verifyRetainedApprovalWithChangedInputs(ctx, upgrade && adopt); err != nil {
 		return nil, err
 	}
 	g.plan.authorized = true
@@ -139,6 +165,10 @@ func (g *approvedGoProjectGuard) checkRecoveryState() error {
 }
 
 func (g *approvedGoProjectGuard) verifyRetainedApproval(ctx context.Context) error {
+	return g.verifyRetainedApprovalWithChangedInputs(ctx, false)
+}
+
+func (g *approvedGoProjectGuard) verifyRetainedApprovalWithChangedInputs(ctx context.Context, allowChangedInputs bool) error {
 	var doc goProjectApproval
 	decoder := json.NewDecoder(bytes.NewReader(g.originalState))
 	decoder.DisallowUnknownFields()
@@ -153,11 +183,14 @@ func (g *approvedGoProjectGuard) verifyRetainedApproval(ctx context.Context) err
 		return errors.New("go retained graph identity is invalid")
 	}
 	for i, control := range g.plan.controls {
-		if !control.Present() || doc.Approval.Controls[i].Path != control.Name() || doc.Approval.Controls[i].SHA256 != control.Digest().String() {
+		if doc.Approval.Controls[i].Path != control.Name() {
+			return errors.New("go retained approval control membership is invalid")
+		}
+		if !allowChangedInputs && (!control.Present() || doc.Approval.Controls[i].SHA256 != control.Digest().String()) {
 			return errors.New("go retained approval does not match current controls")
 		}
 	}
-	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval); err != nil {
+	if err := g.owner.cache.verifyRecordedApproval(ctx, doc.Approval, false); err != nil {
 		return err
 	}
 	digest, err := domain.NewSHA256Digest(doc.CacheDigest)
@@ -185,6 +218,11 @@ func (g *approvedGoProjectGuard) VerifyUnchanged(ctx context.Context) error {
 	if err := g.plan.verifyUnchanged(); err != nil {
 		return err
 	}
+	if g.tidySource != nil {
+		if err := g.tidySource.Verify(ctx); err != nil {
+			return err
+		}
+	}
 	info, err := os.Lstat(g.owner.stateRoot)
 	if err != nil || !os.SameFile(g.stateInfo, info) {
 		return errors.New("go retained approval root changed")
@@ -195,6 +233,9 @@ func (g *approvedGoProjectGuard) VerifyUnchanged(ctx context.Context) error {
 	}
 	if err != nil || !os.SameFile(g.originalStateInfo, stateInfo) || !bytes.Equal(current, g.originalState) {
 		return errors.New("go retained approval changed during transaction")
+	}
+	if g.plan.upgrade && (!pypiSingleLink(stateInfo) || stateInfo.Mode() != g.originalStateInfo.Mode()) {
+		return errors.New("go upgrade retained approval mode or links changed")
 	}
 	return nil
 }
@@ -212,7 +253,7 @@ func sameGoTransactionControls(left, right []domain.ProjectControlFile) bool {
 }
 
 func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
+	if g == nil || (!update.HasRequestedResolution() && g.tidySource == nil) || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("go transaction update differs from guarded project")
 	}
 	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged)
@@ -300,6 +341,30 @@ func (g *approvedGoProjectGuard) commitSelection(ctx context.Context, selected d
 	if err != nil {
 		return err
 	}
+	if g.plan.upgrade {
+		transaction.checkpoint = g.owner.updateCheckpoint
+	}
+	if g.tidySource != nil {
+		selectedBodies := map[string][]byte{}
+		for _, control := range controls {
+			selectedBodies[control.Name()] = control.Body()
+		}
+		transaction.checkpoint = func(phase string) error {
+			if g.owner.updateCheckpoint != nil {
+				if err := g.owner.updateCheckpoint(phase); err != nil {
+					return err
+				}
+			}
+			if phase == "before-backup" {
+				return g.VerifyUnchanged(ctx)
+			}
+			if phase == "before-approval" {
+				return g.tidySource.VerifyPublishedControls(ctx, selectedBodies)
+			}
+			return ctx.Err()
+		}
+	}
+
 	published := false
 	transaction.publishApproval = func() error {
 		current, info, err := readGoTransactionControl(g.state, g.stateName)
@@ -309,6 +374,9 @@ func (g *approvedGoProjectGuard) commitSelection(ctx context.Context, selected d
 			}
 		} else if err != nil || !os.SameFile(g.originalStateInfo, info) || !bytes.Equal(current, g.originalState) {
 			return errors.New("go retained approval changed before publication")
+		}
+		if g.plan.upgrade && g.originalStateInfo != nil && (!pypiSingleLink(info) || info.Mode() != g.originalStateInfo.Mode()) {
+			return errors.New("go upgrade retained approval mode or links changed before publication")
 		}
 		return g.writeState(approval, &published)
 	}
@@ -378,8 +446,11 @@ func (g *approvedGoProjectGuard) Close() error {
 	}
 	g.closed = true
 	var result error
+	if g.tidySource != nil {
+		result = g.tidySource.Close()
+	}
 	if g.state != nil {
-		result = g.state.Close()
+		result = errors.Join(result, g.state.Close())
 	}
 	return errors.Join(result, g.guard.release())
 }

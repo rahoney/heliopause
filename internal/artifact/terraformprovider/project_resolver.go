@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // ResolveProjectDependencyUpdate selects the complete explicit provider set
@@ -14,23 +15,47 @@ import (
 // existing inspection workflow subsequently verifies signer, observes each ELF,
 // records independent Evidence and obtains entry/set Policy decisions.
 func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
-	if c == nil || ctx == nil || ctx.Err() != nil || !install.Valid() || len(controls) != 2 {
+	return c.resolveProjectSelection(ctx, reference, install, controls, false, false)
+}
+
+func (c *Client) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
+	if selector != "" {
+		return domain.ProjectDependencyUpdate{}, errors.New("terraform upgrade selects all required providers without a package selector")
+	}
+	return c.resolveProjectSelection(ctx, domain.ArtifactReference{}, install, controls, true, false)
+}
+
+// ResolveProjectInit preserves an existing complete lock; only a missing lock
+// permits first stable selection. No provider is invented as a primary.
+func (c *Client) ResolveProjectInit(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+	return c.resolveProjectSelection(ctx, domain.ArtifactReference{}, install, controls, false, true)
+}
+
+func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile, upgrade, initialize bool) (domain.ProjectDependencyUpdate, error) {
+	if c == nil || ctx == nil || !install.Valid() || len(controls) != 2 {
 		return domain.ProjectDependencyUpdate{}, errors.New("terraform guarded update request is invalid")
 	}
-	parsed, e := ParseReference(reference.Locator())
-	if e != nil || parsed != reference {
-		return domain.ProjectDependencyUpdate{}, errors.New("terraform exact primary reference is invalid")
+	if err := ctx.Err(); err != nil {
+		return domain.ProjectDependencyUpdate{}, err
+	}
+	if !upgrade && !initialize {
+		parsed, e := ParseReference(reference.Locator())
+		if e != nil || parsed != reference {
+			return domain.ProjectDependencyUpdate{}, errors.New("terraform exact primary reference is invalid")
+		}
 	}
 	requirements, e := Requirements(controls)
 	if e != nil {
 		return domain.ProjectDependencyUpdate{}, e
 	}
 	var originalLock []byte
+	originalLockPresent := false
 	var config domain.ProjectControlFile
 	for _, control := range controls {
 		switch control.Name() {
 		case LockControl:
 			originalLock = control.Body()
+			originalLockPresent = control.Present()
 		case ConfigurationControl:
 			config = control
 		default:
@@ -48,8 +73,28 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 	for _, l := range locks {
 		locked[l.Address] = l
 	}
+	// Refuse a partial/stale retained lock before any public package acquisition.
+	if initialize && originalLockPresent {
+		if len(locked) != len(requirements) {
+			return domain.ProjectDependencyUpdate{}, errors.New("terraform default init requires a complete existing lock")
+		}
+		for _, requirement := range requirements {
+			old, exists := locked[requirement.Address]
+			if !exists {
+				return domain.ProjectDependencyUpdate{}, errors.New("terraform required provider is absent from the existing lock")
+			}
+			for _, constraint := range requirement.Constraints {
+				if !MatchesConstraint(old.Version, constraint) {
+					return domain.ProjectDependencyUpdate{}, errors.New("terraform locked selection does not satisfy configuration constraints")
+				}
+			}
+		}
+	}
 	primaryParts := strings.Split(reference.Locator(), "@")
-	primaryAddress := "registry.terraform.io/" + primaryParts[0]
+	primaryAddress := ""
+	if !upgrade && !initialize {
+		primaryAddress = "registry.terraform.io/" + primaryParts[0]
+	}
 	found := false
 	var selected []LockedProvider
 	var artifacts []domain.ResolvedArtifact
@@ -66,19 +111,29 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 			version = primaryParts[1]
 			found = true
 		}
-		if !primary && !exists {
+		if !upgrade && !primary && !exists && (!initialize || originalLockPresent) {
 			return domain.ProjectDependencyUpdate{}, errors.New("terraform non-primary provider requires an exact existing lock selection")
 		}
-		for _, constraint := range r.Constraints {
-			if !MatchesConstraint(version, constraint) {
-				return domain.ProjectDependencyUpdate{}, errors.New("terraform exact selection does not satisfy configuration constraints")
+		var resolved domain.ResolvedArtifact
+		var ref domain.ArtifactReference
+		if upgrade || initialize && !exists {
+			resolved, e = c.resolveUpgrade(ctx, r)
+			if e != nil {
+				return domain.ProjectDependencyUpdate{}, e
+			}
+			version = resolved.Identity().Version()
+			ref, e = IdentityReference(resolved.Identity())
+		} else {
+			for _, constraint := range r.Constraints {
+				if !MatchesConstraint(version, constraint) {
+					return domain.ProjectDependencyUpdate{}, errors.New("terraform exact selection does not satisfy configuration constraints")
+				}
+			}
+			ref, e = ParseReference(strings.TrimPrefix(r.Address, "registry.terraform.io/") + "@" + version)
+			if e == nil {
+				resolved, e = c.Resolve(ctx, ref)
 			}
 		}
-		ref, e := ParseReference(strings.TrimPrefix(r.Address, "registry.terraform.io/") + "@" + version)
-		if e != nil {
-			return domain.ProjectDependencyUpdate{}, e
-		}
-		resolved, e := c.Resolve(ctx, ref)
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
@@ -106,6 +161,14 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 		if e := c.freezePackage(resolved, bundle); e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
+		if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+			// This preselection DATA copy is fully read and independently frozen.
+			// Required source/dynamic checks use a separate acquired Run later;
+			// outer guard/consumer finalization still controls actual retirement.
+			if e := lifetime.NoteInspection(ctx, run, true); e != nil {
+				return domain.ProjectDependencyUpdate{}, e
+			}
+		}
 		p := LockedProvider{Address: r.Address, Version: version, Constraints: strings.Join(r.Constraints, ", "), Hashes: []string{contents.H1, contents.ZH}}
 		if exists && old.Version == version {
 			for _, hash := range old.Hashes {
@@ -128,12 +191,15 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 			nodes = append(nodes, node)
 		}
 	}
-	if !found || len(locked) != 0 {
+	if !upgrade && !initialize && !found || len(locked) != 0 {
 		return domain.ProjectDependencyUpdate{}, errors.New("terraform requested/locked provider set differs from complete configuration")
 	}
 	body, e := EncodeLock(selected)
 	if e != nil {
 		return domain.ProjectDependencyUpdate{}, e
+	}
+	if initialize && originalLockPresent {
+		body = originalLock
 	}
 	lock, e := domain.NewProjectControlFile(LockControl, body, true)
 	if e != nil {
@@ -148,10 +214,6 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 		}
 		digests = append(digests, d)
 	}
-	graph, e := domain.NewLockedDependencyGraph(nodes, nil)
-	if e != nil {
-		return domain.ProjectDependencyUpdate{}, e
-	}
 	// Deterministic framed identity binds exact selected controls and sources.
 	sort.Slice(artifacts, func(i, j int) bool { return artifacts[i].Identity().Name() < artifacts[j].Identity().Name() })
 	binding := ConfigurationControl + "\x00" + config.Digest().String() + "\x00" + LockControl + "\x00" + lock.Digest().String()
@@ -160,6 +222,13 @@ func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference d
 	}
 	digest, _ := domain.NewSHA256Digest(sha256Hex([]byte(binding)))
 	snapshot, e := domain.NewProjectDependencySnapshot(install, Source(), digests, artifacts, digest)
+	if e != nil {
+		return domain.ProjectDependencyUpdate{}, e
+	}
+	if upgrade || initialize {
+		return domain.NewProjectDependencyUpdateFromSnapshot(controls, after, snapshot)
+	}
+	graph, e := domain.NewLockedDependencyGraph(nodes, nil)
 	if e != nil {
 		return domain.ProjectDependencyUpdate{}, e
 	}

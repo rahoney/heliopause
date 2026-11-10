@@ -22,8 +22,13 @@ Heliopause 구현 milestone, 의존 순서와 현재 실행 작업을 기록한�
 | [14-m11-dynamic-detection-depth-contract.md](./14-m11-dynamic-detection-depth-contract.md) | M11 | Complete | bounded process/filesystem/network detection과 raw payload non-retention |
 | [16-m12-01-ecosystem-expansion-contract.md](./16-m12-01-ecosystem-expansion-contract.md) | M12 | Complete | PyTorch·Go Modules·Cargo·Terraform Provider 생태계 확장; reviewer merge pending |
 | [17-m12-02-fix-list.md](./17-m12-02-fix-list.md) | M12-02 | Complete | final red-team/fix gate |
-| [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | On hold | protected release 운영 설정과 최종 public deployment |
-| [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Plan complete / implementation not started | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
+| [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | In progress | protected release 운영 설정과 최종 public deployment |
+| [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Complete / qualified | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
+| [20-package-client-quarantine-plan.md](./20-package-client-quarantine-plan.md) | Client expansion | 설계 / 구현 전 | baseline·수정 지도·최신 버전 후보·단계별 검증·두 번째 검토 |
+| [21-goal-completion-design.md](./21-goal-completion-design.md) | M13-004 goal completion | 설계 작성 / 보강 구현 NOT_STARTED | 일괄 설치·원래 보안 요구·용량 관리·AI 사용 CLI/Skill·최소 MCP 채택 기준, 순서·완료 조건·CI 운영 |
+| [22-future-ai-assisted-inspection.md](./22-future-ai-assisted-inspection.md) | 향후/v2.0 후보 | 아이디어 기록 / DEFERRED | MCP 사용자 AI 코드 제공·최대2회 시도와 후속 자체 생성 기능을 검토할 때; 현재 보강 범위 밖 |
+
+P5 일회성 실행기 착수 전에는 [기존 구현·exact npm source baseline](./evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)을 확인한다.
 
 ## Rule
 

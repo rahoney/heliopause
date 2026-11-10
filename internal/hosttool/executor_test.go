@@ -1,6 +1,8 @@
 package hosttool
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net"
@@ -311,4 +313,27 @@ func trustedFixtureExecutable(t *testing.T) string {
 	}
 	t.Skip("no root-owned non-symlink fixture executable")
 	return ""
+}
+
+func TestOutputStreamsPreserveSeparationAndCommandValidation(t *testing.T) {
+	t.Parallel()
+	path, err := filepath.EvalSymlinks("/bin/sh")
+	if err != nil {
+		t.Skip("no shell fixture")
+	}
+	tool, err := verifyExecutable(path, "")
+	if err != nil {
+		t.Skip("no trusted shell fixture")
+	}
+	executor := &Executor{tools: map[string]identity{"fixture": tool}, clientHome: t.TempDir()}
+	var output, diagnostic bytes.Buffer
+	if err := executor.RunOutputStreams(context.Background(), &output, &diagnostic, "fixture", "-c", "printf data; printf diagnostic >&2"); err != nil {
+		t.Fatal(err)
+	}
+	if output.String() != "data" || diagnostic.String() != "diagnostic" {
+		t.Fatal("process streams were combined")
+	}
+	if err := executor.RunOutputStreams(context.Background(), &output, &diagnostic, "unregistered"); err == nil {
+		t.Fatal("unregistered tool accepted")
+	}
 }

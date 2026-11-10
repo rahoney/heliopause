@@ -1,0 +1,64 @@
+{
+  "scope": "P6 exact pinned UV source DATA discovery/owner audit; no new runtime execution, selection equivalence or support qualification",
+  "runtime_version": "0.13.4",
+  "runtime_reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+  "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+  "source_tree": "6fb15fcc3c96e60c976e2aec0fdefc00ff8af6a2",
+  "official_repository": "https://github.com/astral-sh/uv",
+  "files": [
+    {
+      "path": "crates/uv-tool-commands/src/run.rs",
+      "git_blob": "c8e453a232092dc4654a75eecf113718ad1de9d5",
+      "sha256": "4300131b41d1d01256dcf7fba08d827300e3e333d6a4d70f45715bd6d0b4ca5d",
+      "bytes": 49085,
+      "raw_file": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-run.rs.txt",
+      "decoded_readback_equal": true
+    },
+    {
+      "path": "crates/uv-tool-commands/src/install.rs",
+      "git_blob": "8547b66946d6b977a24f91712ecdd8fd5c153d6c",
+      "sha256": "48f4c84114db1677e0a18a48f352039dd43385ad532a15e42a863d4d68cfb668",
+      "bytes": 42132,
+      "raw_file": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-install.rs.txt",
+      "decoded_readback_equal": true
+    },
+    {
+      "path": "crates/uv-tool-commands/src/common.rs",
+      "git_blob": "09dd61b308c031eba162e66d9a959aff244c5fb7",
+      "sha256": "c8d75a394e4fc9402cc8acc259124f5facb12c874fe891af66d1630c9e51092a",
+      "bytes": 35432,
+      "raw_file": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-common.rs.txt",
+      "decoded_readback_equal": true
+    },
+    {
+      "path": "crates/uv-tool-commands/src/requirements.rs",
+      "git_blob": "fd6ba7a7f66340270be8b2d1cb472639ab4c3302",
+      "sha256": "c5cd0b52dd511a9daf6370aad600ab66adb38c7e4fab27bc7f5702195266d40e",
+      "bytes": 6107,
+      "raw_file": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-requirements.rs.txt",
+      "decoded_readback_equal": true
+    },
+    {
+      "path": "crates/uv/src/commands/mod.rs",
+      "git_blob": "f0edc5da242d8de15ba2df86b819654c0fea320f",
+      "sha256": "a9f5919efd79214f0e03d1a973c1b5def24d6b5a4b808e03e2941f759257b3a5",
+      "bytes": 5905,
+      "raw_file": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-uv-commands-mod.rs.txt",
+      "decoded_readback_equal": true
+    }
+  ],
+  "facts": [
+    "tool command implementation is uv-tool-commands and reexported by uv commands module",
+    "native run separates environment selection from final process launch",
+    "non-isolated and non-latest can reuse an installed tool environment after native requirement checks",
+    "cached environment construction is separate from installed-tool lookup",
+    "explicit from permits executable provider/PATH fallback; execution also handles env-file and inherited stdio"
+  ],
+  "not_proven": [
+    "existing HAA native tool-install selector equivalent to bounded uvx/tool run",
+    "new Python console entry/runtime/CLI support",
+    "new native command safe execution profile"
+  ],
+  "source_only_not_runtime_qualification": true,
+  "runtime_pin_or_HAA_source_changed": false
+}

@@ -1,0 +1,254 @@
+{
+  "baseline": "c5d597a41563fc214c41921d159ccb1824db10e4",
+  "scope": "UV-only root named tmpfs, exact admission and native startup; production resolver/CLI and complete consumer qualification remain open",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.189,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 62.043,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.949,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.259,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.911,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "cpp": {
+    "canonical_recipe": "scripts/build-gvisor-observer-release.sh",
+    "recipe_receipt": {
+      "canonical_path": "scripts/build-gvisor-observer-release.sh",
+      "canonical_sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c",
+      "private_sha256": "8b7e8fb8d48c62d09e2c4f4cebfc3405a0082ae4a383c0d3f689a80e4ce18358",
+      "only_change": {
+        "before": "  rm -rf \"$work_root\"",
+        "after": "  printf '%s\\n' \"$work_root\" > /tmp/haa-uv-runtime-0_e6zmn4/active-observer-workroot"
+      },
+      "scope": "active pinned C++ workspace reuse; no Host installation; remove full workroot after last consumer"
+    },
+    "latches": 105,
+    "failed_latches": 0,
+    "bazel_seconds": 326.087,
+    "source": {
+      "internal/sandbox/uv_runtime_real_test.go": "28c1d3090f75bccbbe1ae683c415f9f4269efb6438098ac54d4cbe41273ef826",
+      "internal/sandbox/uv_runtime.go": "66ac0d2351d081670cf17a23dd29d73c6439fff03368af8a341a0eb17e980d36",
+      "internal/sandbox/shared_observer.go": "32421aea42a0b5d83d25b41f3eb4ca2f7ce3e76168df925d00bc55f60bda73cf",
+      "internal/sandbox/pypi_resolver.go": "7b56c43f6412093be72be6720e3da5b2c68b209473ac8b32cc13b0bd5c1d39d3",
+      "internal/sandbox/uv_runtime_volume.go": "b480c3401bdb6164c03f8b7f69ea8da788926e367f7a2991359e3bccced7395d",
+      "tools/gvisor-observer/observer.cc": "b89632e66b7fbc41024596a850e7874b927548bc68b0665a0b4e5337c5cc1949",
+      "tools/gvisor-observer/observer_latch_test.cc": "9ee521319110695a358e6f716a21b1caefe78c72edca40edbb1a63b4af121b18"
+    },
+    "observer_sha256": "839ce8971a5356fd2e1c0a038dc8f2d27b23cb242ac4dfd406cb5fd683922238"
+  },
+  "actual": {
+    "args": [
+      "sudo",
+      "-n",
+      "unshare",
+      "--mount",
+      "--net",
+      "--propagation",
+      "private",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "/usr/bin/python3",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-native-namespace.py"
+    ],
+    "exit": 0,
+    "seconds": 8.463,
+    "host_before_after_identical": true,
+    "namespace": {
+      "scope": "actual native startup; private mount namespace and foreground independent daemon; no Host activation",
+      "mount_namespace": "mnt:[4026532219]",
+      "network_namespace": "net:[4026532222]",
+      "host_network_namespace": "net:[4026531833]",
+      "daemon_args": [
+        "/usr/bin/dockerd",
+        "--config-file",
+        "/tmp/haa-uv-runtime-0_e6zmn4/native-startup/daemon.json",
+        "--data-root",
+        "/tmp/haa-uv-runtime-0_e6zmn4/native-startup/docker-data",
+        "--exec-root",
+        "/run/uv-docker-exec",
+        "--pidfile",
+        "/run/uv-docker.pid",
+        "--host",
+        "unix:///run/docker.sock",
+        "--group",
+        "1000",
+        "--bridge",
+        "none",
+        "--iptables=false",
+        "--ip6tables=false",
+        "--ip-forward=false",
+        "--ip-masq=false",
+        "--userland-proxy=false",
+        "--storage-driver",
+        "overlay2",
+        "--log-level",
+        "error"
+      ],
+      "daemon_pid": 695112,
+      "engine_version": "29.8.1",
+      "runtime_registration": {
+        "path": "/usr/libexec/heliopause/gvisor/runsc",
+        "runtimeArgs": [
+          "--sidecar-usage-policy=STRICT",
+          "--pod-init-config=/etc/heliopause/pod-init.json"
+        ]
+      },
+      "images": [
+        {
+          "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+          "config": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191"
+        },
+        {
+          "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+          "config": "sha256:bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+        }
+      ],
+      "test_exit": 0,
+      "seconds": 4.983,
+      "remaining_containers": "",
+      "observer_endpoints_remaining": [],
+      "remaining_volumes": "",
+      "daemon_wait": 0,
+      "exit": 0
+    }
+  },
+  "frozen_test": {
+    "seconds": 0.413,
+    "exit": 0,
+    "binary_sha256": "b201b1b3b6a21d6ed38aecd9fce46fc7ee90676cccabc8068c9814e39e97b410",
+    "source": {
+      "internal/sandbox/uv_runtime_real_test.go": "28c1d3090f75bccbbe1ae683c415f9f4269efb6438098ac54d4cbe41273ef826",
+      "internal/sandbox/uv_runtime.go": "66ac0d2351d081670cf17a23dd29d73c6439fff03368af8a341a0eb17e980d36",
+      "internal/sandbox/shared_observer.go": "32421aea42a0b5d83d25b41f3eb4ca2f7ce3e76168df925d00bc55f60bda73cf",
+      "internal/sandbox/pypi_resolver.go": "7b56c43f6412093be72be6720e3da5b2c68b209473ac8b32cc13b0bd5c1d39d3",
+      "internal/sandbox/uv_runtime_volume.go": "b480c3401bdb6164c03f8b7f69ea8da788926e367f7a2991359e3bccced7395d",
+      "tools/gvisor-observer/observer.cc": "b89632e66b7fbc41024596a850e7874b927548bc68b0665a0b4e5337c5cc1949",
+      "tools/gvisor-observer/observer_latch_test.cc": "9ee521319110695a358e6f716a21b1caefe78c72edca40edbb1a63b4af121b18"
+    },
+    "observer_sha256": "839ce8971a5356fd2e1c0a038dc8f2d27b23cb242ac4dfd406cb5fd683922238"
+  },
+  "prior_failures": {
+    "guest_only_tmpfs": "actual Docker destination must be a directory; UV not executed; stopped B4 data-only scope retained",
+    "named_volume_first": "running copy/hash passed; UV VM_OVERCOMMIT_MEMORY read unclassified; no general Python/Cargo grant",
+    "private_daemon_network": "initial mount-only namespace omitted network isolation; Host bridge absence discovered and exact persisted IPAM restored; exact delete syscall not recorded"
+  },
+  "limits_unchanged": [
+    "old pip helper1MiB",
+    "old five Python profiles/closure authority",
+    "UID1000/capability demotion",
+    "one-shot nonce/generation/ARTIFACT trust removal",
+    "default finite collector/CPU/memory/wall limits"
+  ],
+  "remaining": [
+    "fresh same-source CI/native macOS/existing Linux consumers",
+    "actual UV dependency selection/acquisition/graph under typed network policy",
+    "guarded uv pip install/upgrade/sync and CLI/language/help integration"
+  ],
+  "logs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-startup-active-observer-build.log",
+      "sha256": "2f2caf253d64157a7fcffe83e1d1ca922d89495cf064f7123122d205e1a501c7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-startup-native-actual-first.log",
+      "sha256": "b63cc04ae57d4d0368286b9f59c859029ac2af2822b20c78f7fe60b3f3704947"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-native-actual-copy-diagnostic.log",
+      "sha256": "96229d842173e30b882163a326a4bc6e8e1ed8892554dfe3da3a4ee9a7dccf76"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-volume-native-actual-first.log",
+      "sha256": "3e4b5dab63170f30854a0c530e03223ab811dade9ecd5065f77e9a6835e3755f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-native-host-network-restoration.json",
+      "sha256": "3dc8e8d695fb2df20bba7fac71908e1669a76121144e3b78c50cd80649968b4c"
+    }
+  ],
+  "final_checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.36,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 37.51,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.717,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.213,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.734,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "completed_fixture_cleanup": {
+    "targets": [
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/native-startup",
+        "removed": true
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/runtime/haa-gvisor-observer-uv",
+        "removed": true
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/runtime/haa-gvisor-observer-uv-volume",
+        "removed": true
+      }
+    ],
+    "entries": 6869,
+    "unique_regular_logical_bytes": 858952195,
+    "references": 0,
+    "query_errors": 0,
+    "retained": "active source/SDK/quality cache, qualified base bundle/new startup observer and current C++ build workspace for immediate UV resolver work"
+  },
+  "earlier_failed_builder_cleanup": {
+    "target": "/tmp/haa-uv-runtime-0_e6zmn4/tmp/helox-release-observer.hoCXiA",
+    "entries": 5027,
+    "unique_regular_logical_bytes": 103028353,
+    "references": 0,
+    "query_errors": 0,
+    "removed": true
+  }
+}

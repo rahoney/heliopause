@@ -17,6 +17,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func pythonLiteral(value string) string {
@@ -68,14 +69,18 @@ func freezePythonObservationUnits(plan artifactpypi.ObservationPlan, closureID s
 		default:
 			return nil, errors.New("python observation unit kind is unsupported")
 		}
-		identity := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%s\x00%s\x00%s", closureID, index, unit.kind, unit.candidate, unit.program)))
-		if unit.coverage != artifactpypi.RequiredObservation {
-			identity = sha256.Sum256(append(identity[:], []byte(unit.coverage)...))
-		}
-		unit.id = string(unit.kind) + ":" + hex.EncodeToString(identity[:])
+		unit.id = observationUnitIdentity(closureID, index, unit)
 		units = append(units, unit)
 	}
 	return units, nil
+}
+
+func observationUnitIdentity(closureID string, index int, unit observationUnit) string {
+	identity := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%s\x00%s\x00%s", closureID, index, unit.kind, unit.candidate, unit.program)))
+	if unit.coverage != artifactpypi.RequiredObservation {
+		identity = sha256.Sum256(append(identity[:], []byte(unit.coverage)...))
+	}
+	return string(unit.kind) + ":" + hex.EncodeToString(identity[:])
 }
 
 // A declarative .pth addition may refer to a directory installed by another
@@ -134,10 +139,30 @@ sys.path.insert(0, root)
 importlib.import_module(name)
 `
 
-type pythonClosureObserver interface {
-	StartPythonClosureProfileWithBudget(context.Context, string, string, pythonClosurePhase, *observationTraceLedger) (TraceReader, error)
+type observationPhaseObserver interface {
 	AwaitMountAnchors(context.Context, string) error
 	observationUsage(*observationTraceLedger) (uint64, uint64, error)
+}
+
+type pythonClosureObserver interface {
+	observationPhaseObserver
+	StartPythonClosureProfileWithBudget(context.Context, string, string, pythonClosurePhase, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
+}
+
+type pipxRuntimeObserver interface {
+	observationPhaseObserver
+	StartPipxRuntimeProfileWithBudget(context.Context, string, pythonClosurePhase, *observationTraceLedger) (TraceReader, error)
+}
+
+type pythonObservationSpec struct {
+	artifact      domain.AcquiredArtifact
+	policy        artifactpypi.ResourcePolicy
+	profile       string
+	resourceClass string
+	units         []observationUnit
+	manifest      closureManifest
+	closure       []domain.AcquiredArtifact
+	pipx          *pipxObservationInput
 }
 
 type pythonPhaseTrace struct {
@@ -148,6 +173,7 @@ type pythonPhaseTrace struct {
 
 type pythonPhaseRuntime struct {
 	id          string
+	responder   *inspectionResponder
 	phase       pythonObservationPhase
 	trace       TraceReader
 	registered  bool
@@ -156,33 +182,69 @@ type pythonPhaseRuntime struct {
 	traceResult pythonPhaseTrace
 }
 
+// Both existing Python transactions and environment experiments use the same
+// once-only drain and independently authenticated resource termination.
+func (runtime *pythonPhaseRuntime) stopAndCollect(resources ObservationResourceClient, transaction string) (ObservationResourceLease, pythonPhaseTrace, error) {
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancel()
+	var stopErr error
+	if runtime.responder != nil {
+		stopErr = runtime.responder.stop(cleanupCtx)
+	}
+	traceDone := make(chan pythonPhaseTrace, 1)
+	go func() { traceDone <- runtime.collect() }()
+	lease, err := resources.Terminate(cleanupCtx, transaction, runtime.id)
+	trace := <-traceDone
+	if runtime.responder != nil {
+		stopErr = errors.Join(stopErr, runtime.responder.waitAfterTermination(cleanupCtx, err == nil))
+	}
+	return lease, trace, errors.Join(stopErr, err)
+}
+
+func (runtime *pythonPhaseRuntime) collect() pythonPhaseTrace {
+	runtime.traceOnce.Do(func() {
+		traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+		defer cancel()
+		observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		runtime.traceResult = pythonPhaseTrace{observations, limitation, diagnostic}
+	})
+	return runtime.traceResult
+}
+
 type pythonTransactionExecutor struct {
-	backend           *PythonDynamicBackend
-	observer          pythonClosureObserver
-	resources         ObservationResourceClient
-	volume            closureVolume
-	manifest          closureManifest
-	installed         closureInstallation
-	transaction       string
-	profile           string
-	policy            artifactpypi.ResourcePolicy
-	ledger            *observationTransaction
-	traceLedger       *observationTraceLedger
-	lease             ObservationResourceLease
-	mu                sync.Mutex
-	runtimes          map[string]*pythonPhaseRuntime
-	anchor            string
-	created           bool
-	volumeMade        bool
-	allObserved       []domain.SandboxObservation
-	watch             *observationCPUWatch
-	finalCPU          uint64
-	artifact          domain.AcquiredArtifact
-	started           time.Time
-	activeUnit        string
-	activeInputDigest string
-	commandReason     string
-	requestCtx        context.Context
+	backend            *PythonDynamicBackend
+	observer           observationPhaseObserver
+	resources          ObservationResourceClient
+	volume             closureVolume
+	pipxVolume         *pipxDataVolume
+	execution          bool // selected user-run only; default M5/Pipx remains false
+	manifest           closureManifest
+	installed          closureInstallation
+	transaction        string
+	profile            string
+	policy             artifactpypi.ResourcePolicy
+	ledger             *observationTransaction
+	traceLedger        *observationTraceLedger
+	lease              ObservationResourceLease
+	mu                 sync.Mutex
+	runtimes           map[string]*pythonPhaseRuntime
+	anchor             string
+	created            bool
+	volumeMade         bool
+	allObserved        []domain.SandboxObservation
+	watch              *observationCPUWatch
+	finalCPU           uint64
+	responder          *responderSupply
+	artifact           domain.AcquiredArtifact
+	started            time.Time
+	activeUnit         string
+	activeInputDigest  string
+	commandReason      string
+	requestCtx         context.Context
+	environments       []pythonEnvironmentWorkspace
+	activeEnvironment  *pythonEnvironmentWorkspace
+	activeUnitOriginal string
+	environmentStates  []domain.SandboxEnvironmentState
 }
 
 func observationPolicyForPython(policy artifactpypi.ResourcePolicy, profile string, unitCount int, now time.Time) (observationResourcePolicy, error) {
@@ -209,7 +271,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	if b == nil || b.resources == nil {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_TRUSTED_TRANSACTION_UNAVAILABLE")
 	}
-	observer, ok := b.observer.(pythonClosureObserver)
+	_, ok := b.observer.(pythonClosureObserver)
 	if !ok {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
 	}
@@ -294,10 +356,30 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		}
 		units = append(additional, units...)
 	}
+	return b.executeObservationTransaction(ctx, sessionID, pythonObservationSpec{artifact: artifact, policy: policy, profile: profile, resourceClass: artifactpypi.RootSourceProfileNameFromContext(ctx), units: units, manifest: manifest, closure: closure}, commands)
+}
+
+func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context, sessionID domain.SandboxSessionID, spec pythonObservationSpec, commands *[]PythonCommandObservation) (result domain.SandboxResult, resultErr error) {
+	artifact, policy, profile, units, manifest, closure := spec.artifact, spec.policy, spec.profile, spec.units, spec.manifest, spec.closure
+	observer, ok := b.observer.(observationPhaseObserver)
+	if !ok {
+		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
+	}
 	now := time.Now()
 	resourcePolicy, err := observationPolicyForPython(policy, profile, len(units), now)
 	if err != nil {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RESOURCE_POLICY_INVALID")
+	}
+	originalUnits := units
+	withEnvironments := spec.pipx == nil
+	if withEnvironments {
+		if resourcePolicy.maxUnits > math.MaxInt/2 {
+			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RESOURCE_POLICY_INVALID")
+		}
+		// Count the two experiments for each admitted import separately without
+		// changing the existing physical launch or CPU/wall/trace ceiling.
+		resourcePolicy.maxUnits *= 2
+		units = pythonEnvironmentUnits(originalUnits)
 	}
 	ledger, err := newObservationTransaction(resourcePolicy, units, now)
 	if err != nil {
@@ -318,6 +400,15 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	// Cleanup is part of the security decision. A successful experiment is
 	// downgraded if any runtime, observer stream, cgroup or volume remains.
 	defer func() {
+		if len(transaction.environments) > 0 && result.SessionID().String() != "" {
+			code, _ := result.LimitationCode()
+			retained, retainErr := domain.NewSandboxResult(sessionID, result.Status(), code, transaction.allObserved, transaction.environmentStates...)
+			if retainErr == nil {
+				result = retained
+			} else {
+				resultErr = errors.Join(resultErr, retainErr)
+			}
+		}
 		cleanupErr := transaction.cleanup()
 		if cleanupErr != nil {
 			result, resultErr = pythonCleanupFailure(sessionID, result, resultErr, transaction.diagnostic("cleanup", cleanupErr))
@@ -337,25 +428,26 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 				return
 			}
 			transaction.allObserved = append(transaction.allObserved, completed)
-			result, resultErr = domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", transaction.allObserved)
+			result, resultErr = domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", transaction.allObserved, transaction.environmentStates...)
 			if resultErr == nil && commands != nil {
 				*commands = ledger.commandObservations()
 			}
 		}
 	}()
-	lease, err := b.resources.Create(runCtx, transaction.transaction, artifactpypi.RootSourceProfileNameFromContext(ctx))
+	lease, err := b.resources.Create(runCtx, transaction.transaction, spec.resourceClass)
 	if err != nil || lease.CgroupParent == "" {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
 	}
 	transaction.created, transaction.lease = true, lease
-	volume, err := createClosureVolume(runCtx, b.runner, transaction.transaction, manifest.identity, policy.RuntimeTmpfs())
-	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_UNAVAILABLE")
-	}
-	transaction.volume, transaction.volumeMade = volume, true
-	preparation, err := transaction.startPhase(runCtx, phasePreparation, 0)
-	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
+	if withEnvironments {
+		prepare := b.prepareResponder
+		if prepare == nil {
+			prepare = prepareResponderSupply
+		}
+		transaction.responder, err = prepare(runCtx, b.runner, runtimeidentity.NativeInstallRoot)
+		if err != nil || transaction.responder == nil {
+			return pythonClosureFailure(sessionID, "prepare fixed responder", errors.Join(errResponderSupply, err))
+		}
 	}
 	watch, watchErr := startObservationCPUWatch(runCtx, b.resources, transaction.transaction, ledger, cancel, func(stopCtx context.Context) error {
 		return transaction.abortAll(stopCtx)
@@ -364,47 +456,69 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
 	}
 	transaction.watch = watch
-	validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
-	if err != nil {
-		return pythonClosureFailure(sessionID, "validate wheel destinations", err)
-	}
-	wheelPaths := make([]string, 0, len(validated))
-	for _, item := range validated {
-		if err := b.introducer.introduceWheelAt(runCtx, preparation.id, item.artifact, item.destination); err != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
+	if spec.pipx != nil {
+		volume, err := createPipxDataVolume(runCtx, b.runner, transaction.transaction)
+		if volume != nil {
+			transaction.pipxVolume = volume
+			transaction.volume = volume.volume
+			transaction.volumeMade = true
 		}
-		wheelPaths = append(wheelPaths, item.destination)
+		if err != nil {
+			return pythonClosureFailure(sessionID, "create pipx DATA volume", err)
+		}
+	} else {
+		volume, err := createClosureVolume(runCtx, b.runner, transaction.transaction, manifest.identity, policy.RuntimeTmpfs())
+		if err != nil {
+			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_UNAVAILABLE")
+		}
+		transaction.volume, transaction.volumeMade = volume, true
 	}
-	install := append(boundaryExecArguments(preparation.id, boundaryLaunchMode, "python", "-I", "-B", "-m", "pip", "install",
-		"--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir", "--target", pythonSitePath), wheelPaths...)
-	if err := discardCommand(runCtx, b.runner, "docker", install...); err != nil {
-		failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
-		return failed, errors.Join(failureErr, transaction.diagnostic("install", errors.New(pythonCommandErrorReason(err))))
+	if withEnvironments {
+		if err := transaction.createEnvironmentWorkspaces(runCtx); err != nil {
+			return pythonClosureFailure(sessionID, "create environment workspaces", err)
+		}
 	}
-	installed, err := verifyClosureInstallation(runCtx, b.runner, preparation.id, manifest, policy.RuntimeTmpfs())
+	preparation, err := transaction.startPhase(runCtx, phasePreparation, 0)
 	if err != nil {
-		return pythonClosureFailure(sessionID, "verify prepared installation", err)
+		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
 	}
-	transaction.installed = installed
-	anchor, err := transaction.startPhase(runCtx, phaseAnchor, 1)
-	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ANCHOR_FAILED")
+
+	if spec.pipx != nil {
+		if err := transaction.pipxVolume.seed(runCtx, b.runner, spec.pipx.tool, preparation.id); err != nil {
+			return pythonClosureFailure(sessionID, "seed acquired pipx DATA", err)
+		}
+	} else {
+		if failure := transaction.prepareWheelClosure(runCtx, preparation.id, artifact, closure); failure != nil {
+			return failure.inspectionResult(sessionID)
+		}
 	}
-	transaction.anchor = anchor.id
-	if err := transaction.volume.verifyAttachments(runCtx, b.runner, map[string]bool{preparation.id: false, anchor.id: true}); err != nil {
-		return pythonClosureFailure(sessionID, "verify closure attachments", err)
+	if withEnvironments {
+		if err := transaction.seedEnvironmentWorkspaces(runCtx, preparation.id, originalUnits); err != nil {
+			return pythonClosureFailure(sessionID, "seed environment workspaces", err)
+		}
 	}
-	if err := transaction.terminatePhase(preparation.id); err != nil {
-		failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
-		return failed, errors.Join(failureErr, err)
+	if failure := transaction.sealPreparedClosure(runCtx, preparation.id); failure != nil {
+		return failure.inspectionResult(sessionID)
 	}
-	if after, err := verifyClosureInstallation(runCtx, b.runner, anchor.id, manifest, policy.RuntimeTmpfs()); err != nil || after.identity != installed.identity {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
+	if withEnvironments {
+		if err := transaction.captureEnvironmentBaselines(runCtx, originalUnits); err != nil {
+			return pythonClosureFailure(sessionID, "capture environment baselines", err)
+		}
 	}
-	ledger.mu.Lock()
-	ledger.preparationOK, ledger.anchorAlive = true, true
-	ledger.mu.Unlock()
 	for index, unit := range units {
+		if withEnvironments {
+			transaction.activeEnvironment = nil
+			for index := range transaction.environments {
+				if transaction.environments[index].profile.kind == unit.environment {
+					transaction.activeEnvironment = &transaction.environments[index]
+					break
+				}
+			}
+			if transaction.activeEnvironment == nil {
+				return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_TRUSTED_TRANSACTION_INCOMPLETE")
+			}
+		}
+		transaction.activeUnitOriginal = unit.originalID
 		transaction.activeUnit = unit.id
 		transaction.activeInputDigest = unit.ownerDigest
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
@@ -429,6 +543,10 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 			arguments = append(arguments, unit.candidate)
 		}
 		commandErr := discardCommand(runCtx, b.runner, "docker", arguments...)
+		var drainErr error
+		if commandErr == nil && observedDrainRequired(b.runner, probe.id) {
+			drainErr = awaitObservedProcessDrain(runCtx, probe.id)
+		}
 		transaction.commandReason = pythonCommandErrorReason(commandErr)
 		outcome := observationZeroExit
 		if commandErr != nil {
@@ -442,25 +560,43 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
 			return failed, errors.Join(failureErr, transaction.diagnostic("unit-termination", err))
 		}
+		if drainErr != nil {
+			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-descendants", drainErr))
+		}
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
+		}
+		if transaction.activeEnvironment != nil {
+			environment := transaction.activeEnvironment
+			if err := verifyObservationRuntimeAlive(runCtx, b.runner, environment.anchor); err != nil {
+				return pythonClosureFailure(sessionID, "environment keeper", err)
+			}
+			if err := environment.volume.verifyAttachments(runCtx, b.runner, map[string]bool{environment.anchor: true}); err != nil {
+				return pythonClosureFailure(sessionID, "environment attachments", err)
+			}
 		}
 		afterEvents, afterBytes, err := observer.observationUsage(traceLedger)
 		if err != nil || afterEvents < beforeEvents || afterBytes < beforeBytes {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
 		}
-		cpuLease, err := b.resources.Read(runCtx, transaction.transaction)
-		if err != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
-		}
-		if err := ledger.finishUnit(externalUnitEvidence{
+		sampled, outcomeErr := transaction.watch.finishUnit(runCtx, externalUnitEvidence{
 			unitID: unit.id, containerID: probe.id, terminalOutcome: outcome,
 			observerComplete: true, containerGone: true, cgroupDrained: true,
 			closureUnchanged: true, events: afterEvents - beforeEvents, bytes: afterBytes - beforeBytes,
-			cumulativeCPUUsec: cpuLease.UsageUsec,
-		}, time.Now()); err != nil {
+		})
+		if outcomeErr != nil {
+			if !sampled {
+				return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
+			}
 			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
-			return failed, errors.Join(failureErr, transaction.diagnostic("unit-outcome", err))
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-outcome", outcomeErr))
+		}
+	}
+	transaction.activeEnvironment = nil
+	if withEnvironments {
+		if err := transaction.finishEnvironmentWorkspaces(runCtx); err != nil {
+			return pythonClosureFailure(sessionID, "capture final environment states", err)
 		}
 	}
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", nil)
@@ -553,9 +689,34 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	if t == nil || ctx == nil || t.volume.verify(ctx, t.backend.runner) != nil {
 		return nil, errors.New("python transaction volume is unavailable")
 	}
-	args, err := pythonObservationCreateArguments(t.transaction, ordinal, phase, t.volume, t.lease, t.policy)
+	var args []string
+	var err error
+	if t.pipxVolume != nil {
+		args, err = pipxObservationCreateArguments(t.transaction, ordinal, phase, t.volume, t.lease, t.policy)
+	} else {
+		args, err = pythonObservationCreateArguments(t.transaction, ordinal, phase, t.volume, t.lease, t.policy)
+	}
 	if err != nil {
 		return nil, err
+	}
+	if t.execution && phase == phaseObservation {
+		args, err = pythonExecutionWorkingDirectory(args)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args, err = t.environmentRuntimeArguments(args, phase)
+	if err != nil {
+		return nil, err
+	}
+	activeResponder := phase == phaseObservation && t.activeEnvironment != nil && t.activeEnvironment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = t.responder.containerArguments(args, pythonImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{t.responder}
 	}
 	created, err := t.backend.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
@@ -567,8 +728,18 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	t.runtimes[id] = runtime
 	t.mu.Unlock()
 	readOnly := phase != phasePreparation
-	if err := t.volume.verifyContainerMount(ctx, t.backend.runner, id, readOnly); err != nil {
+	if !(phase == phaseAnchor && t.activeEnvironment != nil) {
+		if err := t.volume.verifyContainerMount(ctx, t.backend.runner, id, readOnly); err != nil {
+			return nil, err
+		}
+	}
+	if err := t.verifyEnvironmentRuntimeMounts(ctx, id, phase); err != nil {
 		return nil, err
+	}
+	if activeResponder {
+		if err := t.responder.verifyReader(ctx, t.backend.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	observerPhase := pythonClosureObservation
 	if phase == phasePreparation {
@@ -576,25 +747,65 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	} else if phase == phaseAnchor {
 		observerPhase = pythonClosureAnchor
 	}
-	trace, err := t.observer.StartPythonClosureProfileWithBudget(ctx, id, t.profile, observerPhase, t.traceLedger)
+	if len(t.environments) > 0 {
+		if phase == phasePreparation {
+			observerPhase = pythonClosureEnvironmentPreparation
+		} else if t.activeEnvironment != nil {
+			if phase == phaseAnchor {
+				observerPhase = pythonClosureEnvironmentAnchor
+			} else {
+				observerPhase = pythonClosureEnvironmentObservation
+			}
+		}
+	}
+	var trace TraceReader
+	if t.execution && phase == phaseObservation {
+		observer, ok := t.backend.observer.(pythonExecutionObserver)
+		if !ok || t.pipxVolume != nil {
+			return nil, errPythonExecution
+		}
+		trace, err = observer.StartPythonExecutionProfileWithBudget(ctx, id, t.traceLedger)
+	} else if t.pipxVolume != nil {
+		observer, ok := t.backend.observer.(pipxRuntimeObserver)
+		if !ok {
+			return nil, errors.New("pipx transaction observer unavailable")
+		}
+		trace, err = observer.StartPipxRuntimeProfileWithBudget(ctx, id, observerPhase, t.traceLedger)
+	} else {
+		observer, ok := t.backend.observer.(pythonClosureObserver)
+		if !ok {
+			return nil, errors.New("python transaction observer unavailable")
+		}
+		trace, err = observer.StartPythonClosureProfileWithBudget(ctx, id, t.profile, observerPhase, t.traceLedger, supplies...)
+	}
 	if err != nil {
 		return nil, err
 	}
 	runtime.trace = trace
-	startErr := discardCommand(ctx, t.backend.runner, "docker", "start", id)
+	var startErr error
+	if activeResponder {
+		runtime.responder, startErr = startResponderInit(ctx, t.backend.runner, id)
+	} else {
+		startErr = discardCommand(ctx, t.backend.runner, "docker", "start", id)
+	}
 	if startErr != nil &&
 		verifyObservationRuntimeAlive(ctx, t.backend.runner, id) != nil {
-		return nil, errors.New("python observation runtime startup is incomplete")
+		return nil, errors.Join(errors.New("python observation runtime startup is incomplete"), startErr)
 	}
 	lease, err := t.resources.Register(ctx, t.transaction, id, string(phase))
 	if err != nil || lease.CgroupParent != t.lease.CgroupParent || lease.CPU != t.lease.CPU {
 		return nil, errors.New("python observation runtime cgroup admission failed")
 	}
 	runtime.registered = true
-	if startErr != nil || awaitBoundaryHelper(ctx, t.backend.runner, id) != nil ||
+	if startErr != nil || awaitBoundaryHelper(ctx, t.backend.runner, id, activeResponder) != nil ||
 		t.observer.AwaitMountAnchors(ctx, id) != nil ||
 		verifyObservationRuntimeAlive(ctx, t.backend.runner, id) != nil {
 		return nil, errors.New("python observation runtime startup is incomplete")
+	}
+	if t.activeEnvironment != nil {
+		if err := verifyEnvironmentResolver(ctx, t.backend.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -623,25 +834,13 @@ func (t *pythonTransactionExecutor) terminatePhase(id string) (resultErr error) 
 	if runtime == nil || runtime.collected || runtime.trace == nil || !runtime.registered {
 		return errors.New("python observation runtime cleanup evidence is unavailable")
 	}
-	traceDone := make(chan pythonPhaseTrace, 1)
-	go func() {
-		// A phase stream is consumable once. Cleanup retries may still drain
-		// resources, but must retain the first complete or failed evidence.
-		runtime.traceOnce.Do(func() {
-			traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
-			defer cancel()
-			observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
-			runtime.traceResult = pythonPhaseTrace{observations, limitation, diagnostic}
-		})
-		traceDone <- runtime.traceResult
-	}()
-	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
-	lease, err := t.resources.Terminate(cleanupCtx, t.transaction, id)
-	cancel()
-	trace := <-traceDone
+	lease, trace, err := runtime.stopAndCollect(t.resources, t.transaction)
 	if err != nil || trace.limitation != "" || !trace.diagnostic.SessionComplete || lease.CgroupParent != t.lease.CgroupParent {
 		return errors.Join(resultErr, t.diagnostic("phase-termination", fmt.Errorf("phase=%s container=%s helper=%s parent_match=%t cumulative_cpu_us=%d limitation=%s trace={%s}",
 			runtime.phase, id, pythonResourceErrorReason(err), lease.CgroupParent == t.lease.CgroupParent, lease.UsageUsec, trace.limitation, trace.diagnostic.String())))
+	}
+	if t.execution && runtime.phase == phaseObservation && len(retainedSuspiciousTraceFacts(trace.diagnostic.KindCounts)) != 0 {
+		resultErr = errors.Join(resultErr, errPythonExecution, fmt.Errorf("python program observation contains a forbidden runtime action: trace={%s}", trace.diagnostic.String()))
 	}
 	t.mu.Lock()
 	runtime.collected = true
@@ -697,6 +896,19 @@ func (t *pythonTransactionExecutor) abortAll(ctx context.Context) error {
 }
 
 func (t *pythonTransactionExecutor) verifyAnchorAndVolume(ctx context.Context, additional map[string]bool) error {
+	if t != nil && t.pipxVolume != nil {
+		reader := t.anchor
+		if len(additional) > 1 {
+			return errors.New("pipx observation has extra readers")
+		}
+		for id, readOnly := range additional {
+			if !readOnly {
+				return errors.New("pipx observation reader is writable")
+			}
+			reader = id
+		}
+		return t.pipxVolume.verifyReader(ctx, t.backend.runner, reader)
+	}
 	if t == nil || t.anchor == "" || verifyObservationRuntimeAlive(ctx, t.backend.runner, t.anchor) != nil ||
 		t.volume.verifyContainerMount(ctx, t.backend.runner, t.anchor, true) != nil {
 		return errors.New("python observation anchor is unavailable")
@@ -765,17 +977,34 @@ func (t *pythonTransactionExecutor) cleanup() error {
 			t.finalCPU = lease.UsageUsec
 		}
 	}
+	for index := range t.environments {
+		volume := &t.environments[index].volume
+		if err := volume.verify(ctx, t.backend.runner); err != nil {
+			failed = errors.Join(failed, err)
+			continue
+		}
+		if err := discardCommand(ctx, t.backend.runner, "docker", "volume", "rm", volume.name); err != nil {
+			failed = errors.Join(failed, err)
+		}
+	}
 	// After Close, the privileged helper has proven there are no artifact
 	// runtimes in the transaction subtree and has returned its final counter.
 	// Volume disposal may be slow for a large CUDA closure, but it cannot grant
 	// artifact CPU time; qualification still waits for exact volume removal.
-	if t.volumeMade {
+	if t.volumeMade && t.pipxVolume != nil {
+		if err := t.pipxVolume.close(ctx, t.backend.runner); err != nil {
+			failed = errors.Join(failed, err)
+		}
+	} else if t.volumeMade {
 		if err := t.volume.verify(ctx, t.backend.runner); err != nil {
 			failed = errors.Join(failed, err)
 		}
 		if err := discardCommand(ctx, t.backend.runner, "docker", "volume", "rm", t.volume.name); err != nil {
 			failed = errors.Join(failed, err)
 		}
+	}
+	if t.responder != nil {
+		failed = errors.Join(failed, t.responder.close(ctx, t.backend.runner))
 	}
 	if failed == nil {
 		t.ledger.mu.Lock()

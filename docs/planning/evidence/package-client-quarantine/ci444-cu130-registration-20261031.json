@@ -1,0 +1,303 @@
+{
+  "work_item": "M13-004/P7 final profile cu130",
+  "profile": "cu130",
+  "status": "ATTEMPT2_COMPLETED_SUCCESS_ALL10_CU130_QUALIFIED",
+  "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+  "expected_tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+  "ordinary_prerequisite": "ci442-ordinary-cpu-qualification-20261031.json",
+  "previous_profile_prerequisite": "p7-cu126-final-qualification-20261031.json",
+  "dispatch": {
+    "profile": "cu130",
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "tree": "84e70a9ea0ec50afa3d41d40bec8839b6811156f",
+    "submitted_at": "2026-10-30T21:14:18.486081+00:00",
+    "request": {
+      "ref": "milestone/m13-release-build-packages",
+      "inputs": {
+        "pytorch_cu126_qualification": false,
+        "pytorch_cu130_qualification": true,
+        "pytorch_cu132_qualification": false
+      },
+      "return_run_details": true
+    },
+    "api_version": "2026-03-10",
+    "auth_provider": "existing repository Git credential helper",
+    "credentials_logged_or_saved": false,
+    "POST_attempts": 1,
+    "official_contract": "https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event",
+    "http_status": 200,
+    "response": {
+      "workflow_run_id": 41129501671,
+      "run_url": "https://api.github.com/repos/rahoney/heliopause/actions/runs/41129501671",
+      "html_url": "https://github.com/rahoney/heliopause/actions/runs/41129501671"
+    },
+    "status": "DISPATCH_ACKNOWLEDGED_RUN_ID_RETURNED"
+  },
+  "run": {
+    "id": 41129501671,
+    "number": 444,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41129501671",
+    "start": "2026-10-30T21:14:19Z",
+    "event": "workflow_dispatch",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "success",
+    "attempt2_start": "2026-10-30T22:15:22Z"
+  },
+  "initial_job_count": 9,
+  "timer": {
+    "run_id": 41129501671,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 832409,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci444-attempt2-autopoll-config.json",
+    "process_start_ticks": "7413457",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 1,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 70152,
+    "owner_identity_verified": true,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "last_result": {
+      "number": 1,
+      "due_at": "2026-10-30T22:35:22+00:00",
+      "query_started_at": "2026-10-30T22:35:22.000181+00:00",
+      "api_get_only": true,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 124341431750,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341433384,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341434642,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341434939,
+          "name": "gVisor Linux Integration",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341469011,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341475272,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341476958,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341488142,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124341492024,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124344142251,
+          "name": "Required",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T22:35:23.953501+00:00",
+      "next_due_at": null
+    },
+    "last_timed_query_at": "2026-10-30T22:35:23.953501+00:00",
+    "start_ticks": "7413457",
+    "observed_exit_code": 0,
+    "exec_chunk_id": "c2f39d",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "required_contract": {
+    "all_jobs": 10,
+    "max_selected_cuda_profiles": 1,
+    "cpu_full_timeout_minutes": 15,
+    "selected_cuda_timeout_minutes": 40,
+    "whole_linux_timeout_minutes": 150,
+    "qualification_plan": "cuda-bindings-numpy",
+    "not_attested_module": "triton.profiler.viewer",
+    "source_runtime_and_qualification_inputs_unchanged": true,
+    "ordinary_clients_are_qualified_separately": true
+  },
+  "remaining": [],
+  "acceptance_closed": false,
+  "first_macos_log_fetch": {
+    "status": "UNAVAILABLE",
+    "api_error": "HTTP404 BlobNotFound",
+    "job_id": 124316524494,
+    "attempts": 1,
+    "not_claimed": "actual log/body/timeout cause"
+  },
+  "first_failure_comparison": "ci444-macos-first-failure-20261031.json",
+  "linux_qualification": "ci444-cu130-linux-qualification-20261031.json",
+  "attempt1_source_proof": "docs/github-logs/package-client-quarantine-20261021/ci444-attempt1-source-log-proof.json",
+  "attempt1_run": {
+    "id": 41129501671,
+    "number": 444,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/41129501671",
+    "start": "2026-10-30T21:14:19Z",
+    "event": "workflow_dispatch",
+    "head_sha": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "cancelled"
+  },
+  "attempt1_timer": {
+    "run_id": 41129501671,
+    "source": "ec1c260804e35915a4dac78e1720c2fc618264ff",
+    "pid": 829329,
+    "uid": 1000,
+    "script": "/tmp/haa-ci-20min-get-worker.py",
+    "config": "/tmp/haa-ci444-autopoll-config.json",
+    "process_start_ticks": "7047447",
+    "mode": "public read-only GET every20min; no credentials or source/CI mutation",
+    "actual_queries": 3,
+    "next_due_at": null,
+    "state": "COMPLETED",
+    "session_id": 13188,
+    "owner_identity_verified": true,
+    "script_sha256": "3e1dede18b78b76cb4968ba3f630c608229434892b4d15f23c3d70dcff4ee659",
+    "last_result": {
+      "number": 3,
+      "due_at": "2026-10-30T22:14:20.638851+00:00",
+      "query_started_at": "2026-10-30T22:14:20.639007+00:00",
+      "api_get_only": true,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "jobs": [
+        {
+          "id": 124316524253,
+          "name": "Representative Wheel Corpus",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524462,
+          "name": "gVisor Observer Helper",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524474,
+          "name": "Minimum Go",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524494,
+          "name": "macOS",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "current_step": "Run canonical platform profile offline"
+        },
+        {
+          "id": 124316524496,
+          "name": "Quick",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524592,
+          "name": "Docs",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524604,
+          "name": "Security",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524607,
+          "name": "Vulnerability",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124316524714,
+          "name": "gVisor Linux Integration",
+          "status": "completed",
+          "conclusion": "success",
+          "current_step": null
+        },
+        {
+          "id": 124336620846,
+          "name": "Required",
+          "status": "completed",
+          "conclusion": "failure",
+          "current_step": null
+        }
+      ],
+      "query_ended_at": "2026-10-30T22:14:21.458101+00:00",
+      "next_due_at": null
+    },
+    "last_timed_query_at": "2026-10-30T22:14:21.458101+00:00",
+    "start_ticks": "7047447",
+    "observed_exit_code": 0,
+    "exec_chunk_id": "8b8b7f",
+    "signal_sent": false,
+    "host_proc_absent": true
+  },
+  "attempt2": {
+    "intent": "docs/github-logs/package-client-quarantine-20261021/ci444-attempt2-macos-rerun-intent.json",
+    "response": "docs/github-logs/package-client-quarantine-20261021/ci444-attempt2-macos-rerun-response.json",
+    "retained_successes": 8,
+    "retained_Linux_full": true,
+    "new_macos_job": 124341431750,
+    "repeat_on_failure": false,
+    "first_due_at": "2026-10-30T22:35:22+00:00"
+  },
+  "qualification": "p7-cu130-final-qualification-20261031.json",
+  "remaining_current_profile_checkpoint": [],
+  "final_handoff": "p7-final-qualification-20261031.json"
+}

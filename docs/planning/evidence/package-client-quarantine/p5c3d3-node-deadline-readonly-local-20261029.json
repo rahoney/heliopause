@@ -1,0 +1,189 @@
+{
+  "scope": "P5-C3d3 same-source12 controlled fixture: previous10 plus readonly self-write denial and real caller DeadlineExceeded after ready prefix",
+  "status": "PASS (named local scope)",
+  "baseline_commit": "951f73e322b40600cc47eae245cc66097e7fe809",
+  "runtime_inputs": 1332,
+  "production_CPP_unchanged": true,
+  "states": {
+    "IMPLEMENTED": "YES (existing two tests)",
+    "WIRED": "YES (existing real runtime and current inspection)",
+    "QUALIFIED": "YES (named local12)",
+    "ACCEPTANCE_CLOSED": "YES (two named gaps and ten regressions only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.468
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 11.093
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 4.526
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3d3-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.278
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.366
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.675
+    }
+  ],
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3d3-v1-bootstrap.test",
+      "sha256": "b9614b52349025075be1fed063137f648eb4ee4bef733195ae718182a2171514",
+      "bytes": 51099108
+    }
+  ],
+  "actual": {
+    "seconds": 202.496,
+    "cases": [
+      [
+        "argv",
+        "true",
+        "73",
+        "0"
+      ],
+      [
+        "term",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "kill",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "cancel",
+        "false",
+        "6",
+        "0"
+      ],
+      [
+        "stdout-overflow",
+        "false",
+        "1048576",
+        "0"
+      ],
+      [
+        "stderr-overflow",
+        "false",
+        "0",
+        "1048576"
+      ],
+      [
+        "outside-read",
+        "false",
+        "9",
+        "0"
+      ],
+      [
+        "network",
+        "false",
+        "14",
+        "0"
+      ],
+      [
+        "child",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "comm-spoof",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "readonly",
+        "true",
+        "16",
+        "0"
+      ],
+      [
+        "deadline",
+        "false",
+        "6",
+        "0"
+      ]
+    ],
+    "readonly": "kernel EROFS/EACCES/EPERM handled; fixed16B; completed program exit0; whole readonly source unchanged; never a successful file write/export",
+    "deadline": "ordinary Go caller WithTimeout30s from before inspection through execution; ready6B proves body reached; original DeadlineExceeded/incomplete/no typed completed NodeProgramError",
+    "current_inspection": "ACTUAL integrity/static/dynamic/Evidence/Policy every fresh case",
+    "fixture_registry": "CONTROLLED_TEST_HTTP_TRANSPORT_NO_NETWORK",
+    "native_solver": "NOT_RUN",
+    "child": "clone fault/ARTIFACT/incomplete and cleanup; child body/held-pipe WaitDelay NOT_PROVEN",
+    "all_source_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop_resources_endpoints0": true,
+    "no_skip": true
+  },
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c3d3-v1-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c3d3-actual-v1-result.json",
+    "inventory": "docs/github-logs/package-client-quarantine-20261021/p5-c3d3-actual-v1-inventory.json"
+  },
+  "hosted": "CI428/source558d75a excludes local C3d tests; no new push while active",
+  "MISSING": [
+    "public execution application/composition",
+    "safe independent output renderer and CLI",
+    "public end-to-end and full final profiles/signed qualification",
+    "child held-pipe branch remains unproven; no grant broadening"
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "baseline_commit": "74372f5",
+  "scope": "read-only recorded advisory detail in existing result presenters; readable impact wire and exact existing binary source owners, no new inspection/Policy/approval authority",
+  "unit": {
+    "implemented": true,
+    "wired": true,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "d20b0df5536fc19376e6668b05d88943ec52d73ef6bb6015859414247da1dce7"
+    },
+    {
+      "path": "internal/cli/advisory.go",
+      "sha256": "dfbd9d1120db37dbe90245fd45766524d9f145953410432f7f2220b4358cdfc0"
+    },
+    {
+      "path": "internal/cli/advisory_test.go",
+      "sha256": "59650e86431d6ca331e8260787c2b69207eeb5ed28d1aeadf2da02c6a8a09dec"
+    },
+    {
+      "path": "internal/cli/presentation.go",
+      "sha256": "8850942ea910fb9b5d24c4aa1f59521818705ab29c0179c09af95a30ab3d7844"
+    },
+    {
+      "path": "internal/cli/result.go",
+      "sha256": "6d4c42c5cb0d933f6ae037a54db94bb675376d191bcc1a1f5ed5609d34ef4dad"
+    },
+    {
+      "path": "internal/cli/install_result.go",
+      "sha256": "a9c9d0fe11b244405669b39983d2e519788452be63e117e3f378ca2f0ac8504f"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "ab4bc93a1676c1735c3240c0a5921af4facefde28d75f89518cfc8fcf81225a9"
+    },
+    {
+      "path": "internal/cli/execution_report.go",
+      "sha256": "316425d849b7ffab3ad5b0405070b089601f61ceecffa539b4f9612349a94536"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "869e3264d1ebfe47271d1f5b08246ef03e22a7494d9cbfaf4acb63e7c1c2cd7a"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "2698364951973ebb263c63b6aab42d9b307695e00916cd025a153feec8517152"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector_test.go",
+      "sha256": "24e10ae8571665448f182b1cbe443ebe9cb54eb40489a06fffe7592ecb8b321b"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_impact.go",
+      "sha256": "c66afdaece93c46da2c2109a7a7bbd6b3a458753d1e17fc7abea8501d187e45a"
+    },
+    {
+      "path": "internal/inspection/advisory/report.go",
+      "sha256": "bb6dc55894f0182dc948c2585257f676271d1f5a3d2b5c520585454599cad915"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "842c68fe36a17dc980680e243fe593c2f9a473493794fee0a80a1220e7697fab"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "95b846a0fe199ade3c16e48f65941ec86e62d97be902408a83dd131ef76a9017"
+    }
+  ],
+  "checks": [
+    {
+      "raw_receipt": "s05-source-identity-red.json",
+      "sha256": "09fb6bde26e47c90bff084aa8aac0516f7f20b55cad483cd57f985b02da473ae",
+      "exit_code": 1,
+      "elapsed": 2.293,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-advisory-details-targeted.json",
+      "sha256": "a3e42a8883e5cc0c074bae2c2ea860b81a9e0d3a066e4e8b6f60e90283a32827",
+      "exit_code": 0,
+      "elapsed": 3.639,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-foundation.json",
+      "sha256": "a65eb7dd842e4975ef75c61cef80fc78a031cb78115ca41c007bde34c2b9bb3c",
+      "exit_code": 0,
+      "elapsed": 53.629,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-security.json",
+      "sha256": "0687f39ed6b58599451709fa31610be2b2453be8a212793f2e7a74f25e79a4eb",
+      "exit_code": 0,
+      "elapsed": 22.576,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-race.json",
+      "sha256": "5f6968bdf5672a036f9cd36487faa6aa861b014f2a538e8790ab3d1e1eccd26e",
+      "exit_code": 0,
+      "elapsed": 38.901,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-static.json",
+      "sha256": "1b804d59d0ddcbdbdb5d30a57f5e874bdd98fefa8954ebec745a5276d8d4ca0f",
+      "exit_code": 0,
+      "elapsed": 9.854,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-vet.json",
+      "sha256": "d1e300654efd0e5b8fca8da50b4c534b98ee628213fb0fc7eeb24a045e3f2018",
+      "exit_code": 0,
+      "elapsed": 1.387,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-details-tag-build.json",
+      "sha256": "5697ed5c0cfcf8d2b69298b5db3bcb16c2e0742605aae4a77581954803b26430",
+      "exit_code": 0,
+      "elapsed": 7.272,
+      "source_unchanged": true
+    }
+  ],
+  "limitations": [
+    "Primitive presentation tests use the actual Local Evidence writer/reader and verify human/JSON facts, source/profile/corruption/cancellation/legacy rejection, normal ALLOW no extra record I/O and original policy/exit preservation.",
+    "Full affected default Race and common foundation/security passed. Tagged -run ^$ is build validity only, no native tests executed.",
+    "Prior Terraform literal-based applicability green is refuted by actual adapter Source() plus unknown alias counterexample; current code uses adapter Source/SourceName and exact architecture allowlist entries. Native Terraform remains unqualified.",
+    "Partial workflow failures retain current check/error/reference output; this does not implement a historical review command or raw evidence replay.",
+    "No repeated actual5-case cohort, CPP rebuild, new CI, Host installation, push or deployment. Actual detail verification is grouped with remaining S05 source/profile/consumer work. Whole S05 and reinforcement remain OPEN."
+  ]
+}

@@ -99,7 +99,7 @@ func cargoAddIntegration(t *testing.T, reference string, crates int) {
 		t.Fatal("retained project lacks complete recorded Evidence")
 	}
 	for _, entry := range approval.Approval.Entries {
-		if len(entry.Evidence) != 2 {
+		if len(entry.Evidence) != 8 {
 			t.Fatal("entry Evidence incomplete")
 		}
 	}

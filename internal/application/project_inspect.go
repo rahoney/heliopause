@@ -15,6 +15,18 @@ type ProjectSetPolicy interface {
 	EvaluateProjectSet(domain.InspectedProjectSet) (domain.PolicyDecision, error)
 }
 
+// Optional source-neutral batch capability, parallel to InspectGraph. The
+// adapter derives its closure from the complete verified acquired set.
+type projectAwareInspection interface {
+	InspectProject(context.Context, domain.ProjectDependencySnapshot, map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error)
+}
+
+// Some source adapters bind general dependency semantics to frozen selection
+// controls. The complete acquired-set/static gate remains the same boundary.
+type projectSelectionAwareInspection interface {
+	InspectProjectSelection(context.Context, domain.ProjectDependencyUpdate, map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error)
+}
+
 // ProjectInspectService reuses the existing per-entry acquire/verify/inspect/
 // Evidence/Policy/run lifecycle for each exact project snapshot dependency.
 type ProjectInspectService struct {
@@ -46,6 +58,17 @@ func NewProjectInspectService(artifact ports.Artifact, verifier ports.Verificati
 }
 
 func (s *ProjectInspectService) InspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot) (domain.ProjectVerifiedSet, error) {
+	return s.inspectProject(ctx, snapshot, nil)
+}
+
+func (s *ProjectInspectService) InspectSelectedProject(ctx context.Context, update domain.ProjectDependencyUpdate) (domain.ProjectVerifiedSet, error) {
+	if !update.Valid() {
+		return domain.ProjectVerifiedSet{}, errors.New("project inspection needs a valid frozen selection")
+	}
+	return s.inspectProject(ctx, update.Snapshot(), &update)
+}
+
+func (s *ProjectInspectService) inspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, selection *domain.ProjectDependencyUpdate) (domain.ProjectVerifiedSet, error) {
 	if ctx == nil || s == nil || s.entry == nil || s.policy == nil || !snapshot.Valid() {
 		return domain.ProjectVerifiedSet{}, errors.New("valid project snapshot inspection is required")
 	}
@@ -56,7 +79,8 @@ func (s *ProjectInspectService) InspectProject(ctx context.Context, snapshot dom
 	if err != nil {
 		return domain.ProjectVerifiedSet{}, fmt.Errorf("generate project inspection operation: %w", err)
 	}
-	inspections := make([]domain.DependencyInspection, 0, len(snapshot.Dependencies()))
+	ctx = ports.WithStorageOperation(ctx, operation)
+	nodes := make([]domain.LockedDependency, 0, len(snapshot.Dependencies()))
 	for _, artifact := range snapshot.Dependencies() {
 		node, err := domain.ProjectDependencyNodeID(artifact.Identity())
 		if err != nil {
@@ -66,11 +90,29 @@ func (s *ProjectInspectService) InspectProject(ctx context.Context, snapshot dom
 		if err != nil {
 			return domain.ProjectVerifiedSet{}, err
 		}
-		inspection, _, err := s.entry.inspectDependency(ctx, operation, dependency)
+		nodes = append(nodes, dependency)
+	}
+	inspections := make([]domain.DependencyInspection, 0, len(nodes))
+	if inspector, ok := s.entry.inspection.(projectAwareInspection); ok && len(nodes) != 0 {
+		inspections, _, _, err = s.entry.inspectDependencyBatch(ctx, operation, nodes, func(artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+			if selection != nil {
+				if current, ok := s.entry.inspection.(projectSelectionAwareInspection); ok {
+					return current.InspectProjectSelection(ctx, *selection, artifacts)
+				}
+			}
+			return inspector.InspectProject(ctx, snapshot, artifacts)
+		})
 		if err != nil {
-			return domain.ProjectVerifiedSet{}, fmt.Errorf("inspect exact project dependency: %w", err)
+			return domain.ProjectVerifiedSet{}, fmt.Errorf("inspect complete project dependency context: %w", err)
 		}
-		inspections = append(inspections, inspection)
+	} else {
+		for _, dependency := range nodes {
+			inspection, _, err := s.entry.inspectDependency(ctx, operation, dependency)
+			if err != nil {
+				return domain.ProjectVerifiedSet{}, fmt.Errorf("inspect exact project dependency: %w", err)
+			}
+			inspections = append(inspections, inspection)
+		}
 	}
 	set, err := domain.NewInspectedProjectSet(snapshot, inspections)
 	if err != nil {

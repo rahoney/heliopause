@@ -1,0 +1,415 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-d1 explicit fixed UV-backend native pipx original source proof/current approval and public CLI only",
+  "baseline_commit": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (optional native capability and explicit pipx upgrade --adopt)",
+    "QUALIFIED": "YES (named local default/whole affected Race and genuine UV/pipx native actual)",
+    "ACCEPTANCE_CLOSED": "YES (fixed recipe native original/current approval local scope only)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/promotion/tool_target.go",
+        "sha256": "b08f31af38cb8b6dcc9b042598548dec4300050e15648d698954b9d6abd54d0f"
+      },
+      {
+        "path": "internal/promotion/tool_publication.go",
+        "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780"
+      },
+      {
+        "path": "internal/promotion/uv_tool_install.go",
+        "sha256": "32b5d708083657346cdaf851ee32a36e2b36f455b0ff085be2484784f3967227"
+      },
+      {
+        "path": "internal/promotion/uv_tool_update.go",
+        "sha256": "69eab7ee6cc4d13ffde08063994b7f70cfba51df8088c74f21329aaf41cf3649"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install.go",
+        "sha256": "80a826ec1994856f1684166f1c929c7d85767febad7406642409d6fa707eae6c"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_install_test.go",
+        "sha256": "bbe3608010716a3344daac1955a3e521e98adf31aabf609656eb12c0478488d6"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool.go",
+        "sha256": "eb696718730c35bd38e84238561dd856137bc89f87fed27fd5a95397b44786e1"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+        "sha256": "eda739723fcc0c983e55787032d483494a1eee728888b25d3c11a092aeda0ddd"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "2634211d82c93ec564c7b4f1964cb3443619d8b1102ce3358cba97a6b2a10f2f"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "2f605e7fc6b111fb380a60c5670b156fad6860df34b9249376c21a264b4e864e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "9ca16b5496c9dd2124f1b12d401a1c578cee170259a700bb681d55f18d18d23e"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "133e4147d5d0665f55a4339224386a3b2890bb422e34d16126bc2ee423b69976"
+      },
+      {
+        "path": "internal/sandbox/uv_tool_replay.go",
+        "sha256": "1733d908ea2033d82a20915cd524aa601994fa8c5f12d6d31f844f1efd4fea84"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay.go",
+        "sha256": "7135d0552e2cee38b5aeef0ee6f49d095139c03b72274c21420bb5a334defcef"
+      },
+      {
+        "path": "internal/sandbox/pipx_tool_replay_test.go",
+        "sha256": "1f0d451f5adc7a200313963f9d185c23252d46c549e28745a5abffa713640dce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_command.go",
+        "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef"
+      },
+      {
+        "path": "internal/promotion/tool_original.go",
+        "sha256": "486c1fdc363f7e8e998a8b15e9d2e3c30de560eda5ba4440aa174466dc951ee5"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update.go",
+        "sha256": "e7b902e21373b6bafa80ea0486f3a0e65105b05234341c4bd85c89f77fb094e9"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_update_test.go",
+        "sha256": "a301194c56c4b7c2dedff521e61a4213258af715884eebd629040e65b376d8ec"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_update_integration_test.go",
+        "sha256": "5ce47565c44922671bb74074c3b3f0db2f9d6db6a9ad183de14492d9e6917baa"
+      },
+      {
+        "path": "internal/cli/uv_tool.go",
+        "sha256": "ba02c32a517e90c44b667ae0c5ad14fcdb84b86b7fa1873fbe5faf4bb6a0b9d0"
+      },
+      {
+        "path": "internal/cli/package_client.go",
+        "sha256": "316cea48ff02cf5966818c92b280ab093a70c8c145570f35156ea3f3eac30e87"
+      },
+      {
+        "path": "internal/cli/presentation.go",
+        "sha256": "cb2d58e88e5baabfd3b0111ec29202e6a3efab747a73b57b652c9e3d0854acf1"
+      },
+      {
+        "path": "internal/cli/pipx_tool.go",
+        "sha256": "d6762223589df200f84e167d4763a9f8cdf93cb232f0cc31e98ab92e85814777"
+      },
+      {
+        "path": "internal/cli/pipx_tool_test.go",
+        "sha256": "f30fe614a3cfe174e0a1e38f11d50adbf45b3b2cf5b6a48d30c5db556365c37c"
+      },
+      {
+        "path": "internal/bootstrap/bootstrap.go",
+        "sha256": "4a4566c1d666511dc8564982e480e9ce1e4258182bdee32b4c76ae4c9155324d"
+      },
+      {
+        "path": "internal/bootstrap/python_client.go",
+        "sha256": "125e7eaa1b41223226ef87535c5416068914a2808b21a388a7bdca20f428e4a5"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client.go",
+        "sha256": "93785a7dfd076c0c89ed80090b19af069824d4a01d7e344399970c9fff00f611"
+      },
+      {
+        "path": "internal/bootstrap/pipx_tool_client_test.go",
+        "sha256": "76d8c179c2eeeb58c1036881d84e0aa81a21fdd0c19cfe7e6977e166a0b5cab0"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_cli_integration_test.go",
+        "sha256": "752fd2f69f11a7bb878b667669e3117fd5850c848e9cbfc3a9449102cccf597e"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_upgrade_cli_integration_test.go",
+        "sha256": "7bf495975db4104c73fe839257bac93a148023d5a6ec884d5784698c14c27da3"
+      },
+      {
+        "path": "internal/promotion/uv_tool_native_original.go",
+        "sha256": "52e864f340e3443a3085184982053f62fac7bb2ff46a62095f141e042cebc566"
+      },
+      {
+        "path": "internal/promotion/pipx_tool_native_original_linux_test.go",
+        "sha256": "305d9ff525156906b153dba7762fa14206b2b8e5afa3d6f4805eee2404c310ee"
+      },
+      {
+        "path": "internal/promotion/pypi_native_ownership.go",
+        "sha256": "aad71e579376ec7b1292a6e17d05543652c4505c5d95f51b13f0f1d8a66267c8"
+      },
+      {
+        "path": "internal/promotion/uv_native_tool_script.go",
+        "sha256": "4a7aa0f70464037065156d98ea5d313dd4afdf5643e0fe709b70604824d4195b"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+        "sha256": "4dcbff9cdaae9796a8df2d136b869b99312abdbe6f5c082fa7c2efa4c874547e"
+      },
+      {
+        "path": "internal/artifact/pypi/pipx_native_enrollment_test.go",
+        "sha256": "57b37b67097c31976fdc1d50b7275fe1af153a23cb9c784b337e1252fde8440b"
+      },
+      {
+        "path": "internal/bootstrap/uv_native_fixture_test.go",
+        "sha256": "9b7bfc0f617a31a3fb404c830b88b985eaa95afcba19fb6ebd2679f990ffffe8"
+      },
+      {
+        "path": "internal/bootstrap/uv_tool_native_adoption_linux_test.go",
+        "sha256": "ce9fcc1442c8b3302d1f8c1dde324d973f958bb85721b06cb7f0ffb7ebc726a6"
+      },
+      {
+        "path": "internal/promotion/uv_complete_ownership.go",
+        "sha256": "aaf1b9016043adef672a2fa6aea0535411f2933482f9e833fb5bcabdfe07cfe4"
+      }
+    ],
+    "source_after_matches_before": true,
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 1.502
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 227.569
+      },
+      {
+        "step": "race",
+        "exit_code": 0,
+        "seconds": 179.722
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 2.274
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 3.526
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.333
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 14.341
+      }
+    ],
+    "full_affected_race": true,
+    "binary_sha256": "d066b76f363ac51187c52d7ce24ed71c167d40b825f02cfd93402d8044858d99"
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 366.291,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "30ea2572eacd01f4182304ac96d957ff84cec1f5de0c49f28a9de7b96186d6f3",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d1-actual-v1/protected-client",
+        "sha256": "d066b76f363ac51187c52d7ce24ed71c167d40b825f02cfd93402d8044858d99"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-d1-actual-v1/observer",
+        "sha256": "ae3018926cc4bdb78707803a47541bfe4ea42d10eabffaaf5299e18ed80843ff"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "bd50e65725267ce57d0382ac227df011f079ef2400ce7984d348a640ce5acbd6"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxUVToolNativeAdoptionCLIIntegration",
+      "TestLinuxPipxToolNativeAdoptionCLIIntegration"
+    ],
+    "named_pass": true
+  },
+  "phases": [
+    {
+      "client": "uv",
+      "case": "native-exact-pin",
+      "controls": 10,
+      "current_evidence_count": 4,
+      "current_requirement": "cowsay==6.0",
+      "selected": "6.0"
+    },
+    {
+      "client": "uv",
+      "case": "managed-repeat-adopt",
+      "controls": 8,
+      "current_evidence_count": 8,
+      "current_requirement": "cowsay==6.0",
+      "selected": "6.0"
+    },
+    {
+      "client": "uv",
+      "case": "native-bounded-version-change",
+      "controls": 10,
+      "current_evidence_count": 12,
+      "current_requirement": "cowsay>=6.0,<=6.1",
+      "selected": "6.0"
+    },
+    {
+      "client": "pipx",
+      "case": "native-exact-pin",
+      "controls": 11,
+      "current_evidence_count": 4,
+      "current_requirement": "cowsay",
+      "selected": "6.1"
+    },
+    {
+      "client": "pipx",
+      "case": "managed-repeat-adopt",
+      "controls": 9,
+      "current_evidence_count": 8,
+      "current_requirement": "cowsay",
+      "selected": "6.1"
+    },
+    {
+      "client": "pipx",
+      "case": "native-bounded-version-change",
+      "controls": 11,
+      "current_evidence_count": 12,
+      "current_requirement": "cowsay",
+      "selected": "6.1"
+    }
+  ],
+  "existing_owners_unchanged": [
+    {
+      "path": "internal/promotion/pypi_native_ownership.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "aad71e579376ec7b1292a6e17d05543652c4505c5d95f51b13f0f1d8a66267c8",
+      "unchanged": true
+    },
+    {
+      "path": "internal/promotion/uv_complete_ownership.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "aaf1b9016043adef672a2fa6aea0535411f2933482f9e833fb5bcabdfe07cfe4",
+      "unchanged": true
+    },
+    {
+      "path": "internal/promotion/uv_native_tool_script.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "4a7aa0f70464037065156d98ea5d313dd4afdf5643e0fe709b70604824d4195b",
+      "unchanged": true
+    },
+    {
+      "path": "internal/artifact/pypi/uv_native_script.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "aa95dfebf32de0ff7e535aee40b84c2bc283a8f6a97ea20b3c62f714107f55e0",
+      "unchanged": true
+    },
+    {
+      "path": "internal/promotion/tool_publication.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "d247e575f70991b09e1949a270255ca60c83fbd150ecc746cba9233580890780",
+      "unchanged": true
+    },
+    {
+      "path": "internal/promotion/pipx_tool_install.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "80a826ec1994856f1684166f1c929c7d85767febad7406642409d6fa707eae6c",
+      "unchanged": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_session.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "a390ae20597f765efeefe31a214e5b8e898daf8a263453fd8c26114ccf70546b",
+      "unchanged": true
+    },
+    {
+      "path": "internal/sandbox/pipx_native_command.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "069becc8872d7198c544ed6fee7b6fbad3a25cb7b92b344857a73883e4f21fef",
+      "unchanged": true
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43",
+      "unchanged": true
+    },
+    {
+      "path": "internal/bootstrap/pipx_tool_client.go",
+      "baseline_head": "f5c0100926a2ddd518417361fc0c9a9bc635d849",
+      "sha256": "93785a7dfd076c0c89ed80090b19af069824d4a01d7e344399970c9fff00f611",
+      "unchanged": true
+    }
+  ],
+  "cpp_reused": "c1-v5 ae301892 / CPP128PASS; no observer/profile/budget/coverage changes",
+  "first_failures_preserved": {
+    "v1": "Staticcheck U1000 unused existing readToolOriginalReceipt wrapper; retained old UV branch wrapper, new pipx closed reader only",
+    "v2_focused": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.664
+      },
+      {
+        "step": "focused",
+        "exit_code": 0,
+        "seconds": 14.092
+      }
+    ]
+  },
+  "negative_boundaries": [
+    "no capability or no --adopt refuses native original before current selection",
+    "static recipe/default/interpreter/link/command and foreign cache/tampered whole archive/script refuse and preserve native data",
+    "raw original pipx JSON and actual exact6.0 constraint are unchanged; native source proof and current approval remain distinct",
+    "current real Evidence permission failure preserves all original inodes/bytes/modes/links and absent HAA ledger",
+    "native current controls11; managed repeat controls9 and fresh current Evidence; UV native10/managed8 unchanged",
+    "fixed source wheel/RECORD/script proof precedes ownership enrollment; original Host interpreter/commands not executed"
+  ],
+  "MISSING": [
+    "grouped existing hosted CI consumers and exact same-source remote qualification",
+    "whole final CPU/CUDA support matrix and signed/native complete release qualification",
+    "independent legacy ZIP CPU boundary remains open; no blind identical retry"
+  ],
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-d1-"
+}

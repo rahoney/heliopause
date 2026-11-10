@@ -1,0 +1,306 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-G2",
+  "status": "NAMED_LOCAL_QUALIFIED_NODE_CURRENT_CLI_ONLY",
+  "baseline": "docs/planning/evidence/package-client-quarantine/p6g2-bun-current-execution-baseline-20261030.md",
+  "source_base": "339ea36c8b29853e3d31154add6a42f221f3bf9c",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/bun_execution_layout.go",
+      "sha256": "1895cde19071426cbc9f4a603a36f24dac66a0d09388ce6f87246a288a89021a"
+    },
+    {
+      "path": "internal/artifact/npm/bun_execution_layout_test.go",
+      "sha256": "1363b4c697c80b73fa0f4b97eca401e6d8e657383028f83d73e941a28f49526b"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_context.go",
+      "sha256": "6e1f8016037e2ba17e8d35c2496a07a4690825774824971520bd5f0ea0b36746"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_layout.go",
+      "sha256": "406b432451553cb7019aab190d6d90102111a393e7e5a8814b4fbd0be7d37ac4"
+    },
+    {
+      "path": "internal/artifact/npm/bun_layout_binding_data.go",
+      "sha256": "ed3441530306b4f79cb456e21de20b14fb89e7332ea5905f8605f88c2c19c5d0"
+    },
+    {
+      "path": "internal/artifact/npm/bun_native_cache.go",
+      "sha256": "3d195d6127e4dbf8ee3ae3385e8d118973ed933d30babf444bc4e74150a9cbff"
+    },
+    {
+      "path": "internal/artifact/npm/bun_original_layout.go",
+      "sha256": "105fb4d5762bdbfee605b4b403091def50bf4228c84f47b4f5fa61aabcc4c9bb"
+    },
+    {
+      "path": "internal/artifact/npm/bun_run_resolution.go",
+      "sha256": "807412c38c223d29c9422bff289e349ad0dc6f62e650ca96dd1b208043a78cff"
+    },
+    {
+      "path": "internal/artifact/npm/bun_run_resolution_test.go",
+      "sha256": "a4958482e0512d9f6273241a76aab6c2c3561e7deca089d7f6ff34d49086c426"
+    },
+    {
+      "path": "internal/artifact/npm/execution_input_archive.go",
+      "sha256": "c379b19620e0138519e0fb7f796cc358f6af9ce3527dc216417ce3998483f9f8"
+    },
+    {
+      "path": "internal/artifact/npm/execution_layout.go",
+      "sha256": "4f853c48fe50624e98ee59144d46a02d4511fd9b7526f30eb4071a14823cc3b1"
+    },
+    {
+      "path": "internal/artifact/npm/native_run_resolution.go",
+      "sha256": "0792962ae138a88e5ef95d0c48e45f61f7c17965145c726505e07ea3097cad0d"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_acquired.go",
+      "sha256": "ce852ffe8add18be07150839933778973266aae08d92716d83ce217e287df5f2"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_layout.go",
+      "sha256": "cf05a6181d14aedbea2ae8d4757014abdd94c0d81c2ad3df498b447efb8adcff"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_execution_layout_test.go",
+      "sha256": "14393f2cf0adf4976388a979234c37d37cd5271b632644aca70a732511d6e9df"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_context.go",
+      "sha256": "fe196aed995c1b20efa35c0b6bbda251f3b74f531c4d94a11128224fc70200fc"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_run_resolution.go",
+      "sha256": "6b313c17d84b3df580f67dc73ce3b01f7490e4c4db67e3082f4842c729e33e30"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "25b632ff9c92c1dc3b4a84d0db3e1a891351ca2a6ab5b139f963a06a05f0d5c4"
+    },
+    {
+      "path": "internal/bootstrap/bun_run_execution.go",
+      "sha256": "1fcb01abad3b2d0610815e11c646264dd242c5aa3d106a0e52fc648d763cff0d"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_run_integration_test.go",
+      "sha256": "a634fd82dfa33447277afbd3ee18084de6062b29e53ed32d47e38ab0ae882891"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution.go",
+      "sha256": "79fa370b159eeff1d8ea13a3a3b2fbd7c435e9bd88c6a2321eefad196ab939fc"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution_integration_test.go",
+      "sha256": "004c72c636dcba1f7308987e496975a28b7aecfa3702164716f8fe988f3f685f"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution_refusal_integration_test.go",
+      "sha256": "082b70f17bfe8ad5c9e118de068acf6143f7ee8b6101b58329e36833d3a7efc9"
+    },
+    {
+      "path": "internal/cli/bun_execution.go",
+      "sha256": "412a9f9e4964d03ffcbe294ca3d624d521b1df1b4c0dbb023272937fab36697f"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "14e7756d6af56c220bd620658f18dd4182aba3e64b1d8ac5c6e351f1554cf056"
+    },
+    {
+      "path": "internal/cli/pnpm_execution.go",
+      "sha256": "06f658bb6892e850e477989ba5618fd2f03b2da005d0b40ef2cdc677cd0cf3fa"
+    },
+    {
+      "path": "internal/cli/pnpm_execution_test.go",
+      "sha256": "92794eb69f52365b09bd2820afe32a512f729e00865812668ce38c5eb3c3cfc9"
+    },
+    {
+      "path": "internal/inspection/npm/bun_execution.go",
+      "sha256": "5bac75f39515c6460fcef8de6743b0bab85ca4479807f8d8f9570577047f1a28"
+    },
+    {
+      "path": "internal/inspection/npm/bun_project.go",
+      "sha256": "4cd50f6eaf817825f9fe6f7bbb21d97374410ee96718343d0993009e43b6e823"
+    },
+    {
+      "path": "internal/sandbox/bun_run_resolver.go",
+      "sha256": "258a86c544a6218d865e3ad2f2113fb908e87a49013d744be1e83b488b34d4b2"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "ad362ab445fd80ea1fa391165176099e2dfe283ea1bae554f9777f43b4b7cb66"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "02ff66372764853c83f68c89f077f6695bdfbadcfaf8ac6c86cceabf1e730e69"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "279a50480e220750fc793b1478e157b4bb943de8eb89ec21e3f95c85584769dd"
+    },
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "05a766ccc093da30e9ca9558f125075d9617b902e58b243a94983bb46f3c04cc"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "0d68cba9b2dc2a84ba0166bc9cc91c74f8c0efccf94d57ab15231d66122635c5"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "cbe6b7bafb53123f6946994a28d8a36bbbefe4f3d79904b0e4d58c86bd2ca4c1"
+    }
+  ],
+  "implementation": {
+    "execution_context": "Bun native placements/edges and independently bound unique originals; project/execution mutually exclusive; no installation target or fake snapshot",
+    "shared_owners": "PNPM request/control fingerprint and acquired binding bodies reused without changing PNPM schema; Bun whole inspection/static-all/native preparation/every instance/current handoff reused",
+    "Node_layout": "Distinct bun identity; native byte/link proof, hardlink private copies and existing readonly input/capture/target/terminal; generic npm stays strict",
+    "current_workflow": "Existing ExecutionInspect/Preparation/Evidence/Policy/records and Node runtime; current CLI default factory wired",
+    "CLI": "bunx and bun x, bare/exact public package, explicit --package/command; strict sole basename default; --bun remains rejected",
+    "minimum_CPP_fix": "Exact14argv offline Bun install current direct-root marker, cleared on exec and not inherited by clone; successful kernel openat2 O_PATH result in exact project node_modules/workspace only. No synthetic pending/general correlation bypass/network grant."
+  },
+  "focused": {
+    "context_and_existing_Bun_PNPM_seconds": 4.742,
+    "affected6_package_checks_seconds": 8.546,
+    "new_layout_binding_seconds": 4.0,
+    "final_new_checker_seconds": 1.728,
+    "tagged_vet_seconds": 3.005,
+    "tagged_pinned_Staticcheck_seconds": 2.874,
+    "tagged_build_seconds": 2.347,
+    "first_Staticcheck_ST1005": "New capitalized error text only; final check PASS. Raw first build preserved."
+  },
+  "actual_named": {
+    "current_application_cases": 2,
+    "current_application_seconds": 60.97,
+    "current_application_operator_seconds": 63.211,
+    "current_application": "Fresh public TypeScript5.9.3 original/whole quarantine/Policy ALLOW/new Manifest-SBOM; Node normal0 and typed guest nonzero1",
+    "CLI_cases": 3,
+    "CLI_seconds": 190.91,
+    "CLI": "bunx en/json/private0; bun x ko/json/show/nonzero1; implicit bunx Rimraf3.0.2 ko/human/show0, whole12nodes/13edges",
+    "entry_refusal_cases": 2,
+    "entry_refusal_seconds": 50.0,
+    "entry_refusal": "Ambiguous/missing after fresh whole Policy ALLOW; runtime NOT_STARTED/no exit/output/Manifest",
+    "CLI_operator_seconds": 243.126,
+    "observation_complete_helper_wait0_confirmed_stop": true,
+    "Host5_Docker_unchanged_same_inode_profile_restore": true,
+    "runtime": "Node; explicit Bun program NOT_RUN",
+    "synthetic_binding_only": "Peer fixture keeps6native placements/5unique originals and shared React archive; mocked metadata/unit proof, not new native peer qualification"
+  },
+  "first_failures": {
+    "v1": "Current app offline preparation OPEN_RESULT_CORRELATION/events17; Policy/program not reached. Actual18.90s/operator22.239s; Host/helper restored",
+    "v2": "Same Go/input/private diagnostic: kernel sysno437 flags2654208 successful project/node_modules/typescript/bin mount36/pending0; actual17.42s/operator19.575s. No changed policy or qualification claim",
+    "targeted_RED_seconds": 53.187,
+    "targeted_GREEN_seconds": 46.116,
+    "raw_root": "docs/github-logs/package-client-quarantine-20261021/p6-g2-"
+  },
+  "CPP": {
+    "latches_PASS": 132,
+    "seconds": 50.004,
+    "observer_sha256": "57c186eaca7de20ff4e7bdf09810c4d0b7f9926a6994585fe06f8791b4f289e3",
+    "observer_source_sha256": "0d68cba9b2dc2a84ba0166bc9cc91c74f8c0efccf94d57ab15231d66122635c5",
+    "same_observer_as_actual": true,
+    "no_diagnostic_or_temporary_runner_in_final": true
+  },
+  "hosted_wiring": {
+    "existing_Bun_supply_cohorts": true,
+    "new_jobs": 0,
+    "new_helper_rebind": 0,
+    "expected_Linux_parents": 119,
+    "Required_jobs": 10,
+    "CPP_latches": 132,
+    "Linux_job_timeout_minutes": 120,
+    "new_parents": "G1 exact cold1 and G2 app1/CLI1/refusal1",
+    "saved_actual_guard_DATA_replay": "complete accepted, empty/duplicate/SKIP rejected; no native rerun",
+    "bare_cold_scope": "G1 bare Semver named local; this new hosted cold is exact TypeScript only"
+  },
+  "grouped_checks": {
+    "status": "PASS",
+    "CPP_latches": 132,
+    "CPP_seconds": 50.004,
+    "checks": [
+      {
+        "name": "format",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "format"
+        ],
+        "exit_code": 0,
+        "seconds": 1.835
+      },
+      {
+        "name": "quick",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "quick"
+        ],
+        "exit_code": 0,
+        "seconds": 351.507
+      },
+      {
+        "name": "affected-race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "./internal/artifact/npm",
+          "./internal/inspection/npm",
+          "./internal/sandbox",
+          "./internal/bootstrap",
+          "./internal/cli",
+          "-count=1"
+        ],
+        "exit_code": 0,
+        "seconds": 92.964
+      },
+      {
+        "name": "checker-race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "./scripts/check",
+          "-count=1"
+        ],
+        "exit_code": 0,
+        "seconds": 72.786
+      }
+    ],
+    "documentation_security": [
+      {
+        "name": "docs",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "exit_code": 0,
+        "seconds": 0.342
+      },
+      {
+        "name": "security",
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "exit_code": 0,
+        "seconds": 18.055
+      }
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-g2-final-go-checks",
+    "tagged_pinned_Staticcheck": "PASS2.874s; frozen CLI/product source reused",
+    "no_repeated_immutable_native_CPP_CI": true
+  },
+  "still_open": [
+    "new-source hosted",
+    "explicit readonly Bun program/runtime and --bun",
+    "generic native/peer equivalence/hostile and whole P6",
+    "P7/final profile matrix/support/signing"
+  ],
+  "Core_Policy_budgets_runtime_pin_unchanged": true
+}

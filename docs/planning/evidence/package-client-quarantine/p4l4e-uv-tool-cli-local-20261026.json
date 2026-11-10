@@ -1,0 +1,117 @@
+{
+  "scope": "P4-L4E public fresh uv tool install, existing empty explicit pinned-runtime venv and disjoint explicit bin root; no original upgrade/pipx/runtime provisioning/Host command execution claim",
+  "baseline": "294bb578c168baca86121d4ba75ce1afb30983c6",
+  "implemented": "YES",
+  "wired": "YES (actual registry/bootstrap/current Install pipeline and result renderer)",
+  "qualified": "YES (named local)",
+  "acceptance_closed": "YES (named fresh CLI); NO (whole P4/M13-004)",
+  "checks": [
+    {
+      "receipt": "p4l4e-tool-cli-v1-quick.json",
+      "sha256": "4d5289c3409bc1e59aa483901de0bcba7942e55479b83089532655e36ab45f3e",
+      "seconds": 72.642,
+      "exit": 0
+    },
+    {
+      "receipt": "p4l4e-tool-cli-v2-workflow.json",
+      "sha256": "169e0dda5431fbebbd7c3f31b10b8f93b3a2f71cd3b35ba858d15d47233302cb",
+      "seconds": 0.734,
+      "exit": 0
+    },
+    {
+      "receipt": "p4l4e-tool-cli-v2-full-affected-race.json",
+      "sha256": "9cf014895787223a1ca9573b91daecf88a76e2a19b985cc587289e7b44d8dfc6",
+      "seconds": 27.842,
+      "exit": 0
+    },
+    {
+      "receipt": "p4l4e-tool-cli-v3-format.json",
+      "sha256": "1390bb7d5aba6e1eea858c719986d431aed955ad381e843a451a19f743d2c84b",
+      "seconds": 1.568,
+      "exit": 0
+    },
+    {
+      "receipt": "p4l4e-tool-cli-v3-security.json",
+      "sha256": "783acb4d3b8aa34a42b8cb82769e7892e7978c2780b0d545b655fa163ab9bc3f",
+      "seconds": 10.291,
+      "exit": 0
+    },
+    {
+      "receipt": "p4l4e-tool-cli-v3-docs.json",
+      "sha256": "fc47156de7467cebc78b4da5f392ffed8cb5296854a1afca806dbcf252c5d235",
+      "seconds": 0.327,
+      "exit": 0
+    }
+  ],
+  "default_check_reuse": "Default source unchanged after v1 Quick/v2 Race; only realcorpus fixture JSON runtime_identity tag corrected; p4l4e-first-actual-fixture-assessment.json",
+  "source_files": [
+    {
+      "path": "internal/cli/uv_tool.go",
+      "sha256": "f2473db76f19b8385c64a13d4fc32cab0d7d58ce40844d4eacb0cfc59254900b"
+    },
+    {
+      "path": "internal/cli/uv_tool_test.go",
+      "sha256": "e16ba97b66a04986dac8ce38e5168b52ec965b94487f309ebf2fe5f305aea5ed"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "2470d04ec062a97e47883d029a45c15d0c483708938eec810330fd3ebd663530"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "sha256": "b07009f3d229a5c5e0a6a863c0aa8e3b1b4048a980b7d5741f0d3f80e76a46ff"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_client.go",
+      "sha256": "2bb272c6f7e949d35462c13fd4023a258ab918ee0d9131b83ff48a8c9088ab67"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_client_test.go",
+      "sha256": "45f00e0d22fabe77547bfc89bb3f2c87e99025a61e0e68bd920c1f318ec0acad"
+    },
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "sha256": "905533f7261ce3e58779c30b60bce801df72afa64778589a1cc5335d3d9b54a2"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_cli_integration_test.go",
+      "sha256": "f57c20f02b46b842fb519e85995d2c420787a42c6f57c7cf304d2e07461d2d67"
+    }
+  ],
+  "mechanical_reuse": "p4l4e-cli-mechanical-reuse-v1.json",
+  "actual": {
+    "raw_receipt": "p4l4e-tool-cli-native-v2-result.json",
+    "seconds": 317.049,
+    "new_cli_seconds": 77.71,
+    "json": 29.98,
+    "human_with_spaces": 29.59,
+    "unowned_site_refusal": 1.62,
+    "occupied_command_refusal": 16.52,
+    "existing_uv_cli_seconds": 236.61,
+    "existing_uv_cli_completed_requests": 7,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "host_protected_snapshot_identical": true,
+    "no_skip": true,
+    "binary": {
+      "path": "/tmp/hpr-bx53162k/uv-tool-cli-native-v2/bootstrap.test",
+      "size": 49363386,
+      "sha256": "0d1989e7f71a60e226c4db36bdc8c3c7d87eecf62839cb5f82552270f0c9dc06"
+    },
+    "observer_reuse": "p4l3-uv-tool-directory-observer-canonical-v1.json",
+    "interpreter_fixture": "p4l4e-tool-cli-native-v2-interpreter-fixture.json; pinned image executable as DATA only",
+    "log_sha256": "b55c7a34b6b4c25d320d26ec14adc93d68b49fa139e0d091354781761e4fa6a5"
+  },
+  "first_actual_failure": {
+    "receipt": "p4l4e-tool-cli-native-v1-result.json",
+    "assessment": "p4l4e-first-actual-fixture-assessment.json",
+    "scope": "Runtime JSON fixture key mismatch after JSON request completion; subsequent cases NOT_REACHED; raw preserved"
+  },
+  "remote_ci": "Next grouped P4 project/tool end-to-end checkpoint; not yet run for this source",
+  "missing": [
+    "Native tool original upgrade/adoption and retired command reconciliation",
+    "pipx production supply/backend/admission/public CLI",
+    "P5/P6 execution runners",
+    "P7 final source CPU/CUDA/support matrix"
+  ]
+}

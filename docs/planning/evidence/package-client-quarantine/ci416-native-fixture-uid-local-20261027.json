@@ -1,0 +1,205 @@
+{
+  "scope": "CI416 test-fixture-only UID correction; production/runtime/observer/Policy unchanged. Named local verification completed; corrected hosted Linux/Required still pending.",
+  "baseline": "41a8272b442211d3a3c6f026d4b26077bad6e4b4",
+  "remote_failed_source": "1b16544a4bd4091aec5572d42509d9dbd91f8bc2",
+  "remote_failed_tree": "616b506bb789cffff8359220262383782d66ab7b",
+  "remote_result": "8 SUCCESS; Linux and Required FAILURE; new native producer0.77s EACCES, current native approval NOT_REACHED; existing tool4/PNPM peer PASS",
+  "remote_numeric_host_uid": "NOT_OBSERVED",
+  "local_red_green": {
+    "driver_sha256": "a8caee1cca507528bd9910d8a5670e7f9cb8ae6a485aea7fce41bdbabc2b3b69",
+    "same_driver_bytes": true,
+    "before": {
+      "phase": "before",
+      "host_uid": 1001,
+      "host_gid": 1001,
+      "exit": 1,
+      "seconds": 1.668,
+      "log_sha256": "6a72153e9a00751682803319237e394097fcab4d503fc80e6ffd77d657918805",
+      "binary_sha256": "a55102d0880791c37de0f27c287c306578f09b2776d47cb989a6c3657526f8d6",
+      "host_protected5_and_docker_unchanged": true,
+      "product_current_approval": "NOT_RUN",
+      "no_skip": true,
+      "expected_observed": true
+    },
+    "after": {
+      "phase": "after",
+      "host_uid": 1001,
+      "host_gid": 1001,
+      "exit": 0,
+      "seconds": 1.818,
+      "log_sha256": "9364df6026081341f6778f5f99b8bee29450be62b144bcd04cb17f17baebe837",
+      "binary_sha256": "55722c788ccf25f28af3e90eec02f5cc2ae734a1649f9c83b4ce5a84c704fd9f",
+      "host_protected5_and_docker_unchanged": true,
+      "product_current_approval": "NOT_RUN",
+      "no_skip": true,
+      "expected_observed": true
+    },
+    "scratch_driver_removed_before_candidate_checks": true
+  },
+  "reused_sections": {
+    "baseline": "41a8272",
+    "only_code_path": "internal/bootstrap/uv_native_fixture_test.go",
+    "sections": [
+      {
+        "section": "locked supply/bounded Docker identity and cleanup",
+        "bytes": 4130,
+        "sha256": "41b8e1528c862ebca74a221bbf7d20cbfe8246153d13e60cd37a992312dee927",
+        "unchanged": true
+      },
+      {
+        "section": "bounded guest DATA writer",
+        "bytes": 733,
+        "sha256": "afbe2bd753fe62ecdc6c33b941a4a81bfa2a1da42a5711aa4a916ad63c3271ea",
+        "unchanged": true
+      },
+      {
+        "section": "existing native pip/local-index/export",
+        "bytes": 4022,
+        "sha256": "0273fb5ffb74a626578effcb9aa9ff8f4616090eb696216033aeedd2b172421b",
+        "unchanged": true
+      }
+    ],
+    "default_arguments": "runtime uid/gid remain1000:1000/network none/no bind/no capability or timeout change; actual default consumer pending"
+  },
+  "source_files": [
+    {
+      "path": "internal/bootstrap/uv_native_fixture_test.go",
+      "sha256": "c74a7678d48558b0e005faba2c6060e97c74160ceb6e423e35d644fa3f1ee9a3"
+    }
+  ],
+  "implemented": "YES(test fixture only)",
+  "wired": "YES(actual native tool fixture caller)",
+  "qualified": "YES(named local UID1001 producer and UID1000 current/native/default actuals); NO(corrected hosted)",
+  "acceptance_closed": false,
+  "checks": {
+    "quick": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "source": "/tmp/haa-ci416-failure-20261027/source",
+      "exit": 0,
+      "seconds": 281.578,
+      "log_sha256": "638769d7df75c19909a16afed245e3d381abf5bf2772f37e63d9af422a65a8cf",
+      "compiler_role": "repository-pinned Go1.27.3; exact absolute executable recorded only in companion local raw receipt"
+    },
+    "bootstrap_full_race": {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/bootstrap",
+        "-timeout",
+        "5m"
+      ],
+      "source": "/tmp/haa-ci416-failure-20261027/source",
+      "exit": 0,
+      "seconds": 17.703,
+      "log_sha256": "e5b730c5b4e3d27b761de4395b20a698f05e080e6cbcc7f8a54d08737f70b604",
+      "compiler_role": "repository-pinned Go1.27.3; exact absolute executable recorded only in companion local raw receipt"
+    },
+    "tagged_compile": {
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-trimpath",
+        "-c",
+        "-o",
+        "/tmp/haa-ci416-failure-20261027/bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "source": "/tmp/haa-ci416-failure-20261027/source",
+      "exit": 0,
+      "seconds": 2.616,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary": {
+        "sha256": "8182690ec236b40682cf0df178033d1c753611885ea7f37ae07bcc473a97bed2",
+        "size": 49639830
+      },
+      "compiler_role": "repository-pinned Go1.27.3; exact absolute executable recorded only in companion local raw receipt"
+    },
+    "docs": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "source": "/tmp/haa-ci416-failure-20261027/source",
+      "exit": 0,
+      "seconds": 0.417,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "compiler_role": "repository-pinned Go1.27.3; exact absolute executable recorded only in companion local raw receipt"
+    },
+    "security": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "source": "/tmp/haa-ci416-failure-20261027/source",
+      "exit": 0,
+      "seconds": 19.601,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f",
+      "compiler_role": "repository-pinned Go1.27.3; exact absolute executable recorded only in companion local raw receipt"
+    }
+  },
+  "actuals": {
+    "native_current": {
+      "exit": 0,
+      "seconds": 168.356,
+      "host_before_after_identical": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "log_sha256": "20c4f7a2fed1cc50559119611e8fecd1bc362672787267cfd07211ee1d6a3473",
+      "binary_sha256": "8182690ec236b40682cf0df178033d1c753611885ea7f37ae07bcc473a97bed2",
+      "expected_named_tests": [
+        "TestLinuxUVToolNativeAdoptionCLIIntegration"
+      ],
+      "passed_named_tests": [
+        "TestLinuxUVToolNativeAdoptionCLIIntegration"
+      ],
+      "named_tests_exact": true
+    },
+    "affected_default": {
+      "exit": 0,
+      "seconds": 275.437,
+      "host_before_after_identical": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "log_sha256": "0afa862432fbee0ac499092af7ff182edffe25226dddb15d3c60f88bcad6aef5",
+      "binary_sha256": "8182690ec236b40682cf0df178033d1c753611885ea7f37ae07bcc473a97bed2",
+      "expected_named_tests": [
+        "TestLinuxUVProjectNativeAdoptionCLIIntegration",
+        "TestLinuxUVSyncCompleteCLIIntegration"
+      ],
+      "passed_named_tests": [
+        "TestLinuxUVProjectNativeAdoptionCLIIntegration",
+        "TestLinuxUVSyncCompleteCLIIntegration"
+      ],
+      "named_tests_exact": true
+    }
+  },
+  "missing": [
+    "New hosted Linux/Required qualification; no automatic resolution claim for CI415 FD cause",
+    "Whole M13-004/P4/profile matrix remains open"
+  ],
+  "execution_input_binding": {
+    "all_actual_execution_inputs_unchanged": true,
+    "documentation_only_drift": [
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/evidence/package-client-quarantine/ci416-native-fixture-uid-investigation-20261027.md",
+      "docs/planning/evidence/package-client-quarantine/ci416-native-fixture-uid-local-20261027.json"
+    ],
+    "actual_inventory_sha256": "f8f1b76d4d012ac591eba4dc5c78f5d917607ecd5d7b61653c21f3c2fdab5e19",
+    "files": 2660
+  },
+  "final_staged_proof": "companion ci416-corrected-final-whole-candidate.json stores full index/disk/mode and final staged docs/security results"
+}

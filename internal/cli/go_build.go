@@ -33,7 +33,11 @@ func AddGoModuleBuild(root *cobra.Command, builder GoModuleBuilder) error {
 		if err != nil {
 			return err
 		}
-		result, published, operationErr := builder.Build(contextOrBackground(command.Context()), install, args[0])
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		result, published, operationErr := builder.Build(progressContext, install, args[0])
+		progressErr := finishProgress()
+		operationErr = errors.Join(operationErr, progressErr)
 		if result.OperationID().String() != "" {
 			if err := WriteHumanResult(command.OutOrStdout(), result); err != nil {
 				return errors.Join(operationErr, err)
@@ -47,6 +51,10 @@ func AddGoModuleBuild(root *cobra.Command, builder GoModuleBuilder) error {
 		}
 		if !published.Valid() {
 			return errors.New("go build output publication is incomplete")
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			p.line("%s %s", p.text("Build output:", "빌드 결과:"), safeTerminal(published.RelativeDirectory()))
+			return p.writeErr
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Build output: %s\n", published.RelativeDirectory())
 		return err

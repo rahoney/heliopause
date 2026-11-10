@@ -1,0 +1,44 @@
+{
+  "scope": "P5-C3b pinned npm ci/reify source DATA; no product/runtime qualification",
+  "source_base": "d68485ae0883db7022094a0c2fa4a096e415825f",
+  "image": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+  "npm_version": "11.19.0",
+  "files": [
+    {
+      "path": "npm-package.json",
+      "source": "package.json",
+      "sha256": "09dfcf187178ce1ab3ea6194c80d3ae082ad2a86dc1269ac963f94429e718122",
+      "bytes": 6597
+    },
+    {
+      "path": "npm-ci.js",
+      "source": "lib/commands/ci.js",
+      "sha256": "fb9ed5eb26d841dfcdf8cffaa3c33be3edda6ee27797b5db5ccbfbaba86e4315",
+      "bytes": 4851
+    },
+    {
+      "path": "arborist-reify.js",
+      "source": "node_modules/@npmcli/arborist/lib/arborist/reify.js",
+      "sha256": "bcd9de86dc8bdb70797bf9ee2e5a73f1eab653dd7446e0c3ca09eab5e3d29dcd",
+      "bytes": 79593
+    },
+    {
+      "path": "arborist-shrinkwrap.js",
+      "source": "node_modules/@npmcli/arborist/lib/shrinkwrap.js",
+      "sha256": "5c803fa4fff641bb6afb94bc8a8b38204ce27a17348baff8c195cd8e2738072b",
+      "bytes": 40362
+    }
+  ],
+  "export_receipt_sha256": "1199df5b521b0b7e8eeb958a0adba3c639efd7ac3de86417cde2b0bd2b725ac1",
+  "raw_prefix": "p5-c3b-source-* under existing package-client-quarantine-20261021 raw directory",
+  "never_started_readonly_network_none": true,
+  "minimal_isolated_Docker_client_env_config": true,
+  "container_removed": true,
+  "host_Docker_before_after_identical": true,
+  "facts": [
+    "ci opts force packageLock=true/save=false",
+    "ci and reify gate lifecycle scripts on ignoreScripts",
+    "reify writes node_modules/.package-lock.json as hidden metadata"
+  ],
+  "interpretation": "metadata is format data, not approval; materializer must not silently admit native cache into executable source tree"
+}

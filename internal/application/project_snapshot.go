@@ -17,6 +17,11 @@ func resolveProjectSnapshot(ctx context.Context, installContext domain.InstallCo
 	if err := ctx.Err(); err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return snapshot, err
+	}
+	defer func() { finishUse(resultErr) }()
 	guard, err := promoter.Begin(ctx, installContext)
 	if err != nil {
 		return snapshot, fmt.Errorf("guard "+label+" project inputs: %w", err)
@@ -30,6 +35,7 @@ func resolveProjectSnapshot(ctx context.Context, installContext domain.InstallCo
 			snapshot = domain.ProjectDependencySnapshot{}
 		}
 	}()
+	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	snapshot, err = resolver.ResolveProjectDependencies(ctx, installContext)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, fmt.Errorf("resolve complete "+label+" project graph: %w", err)
@@ -57,6 +63,7 @@ func resolveProjectSnapshot(ctx context.Context, installContext domain.InstallCo
 	if err := guard.VerifyUnchanged(ctx); err != nil {
 		return snapshot, err
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	verified, err := inspection.InspectProject(ctx, snapshot)
 	if err != nil {
 		return snapshot, fmt.Errorf("inspect complete "+label+" project inputs: %w", err)
@@ -64,10 +71,12 @@ func resolveProjectSnapshot(ctx context.Context, installContext domain.InstallCo
 	if err := guard.VerifyUnchanged(ctx); err != nil {
 		return snapshot, err
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "stage"})
 	staged, err := staging.StageProject(ctx, verified)
 	if err != nil {
 		return snapshot, fmt.Errorf("stage approved "+label+" project inputs: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
 	if err := guard.CommitSnapshot(ctx, snapshot, staged); err != nil {
 		return snapshot, fmt.Errorf("retain approved "+label+" project inputs: %w", err)
 	}

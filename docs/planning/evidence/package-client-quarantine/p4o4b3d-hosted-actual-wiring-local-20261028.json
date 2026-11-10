@@ -1,0 +1,573 @@
+{
+  "schema": "haa-local-qualification/v1",
+  "work_item": "M13-004",
+  "substep": "P4-O4-B3d",
+  "baseline_commit": "2c52c034ec0f3b5772cffbeb3e1af3320cc46f53",
+  "status": "NAMED_LOCAL_QUALIFIED_HOSTED_OPEN",
+  "audit": {
+    "IMPLEMENTED": "YES(existing fixed fetch/materializer, Go tests and helper/client lifecycle reused)",
+    "WIRED": "YES(existing Linux integration job, exact inspect/graph/namespace commands and current client restoration)",
+    "QUALIFIED": "YES(local UID1000 actual recipe); NO(hosted UID1001/current CI)",
+    "ACCEPTANCE_CLOSED": "YES(named local wiring/recipe scope only)",
+    "MISSING": [
+      "hosted UID1001/checkouts/logs qualification on authorized current source",
+      "native installed pipx runtime/tool install/upgrade/CLI",
+      "new signed/current full native activation qualification where required",
+      "full supported CPU/three CUDA/final profiles"
+    ]
+  },
+  "sources": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "5e7a19eaebcb5a6d069ad5c034506967328471ffc617da50ba681ac189696334"
+    },
+    {
+      "path": "scripts/ci-pipx-runtime.sh",
+      "sha256": "2d55a62d2eb9706c354e53be36bc07525b53117249b0d758f976d0a5c58233e3"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_workflow.go",
+      "sha256": "a6752884361d2f879d40dfeb415ada4b02ea235cdeb3f059652c7ed50f530b98"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "c71d3c047446bee0a939a652a50a7dce12b3f6ee2ff33ebb3cfbfee79d882e77"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_workflow_test.go",
+      "sha256": "c3c8315a5f2a43bd6e75065514f26660c29ccf6529bd20c6c59cc9ff89212c90"
+    },
+    {
+      "path": "scripts/check/pipx_runtime_driver_test.go",
+      "sha256": "bc3f8e65b30a41f1a0b60a79939f4d4743b6046facbca8db236d709c2fb527c2"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "a3d030b1c8a05b99dca62d55df67c82a9cb92aa063fe75aedf80862e1333df51"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.679
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 47.782
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 40.351
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 0.684
+    },
+    {
+      "step": "release-gate",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "release-gate"
+      ],
+      "exit_code": 0,
+      "seconds": 0.32
+    },
+    {
+      "step": "compile-bootstrap",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-c",
+        "-o",
+        "/tmp/haa-p4o4b3d-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.941
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.322
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.827
+    }
+  ],
+  "driver_harness": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.734
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestPipxCI",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 1.965
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 1.45
+    }
+  ],
+  "actual": {
+    "exit": 0,
+    "seconds": 135.807,
+    "host_before_after_identical": true,
+    "no_skip": true,
+    "passed_exact_top_levels": [
+      "TestPipxAcquiredRuntimeRequiredInspectionIntegration",
+      "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging",
+      "TestInitialNativeFilesInDisposableNamespace",
+      "TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace",
+      "TestProtectedStageInDisposableNamespace",
+      "TestInterruptedSystemCopyInDisposableNamespace"
+    ],
+    "all_required_tests_once": true,
+    "helper_wait_zero_count": 4,
+    "helper_confirmed_stopped": true,
+    "no_helpers_after": true,
+    "source_unchanged": true,
+    "no_pipx_work_left": true,
+    "log_sha256": "d95267c4ca85cd1d03b3436e4ff9951d1bd12470a5609a382bd2f67a9f6b14d5",
+    "scope": "actual fixed42input recipes under ordinary localUID1000; original gVisor inode retained/private protected client swaps/root test namespaces; historical SBOM source/staging fixture and crypto doubles only; hostedUID1001/CI not qualified",
+    "production_client_restored": true
+  },
+  "namespace": {
+    "mount_namespace": "mnt:[4026532218]",
+    "host_mount_namespace": "mnt:[4026532211]",
+    "network_namespace": "net:[4026531833]",
+    "host_network_namespace": "net:[4026531833]",
+    "gvisor_original_directory_inode_retained": true,
+    "ordinary_uid": 1000,
+    "hosted_uid1001_not_qualified": true,
+    "exit": 0,
+    "seconds": 135.421,
+    "production_client_restored": true
+  },
+  "compiled_identities": [
+    {
+      "role": "production-cli",
+      "sha256": "0007df2f881aa6e0e97e535a5a32521432f6fe284edc3e71631230d4f9abc723",
+      "size": 44067919
+    },
+    {
+      "role": "network-helper",
+      "sha256": "c006b1a46de574b92d82d6e76a07e24f3fb20f054343db81e953fd23719838a8",
+      "size": 8452484
+    },
+    {
+      "role": "observer",
+      "sha256": "3d7ba170592a30bc5d0ea411f0114307e8590e38e17f8795a6f8b5d10c3cac45",
+      "size": 3159696
+    },
+    {
+      "role": "bootstrap-test",
+      "sha256": "f81a0f3003059d85ba9199ede0439a62c9c638a65c91d4dcd5e1e7620750b0b2",
+      "size": 49946433
+    },
+    {
+      "role": "graph-test",
+      "sha256": "4f005e5f16af88a39f75fe6710fb043f38bdc9495e7fb9b772120474f2021101",
+      "size": 35860286
+    },
+    {
+      "role": "releaseactivation-test",
+      "sha256": "b49e4d2e567e83c5bdc24d6f0b5b6dcc5cd732d44849491dac23889047f9f4e3",
+      "size": 31358826
+    },
+    {
+      "role": "releaseinstall-test",
+      "sha256": "17fca39c3b9e36ebe6f6407d773f6b2226faad2aec76faaf0b2bae43abcd576e",
+      "size": 6602930
+    }
+  ],
+  "concrete_inputs": "each mode explicitly prepares current frozen42inputs/11wheels/31documents using existing bounded fetch and offline materializer; no ambient wheel cache/augmentation; selected ZIP and NOTICE unchanged",
+  "dispatch": "exact modes inspect/graph/namespace, explicit package cwd/env/filter and tagged client; test exit0 alone insufficient; empty filter, SKIP, child-only/duplicate PASS and nonzero primary rejected; own input cleanup checked including injected cleanup failure",
+  "graph_scope": "canonical historical v0.1.0 producer SBOM copied explicitly and rebased only inside existing unsigned source/staging fixture; native6 fake sandbox/integrity-only positive and production SDK unsigned negative; current producer11distribution census remains B3b actual scope",
+  "root_scope": "DATA bootstrap5cases/legacy bootstrap-stage and pending24cases/SIGKILL in separate root mount/network namespaces; auth/crypto filesystem doubles only/no registration/activation; full255942560B real producer wire remains B3c named local scope",
+  "lifecycle": "same owning foreground sudo helper/client replacement/restore; first error preserved; actual six exact top-level tests, four wait0 and final CONFIRMED_STOPPED/production client restored/no helpers or input directories; Host5files/Docker unchanged",
+  "unchanged_contracts": "no job/image/dependency/timeout/Required/coverage/budget change; existing PNPM/Bun/UV client recipes retained; product completion authority unaffected",
+  "first_failures": [
+    {
+      "kind": "logical version owner fixture",
+      "seconds": 80.09,
+      "test": "TestRuntimeVersionOwnersAllowCoordinatedFutureGoInputs",
+      "cause": "existing fixture did not copy the new owned CI script; strict unavailable guard correct",
+      "correction": "one explicit script added to existing runtimeOwnerFixture inventory",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-quick.log"
+    },
+    {
+      "kind": "operator setup; actual tests NOT_REACHED",
+      "seconds": 0.297,
+      "cause": "libmount canonicalized held FD source through newly overmounted path; original inode guard correctly stopped before clients",
+      "evidence": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-bind-probe-result.json",
+      "correction": "operator-only --no-canonicalize on held directory bind, with original inode/read-only guards retained; no product path exception"
+    }
+  ],
+  "external_checkpoint": "push21387da..e859487 to GitHub rahoney/heliopause milestone/m13-release-build-packages remains AWAITING_USER_APPROVAL after automatic review; no new push/run/timer; that pending request does not authorize later HEAD",
+  "raw_inventory": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-bind-probe-result.json",
+      "bytes": 687,
+      "sha256": "bd9927715c409072e32d50950fa9349ba2b8f14a4729bc6ce3afe4325fe8f5aa"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-bind-probe.py",
+      "bytes": 1583,
+      "sha256": "fd7e18021caf31b73491934630202d83dadccb5f59cabce30bd6f003119bf684"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--.github--workflows--heliopause-ci.yml",
+      "bytes": 27926,
+      "sha256": "5e7a19eaebcb5a6d069ad5c034506967328471ffc617da50ba681ac189696334"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--check--pipx_runtime_driver_test.go",
+      "bytes": 6457,
+      "sha256": "bc3f8e65b30a41f1a0b60a79939f4d4743b6046facbca8db236d709c2fb527c2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--check--pipx_runtime_workflow.go",
+      "bytes": 6339,
+      "sha256": "a6752884361d2f879d40dfeb415ada4b02ea235cdeb3f059652c7ed50f530b98"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--check--pipx_runtime_workflow_test.go",
+      "bytes": 5342,
+      "sha256": "c3c8315a5f2a43bd6e75065514f26660c29ccf6529bd20c6c59cc9ff89212c90"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--check--runtime_versions_test.go",
+      "bytes": 11410,
+      "sha256": "a3d030b1c8a05b99dca62d55df67c82a9cb92aa063fe75aedf80862e1333df51"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--check--workflow.go",
+      "bytes": 37211,
+      "sha256": "c71d3c047446bee0a939a652a50a7dce12b3f6ee2ff33ebb3cfbfee79d882e77"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-final-source--scripts--ci-pipx-runtime.sh",
+      "bytes": 3826,
+      "sha256": "2d55a62d2eb9706c354e53be36bc07525b53117249b0d758f976d0a5c58233e3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-checks.json",
+      "bytes": 323,
+      "sha256": "7977ee2f83e92d88a6390ac2d1b61cc0ee4c890e04d3776dccfd1ca960a86022"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-quick.log",
+      "bytes": 25660,
+      "sha256": "a6462435ed6b1efb7d83fc3391dc4f277ce39fae6c8ae2866f9d9a6529d29916"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-runtime_versions_test.go",
+      "bytes": 11380,
+      "sha256": "40a460e250205b77ad56a787f45954bcb373a8fa91a46f3c8c0dd9d1067bdf4e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--.github--workflows--heliopause-ci.yml",
+      "bytes": 27926,
+      "sha256": "5e7a19eaebcb5a6d069ad5c034506967328471ffc617da50ba681ac189696334"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--scripts--check--pipx_runtime_driver_test.go",
+      "bytes": 6457,
+      "sha256": "bc3f8e65b30a41f1a0b60a79939f4d4743b6046facbca8db236d709c2fb527c2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--scripts--check--pipx_runtime_workflow.go",
+      "bytes": 6339,
+      "sha256": "a6752884361d2f879d40dfeb415ada4b02ea235cdeb3f059652c7ed50f530b98"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--scripts--check--pipx_runtime_workflow_test.go",
+      "bytes": 5342,
+      "sha256": "c3c8315a5f2a43bd6e75065514f26660c29ccf6529bd20c6c59cc9ff89212c90"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--scripts--check--workflow.go",
+      "bytes": 37211,
+      "sha256": "c71d3c047446bee0a939a652a50a7dce12b3f6ee2ff33ebb3cfbfee79d882e77"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source--scripts--ci-pipx-runtime.sh",
+      "bytes": 3826,
+      "sha256": "2d55a62d2eb9706c354e53be36bc07525b53117249b0d758f976d0a5c58233e3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-first-source.json",
+      "bytes": 574,
+      "sha256": "88d293387c070ebe96944867659453178296f407755a1de91ff8001e342b3eb3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-harness-checks.json",
+      "bytes": 528,
+      "sha256": "0714498c049a7363b2ba83391d3b0d01a427f154be14e002a6b4e58f96c2bd5e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-harness-focused.log",
+      "bytes": 56,
+      "sha256": "971b9d4b76e24a1c84d47d01264b020157743487448af9a6057c6796cac417f9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-harness-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-harness-source.json",
+      "bytes": 574,
+      "sha256": "88d293387c070ebe96944867659453178296f407755a1de91ff8001e342b3eb3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-harness-workflow.log",
+      "bytes": 1071,
+      "sha256": "ab6fcc9d4834d95f845e01149aac3d563c8d5aff7358adb032be31135baa5ab3"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-actual.sh",
+      "bytes": 528,
+      "sha256": "dfbf11cc49ef36200e89edd4563537ba9afead3b2fdd14959018714a3a4eac17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-binaries.json",
+      "bytes": 997,
+      "sha256": "e26873c9f77c3b336295bf7af46a9feb34fb776fd6e0f80a23910aa7b5648075"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-helpers-after.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-inventory.json",
+      "bytes": 1933,
+      "sha256": "e576ca5faeb9ee66cdedcd11293cd4e211830e94745a0ee2b648e7449e2ab82e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-lifecycle.log",
+      "bytes": 342,
+      "sha256": "c6cc200390ce7e6d220127b6a739ff782817927fcea659af84b1cf1824aa55b8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-namespace.py",
+      "bytes": 2681,
+      "sha256": "c09c6ed357e6ac2f3c22a1b0f910e05a993aa9fa777b6ed56498e4c7deda3cc4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-result.json",
+      "bytes": 689,
+      "sha256": "1f2c2f34819310b4c1acc174e0e22e18ea1364d8156ea5c9b7cc391c66ba3cde"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v1-source.json",
+      "bytes": 1186,
+      "sha256": "e503ffdba1205950c8782e63386ca7d865796f9a70be59b8efac61372a772d08"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-actual.log",
+      "bytes": 14902,
+      "sha256": "d95267c4ca85cd1d03b3436e4ff9951d1bd12470a5609a382bd2f67a9f6b14d5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-actual.sh",
+      "bytes": 528,
+      "sha256": "4d3779b13a1e0e8d984169f5814e5e1b35330163f8822a6d1abe1093f9451f68"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-binaries.json",
+      "bytes": 997,
+      "sha256": "e26873c9f77c3b336295bf7af46a9feb34fb776fd6e0f80a23910aa7b5648075"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-helpers-after.json",
+      "bytes": 36,
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-host-after.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-host-before.json",
+      "bytes": 2180,
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-inventory.json",
+      "bytes": 2367,
+      "sha256": "8f2a0a1573cb4b14bec8ebf7fbca613fdee2588d706bf68b70270e0f82244570"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-lifecycle.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-namespace-result.json",
+      "bytes": 370,
+      "sha256": "36b3dc5d20d2184ac07623cda29b3e70a8d4b7a6448bc0102d6b6808aca7d3c5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-namespace.py",
+      "bytes": 2701,
+      "sha256": "a8d402f07284ee1412e50ff0182be4f839c17272c83f042f09b4e24a91a006dc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-result.json",
+      "bytes": 1036,
+      "sha256": "484d38a6d1da67b5eb48c3e4796cbac0aaa18c9c1756d726793027b3e2886783"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2-source.json",
+      "bytes": 1186,
+      "sha256": "e503ffdba1205950c8782e63386ca7d865796f9a70be59b8efac61372a772d08"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual-v2.py",
+      "bytes": 9675,
+      "sha256": "bc15cc4d6226672d35370f83abb4049de4e263720c66eff48ec3a4c12526a10d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-recipe-actual.py",
+      "bytes": 9655,
+      "sha256": "81cf6240fafef0d96c4ee7f70beb5c3bbdd8a808005f9db6679690eb4da7416f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-checks.json",
+      "bytes": 1417,
+      "sha256": "aa32785175c388c6d2b4dbb9f278a7a39138075118bdf3b04e1f9b8ee0f72a7c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-compile-bootstrap.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-quick.log",
+      "bytes": 1354,
+      "sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-race.log",
+      "bytes": 57,
+      "sha256": "195e9dd3706a51b38dea5fc7d66ea3051773bd39fc05145117f5ed95527eea03"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-release-gate.log",
+      "bytes": 21,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-source.json",
+      "bytes": 718,
+      "sha256": "5c3ef5d549cc604e47e2740e2ebd0696d3131190eafbf970b77d298760eda8ff"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b3d-v2-workflow.log",
+      "bytes": 1071,
+      "sha256": "e382b77268fc5f8020d3f9abf700153b1cc8073a00afc2798522a6f1ea1571c4"
+    }
+  ]
+}

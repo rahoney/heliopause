@@ -91,7 +91,7 @@ func TestResolverNetworkPolicyCreateDiagnostic(t *testing.T) {
 }
 
 func TestValidateResolverEndpointsRejectsUnsafeOrAmbiguousInputs(t *testing.T) {
-	for _, endpoints := range [][]netip.Addr{nil, {netip.MustParseAddr("127.0.0.1")}, {netip.MustParseAddr("10.0.0.1")}, {netip.MustParseAddr("1.1.1.1"), netip.MustParseAddr("1.1.1.1")}, {netip.MustParseAddr("2606:4700:4700::1111")}} {
+	for _, endpoints := range [][]netip.Addr{nil, {netip.MustParseAddr("127.0.0.1")}, {netip.MustParseAddr("10.0.0.1")}, {netip.MustParseAddr("169.254.169.254")}, {netip.MustParseAddr("255.255.255.255")}, {netip.MustParseAddr("1.1.1.1"), netip.MustParseAddr("1.1.1.1")}, {netip.MustParseAddr("2606:4700:4700::1111")}} {
 		if err := validateResolverEndpoints(endpoints); err == nil {
 			t.Fatalf("validateResolverEndpoints(%v) error = nil", endpoints)
 		}

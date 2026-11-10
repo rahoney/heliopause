@@ -1,0 +1,116 @@
+{
+  "schema": "helox.pnpm-approved-data-cache-local/v1",
+  "baseline": "7e966e7786d4e439fff80112014471d315c4ce26",
+  "scope": "B5a non-executing, exact-approval data staging only; not Host installation or persistent target adoption",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (actual bootstrap inspection/Evidence/Policy to Stage/Open)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/inspection/npm/pnpm_project.go",
+      "sha256": "bc168c7e73848a78ce0d69b7b1e8331749e118e8b05a209e87ac57448e5bcca2"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_intake.go",
+      "sha256": "4be51ff66ae494bbca80af4c65ef5376f8d761dfa0bed9e305c65af9cdf155a8"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_transport.go",
+      "sha256": "f5015cfe2a52f41d98e2e2d6d1add4fa909cae2fece5df5aa2ef5d9422668f7b"
+    },
+    {
+      "path": "internal/promotion/project_cache_evidence.go",
+      "sha256": "fc4a2a0d4cbd832f4b3c4789313307dc2c4de49aa02401c33990eed7e94d925a"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "sha256": "fdcf0dae36ca35f5e5e5840a14771437564ff4d1e08ff5c04ef0f1f9e5553946"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_approval.go",
+      "sha256": "5917c7687da6f004e2546da9fcc5c5aff4cfbdb4891f45ecbd1ba507d7c89fc5"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_test.go",
+      "sha256": "37e00b48a45e8f2882994a3a1537125797059978c56f41ca295e97940d3371f3"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_cache_integration_test.go",
+      "sha256": "24a9ea626f485388b709cd818612b4e6c2ea8435d48243f978d4acc153bf0a51"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_inspection_test.go",
+      "sha256": "a0b7e0a28f760781888b482097bbabcc1b44942c99dccdba26a59cefc2015e7c"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.569,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-reviewed-format.json"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 130.142,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-reviewed-quick.json"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.431,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-reviewed-security.json"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.234,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-reviewed-docs.json"
+    },
+    {
+      "profile": "race-new",
+      "exit": 0,
+      "seconds": 9.823,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-reviewed-race-new.json"
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 148.769,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-ready-race.json"
+    }
+  ],
+  "race_reuse": "six packages after final production source; subsequent added tests have focused Race and canonical Quick; final realcorpus delta corrects log labels only",
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-approved-cache-result.json",
+    "sha256": "5ae07f8f4ce0990418bdf9ee1ff8e03645c5b66fbf12a6cc7c7fd3d1c97cbdad",
+    "exit": 0,
+    "seconds": 43.959,
+    "peer": "four actual public entries and 24 unique Evidence records; actual static/dynamic/Policy to sealed data tar Stage/Open and byte-drift rejection",
+    "empty": "explicit empty approval and exactly two sealed controls; no per-entry Evidence, layout tar, dynamic instance or tamper assertion",
+    "handoff": "successful request handoff; cancelled next request clears it; no Host project created",
+    "helper": "wait0/CONFIRMED_STOPPED",
+    "host_before_after_identical": true
+  },
+  "log_scope_correction": "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-actual-log-scope-correction.json; original log unconditional true labels for empty are not expanded into actual coverage; final source has conditional labels and unchanged assertions/production code",
+  "final_candidate_checks": [
+    "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-final-security.json",
+    "docs/github-logs/package-client-quarantine-20261021/p2c5b5a-final-docs.json"
+  ],
+  "environment": {
+    "go": "1.27.3",
+    "GOMAXPROCS": "2 (quality/compile)",
+    "quality_cache": "retained warm cache",
+    "runtime_and_check_limits": "unchanged"
+  },
+  "remote": "CI405 only qualifies its frozen7e966e7; B5a not pushed while it runs",
+  "missing": [
+    "Host typed extraction and independent retained approval",
+    "actual-operation Manifest/SBOM and guarded transaction/adoption/rollback/recovery",
+    "Bootstrap/CLI and whole P2 qualification"
+  ]
+}

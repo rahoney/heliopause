@@ -481,11 +481,23 @@ dependency state를 transactionally 갱신한다.
 ```bash
 helox go get example.com/module@v1.2.3
 helox go mod download
+helox go mod tidy [--adopt]
 helox go build ./...
 ```
 
-`go mod`는 command group이므로 첫 release에서 명시적으로 지원하는 `go mod`
-operation은 `go mod download`로 한정한다.
+`go mod download`는 현재 controls의 graph를 준비하며 소스에 맞춰 정리하지 않는다.
+M13 보강의 `go mod tidy`는 현재 단일 모듈의 bounded source·test·build-tag 입력을
+anchored reader로 고정하고 고정 Go가 의존성을 추가·제거한다. 숨김 namespace와 vendor는
+전달하지 않으며 workspace·중첩 모듈·replace·SDK/non-require directive 변경은 거부한다.
+Native/변경 controls 등록에는 `--adopt`가 필요하다. 원래 의존성이 없는 최초 프로젝트는
+기존 dependency-free 등록 경계를 사용한다.
+
+Tidy는 기존 public proxy/SumDB, 전체 선택 검사·Policy·검증 cache와 원자 controls 반영을
+재사용한다. `go.sum`이 없으면 private 사본만 빈 파일로 준비하고, 전체 승인 전 Host
+설정을 만들지 않는다. Source/control 신원·내용을 선택 후와 publication 전후 재확인하며
+같은 controls는 inode·mode·mtime을 보존한다. JSON은 `helox.project-tidy-result/v1`의
+`TIDY`/`DEPENDENCY_CONTROLS`로 검사와 실제 반영 완료를 구분한다. 이는 프로젝트 실행이나
+관찰 build 완료가 아니며 로컬/hosted qualification 상태는 Queue와 goal 감사 leaf가 소유한다.
 
 `helox go build`를 first-release contract에 포함한다. 이유는 HAA가 검증한 module을
 격리 cache에서 확인한 뒤 사용자가 일반 `go build`를 실행하면서 dependency를 다시
@@ -561,6 +573,60 @@ Operation-private SumDB requests는 64개, single response 1 MiB, total 4 MiB,
 error/path/text를 새로운 authority 또는 공개 failure detail로 사용하지 않는다.
 Static inspection은 동일 envelope의 bounds·module identity·Go syntax를 확인하며
 source를 import/execute하지 않는다. 실제 project/build qualification 범위는 Queue가 소유한다.
+
+#### Required MVS go.mod metadata — SEC-UPD-001 additive contract
+
+This reviewed addition is qualified for sourcee00 after source/proof/cache/build
+and same-tree CI341 consumers pass; [correction audit and edit map](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md)
+records the actual missing lower-version metadata case. Existing responsibilities
+and bounds above remain. Preserve the version1 envelope when context is empty.
+
+For each selected public module path, derive lower public versions at the
+intersection of the validated frozen raw requirement graph and the selected
+guarded go.sum /go.mod declarations. A graph-mentioned lower requirement without
+such a declaration may be unexpanded under Go graph pruning; do not fabricate an
+acquired subject or require its absent checksum. Validate all checksum grammar,
+duplicates and selected archive/control pairs first. Ignore unused historical
+sum lines and absent pruned references before the required-context count bound.
+Bind the canonical declared h1 for every included control; declarations are not
+proof. Every included old-version proof and the unchanged offline graph/build
+completeness checks remain required. Require official module/version spelling,
+strictly lower versions, unique canonical lexical order and at most16 references
+per selected module. The existing Domain1024-byte declared-integrity limit also
+applies without expansion; long-version declarations may hit it earlier and must
+refuse rather than truncate. The optional integrity suffix is
+`;required-mods=<version>:<h1>[,<version>:<h1>...]` after the existing selected
+`h1=<archive-h1>;go.mod=<control-h1>` pair. Empty/duplicate/unknown context refuses.
+Requested-primary and complete-project forms use the same frozen declarations;
+neither changes the actual selected graph or invents another dependency role.
+
+When required context exists, `HAA-GO-MODULE-2` uses the same length framing, with
+canonical JSON in the control section: mod is the selected raw byte string and
+required_mods is a nonempty ordered array of version/body raw byte strings
+(JSON byte strings use standard base64). Exact field/membership/order/identity
+checks reject duplicates, unknown/trailing data and omitted/extra controls.
+The complete encoded control section, including current and required controls,
+stays within4MiB; ZIP stays within64MiB and the existing full envelope bound.
+No additional source archive or extracted old module is selected or installed.
+
+Acquire only frozen same-path exact .mod endpoints on the fixed public proxy,
+never arbitrary URLs, resolver/global cache or discovery driven by failure text.
+Metadata-bearing acquisition has a120s total ceiling, the existing two60s request
+ceiling. Authenticate every required old-version /go.mod record independently
+using the pinned SumDB client, retaining its existing60s/64 requests/1MiB response/
+4MiB total limits. Current-version proof or equal bytes do not substitute for
+old-version binding. Check each control's official grammar and exact module path
+without executing it. Full envelope digest/Evidence includes this context.
+
+Only after the same entry/set ALLOW may the existing cache owner materialize
+those required .mod files. Rehash against the approved envelope/declarations,
+reject path/content collisions and include all files in the exact trusted receipt.
+Keep aggregate512MiB/20,000 files/40,000 entries and4MiB receipt unchanged. Cache
+reuse and read-only build archive include the same metadata; the existing offline
+download-all/graph reconciliation remains required before and after compilation.
+No build networking, control rewrite, fake archive, silent metadata fallback or
+new trust authority is permitted. Metadata count does not inflate selected-module
+or installed-artifact counts in CLI results.
 
 Go의 기본 package 탐색이 제외하는 정확한 `testdata` directory의 `.go`는 negative
 parser fixture 등을 포함하는 archive data로 취급한다. 이 구분은 package/vendor
@@ -752,8 +818,13 @@ verified cache에 없으면 build 중 외부 download로 보충하지 않고 res
 검증했다. 측정 최대값을 새 recipe의 event count로 전용하지 않는다. 검증 소비자와
 최종 qualification은 [Go qualification evidence](./evidence/m12-002-go-build-qualification/result.json)와 Queue가 소유한다.
 
-Host transaction의 preparation/build 공용 normalized-event 원장은 20,000으로
-제한한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
+Host transaction의 두 필수 fresh 환경에 대한 preparation/build/readonly keeper 공용
+normalized-event 원장은 **40,000**으로 제한한다. 2026-11-03에 사용자가 기존20,000의
+Go-only 조정을 승인했다. 새 VFS 관찰/두 환경을 포함한 실제 pflag의
+16,920+3,696>20,000 실패를 근거로 하며 기존 단일 실험 상한을 환경마다 다시 지급하지
+않는다. 실제 source/원본과 한정 qualification은
+[환경 상태 원장](./evidence/m13-004-convenience/environment-state-local-20261102.json)이
+소유한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
 새로 열어 예산을 보충하지 않는다. Physical collector는 10,000 records / 2 MiB,
 workspace summary saturation은 10,000, CPU 1 core·memory 512 MiB·build transaction
 3 minutes를 유지한다. Helper charged events, physical records, summary count와
@@ -890,6 +961,14 @@ expanded bytes200MiB, canonical receipt4MiB다. 개별 crate의 기존 archive/f
 한도는 그대로 적용한다. 독립 승인·Evidence와 모든 파일을 staging 및 재사용 때
 재확인하며, archive가 `.cargo-checksum.json` 권위를 제공할 수 없다. 이 초기 한도는
 실제 정상 처리량과 초과 차단 근거 없이 자동 확장하지 않는다.
+
+Verified Cargo cache의 payload는 아직 공개되지 않은 controller-owned private
+temporary tree에만 작성한다. 이 단계의 개별 write는 최종 tree 동기화까지 초기
+file sync를 모을 수 있지만, seal·전체 inventory·receipt 기록 뒤 모든 파일과
+directory의 실제 sync를 완료하기 전에는 cache를 publish하거나 유효한 handle을
+반환하지 않는다. No-replace rename 뒤 cache parent sync도 유지한다. 어느 barrier든
+실패하면 유효한 staged handle을 반환하지 않고 미공개 tree를 정리하며 최초 오류를
+보존한다. 공유 metadata writer의 즉시 sync 및 다른 생태계 동작은 그대로다.
 
 `cargo add`는 원본 complete source/control guard를 선택 이전부터 유지하고 한 번의
 private selection을 canonical crate acquisition·독립 검증·검사·Evidence·Policy·cache와
@@ -1166,9 +1245,11 @@ member64MiB, expanded aggregate200MiB, archive10,000entries, complete installed 
 200MiB/10,000files/20,000entries의 한도를 유지한다. 한도 밖 package는 자동 설치하지 않는다.
 
 Verified signer에만 같은 acquired subject의 required isolated `-help` probe를 수행한다.
-`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 한 번 실행하고
+`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 각 필수 fresh 환경에서 한 번 실행하고
 network-none, readonly OCI root, 기존 CPU30s/wall30s/memory512MiB/PID64/charged10,000
-경계를 적용한다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
+경계를 두 환경 전체의 공유 원장에 적용한다. Wall30s/CPU30s/charged10,000을 환경마다
+재부여하지 않는다. 종료 후 상태는 고정 RO keeper에서 기록하며 두 환경의 terminal과
+workspace Evidence가 모두 필요하다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
 기록한다. Terminal1은 consumed exact direct-exec admission과 typed external target exit를
 함께 요구한다. stdout·error string·bare exit error는 완료 authority가 아니다. Missing
 observation, ambiguous admission, timeout/resource/cleanup failure는 required INCOMPLETE다.

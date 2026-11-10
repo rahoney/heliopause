@@ -1,0 +1,345 @@
+{
+  "status": "PASS (local hosted wiring/guard scope only)",
+  "baseline_commit": "37e230fbd6ac488a7b62347539460bd0405758aa",
+  "runtime_inputs": 1351,
+  "existing1347_sources_unchanged": true,
+  "production_Go_CPP_unchanged": true,
+  "modified_paths": [
+    "scripts/check/uv_tools_workflow.go",
+    "scripts/check/uv_tools_workflow_test.go",
+    "scripts/check/workflow.go",
+    "scripts/ci-uv-tools.sh"
+  ],
+  "workflow_source": {
+    "path": ".github/workflows/heliopause-ci.yml",
+    "sha256": "8b8ea0a73ec1fb79359304db5134b8bae6d767e2820a6c6eee20dec6117bae47"
+  },
+  "states": {
+    "IMPLEMENTED": "YES (current profile and hosted wiring)",
+    "WIRED": "YES (unconditional existing job)",
+    "QUALIFIED": "YES (local wiring/DATA guard only); hosted NO",
+    "ACCEPTANCE_CLOSED": "NO (actual next source CI required)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.517
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 2.218
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./scripts/check",
+        "-run",
+        "^(TestUVTools|TestCurrentExecutionPreparation)"
+      ],
+      "exit_code": 0,
+      "seconds": 1.317
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 299.996
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 55.89
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 18.005
+    }
+  ],
+  "inert_Bash_and_saved_log_DATA_guard_cases": {
+    "scope": "inert Bash and saved actual log DATA only; no protected client/native/Docker/artifact execution",
+    "cases": [
+      {
+        "case": "saved real logs",
+        "exit": 0,
+        "expected": 0,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "empty Node",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "empty Python",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node child only",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python child only",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node duplicate parent",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python duplicate parent",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node SKIP",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python SKIP",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node missing case",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python missing case",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node duplicate ID same count",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python duplicate ID same count",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node foreign marker",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python foreign marker",
+        "exit": 1,
+        "expected": 1,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Node original error",
+        "exit": 7,
+        "expected": 7,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Node original beats cat",
+        "exit": 7,
+        "expected": 7,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Node cat error",
+        "exit": 23,
+        "expected": 23,
+        "calls": [
+          "node"
+        ]
+      },
+      {
+        "case": "Python original error",
+        "exit": 9,
+        "expected": 9,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Python original beats cat",
+        "exit": 9,
+        "expected": 9,
+        "calls": [
+          "node",
+          "python"
+        ]
+      },
+      {
+        "case": "Python cat error",
+        "exit": 23,
+        "expected": 23,
+        "calls": [
+          "node",
+          "python"
+        ]
+      }
+    ],
+    "syntax": "both CI helper and exact hosted step PASS",
+    "step_sha256": "d7340c7b1971804349e80d0295eea2a0278364217bff85ce11695a8400c0ab57",
+    "Node_log_sha256": "597aeab02e1a957cd0bfe5942d7ea3fa1422b4825dfa9a8f8eb8b4d36291606e",
+    "Python_log_sha256": "351a729ed97c187e8a49db2291b6130592040a6674ce79af00936f1cbc98721b",
+    "all_pass": true
+  },
+  "current_parent_scopes": {
+    "Node_refusal2": "C7 local actual33.886s retained; current Node code unchanged",
+    "Python_preparation3": "A3 local actual84.364s/fresh3/stored2/refusal1 retained; current production code unchanged",
+    "each_parent_timeout": "5m unchanged; new current Python profile owns existing image DATA export/cleanup; no user program runtime"
+  },
+  "not_done": [
+    "new source Required/actual checkout/tree/logs",
+    "UVx native golden equivalence/user Python runtime/CLI",
+    "whole final4profiles/signed qualification"
+  ],
+  "raw_guard": "docs/github-logs/package-client-quarantine-20261021/p6-a4-guards.json",
+  "next": "final docs/security, meaningful commit and authorized normal grouped push, run registration and real20min status queries",
+  "git_preflight_followup": "one whitespace-only YAML blank line rejected before commit; removed without behavior change; original candidate/index preserved; final workflow/docs/security required",
+  "original_wiring_source_identity": "docs/github-logs/package-client-quarantine-20261021/p6-a4-v1-source-identity.json",
+  "current_source_identity": "docs/github-logs/package-client-quarantine-20261021/p6-a4-v2-source-identity.json",
+  "final_YAML_checks": [
+    {
+      "profile": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit": 0,
+      "seconds": 0.866
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.315
+    },
+    {
+      "profile": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 10.597
+    }
+  ]
+}

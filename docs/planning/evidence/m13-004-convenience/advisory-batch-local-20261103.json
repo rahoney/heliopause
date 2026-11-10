@@ -1,0 +1,152 @@
+{
+  "baseline_commit": "a4e4f15",
+  "scope": "S05 bounded HTTP batch/page protocol component and controlled test transport only; no provider live response, affected record interpretation, production transport, application/Policy/CLI wiring or cache",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/inspection/advisory/osv.go",
+      "sha256": "bbd0bef08560a3cfccb7c6a7b42c14c70e3b9e743d6028d99b9e1c6800ae46e1"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_json.go",
+      "sha256": "3a97daa12e4eac1818ce067def8d8d14d6d73ebd49166b359264baca6b41ebbb"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_test.go",
+      "sha256": "5c58540bd3941096a16e4b4fa519b6dec06159994d36f24738d964c632adfbb3"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_json_test.go",
+      "sha256": "be5b77758d05796d8aea33a1b16a9e8a2a09d2f39b9c6d8bb275a5c14640f028"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "b00c77aa97c37897a74d012c82316e00871b947a50bbc7cf19905ec0bb1effa8"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "sha256": "08c684b47a3038f77d1dfb8b9e55ebbb03f0f3c3a950f0778b5f45567ac8ee5b"
+    }
+  ],
+  "checks": [
+    {
+      "raw_file": "s05-lookup-bounds-race.json",
+      "sha256": "b27668b81f60a4baf4975b67a9aee01df4ac54bdc83758b9b12f3131f053e14e",
+      "elapsed_seconds": 4.501,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "controlled batch/page lookup and response negatives with Race",
+      "verified_source_paths": [
+        "internal/inspection/advisory/osv.go",
+        "internal/inspection/advisory/osv_json.go",
+        "internal/inspection/advisory/osv_test.go",
+        "internal/inspection/advisory/osv_json_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-static.json",
+      "sha256": "672f4850b82d7a68998eef56c61360bdafed2046806b55f69e50bb45e72778b9",
+      "elapsed_seconds": 0.899,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "pinned Staticcheck advisory",
+      "verified_source_paths": [
+        "internal/inspection/advisory/osv.go",
+        "internal/inspection/advisory/osv_json.go",
+        "internal/inspection/advisory/osv_test.go",
+        "internal/inspection/advisory/osv_json_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-boundary-static.json",
+      "sha256": "bfc1fef74c26daf7354e0e4ab074afcbb36194477349fa8337c67164909a214f",
+      "elapsed_seconds": 2.418,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "pinned Staticcheck checker",
+      "verified_source_paths": [
+        "scripts/check/architecture.go",
+        "scripts/check/architecture_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-vet.json",
+      "sha256": "37ace1b6519dd14f2335fed66e2e65e5f36ab5151eaee7327aee41418d424134",
+      "elapsed_seconds": 0.623,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "Go vet affected packages",
+      "verified_source_paths": [
+        "internal/inspection/advisory/osv.go",
+        "internal/inspection/advisory/osv_json.go",
+        "internal/inspection/advisory/osv_test.go",
+        "internal/inspection/advisory/osv_json_test.go",
+        "scripts/check/architecture.go",
+        "scripts/check/architecture_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-foundation.json",
+      "sha256": "4c33b5f52c81485776bc2def04173496846e5ae235dacb870e03946725df9da6",
+      "elapsed_seconds": 55.335,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "canonical foundation: formatting, runtime/module drift, source/test builds, architecture, docs at its recorded input",
+      "verified_source_paths": [
+        "internal/inspection/advisory/osv.go",
+        "internal/inspection/advisory/osv_json.go",
+        "internal/inspection/advisory/osv_test.go",
+        "internal/inspection/advisory/osv_json_test.go",
+        "scripts/check/architecture.go",
+        "scripts/check/architecture_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-security.json",
+      "sha256": "5d79d65a86961b4a6f020fe9ae300678a4f2e1ca42f618cb81654ea78146660c",
+      "elapsed_seconds": 14.955,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "canonical gosec/Gitleaks current tree and detection contract",
+      "verified_source_paths": [
+        "internal/inspection/advisory/osv.go",
+        "internal/inspection/advisory/osv_json.go",
+        "internal/inspection/advisory/osv_test.go",
+        "internal/inspection/advisory/osv_json_test.go",
+        "scripts/check/architecture.go",
+        "scripts/check/architecture_test.go"
+      ]
+    },
+    {
+      "raw_file": "s05-lookup-architecture-target.json",
+      "sha256": "6d613bd350dbec4e5a7d9068ee5c19fdd8fe48b31ad65b5ba8901c171c947849",
+      "elapsed_seconds": 0.544,
+      "exit_code": 0,
+      "source_unchanged": true,
+      "scope": "actual existing positive and negative architecture tests",
+      "verified_source_paths": [
+        "scripts/check/architecture.go",
+        "scripts/check/architecture_test.go"
+      ]
+    }
+  ],
+  "resource_limits": {
+    "input_packages": 4096,
+    "message_packages": 1000,
+    "message_response_bytes": 2097152,
+    "total_response_bytes": 16777216,
+    "total_requests": 64,
+    "total_id_references": 8192,
+    "lookup_wall_seconds": 30,
+    "http_timeout_seconds": 10
+  },
+  "ci_started": false,
+  "host_installation_changed": false,
+  "required_dynamic_checks_changed": false,
+  "runtime_lock_changed": false
+}

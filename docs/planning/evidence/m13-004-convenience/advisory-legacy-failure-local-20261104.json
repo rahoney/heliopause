@@ -1,0 +1,227 @@
+{
+  "baseline": "893522a",
+  "scope": "legacy Go exact get/download, Cargo add, Terraform exact init failure presentation; no new selection/inspection/approval",
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "source_inputs": [
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "dc78d7918a91009af00bc751d63e1a38c108fdc0c505c8dac8d0b448361ca2fa"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "a987a5c062d54d52e917d02a08e4a0ab8307ebf524efcd058c047e11533e093b"
+    },
+    {
+      "path": "internal/cli/cargo_update_test.go",
+      "sha256": "28c7b90df88b868411b00125dc31718ea71ce39f304ef332273b59fe137dd99c"
+    },
+    {
+      "path": "internal/bootstrap/advisory_integration_test.go",
+      "sha256": "de93770cee3fb56a481998d06d17ad43502925be68039d94dda3d745d2ae2cec"
+    }
+  ],
+  "checks": [
+    {
+      "raw": "s05-legacy-failure-red.json",
+      "scope": "three exact callers; six recorded cases failed, six early-error cases passed",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/cli",
+        "-run",
+        "^TestLegacyExactProjectFailureKeepsRecordedFactsAndFirstCause$",
+        "-count=1"
+      ],
+      "exit_code": 1,
+      "elapsed": 1.392,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-failure-target.json",
+      "scope": "initial exact callers and existing presenter/normal binding regressions",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "./internal/cli",
+        "-run",
+        "TestLegacyExactProjectFailure|TestGoModuleDownload|TestCargoAddInvokes|TestTerraformInitInvokes|TestRecordedAdvisoryDetails",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 3.941,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-failure-race.json",
+      "scope": "initial three callers, before download addition; full CLI/bootstrap Race",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "./internal/cli",
+        "./internal/bootstrap",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 34.64,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-failure-final-target.json",
+      "scope": "final four callers; sixteen recorded/early human/auto cases",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "./internal/cli",
+        "-run",
+        "^TestLegacyExactProjectFailureKeepsRecordedFactsAndFirstCause$",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "elapsed": 8.17,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-final-static.json",
+      "scope": "final tagged CLI/bootstrap",
+      "command": [
+        "/tmp/haa-full-audit-20261031/combined-final/quality-tools/bin/staticcheck",
+        "-tags",
+        "realcorpus",
+        "./internal/cli",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 10.411,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-final-vet.json",
+      "scope": "final tagged CLI/bootstrap",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "-tags",
+        "realcorpus",
+        "./internal/cli",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 1.425,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-production-build.json",
+      "scope": "current production CLI",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "build",
+        "-trimpath",
+        "-ldflags",
+        "-s -w",
+        "-o",
+        "/tmp/haa-goal-implementation-20261101/helox-s05-legacy-facts",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "elapsed": 6.703,
+      "source_unchanged": true
+    },
+    {
+      "raw": "s05-legacy-native-test-build.json",
+      "scope": "tagged actual driver compile; not native by itself",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-tags",
+        "realcorpus",
+        "-c",
+        "-o",
+        "/tmp/haa-goal-implementation-20261101/bootstrap-s05-legacy-facts.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed": 8.906,
+      "source_unchanged": true
+    }
+  ],
+  "actual": {
+    "raw": "s05-legacy-failure-native-v1.json",
+    "complete": true,
+    "elapsed": 29.892,
+    "host_unchanged": true,
+    "restored": true,
+    "large_test_copies_removed": true,
+    "removed_copy_bytes": 381927030,
+    "helper_sha256": "8941e8a185f087a5e2debbf4668c3cbe880f5b556d458aa8565d2de6d9e71eca",
+    "observer_sha256": "5c33c2015f771a5410f03d94ef155af29835aa2999b633887953f6eccd911417",
+    "cases": [
+      {
+        "case": "go-exact-controlled-malware",
+        "seconds": 17.935,
+        "required_checks": 3,
+        "policy": "BLOCK",
+        "record": "MAL-0000-helox-controlled",
+        "target_preserved": true,
+        "exit": 1
+      },
+      {
+        "case": "cargo-exact-controlled-malware",
+        "seconds": 9.616,
+        "required_checks": 3,
+        "policy": "BLOCK",
+        "record": "MAL-0000-helox-controlled",
+        "target_preserved": true,
+        "exit": 1
+      }
+    ],
+    "executable_digest": {
+      "algorithm": "sha256",
+      "value": "62fbe0567e154e128b841c7eacb9a07b23fb3f36e91dbca549db8d9ba874ce0c"
+    }
+  },
+  "cleanup": {
+    "scope": "only completed current CLI/test runner and superseded scratch helper; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "helox-s05-public-languages",
+        "bytes": 37593351,
+        "sha256": "90ca83d32d1eaf40afc7a7a8fab41ca2f875b80f0a996766a03ee254e711cca3"
+      },
+      {
+        "file": "bootstrap-s05-public-languages.test",
+        "bytes": 56605732,
+        "sha256": "b7c43bbe7487f1c8e616d49f8d306643b36e8e97f1dc33ce0942cde7e3378bf2"
+      },
+      {
+        "file": "policy-helper-s05-advisory",
+        "bytes": 8453333,
+        "sha256": "fd09c650e37b6a64d5191be3179175c3c775321dd53336340c4e87c44c9eeaf0"
+      }
+    ],
+    "retained_active_inputs": [
+      "helox-s05-legacy-facts",
+      "bootstrap-s05-legacy-facts.test",
+      "policy-helper-s05-public-languages",
+      "haa-sandbox-responder",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 102652416,
+    "complete": true
+  },
+  "missing": [
+    "native Go download and Terraform failure/display qualification",
+    "opaque binary and named-profile/current remaining public regression fixtures",
+    "whole S05 and final hosted acceptance"
+  ],
+  "local_qualification": "Four-caller controlled16-case and two actual legacy command cases PASS; remaining native/hosted scope stays OPEN."
+}

@@ -1,0 +1,153 @@
+{
+  "schema": "helox.pnpm-project-inspection-local/v1",
+  "baseline": "a0c9eb6f0b7a19656f5f372d18af513132034ca5",
+  "scope": "B4c static-all collection gate, actual instance/session aggregate and retained partial Evidence; named local only",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (project adapter, existing actual Policy/Evidence consumer and CI invocation)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole P2)"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_layout.go",
+      "sha256": "5df5ac5aac44ed1d14df160ebd9d5f67adff1ccd8ed351046d43fb14620e5209"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_layout_test.go",
+      "sha256": "70da2e0f0eea662803423f3a83aa99d4575024d1e3daebec6da11b9fdddc230f"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_budget.go",
+      "sha256": "298d9e3672c8d036ed03f23b136a2cf75d3f2fb0d5a3f1dc4342d9d6bca2972d"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_inspection_budget_test.go",
+      "sha256": "0e8f941f50d9677434807c83a9ba55a54933430fa8bb9296715bfc15ca0bde03"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_project.go",
+      "sha256": "ebfd17a73ce01ac1c3c1da46a5a4861247f492f8cfa402d34585a0a315470125"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic.go",
+      "sha256": "9b97b76ad858f658a9a96b0c500b7b854b2007e980aed2a9a4925a2802b3e928"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic_test.go",
+      "sha256": "09f679e834d1f32cc2615bd483f53b192aae790d2755f73c91aaadb492fae27b"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_inspection_test.go",
+      "sha256": "bfb83485e23baf4538482f15a6fe8a0fe5af94948e62f929b45069ae4ffb2f41"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_inspection_real_test.go",
+      "sha256": "b48244065e1e9e76d41e2e364a0da21a5a9ef4c41eb60db0917f6d4a200d03f9"
+    },
+    {
+      "path": "internal/sandbox/pnpm_public_resolver_real_test.go",
+      "sha256": "28ed8949c2992cd5a70499bf9f1c8877b2bbf765425e14a909fcec85ff166a9e"
+    },
+    {
+      "path": "internal/application/dependency_batch_inspect.go",
+      "sha256": "a441f50c8b22f01bc38f7a1acc9869c29e8ff19eeff82bd50431fceb75567b46"
+    },
+    {
+      "path": "internal/application/project_batch_inspect_test.go",
+      "sha256": "eb94ecb6b00683e1c22533c9a9882dc2120e7bea491ea759546431435fa14644"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "9239b5bc15cfd14e4614c9c51f3e3e52b2abeb0f732234c1c8c4a2a826b5458a"
+    },
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "sha256": "4f30d08a9189cd943fd2f56b3b9f932e9af5c618ee9e7141283d916e1b783e34"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "sha256": "9c147591496ea785d716bb9f36d9c6c24489e74345885ad6b3067eb15422d134"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "e81ef92c32c514388251ad1f646ccd7f59378161fc92b35149e0632c73b9c505"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "f58924e308c7a7f5c0cea9734e829dcbd86ebd92384722bd9d5ce2c9fae97e01"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.212,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-public-policy-format.json"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 51.085,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-public-policy-quick.json"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.702,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-public-policy-workflow.json"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 11.742,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-complete-source-security.json"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.227,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-complete-source-docs.json"
+    },
+    {
+      "profile": "race",
+      "exit": 0,
+      "seconds": 32.714,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-complete-source-race.json"
+    }
+  ],
+  "race_scope": "all internal/artifact/npm, internal/inspection/npm, internal/application and internal/sandbox; after final production source. Subsequent delta is realcorpus consumer/CI wiring only.",
+  "final_candidate_checks": [
+    "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-final-security.json",
+    "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-final-docs.json"
+  ],
+  "actual": [
+    {
+      "scope": "frozen public transitive2/peer4; full input/layout binding; fresh actual session evidence; no Policy",
+      "exit": 0,
+      "seconds": 49.087,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-final-project-result.json",
+      "sha256": "cba08c8063e675082675bbd517e31593cf0c09fc03025b1f2cb6cbe0ac9377bd"
+    },
+    {
+      "scope": "native eight selections; single/transitive/peer/selected-update four actual ProjectInspectService/Evidence Store/Policy cases; no Host install",
+      "exit": 0,
+      "seconds": 114.917,
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p2c5b4c-public-policy-result.json",
+      "sha256": "916ef5f54684e7cdd17bea4360960c5c4ee54fbc4027002d84ca3f0988492d04"
+    }
+  ],
+  "previous_direct_actual": "p2c5b4c-project-result.json predates the final MatchesInput gate and is not substituted for final-project; first fixture failure remains preserved",
+  "reused_observer": "B4b2 canonical release/112 latches; C++ and lock unchanged",
+  "environment": {
+    "go": "1.27.3",
+    "GOMAXPROCS": "2",
+    "quality_cache": "retained warm cache",
+    "runtime_and_check_limits": "unchanged"
+  },
+  "missing": [
+    "bundled remote qualification and existing shared consumers",
+    "PNPM retained cache/provenance/Host records, guarded transaction and CLI",
+    "whole P2 acceptance"
+  ]
+}

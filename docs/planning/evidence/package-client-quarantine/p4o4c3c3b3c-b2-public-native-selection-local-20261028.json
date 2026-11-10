@@ -1,0 +1,195 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-b2 fresh public UV-backend selection -> independently frozen whole originals -> fixed installed ZIP/native pipx metadata only",
+  "baseline_commit": "9c49d575ec19492e2cedd5d78b4d9e274007cc40",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (production resolver/factory and actual)",
+    "QUALIFIED": "YES (named public/local namespace)",
+    "ACCEPTANCE_CLOSED": "YES (C-b2 fresh selection scope)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "9fea37711a3f3608e6830865ce786f2be7f6406e5e03c16bbf02f7ab635f22cb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "a8aad4c93f385a5924ff1af39738c83501c5f61677cd2cb6c36cb27e8d04e941"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "187209d663a7a43f5bc724ca3d767681aba1544a6ac4a3e430bdaaced33bbd93"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver.go",
+        "sha256": "8fcdc1b9f213feede45bcee8a6c21d9c96b25e3ea8c6308bfc0320c8fc514f11"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_test.go",
+        "sha256": "6cb4ff24b8d9ea1a25ad851e082ec6899b22ae63eb0db4cbc24ff829083ec2eb"
+      },
+      {
+        "path": "internal/sandbox/pipx_resolver_integration_linux_test.go",
+        "sha256": "e84061b4cc0cac72db9abd1aba5b0caa2faf06efeac010efd9d2285a798c6047"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "7139ab48867830ece66c41706b393a63aea7ce649a2b805e6a34f73076fa8aa4",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.704
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 86.1
+      },
+      {
+        "step": "sandbox-race",
+        "exit_code": 0,
+        "seconds": 27.758
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.111
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.841
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.258
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 13.444
+      }
+    ]
+  },
+  "cpp18_reused": {
+    "binary_sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555",
+    "source6_unchanged": true,
+    "receipt": "p4o4c3c3b3c1-native-session-local-20261028.json"
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 51.055,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "717875f989f10a26016a328e72916e7a8ac3c42ae0525338d2ee87f1485ccbb8",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b2-actual-v1/protected-client",
+        "sha256": "7139ab48867830ece66c41706b393a63aea7ce649a2b805e6a34f73076fa8aa4"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b2-actual-v1/observer",
+        "sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "9fea37711a3f3608e6830865ce786f2be7f6406e5e03c16bbf02f7ab635f22cb"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "187209d663a7a43f5bc724ca3d767681aba1544a6ac4a3e430bdaaced33bbd93"
+      }
+    ],
+    "public_selection_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxPipxPublicInstallResolverIntegration"
+    ],
+    "named_pass": true
+  },
+  "public_original": {
+    "project": "cowsay",
+    "version": "6.1",
+    "url": "https://files.pythonhosted.org/packages/f1/13/63c0a02c44024ee16f664e0b36eefeb22d54e93531630bd99e237986f534/cowsay-6.1-py3-none-any.whl",
+    "declared_integrity": "sha256:274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+  },
+  "public_provenance": {
+    "selector": "cowsay==6.1",
+    "graph": 1,
+    "commands": 1,
+    "controls": 4,
+    "digest": "51362db88e6510652f918f75a585b9dd0ada36e906bc97244b9e0dbce3ecfc51",
+    "runtime": "pipx-tool-install:pipx:1.18.4;backend:uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi;zip:0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670",
+    "control_digests": [
+      {
+        "name": "pipx-tool-intent.json",
+        "digest": "4cc271931c8155deb37dfbef13cfae10c5bc1e0ce7d417d01f97a603e2bb2cbc"
+      },
+      {
+        "name": "pipx-tool-receipt.json",
+        "digest": "d66ec26a443fd3b12373261c781a4b5c40349dabda5a00b09ffcce4462c25bfb"
+      },
+      {
+        "name": "pipx-tool-pylock.toml",
+        "digest": "5e13f088b8d0b12b0317a93e87c91a795802a5d15be321f590bf482a45f4b757"
+      },
+      {
+        "name": "pipx-tool-census.json",
+        "digest": "57a7bb3f097e6d859cab1e3cc5eb425a87e4950f1c676e45f25a4dced881c539"
+      }
+    ]
+  },
+  "refusal": {
+    "selector": "idna==3.11",
+    "result": "zero selection; native install failed",
+    "native_transaction_reached": true,
+    "observer_fault": "none",
+    "combined_creates": 2,
+    "combined_registers": 2,
+    "combined_closes": 2,
+    "last_close_cpu_usec": 2184769,
+    "scope": "bounded non-tool refusal with complete native cleanup; no stronger stderr/root-cause attribution"
+  },
+  "network_roles": "trusted CONTROL native UV and independent Python reader only; offline native pipx profile unchanged",
+  "installed_supply_fixture": "C-b1 private overlay/root-owned0755 current and0444 selected ZIP/RO mount; Host root absent before and after; no signed registration/activation claim",
+  "fixture_history": {
+    "first_quick_exit": 1,
+    "quick_seconds": 203.647,
+    "first_mismatch": "shared receipt package_or_url=probe<2,>=1 but new test expected probe==1.0",
+    "next_focused_mismatch": "shared UVLock had exact probe@1.0 reference but production UpgradeRequirement.Reference intentionally retains source/project only",
+    "correction": "new test metadata exact requirement and refreeze using production source-only reference; shared fixtures and production guard unchanged",
+    "focused_green_log": "ok  \tgithub.com/rahoney/heliopause/internal/sandbox\t0.012s\n",
+    "production_equals_first_check_manifest": true,
+    "scope": "new fixture correction; no runtime/Policy/CPU cause claim"
+  },
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-b2-",
+  "MISSING": [
+    "original environment upgrade with inert authenticated original/whole source and native semantics",
+    "current complete inspection Evidence/Policy and approved cache",
+    "guarded Host transaction/CLI/native/current adoption",
+    "hosted/final CPU-CUDA/signed-native qualification",
+    "legacy ZIP mixed CPU boundary qualification"
+  ]
+}

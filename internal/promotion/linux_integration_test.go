@@ -99,20 +99,27 @@ func validStagedPyPIFixture(t *testing.T, root string) (domain.VerifiedBundle, d
 
 func writeFixtureWheel(t *testing.T, path string) {
 	t.Helper()
+	writeNamedFixtureWheel(t, path, "haa-promotion-fixture")
+}
+
+func writeNamedFixtureWheel(t *testing.T, path, project string) {
+	t.Helper()
+	module := strings.ReplaceAll(project, "-", "_")
+	dist := module + "-1.0.0.dist-info"
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}
 	archive := zip.NewWriter(file)
-	files := map[string][]byte{"haa_promotion_fixture/__init__.py": []byte("value = 42\n"), "haa_promotion_fixture-1.0.0.dist-info/METADATA": []byte("Metadata-Version: 2.1\nName: haa-promotion-fixture\nVersion: 1.0.0\n"), "haa_promotion_fixture-1.0.0.dist-info/WHEEL": []byte("Wheel-Version: 1.0\nGenerator: haa\nRoot-Is-Purelib: true\nTag: py3-none-any\n")}
+	files := map[string][]byte{module + "/__init__.py": []byte("value = 42\n"), dist + "/METADATA": []byte("Metadata-Version: 2.1\nName: " + project + "\nVersion: 1.0.0\n"), dist + "/WHEEL": []byte("Wheel-Version: 1.0\nGenerator: haa\nRoot-Is-Purelib: true\nTag: py3-none-any\n")}
 	record := make([]string, 0, len(files)+1)
-	names := []string{"haa_promotion_fixture/__init__.py", "haa_promotion_fixture-1.0.0.dist-info/METADATA", "haa_promotion_fixture-1.0.0.dist-info/WHEEL"}
+	names := []string{module + "/__init__.py", dist + "/METADATA", dist + "/WHEEL"}
 	for _, name := range names {
 		sum := sha256.Sum256(files[name])
 		record = append(record, name+",sha256="+base64.RawURLEncoding.EncodeToString(sum[:])+","+strconv.Itoa(len(files[name])))
 	}
-	files["haa_promotion_fixture-1.0.0.dist-info/RECORD"] = []byte(strings.Join(record, "\n") + "\nhaa_promotion_fixture-1.0.0.dist-info/RECORD,,\n")
-	names = append(names, "haa_promotion_fixture-1.0.0.dist-info/RECORD")
+	files[dist+"/RECORD"] = []byte(strings.Join(record, "\n") + "\n" + dist + "/RECORD,,\n")
+	names = append(names, dist+"/RECORD")
 	for _, name := range names {
 		writer, err := archive.Create(name)
 		if err != nil {

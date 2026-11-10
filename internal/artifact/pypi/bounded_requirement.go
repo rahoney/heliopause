@@ -39,6 +39,16 @@ func (r BoundedRequirement) Project() string { return r.project }
 // and must survive project-level aggregation.
 func (r BoundedRequirement) Extras() []string { return append([]string(nil), r.extras...) }
 
+// VersionConstraint excludes extras, which must be preserved separately as
+// typed obligations before this form can be used as a pip constraint.
+func (r BoundedRequirement) VersionConstraint() string {
+	parts := make([]string, 0, len(r.constraints))
+	for _, constraint := range r.constraints {
+		parts = append(parts, constraint.operator+constraint.version)
+	}
+	return r.project + strings.Join(parts, ",")
+}
+
 // ParseBoundedRequirement accepts only bare names, numeric exact/compatible
 // releases, release prefixes, and comparison conjunctions. cuda-toolkit extras require
 // the one active Linux marker emitted by the supported CUDA metadata.
@@ -181,6 +191,28 @@ func CandidateSatisfiesBoundedRequirements(version string, requirements []Bounde
 		}
 	}
 	return true
+}
+
+// SatisfiesBoundedRequirements applies numeric bounds to the public release
+// part of a source-bound named build. Public local versions remain invalid.
+func (c Candidate) SatisfiesBoundedRequirements(requirements []BoundedRequirement) bool {
+	profile, ok := ProfileForSource(c.source)
+	if !ok || !sourceOwnsProject(profile, c.source, c.project) {
+		return false
+	}
+	version, err := normalizeVersionForProfile(c.version, IsPyTorchSource(c.source))
+	if err != nil || version != c.version {
+		return false
+	}
+	for _, requirement := range requirements {
+		if requirement.project != c.project {
+			return false
+		}
+	}
+	if IsPyTorchSource(c.source) {
+		version = strings.SplitN(version, "+", 2)[0]
+	}
+	return CandidateSatisfiesBoundedRequirements(version, requirements)
 }
 
 func parseNumericRelease(value string) ([]uint64, bool) {

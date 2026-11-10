@@ -1,0 +1,122 @@
+{
+  "scope": "P5-B2d selected Node entry bytes read through existing controlled static archive capture; DATA only",
+  "source_base": "a4ce06b291313eba9cadda80ae1ba377aedfdc3e",
+  "source_files_each": 1295,
+  "prior1292_unchanged_each": true,
+  "new_or_extended_source": [
+    {
+      "path": "internal/inspection/npm/archive_inventory.go",
+      "sha256": "3190024af78f2f2d53541a9cdc9c19b8eca6b593e6248e966109097d74d7aa04",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/inspection/npm/execution_entry.go",
+      "sha256": "9236fef16312e72d2b1bcb4e4dc19c0b5472976ce053936f5ca348f1934332cf",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/inspection/npm/execution_entry_test.go",
+      "sha256": "a8844be0af9f05f2c52fdf81d0e92e85baef14c3c76c40d658414c27541417ff",
+      "mode": "100644"
+    }
+  ],
+  "existing_owner_extension": {
+    "path": "internal/inspection/npm/archive_inventory.go",
+    "before_sha256": "f15a389d9f0acb67df8ba6fd6032541b1f76fd8e7e9d9871a330eb50ff305f6c",
+    "after_sha256": "3190024af78f2f2d53541a9cdc9c19b8eca6b593e6248e966109097d74d7aa04",
+    "reviewed_diff_sha256": "954ca9ac3b222752bd42557def2d018b9fb14e4d3fb96fa11db6ff98267fced0",
+    "scope": "optional selected member writer in existing capture; default digest writer and whole finish/guards unchanged"
+  },
+  "states": {
+    "IMPLEMENTED": "YES (controlled entry reader)",
+    "WIRED": "NO (actual P5 command flow absent)",
+    "QUALIFIED": "YES (named local reader and existing inspector consumers)",
+    "ACCEPTANCE_CLOSED": "YES (B2d reader scope); NO (whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.767
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 279.401
+    },
+    {
+      "step": "inspection-npm-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/inspection/npm"
+      ],
+      "exit_code": 0,
+      "seconds": 17.241
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.305
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 12.156
+    }
+  ],
+  "reused": [
+    "Inspector.inspect/InspectArchive",
+    "openInventorySource",
+    "archiveCapture.entry/copyArchivePayload/finish",
+    "ExecutionEntry.Matches",
+    "BindNodeTarget"
+  ],
+  "bounds_unchanged": {
+    "selected_file_bytes": 20971520,
+    "archive_decoded_bytes": 209715200,
+    "entries": 10000,
+    "manifest_bytes": 1048576
+  },
+  "verified": [
+    "manifest before/after selected member; empty JS; explicit different command and alias",
+    "actual whole original source digest/size and complete original inventory binding",
+    "selected/other digest, other mode/size, manifest or intake substitution rejected",
+    "source CRC/trailing/symlink mutation rejected",
+    "other shebang/runtime flags rejected by existing Node owner",
+    "nil/zero/missing inspector and context cancellation/cause preserved",
+    "no extraction/publication"
+  ],
+  "host_or_node_execution": false,
+  "missing": [
+    "real resolver/fresh inspection/Node context/records/staging preparation composition",
+    "introduction rehash/backend/output/exit/cancel/cleanup",
+    "CLI and actual hostile qualification"
+  ],
+  "ci423_source_6dd_excludes_this_code": true
+}

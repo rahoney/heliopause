@@ -17,10 +17,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"golang.org/x/sys/unix"
 )
 
@@ -44,6 +46,12 @@ type ObservationResourceLease struct {
 	CgroupParent string `json:"cgroup_parent"`
 	CPU          int    `json:"cpu"`
 	UsageUsec    uint64 `json:"usage_usec"`
+	// Local trusted transport timing; never decoded from the helper's wire.
+	ReadTiming ObservationResourceReadTiming `json:"-"`
+}
+
+type ObservationResourceReadTiming struct {
+	StartedUnixNS, IdentityNS, DialNS, EncodeNS, ResponseNS, ReverifyNS, TotalNS int64
 }
 
 type observationResourceRequest struct {
@@ -237,18 +245,28 @@ func observationParent(transaction string) (string, error) {
 	return "haaobs" + hex.EncodeToString(digest[:12]) + ".slice", nil
 }
 
-func observationPolicy(name string) (artifactpypi.ResourcePolicy, error) {
-	if name == "pypi" {
-		return artifactpypi.PublicPyPIProfile().ResourcePolicy(), nil
+func observationPolicy(name string) (uint64, int, error) {
+	if name == ports.SourceAnalysisResourceProfile {
+		return ports.SourceAnalysisCPUSeconds * 1_000_000, ports.SourceAnalysisMaxLaunches, nil
 	}
-	if !strings.HasPrefix(name, "pytorch:") {
-		return artifactpypi.ResourcePolicy{}, errors.New("unsupported observation resource policy")
+	// The existing default CPU authorization matches the npm lifecycle's
+	// unchanged 30-second ceiling. Environment experiments share this parent.
+	var policy artifactpypi.ResourcePolicy
+	if name == "pypi" || name == "npm-lifecycle" || name == "github-elf" || name == "terraform-provider" {
+		policy = artifactpypi.PublicPyPIProfile().ResourcePolicy()
+	} else {
+		profile, ok := artifactpypi.PyTorchProfile(strings.TrimPrefix(name, "pytorch:"))
+		if !strings.HasPrefix(name, "pytorch:") || !ok || profile.Name() != name {
+			return 0, 0, errors.New("unsupported observation resource policy")
+		}
+		policy = profile.ResourcePolicy()
 	}
-	profile, ok := artifactpypi.PyTorchProfile(strings.TrimPrefix(name, "pytorch:"))
-	if !ok || profile.Name() != name {
-		return artifactpypi.ResourcePolicy{}, errors.New("unsupported observation resource policy")
+	maxLaunches := 2*policy.MaxObservationImportsPerArtifact() + 4
+	if name == "npm-lifecycle" || name == "github-elf" || name == "terraform-provider" {
+		// Two fresh writers and their readonly keepers share one authorization.
+		maxLaunches = 4
 	}
-	return profile.ResourcePolicy(), nil
+	return uint64(policy.RuntimeCPUSecs()) * 1_000_000, maxLaunches, nil
 }
 
 func firstAvailableCPU() (int, error) {
@@ -292,7 +310,7 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 		if session != nil || request.Container != "" || request.Role != "" {
 			return ObservationResourceLease{}, errors.New("observation resource transaction already exists")
 		}
-		policy, err := observationPolicy(request.Profile)
+		ceiling, maxLaunches, err := observationPolicy(request.Profile)
 		if err != nil {
 			return ObservationResourceLease{}, err
 		}
@@ -314,8 +332,8 @@ func (e *observationResourceEngine) apply(ctx context.Context, peer uint32, requ
 			return ObservationResourceLease{}, err
 		}
 		session = &observationResourceSession{peer: peer, parent: parent, cpu: cpu, path: path, keeperScope: keeperScope, usage: baseline,
-			ceiling:     uint64(policy.RuntimeCPUSecs()) * 1_000_000,
-			maxLaunches: 2*policy.MaxObservationImportsPerArtifact() + 4,
+			ceiling:     ceiling,
+			maxLaunches: maxLaunches,
 			containers:  make(map[string]string), scopes: make(map[string]string),
 			drainedScopes: make(map[string]struct{}), drainedContainers: make(map[string]string)}
 		e.sessions[request.Transaction] = session
@@ -595,6 +613,7 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 		return err
 	}
 	engine := &observationResourceEngine{executor: executor, keeper: systemdObservationKeeper{executor: executor}, sessions: make(map[string]*observationResourceSession)}
+	var slowReadReports atomic.Uint32
 	go func() { <-ctx.Done(); _ = listener.Close() }()
 	for {
 		connection, err := listener.AcceptUnix()
@@ -604,14 +623,20 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 			}
 			return errors.New("accept observation resource client")
 		}
-		go func() {
-			defer connection.Close()
+		accepted := time.Now()
+		go func(accepted time.Time) {
+			timing := observationServerReadTiming{started: accepted, dispatched: time.Now()}
+			defer func() {
+				_ = connection.Close()
+				timing.report(os.Stderr, &slowReadReports, time.Now())
+			}()
 			_ = connection.SetDeadline(time.Now().Add(5 * time.Second))
 			peer, err := authorizer.AuthorizePeer(connection)
+			timing.authorized = time.Now()
 			if err != nil {
 				return
 			}
-			body, err := bufio.NewReaderSize(connection, maxObservationResourceMessage+1).ReadBytes('\n')
+			body, err := bufio.NewReaderSize(connection, maxObservationResourceMessage+1).ReadSlice('\n')
 			if err != nil || len(body) < 2 || len(body) > maxObservationResourceMessage {
 				return
 			}
@@ -621,15 +646,19 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 			if decoder.Decode(&request) != nil || decoder.Decode(&struct{}{}) != io.EOF {
 				return
 			}
+			timing.decoded = time.Now()
+			timing.authenticatedRead = request.Operation == "read"
 			requestLimit := observationResourceTimeout(request.Operation)
 			_ = connection.SetDeadline(time.Now().Add(requestLimit))
 			requestContext, cancel := context.WithTimeout(ctx, requestLimit)
 			lease, err := engine.apply(requestContext, peer, request)
 			cancel()
+			timing.applied = time.Now()
 			if err == nil {
 				_ = json.NewEncoder(connection).Encode(observationResourceResponse{OK: true, Lease: lease})
 			}
-		}()
+			timing.wrote = time.Now()
+		}(accepted)
 	}
 }
 
@@ -647,11 +676,27 @@ func NewSystemObservationResourceClient() (*ObservationResourceClient, error) {
 	return &ObservationResourceClient{endpoint: observationResourceSocket, group: config.ClientGID}, nil
 }
 
-func (c *ObservationResourceClient) call(ctx context.Context, request observationResourceRequest) (ObservationResourceLease, error) {
-	if c == nil || ctx == nil || verifyPolicySocket(c.endpoint, c.group) != nil {
+func (c *ObservationResourceClient) call(ctx context.Context, request observationResourceRequest) (lease ObservationResourceLease, resultErr error) {
+	if c == nil || ctx == nil {
 		return ObservationResourceLease{}, errors.New("observation resource service identity changed")
 	}
+	started := time.Now()
+	timing := ObservationResourceReadTiming{StartedUnixNS: started.UnixNano()}
+	defer func() {
+		if request.Operation == "read" {
+			timing.TotalNS = time.Since(started).Nanoseconds()
+			lease.ReadTiming = timing
+		}
+	}()
+	stage := time.Now()
+	identityErr := verifyPolicySocket(c.endpoint, c.group)
+	timing.IdentityNS = time.Since(stage).Nanoseconds()
+	if identityErr != nil {
+		return ObservationResourceLease{}, errors.New("observation resource service identity changed")
+	}
+	stage = time.Now()
 	connection, err := (&net.Dialer{Timeout: 5 * time.Second}).DialContext(ctx, "unix", c.endpoint)
+	timing.DialNS = time.Since(stage).Nanoseconds()
 	if err != nil {
 		return ObservationResourceLease{}, errors.New("observation resource service connection failed")
 	}
@@ -661,14 +706,25 @@ func (c *ObservationResourceClient) call(ctx context.Context, request observatio
 		deadline = contextDeadline
 	}
 	_ = connection.SetDeadline(deadline)
-	if json.NewEncoder(connection).Encode(request) != nil {
+	stage = time.Now()
+	encodeErr := json.NewEncoder(connection).Encode(request)
+	timing.EncodeNS = time.Since(stage).Nanoseconds()
+	if encodeErr != nil {
 		return ObservationResourceLease{}, errors.New("observation resource request failed")
 	}
 	decoder := json.NewDecoder(io.LimitReader(connection, maxObservationResourceMessage+1))
 	decoder.DisallowUnknownFields()
 	var response observationResourceResponse
-	if decoder.Decode(&response) != nil || decoder.Decode(&struct{}{}) != io.EOF || !response.OK ||
-		verifyPolicySocket(c.endpoint, c.group) != nil {
+	stage = time.Now()
+	responseOK := decoder.Decode(&response) == nil && decoder.Decode(&struct{}{}) == io.EOF && response.OK
+	timing.ResponseNS = time.Since(stage).Nanoseconds()
+	if !responseOK {
+		return ObservationResourceLease{}, errors.New("observation resource response is untrusted")
+	}
+	stage = time.Now()
+	identityErr = verifyPolicySocket(c.endpoint, c.group)
+	timing.ReverifyNS = time.Since(stage).Nanoseconds()
+	if identityErr != nil {
 		return ObservationResourceLease{}, errors.New("observation resource response is untrusted")
 	}
 	return response.Lease, nil

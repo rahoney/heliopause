@@ -3,6 +3,7 @@ package pypi
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,16 @@ func TestInspectWheelPreservesBlockingFindingAndCompositeSkipsDynamic(t *testing
 	if err != nil || len(combined.Findings()) != 1 || combined.Findings()[0].Code() != "M5_WHEEL_STATIC_INVALID" {
 		t.Fatalf("Composite Inspect() = %#v, %v", combined, err)
 	}
+	analyzer := &pypiSourceFixture{}
+	configured, err := NewStaticInspector(root, static.target, analyzer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, _ := NewCompositeInspector(configured, dynamic)
+	blocked, err := current.Inspect(context.Background(), artifact)
+	if err != nil || analyzer.calls != 0 || len(blocked.Findings()) != 1 || len(blocked.Executions()) != 2 || len(blocked.Diagnostics()) != 1 {
+		t.Fatal("invalid archive reached a parser or lost the original finding/diagnostic", err)
+	}
 }
 
 type panicWheelRunner struct{}
@@ -77,4 +88,72 @@ func hexDigest(value []byte) string {
 		result[index*2+1] = hex[item&0xf]
 	}
 	return string(result)
+}
+
+func TestDerivedWheelStaticResultRemainsAvailableToDynamicPhase(t *testing.T) {
+	inspector, original, directory := consoleIntakeFixture(t)
+	for _, pair := range [][2]string{{"wheel.whl", "derived.whl"}, {"filename", "derived-filename"}} {
+		if err := os.Rename(filepath.Join(directory, pair[0]), filepath.Join(directory, pair[1])); err != nil {
+			t.Fatal(err)
+		}
+	}
+	identity, err := domain.NewResolvedArtifactIdentity(original.Identity().Source(), original.Identity().Name(), original.Identity().Version(), "derived-wheel")
+	if err != nil {
+		t.Fatal(err)
+	}
+	declared, _ := original.DeclaredIntegrity()
+	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, original.Digest(), strings.TrimSuffix(original.ContentHandle(), ":wheel")+":derived-wheel", original.SizeBytes(), declared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheel, report, err := inspector.InspectWheel(context.Background(), artifact)
+	if err != nil || len(report.Findings()) != 0 || wheel.Project != identity.Name() || len(wheel.ImportNames) == 0 {
+		t.Fatalf("derived wheel static result lost: %q %v", wheel.Project, err)
+	}
+	collected, files, sourceReport, err := inspector.InspectWheelSources(context.Background(), artifact)
+	if err != nil || len(sourceReport.Findings()) != 0 || collected.Project != wheel.Project || len(files) == 0 {
+		t.Fatal("derived wheel source collection lost the typed result", err)
+	}
+}
+
+func TestCompositeRetainsStaticReportAfterDynamicFailure(t *testing.T) {
+	static, artifact, _ := consoleIntakeFixture(t)
+	cause := errors.New("dynamic runner unavailable")
+	dynamic, err := NewDynamicInspector(&commandRunner{err: cause})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := NewCompositeInspector(static, dynamic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	report, err := inspector.Inspect(context.Background(), artifact)
+	if !errors.Is(err, cause) || len(report.Executions()) != 1 || len(report.Evidence()) == 0 || report.Execution().ID().String() != "pypi-static-archive" {
+		t.Fatalf("static facts/original cause lost: %v %#v", err, report.Executions())
+	}
+}
+
+func TestGraphRetainsStaticReportsAfterDynamicFailure(t *testing.T) {
+	static, artifact, _ := consoleIntakeFixture(t)
+	cause := errors.New("dynamic runner unavailable")
+	dynamic, _ := NewDynamicInspector(&commandRunner{err: cause})
+	inspector, _ := NewCompositeInspector(static, dynamic)
+	declared, _ := artifact.DeclaredIntegrity()
+	resolved, err := domain.NewResolvedArtifact(artifact.Identity(), "https://example.test/wheel", declared)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, _ := domain.NewDependencyNodeID("primary")
+	node, err := domain.NewLockedDependency(id, domain.DependencyPrimary, resolved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	graph, err := domain.NewLockedDependencyGraph([]domain.LockedDependency{node}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reports, err := inspector.InspectGraph(context.Background(), graph, map[domain.DependencyNodeID]domain.AcquiredArtifact{id: artifact})
+	if !errors.Is(err, cause) || len(reports) != 1 || len(reports[id].Evidence()) == 0 {
+		t.Fatalf("static graph facts/original cause lost: %v %d", err, len(reports))
+	}
 }

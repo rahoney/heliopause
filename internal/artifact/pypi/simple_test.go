@@ -706,3 +706,32 @@ func sampleSimpleJSON(project, filename, requiresPython string) string {
 func sampleReportJSON() string {
 	return `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + sampleSHA256 + `","hashes":{"sha256":"` + sampleSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"Primary","version":"1.0","requires_python":">=3.14","requires_dist":["child>=2"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/child-2.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + sampleSHA256 + `","hashes":{"sha256":"` + sampleSHA256 + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"child","version":"2.0","requires_python":"","requires_dist":[]}}]}`
 }
+
+func TestRequirementsSimplePythonClausesMatchOnlyFormattingChanges(t *testing.T) {
+	// Actual six1.17.0 source/archive spelling, with synthetic source identity.
+	archive := ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+	candidate := Candidate{project: "parent", version: "1.0", source: PublicPyPIProfile().Source(), filename: "parent-1.0-py3-none-any.whl", url: "https://files.pythonhosted.org/packages/parent-1.0-py3-none-any.whl", sha256: sampleSHA256, requiresPython: archive}
+	for _, test := range []struct {
+		simple string
+		accept bool
+	}{
+		{"!=3.0.*,!=3.1.*,!=3.2.*,>=2.7", true},
+		{">=2.7, !=3.0.*,!=3.1.*, !=3.2.*", true},
+		{">=2.7,!=3.0.*,!=3.1.*", false},
+		{">=2.7,!=3.0.*,!=3.1.*,!=3.3.*", false},
+		{">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,<3.14", false},
+		{">=2.7,!=3.0.*,!=3.1.*,!=3 .2.*", false},
+	} {
+		page, err := ParseSimpleProject("parent", []byte(sampleSimpleJSON("parent", candidate.filename, test.simple)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = crossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}, true)
+		if (err == nil) != test.accept {
+			t.Fatalf("general source mismatch %q accepted=%v error=%v", test.simple, test.accept, err)
+		}
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+			t.Fatal("legacy Python grammar changed")
+		}
+	}
+}

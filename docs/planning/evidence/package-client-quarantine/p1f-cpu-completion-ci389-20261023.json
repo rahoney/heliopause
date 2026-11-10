@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "source_commit": "5e659da6ea6c147455f9c659f2f16308f84ec66b",
+  "checkout": "1aac7c2b4382452aaa61cf206ecd9f91c1ce9c99",
+  "tree": "3f527c61efbfd7b1c65b629cbdd8f677c07e571e",
+  "run": {
+    "id": 39855420453,
+    "number": 389,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/39855420453",
+    "conclusion": "failure"
+  },
+  "jobs": [
+    {
+      "name": "Security",
+      "id": 120092253087,
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 120092253270,
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 120092253330,
+      "conclusion": "success"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 120092253386,
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 120092253394,
+      "conclusion": "failure"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 120092253415,
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 120092253525,
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "id": 120092253552,
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 120092253637,
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 120108185940,
+      "conclusion": "failure"
+    }
+  ],
+  "QUALIFIED": "PARTIAL Linux/CPU yes; macOS/Required no; CUDA untested",
+  "ACCEPTANCE_CLOSED": "NO",
+  "linux": {
+    "top_level_passes": 51,
+    "cpu_full_seconds": 216.4,
+    "post_cpu_tests": "sdist6.44/wheel3.49/npm promotion2.89/PyPI promotion2.42 PASS",
+    "helper_reaps": 5,
+    "cleanup": "original0 CONFIRMED_STOPPED helper_stop0/client_error0/client_restore0 NOT_REQUIRED"
+  },
+  "first_failure": {
+    "job": "macOS",
+    "step": "production build",
+    "elapsed_limit_seconds": 120,
+    "exited": false,
+    "exit_code": -1,
+    "user_ms": 197369,
+    "system_ms": 107962,
+    "default_test": "NOT_REACHED",
+    "compiler_error": "NONE observed",
+    "root_cause": "UNKNOWN why build exceeded2m; same Go1.26.10/darwin-amd64, runner macos-26/20260824.0517.1 and aligned cache/trimpath as prior successful CI386/387/388",
+    "not_inferred": "CPU ordering correction caused macOS slowdown; CPU/CUDA runtime budgets exhausted"
+  },
+  "missing": [
+    "macOS native build/default test and Required",
+    "separate CUDA3 full",
+    "actual complete sync guard/cache/records/CLI/P1"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "0d82c39025466d9497471f6b4d54fc023da45fb05cbe129b6f98f92a1ad498f4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-final-run.json",
+      "bytes": 14924,
+      "sha256": "a7e8b3d76bb275fcbbf01455b00c94a861822160bc1c25fceab063256d68ab8f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-checkout.json",
+      "bytes": 2850,
+      "sha256": "1401f9c9f4f8afa1dd99d9004ae3c4702373c8ce257498d6d40a358823c33736"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-linux.log",
+      "bytes": 584312,
+      "sha256": "8939905f11fee71d5e8ee5db7effd4115f82d4b8d2a00d16d189839e20765aca"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-macos.log",
+      "bytes": 24876,
+      "sha256": "d9c04c0526ac0b3a24d3f5da93a8d4365a79783bbf733402108a304d47e85cb6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci389-required.log",
+      "bytes": 22394,
+      "sha256": "77e8fece17f6c734fa0b196e9d688341403f02c25522eef72996131909ffec50"
+    }
+  ]
+}

@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func registerTeardownTestSession(t *testing.T, containerID string) *observerSecuritySession {
@@ -509,7 +511,9 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	}
 	defer writer.Close()
 	var diagnostic bytes.Buffer
+	observer.mu.Lock()
 	observer.diagnostic = &diagnostic
+	observer.mu.Unlock()
 	for _, record := range []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "container-start"},
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
@@ -530,6 +534,95 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	}
 	if got, want := diagnostic.String(), "observer_attribution sequence=1 profile=default counts=NETWORK/SOCKET/INET/DIRECT_EXEC_SESSION/PYTHON:1,NETWORK/TRUSTED_CONTROL/CONNECT/INET6/DIRECT_EXEC_SESSION/PYTHON:1\n"; got != want {
 		t.Fatalf("diagnostic = %q, want %q", got, want)
+	}
+}
+
+func TestSharedObserverBunInstallerNetworkRequiresBoundProfile(t *testing.T) {
+	for _, profile := range []string{bunProjectResolverProfile, "default", bunResolverProfile, pnpmResolverProfile, uvResolverProfile} {
+		t.Run(profile, func(t *testing.T) {
+			endpoint := observerEndpoint(t)
+			observer, err := NewSharedObserver(endpoint)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer observer.Close()
+			const container = "0123456789abcdef"
+			reader, err := observer.Start(context.Background(), container)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var diagnostic bytes.Buffer
+			observer.mu.Lock()
+			observer.streams[container].profile = profile
+			observer.diagnostic = &diagnostic
+			observer.mu.Unlock()
+			writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer writer.Close()
+			record := helperRecord{ContainerID: container, Kind: "trusted-bun-install-network", EventSource: "CONNECT", Family: "INET", ProcessRelation: "ARTIFACT_GROUP", ProcessClass: "OTHER"}
+			items := []helperRecord{record}
+			if profile == bunProjectResolverProfile {
+				items = append(items, helperRecord{ContainerID: container, Kind: "stream-end"})
+			}
+			for _, item := range items {
+				body, err := json.Marshal(item)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := writer.Write(body); err != nil {
+					t.Fatal(err)
+				}
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			_, err = reader.Next(ctx)
+			if profile == bunProjectResolverProfile {
+				if err != io.EOF || !strings.Contains(diagnostic.String(), "NETWORK/TRUSTED_BUN_INSTALL/CONNECT/INET/ARTIFACT_GROUP/OTHER:1") {
+					t.Fatal("native attribution was not consumed by its exact profile", err, diagnostic.String())
+				}
+			} else {
+				var fault observerFault
+				if !errors.As(err, &fault) || fault.reason != "ATTRIBUTION_FAILURE" {
+					t.Fatal("foreign profile accepted native network", err)
+				}
+			}
+		})
+	}
+}
+
+func TestDecodeBunInstallerNetworkPreservesControlBoundary(t *testing.T) {
+	base := helperRecord{ContainerID: "0123456789abcdef", Kind: "trusted-bun-install-network", EventSource: "CONNECT", Family: "INET", ProcessRelation: "ARTIFACT_GROUP", ProcessClass: "OTHER"}
+	for _, scenario := range []string{"normal", "control-kind", "socket", "packet", "direct-root", "class", "count", "reason", "parent"} {
+		record := base
+		switch scenario {
+		case "control-kind":
+			record.Kind = "trusted-control-network"
+		case "socket":
+			record.EventSource = "SOCKET"
+		case "packet":
+			record.Family = "PACKET"
+		case "direct-root":
+			record.ProcessRelation = "DIRECT_EXEC_SESSION"
+		case "class":
+			record.ProcessClass = "PYTHON"
+		case "count":
+			count := uint64(1)
+			record.Count = &count
+		case "reason":
+			record.ClassificationReason = "OTHER"
+		case "parent":
+			record.ParentRelation = "ARTIFACT_GROUP"
+		}
+		body, err := json.Marshal(record)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = decodeHelperRecord(body)
+		if (err == nil) != (scenario == "normal") {
+			t.Fatalf("%s: decoder result=%v", scenario, err)
+		}
 	}
 }
 
@@ -610,7 +703,9 @@ func TestSharedObserverFlushesAttributionOnStreamFault(t *testing.T) {
 	}
 	defer writer.Close()
 	var diagnostic bytes.Buffer
+	observer.mu.Lock()
 	observer.diagnostic = &diagnostic
+	observer.mu.Unlock()
 	for _, record := range []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "container-start"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "NODE", ClassificationReason: "CLASS_MISMATCH", ParentRelation: "TRACKED_GROUP"},
@@ -930,4 +1025,88 @@ func observerEndpoint(t *testing.T) string {
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(directory) })
 	return filepath.Join(directory, "o.sock")
+}
+
+func TestFilesystemMutationRecordsAreBoundedNeutralFacts(t *testing.T) {
+	kinds := []string{"filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation"}
+	var records []TraceRecord
+	for _, kind := range kinds {
+		t.Run(kind, func(t *testing.T) {
+			for _, count := range []uint64{1, domain.MaximumObservationSummaryCount} {
+				payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: &count})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := decodeHelperRecord(payload); err != nil {
+					t.Fatalf("bounded fact rejected: %v", err)
+				}
+			}
+			for _, count := range []*uint64{nil, new(uint64)} {
+				payload, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: count})
+				if _, err := decodeHelperRecord(payload); err == nil {
+					t.Fatal("missing or zero operation count accepted")
+				}
+			}
+			count := uint64(domain.MaximumObservationSummaryCount + 1)
+			payload, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: &count})
+			if _, err := decodeHelperRecord(payload); err == nil {
+				t.Fatal("unbounded operation count accepted")
+			}
+		})
+		records = append(records, TraceRecord{Kind: kind, Count: 2, Bytes: 100})
+	}
+	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{records: records})
+	if limitation != "" || !diagnostic.SessionComplete || len(observations) != len(kinds) {
+		t.Fatalf("operation trace incomplete: %s %+v", limitation, diagnostic)
+	}
+	for _, fact := range observations {
+		if fact.Category() != domain.ObservationFilesystem || fact.Count() != 2 || !strings.Contains(diagnostic.String(), fact.Subject()+":2") {
+			t.Fatalf("fact not retained: %+v", fact)
+		}
+	}
+	if len(retainedSuspiciousTraceFacts(diagnostic.KindCounts)) != 0 {
+		t.Fatal("workspace operation became a suspicious partial fact")
+	}
+	ledger, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := ledger.maxEvents
+	if err := ledger.charge(helperRecord{Kind: kinds[0], Count: &count}, 100); err != nil {
+		t.Fatal(err)
+	}
+	one := uint64(1)
+	if err := ledger.charge(helperRecord{Kind: kinds[1], Count: &one}, 100); err == nil || ledger.events != count {
+		t.Fatal("operation aggregate replenished the shared budget")
+	}
+}
+
+func TestNPMEnvironmentLedgerBoundsAllFourSessionsWithoutReplenishment(t *testing.T) {
+	budget := traceBudgetForProfile("npm-lifecycle")
+	if budget.events != maximumTraceEvents || budget.bytes != maximumTraceBytes {
+		t.Fatal("physical collector budget changed")
+	}
+	ledger, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for session := 0; session < 4; session++ {
+		count := uint64(maximumTraceEvents)
+		if err := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &count}, 100); err != nil {
+			t.Fatalf("finite writer/readonly session %d exceeded the shared authorization: %v", session, err)
+		}
+	}
+	if ledger.events != 4*uint64(maximumTraceEvents) || ledger.bytes != 400 {
+		t.Fatal("normalized event counts were lost or double charged")
+	}
+	one := uint64(1)
+	if err := ledger.charge(helperRecord{Kind: "process-exec-expected", Count: &one}, 100); err == nil || ledger.events != 4*uint64(maximumTraceEvents) || ledger.bytes != 400 {
+		t.Fatal("fifth session replenished the aggregate or a refused batch changed counters")
+	}
+	for _, profile := range []string{"pypi-wheel", "github-elf", "terraform-provider", sourceAnalysisProfile} {
+		other, err := newObservationTraceLedger(profile)
+		if err != nil || other.maxEvents != uint64(maximumTraceEvents) || other.maxBytes != maximumTraceBytes {
+			t.Fatal("unrelated profile authorization changed", profile, err)
+		}
+	}
 }

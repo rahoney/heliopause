@@ -1,0 +1,122 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B3b2b",
+  "baseline": "5641ed684e85afb894f090c45e98f70bd1de9527",
+  "status": "LOCAL_VERIFIED_COMPLETE_NODE_BIN_CODE_FORMAT_ONLY",
+  "implemented": "YES_FULL_NODE_TEMPLATE_AND_RESTRICTED_PATH_DATA",
+  "wired": "YES_THREE_KNOWN_NATIVE_FIXTURE_SHIMS; NO_ARCHIVE_BIN_BINDING",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_bin_shim.go",
+      "sha256": "b973894cb7bcd35ee2aff7256b804bc4ded9e1cc0e4eaf8977c430bf735436ff"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_bin_shim_test.go",
+      "sha256": "06c3a86258e12b5565b70d1cbf88f0ec43e568060b95408f4a84d4bc8ecd79b4"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/pnpm-node-bin-shim.normalized",
+      "sha256": "64d69cfde5def2f7644e5ca92e1e669eaeb87bcbd30355f2c2cd9ac3b20bf2d7"
+    },
+    {
+      "path": "internal/sandbox/pnpm_offline_fixture_real_test.go",
+      "sha256": "17f96be1e3c14d0361559eaa3804f126acb4f6a82d9f16fb2177ead2243ea6ef"
+    },
+    {
+      "path": "internal/sandbox/pnpm_layout_inventory_real_test.go",
+      "sha256": "1946edbeb368a96422aaa8f99067f3b78474cbf0fd4a0449603aaaaad279cd76"
+    }
+  ],
+  "code_format": {
+    "upstream_commit": "91774e72a04d52ce61db06339696a433d383c764",
+    "bytes_normalized": 3346,
+    "sha256": "64d69cfde5def2f7644e5ca92e1e669eaeb87bcbd30355f2c2cd9ac3b20bf2d7",
+    "authority": "reviewed complete code-format identity only; expected target must be bound to original archive later",
+    "source_version_owner": "existing runtime lock; no version in format parser",
+    "notice_owner": "tools/pnpm/NOTICE"
+  },
+  "checks": {
+    "security_seconds": 12.107,
+    "quick_seconds": 141.274,
+    "docs_seconds": 0.384,
+    "npm_artifact_full_race_seconds": 6.168
+  },
+  "actual": {
+    "seconds": 18.382,
+    "test_seconds": 15.87,
+    "native_shims_complete_code_matches": 3,
+    "bin_locations": [
+      "own package",
+      "private hoist",
+      "dependency consumer"
+    ],
+    "expected_target_source": "explicit controlled public fixture table, never native marker",
+    "original_controls_identity_links_and_instance_paths_preserved": true,
+    "trace_complete": true,
+    "forbidden_observations": 0,
+    "host_unchanged": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "final_original": 0,
+    "source_archive_bin_binding": false,
+    "dynamic_executed": false,
+    "policy_or_host_installation_executed": false
+  },
+  "cleanup": {
+    "logical_bytes": 165592448,
+    "files": 11,
+    "all_uid_references": 0,
+    "query_errors": 0,
+    "target_absent": true
+  },
+  "not_qualified": [
+    "original archive manifest/bin/header and all payload byte binding",
+    "complete frozen graph and generated metadata verification",
+    "production prepare/static-all/per-instance aggregation",
+    "Host transaction/records/CLI and full P2"
+  ],
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-bin-first-format.json",
+      "sha256": "bd5ab14371fe1dbd4038d67bb382d4c395396ee351216ab44fca53801206cf73"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-bin-first-security.json",
+      "sha256": "5426348dac72f2abde0cd78fdddc342fc49dd51b678333e0b25c27bb9b04b4af"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-bin-first-quick.json",
+      "sha256": "8b065020fdc297c9cdaded1499bf8911b918ebc6bec31ffc373637e304a3addc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-bin-first-docs.json",
+      "sha256": "6d362912ce4b4df5d3e4257920bd6e5675f8b6f5915dd9eb1b8c071365c9df01"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-bin-full-race.json",
+      "sha256": "08d7b8994e9e90dbd648c1248f4598f3280ee5b7b4065df2c6db263e04c34c53"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-shim-source-comparison.json",
+      "sha256": "c32a6e059c4aaf8b18811a994b9d2c7089a10cdf8abd5aae0708488b46166e58"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-pnpm-layout-bin-runtime-preparation.json",
+      "sha256": "cb5d5fff17f0b72003cba48d542ba1766a721f210809dd2fef50fc7fc125bee6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-pnpm-layout-bin.json",
+      "sha256": "bc9293193a162d162bdde10ba200cd7866829f0ffbb2cf5fa38fa0597eb49a82"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-pnpm-layout-bin-actual.log",
+      "sha256": "b2404f66c1d1ccdb61073cb5384bb787c1b4136dd3b987dc5c535b02cc5c94b2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b2b-pnpm-layout-bin-completed-runtime-cleanup.json",
+      "sha256": "4bb82538168589a2e7c61e3ac751714b78498111a01e1a1b859b245614ec7434"
+    }
+  ]
+}

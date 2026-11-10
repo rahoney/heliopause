@@ -1,0 +1,101 @@
+{
+  "scope": "M13-004/P4-O4-C3c1 static whole-wheel binding before a native pipx metadata query; not query/runtime admission or Policy",
+  "baseline": {
+    "source": "2f350163238a4dd41bb69bc0eb754a3bd90f80d9",
+    "tree": "1aa93a1c2bb6b5fe0c8f55d5ea360a8e3f55a163",
+    "files": 2819
+  },
+  "implemented": "YES (named pre-query graph entry)",
+  "wired": "YES (existing archive/source/constraint/graph owner and startup gate); NO (native query caller)",
+  "qualified": "YES (named local static scope)",
+  "acceptance_closed": "NO (whole native pipx/CLI)",
+  "source": [
+    {
+      "path": "internal/artifact/pypi/pipx_query_wheels.go",
+      "sha256": "8fe57170b6c5292d10655bfe963f7b845306713875faa6b6e58734b8fd305a4d"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_query_wheels_test.go",
+      "sha256": "8ab7cf299ba01157ffea2748fbdb23e06d331047051c36f76bf913ad88c0ba89"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_query_wheels_realcorpus_test.go",
+      "sha256": "2dab580f1ffd87ae91dc8c09161cd22ded234fef9f783862188477056fdffc68"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "6f51d77019ed52c5d14eb21c3bda26680000cc4912ffaa935fd96f0b1d8776ed"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.688,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 251.469,
+      "log_sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "step": "pypi-race",
+      "exit_code": 0,
+      "seconds": 9.934,
+      "log_sha256": "bcee2b0a70ae186df9f7af5823a4ff5543db489f0f4cb52864ea4b53bf8e44bf"
+    },
+    {
+      "step": "tag-vet",
+      "exit_code": 0,
+      "seconds": 0.595,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "actual",
+      "exit_code": 0,
+      "seconds": 2.64,
+      "log_sha256": "3c64adacc5c542adc190416f5fb50f5a90cd8ed89c6f00ecfdc88603fc0333a0"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.251,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 14.025,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "validated": [
+    "same authentic original whole graph as ordinary UV without a fabricated receipt",
+    "root/dependency startup hooks and top-level customization surfaces rejected; ordinary UV behavior and nested ordinary module retained",
+    "missing/duplicate archive/source, changed archive/size/hash/yanked/Python and unsatisfied/orphan dependency/target/bounds rejected",
+    "existing fixed runtime supply root/namespace gate unchanged"
+  ],
+  "actual_corpus": {
+    "original_archives": 2,
+    "root": "userpath",
+    "version": "1.9.2",
+    "dependency": "click",
+    "canonical_frozen_inputs_verified": 42,
+    "input_readback": "p4o4c3c1-frozen-readback.json",
+    "lock": "synthetic parser-binding fixture; no native solver run",
+    "test": "TestPipxPreQueryActualFrozenWheelCorpus",
+    "top_level_pass": true,
+    "skip": false,
+    "artifact_or_native_query_executed": false
+  },
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "fixed native program/argv/offline guest environment and actual native selection",
+    "installed DATA/current supply/native profile and Artifact query admission",
+    "current Policy/guarded promotion/bootstrap/CLI",
+    "new hosted UID1001/signed-native/final profiles"
+  ],
+  "remote_push": "e859487 payload AWAITING_USER_APPROVAL; no new CI/timer started"
+}

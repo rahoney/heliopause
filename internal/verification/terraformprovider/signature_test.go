@@ -164,6 +164,38 @@ func TestOfficialHistoricalBindingRequiresCurrentAuthority(t *testing.T) {
 	}
 }
 
+// The registry later served the same official key re-certified on 2026-02-18
+// without its 2021 self-signatures; the 2025 signature stays valid through the
+// pinned current binding, and tampering or an invalid current authority still fail.
+func TestOfficialRecertifiedRegistryCertificateUsesCurrentBinding(t *testing.T) {
+	artifact, sums, sig := signedFixture(t, "hashicorp-random-3.7.2", "hashicorp/random@3.7.2")
+	recertified, err := os.ReadFile("testdata/hashicorp-recertified-20260218.asc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact.SigningKeys[0].ASCIIArmor = string(recertified)
+	now := time.Date(2026, 11, 7, 0, 0, 0, 0, time.UTC)
+	binding, err := VerifySignedChecksums(artifact, sums, sig, now)
+	if err != nil || binding.Trust != TrustOfficial || binding.Fingerprint != OfficialFingerprint {
+		t.Fatalf("recertified official binding = %+v, %v", binding, err)
+	}
+	config := &packet.Config{Time: func() time.Time { return now }, MinRSABits: 2048}
+	entity, _, err := parseCertificate(recertified)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, valid := entity.SigningKeyById(time.Date(2025, 4, 22, 12, 0, 0, 0, time.UTC), 0xC820C6D5CD27AB87, config); valid {
+		t.Fatal("fixture no longer lacks a signing-time binding")
+	}
+	tampered := bytes.Replace(sums, []byte("linux_amd64"), []byte("linux_arm64"), 1)
+	if _, err := VerifySignedChecksums(artifact, tampered, sig, now); err == nil {
+		t.Fatal("tampered checksums accepted with recertified certificate")
+	}
+	if _, err := VerifySignedChecksums(artifact, sums, sig, time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)); err == nil {
+		t.Fatal("expired official authority accepted with recertified certificate")
+	}
+}
+
 func TestDetachedSignatureRejectsRevokedAndExpiredCurrentKeys(t *testing.T) {
 	created := time.Now().UTC().Add(-time.Minute).Truncate(time.Second)
 	config := &packet.Config{Time: func() time.Time { return created }, Algorithm: packet.PubKeyAlgoEdDSA, DefaultHash: crypto.SHA256, KeyLifetimeSecs: 30}

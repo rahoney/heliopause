@@ -40,12 +40,17 @@ func NewInstallService(inspection *InstallInspectService, manifest ports.Manifes
 	return &InstallService{inspection: inspection, manifest: manifest, staging: staging, promotion: promotion}, nil
 }
 
-func (s *InstallService) Install(ctx context.Context, request InstallRequest) (InstallOutcome, error) {
+func (s *InstallService) Install(ctx context.Context, request InstallRequest) (outcome InstallOutcome, resultErr error) {
+	if request.update {
+		if _, ok := s.promotion.(ports.InstallUpdateSession); !ok {
+			return InstallOutcome{failureCode: "UPDATE_PREPARATION_FAILED"}, errors.New("update requires an original-state session before resolution")
+		}
+	}
 	inspected, err := s.inspection.Inspect(ctx, request)
 	if err != nil {
 		return InstallOutcome{inspection: inspected, failureCode: "INSTALL_INSPECTION_FAILED"}, err
 	}
-	outcome := InstallOutcome{inspection: inspected}
+	outcome = InstallOutcome{inspection: inspected}
 	if inspected.Decision().Decision() != domain.DecisionAllow {
 		return outcome, nil
 	}
@@ -54,18 +59,26 @@ func (s *InstallService) Install(ctx context.Context, request InstallRequest) (I
 		outcome.failureCode = "VERIFIED_SET_INVALID"
 		return outcome, fmt.Errorf("construct complete ALLOW set: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "manifest"})
 	bundle, err := s.manifest.Build(ctx, inspected.OperationID(), request.Context(), inspected.Resolution(), verified)
 	if err != nil {
 		outcome.failureCode = "MANIFEST_GENERATION_FAILED"
 		return outcome, fmt.Errorf("build verified Manifest and SBOM: %w", err)
 	}
 	outcome.bundle = bundle
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return outcome, err
+	}
+	defer func() { finishUse(resultErr) }()
+	ports.ReportProgress(ctx, ports.Progress{Stage: "stage"})
 	staged, err := s.staging.Stage(ctx, bundle)
 	if err != nil {
 		outcome.failureCode = "STAGING_FAILED"
 		return outcome, fmt.Errorf("stage verified set: %w", err)
 	}
 	outcome.staged = staged
+	ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
 	promoted, err := s.promotion.Promote(ctx, staged, bundle, request.Context())
 	if err != nil {
 		outcome.failureCode = "PROMOTION_FAILED"

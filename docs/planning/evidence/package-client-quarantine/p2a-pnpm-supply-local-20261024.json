@@ -1,0 +1,152 @@
+{
+  "scope": "M13-004/P2a official pnpm Linux amd64 offline supply verification; local checkpoint, no runtime pin or product command support",
+  "baseline": "5245232",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES — actual maintenance command",
+  "QUALIFIED": "NO — next functional checkpoint remote pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "local_status": "VERIFIED",
+  "upstream": {
+    "version": "12.15.0",
+    "source_commit": "91774e72a04d52ce61db06339696a433d383c764",
+    "workflow_run": "39583314875",
+    "repository_id": "50565430",
+    "owner_id": "21320719",
+    "runner_environment": "self-hosted; exact upstream-only certificate/predicate policy",
+    "archive": {
+      "name": "pnpm-linux-x64.tar.gz",
+      "bytes": 25369328,
+      "sha256": "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+    }
+  },
+  "checks": [
+    {
+      "name": "p2a-supply-format",
+      "exit": 0,
+      "seconds": 0.286,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-format.json"
+    },
+    {
+      "name": "p2a-supply-focused",
+      "exit": 0,
+      "seconds": 3.476,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-focused.json"
+    },
+    {
+      "name": "p2a-supply-canonical-quick",
+      "exit": 0,
+      "seconds": 181.382,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-canonical-quick.json"
+    },
+    {
+      "name": "p2a-supply-canonical-security",
+      "exit": 0,
+      "seconds": 5.852,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-canonical-security.json"
+    },
+    {
+      "name": "p2a-supply-canonical-docs",
+      "exit": 0,
+      "seconds": 0.228,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-canonical-docs.json"
+    },
+    {
+      "name": "p2a-supply-official-command",
+      "exit": 0,
+      "seconds": 1.578,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-official-command.json"
+    },
+    {
+      "name": "p2a-supply-full-race",
+      "exit": 0,
+      "seconds": 45.633,
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p2a-supply-full-race.json"
+    }
+  ],
+  "verified_boundaries": [
+    "real signed proof exact SAN/issuer/repo/owner/tag/source/run/subject and transparency/CT/timestamps",
+    "real HAA/UV publisher cross-refusal, wrong version/source/run/archive, malformed/oversize/missing/tampered proof, cancelled context",
+    "actual archive digest required; relative/missing/symlink/oversize/unknown/trailing/extra arguments refused",
+    "existing HAA/UV verifier and UV maintenance consumers preserved in default/Race"
+  ],
+  "source_files": [
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_release.go",
+      "sha256": "2bd4232d452e467335f8595d61eba174c1c0c7de12937aecf2c9cc60522f2218"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_release_test.go",
+      "sha256": "1541bad03e79b92ff1f1db8b7c4f78546ae98f0a3434b16d74d0bdbe220f2c3e"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pnpm-12.15.0/identity.json",
+      "sha256": "86cbe2306935355db53373fefe4459464c6589e5a53ca9c101c21f18ccc106cf"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pnpm-12.15.0/bundle.json",
+      "sha256": "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release.go",
+      "sha256": "54d7b8aa646a381e16a4d3433c2661830301550162e6369015f2002d196f1780"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release_test.go",
+      "sha256": "115fb50c277a17b4b8103057651c6de60660d6c3c58ac73f86f030c3998df967"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_release_real_test.go",
+      "sha256": "56cd19605b35e54470d55b96f34d1908b599ff3c16eb1b1eea34334859e6b4c7"
+    },
+    {
+      "path": "scripts/update-runtime/supply_file.go",
+      "sha256": "34b46ae84e173483638e8b6ae7d86ab1ef1075257ef3df24891c19ee6bc6bcdb"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "9b81b4841e6d42a236acd90e2f2015d789aa4a394df4f0359432176fdac09654"
+    },
+    {
+      "path": "scripts/update-runtime/uv_image.go",
+      "sha256": "774a0c431cdac94125ff9cd7e68d5110a0458f35de2466ea89552a880b877966"
+    },
+    {
+      "path": "scripts/update-runtime/uv_supply.go",
+      "sha256": "9066bcf0d7d2e00f7df05c257ef9a1373c359fdcd42fae877ebab9404b84f4ec"
+    }
+  ],
+  "raw_refs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2-pnpm-discovery-20261024.json",
+      "sha256": "cba0acb818b5df8f4e6c080a94298f0452e66c0b884ecb56ddc6b885515f94f5",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2-pnpm-archive-acquisition-20261024.json",
+      "sha256": "5e6f73b9d926ad287cfaf44c045be8bcd3e8951696ae06dd80749cda44c82b76",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2-pnpm-native-elf-observation-20261024.json",
+      "sha256": "4c3f0940c4a99f38de62847572360dbeee63656ddd7cfb7d2a338d0f33def154",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2-pnpm-runtime-semantics-20261024.json",
+      "sha256": "b8325252366230ba124ba2cd9593e50867cc8c99e54d5c24a4fd17df75124c2d",
+      "storage": "local untracked raw; not remotely archived"
+    }
+  ],
+  "remaining": [
+    "native tool/ABI and exact runtime admission",
+    "single version owner/maintenance/release delivery",
+    "pnpm native lock/peer graph and independent source binding",
+    "guarded add/install/update/layout/adoption/rollback/CLI",
+    "actual affected consumer/native platform/Required qualification"
+  ],
+  "cleanup": {
+    "test_tempdirs": "Go testing cleanup; no persistent installed/runtime/service change",
+    "retained_archive": "25,369,328 bytes next P2b supply/runtime input; not a completed unused test payload",
+    "rollback_backups": "G127 original operational assets preserved"
+  }
+}

@@ -5,6 +5,46 @@ import (
 	"testing"
 )
 
+func TestContentInspectionKeepsRuntimeBehindItsPort(t *testing.T) {
+	const module = "example.test/project"
+	for _, owner := range []string{"/internal/core/domain", "/internal/core/ports", "/internal/runtimeidentity"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/content", Imports: []string{module + owner}}}); len(findings) != 0 {
+			t.Fatal("content contract edge rejected", findings)
+		}
+	}
+	for _, owner := range []string{"npm", "gomodule", "cargo", "pypi", "githubrelease", "terraformprovider"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/" + owner, Imports: []string{module + "/internal/inspection/content"}}}); len(findings) != 0 {
+			t.Fatal("current source selection cannot reuse content owner", owner, findings)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/promotion", Imports: []string{module + "/internal/inspection/content"}}}); len(findings) != 0 {
+		t.Fatal("cache cannot reuse the current content declaration", findings)
+	}
+	for _, dependency := range []string{module + "/internal/sandbox", module + "/internal/bootstrap", module + "/internal/policy", "example.com/unreviewed-engine"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/content", Imports: []string{dependency}}}); len(findings) == 0 {
+			t.Fatal("content escaped inspection contract", dependency)
+		}
+	}
+}
+
+func TestBunCleartextCryptoHasOnlyReviewedCaller(t *testing.T) {
+	const module = "example.test/project"
+	imports := []string{"github.com/ProtonMail/go-crypto/openpgp/clearsign", "github.com/ProtonMail/go-crypto/openpgp/packet", "github.com/ProtonMail/go-crypto/openpgp/v2"}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/verification/releaseprovenance", Imports: imports}}); len(findings) != 0 {
+		t.Fatal("reviewed Bun crypto edge rejected", findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/core/ports", "/internal/application", "/internal/policy", "/internal/cli", "/internal/sandbox", "/scripts/update-runtime"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: imports}}); len(findings) == 0 {
+			t.Fatal("Bun crypto escaped reviewed verifier", owner)
+		}
+	}
+	for _, owner := range []string{"/internal/verification/releaseprovenance", "/internal/verification/terraformprovider"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"github.com/ProtonMail/go-crypto/openpgp/unreviewed"}}}); len(findings) == 0 {
+			t.Fatal("whole external crypto prefix was allowed", owner)
+		}
+	}
+}
+
 func TestValidateCurrentImports(t *testing.T) {
 	t.Parallel()
 
@@ -22,13 +62,31 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/verification/pypi", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/inspection/npm", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
+		{ImportPath: modulePath + "/internal/inspection/advisory", Imports: []string{"net/http", "encoding/json", modulePath + "/internal/artifact/pypi", modulePath + "/internal/artifact/cargo", modulePath + "/internal/artifact/githubrelease", modulePath + "/internal/artifact/terraformprovider", "golang.org/x/mod/semver"}},
 		{ImportPath: modulePath + "/internal/inspection/pypi", Imports: []string{modulePath + "/internal/artifact/pypi", modulePath + "/internal/core/domain", modulePath + "/internal/sandbox"}},
 		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
+		{ImportPath: modulePath + "/scripts/update-runtime", Imports: []string{modulePath + "/internal/hosttool", modulePath + "/internal/runtimeidentity"}},
 	}
 	if findings := validateCurrentImports(modulePath, packages); len(findings) != 0 {
 		t.Fatalf("validateCurrentImports findings = %v, want none", findings)
+	}
+}
+
+func TestNPMArchiveInventoryHasOnlyReviewedConsumerEdge(t *testing.T) {
+	const module = "example.test/project"
+	adapter := module + "/internal/artifact/npm"
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/npm", Imports: []string{adapter}}}); len(findings) != 0 {
+		t.Fatal("reviewed archive value edge rejected", findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/policy"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{adapter}}}); len(findings) == 0 {
+			t.Fatal("archive type escaped adapter boundary", owner)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/sandbox", Imports: []string{module + "/internal/inspection/npm"}}}); len(findings) == 0 {
+		t.Fatal("sandbox acquired a reverse inspection dependency")
 	}
 }
 
@@ -46,14 +104,65 @@ func TestValidateCurrentImportsRejectsBoundaryShortcut(t *testing.T) {
 		{ImportPath: modulePath + "/internal/artifact/npm", Imports: []string{modulePath + "/internal/application", "example.com/npm"}},
 		{ImportPath: modulePath + "/internal/artifact/pypi", Imports: []string{modulePath + "/internal/application", "example.com/pypi"}},
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{modulePath + "/internal/application", "example.com/npm-verification"}},
+		{ImportPath: modulePath + "/internal/inspection/advisory", Imports: []string{modulePath + "/internal/sandbox", modulePath + "/internal/bootstrap", "example.com/advisory"}},
 		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{modulePath + "/internal/application", "example.com/sandbox"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/cli", "example.com/fake", "net/http"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{modulePath + "/internal/cli"}},
 	}
 	findings := strings.Join(validateCurrentImports(modulePath, packages), "\n")
+	if !strings.Contains(findings, "internal/inspection/advisory") || !strings.Contains(findings, "example.com/advisory") {
+		t.Fatal("advisory transport escaped reviewed module boundaries", findings)
+	}
 	for _, expected := range []string{"cmd/helox", "example.com/sdk", "internal/cli", "internal/core/domain", "example.com/domain", "forbidden concrete package os", "internal/core/ports", "example.com/ports", "internal/application", "example.com/application", "internal/policy", "example.com/policy", "internal/artifact/npm", "example.com/npm", "internal/artifact/pypi", "example.com/pypi", "internal/verification/npm", "example.com/npm-verification", "internal/sandbox", "example.com/sandbox", "internal/testutil/fakeworkflow", "example.com/fake", "forbidden concrete package net/http", "scripts/check"} {
 		if !strings.Contains(findings, expected) {
 			t.Errorf("findings missing %q: %s", expected, findings)
+		}
+	}
+}
+
+func TestValidateCurrentImportsScopesGitHubAdapterEdges(t *testing.T) {
+	const modulePath = "example.test/project"
+	adapter := modulePath + "/internal/artifact/githubrelease"
+	for _, owner := range []string{"internal/cli", "internal/promotion"} {
+		findings := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/" + owner, Imports: []string{adapter}}})
+		if len(findings) != 0 {
+			t.Fatal("reviewed static parser/frozen binding edge refused", owner, findings)
+		}
+	}
+	for _, owner := range []string{"internal/core/domain", "internal/application"} {
+		findings := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/" + owner, Imports: []string{adapter}}})
+		if len(findings) != 1 || !strings.Contains(findings[0], "disallowed product package "+adapter) {
+			t.Fatal("GitHub concrete dependency escaped its adapter boundary", owner, findings)
+		}
+	}
+}
+
+func TestPipxReleaseInspectionParserEdgesRemainScoped(t *testing.T) {
+	const modulePath = "example.test/project"
+	for _, dependency := range []string{"internal/artifact/pypi", "internal/runtimeidentity"} {
+		allowed := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/internal/inspection/githubrelease", Imports: []string{modulePath + "/" + dependency}}})
+		if len(allowed) != 0 {
+			t.Fatal("reviewed ZIP parser/pin edge refused", allowed)
+		}
+		for _, owner := range []string{"internal/core/domain", "internal/application"} {
+			findings := validateCurrentImports(modulePath, []packageMetadata{{ImportPath: modulePath + "/" + owner, Imports: []string{modulePath + "/" + dependency}}})
+			if len(findings) != 1 {
+				t.Fatal("concrete ZIP dependency escaped adapter scope", owner, dependency, findings)
+			}
+		}
+	}
+}
+
+func TestStorageConsumersUseOnlyOpaquePortBoundary(t *testing.T) {
+	const module = "example.test/project"
+	for _, owner := range []string{"internal/artifact/gomodule", "internal/artifact/cargo", "internal/artifact/terraformprovider", "internal/inspection/pypi", "internal/sandbox"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/" + owner, Imports: []string{module + "/internal/core/ports"}}}); len(findings) != 0 {
+			t.Fatal("approved storage contract rejected", owner, findings)
+		}
+		for _, concrete := range []string{"internal/storage", "internal/bootstrap"} {
+			if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/" + owner, Imports: []string{module + "/" + concrete}}}); len(findings) == 0 {
+				t.Fatal("concrete storage/composition shortcut accepted", owner, concrete)
+			}
 		}
 	}
 }

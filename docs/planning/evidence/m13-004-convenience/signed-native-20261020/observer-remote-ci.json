@@ -1,0 +1,158 @@
+{
+  "schema": "helox.remote-ci-receipt/v1",
+  "source_commit": "4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25",
+  "run": 39461816815,
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/39461816815",
+  "conclusion": "success",
+  "actual_checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+  "whole_tree": "6a81838e30f509c37c4e9089bfd34f1bfc9f9196",
+  "tree_and_modes_equal": true,
+  "jobs": [
+    {
+      "job": "macOS",
+      "id": 118762930298,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Security",
+      "id": 118762930313,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Vulnerability",
+      "id": 118762930429,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Representative Wheel Corpus",
+      "id": 118762930502,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "gVisor Observer Helper",
+      "id": 118762930522,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Docs",
+      "id": 118762930593,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Minimum Go",
+      "id": 118762930594,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Quick",
+      "id": 118762930787,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "gVisor Linux Integration",
+      "id": 118762930811,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    },
+    {
+      "job": "Required",
+      "id": 118784019190,
+      "checkout": "dacc1561cd5dd38101f5f05e6304c5efdc1d653e",
+      "conclusion": "success"
+    }
+  ],
+  "native_macos": "PASS",
+  "observer_latch_pass": 103,
+  "linux_top_level_tests": [
+    "TestLinuxTrustedHostExecutorIntegration",
+    "TestPublicTerraformProviderSourceIntegration",
+    "TestLinuxPyTorchResolverIntegration",
+    "TestLinuxGoIsolatedResolverIntegration",
+    "TestLinuxGoIsolatedProjectResolverIntegration",
+    "TestLinuxGoSourceProjectSnapshotIntegration",
+    "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+    "TestLinuxCargoSourceProjectSnapshotIntegration",
+    "TestLinuxTerraformProviderProbeIntegration",
+    "TestLinuxTerraformProviderSecurityIntegration",
+    "TestLinuxNPMInspectCLIIntegration",
+    "TestLinuxGoDependencyFreeDownloadIntegration",
+    "TestLinuxGoGetDownloadIntegration",
+    "TestLinuxGoTransitiveGetDownloadIntegration",
+    "TestLinuxGoDependencyFreeBuildCLIIntegration",
+    "TestLinuxGoPublicBuildCLIIntegration",
+    "TestLinuxGoTransitiveBuildCLIIntegration",
+    "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+    "TestLinuxGoCgoBuildCLIIntegration",
+    "TestLinuxGoLibraryBuildCLIIntegration",
+    "TestLinuxGoMixedPackagesBuildCLIIntegration",
+    "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+    "TestLinuxGoBuildSecurityCLIIntegration",
+    "TestLinuxCargoAddIntegration",
+    "TestLinuxCargoTransitiveAddIntegration",
+    "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+    "TestLinuxCargoPublicBuildCLIIntegration",
+    "TestLinuxCargoTransitiveBuildCLIIntegration",
+    "TestLinuxCargoLibraryBuildCLIIntegration",
+    "TestLinuxCargoWorkspaceBuildCLIIntegration",
+    "TestLinuxCargoBuildScriptBuildCLIIntegration",
+    "TestLinuxCargoProcMacroBuildCLIIntegration",
+    "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+    "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+    "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+    "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+    "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+    "TestLinuxCargoProcMacroSecurityCLIIntegration",
+    "TestLinuxTerraformInitIntegration",
+    "TestLinuxTerraformInitNegativeIntegration",
+    "TestLinuxPyTorchFullIntegration",
+    "TestLinuxPyPISdistBuildIntegration",
+    "TestLinuxPyPIWheelDynamicIntegration",
+    "TestLinuxNPMPromotionIntegration",
+    "TestLinuxPyPIPromotionIntegration"
+  ],
+  "pytorch_cpu_full_seconds": 291.99,
+  "helper_reaps": [
+    {
+      "pid": 151003,
+      "wait": 0
+    },
+    {
+      "pid": 163422,
+      "wait": 0
+    },
+    {
+      "pid": 174863,
+      "wait": 0
+    },
+    {
+      "pid": 273830,
+      "wait": 0
+    },
+    {
+      "pid": 275427,
+      "wait": 0
+    }
+  ],
+  "final_cleanup": {
+    "original": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "restore_result": "NOT_REQUIRED"
+  },
+  "limits": [
+    "no new CUDA full",
+    "expanded sandbox Race seven preexisting failures preserved separately",
+    "corrected actual signed caller cancellation still missing"
+  ],
+  "raw_owner": "docs/github-logs/self-update-signed-20261020"
+}

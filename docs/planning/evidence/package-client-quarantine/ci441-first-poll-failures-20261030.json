@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/CI441 first poll failures",
+  "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+  "tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+  "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+  "status": "IN_PROGRESS_LINUX_WITH_TWO_UPSTREAM_FAILURES",
+  "actual_poll": {
+    "number": 1,
+    "ended_at": "2026-10-30T13:23:20.958410+00:00",
+    "next_due_at": "2026-10-30T13:43:20.958410+00:00",
+    "worker_session": 58611,
+    "worker_pid": 657507
+  },
+  "completed8": {
+    "scope": "Completed8 only:6SUCCESS/2FAIL; Linux in progress/Required pending",
+    "source": "1ee37880f7ea1c38ef4b541fe567f65c7c618ec3",
+    "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151",
+    "whole_tree": "a5eedf7aa95d002c2542822741b3f173d9402ce5",
+    "source_parent_verified": true,
+    "jobs": [
+      {
+        "job_id": 124077271882,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success",
+        "bytes": 279382,
+        "sha256": "aa128445e21597228e02ffbe982bcaca14fe2ba30435cab1bf0ef56e84634144",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272164,
+        "name": "Docs",
+        "conclusion": "success",
+        "bytes": 20519,
+        "sha256": "6ce147b9eec4b4278ec45c60905cd9160e44e8fd87172b76a5671a4763c13e36",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272254,
+        "name": "macOS",
+        "conclusion": "failure",
+        "bytes": 115075,
+        "sha256": "f721db06cea20c0804539cf843639c910ed8ec06124825539ebe528a230aaa0d",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272282,
+        "name": "Security",
+        "conclusion": "success",
+        "bytes": 21964,
+        "sha256": "7f5721c67d28bdd9938e68cd18df81edb5d168846312bc53bbdaaba29c40263f",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272290,
+        "name": "Minimum Go",
+        "conclusion": "success",
+        "bytes": 21503,
+        "sha256": "f9e1888b2d411d6bef6a63abfae8019a378deb74d63b30a54b7510b482f17230",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272318,
+        "name": "Quick",
+        "conclusion": "success",
+        "bytes": 23839,
+        "sha256": "4d277a9fe3c521b2ff747b4eaffbaf534869081df7ffb2f959d4ac341371416e",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272332,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "failure",
+        "bytes": 21937,
+        "sha256": "218afce174a4177a2a4a0d06bc0086f38099cdece0a51ca6c59022dc0df46d9a",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      },
+      {
+        "job_id": 124077272390,
+        "name": "Vulnerability",
+        "conclusion": "success",
+        "bytes": 21705,
+        "sha256": "caf8a7c8b9e3b29c753ca0c24095ee41c4a4bb5af8958516fe022e6d447c2e3c",
+        "checkout": "adaa5eb846c2e3519f2bb16afe262f3b2c5be151"
+      }
+    ],
+    "bytes": 525924,
+    "fetched_once_no_refetch": true
+  },
+  "Corpus": {
+    "job_id": 124077272332,
+    "phase": "bootstrap product module download before corpus acquisition/test",
+    "at": "2026-10-30T13:08:24.8011172Z",
+    "error": "sum.golang.org/tile/8/0/x214/371 HTTP/2 stream185 INTERNAL_ERROR received from peer while verifying four AWS module go.mod checksums",
+    "classification": "TRANSPORT_SETUP_FAILURE_CONFIRMED",
+    "root_service_runner_or_network_cause": "UNKNOWN",
+    "corpus_test": "NOT_REACHED"
+  },
+  "macOS": {
+    "job_id": 124077272254,
+    "phase": "platform default test",
+    "production_build_seconds": 97.403304,
+    "default_test_started_at": "2026-10-30T13:09:06.2664580Z",
+    "timeout_at": "2026-10-30T13:15:06.5030700Z",
+    "outer_timeout_seconds": 360,
+    "inner_go_test_timeout": "5m",
+    "terminal": {
+      "exited": false,
+      "exit_code": -1,
+      "user_ms": 427736,
+      "system_ms": 292028
+    },
+    "progress": {
+      "started_packages": 47,
+      "finished_packages": 45,
+      "active_entries": 3,
+      "unavailable": false,
+      "truncated": false
+    },
+    "affected_changed_packages_PASS": {
+      "bootstrap": 1.588,
+      "cli": 4.387,
+      "sandbox": 17.11,
+      "scripts_check": 62.393
+    },
+    "remaining_active": "promotion package plus scripts/update-runtime package/TestVerificationPreservesForeignCandidateEdit; stale/in-flight progress is not completion proof",
+    "CI440_prior_build_seconds": 52.798496,
+    "underlying_cause": "UNKNOWN; slower phase timings/CPU saturation do not prove a new source defect or a specific cold-cache cause"
+  },
+  "changes_for_failures": "NONE: no budget increase, test skip, automatic retry or new CI",
+  "next": "Keep Linux/source frozen and20min actual GET; no refetch of completed8 logs. First preserve independent failures; current UV extras/--with work is audit only and final CUDA3 stays deferred."
+}

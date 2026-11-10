@@ -1,0 +1,522 @@
+{
+  "schema": "haa.named-diagnostic-assessment.v1",
+  "scope": "C-e1 CPU owner audit and diagnostic-only windows; no production code/pin/budget/coverage change or repair claim",
+  "baseline": {
+    "commit": "b5caa454ecae59d9d5b3ce74f93db9a7de387f2c",
+    "tree": "6f5666c58839c84ac6626c8872b656c3525f07cd",
+    "tracked_files": 2879
+  },
+  "runtime_source": {
+    "count": 1280,
+    "root_and_private_unchanged": true,
+    "inventory_raw": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-runtime-source-before.json"
+  },
+  "diagnostics": [
+    {
+      "diagnostic": "cpu-window",
+      "product_exit": 1,
+      "seconds": 42.703,
+      "reports": 1,
+      "sample_counts": [
+        170
+      ],
+      "named_parent_pass": false,
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--result.json"
+    },
+    {
+      "diagnostic": "encoding",
+      "product_exit": 1,
+      "seconds": 45.627,
+      "reports": 1,
+      "sample_counts": [
+        174
+      ],
+      "named_parent_pass": false,
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--result.json"
+    },
+    {
+      "diagnostic": "phase",
+      "product_exit": 0,
+      "seconds": 88.73,
+      "reports": 3,
+      "sample_counts": [
+        214,
+        22,
+        219
+      ],
+      "named_parent_pass": true,
+      "all_source_input_host_and_helper_invariants_pass": true,
+      "raw_result": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--result.json"
+    }
+  ],
+  "conclusions": [
+    "Original metric complete-before FAIL at final userpath.cli: Close13.012223s, lastRead13.007341s; following two cases NOT_RUN.",
+    "Encoding-only candidate: all657 bodies and metadata plus20 required plan candidates/coverage/ordinals equal; new subject IDs; 637Store/20Deflate,7155471B. First normal FAIL13.127181s; candidate NOT_ADOPTED.",
+    "Original ZIP phase diagnostic PASS normal20units/5commands -> genuine Read followed by test-only injected failure/zero commands -> normal20units/5commands; CPU12.815358/0.630527/12.873832s.",
+    "Phase normal observation mixed windows total10.372961/10.376741s, termination windows excluding overlapping anchor0.101256/0.099849s. Last available kernel user/system8.396825/4.418258s and8.184130/4.689447s. These are kernel category windows, not exclusive Python or function profiles.",
+    "Anchor last seen0.203757/0.223132s and keeper small, so measurements do not support a dominant transaction-long busy anchor. No fixed performance ratio is inferred.",
+    "Historical diagnostic CPUAuthorizationSeconds was misnamed: typed lease.CPU is CPU affinity index, not seconds. Raw preserved, new diagnostic field CPUIndex. CPU authorization remains policy/ledger30total/17reserve/13active.",
+    "Ordinary /proc exe query EACCES and post-Close cgroup ENOENT retained. Process names and partial queries never authorize completion/absence. Typed helper Close/owning lifecycle and Host snapshot independently passed."
+  ],
+  "not_closed": [
+    "Repeatable production current-cohort legacy ZIP CPU qualification; metric-only PASS is not a repair or final qualification.",
+    "Same-source hosted Linux/UID1001/macOS and required conclusions for25local commits beyond e859.",
+    "Whole final CPU/cu126/cu130/cu132 affected matrix and signed complete15asset/19bundle native release path.",
+    "Ordinary native default/other recipe support remains unsupported/unqualified in current bounded lane; P5/P6 execution not implemented."
+  ],
+  "remote_readback": {
+    "checked_at": "2026-10-28 10:39:50 UTC",
+    "branch": "refs/heads/milestone/m13-release-build-packages",
+    "remote_head": "e859487404ccd907cc7a5472e5ec8b6a417a1840",
+    "latest_run": {
+      "id": 40598317489,
+      "number": 421,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "e859487404ccd907cc7a5472e5ec8b6a417a1840",
+      "url": "https://github.com/rahoney/heliopause/actions/runs/40598317489",
+      "started_at": "2026-10-27T22:54:33Z",
+      "updated_at": "2026-10-27T23:59:20Z"
+    },
+    "active_timer": false
+  },
+  "raw_originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--actual.log",
+      "sha256": "984e3484e204c2428daf48451913d753e7463e33217e589b7f8456019294d3dd",
+      "bytes": 61982
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--actual.sh",
+      "sha256": "13b07ef49bd5fb3315a6e8058c6646716c096f9c8abe2f320afdd1c2a53f193c",
+      "bytes": 478
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--cpu-window-reports.json",
+      "sha256": "5d77cf415ddeb114a2e7bbf021c825616139da94b31554d0416073951eb7f4c4",
+      "bytes": 97867
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--namespace-result.json",
+      "sha256": "7b56732eaf3088e02eefbfd635e167d872dec7918534017521b6e3f77d087206",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--namespace.py",
+      "sha256": "3a11c4b6c8138d4a0d8a20144c1db73b7d157831ac38c40bf5d70c023cbed99e",
+      "bytes": 1566
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--result.json",
+      "sha256": "4d66970cc7efaf2b330297317808a745027e9101e767444de104c94925f43b01",
+      "bytes": 2277
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--runtime-source-binding.json",
+      "sha256": "6cba794e5c360dbb249c7ea6bea8c6d55dce9b806e68fe0c92abd3634510ce76",
+      "bytes": 231544
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--actual.log",
+      "sha256": "15a68ff9e726928d7acc06baaaee43792989b14ef5c8a437b1ff5bd12a263841",
+      "bytes": 63245
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--actual.sh",
+      "sha256": "fce4dfc685d77815e3bf601bb3e61f31912d6388f0a604e2c57bb8a4e63fb34c",
+      "bytes": 461
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--candidate-binding.json",
+      "sha256": "dcf93e7440663dc018d1d6350298e6a7edc7c07df3684f49c61575e7919fc69a",
+      "bytes": 142353
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--cpu-window-reports.json",
+      "sha256": "8d104a481f21001d72fe80e058d4ed0b04073be19c8b5cf9ac81106d8a7d60fe",
+      "bytes": 100038
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--namespace-result.json",
+      "sha256": "40092b81a3e0f32df921bef1818924f18769d0909b939e52a0165c90b3d9f16a",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--namespace.py",
+      "sha256": "36c490092fa8fe48e797be082fe3b6a7100fefc02fdb27e24494e5246d0f64fe",
+      "bytes": 1564
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--result.json",
+      "sha256": "8ecf58d37779bd7ebde5f46e01d4a0e7c08267b173b6c1c716030d984548c01c",
+      "bytes": 2924
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--runtime-source-binding.json",
+      "sha256": "6cba794e5c360dbb249c7ea6bea8c6d55dce9b806e68fe0c92abd3634510ce76",
+      "bytes": 231544
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--actual.log",
+      "sha256": "f5e8e43890f3e18c570922ef073c85e27a54e19ffcca9ca90480417ce772fcb9",
+      "bytes": 512299
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--actual.sh",
+      "sha256": "e463721363f5af700edf4080acbf49e1e187343a06d8460275e8b399d953cef4",
+      "bytes": 468
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--cpu-window-reports.json",
+      "sha256": "3849c9e68edc42ca8c221a87fe538d917286760209f1a83ca92e2a9ed64f7fc5",
+      "bytes": 986696
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--host-after.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--host-before.json",
+      "sha256": "80e19317fa396eb7b3da174772e4c941a4602ebec0272149d98e0ddd0d8aed5d",
+      "bytes": 2180
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--namespace-result.json",
+      "sha256": "6b8b5a782e0c24efa4c6c91aff31a8c8967836bc2acae0cb99b2afdab9e52141",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--namespace.py",
+      "sha256": "b0dba1ed082557af2e8cb10f3dfdffc29196cc73642b3f0b8caa5b420096ff0d",
+      "bytes": 1561
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--result.json",
+      "sha256": "9437fb2f0d953e5c55d870c169da3683fa1c177b915c23e2823158e7650dd494",
+      "bytes": 2441
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--runtime-source-binding.json",
+      "sha256": "6cba794e5c360dbb249c7ea6bea8c6d55dce9b806e68fe0c92abd3634510ce76",
+      "bytes": 231544
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1--user-tmp--haa-network-policy-helper.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--assembler-identity.json",
+      "sha256": "4acc5e9c183004aa73f2f8cc5a060e97fe84649d2e72757615e98da6014df248",
+      "bytes": 679
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--assembler-overlay.json",
+      "sha256": "6172be99a5dbdc4c0de87c21857eda9a783388a73ddb8439e45d8c01574ae41c",
+      "bytes": 156
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--build-identity.json",
+      "sha256": "56e2c8b2707dcbe9c84c8da0009c4a30513b9b1dd96b10835c18c37d37a12847",
+      "bytes": 1421
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--materialize.log",
+      "sha256": "103cb6744f1b2a49a3a0b6ed2469ec0bd9fc0fdfee7c0011ca78a18c6171acce",
+      "bytes": 193
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--member-binding.json",
+      "sha256": "dcf93e7440663dc018d1d6350298e6a7edc7c07df3684f49c61575e7919fc69a",
+      "bytes": 142353
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--operator-binding.json",
+      "sha256": "5408b621f290caff140b4a67db600991fb7481a27befcdb23d9a684f969c7fe7",
+      "bytes": 361
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--pipx_supply_zip.go.txt",
+      "sha256": "9cb2c5c87a3c71e83256db4e92858b2717157ec4757ab707f459789b84d6f63c",
+      "bytes": 4123
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--runtime-identity.json",
+      "sha256": "30ae45ad8d385e3569fd64acdc64a8b399611b7e1814618ad012343610119a1d",
+      "bytes": 1261
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--runtime-overlay.json",
+      "sha256": "61aa34f214224277049e20929e2bb9c29eacecef199b809d48e3e0a3a28521ce",
+      "bytes": 282
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding--runtime_lock_gen.go.txt",
+      "sha256": "1743fe224595df527ab093c5be9cd9ea9ae28ed0e6f70b27b84b90b5172d77a9",
+      "bytes": 8704
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--build-identity.json",
+      "sha256": "bef61728182f337d92569a9a11d635b86446bbc415b5825b476c9b0733855be7",
+      "bytes": 885
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--identity.json",
+      "sha256": "9614c3fd41622fc149b097648e18675f3c5aff35141421db9f9e23b7d8b306c5",
+      "bytes": 722
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--operator-binding.json",
+      "sha256": "3612ca5f87c2bac7787034c4966810db7b39b8e223741dea5030f6326609441c",
+      "bytes": 254
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--overlay.json",
+      "sha256": "16d6878bc45247cdd43a5a1e63c558bacc3333bbf97b275a0c57f56d8bca91f6",
+      "bytes": 161
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase--pipx_dynamic_real_test.go.txt",
+      "sha256": "145a0bd3e2a868a79c8883f377d1ace78c990047b76a844dc2beb8fec79f2c21",
+      "bytes": 10190
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-archive-size-census.json",
+      "sha256": "6d6da7f579491b03e90166708e17ee4201ec6451f275295f619d3560f1bda567",
+      "bytes": 270
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-build-identity.json",
+      "sha256": "4b22c321f656efe855dc6d2e01b280271286685cbf5123530a5e120c343a7d26",
+      "bytes": 825
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-cpu-window-actual-v1.py",
+      "sha256": "cb132b60273831d3b0432d2ce77b41759fea42353261c77b13e438e2e7031075",
+      "bytes": 9662
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-prepare.py",
+      "sha256": "67543e91767aa6064bf07ce59ad1b6e5f540a56ceb80ab336d2a99cce1484364",
+      "bytes": 3846
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-actual-v1.py",
+      "sha256": "9f19c371287025904a8bf08c2af971dc8b5e5586344163ed750312232a037136",
+      "bytes": 9850
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-bind.py",
+      "sha256": "7d9c725ae40b83ef3ff4d283c076c2b2eb1591d071780ac087aaa2d15a7e0b9b",
+      "bytes": 2763
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-encoding-prepare.py",
+      "sha256": "33c897ff7d5aac857d06713788d01f64e8d2121d5ac6e5dac0d2486876b0588f",
+      "bytes": 1218
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-metric-overlay.py",
+      "sha256": "e847a664e5317d1fde3a2380daa7f6ed9a8f3dc3c6f470d074ff4ab2a09ed9c7",
+      "bytes": 5369
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-metric-test.go.txt",
+      "sha256": "82571f3886e6da7a5148acab4eea43923db03e32d328cacd236591dfa397b6d9",
+      "bytes": 6923
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-overlay-identity.json",
+      "sha256": "88f0e699f31e83efee1cbdcd36d27d845f67bce19fd6335c158ca03cc39c7f15",
+      "bytes": 622
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-overlay.json",
+      "sha256": "768000a4976d6bc814d14df1cbc471e6ee726228528786f0270d0ce45ef611c7",
+      "bytes": 144
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-prepare.py",
+      "sha256": "66305613819c2cfc93e0c202c845150da0df6cc3f09d218418b5222e770aa0a6",
+      "bytes": 1823
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-actual-v1.py",
+      "sha256": "171da7d20332e0f19994a815cf1304be5da12bbdf176bc9e2cb623c1a636c23a",
+      "bytes": 9703
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-analysis.json",
+      "sha256": "dc3b4362677570b01dd4cd6fc51e5697873a69a1c45ca909bb073de081325647",
+      "bytes": 52001
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-analysis.py",
+      "sha256": "ac9c443fd799604fe3675b336c2cbe1561b04bb945b44579066de9bc18e5ac1e",
+      "bytes": 2537
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-phase-overlay.py",
+      "sha256": "0734473549358ebea79fae156b775206ac43225e9a81ec63fc3036ae9c6d9e34",
+      "bytes": 5265
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-record.py",
+      "sha256": "64a1a228383cc4074f5ef1fc192a32db8e5316094002380f08955f2c2d5a71a6",
+      "bytes": 12041
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-remote-readback.json",
+      "sha256": "f31c4f51eef4f7bf1f34cce532e6dfa954a10e36112b33c3f6dc3aef83be1b10",
+      "bytes": 536
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-runtime-source-before.json",
+      "sha256": "8b891f7a0a5eb317a2f4abe11a0116ad696db0839e154135ffebe743d6bf8392",
+      "bytes": 217750
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-threshold-census.json",
+      "sha256": "57830d2f4cda709a9ef718ac41cf012ff37b6aff8e5ce9fb9220f6a74308365e",
+      "bytes": 735
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-e1-window-analysis.json",
+      "sha256": "7ad09a0a10c224528c2ab1bcb343e73397127cfdea4e574c524447ff9132fd2c",
+      "bytes": 9179
+    }
+  ]
+}

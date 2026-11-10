@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "source_commit": "9b0da57130ee2012bfe6bddf1fffa59ef15b9389",
+  "source_tree": "d124af392d06f6a75317076169c140851214c3fe",
+  "run_id": 39716854958,
+  "run_number": 373,
+  "status": "completed",
+  "conclusion": "failure",
+  "checkout": {
+    "sha": "de587e30e474e0f1605f73c9e6645b7f0964425a",
+    "tree": "d124af392d06f6a75317076169c140851214c3fe",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 119620911460,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 119620911557,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 119620911560,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 119620911568,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Docs",
+      "id": 119620911626,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 119620911647,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Security",
+      "id": 119620911653,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 119620911735,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 119620911736,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 119633227124,
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "linux": {
+    "status": "PASS",
+    "native_startup": {
+      "seconds": 3.24,
+      "trace_events": 29,
+      "trace_bytes": 3306,
+      "complete": true
+    },
+    "native_empty_target_query": {
+      "seconds": 3.13,
+      "trace_events": 31,
+      "trace_bytes": 3551,
+      "complete": true
+    },
+    "native_compile_sync_collection": {
+      "seconds": 3.58,
+      "controls": 1,
+      "lock_bytes": 616,
+      "trace_events": 35,
+      "trace_bytes": 4008,
+      "complete": true
+    },
+    "existing_integration": "PASS",
+    "pytorch_cpu_full_seconds": 287.67,
+    "helper_waits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    },
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci373-linux.log"
+  },
+  "macos": {
+    "production_build": "PASS,94.05s",
+    "default_test": "FAIL,360s",
+    "terminal": {
+      "available": true,
+      "exited": false,
+      "success": false,
+      "exit_code": -1,
+      "user_ms": 559932,
+      "system_ms": 356096
+    },
+    "progress": {
+      "started": 47,
+      "finished": 46,
+      "active": 1,
+      "active_package": "github.com/rahoney/heliopause/internal/promotion",
+      "root_test": null,
+      "elapsed_ms": 214183
+    },
+    "root_cause": "UNCONFIRMED; cache/trimpath split audited separately, no deadline/coverage reduction",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci373-macos-failed.log"
+  },
+  "scope": "C2 native output and existing Linux consumers qualified remotely for9b0da57 only; independent reader344a93d/cache alignment are later candidates",
+  "required_pass": false,
+  "qualification_closed": false
+}

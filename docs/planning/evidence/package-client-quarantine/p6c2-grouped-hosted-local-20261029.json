@@ -1,0 +1,304 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-C2 existing current cohort grouped hosted wiring",
+  "baseline": "04fb88f0290b1adb4d440e0fb3b6feac84c979d9",
+  "baseline_tree": "28382db14b93c71a1a290826df481c57fd399163",
+  "runtime_inputs": 1368,
+  "existing1365_unchanged": true,
+  "modified_runtime_paths": [
+    "scripts/check/uv_tools_workflow.go",
+    "scripts/check/uv_tools_workflow_test.go",
+    "scripts/ci-uv-tools.sh"
+  ],
+  "workflow": {
+    "path": ".github/workflows/heliopause-ci.yml",
+    "sha256": "39e0cb7240ed736a34b24da4dbfec16e30d3155e68f04c41764975e96a8d8961"
+  },
+  "production_internal_cmd_and_CPP132_unchanged": true,
+  "closed_profiles": {
+    "python-execution-boundary": "controlled8, ordinary protected client, exact parent8m, before interpreter DATA export",
+    "python-execution-hostile": "controlled standard-library5, ordinary protected client, exact parent8m, before interpreter DATA export",
+    "python-execution-workflow": "public3, existing never-started fixed interpreter DATA export/cleanup, exact parent5m"
+  },
+  "current_step": "Qualify current execution workflows and boundaries",
+  "previous_consumers_preserved": [
+    "Node post-Policy refusal2",
+    "Python current preparation3",
+    "readonly input4",
+    "selected console2"
+  ],
+  "new_consumers": [
+    "Python boundary8",
+    "standard-library hostile5",
+    "public application workflow3"
+  ],
+  "coverage_guard": "each top-level exact parent1, exact named IDs once, no SKIP, command error before cat error",
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.62
+    },
+    {
+      "step": "workflow",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "exit_code": 0,
+      "seconds": 1.821
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./scripts/check",
+        "-run",
+        "^(TestUVTools|TestCurrentExecution)"
+      ],
+      "exit_code": 0,
+      "seconds": 1.619
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 348.386
+    },
+    {
+      "step": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./scripts/check"
+      ],
+      "exit_code": 0,
+      "seconds": 62.629
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.316
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.818
+    }
+  ],
+  "inert_guard_DATA": {
+    "cases": 78,
+    "all7_consumers": true,
+    "all_pass": true,
+    "new_native_artifact_Docker_execution": false,
+    "original_logs": [
+      {
+        "consumer": "node",
+        "source": "/tmp/haa-p5-c7-actual-v1/actual.log",
+        "original_sha256": "597aeab02e1a957cd0bfe5942d7ea3fa1422b4825dfa9a8f8eb8b4d36291606e",
+        "selected_parent_sha256": "c4e834fbea4a7b170d55653826b01597cd3c16054175d7e9751b0e1aacb2f23b",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "preparation",
+        "source": "/tmp/haa-p6-a3-actual-v1/actual.log",
+        "original_sha256": "351a729ed97c187e8a49db2291b6130592040a6674ce79af00936f1cbc98721b",
+        "selected_parent_sha256": "ba2f6a108914b143f0b4af2d0ffd8ca9b630a2827cbd24892300369b5db2b3ff",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "inputs",
+        "source": "/tmp/haa-p6-b1-actual-v2/actual.log",
+        "original_sha256": "848aa9959cdf447dd73c8a8a762dfa2e6599bfd98b1aa2abd593867937f15124",
+        "selected_parent_sha256": "7d648fb921d57b8555a57fabdeee89dd3a2a8c4ef135cc0bc0b2db0d3c18045a",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "runtime",
+        "source": "/tmp/haa-p6-b2b-python-actual-v2/actual.log",
+        "original_sha256": "b3b94a14d6ddf9cdf43caf3805d617b111056f9ade81c03f6ba923f0db14e0f0",
+        "selected_parent_sha256": "6ed8eb3c4b5c52c4a45378a82f670655859d0d2d2a437bc7343f383ab42acbd3",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "boundary",
+        "source": "/tmp/haa-p6-b2d1-python-boundary-actual-v1/actual.log",
+        "original_sha256": "18be9cc5c40b01f3c20d5552985619314bc7c6fb53b714e885977b8361c30394",
+        "selected_parent_sha256": "8837c5e7aa04136c3360dc8129afaf8f1e9884c7997334d2e65c428070cd40c0",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "hostile",
+        "source": "/tmp/haa-p6-b2d2-python-actual-v7-all5/actual.log",
+        "original_sha256": "cb40ebbbb640550f75684a3d4dff580c7c9690679c318047618123c0a30f71d1",
+        "selected_parent_sha256": "09f5d7a388f8a9948ade4783fc3269e6b78c2657370041514233322ca8d0305a",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      },
+      {
+        "consumer": "workflow",
+        "source": "/tmp/haa-p6-c-python-actual-v1/actual.log",
+        "original_sha256": "7bdf758f91087ce488a673948e21c87d247c00a5c9ea6a8fc28200f8398b34ed",
+        "selected_parent_sha256": "b70a227583882e230ace25d27d4e08879c9780c2078d85cf8bcc2fc2ea9b2f78",
+        "scope": "stored actual PASS parent only; encompassing original failures are preserved independently"
+      }
+    ],
+    "step_sha256": "6a833547d4ec459f7f992cedcf0ace3170a18617d725b13b889d58ee74b56c8d"
+  },
+  "reuse_of_actual_local": [
+    "D1 eight191.36s; original controlled public/native solver NOT_RUN",
+    "D2 current standard-library five81.36s; raw fork-only cause remains unconfirmed",
+    "C public workflow three95.89s; actual native selector is UV tool install, not UVx equivalence"
+  ],
+  "CI": {
+    "new_jobs": 0,
+    "required_jobs": 10,
+    "Linux_timeout_minutes": 120,
+    "permissions_unchanged": true,
+    "prior_CI432_seconds": 6029,
+    "new16_local_seconds_sum": 368.61,
+    "estimated_ordinary_total_minutes": 107,
+    "estimate_is_not_guaranteed": true,
+    "push": "PENDING normal grouped FF only",
+    "qualification": "PENDING actual new source/run/checkout/logs",
+    "monitor_interval_minutes": 20,
+    "active_CI_cancellation": false
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (local wiring/78 inert DATA only); hosted PENDING",
+    "ACCEPTANCE_CLOSED": "NO (new-source hosted result missing)",
+    "MISSING": [
+      "grouped FF push and actual source/run registration",
+      "all required hosted results and logs/source proof",
+      "native UVx/golden/aliases/CLI/whole final support separate"
+    ]
+  },
+  "originals": [
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-baseline.json",
+      "bytes": 230,
+      "sha256": "509f70dad54e62ca759cac15a282aee8c416d686aadc960c0eaa942d4c585ae2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-edit.py",
+      "bytes": 9772,
+      "sha256": "bbbf283d89c3f77678ced93a108898e45d596e7d63013dbdbd54889cc2a47c96"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-check.py",
+      "bytes": 2936,
+      "sha256": "4e857fc161fdda7116077cfdf612f70902657a35b587eaa6c0f8860481a4aba2"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-current-step.sh",
+      "bytes": 7288,
+      "sha256": "6a833547d4ec459f7f992cedcf0ace3170a18617d725b13b889d58ee74b56c8d"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-guards.py",
+      "bytes": 6701,
+      "sha256": "f7acdc88327e99c058497284c6296d917ea59aab84f8d0edc59b4515a9582677"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-guards-v1.json",
+      "bytes": 19779,
+      "sha256": "2dcd129e7cb960d162369754bf081796091b5d3991be0bdc781f1505f7970e27"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-checks.json",
+      "bytes": 1234,
+      "sha256": "7210360f34795ad97836098cc7ccdbf66831d4380222ff9c76d8f279f00f879b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-source-identity.json",
+      "bytes": 248890,
+      "sha256": "5d157204c49ed7e74c492aa7384f4e880fbf5bf7b49658873ad42d238bbcab4b"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-workflow.log",
+      "bytes": 1071,
+      "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-focused.log",
+      "bytes": 17459,
+      "sha256": "58c7d76fa2eb854f036f2f85442e61c2653a6fdf7a68bb17edf127641cad2eb4"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-quick.log",
+      "bytes": 1354,
+      "sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-checker-race.log",
+      "bytes": 57,
+      "sha256": "5a55f5dae503f46828f78debe455f173339938ef6e5d3f6fd7e259364b7f50b8"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/haa-p6-c2-v1-security.log",
+      "bytes": 166,
+      "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-c2-v1-source--scripts__check__uv_tools_workflow.go",
+      "bytes": 15342,
+      "sha256": "46dab0a5673e95a580f8a7dac37f42677609489c8de76f5b77fed4ba7225b7fd"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-c2-v1-source--scripts__check__uv_tools_workflow_test.go",
+      "bytes": 13608,
+      "sha256": "a6eadd8650f36b283263fcc6e80340437431cc27b8677bc465edb04081f09eb3"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-c2-v1-source--scripts__ci-uv-tools.sh",
+      "bytes": 6979,
+      "sha256": "5e43728f20f49ad68bdc3939c4cecfd1c163de6f05513e2eb500ef40a4cebc73"
+    },
+    {
+      "file": "docs/github-logs/package-client-quarantine-20261021/p6-c2-v1-source--.github__workflows__heliopause-ci.yml",
+      "bytes": 43810,
+      "sha256": "39e0cb7240ed736a34b24da4dbfec16e30d3155e68f04c41764975e96a8d8961"
+    }
+  ]
+}

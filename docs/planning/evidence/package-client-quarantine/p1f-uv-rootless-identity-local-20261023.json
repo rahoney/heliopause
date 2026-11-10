@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "baseline": "39e92ac8cad6344c1341cf3db45215c9d2479dd8",
+  "scope": "C3e3/A2a rootless file-list inventory metadata identity/uniqueness precondition; existing public UpgradeInput validation retained",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES at shared inventory helper; actual complete sync guard/CLI NO",
+  "QUALIFIED": "LOCAL ONLY; fresh shared source CI pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "same-source shared consumers/Required qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/pypi_native_inventory.go",
+      "bytes": 11464,
+      "sha256": "b8b6b069523cbe5d6d4d135fab6393eff262ee40491f035a05eddd4989944dc0"
+    },
+    {
+      "path": "internal/promotion/pypi_installed_snapshot_test.go",
+      "bytes": 4175,
+      "sha256": "1cb45dfb84e026df4f137bb041b2b76fa6d20bde0992ee955eef227631c571e1"
+    }
+  ],
+  "before": {
+    "scope": "rootless helper input precondition only; old production UpgradeInput already validates metadata",
+    "phase": "before",
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-count=1",
+      "-v",
+      "./internal/promotion",
+      "-run",
+      "^TestRootlessInventoryRequiresMetadataIdentityCoverage$"
+    ],
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "expected_exit": 1,
+    "observed_exit": 1,
+    "seconds": 6.112,
+    "sources": [
+      {
+        "path": "internal/promotion/pypi_native_inventory.go",
+        "sha256": "30c55bab7ea9011e2449df56dd9c667aa6c628c87cb81755fc3b54e9c7262699"
+      },
+      {
+        "path": "internal/promotion/pypi_installed_snapshot_test.go",
+        "sha256": "1cb45dfb84e026df4f137bb041b2b76fa6d20bde0992ee955eef227631c571e1"
+      }
+    ]
+  },
+  "after": {
+    "scope": "rootless helper input precondition only; old production UpgradeInput already validates metadata",
+    "phase": "after",
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-count=1",
+      "-v",
+      "./internal/promotion",
+      "-run",
+      "^TestRootlessInventoryRequiresMetadataIdentityCoverage$"
+    ],
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "expected_exit": 0,
+    "observed_exit": 0,
+    "seconds": 4.93,
+    "sources": [
+      {
+        "path": "internal/promotion/pypi_native_inventory.go",
+        "sha256": "b8b6b069523cbe5d6d4d135fab6393eff262ee40491f035a05eddd4989944dc0"
+      },
+      {
+        "path": "internal/promotion/pypi_installed_snapshot_test.go",
+        "sha256": "1cb45dfb84e026df4f137bb041b2b76fa6d20bde0992ee955eef227631c571e1"
+      }
+    ]
+  },
+  "same_five_negative_test_source": true,
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/promotion",
+      "./internal/bootstrap",
+      "./internal/application"
+    ],
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "exit": 0,
+    "seconds": 124.98
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.367,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-format.json",
+        "bytes": 110,
+        "sha256": "0b65892719d3448d8f6ddd920c7734759fe0e2b44c1942c2b3a476ffc7709d9e"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 111.933,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-quick.json",
+        "bytes": 111,
+        "sha256": "351136b7cb73e84ccfa59b231c4aaabcf109005559c9aef13e94b9cd3dfd30d5"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-quick.log",
+        "bytes": 1354,
+        "sha256": "b67da847925914ee839cb5cca1e35661223e4c2c60aa3c274b5244d85a03ac77"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.785,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-security.json",
+        "bytes": 112,
+        "sha256": "c5b7e13551f21860a9a7f117f04dea17c3ce5a9e903ccd43f9b01e19de8ddf5b"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.227,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-docs.json",
+        "bytes": 108,
+        "sha256": "7c869091c6211e30a43f620db2430212f911d67ed2aff1ded6836078681867dd"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.728,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-workflow.json",
+        "bytes": 112,
+        "sha256": "d1b73849a958218cb2fe361c3886f4144773600218b1260b79c5b22b726f0357"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "09f1722e8082e1146121c5992fcff370deed9f7679deb1d4d7b915d5ed10cb62"
+      }
+    }
+  ],
+  "current_public_scope": "Existing production wrapper already runs NewUpgradeInput identity/duplicate validation before this helper; no existing public vulnerability or A1 regression claimed",
+  "P1_remaining": [
+    "all-original native ownership proof/source-target guard",
+    "complete-only Python transaction/cache/Manifest/SBOM/offline publication",
+    "sync CLI/SKIP/report and whole P1 qualification"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-before.json",
+      "bytes": 796,
+      "sha256": "76dcea279261153eefa462f7da15f8af0b91770470137b043e2ba337598073c0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-before.log",
+      "bytes": 1489,
+      "sha256": "edfa7aee5ef8a0583a33ad09ac0672d461c39f9650f02f9d89b38642fd1f4953"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-after.json",
+      "bytes": 794,
+      "sha256": "bef2932ddad5c67f34999f4adb0d62b270d8637d3096ffc851c03e4cd3ee78d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-after.log",
+      "bytes": 1084,
+      "sha256": "17b115a78c7fad7f50035fb20cb291a27870b475ed1da1b828b5ecc1ae772e5d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-race.json",
+      "bytes": 281,
+      "sha256": "7d03ec3da61bba77373662efa69803ed8fbf730f8779e202eeb0d5974d22a229"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-rootless-identity-race.log",
+      "bytes": 187,
+      "sha256": "9a38bdf112de4d60c7ccda9674cb10b1d010ca4504d097866cc809e29bbbf0cd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/rootless-identity-probe.py",
+      "bytes": 2188,
+      "sha256": "325958167bf22026236ecc14560abf9e3fd195a437865b7b5c692b5d614b77e9"
+    }
+  ],
+  "cleanup": {
+    "completed_operator_removed": true,
+    "small_reproducer_archived": true,
+    "fresh_owned_go_tmpdir_entries": 0,
+    "new_native_resource_setup": "NONE; active source/SDK/runtime/cache retained"
+  }
+}

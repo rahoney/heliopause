@@ -1,0 +1,306 @@
+{
+  "scope": "CI417/source518800c named hosted qualification: CI416 fixture UID correction and supported public native/managed/fresh UV tools. Whole M13-004/P4 acceptance remains open.",
+  "run_id": 40449588924,
+  "run_number": 417,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40449588924",
+  "result": "SUCCESS",
+  "source_binding": {
+    "source": "518800c052231e46dece7a1dbe9c25cadb9395fa",
+    "tree": "df6892086489b84804f505a0f79e8555eb6dbedf",
+    "source_files": 2660,
+    "all10_checkout": "1fab621cecd2783ce493574eacb1508e322ca5fc",
+    "checkout_parents": [
+      "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+      "518800c052231e46dece7a1dbe9c25cadb9395fa"
+    ],
+    "whole_tree_equal": true,
+    "run_id": 40449588924,
+    "started_at": "2026-10-27T04:24:47Z",
+    "completed_at": "2026-10-27T05:41:32+00:00",
+    "elapsed_seconds": 4605
+  },
+  "jobs": [
+    {
+      "id": 122008918484,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918562,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918670,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918692,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918693,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918729,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918742,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918757,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122008918787,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122031590968,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_pass_count": 79,
+    "top_level_fail_count": 0,
+    "top_level_skip_count": 0,
+    "uv_tool_bootstrap_exact5": [
+      {
+        "name": "TestLinuxUVToolInstallCLIIntegration",
+        "seconds": 65.99
+      },
+      {
+        "name": "TestUVPublicToolUpgradeEvidenceFailureIntegration",
+        "seconds": 44.1
+      },
+      {
+        "name": "TestUVPublicToolApprovedUpgradeIntegration",
+        "seconds": 92.03
+      },
+      {
+        "name": "TestLinuxUVToolUpgradeCLIIntegration",
+        "seconds": 74.6
+      },
+      {
+        "name": "TestLinuxUVToolNativeAdoptionCLIIntegration",
+        "seconds": 138.06
+      }
+    ],
+    "native_host_uid": 1001,
+    "native_host_gid": 1001,
+    "native_guest": "1001:1001",
+    "native_current_cases": [
+      {
+        "case": "native-exact-pin",
+        "controls": 10,
+        "cumulative_fresh_evidence": 4,
+        "original_requirement": "cowsay==6.0",
+        "selected": "6.0"
+      },
+      {
+        "case": "managed-repeat-adopt",
+        "controls": 8,
+        "cumulative_fresh_evidence": 8,
+        "original_requirement": "cowsay==6.0",
+        "selected": "6.0"
+      },
+      {
+        "case": "native-bounded-version-change",
+        "controls": 10,
+        "cumulative_fresh_evidence": 12,
+        "original_requirement": "cowsay>=6.0,<=6.1",
+        "selected": "6.0"
+      }
+    ],
+    "native_current_evidence_failure_original_preserved": true,
+    "observer_latches": 122,
+    "helper_build_latches": 122,
+    "cpu_full_seconds": 282.58,
+    "helper_wait_zero_count": 11,
+    "final_cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    }
+  },
+  "qualification": {
+    "ci416_native_fixture_uid": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "scope": "named UID1001/current native public recipe regression",
+      "MISSING": []
+    },
+    "uv_tool_supported_recipes": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "scope": "named fresh/managed upgrade/explicit supported native adoption; existing source/runtime/contracts unchanged",
+      "MISSING": []
+    },
+    "whole_m13_004_p4": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO(whole)",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "P4-O pipx immutable supply/provenance bridge/loader/runtime/backend/current approval/public CLI",
+        "Remaining P2/P3/P4 final support/profile matrix; P5/P6/P7"
+      ],
+      "scope": "whole objective incomplete; supported UV components independently implemented/wired/qualified above"
+    }
+  },
+  "ci415_fd_failure_cause": "OPEN; peer PASS is not a causal fix proof",
+  "raw_logs": {
+    "storage": "local companion docs/github-logs/package-client-quarantine-20261021; not claimed committed or remotely backed up",
+    "count": 10,
+    "total_decoded_bytes": 1200139,
+    "exact_readback_sha256_verified": true,
+    "inventory": [
+      {
+        "job": "Docs",
+        "job_id": 122008918562,
+        "path": "ci417-docs-decoded.log",
+        "bytes": 20521,
+        "sha256": "af31704a4a2b23d589c49ba9f9d03ef05582461ac1c4857862fc145b0854b576",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 259
+      },
+      {
+        "job": "gVisor Linux Integration",
+        "job_id": 122008918693,
+        "path": "ci417-gvisor-linux-integration-decoded.log",
+        "bytes": 732954,
+        "sha256": "e0dc3ee30471fa5cd4bcc9681c21b341ebb3eba3a6e23c808bc6232800aaff11",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 4442
+      },
+      {
+        "job": "gVisor Observer Helper",
+        "job_id": 122008918729,
+        "path": "ci417-gvisor-observer-helper-decoded.log",
+        "bytes": 276513,
+        "sha256": "040b2a84a5b8c45db88b06c755fec56594733aade9c0702daca2182b8696b1d3",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 2013
+      },
+      {
+        "job": "macOS",
+        "job_id": 122008918787,
+        "path": "ci417-macos-decoded.log",
+        "bytes": 23596,
+        "sha256": "ce5c418ac0cf89723d23bd6df910d2645b76b7dd40076901c191781932bd2d3a",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 297
+      },
+      {
+        "job": "Minimum Go",
+        "job_id": 122008918670,
+        "path": "ci417-minimum-go-decoded.log",
+        "bytes": 21503,
+        "sha256": "252c325b9f68ed7c9df42e2611542a7c6618959b66a0735aa07e0fa0e38d47bc",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 273
+      },
+      {
+        "job": "Quick",
+        "job_id": 122008918742,
+        "path": "ci417-quick-decoded.log",
+        "bytes": 23838,
+        "sha256": "b578a4e637cf81878334720555dade230f06989279af0e337c5e37c8c1940051",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 306
+      },
+      {
+        "job": "Representative Wheel Corpus",
+        "job_id": 122008918757,
+        "path": "ci417-representative-wheel-corpus-decoded.log",
+        "bytes": 35360,
+        "sha256": "29af9e5959a88271f7062144cc79fd613393384da8c57e67800a5306699acf38",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 359
+      },
+      {
+        "job": "Required",
+        "job_id": 122031590968,
+        "path": "ci417-required-decoded.log",
+        "bytes": 22300,
+        "sha256": "6ff8926e0f69df80ea7491e3eb36c836ffbe88005eff9fb3debe1ecd8dc3334a",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 284
+      },
+      {
+        "job": "Security",
+        "job_id": 122008918692,
+        "path": "ci417-security-decoded.log",
+        "bytes": 21849,
+        "sha256": "5f261d07fe0fc6307907113f9a9cd77088e3230f3e161661ce4c3e243fd59de8",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 281
+      },
+      {
+        "job": "Vulnerability",
+        "job_id": 122008918484,
+        "path": "ci417-vulnerability-decoded.log",
+        "bytes": 21705,
+        "sha256": "eff150abef68b215c31521e7003ce3bc3e7edc3019d5e2bf6b50759684315d06",
+        "checkout": [
+          "1fab621cecd2783ce493574eacb1508e322ca5fc"
+        ],
+        "lines": 278
+      }
+    ]
+  },
+  "limits": [
+    "Only actual CPU profile is qualified here; echoed CUDA commands are not executions",
+    "Local later documentation-only commits are not this hosted source; no new product changes or CI re-run needed to record result",
+    "No release/main merge/publication implied"
+  ],
+  "unsupported": [
+    "Ordinary native default/other recipes and runtime provisioning are not newly supported"
+  ]
+}

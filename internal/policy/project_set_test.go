@@ -68,6 +68,7 @@ func TestProjectSetPolicyUsesCompleteCoverageAndBlockPrecedence(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+				entry = projectEntryWithArchiveAction(t, entry, domain.EvidenceHostInstallActionNotRequired, "npm-static-archive")
 				entries = append(entries, entry)
 			}
 			set, err := domain.NewInspectedProjectSet(snapshot, entries)

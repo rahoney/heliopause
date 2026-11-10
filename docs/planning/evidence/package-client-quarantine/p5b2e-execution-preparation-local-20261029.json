@@ -1,0 +1,174 @@
+{
+  "scope": "P5-B2e non-install preparation API and actual DATA storage handoff; no user program execution",
+  "source_base": "4ecf37bdac2b0846303f74c36f57e3653cfe6470",
+  "source_files_each": 1300,
+  "prior1292_unchanged_each": true,
+  "new_or_extended_source": [
+    {
+      "path": "internal/core/domain/execution_context.go",
+      "sha256": "f1ce76fba8b82b06c77fb7b95ca94f145b02faf59eb1e6dbc6699037a4a1bf08",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/core/domain/execution_context_test.go",
+      "sha256": "40aaefcf928251ab4d5ace06d0a26d4693f49836b9ae2d2e69baa48723da6f9b",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver.go",
+      "sha256": "3b5c01bed8bd52729906e0f44db05bf77d40ffe4e134f98960ddb03aa2b6832c",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/application/execution_prepare.go",
+      "sha256": "0feca6cad69556091f0dbeb74879eb4b71d2a463df3d71e821893d25c1577099",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/application/execution_prepare_test.go",
+      "sha256": "faf4ee2ca18578b9b7e4156266f9b438920f88579320d21a03bbc0ca66308e61",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare.go",
+      "sha256": "b9b393af973bea4d7effe03c6d3aa97a8a397e0e07cfd93e7ace938eaa99aa5e",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare_test.go",
+      "sha256": "0667b14d9eb8fc390d54371bfeafff293a11fadc5df865b5fd1d85d2ced70c1d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/npm_execution_resolver_test.go",
+      "sha256": "1fc39415f382eba1f2d492422f5bf25d27bf744a018b058b9f653e8cb0307891",
+      "mode": "100644"
+    }
+  ],
+  "reviewed_existing_changes": [
+    {
+      "path": "internal/core/domain/execution_context.go",
+      "before_sha256": "da6e424b5af6e010861745231c0441f624fb0571e04f43ef90ea5171d69b7b7e",
+      "after_sha256": "f1ce76fba8b82b06c77fb7b95ca94f145b02faf59eb1e6dbc6699037a4a1bf08",
+      "reviewed_diff_sha256": "8429f5523e7a83e30454096726df95cbb65f86934e58ac9c5b43e8d6dbab8f56"
+    },
+    {
+      "path": "internal/core/domain/execution_context_test.go",
+      "before_sha256": "930cafe13096cfc4ce807fe9f277eb241b3e9270d7b246fa19fc68aab624d669",
+      "after_sha256": "40aaefcf928251ab4d5ace06d0a26d4693f49836b9ae2d2e69baa48723da6f9b",
+      "reviewed_diff_sha256": "45280c63928a4cbce81e5ee97fdfa5b32474a74d1e4b565c596f4d504bae9683"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver.go",
+      "before_sha256": "4f0c44d86283179ba0f1b6fae934abc9261836d5501108361c336a4285d9aed2",
+      "after_sha256": "3b5c01bed8bd52729906e0f44db05bf77d40ffe4e134f98960ddb03aa2b6832c",
+      "reviewed_diff_sha256": "027479dfd18ea6432e8dbe3396312254694101fc8236460c636bc2efa0ecc77b"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (internal preparation pipeline/concrete adapter composition only)",
+    "QUALIFIED": "YES (named local API/negative and DATA handoff only)",
+    "ACCEPTANCE_CLOSED": "YES (B2e narrow preparation scope); NO (production user-run/whole P5)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.662
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 229.702
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/core/domain",
+        "./internal/application",
+        "./internal/bootstrap",
+        "./internal/evidence",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 39.718
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.271
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 16.332
+    }
+  ],
+  "first_quick": {
+    "seconds": 105.434,
+    "exit_code": 1,
+    "cause": "SA9005 in new privacy test directly marshaling opaque private-field request",
+    "correction": "explicit MarshalJSON rejects private request serialization; generic formatters redact; scanner rules unchanged",
+    "raw_prefix": "p5-b2e-first-"
+  },
+  "reused": [
+    "NPMResolver.resolveDependencies through targetless entry method",
+    "ExecutionInspectService fresh per-entry/batch lifecycle",
+    "Inspector.InspectArchive/ReadNodeExecutionEntry and exact bin/Node proof",
+    "newNodeExecutionContext with canonical Node pin",
+    "NewExecutionContext and existing command/argv bounds",
+    "Generator.BuildExecution",
+    "LocalStaging.Stage and actual Evidence store"
+  ],
+  "verified": [
+    "invalid explicit command/argv before I/O; immutable argv and formatter/JSON privacy",
+    "one resolver call then fresh whole inspection on every request",
+    "entry adapter context supplies measured facts only; operation/resolution/set/argv rebound from current request",
+    "cached primary intake or records set, explicit command substitution and malformed staging ID/handle refused",
+    "provider errors/complete inspection facts and cancellation cause preserved without later calls",
+    "production factory constructs required static+dynamic composite from actual Backend; no generic static-only injection",
+    "real fixed archive bytes/SRI/static reading/Evidence/Node pin/Manifest/SBOM/staging repeated fresh handoff",
+    "tampered original cannot be replaced by staged bytes or old approval; wrong interpreter fails before staging"
+  ],
+  "data_test_limits": [
+    "fixed graph/fixture acquisition; M1 fixture Policy; real static integrity/store/records/staging adapters",
+    "no live npm selection, production M3 dynamic execution, observer or actual user program",
+    "production factory positive runtime qualification not performed by DATA fixture"
+  ],
+  "request_privacy": "private copied argv; generic formatter redaction; JSON serialization refused; no argv/hash/output in Manifest/SBOM",
+  "missing": [
+    "production selection/complete dynamic inspection actual preparation qualification",
+    "fresh user-run sandbox/introduction rehash/network deny/resources/trusted output and exit transport",
+    "stdout/stderr/exit/signal/cancel/cleanup and hostile qualification",
+    "CLI/aliases and full final profile support"
+  ],
+  "ci424_source_4ec_excludes_this_code": true
+}

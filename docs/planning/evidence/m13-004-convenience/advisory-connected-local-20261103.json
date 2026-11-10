@@ -1,0 +1,427 @@
+{
+  "baseline_commit": "aad4ea2",
+  "scope": "bounded production public transport, existing inspection capability forwarding/report/M3 normalization and two Go/Cargo composition consumers only",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/inspection/advisory/osv_http.go",
+      "sha256": "55f267883bfb7374e01687615d0ed7f99341cea340f9b32c8b964fc53236c41c"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_http_test.go",
+      "sha256": "43918f503075d571c47a44bed682e9954f08d3c8e4ba07d354d328ab10c3285e"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "8acaae59a3d5c2a55781f43e831973174eb3613cf5e5eaece6d9897dcdfe7349"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector_test.go",
+      "sha256": "2658d3b013712984b603cf5f02a18077bb0f567c7d1d08bf6ab4451d875a0fb7"
+    },
+    {
+      "path": "internal/inspection/advisory/report.go",
+      "sha256": "553d4bf90e100a8f261615feb7e1ae96be32056675f6ce89c752883f41bd275c"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_record.go",
+      "sha256": "aa45088cbe25e8040803927710e58d51a05d27c6bab81595670c7639f4ea84b0"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_record_test.go",
+      "sha256": "526b5c8783ebde7c8b738334b1ab48bd67a4ac18949dc117a970c5d849615d1c"
+    },
+    {
+      "path": "internal/inspection/advisory/testdata/README.md",
+      "sha256": "af87eecc90a5d5fe3302b9cc7e3558cbbb9f5f13f0942f9d5a29757e9fef4457"
+    },
+    {
+      "path": "internal/inspection/advisory/testdata/ghsa-cpwx-vrp4-4pq7.json",
+      "sha256": "34d257e978fb44df9fd325312ec6f2e89f826b4e8290b05cf9a04427625846cf"
+    },
+    {
+      "path": "internal/networkpolicy/contract.go",
+      "sha256": "ab963f8f62b3bebbf3f5066d25ff9ed2e46fbf4bdd463895f1428dd2e9dc2efa"
+    },
+    {
+      "path": "internal/policy/m3.go",
+      "sha256": "a91319df62de87e5fb5d169473ac1eccf49485b7957c99595e6db4cec92fe6a5"
+    },
+    {
+      "path": "internal/policy/m3_test.go",
+      "sha256": "abfe0993293b18a03c14f31c8ee6281e7c85aed6ec073cce739e9e213b3b136b"
+    },
+    {
+      "path": "internal/bootstrap/advisory.go",
+      "sha256": "ffe2c6613c195fa7f9f2ba82759b614122c71568a87286d24eb089d5887a7b7d"
+    },
+    {
+      "path": "internal/bootstrap/go_module.go",
+      "sha256": "ba9f8bb9ffe33a0349bce36ff7113194469f90656f7b6b972da8f946034c4e7c"
+    },
+    {
+      "path": "internal/bootstrap/cargo.go",
+      "sha256": "a721bf1e82a13550e89db43320ea6d92b1ec42f9ca76e308ed1b3f3127fbca2a"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "e2f14ff5f336c959c2ae1a3512e10292529b76e42a3132167c6088ea7dbc7087"
+    },
+    {
+      "path": "docs/domain-model/12-m3-linux-dynamic-contract.md",
+      "sha256": "33893a582b7efcf19bc60702a2aa35b3e1462c4902e48efa3f07f7e84639298d"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": {
+        "raw_file": "s05-http-targeted.json",
+        "sha256": "ef1e191f5026f65261af4c8a017e62058dc8e91cce611e1b7304d5278dbf5861",
+        "bytes": 94906
+      },
+      "log": {
+        "raw_file": "s05-http-targeted.log",
+        "sha256": "0b35dfd69bf7f352eea450ec23f68e81b088c9fe5af955c62eea08e98dcc6c04",
+        "bytes": 136
+      },
+      "exit_code": 0,
+      "elapsed": 1.151,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-targeted.json",
+        "sha256": "dd67c311c9622fc24dee31f1b2aa4363cb0adc302bf133dca74c813738ce1d89",
+        "bytes": 95502
+      },
+      "log": {
+        "raw_file": "s05-connected-targeted.log",
+        "sha256": "a1e62a153d017944d6572b0fd41fa30101a5f4ec79955e04066750bd16c8e2cc",
+        "bytes": 623
+      },
+      "exit_code": 1,
+      "elapsed": 1.541,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-network-policy-unrestricted.json",
+        "sha256": "4268b8ed2bbfcbb458944d8100650ad3eac083c7ed3898390509530454e3a040",
+        "bytes": 95439
+      },
+      "log": {
+        "raw_file": "s05-network-policy-unrestricted.log",
+        "sha256": "61ece2395248479464bc2a13db00dbe2b7fd7b2a3f4e44f7909ea1f14fed8984",
+        "bytes": 65
+      },
+      "exit_code": 0,
+      "elapsed": 0.342,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-race.json",
+        "sha256": "76246633fa6012f2816db8c19728f3ff9cbd9eb9dee9ded6f3e0cfb9006c160d",
+        "bytes": 95627
+      },
+      "log": {
+        "raw_file": "s05-connected-race.log",
+        "sha256": "cc94d050763945665ec202d8ef58b654309dce4928e9c8a89e66181ab7908240",
+        "bytes": 129
+      },
+      "exit_code": 0,
+      "elapsed": 6.662,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-static.json",
+        "sha256": "f8335d2c51a23b1c5227efb361544a8f6bdbb14833b11c1d12b6f13258557206",
+        "bytes": 95691
+      },
+      "log": {
+        "raw_file": "s05-connected-static.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 11.494,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-vet.json",
+        "sha256": "6f31d82dd5097451809c481b947d2a76d3f9c083f3877586924559f1138a34c2",
+        "bytes": 95657
+      },
+      "log": {
+        "raw_file": "s05-connected-vet.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 7.671,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-modified-red.json",
+        "sha256": "e5a6f834cefb34d809acbea8c7ef8ffbe2046b8a99928fcd860103be7e9b08e0",
+        "bytes": 95852
+      },
+      "log": {
+        "raw_file": "s05-modified-red.log",
+        "sha256": "72ad05b6c1980c14d90f947bfca0bb311f8fe80a27f9b34a3768473317b2334c",
+        "bytes": 322
+      },
+      "exit_code": 1,
+      "elapsed": 1.065,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-modified-green.json",
+        "sha256": "54934323c42004849e94f7ff045238bef5a115778bb85f982d001acfb5af7022",
+        "bytes": 95778
+      },
+      "log": {
+        "raw_file": "s05-modified-green.log",
+        "sha256": "d846b96ef1190ea1f17447cc9786172e240b7112fded0d1467dbd6eb669e72ae",
+        "bytes": 71
+      },
+      "exit_code": 0,
+      "elapsed": 5.057,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-foundation.json",
+        "sha256": "2f6cc0bc348dbec8f636c96238492193dbdd09eeb09a9714ecab8bc9c5d9d6b4",
+        "bytes": 95752
+      },
+      "log": {
+        "raw_file": "s05-connected-foundation.log",
+        "sha256": "9a11ad5904339c8547661fe52e33b16752039a630a347111257b7ad07e69e7d3",
+        "bytes": 224
+      },
+      "exit_code": 0,
+      "elapsed": 63.665,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-security.json",
+        "sha256": "c70fa68aa06473d930179403cdb1f6cfac78c9995cff76153362ab0c1533036d",
+        "bytes": 95750
+      },
+      "log": {
+        "raw_file": "s05-connected-security.log",
+        "sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a",
+        "bytes": 166
+      },
+      "exit_code": 0,
+      "elapsed": 20.493,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-connected-bootstrap-race.json",
+        "sha256": "bdccda9ca82d90a554dd05e530075dad69d31618c46d2943a7409e49d81ddca8",
+        "bytes": 95769
+      },
+      "log": {
+        "raw_file": "s05-connected-bootstrap-race.log",
+        "sha256": "c1ab8bb8b3b9e61a41fe76f02da5a275f6a46ae63add0122e9d4b2619c1e81fb",
+        "bytes": 61
+      },
+      "exit_code": 0,
+      "elapsed": 29.521,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-final-advisory.json",
+        "sha256": "5a359d6651ca2f90fa0f67d3ea661097a3d088205f95b0dc959d446947363f89",
+        "bytes": 95778
+      },
+      "log": {
+        "raw_file": "s05-final-advisory.log",
+        "sha256": "def310ec4739c1381f954801822fcba9c44a94b35bfd482f0d6b36dee2e672fd",
+        "bytes": 71
+      },
+      "exit_code": 0,
+      "elapsed": 5.211,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-final-static.json",
+        "sha256": "ccda29057c5ab85b137fbfc93bb3c44fb107fd6b2cb78ec239b8b26ed5816678",
+        "bytes": 95781
+      },
+      "log": {
+        "raw_file": "s05-final-static.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 1.124,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-final-vet.json",
+        "sha256": "a40b1178218804f70911b058bc84ab7b8e37df121b5f1089adf579cf0a73429a",
+        "bytes": 95748
+      },
+      "log": {
+        "raw_file": "s05-final-vet.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "exit_code": 0,
+      "elapsed": 0.457,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "raw_file": "s05-final-format-check.json",
+        "sha256": "2115ed0aa0be9fd49495dff02b1706c64323b38b05a46dfd860892449842191b",
+        "bytes": 95747
+      },
+      "log": {
+        "raw_file": "s05-final-format-check.log",
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+        "bytes": 15
+      },
+      "exit_code": 0,
+      "elapsed": 1.067,
+      "source_unchanged": true
+    }
+  ],
+  "live_data": [
+    {
+      "actual": {
+        "raw_file": "s05-http-live-v1-actual.json",
+        "sha256": "c4d7dc2c2ac24f9a2f305253016c23ceb431ed4dfb65f95ca0de466967ec2e14",
+        "bytes": 423
+      },
+      "log": {
+        "raw_file": "s05-http-live-v1-actual.log",
+        "sha256": "6e067a749011ff59e97b7a808b6cef154650eba7e628df8b62cacb2e07b3c16c",
+        "bytes": 382
+      },
+      "build": {
+        "raw_file": "s05-http-live-v1-build.json",
+        "sha256": "549597c56034ebf910e37eaf657709e857a1c87ce643d96b50e6407559e43fe6",
+        "bytes": 95817
+      },
+      "operator_source": {
+        "raw_file": "s05-http-live-v1-main.go.txt",
+        "sha256": "743968fe2c77bba96d16a06a99bca95ea9153d2254104f593d0e282ff072e69f",
+        "bytes": 2819
+      },
+      "exit_code": 1,
+      "elapsed": 1.222,
+      "binary_sha256": "23ce99f89e29158394da9dcf68afa943c281e75d52fe8112d726a5af1e405dbc",
+      "scope": "real production public HTTPS/TLS and calculator, synthetic original inspection only; no artifact installation/execution"
+    },
+    {
+      "actual": {
+        "raw_file": "s05-http-live-v2-actual.json",
+        "sha256": "94ad683044c35c0c590c1f0fcc38f498245e9962b22b1d321f7132104d206d16",
+        "bytes": 426
+      },
+      "log": {
+        "raw_file": "s05-http-live-v2-actual.log",
+        "sha256": "e64a61f63c703aa2293586b48bf8a34eb26c2bb75e47414cf2bffa6142f129f7",
+        "bytes": 756
+      },
+      "build": {
+        "raw_file": "s05-http-live-v2-build.json",
+        "sha256": "fe61f99026a195b91cd74f1bec45c5f3bf5b589f70da8605a98cf6758dbf3167",
+        "bytes": 95817
+      },
+      "operator_source": {
+        "raw_file": "s05-http-live-v2-main.go.txt",
+        "sha256": "23891734a47418ceecdf54ee88fcf7d22042728798e747acb94b51bfdae58f41",
+        "bytes": 3842
+      },
+      "exit_code": 1,
+      "elapsed": 1.123,
+      "binary_sha256": "59dc2c6500f5855361a4a9042021c916198764a299c78b063e09f0cb4a367824",
+      "scope": "real production public HTTPS/TLS and calculator, synthetic original inspection only; no artifact installation/execution"
+    },
+    {
+      "actual": {
+        "raw_file": "s05-http-live-v3-actual.json",
+        "sha256": "0982dd35079aacdc7aeb539fe2043706384b15266826024939be15b0e005f11d",
+        "bytes": 426
+      },
+      "log": {
+        "raw_file": "s05-http-live-v3-actual.log",
+        "sha256": "013075f9c13d2c9fff4278476271ad043a02610bf725571edd041a363ad5a5a2",
+        "bytes": 4563
+      },
+      "build": {
+        "raw_file": "s05-http-live-v3-build.json",
+        "sha256": "502ead5b0b2b5b708e061168a9ce75f60f4156855dcaaf28c2cdd28c7d67bf16",
+        "bytes": 95993
+      },
+      "operator_source": {
+        "raw_file": "s05-http-live-v3-main.go.txt",
+        "sha256": "3c8ee8d3d4ec227971e3eab316be51f6dd8c2d7074c8fa6dd1da6c8df539acba",
+        "bytes": 3845
+      },
+      "exit_code": 0,
+      "elapsed": 4.381,
+      "binary_sha256": "a66d1fe21c77e78895c0e61f909512bcbd1ae492604b25ff74a190bfdab1c2cc",
+      "scope": "real production public HTTPS/TLS and calculator, synthetic original inspection only; no artifact installation/execution"
+    }
+  ],
+  "captured_responses": {
+    "raw_file": "s05-http-v3-response-inventory.json",
+    "sha256": "54de294df6e494690fb5cf16763be6b39fe781731e9c70dd5f5b4c68375d9270",
+    "bytes": 2142
+  },
+  "provider_modified_precision": {
+    "id": "GHSA-cpwx-vrp4-4pq7",
+    "index": "2026-09-10T03:49:48.526758Z",
+    "record": "2026-09-10T03:49:48.526758681Z",
+    "raw": {
+      "raw_file": "s05-http-v2-response-03.json",
+      "sha256": "343a0678ec31607984c5ad8c386e4bd5395ce21de58a0361c73f8a4830766349",
+      "bytes": 2635
+    },
+    "projection": "internal/inspection/advisory/testdata/ghsa-cpwx-vrp4-4pq7.json",
+    "comparison": "exact or record truncated to microseconds only when index is microsecond-aligned; original record time unchanged",
+    "limit": "index cannot distinguish changes inside one microsecond; not a cryptographic snapshot"
+  },
+  "qualification_boundary": [
+    "final advisory guard only refuses invented execution-selection support; final Race/Staticcheck/vet/format cover it",
+    "foundation/security/bootstrap Race and live DATA precede that final narrow guard; other consumers/HTTP/score logic unchanged",
+    "initial combined unit failure was Unix socket sandbox setsockopt permission; unchanged networkpolicy alone passed with IPC permission",
+    "live original provider was synthetic; no real artifact quarantine, Policy, CLI or installation exercised"
+  ],
+  "cleanup": {
+    "raw_file": "s05-http-review-cleanup.json",
+    "sha256": "afcf3e383525e6d308d7315aff0c94e36a69a7be111fa0adadca7a35e987c72b",
+    "bytes": 3144
+  },
+  "missing": [
+    "remaining npm/Python and other required production consumers",
+    "finite 24h cache/freshness/refresh connected to C01 owner",
+    "explicit malicious advisory and alias normalization acceptance",
+    "full Evidence/Policy/cache/CLI normal/refusal/error/target preservation",
+    "CVSS NOTICE release/install/update distribution",
+    "whole grouped and final S05 qualification"
+  ],
+  "runtime_lock_changed": false,
+  "host_installation_changed": false,
+  "ci_started": false
+}

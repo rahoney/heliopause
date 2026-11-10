@@ -1,0 +1,104 @@
+{
+  "scope": "P4-M4C held managed tool original and current whole inspection/Evidence/Policy/Manifest/complete publication backend/factory; no public CLI/native adoption",
+  "baseline": "2b06298f63a0c62276849107f765ec45fa3f419f",
+  "implemented": "YES",
+  "wired": "YES (current update service/factory); NO (public CLI)",
+  "qualified": "YES (named local)",
+  "acceptance_closed": "YES (C backend); NO (M4/P4)",
+  "checks": [
+    {
+      "receipt": "p4m5-tool-update-v2-quick.json",
+      "seconds": 214.628,
+      "log_sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "receipt": "p4m5-tool-update-v2-security.json",
+      "seconds": 11.472,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p4m5-tool-update-v2-docs.json",
+      "seconds": 0.281,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p4m5-tool-update-v2-full-affected-race.json",
+      "seconds": 173.315,
+      "log_sha256": "bbbf32d619a768c301ed90dd6afef70e8ab4d7ca7b6ed428798e9c5c93b01d15"
+    }
+  ],
+  "actual": [
+    {
+      "receipt": "p4m5-tool-managed-update-native-v1-result.json",
+      "seconds": 175.459,
+      "helper_wait": 0,
+      "host_before_after_identical": true,
+      "no_skip": true
+    },
+    {
+      "receipt": "p4m5-tool-managed-update-evidence-failure-v1-result.json",
+      "seconds": 56.766,
+      "helper_wait": 0,
+      "host_before_after_identical": true,
+      "no_skip": true
+    }
+  ],
+  "verified": [
+    "authentic current HAA public6.0 ownership; only historical unversioned receipt requirement synthetic",
+    "native changed-version and same-version both fresh current RunIDs/Evidence/Policy and8 controls/Host receipt/complete atomic commit",
+    "old receipt constraint retained; explicit positional requirement preserved",
+    "authentic exact-pin6.1 no-op with current Evidence Record failure preserves primary cause and original inode/bytes/mode/links; no Bundle/promotion",
+    "native original adoption refused without changes",
+    "WHEEL exact same archive owner, held snapshot/hash/size/identity, bounds; drift/ownership negatives; both locks retained through selection",
+    "existing fresh CLI JSON/human and unowned-site/occupied-command refusals retained"
+  ],
+  "actual_positive_seconds": {
+    "total": 175.459,
+    "fresh_cli": 86.29,
+    "managed_seed_upgrade_noop": 86.64,
+    "changed": 27.88,
+    "same_version": 28.06
+  },
+  "reuse": "p4m5-current-update-reuse-v1.json;13 owner files/Promote/Close/fresh assertion body unchanged; original current stack shared",
+  "source_files": [
+    {
+      "path": "internal/promotion/uv_tool_install.go",
+      "sha256": "cb4fdc79685341caf7314fda0228158269c23a9f988088364daf70ea27abed33"
+    },
+    {
+      "path": "internal/promotion/uv_tool_update.go",
+      "sha256": "e0b7cf0813b9510900cb4d3ada9651f8d1312f4111f6a80af9a9cfe7281e7e0a"
+    },
+    {
+      "path": "internal/promotion/uv_tool_update_test.go",
+      "sha256": "a87c72cbebae87d3b313a51c94f42c5cbef02bc050efe95f93c7bb57055c7183"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_update.go",
+      "sha256": "fb4679ab2d2c7c16f66517cf8095b6fdb3394c0c0367b9830b6693ca3e8a5649"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_test.go",
+      "sha256": "b9cc1b64d3bdef224e24b4657c627450f4e9e400cc7e094c09bf1c8f06c60189"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+      "sha256": "ea2880c8e312abb239227c8efd046dcad5d605d2bb0463db1f21bd5ce33c172c"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_update_integration_test.go",
+      "sha256": "855d535b222f7cca17806010f3277f1dd14e2d97585fd9514e37ee1a9819a5c4"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_update_failure_integration_test.go",
+      "sha256": "3c2b1205b064953b6597945b72818bb58f88ba036de8c37c48aea6fadc15f1b9"
+    }
+  ],
+  "scope_of_late_test": "Only new realcorpus tag-only Evidence failure file after canonical default Quick; production/previous positive source unchanged; canonical format and tagged build/actual checked",
+  "operator_first_failure": "p4m5-actual-preparation-first-assessment.json; old test-list assertion stopped before mutation/native start; same compile/binary reused after exact-name correction",
+  "missing": [
+    "public managed upgrade CLI and hosted cohort",
+    "native tool original adoption/pipx/final profile support"
+  ],
+  "remote_ci": "No new push/CI; CI414 source294 Quick fixture cleanup failed; local mitigation Git2.55 remote OPEN"
+}

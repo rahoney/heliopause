@@ -1,0 +1,122 @@
+{
+  "schema": "p3b1-bun-native-data-local/v1",
+  "baseline": "378d1e1",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (offline verify-bun-release v2)",
+    "QUALIFIED": "YES (named local ZIP/ELF data only)",
+    "ACCEPTANCE_CLOSED": "NO (whole P3)"
+  },
+  "scope": "Authenticated fixed Bun ZIP to bounded immutable native data identity. Shared GNU ELF conditions mechanically preserved for PNPM. No Host Bun execution or production pin/guest/runtime/Policy qualification.",
+  "source_inventory": [
+    {
+      "path": "internal/verification/releaseprovenance/native_elf.go",
+      "sha256": "c9e6648ad73d51d27e717afbfb46c229c2daa7f6ec2c3219c29fdbff9283c2d4"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool.go",
+      "sha256": "71436f0b3e6563dee9feece964aa008d89f6c50d49eaceade8d9f969e3dc137a"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pnpm_tool_test.go",
+      "sha256": "6220897391b1602430811597cf275bef3f004e54b4cb0e821923904eb0ce97a2"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/bun_tool.go",
+      "sha256": "509e8986c08eb5659e26504fbb3c31863be3c851b066e0eb7b92d5206cd7b59b"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/bun_tool_test.go",
+      "sha256": "4531a0fd0d0b4a67a37accbcf7ef42f822003a8ea00031e5f313edd6d9552ee4"
+    },
+    {
+      "path": "scripts/update-runtime/bun_release.go",
+      "sha256": "eaeade138fef4ae7eb64febeaf2d2b93e616f2ad292cb2316b553787ff8742d0"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-final-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 126.594,
+      "log_sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-final-security.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 10.964,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-final-docs.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.237,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-final-race.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/verification/releaseprovenance",
+        "./internal/verification/terraformprovider",
+        "./scripts/update-runtime",
+        "./scripts/check",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 34.957,
+      "log_sha256": "a5fdc02fc312cc55f8dcd7c3d70cbe1750acf3395bc33739ed3c9f84e5dba6c9"
+    }
+  ],
+  "actual": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-actual-result.json",
+    "seconds": 3.555,
+    "cases": 5,
+    "native_sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235",
+    "native_size": 107308936
+  },
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p3b1-elf-mechanical-reuse.json",
+  "first_failures": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-first-quick.json",
+      "cause": "moved ELF helper import cleanup removed utf8 still used by PNPM path validation; restored import"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b1-bun-reviewed-quick.json",
+      "cause": "Staticcheck SA1012 rejects literal nil Context call in defensive test; removed invalid caller, production guard retained"
+    }
+  ],
+  "trailer_regression": {
+    "red": "docs/github-logs/package-client-quarantine-20261021/p3b1-trailer-red.json",
+    "green": "docs/github-logs/package-client-quarantine-20261021/p3b1-trailer-green.json",
+    "cause": "zip.NewReader permits unaccounted trailing transport; fixed exact EOCD one-disk/two-member/no-comment closed boundary"
+  },
+  "missing": [
+    "native candidate output and isolated exact version/ABI",
+    "single runtime owner/updater/release/guest admission",
+    "lock/public graph/layout/lifecycle/full Policy/cache/records/transaction/CLI",
+    "whole P3 qualification/support"
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "baseline_commit": "3c0ec3f",
+  "scope": "one canonical unchanged MIT notice embedded in the authenticated CLI binary, exposed offline via helox licenses human/JSON; existing binary release/install/update path retained",
+  "unit": {
+    "implemented": true,
+    "wired": true,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "6663d161e80e639a27063de2298f620f1dcffb1f634ed7d9fbed3e8287d89e0e"
+    },
+    {
+      "path": "internal/inspection/advisory/NOTICE",
+      "sha256": "a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "b1418636a670505d3c79eb2d096c234d4b3e125b2bfaff454e1658f031ac320f"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "sha256": "297aed36302bbae8b8c04779cea08e925a4abab9f507d7c4c7a7b07ad19b6ae3"
+    },
+    {
+      "path": "internal/cli/presentation_test.go",
+      "sha256": "a902475d0661c4db7dccb04a10662b04dd4053f93dadc685228b1c6606bbfd11"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "4dbf84bc123499964036125ccd51b1c7fbd2ea0d3b299525d14cdf519707adc8"
+    },
+    {
+      "path": "internal/bootstrap/advisory_cache_test.go",
+      "sha256": "e5e421f4347473081e836a5c113e111fa0ed740fcbabd2a053a4948af4ae563f"
+    }
+  ],
+  "notice_move": {
+    "from": "tools/cvss/NOTICE",
+    "to": "internal/inspection/advisory/NOTICE",
+    "bytes": 1217,
+    "sha256": "a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a",
+    "bytes_unchanged": true
+  },
+  "checks": [
+    {
+      "raw_receipt": "s05-notices-targeted.json",
+      "sha256": "9916d95aad80c7c7f525a66d540cd97e4f614ccbdcf35dac669710a1ab324564",
+      "exit_code": 0,
+      "elapsed": 5.214,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-binary-build.json",
+      "sha256": "ac99548cc0bcd6e61f7038a05e2eeb31bd929517ba479718c9f66294eb7b73c6",
+      "exit_code": 0,
+      "elapsed": 3.599,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-foundation.json",
+      "sha256": "8c9c28b4cb100cf7b5a502b39f0396b20c4aaef043d884bb49baa4ee411ce279",
+      "exit_code": 0,
+      "elapsed": 27.02,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-security.json",
+      "sha256": "4b8cee0eabf48baa712354f7b8f5d8744e0303dfdb914d031046bb9ec4b01445",
+      "exit_code": 0,
+      "elapsed": 15.422,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-cli-bootstrap-race.json",
+      "sha256": "dd035265db626d8b698494dec8a105dc5793a012eabe85f2c78f23a30ff31e50",
+      "exit_code": 0,
+      "elapsed": 34.49,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-static.json",
+      "sha256": "3f05d14e314ae7c2eb576bf27ed5ef9bdc8881e010f04f0bf373d7c84b7b1463",
+      "exit_code": 0,
+      "elapsed": 4.715,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-notices-vet.json",
+      "sha256": "94e29e0fcf28af79647efc865a1f88315ff73267e850758fca617e4d6336dfe2",
+      "exit_code": 0,
+      "elapsed": 1.469,
+      "source_unchanged": true
+    }
+  ],
+  "actual": {
+    "raw_receipt": "s05-notices-actual.json",
+    "sha256": "830c429fbca474da6fdd68e5d6b412043ad6a8b9195c48346c6874b56019ecfd",
+    "scope": "actual linked CLI offline notices, no runtime/artifact/installation exercised",
+    "elapsed": 0.087,
+    "binary": {
+      "sha256": "751e23e792ec04249d9aa4d4081ca54b5bf870ea5e1a4b0668946eed03600486",
+      "bytes": 37548295
+    },
+    "notices": {
+      "sha256": "a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a",
+      "bytes": 1217
+    },
+    "checks": [
+      {
+        "name": "human",
+        "args": [
+          "licenses",
+          "--output",
+          "human"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a46dc4ea765352593e37d7dd5ce59d512e43d62ce9e30c1d023c71d44cbdb78a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "json",
+        "args": [
+          "licenses",
+          "--output",
+          "json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "6f522c53995ca90f2235ea6c7aead767fbff008ceaae99b4927fbd67650ada98",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "help",
+        "args": [
+          "licenses",
+          "--help"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "8fc0980fcf37294cec7d82ad32be2b9cc65d391117d22dda63fff2bc6128ccb8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "reject-extra",
+        "args": [
+          "licenses",
+          "unexpected"
+        ],
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "a322cf0457c0ddc79854abb076103a436afe549fc07ad956cf6eef6e89a23334"
+      }
+    ],
+    "isolated_working_directory_unchanged": true,
+    "temporary_directory_removed": true
+  },
+  "limitations": [
+    "Actual offline linked CLI and local grouped checks; no signed release/protected installation/native self-update performed.",
+    "No external notice asset/manifest schema/runtime-version selector added. Earlier path in historical evidence is retained as history.",
+    "One current production CLI binary is retained for the immediate S05 actual CLI quarantine bundle; temporary notices working directory and all test payloads were removed."
+  ],
+  "whole_s05_closed": false
+}

@@ -71,8 +71,18 @@ func newIsolatedCargoRunner(runner CommandRunner, endpoints NamedEndpointResolve
 }
 
 func validCargoResolverCommand(arguments []string) bool {
-	if strings.Join(arguments, "\x00") == "metadata\x00--locked\x00--format-version\x001" {
+	if strings.Join(arguments, "\x00") == "metadata\x00--locked\x00--format-version\x001" || strings.Join(arguments, "\x00") == "metadata\x00--locked\x00--format-version\x001\x00--all-features" {
 		return true
+	}
+	if len(arguments) == 1 && (arguments[0] == "update" || arguments[0] == "fetch") {
+		return true
+	}
+	if len(arguments) == 2 && arguments[0] == "fetch" && arguments[1] == "--locked" {
+		return true
+	}
+	if len(arguments) == 3 && arguments[0] == "update" && arguments[1] == "-p" && arguments[2] != "" {
+		selector, err := artifactcargo.ParseUpdateSelector(arguments[2])
+		return err == nil && selector == arguments[2]
 	}
 	if len(arguments) != 2 || arguments[0] != "add" {
 		return false
@@ -106,8 +116,14 @@ func (r *IsolatedCargoRunner) RunCargo(ctx context.Context, workspace string, en
 		}
 	}()
 	frozen := source.files()
+	if arguments[0] == "fetch" && (len(arguments) == 2) != (len(frozen["Cargo.lock"]) != 0) {
+		return nil, errors.New("cargo fetch lock intent differs from frozen input")
+	}
 	if arguments[0] == "metadata" && len(frozen["Cargo.lock"]) == 0 {
 		return nil, errors.New("cargo metadata requires a frozen lock")
+	}
+	if arguments[0] == "update" && len(frozen["Cargo.lock"]) == 0 {
+		return nil, errors.New("cargo update requires a frozen lock")
 	}
 	archive, err := source.archive()
 	if err != nil {
@@ -239,6 +255,12 @@ func (r *IsolatedCargoRunner) RunCargo(ctx context.Context, workspace string, en
 	}
 	if arguments[0] == "metadata" && (!bytes.Equal(selectedManifest, frozen["Cargo.toml"]) || !bytes.Equal(selectedLock, frozen["Cargo.lock"])) {
 		return nil, errors.New("cargo metadata changed frozen controls")
+	}
+	if arguments[0] == "fetch" && (!bytes.Equal(selectedManifest, frozen["Cargo.toml"]) || len(arguments) == 2 && !bytes.Equal(selectedLock, frozen["Cargo.lock"])) {
+		return nil, errors.New("cargo fetch changed its frozen controls")
+	}
+	if arguments[0] == "update" && !bytes.Equal(selectedManifest, frozen["Cargo.toml"]) {
+		return nil, errors.New("cargo lock update changed the frozen manifest")
 	}
 	return output, nil
 }

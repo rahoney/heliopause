@@ -23,6 +23,19 @@ const (
 
 func pythonObservationCreateArguments(transaction string, ordinal int, phase pythonObservationPhase,
 	volume closureVolume, lease ObservationResourceLease, policy artifactpypi.ResourcePolicy) ([]string, error) {
+	return pythonObservationRuntimeArguments(transaction, ordinal, phase, volume, lease, policy, false)
+}
+
+func pipxObservationCreateArguments(transaction string, ordinal int, phase pythonObservationPhase,
+	volume closureVolume, lease ObservationResourceLease, policy artifactpypi.ResourcePolicy) ([]string, error) {
+	if policy != artifactpypi.PublicPyPIProfile().ResourcePolicy() || !(&pipxDataVolume{volume: volume}).valid() {
+		return nil, errPipxToolSupply
+	}
+	return pythonObservationRuntimeArguments(transaction, ordinal, phase, volume, lease, policy, true)
+}
+
+func pythonObservationRuntimeArguments(transaction string, ordinal int, phase pythonObservationPhase,
+	volume closureVolume, lease ObservationResourceLease, policy artifactpypi.ResourcePolicy, zipData bool) ([]string, error) {
 	if transaction == "" || ordinal < 0 || lease.CgroupParent == "" || lease.CPU < 0 ||
 		(phase != phasePreparation && phase != phaseAnchor && phase != phaseObservation) {
 		return nil, errors.New("python observation runtime identity is invalid")
@@ -37,7 +50,7 @@ func pythonObservationCreateArguments(transaction string, ordinal int, phase pyt
 		return nil, errors.New("python observation preparation memory is unbounded")
 	}
 	memory := policy.RuntimeMemory()
-	if phase == phasePreparation {
+	if phase == phasePreparation && !zipData {
 		// Retained volume tmpfs pages and pip's own working set can coexist.
 		memory += policy.RuntimeTmpfs()
 	}

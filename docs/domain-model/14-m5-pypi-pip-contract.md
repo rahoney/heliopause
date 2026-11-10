@@ -25,12 +25,14 @@ M5-001은 contract/queue만 만든다. Go package, Python/pip image/runtime lock
 
 ### M5-002 runtime identity와 target basis
 
-M5 automatic path의 유일한 runtime은 Linux amd64 Docker Official Image `python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52`이다. 이는 mutable tag가 아닌 OCI index digest다. Python identity는 `3.14.7`, bundled pip identity는 `26.2.1`로 lock한다. CPython 3.14.7은 2026-08-05의 current stable maintenance release이고, pip 26.2.1은 2026-08-04의 latest stable release다. CPython 3.14 maintenance line에는 earlier pip archive-handling security fix를 포함한 pip 26.1 update가 backport되었으므로, M5는 그보다 최신인 26.2.1을 사용한다.
+Automatic path는 Linux amd64의 exact Docker Official Python image/CPython/bundled pip만 사용하며, 현재 세 identity는 `scripts/runtimes.lock.json`이 소유한다. Mutable tag·ambient version으로 대체하지 않는다. 2026-10-31 보안 패치와 같은 cp314 target의 새 검증은 [전체 감사](../planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 따른다.
+
+M5 당시 선택은 `python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52`/Python3.14.7/pip26.2.1이었다. 아래 해당 release·backport 링크는 그 역사적 선택의 근거이며 현재 pin의 별도 owner가 아니다.
 
 - fixed target tag **basis**는 `cp314` interpreter, `cp314` ABI, `manylinux_2_36_x86_64` platform이다. 이 값은 Debian bookworm glibc target을 나타내며 arbitrary Host tag·architecture로 fallback하지 않는다. M5-003 resolver는 locked container 안에서 reported Python/pip version 및 `pip debug --verbose` compatible-tag closure를 다시 확인해 candidate selection input을 만들며, mismatch·unknown tag·unavailable command는 incomplete다.
 - `scripts/runtimes.lock.json`이 image reference, Python/pip version과 target basis의 single runnable lock input이다. `internal/sandbox.PinnedPythonRuntime`과 lock의 mismatch는 test failure다.
 - 기존 resolver/dynamic factory가 configured executor를 전달하는 `probePython`은 image를 pull하거나 pip/project를 실행하지 않는다. macOS/Windows/non-amd64는 Docker command 전 `M5_PYPI_LINUX_AMD64_ONLY`, gVisor/Docker prerequisite failure는 `M5_PYPI_RUNTIME_*`, exact image absent는 `M5_PYPI_IMAGE_UNAVAILABLE`로 explicit non-ALLOW capability를 반환한다. Node image presence는 PyPI capability의 prerequisite가 아니다. 사용되지 않던 executor 없는 public wrapper는 M12-005에서 제거했으며 실제 capability probe와 조건은 유지한다.
-- public input은 `project[@exact-version]`뿐이다. parser는 PyPA name normalization과 public PEP 440 normalization을 적용하고, extras/specifier range/marker/direct URL/local version/whitespace와 ambiguous locator를 resolver 전에 거부한다. normalized project/version만 later adapter input이 되며 raw user input은 result/Evidence에 쓰지 않는다.
+- 기본 inspect/install public input은 `project[@exact-version]`뿐이다. parser는 PyPA name normalization과 public PEP 440 normalization을 적용하고, extras/specifier range/marker/direct URL/local version/whitespace와 ambiguous locator를 resolver 전에 거부한다. normalized project/version만 later adapter input이 되며 raw user input은 result/Evidence에 쓰지 않는다. SEC-UPD-001의 별도 guarded `pip install --upgrade` 입력·기존 환경 제약·완료 기준은 [update quarantine 계약](../user-journey-cli-ia/06-update-quarantine.md)이 소유한다. 현재 업데이트 연결은 검증 중이며 기본 설치의 입력·소유권 규칙을 완화하지 않는다.
 
 공식 근거: [Python 3.14.7 release](https://www.python.org/downloads/release/python-3147/), [Docker Official Images Python manifest](https://github.com/docker-library/official-images/blob/master/library/python), [Python 3.14 slim-bookworm Dockerfile](https://github.com/docker-library/python/blob/master/3.14/slim-bookworm/Dockerfile), [pip 26.2.1 release](https://pypi.org/project/pip/), [pip changelog](https://pip.pypa.io/en/stable/news/), [CPython pip security backport](https://github.com/python/cpython/issues/149148), [PEP 440](https://peps.python.org/pep-0440/), [PyPA name normalization](https://packaging.python.org/en/latest/specifications/name-normalization/)와 [platform compatibility tags](https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/).
 
@@ -119,6 +121,23 @@ required-success 규칙을 이 범위에서 명시적으로 대체한다.
 정확한 entry-point module이 인증된 site directory의 implicit namespace인 경우에도 독립 unit으로 검사한다. Admission은 controlled parent search에서 각 local component를 찾고 origin/namespace containment를 확인한 뒤 정확한 전체 module을 import한다. 이 사전 선택을 위해 parent artifact 코드를 먼저 실행하거나 mutable `__file__`/`__path__`를 독립 attestation으로 사용하지 않는다.
 
 검증된 `RECORD`에서 선언된 `Import-Name`·`Import-Namespace`, Python `.py` 모듈 및 Python extension 모듈이 전혀 없고 구조적으로 실행 가능 Python 표면이 없음이 정적으로 입증된 wheel(metadata-only 또는 native library/header 등 native/data-only wheel)은 Python import 적용 대상이 아님을 정적으로 확정할 수 있다. 이 경우에도 동일한 격리 session에서 exact wheel closure를 offline 설치하고 설치된 distribution identity를 확인하며 observer 완료를 요구한다. 결과에는 import `NOT_APPLICABLE`을 명시한다. 설치 가능 payload가 있지만 import surface를 안전하게 확정할 수 없거나 모호한 wheel은 이 예외에 해당하지 않으며 기존처럼 fail-closed다.
+
+현재 ordinary wheel 관찰은 동일 RO 코드 closure와 root CPU/wall/trace 한도 안에서 최소/
+모의 두 환경의 각 단위를 fresh process·전용 opaque `/tmp` subpath로 실행한다. 환경별
+readonly keeper와 전체 profile의 before/final inventory를 사용하며 두 workspace 용량의
+합은 기존 writable tmpfs 상한이다. 물리 launch는 N개 원래 단위에 `2N+4`이며 기존 상한을
+늘리지 않는다. 두 환경의 optional command가 모두 zero인 경우에만 합친 `ATTESTED`가
+가능하고, 한쪽의 관찰/종료/회계 누락은 전체 required 미완료다. 별도 사용자 프로그램 실행과
+Pipx 도구 공급물 관찰은 각자의 기존 경로이며 이 연결의 완료 주장에 포함하지 않는다.
+
+현재 required profile은 중앙 Python image·gVisor patch와 공통 환경/schema version에
+결합한다. 두 환경의 상태/활성 관찰 증거가 없으면 완료로 정규화하지 않는다. 상태 Evidence는
+같은 target·check·profile에 묶이며 단위별 raw 경로·dummy 내용은 보존하지 않는다.
+보조 환경의 `m5-inspection-environment/v2`는 `original_environment=NOT_ATTESTED`와
+input/binding을 보존하고, 별도 `pypi-supplemented-observations` Evidence ID와 관찰 summary의
+SHA256을 참조한다. 각 Evidence의1024B 한도를 유지하며 전체 관찰을 메타데이터에 중복
+삽입하지 않는다. 확인된 Finding은 두 증거를 참조한다. 기존 저장된 v1 자료는 과거 결과로
+읽을 수 있지만 새 required profile의 완료 증거로 재사용하지 않는다.
 
 ## 4. sdist와 derived wheel
 

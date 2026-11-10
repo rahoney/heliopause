@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "scope": "Go module require grouping compatible with selected old1.26.10 and proposed1.27.3; no dependency version/floor/Host adoption",
+  "baseline_commit": "90392d6f6f991dbff99da1bb4d825eefa6901b28",
+  "first_target_configuration": {
+    "sdk": "authenticated official1.27.3",
+    "bootstrap": "PASS",
+    "quick": "FAIL at module drift; first format/runtime drift/freshness passed",
+    "frozen_plan_preserved": true,
+    "migration_complete": false
+  },
+  "module_comparison": {
+    "require_entries": 122,
+    "requires_and_directness_unchanged": true,
+    "other_directives_unchanged_except_target_Go_for_probe": true,
+    "go_sum_unchanged": true,
+    "before_sha256": "feef89870ed9ee6bfbd07779a354d32c9ef586434bd2890b065382b4d5d9a2b3",
+    "target_tidy_sha256": "59709834b2cec0c3374221fc5cc3f87f4e4681492c093358495d0f5836b129c6",
+    "normalized_current_floor_sha256": "38499a2cfbce4058c4d94f72951aefd6ac9ffaac4cb739aaab36afbc3440a56a",
+    "target_tidy_exit": 0,
+    "old_sdk_tidy_diff_exit": 0
+  },
+  "canonical_current_sdk": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 48.866,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.601,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.217,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "implementation": "existing go.mod require blocks canonicalized from standard target tidy output; current Go floor1.26.10 retained; no new version-specific updater code or validation bypass",
+  "qualification_boundary": "new SDK tool analysis/gVisor/native/platform/CPU3CUDA/activation still unqualified; prior P1 qualifiers do not apply to targettuple",
+  "cleanup": {
+    "scope": "completed private module normalization proposal and driver; source result/go.sum identity verified, primary first failure and canonical evidence retained",
+    "scratch": "/tmp/haa-go1273-yzyvqne9/module-normalization",
+    "files": [
+      {
+        "path": "/tmp/haa-go1273-yzyvqne9/propose-module-normalization.py",
+        "bytes": 3712,
+        "sha256": "c02beec16a6e082e8b6e34901c5064e7675fbf147b506c368e0d52770faebad3"
+      },
+      {
+        "path": "/tmp/haa-go1273-yzyvqne9/normalized-go.mod",
+        "bytes": 6430,
+        "sha256": "38499a2cfbce4058c4d94f72951aefd6ac9ffaac4cb739aaab36afbc3440a56a"
+      }
+    ],
+    "removed": true
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-first-module-drift-20261023.json",
+      "bytes": 1661,
+      "sha256": "76a076b03979075ccc1bc8bf6b6b038584e4584bcf5ef1aaf9b91f96c8c8b886"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-first-quick-module-drift-20261023.log",
+      "bytes": 2696,
+      "sha256": "8b4f8cc78becfd83c851a3624499e7ca5c57c3925d2024fbb22b1bdb9fd743a8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-first-bootstrap-20261023.log",
+      "bytes": 397,
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-normalization-proposal-20261023.json",
+      "bytes": 786,
+      "sha256": "5ed155ecea554040353b65a277ef09e0b3c5af94a9474fb59a2b77d2ce5f134d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-normalization-proposal-20261023.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-proposal-cleanup-20261023.json",
+      "bytes": 637,
+      "sha256": "2087e3c3fd28b6d1848a8246f38379898a7ef9eb552d0cf80f25fff9a1fc8ad7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "df8808823659953879d84c3cb922456698b798b6aee901bc525935e279f63816"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-security.json",
+      "bytes": 112,
+      "sha256": "37dad89c7ff8259f13b7fa7bb5f8e96358fe6b91a01f18e3f2b1d52891005b8c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-docs.json",
+      "bytes": 108,
+      "sha256": "3eab95ae5879bc70e6a301a49acf953e988f3ab67b218fca65202ad30333cf86"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-module-baseline-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    }
+  ]
+}

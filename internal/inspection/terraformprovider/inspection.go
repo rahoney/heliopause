@@ -11,6 +11,8 @@ import (
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type Inspector struct {
@@ -43,7 +45,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 		return domain.InspectionReport{}, ctx.Err()
 	}
 	checkID, _ := domain.NewCheckID("terraform-provider-static")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", providerCheckProfile("terraform-provider-static"))
 	id, _ := domain.NewEvidenceID("terraform-provider-static-result")
 	summary := "Provider ZIP rejected by bounded path/type/size/CRC/ELF inspection."
 	if archiveErr == nil {
@@ -59,8 +61,28 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 		findings = append(findings, f)
 	}
 	static, e := domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
-	if e != nil || archiveErr != nil {
+	if e != nil {
 		return static, e
+	}
+	if archiveErr != nil {
+		id, _ := domain.NewCheckID("terraform-provider-dynamic")
+		check, _ := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M12_TERRAFORM_STATIC_PREREQUISITE_FAILED", providerCheckProfile("terraform-provider-dynamic"))
+		skipped, err := domain.NewInspectionReport(check, nil, nil)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
+	}
+	memberDigest, e := domain.NewSHA256Digest(contents.ExecutableDigest)
+	if e != nil {
+		return static, e
+	}
+	native, nativeErr := content.InspectELF(ctx, artifact, contents.Executable, contents.Files[contents.Executable], 0o755, memberDigest)
+	if len(native.Executions()) != 0 {
+		static, e = domain.NewCompositeInspectionReport([]domain.InspectionReport{static, native})
+	}
+	if nativeErr != nil || e != nil {
+		return static, errors.Join(nativeErr, e)
 	}
 	verified, e := i.verification.Verify(ctx, artifact)
 	if e != nil {
@@ -68,7 +90,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	}
 	if verified.Outcome() != domain.VerificationVerified || verified.Execution().Status() != domain.ExecutionCompleted {
 		dynamicID, _ := domain.NewCheckID("terraform-provider-dynamic")
-		stopped, _ := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M12_TERRAFORM_SOURCE_NOT_VERIFIED")
+		stopped, _ := domain.NewCheckExecution(dynamicID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M12_TERRAFORM_SOURCE_NOT_VERIFIED", providerCheckProfile("terraform-provider-dynamic"))
 		dynamic, e := domain.NewInspectionReport(stopped, nil, nil)
 		if e != nil {
 			return domain.InspectionReport{}, e
@@ -80,7 +102,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 		return domain.InspectionReport{}, e
 	}
 	result, e := i.sandbox.Execute(ctx, request)
-	if e != nil {
+	if e != nil && result.Status() != domain.SandboxIncomplete {
 		return domain.InspectionReport{}, e
 	}
 	dynamic, e := providerProbeReports(artifact, result)
@@ -114,14 +136,18 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 			}
 		}
 	}
-	if status == domain.ExecutionCompleted && (terminal != 1 || lifecycle != 1) {
+	if status == domain.ExecutionCompleted && (terminal != 2 || lifecycle != 1) {
 		status, limitation = domain.ExecutionIncomplete, "M12_TERRAFORM_PROBE_TERMINAL_UNPROVEN"
+	}
+	states := result.EnvironmentStates()
+	if status == domain.ExecutionCompleted && (len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered) {
+		status, limitation = domain.ExecutionIncomplete, "M12_TERRAFORM_ENVIRONMENT_INCOMPLETE"
 	}
 	summary, e := result.ObservationSummary()
 	if e != nil {
 		return nil, e
 	}
-	check, e := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
+	check, e := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, providerCheckProfile("terraform-provider-dynamic"))
 	if e != nil {
 		return nil, e
 	}
@@ -129,6 +155,19 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 	ev, e := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "terraform-provider-dynamic", summary)
 	if e != nil {
 		return nil, e
+	}
+	facts := []domain.Evidence{ev}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return nil, err
+		}
+		stateID, _ := domain.NewEvidenceID("terraform-workspace-" + string(state.Profile))
+		fact, err := domain.NewEvidence(stateID, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return nil, err
+		}
+		facts = append(facts, fact)
 	}
 	seen := map[string]bool{}
 	var findings []domain.Finding
@@ -158,7 +197,7 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 		// Recorded suspicious facts are a completed partial observation. They
 		// do not complete the independent required probe coverage check.
 		observedID, _ := domain.NewCheckID("terraform-provider-observed-facts")
-		observed, _ := domain.NewCheckExecution(observedID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		observed, _ := domain.NewCheckExecution(observedID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", providerCheckProfile("terraform-provider-observed-facts"))
 		partialEvidence, err := domain.NewEvidence(id, observedID, artifact.Identity(), artifact.Digest(), "terraform-provider-dynamic", summary)
 		if err != nil {
 			return nil, err
@@ -173,9 +212,43 @@ func providerProbeReports(artifact domain.AcquiredArtifact, result domain.Sandbo
 		}
 		return []domain.InspectionReport{partial, coverage}, nil
 	}
-	report, err := domain.NewInspectionReport(check, findings, []domain.Evidence{ev})
+	report, err := domain.NewInspectionReport(check, findings, facts)
 	if err != nil {
 		return nil, err
 	}
 	return []domain.InspectionReport{report}, nil
+}
+
+func providerCheckProfile(name string) domain.ContentDigest {
+	runtime := ""
+	if name != "terraform-provider-static" {
+		runtime = runtimeidentity.NodeImageReference
+	}
+	revision := name + "-v1"
+	if name != "terraform-provider-static" {
+		revision = name + "-environments-v3"
+		runtime += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
+	}
+	profile, _ := domain.CheckProfileDigest(revision, runtime)
+	return profile
+}
+
+func (i *Inspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || artifact.Identity().Source() != artifactterraform.Source() {
+		return nil, errors.New("terraform inspection declaration is invalid")
+	}
+	var result []domain.CheckRequirement
+	for _, name := range []string{"terraform-provider-static", "terraform-provider-dynamic", "terraform-provider-observed-facts"} {
+		id, _ := domain.NewCheckID(name)
+		requirement, err := domain.NewCheckRequirement(id, kind, name != "terraform-provider-observed-facts", providerCheckProfile(name))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, requirement)
+	}
+	native, err := content.BinaryChecks()
+	if err != nil {
+		return nil, err
+	}
+	return append(result, native...), nil
 }

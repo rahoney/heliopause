@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "0f8ddccafed3e75cb0c4c96805a8b41a776519e7",
+  "scope": "P2c4 complete PNPM snapshot/peer wiring identity; partial actual quarantine only",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "NO",
+  "ACCEPTANCE_CLOSED": "NO",
+  "checks": [
+    {
+      "record": "p2c4-pnpm-project-final-quick.json",
+      "exit": 0,
+      "seconds": 31.397,
+      "log_sha256": "a5efbe2e142a90caa406564279fd586d2e1a0bed82b0bb65c6e01ea595e4071c"
+    },
+    {
+      "record": "p2c4-pnpm-project-final-security.json",
+      "exit": 0,
+      "seconds": 4.504,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "record": "p2c4-pnpm-project-final-docs.json",
+      "exit": 0,
+      "seconds": 0.225,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "record": "p2c4-pnpm-project-full-race.json",
+      "exit": 0,
+      "seconds": 23.05,
+      "log_sha256": "924111b347dc62bd2901c62fa0c189e9c6132e5204439382ca8564fc43aee7cb"
+    },
+    {
+      "record": "p2c4-pnpm-project-public-source.json",
+      "exit": 0,
+      "seconds": 1.698,
+      "log_sha256": "7e57783b8f62898a5d2024393f60f4681e67adc5ce480ddf9237028f163e0f37"
+    }
+  ],
+  "actual_first": {
+    "record": "p2c4-pnpm-project-quarantine.json",
+    "exit": 1,
+    "seconds": 30.89,
+    "native_snapshot_cases_passed": [
+      "single",
+      "transitive"
+    ],
+    "archive_quarantine_passed": [
+      "single"
+    ],
+    "first_rejection": "transitive complete set did not receive ALLOW",
+    "later_native_cases": "NOT_EXECUTED"
+  },
+  "actual_fresh_diagnostic": {
+    "record": "p2c4-pnpm-project-fresh-policy-diagnostic.json",
+    "exit": 1,
+    "seconds": 30.264,
+    "single": "required checks3/evidence4/M3+M4 ALLOW",
+    "transitive": {
+      "set": "MANUAL_REVIEW/M4_DEPENDENCY_REVIEW_REQUIRED",
+      "is-number@6.0.0": "required3 COMPLETED/ALLOW; action NOT_REQUIRED",
+      "is-odd@3.0.1": "integrity/static COMPLETED; action NOT_REQUIRED; dynamic INCOMPLETE/M3_DYNAMIC_EXECUTION_FAILED; entry MANUAL_REVIEW/M3_REQUIRED_CHECK_INCOMPLETE"
+    },
+    "runtime_stderr": "not collected; ENOTCACHED not claimed",
+    "host_before_after_identical": true,
+    "host_native_installation_absent": true,
+    "helper": "wait0/CONFIRMED_STOPPED/original1/client_error0/client_restore0"
+  },
+  "diagnostic_NOT_EXECUTED": {
+    "record": "p2c4-pnpm-project-policy-diagnostic-scope.json",
+    "seconds": 0.729,
+    "reason": "private overlay preflight failed before current actual; stale copied actual/result not current evidence"
+  },
+  "confirmed_preparation_gap": "existing npm backend introduces one target archive for offline install; npm composite lacks dependency/peer-context capability; backend and dynamic match qualified343 source",
+  "causality_limit": "missing closure is an acceptance gap; full causal repair requires same actual transitive input with an exact frozen fixture and preserved checks",
+  "cleanup": {
+    "record": "p2c4-pnpm-project-completed-runtime-cleanup.json",
+    "logical_bytes": 188106872,
+    "files": 12,
+    "all_uid_references": 0,
+    "query_errors": 0,
+    "target_absent": true,
+    "earlier_overlay_cleanup_bytes": 57825162
+  },
+  "source_inventory": [
+    {
+      "path": "internal/artifact/npm/pnpm_lock.go",
+      "sha256": "d68154464fb4db457e0f234159fabbd1d152617037ec102f1c7566ec6b954b6d"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_lock_test.go",
+      "sha256": "cdb4dd03e62273700ab3bade29df3eed2428398f9c548dc28ccf3f5eac99bb2f"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_project_snapshot.go",
+      "sha256": "60a6232b38c2a1728f8d0d6160ec0dc0e7f562ad2fb3c052df0ea6168b0fd063"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_project_snapshot_test.go",
+      "sha256": "00b19cacdfab6ca2273561bd5c0d770bcdbd4f80355653ba75c690f5068481f1"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection_real_test.go",
+      "sha256": "326ea17f2c9e1ed6799d4d70bd8aa953e8ba7232ef56da03aba51cee46c4b072"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_snapshot_test.go",
+      "sha256": "305957c84711f6c58bc6834fdb3d5ac227c77593aab45a369c65ed28caea829c"
+    },
+    {
+      "path": "internal/sandbox/pnpm_public_resolver_real_test.go",
+      "sha256": "ba15186e41d977dd2b5f8a7032f7bfb46569218054ac235575f5c45c775c73c8"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver.go",
+      "sha256": "c4e84add1486430e785025bac036d5e68b1566cad767348c977b247ee6439143"
+    }
+  ],
+  "missing": [
+    "frozen exact npm dependency/peer dynamic fixture: source audit/design/review then actual transitive/peer/update qualification",
+    "offline native PNPM layout/records/guarded transaction/CLI",
+    "native5 signed whole self-update and final P2 qualification"
+  ],
+  "remote": {
+    "run": 402,
+    "head": "940d8e47c2a4639f3cbc158aeb92c12de43a50cb",
+    "first_check_kst": "2026-10-24 14:57:13 KST",
+    "qualifies_this_later_source": false
+  }
+}

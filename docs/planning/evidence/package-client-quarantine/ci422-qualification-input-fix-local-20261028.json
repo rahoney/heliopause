@@ -1,0 +1,115 @@
+{
+  "scope": "CI422 qualification input wiring only; production guard and runtime pins unchanged",
+  "status": "LOCAL_QUALIFIED (named positive parent and hash-role regression only); hosted whole remains OPEN",
+  "base_source": "60113e40fe820d76d36eb5913bb7da4639f25a59",
+  "source_files_each": 1283,
+  "changed_test_files": [
+    {
+      "path": "internal/artifact/pypi/source_profile_test.go",
+      "sha256": "ebe676eb1d92a7f2c9f2fde5a5ce41305e94465e342d4a4d5ea39741147244ae",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/linux_integration_test.go",
+      "sha256": "358c380d6feddd6f1e0c997bf80dc81481b5738788afbe90cd28e0871899682c",
+      "mode": "100644"
+    }
+  ],
+  "production_cpp_sdk_workflow_unchanged": true,
+  "runtime_pin_owner": "scripts/runtimes.lock.json -> runtimeidentity.PyTorchCPUVersion=2.14.0+cpu; pre-existing full integration uses same owner",
+  "positive_input": "torch@2.14.0+cpu",
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 45.715,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_fixture_workspaces_absent": true,
+    "log_sha256": "df07eed4ff2fa62b2195e01ca1e3f7bf66c8cc3a402c3fcec9f7b8ed1373e13c",
+    "scope": "CURRENT positive resolver parent with existing canonical CPUVersion; no overlay; live public dependency resolution, not frozen full graph or hosted qualification",
+    "passed_named_tests": [
+      "TestLinuxPyTorchResolverIntegration"
+    ],
+    "canonical_CPU_version": "2.14.0+cpu",
+    "production_guard_unchanged": true,
+    "named_pass": true
+  },
+  "checks": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 124.549
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/artifact/pypi",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 28.622
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-ci422-input-fix-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 7.921
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.332
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.549
+    }
+  ],
+  "negative": "existing selected-hashless-wheel test additionally rejects data-core-metadata/data-dist-info-metadata hashes as wheel digests",
+  "first_failure_evidence": "ci422-pytorch-report-diagnostic-20261028.json",
+  "causal_limit": "local report/source missing wheel hash confirmed; original hosted report not captured, exact hosted version remains inferred",
+  "scope_limit": "live public dependencies, not frozen full graph; no 2.15 support or whole hosted/final/signed qualification claim",
+  "missing": [
+    "grouped exact-source public candidate review/permission and hosted verification",
+    "current final4profiles/signed15asset19bundle",
+    "P5 execution/CLI and P6/P7 acceptance"
+  ],
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/ci422-input-fix-actual-v1--",
+  "new_push_or_rerun": false
+}

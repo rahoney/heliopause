@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"path/filepath"
 	"strings"
@@ -51,6 +52,22 @@ func TestCheckMarkdownTreeRejectsBrokenFixtures(t *testing.T) {
 	}
 }
 
+func TestCheckMarkdownTreeSkipsRawCaptureDirectory(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	writeTestFile(t, filepath.Join(root, "README.md"), "[guide](docs/guide.md)\n")
+	writeTestFile(t, filepath.Join(root, "docs", "guide.md"), "# Guide\n")
+	writeTestFile(t, filepath.Join(root, "docs", "github-logs", "snapshot", "queue.md"), "[missing](missing.md)\n")
+	if err := checkMarkdownTree(root); err != nil {
+		t.Fatalf("checkMarkdownTree error: %v", err)
+	}
+	writeTestFile(t, filepath.Join(root, "docs", "other", "queue.md"), "[missing](missing.md)\n")
+	if err := checkMarkdownTree(root); err == nil {
+		t.Fatal("checkMarkdownTree accepted a broken link outside the raw capture directory")
+	}
+}
+
 func TestFenceMarkerRequiresMatchingClosure(t *testing.T) {
 	t.Parallel()
 
@@ -63,5 +80,19 @@ func TestFenceMarkerRequiresMatchingClosure(t *testing.T) {
 	}
 	if _, _, closing = fenceMarker("````", marker, length); !closing {
 		t.Fatal("matching fence did not close the block")
+	}
+}
+
+func TestWarnOversizedDocsReportsOnlyOversizedFiles(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	writeTestFile(t, filepath.Join(root, "PROJECT-DECISIONS.md"), strings.Repeat("x", 30<<10+1))
+	writeTestFile(t, filepath.Join(root, "docs", "lessons", "ci.md"), "small\n")
+	var out bytes.Buffer
+	warnOversizedDocs(root, &out)
+	got := out.String()
+	if !strings.Contains(got, "PROJECT-DECISIONS.md") || strings.Contains(got, "ci.md") || strings.Contains(got, "AGENTS.md") {
+		t.Fatalf("warnings = %q", got)
 	}
 }

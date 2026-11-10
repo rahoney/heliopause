@@ -1,0 +1,139 @@
+{
+  "schema": "helox.remote-qualification/v1",
+  "work_item": "M13-004/P2 checkpoint through B1",
+  "status": "SUCCESS_SCOPED_TO_DB464FD",
+  "run_id": 40075179512,
+  "run_number": 403,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40075179512",
+  "source_head": "db464fdca8e4de9070d546d216ddd1861716edb6",
+  "checkout": "d5be7ee7ee07dcbb012affe372607bc2cd3a57f5",
+  "whole_tree": "ced85a9184f5f4d922432cd3efb78a95d6049d85",
+  "whole_tree_files": 2173,
+  "parents": [
+    "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "db464fdca8e4de9070d546d216ddd1861716edb6"
+  ],
+  "whole_tree_matches_source": true,
+  "run_elapsed_seconds": 3077,
+  "timer": {
+    "phase": "DUE",
+    "run_id": 40075179512,
+    "run_number": 403,
+    "head": "db464fdca8e4de9070d546d216ddd1861716edb6",
+    "run_created_at": "2026-10-24T07:42:12Z",
+    "first_check_after_utc": "2026-10-24T08:37:12+00:00",
+    "first_check_after_kst": "2026-10-24T17:37:12+09:00",
+    "estimate_basis": "CI402 elapsed3191s/53m11; first check55min; no repeated polling before due",
+    "timer_pid": 3,
+    "armed_at": "2026-10-24T07:42:40.911102+00:00",
+    "expired_at": "2026-10-24T08:37:12.000424+00:00"
+  },
+  "checks": {
+    "required_and_prerequisites_success": 10,
+    "native_go": "1.27.3",
+    "native_macos_production_build_and_default_test": "SUCCESS",
+    "observer_latches_each_job": 110,
+    "linux_job_top_level_passes": 57,
+    "linux_top_level_count_scope": "whole job, includes preliminary and later actual consumers; not one single main phase",
+    "cpu_full_seconds": 286.42,
+    "pnpm_actual_startup_empty_node_artifact_seconds": [
+      3.17,
+      2.91,
+      3.0,
+      4.48
+    ],
+    "helper_wait_zero_count": 5,
+    "final_helper_state": "CONFIRMED_STOPPED",
+    "final_original_exit": 0,
+    "final_client_error": 0,
+    "final_client_restore": 0
+  },
+  "jobs": [
+    {
+      "name": "Minimum Go",
+      "id": 120816877139,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-minimum-go.log",
+      "decoded_utf8_bytes": 21510,
+      "sha256": "c4fa11b25875de8d1c96b0b92cf63f0a897b634d542b224ad83b0c315ddbf505"
+    },
+    {
+      "name": "Quick",
+      "id": 120816877281,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-quick.log",
+      "decoded_utf8_bytes": 23838,
+      "sha256": "ed8042234781ebf40bd9fc2470814c842f5fd41840f3c8fffb76df880dbff8ad"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 120816877305,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-vulnerability.log",
+      "decoded_utf8_bytes": 21700,
+      "sha256": "b4f79251dab0bf52a35599b454e274db2a47880a9b49e85c10d530feec765462"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 120816877332,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-representative-wheel-corpus.log",
+      "decoded_utf8_bytes": 35360,
+      "sha256": "9224e3d0e877afc7a1cc87cca9960ea4bf9259265d75b0454456038ef1eb160a"
+    },
+    {
+      "name": "Docs",
+      "id": 120816877335,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-docs.log",
+      "decoded_utf8_bytes": 20518,
+      "sha256": "34fc05026ee7a897d0cb8d5b30114a5e86f9de52451d433b13fd9ef0997b9380"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 120816877418,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-gvisor-observer-helper.log",
+      "decoded_utf8_bytes": 274728,
+      "sha256": "b9bcced6e048ce5d5a9f41dfd784f7fcf12ddf1b66ff8eab9ba8463ed9005194"
+    },
+    {
+      "name": "macOS",
+      "id": 120816877425,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-macos.log",
+      "decoded_utf8_bytes": 26175,
+      "sha256": "05204f86837e80bfbe29b277bb0e0af774de0ca57b6beca9ad0274fd1abc2bb3"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 120816877434,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-gvisor-linux-integration.log",
+      "decoded_utf8_bytes": 658455,
+      "sha256": "c72b130223ac5b70d8b81f66a6920950431f048bf2eeafca498a9b97f357508d"
+    },
+    {
+      "name": "Security",
+      "id": 120816877548,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-security.log",
+      "decoded_utf8_bytes": 21849,
+      "sha256": "a2382b64198eadedd72006bba49553aed0c5cd54dfd68df2c0af46a4743d0ea8"
+    },
+    {
+      "name": "Required",
+      "id": 120826820774,
+      "conclusion": "success",
+      "log": "docs/github-logs/package-client-quarantine-20261021/p2c5b-pnpm-ci403-required.log",
+      "decoded_utf8_bytes": 22295,
+      "sha256": "1609581cddad0d3e42edb675b909b9ca3737fd38067a58cfa9d47bc3967aed62"
+    }
+  ],
+  "not_qualified_by_this_run": [
+    "later local B2 exact target lifecycle/admission/C++112",
+    "production frozen layout/static-all/per-instance aggregate",
+    "full P2 acceptance and CLI/Host integration"
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

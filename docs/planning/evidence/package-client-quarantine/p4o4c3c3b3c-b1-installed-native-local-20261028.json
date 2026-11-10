@@ -1,0 +1,179 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "C-b1 fixed installed protected ZIP -> existing same-frozen observed session only",
+  "baseline_commit": "111f71fd472761497d4d5aa9f4d484467eb59d37",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (installed entry/actual)",
+    "QUALIFIED": "YES (named namespace fixture)",
+    "ACCEPTANCE_CLOSED": "YES (C-b1 scope only)"
+  },
+  "go": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "9fea37711a3f3608e6830865ce786f2be7f6406e5e03c16bbf02f7ab635f22cb"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "a8aad4c93f385a5924ff1af39738c83501c5f61677cd2cb6c36cb27e8d04e941"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "187209d663a7a43f5bc724ca3d767681aba1544a6ac4a3e430bdaaced33bbd93"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "bc5d8fef9127cbea40b7727743cecbae26720d296c09f1815931ab3f21ca3a3b",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.689
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 104.819
+      },
+      {
+        "step": "sandbox-race",
+        "exit_code": 0,
+        "seconds": 24.782
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 1.257
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 8.811
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.268
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 14.677
+      }
+    ]
+  },
+  "cpp18_reused": {
+    "binary_sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555",
+    "source_unchanged": true,
+    "previous_receipt": "p4o4c3c3b3c1-native-session-local-20261028.json"
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 16.823,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "02127f2d80422a8ddf4647af917b9cb451aff4fb3f58c53edfe7a1a6eefab814",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b1-actual-v2/protected-client",
+        "sha256": "bc5d8fef9127cbea40b7727743cecbae26720d296c09f1815931ab3f21ca3a3b"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c-b1-actual-v2/observer",
+        "sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "9fea37711a3f3608e6830865ce786f2be7f6406e5e03c16bbf02f7ab635f22cb"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "187209d663a7a43f5bc724ca3d767681aba1544a6ac4a3e430bdaaced33bbd93"
+      }
+    ],
+    "installed_mode_confirmed": true,
+    "passed_named_tests": [
+      "TestLinuxPipxObservedNativeInstallIntegration"
+    ],
+    "named_pass": true
+  },
+  "positive": {
+    "controls": 2,
+    "graph": 2,
+    "target": 1,
+    "create_register_close_each": 1,
+    "cpu_usec": 2080678,
+    "last_read_cpu_usec": 2080428
+  },
+  "accounting_refusal": {
+    "genuine_read_then_injected": true,
+    "target": 0,
+    "controls": 0,
+    "graph": 0,
+    "create_register_close_each": 1,
+    "cpu_usec": 113146
+  },
+  "supply_fixture": {
+    "fixed_root": "/usr/lib/heliopause",
+    "root_versions_mode": "0755 root:root",
+    "current": "versions/v0.0.0-fixture",
+    "zip_mode": "0444 root:root single-link",
+    "whole_supply_mount": "read-only bind in private mount namespace",
+    "host_supply_root_absent_before_and_after": true,
+    "scope": "compiled pinned identity/held-root/ownership checks; unsigned fixture, no publisher authenticity/registration/activation claim"
+  },
+  "v1_failure": {
+    "stage": "ordinary launcher before helper/product/test",
+    "exit": 127,
+    "exact_error": "/usr/bin/env: error while loading shared libraries: libc.so.6: cannot open shared object file: Permission denied",
+    "namespace": {
+      "mount_namespace": "mnt:[4026532226]",
+      "host_mount_namespace": "mnt:[4026532211]",
+      "network_namespace": "net:[4026531833]",
+      "host_network_namespace": "net:[4026531833]",
+      "exit": 127,
+      "seconds": 0.003
+    },
+    "host_and_docker_identical": true,
+    "helpers_after": {
+      "matches": [],
+      "errors": []
+    },
+    "upper_root_mode": "0o700",
+    "source_unchanged": true,
+    "qualification": "NOT_REACHED; no product/runtime failure claim",
+    "correction": "only task-owned overlay upper root0755 and actual mounted-root guard before ordinary exec; work remains0700"
+  },
+  "mechanical_reuse": {
+    "original_runPipxNativeInstall_body_byte_identical": true,
+    "observer_all_cpp6_byte_identical": true
+  },
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c-b1-",
+  "MISSING": [
+    "C-b2 native public UV-backend selection/whole frozen archive production factory",
+    "original environment upgrade",
+    "current full inspection Evidence/Policy/CLI",
+    "hosted/final CPU-CUDA/signed-native profiles",
+    "legacy ZIP mixed CPU boundary qualification"
+  ]
+}

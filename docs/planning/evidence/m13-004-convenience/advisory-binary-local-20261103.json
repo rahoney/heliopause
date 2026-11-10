@@ -1,0 +1,76 @@
+{
+  "baseline_commit": "a9fe065",
+  "scope": "fixed authenticated binary source applicability; existing required controls retained",
+  "unit": {
+    "implemented": true,
+    "wired": true,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/inspection/advisory/inspector.go",
+      "sha256": "ae3b9b8bc2292b0e4219feb758dfa6ba837b7ff88c4e1d555e7ac19bd44bf929"
+    },
+    {
+      "path": "internal/inspection/advisory/inspector_test.go",
+      "sha256": "52542af9170b6eb07d989211982384c53104dea84634fe138f29e5aad8ce1996"
+    },
+    {
+      "path": "internal/inspection/advisory/report.go",
+      "sha256": "2b33e59640c4bd747429532f53f36744d70673090b5fd90d033351dfa351bc86"
+    },
+    {
+      "path": "internal/policy/m3_test.go",
+      "sha256": "0c41a47821f8e481aa6025b1644e1047030d544ad781b49e7e0c97791ba40a32"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "2fb5962c117321af0c8474fe38455fc0e8728cae75e0c49cfca4c7b40d05be76"
+    },
+    {
+      "path": "internal/bootstrap/terraform.go",
+      "sha256": "5e1b63c229488b577ba7c5e5ff92b5b8fe41e66e4e0c176cf463ea6656d4b43c"
+    },
+    {
+      "path": "internal/bootstrap/self_update_linux.go",
+      "sha256": "c0c8b9b925458b94c37069f36554311de290b2166f29564a5c7195fde9f38a70"
+    }
+  ],
+  "checks": [
+    {
+      "raw_receipt": "s05-binary-applicability-unit.json",
+      "sha256": "fb9a2a10db1859735a7ae55b8e47ffe992e91384882b7e702e3bbf34ee07ce0a",
+      "exit_code": 1,
+      "elapsed": 4.99,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-binary-applicability-race.json",
+      "sha256": "0e872f2c51f0502ba5477062a3bbd4dddb71fcfc790375704058d3dde98b280a",
+      "exit_code": 0,
+      "elapsed": 9.449,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-binary-applicability-static.json",
+      "sha256": "0e91c412d5860f042b6556a63bae31ef636d66de21553deaf21b1a8a8cef94b8",
+      "exit_code": 0,
+      "elapsed": 2.795,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-binary-applicability-vet.json",
+      "sha256": "67fbdc235dbc8854a2991f5711f8182304a7b89258d6c2d0f575357d4b098fc5",
+      "exit_code": 0,
+      "elapsed": 1.476,
+      "source_unchanged": true
+    }
+  ],
+  "limitations": [
+    "Controlled adapter and M6 normal/review/block tests, not actual binary/CLI qualification.",
+    "First unit failed only because the new incomplete test fixture omitted its limitation code. Product contract unchanged; corrected fixture passed in full affected Race.",
+    "Package mapping/query failures and unknown sources remain required; unsupported binary mapping never means vulnerability-free.",
+    "Common/final and actual consumer qualification remain OPEN."
+  ]
+}

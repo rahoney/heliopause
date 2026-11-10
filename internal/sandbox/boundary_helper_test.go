@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -152,6 +151,10 @@ func tokenizeCPPSource(source []byte) ([]cppToken, error) {
 }
 
 func extractOCIBootstrapCommand(source []byte) (string, error) {
+	return extractObserverRawCommand(source, "kOCIBootstrapCommand")
+}
+
+func extractObserverRawCommand(source []byte, name string) (string, error) {
 	tokens, err := tokenizeCPPSource(source)
 	if err != nil {
 		return "", fmt.Errorf("tokenize C++ source: %w", err)
@@ -161,7 +164,7 @@ func extractOCIBootstrapCommand(source []byte) (string, error) {
 	for k := 0; k+7 < len(tokens); k++ {
 		if tokens[k].typ == cppTokIdent && tokens[k].val == "constexpr" &&
 			tokens[k+1].typ == cppTokIdent && tokens[k+1].val == "char" &&
-			tokens[k+2].typ == cppTokIdent && tokens[k+2].val == "kOCIBootstrapCommand" &&
+			tokens[k+2].typ == cppTokIdent && tokens[k+2].val == name &&
 			tokens[k+3].typ == cppTokPunct && tokens[k+3].val == "[" &&
 			tokens[k+4].typ == cppTokPunct && tokens[k+4].val == "]" &&
 			tokens[k+5].typ == cppTokPunct && tokens[k+5].val == "=" &&
@@ -172,20 +175,16 @@ func extractOCIBootstrapCommand(source []byte) (string, error) {
 	}
 
 	if len(candidates) == 0 {
-		return "", errors.New("no valid kOCIBootstrapCommand declaration found in observer source")
+		return "", fmt.Errorf("no valid %s declaration found in observer source", name)
 	}
 	if len(candidates) > 1 {
-		return "", fmt.Errorf("multiple (%d) kOCIBootstrapCommand declarations found in observer source", len(candidates))
+		return "", fmt.Errorf("multiple (%d) %s declarations found in observer source", len(candidates), name)
 	}
 	return candidates[0], nil
 }
 
 func TestObserverOCIBootstrapCommandMatchesBoundaryContainerCommand(t *testing.T) {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("locate boundary helper test source")
-	}
-	source, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	source, err := os.ReadFile(filepath.Join("..", "..", "tools", "gvisor-observer", "observer.cc"))
 	if err != nil {
 		t.Fatalf("read observer source: %v", err)
 	}
@@ -312,6 +311,8 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 		{boundaryLaunchMode, boundaryOriginLaunchMode},
 		{boundaryPythonHandoffMode, boundaryOriginPythonHandoffMode},
 		{boundaryELFHandoffMode, boundaryOriginELFHandoffMode},
+		{boundaryNodeHandoffMode, boundaryOriginNodeHandoffMode},
+		{boundaryBunHandoffMode, boundaryOriginBunHandoffMode},
 	} {
 		arguments := boundaryExecArguments("0123456789abcdef", test.mode, "/bin/true")
 		want := []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, test.origin, "/bin/true"}
@@ -334,7 +335,7 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 	for _, required := range []string{
 		`admission "${1-}"`,
 		`token="$1"; shift; exec ` + boundaryHelperPath,
-		`--launch|--handoff-python|--handoff-elf) shift; admission "${1-}"; shift; demote "$@"`,
+		`--launch|--handoff-python|--handoff-elf|--handoff-node|--handoff-bun) shift; admission "${1-}"; shift; demote "$@"`,
 	} {
 		if !strings.Contains(boundaryHelper, required) {
 			t.Fatalf("boundary helper does not validate then strip admission capability %q: %q", required, boundaryHelper)
@@ -381,5 +382,16 @@ func TestAwaitBoundaryHelperUsesOnlyWrappedUserExecAndFailsClosed(t *testing.T) 
 	cancel()
 	if err := awaitBoundaryHelper(ctx, &recordingRunner{errors: []error{errors.New("not ready")}}, "0123456789abcdef"); err == nil {
 		t.Fatal("awaitBoundaryHelper() accepted unavailable helper")
+	}
+}
+
+func TestObserverPipxReadinessMatchesControllerCommand(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "tools", "gvisor-observer", "observer.cc"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := extractObserverRawCommand(source, "kBoundaryReadinessScript")
+	if err != nil || got != boundaryReadinessScript {
+		t.Fatalf("pipx readiness command drift: %v", err)
 	}
 }

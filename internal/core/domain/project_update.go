@@ -40,18 +40,35 @@ func (f ProjectControlFile) Body() []byte          { return append([]byte(nil), 
 func (f ProjectControlFile) Present() bool         { return f.present }
 func (f ProjectControlFile) Digest() ContentDigest { return f.digest }
 
-// ProjectDependencyUpdate freezes the requested primary resolution and the
-// complete selected project from one private selection. It confers no Policy
-// approval and must be inspected/staged before transaction publication.
+// ProjectDependencyUpdate freezes original controls and a complete selected
+// project from one private selection. A requested-primary resolution is explicit;
+// neither form grants Policy approval or publication authority.
 type ProjectDependencyUpdate struct {
-	original   []ProjectControlFile
-	selected   []ProjectControlFile
-	snapshot   ProjectDependencySnapshot
-	resolution DependencyResolution
+	original     []ProjectControlFile
+	selected     []ProjectControlFile
+	snapshot     ProjectDependencySnapshot
+	resolution   DependencyResolution
+	snapshotOnly bool
 }
 
 func NewProjectDependencyUpdate(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot, resolution DependencyResolution) (ProjectDependencyUpdate, error) {
-	if !snapshot.Valid() || resolution.LockfileDigest() != snapshot.GraphDigest() || len(resolution.Graph().Nodes()) == 0 || len(original) == 0 || len(original) > 32 || len(original) != len(selected) || len(selected) != len(snapshot.ControlDigests()) {
+	return newProjectDependencyUpdate(original, selected, snapshot, resolution, false, false)
+}
+
+// NewProjectDependencyUpdateFromSnapshot binds a complete-project selection
+// without inventing a primary or relaxing the requested-primary constructor.
+func NewProjectDependencyUpdateFromSnapshot(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot) (ProjectDependencyUpdate, error) {
+	return newProjectDependencyUpdate(original, selected, snapshot, DependencyResolution{}, true, false)
+}
+
+// NewProjectDependencyUpdateFromSnapshotWithControlPresence preserves explicit absent outputs.
+// Ecosystem adapters still validate which controls may be absent.
+func NewProjectDependencyUpdateFromSnapshotWithControlPresence(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot) (ProjectDependencyUpdate, error) {
+	return newProjectDependencyUpdate(original, selected, snapshot, DependencyResolution{}, true, true)
+}
+
+func newProjectDependencyUpdate(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot, resolution DependencyResolution, snapshotOnly, controlPresence bool) (ProjectDependencyUpdate, error) {
+	if !snapshot.Valid() || (!snapshotOnly && (resolution.LockfileDigest() != snapshot.GraphDigest() || len(resolution.Graph().Nodes()) == 0)) || (snapshotOnly && (resolution.LockfileDigest().String() != "" || len(resolution.Graph().Nodes()) != 0)) || len(original) == 0 || len(original) > 32 || len(original) != len(selected) || len(selected) != len(snapshot.ControlDigests()) {
 		return ProjectDependencyUpdate{}, errors.New("project update requires matching complete selection")
 	}
 	before := append([]ProjectControlFile(nil), original...)
@@ -60,7 +77,7 @@ func NewProjectDependencyUpdate(original, selected []ProjectControlFile, snapsho
 	sort.Slice(after, func(i, j int) bool { return after[i].name < after[j].name })
 	controls := snapshot.ControlDigests()
 	for i := range before {
-		if before[i].name == "" || before[i].digest.String() == "" || before[i].name != after[i].name || !after[i].present || after[i].name != controls[i].Name() || after[i].digest != controls[i].Digest() || (i != 0 && before[i-1].name == before[i].name) {
+		if before[i].name == "" || before[i].digest.String() == "" || before[i].name != after[i].name || !controlPresence && !after[i].present || after[i].name != controls[i].Name() || after[i].digest != controls[i].Digest() || (i != 0 && before[i-1].name == before[i].name) {
 			return ProjectDependencyUpdate{}, errors.New("project update controls differ from selected snapshot")
 		}
 	}
@@ -74,12 +91,14 @@ func NewProjectDependencyUpdate(original, selected []ProjectControlFile, snapsho
 			return ProjectDependencyUpdate{}, errors.New("requested resolution differs from complete project")
 		}
 	}
-	return ProjectDependencyUpdate{before, after, snapshot, resolution}, nil
+	return ProjectDependencyUpdate{before, after, snapshot, resolution, snapshotOnly}, nil
 }
 
 func (u ProjectDependencyUpdate) Valid() bool {
-	return u.snapshot.Valid() && len(u.original) != 0 && u.resolution.LockfileDigest() == u.snapshot.GraphDigest()
+	return u.snapshot.Valid() && len(u.original) != 0 && (u.snapshotOnly || u.resolution.LockfileDigest() == u.snapshot.GraphDigest())
 }
+
+func (u ProjectDependencyUpdate) HasRequestedResolution() bool { return u.Valid() && !u.snapshotOnly }
 func (u ProjectDependencyUpdate) OriginalControls() []ProjectControlFile {
 	return append([]ProjectControlFile(nil), u.original...)
 }

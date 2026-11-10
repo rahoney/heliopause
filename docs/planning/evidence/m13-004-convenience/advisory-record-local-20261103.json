@@ -1,0 +1,70 @@
+{
+  "baseline_commit": "df8fa52",
+  "scope": "controlled record GET/decoder plus whole batch+record budgets and duplicate-node expansion cap; no live OSV, version assessment, production transport, Application/Policy/CLI or cache",
+  "whole_s05": {
+    "implemented": false,
+    "wired": false,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/inspection/advisory/osv.go",
+      "sha256": "5bf926f943623c2426ecefb5ca6c76c864a6a756acfcddd80524ac28f1d4be49"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_json.go",
+      "sha256": "9b00ce12979e770320cabcb8602dcbab8798e9d4c0559a4c19ed4c67f1952d91"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_record.go",
+      "sha256": "0df6a848c49a66e8750947dc59364e588699695aec0f16e8e7e6244b1066d21d"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_record_test.go",
+      "sha256": "704ac99db954bc54124b2772751105d767082497871bc9e909edc64b4438a13d"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_test.go",
+      "sha256": "5c58540bd3941096a16e4b4fa519b6dec06159994d36f24738d964c632adfbb3"
+    },
+    {
+      "path": "internal/inspection/advisory/osv_json_test.go",
+      "sha256": "be5b77758d05796d8aea33a1b16a9e8a2a09d2f39b9c6d8bb275a5c14640f028"
+    }
+  ],
+  "checks": [
+    {
+      "raw_file": "s05-record-and-shared-budgets-race.json",
+      "sha256": "798c3b2860c10f52e364d4cc191727e054dbc1153db0951e28db2092f5c6233b",
+      "elapsed_seconds": 4.995,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-record-static.json",
+      "sha256": "42775710139c6d3c8808f081f8db160b04f3c66bebd466e28664d360132a4179",
+      "elapsed_seconds": 0.624,
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "raw_file": "s05-record-vet.json",
+      "sha256": "129e59a190265cc89b4988300d6a472a620088319ee11737e001292f3db80aa8",
+      "elapsed_seconds": 0.384,
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  ],
+  "counterexample": {
+    "raw_file": "s05-duplicate-expansion-red.json",
+    "sha256": "8ec33ef819a82444bd5e8b7cee3c38908ef8fb32e6559321a635537ca51fed38",
+    "elapsed_seconds": 0.743,
+    "exit_code": 1,
+    "scope": "current record candidate with previous duplicate expansion behavior restored only; small 4096 nodes x 3 refs, no OOM/public provider/native claim"
+  },
+  "budgets_shared_with_batch": true,
+  "expanded_node_references_cap": 8192,
+  "ci_started": false,
+  "host_installation_changed": false
+}

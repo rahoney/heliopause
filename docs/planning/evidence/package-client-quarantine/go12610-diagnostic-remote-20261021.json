@@ -1,0 +1,222 @@
+{
+  "baseline": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+  "tree": "966dc2357d7420cac345fd58148cd924176ac4ce",
+  "ci366": {
+    "run": 39605808634,
+    "checkout": "69f391ee71bca1ccd4c083a4e3eee9a6d4ee77b2",
+    "tree": "966dc2357d7420cac345fd58148cd924176ac4ce",
+    "conclusion": "success",
+    "jobs": 10,
+    "cpu_full_seconds": 213.74,
+    "linux_top_level_pass": 45,
+    "helper_wait_zero": 5,
+    "native_macos": "success",
+    "cpp_latches": 103,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0"
+  },
+  "manual_cu126": {
+    "run": 39605942685,
+    "head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "id": 119242031995,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032431,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032523,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032538,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032550,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032620,
+        "name": "macOS",
+        "conclusion": "failure"
+      },
+      {
+        "id": 119242032742,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032758,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 119242032874,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 119275871235,
+        "name": "Required",
+        "conclusion": "failure"
+      }
+    ],
+    "linux": {
+      "conclusion": "success",
+      "cpu_full_seconds": 295.16,
+      "cu126_full_seconds": 1296.54,
+      "helper_wait_zero": 5,
+      "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+      "server_slow_read_rows": 0,
+      "pressure": [
+        {
+          "profile": "cpu",
+          "records": 294,
+          "unavailable": 0,
+          "ranges": {
+            "mem_available_kib": {
+              "min": 13153484,
+              "max": 15171324,
+              "delta": -35636
+            },
+            "shmem_kib": {
+              "min": 49808,
+              "max": 1315224,
+              "delta": 4
+            },
+            "swap_free_kib": {
+              "min": 3145680,
+              "max": 3145680,
+              "delta": 0
+            },
+            "controller_peak_rss_kib": {
+              "min": 28812,
+              "max": 1039236,
+              "delta": 1010424
+            },
+            "pgscan_direct": {
+              "min": 481,
+              "max": 481,
+              "delta": 0
+            },
+            "pgsteal_direct": {
+              "min": 481,
+              "max": 481,
+              "delta": 0
+            },
+            "pswpin": {
+              "min": 78,
+              "max": 78,
+              "delta": 0
+            },
+            "pswpout": {
+              "min": 610,
+              "max": 610,
+              "delta": 0
+            },
+            "psi_memory_full_total_us": {
+              "min": 110313,
+              "max": 114187,
+              "delta": 3874
+            },
+            "psi_memory_some_total_us": {
+              "min": 122132,
+              "max": 126021,
+              "delta": 3889
+            }
+          }
+        },
+        {
+          "profile": "cu126",
+          "records": 1295,
+          "unavailable": 0,
+          "ranges": {
+            "mem_available_kib": {
+              "min": 1959476,
+              "max": 15274576,
+              "delta": 132784
+            },
+            "shmem_kib": {
+              "min": 30528,
+              "max": 13193036,
+              "delta": -19284
+            },
+            "swap_free_kib": {
+              "min": 372028,
+              "max": 3145680,
+              "delta": -91304
+            },
+            "controller_peak_rss_kib": {
+              "min": 28440,
+              "max": 2704520,
+              "delta": 2676080
+            },
+            "pgscan_direct": {
+              "min": 481,
+              "max": 66024,
+              "delta": 65543
+            },
+            "pgsteal_direct": {
+              "min": 481,
+              "max": 65458,
+              "delta": 64977
+            },
+            "pswpin": {
+              "min": 78,
+              "max": 626042,
+              "delta": 625964
+            },
+            "pswpout": {
+              "min": 610,
+              "max": 1069166,
+              "delta": 1068556
+            },
+            "psi_memory_full_total_us": {
+              "min": 114187,
+              "max": 4783385,
+              "delta": 4669198
+            },
+            "psi_memory_some_total_us": {
+              "min": 126021,
+              "max": 4817529,
+              "delta": 4691508
+            }
+          }
+        }
+      ]
+    },
+    "macos": {
+      "conclusion": "failure",
+      "job": 119242032620,
+      "error": "production build passed; default test command timed out at6m; context deadline exceeded",
+      "cause": "unproven; same-source CI366 native macOS succeeded"
+    },
+    "scope": "new trusted timing/OS observation source only; no proof of prior accounting latency cause or general fix; no budget/timeout changes"
+  },
+  "interpretation": {
+    "observed": "new diagnostics actually wired; successful CPU/cu126; memory pressure/reclaim/swap present in successful cu126",
+    "not_proven": [
+      "root cause of earlier accounting-late",
+      "general accounting defect repaired",
+      "Go patch caused timeout/latency",
+      "new UV observer or production UV support qualified"
+    ],
+    "unchanged": [
+      "strict1s accounting gap",
+      "CPU300s/wall40m",
+      "canonical platform2m production/6m default-test deadlines",
+      "Required prerequisites",
+      "Host activation"
+    ]
+  },
+  "raw": "docs/github-logs/package-client-quarantine-20261021/ci366-*.log; go12610-cu126-diagnostic-{linux,macos-failed}.log; go12610-cu126-diagnostic-result.json"
+}

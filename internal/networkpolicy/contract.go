@@ -50,7 +50,7 @@ func NewResolverPolicy(session domain.SandboxSessionID, networkID string, subnet
 	seen := make(map[netip.Addr]struct{}, len(endpoints))
 	canonical := make([]netip.Addr, 0, len(endpoints))
 	for _, endpoint := range endpoints {
-		if !endpoint.IsValid() || !endpoint.Is4() || endpoint.IsPrivate() || endpoint.IsLoopback() || endpoint.IsMulticast() || endpoint.IsUnspecified() {
+		if !IsPublicIPv4(endpoint) {
 			return ResolverPolicy{}, errors.New("resolver policy endpoint set is invalid")
 		}
 		if _, duplicate := seen[endpoint]; duplicate {
@@ -61,6 +61,24 @@ func NewResolverPolicy(session domain.SandboxSessionID, networkID string, subnet
 	}
 	sort.Slice(canonical, func(i, j int) bool { return canonical[i].Less(canonical[j]) })
 	return ResolverPolicy{session: session, networkID: networkID, subnet: subnet.Masked(), endpoints: canonical}, nil
+}
+
+// IsPublicIPv4 is the existing IANA destination rule shared by resolver policy
+// and controller-owned advisory connections. It grants no network lifecycle.
+func IsPublicIPv4(endpoint netip.Addr) bool {
+	if !endpoint.Is4() || !endpoint.IsGlobalUnicast() || endpoint.IsPrivate() {
+		return false
+	}
+	publicAnycast := endpoint == netip.AddrFrom4([4]byte{192, 0, 0, 9}) || endpoint == netip.AddrFrom4([4]byte{192, 0, 0, 10})
+	for _, block := range [...]string{
+		"0.0.0.0/8", "100.64.0.0/10", "192.0.0.0/24", "192.0.2.0/24", "192.88.99.0/24",
+		"198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4",
+	} {
+		if !publicAnycast && netip.MustParsePrefix(block).Contains(endpoint) {
+			return false
+		}
+	}
+	return true
 }
 
 func (p ResolverPolicy) Session() domain.SandboxSessionID { return p.session }

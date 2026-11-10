@@ -89,7 +89,29 @@ Read:
 - [User Journey — Journey and Input](./user-journey-cli-ia/01-journey-and-input.md)
 - [User Journey — CLI Structure](./user-journey-cli-ia/02-cli-structure.md)
 - [User Journey — Execution and Interaction](./user-journey-cli-ia/03-execution-and-interaction.md)
+- [Terminal presentation and branded launcher](./user-journey-cli-ia/05-terminal-presentation.md)
+- 대화형 시작 화면 작업이면 [CLI-UX-003 baseline/edit map/second review](./planning/evidence/cli-launcher/baseline-20261020.md)와 [qualification](./planning/evidence/cli-launcher/qualification-20261020.md)
 - [Domain — Operation Request and Context](./domain-model/06-operation-request-context.md)
+
+### Package client와 실행 전 검역 확장
+
+Read:
+
+- [Client/runner 설계](./user-journey-cli-ia/09-package-client-quarantine.md)
+- [Baseline·수정 지도·버전 후보·검증·재검토](./planning/20-package-client-quarantine-plan.md)
+- P1 다음/P2 이전의 [Go1.27.3 전환 순서·착수 감사](./planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)
+- [P2 pnpm baseline·공급·runtime·graph·layout 수정 지도](./planning/evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)
+- P5 실행기 착수 전 [기존 owner·exact npm source baseline](./planning/evidence/package-client-quarantine/p5-execution-foundation-baseline-20261028.md)
+- 위 Artifact/CLI/Staging route와 아래 runtime maintenance 문서
+
+### 원래 목표 보강과 자동 용량 관리
+
+일괄 설치·원래 보안 목표·자동 정리 보강을 재개할 때는 먼저
+[현재 구현 감사](./planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)와
+[보강 설계·수정 지도·완료 기준](./planning/21-goal-completion-design.md)을 읽는다.
+사용자가 순차 구현을 승인했으며 현재 실행 상태·검증 근거는 Queue가 소유한다.
+코딩 AI의 지원 생태계별 CLI 결과·대안 재검역·우회 금지 Skill과 최소 MCP 채택 기준은
+같은 보강 설계 §4.8–4.9를 따른다. AI가 검사 코드를 생성하는 향후 계획과 구분한다.
 
 ### Runtime, 배포 또는 trusted tooling
 
@@ -105,6 +127,9 @@ Read:
   [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)
 - runtime, release artifact, signing identity, installer 또는 bootstrap 작업이면
   [M10 Verified Distribution & Bootstrap Contract](./planning/13-m10-verified-distribution-bootstrap-contract.md)
+- Native 최초 설치 인계·설정·등록 작업이면 [Native bootstrap 인계](./user-journey-cli-ia/08-native-bootstrap.md)
+- Heliopause 본체 업데이트 작업이면 [자체 업데이트 설계 제안](./user-journey-cli-ia/07-self-update.md)과
+  [M13-004 baseline/edit map/두 번째 검토](./planning/evidence/m13-004-convenience/self-update-20261020.md)
 - final release environment, protected tag/branch, Ruleset activation 또는 public
   deployment 작업이면
   [M13 Production Release & Operations Contract](./planning/18-m13-production-release-operations-contract.md)
@@ -140,6 +165,7 @@ Read:
 - [Planning Index](./planning/README.md)
 - [Step 12 — Milestones](./planning/01-milestones.md)
 - [Step 13 — Current Work Queue](./planning/02-current-work-queue.md)
+  - 종결된 과거 checkpoint 이력은 `docs/planning/archive/`에 있으며 Queue 끝의 색인이 가리킨다. 현재 판정이 아니다.
 - 완료 milestone의 qualification evidence가 필요하면 해당 planning qualification
   문서를 읽고, 현재 M8 작업이면
   [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)를 읽는다.

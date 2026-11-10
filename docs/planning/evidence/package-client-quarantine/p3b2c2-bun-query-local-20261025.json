@@ -1,0 +1,159 @@
+{
+  "work_item": "M13-004/P3-B2c2",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (actual fixed guest queries)",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (whole Bun client)",
+    "MISSING": [
+      "nonempty Bun lock format and independently authenticated graph",
+      "Bun resolver/cache/layout/lifecycle/transaction/CLI",
+      "whole Bun affected-source remote qualification"
+    ]
+  },
+  "baseline": "c9a6143",
+  "scope": "exact Bun --version/--revision only in pinned Node GNU ABI, network-none, private attested native volume and existing one-shot Root demotion/observer session",
+  "sources": [
+    {
+      "path": "internal/sandbox/bun_runtime.go",
+      "sha256": "ffd20bf5df722009e62b294cedf0863162190af76f38949d686305bbeef471e3"
+    },
+    {
+      "path": "internal/sandbox/bun_runtime_test.go",
+      "sha256": "9ee1ed00c794e530c107c7966b6c166458e57a01e99ca77e78901d4d5153d024"
+    },
+    {
+      "path": "internal/sandbox/bun_runtime_real_test.go",
+      "sha256": "102965dce74d9fb9f4cde2a93e0cf8c02f3932099d966e314ee4ed7590a8e61c"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "163e9a692f809e9efac8a718f86b2636e6e0ab8f368762c71732a39be0401ec4"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "f0fcf427278a0ab988eda5f12d85150e6a5b0a011dc5562197f9ae05297e8f5f"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "c0138d6f762157e06a92ae8f3eea77e049044b1cad8e29970353dbebda4b9bc3"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 199.952,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "23ddc07c482a032b3d081c9ba5af784ba47fb1afa1c2522f3206d23b84d5bb87"
+    },
+    {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.869,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.306,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 23.534,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "003ee8851493c97258a33a5ff39120e7180b293932ab4f28dcc48eddb3e65bdc"
+    }
+  ],
+  "final_cpp_only_correction": "After initial Quick/Race only observer.cc and observer_latch_test.cc changed: two directly observed Bun-only reads. All114 canonical C++ latches and actual final guest validate these final inputs; Go files unchanged.",
+  "observer": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/hpr-bx53162k/bun-query-observer-v3"
+    ],
+    "exit": 0,
+    "seconds": 228.561,
+    "source": "/tmp/hpr-bx53162k/source",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "f0fcf427278a0ab988eda5f12d85150e6a5b0a011dc5562197f9ae05297e8f5f"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "c0138d6f762157e06a92ae8f3eea77e049044b1cad8e29970353dbebda4b9bc3"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+      }
+    ],
+    "log_sha256": "eed146c15404d00f0b4354e68cde767f0bd7e9c31aa99db65879e71ea4f0cdd0",
+    "latches_pass": 114,
+    "latches_fail": 0,
+    "observer": {
+      "path": "/tmp/hpr-bx53162k/bun-query-observer-v3",
+      "sha256": "b786417af6c3364d2200d1234830d0fd521be4757619c52dd5648d9308f2afa5",
+      "size": 3126312
+    }
+  },
+  "actual": {
+    "operator_seconds": 7.393,
+    "test_seconds": 5.02,
+    "events": 33,
+    "bytes": 3762,
+    "session_complete": true,
+    "version": "1.4.4",
+    "revision": "1.4.4+38afee6c8",
+    "host_before_after_identical": true,
+    "helper_reaped_wait": 0,
+    "cleanup": "original0 CONFIRMED_STOPPED stop0/client_error0/client_restore0"
+  },
+  "first_failures": [
+    "first actual5.45s: overcommit O_LARGEFILE32768 denied, version stdout not completion",
+    "v2actual4.88s: next own PID/maps557056 denied; neither partial run qualified",
+    "finalv3 actual5.02s full query/session PASS; grants require exact profile/path/flags/current Bun/direct CONTROL/consumed root/topology; no clone/artifact/Python/PNPM grants"
+  ],
+  "operator_corrections": [
+    "first113 latches success but wrapper parsed wrong log suffix; corrected interpretation without rerun, first wrapper duration unavailable",
+    "v3 prepare global label replacement also changed active candidate path; corrected only input path and resumed exact six empty owned dirs before any privileged binding/helper launch; initial parser indentation failure performed no operation"
+  ],
+  "format_discovery": "same Bun1.4.4 runc empty manifest leaves no bun.lock, says No packages! Deleted empty lockfile; not a nonempty lock format or product graph proof",
+  "ci_boundary": "CI411 remote9410 has older observer112 and no new Bun source. Linux/cu132 succeeds, macOS/Required fails; no Bun push or new CI here.",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/",
+  "cleanup": "all query containers/private volumes/observer endpoints/helpers gone and Host before/after equal; active native candidate and final query input kept for immediate next format/lock work; C1 four completed source copies1,252,529,078B removed after0refs/0query errors"
+}

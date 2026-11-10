@@ -1,0 +1,149 @@
+{
+  "scope": "N2C internal optional native enrollment/current-control wiring; synthetic original source ports and real filesystem publication/rollback; current PUBLIC managed/fresh consumers. Actual PUBLIC NATIVE original approval remains NOT_QUALIFIED until N2D actual consumers.",
+  "baseline": "ced69f35159de71df802ffa0d5d57e61ed5afacf",
+  "implemented": true,
+  "wired": "YES(internal service); NO(public native opt-in in this candidate)",
+  "qualified": "YES(named synthetic original and existing managed/fresh actual); NO(actual native current approval)",
+  "whole_native_adoption_acceptance_closed": false,
+  "checks": {
+    "quick": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "source": "/tmp/haa-n2c-resume-20261027/source",
+      "exit": 0,
+      "seconds": 208.494,
+      "log_sha256": "d2fa10b0075666cb72aafaf87671d476c734308b1ac5c2d39597793ba8aa19eb"
+    },
+    "security": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "source": "/tmp/haa-n2c-resume-20261027/source",
+      "exit": 0,
+      "seconds": 26.611,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "docs": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "source": "/tmp/haa-n2c-resume-20261027/source",
+      "exit": 0,
+      "seconds": 0.55,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "full_affected_race": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/promotion",
+        "./internal/bootstrap",
+        "-timeout",
+        "5m"
+      ],
+      "source": "/tmp/haa-n2c-resume-20261027/source",
+      "exit": 0,
+      "seconds": 163.552,
+      "log_sha256": "4d8baa28640811e8f432edbdbe24e164ddd17d240ae096b6905b557e6104b6be"
+    }
+  },
+  "actual": {
+    "exit": 0,
+    "seconds": 376.837,
+    "host_before_after_identical": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "log_sha256": "0140393f944dea599c9e0d4ef8dc85d8135077a4fcafe96e943281b033716e18",
+    "binary_sha256": "5f0db68f61c000c4c4c31b802d2021a86e005b897d78cebe6de478ab6b2531e6"
+  },
+  "observer": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-n2c-resume-20261027/observer"
+    ],
+    "exit": 0,
+    "seconds": 274.062,
+    "log_sha256": "c1a059ae8cd0005d6587c246656c395baa71e5b8f0d0b29359c42c6156c14fab",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "7d6374e26f290dadd6ea631b4eea61f532f0b186b7ae4719650b02b3a07f770a"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "f459361da729fc62de396af05eed669c36f6d83e013b2c42b95c99d88189f005"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+      }
+    ],
+    "observer": {
+      "sha256": "a83e7416877552280e6e129e40c91bda14f704fb19f453284ebfc46e7f644dd3",
+      "size": 3155160
+    }
+  },
+  "source_files": [
+    {
+      "path": "internal/bootstrap/uv_tool_update.go",
+      "sha256": "929bf85801e0c5e2b7711d0bb55c65e7658c7f10bcc51b99155adb588d756703"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_update_integration_test.go",
+      "sha256": "3b0013331b3b2844eb6fb1e6d7be81be564454058e1a3b73739466db812ac45b"
+    },
+    {
+      "path": "internal/promotion/tool_original_publication_test.go",
+      "sha256": "77608c5fe91156b0692e34e91da9db1138436b7c6c9d5da50fa2be4ae6faeda5"
+    },
+    {
+      "path": "internal/promotion/tool_target.go",
+      "sha256": "0d77286516d9ff880dd2892c5ea6ddd0aa88c2c8d976649001a40cad457c6caf"
+    },
+    {
+      "path": "internal/promotion/uv_tool_install.go",
+      "sha256": "c489572b9d201c3f4472660a51e57cd0ae7163a88170f6ead0d350ccb0426038"
+    },
+    {
+      "path": "internal/promotion/uv_tool_native_original.go",
+      "sha256": "d37d942ca7b299bb1234f9a8e505d353d4af978ba5540c2277dc0887ff1922e9"
+    },
+    {
+      "path": "internal/promotion/uv_tool_update.go",
+      "sha256": "fdf300bfdb14a18898eba00385c42df0272ea186d7adf4be2aa4e87754f0024e"
+    },
+    {
+      "path": "internal/promotion/uv_tool_native_update_linux_test.go",
+      "sha256": "00ee872fad5d8ad6a782a7f60310998ee50fb64866dfca017fd576f5e296a051"
+    }
+  ],
+  "verified": [
+    "explicit native dispatch only; immutable collaborator copy; corrupt HAA state cannot fall back to native",
+    "held raw receipt and authentic old-source controls retain their own immutable digests/current native intent",
+    "synthetic native absent prior ledger uses same complete publisher; version change/noop; four faults/cancel/late foreign cleanup preserve raw bytes/inodes/modes/links/ledger absence and recovery",
+    "existing public managed/fresh JSON/human and refusals; changed version/same-version/repeated managed explicit adopt all fresh current approval; failed current Evidence retains original",
+    "canonical builder122latches; original thirteen engines/runtime/observer owners unchanged"
+  ],
+  "first_failures": "p4n2c-resume-first-assessment-20261027.json; p4n2c-concurrent-validation-assessment-20261027.json; original failed raw never overwritten",
+  "missing": [
+    "actual native original current full inspection/Manifest10 controls/cache/publication and native current Evidence failure",
+    "public --adopt/preflight/help and exact public native producer (N2D)",
+    "broader native default recipes/pipx/final profile qualification",
+    "CI415 exact FD failure cause; next necessary grouped CI with actual10min status timers"
+  ]
+}

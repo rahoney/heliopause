@@ -1,0 +1,211 @@
+{
+  "scope": "P4-N2D fixed native UV tool public CLI and actual original/current approval; named local only. Whole M13-004/P4 and remote/final profiles remain open.",
+  "baseline": "17293acc37e6253c4b621aacccab014142c3e38c",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "YES(named local canonical/Race and actual consumers)",
+  "acceptance_closed": "NO(whole P4, hosted and final profiles)",
+  "source_files": [
+    {
+      "path": "internal/bootstrap/uv_native_fixture_test.go",
+      "mode": "100644",
+      "sha256": "ada8ccf00b092158264ea8dd1e828111b668cd451a905d196e7c0068ceb17219"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_native_adoption_linux_test.go",
+      "mode": "100644",
+      "sha256": "1ac79d77fab8b76d74a08dd943b4c1b24552f5943e40c36d67048a7cec8a94e1"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_upgrade_cli_integration_test.go",
+      "mode": "100644",
+      "sha256": "8e5864c632e910af7d15700982f9250f6b52f0c57e56ff0714eec3835cb7383d"
+    },
+    {
+      "path": "internal/cli/uv_tool_upgrade.go",
+      "mode": "100644",
+      "sha256": "506511b0272493ab4e44062595a6b01a9746bb4121bc7c84a3a034266e327a26"
+    },
+    {
+      "path": "internal/cli/uv_tool_upgrade_test.go",
+      "mode": "100644",
+      "sha256": "565017da9155304694a1445f1b1ac67af71a8fb1bdb5b10aded79704b83c231f"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "mode": "100644",
+      "sha256": "8b9585f0be164b4fe3d9294972a5caed8b81df4f0e88db48fccbb8b56c084fd3"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "mode": "100644",
+      "sha256": "75c8b34c1ae343c3348a3a7982fa510d4a4bee14167328088a6e85715a4f00e9"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "mode": "100644",
+      "sha256": "497a26d4df419ba9cd1d37ab372aad1375312a3525ad9391ec56b5b61b27a0fc"
+    }
+  ],
+  "actual_native": {
+    "exit": 0,
+    "seconds": 171.767,
+    "host_before_after_identical": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "log_sha256": "d2000dc3e1fd7099047da0c834ad840414afa5dc528926818a4643602b95a912",
+    "binary_sha256": "a54bd23ecda53d1dfe399ab0a2d9b3b58bfa23b4da017ee860fa3605a85a23c5",
+    "expected_named_tests": [
+      "TestLinuxUVToolNativeAdoptionCLIIntegration"
+    ],
+    "passed_named_tests": [
+      "TestLinuxUVToolNativeAdoptionCLIIntegration"
+    ],
+    "named_tests_exact": true
+  },
+  "affected_default_fixture_actual": {
+    "exit": 0,
+    "seconds": 281.476,
+    "host_before_after_identical": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "log_sha256": "9f410d387cb9e5fbf652a761673e6d3a2f9f711e1470c07223a6175021046a5a",
+    "binary_sha256": "a54bd23ecda53d1dfe399ab0a2d9b3b58bfa23b4da017ee860fa3605a85a23c5",
+    "expected_named_tests": [
+      "TestLinuxUVProjectNativeAdoptionCLIIntegration",
+      "TestLinuxUVSyncCompleteCLIIntegration"
+    ],
+    "passed_named_tests": [
+      "TestLinuxUVProjectNativeAdoptionCLIIntegration",
+      "TestLinuxUVSyncCompleteCLIIntegration"
+    ],
+    "named_tests_exact": true
+  },
+  "actual_source_inventory": {
+    "raw": "p4n2d-native-v6-source.json",
+    "file_count": 2656,
+    "sha256": "80484cbde51ed8ec48a984e61fcfed72b55707e2e26e53299c190d75ed68b49d"
+  },
+  "observer": {
+    "same_source_as_N2C": true,
+    "sha256": "a83e7416877552280e6e129e40c91bda14f704fb19f453284ebfc46e7f644dd3",
+    "canonical_latches": 122
+  },
+  "checks": {
+    "quick": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 62.462,
+      "log_sha256": "8ba158ab5445b9e23df158f2bc5abe28e3fdb227cea6fe46491c6c8f84465fda"
+    },
+    "full_affected_race": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "./internal/promotion",
+        "./internal/bootstrap",
+        "./internal/cli",
+        "./scripts/check",
+        "-timeout",
+        "5m"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 183.469,
+      "log_sha256": "9ec49a4382fbe9bc601848eab4f86827911b1976bd48905b5f991536bfdcaf98"
+    },
+    "workflow": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 1.088,
+      "log_sha256": "8de714f03b4d1004312a9c7670ee09f2a2b8c502071f7a30a8d3805557d3f3dc"
+    },
+    "docs": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 0.446,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "security": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 12.445,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "tagged_compile": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-tags=realcorpus",
+        "-trimpath",
+        "-c",
+        "-o",
+        "/tmp/haa-n2d-resume-20261027/bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "source": "/tmp/haa-n2d-resume-20261027/source",
+      "exit": 0,
+      "seconds": 2.745,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "verified": [
+    "Explicit --adopt routes existing typed request; repeated adoption flag/native options rejected before binding; fixed recipe limits in localized help",
+    "Real native exact6.0 and original bounded6.1 to current6.0: fresh complete required inspection/Evidence/ALLOW and Manifest10 controls including raw receipt/whole old-source proof, publication and preserved user file",
+    "Managed repeated --adopt uses fresh Evidence and Manifest8; original exact/bounded constraints remain unchanged",
+    "Real current Evidence permission failure and no-adopt/script/receipt mutations refuse without changing original file identity/bytes/mode/links or creating ownership ledger",
+    "Same binary affected existing native project add/sync and complete multi-root/retained/empty/native sync all PASS",
+    "Both final actuals have exact named consumers/noSKIP; owning helper wait0/CONFIRMED_STOPPED and installed protected5 files plus Docker inventory unchanged"
+  ],
+  "first_failures": [
+    "p4n2d-first-actual-assessment-20261027.json",
+    "p4n2d-native-only-v3-assessment.json",
+    "p4n2d-native-only-v4-assessment.json"
+  ],
+  "composition_limit": "Initial canonical five-consumer344.580s run: existing4 PASS, new native failed test assertion. Final native-only171.767s run repeats exact-pin/managed repeat plus bounded replacement. Does not rewrite first full script as all-success; grouped hosted exact5 remains pending.",
+  "missing": [
+    "Hosted grouped qualification and CI415 exact FD failure cause (bounded diagnostic only, no authority change)",
+    "pipx immutable supply/runtime/backend/CLI and current persistent-tool paths",
+    "Ordinary native default/other recipes unsupported; final support/profile matrix and P5..P7 remain"
+  ],
+  "actual_execution_input_binding": {
+    "actual_inventory": "native-v6-source.json",
+    "files": 2656,
+    "all_execution_inputs_unchanged": true,
+    "documentation_only_drift_after_actual": [
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/20-package-client-quarantine-plan.md",
+      "docs/planning/evidence/package-client-quarantine/p4n2d-uv-native-tool-cli-plan-20261027.md",
+      "docs/user-journey-cli-ia/09-package-client-quarantine.md"
+    ]
+  }
+}

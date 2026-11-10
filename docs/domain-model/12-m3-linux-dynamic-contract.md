@@ -4,12 +4,12 @@ M3는 M2의 exact npm Artifact에 Linux 전용 dynamic lifecycle inspection을 �
 
 ## 1. Runtime identity와 지원 경계
 
-Production backend는 Docker Engine의 OCI runtime integration 위에서 canonical `scripts/runtimes.lock.json`의 gVisor source와 exact HAA patch/build-input·installed-byte identity를 사용한다. 현재 qualification은 `release-20260907.0` / `7c6199801fd233d6d55309af4645d4746a077de7`, Docker29.8.1이다. gVisor는 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. M3 당시 `release-20260810.0` / `5ceb9a5fd5750d6c73dd166441f28306039300d0`과 Docker29.6.x 및 stock upstream SHA-512 결과는 역사적 qualification 범위다. Distributed patched artifact의 architecture별 final digest와 배포 계약은 M10/M13이 소유한다.
+Production backend는 Docker Engine의 OCI runtime integration 위에서 canonical `scripts/runtimes.lock.json`의 gVisor source와 exact HAA patch/build-input·installed-byte identity를 사용한다. 직전 qualification은 `release-20260907.0` / `7c6199801fd233d6d55309af4645d4746a077de7`, Docker29.8.1을 사용했다. 현재 Docker 최소/CI 버전은 canonical lock을 따르며, 2026-10-31 보안 패치 후보와 새 qualification은 [전체 감사](../planning/evidence/m13-004-convenience/full-source-audit-20261031.md)가 소유한다. gVisor는 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. M3 당시 `release-20260810.0` / `5ceb9a5fd5750d6c73dd166441f28306039300d0`과 Docker29.6.x 및 stock upstream SHA-512 결과는 역사적 qualification 범위다. Distributed patched artifact의 architecture별 final digest와 배포 계약은 M10/M13이 소유한다.
 
 - 현재 qualified Host: Linux amd64와 canonical lock의 Docker/runsc/observer identity·필수 cgroup/trace capability. 다른 architecture의 registration이나 source build만으로 동적 지원을 주장하지 않는다. Public installer/Host activation은 M13의 별도 acceptance다.
 - unsupported host: macOS, Windows, Docker/runc-only host, rootless/cgroup capability 또는 gVisor trace capability가 없는 Linux host. 이 경우 required dynamic inspection은 `UNAVAILABLE / M3_DYNAMIC_CAPABILITY_UNAVAILABLE`이며 자동 `ALLOW`가 없다.
 - M3 CI는 `ubuntu-24.04` pinned runner에서 explicit runtime probe가 성공할 때만 Linux dynamic integration job을 실행한다. probe 실패는 skipped success가 아니라 failure다.
-- workload image는 canonical runtime lock의 `node_image.reference`와 bundled npm identity로 고정한다. 현재 Node24.21.0/npm11.19.0이다. Runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
+- workload image는 canonical runtime lock의 `node_image.reference`와 bundled npm identity로 고정한다. Node24.21.0/npm11.19.0 결과는 직전 qualification 범위이며 현재 고정값은 같은 lock을 따른다. Runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
 
 공식 근거: [gVisor installation](https://gvisor.dev/docs/user_guide/install/), [gVisor Docker quick start](https://gvisor.dev/docs/user_guide/quick_start/docker/), [gVisor security model](https://github.com/google/gvisor), [locked gVisor trace/seccheck](https://github.com/google/gvisor/blob/7c6199801fd233d6d55309af4645d4746a077de7/pkg/sentry/seccheck/README.md), [Docker Engine 29 release notes](https://docs.docker.com/engine/release-notes/29/).
 
@@ -204,9 +204,9 @@ interpretation.
 없거나 일치하지 않으면 비적격이다. 일반 PyPI의 같은 Python runtime에도 동일하게
 적용하며 npm/GitHub ELF의 동작 허용 범위는 변경하지 않는다.
 
-## 5. M3 Policy v3 direction
+## 5. M3 Policy
 
-M3 Policy identity is `m3-npm-dynamic-inspect`, version 1.
+M3 Policy identity is `m3-npm-dynamic-inspect`, version 3.
 
 1. integrity mismatch or blocking static/dynamic Finding → `BLOCK`.
 2. required static, integrity or dynamic check unsupported/unavailable/failed/incomplete → `MANUAL_REVIEW / M3_REQUIRED_CHECK_INCOMPLETE`.
@@ -217,6 +217,19 @@ This does not change M2 results retroactively. M3 Policy is only wired when the 
 `M3_NETWORK_ATTEMPT` and `M3_UNEXPECTED_PROCESS` remain `MANUAL_REVIEW` reasons;
 this contract changes only the raw-observation-to-Finding and attribution
 conditions that may produce them.
+
+M13-004 S05 adds `M13_ADVISORY_REVIEW` for affected advisories below the
+confirmed HIGH threshold, missing/unsupported CVSS, or unknown version impact.
+It remains `MANUAL_REVIEW`; confirmed affected CVSS base scores at least7.0
+produce `M13_ADVISORY_HIGH` and `BLOCK`. An active primary OSV `MAL-` record
+whose exact package/version is affected produces `M13_ADVISORY_MALICIOUS` and
+`BLOCK`, including when CVSS is absent. Alias components preserve all original
+Evidence and emit their strongest Finding; withdrawal of one record does not
+withdraw another active record. Human severity labels alone are not
+authoritative. Any stronger integrity/static/dynamic/unknown blocking Finding
+still wins regardless of report order. Required advisory mapping/query/assessment
+incompleteness never permits automatic installation. Provider I/O and score
+normalization remain in Inspection, not Policy.
 
 ## 6. Fixtures, retention and exclusions
 

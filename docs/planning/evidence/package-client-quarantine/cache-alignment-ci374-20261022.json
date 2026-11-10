@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "source_commit": "f76c564e2dbde0fd256b56fcde2ba4c90e4f5e2b",
+  "source_tree": "020f170aaa32914df4369dc75f907749d3d34238",
+  "run_id": 39721765596,
+  "run_number": 374,
+  "status": "completed",
+  "conclusion": "success",
+  "checkout": {
+    "sha": "f460f91adb42585b2a3ef4bff31ba2a7c75bea15",
+    "tree": "020f170aaa32914df4369dc75f907749d3d34238",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "name": "Quick",
+      "id": 119636619298,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 119636619428,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "id": 119636619491,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 119636619497,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 119636619514,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 119636619558,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 119636619938,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Security",
+      "id": 119636620063,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 119636622984,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 119644837911,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "macos": {
+    "status": "PASS",
+    "go": "1.26.10 darwin/amd64",
+    "production_build_seconds": 55.562,
+    "default_test_envelope_seconds_upper_bound": 171.294,
+    "compiler_and_cache_alignment_observed": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci374-macos.log"
+  },
+  "linux": {
+    "status": "PASS",
+    "native_startup": {
+      "seconds": 3.34,
+      "trace_events": 29,
+      "trace_bytes": 3306,
+      "complete": true
+    },
+    "native_empty_target_query": {
+      "seconds": 1.95,
+      "trace_events": 31,
+      "trace_bytes": 3551,
+      "complete": true
+    },
+    "native_compile_sync_collection": {
+      "seconds": 2.15,
+      "controls": 1,
+      "lock_bytes": 616,
+      "trace_events": 35,
+      "trace_bytes": 4008,
+      "complete": true
+    },
+    "existing_integration": "PASS",
+    "pytorch_cpu_full_seconds": 186.73,
+    "helper_waits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    },
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci374-linux.log"
+  },
+  "scope": "cache-aligned checker/current reader source and existing native output/legacy consumers; later public native caller ab54d4a not covered",
+  "historical_timeout_root_cause": "UNCONFIRMED; input split corrected and this candidate passed native deadlines, no universal historical-cause claim",
+  "required_pass": true,
+  "cache_alignment_acceptance_closed": true,
+  "p1_acceptance_closed": false
+}

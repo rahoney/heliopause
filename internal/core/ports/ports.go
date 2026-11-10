@@ -23,6 +23,17 @@ type Inspection interface {
 	Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error)
 }
 
+// CheckPlanner declares independently configured check identities before the
+// corresponding provider executes. Actual reports never define this list.
+type CheckPlanner interface {
+	ExpectedChecks(context.Context, domain.AcquiredArtifact, domain.CheckKind) ([]domain.CheckRequirement, error)
+}
+
+// NPMEnvironmentTraceEventLimit bounds the single normalized authorization for
+// two fresh writers and their readonly keepers. Physical stream limits remain
+// independent; opening another stream never replenishes this aggregate.
+const NPMEnvironmentTraceEventLimit = 40_000
+
 // Sandbox executes exact controlled content in one ephemeral Session and returns raw observations.
 type Sandbox interface {
 	Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error)
@@ -30,7 +41,7 @@ type Sandbox interface {
 
 // Evidence records a bounded batch and returns trusted references.
 type Evidence interface {
-	Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error)
+	Record(context.Context, domain.RunID, []domain.Evidence, ...domain.CheckExecution) ([]domain.EvidenceReference, error)
 }
 
 // DependencyResolver resolves one requested Artifact into a bounded exact graph.
@@ -50,6 +61,18 @@ type ProjectDependencyResolver interface {
 // under the caller's project guard. The result is not promotion authorization.
 type ProjectDependencyUpdateResolver interface {
 	ResolveProjectDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)
+}
+
+// ProjectLockUpdateResolver selects a complete lock graph without a requested
+// primary. Selector grammar and native tool semantics belong to the adapter.
+type ProjectLockUpdateResolver interface {
+	ResolveProjectLockUpdate(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
+}
+
+// ProjectDependencyUpgradeResolver freezes native named selection under the
+// original guard, including its actual requested primary and complete project.
+type ProjectDependencyUpgradeResolver interface {
+	ResolveProjectDependencyUpgrade(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
 }
 
 // ProjectMutationGuard holds the original target through selection, approval

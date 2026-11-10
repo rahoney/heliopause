@@ -20,13 +20,22 @@ func ExecuteInstall(ctx context.Context, installer Installer, request applicatio
 	if ctx == nil || installer == nil || output == nil {
 		return 2, errors.New("install CLI adapter requires context, use case, and output")
 	}
+	ctx, finishProgress := beginProgress(ctx, output, machine)
+	defer func() { _ = finishProgress() }()
 	outcome, operationErr := installer.Install(ctx, request)
+	if !machine {
+		if writer, ok := output.(*presentationWriter); ok {
+			writer.presentation.interruption = interruptionCode(operationErr)
+		}
+	}
+	progressErr := finishProgress()
 	var presentationErr error
 	if machine {
 		presentationErr = WriteJSONInstallResult(output, outcome, operationErr)
 	} else {
 		presentationErr = WriteHumanInstallResult(output, outcome, operationErr)
 	}
+	presentationErr = errors.Join(presentationErr, progressErr)
 	if presentationErr != nil {
 		return 1, errors.Join(operationErr, presentationErr)
 	}
@@ -58,8 +67,28 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 		return errors.New("human presenter requires a started Install operation")
 	}
 	status, promotion := installStatuses(outcome, operationErr)
-	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\nTarget: %s\nPromotion: %s\n", domain.OperationInstall, inspection.OperationID(), status, inspection.Request().Context().Target(), promotion); err != nil {
+	if writer, ok := output.(*presentationWriter); ok && writer.presentation.human() {
+		return writer.presentation.renderInstall(outcome, operationErr)
+	}
+	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\nTarget: %s\nPromotion: %s\n", inspection.Request().Operation(), inspection.OperationID(), status, inspection.Request().Context().Target(), promotion); err != nil {
 		return err
+	}
+	p := presentationFor(output)
+	if inspection.Set().Valid() {
+		var checks []domain.CheckExecution
+		for index, item := range inspection.Set().Inspections() {
+			checks = append(checks, item.Checks()...)
+			if index < 8 {
+				p.line("Run: %s", item.RunID().String())
+				p.renderCheckPlan(item.CheckPlan(), item.Checks())
+				p.renderAdvisoryDetails(p.advisoryDetails(item.CheckPlan(), item.Checks(), item.Evidence(), item.PolicyDecision()))
+			}
+		}
+		p.renderChecks(checks)
+	}
+	p.renderInspectionFailure(operationErr)
+	if p.writeErr != nil {
+		return p.writeErr
 	}
 	if decision := inspection.Decision(); decision.PolicyID() != "" {
 		if _, err := fmt.Fprintf(output, "Policy: %s (%s v%d)\nReasons: %v\n", decision.Decision(), decision.PolicyID(), decision.Version(), decision.Reasons()); err != nil {
@@ -72,7 +101,11 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 		}
 	}
 	if operationErr != nil {
-		_, err := fmt.Fprintf(output, "Error: %s: Install operation failed.\n", outcome.FailureCode())
+		message := "Install operation failed."
+		if inspection.Request().Operation() == domain.OperationUpdate {
+			message = "Update operation failed."
+		}
+		_, err := fmt.Fprintf(output, "Error: %s: %s\n", outcome.FailureCode(), message)
 		return err
 	}
 	return nil
@@ -85,8 +118,8 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	}
 	status, promotion := installStatuses(outcome, operationErr)
 	document := installMachineResult{
-		SchemaVersion: operationResultSchema, OperationID: inspection.OperationID().String(), Operation: string(domain.OperationInstall),
-		OperationStatus: status, Artifact: machineArtifact{Reference: machineReference{SourceID: inspection.Request().Reference().Source().String(), Locator: inspection.Request().Reference().Locator()}},
+		SchemaVersion: operationResultSchema, OperationID: inspection.OperationID().String(), Operation: string(inspection.Request().Operation()),
+		OperationStatus: status, Artifact: machineArtifact{Reference: machineReference{SourceID: inspection.Request().Source().String(), Locator: inspection.Request().Reference().Locator()}},
 		Checks: []machineCheck{}, EvidenceReferences: []machineEvidenceReference{}, Target: inspection.Request().Context().Target().String(), PromotionStatus: promotion,
 	}
 	for _, diagnostic := range inspection.GraphStaticDiagnostics() {
@@ -104,11 +137,21 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), EntryPolicyDecision: string(diagnostic.Decision()), EntryPolicyReasons: diagnostic.Reasons(), DynamicFindingCodes: diagnostic.DynamicFindingCodes(),
 		})
 	}
+	document.InspectionResults = machineInspectionFailures(operationErr)
 	if inspection.Set().Valid() {
 		for _, item := range inspection.Set().Inspections() {
+			if details := presentationFor(output).advisoryDetails(item.CheckPlan(), item.Checks(), item.Evidence(), item.PolicyDecision()); details != nil {
+				document.AdvisoryDetails = append(document.AdvisoryDetails, details)
+			}
+			if plan := presentCheckPlan(item.CheckPlan()); plan != nil {
+				document.CheckPlans = append(document.CheckPlans, *plan)
+			}
 			for _, check := range item.Checks() {
-				machine := machineCheck{ID: check.ID().String(), Kind: string(check.Kind()), Required: check.Required(), Capability: string(check.Capability()), ExecutionStatus: string(check.Status())}
-				machine.LimitationCode, _ = check.LimitationCode()
+				machine := presentCheck(check)
+				if item.CheckPlan().Valid() {
+					machine.Node = item.Node().String()
+					machine.RunID = item.RunID().String()
+				}
 				document.Checks = append(document.Checks, machine)
 			}
 			for _, reference := range item.Evidence() {
@@ -127,12 +170,27 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	}
 	if operationErr != nil {
 		document.Error = &machineError{Code: outcome.FailureCode(), Message: "Install operation failed."}
+		if inspection.Request().Operation() == domain.OperationUpdate {
+			document.Error.Message = "Update operation failed."
+		}
+	}
+	if len(document.InspectionResults) != 0 || len(document.CheckPlans) != 0 || len(document.GraphStaticNotReady) != 0 || len(document.GraphDynamicInstallFailures) != 0 || len(document.DependencyPolicyAttribution) != 0 {
+		document.SchemaVersion = declaredOperationResultSchema
+	}
+	for _, check := range document.Checks {
+		if check.ProfileSHA256 != "" {
+			document.SchemaVersion = declaredOperationResultSchema
+			break
+		}
 	}
 	return json.NewEncoder(output).Encode(document)
 }
 
 func installStatuses(outcome application.InstallOutcome, operationErr error) (string, string) {
 	if operationErr != nil {
+		if outcome.Promoted().Target().String() != "" {
+			return string(domain.OperationFailed), "COMPLETED"
+		}
 		return string(domain.OperationFailed), "FAILED"
 	}
 	if outcome.Promoted().Target().String() != "" {
@@ -142,12 +200,15 @@ func installStatuses(outcome application.InstallOutcome, operationErr error) (st
 }
 
 type installMachineResult struct {
+	AdvisoryDetails             []*advisoryDetails                     `json:"advisory_details,omitempty"`
 	SchemaVersion               string                                 `json:"schema_version"`
 	OperationID                 string                                 `json:"operation_id"`
 	Operation                   string                                 `json:"operation"`
 	OperationStatus             string                                 `json:"operation_status"`
 	Artifact                    machineArtifact                        `json:"artifact"`
 	Checks                      []machineCheck                         `json:"checks"`
+	CheckPlans                  []machineCheckPlan                     `json:"check_plans,omitempty"`
+	InspectionResults           []machineResult                        `json:"inspection_results,omitempty"`
 	EvidenceReferences          []machineEvidenceReference             `json:"evidence_references"`
 	GraphStaticNotReady         []machineGraphStaticDiagnostic         `json:"graph_static_not_ready,omitempty"`
 	GraphDynamicInstallFailures []machineGraphDynamicInstallDiagnostic `json:"graph_dynamic_install_failures,omitempty"`

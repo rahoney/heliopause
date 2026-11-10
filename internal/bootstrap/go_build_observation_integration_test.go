@@ -3,6 +3,7 @@ package bootstrap_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -18,6 +19,16 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
+// goTransitiveBuildReference is a real public graph above 10,000 files whose
+// exact nodes had no OSV record when selected on 2026-11-10; that is a dated
+// observation, so a later advisory must still stop this ALLOW fixture. Its
+// root package imports nothing, so the approved tidy adds the selected
+// package's indirect requirements before the build.
+const (
+	goTransitiveBuildReference = "k8s.io/client-go@v0.38.0-beta.0"
+	goTransitiveBuildMain      = "package main\nimport \"k8s.io/client-go/util/workqueue\"\nfunc main() { _ = workqueue.DefaultTypedControllerRateLimiter[string]() }\n"
+)
+
 func TestLinuxGoDependencyFreeRetainedBuildObservationIntegration(t *testing.T) {
 	goRetainedBuildObservationIntegration(t, "", "package main\nfunc main() {}\n")
 }
@@ -27,11 +38,15 @@ func TestLinuxGoPublicRetainedBuildObservationIntegration(t *testing.T) {
 }
 
 func TestLinuxGoTransitiveRetainedBuildObservationIntegration(t *testing.T) {
-	goRetainedBuildObservationIntegration(t, "google.golang.org/grpc@v1.76.0", "package main\nimport \"google.golang.org/grpc\"\nfunc main() { _ = grpc.NewServer() }\n")
+	goRetainedBuildObservationIntegration(t, goTransitiveBuildReference, goTransitiveBuildMain)
 }
 
 func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
-	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./testdata", true)
+	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./testdata", true, false)
+}
+
+func TestLinuxGoDependencyFreeRetainedOutputEnvironmentIntegration(t *testing.T) {
+	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./...", false, true)
 }
 
 // This gate starts with actual CLI acquisition/verification/inspection/Policy
@@ -39,10 +54,10 @@ func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
 // to the observed builder. It does not qualify output publication or build CLI.
 func goRetainedBuildObservationIntegration(t *testing.T, reference, main string) {
 	t.Helper()
-	goRetainedBuildSelectionIntegration(t, reference, main, "./...", false)
+	goRetainedBuildSelectionIntegration(t, reference, main, "./...", false, false)
 }
 
-func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector string, invalid bool) {
+func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector string, invalid, capture bool) {
 	t.Helper()
 	if os.Getenv("HELOX_GO_RETAINED_BUILD_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor and authenticated helper")
@@ -115,12 +130,43 @@ func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := builder.ObserveBuild(ctx, snapshot, source, inputCache, selector)
+	var result domain.SandboxResult
+	if capture {
+		run, err := domain.NewRunID()
+		if err != nil {
+			t.Fatal(err)
+		}
+		inputs, err := domain.NewProjectBuildInputs(snapshot, source, inputCache, run, selector)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var observed domain.ProjectBuildObservation
+		observed, err = builder.Build(ctx, inputs)
+		result = observed.SandboxResult()
+		if err != nil {
+			cause := err
+			for range 16 {
+				if joined, ok := cause.(interface{ Unwrap() []error }); ok && len(joined.Unwrap()) != 0 {
+					cause = joined.Unwrap()[0]
+				} else if next := errors.Unwrap(cause); next != nil {
+					cause = next
+				} else {
+					break
+				}
+			}
+			t.Fatalf("actual retained output build: %v original_cause=%v", err, cause)
+		}
+		if observed.Output().Identity().Variant() != "go-output" || observed.Binding().SourceDigest() != source.Digest() {
+			t.Fatal("actual retained output/source binding missing")
+		}
+	} else {
+		result, err = builder.ObserveBuild(ctx, snapshot, source, inputCache, selector)
+	}
 	if invalid {
 		if err == nil || result.Status() != domain.SandboxIncomplete || !strings.Contains(err.Error(), "command_status=EXIT_STATUS_1") {
 			t.Fatalf("explicit invalid source did not preserve compiler failure: %v status=%s", err, result.Status())
 		}
-	} else if err != nil || result.Status() != domain.SandboxCompleted {
+	} else if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
 		t.Fatalf("actual retained-cache observed build: %v status=%s", err, result.Status())
 	}
 	for _, observed := range result.Observations() {
@@ -169,8 +215,21 @@ func prepareGoBuildIntegrationProject(t *testing.T, reference, main string) (con
 	if reference != "" {
 		args = []string{"go", "get", reference}
 	}
-	if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
+	started := time.Now()
+	err = bootstrap.Run(ctx, args, &stdout, &stderr)
+	logGoCLITiming(t, ctx, reference, "prepare", started)
+	if err != nil {
 		t.Fatalf("actual retained approval: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
+	}
+	if reference == goTransitiveBuildReference {
+		stdout.Reset()
+		stderr.Reset()
+		started = time.Now()
+		err = bootstrap.Run(ctx, []string{"go", "mod", "tidy"}, &stdout, &stderr)
+		logGoCLITiming(t, ctx, reference, "tidy", started)
+		if err != nil {
+			t.Fatalf("actual approved tidy: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
+		}
 	}
 	return ctx, root, project
 }

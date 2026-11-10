@@ -158,6 +158,7 @@ func TestLinuxTerraformProviderSecurityIntegration(t *testing.T) {
 				t.Fatal(e)
 			}
 			backend := &TerraformProviderBackend{elf: elf}
+			elf.resources = integrationObservationResourceAdapter(t)
 			request, e := domain.NewSandboxRequest(artifact)
 			if e != nil {
 				t.Fatal(e)
@@ -165,7 +166,7 @@ func TestLinuxTerraformProviderSecurityIntegration(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 			result, e := backend.Execute(ctx, request)
-			if e != nil {
+			if e != nil && result.Status() != domain.SandboxIncomplete {
 				t.Fatal(e)
 			}
 			code, _ := result.LimitationCode()
@@ -180,6 +181,10 @@ func TestLinuxTerraformProviderSecurityIntegration(t *testing.T) {
 			}
 			switch kind {
 			case "normal":
+				states := result.EnvironmentStates()
+				if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+					t.Fatal("normal probe missing two environment states")
+				}
 				if result.Status() != domain.SandboxCompleted {
 					t.Fatalf("minimal normal ELF failed %s/%s reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
 				}

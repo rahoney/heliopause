@@ -92,8 +92,16 @@ type WheelInspection struct {
 	WheelVersion                      string
 	DeclaredSHA256, ObservedSHA256    string
 	Files                             []WheelFile
-	RequiresPython                    string
-	RequiresDist, ImportNames         []string
+	// Complete archive totals include RECORD, signature sidecars and directories;
+	// Files retains the distinct normalized RECORD contract.
+	ArchiveUncompressedBytes  int64
+	ArchiveEntries            int
+	RequiresPython            string
+	RequiresDist, ImportNames []string
+	// Retained for authenticated requested-extra and requirements binding. It is not
+	// serialized inspection authority or an installed tool receipt.
+	providesExtra []string
+	distInfo      string
 	// NoImportSurface identifies no automatic Python import/startup role under the pinned
 	// surface (such as a metadata-only wheel or native/data-only wheel).
 	NoImportSurface      bool
@@ -105,16 +113,28 @@ type WheelInspection struct {
 
 // InspectWheel validates one selected wheel without extracting or executing it.
 func InspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits) (WheelInspection, error) {
-	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, false)
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, false, nil)
 }
+
+// MemberCapture optionally copies bounded member DATA during the original
+// validation pass. Bytes remain provisional until the entire inspection succeeds.
+// Returning nil skips capture without skipping any integrity validation.
+type MemberCapture func(name string, size uint64) io.Writer
 
 // InspectWheelForSource permits PyTorch's canonical PEP 440 local build
 // suffixes while retaining the ordinary PyPI parser's stricter contract.
-func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, source domain.SourceID) (WheelInspection, error) {
-	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, IsPyTorchSource(source))
+func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, source domain.SourceID, captures ...MemberCapture) (WheelInspection, error) {
+	if len(captures) > 1 {
+		return WheelInspection{}, wheelValidation(WheelValidationOther)
+	}
+	var capture MemberCapture
+	if len(captures) == 1 {
+		capture = captures[0]
+	}
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, IsPyTorchSource(source), capture)
 }
 
-func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool) (WheelInspection, error) {
+func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool, capture MemberCapture) (WheelInspection, error) {
 	if reader == nil || size <= 0 || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationOther)
 	}
@@ -139,7 +159,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	var uncompressed int64
 	var metadataFiles = map[string][]byte{}
 	var regularFiles []string
-	primaryDistInfo := wheelDistInfo(project, version)
+	primaryDistInfo := ""
 	hash := sha256.New()
 	if err := hashReaderAt(reader, size, hash); err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationDigest)
@@ -161,7 +181,12 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 		if !directory {
 			regularFiles = append(regularFiles, name)
 		}
-		if isPrimaryWheelMetadata(name, primaryDistInfo) {
+		metadataDirectory := strings.SplitN(name, "/", 2)[0]
+		if wheelDistInfoMatches(metadataDirectory, project, version) && isPrimaryWheelMetadata(name, metadataDirectory) {
+			if primaryDistInfo != "" && primaryDistInfo != metadataDirectory {
+				return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
+			}
+			primaryDistInfo = metadataDirectory
 			if entry.UncompressedSize64 > uint64(limits.MaxMetadata) {
 				return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 			}
@@ -175,7 +200,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	if len(metadataFiles) != 3 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	info, err := parseWheelMetadata(project, version, filename, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
+	info, err := parseWheelMetadata(project, version, filename, primaryDistInfo, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits, capture)
 	if err != nil {
 		return WheelInspection{}, err
 	}
@@ -185,10 +210,12 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	}
 	info.ObservedSHA256 = observed
 	info.DeclaredSHA256 = declaredSHA256
+	info.ArchiveUncompressedBytes = uncompressed
+	info.ArchiveEntries = len(archive.File)
 	return info, nil
 }
 
-func parseWheelMetadata(project, version, filename string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits) (WheelInspection, error) {
+func parseWheelMetadata(project, version, filename, distInfo string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits, capture MemberCapture) (WheelInspection, error) {
 	if len(metadata) == 0 || len(wheel) == 0 || len(record) == 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
@@ -213,7 +240,9 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if !hasWheelVer || wheelVer == "" || !supportedWheelVersion(wheelVer) {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	distInfo := wheelDistInfo(project, version)
+	if !wheelDistInfoMatches(distInfo, project, version) {
+		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
+	}
 	for _, name := range []string{distInfo + "/METADATA", distInfo + "/WHEEL", distInfo + "/RECORD"} {
 		entry, ok := entries[name]
 		if !ok {
@@ -236,7 +265,7 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 	}
-	files, err := validateRecord(record, regular, entries, distInfo)
+	files, err := validateRecord(record, regular, entries, distInfo, capture)
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
@@ -288,6 +317,8 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 		Files:            files,
 		RequiresPython:   reqPy,
 		RequiresDist:     metaHeaders.all("requires-dist"),
+		providesExtra:    metaHeaders.all("provides-extra"),
+		distInfo:         distInfo,
 		ImportNames:      imports,
 		NoImportSurface:  noImportSurface,
 		EntryPoints:      entryPoints,
@@ -1049,7 +1080,7 @@ func validEntryPointName(name string) bool {
 	return true
 }
 
-func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string) ([]WheelFile, error) {
+func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string, capture MemberCapture) ([]WheelFile, error) {
 	primaryRecord := primaryDistInfo + "/RECORD"
 	r := csv.NewReader(bytes.NewReader(body))
 	r.FieldsPerRecord = 3
@@ -1093,22 +1124,22 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		if name == "" {
 			continue
 		}
-		if name == primaryDistInfo+"/RECORD.jws" || name == primaryDistInfo+"/RECORD.p7s" {
-			continue
-		}
+		signature := name == primaryDistInfo+"/RECORD.jws" || name == primaryDistInfo+"/RECORD.p7s"
 		file, ok := recorded[name]
-		if !ok || file.Path == "" {
+		if !signature && (!ok || file.Path == "") {
 			return nil, errors.New("wheel contains unrecorded file")
 		}
-		if name == primaryRecord && file.Size == 0 && file.SHA256 == "" {
-			continue
-		}
+		exempt := signature || name == primaryRecord && file.Size == 0 && file.SHA256 == ""
 		entry := entries[name]
-		actualSize, actualDigest, err := streamRecordFile(entry)
-		if err != nil || actualSize != file.Size {
+		var destination io.Writer
+		if capture != nil && entry != nil {
+			destination = capture(name, entry.UncompressedSize64)
+		}
+		actualSize, actualDigest, err := streamRecordFile(entry, destination)
+		if err != nil || !exempt && actualSize != file.Size {
 			return nil, errors.New("wheel RECORD size mismatch")
 		}
-		if actualDigest != file.SHA256 {
+		if !exempt && actualDigest != file.SHA256 {
 			return nil, errors.New("wheel RECORD digest mismatch")
 		}
 	}
@@ -1130,7 +1161,7 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 	return files, nil
 }
 
-func streamRecordFile(file *zip.File) (int64, string, error) {
+func streamRecordFile(file *zip.File, destination io.Writer) (int64, string, error) {
 	if file == nil {
 		return 0, "", errors.New("wheel RECORD file is missing")
 	}
@@ -1143,7 +1174,11 @@ func streamRecordFile(file *zip.File) (int64, string, error) {
 	if file.UncompressedSize64 > uint64(1<<63-2) {
 		return 0, "", errors.New("wheel RECORD file exceeds streaming bound")
 	}
-	size, err := io.Copy(hash, io.LimitReader(r, int64(file.UncompressedSize64)+1))
+	var writer io.Writer = hash
+	if destination != nil {
+		writer = io.MultiWriter(hash, destination)
+	}
+	size, err := io.Copy(writer, io.LimitReader(r, int64(file.UncompressedSize64)+1))
 	if err != nil {
 		return 0, "", err
 	}
@@ -1155,6 +1190,17 @@ func streamRecordFile(file *zip.File) (int64, string, error) {
 
 func wheelDistInfo(project, version string) string {
 	return strings.ReplaceAll(project, "-", "_") + "-" + strings.ReplaceAll(version, "-", "_") + ".dist-info"
+}
+
+// Older wheels may retain uppercase letters or dots in their distribution
+// component. Normalize identity only; callers retain the exact measured path.
+func wheelDistInfoMatches(directory, project, version string) bool {
+	if path.Base(directory) != directory || !strings.HasSuffix(directory, ".dist-info") {
+		return false
+	}
+	distribution, foundVersion, ok := strings.Cut(strings.TrimSuffix(directory, ".dist-info"), "-")
+	normalized, err := NormalizeProjectName(distribution)
+	return ok && err == nil && normalized == project && version != "" && foundVersion == strings.ReplaceAll(version, "-", "_")
 }
 
 func isPrimaryWheelMetadata(name, distInfo string) bool {

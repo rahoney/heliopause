@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-31",
+  "work_item": "M13-004/CI441-job-budget",
+  "source_base": "0434612616e6c948877be354e84d55d35231e262",
+  "approval": {
+    "source": "user message 2026-10-31",
+    "text": "조정해도되.",
+    "scope": "only gvisor-integration whole-job120→150min",
+    "persisted_in": "AGENTS.md and plan20 §5"
+  },
+  "changed_runtime_source": false,
+  "workflow_sha256": "e4338593bf2b76d6f058aa9fb0cc6182f166f7a2dcbda003dd58ffc007b6e48a",
+  "Linux_job_minutes": 150,
+  "per_test_and_product_limits_unchanged": true,
+  "all_checks_and_Required10_unchanged": true,
+  "checks": [
+    {
+      "name": "workflow",
+      "exit_code": 0,
+      "seconds": 2.135
+    },
+    {
+      "name": "docs",
+      "exit_code": 0,
+      "seconds": 0.372
+    },
+    {
+      "name": "security",
+      "exit_code": 0,
+      "seconds": 13.478
+    }
+  ],
+  "validation_reuse": "same one-line workflow candidate validated before approval; only approval/docs metadata followed; no native/CPP/Quick/Race repeated",
+  "remote": "NOT_RUN / no push",
+  "comparison": "ci441-time-budget-comparison-20261031.json"
+}

@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "scope": "actual complete UV pip sync and existing common consumers on CI391; CUDA3 still required before whole P1 acceptance",
+  "source_commit": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+  "checkout": "ad3c1ebe349dfcd7a7c743e0b8d908e68d152a87",
+  "tree": "9ece0a2e57c55e5276dc1df55d97d4c1b5f49323",
+  "run_id": 39895409439,
+  "run_number": 391,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 120224569257,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569469,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569484,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569492,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569503,
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569518,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569526,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569527,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 120224569561,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 120235308923,
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "timer": {
+    "created_utc": "2026-10-23T03:30:44Z",
+    "first_check_utc": "2026-10-23T04:25:44Z",
+    "actual_check_utc": "2026-10-23T04:25:52Z",
+    "completed_utc": "2026-10-23T04:09:46Z",
+    "created_to_updated_seconds": 2342,
+    "method": "actual asynchronous countdown using <=55-second yields; no status polling during wait"
+  },
+  "linux": {
+    "top_level_passes": 53,
+    "skips": 0,
+    "uv_install_seconds": 158.51,
+    "sync_complete_seconds": 103.23,
+    "sync_closure_seconds": 46.14,
+    "actual_sync_entries": [
+      2,
+      2,
+      1,
+      0,
+      0,
+      1,
+      5
+    ],
+    "scenarios": [
+      "two disconnected exact roots",
+      "same-set gets fresh Run/Evidence/Manifest",
+      "replacement and excluded original removal",
+      "blank skip preserves installed state and Evidence",
+      "explicit empty requirements and pylock use approval/records",
+      "genuine native excluded original refused without adoption; exact old-wheel proof with --adopt",
+      "complete requests graph checks all five wheels and SBOM five nodes/four edges"
+    ],
+    "cpu_full_seconds": 215.06
+  },
+  "macos": {
+    "conclusion": "success",
+    "production_build_seconds_approx": 60.972,
+    "default_test": "PASS; previous timeouts internal cause not established"
+  },
+  "cleanup": {
+    "helpers_reaped_wait_zero": 5,
+    "final": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+    "resources": "CI-owned test targets/caches and process cleanup on ephemeral runner; no Host installation activation"
+  },
+  "status": {
+    "implemented": "YES",
+    "wired": "YES",
+    "qualified": "actual sync/common CPU/macOS candidate verified; CUDA3 pending",
+    "acceptance_closed": "NO — whole P1 awaits three same-source CUDA profiles"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-final-run.json",
+      "bytes": 14648,
+      "sha256": "e8dfd064821bbedaf5afad65798e6bf84e5ae4c84476fa04334f0b60ed312dbc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-final-jobs.json",
+      "bytes": 30176,
+      "sha256": "8c15d81ff051503d88e74f6f0a4a88a98708ffa0e09d115bdacb19f13998935e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-checkout.json",
+      "bytes": 2850,
+      "sha256": "5086ee8020d2d7483928723659aa2dde9af2a112e27d17fa2639aaecd4b2f633"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-linux.log",
+      "bytes": 584486,
+      "sha256": "8eb0c71526176a024eac6844dd10806c48a7575c8fabb542f3860519baaef7fb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-macos.log",
+      "bytes": 21804,
+      "sha256": "96a8fc962761c2bc197c8288704bcd659c66ee925df48a245904ad2723381f1a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci391-required.log",
+      "bytes": 22243,
+      "sha256": "f25b8ae2dc50b88d7158ba3cf1eb29370a2780a10c6534753d779b41e99f4929"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-ci391-timer-20261023.json",
+      "bytes": 565,
+      "sha256": "16b2ac045a4309cefb543afddc8654b211f574b909f9580c890b354398a3dd6e"
+    }
+  ]
+}

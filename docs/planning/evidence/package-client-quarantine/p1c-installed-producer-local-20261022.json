@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "baseline": "8a025b83007384f6883193615f69db5387111b4e",
+  "scope": "C3c1 native installed-aware UV producer and independent graph binding; guarded update/promotion/CLI and sync remain separate",
+  "sources": [
+    {
+      "path": "internal/artifact/pypi/upgrade_input.go",
+      "sha256": "25effb8ce33ad00149f089cf23b3e687d45e7571b10bc3e3ca44c932a8674d29"
+    },
+    {
+      "path": "internal/artifact/pypi/upgrade_selection.go",
+      "sha256": "d638e009dd6e8e3a3c664a8a331e32e7c5364aca75e3d444f0a8e0585a07bfe0"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_selection.go",
+      "sha256": "4cff2da0d339e5d9cc90033a24e0304d405b779c9b03b9d636d4c9b00714b882"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_selection_test.go",
+      "sha256": "fd51813a451128bfa9a1ee9d4b1c918669e4ff857c24aa5cf41a2384605afbfd"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "05cb5a6fe90969c8727686d2a579ddb92e9477d74f8ee00b4aad33a506cf344f"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "sha256": "479660d6670e6467f03d2c5ebe25f717897021a07393cc53a14aebab3a0b3a4f"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_integration_linux_test.go",
+      "sha256": "4c2b6fe0bd47aa635494556656393d642317ec1e80f610ab14135f0223297e00"
+    },
+    {
+      "path": "internal/sandbox/uv_selection_input.go",
+      "sha256": "e4049cadfefcbb002bf8ba6784828660e2a0090d2c300225ad10530dd18be778"
+    },
+    {
+      "path": "internal/sandbox/uv_selection_input_test.go",
+      "sha256": "73e23ee246cad0b82ace29c0c4fdb85b2402342f300ce2d49dca36e454de565b"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "31e9d41ce85c0f14c29be63007335e071c61366c3284b2acaeb198fe01b87223"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "5b312ec14d8d6966f12706768ab97a0f04cd2069a63dd035d1c32f75283ef779"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "1f8559d6cddc3f9426be1aabe9d46e01e7bc376f43e8e9422f5d6cbee10bb45a"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.348,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 129.717,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.849,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.213,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.715,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": [
+    {
+      "phase": "artifact",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/artifact/pypi"
+      ],
+      "exit": 0,
+      "seconds": 9.49
+    },
+    {
+      "phase": "sandbox",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./internal/sandbox",
+        "-run",
+        "^Test(UV|PyPIResolver|PyTorch.*(Resolver|Resolve))"
+      ],
+      "exit": 0,
+      "seconds": 25.809
+    },
+    {
+      "phase": "checker",
+      "command": [
+        "test",
+        "-trimpath",
+        "-race",
+        "-count=1",
+        "-timeout=3m",
+        "./scripts/check"
+      ],
+      "exit": 0,
+      "seconds": 36.039
+    }
+  ],
+  "properties_checked": [
+    "strict preview dry-run JSON with duplicate/unknown/missing/action-pair refusal and explicit no-op",
+    "canonical public original-input/intent/runtime binding before Docker/network",
+    "shared retained-version constraints preserve original pip behavior",
+    "no fake pip report or authenticated Candidate constructed from delta",
+    "whole graph identities/changed-set completeness/retained requirements checked against native choices",
+    "only frozen original METADATA enters fixed private mount; no user interpreter/module/RECORD transport",
+    "returned original files/modes/owner/bytes and selected lock rechecked; fresh tar scanner still rejects update input",
+    "bounded streaming native delta output and primary failure cause preservation",
+    "three native intents wired to existing lifecycle and authenticated CI public integration; skip mutation rejected"
+  ],
+  "initial_failure": {
+    "phase": "first Quick test-build",
+    "seconds": 31.48,
+    "finding": "new test referenced nonexistent streamingIntakeRunner; reused existing uvReaderFixture without changing production behavior",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-c3c1-first-quick.log"
+  },
+  "original_count_regression": {
+    "before": {
+      "status": "FAIL",
+      "test": "TestUVOriginalMetadataLimitDoesNotTreatRetainedDistributionsAsSelectedGraph",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/uv-c3c1-original-count-before.log"
+    },
+    "cause": "original metadata incorrectly used selected graph budget64 instead of existing original-input bound1024",
+    "correction": "reuse UpgradeInputDistributionLimit from existing original-input owner; selected graph budget unchanged",
+    "after": "same regression passed within final Quick and selected sandbox Race"
+  },
+  "implemented": true,
+  "wired": "native resolver port and actual CI entry; guarded client update/promotion not wired",
+  "qualified": "local canonical5 and three relevant Race only",
+  "acceptance_closed": false,
+  "missing": [
+    "actual native installed-aware public transport/selection and same-source Required CI",
+    "guarded original target/ownership/update promotion and client binding",
+    "native UV enrollment and complete/multi-root/empty sync; whole P1 qualification"
+  ],
+  "runtime": "existing pinned Go1.26.10/Python3.14.7/UV0.13.4; G127 NOT_STARTED after P1",
+  "cleanup": {
+    "temporary_entries": 0,
+    "native_assets_created": false,
+    "retained": "active source/SDK/quality/runtime for actual C3c qualification"
+  }
+}

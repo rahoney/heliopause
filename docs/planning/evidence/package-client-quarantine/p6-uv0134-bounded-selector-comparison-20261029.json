@@ -1,0 +1,49 @@
+{
+  "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+  "sources": [
+    {
+      "path": "crates/uv-environment-operations/src/environment.rs",
+      "git_blob": "1ff2815a65bc84d83a69cbc5e1e8dc05ca16ff01",
+      "bytes": 12792,
+      "sha256": "2b7673465e1946c4c7fa1ada9030c2231ac66be4714aae08948613181d0646a4",
+      "url": "https://github.com/astral-sh/uv/blob/7456b60bc6bc348e13e06e3691bf08e78d3aef54/crates/uv-environment-operations/src/environment.rs"
+    },
+    {
+      "path": "crates/uv-environment-operations/src/lib.rs",
+      "git_blob": "7a899d5dac7dece39ce6ad13755aff974e397b4b",
+      "bytes": 79542,
+      "sha256": "178922ef1365bfd8d9c227209267f514b33a1836a4d0fa4868288b4df5df50aa",
+      "url": "https://github.com/astral-sh/uv/blob/7456b60bc6bc348e13e06e3691bf08e78d3aef54/crates/uv-environment-operations/src/lib.rs"
+    },
+    {
+      "path": "crates/uv-dispatch/src/lib.rs",
+      "git_blob": "68e7a0097e6faa02a27650c357bd8f90557c961a",
+      "bytes": 28265,
+      "sha256": "fe643e46a2faf7f30d8e6cee2c8fab8cfad3cd3815c090cdd1fb8bc38368655f",
+      "url": "https://github.com/astral-sh/uv/blob/7456b60bc6bc348e13e06e3691bf08e78d3aef54/crates/uv-dispatch/src/lib.rs"
+    },
+    {
+      "path": "crates/uv-types/src/traits.rs",
+      "git_blob": "acf381172020831f54b4c9b264581549a77c44a9",
+      "bytes": 14272,
+      "sha256": "aa00a126799f1c408bc4b2805b13b5c88ee065fce281ea4972326c1ce7da1a13",
+      "url": "https://github.com/astral-sh/uv/blob/7456b60bc6bc348e13e06e3691bf08e78d3aef54/crates/uv-types/src/traits.rs"
+    },
+    {
+      "path": "crates/uv-distribution/src/source/mod.rs",
+      "git_blob": "0fd46a3366596f08d5db52ea1a6dec78fe76ef28",
+      "bytes": 136407,
+      "sha256": "ab924c00b422d19c7b8134464f47a8b73e20083bb1efb562898b0818f66a18dc",
+      "url": "https://github.com/astral-sh/uv/blob/7456b60bc6bc348e13e06e3691bf08e78d3aef54/crates/uv-distribution/src/source/mod.rs"
+    }
+  ],
+  "original_bytes_git_blob_SHA256_readback_verified": true,
+  "status": "source-derived conditional comparison only; actual native UVx golden equivalence OPEN",
+  "facts": [
+    "run CachedEnvironment and non-preview fresh tool install share Specific resolve_environment",
+    "Project/Tool SourceTreeEditablePolicy differs only in named local/Git workspace editable lowering owners",
+    "fresh public wheel/no-build/same interpreter-settings/no cache provides a conditional source argument, not a native golden result"
+  ],
+  "current_composition": "existing actual fresh tool-install identity retained; current public Python preparation actual3 qualified; no UVx alias exposed",
+  "raw": "docs/github-logs/package-client-quarantine-20261021/p6-uv0134-bounded-selector-analysis-v2.json"
+}

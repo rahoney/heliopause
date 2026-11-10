@@ -11,37 +11,12 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, nil, nil, nil}}
-	introducer := &recordingIntroducer{}
-	backend := newTestBackend(t, runner, introducer, &emptyObserver{}, availableProbe)
-
-	result, err := backend.Execute(context.Background(), sandboxRequest(t))
+func TestBackendUsesConstrainedDockerBaseCommand(t *testing.T) {
+	session, err := domain.NewSandboxSessionID()
 	if err != nil {
-		t.Fatalf("Execute() error = %v", err)
+		t.Fatal(err)
 	}
-	if result.Status() != domain.SandboxCompleted {
-		t.Fatalf("Status() = %q, want COMPLETED", result.Status())
-	}
-	if introducer.calls != 1 || introducer.containerID != "0123456789abcdef" {
-		t.Fatalf("Introduce calls = %d, container = %q", introducer.calls, introducer.containerID)
-	}
-	if len(runner.calls) != 5 {
-		t.Fatalf("command calls = %d, want 5", len(runner.calls))
-	}
-	assertConstrainedCreateCommand(t, runner.calls[0].arguments)
-	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "0123456789abcdef"}) {
-		t.Fatalf("start command = %q %q", got.binary, got.arguments)
-	}
-	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, boundaryReadinessArguments("0123456789abcdef")) {
-		t.Fatalf("helper readiness command = %q %q", got.binary, got.arguments)
-	}
-	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/sh", "-ceu", npmLifecycleCommand)) {
-		t.Fatalf("npm command = %q %q", got.binary, got.arguments)
-	}
-	if got := runner.calls[4]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
-		t.Fatalf("cleanup command = %q %q", got.binary, got.arguments)
-	}
+	assertConstrainedCreateCommand(t, createArguments(session))
 }
 
 func TestNPMLifecycleCommandIsExactOfflineNonNotifyingInvocation(t *testing.T) {
@@ -74,132 +49,101 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 }
 
 func TestBackendTerminatesContainerBeforeCollectingFinalizedTrace(t *testing.T) {
-	cleanup := make(chan struct{})
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
-	runner.cleanupSignal = cleanup
-	observer := &recordingObserver{reader: &cleanupGatedTraceReader{
-		cleanup: cleanup,
-		records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}},
-	}}
-	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
-
-	result, err := backend.Execute(context.Background(), sandboxRequest(t))
+	backend, model, request := newEnvironmentBackendModel(t)
+	model.traceRecords = []TraceRecord{{Kind: "network-attempt", Bytes: 1}}
+	result, err := backend.Execute(context.Background(), request)
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
 	}
-	if observer.containerID != "0123456789abcdef" {
-		t.Fatalf("observer container ID = %q", observer.containerID)
+	count := uint64(0)
+	for _, fact := range result.Observations() {
+		if fact.Category() == domain.ObservationNetwork {
+			count += fact.Count()
+		}
 	}
-	observations := result.Observations()
-	if len(observations) != 2 || observations[0].Category() != domain.ObservationNetwork {
-		t.Fatalf("observations = %#v", observations)
+	if count != 4 || len(model.containers) != 0 {
+		t.Fatalf("finalized trace not drained: network=%d containers=%d", count, len(model.containers))
 	}
 }
 
 func TestBackendObserverFailureIsIncompleteAndDisposesContainer(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
-	backend := newTestBackend(t, runner, &recordingIntroducer{}, &recordingObserver{err: errors.New("observer unavailable")}, availableProbe)
-
-	result, err := backend.Execute(context.Background(), sandboxRequest(t))
-	if err != nil || result.Status() != domain.SandboxIncomplete {
+	backend, model, request := newEnvironmentBackendModel(t)
+	model.failure = "observer"
+	result, err := backend.Execute(context.Background(), request)
+	if err == nil || result.Status() != domain.SandboxIncomplete {
 		t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
 	}
-	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_OBSERVER_FAILED" {
+	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_SETUP_FAILED" {
 		t.Fatalf("LimitationCode() = %q", code)
 	}
-	if len(runner.calls) != 2 || !sameStrings(runner.calls[1].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
-		t.Fatalf("container not disposed: %#v", runner.calls)
+	if model.commands != 0 || model.introductions != 0 || len(model.containers) != 0 || len(model.volumes) != 0 {
+		t.Fatal("observer setup failure executed input or retained owned resources")
 	}
 }
 
 func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
+	commandFailure, cleanupFailure := errors.New("exit status 1"), errors.New("cleanup")
 	tests := []struct {
-		name       string
-		responses  [][]byte
-		errors     []error
-		limitation string
+		name             string
+		command, cleanup error
+		code             string
 	}{
-		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, errors.New("exit status 1")}, "M3_DYNAMIC_EXECUTION_FAILED"},
-		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
+		{"process failure", commandFailure, nil, "M3_DYNAMIC_EXECUTION_FAILED"},
+		{"cleanup failure", nil, cleanupFailure, "M3_DYNAMIC_CLEANUP_FAILED"},
+		{"primary failure preserved", commandFailure, cleanupFailure, "M3_DYNAMIC_EXECUTION_FAILED"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			backend := newTestBackend(t, &recordingRunner{responses: test.responses, errors: test.errors}, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
-			result, err := backend.Execute(context.Background(), sandboxRequest(t))
-			if err != nil || result.Status() != domain.SandboxIncomplete {
-				t.Fatalf("Execute() = (%q, %v), want incomplete", result.Status(), err)
+			backend, model, request := newEnvironmentBackendModel(t)
+			model.commandCause, model.closeCause = test.command, test.cleanup
+			result, err := backend.Execute(context.Background(), request)
+			code, _ := result.LimitationCode()
+			if result.Status() != domain.SandboxIncomplete || code != test.code || (test.command != nil && !errors.Is(err, test.command)) || (test.cleanup != nil && !errors.Is(err, test.cleanup)) {
+				t.Fatalf("Execute() = (%q/%s, %v)", result.Status(), code, err)
 			}
-			if code, _ := result.LimitationCode(); code != test.limitation {
-				t.Fatalf("LimitationCode() = %q, want %q", code, test.limitation)
+			if len(model.containers) != 0 || len(model.volumes) != 0 {
+				t.Fatal("owned resources retained")
 			}
 		})
 	}
 }
 
 func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, waitForContext: true, waitForContextAt: 3}
-	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
-	backend.wallTimeout = time.Millisecond
-
-	result, err := backend.Execute(context.Background(), sandboxRequest(t))
-	if err != nil || result.Status() != domain.SandboxIncomplete {
-		t.Fatalf("Execute() = (%q, %v), want incomplete", result.Status(), err)
+	backend, model, request := newEnvironmentBackendModel(t)
+	model.failure = "timeout"
+	backend.wallTimeout = 20 * time.Millisecond
+	result, err := backend.Execute(context.Background(), request)
+	code, _ := result.LimitationCode()
+	if result.Status() != domain.SandboxIncomplete || code != "M3_DYNAMIC_TIMEOUT" || !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("Execute() = (%q/%s, %v)", result.Status(), code, err)
 	}
-	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_TIMEOUT" {
-		t.Fatalf("LimitationCode() = %q, want timeout", code)
-	}
-	if len(runner.calls) != 5 || !sameStrings(runner.calls[4].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
-		t.Fatalf("cleanup command missing after timeout: %#v", runner.calls)
+	if model.commands != 1 || len(model.containers) != 0 || len(model.volumes) != 0 {
+		t.Fatal("timeout did not stop before next experiment and drain owned resources")
 	}
 }
 
 func TestBackendArtifactIntroductionBlockedUntilMountAnchorsReady(t *testing.T) {
 	t.Run("blocked when observer fails topology reconciliation", func(t *testing.T) {
-		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
-		introducer := &recordingIntroducer{}
-		observer := &recordingObserver{err: errors.New("topology reconciliation failed")}
-		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
-
-		result, err := backend.Execute(context.Background(), sandboxRequest(t))
-		if err != nil || result.Status() != domain.SandboxIncomplete {
-			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
-		}
-		if introducer.calls != 0 {
-			t.Fatalf("introducer called %d times, want 0 when mount anchors not ready", introducer.calls)
+		backend, model, request := newEnvironmentBackendModel(t)
+		model.failure = "topology"
+		result, err := backend.Execute(context.Background(), request)
+		if err == nil || result.Status() != domain.SandboxIncomplete || model.introductions != 0 || model.commands != 0 || len(model.containers) != 0 {
+			t.Fatalf("unready topology allowed input: %s %v", result.Status(), err)
 		}
 	})
-
-	t.Run("blocked when observer does not implement mountAnchorReadyObserver", func(t *testing.T) {
-		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
-		introducer := &recordingIntroducer{}
-		observer := &plainObserver{}
-		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
-
-		result, err := backend.Execute(context.Background(), sandboxRequest(t))
-		if err != nil || result.Status() != domain.SandboxIncomplete {
-			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
-		}
-		if introducer.calls != 0 {
-			t.Fatalf("introducer called %d times, want 0 when observer lacks topology readiness", introducer.calls)
+	t.Run("blocked when observer lacks environment topology contract", func(t *testing.T) {
+		backend, model, request := newEnvironmentBackendModel(t)
+		backend.observer = &plainObserver{}
+		result, err := backend.Execute(context.Background(), request)
+		if err != nil || result.Status() != domain.SandboxIncomplete || model.creates != 0 || model.introductions != 0 {
+			t.Fatal("legacy observer admitted environment experiments")
 		}
 	})
-
 	t.Run("ordered strictly before artifact introduction", func(t *testing.T) {
-		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
-		introducer := &sequencedIntroducer{}
-		var order []string
-		observer := &sequencedObserver{
-			onAwait: func() { order = append(order, "mount-anchors-ready") },
-		}
-		introducer.onIntroduce = func() { order = append(order, "artifact-introduced") }
-		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
-
-		result, err := backend.Execute(context.Background(), sandboxRequest(t))
-		if err != nil || result.Status() != domain.SandboxCompleted {
-			t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
-		}
-		if len(order) < 2 || order[0] != "mount-anchors-ready" || order[1] != "artifact-introduced" {
-			t.Fatalf("execution order = %#v, want [mount-anchors-ready, artifact-introduced]", order)
+		backend, model, request := newEnvironmentBackendModel(t)
+		result, err := backend.Execute(context.Background(), request)
+		if err != nil || result.Status() != domain.SandboxCompleted || strings.Join(model.order, ",") != "mount-anchors-ready,artifact-introduced,mount-anchors-ready,mount-anchors-ready,artifact-introduced,mount-anchors-ready" {
+			t.Fatalf("order=%q result=%s err=%v", model.order, result.Status(), err)
 		}
 	})
 }
@@ -248,18 +192,13 @@ type recordingRunner struct {
 	boundedOutput    []byte
 	waitForContext   bool
 	waitForContextAt int
-	cleanupSignal    chan struct{}
 }
 
 func (r *recordingRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	_, bounded := ctx.Deadline()
 	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
 	r.timeline = append(r.timeline, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
-	if r.cleanupSignal != nil && binary == "docker" && len(arguments) == 3 &&
-		arguments[0] == "rm" && arguments[1] == "--force" {
-		close(r.cleanupSignal)
-		r.cleanupSignal = nil
-	}
+
 	index := len(r.calls) - 1
 	if r.waitForContext && index == r.waitForContextAt {
 		<-ctx.Done()
@@ -318,20 +257,10 @@ func (s *sequencedObserver) AwaitMountAnchors(context.Context, string) error {
 	return nil
 }
 
-type sequencedIntroducer struct {
-	onIntroduce func()
-}
-
-func (s *sequencedIntroducer) Introduce(context.Context, string, domain.AcquiredArtifact) error {
-	if s.onIntroduce != nil {
-		s.onIntroduce()
-	}
-	return nil
-}
-
 type cleanupGatedTraceReader struct {
 	cleanup <-chan struct{}
 	records []TraceRecord
+	err     error
 }
 
 func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
@@ -341,6 +270,11 @@ func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error)
 		return TraceRecord{}, ctx.Err()
 	}
 	if len(r.records) == 0 {
+		if r.err != nil {
+			err := r.err
+			r.err = nil
+			return TraceRecord{}, err
+		}
 		return TraceRecord{}, io.EOF
 	}
 	record := r.records[0]

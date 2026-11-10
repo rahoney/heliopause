@@ -10,6 +10,45 @@ import (
 	"strings"
 )
 
+const goTidyNativeCensus = `awk 'BEGIN { expected["imports-tests-tags"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyProjectResolverIntegration \(/ { parents++ } /actual_go_tidy=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyProjectResolverIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-resolver.log"`
+const goTidyCLICensus = `awk 'BEGIN { expected["adopt"]=1; expected["noop"]=1; expected["remove-all"]=1 } /^--- PASS: TestLinuxGoTidyCLIIntegration \(/ { parents++ } /actual_go_tidy_cli=PASS case=/ { split($0, parts, "case="); split(parts[2], fields, " "); if (!(fields[1] in expected) || seen[fields[1]]++) bad=1; cases++ } /^--- (FAIL|SKIP): TestLinuxGoTidyCLIIntegration/ { bad=1 } END { if (parents != 1 || cases != 3 || bad) exit 1 }' "$RUNNER_TEMP/haa-go-cli.log"`
+
+const advisoryQualificationRun = `set -euo pipefail
+if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+  echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+  exit 0
+fi
+source scripts/ci-integration-cleanup.sh
+haa_ci_initialize
+cmp -- "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+haa_start_policy_helper
+umask 077
+HELOX_ADVISORY_CLI_INTEGRATION=1 "$RUNNER_TEMP/helox-pnpm-project-test" -test.v -test.failfast -test.timeout=15m -test.run '^TestAdvisory(ProductionCLIQuarantine|PublicLanguageProductionCLI|GitHubOpaqueProductionCLI)Integration$' | tee "$RUNNER_TEMP/haa-advisory-cli.log"
+awk '
+BEGIN {
+  split("TestAdvisoryProductionCLIQuarantineIntegration TestAdvisoryPublicLanguageProductionCLIIntegration TestAdvisoryGitHubOpaqueProductionCLIIntegration", names, " ")
+  for (i in names) parents[names[i]]=0
+  split("fresh-cache cache-reuse malware-block tampered-cache force-refresh malware-human", names, " ")
+  for (i in names) cases["TestAdvisoryProductionCLIQuarantineIntegration/" names[i]]=0
+  split("npm-normal npm-controlled-malware go-normal go-controlled-malware cargo-normal cargo-controlled-malware go-exact-controlled-malware go-download-exact-controlled-malware cargo-exact-controlled-malware", names, " ")
+  for (i in names) cases["TestAdvisoryPublicLanguageProductionCLIIntegration/" names[i]]=0
+}
+/no tests to run|--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS:/ { if (!($3 in parents) || parents[$3]++) bad=1 }
+/^[[:space:]]+--- PASS:/ { if (!($3 in cases) || cases[$3]++) bad=1 }
+/advisory_github_cli_complete attempt=/ {
+  value=$3; sub(/^attempt=/,"",value)
+  if (value !~ /^[01]$/ || attempts[value]++ || $4!="required_checks=3" || $5!="optional=UNSUPPORTED" || $6!="query=NOT_RUN" || $8!="digest=VERIFIED") bad=1
+}
+END {
+  if (bad || attempts[0]!=1 || attempts[1]!=1) exit 1
+  for (name in parents) if (parents[name]!=1) exit 1
+  for (name in cases) if (cases[name]!=1) exit 1
+}
+' "$RUNNER_TEMP/haa-advisory-cli.log"
+rm -- "$RUNNER_TEMP/haa-advisory-cli.log"
+`
+
 const workflowRelativePath = ".github/workflows/heliopause-ci.yml"
 const securityWorkflowRelativePath = ".github/workflows/heliopause-security.yml"
 const releaseWorkflowRelativePath = ".github/workflows/heliopause-release-build.yml"
@@ -77,6 +116,44 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 	if relativePath == workflowRelativePath || relativePath == releaseWorkflowRelativePath {
 		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
 	}
+	if relativePath == workflowRelativePath {
+		for _, name := range []string{"ci-responder-source.sh", "ci-stimulus-corpus.sh"} {
+			info, err := os.Lstat(filepath.Join(root, "scripts", name))
+			if err != nil || !info.Mode().IsRegular() || info.Size() > outputLimit {
+				findings = append(findings, "CI source/corpus module is unavailable or not a bounded regular file: "+name)
+			}
+		}
+		script, err := os.ReadFile(filepath.Join(root, "scripts", "ci-pnpm-runtime.sh"))
+		if err != nil {
+			findings = append(findings, "PNPM runtime qualification script is unavailable")
+		} else {
+			findings = append(findings, validatePNPMRuntimeScript(string(script))...)
+		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-bun-runtime.sh"))
+		if err != nil {
+			findings = append(findings, "Bun runtime qualification script is unavailable")
+		} else {
+			findings = append(findings, validateBunRuntimeScript(string(script))...)
+		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-pipx-runtime.sh"))
+		if err != nil {
+			findings = append(findings, "pipx runtime qualification script is unavailable")
+		} else {
+			findings = append(findings, validatePipxRuntimeScript(string(script))...)
+		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-pipx-tools.sh"))
+		if err != nil {
+			findings = append(findings, "pipx installed tools fixture script is unavailable")
+		} else {
+			findings = append(findings, validatePipxInstalledToolsScript(string(script))...)
+		}
+		script, err = os.ReadFile(filepath.Join(root, "scripts", "ci-uv-tools.sh"))
+		if err != nil {
+			findings = append(findings, "UV tools qualification script is unavailable")
+		} else {
+			findings = append(findings, validateUVToolsScript(string(script))...)
+		}
+	}
 	if len(findings) != 0 {
 		return &checkFailure{class: findingFailure, step: "CI configuration", detail: strings.Join(findings, "\n")}
 	}
@@ -106,29 +183,58 @@ func validateRuntimeLockWorkflow(root, contents string) []string {
 
 func runtimeLockStrings(value any) []string {
 	var values []string
-	var visit func(any)
-	visit = func(current any) {
+	var visit func(any, string)
+	visit = func(current any, location string) {
 		switch typed := current.(type) {
 		case map[string]any:
-			for _, child := range typed {
-				visit(child)
+			for key, child := range typed {
+				next := location + "/" + key
+				// These exact validated enum fields reference owner keys; they are not
+				// copied runtime identities. Other fields retain the literal check.
+				if (next == "/pipx_tool/runtime_image" || next == "/semgrep_tool/runtime_image") && child == "python_image" || next == "/bun_tool/runtime_image" && child == "node_image" {
+					continue
+				}
+				visit(child, next)
 			}
 		case []any:
 			for _, child := range typed {
-				visit(child)
+				visit(child, location+"/[]")
 			}
 		case string:
 			values = append(values, typed)
 		}
 	}
-	visit(value)
+	visit(value, "")
 	return values
 }
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	blocks, err := activeJobRunLines(contents, "gvisor-integration", "Qualify production advisory quarantine")
+	if err == nil && (len(blocks) != 1 || kernelQualificationLines(strings.Join(blocks[0], "\n")) != kernelQualificationLines(advisoryQualificationRun)) {
+		findings = append(findings, "advisory qualification requires the protected production client, existing tagged driver, exact parents/cases and no-SKIP/failure guard")
+	}
+	findings = append(findings, validateResponderSourceOrder(contents)...)
+	findings = append(findings, validateCUDAQualificationScope(contents)...)
+	findings = append(findings, validateIntegrationSuites(contents)...)
+	findings = append(findings, validateKernelTerminalQualification(contents)...)
+	findings = append(findings, validatePlatformBuildCache(contents)...)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh", "bash scripts/ci-pnpm-runtime.sh project"})...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm project and stimulus", []string{"bash scripts/ci-npm-project.sh native", "bash scripts/ci-npm-project.sh project", "bash scripts/ci-stimulus-corpus.sh"})...)
+	findings = append(findings, validatePNPMInspectionClientOrder(contents)...)
+	findings = append(findings, validatePNPMProjectClientOrder(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "Bun", []string{"bash scripts/ci-bun-runtime.sh", "bash scripts/ci-bun-runtime.sh project"})...)
+	findings = append(findings, validateBunInspectionClientOrder(contents)...)
+	findings = append(findings, validateBunProjectClientOrder(contents)...)
+	findings = append(findings, validatePipxInspectionClientOrder(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV tools", []string{"bash scripts/ci-uv-tools.sh", "bash scripts/ci-uv-tools.sh bootstrap"})...)
+	findings = append(findings, validateUVToolsClientOrder(contents)...)
+	findings = append(findings, validateCurrentExecutionPreparationQualification(contents)...)
+	findings = append(findings, validateActiveJobCommands(contents, "gvisor-integration", "Qualify production Node execution preparation", "npm execution CLI", []string{"HELOX_NPM_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=18m -test.run '^TestLinuxNPMExecutionCLIIntegration$'"})...)
+	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{
 		`scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`,
@@ -160,8 +266,10 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 		"HELOX_PYTORCH_PROFILE=cu132",
 		`docker pull "$go_image"`,
 
-		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'`,
-		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload)Integration$'`,
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot|TidyProjectResolver)Integration$' | tee "$RUNNER_TEMP/haa-go-resolver.log"`,
+		goTidyNativeCensus,
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload|TidyCLI)Integration$' | tee "$RUNNER_TEMP/haa-go-cli.log"`,
+		goTidyCLICensus,
 		`HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'`,
 		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",
@@ -169,7 +277,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 		"    if: ${{ always() }}",
 		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration\n      - wheel-corpus",
 		"run: go run ./scripts/check bootstrap-modules",
-		"run: go run ./scripts/check platform",
+		"run: go run -trimpath ./scripts/check platform",
 		"run: go run ./scripts/check corpus",
 		`run: python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"`,
 		"run: go run ./scripts/check security",
@@ -317,6 +425,23 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		`--checksums-output "$dist/helox-release-checksums.txt" \`,
 		`--asset "$dist/helox-linux-amd64.deb" \`,
 		`--asset "$dist/helox-linux-amd64.rpm"`,
+	})...)
+	findings = append(findings, validateActiveJobCommands(contents, "build-and-attest", "Build deterministic native release assets", "release installer", []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer`,
+		`--asset "$dist/haa-release-installer-linux-amd64" \`,
+	})...)
+	findings = append(findings, validateActiveJobCommands(contents, "build-and-attest", "Build deterministic native release assets", "sandbox responder", []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags='-s -w' -o "$dist/haa-sandbox-responder" ./cmd/haa-sandbox-responder`,
+		`--asset "$dist/haa-sandbox-responder" \`,
+	})...)
+	findings = append(findings, validatePNPMReleaseSupply(contents)...)
+	findings = append(findings, validateBunReleaseSupply(contents)...)
+	findings = append(findings, validatePipxReleaseSupply(contents)...)
+	findings = append(findings, validateOrderedNativeReleaseSupply(contents, "UV runtime image", []string{
+		`go run ./scripts/runtime-image-manifest \`,
+		`uv_image="$(jq -er '.uv_image.reference' scripts/runtimes.lock.json)"`,
+		`docker buildx imagetools inspect "$uv_image" >/dev/null`,
+		`go run ./scripts/release-packages \`,
 	})...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
@@ -532,10 +657,60 @@ func workflowJobIDs(contents string) []string {
 
 // These fixed commands belong to the actual unconditional lifecycle step.
 // Their presence in comments, another job or a skipped step supplies no gate.
+const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
+const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
+const cargoFetchSelectionIntegrationCommand = `HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'`
+const cargoFetchCLIIntegrationCommand = `HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'`
+const uvSyncCLIIntegrationCommand = `HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'`
+
+var uvIntegrationCommands = []string{
+	uvSyncCLIIntegrationCommand,
+	`HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'`,
+	`HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.run '^TestLinuxUVInstallCLIIntegration$'`,
+	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
+	`docker pull "$uv_image"`,
+	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
+	uvPublicResolverIntegrationCommand,
+}
+
+// The same ephemeral job cache and compiler flags must reach both the outer
+// checker bootstrap and its offline build/test children. No remote cache is used.
+func validatePlatformBuildCache(contents string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
+	const root = "${{ runner.temp }}/heliopause-platform-tools"
+	var findings []string
+	for _, jobID := range []string{"minimum-go", "macos"} {
+		job := workflowMap(workflowMap(doc["jobs"])[jobID])
+		steps, _ := job["steps"].([]any)
+		for _, stage := range []struct{ name, command string }{
+			{"Bootstrap product modules", "go run -trimpath ./scripts/check bootstrap-modules"},
+			{"Run canonical platform profile offline", "go run -trimpath ./scripts/check platform"},
+		} {
+			findings = append(findings, validateActiveJobCommands(contents, jobID, stage.name, jobID+" platform", []string{stage.command})...)
+			for _, raw := range steps {
+				step := workflowMap(raw)
+				if step["name"] != stage.name {
+					continue
+				}
+				env := workflowMap(step["env"])
+				if env["HELOX_TOOL_CACHE"] != root || env["GOCACHE"] != root+"/go-build" || env["GOFLAGS"] != "" {
+					findings = append(findings, fmt.Sprintf("%s %s requires one fixed job-local build cache and empty GOFLAGS", jobID, stage.name))
+				}
+			}
+		}
+	}
+	return findings
+}
+
 var cargoIntegrationCommands = []string{
+	cargoFetchSelectionIntegrationCommand,
+	cargoFetchCLIIntegrationCommand,
 	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
 	`docker pull "$rust_image"`,
-	`HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`,
+	cargoSourceIntegrationCommand,
 	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'`,
 	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'`,
 }
@@ -557,13 +732,33 @@ func validateLifecycleIntegrationCommands(contents, label string, commands []str
 }
 
 func validateActiveJobCommands(contents, jobID, stepName, label string, commands []string) []string {
-	doc, err := parseWorkflow(contents)
+	blocks, err := activeJobRunLines(contents, jobID, stepName)
 	if err != nil {
 		return nil
+	}
+	counts := map[string]int{}
+	for _, lines := range blocks {
+		for _, line := range lines {
+			counts[line]++
+		}
+	}
+	var findings []string
+	for _, command := range commands {
+		if counts[command] != 1 {
+			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
+		}
+	}
+	return findings
+}
+
+func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil, err
 	} // The structural validator owns parse failures.
 	job := workflowMap(workflowMap(doc["jobs"])[jobID])
 	steps, _ := job["steps"].([]any)
-	counts := map[string]int{}
+	var blocks [][]string
 	for _, raw := range steps {
 		step := workflowMap(raw)
 		if step["name"] != stepName {
@@ -573,15 +768,175 @@ func validateActiveJobCommands(contents, jobID, stepName, label string, commands
 			continue
 		}
 		run, _ := step["run"].(string)
+		var lines []string
 		for _, line := range strings.Split(run, "\n") {
-			counts[strings.TrimSpace(line)]++
+			lines = append(lines, strings.TrimSpace(line))
+		}
+		blocks = append(blocks, withoutIntegrationSuiteGuards(lines))
+	}
+	return blocks, nil
+}
+
+const cudaOnlyCIExpression = "${{ github.event_name == 'workflow_dispatch' && (inputs.pytorch_cu126_qualification || inputs.pytorch_cu130_qualification || inputs.pytorch_cu132_qualification) }}"
+const ordinaryCILifecycleGuard = `if [ "$HELOX_CI_CUDA_ONLY" = false ]; then`
+const cudaOnlyExecutionStepGuard = `if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
+echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
+exit 0
+fi`
+
+// CUDA qualification preserves the common runtime and CPU/selected full probe.
+// Ordinary PR/default runs retain every client/execution cohort separately.
+func validateCUDAQualificationScope(contents string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
+	job := workflowMap(workflowMap(doc["jobs"])["gvisor-integration"])
+	var findings []string
+	if workflowMap(job["env"])["HELOX_CI_CUDA_ONLY"] != cudaOnlyCIExpression {
+		findings = append(findings, "CUDA-only qualification must require explicit manual profile inputs")
+	}
+	steps, _ := job["steps"].([]any)
+	for _, raw := range steps {
+		if workflowMap(workflowMap(raw)["env"])["HELOX_CI_CUDA_ONLY"] != nil {
+			findings = append(findings, "qualification scope must not be overridden by a step")
+		}
+	}
+	blocks, _ := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if len(blocks) != 1 {
+		return append(findings, "CUDA qualification requires the existing unconditional runtime lifecycle")
+	}
+	body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+	if strings.Count(body, ordinaryCILifecycleGuard) != 3 {
+		findings = append(findings, "ordinary lifecycle requires three exact profile scopes")
+	}
+	for _, boundary := range []string{
+		ordinaryCILifecycleGuard + "\n" + `mkdir -p "$RUNNER_TEMP/pypi-target"`,
+		terraformIntegrationCommands[1] + "\nfi\n" + `go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap`,
+		ordinaryCILifecycleGuard + "\n" + `HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`,
+		terraformIntegrationCommands[2] + "\nfi\nselected_cuda_profiles=0",
+		ordinaryCILifecycleGuard + "\n" + `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"` + "\nhaa_start_policy_helper\n" + `HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'`,
+		`HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration` + "\nfi",
+	} {
+		if strings.Count(body, boundary) != 1 {
+			findings = append(findings, "CUDA-only scope must preserve common setup, client binding and full inputs")
+		}
+	}
+	for _, step := range []string{"Qualify production advisory quarantine", "Qualify production Node execution preparation", currentExecutionPreparationStep, kernelTerminalQualificationStep} {
+		blocks, _ := activeJobRunLines(contents, "gvisor-integration", step)
+		if len(blocks) != 1 || !strings.HasPrefix(kernelQualificationLines(strings.Join(blocks[0], "\n")), "set -euo pipefail\n"+cudaOnlyExecutionStepGuard+"\nsource scripts/ci-integration-cleanup.sh\n") {
+			findings = append(findings, "ordinary execution step requires exact manual-CUDA scope: "+step)
+		}
+	}
+	return findings
+}
+
+// These real consumers read tracked package fixtures. Require the same
+// narrow subshell shape as go test's package cwd, without changing later steps.
+// This validates this repository convention, not arbitrary Bash semantics.
+func validatePackageFixtureWorkingDirectories(contents string) []string {
+	blocks, err := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if err != nil {
+		return nil
+	}
+	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"}
+	counts := map[string]int{}
+	for _, block := range blocks {
+		var lines []string
+		for _, line := range block {
+			if line != "" && !strings.HasPrefix(line, "#") {
+				lines = append(lines, line)
+			}
+		}
+		for i := 2; i+1 < len(lines); i++ {
+			if directory := scopes[lines[i]]; directory != "" && lines[i-2] == "(" && lines[i-1] == "cd "+directory && lines[i+1] == ")" {
+				counts[lines[i]]++
+			}
 		}
 	}
 	var findings []string
-	for _, command := range commands {
+	for command := range scopes {
 		if counts[command] != 1 {
-			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
+			findings = append(findings, fmt.Sprintf("fixture integration requires one matching package subshell for %q", command))
 		}
+	}
+	return findings
+}
+
+// Independent expected producer policy: no command presence or source-derived
+// expected list can stand in for the acquired->verified->packaged->bound order.
+func validatePNPMReleaseSupply(contents string) []string {
+	return validateOrderedNativeReleaseSupply(contents, "pnpm", []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`pnpm_archive="$RUNNER_TEMP/helox-pnpm-linux-x64.tar.gz"`,
+		`pnpm_url="$(jq -er '.pnpm_tool.archive.url' scripts/runtimes.lock.json)"`,
+		`pnpm_size="$(jq -er '.pnpm_tool.archive.size' scripts/runtimes.lock.json)"`,
+		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$pnpm_size" --output "$pnpm_archive" "$pnpm_url"`,
+		`go run ./scripts/update-runtime materialize-pnpm \`,
+		`--root "$GITHUB_WORKSPACE" \`,
+		`--archive "$pnpm_archive" \`,
+		`--output "$dist/pnpm-linux-amd64" \`,
+		`--notices-output "$dist/pnpm-NOTICE.txt"`,
+		`rm -- "$pnpm_archive"`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/pnpm-linux-amd64" \`,
+		`--asset "$dist/pnpm-NOTICE.txt" \`,
+	})
+}
+
+func validateBunReleaseSupply(contents string) []string {
+	return validateOrderedNativeReleaseSupply(contents, "bun", []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`bun_archive="$RUNNER_TEMP/helox-bun-linux-x64.zip"`,
+		`bun_url="$(jq -er '.bun_tool.archive.url' scripts/runtimes.lock.json)"`,
+		`bun_size="$(jq -er '.bun_tool.archive.size' scripts/runtimes.lock.json)"`,
+		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_archive" "$bun_url"`,
+		`go run ./scripts/update-runtime materialize-bun --root "$GITHUB_WORKSPACE" --archive "$bun_archive" --output "$dist/bun-linux-amd64" --notices-output "$dist/bun-NOTICE.txt"`,
+		`rm -- "$bun_archive"`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/bun-linux-amd64" \`,
+		`--asset "$dist/bun-NOTICE.txt" \`,
+	})
+}
+
+func validatePipxReleaseSupply(contents string) []string {
+	return validateOrderedNativeReleaseSupply(contents, "pipx", []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`pipx_input="$RUNNER_TEMP/helox-pipx-supply"`,
+		`go run ./scripts/update-runtime fetch-pipx-supply --root "$GITHUB_WORKSPACE" --output "$pipx_input"`,
+		`go run ./scripts/update-runtime materialize-pipx --root "$GITHUB_WORKSPACE" --input "$pipx_input" --output "$dist/pipx-runtime-linux-amd64.zip" --notices-output "$dist/pipx-NOTICE.txt"`,
+		`go run ./scripts/runtime-image-manifest \`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/pipx-runtime-linux-amd64.zip" \`,
+		`--asset "$dist/pipx-NOTICE.txt" \`,
+	})
+}
+
+func validateOrderedNativeReleaseSupply(contents, client string, expected []string) []string {
+	blocks, err := activeJobRunLines(contents, "build-and-attest", "Build deterministic native release assets")
+	if err != nil {
+		return nil
+	}
+	if len(blocks) != 1 {
+		return []string{client + " release supply requires one unconditional native build step"}
+	}
+	var findings []string
+	previous := -1
+	for _, command := range expected {
+		found, count := -1, 0
+		for i, line := range blocks[0] {
+			if line == command {
+				found = i
+				count++
+			}
+		}
+		if count != 1 || found <= previous {
+			findings = append(findings, client+" release supply requires ordered active command: "+command)
+		}
+		previous = found
 	}
 	return findings
 }

@@ -1,0 +1,68 @@
+{
+  "work_item": "M13-004/P4-A",
+  "baseline": "50fd3b2964669f27793c30caa0b2b61113df3e00",
+  "status": {
+    "IMPLEMENTED": "YES (frozen virtual-project input/intent only)",
+    "WIRED": "YES (canonical control read/replay); NO (native resolver/CLI)",
+    "QUALIFIED": "YES (named local parser/native original format only)",
+    "ACCEPTANCE_CLOSED": "YES (P4-A input boundary only); NO (whole P4)",
+    "MISSING": [
+      "native uv.lock/target export binding and isolated project resolver",
+      "project/venv atomic ownership/transaction and CLI",
+      "persistent UV tool/pipx metadata/scripts supply/ownership/qualification"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4a-input-final-format.json",
+      "seconds": 0.623,
+      "sha256": "cf2716e498b455a4e26d105af4cdab67773f171490dc40f9da50e23a3dc1e22f"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4a-input-final-quick.json",
+      "seconds": 43.181,
+      "sha256": "843b715e036ee888dd254f30d8c0670a0d4f75e44a04cdbb7500c19b404ce1fd"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4a-input-final-security.json",
+      "seconds": 8.911,
+      "sha256": "e26abdbc303057295acd801ff1267860ba197f7b6c988d28d7d47bf9f13882db"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4a-input-final-docs.json",
+      "seconds": 0.249,
+      "sha256": "cdab1ef26e8e2fbf8b70c061dc2df8d9cd656296b122a6e9eb953b91297e3d73"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4a-input-full-artifact-race.json",
+      "seconds": 5.379,
+      "sha256": "8f2c29b0404351cb77f5e0326f29b0aeb2ec75ffb347391fb7e637a823babf94"
+    }
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_project_input.go",
+      "sha256": "fd613c2f89092bbbf0abc3df4e0242b8143341334f37798fe8c04ef75da7365a"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_input_test.go",
+      "sha256": "129039b604fde571c9db04931f7d015b0f7f7260b0d86674ba422b0fc5e0ea66"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-0.13.4-empty-project.pyproject.toml",
+      "sha256": "8dd69e86666fe668cee31d4ff95437acd7819b38f7c6afe2c33f59b572594673"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-0.13.4-empty-project.uv.lock",
+      "sha256": "1ace8a943176818e909d069bedaa39170ad9a59e921386ec4744a33b1639cf99"
+    }
+  ],
+  "native_query": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p4a-native-query-20261026.json",
+    "sha256": "facbb49f063e3729306194b32471351e2ac0a9c4ac28945bf64d9eb281859c24",
+    "scope": "fixed UV0.13.4/Python3.14.7; network-none disposable runc format/help only; both containers identity-checked and removed; not gVisor/Policy/install authority"
+  },
+  "reuse": "existing UV pip/parser/binder/Policy/transaction/CPP/runtime pins/workflow unchanged",
+  "ci": "CI413 frozen50fd remains active; P4 source is outside that CI, no push/dispatch for this helper",
+  "lessons_review": "No new failure/cause established; prior lessons unchanged"
+}

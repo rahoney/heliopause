@@ -48,7 +48,7 @@ func (c *checker) runGitleaks(step string, arguments ...string) error {
 	if err := c.verifyTool(tool); err != nil {
 		return err
 	}
-	return c.runAnalysis(step, c.toolExecutable(tool), arguments...)
+	return c.runGitleaksWithPublicMetadata(step, c.toolExecutable(tool), arguments...)
 }
 
 func (c *checker) runVulnerability() error {
@@ -76,6 +76,12 @@ func (c *checker) fuzzSteps() []checkStep {
 		}},
 		{"fuzz PyPI reference", func() error {
 			return c.runGoWithTimeout("fuzz PyPI reference", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzParseReference", "-fuzztime=5s")
+		}},
+		{"fuzz uv lock", func() error {
+			return c.runGoWithTimeout("fuzz uv lock", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzParseUVLockNoPanic", "-fuzztime=5s")
+		}},
+		{"fuzz uv tool layers", func() error {
+			return c.runGoWithTimeout("fuzz uv tool layers", time.Minute, "test", "./internal/verification/releaseprovenance", "-run=^$", "-fuzz=FuzzUVToolLayersNoPanic", "-fuzztime=5s")
 		}},
 		{"fuzz wheel inspection", func() error {
 			return c.runGoWithTimeout("fuzz wheel inspection", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzInspectWheelNoPanic", "-fuzztime=5s")

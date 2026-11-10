@@ -1,0 +1,489 @@
+{
+  "scope": "P4-O3 IMMUTABLE_CANDIDATE_AND_FIXED_PYTHON_ZIP_BOOT_ONLY",
+  "status": "LOCAL_QUALIFIED",
+  "baseline_commit": "5c1c637",
+  "source_identity": [
+    {
+      "path": "internal/artifact/pypi/pipx_supply_zip.go",
+      "sha256": "26a1b27790f03abe3bd293a7a52ab1d36825692686941fbab4922a76c58a08ef"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_supply_zip_test.go",
+      "sha256": "03edf3f5b4fac6c34ff538f52eb9bde30f147be07855e3c8643581e784ed635c"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_closure.go",
+      "sha256": "750e51d4a26f5dddc1f629372cb2092e79d01fd9c31fc8ca79871367c8e64f9b"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_materialize.go",
+      "sha256": "8d844457719dbbe1e9a79c3130cc4dd0561716db667d855527f3eeda9c8d5c88"
+    },
+    {
+      "path": "scripts/update-runtime/pipx_materialize_test.go",
+      "sha256": "0307b4af6ca6957cf2fc17d1dd75af5095edcc30aa6ee2a3eb29a8db5edea51d"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "134c092a7b9a290a32a6c32816bf30bb82273e5b0e97b58855367c6139806e0a"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "elapsed_seconds": 0.808
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "elapsed_seconds": 221.019
+    },
+    {
+      "step": "race",
+      "exit_code": 0,
+      "elapsed_seconds": 37.284
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "elapsed_seconds": 0.384
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "elapsed_seconds": 15.875
+    }
+  ],
+  "materialization": {
+    "checks": [
+      {
+        "step": "verify",
+        "exit_code": 0,
+        "seconds": 1.467
+      },
+      {
+        "step": "materialize",
+        "exit_code": 0,
+        "seconds": 0.415
+      },
+      {
+        "step": "no-replace",
+        "exit_code": 1,
+        "seconds": 0.365
+      },
+      {
+        "step": "deterministic",
+        "exit_code": 0,
+        "seconds": 0.415
+      }
+    ],
+    "source_verifier_stdout_unchanged": true,
+    "all_original_190_members_identical": true,
+    "no_replace_preserves_inode_and_bytes": true,
+    "second_output_identical": true,
+    "frozen_inputs_unchanged": true,
+    "candidate": {
+      "size": 2505814,
+      "sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
+      "mode": "0444"
+    },
+    "scope": "DATA_MATERIALIZATION_ONLY"
+  },
+  "guest_probe": {
+    "scope": "RUNC_FIXED_PYTHON_ZIP_BOOT_ONLY_NOT_GVISOR_OR_INSTALL_QUALIFICATION",
+    "image_id": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191",
+    "results": [
+      {
+        "step": "metadata",
+        "cli_exit": 0,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-27T08:02:55.500829631Z",
+          "FinishedAt": "2026-10-27T08:02:55.969185472Z"
+        },
+        "seconds": 0.639
+      },
+      {
+        "step": "version",
+        "cli_exit": 0,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-27T08:02:56.30665274Z",
+          "FinishedAt": "2026-10-27T08:02:57.077387384Z"
+        },
+        "seconds": 0.938
+      },
+      {
+        "step": "help",
+        "cli_exit": 0,
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-27T08:02:57.396597922Z",
+          "FinishedAt": "2026-10-27T08:02:58.098260065Z"
+        },
+        "seconds": 0.836
+      }
+    ],
+    "failure": null,
+    "host_unchanged": true,
+    "candidate_unchanged": true
+  },
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--deterministic.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--deterministic.stdout.log",
+      "size": 193,
+      "sha256": "280290ecc27a64cefab94af6f2e35dcb9987ca9db439d4e16bbba89c50d6526c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--host-after.json",
+      "size": 2180,
+      "sha256": "b0b385bce9fc85da9718f45cba06817522cbfc7ac1f9dc71f28f5b12017b1c11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--host-before.json",
+      "size": 2180,
+      "sha256": "b0b385bce9fc85da9718f45cba06817522cbfc7ac1f9dc71f28f5b12017b1c11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--metadata-argv.json",
+      "size": 1690,
+      "sha256": "4797850826cacfc73e6f178dc783e213297beece54bc8b11357f306a11b4da1a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--metadata-created.json",
+      "size": 7531,
+      "sha256": "1bafd5fde5aecd7486cb933c9cd25aa054c7ae192309eeaaf55799274d8c4064"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--metadata.stderr.log",
+      "size": 241,
+      "sha256": "e29fedd664ce49b64440fe212ed39cc2ca134e882dbc232db86e18cf97825a4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--metadata.stdout.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--results.json",
+      "size": 407,
+      "sha256": "a0121be2deca0d7ef5e53b90011023a55ac349cd510d40c311f80bd8965a947a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest--summary.json",
+      "size": 1031,
+      "sha256": "2e332ff2a4d66b07bea3c2fa84661ebc6b41dace279910f0d61f96c3dd145eb2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--help-argv.json",
+      "size": 1006,
+      "sha256": "f626bd53657e2618029ef37849f7dfd85ecbfa24eefee9b1d2857c36278b1cfe"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--help-created.json",
+      "size": 6173,
+      "sha256": "2be8709a67423dff9d850e6199779a590352fde9a3eaf60ecc568395d8b155b6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--help.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--help.stdout.log",
+      "size": 4895,
+      "sha256": "3fa63ac7c372c9b03817b729aa484462be167171c1c6be770e86c208c75c5fb8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--host-after.json",
+      "size": 2180,
+      "sha256": "b0b385bce9fc85da9718f45cba06817522cbfc7ac1f9dc71f28f5b12017b1c11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--host-before.json",
+      "size": 2180,
+      "sha256": "b0b385bce9fc85da9718f45cba06817522cbfc7ac1f9dc71f28f5b12017b1c11"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--metadata-argv.json",
+      "size": 1746,
+      "sha256": "9f107be273a5ca719b84f45db5919db70e60e04bf4dc760ef097d02833a0ec80"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--metadata-created.json",
+      "size": 7643,
+      "sha256": "3e2029f4a9b2fc5546a3815cd94a0ccd2229e574a2da94943b585095f551858a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--metadata.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--metadata.stdout.log",
+      "size": 963,
+      "sha256": "c487cd18c0fbaa216093064e4f3a32a6c08a84b05c1ae1607eb2c1d339b77619"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--results.json",
+      "size": 1209,
+      "sha256": "d137790be54a2421192fa33e870636cb63d95cd1388c689538c87e70223a0649"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--summary.json",
+      "size": 1583,
+      "sha256": "edb714fe59726d995d4ae9a144ddabc04756c1fd98a7c80ffad2f623f2c18ddc"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--version-argv.json",
+      "size": 1012,
+      "sha256": "d8654dec680f58259cce6560b052ea0eb5705d5de9571357cba55b5bc3ff1a6d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--version-created.json",
+      "size": 6182,
+      "sha256": "65a1d1f4d88e4e350a3b298a9310562c29b5c7e56b843f98b19a3c278b2c928d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--version.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--guest-v2--version.stdout.log",
+      "size": 7,
+      "sha256": "dc7b48f21b523c860daba65e0b44b2130ab2b162dd8045168238c7bc69485ad4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--materialize.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--materialize.stdout.log",
+      "size": 193,
+      "sha256": "280290ecc27a64cefab94af6f2e35dcb9987ca9db439d4e16bbba89c50d6526c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--no-replace.stderr.log",
+      "size": 71,
+      "sha256": "4404d5643e2f234f7d61ab68e1dfae958da059b23e102fc56e43576267bdb6ee"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--no-replace.stdout.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--result.json",
+      "size": 307,
+      "sha256": "6bba272f1291aa56ddd3a011a7baacaa751a7681976b1e8b889c293c78fc6c33"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--summary.json",
+      "size": 757,
+      "sha256": "a2589c485996efc723da65b3463896a3fed9864465518de90e6aa808179be474"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--verify.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-candidate-20261027--verify.stdout.log",
+      "size": 49809,
+      "sha256": "09b781f87777179c1d09134caec4ecec4ebcf2f876ec113035c18a7d1f2b8e48"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-check-results.json",
+      "size": 82,
+      "sha256": "d078371820a29cd4a56b5139d332db8064c59e18fab7b3f39e5c0e09cb885cef"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-edit.py",
+      "size": 2435,
+      "sha256": "423b605ad97b59a02696d2dfb80d0b58192bc4f4b7081e5590a7856c89d90eca"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-focused.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-focused.stdout.log",
+      "size": 130,
+      "sha256": "1735de07e631c39782c86c2fb14292f15b9f1761e05f3dd7b0ba7b49dc0124e7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-format.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-format.stdout.log",
+      "size": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-quick.stderr.log",
+      "size": 197,
+      "sha256": "f9decce170469ac3f5128476cd5509f8fab99180c09b2cfc05f771487a82e8a5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-quick.stdout.log",
+      "size": 1333,
+      "sha256": "74a9fcef7685dc9b412a06e872ee3a21621ad67345194d78bd5d7cf103356dab"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-first-results.json",
+      "size": 164,
+      "sha256": "75c24976a279d6666088931d934fb692bf9815669fd1b2984bd180cce5fa341f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-guest-probe-v1.py",
+      "size": 5453,
+      "sha256": "52887394dea97fe72f5437a019d77a023557cc9808ea6bfc337bb0a010e2ba4d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-guest-probe-v2.py",
+      "size": 5512,
+      "sha256": "5cda339389c94f490609ef0693048e9e0dbb98fde7d7fda8b3d21f26fd11c9b6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-guest-probe.py",
+      "size": 5453,
+      "sha256": "52887394dea97fe72f5437a019d77a023557cc9808ea6bfc337bb0a010e2ba4d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-materialize-actual.py",
+      "size": 2482,
+      "sha256": "9746c1b98cb2724f3358f6654b6ae25bb71e3c5bfead7de49a833c701cfae2c1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-paths.json",
+      "size": 471,
+      "sha256": "4d268694a84bb71070d2759298d759f79891f69ed8aeec7b406507d91b85a6da"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-python-docs-fetched.json",
+      "size": 15669,
+      "sha256": "cfb68b9774863479d6cbcbbbac74a9815e8b0a5b38afdf7ec54ae8070eba7dc2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-python-sources-fetched.json",
+      "size": 75171,
+      "sha256": "a0782fe409f923ab7d49faa4a287d74e75048adfd7e17ab44266295f2173b44c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-qualify-v2.py",
+      "size": 1059,
+      "sha256": "9d58686c8a3c7d2604d663c6fcd9c445ad0a1bbed3e6f21c708d049bf73f8b64"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-source-before-actual.json",
+      "size": 883,
+      "sha256": "5e54d08780c84acad24c638c50f78b6349075167e3311b277e1768433415ea06"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-docs.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-docs.stdout.log",
+      "size": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-format.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-format.stdout.log",
+      "size": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-quick.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-quick.stdout.log",
+      "size": 1354,
+      "sha256": "494d0f33609c3a831428d02c774d45413b13b3bdda5ef10e1543b7fe69ddaab2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-race.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-race.stdout.log",
+      "size": 131,
+      "sha256": "333684390ebde070607850b5e94737c9260ecdeed68e7245f648124ce271d933"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-results.json",
+      "size": 404,
+      "sha256": "e9c5d7438273ff6026f1971cf6b365f117aec560e7d3d9cfd068fb87c495ba12"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-security.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-v2-security.stdout.log",
+      "size": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o3-wheel-resource-source-census.json",
+      "size": 4782,
+      "sha256": "41cbae9843c4de76fdfff15e1b2037c47cb4f2f25b0236688fdc2d6a442751d3"
+    }
+  ],
+  "raw_storage": "Local untracked raw files, not remotely backed up by this commit",
+  "first_failures": [
+    "Quick89.010s: SA1019 SetModTime; replaced with fixed Modified field",
+    "First runc metadata0.687s: fixture rejected stdlib python314.zip path before candidate import; exact three pinned paths checked in v2; version/help not reached in v1"
+  ],
+  "missing": [
+    "Single runtime owner and maintenance/release consumers",
+    "Typed readonly guest supply and gVisor/observer admission",
+    "Fixed UV backend and native install/upgrade/Artifact query roles",
+    "Public pipx CLI and whole P4/final profile qualification"
+  ]
+}

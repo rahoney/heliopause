@@ -1,0 +1,244 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-E2-B",
+  "source_base": "a9bfc3a",
+  "scope": "Public pipx run selection/source DATA; no current application Policy/program or CLI",
+  "audit": {
+    "whole_native_binding_and_resolver": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "named local YES",
+      "ACCEPTANCE_CLOSED": "named source/native slice YES",
+      "MISSING": []
+    },
+    "current_pipx_run_application_CLI": {
+      "IMPLEMENTED": "NO",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "current whole inspection/approval/approved console adapter",
+        "CLI/aliases/sole-app default and explicit support mapping",
+        "current real normal/nonzero/refusal cases",
+        "new-source grouped hosted and whole final acceptance"
+      ]
+    }
+  },
+  "source_identity": [
+    {
+      "path": "internal/sandbox/pipx_native_session.go",
+      "sha256": "ae996533337bd64e5fa6bdad0745962e5350ab51461761e21aadcf339e345920"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_resolver.go",
+      "sha256": "994d0f6f33c0c7b96aa8d338e7e5e1cc753fbdcb4d1109c27277bd780c9f20a9"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_resolver_test.go",
+      "sha256": "cffbce8084f24c6bd3df349233499f6115021cdc89872151df3dd8cd3c5f02e5"
+    },
+    {
+      "path": "internal/sandbox/pipx_run_probe_real_test.go",
+      "sha256": "cf46b36ec9efeb0527b9bda033e64952bd4757970f32a691cda89e12145732f4"
+    },
+    {
+      "path": "internal/sandbox/uv_run_console_binding.go",
+      "sha256": "68205010ad48d99649c539525ff84e89841d57cdc2f68af571586f7726886f6a"
+    },
+    {
+      "path": "internal/sandbox/uv_run_console_binding_test.go",
+      "sha256": "7e061f45af58b4ac4df42c337da94554a56bdc8bdb02b3200620730a2a9b86ac"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver.go",
+      "sha256": "2c156226fae6508357da0570ebba8f15b4ddb64f1afef5befefeb608298e66cc"
+    },
+    {
+      "path": "internal/sandbox/uv_run_resolver_real_test.go",
+      "sha256": "e20a2e7e58017a3ca9a993da7e3d308572fe5f707b7da052f220b843d9fa20fc"
+    }
+  ],
+  "shared_owners": {
+    "native_session_fragments": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-checks/unwired-session-sharing-proof.json",
+    "UV_descriptor_inverse": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-checks/final-uv-selection-sharing-proof.json",
+    "same_lifecycle_checks_and_defer_bytes": true,
+    "existing_callback_only_indentation_changed": true,
+    "existing_UV_descriptor_inverse_byte_equal": true,
+    "native_cache_metadata_is_unapproved_DATA": true,
+    "new_network_grant_event_budget_state_engine": false
+  },
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.886
+    },
+    {
+      "step": "focused",
+      "exit_code": 0,
+      "seconds": 8.583
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 282.759
+    },
+    {
+      "step": "sandbox-race",
+      "exit_code": 0,
+      "seconds": 65.573
+    },
+    {
+      "step": "tagged-vet",
+      "exit_code": 0,
+      "seconds": 1.219
+    },
+    {
+      "step": "tagged-staticcheck",
+      "exit_code": 0,
+      "seconds": 4.73
+    }
+  ],
+  "final_tagged_recorder_checks": [
+    {
+      "step": "format-public-test",
+      "exit_code": 0,
+      "seconds": 0.787
+    },
+    {
+      "step": "public-test-vet",
+      "exit_code": 0,
+      "seconds": 1.318
+    },
+    {
+      "step": "public-test-staticcheck",
+      "exit_code": 0,
+      "seconds": 10.737
+    }
+  ],
+  "default_Quick_Race_source_unchanged_by_tagged_only_changes": true,
+  "first_failures": [
+    {
+      "scope": "fixture compile contract",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-checks/binding-first-focused.log",
+      "correction": "preserve old fixture wrapper; no other consumers changed"
+    },
+    {
+      "scope": "recorded native census binder",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-checks/binding-census-focused.log",
+      "cause": "empty UV env/.lock 0666; exact existing pipx install exception reused"
+    },
+    {
+      "scope": "ordinary build consumer wiring",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-checks/unwired-quick.log",
+      "cause": "U1000: native run only had a tagged caller",
+      "correction": "complete real public PipxResolver.ResolveToolRun; no ignore/dummy reference"
+    },
+    {
+      "scope": "actual recorder oracle",
+      "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-actual-v1/inventory.json",
+      "cause": "native pipx uses pipx-native-resolver, not UV frozen-offline phase",
+      "prior_old_install_accounting_and_new_frozen_cases": "PASS",
+      "prior_public_incomplete": "NOT_REACHED",
+      "correction": "exact pipx profile in shared test recorder; only public two cases replayed"
+    }
+  ],
+  "native_existing_and_frozen": {
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-production-actual-v1/actual.log",
+    "cases_pass": 3,
+    "whole_command_status": "FAIL at later recorder oracle; not whole PASS",
+    "existing_install_cpu_usec": 2048117,
+    "accounting_refusal_no_target_or_metadata": true,
+    "new_frozen_graph": 2,
+    "new_frozen_cpu_usec": 2130765
+  },
+  "public_pipx": {
+    "actual": {
+      "exit_code": 0,
+      "seconds": 52.425,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "Public pipx resolver normal/incomplete only; prior v1 install/accounting/frozen PASS reused; current exact observer matched with canonical close-enter profile temporarily in Host runsc configuration; restored after quiet query. Public resolver actual source acquisition/normal/incomplete refusal included; current Policy/CLI and whole hosted qualification remain open. Protected ZIP supply is a private namespace compiled-pin fixture, not release/publisher activation.",
+      "Go_source_base": "a9bfc3a",
+      "new_test_source": {
+        "path": "internal/sandbox/pipx_run_probe_real_test.go",
+        "sha256": "cf46b36ec9efeb0527b9bda033e64952bd4757970f32a691cda89e12145732f4"
+      },
+      "local_observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b"
+    },
+    "normal_seconds": 25.15,
+    "incomplete_refused_seconds": 25.36,
+    "normal_graph": 1,
+    "refused_graph": 0,
+    "traces": 6,
+    "raw_complete": 6,
+    "delivered_complete": 5,
+    "injected_incomplete": 1,
+    "native_Outside_network_unexpected_honeytoken": 0,
+    "native_resource_each_case": {
+      "create": 1,
+      "register": 1,
+      "close": 1
+    },
+    "native_CPU_usec": [
+      2256081,
+      2009591
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-public-actual-v2/inventory.json"
+  },
+  "affected_UV": {
+    "actual": {
+      "exit_code": 0,
+      "seconds": 50.264,
+      "host_unchanged": true,
+      "helpers_after": {
+        "matches": [],
+        "errors": []
+      },
+      "no_skip": true,
+      "helper_wait_zero": true,
+      "helper_confirmed_stopped": true,
+      "observer_directory_empty_after": true,
+      "scope": "Affected existing UV public resolver normal/incomplete on the same new common source; exact ELF reused; current exact observer matched with canonical close-enter profile temporarily in Host runsc configuration; restored after quiet query. Affected UV actual source acquisition/normal/incomplete refusal included; current Policy/CLI and whole hosted qualification remain open. No private pipx supply is introduced in this affected UV comparison.",
+      "Go_source_base": "a9bfc3a",
+      "new_test_source": {
+        "path": "internal/sandbox/pipx_run_probe_real_test.go",
+        "sha256": "cf46b36ec9efeb0527b9bda033e64952bd4757970f32a691cda89e12145732f4"
+      },
+      "local_observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b"
+    },
+    "actual_command_seconds": 50.264,
+    "traces": 6,
+    "raw_complete": 6,
+    "delivered_complete": 5,
+    "injected_incomplete": 1,
+    "native_Outside_network_unexpected_honeytoken": 0,
+    "same_exact_ELF_reused": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-e2b-uv-affected-v1/inventory.json"
+  },
+  "protected_profile": {
+    "matching_canonical_close_enter": true,
+    "restored_same_inode_original_bytes_after_helpers_containers_query_absent": true,
+    "all_three_actual_attempts_host_files_Docker_preserved": true,
+    "fixed_installed_ZIP_fixture_private_namespace_only": true,
+    "publisher_activation": "NOT_TESTED"
+  },
+  "CPP_unchanged_from_E2A": {
+    "observer_sha256": "989b16c4880854ae4a92a579cf03da2a652c99aff92df96c5894a9a0b533f69b",
+    "no_same_source_CPP_rerun": true
+  },
+  "frozen_remote_CI437": {
+    "source": "f4f7abc",
+    "contains_new_E2_source": false,
+    "result": "PENDING",
+    "no_push_or_cancel": true
+  },
+  "whole_P6_P7_and_final": "OPEN"
+}

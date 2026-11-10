@@ -1,0 +1,142 @@
+{
+  "baseline": "0b41c10a689597b4c40e1882a040626bd4cd9f75",
+  "status": {
+    "IMPLEMENTED": "YES selection producer boundary",
+    "WIRED": "YES local actual consumer; NO product CLI/graph",
+    "QUALIFIED": "NO public selection/whole P2 remains",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "canonical": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.48,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 51.37,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.155,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.322,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "actual": {
+    "scope": "empty native selection and four synthetic injected failures; inert policy service, no public egress",
+    "exit": 0,
+    "seconds": 31.084,
+    "passed_subcases": 5,
+    "injection_reached_assertions": "PASS",
+    "host_unchanged": true,
+    "host_native_absent": true,
+    "daemon_waits": [
+      0
+    ],
+    "containers": "",
+    "volumes": "",
+    "observer_endpoints": []
+  },
+  "observer": {
+    "product_same_as": "0b41c10/343f03f",
+    "latch_pass": 110,
+    "binary_sha256": "279e4a3ed36a5ae274a8ec1d57d263392ba5d2ea4c63266f4916d8485e2664ca",
+    "temporary_read_grants_19_20": "SUPERSEDED, absent from final production"
+  },
+  "first_failures": {
+    "raw": "p2c2-pnpm-producer-first-fault-scope.json",
+    "second": "p2c2-pnpm-boundary-producer-reviewed.json",
+    "negative_scope": "first four PASS not credited because early runtime fault; corrected fixture requires injection counters"
+  },
+  "source": [
+    {
+      "path": "internal/artifact/npm/pnpm_lock.go",
+      "sha256": "4d25d262f1ade4e11fab4b9ddc0e8618ae5e8542c7c2d07efea10a9b1e87fdcd"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection_input.go",
+      "sha256": "5243c6ce6c1a4188a783c5780766e613cc2315867f7844539b305b9ff13ef915"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_selection_input_test.go",
+      "sha256": "4f1586f47af4a6623e97508247b57cd4920d562a82c7e5d7b3d7d0b12a19e2d1"
+    },
+    {
+      "path": "internal/sandbox/native_resolver_container.go",
+      "sha256": "d182c82d8b9e56aaf5fd8efde7e6b86875d946cf29eb71bbcfc38138c2be73dd"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver.go",
+      "sha256": "e9f589598fb8781ab17bd95c55eeafd07e1008f6d4891b1b4476fe6b197b9fe8"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver_test.go",
+      "sha256": "d0be935961716b0513b0f5b21014b0c614d3cd240bac6ab5f2d611590df45643"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime.go",
+      "sha256": "6cb84adb9ae38ff6b19ce6b5796dc11833c22179a62f6c3378c94fff85bb4b3b"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime_test.go",
+      "sha256": "f7bbe6ca73a98de3debad88f4784133b88a7f431f704953e6107af44b7e1bfbe"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver.go",
+      "sha256": "37c94adc9a6832e983677744631ee3e73df8eecd5b5dce31144f3b92532ea025"
+    },
+    {
+      "path": "internal/sandbox/pnpm_resolver_real_test.go",
+      "sha256": "9bb8bd41ea5986e6b7484478b30c829866efd2806f0a3e838956b1a413f08b04"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "93e1cefc4eb977edb9737e21e7ae999406e716d6c56a961a535e9e6283306f1d"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "641bd940b2712bcf0c8617e7455b8eb204c5cd30b53820b2e2f7d87c98427605"
+    }
+  ],
+  "official_review": "p2c2-pnpm-notifier-source.json and p2c2-pnpm-preflight-upstream.json; exact source91774e72a04d52ce61db06339696a433d383c764",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "raw": [
+    "p2c2-pnpm-producer-no-notifier-{format,quick,security,docs}.{json,log}",
+    "p2c2-pnpm-boundary-producer-no-notifier.json",
+    "p2c2-pnpm-producer-boundary-completed-runtime-cleanup.json",
+    "p2c2-pnpm-producer-no-notifier-race.json"
+  ],
+  "remaining": [
+    "actual public native typed policy/HTTPS single/transitive/peer",
+    "independent source binding of actual controls",
+    "Domain graph/HostInstallAction",
+    "native layout/transaction/CLI and full P2 qualification"
+  ],
+  "race": {
+    "command": [
+      "/home/winamp/.local/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/artifact/npm",
+      "./internal/sandbox",
+      "-timeout",
+      "5m"
+    ],
+    "exit": 0,
+    "seconds": 21.188,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "log_sha256": "7bf292315d9aec6ddd828c855ea886a2326b69763399b272324d0a9104396d0f"
+  },
+  "completed_trial_bytes_removed": 1333877777
+}

@@ -1,0 +1,150 @@
+{
+  "work_item": "M13-004/P3-B4c-a",
+  "baseline": "8ffb0c909d3e1f350c5b77eea59023d60bf2f278",
+  "status": {
+    "IMPLEMENTED": "YES (full native file-cache binding, registry data envelope and two-cache footprint)",
+    "WIRED": "YES (frozen-data actual consumer; production preparer next)",
+    "QUALIFIED": "YES (named local data subset)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4c/Bun)",
+    "MISSING": [
+      "production controlled intake/seed/transport/preparer and exact observer shapes with complete cleanup/observation",
+      "actual multiple-version/cyclic source graphs beyond the two alias recipe samples",
+      "Bun lifecycle/runtime and full inspection/Policy, approved cache/transaction/CLI",
+      "whole affected-profile remote qualification and next meaningful macOS/Required gate"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/artifact/npm/bun_inspection_context.go",
+      "sha256": "cc143b7e0566cbd60544b4a4fa08084306d186e60757015da24a75a5bf142d32"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_budget.go",
+      "sha256": "4847c935afa3d8726a796bd43d8a84c4d23621948c7bbc1205160fc1751c6636"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_budget_test.go",
+      "sha256": "3e2187e93808d71a9cebf9a8946d1d9987a35e63aa8a90c34ed183c7551cc9cd"
+    },
+    {
+      "path": "internal/artifact/npm/bun_native_cache.go",
+      "sha256": "70cc0451545e61ee742d17d31dc47479f2d7127f24699c3caf38cf708a423fd5"
+    },
+    {
+      "path": "internal/artifact/npm/bun_registry_cache.go",
+      "sha256": "66ecfa7d22aae81cb92262c24e075433ee29572be92159c1d14bc2c643d2175c"
+    },
+    {
+      "path": "internal/artifact/npm/bun_native_cache_test.go",
+      "sha256": "26db600944a573b28e9b1084166455dbe90ead5364496f0461e3ff093d5f346c"
+    },
+    {
+      "path": "internal/sandbox/bun_native_cache_real_test.go",
+      "sha256": "6aa136f2ca392d5b880fd215ec3494c644e89b1b4643d2b437035778fa3518a2"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4ca-cache-first-format.json",
+      "command_display": [
+        "canonical",
+        "format"
+      ],
+      "exit": 0,
+      "seconds": 1.768,
+      "log_sha256": null
+    },
+    {
+      "receipt": "p3b4ca-cache-first-quick.json",
+      "command_display": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 191.832,
+      "log_sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "receipt": "p3b4ca-bun-full-related-race.json",
+      "command_display": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/npm",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 50.203,
+      "log_sha256": "063620212871437024d36d15609030af4115679774880648ecf96a1ff76785b7"
+    },
+    {
+      "receipt": "p3b4ca-bun-cache-tagged-vet.json",
+      "command_display": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 1.172,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4ca-bun-cache-binding-real-compile.json",
+      "command_display": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/hpr-bx53162k/bun-cache-binding/sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 8.143,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "receipt": "p3b4ca-bun-cache-binding-real.json",
+      "command_display": [
+        "sandbox.test",
+        "-test.v",
+        "-test.timeout=3m",
+        "-test.run",
+        "^TestBunFrozenNativeCacheBinding$"
+      ],
+      "exit": 0,
+      "seconds": 1.571,
+      "log_sha256": "eea6205bbadc0689932f04a9fd42b69f0e55393b6a032f0c13e1e3a7a7015b5a"
+    }
+  ],
+  "native_prototypes": {
+    "failed_file_only": "p3b4c-bun-file-seed-{transitive,peer}-runc-v1.json",
+    "successful_scoped_seed": "p3b4c-bun-file-seed-{transitive,peer}-runc-v2.json",
+    "lock_only_import_and_frozen": "p3b4c-bun-file-seed-{transitive,peer}-runc-v3.json",
+    "digest_alias_roots_import_and_frozen": "p3b4c-bun-file-seed-{transitive,peer}-runc-v4.json",
+    "scope": "network-none runc only; frozen SRI rechecked; originals preserved; exact container absence; synthetic seed graph/private lock never used as public selection or approval"
+  },
+  "actual_cache_binding": {
+    "receipt": "p3b4ca-bun-cache-binding-real.json",
+    "archives": [
+      2,
+      4
+    ],
+    "registry_bytes": [
+      24576,
+      423424
+    ],
+    "full_file_and_SRI_marker_checked": true,
+    "partial_rejected": true,
+    "global_native_indices": "discarded data, not claimed validated",
+    "gVisor_native_execution_Policy_Host_install": "NOT_EXERCISED"
+  },
+  "resource_scope": "same128MiB ceiling; compressed + two unique expanded caches + every logical instance; original PNPM accounting engine untouched; implied directory ceiling checked before native work",
+  "remote": "NO new push/CI; continue production prepare; grouped meaningful checkpoint with active clock timer"
+}

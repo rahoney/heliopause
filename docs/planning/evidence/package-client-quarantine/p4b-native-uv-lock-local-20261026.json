@@ -1,0 +1,70 @@
+{
+  "work_item": "M13-004/P4-B",
+  "baseline": "619b214bf7dcb8145652881146740d5a72007c4a",
+  "status": {
+    "IMPLEMENTED": "YES (native1/revision5 reader and target export identity boundary)",
+    "WIRED": "YES (typed artifact adapter); NO (production project resolver/CLI)",
+    "QUALIFIED": "YES (named local structural/negative and actual empty native format)",
+    "ACCEPTANCE_CLOSED": "YES (reader boundary only); NO (whole P4)",
+    "MISSING": [
+      "isolated native project command and actual public nonempty output/export compatibility",
+      "independent archive/metadata binding through project resolver",
+      "project/venv transaction and CLI; persistent UV tool/pipx"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4b-native-lock-first-format.json",
+      "seconds": 1.54,
+      "sha256": "5304d0d0c7766efd31eff7aea5331012bee646df0e2d50a8599d0912434080dc"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4b-native-lock-first-quick.json",
+      "seconds": 202.858,
+      "sha256": "44654ef4a9fabf6f13468004f326dce03fcdd73f6b4addc56829da025d4cf4f6"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4b-native-lock-first-security.json",
+      "seconds": 12.989,
+      "sha256": "5ccee95066e96f523f487ccaf3553a30231bb7c1a46c0f58119e4edfbc8321c7"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4b-native-lock-first-docs.json",
+      "seconds": 0.255,
+      "sha256": "66f8f3e9e1966bbe26360fe78859bf51552e1fd1c37290b12c55c1bcbd81a923"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4b-native-lock-full-artifact-race.json",
+      "seconds": 5.679,
+      "sha256": "473ccd58fb14be9c5180f0785e17faa2e7ea186c344c0b4c4dde05df6fa3d024"
+    }
+  ],
+  "unchanged_owners": [
+    "internal/artifact/pypi/uv_lock.go",
+    "internal/artifact/pypi/uv_project_lock.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/sandbox/uv_resolver.go",
+    "internal/sandbox/uv_sync_resolver.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_native_project_lock.go",
+      "sha256": "f9b3251812673c6f8d4b1bdc1332407dfc7aa05cd10ade46d065acfc116ddd2e"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_native_project_lock_test.go",
+      "sha256": "47ea16e4980a8e67b9943bda2e50746c15f4fa21ee17f7fc68ce2013154e5deb"
+    }
+  ],
+  "boundaries": [
+    "actual fixed UV empty virtual root differs from absent root; original bytes preserved",
+    "synthetic public source/SRI complete graph and target export; not native public acquisition",
+    "unknown schema/source/marker/local root/metadata/edge/disconnected/export hash/size/URL substitution rejected",
+    "sdist metadata inert only, no archive acquisition/build/execution/Policy authority; existing wheel-only source/filename/hash/size/budgets reused"
+  ],
+  "ci": "CI413 frozen50fd outside this P4 source; no push/dispatch",
+  "lessons_review": "No new product failure or cause; receipt operator initially guessed nonexistent workflow filename, corrected from actual rg inventory before record creation; existing lessons unchanged"
+}

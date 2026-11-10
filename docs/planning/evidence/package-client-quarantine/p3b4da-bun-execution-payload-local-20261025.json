@@ -1,0 +1,94 @@
+{
+  "work_item": "M13-004/P3-B4d-a",
+  "baseline": "4420b48d6d8cb500341b982250eee5000dfa7f92",
+  "status": {
+    "IMPLEMENTED": "YES (Bun typed execution-data renderer and fixed-kind copy/readback)",
+    "WIRED": "YES (actual fresh scope consumer; instance backend next)",
+    "QUALIFIED": "YES (named local data transfer and affected PNPM whole project)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4d/Bun)",
+    "MISSING": [
+      "exact Bun instance lifecycle command/topology/one-shot admission and native/runtime requirements",
+      "Bun backend and complete static-all/dynamic aggregation/Policy wiring",
+      "approved cache/transaction/CLI and whole remote qualification; next meaningful macOS/Required gate remains"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/pnpm_inspection_payload.go",
+      "sha256": "cd8dd90862d2f1351d6219d9952db4a18e4b00b3b69aa5d620dc9e8744d0bd49"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_payload.go",
+      "sha256": "6f6ce93c9791a3add5830240a06faceecff552314ca2fbf9fed0c4924a2f0b0c"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_payload_test.go",
+      "sha256": "896bce448f24d7f0f504cbbeb05ba609df19ecd9359ca1309b41715f86be4b9a"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_payload_real_test.go",
+      "sha256": "e7386683285a71db7d61abccfd4623788e157f285b3be24361b77d5ca5b0d012"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4da-reviewed-quick.json",
+      "exit": 0,
+      "seconds": 170.358,
+      "receipt_sha256": "916a9160ac15d3fd35a955e2b36ea140c3ad39d2045bd237d7aaf02f931d09ca"
+    },
+    {
+      "receipt": "p3b4da-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 23.229,
+      "receipt_sha256": "e5592e96f4ae0b9461555d16b4aa874189698506e4c8d9e7648d26cce22bce71"
+    },
+    {
+      "receipt": "p3b4da-bun-payload-tagged-vet.json",
+      "exit": 0,
+      "seconds": 0.921,
+      "receipt_sha256": "3fb5f51a3260e584f032e5828184cb526ee99008d81cc178f3d84aaa796019df"
+    },
+    {
+      "receipt": "p3b4da-bun-payload-v2-actual-compile.json",
+      "exit": 0,
+      "seconds": 6.335,
+      "receipt_sha256": "788dc2e29a52b08db71b99eb718d9a868630fdf1700b182b43d1cbb00215f43c"
+    },
+    {
+      "receipt": "p3b4da-bun-payload-v2-result.json",
+      "exit": 0,
+      "seconds": 65.119,
+      "receipt_sha256": "3dd58d529f8355c706fd9e03f166d046f3f1e5f8c3b546c434556b4f29af861c"
+    }
+  ],
+  "bun_actual": {
+    "fresh_public_archives": 4,
+    "bound_layout_entries": 63,
+    "payload_entries": 65,
+    "payload_bytes": 425984,
+    "full_readback": true,
+    "fresh_destination_session": true,
+    "seconds": 15.01,
+    "lifecycle_Policy_Host_install": "NOT_EXERCISED"
+  },
+  "pnpm_affected_actual": {
+    "fixtures": [
+      "transitive",
+      "peer"
+    ],
+    "fresh_dynamic_sessions": [
+      2,
+      4
+    ],
+    "static_all": true,
+    "required_dynamic": "COMPLETED",
+    "seconds": 47.53,
+    "Policy_Host_install": "NOT_EXERCISED"
+  },
+  "body_reuse": "p3b4da-payload-mechanical-reuse.json",
+  "original_failure": "p3b4da-first-quick.json (56.550s Staticcheck U1000; unused private wrapper removed, no rule suppression)",
+  "observer": "CPP unchanged; p3b4cb-bun-preparation-observer-canonical-network.json/117 latches reused by exact binary/source identity",
+  "runtime_or_network_grants_added": false,
+  "ci": "No push/new CI for this data unit; plan section 5 backend/end-to-end grouping and actual timer continuation remain."
+}

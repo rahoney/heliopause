@@ -1,0 +1,204 @@
+{
+  "schema": "haa.named-local-qualification.v1",
+  "scope": "P4-O4-C3c3b3c C-a fresh offline native metadata/typed accounting/cleanup only",
+  "baseline_commit": "8276a33427fd632a3a582d1f40098e7a8bc3dd05",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local fixture)",
+    "ACCEPTANCE_CLOSED": "YES (C-a named fixture only)"
+  },
+  "observer_build": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/haa-p4o4c3c3b3c1-v18-observer"
+    ],
+    "exit_code": 0,
+    "seconds": 247.792,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "3d5dc0e136592c9a20306dadc37bf7ab15390753dbb809e31eae88b6b22bfffc"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "64f5e1a1cd050392cbe02734daf629e2a6758e070585daf5efb19e2ce058131f"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ],
+    "log_sha256": "de5d620a818b0c2d1acd5441e9c821c04df51b45f784908e6a864dfb9eef43ef",
+    "observer": {
+      "bytes": 3201920,
+      "sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555"
+    }
+  },
+  "latches": {
+    "pass": 128,
+    "fail": 0
+  },
+  "go_build_reused": {
+    "source_identity": [
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "26bf8979985d6c7b8e29dd5cf3ea973de9649efc897256af426d7c78ecb964db"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_test.go",
+        "sha256": "f7b09f9d72b3077592fbcf40c1bb73e3d3b3b396122bb654c108520987494e24"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "27a28860d505f688b2cf2e9d52daefc0fbc079e5bb8e6b8241ae04ea4d200e43"
+      },
+      {
+        "path": "internal/sandbox/fault_open_diagnostic_test.go",
+        "sha256": "62e6203e12502f94fa35eef89b7fe49c70597964f754513de756a7409143d4d0"
+      },
+      {
+        "path": "internal/sandbox/collector.go",
+        "sha256": "7f71113ed092d37427630d66583aa936b99bc7aad49a697f759c695937eef505"
+      }
+    ],
+    "source_after_matches_before": true,
+    "binary_sha256": "eea7a02bb362ae424aa5d9ddefaa6f5f6c145f33f047279ba017ec516a49b4e3",
+    "checks": [
+      {
+        "step": "format",
+        "exit_code": 0,
+        "seconds": 0.67
+      },
+      {
+        "step": "quick",
+        "exit_code": 0,
+        "seconds": 47.859
+      },
+      {
+        "step": "focused-race",
+        "exit_code": 0,
+        "seconds": 10.116
+      },
+      {
+        "step": "tag-vet",
+        "exit_code": 0,
+        "seconds": 0.987
+      },
+      {
+        "step": "actual-build",
+        "exit_code": 0,
+        "seconds": 7.112
+      },
+      {
+        "step": "docs",
+        "exit_code": 0,
+        "seconds": 0.247
+      },
+      {
+        "step": "security",
+        "exit_code": 0,
+        "seconds": 9.499
+      }
+    ]
+  },
+  "actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 17.003,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "log_sha256": "945548124ce26e9b3c59ae4644c9540d319b5933b2ad37e953065f59dd97a979",
+    "sources": [
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c1-actual-v18/protected-client",
+        "sha256": "eea7a02bb362ae424aa5d9ddefaa6f5f6c145f33f047279ba017ec516a49b4e3"
+      },
+      {
+        "path": "/tmp/haa-p4o4c3c3b3c1-actual-v18/observer",
+        "sha256": "5d976ecdc2f1056099ec18a0eb329ce5286b8f03af7e6758bda3e8b1423ef555"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session.go",
+        "sha256": "26bf8979985d6c7b8e29dd5cf3ea973de9649efc897256af426d7c78ecb964db"
+      },
+      {
+        "path": "/tmp/haa-p4o1-20261027-source/internal/sandbox/pipx_native_session_real_test.go",
+        "sha256": "2a4972a8d3f4776343ddeac39e5d20856d3e0c976e899bdbe7ebedbae840fb28"
+      }
+    ],
+    "passed_named_tests": [
+      "TestLinuxPipxObservedNativeInstallIntegration"
+    ],
+    "named_pass": true
+  },
+  "positive": {
+    "targets": 1,
+    "controls": 2,
+    "graph_nodes": 2,
+    "cpu_usec": 2128257,
+    "last_read_cpu_usec": 2127970,
+    "creates": 1,
+    "registers": 1,
+    "closes": 1
+  },
+  "accounting_refusal": {
+    "genuine_read_before_injection": true,
+    "targets": 0,
+    "controls": 0,
+    "graph_nodes": 0,
+    "cpu_usec": 106412,
+    "creates": 1,
+    "registers": 1,
+    "closes": 1
+  },
+  "mechanical_reuse": {
+    "baseline": "8276a33427fd632a3a582d1f40098e7a8bc3dd05",
+    "inverse_two_exact_read_changes_equals_entire_baseline_observer": true,
+    "generic_sender_parser_switch_six_guards_unchanged": true
+  },
+  "raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p4o4c3c3b3c1-",
+  "failure_history": {
+    "previous_checkpoint": "p4o4c3c3b3c1-native-query-diagnostics-checkpoint-20261028.json",
+    "v17": "directory outside3 removed; expected34 then exact immutable os-release fault; all cleanup/input/source invariants true",
+    "v18": "fresh and genuine accounting-refusal passed"
+  },
+  "not_claimed": [
+    "live public native resolution",
+    "installed protected supply authentication/caller",
+    "original-environment upgrade",
+    "current complete inspection Evidence/Policy",
+    "CLI or Host publication",
+    "hosted/CUDA/signed-native qualification",
+    "legacy ZIP whole-parent CPU-boundary closure"
+  ],
+  "MISSING": [
+    "C-b installed protected ZIP/frozen source production factory",
+    "original upgrade/current complete inspection and Policy",
+    "CLI/native and final support/profile matrix",
+    "legacy ZIP mixed CPU boundary investigation/qualification"
+  ]
+}

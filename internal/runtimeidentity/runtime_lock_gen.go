@@ -3,11 +3,12 @@
 package runtimeidentity
 
 const (
+	RuntimeLockSHA256            = "077fe86db0b84a479a79180680f316a762be950060e1a5edb9cca7e80572bab5"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
 	GVisorPatchPath              = "tools/gvisor/release-20260907.0.patch"
-	GVisorPatchSHA256            = "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+	GVisorPatchSHA256            = "c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68"
 	GVisorBazelModuleLockSHA256  = "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34"
 	GVisorBuilderImageRepository = "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64"
 	GVisorBuilderImageTag        = "c48008cead6d6826"
@@ -15,18 +16,60 @@ const (
 	GVisorBuilderArchitecture    = "amd64"
 	BazelVersion                 = "8.3.1"
 	BazelLinuxX8664SHA512        = "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
-	DockerMinimumEngine          = "29.8.1"
-	DockerCIEngine               = "29.8.1"
-	DockerCEPackage              = "5:29.8.1-1~ubuntu.24.04~noble"
-	DockerCECLIPackage           = "5:29.8.1-1~ubuntu.24.04~noble"
-	ContainerdPackage            = "2.3.5-1~ubuntu.24.04~noble"
-	NodeImageReference           = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
-	NodeNPMVersion               = "11.19.0"
-	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
-	PythonVersion                = "3.14.7"
-	PipVersion                   = "26.2.1"
-	GoImageReference             = "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff"
-	GoVersion                    = "1.26.9"
+	DockerMinimumEngine          = "29.9.2"
+	DockerCIEngine               = "29.9.2"
+	DockerCEPackage              = "5:29.9.2-1~ubuntu.24.04~noble"
+	DockerCECLIPackage           = "5:29.9.2-1~ubuntu.24.04~noble"
+	ContainerdPackage            = "2.4.2-1~ubuntu.24.04~noble"
+	NodeImageReference           = "node:24.22.1-slim@sha256:e1582112fb9f152ed38eefcd712efc93fee1becb519fdfa57574d5e07eaa5e7d"
+	NodeNPMVersion               = "11.19.1"
+	UVImageReference             = "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+	UVVersion                    = "0.13.4"
+	UVArchitecture               = "amd64"
+	UVSourceCommit               = "7456b60bc6bc348e13e06e3691bf08e78d3aef54"
+	UVWorkflowRun                = "39441647119"
+	UVIndexSHA256                = "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b"
+	UVBundleSHA256               = "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835"
+	UVConfigSHA256               = "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+	UVToolPath                   = "/uv"
+	UVToolSHA256                 = "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499"
+	PNPMVersion                  = "12.15.0"
+	PNPMArchitecture             = "amd64"
+	PNPMArchiveURL               = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
+	PNPMArchiveSHA256            = "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+	BunVersion                   = "1.4.4"
+	BunArchitecture              = "amd64"
+	BunRuntimeImage              = "node_image"
+	BunArchiveURL                = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip"
+	BunArchiveSHA256             = "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c"
+	BunPublisherFingerprint      = "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59"
+	BunChecksumsPath             = "tools/bun/SHASUMS256.txt.asc"
+	BunChecksumsSHA256           = "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+	BunSourceCommitObserved      = "38afee6c84fcf48c0edb2466aa4b27d287a59c30"
+	BunToolPath                  = "bun"
+	BunToolSHA256                = "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235"
+	BunNoticesPath               = "tools/bun/NOTICE"
+	BunNoticesSHA256             = "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980"
+	PNPMSourceCommit             = "91774e72a04d52ce61db06339696a433d383c764"
+	PNPMWorkflowRun              = "39583314875"
+	PNPMBundlePath               = "tools/pnpm/release-proof.json"
+	PNPMBundleSHA256             = "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+	PNPMToolPath                 = "pnpm"
+	PNPMToolSHA256               = "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
+	PNPMNoticesPath              = "tools/pnpm/NOTICE"
+	PNPMNoticesSHA256            = "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
+	PipxVersion                  = "1.18.4"
+	PipxArchitecture             = "amd64"
+	PipxRuntimeImage             = "python_image"
+	PipxToolPath                 = "pipx-runtime.zip"
+	PipxToolSHA256               = "0d02e769a58079e1a123fd6a68dd305a23be4381e3f83e7ab1e1f30d6e4d7670"
+	PipxNoticesPath              = "tools/pipx/NOTICE"
+	PipxNoticesSHA256            = "b5f0bb2d960461736a5d6910e6e135751ec6759f1e97e8ba90506e8b93214fd0"
+	PythonImageReference         = "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86"
+	PythonVersion                = "3.14.10"
+	PipVersion                   = "26.2.2"
+	GoImageReference             = "golang:1.27.3-bookworm@sha256:fea12ba16096adec0f699ce1c4da2154d320450e56c1f63671f95d2a3551c77b"
+	GoVersion                    = "1.27.3"
 	GoArchitecture               = "amd64"
 	RustImageReference           = "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0"
 	RustVersion                  = "1.99.0"
@@ -39,7 +82,29 @@ const (
 	PyTorchCU126Version          = "2.14.0+cu126"
 	PyTorchCU130Version          = "2.14.0+cu130"
 	PyTorchCU132Version          = "2.14.0+cu132"
+	UVToolSize                   = 42544544
+	PNPMArchiveSize              = 25369328
+	PNPMToolSize                 = 57822504
+	PNPMNoticesSize              = 3152
+	BunArchiveSize               = 51794595
+	BunToolSize                  = 107308936
+	BunNoticesSize               = 14877
+	PipxToolSize                 = 2455948
+	PipxNoticesSize              = 44855
 )
+
+// SelectedSemgrepSupply returns the immutable lock-selected value.
+func SelectedSemgrepSupply() SemgrepSupplyOwner {
+	return SemgrepSupplyOwner{
+		Version: "1.183.0", Architecture: "amd64", RuntimeImage: "python_image", SourceCommit: "4fe07d805dd2a4b64fed486e95136923f08648d0", SourceTagObject: "f4162666feb36c1f9d1788f9b331f6a59b5a83ec", SourceManifestSHA256: "ffd276301c9d88e044a422c667e33c2d39a0afc3b9d273de68610465113adca5", SourceDateEpoch: 1793297858,
+		Tool:    SemgrepSupplyAsset{Path: "semgrep-core-linux-amd64", SHA256: "33ae45003cb97dfc253e5db9076f9f19d78b51f65a0d23f7e188d972ad731229", Size: 171651104},
+		Sources: SemgrepSupplyAsset{Path: "semgrep-SOURCES.tar", SHA256: "f36d91990edbc27bad657532aec7345a5ad73c251a39b2380c675d3962510f51", Size: 327986176},
+		Notices: SemgrepSupplyAsset{Path: "semgrep-NOTICES.tar", SHA256: "c30784ef7de4d7370b20055f64bdf606ceb91a447e293cfc272b412fd8cb17d7", Size: 1997312},
+		Rules:   SemgrepSupplyAsset{Path: "tools/semgrep/rules.json", SHA256: "671f488c3b5edf32e6c7b07e644870e3a8154683fa307c14fe14ec1656114d97", Size: 11988},
+		Patch:   SemgrepSupplyAsset{Path: "tools/semgrep/quarantine.patch", SHA256: "3aa2d8f8b4aac649e34edc3642696cb8e8457ce2bcbf607bb1a4370643c5f5a8", Size: 6495},
+		Worker:  SemgrepSupplyAsset{Path: "scripts/update-runtime/semgrep_build_worker.sh", SHA256: "0654f9400147e201f4c7e26dd2df4e0a92baec7a1e5a9403f1cb201eebcb2767", Size: 7344},
+	}
+}
 
 type PythonSourceProfileLock struct {
 	Name, SourceID, IndexURL, IndexHost string
@@ -60,10 +125,10 @@ type GVisorBundleMemberLock struct {
 }
 
 var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
-	{Path: "containerd-shim-runsc-v1", Size: 43763177, SHA512: "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"},
-	{Path: "gvisor-bin/checkpointgofer", Size: 69307944, SHA512: "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"},
+	{Path: "containerd-shim-runsc-v1", Size: 43892969, SHA512: "b74e187449c4de5f091d66875dedfff4b2f50c54771367f5e2d404148ac544be2fe1b7ff1aa5463dfc01a0070513a18621d87127e9c1928cf0303a093b8514e2"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 68279621, SHA512: "292d8db3da84aa1b80a8d874a71c506731b7d0ffd10246b823ee122c80514471ec4e4b1343bfda3c825da828b84f97b5c99d3111fd0035113b91d0a5aeac0786"},
 	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-	{Path: "gvisor-bin/gvisor_sentry", Size: 52220923, SHA512: "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"},
-	{Path: "gvisor-bin/runsc-metric-server", Size: 53298557, SHA512: "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"},
-	{Path: "runsc", Size: 109851720, SHA512: "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 51952312, SHA512: "5cb31d23567463e0aaca08047b09801fbd363e3986b9dc9ae1d4ab5a22890363ee7e8d2f83751be292b405a384f7d8110dcfc51596c87b5a42d7362051e0ccd5"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 53413734, SHA512: "87b44729b82008dbc2cc6455f68586827e6d96dbddb6d2023e98d66ff94a8ec37bc2ff150b8b379fc6668db47946551076f782c92357e17bd0459fefc6d4d68f"},
+	{Path: "runsc", Size: 111030944, SHA512: "a677715fba638f745240c5cc2496a2132009086179cc918236b407e9cb5835d1be706e4033ede4b3bfa66c87b738b8e4db1331dab4cb1798b6cf7685bb25165b"},
 }

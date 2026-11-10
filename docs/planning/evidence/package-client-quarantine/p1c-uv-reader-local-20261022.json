@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "baseline": "9b0da57130ee2012bfe6bddf1fffa59ef15b9389",
+  "scope": "P1c C2 private independent exact-release metadata/whole archive binding through existing Python session; fixed replay only",
+  "sources": [
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "sha256": "726f17a693d6e42cf79f09970fe127e9e6ccb9a29b69e3505d25b79f5bf08aad"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_reader.go",
+      "sha256": "afe73628b08d793e58cf6ec12ced5e3bb2e33966d70e0cdf1a9c3de09d200206"
+    },
+    {
+      "path": "internal/sandbox/uv_resolver_reader_test.go",
+      "sha256": "f53c55af9bde331794e7271d825a923de51ed5343ecf74e877f1fd6e88bf75df"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.307,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 37.339,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.76,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.211,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.749,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "command": [
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=2m",
+      "-run",
+      "^Test(UVIndependentReader|UVArchiveWriter|PyPIResolver|PyTorch.*(Resolver|Resolve))",
+      "./internal/sandbox"
+    ],
+    "exit": 0,
+    "seconds": 10.055
+  },
+  "shared_session_extraction": {
+    "checks": [
+      {
+        "profile": "format",
+        "exit": 0,
+        "seconds": 0.325,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      },
+      {
+        "profile": "quick",
+        "exit": 0,
+        "seconds": 96.785,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      },
+      {
+        "profile": "security",
+        "exit": 0,
+        "seconds": 6.579,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      },
+      {
+        "profile": "docs",
+        "exit": 0,
+        "seconds": 0.267,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      },
+      {
+        "profile": "workflow",
+        "exit": 0,
+        "seconds": 0.886,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    ],
+    "race": {
+      "command": [
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=2m",
+        "-run",
+        "^Test(PyPIResolver|PyTorch.*(Resolver|Resolve))",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 10.199
+    },
+    "existing_request_timeout_cleanup_order_preserved": true
+  },
+  "reader": {
+    "metadata_endpoint": "typed exact public PyPI release URL only",
+    "metadata_max_bytes": 4194304,
+    "archive_limit": "exact selected wheel size plus public-source aggregate budget",
+    "validation": "independent release identity/URL/filename/SHA/size/yanked, whole archive/digest/RECORD/Requires-Dist via existing BindWheels",
+    "workspace": "private0700, file0600, close after final ReaderAt and remove",
+    "failure": "no graph after command/parse/byte/metadata/archive/trace/cancel/cleanup failure; subprocess text hidden with inspectable cause",
+    "solver_identity": "uv and pinned Python target; no fabricated pip report"
+  },
+  "first_failure": {
+    "cause": "synthetic requires_python>=3.8 differed from wheel metadata with no Requires-Python",
+    "product_validation_changed": false,
+    "fixture_corrected": true,
+    "mismatch_retained_as_negative": true,
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-c2-reader-quick.log"
+  },
+  "implemented": true,
+  "wired": "private adapter to shared Python session and existing artifact parsers; production native caller NO",
+  "qualified": "canonical5, related Race and fixed replay; actual Python HTTP/native public producer not yet qualified",
+  "acceptance_closed": false,
+  "missing": [
+    "actual UV public PyPI producer/native caller",
+    "actual isolated Python HTTP metadata/archive transport and complete graph qualification",
+    "guarded install/upgrade/sync and CLI",
+    "new candidate remote qualification; macOS timeout cause remains unconfirmed"
+  ]
+}

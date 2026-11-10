@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "work_item": "M13-004/P1 client foundation + uv pip",
+  "scope": "bounded Linux amd64 public wheel UV pip install/upgrade/sync; full complete-set quarantine and same-source common CPU/three CUDA qualification",
+  "qualification_source_commit": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+  "qualification_source_tree": "9ece0a2e57c55e5276dc1df55d97d4c1b5f49323",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "baseline_reused": [
+    "existing PyPI wheel/archive/RECORD and dependency normalization",
+    "existing InstallInspect batch acquire/verify/static-all/per-target closure/Evidence/entry/set Policy",
+    "existing Python venv ownership/adoption/held transaction/offline pip/rollback",
+    "existing runtime lock/provenance/maintenance and bounded CLI descriptor/presentation"
+  ],
+  "source_changes_preserved_in_commits": [
+    "7e1e4c6",
+    "ea287b2"
+  ],
+  "actual_sync": {
+    "run_id": 39895409439,
+    "jobs": "10 SUCCESS including Required",
+    "linux_top_level_passes": 53,
+    "complete_seconds": 103.23,
+    "closure_seconds": 46.14,
+    "coverage": [
+      "two disconnected exact roots",
+      "same-set gets fresh Run/Evidence/Manifest",
+      "replacement and excluded original removal",
+      "blank skip preserves installed state and Evidence",
+      "explicit empty requirements and pylock use approval/records",
+      "genuine native excluded original refused without adoption; exact old-wheel proof with --adopt",
+      "complete requests graph checks all five wheels and SBOM five nodes/four edges"
+    ]
+  },
+  "same_source_profiles": [
+    {
+      "profile": "cu126",
+      "run_id": 39900424368,
+      "run_number": 392,
+      "checkout": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+      "tree": "9ece0a2e57c55e5276dc1df55d97d4c1b5f49323",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 120240502817,
+          "name": "Vulnerability",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503080,
+          "name": "macOS",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503113,
+          "name": "gVisor Linux Integration",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503123,
+          "name": "gVisor Observer Helper",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503148,
+          "name": "Quick",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503164,
+          "name": "Minimum Go",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503225,
+          "name": "Representative Wheel Corpus",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503235,
+          "name": "Docs",
+          "conclusion": "success"
+        },
+        {
+          "id": 120240503332,
+          "name": "Security",
+          "conclusion": "success"
+        },
+        {
+          "id": 120260871282,
+          "name": "Required",
+          "conclusion": "success"
+        }
+      ],
+      "linux_top_level_passes": 54,
+      "cpu_full_seconds": 281.62,
+      "cuda_full_seconds": 1244.38,
+      "helpers_reaped_wait_zero": 5,
+      "cleanup": "2026-10-23T05:38:50.8397068Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=418721"
+    },
+    {
+      "profile": "cu130",
+      "run_id": 39907862210,
+      "run_number": 393,
+      "checkout": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+      "tree": "9ece0a2e57c55e5276dc1df55d97d4c1b5f49323",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 120263840949,
+          "name": "Representative Wheel Corpus",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841140,
+          "name": "Security",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841148,
+          "name": "gVisor Observer Helper",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841151,
+          "name": "Vulnerability",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841153,
+          "name": "gVisor Linux Integration",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841219,
+          "name": "Quick",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841242,
+          "name": "Docs",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841262,
+          "name": "macOS",
+          "conclusion": "success"
+        },
+        {
+          "id": 120263841288,
+          "name": "Minimum Go",
+          "conclusion": "success"
+        },
+        {
+          "id": 120287693523,
+          "name": "Required",
+          "conclusion": "success"
+        }
+      ],
+      "linux_top_level_passes": 54,
+      "cpu_full_seconds": 312.36,
+      "cuda_full_seconds": 1192.58,
+      "helpers_reaped_wait_zero": 5,
+      "cleanup": "2026-10-23T07:03:52.3703648Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=413228"
+    },
+    {
+      "profile": "cu132",
+      "run_id": 39916153194,
+      "run_number": 394,
+      "checkout": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+      "tree": "9ece0a2e57c55e5276dc1df55d97d4c1b5f49323",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 120290072699,
+          "name": "Representative Wheel Corpus",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072884,
+          "name": "Security",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072918,
+          "name": "gVisor Observer Helper",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072931,
+          "name": "macOS",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072979,
+          "name": "Minimum Go",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072988,
+          "name": "Vulnerability",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290072990,
+          "name": "Docs",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290073003,
+          "name": "Quick",
+          "conclusion": "success"
+        },
+        {
+          "id": 120290073021,
+          "name": "gVisor Linux Integration",
+          "conclusion": "success"
+        },
+        {
+          "id": 120310417808,
+          "name": "Required",
+          "conclusion": "success"
+        }
+      ],
+      "linux_top_level_passes": 54,
+      "cpu_full_seconds": 227.58,
+      "cuda_full_seconds": 878.63,
+      "helpers_reaped_wait_zero": 5,
+      "cleanup": "2026-10-23T08:06:52.3906767Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=410613"
+    }
+  ],
+  "local_qualification": [
+    "p1f-uv-sync-backend-local-20261023.json: canonical5 + five-package Race142.011s",
+    "p1f-uv-sync-cli-local-20261023.json: final canonical5, platform + seven-package Race138.116s; actual7language21CLI cases"
+  ],
+  "review": {
+    "rounds": 2,
+    "controlled_regression": "same pre-format complete-project capability test before FAIL/after PASS, final formatted hashes separately qualified",
+    "preserved_first_failures": "prior local receipts retain unused/import/staticcheck, empty binder boundary, fixture/source preflight and project closure evidence; no native failure invented",
+    "scope_check": "uv project remains P4; other clients and executions P2..P7 unstarted; no fake primary, host manager fallback or relaxed invariant",
+    "final_document_crosscheck": "removed stale production UV resolver/CLI unwired claims; scoped support table, historical baselines and current README Go1.26.10 compared with actual implementation and records"
+  },
+  "cleanup": {
+    "temporary_production_cli_binary_workroot_removed_bytes": 43581079,
+    "completed_prior_test_drivers_removed_bytes": 20806,
+    "final_qualification_drivers_removed_bytes": 7126,
+    "active_shared_sdk_source_cache": "retained for final canonical checks and controlled G127 transition; retirement requires last consumer/proof/rollback checks",
+    "new_local_native_resources": 0,
+    "CI_helpers": "each run five reaped wait0 and final CONFIRMED_STOPPED/client_restore0; temporary targets removed by tests on ephemeral runner"
+  },
+  "boundaries": [
+    "qualification belongs to ea287b2 and tree9ece; later closure changes documentation/evidence only",
+    "native public default UV wheel adoption excludes generated scripts/compiled caches/cross-scheme/local/direct/VCS/build",
+    "CUDA profile checks are artifact/runtime quarantine; no GPU driver/device functionality attestation",
+    "triton.profiler.viewer remains explicitly NOT_ATTESTED with supplemented inspection input excluded from promoted set",
+    "past positive CUDA sample-late/macOS timeout internal causes remain unproven; final-read controlled correction not generalized",
+    "no package name reservation/main merge/tag/publication/Host activation"
+  ],
+  "next": "G127 coordinated Go1.27.3 audit/second review/source qualification before P2",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p1-cu126-qualification-final-20261023.json",
+      "bytes": 3266,
+      "sha256": "dd0af2da77594c102cdd7a08b1bd20841049b818a99a9a47dd25361561453667"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p1-cu130-qualification-final-20261023.json",
+      "bytes": 3266,
+      "sha256": "33702b3cffb9cd1c5adc7977f7842879b5b2496a879153b8a5ed6975b0f2cbe8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p1-cu132-qualification-final-20261023.json",
+      "bytes": 3265,
+      "sha256": "395a298b5281e42e3d75366ec0a9cf5457a43f115c6f16e05a9a016782cf467c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p1-completed-qualification-operators-cleanup-20261023.json",
+      "bytes": 566,
+      "sha256": "f7240300a301aa1f4c69bf525d3960f3c155a279b066d15b410ee4bd1de5d040"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-completed-local-operators-cleanup-20261023.json",
+      "bytes": 1963,
+      "sha256": "1a4718e7f5e3cf3bfe77eba2b6a46223d33b175b1ef0613055eb483329b996db"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p1-doc-driver-cleanup-20261023.json",
+      "bytes": 284,
+      "sha256": "4b3aed50996e9b547105b3b3b14dfb833fe4f62269bbe22bc7dd34772fbec4b1"
+    }
+  ],
+  "documentation_validation": {
+    "candidate_checks": [
+      {
+        "profile": "docs",
+        "exit": 0,
+        "seconds": 0.698,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      },
+      {
+        "profile": "security",
+        "exit": 0,
+        "seconds": 6.428,
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+      }
+    ],
+    "final_check_profiles": [
+      "docs",
+      "security"
+    ],
+    "final_raw_prefix": "docs/github-logs/package-client-quarantine-20261021/p1-closure-docs-final-20261023",
+    "product_retesting": "no unchanged full product CI repeated for documentation-only closure"
+  }
+}

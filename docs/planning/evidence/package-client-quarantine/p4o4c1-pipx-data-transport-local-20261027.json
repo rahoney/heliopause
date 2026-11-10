@@ -1,0 +1,207 @@
+{
+  "scope": "P4-O4-C1 FIXED_DATA_SUPPLY_AND_TRANSPORT_ONLY",
+  "status": "LOCAL_QUALIFIED",
+  "baseline_commit": "1166396",
+  "source_identity": [
+    {
+      "path": "internal/sandbox/native_tool_transport.go",
+      "sha256": "0ed8f9473c27e9bb1af6fee610e6caf96880fdc88b03252d2d4aefa95c15a9a8"
+    },
+    {
+      "path": "internal/sandbox/native_installed_tool.go",
+      "sha256": "6234877a4916ec758b4e72408335671bb1db92a3a3e8116d9db8afa99fcd3d54"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_volume.go",
+      "sha256": "f96d000d70ef83111b1b6621c35bcfd17c6f6b61751425311135c11311aaa673"
+    },
+    {
+      "path": "internal/sandbox/pipx_tool_supply.go",
+      "sha256": "091c5f5d9393e50b40ef9f619dbbb97e2af4ba0b57b32f7242e80b812403c1b4"
+    },
+    {
+      "path": "internal/sandbox/pipx_tool_supply_test.go",
+      "sha256": "efb6d92425b95e69a359c481e3392c6ce66846bd17f9931771fcec26de24e89b"
+    },
+    {
+      "path": "internal/sandbox/pipx_tool_supply_namespace_linux_test.go",
+      "sha256": "25de29b8bc3ba074ce0fa44fdc503fc32983dceb1fdeadd4dd2be45bc6ee6900"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.644
+    },
+    {
+      "step": "focused",
+      "exit_code": 0,
+      "seconds": 6.528
+    },
+    {
+      "step": "actual-build",
+      "exit_code": 0,
+      "seconds": 6.382
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 230.736
+    },
+    {
+      "step": "race",
+      "exit_code": 0,
+      "seconds": 25.658
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.242
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 11.624
+    }
+  ],
+  "actual": {
+    "exit_code": 0,
+    "seconds": 0.149,
+    "no_skip": true,
+    "named_pass": true,
+    "input_unchanged": true,
+    "input_sha256": "2f0162285ed79d1de358dd4261e189731f43106c2ca8084167bc733c62ba0eb4",
+    "scope": "actual bytes/protected fixture/tar roundtrip only; no Docker/Python execution or installed activation"
+  },
+  "actual_negative_cases": 15,
+  "preserved_boundaries": [
+    "existing UV image0755 and installed native0555 modes",
+    "pipx DATA0444 and fixed complete pin/path only",
+    "single-writer native volume rejects pipx",
+    "no Docker or Python executed by actual namespace test",
+    "original installed runtime not changed"
+  ],
+  "missing": [
+    "readonly runtime lifecycle and live Docker transport",
+    "gVisor/observer execution and ZIP inspection",
+    "release activation/native pipx/public CLI/whole P4"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-actual-build.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-actual-build.stdout.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-actual-result.json",
+      "size": 311,
+      "sha256": "495b3acc71e32df3c782ffad42dd97db8237a1ba96dbbca123ef52a2c34c54a5"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-actual.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-actual.stdout.log",
+      "size": 2517,
+      "sha256": "e2b1ac61aa8dee0f0b6212f4499b65879ce7332ceb5b47320159f62f99e2a304"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-check.py",
+      "size": 1264,
+      "sha256": "b80c101197443edccb405e613f5740d5b0e00073dd77c05c23efabde8f70636f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-checks.json",
+      "size": 226,
+      "sha256": "b9448aa6e8da327bfb4d7e547614090e7d5ed6a1496eb7daeb2b37d24a108be6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-check.py",
+      "size": 730,
+      "sha256": "f72b380211837f831442706ab7fdeeb122865c0592410bea3b72d3060bafb34a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-docs.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-docs.stdout.log",
+      "size": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-quick.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-quick.stdout.log",
+      "size": 1354,
+      "sha256": "0b349059bdf36f7f7343e31c1092480d3a30369880752660aefcc2576e4f2336"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-race.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-race.stdout.log",
+      "size": 60,
+      "sha256": "07ce1826eabe208d0e21f5757271983dd6a51446ccb94d2747dd0fb0f971b7b7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-results.json",
+      "size": 292,
+      "sha256": "ef2bcea072051cb840e49bd9858eb9975bbbcf87aa6d11d84fe71a9260cb5db2"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-security.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-final-security.stdout.log",
+      "size": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-focused.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-focused.stdout.log",
+      "size": 59,
+      "sha256": "b0d6f7d1b7facee99bf3b0c893abd77b0c71bf8d7307fa5d40f2ac935d08f543"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-format.stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-format.stdout.log",
+      "size": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-paths.json",
+      "size": 434,
+      "sha256": "a6b77d14fab168b49f2ef7f75e37cfa6388bc7fb63a27205f3229c69b17aa72d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4c1-source.json",
+      "size": 892,
+      "sha256": "6692c7b4938ef4d40a1b086d5f916d9920b2febd28945abf9a942e3eb215e6ec"
+    }
+  ]
+}

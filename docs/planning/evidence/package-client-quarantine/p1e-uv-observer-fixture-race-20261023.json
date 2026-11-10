@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "scope": "test-only synchronization of existing admission peer counters and live observer diagnostic fixture assignment",
+  "baseline_commit": "344af5ebc7beb16156ed7a89678cf1f0040130b2",
+  "cause": "plain counters crossed Unix peer goroutine/caller without Go synchronization; live receiver tests assigned diagnostic/Buffer without existing observer mutex",
+  "production_change": false,
+  "owner_before": [
+    {
+      "path": "internal/sandbox/direct_exec_admission_test.go",
+      "bytes": 55970,
+      "sha256": "fa2c59d369fb83b4155b95af49a68b1317fde30cf0e628862619ae2f5b6ef736",
+      "unchanged_from_baseline": true
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "bytes": 38903,
+      "sha256": "fd83722be92bd01a031a386c7327c3c96d46b80f38d67b18de183e628b6f9fd7",
+      "unchanged_from_baseline": true
+    },
+    {
+      "path": "internal/sandbox/shared_observer_test.go",
+      "bytes": 34890,
+      "sha256": "a5b7d64cf1d1674d5bd2fce10c3880773a18eba833002bbec185056830d42153",
+      "unchanged_from_baseline": true
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "bytes": 38001,
+      "sha256": "af64aaedcea74bfa561423f1237ebb4acc585d7db6728121e59b4383a1e71551",
+      "unchanged_from_baseline": true
+    },
+    {
+      "path": "internal/sandbox/observer_supervisor.go",
+      "bytes": 9814,
+      "sha256": "03a8bf13a24cf76cbb37bd0acb8be66b034815d1a3c90153979c0a9fe5d399f4",
+      "unchanged_from_baseline": true
+    }
+  ],
+  "fixture_source": [
+    {
+      "path": "internal/sandbox/direct_exec_admission_test.go",
+      "bytes": 56213,
+      "sha256": "937d7eca866bcec120df616cacccf8c08933ffbfacb60a817c531db1207a1506"
+    },
+    {
+      "path": "internal/sandbox/shared_observer_test.go",
+      "bytes": 34974,
+      "sha256": "16f9364e232a86aca55dd1e287d5813399b265ad983754927ec68831f774b8f0"
+    }
+  ],
+  "verification": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-baseline-before.json",
+      "result": {
+        "baseline": "344af5ebc7beb16156ed7a89678cf1f0040130b2",
+        "command": [
+          "test",
+          "-trimpath",
+          "-race",
+          "-count=1",
+          "-timeout=3m",
+          "./internal/sandbox",
+          "-run",
+          "^Test(AmbiguousCancelPoisonsSessionAndInvalidatesIt|ReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession|AmbiguousStatusPoisonsSession|AmbiguousCompletePoisonsSession|SuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel|SharedObserverAttributesOneContainerAndClosesItsStream|SharedObserverFlushesAttributionOnStreamFault)$"
+        ],
+        "exit": 1,
+        "seconds": 8.013,
+        "scope": "unchanged old admission-counter and attribution test fixtures; compare against new UV candidate failure",
+        "archive_bytes": 35194880,
+        "directory": "/tmp/haa-uv-runtime-0_e6zmn4/uv-race-baseline",
+        "owners": [
+          {
+            "path": "internal/sandbox/direct_exec_admission_test.go",
+            "bytes": 55970,
+            "sha256": "fa2c59d369fb83b4155b95af49a68b1317fde30cf0e628862619ae2f5b6ef736",
+            "unchanged_from_baseline": true
+          },
+          {
+            "path": "internal/sandbox/direct_exec_admission.go",
+            "bytes": 38903,
+            "sha256": "fd83722be92bd01a031a386c7327c3c96d46b80f38d67b18de183e628b6f9fd7",
+            "unchanged_from_baseline": true
+          },
+          {
+            "path": "internal/sandbox/shared_observer_test.go",
+            "bytes": 34890,
+            "sha256": "a5b7d64cf1d1674d5bd2fce10c3880773a18eba833002bbec185056830d42153",
+            "unchanged_from_baseline": true
+          },
+          {
+            "path": "internal/sandbox/shared_observer.go",
+            "bytes": 38001,
+            "sha256": "af64aaedcea74bfa561423f1237ebb4acc585d7db6728121e59b4383a1e71551",
+            "unchanged_from_baseline": true
+          },
+          {
+            "path": "internal/sandbox/observer_supervisor.go",
+            "bytes": 9814,
+            "sha256": "03a8bf13a24cf76cbb37bd0acb8be66b034815d1a3c90153979c0a9fe5d399f4",
+            "unchanged_from_baseline": true
+          }
+        ]
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-first-consumers-race.json",
+      "result": {
+        "command": [
+          "test",
+          "-trimpath",
+          "-race",
+          "-count=1",
+          "-timeout=3m",
+          "./internal/sandbox",
+          "./internal/artifact/pypi"
+        ],
+        "exit": 1,
+        "seconds": 27.809,
+        "files": [
+          {
+            "path": "internal/artifact/pypi/uv_sync_input.go",
+            "sha256": "a6f2fb67d0bc7800d1fbdd97a91a5a06826f43fe72af1caca0bf95f17d934ab5"
+          },
+          {
+            "path": "internal/sandbox/pypi_resolver.go",
+            "sha256": "f8ef3509b334523cce64625e7ec38ed874983eb0af9f040a32f812150828e30e"
+          },
+          {
+            "path": "internal/sandbox/uv_resolver.go",
+            "sha256": "65814c19d848e4617fad4c6bdd04f3a18cf205e5409e15cb9dedeea57b9fd5de"
+          },
+          {
+            "path": "internal/sandbox/uv_resolver_reader.go",
+            "sha256": "f5e4dc8fd49423dde56c924c5d721a87e25caa0a0ad0100b8c500e7afbd9bd2e"
+          },
+          {
+            "path": "internal/sandbox/uv_native_output.go",
+            "sha256": "4e98d256a76630f3187e42b77adb3df032bc4d36be67edb6a899d2f237f04c8e"
+          },
+          {
+            "path": "internal/sandbox/uv_sync_resolver.go",
+            "sha256": "34084f8758bba71f3f9c0f66513f3c8553837bf893bb8eb0053c87d47923c599"
+          },
+          {
+            "path": "internal/sandbox/uv_sync_resolver_test.go",
+            "sha256": "0a317f466b377a0977958101d762a6e7ba8f5f224024a0670b6e65f0a7940f0c"
+          },
+          {
+            "path": "internal/sandbox/uv_resolver_integration_linux_test.go",
+            "sha256": "ba1a2f8d10341757feb5a0ede1efb599f0c9a0da8143b48f96cc59894376c25e"
+          },
+          {
+            "path": "internal/sandbox/uv_sync_resolver_integration_linux_test.go",
+            "sha256": "f6c5565daa46195b5a21bc74be1babcc097ce103e046d3d26fa494e7f64e8a3b"
+          }
+        ]
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-baseline-fixed.json",
+      "result": {
+        "phase": "baseline-fixed",
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/uv-race-baseline",
+        "command": [
+          "test",
+          "-trimpath",
+          "-race",
+          "-count=1",
+          "-timeout=3m",
+          "./internal/sandbox",
+          "./internal/artifact/pypi"
+        ],
+        "exit": 0,
+        "seconds": 20.993,
+        "fixture_source": [
+          {
+            "path": "internal/sandbox/direct_exec_admission_test.go",
+            "bytes": 56213,
+            "sha256": "937d7eca866bcec120df616cacccf8c08933ffbfacb60a817c531db1207a1506"
+          },
+          {
+            "path": "internal/sandbox/shared_observer_test.go",
+            "bytes": 34974,
+            "sha256": "16f9364e232a86aca55dd1e287d5813399b265ad983754927ec68831f774b8f0"
+          }
+        ]
+      }
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-candidate-fixed.json",
+      "result": {
+        "phase": "candidate-fixed",
+        "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+        "command": [
+          "test",
+          "-trimpath",
+          "-race",
+          "-count=1",
+          "-timeout=3m",
+          "./internal/sandbox",
+          "./internal/artifact/pypi"
+        ],
+        "exit": 0,
+        "seconds": 21.253,
+        "fixture_source": [
+          {
+            "path": "internal/sandbox/direct_exec_admission_test.go",
+            "bytes": 56213,
+            "sha256": "937d7eca866bcec120df616cacccf8c08933ffbfacb60a817c531db1207a1506"
+          },
+          {
+            "path": "internal/sandbox/shared_observer_test.go",
+            "bytes": 34974,
+            "sha256": "16f9364e232a86aca55dd1e287d5813399b265ad983754927ec68831f774b8f0"
+          }
+        ]
+      }
+    }
+  ],
+  "scope_boundary": "First new-source full Race failed 7 fixtures; unchanged baseline reproduced 6 of those 7. No claim that every old race reproduces deterministically, or that new UV source caused them. After same two-file fix both baseline and candidate full sandbox/artifact Race passed. Native complete gVisor qualification remains separate.",
+  "cleanup": {
+    "comparison_source_deleted": true,
+    "comparison_regular_files": 2020,
+    "comparison_bytes": 33549068,
+    "archive_deleted_after_extraction": true,
+    "go_tmpdir_entries": 0
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-baseline-before.log",
+      "bytes": 18838,
+      "sha256": "bbd6ca8651187dcc99fa3ed70720a774413e5222b17222b1bbbe6df892ae1de7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-native-first-consumers-race.log",
+      "bytes": 29204,
+      "sha256": "b13e8bdb103adcdfcac923d39db717358c1460f1bc775378322ac4ba6c2ed23e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-baseline-fixed.log",
+      "bytes": 125,
+      "sha256": "a95fcbf089533574b51283f685d58940bee6aba5387384055244c24046949fa7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-race-candidate-fixed.log",
+      "bytes": 125,
+      "sha256": "d1bb7a568f5cdf4d2aa7a2c9ba827d2e5ce80037e120342e13b5a8d3fe551d92"
+    }
+  ]
+}

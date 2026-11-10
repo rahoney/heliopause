@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "baseline": "6426436c7dd62d0ec1e2aaff9b3dd45cdf226e0e",
+  "scope": "C3e3/A2b existing proof core shared with primary-free whole-original inventory subjects; synthetic archives only for new all-original coverage",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES shared selected wrapper; actual complete sync guard caller NO",
+  "QUALIFIED": "LOCAL ONLY for new all-original bridge; fresh source/shared and actual complete guard integration pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh shared source CI",
+    "actual complete guard call and whole-original native qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/pypi_native_ownership.go",
+      "bytes": 16948,
+      "sha256": "e3573ad1fc09c1e660c3fac3b31029a5df97ee71d9224321116f631adf1d4fc4"
+    },
+    {
+      "path": "internal/promotion/linux_integration_test.go",
+      "bytes": 12456,
+      "sha256": "19563c6f28f3305c73949c57c0d9d62beb9f468a3fd1493dcbd7f6d6c34aad89"
+    },
+    {
+      "path": "internal/promotion/uv_original_inventory_proof_test.go",
+      "bytes": 9774,
+      "sha256": "acf24e1c2aebaf5f70bceb4f27c0b57d73704824259c19fa74ccef285a521f2a"
+    }
+  ],
+  "core_equivalence": {
+    "baseline": "6426436",
+    "owner": "internal/promotion/pypi_native_ownership.go",
+    "proof_core": "identical after graph-node identity becomes real subject project/source",
+    "preserved": "5m context/error handling, oldWheel/footprint/cache absences/proof schema/control bytes/cleanup body",
+    "scope": "source-body equivalence only; selected/all subject fixtures and actual qualification remain separate"
+  },
+  "tests": "existing selected alpha proves one original; direct complete inventory proves alpha and excluded beta, authentic file/digest/control/cache-namespace bindings; corrupt excluded archive refuses proof control; no HAA ownership/metadata; exact intake scopes empty",
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.326,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-format.json",
+        "bytes": 110,
+        "sha256": "50da62b1be371a22b8d139547ac5eac0c662bb6179ba3c6e2676bc115d6a431e"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 124.481,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-quick.json",
+        "bytes": 111,
+        "sha256": "b5afbf9d2f043f09f1e6343fdff150111a041c1ccc3b1955a46c646b0b55012f"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-quick.log",
+        "bytes": 1354,
+        "sha256": "de25279a746d221ef66f0a5a8f12cfd608f33c8c019fdae2965c64e6510367bc"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.581,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-security.json",
+        "bytes": 112,
+        "sha256": "42f05d305683c0ecdc6006bbfbaef6a3797cb7937234afe5dda2562e7acc9911"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.24,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-docs.json",
+        "bytes": 107,
+        "sha256": "aa95064618fbe69d483b9d86762c808e42ec2b10b8a843271848a78bdf98069a"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.774,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-workflow.json",
+        "bytes": 112,
+        "sha256": "928095559c713237b0717686f69423dc26ff4db0a6c51e9e1d0affb17bb9121d"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-workflow.log",
+        "bytes": 1071,
+        "sha256": "cb212264823ffeba78abebfe3444d7d7ea7a05f20f9e23d068af00387c4671cd"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/promotion",
+      "./internal/bootstrap",
+      "./internal/application"
+    ],
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+    "exit": 0,
+    "seconds": 128.679
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-body-equivalence.json",
+      "bytes": 411,
+      "sha256": "e9619f7c4295d7b2caf62a0c991a66a312952c6fb426b52119d903384fc0e184"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-race.json",
+      "bytes": 282,
+      "sha256": "8db7d6e779651520e4ea703fbe99256cf2fc8e3adf1d13c84ec3a163eff64190"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-original-proof-bridge-race.log",
+      "bytes": 187,
+      "sha256": "69c593aaeb7db92c87d65e9ecda4114c82b922d6bc4003c542b257d09ceacbf6"
+    }
+  ],
+  "P1_remaining": [
+    "actual frozen source/target guard and whole original enrollment wiring",
+    "complete-only transaction/cache/Manifest/SBOM/offline publication",
+    "CLI/SKIP/report and whole P1 acceptance"
+  ],
+  "cleanup": {
+    "all_local_checks_completed": true,
+    "fresh_owned_go_tmpdir_entries": 0,
+    "manual_native_resource_setup": "NONE; synthetic test fixture roots cleaned by test lifecycle; retain active source/SDK/runtime/cache"
+  }
+}

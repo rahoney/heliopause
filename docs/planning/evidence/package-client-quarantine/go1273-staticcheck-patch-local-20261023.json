@@ -1,0 +1,152 @@
+{
+  "scope": "exact Staticcheck2026.2.2 current SDK canonical and target SDK scoped analysis; complete target configuration remains",
+  "baseline": "96941491c4bbfae2a757c11bf30f61a4acf5b712",
+  "selected": {
+    "release": "2026.2.2",
+    "module": "v0.8.2",
+    "display": "staticcheck 2026.2.2 (0.8.2)",
+    "minimum_go": "1.26.0"
+  },
+  "prior_selection": "2026.2 target decoder5/max4 FAIL; current-only prior receipt remains historical; target recommendation superseded",
+  "probe": {
+    "baseline": "96941491c4bbfae2a757c11bf30f61a4acf5b712",
+    "source": "/tmp/haa-go1273-yzyvqne9/staticcheck-config/verification-1876054408/source",
+    "sdk": "/tmp/haa-go1273-yzyvqne9/staticcheck-config/sdk/go",
+    "configuration_qualification": false,
+    "phase_results": [
+      {
+        "phase": "install",
+        "exit": 0,
+        "seconds": 6.217,
+        "log": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-install-20261023.log",
+        "log_sha256": "bcc1cbb8eed93d863971828fa66ce5aa532b2b4a8faa35c4f267192edb436e17"
+      },
+      {
+        "phase": "identity",
+        "exit": 0,
+        "seconds": 0.021,
+        "log": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-identity-20261023.log",
+        "log_sha256": "129e8482ea7967a9991755f5236f4613081e8b49c8ac47acd416013ae6a4a658"
+      },
+      {
+        "phase": "buildinfo",
+        "exit": 0,
+        "seconds": 0.013,
+        "log": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-buildinfo-20261023.log",
+        "log_sha256": "a90d0350c454d10128a9ea5171b06d3319ef173937bec2d7297186924abd343c"
+      },
+      {
+        "phase": "analysis",
+        "exit": 0,
+        "seconds": 8.613,
+        "log": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-analysis-20261023.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "before_source_hash": "a315c45374c579d4c7ff8c2f9bd9fd7815c69ae5ac2ebbbb1783fdcb4f33e763",
+    "after_source_hash": "a315c45374c579d4c7ff8c2f9bd9fd7815c69ae5ac2ebbbb1783fdcb4f33e763"
+  },
+  "current_sdk_checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 55.705,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.448,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.222,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "migration_complete": false,
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck20262-target-failure-20261023.json",
+      "bytes": 1535,
+      "sha256": "2d6d074cb6d2e3ccce69ebfe002ab2501eebf71469fd36d17c616eb5fc7cf27d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-official-review-20261023.json",
+      "bytes": 87393,
+      "sha256": "f85a4ce46b7624f75a748e5227c50d3b92b0372fbd1292d3463f485a0794963d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-20261023.json",
+      "bytes": 1646,
+      "sha256": "fb5cd3c0c4f4f87f860426707918760b19037af31701a02ffe93cb859bfdcc71"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-bootstrap-20261023.json",
+      "bytes": 161,
+      "sha256": "023239669ebaec858de99a64cba633ad6dc99e1ec4a41bdad7f0fcf853bd4706"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-bootstrap-20261023.log",
+      "bytes": 397,
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-retired-normalized-config-payload-20261023.json",
+      "bytes": 1218,
+      "sha256": "fdfe3c39f37c966a96108a79d1c6cdf0219ea46ba64dcd1c5ad5891eb64e8a8a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-install-20261023.log",
+      "bytes": 85,
+      "sha256": "bcc1cbb8eed93d863971828fa66ce5aa532b2b4a8faa35c4f267192edb436e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-identity-20261023.log",
+      "bytes": 29,
+      "sha256": "129e8482ea7967a9991755f5236f4613081e8b49c8ac47acd416013ae6a4a658"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-buildinfo-20261023.log",
+      "bytes": 935,
+      "sha256": "a90d0350c454d10128a9ea5171b06d3319ef173937bec2d7297186924abd343c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-target-probe-analysis-20261023.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-quick.json",
+      "bytes": 110,
+      "sha256": "667d406a75eaf705580b96d03ece2e7252ee95e82e942a3d57d224014e377842"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-security.json",
+      "bytes": 112,
+      "sha256": "f6054965af5aa8d9b1c663233af88ff40cb11eeedae0e9453785509e16b2a376"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-docs.json",
+      "bytes": 108,
+      "sha256": "404c7bac45de58e20d7cb871198876846764f0a8625c4e570d07cd67f2385076"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-staticcheck202622-current-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
@@ -15,7 +17,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	sbomPath := filepath.Join(root, "helox-release-sbom.cdx.json")
@@ -33,7 +35,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 8 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 20 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -58,7 +60,7 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	workflowRun := "https://github.com/rahoney/heliopause/actions/runs/123"
@@ -77,6 +79,24 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 	}
 	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://attacker.invalid/run/123", runtimeLock, filepath.Join(root, "other-sbom.json"), runtimeImagesPath, filepath.Join(root, "other-manifest.json"), assets); err == nil {
 		t.Fatal("unexpected workflow run URL was accepted")
+	}
+}
+
+func TestResponderReleaseRefusesForeignOrOversizedProgram(t *testing.T) {
+	root := t.TempDir()
+	binary := filepath.Join(root, "helox-linux-amd64")
+	buildNativeHeloxTest(t, binary)
+	assets := releaseAssets(t, root, binary)
+	if _, _, err := collectAssets(assets); err != nil {
+		t.Fatal("actual fixed responder refused", err)
+	}
+	for _, body := range [][]byte{[]byte("foreign program"), make([]byte, runtimeidentity.SandboxResponderMaxBytes+1)} {
+		if err := os.WriteFile(filepath.Join(root, runtimeidentity.SandboxResponderAssetName), body, 0700); err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := collectAssets(assets); err == nil {
+			t.Fatal("invalid responder accepted by release producer")
+		}
 	}
 }
 
@@ -102,14 +122,32 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"helox-darwin-arm64",
 		"haa_gvisor_observer-linux-amd64",
 		"haa-network-policy-helper-linux-amd64",
+		runtimeidentity.SandboxResponderAssetName,
+		"haa-release-installer-linux-amd64",
+		"pnpm-linux-amd64",
+		"pnpm-NOTICE.txt",
+		"bun-linux-amd64",
+		"bun-NOTICE.txt",
+		"pipx-runtime-linux-amd64.zip",
+		"pipx-NOTICE.txt",
 		"helox-linux-amd64.deb",
 		"helox-linux-amd64.rpm",
+		"semgrep-core-linux-amd64", "semgrep-SOURCES.tar", "semgrep-NOTICES.tar", "semgrep-rules.json",
 	}
 	paths := make([]string, 0, len(names))
 	for _, name := range names {
 		path := filepath.Join(root, name)
 		if name == "helox-linux-amd64" {
 			paths = append(paths, binary)
+			continue
+		}
+		if name == runtimeidentity.SandboxResponderAssetName {
+			command := exec.Command("go", "build", "-trimpath", "-ldflags=-s -w", "-o", path, "../../cmd/haa-sandbox-responder")
+			command.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")
+			if output, err := command.CombinedOutput(); err != nil {
+				t.Fatalf("build fixed responder: %v\n%s", err, output)
+			}
+			paths = append(paths, path)
 			continue
 		}
 		body := []byte("fixture-" + name)
@@ -119,4 +157,223 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		paths = append(paths, path)
 	}
 	return paths
+}
+
+// Synthetic owner bytes for producer mechanics; no upstream or runtime approval.
+func syntheticReleaseLock(t *testing.T, paths []string) []byte {
+	t.Helper()
+	var lock runtimeLock
+	lock.SchemaVersion = 6
+	lock.GVisor.Release = "release-20260810.0"
+	lock.GVisor.Commit = strings.Repeat("a", 40)
+	lock.PNPMTool.Version = "1.2.3"
+	lock.BunTool.Version = "1.2.3"
+	lock.PipxTool.Version = "1.2.3"
+	lock.PipxTool.Architecture = "amd64"
+	lock.PipxTool.RuntimeImage = "python_image"
+	// Reuse the canonical source inventory as metadata; the produced bytes below
+	// remain synthetic and do not assert upstream/runtime authenticity.
+	actual, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var source runtimeLock
+	if err := json.Unmarshal(actual, &source); err != nil {
+		t.Fatal(err)
+	}
+	lock.SemgrepTool = source.SemgrepTool
+	lock.PipxTool.Inputs = source.PipxTool.Inputs
+	for index, input := range lock.PipxTool.Inputs {
+		lock.PipxTool.Inputs[index].Path = strings.Replace(input.Path, "pipx/pipx-"+source.PipxTool.Version+"-", "pipx/pipx-1.2.3-", 1)
+	}
+	for _, path := range paths {
+		if runtimeidentity.SemgrepAssetMaximum(filepath.Base(path)) != 0 {
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var target *runtimeidentity.SemgrepSupplyAsset
+			switch record.Name {
+			case lock.SemgrepTool.Tool.Path:
+				target = &lock.SemgrepTool.Tool
+			case lock.SemgrepTool.Sources.Path:
+				target = &lock.SemgrepTool.Sources
+			case lock.SemgrepTool.Notices.Path:
+				target = &lock.SemgrepTool.Notices
+			case runtimeidentity.SemgrepRulesAssetName:
+				target = &lock.SemgrepTool.Rules
+			}
+			target.SHA256, target.Size = record.SHA256, record.Size
+		}
+		switch filepath.Base(path) {
+		case "pnpm-linux-amd64":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PNPMTool.Tool.SHA256 = record.SHA256
+			lock.PNPMTool.Tool.Size = record.Size
+		case "pnpm-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PNPMTool.Notices.SHA256 = record.SHA256
+			lock.PNPMTool.Notices.Size = record.Size
+		case "bun-linux-amd64":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.BunTool.Tool.SHA256 = record.SHA256
+			lock.BunTool.Tool.Size = record.Size
+		case "bun-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.BunTool.Notices.SHA256 = record.SHA256
+			lock.BunTool.Notices.Size = record.Size
+		case "pipx-runtime-linux-amd64.zip":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PipxTool.Tool.SHA256 = record.SHA256
+			lock.PipxTool.Tool.Size = record.Size
+		case "pipx-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PipxTool.Notices.SHA256 = record.SHA256
+			lock.PipxTool.Notices.Size = record.Size
+
+		}
+	}
+	body, err := json.Marshal(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return body
+}
+
+func TestPNPMReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"pnpm-linux-amd64", "pnpm-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			if err := os.WriteFile(binary, []byte("not a Go binary; binding rejection must precede buildinfo"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substituted after materialization"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, manifest := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), manifest, assets)
+			if err == nil || !strings.Contains(err.Error(), "pnpm release asset differs") {
+				t.Fatalf("missing source-owner rejection: %v", err)
+			}
+			for _, path := range []string{sbom, manifest} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("substituted pnpm produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestBunReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"bun-linux-amd64", "bun-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			if err := os.WriteFile(binary, []byte("not a Go binary; binding rejection must precede buildinfo"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substituted after materialization"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, manifest := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), manifest, assets)
+			if err == nil || !strings.Contains(err.Error(), "bun release asset differs") {
+				t.Fatalf("missing source-owner rejection: %v", err)
+			}
+			for _, path := range []string{sbom, manifest} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("substituted bun produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestPipxReleaseDataMustMatchOwnerAndCensusBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"pipx-runtime-linux-amd64.zip", "pipx-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			buildNativeHeloxTest(t, binary)
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substitution"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			images := filepath.Join(root, "helox-runtime-images.json")
+			if err := os.WriteFile(images, []byte("metadata"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			output := filepath.Join(root, "helox-release-manifest.json")
+			sbom := filepath.Join(root, "helox-release-sbom.cdx.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, images, output, assets)
+			if err == nil || !strings.Contains(err.Error(), "pipx release DATA differs") {
+				t.Fatal("substituted DATA accepted", err)
+			}
+			for _, path := range []string{output, sbom} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("invalid DATA produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestSemgrepReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(runtimeidentity.SelectedSemgrepSupply()) {
+		t.Run(asset.Path, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			buildNativeHeloxTest(t, binary)
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, asset.Path), []byte("changed"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, output := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			if err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), output, assets); err == nil {
+				t.Fatal("changed supply accepted")
+			}
+			for _, path := range []string{sbom, output} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("metadata written before supply validation", path, err)
+				}
+			}
+		})
+	}
 }

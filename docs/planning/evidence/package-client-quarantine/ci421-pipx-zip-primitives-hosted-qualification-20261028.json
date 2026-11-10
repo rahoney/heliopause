@@ -1,0 +1,224 @@
+{
+  "scope": "CI421 approved six-commit e859487 checkpoint: supply/common checks, CPP ZIP primitives and existing named hosted consumers; newer B3/C3/native execution is excluded",
+  "status": "QUALIFIED (named hosted checkpoint only)",
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40598317489",
+  "run_id": 40598317489,
+  "source_commit": "e859487404ccd907cc7a5472e5ec8b6a417a1840",
+  "checkout_commit": "57a5633927a4675f2bb62b0a70e6f072af4e9142",
+  "whole_tree": "6753df830d8797cab96ebbc6f5be229500ffb884",
+  "tracked_files": 2789,
+  "all_job_checkouts_match": true,
+  "run_started_at": "2026-10-27T22:54:33Z",
+  "workflow_completed_at": "2026-10-27T23:59:20Z",
+  "workflow_elapsed_seconds": 3887.0,
+  "linux_log_span_seconds": 3851.548727,
+  "jobs": [
+    {
+      "id": 122519793634,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793864,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793887,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793919,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793929,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793965,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793969,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519793985,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122519794177,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122544697179,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "top_level_pass": 79,
+    "skips": 0,
+    "helper_wait_zero_count": 11,
+    "cpp_latches_each": 124,
+    "full_cpu_test_seconds": 236.66,
+    "final_cleanup": "2026-10-27T23:58:49.7176025Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=536080",
+    "new_acquired_zip_actual_parent_ran": false,
+    "native_host_uid1001_fixture_present": true
+  },
+  "timer_polls": [
+    "2026-10-27 23:14:47 UTC",
+    "2026-10-27 23:35:24 UTC",
+    "2026-10-27 23:56:10 UTC",
+    "2026-10-28 00:16:42 UTC"
+  ],
+  "timers_finished_no_active_watcher": true,
+  "raw_logs": [
+    {
+      "id": 122519793634,
+      "name": "gVisor Linux Integration",
+      "characters": 684712,
+      "decoded_utf8_bytes": 684714,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "ae87d7ebd5ab94431f6e03cb68f82214ba64779ccf95abd2e275f52e528629b2",
+      "path": "ci421-job-122519793634.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793864,
+      "name": "Quick",
+      "characters": 23840,
+      "decoded_utf8_bytes": 23842,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "3f5e6356d245bb1ec9d1dcf19f10271644148b51a0c0db3b9ceec09daf08877d",
+      "path": "ci421-job-122519793864.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793887,
+      "name": "Docs",
+      "characters": 20517,
+      "decoded_utf8_bytes": 20519,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "f45f89d683bb4f066e576b4a10f3981981313bcdb6f3ea290107dea5a12b30d0",
+      "path": "ci421-job-122519793887.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793919,
+      "name": "Vulnerability",
+      "characters": 21694,
+      "decoded_utf8_bytes": 21696,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "46d43521c41bbb8c67b4c226f6e14bb741003cb851bb7ee0a8324d0aecd322d0",
+      "path": "ci421-job-122519793919.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793929,
+      "name": "gVisor Observer Helper",
+      "characters": 276939,
+      "decoded_utf8_bytes": 276941,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "3890ac28e91d3063c31f44373adb6b363894cff1e5f35c6986fff83188894073",
+      "path": "ci421-job-122519793929.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793965,
+      "name": "Security",
+      "characters": 21960,
+      "decoded_utf8_bytes": 21962,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "26d25492baa26f39b95b34d31c5ce1cc9fcea1320ff5708b0e17e545b35bfec2",
+      "path": "ci421-job-122519793965.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793969,
+      "name": "macOS",
+      "characters": 21920,
+      "decoded_utf8_bytes": 21922,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "b18a250c5cd30aefc672d2ce6c754aff142ae39eccc657a903eb33e3da3c105a",
+      "path": "ci421-job-122519793969.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519793985,
+      "name": "Minimum Go",
+      "characters": 21501,
+      "decoded_utf8_bytes": 21503,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "86d0eea43384753ab21a09233f2fc29431d6d5e0d4c2e941c9e6c73f36c6732b",
+      "path": "ci421-job-122519793985.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122519794177,
+      "name": "Representative Wheel Corpus",
+      "characters": 35365,
+      "decoded_utf8_bytes": 35367,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "992fa2d6540323eb6d21813e21a8ee026a30dbb52d65faded40def900f565fdc",
+      "path": "ci421-job-122519794177.log",
+      "readback_verified": true
+    },
+    {
+      "id": 122544697179,
+      "name": "Required",
+      "characters": 22296,
+      "decoded_utf8_bytes": 22298,
+      "checkouts": [
+        "57a5633927a4675f2bb62b0a70e6f072af4e9142"
+      ],
+      "sha256": "20aa3591c8ae88877197b3942d670ed9322dfb8a61f52cd86b1fd259325ec95a",
+      "path": "ci421-job-122544697179.log",
+      "readback_verified": true
+    }
+  ],
+  "decoded_log_bytes": 1150764,
+  "all_logs_readback_equal": true,
+  "missing": [
+    "new acquired ZIP20-unit/required inspector hosted actual qualification",
+    "later complete DATA/native CPP and Go session/current Policy/Host/CLI qualification",
+    "signed native full update/final support profiles"
+  ],
+  "ci415_cause": "OPEN; not resolved by later green runs"
+}

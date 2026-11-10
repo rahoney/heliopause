@@ -1,0 +1,95 @@
+{
+  "run_id": 40846289893,
+  "run_number": 432,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40846289893",
+  "source": "9198a57b1b2cd40065ba6e10a1718ba08bac8a13",
+  "tree": "98eccd3ed90fe73fc1e2b737323fef2f1745f137",
+  "tracked_files": 3046,
+  "runtime_inputs": 1361,
+  "branch": "milestone/m13-release-build-packages",
+  "normal_FF_from": "0d96e23e665da91ab1954b27441c6547fb3f0186",
+  "remote_post_ref_confirmed": true,
+  "active_run_filters_before_push": {
+    "queued": 0,
+    "in_progress": 0,
+    "waiting": 0,
+    "requested": 0,
+    "pending": 0
+  },
+  "status": "completed",
+  "conclusion": "success",
+  "started_at": "2026-10-29T09:00:39Z",
+  "initial_jobs": [
+    {
+      "id": 123354480572,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123354480872,
+      "name": "macOS",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 123354480907,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123354480952,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123354481019,
+      "name": "gVisor Linux Integration",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 123354481050,
+      "name": "Quick",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 123354481075,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 123354481125,
+      "name": "gVisor Observer Helper",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 123354481184,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "monitor_session": 91578,
+  "monitor_pid": 2946324,
+  "monitor_state": "COMPLETED_CONFIRMED; own SIGTERM/session exit143 after final observation",
+  "public_GET_probe": "KNOWN HTTP200 run/jobs, no credentials; original byte/hash/readback retained",
+  "first_due_at": "2026-10-29T09:20:39+00:00",
+  "first_due_KST": "2026-10-29 18:20:39 KST",
+  "poll_interval_minutes": 20,
+  "monitor_mode": "actual public GET at due, write originals and register next before model-side analysis; completion stops worker",
+  "estimate": "recent CI43199m03 plus initial selected Python2; about100-130min excluding queue is an estimate only; actual status checked every20min",
+  "qualification": "COMPLETE for frozen source9198 named hosted scope; later local D1/D2 outside",
+  "scope": "new shared Node capture/CPP132 and initial internal selected Python2 alongside existing current2/3/4 and ordinary common consumers; hostile Python/native UVx/aliases/application runtime adapter/CLI/final open",
+  "prior_failures": "first Python exact ABI corrected named local; first Pipx CPU authorization cause UNCONFIRMED, measured current pass kept separate",
+  "last_query_at": "2026-10-29T10:44:00.889Z",
+  "next_due_at": null,
+  "completed20min_polls": 5,
+  "last_jobs": "Required/all10 SUCCESS; manual final MCP read immediately after timed poll05 nine SUCCESS/Required in_progress",
+  "completion_receipt": "ci432-python-selected-backend-hosted-qualification-20261029.json"
+}

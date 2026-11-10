@@ -1,0 +1,84 @@
+{
+  "scope": "M13-004/P4-O4-C3b bounded inert pipx original upgrade/replay input; no native query, ownership, Policy or CLI support qualification",
+  "baseline": {
+    "source": "a1d7082242013abc9412a3fd499f46315fade78a",
+    "tree": "9977a97060417705b70e9110342c515a3ae4fc91",
+    "files": 2814
+  },
+  "implemented": "YES (named input and replay wrappers)",
+  "wired": "YES (existing strict receipt/UpgradeInput/shared replay validation); NO (native/CLI consumer)",
+  "qualified": "YES (named local)",
+  "acceptance_closed": "NO (whole pipx/native/CLI)",
+  "source": [
+    {
+      "path": "internal/artifact/pypi/pipx_tool_upgrade_input.go",
+      "sha256": "724b7332fc3950e967a72ae9ac709e36fae3b4946dac4b36c0a90f274a7e0e4d"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_tool_upgrade_input_test.go",
+      "sha256": "287fdfd9966881f53ccde60795ea05f23296455d1ab3e7066744385e23feaf15"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_tool_replay_controls.go",
+      "sha256": "b9a3219ecf620c4ce1c575d151586d83c3a7bb0beeeb3930aeaef8328722417d"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_tool_replay_controls_test.go",
+      "sha256": "75a7c7b999bd0ebcb02b6b104688f35c6c6bf5cd0d103450bb4a1a0aaedba6d2"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_tool_replay_controls.go",
+      "sha256": "85cbe2f046c77fb777d5f6f0bb484a8d65088fe35e5f47aab6ef77f70ee126cc"
+    }
+  ],
+  "checks": [
+    {
+      "step": "format",
+      "exit_code": 0,
+      "seconds": 0.696,
+      "log_sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "step": "quick",
+      "exit_code": 0,
+      "seconds": 248.212,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "step": "pypi-race",
+      "exit_code": 0,
+      "seconds": 9.898,
+      "log_sha256": "727845b07aff7ad44767ebd04ad5a1d4ceb9ad76525cebf5b2f89ed55d1105ea"
+    },
+    {
+      "step": "docs",
+      "exit_code": 0,
+      "seconds": 0.277,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "step": "security",
+      "exit_code": 0,
+      "seconds": 15.722,
+      "log_sha256": "c525556e38a518e61b482d79fed8db8367f35c493386b51dea0438c41b551c3a"
+    }
+  ],
+  "validated": [
+    "old requirement/version frozen separately from derived bare-project upgrade request",
+    "exact receipt main version and pinned Python bound to original METADATA",
+    "empty/default or reviewed public wheel-only option semantics only; stored argv/interpreter never executed or returned as argv",
+    "unknown/duplicate/source override/local/offline/index/constraint/control substitution and encoded combined byte bound rejected",
+    "complete frozen METADATA/WHEEL census, original digest/tag/platform/runtime and defensive copy checked",
+    "existing UV replay validation body preserved apart from explicit parameter names; UV control name/semantics retained"
+  ],
+  "mechanical_reuse": "p4o4c3b-replay-mechanical-reuse.json",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "missing": [
+    "pre-query authenticated whole-wheel startup surface gate consumer",
+    "installed native fixed runtime/selection and Artifact query admission",
+    "current whole-set guarded promotion/bootstrap/CLI",
+    "new hosted UID1001/signed-native/final profiles"
+  ],
+  "new_ci_started": false,
+  "remote_push": "e859487 checkpoint AWAITING_USER_APPROVAL; subsequent commits not included in pending payload"
+}

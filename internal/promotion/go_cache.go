@@ -102,11 +102,14 @@ func (c *GoVerifiedCache) goCacheApproval(ctx context.Context, set domain.Projec
 		p := inspection.PolicyDecision()
 		integrity, _ := a.DeclaredIntegrity()
 		e := goCacheEntry{Source: a.Identity().Source().String(), Module: a.Identity().Name(), Version: a.Identity().Version(), Digest: a.Digest().String(), Integrity: integrity, Run: inspection.RunID().String(), Policy: p.PolicyID(), PolicyVersion: p.Version()}
-		var err error
-		e.Evidence, err = projectCacheEvidence(ctx, c.evidence, inspection)
+		records, facts, err := projectCacheEvidenceFacts(ctx, c.evidence, inspection)
 		if err != nil {
 			return goCacheDocument{}, err
 		}
+		if err := verifyArchiveContentEvidence(facts); err != nil {
+			return goCacheDocument{}, err
+		}
+		e.Evidence = records
 		doc.Entries = append(doc.Entries, e)
 	}
 	return doc, nil
@@ -171,6 +174,10 @@ func (c *GoVerifiedCache) StageProject(ctx context.Context, set domain.ProjectVe
 		// Bound the complete next expansion before writing or extracting it.
 		totalBytes += uint64(len(bundle.Mod()) + len(bundle.Zip()) + 512)
 		totalFiles += len(entries) + 4
+		for _, control := range bundle.RequiredMods() {
+			totalBytes += uint64(len(control.Body))
+			totalFiles++
+		}
 		for _, entry := range entries {
 			totalBytes += entry.UncompressedSize64
 		}
@@ -244,6 +251,9 @@ func (c *GoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.St
 // The expected document is either derived from a live typed approval or read
 // from the separate controller-owned project receipt, never the project marker.
 func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected goCacheDocument) (string, error) {
+	if err := c.verifyRecordedApproval(ctx, expected, true); err != nil {
+		return "", err
+	}
 	id, ok := strings.CutPrefix(handle, "project-cache:")
 	if !ok {
 		return "", errors.New("invalid Go cache handle")
@@ -300,7 +310,7 @@ func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle s
 	return filepath.Join(root, "modcache"), nil
 }
 
-func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument) error {
+func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument, requireProfiles bool) error {
 	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("go retained approval coverage is invalid")
 	}
@@ -319,6 +329,7 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 		if err != nil {
 			return errors.New("go retained entry digest is invalid")
 		}
+		var facts []domain.Evidence
 		for _, recorded := range entry.Evidence {
 			id, err := domain.NewEvidenceID(recorded.ID)
 			if err != nil {
@@ -328,9 +339,17 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 			if err != nil {
 				return err
 			}
-			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if err != nil || hash.String() != recorded.SHA256 {
+			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != recorded.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("go retained Evidence changed or is unavailable")
+			}
+			if requireProfiles {
+				facts = append(facts, fact)
+			}
+		}
+		if requireProfiles {
+			if err := verifyArchiveContentEvidence(facts); err != nil {
+				return err
 			}
 		}
 	}

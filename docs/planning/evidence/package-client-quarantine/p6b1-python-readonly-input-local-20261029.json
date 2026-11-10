@@ -1,0 +1,415 @@
+{
+  "work_item": "M13-004/P6-B1",
+  "date": "2026-10-29",
+  "baseline_commit": "dedb92adb10f30913015a1d92b06b4ddf3557425",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (DATA validator and same shared existing M5 owners)",
+    "QUALIFIED": "YES (named local only)",
+    "ACCEPTANCE_CLOSED": "YES (B1 named scope only)"
+  },
+  "scope": "current approved Python complete readonly DATA inputs and operational trace/CPU/cleanup; no selected console or user-run completion",
+  "source": {
+    "runtime_inputs": 1355,
+    "prior_inputs": 1351,
+    "prior_unchanged": 1349,
+    "modified_paths": [
+      "internal/bootstrap/uv_tool_install_integration_test.go",
+      "internal/sandbox/pypi_trusted_transaction.go"
+    ],
+    "new_paths": [
+      "internal/sandbox/pypi_closure_preparation.go",
+      "internal/sandbox/python_execution_inputs.go",
+      "internal/sandbox/python_execution_inputs_test.go",
+      "internal/bootstrap/python_execution_inputs_integration_test.go"
+    ],
+    "changed_source_identity": [
+      {
+        "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+        "sha256": "ca1e03b192c0d46e8af169423fb4b0d171cc52fc91f3a0ec20b55d21a93cb916",
+        "mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_trusted_transaction.go",
+        "sha256": "d00584d7f8e8335e684749215ba0ed41eb5c1f211389417c1fe98ca24cc8aeea",
+        "mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_preparation.go",
+        "mode": "100644",
+        "sha256": "81b7210164349af05af295fa198c999e59df61754c6e3a57c28ae10ec572b85b"
+      },
+      {
+        "path": "internal/sandbox/python_execution_inputs.go",
+        "mode": "100644",
+        "sha256": "735409634f8a12177f65e85bb265446c598eff299734a1f6ff545c078ae8d41a"
+      },
+      {
+        "path": "internal/sandbox/python_execution_inputs_test.go",
+        "mode": "100644",
+        "sha256": "e50eeb96db982b3913bff73d67a72ab190774ceb452f5c42960a41eb4d17ea57"
+      },
+      {
+        "path": "internal/bootstrap/python_execution_inputs_integration_test.go",
+        "mode": "100644",
+        "sha256": "9ebe1a02d18a6f9d1e5f7f410918a4c429aef0645a90e94b106000dfdc5dcab2"
+      }
+    ],
+    "full_source_identity_raw": "docs/github-logs/package-client-quarantine-20261021/p6-b1-v2-build-identity.json",
+    "cpp": "unchanged CPP131/b76b0c86 observer"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.117
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/sandbox",
+        "-run",
+        "^(TestPythonExecutionInputs|TestPythonClosurePreparationPreserves|TestPythonPreparationZeroUnits)"
+      ],
+      "exit_code": 0,
+      "seconds": 8.589
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 92.105
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "./internal/inspection/pypi",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 36.751
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 2.57
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 12.793
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b1-v2-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.57
+    },
+    {
+      "step": "sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b1-v2-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 1.217
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 14.753
+    }
+  ],
+  "binaries": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p6-b1-v2-bootstrap.test",
+      "sha256": "c38087e735bc26e3b34f4339eb3c73cdfe1955343b9c642f3707135d1343f8d3",
+      "bytes": 51478809
+    },
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p6-b1-v2-sandbox.test",
+      "sha256": "2c5b4851d1cdc07cbd37be8c87a914ec41a377eee96000378c3121671ca3a42f",
+      "bytes": 27703433
+    }
+  ],
+  "actual": {
+    "python_readonly4": {
+      "cpp_source_unchanged": true,
+      "source_unchanged": true,
+      "fixed42_and_zip_unchanged": true,
+      "exit": 1,
+      "seconds": 120.325,
+      "host_before_after_identical": true,
+      "input_unchanged": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "no_helpers_after": true,
+      "owned_fixture_workspaces_absent": true,
+      "log_sha256": "848aa9959cdf447dd73c8a8a762dfa2e6599bfd98b1aa2abd593867937f15124",
+      "sources": [
+        {
+          "path": "/tmp/haa-p6-b1-actual-v2/protected-client",
+          "sha256": "c38087e735bc26e3b34f4339eb3c73cdfe1955343b9c642f3707135d1343f8d3"
+        },
+        {
+          "path": "/tmp/haa-p6-b1-actual-v2/observer",
+          "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77"
+        },
+        {
+          "path": "/tmp/haa-p6-b1-20261029-source/internal/bootstrap/python_execution_inputs_integration_test.go",
+          "sha256": "9ebe1a02d18a6f9d1e5f7f410918a4c429aef0645a90e94b106000dfdc5dcab2"
+        }
+      ],
+      "scope": "actual current Python readonly DATA input2 and acquisition/tamper refusal2 plus existing acquired pipx required inspection consumer; no selected user program/native UVx/CLI",
+      "passed_named_tests": [
+        "TestLinuxPythonExecutionInputsIntegration"
+      ],
+      "native_solver": "ACTUAL UV tool install",
+      "current_verification_inspection_Evidence_Policy": "ACTUAL",
+      "owned_python_workspaces_absent": true,
+      "success_cases": [
+        [
+          "1",
+          "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+        ],
+        [
+          "2",
+          "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+        ]
+      ],
+      "acquisition_refusal": true,
+      "tamper_refusal": true,
+      "existing_pipx_required_consumer": false,
+      "named_pass": false,
+      "observer_directory_entries_after": [],
+      "observer_directory_empty_after": true,
+      "all_expected_cases": true
+    },
+    "python_parent_status": "PASS73.90s; encompassing v2 operator FAIL due subsequent pipx CPU exhaustion; not whole operator success",
+    "existing_pipx_same_binary_comparison": {
+      "cpp_source_unchanged": true,
+      "source_unchanged": true,
+      "fixed42_and_zip_unchanged": true,
+      "exit": 0,
+      "seconds": 41.25,
+      "host_before_after_identical": true,
+      "input_unchanged": true,
+      "no_skip": true,
+      "helper_confirmed_stopped": true,
+      "helper_wait_zero": true,
+      "no_helpers_after": true,
+      "owned_fixture_workspaces_absent": true,
+      "log_sha256": "dbec215b743da34246cdfb43c47cea7b39a7f3de346c00570a3a0b2eb1c51e74",
+      "sources": [
+        {
+          "path": "/tmp/haa-p6-b1-pipx-counter-v1/protected-client",
+          "sha256": "c38087e735bc26e3b34f4339eb3c73cdfe1955343b9c642f3707135d1343f8d3"
+        },
+        {
+          "path": "/tmp/haa-p6-b1-pipx-counter-v1/observer",
+          "sha256": "b76b0c86941fdae63c7c195aa237bcb29e421020df02bbbcd255d709e10c3e77"
+        },
+        {
+          "path": "/tmp/haa-p6-b1-20261029-source/internal/bootstrap/python_execution_prepare_integration_test.go",
+          "sha256": "a3d3426b895c64483b93d120321389e31fec76fdc723a9820029eaa8dc177534"
+        }
+      ],
+      "scope": "CURRENT B1 DIFFERENTIAL: pipx-only unchanged source1355/binaryc380/ZIP/CPP131/Host policy/limits plus read-only host cgroup CPU counters; previous current readonly4 not repeated",
+      "passed_named_tests": [
+        "TestPipxAcquiredRuntimeRequiredInspectionIntegration"
+      ],
+      "owned_python_workspaces_absent": true,
+      "named_pass": true,
+      "existing_pipx_required_consumer": true,
+      "cpu_counter_diagnostic": {
+        "samples": 355,
+        "errors": [],
+        "cgroups": [
+          "haaobs3041eef169234f3d20b4c0f6.slice"
+        ],
+        "peak_usage_usec": 11545051,
+        "new_cgroups_absent_after": true
+      },
+      "observer_directory_entries_after": [],
+      "observer_directory_empty_after": true
+    },
+    "earlier_baseline_result": "pre-B1 binary61d same fixed pipx parent PASS40.48s/actual42.455s",
+    "same_source_and_binary_verified": true,
+    "cpu_guard_failure": "v2 pipx FAIL43.25s/authorization exhausted remains preserved; later named PASS39.40s/read-only counter peak11545051us is not causal resolution",
+    "scope": "separate named consumers under exactly same1355 source andc380 binary; no selected user run"
+  },
+  "originals": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-actual.log",
+      "sha256": "dbec215b743da34246cdfb43c47cea7b39a7f3de346c00570a3a0b2eb1c51e74",
+      "bytes": 633
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-actual.sh",
+      "sha256": "4015732caaf63c5c7ec765bee2e6395bff45112f7c1258d82e9b01cd41fab5fd",
+      "bytes": 728
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7",
+      "bytes": 11165
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-cpu-counter-observations.json",
+      "sha256": "6b8e71b1146b48175281ddf1240bfa2c750c80bb07d29eda6b5e8386869d1083",
+      "bytes": 149925
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-helpers-after.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-helpers-before.json",
+      "sha256": "710ca323dc558993f14e0624f85a1d910ef45809aa621680dbf928255f8d2db2",
+      "bytes": 36
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-host-after.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-host-before.json",
+      "sha256": "bda6bcbd556c130ec287eda22616c06015b40480d34a92745aaa77af811256aa",
+      "bytes": 2225
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-inputs-after.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-inputs-before.json",
+      "sha256": "210e5ce1e2540f4ca67ec40339af63190b0eeb7cce5fe85d7f6a3f5926e56a23",
+      "bytes": 6949
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-lifecycle.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-namespace-result.json",
+      "sha256": "7fcb245d484ebb1a05ec641e37430a8849dc3af7e95d74295f7779bd032619d0",
+      "bytes": 215
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-namespace.py",
+      "sha256": "bfbc1400b4dc751af3e52486ea0796d952430369bd734dcc855b6b92d5eb1738",
+      "bytes": 1584
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-result.json",
+      "sha256": "32ab005b920a8d3800fe5249fcae3d9388cb69f446149b802564c1b9bfe609bc",
+      "bytes": 1663
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-counter-v1-runtime-source-binding.json",
+      "sha256": "72fa3efc0ad75bbf58ddb3810f3509752d50d927f98a10b6c6dd642ba6193f57",
+      "bytes": 245289
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b1-freeze-checks-v2.py",
+      "sha256": "8afa7267a5f632d2b3fe5a405150dfa722b6d3c4cbc794a4bf1b87050878eae1",
+      "bytes": 1835
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b1-record-v3.py",
+      "sha256": "515f466668fc316e2e112f43f9896a749d3f7e95a5d91c97d379a600b74980cb",
+      "bytes": 6812
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b1-pipx-counter-v1.py",
+      "sha256": "43bdade06b24b006f19a34ccb34823adf40608bc5e4b5ae7503a250eb4988117",
+      "bytes": 12055
+    }
+  ],
+  "first_failure": {
+    "scope": "actual-v1 first readonly consumer FAIL36.88s/pipx not reached; no successful readonly case",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/p6-b1-actual-v1-original-inventory.json",
+    "confirmed_cause": "new consumer sampled private run.Err after existing normal CPU watch.stop had canceled it",
+    "correction": "preserve pre-cleanup run failures and join actual cleanup/watch failures; outer caller cause and final wall/CPU/trace/teardown remain mandatory",
+    "v1_checks": "canonical10 PASS is not actual success"
+  },
+  "missing": [
+    "Python ARTIFACT selected console runtime/admission/terminal/bounded output and actual boundaries",
+    "native UVx selector golden equivalence and real aliases/CLI",
+    "new B1 hosted source qualification (CI430 excludes B1)",
+    "whole P4/P5-P7/final4profiles/signed release acceptance"
+  ],
+  "pipx_cpu_failure_original": "docs/github-logs/package-client-quarantine-20261021/p6-b1-actual-v2-original-inventory.json",
+  "pipx_pre_B1_comparison_original": "docs/github-logs/package-client-quarantine-20261021/p6-b1-pipx-baseline-v1-original-inventory.json",
+  "ci430": "active source3c85 unchanged; no push while running"
+}

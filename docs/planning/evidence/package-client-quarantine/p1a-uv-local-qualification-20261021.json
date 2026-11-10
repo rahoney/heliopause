@@ -1,0 +1,192 @@
+{
+  "baseline": "ef1e03e452f49219681a154b774ca2eed38dfaf9",
+  "scope": "P1a native uv data/selection/authenticated wheel graph boundary; no production uv command or runtime wiring",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "reason": "Local source/default/fuzz/actual corpus PASS; remote source CI pending and whole P1 runtime/CLI remains"
+  },
+  "checks": {
+    "format": {
+      "exit": 0,
+      "seconds": 0.31
+    },
+    "quick": {
+      "exit": 0,
+      "seconds": 141.92
+    },
+    "security": {
+      "exit": 0,
+      "seconds": 6.6
+    },
+    "docs": {
+      "exit": 0,
+      "seconds": 0.22
+    },
+    "fuzz": {
+      "exit": 0,
+      "seconds": 43.51
+    }
+  },
+  "native_corpus": {
+    "exit": 0,
+    "seconds": 1.578,
+    "scope": "Final public-budget candidate, same frozen actual selected wheel corpus; data boundary only"
+  },
+  "files": [
+    {
+      "path": "internal/artifact/pypi/uv_lock.go",
+      "sha256": "b1bdded6bd13ea62d3ac94d50c7c646c54f238120caa55fee0cafc0208e18471"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_lock_test.go",
+      "sha256": "11310112791c55407b2bc6ecb4ea8d7686af54c401f3ad3cd0d4ce5ae292c7fb"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "d75d07a5a12ad2ccc2d90e12696bda9e2b06fbca33b5360501c86e425b59fdb0"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_real_corpus_test.go",
+      "sha256": "4cd5926062e435f3ff95be870577b20d25c7021ae29a7ba947243cdcf88433c6"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_release_metadata.go",
+      "sha256": "17242d3908c013a50f6aaadebd6d41362ea47f4080913609515aaa43d6fbb7dc"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_release_metadata_test.go",
+      "sha256": "59c759c0df7b460d4ff3384ec7133d6b87e83752b7866a90c4fa06286d0f3823"
+    },
+    {
+      "path": "scripts/check/security.go",
+      "sha256": "270acec63b61310eced7d9ddbf674f02494529ec89ee0f187b62e4d00e4ee7f6"
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "sha256": "c8ee4e89f950d2d89d644042d132d0a41e9b99e2e59ec1950c48a5ef657d1bd6"
+    }
+  ],
+  "wheel_inputs": [
+    {
+      "project": "certifi",
+      "version": "2026.10.19",
+      "metadata_url": "https://pypi.org/simple/certifi/",
+      "metadata_response_sha256": "2c031e2acb9e8411f0861d32bf398254d72497b02c0764ccd04bccb8b3c9602d",
+      "original_file_count": 144,
+      "selected_record_count": 1,
+      "filename": "certifi-2026.10.19-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl",
+      "sha256": "42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b",
+      "bytes": 136464
+    },
+    {
+      "project": "charset-normalizer",
+      "version": "3.5.2",
+      "metadata_url": "https://pypi.org/simple/charset-normalizer/",
+      "metadata_response_sha256": "7cb55e6915e25bebc4f5c057127a53c72a39008bea2f50960dbcfe5f5c0549cc",
+      "original_file_count": 2461,
+      "selected_record_count": 1,
+      "filename": "charset_normalizer-3.5.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/18/24/bad3ac4271589df29cf5ce2f5ae490518a5739358052bd0d61209e6fea54/charset_normalizer-3.5.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "34276fd796040bf0993ab33a369aa572e6979c7aab225a88893667ad8eac8f7a",
+      "bytes": 255056
+    },
+    {
+      "project": "idna",
+      "version": "3.20",
+      "metadata_url": "https://pypi.org/simple/idna/",
+      "metadata_response_sha256": "0bb074e13eeab85764ae0b58f43a40fe70d7155ac7485d849e435f5b8df12811",
+      "original_file_count": 75,
+      "selected_record_count": 1,
+      "filename": "idna-3.20-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "bytes": 69583
+    },
+    {
+      "project": "requests",
+      "version": "2.32.5",
+      "metadata_url": "https://pypi.org/simple/requests/",
+      "metadata_response_sha256": "10134c88be5b9cf099b4b23c758c26a85f47097243c082f126019f1b3dbbf654",
+      "original_file_count": 244,
+      "selected_record_count": 1,
+      "filename": "requests-2.32.5-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl",
+      "sha256": "2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6",
+      "bytes": 64738
+    },
+    {
+      "project": "urllib3",
+      "version": "2.8.0",
+      "metadata_url": "https://pypi.org/simple/urllib3/",
+      "metadata_response_sha256": "7e72c7b3c9211c01b31b2fc6c8d2e46cf4b015969e4b11ddf5a0f9dd71609874",
+      "original_file_count": 192,
+      "selected_record_count": 1,
+      "filename": "urllib3-2.8.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "bytes": 135717
+    }
+  ],
+  "release_metadata": {
+    "scope": "Exact-release metadata corpus, no filtered Simple response used by the new consumer",
+    "records": [
+      {
+        "project": "certifi",
+        "version": "2026.10.19",
+        "metadata_url": "https://pypi.org/pypi/certifi/2026.10.19/json",
+        "sha256": "5b6ba21c20c09f5e4ca52bf8251de25fafbdb56909c60e3ba44d4f2b6ef5d319",
+        "file_count": 2,
+        "bytes": 4631
+      },
+      {
+        "project": "charset-normalizer",
+        "version": "3.5.2",
+        "metadata_url": "https://pypi.org/pypi/charset-normalizer/3.5.2/json",
+        "sha256": "9fda300857ae6a0486b4cd2d2fec7817ed2d45657249a6dfc0c2bbd1a44267b6",
+        "file_count": 172,
+        "bytes": 202370
+      },
+      {
+        "project": "idna",
+        "version": "3.20",
+        "metadata_url": "https://pypi.org/pypi/idna/3.20/json",
+        "sha256": "e7cbd26e23ce60f6cb3a151d2adf3b1b087bb8f10ac2d9d6db70fdccbf3bb041",
+        "file_count": 2,
+        "bytes": 9180
+      },
+      {
+        "project": "requests",
+        "version": "2.32.5",
+        "metadata_url": "https://pypi.org/pypi/requests/2.32.5/json",
+        "sha256": "9d10d4c95b77114fff98d03808258e56753507b86328ad28759dda7df1a95775",
+        "file_count": 2,
+        "bytes": 8981
+      },
+      {
+        "project": "urllib3",
+        "version": "2.8.0",
+        "metadata_url": "https://pypi.org/pypi/urllib3/2.8.0/json",
+        "sha256": "5315e7401db3cacccd0c2ce5daf81f752a9cc3614b18c37f2b79930b7159ce2f",
+        "file_count": 2,
+        "bytes": 9510
+      }
+    ],
+    "full_simple_negative": {
+      "url": "https://pypi.org/simple/charset-normalizer/",
+      "sha256": "7cb55e6915e25bebc4f5c057127a53c72a39008bea2f50960dbcfe5f5c0549cc",
+      "file_count": 2461,
+      "bytes": 1842134,
+      "expected_existing_bound": 1024
+    }
+  },
+  "remaining": [
+    "Fixed uv runtime/provenance/image manifest and maintenance",
+    "Observer/client factory and typed-network resolver lifecycle",
+    "Install/upgrade/sync CLI and guarded promotion, actual negative/rollback qualification",
+    "Exact-source remote CI"
+  ]
+}

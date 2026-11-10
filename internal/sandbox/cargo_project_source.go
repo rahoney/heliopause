@@ -18,47 +18,53 @@ import (
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 )
 
-type cargoSourceMember struct {
+type projectSourceMember struct {
 	name string
 	info os.FileInfo
 	body []byte
 	hash [32]byte
 }
 
-// cargoProjectSource retains anchored directory handles and exact source
+// projectSourceSnapshot retains anchored directory handles and exact source
 // members until selection/observation is reconciled with the original project.
 // It does not grant registry provenance or publication approval to local bytes.
-type cargoProjectSource struct {
+type projectSourceSnapshot struct {
 	project  string
 	rootInfo os.FileInfo
 	roots    []*os.Root
-	members  []cargoSourceMember
+	members  []projectSourceMember
+	limits   projectBuildInputLimits
 }
 
 // CargoProjectSource exposes the existing data-only capture to the guarded
 // promotion consumer. It carries no registry or execution authority.
-type CargoProjectSource = cargoProjectSource
+type CargoProjectSource = projectSourceSnapshot
+
+type cargoProjectSource = projectSourceSnapshot
+
+// GoProjectSource is the same anchored data witness with Go-specific limits.
+type GoProjectSource = projectSourceSnapshot
 
 func CaptureCargoProjectSource(ctx context.Context, project string) (*CargoProjectSource, error) {
 	return captureCargoProject(ctx, project)
 }
 
-func (s *cargoProjectSource) Files() map[string][]byte         { return s.files() }
-func (s *cargoProjectSource) Verify(ctx context.Context) error { return s.verify(ctx) }
-func (s *cargoProjectSource) Archive() ([]byte, error)         { return s.archive() }
+func (s *projectSourceSnapshot) Files() map[string][]byte         { return s.files() }
+func (s *projectSourceSnapshot) Verify(ctx context.Context) error { return s.verify(ctx) }
+func (s *projectSourceSnapshot) Archive() ([]byte, error)         { return s.archive() }
 
 // BuildArchive preserves source bytes while using readonly transport metadata.
-func (s *cargoProjectSource) BuildArchive() ([]byte, error) { return s.archiveWithFileMode(0o400) }
-func (s *cargoProjectSource) Close() error                  { return s.close() }
+func (s *projectSourceSnapshot) BuildArchive() ([]byte, error) { return s.archiveWithFileMode(0o400) }
+func (s *projectSourceSnapshot) Close() error                  { return s.close() }
 
 // VerifyPublishedControls permits only the two exact selected root controls to
 // change during publication. Every other source member retains its original
 // inode, mode and content witness; hidden HAA records are not source authority.
-func (s *cargoProjectSource) VerifyPublishedControls(ctx context.Context, controls map[string][]byte) (resultErr error) {
+func (s *projectSourceSnapshot) VerifyPublishedControls(ctx context.Context, controls map[string][]byte) (resultErr error) {
 	if s == nil || len(s.roots) == 0 || len(controls) != 2 {
 		return errors.New("cargo publication source witness is unavailable")
 	}
-	current, err := captureCargoProject(ctx, s.project)
+	current, err := captureProjectSource(ctx, s.project, s.limits)
 	if err != nil {
 		return err
 	}
@@ -66,15 +72,15 @@ func (s *cargoProjectSource) VerifyPublishedControls(ctx context.Context, contro
 	if !os.SameFile(s.rootInfo, current.rootInfo) || s.rootInfo.Mode() != current.rootInfo.Mode() {
 		return errors.New("cargo publication source root changed")
 	}
-	expected := map[string]cargoSourceMember{}
+	expected := map[string]projectSourceMember{}
 	for _, member := range s.members {
-		if member.name != "Cargo.toml" && member.name != "Cargo.lock" {
+		if member.name != s.limits.controls[0] && member.name != s.limits.controls[1] {
 			expected[member.name] = member
 		}
 	}
 	seen := 0
 	for _, member := range current.members {
-		if member.name == "Cargo.toml" || member.name == "Cargo.lock" {
+		if member.name == s.limits.controls[0] || member.name == s.limits.controls[1] {
 			body, exists := controls[member.name]
 			if !exists || !bytes.Equal(body, member.body) {
 				return errors.New("cargo published controls differ from selection")
@@ -94,8 +100,18 @@ func (s *cargoProjectSource) VerifyPublishedControls(ctx context.Context, contro
 	return nil
 }
 
-func captureCargoProject(ctx context.Context, project string) (result *cargoProjectSource, resultErr error) {
-	if ctx == nil || !filepath.IsAbs(project) || filepath.Clean(project) != project || project == "/" {
+func captureCargoProject(ctx context.Context, project string) (*projectSourceSnapshot, error) {
+	return captureProjectSource(ctx, project, cargoBuildInputLimits("project"))
+}
+
+func CaptureGoProjectSource(ctx context.Context, project string) (*GoProjectSource, error) {
+	return captureProjectSource(ctx, project, goBuildInputLimits("project"))
+}
+
+// Only bounded data copying and identity retention are shared. Each source
+// profile retains its own control grammar, ignored namespaces and budgets.
+func captureProjectSource(ctx context.Context, project string, limits projectBuildInputLimits) (result *projectSourceSnapshot, resultErr error) {
+	if ctx == nil || !filepath.IsAbs(project) || filepath.Clean(project) != project || project == "/" || (limits.variant != "cargo-source" && limits.variant != "go-source") {
 		return nil, errors.New("cargo source project is invalid")
 	}
 	if err := ctx.Err(); err != nil {
@@ -109,7 +125,7 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 	if err != nil {
 		return nil, errors.New("open anchored cargo source")
 	}
-	snapshot := &cargoProjectSource{project: project, rootInfo: info, roots: []*os.Root{root}}
+	snapshot := &projectSourceSnapshot{project: project, rootInfo: info, roots: []*os.Root{root}, limits: limits}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, snapshot.close())
@@ -130,27 +146,27 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 		if err != nil {
 			return errors.New("open cargo source inventory")
 		}
-		entries, readErr := file.ReadDir(2*artifactcargo.MaxCrateFiles + 1)
+		entries, readErr := file.ReadDir(2*limits.files + 1)
 		closeErr := file.Close()
 		if (readErr != nil && !errors.Is(readErr, io.EOF)) || closeErr != nil {
 			return errors.New("read cargo source inventory")
 		}
 		for _, entry := range entries {
 			count++
-			if count > 2*artifactcargo.MaxCrateFiles {
+			if count > 2*limits.files {
 				return errors.New("cargo source inventory exceeds entry bound")
 			}
-			if prefix == "" && entry.Name() == ".cargo" {
+			if limits.variant == "cargo-source" && prefix == "" && entry.Name() == ".cargo" {
 				return errors.New("project Cargo configuration is unsupported")
 			}
 			// As in the existing project source boundary, hidden host configuration
 			// and HAA records are not input. Cargo output is private, not copied
 			// from the user's existing target tree.
-			if strings.HasPrefix(entry.Name(), ".") || (prefix == "" && entry.Name() == "target") {
+			if strings.HasPrefix(entry.Name(), ".") || (limits.variant == "cargo-source" && prefix == "" && entry.Name() == "target") || (limits.variant == "go-source" && entry.Name() == "vendor") {
 				continue
 			}
 			name := path.Join(prefix, entry.Name())
-			if len(name) > 4096 || !utf8.ValidString(name) || name != path.Clean(name) || strings.ContainsAny(name, "\\:\x00\r\n\t") {
+			if len(name) > limits.maxPath || !utf8.ValidString(name) || name != path.Clean(name) || strings.ContainsAny(name, "\\:\x00\r\n\t") {
 				return errors.New("cargo source member is noncanonical")
 			}
 			info, err := directory.Lstat(entry.Name())
@@ -167,7 +183,7 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 				if err != nil || !os.SameFile(info, opened) {
 					return errors.New("cargo source directory identity changed")
 				}
-				snapshot.members = append(snapshot.members, cargoSourceMember{name: name, info: info})
+				snapshot.members = append(snapshot.members, projectSourceMember{name: name, info: info})
 				if err := walk(child, name); err != nil {
 					return err
 				}
@@ -178,10 +194,10 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 				continue
 			}
 			files++
-			if (name == "Cargo.toml" || name == "Cargo.lock") && info.Size() > artifactcargo.MaxProjectControlBytes {
+			if (name == limits.controls[0] || name == limits.controls[1]) && info.Size() > limits.control {
 				return errors.New("cargo project control exceeds bound")
 			}
-			if files > artifactcargo.MaxCrateFiles || !info.Mode().IsRegular() || !goBuildSingleLink(info) || info.Size() < 0 || info.Size() > artifactcargo.MaxCrateFileBytes || info.Size() > artifactcargo.MaxCrateExpandedBytes-total {
+			if files > limits.files || !info.Mode().IsRegular() || !goBuildSingleLink(info) || info.Size() < 0 || info.Size() > limits.file || info.Size() > limits.payload-total {
 				return errors.New("cargo source requires bounded single-link regular files")
 			}
 			file, err := directory.OpenFile(entry.Name(), os.O_RDONLY|syscall.O_NONBLOCK, 0)
@@ -200,7 +216,7 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 				return errors.New("cargo source changed during capture")
 			}
 			total += int64(len(body))
-			snapshot.members = append(snapshot.members, cargoSourceMember{name: name, info: info, body: body, hash: sha256.Sum256(body)})
+			snapshot.members = append(snapshot.members, projectSourceMember{name: name, info: info, body: body, hash: sha256.Sum256(body)})
 		}
 		return nil
 	}
@@ -213,18 +229,22 @@ func captureCargoProject(ctx context.Context, project string) (result *cargoProj
 	}
 	sort.Slice(snapshot.members, func(i, j int) bool { return snapshot.members[i].name < snapshot.members[j].name })
 	bodies := snapshot.files()
-	if _, err := artifactcargo.SelectedLocalManifests(bodies); err != nil {
-		return nil, err
-	}
-	if lock, present := bodies["Cargo.lock"]; present {
-		if err := artifactcargo.ValidateProjectLock(lock); err != nil {
+	if limits.variant == "cargo-source" {
+		if _, err := artifactcargo.SelectedLocalManifests(bodies); err != nil {
 			return nil, err
 		}
+		if lock, present := bodies["Cargo.lock"]; present {
+			if err := artifactcargo.ValidateProjectLock(lock); err != nil {
+				return nil, err
+			}
+		}
+	} else if err := validateGoProjectSource(bodies); err != nil {
+		return nil, err
 	}
 	return snapshot, nil
 }
 
-func (s *cargoProjectSource) files() map[string][]byte {
+func (s *projectSourceSnapshot) files() map[string][]byte {
 	result := map[string][]byte{}
 	for _, m := range s.members {
 		if m.info.Mode().IsRegular() {
@@ -236,11 +256,11 @@ func (s *cargoProjectSource) files() map[string][]byte {
 
 // privateWorkspace copies only the anchored data inventory. Cargo is never
 // invoked while this code has access to the caller's original directory.
-func (s *cargoProjectSource) privateWorkspace(ctx context.Context) (workspace string, cleanup func() error, resultErr error) {
+func (s *projectSourceSnapshot) privateWorkspace(ctx context.Context) (workspace string, cleanup func() error, resultErr error) {
 	if err := s.verify(ctx); err != nil {
 		return "", nil, err
 	}
-	workspace, err := os.MkdirTemp("", "haa-cargo-project-")
+	workspace, err := os.MkdirTemp("", "haa-"+s.limits.variant+"-")
 	if err != nil {
 		return "", nil, errors.New("create private Cargo project")
 	}
@@ -287,11 +307,11 @@ func (s *cargoProjectSource) privateWorkspace(ctx context.Context) (workspace st
 	return workspace, cleanup, nil
 }
 
-func (s *cargoProjectSource) verify(ctx context.Context) (resultErr error) {
+func (s *projectSourceSnapshot) verify(ctx context.Context) (resultErr error) {
 	if s == nil || len(s.roots) == 0 {
 		return errors.New("cargo source snapshot is closed")
 	}
-	current, err := captureCargoProject(ctx, s.project)
+	current, err := captureProjectSource(ctx, s.project, s.limits)
 	if err != nil {
 		return err
 	}
@@ -308,9 +328,9 @@ func (s *cargoProjectSource) verify(ctx context.Context) (resultErr error) {
 	return nil
 }
 
-func (s *cargoProjectSource) archive() ([]byte, error) { return s.archiveWithFileMode(0o600) }
+func (s *projectSourceSnapshot) archive() ([]byte, error) { return s.archiveWithFileMode(0o600) }
 
-func (s *cargoProjectSource) archiveWithFileMode(fileMode int64) ([]byte, error) {
+func (s *projectSourceSnapshot) archiveWithFileMode(fileMode int64) ([]byte, error) {
 	if s == nil || len(s.roots) == 0 {
 		return nil, errors.New("cargo source snapshot is closed")
 	}
@@ -318,6 +338,12 @@ func (s *cargoProjectSource) archiveWithFileMode(fileMode int64) ([]byte, error)
 	w := tar.NewWriter(&body)
 	for _, member := range s.members {
 		h := &tar.Header{Name: member.name, Mode: fileMode, Size: int64(len(member.body)), Typeflag: tar.TypeReg}
+		if s.limits.variant == "go-source" {
+			h.Uid, h.Gid = 1000, 1000
+			if member.name != s.limits.controls[0] && member.name != s.limits.controls[1] {
+				h.Mode = 0o400
+			}
+		}
 		if member.info.IsDir() {
 			h.Typeflag = tar.TypeDir
 			h.Mode = 0o700
@@ -332,13 +358,13 @@ func (s *cargoProjectSource) archiveWithFileMode(fileMode int64) ([]byte, error)
 			}
 		}
 	}
-	if err := w.Close(); err != nil || body.Len() > artifactcargo.MaxCrateExpandedBytes+(2*artifactcargo.MaxCrateFiles+2)*512 {
+	if err := w.Close(); err != nil || int64(body.Len()) > s.limits.payload+int64(2*s.limits.files+2)*512 {
 		return nil, errors.New("cargo source archive exceeds bound")
 	}
 	return body.Bytes(), nil
 }
 
-func (s *cargoProjectSource) close() error {
+func (s *projectSourceSnapshot) close() error {
 	if s == nil {
 		return nil
 	}

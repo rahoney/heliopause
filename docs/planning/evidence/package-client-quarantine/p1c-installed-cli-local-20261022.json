@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "baseline": "421764a0944c288c8a75a27fb84b2a077505952d",
+  "closure_commit": "9955e38b6730af9147282ba494cac6615add55dc",
+  "scope": "C3c2b managed installed-aware ordinary UV install and two CLI upgrade intents",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES at production composition/CLI",
+  "QUALIFIED": "LOCAL ONLY; same-source actual UV CLI/native/shared-consumer CI pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "actual authenticated CLI fresh/retained/root-upgrade/closure-noop/new-root and refusal qualification",
+    "same-source required CI/macOS/shared consumers",
+    "native UV ownership enrollment",
+    "complete multi-root/empty sync"
+  ],
+  "source": [
+    {
+      "path": "internal/bootstrap/python_client.go",
+      "bytes": 5191,
+      "sha256": "5e9cd631ecf7fd194a11f7b67df026a34e619b1378c4fdbd9aba0382e4f26715"
+    },
+    {
+      "path": "internal/bootstrap/uv_install_integration_test.go",
+      "bytes": 8257,
+      "sha256": "de5fb3c49d4189bce2df85d8c525160e4fc2d03003f6ca2819680723d8649242"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "bytes": 12966,
+      "sha256": "491e390200a8334263c8a32615932a400551ae09d9a27e77475ab1a550c4ca50"
+    },
+    {
+      "path": "internal/cli/package_client_test.go",
+      "bytes": 6692,
+      "sha256": "48a63f46366718370d82dba6eff15b6485f5b7f39617ab61c75459b39e909679"
+    },
+    {
+      "path": "internal/cli/presentation_catalog.go",
+      "bytes": 14950,
+      "sha256": "1f020f2870600ccdf5f02c429bfac06d9423ff8bf453815ecbb8344bdca0e3da"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "bytes": 31597,
+      "sha256": "9dd10a8e7146d1a4dc0e4a1dbec76ee54818ccc8399b2c14524493fc640c6dbf"
+    },
+    {
+      "path": "internal/promotion/pypi_update.go",
+      "bytes": 20490,
+      "sha256": "3b2ebaa984d3929e9449638d43f95591c3b52ff2f8b05665356ee1a9ee08af2c"
+    },
+    {
+      "path": "internal/promotion/uv_install.go",
+      "bytes": 10564,
+      "sha256": "6c64eb6ab10b0ba3a79e782d0edd3a5f225605b5cda795cdc083154a29166965"
+    },
+    {
+      "path": "internal/promotion/uv_update_test.go",
+      "bytes": 17507,
+      "sha256": "016e67952ba4a46e8dbc25eae01c2ca6b41e0ac3e35dc72f9119f7daec115916"
+    },
+    {
+      "path": "internal/promotion/uv_installed_install_test.go",
+      "bytes": 5087,
+      "sha256": "a93b19bc2135cab17355739064149d8a2cf8e6f3466a1aed91f5e97c8cd38340"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.353,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-format.json",
+        "bytes": 110,
+        "sha256": "2f1746362123830913beb000b0aafa524d1c59a382fa52fc131d080bcc5795ef"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 37.112,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-quick.json",
+        "bytes": 110,
+        "sha256": "82219e530db9d72284381192930ab249fa64b6eb06277fa21c7b9d95de5c9270"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-quick.log",
+        "bytes": 1354,
+        "sha256": "d413a33819806885c11e98fec36c208ce9188d2dacb962249d1fa080f41fbc5d"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.889,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-security.json",
+        "bytes": 112,
+        "sha256": "00e85300854635ffa47efe38952d245a506e4db6857a5491933fbaf2fed1fad6"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.226,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-docs.json",
+        "bytes": 108,
+        "sha256": "6619c780f35789fb0294a2e5e04a8b9407a5ec3eb4a14f17cffd1691af3223b3"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.91,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-workflow.json",
+        "bytes": 111,
+        "sha256": "9c08dd275b2b2a5614205d5536a238226989ce9543c2f55556d0c6810fbce492"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-final-workflow.log",
+        "bytes": 1071,
+        "sha256": "f30d093b20015e14de69ddc2fa10ae3261e98adb07522f56b22dcbc96a0e5d55"
+      }
+    },
+    {
+      "command": [
+        "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=5m",
+        "./internal/promotion",
+        "./internal/cli",
+        "./internal/bootstrap",
+        "./internal/application",
+        "./internal/artifact/pypi"
+      ],
+      "exit": 0,
+      "seconds": 137.572,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-full-race.json",
+        "bytes": 307,
+        "sha256": "7989e80337bcedae23bc45c77caa0662d64632d896f55504f7f2d2c1365c078a"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-c3c2b-full-race.log",
+        "bytes": 308,
+        "sha256": "2cb3877cecb1f2fe2e660eeaa3e8f5e419fcefc043da6998b877726614d52f18"
+      }
+    }
+  ],
+  "failures": [],
+  "review": [
+    "Existing held transaction transferred to shared snapshot without unlock/relock. Ordinary wrapper hides update marker and checks original reference/context before adapting to frozen bare reference.",
+    "Fresh/install/upgrade intent mappings remain in typed client descriptor and factory, independent of source identity and presentation. --upgrade-package accepts only matching bare requested root; unsupported option/index/adoption refused.",
+    "EN/KO help and other five language fallback bind to descriptor flag descriptions after generic translations. Existing pip only-if-needed behavior remains.",
+    "Five actual CLI cases and unsupported-original unchanged-target/Evidence refusal are wired into existing authenticated CI; not executed locally. No skipped gate/new job/privilege/role/budget change."
+  ],
+  "cleanup": {
+    "task_tmp_entries": 0,
+    "new_native_resources": 0,
+    "preserved": "small evidence and SDK/source/quality/qualified bundle needed by next P1 consumer"
+  }
+}

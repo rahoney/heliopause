@@ -1,0 +1,332 @@
+{
+  "work_item": "M13-004",
+  "substep": "P6-B2-B",
+  "status": "NAMED_LOCAL_QUALIFIED",
+  "IMPLEMENTED": "YES (initial selected Python backend/profile)",
+  "WIRED": "YES (internal sandbox API/current real preparation consumer); application runtime adapter/public CLI not yet wired",
+  "QUALIFIED": "YES (named local normal0/nonzero2 and existing affected consumers)",
+  "ACCEPTANCE_CLOSED": "YES (same initial named scope only)",
+  "baseline_commit": "edcfaed221917a980e6b5554ebdd4af9c0740aba",
+  "runtime_inputs": 1361,
+  "existing1352_unchanged_from_B2A": true,
+  "modified_paths": [
+    "internal/sandbox/pypi_trusted_transaction.go",
+    "internal/sandbox/shared_observer.go",
+    "tools/gvisor-observer/observer.cc",
+    "tools/gvisor-observer/observer_latch_test.cc"
+  ],
+  "new_paths": [
+    "internal/artifact/pypi/execution_startup.go",
+    "internal/sandbox/python_execution.go",
+    "internal/sandbox/python_execution_observer.go",
+    "internal/sandbox/python_execution_test.go",
+    "internal/bootstrap/python_execution_integration_test.go"
+  ],
+  "source_identity": [
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "sha256": "cc02f87ece5c302b7f1f432303afcfdf8a2ee2448a658130018f5dfb27b39afb",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "58c6065c387974b4f35fd4950f2779ca0d3f2fcb5698a3b066350526c1857149",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "ed5a2bd2865bcec066c326bedc5ac731c1cd6cd10cdbfbdaff4e2169107850a6",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "8623c5cd9def4d8f51ef827f10410806b125a5293b70be8dd9466c8d03f7a18d",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/artifact/pypi/execution_startup.go",
+      "mode": "100644",
+      "sha256": "6783e588bf769d5e36b8db335e1b5c5f807eac9adc1e870856cdd860377a2bb9"
+    },
+    {
+      "path": "internal/sandbox/python_execution.go",
+      "mode": "100644",
+      "sha256": "a951a54152da35e26bfe981a2a908f4100679c35004fe0e3f23a987667b021cc"
+    },
+    {
+      "path": "internal/sandbox/python_execution_observer.go",
+      "mode": "100644",
+      "sha256": "59d132fa5bc80e4ef46c87ea559f7ab86b91832fab1c86534d6797ba49a7fa18"
+    },
+    {
+      "path": "internal/sandbox/python_execution_test.go",
+      "mode": "100644",
+      "sha256": "cb05b75b3fb123862426521ff808e997d44dd364e4fc3b4512f6996eb46ee697"
+    },
+    {
+      "path": "internal/bootstrap/python_execution_integration_test.go",
+      "mode": "100644",
+      "sha256": "817487a1cccfcc1561293fc24ef4fdf7e2a9af2151c72412f2992f2b683f9879"
+    }
+  ],
+  "checks_current_or_explicitly_reused": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.669,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/sandbox",
+        "-run",
+        "^TestPythonExecution"
+      ],
+      "exit_code": 0,
+      "seconds": 9.951,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 56.6,
+      "scope": "current CPP-only correction candidate"
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "./internal/artifact/pypi",
+        "./internal/inspection/pypi",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 43.098,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 3.574,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 14.208,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b2b-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.323,
+      "reused_from": "/tmp/haa-p6-b2b-v1-build-identity.json",
+      "scope": "identical Go/formatter/SDK inputs and binary; CPP is qualified separately by new release build"
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.416,
+      "scope": "current CPP-only correction candidate"
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 14.415,
+      "scope": "current CPP-only correction candidate"
+    }
+  ],
+  "Go_binary": {
+    "role": "bootstrap",
+    "path": "/tmp/haa-p6-b2b-v1-bootstrap.test",
+    "sha256": "f70fca09db5408c85d08f86a6f089a2cf7f981e4e6bbe902b3b246afc9a68077",
+    "bytes": 51529697
+  },
+  "v2_CPP_only_correction": {
+    "existing1359_unchanged_from_v1": true,
+    "Go_binary_same_f70": true,
+    "source_delta": [
+      "tools/gvisor-observer/observer.cc",
+      "tools/gvisor-observer/observer_latch_test.cc"
+    ],
+    "read": "/proc/sys/vm/overcommit_memory",
+    "flags": 32768,
+    "mount": "system /proc",
+    "guards": "current Python image/ARTIFACT/direct-root/start/active; no pending authority; exact read flags/path/mount; negative aliases/flags/role/clone/image/mount cases"
+  },
+  "CPP": {
+    "sha256": "f69b315ea353f7e1840c6e176e5837cbb89a0839012bd1af118cc5f84a2551db",
+    "bytes": 3221592,
+    "latches": 132,
+    "build_seconds": 305.01,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "ed5a2bd2865bcec066c326bedc5ac731c1cd6cd10cdbfbdaff4e2169107850a6"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "8623c5cd9def4d8f51ef827f10410806b125a5293b70be8dd9466c8d03f7a18d"
+      },
+      {
+        "path": "tools/gvisor-observer/BUILD",
+        "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "6f1e6e0e0f315df68a63261ac0c9a93e1d7659f3a2598dc16cba66af3b0c275f"
+      },
+      {
+        "path": "scripts/prepare-gvisor-build-source.sh",
+        "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f"
+      },
+      {
+        "path": "scripts/build-gvisor-observer-release.sh",
+        "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c"
+      }
+    ]
+  },
+  "actual": {
+    "python": {
+      "result": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-python-actual-v2-result.json",
+      "named_tests": [
+        "TestLinuxPythonExecutionIntegration"
+      ],
+      "seconds": 74.633,
+      "case_count": 2,
+      "source_Host_inputs_Docker_preserved": true,
+      "helper_wait0_confirmedstop": true,
+      "owned_workspaces_observer_endpoints_absent": true
+    },
+    "node": {
+      "result": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-node-actual-v2-result.json",
+      "named_tests": [
+        "TestLinuxNodeExecutionBoundaryIntegration"
+      ],
+      "seconds": 207.898,
+      "case_count": 12,
+      "source_Host_inputs_Docker_preserved": true,
+      "helper_wait0_confirmedstop": true,
+      "owned_workspaces_observer_endpoints_absent": true
+    },
+    "pipx": {
+      "result": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-pipx-current-counter-v1-result.json",
+      "named_tests": [
+        "TestPipxAcquiredRuntimeRequiredInspectionIntegration"
+      ],
+      "seconds": 44.137,
+      "case_count": 1,
+      "source_Host_inputs_Docker_preserved": true,
+      "helper_wait0_confirmedstop": true,
+      "owned_workspaces_observer_endpoints_absent": true
+    }
+  },
+  "first_failure": {
+    "original": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-python-actual-v1-first-failure.json",
+    "parent_seconds": 40.25,
+    "status": "FAILURE_PRESERVED",
+    "reason": "new profile omitted exact pinned Python overcommit ABI read; source/Host/inputs and complete disposal preserved",
+    "v1_canonical9_and_CPP132_pass_did_not_close_actual": true
+  },
+  "reuse": "Current whole source/opaque console/readonly install+census/anchor and real CPU+trace/cleanup reused; same captureAdmittedProgram drives separate closed Python ARTIFACT profile with fixed controller/full target argv. Guest program error is held outside operational callback so final CPU/trace/cleanup is mandatory. Existing Pipx startup gate and Node vector comparison reused, original consumers retained.",
+  "actual_original_inventory": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-v2-actual-original-inventory.json",
+  "limits": [
+    "Internal selected-program backend only; native selection identity remains UV tool install. Native UVx golden/aliases/application adapter/public CLI remain OPEN.",
+    "Python signals/cancellation/output overflow/outside/network/clone/comm-spoof/readonly hostile actual matrix remains OPEN; CPP negatives and Node actual do not replace it.",
+    "Node child actual only proves clone fault/ARTIFACT/incomplete/cleanup; child JS/held-pipe drain NOT_PROVEN.",
+    "Runtime complete is operational admission/target/terminal/capture/source/accounting/cleanup DATA, not inspection/Policy/package safety or callable semantic return attestation.",
+    "CI431/source0d96 excludes this shared/helper/profile source. New grouped hosted and whole final CPU/three CUDA/signed support remain OPEN.",
+    "Current Pipx CPU authorization exhausted once; separate readonly-counter current pass qualifies only that named result; first failure/cause and whole resource-envelope acceptance remain open."
+  ],
+  "MISSING": [
+    "Meaningful grouped hosted qualification for new shared runtime/CPP and actual Python parent.",
+    "Python hostile-boundary actual matrix and native UVx/golden/runtime application adapters/aliases/CLI.",
+    "Whole final affected profile/support acceptance."
+  ],
+  "Pipx_CPU_guard_followup": {
+    "first_failure": "docs/github-logs/package-client-quarantine-20261021/p6-b2b-pipx-actual-v2-first-failure.json",
+    "first_parent_seconds": 45.08,
+    "baseline_old_Go_c380_new_CPP_f69": "PASS43.32s/391samples/peak12434757us, diagnostic only",
+    "current_Go_f70_CPP_f69_counter": {
+      "samples": 379,
+      "errors": [],
+      "cgroups": [
+        "haaobs44ad0e6f66c0b90d5a8196e6.slice"
+      ],
+      "peak_usage_usec": 11713906,
+      "new_cgroups_absent_after": true
+    },
+    "current_parent_seconds": 42.14,
+    "current_operator_seconds": 44.137,
+    "source_binary_policy_limits_unchanged": true,
+    "cause": "UNCONFIRMED; separate current measured pass does not turn the first failure into success or prove a CPU-envelope fix"
+  },
+  "completed_copies_disposed": {
+    "files": 12,
+    "bytes": 328456846,
+    "root_processes": 85,
+    "references": 0,
+    "query_errors": 0,
+    "originals_and_inputs_preserved": true
+  }
+}

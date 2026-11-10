@@ -1,0 +1,269 @@
+{
+  "scope": "new Go1.27.3 cu126 first failure, source/past-green/pressure diagnosis; no fix, no retry, no activation",
+  "source_commit": "c34365e443b0c0171b9b44c2ba32a9ce4d937342",
+  "run_id": 39966904607,
+  "run_number": 396,
+  "overall": "FAILURE",
+  "jobs": {
+    "success": 8,
+    "failure": [
+      "gVisor Linux Integration",
+      "Required"
+    ]
+  },
+  "prior_same_source_ordinary": "CI395 Required ten SUCCESS; Linux53/CPU278.97/native macOS",
+  "CPU_full_seconds": 263.98,
+  "cu126_full_seconds": 398.73,
+  "linux_top_level_PASS": 49,
+  "linux_top_level_FAIL": [
+    [
+      "TestLinuxPyTorchFullIntegration",
+      "398.73"
+    ]
+  ],
+  "primary": {
+    "stage": "install",
+    "install_elapsed_ms": 49730,
+    "first_cpu_accounting": {
+      "failed_before": false,
+      "termination": false,
+      "gap_ns": 1450981725,
+      "max_gap_ns": 1000000000,
+      "read_ns": 962750609,
+      "before_read_gap_ns": 488230616,
+      "ledger_lock_ns": 500,
+      "identity_ns": 413708639,
+      "response_ns": 548848981,
+      "server_engine_ns": 548612358,
+      "usage_us": 46403455,
+      "limit_seconds": 300,
+      "wall_remaining_ns": 2350539868165
+    },
+    "not_total_CPU_or_wall_exhaustion": true
+  },
+  "secondary": [
+    "CANCELED",
+    "termination accounting already failed",
+    "runtime termination unproven / PROFILE_LOOKUP_FAILURE"
+  ],
+  "cleanup": {
+    "helper_waits": [
+      "0",
+      "0",
+      "0"
+    ],
+    "state": "CONFIRMED_STOPPED",
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "restore_result": "RESTORED",
+    "original_exit": 1
+  },
+  "past_green_source_comparison": {
+    "passed_source": "ea287b2915f3fc77563e11bde9e5f277e9e90c64",
+    "failed_source": "c34365e443b0c0171b9b44c2ba32a9ce4d937342",
+    "files": [
+      {
+        "path": "internal/sandbox/pypi_observation_cpu.go",
+        "before_sha256": "1e576e9f6e51fc68d2356eefcdcc603c011b723e1aa9b8054edcdc3779aa6653",
+        "after_sha256": "1e576e9f6e51fc68d2356eefcdcc603c011b723e1aa9b8054edcdc3779aa6653",
+        "equal": true
+      },
+      {
+        "path": "internal/hosttool/observation_resource_linux.go",
+        "before_sha256": "7120e4eb5dee0b2ef76379654d8ff00bb8648369049f622a2b14465e8a1b12ec",
+        "after_sha256": "7120e4eb5dee0b2ef76379654d8ff00bb8648369049f622a2b14465e8a1b12ec",
+        "equal": true
+      },
+      {
+        "path": "internal/hosttool/observation_keeper_linux.go",
+        "before_sha256": "545432a7128bd4c037b84cbfe39a2c34c323dd74c8eee267e91a6ebb02b5dbe3",
+        "after_sha256": "545432a7128bd4c037b84cbfe39a2c34c323dd74c8eee267e91a6ebb02b5dbe3",
+        "equal": true
+      },
+      {
+        "path": "internal/hosttool/policy_service_linux.go",
+        "before_sha256": "0b3eb9ad8eb7e874b59eb81a7eb037b0b0001c0bebd1fa047c1adf138faa2434",
+        "after_sha256": "0b3eb9ad8eb7e874b59eb81a7eb037b0b0001c0bebd1fa047c1adf138faa2434",
+        "equal": true
+      },
+      {
+        "path": "internal/bootstrap/observation_resource_linux.go",
+        "before_sha256": "db8c4647f263186a18383944cb6a30334da9c5b8fec32e67216318831afdd11d",
+        "after_sha256": "db8c4647f263186a18383944cb6a30334da9c5b8fec32e67216318831afdd11d",
+        "equal": true
+      },
+      {
+        "path": "internal/bootstrap/pytorch_linux_integration_test.go",
+        "before_sha256": "300a750a2f9a16619f409b0cd7cfb7569ae64a90caf067d3a9641f420e3c0689",
+        "after_sha256": "300a750a2f9a16619f409b0cd7cfb7569ae64a90caf067d3a9641f420e3c0689",
+        "equal": true
+      },
+      {
+        "path": "internal/bootstrap/pytorch_pressure_test.go",
+        "before_sha256": "f94bebb2aa18e140b8f41fb937aeb544f81756976bfffe8d8e719b91377c6fb5",
+        "after_sha256": "f94bebb2aa18e140b8f41fb937aeb544f81756976bfffe8d8e719b91377c6fb5",
+        "equal": true
+      }
+    ],
+    "scope": "source identity only; Go compiler/gVisor outputs/hosted execution differ, not controlled compiler causal comparison"
+  },
+  "pressure_comparison": {
+    "passed_previous_Go12610_ci392": [
+      {
+        "samples": 281,
+        "unavailable": 0,
+        "mem_available_kib": {
+          "min": 12840968,
+          "max": 15169040
+        },
+        "controller_rss_kib": {
+          "min": 31696,
+          "max": 1392252
+        },
+        "controller_peak_rss_kib": {
+          "min": 31696,
+          "max": 1409000
+        },
+        "shmem_kib": {
+          "min": 49740,
+          "max": 1806452
+        },
+        "pgscan_direct_delta": 0,
+        "pgsteal_direct_delta": 0,
+        "pswpin_delta": 0,
+        "pswpout_delta": 0,
+        "psi_memory_full_total_us_delta": 0,
+        "psi_io_full_total_us_delta": 3515417,
+        "timing_rows": []
+      },
+      {
+        "samples": 1243,
+        "unavailable": 0,
+        "mem_available_kib": {
+          "min": 1176704,
+          "max": 15172520
+        },
+        "controller_rss_kib": {
+          "min": 31788,
+          "max": 4284180
+        },
+        "controller_peak_rss_kib": {
+          "min": 31788,
+          "max": 4284240
+        },
+        "shmem_kib": {
+          "min": 49744,
+          "max": 13416184
+        },
+        "pgscan_direct_delta": 89068,
+        "pgsteal_direct_delta": 88002,
+        "pswpin_delta": 642493,
+        "pswpout_delta": 999518,
+        "psi_memory_full_total_us_delta": 2536106,
+        "psi_io_full_total_us_delta": 43342500,
+        "timing_rows": []
+      }
+    ],
+    "failed_Go1273_ci396": [
+      {
+        "samples": 262,
+        "unavailable": 0,
+        "mem_available_kib": {
+          "min": 13086488,
+          "max": 15152876
+        },
+        "controller_rss_kib": {
+          "min": 32728,
+          "max": 995792
+        },
+        "controller_peak_rss_kib": {
+          "min": 32728,
+          "max": 1046036
+        },
+        "shmem_kib": {
+          "min": 51256,
+          "max": 1504524
+        },
+        "pgscan_direct_delta": 0,
+        "pgsteal_direct_delta": 0,
+        "pswpin_delta": 0,
+        "pswpout_delta": 0,
+        "psi_memory_full_total_us_delta": 0,
+        "psi_io_full_total_us_delta": 18753063,
+        "timing_rows": []
+      },
+      {
+        "samples": 399,
+        "unavailable": 0,
+        "mem_available_kib": {
+          "min": 413340,
+          "max": 15203072
+        },
+        "controller_rss_kib": {
+          "min": 32388,
+          "max": 2317076
+        },
+        "controller_peak_rss_kib": {
+          "min": 32388,
+          "max": 2322836
+        },
+        "shmem_kib": {
+          "min": 24352,
+          "max": 13112728
+        },
+        "pgscan_direct_delta": 45717,
+        "pgsteal_direct_delta": 27741,
+        "pswpin_delta": 600,
+        "pswpout_delta": 40556,
+        "psi_memory_full_total_us_delta": 1921936,
+        "psi_io_full_total_us_delta": 15734051,
+        "timing_rows": []
+      }
+    ]
+  },
+  "interpretation": {
+    "confirmed": "positive late sample plus concurrent direct reclaim/swap/pressure; current source guards are unchanged from passed Go1.26.10 cu126",
+    "not_proven": [
+      "historical/new failure exact OS/Go causality",
+      "same interleaving as negative149ns completion race",
+      "memory pressure as sole direct cause",
+      "larger or smaller Go27 heap regression; passed prior controller peak was higher"
+    ],
+    "scope": "different hosted executions/compiler/gVisor outputs; not controlled compiler regression experiment"
+  },
+  "next": "existing controlled temporary local revalidation on current24GB WSL with GC trace diagnostics only; exact original12 backup/confirmed-stop restore, unchanged source/policy; do not blind retry hosted run or change limits",
+  "host_installed_mutation": false,
+  "MISSING": [
+    "same final source cu126 qualification and exact late cause/disposition",
+    "cu130/cu132",
+    "controlled activation/readback/old-owned retirement"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci396-runs-20261023.json",
+      "sha256": "3e9de1959c84a8f2445eeae88c21042c11731e8af82870a38a1d828bb0a7f991",
+      "bytes": 65259
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci396-jobs-20261023.json",
+      "sha256": "2642ae506b0418b36bb1c5de4e3d228193b60b8a9da7974e0f34ce29c234d80c",
+      "bytes": 21244
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci396-logs-20261023.json",
+      "sha256": "9f4b1366ff847c49cb4255a952a0fc79b86c9c209e47f362d870d13388878bb4",
+      "bytes": 2601
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci396-pressure-comparison-20261024.json",
+      "sha256": "22e6c3e66bfd54ac4aa4e50ba1a71eafea705302be864e10b6616d7cf8beb5b0",
+      "bytes": 2609
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-ci396-past-green-source-comparison-20261024.json",
+      "sha256": "fa319082b55ebaa0f0cfed491440df81a0f4195c6a4cbcf073ffa9f084d9b2e4",
+      "bytes": 2216
+    }
+  ]
+}

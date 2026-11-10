@@ -85,6 +85,24 @@ sanitized metadata, not a security decision.
   stream or resource limit is required-check incomplete and cannot `ALLOW`.
 - no executable is dynamically run merely because it is embedded in an archive.
 
+The raw ELF process remains ARTIFACT after its exact one-shot handoff. Read-only
+access to its own sandbox PID's cgroup/mountinfo and fixed sandbox CPU quota
+metadata, plus the sandbox's fixed `/proc/sys/kernel/osrelease` OS marker, is
+runtime input, never resource/completion authority. The locked OCI
+root may supply the fixed libm/libstdc++/libgcc_s/librt/libpthread/libdl ABI libraries alongside the
+existing libc/loader inputs. Successful reads require the actual process
+generation, completed handoff, fixed mount class/point and exact paths or
+canonical library versions; they retain normalized runtime-access counts.
+The same completed ARTIFACT handoff may read only its own sandbox group PID's
+`maps` and the fixed `/proc/sys/vm/overcommit_memory`, both at flags557056
+through the system `/proc` anchor. This owner-approved
+Rust startup extension exposes neither Host memory nor another PID and keeps
+normalized access counts. Other PIDs, self aliases, environ/mem, unqualified VM
+metadata, arbitrary proc/sys/library prefixes, writes, shadow
+mounts and untrusted role/name claims gain no permission. Host namespaces,
+mounts and credentials remain unavailable; required observation and Policy
+checks still govern the complete operation.
+
 ## 4. Policy, Manifest and Promotion
 
 M6 has one primary graph node and no package dependency resolver. It still uses
@@ -136,3 +154,10 @@ its acceptance criteria.
 - [Verifying release integrity](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/verify-release-integrity) — immutable release and local asset verification semantics
 - [Artifact attestations](https://docs.github.com/en/actions/concepts/security/artifact-attestations) — provenance requires cryptographic verification and is not an independent safety verdict
 - [Verify artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations) — verified attestation is an optional future input, not raw metadata
+
+## SEC-UPD-001 scoped extension
+
+The original NEW_TARGET/no-overwrite contract above remains strict. Explicit
+managed-target replacement is a separate request mode whose current semantics
+are owned by the [reviewed update contract](../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics).
+It is planned, not implemented or qualified by historical M6 evidence.

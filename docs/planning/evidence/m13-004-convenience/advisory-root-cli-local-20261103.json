@@ -1,0 +1,108 @@
+{
+  "baseline_commit": "312a987",
+  "scope": "production pip install -r with authentic benign public packaging24.2 and existing native checks/installation; controlled complete advisory cache DATA vs actual OSV force refresh; first production route gap minimally corrected",
+  "unit": {
+    "implemented": true,
+    "wired": true,
+    "qualified": false,
+    "acceptance_closed": false
+  },
+  "source_files": [
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "fcbab4fe10b88c93ae5ee0d2415512bbe3ab71a9a6dc9684065113728161126e"
+    },
+    {
+      "path": "internal/bootstrap/pypi_update_test.go",
+      "sha256": "696b194b844b2e2d35b5ad2cb9b8452c28b9685ed940e0c2c2341a563b94033e"
+    },
+    {
+      "path": "internal/bootstrap/advisory_integration_test.go",
+      "sha256": "ea03f0d5190bf8fd2656bb8336557731dcdb5558c8b7862603cf11a514a7ea4e"
+    }
+  ],
+  "checks": [
+    {
+      "raw_receipt": "s05-root-requirements-route-race.json",
+      "sha256": "4a205ce3f26e5eb76cc9ed9316febcb7ad2e5052e255155aa536e1b6aa62deb9",
+      "exit_code": 0,
+      "elapsed": 7.752,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-root-requirements-route-static.json",
+      "sha256": "b426f8a6a4da1c0c79f4ec802c8bd0a1db3b30c7ecf9944965727b0db75015c8",
+      "exit_code": 0,
+      "elapsed": 3.869,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-root-requirements-route-vet.json",
+      "sha256": "e2976d90fbc9da439e311ae88e3dedee61c959d22401bfc33e54266d83f97fc5",
+      "exit_code": 0,
+      "elapsed": 1.117,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-root-requirements-tagged-static.json",
+      "sha256": "626445d435b0556add4cf6f77944d8a5e3a84832d03ca39664242bf777485087",
+      "exit_code": 0,
+      "elapsed": 2.263,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-root-route-production-build.json",
+      "sha256": "a785e16e2b50e480a14a856ab6a56d40a671f16f202ff83c42c59dff0f578ad3",
+      "exit_code": 0,
+      "elapsed": 2.627,
+      "source_unchanged": true
+    },
+    {
+      "raw_receipt": "s05-root-route-native-test-build.json",
+      "sha256": "15e2b34ae58b8383f3979076cf07a8efadac2152ebbfa24acfed670cde3eeb3a",
+      "exit_code": 0,
+      "elapsed": 6.393,
+      "source_unchanged": true
+    }
+  ],
+  "input_preflight_failure": {
+    "raw_receipt": "s05-actual-cli-input-preflight-v1.json",
+    "sha256": "8a3b2a68f1ab8b7e5c02dfa1328fcdce14b77c389bed33e97fa4e6c2181cf3bc"
+  },
+  "compiler_input_census": {
+    "raw_receipt": "s05-actual-cli-complete-compiler-inputs.json",
+    "sha256": "cda338750b506a4675646b2e48e606c9a9b789eac719e8327fe99a411e79f14f"
+  },
+  "first_native_failure": {
+    "raw_receipt": "s05-advisory-cli-native-v1.json",
+    "sha256": "73c2bc363f81b901e3fb552ccd294744b2c71f4f9622e9bc6bdcbd5d7ea10e9b"
+  },
+  "current_native": {
+    "raw_receipt": "s05-advisory-cli-native-v2.json",
+    "sha256": "c5aa429e3145af583d90f1644c26b5616e4fe3e745cf9717528d6aa4129e5c83",
+    "elapsed": 258.093,
+    "parent": 1,
+    "children": 5,
+    "production_cli_operations": 6,
+    "no_skip": true,
+    "helper_wait_zero": true,
+    "host_unchanged": true,
+    "temporary_native_target_removed": true,
+    "test_copy_bytes_removed": 381873878
+  },
+  "completed_clients_cleanup": {
+    "raw_receipt": "s05-completed-client-cleanup.json",
+    "sha256": "bc48d00cd31daf995fd50c5d246be5310798e85e023a13d8ae6c469a865976e0",
+    "queried_processes": 105,
+    "references": 0,
+    "query_errors": 0,
+    "removed_bytes": 102449863
+  },
+  "limitations": [
+    "Normal/cache reuse, no-CVSS synthetic MAL blocking before installation, tampered-cache required incomplete/target unchanged, actual public OSV force refresh were exercised. No malicious Artifact acquired and no claim packaging is malicious.",
+    "Per-operation native four checks and two persisted environment states/current subject were asserted. Live API result is time-specific and not a frozen global DB snapshot.",
+    "Concrete PyPI implementation was already present; only existing source-router ProjectLockUpdateResolver forwarding was added. No new resolver/framework or runtime/compiler version selector.",
+    "Other public CLI/language/profile/binary consumers, advisory detail presentation, complete S05/C01/reinforcement and hosted qualification remain OPEN.",
+    "Initial preparation/first native failures retained; original helper/CPP only reused after actual input comparison. Current changed policy helper fd09 is retained as the single active candidate; superseded scratch helper removed."
+  ]
+}

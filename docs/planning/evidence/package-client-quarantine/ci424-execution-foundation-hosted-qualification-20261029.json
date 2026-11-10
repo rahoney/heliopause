@@ -1,0 +1,669 @@
+{
+  "scope": "CI424 exact source4ec ordinary Required/current common/P4 consumers and included P5-B1/B2a-B2d API source; no actual P5 user program",
+  "status": "QUALIFIED (named hosted source only)",
+  "states": {
+    "IMPLEMENTED": "YES (named consumers/source APIs)",
+    "WIRED": "YES (ordinary workflow); NO (actual P5 user-run)",
+    "QUALIFIED": "YES (exact hosted scope)",
+    "ACCEPTANCE_CLOSED": "YES (ordinary checkpoint); NO (whole P4/P5/final signed)"
+  },
+  "run_url": "https://github.com/rahoney/heliopause/actions/runs/40721538953",
+  "run_id": 40721538953,
+  "source_commit": "4ecf37bdac2b0846303f74c36f57e3653cfe6470",
+  "checkout_commit": "2823b654150df44f353c79bbd9617e2208dd394b",
+  "whole_tree": "d88cd820e5eec28f1959f66b617d1b2cc95b5f98",
+  "tracked_files": 2909,
+  "checkout_parents": [
+    "ef5ef0e0e0437a9083133674ef8b9e6d693b83a9",
+    "4ecf37bdac2b0846303f74c36f57e3653cfe6470"
+  ],
+  "all_job_checkouts_and_whole_tree_match": true,
+  "run_started_at": "2026-10-28T15:59:44Z",
+  "workflow_final_update_at": "2026-10-28T17:31:44Z",
+  "elapsed_to_final_update_seconds": 5520.0,
+  "linux_log_span_seconds": 5473.433462,
+  "jobs": [
+    {
+      "id": 122933477133,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477664,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477712,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477791,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933477884,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478017,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478086,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478246,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122933478344,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 122986252054,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux": {
+    "linux_top_level_pass": 92,
+    "skips": 0,
+    "failures": 0,
+    "helper_reaped_wait_zero": 14,
+    "final_cleanup": "2026-10-28T17:31:02.2885010Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=654195",
+    "linux_cpp_latches": 128,
+    "observer_job_cpp_latches": 128,
+    "named_parents_seconds": {
+      "TestPNPMActualIsolatedNativeStartup": 3.43,
+      "TestPNPMActualIsolatedEmptyLock": 3.15,
+      "TestPNPMActualIsolatedNodeQuery": 2.95,
+      "TestPNPMActualReleaseArtifactProbe": 4.48,
+      "TestPNPMActualProductionProjectInspection": 37.96,
+      "TestPNPMActualProductionInstanceExecution": 13.9,
+      "TestPNPMPublicNativeResolverIntegration": 92.61,
+      "TestPNPMPublicApprovedCacheIntegration": 34.59,
+      "TestPNPMPublicProjectTransactionIntegration": 118.87,
+      "TestPNPMProjectCLIIntegration": 147.33,
+      "TestPNPMNativeOriginalIntegration": 104.21,
+      "TestBunPublicNativeResolverIntegration": 43.0,
+      "TestBunActualNativeProjectSelectionBoundary": 22.16,
+      "TestBunPublicProjectQuarantineIntegration": 43.61,
+      "TestBunActualArtifactExecutionBoundary": 12.1,
+      "TestBunPublicApprovedCacheIntegration": 38.44,
+      "TestBunPublicProjectTransactionIntegration": 129.73,
+      "TestBunProjectCLIIntegration": 158.78,
+      "TestBunNativeOriginalIntegration": 108.2,
+      "TestLinuxPyTorchResolverIntegration": 32.94,
+      "TestLinuxPyTorchFullIntegration": 285.4,
+      "TestPipxAcquiredRuntimeRequiredInspectionIntegration": 34.28,
+      "TestPipxPublicToolApprovedUpgradeIntegration": 119.71,
+      "TestLinuxPipxToolInstallCLIIntegration": 86.71,
+      "TestLinuxPipxToolUpgradeCLIIntegration": 95.64,
+      "TestLinuxPipxToolNativeAdoptionCLIIntegration": 170.54,
+      "TestLinuxPipxObservedNativeInstallIntegration": 12.8,
+      "TestLinuxPipxPublicInstallResolverIntegration": 39.04,
+      "TestLinuxPipxPublicOriginalUpgradeIntegration": 73.86,
+      "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging": 67.64,
+      "TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace": 0.14
+    },
+    "all_top_level_parents": [
+      {
+        "name": "TestLinuxTrustedHostExecutorIntegration",
+        "seconds": 3.65
+      },
+      {
+        "name": "TestUVActualIsolatedNativeStartup",
+        "seconds": 3.56
+      },
+      {
+        "name": "TestUVActualIsolatedEmptyTargetQuery",
+        "seconds": 3.24
+      },
+      {
+        "name": "TestUVActualIsolatedNativeLockCollection",
+        "seconds": 3.68
+      },
+      {
+        "name": "TestPublicTerraformProviderSourceIntegration",
+        "seconds": 1.8
+      },
+      {
+        "name": "TestPNPMActualIsolatedNativeStartup",
+        "seconds": 3.43
+      },
+      {
+        "name": "TestPNPMActualIsolatedEmptyLock",
+        "seconds": 3.15
+      },
+      {
+        "name": "TestPNPMActualIsolatedNodeQuery",
+        "seconds": 2.95
+      },
+      {
+        "name": "TestPNPMActualReleaseArtifactProbe",
+        "seconds": 4.48
+      },
+      {
+        "name": "TestPNPMActualProductionProjectInspection",
+        "seconds": 37.96
+      },
+      {
+        "name": "TestPNPMActualProductionInstanceExecution",
+        "seconds": 13.9
+      },
+      {
+        "name": "TestPNPMPublicNativeResolverIntegration",
+        "seconds": 92.61
+      },
+      {
+        "name": "TestPNPMPublicApprovedCacheIntegration",
+        "seconds": 34.59
+      },
+      {
+        "name": "TestPNPMPublicProjectTransactionIntegration",
+        "seconds": 118.87
+      },
+      {
+        "name": "TestPNPMProjectCLIIntegration",
+        "seconds": 147.33
+      },
+      {
+        "name": "TestPNPMNativeOriginalIntegration",
+        "seconds": 104.21
+      },
+      {
+        "name": "TestBunPublicNativeResolverIntegration",
+        "seconds": 43.0
+      },
+      {
+        "name": "TestBunActualNativeProjectSelectionBoundary",
+        "seconds": 22.16
+      },
+      {
+        "name": "TestBunPublicProjectQuarantineIntegration",
+        "seconds": 43.61
+      },
+      {
+        "name": "TestBunActualArtifactExecutionBoundary",
+        "seconds": 12.1
+      },
+      {
+        "name": "TestBunPublicApprovedCacheIntegration",
+        "seconds": 38.44
+      },
+      {
+        "name": "TestBunPublicProjectTransactionIntegration",
+        "seconds": 129.73
+      },
+      {
+        "name": "TestBunProjectCLIIntegration",
+        "seconds": 158.78
+      },
+      {
+        "name": "TestBunNativeOriginalIntegration",
+        "seconds": 108.2
+      },
+      {
+        "name": "TestLinuxPyTorchResolverIntegration",
+        "seconds": 32.94
+      },
+      {
+        "name": "TestUVPublicNativeResolverIntegration",
+        "seconds": 56.21
+      },
+      {
+        "name": "TestUVPublicToolInstallResolverIntegration",
+        "seconds": 10.86
+      },
+      {
+        "name": "TestUVPublicToolUpgradeResolverIntegration",
+        "seconds": 16.98
+      },
+      {
+        "name": "TestUVPublicNativeUpdateResolverIntegration",
+        "seconds": 26.4
+      },
+      {
+        "name": "TestLinuxUVToolInstallCLIIntegration",
+        "seconds": 67.74
+      },
+      {
+        "name": "TestUVPublicToolUpgradeEvidenceFailureIntegration",
+        "seconds": 44.88
+      },
+      {
+        "name": "TestUVPublicToolApprovedUpgradeIntegration",
+        "seconds": 93.78
+      },
+      {
+        "name": "TestLinuxUVToolUpgradeCLIIntegration",
+        "seconds": 76.19
+      },
+      {
+        "name": "TestLinuxUVToolNativeAdoptionCLIIntegration",
+        "seconds": 142.14
+      },
+      {
+        "name": "TestLinuxGoIsolatedResolverIntegration",
+        "seconds": 5.71
+      },
+      {
+        "name": "TestLinuxGoIsolatedProjectResolverIntegration",
+        "seconds": 2.8
+      },
+      {
+        "name": "TestLinuxGoSourceProjectSnapshotIntegration",
+        "seconds": 2.76
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+        "seconds": 2.41
+      },
+      {
+        "name": "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "seconds": 1.45
+      },
+      {
+        "name": "TestLinuxTerraformProviderProbeIntegration",
+        "seconds": 3.1
+      },
+      {
+        "name": "TestLinuxTerraformProviderSecurityIntegration",
+        "seconds": 2.18
+      },
+      {
+        "name": "TestLinuxNPMInspectCLIIntegration",
+        "seconds": 5.72
+      },
+      {
+        "name": "TestLinuxUVInstallCLIIntegration",
+        "seconds": 203.88
+      },
+      {
+        "name": "TestLinuxUVSyncCompleteCLIIntegration",
+        "seconds": 134.95
+      },
+      {
+        "name": "TestLinuxUVSyncClosureCLIIntegration",
+        "seconds": 62.02
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeDownloadIntegration",
+        "seconds": 16.05
+      },
+      {
+        "name": "TestLinuxGoGetDownloadIntegration",
+        "seconds": 23.04
+      },
+      {
+        "name": "TestLinuxGoTransitiveGetDownloadIntegration",
+        "seconds": 86.7
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+        "seconds": 41.0
+      },
+      {
+        "name": "TestLinuxGoPublicBuildCLIIntegration",
+        "seconds": 51.73
+      },
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "seconds": 169.28
+      },
+      {
+        "name": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+        "seconds": 13.52
+      },
+      {
+        "name": "TestLinuxGoCgoBuildCLIIntegration",
+        "seconds": 31.07
+      },
+      {
+        "name": "TestLinuxGoLibraryBuildCLIIntegration",
+        "seconds": 14.24
+      },
+      {
+        "name": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+        "seconds": 24.36
+      },
+      {
+        "name": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+        "seconds": 23.25
+      },
+      {
+        "name": "TestLinuxGoBuildSecurityCLIIntegration",
+        "seconds": 44.16
+      },
+      {
+        "name": "TestLinuxCargoAddIntegration",
+        "seconds": 16.97
+      },
+      {
+        "name": "TestLinuxCargoTransitiveAddIntegration",
+        "seconds": 19.53
+      },
+      {
+        "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+        "seconds": 9.56
+      },
+      {
+        "name": "TestLinuxCargoPublicBuildCLIIntegration",
+        "seconds": 28.79
+      },
+      {
+        "name": "TestLinuxCargoTransitiveBuildCLIIntegration",
+        "seconds": 39.43
+      },
+      {
+        "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+        "seconds": 18.56
+      },
+      {
+        "name": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+        "seconds": 19.3
+      },
+      {
+        "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+        "seconds": 19.77
+      },
+      {
+        "name": "TestLinuxCargoProcMacroBuildCLIIntegration",
+        "seconds": 19.76
+      },
+      {
+        "name": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+        "seconds": 9.3
+      },
+      {
+        "name": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+        "seconds": 9.89
+      },
+      {
+        "name": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+        "seconds": 19.77
+      },
+      {
+        "name": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+        "seconds": 9.3
+      },
+      {
+        "name": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+        "seconds": 9.12
+      },
+      {
+        "name": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+        "seconds": 20.31
+      },
+      {
+        "name": "TestLinuxTerraformInitIntegration",
+        "seconds": 49.42
+      },
+      {
+        "name": "TestLinuxTerraformInitNegativeIntegration",
+        "seconds": 6.59
+      },
+      {
+        "name": "TestLinuxPyTorchFullIntegration",
+        "seconds": 285.4
+      },
+      {
+        "name": "TestLinuxPyPISdistBuildIntegration",
+        "seconds": 8.87
+      },
+      {
+        "name": "TestLinuxPyPIWheelDynamicIntegration",
+        "seconds": 4.62
+      },
+      {
+        "name": "TestPipxAcquiredRuntimeRequiredInspectionIntegration",
+        "seconds": 34.28
+      },
+      {
+        "name": "TestPipxPublicToolApprovedUpgradeIntegration",
+        "seconds": 119.71
+      },
+      {
+        "name": "TestLinuxPipxToolInstallCLIIntegration",
+        "seconds": 86.71
+      },
+      {
+        "name": "TestLinuxPipxToolUpgradeCLIIntegration",
+        "seconds": 95.64
+      },
+      {
+        "name": "TestLinuxPipxToolNativeAdoptionCLIIntegration",
+        "seconds": 170.54
+      },
+      {
+        "name": "TestLinuxPipxObservedNativeInstallIntegration",
+        "seconds": 12.8
+      },
+      {
+        "name": "TestLinuxPipxPublicInstallResolverIntegration",
+        "seconds": 39.04
+      },
+      {
+        "name": "TestLinuxPipxPublicOriginalUpgradeIntegration",
+        "seconds": 73.86
+      },
+      {
+        "name": "TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging",
+        "seconds": 67.64
+      },
+      {
+        "name": "TestInitialNativeFilesInDisposableNamespace",
+        "seconds": 0.13
+      },
+      {
+        "name": "TestPipxBootstrapCopyRecoveryAndCleanupInDisposableNamespace",
+        "seconds": 0.14
+      },
+      {
+        "name": "TestProtectedStageInDisposableNamespace",
+        "seconds": 0.01
+      },
+      {
+        "name": "TestInterruptedSystemCopyInDisposableNamespace",
+        "seconds": 0.05
+      },
+      {
+        "name": "TestLinuxNPMPromotionIntegration",
+        "seconds": 3.58
+      },
+      {
+        "name": "TestLinuxPyPIPromotionIntegration",
+        "seconds": 3.16
+      }
+    ],
+    "native_host_uid1001_present": true,
+    "original_zip_digest_present": true,
+    "unsigned_set_authenticity_refused": true
+  },
+  "decoded_log_bytes": 1263604,
+  "all_logs_readback_equal": true,
+  "raw_logs": [
+    {
+      "id": 122933477133,
+      "name": "macOS",
+      "chars": 21361,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933477133.log",
+      "characters": 21361,
+      "decoded_utf8_bytes": 21363,
+      "sha256": "846c5996f5af85d2842f829f56574587ce912a631ce8492eb3baab426c236ce8"
+    },
+    {
+      "id": 122933477712,
+      "name": "Minimum Go",
+      "chars": 21501,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933477712.log",
+      "characters": 21501,
+      "decoded_utf8_bytes": 21503,
+      "sha256": "5fe5dc02e64388e7a0a93f685e622bd3665a36ca18632972335dd05e72a2b6b4"
+    },
+    {
+      "id": 122933477791,
+      "name": "Representative Wheel Corpus",
+      "chars": 35361,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933477791.log",
+      "characters": 35361,
+      "decoded_utf8_bytes": 35363,
+      "sha256": "47bdaf5eb47644dbe7bcb73c078c0d298d19261c1e425261d895e1bf34daf91a"
+    },
+    {
+      "id": 122933477884,
+      "name": "Docs",
+      "chars": 20515,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933477884.log",
+      "characters": 20515,
+      "decoded_utf8_bytes": 20517,
+      "sha256": "5a8798014e902d8b4e9bb9e2038d1142c4a3769d250c27647820a7300b23ce2a"
+    },
+    {
+      "id": 122933478017,
+      "name": "Vulnerability",
+      "chars": 21702,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933478017.log",
+      "characters": 21702,
+      "decoded_utf8_bytes": 21704,
+      "sha256": "b414f5339846e423dabebe466b9026b5a9b10413ea38a7e66e246756cfc41c4d"
+    },
+    {
+      "id": 122933478086,
+      "name": "gVisor Observer Helper",
+      "chars": 276995,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 14,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933478086.log",
+      "characters": 276995,
+      "decoded_utf8_bytes": 276997,
+      "sha256": "3772405b6db225a4945b37b08876ab9a0d3461ea0f625aeeda02f3f6794763e9"
+    },
+    {
+      "id": 122933478246,
+      "name": "Quick",
+      "chars": 23838,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933478246.log",
+      "characters": 23838,
+      "decoded_utf8_bytes": 23840,
+      "sha256": "5ae6cb4515c37f40fa346f98f2d9fcfa8b338e8866f321ac203a510b852d3c96"
+    },
+    {
+      "id": 122933478344,
+      "name": "Security",
+      "chars": 21965,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "parts": 2,
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933478344.log",
+      "characters": 21965,
+      "decoded_utf8_bytes": 21967,
+      "sha256": "d05fe69bae0c47b38ded491f77968caca80207407ca319903bccb12d90c5b7c1"
+    },
+    {
+      "id": 122933477664,
+      "chars": 798053,
+      "parts": 40,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "name": "gVisor Linux Integration",
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122933477664.log",
+      "characters": 798053,
+      "decoded_utf8_bytes": 798055,
+      "sha256": "b9f92e33d00f1f2256b28d3b06b2190d884a4f39ac2a9e4854f2742b0c1ad37d"
+    },
+    {
+      "id": 122986252054,
+      "chars": 22293,
+      "parts": 2,
+      "checkouts": [
+        "2823b654150df44f353c79bbd9617e2208dd394b"
+      ],
+      "name": "Required",
+      "each_chunk_readback_equal": true,
+      "path": "ci424-job-122986252054.log",
+      "characters": 22293,
+      "decoded_utf8_bytes": 22295,
+      "sha256": "6d9069beb39e13e4e0012895850903fa5ec994f714202dbf635795db19c2ff0d"
+    }
+  ],
+  "timer_queries": [
+    "2026-10-28T16:20:03Z",
+    "2026-10-28T16:40:43Z",
+    "2026-10-28T17:00:56Z",
+    "2026-10-28T17:21:04Z",
+    "2026-10-28T17:41:10Z"
+  ],
+  "last_timer_fired_at": "2026-10-28T17:41:04.775457+00:00",
+  "timers_finished_no_next_timer": true,
+  "limits": [
+    "actual production Node preparation B2f/new hosted step after4ec is excluded",
+    "later B2e/C1/C2 source is excluded",
+    "native installed fixed fixture/synthetic lock and unsigned13subject/native6fixture/promoter spy are distinct from production signed full update",
+    "original CI422 hosted report bytes/version remain uncollected",
+    "current green does not identify historical CI415 direct cause"
+  ],
+  "missing": [
+    "next grouped source B2e/B2f/C1/C2 hosted qualification",
+    "same final-source CPU/cu126/cu130/cu132 and final support matrix",
+    "signed15asset/19bundle whole native update",
+    "P5 actual offline materialization/admission/runtime/output/exit/cancel/cleanup/CLI",
+    "P6/P7 completion"
+  ]
+}

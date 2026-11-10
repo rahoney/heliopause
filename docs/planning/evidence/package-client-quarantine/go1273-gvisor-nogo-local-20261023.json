@@ -1,0 +1,238 @@
+{
+  "scope": "existing gVisor HAA patch analyzer dependency compatibility unit; current SDK canonical plus retained-cache actual Go1.27.3 private build, not clean final runtime qualification",
+  "baseline": "a82fb6c3572e6f23e3a99bc6b48f52cd3837532f",
+  "change": "only MODULE exact x/tools0.51/mod0.41/sync0.23 version/sums appended to existing patch; lock patchSHA and existing generator updated",
+  "current_go_owner": "1.26.10",
+  "target_go": "1.27.3",
+  "existing_upstream_commit_and_SDK_patch_and_Honnef_and_rules": "UNCHANGED",
+  "probe1": "ordinary library cache hit INSUFFICIENT, interpretation corrected with original retained",
+  "explicit_nogo_test": "1/1 PASS99.958s",
+  "private_release": "PASS200.290s, six observed outputs/five actualGo1.27.3 compilers, four required trace points",
+  "current_checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.447,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 140.137,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.214,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.231,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.744,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "patch_application": {
+    "patch": "tools/gvisor/release-20260907.0.patch",
+    "before_sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3",
+    "after_sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331",
+    "added_module_diff_sha256": "5b9a66249611394e1a081f8225ff5e51b128f06e4f0db85cf48be7cd0b0bc4ff",
+    "declared_pin_delta": [
+      "x/tools v0.51.0",
+      "x/mod v0.41.0",
+      "x/sync v0.23.0"
+    ],
+    "resolution_diagnostic_differences": {
+      "golang.org/x/mod": {
+        "before": null,
+        "after": [
+          "v0.34.0",
+          "v0.41.0"
+        ]
+      },
+      "golang.org/x/sync": {
+        "before": null,
+        "after": [
+          "v0.20.0",
+          "v0.23.0"
+        ]
+      },
+      "golang.org/x/tools": {
+        "before": null,
+        "after": [
+          "v0.43.0",
+          "v0.51.0"
+        ]
+      }
+    },
+    "scope": "existing HAA patch MODULE delta only; generated identity pending, old bundle hashes retained for first-stage migration; no activation",
+    "diagnostic_source_before": "go1273-bundle-capture-20261023.log",
+    "diagnostic_source_after": "go1273-gvisor-nogo-probe1-20261023.log",
+    "scope_note": "compare two logs that actually emitted graph diagnostics; later cached full-build absence is not removal; not a complete resolved graph inventory",
+    "original_interpretation_sha256": "6ff6489a25e4bba1bfa128ab089bff14e44f3bc8379af134b4e8d7b55d28881e"
+  },
+  "source_preparation": {
+    "exit": 0,
+    "seconds": 2.273,
+    "scope": "exact upstream+combined HAA patch restored by existing shared preparer, current Go1.26.10 selector; no runtime build/adoption",
+    "preparation": {
+      "schema_version": 1,
+      "gvisor_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+      "haa_patch_sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331",
+      "selected_go": "1.26.10",
+      "upstream_go_minimum": "1.26.3",
+      "sdk_patch_sha256": "c222e2b1f22e2f07d8e0f1e5251388634053bcd492dc94a13c3888e2b42c1dbd",
+      "prepared_go_mod_sha256": "30e50d7b72540a85716ad3d9e375b68c904c37f7a8e32b92738651b1486221b8"
+    },
+    "module_sha256": "4b1880eb1bc7d762fd692229b876c1fc7682107a55fd8a12246fae1b1b4514f4",
+    "completed_preparation_directory_removed": true
+  },
+  "migration_complete": false,
+  "missing": [
+    "new baseline target configuration",
+    "fresh canonical capture and observer",
+    "second frozen plan and strict independent reproduction",
+    "native/CPUthreeCUDA/platform/Required",
+    "controlled activation/owned retirement"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-configuration-pass-20261023.json",
+      "bytes": 4269,
+      "sha256": "7cbd699d033296595e5c3af288f714361b780e184dc942b4f4ab7f50674caa6d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-bundle-capture-20261023.json",
+      "bytes": 536,
+      "sha256": "52a328563bd2710a2dacbf19d02f4cb99eee0788952b56e7fd5187aeca2adb2f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-bundle-capture-20261023.log",
+      "bytes": 20912,
+      "sha256": "9522250ea47032abc9ed02bb65fc5ed84f265fd5c116c6ffe94394df9ea2bb92"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-first-failure-20261023.json",
+      "bytes": 2104,
+      "sha256": "1a69d2f0a8303790522dff6ae5a12ad1e7646f3950c982d39bd876e4d42da7a1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-probe1-20261023.json",
+      "bytes": 3564,
+      "sha256": "a54d43cb7d37d6879b2b8c2b9d52744b131109a5d0295c7b2cd3ad5e4530d568"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-probe1-module.diff",
+      "bytes": 975,
+      "sha256": "5b9a66249611394e1a081f8225ff5e51b128f06e4f0db85cf48be7cd0b0bc4ff"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-probe2-20261023.json",
+      "bytes": 1212,
+      "sha256": "1c89d693a1ba4de84e7529c6755a781ed241a8f12ead8b871c1be0a4aa123d26"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-probe2-20261023.log",
+      "bytes": 3911,
+      "sha256": "f345b9e81dcaebe4d8782c2178eb44294916fcb453e30d34cfc067314cd6d44f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-private-release-20261023.json",
+      "bytes": 1140,
+      "sha256": "cc9a196d82447e9122f573798da6be687ff5559f2c8f79fdad7f2732c70ff23d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-private-release-20261023.log",
+      "bytes": 10939,
+      "sha256": "1eff1d5bbffb8ca013226a47cf6823dfb72ea0e8e8b07b18a28ac5c3f760465e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-private-members-20261023.json",
+      "bytes": 2222,
+      "sha256": "4a981fe61cbbe47abc4139b872f2e6bafa5584a10c1938964d7ffc081f4aaeaf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-private-trace-check-20261023.json",
+      "bytes": 351,
+      "sha256": "77c9c22f2ddcdad4bab5d64ddd599b47b1d7f8452555ed91e77a9df725ba4777"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-patch-application-20261023.json",
+      "bytes": 1377,
+      "sha256": "302c0faadf0dda75016c4479bc41879a2d6c87368caed87afa8bb60f50e8ab07"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-generator-20261023.json",
+      "bytes": 355,
+      "sha256": "4d6d03acb8e041d4a1a986cde5d5cd59ce5513c1ae6eca6950f96fd1954cbdf0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-patch-preparation-20261023.json",
+      "bytes": 776,
+      "sha256": "4bde64cf0c9ec0e0d9ce12c5bdb537ef6c54c5dcaf2fe46f26e438d00ddd0c33"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-completed-gvisor-probe-retirement-20261023.json",
+      "bytes": 503,
+      "sha256": "2e177e179d3f613373f5c79b85ed263ee62bc5d94032848860b36a38ee17c396"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-format.json",
+      "bytes": 110,
+      "sha256": "7df73da1f790834a47b714d5fd4668c7cf79b8b9a3bc8cdebfe2d13a9464ae42"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-format.log",
+      "bytes": 15,
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-quick.json",
+      "bytes": 111,
+      "sha256": "69ec9c51ced93ec8595c155dfab0eadc170d5fc3b4331f3123400d142000ad8a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-quick.log",
+      "bytes": 1354,
+      "sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-security.json",
+      "bytes": 112,
+      "sha256": "f98090717c2e92c2178d07e73bb0091c14a6b8c28d6116932763d891c20b5f6c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-security.log",
+      "bytes": 80,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-docs.json",
+      "bytes": 108,
+      "sha256": "194d642c3371b1b35fd4ea2d53bd7b1895f4350c7fab0c90c5e3b20db29b3819"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-workflow.json",
+      "bytes": 112,
+      "sha256": "2ac907b4e8b4cc83088d56d1f1d90db8ec8a62de2dbc154e2839be3802e8a889"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/go1273-gvisor-nogo-current-20261023-workflow.log",
+      "bytes": 1071,
+      "sha256": "817e48438a0c2c5e416059ca4674982294b7159dc56058a4661f96b6b68691ac"
+    }
+  ]
+}

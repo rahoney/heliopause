@@ -166,3 +166,206 @@ func mustEvidence(t *testing.T, idValue string, checkID domain.CheckID, identity
 	}
 	return evidence
 }
+
+func TestCompositeInspectionCoverageBoundaries(t *testing.T) {
+	identity, digest := evidenceSubject(t)
+	report := func(name, limitation, code string) domain.InspectionReport {
+		t.Helper()
+		id := mustCheckID(t, name)
+		status := domain.ExecutionCompleted
+		if limitation != "" {
+			status = domain.ExecutionIncomplete
+		}
+		execution, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var evidence []domain.Evidence
+		var findings []domain.Finding
+		if status == domain.ExecutionCompleted {
+			item := mustEvidence(t, name+"-evidence", id, identity, digest)
+			evidence = []domain.Evidence{item}
+			if code != "" {
+				finding, err := domain.NewFinding(code, []domain.EvidenceID{item.ID()})
+				if err != nil {
+					t.Fatal(err)
+				}
+				findings = []domain.Finding{finding}
+			}
+		}
+		result, err := domain.NewInspectionReport(execution, findings, evidence)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return result
+	}
+	first := report("first", "", "")
+	second := report("second", "", "")
+	third := report("third", "", "")
+	t.Run("duplicate check", func(t *testing.T) {
+		if _, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{first, first}); err == nil {
+			t.Fatal("duplicate execution accepted")
+		}
+	})
+	t.Run("nested checks", func(t *testing.T) {
+		inner, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{first, second})
+		if err != nil {
+			t.Fatal(err)
+		}
+		outer, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{inner, third})
+		if err != nil || len(outer.Executions()) != 3 || len(outer.Evidence()) != 3 {
+			t.Fatalf("nested required check lost: checks=%d error=%v", len(outer.Executions()), err)
+		}
+	})
+	t.Run("partial retains confirmed finding", func(t *testing.T) {
+		incomplete := report("not-finished", "INSPECTION_INCOMPLETE", "")
+		blocked := report("confirmed", "", "M3_HONEYTOKEN_ACCESS")
+		inner, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{incomplete, blocked})
+		if err != nil {
+			t.Fatal(err)
+		}
+		outer, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{inner, third})
+		if err != nil || len(outer.Executions()) != 3 || len(outer.Findings()) != 1 {
+			t.Fatalf("confirmed violation lost next to incomplete check: %v", err)
+		}
+	})
+}
+
+func TestCheckPlanFreezesExactRunSubjectAndProfileMembership(t *testing.T) {
+	identity, digest := evidenceSubject(t)
+	artifact, err := domain.NewAcquiredArtifact(identity, digest, "fixture:subject", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	run, err := domain.ParseRunID("run_aaaaaaaaaaaaaaaaaaaaaaaaaa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	profile, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	foreignProfile, _ := domain.NewSHA256Digest(strings.Repeat("c", 64))
+	ids := []domain.CheckID{mustCheckID(t, "planned-integrity"), mustCheckID(t, "planned-static"), mustCheckID(t, "planned-dynamic")}
+	requirements := []domain.CheckRequirement{}
+	checks := []domain.CheckExecution{}
+	for index, id := range ids {
+		kind := domain.CheckInspection
+		if index == 0 {
+			kind = domain.CheckVerification
+		}
+		requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		requirements = append(requirements, requirement)
+		execution, err := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checks = append(checks, execution)
+	}
+	plan, err := domain.NewCheckPlan(run, artifact, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	optionalID, _ := domain.NewCheckID("optional-observation")
+	optional, _ := domain.NewCheckRequirement(optionalID, domain.CheckInspection, false, profile)
+	optionalPlan, err := domain.NewCheckPlan(run, artifact, append(append([]domain.CheckRequirement(nil), requirements...), optional))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := optionalPlan.Validate(run, artifact, checks); err != nil {
+		t.Fatal("absent declared optional fact became required", err)
+	}
+
+	requirements[0] = domain.CheckRequirement{}
+	copied := plan.Requirements()
+	copied[1] = domain.CheckRequirement{}
+	if err := plan.Validate(run, artifact, checks); err != nil {
+		t.Fatal("declaration mutated", err)
+	}
+	for _, kind := range []string{"missing", "duplicate", "extra", "weakened-required", "wrong-kind", "wrong-profile", "unbound-legacy"} {
+		t.Run(kind, func(t *testing.T) {
+			actual := append([]domain.CheckExecution(nil), checks...)
+			switch kind {
+			case "missing":
+				actual = actual[:2]
+			case "duplicate":
+				actual[2] = actual[1]
+			case "extra":
+				actual = append(actual, actual[0])
+			case "weakened-required":
+				actual[2], err = domain.NewCheckExecution(ids[2], domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+			case "wrong-kind":
+				actual[2], err = domain.NewCheckExecution(ids[2], domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+			case "wrong-profile":
+				actual[2], err = domain.NewCheckExecution(ids[2], domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", foreignProfile)
+			case "unbound-legacy":
+				actual[2], err = domain.NewCheckExecution(ids[2], domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := plan.Validate(run, artifact, actual); err == nil {
+				t.Fatal("inexact membership accepted")
+			}
+		})
+	}
+	foreignRun, _ := domain.ParseRunID("run_bbbbbbbbbbbbbbbbbbbbbbbbbb")
+	if err := plan.Validate(foreignRun, artifact, checks); err == nil {
+		t.Fatal("foreign Run accepted")
+	}
+	foreignArtifact, _ := domain.NewAcquiredArtifact(identity, foreignProfile, "fixture:foreign", 1)
+	if err := plan.Validate(run, foreignArtifact, checks); err == nil {
+		t.Fatal("foreign digest accepted")
+	}
+	incomplete := append([]domain.CheckExecution(nil), checks...)
+	incomplete[2], err = domain.NewCheckExecution(ids[2], domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "OBSERVER_INCOMPLETE", profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.Validate(run, artifact, incomplete); err != nil {
+		t.Fatal("membership must preserve failed actual status for Policy", err)
+	}
+	// PolicyInput must enforce the declared set using the same reports and evidence.
+	verificationEvidence := mustEvidence(t, "planned-integrity-evidence", ids[0], identity, digest)
+	verification, err := domain.NewVerificationReport(checks[0], domain.VerificationVerified, []domain.Evidence{verificationEvidence})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reports []domain.InspectionReport
+	evidence := []domain.Evidence{verificationEvidence}
+	for index := 1; index < len(checks); index++ {
+		item := mustEvidence(t, ids[index].String()+"-evidence", ids[index], identity, digest)
+		evidence = append(evidence, item)
+		report, err := domain.NewInspectionReport(checks[index], nil, []domain.Evidence{item})
+		if err != nil {
+			t.Fatal(err)
+		}
+		reports = append(reports, report)
+	}
+	inspection, err := domain.NewCompositeInspectionReport(reports)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var references []domain.EvidenceReference
+	for _, item := range evidence {
+		reference, err := domain.NewEvidenceReference(item.ID(), "fixture:"+item.ID().String())
+		if err != nil {
+			t.Fatal(err)
+		}
+		references = append(references, reference)
+	}
+	input, err := domain.NewPolicyInput(run, artifact, verification, inspection, references, plan)
+	if err != nil || !input.CheckPlan().Valid() {
+		t.Fatal("frozen plan not carried to Policy", err)
+	}
+	partial, err := domain.NewInspectionReport(checks[1], nil, evidence[1:2])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := domain.NewPolicyInput(run, artifact, verification, partial, references[:2], plan); err == nil {
+		t.Fatal("missing dynamic check reached Policy input")
+	}
+	if _, err := domain.NewCheckPlan(run, artifact, append(plan.Requirements(), plan.Requirements()[0])); err == nil {
+		t.Fatal("duplicate declaration accepted")
+	}
+}

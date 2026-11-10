@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-29",
+  "work_item": "M13-004/P6-B2-D2 named standard-library hostile boundary5",
+  "baseline_for_source": "cfd2eb5ba6bc71cc7fa4616989c54004ad6be4f1",
+  "latest_metadata_checkpoint": "fbe4d28ada56bcfe16e4feea2a61a01d3e40ac83",
+  "runtime_inputs": 1365,
+  "baseline_existing1361_unchanged": true,
+  "modified_paths": [
+    "internal/bootstrap/python_execution_boundary_fixture_test.go",
+    "internal/sandbox/pypi_trusted_transaction.go"
+  ],
+  "new_paths": [
+    "internal/bootstrap/python_execution_hostile_fixture_test.go",
+    "internal/bootstrap/python_execution_hostile_integration_test.go"
+  ],
+  "production_delta": "one existing Python-only suspicious trace refusal now carries bounded TraceDiagnostic.String; no permission/guard/controller/CPU/trace/cleanup semantics changed",
+  "D1_builder_reuse": "same original module constant/archive body/metadata/RECORD and current inspection; private module parameter extraction only",
+  "checks_composed": [
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 396.34
+    },
+    {
+      "step": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 38.254
+    },
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.767
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 2.574
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 2.321
+    },
+    {
+      "step": "bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p6-b2d2-v5-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 2.321
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 10.491
+    }
+  ],
+  "checks_reuse": {
+    "unchanged_default_Quick_and_wholeRace": "same default selected inputs; only two excluded linux&&realcorpus hostile tests changed",
+    "v1_D1_actual8": "unchanged production and all D1 inputs; v1 binary c9cb/current CPP132 actual153.86s, original failure retained separately"
+  },
+  "test_binary": {
+    "role": "bootstrap",
+    "path": "/tmp/haa-p6-b2d2-v5-bootstrap.test",
+    "sha256": "a97483ac6d4fde7f1c673a396e2454644ff70b85dfc68ee00850d9cd325b061f",
+    "bytes": 51647045
+  },
+  "CPP": {
+    "sha256": "f69b315ea353f7e1840c6e176e5837cbb89a0839012bd1af118cc5f84a2551db",
+    "latches": 132,
+    "unchanged": true
+  },
+  "actual": {
+    "parent": "TestLinuxPythonExecutionHostileIntegration",
+    "parent_seconds": 81.36,
+    "operator_seconds": 83.255,
+    "cases": [
+      [
+        "outside-read",
+        "false",
+        "9",
+        "0"
+      ],
+      [
+        "network",
+        "false",
+        "14",
+        "0"
+      ],
+      [
+        "clone-exec",
+        "false",
+        "23",
+        "0"
+      ],
+      [
+        "comm-spoof",
+        "false",
+        "12",
+        "0"
+      ],
+      [
+        "readonly",
+        "true",
+        "16",
+        "0"
+      ]
+    ],
+    "clone_exec": {
+      "child_body_observed": true,
+      "unexpected_exec_observed": true,
+      "CLONE_CHILD_fault": true,
+      "ARTIFACT_role": true,
+      "complete": false
+    },
+    "comm_spoof": "builtin _thread.set_name then proc access retained current PYTHON/pinned/ARTIFACT identity, incomplete",
+    "readonly": "actual denied write, complete exit0, exact readonly-denied prefix and whole input preserved; failed open returns before successful-open classification",
+    "fresh_actual_integrity_static_dynamic_Evidence_M3_M5": true,
+    "source_host5_fixed42_ZIP_Docker_unchanged": true,
+    "helper_wait": 0,
+    "owned_workspaces_observer_endpoints_absent": true,
+    "no_skip": true,
+    "log_sha256": "cb40ebbbb640550f75684a3d4dff580c7c9690679c318047618123c0a30f71d1",
+    "public_authentication": "NOT_RUN controlled raw input",
+    "native_solver": "NOT_RUN"
+  },
+  "D1_actual_reuse": {
+    "binary_sha256": "c9cb786ada6c0ed03eb0653302dc1b43113742b1ec630c4690bc66556359cd41",
+    "actual_parent_seconds": 153.86,
+    "same_production_and_all_D1_sources_and_input_and_CPP": true,
+    "source_difference_from_that_run": "only two excluded tagged hostile test files",
+    "original": "docs/github-logs/package-client-quarantine-20261021/p6-b2d2-python-actual-v1-result.json",
+    "earlier_overall_run_failed_after_D1": true
+  },
+  "first_attempts_preserved": [
+    {
+      "attempt": "v1",
+      "operator_seconds": 203.9,
+      "state": "FAIL clone expected child but first root proc fault; D1 eight153.86 and outside/network passed"
+    },
+    {
+      "attempt": "v2",
+      "operator_seconds": 51.241,
+      "state": "FAIL libc-fork child-body true, first root proc/status fault provenance unresolved"
+    },
+    {
+      "attempt": "v3-remaining",
+      "operator_seconds": 40.709,
+      "state": "comm-spoof passed; readonly actual complete/nil disproved test oracle"
+    },
+    {
+      "attempt": "v4-readonly",
+      "operator_seconds": 23.355,
+      "state": "test-only nil executeErr.Error panic after positive runtime; original2/helperwait0/full cleanup retained"
+    },
+    {
+      "attempt": "v5-clone-diagnostic",
+      "operator_seconds": 19.223,
+      "state": "diagnostic only, Go test failed; controlled parent8/returned9/child9/parent8, first external root fault; NOT qualification"
+    },
+    {
+      "attempt": "v6-readonly",
+      "operator_seconds": 25.058,
+      "state": "selected positive1 PASS22.82s after test nil guard; no production change"
+    }
+  ],
+  "unresolved_scope": "raw os.fork/libc-fork first-fault causality remains UNCONFIRMED; standard-library input substitution is not a causal fix or fork-only compatibility grant; general child/orphan/held-pipe/final support remains open",
+  "cleanup": {
+    "this_completed_batch_files": 12,
+    "logical_bytes": 329229478,
+    "root_processes": 97,
+    "references": 0,
+    "query_errors": 0,
+    "all_originals_and_baselines_preserved": true,
+    "cumulative_removed_files": 207,
+    "cumulative_logical_bytes": 7588140637
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local standard-library hostile5)",
+    "ACCEPTANCE_CLOSED": "YES (named five only)",
+    "MISSING": [
+      "raw fork-only cause/compatibility not qualified",
+      "new-source hosted boundary qualification",
+      "native UVx equivalence/golden/aliases/application runtime adapter/CLI",
+      "whole final profiles/signed support",
+      "prior Pipx CPU/drop causes unconfirmed"
+    ]
+  },
+  "originals": {
+    "current_actual": "docs/github-logs/package-client-quarantine-20261021/p6-b2d2-v7-all5-original-inventory.json",
+    "current_build": "docs/github-logs/package-client-quarantine-20261021/p6-b2d2-v5-preactual-original-inventory.json",
+    "initial_build": "docs/github-logs/package-client-quarantine-20261021/p6-b2d2-preactual-original-inventory.json",
+    "fixed_source": "docs/github-logs/package-client-quarantine-20261021/p6-b2d2-fixed-stdlib-source-inventory.json",
+    "cleanup": "docs/github-logs/package-client-quarantine-20261021/haa-p6-b2d2-completed-result.json"
+  },
+  "hosted_scope": "CI432 source9198/tree98ecc1361 all10SUCCESS only; these later1365 sources are outside that hosted qualification"
+}

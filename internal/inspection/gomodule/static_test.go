@@ -7,22 +7,40 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t *testing.T) {
 	for _, tc := range []struct {
 		name, mod, identity, file, body string
 		duplicate, link, corrupt        bool
+		requiredMod                     string
 		want                            string
+		contentFinding                  string
+		native, noSource                bool
 	}{
 		{name: "normal", mod: "example.com/module", file: "module.go", body: "package module\nfunc init() { panic(\"must never execute\") }\n"},
+		{name: "python helper is content DATA", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n"},
+		{name: "extensionless helper", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n"},
+		{name: "native disguised as Python", mod: "example.com/module", file: "tools/helper.py", body: "MZ", native: true},
+		{name: "extensionless helper CRC", mod: "example.com/module", file: "tools/helper", body: "#!/usr/bin/env python3\nraise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
+		{name: "other source CRC", mod: "example.com/module", file: "tools/helper.py", body: "raise RuntimeError('must never execute')\n", corrupt: true, contentFinding: "M12_GO_MODULE_ARCHIVE_INVALID"},
+		{name: "plain DATA", mod: "example.com/module", file: "README.md", body: "plain inert DATA", noSource: true},
+		{name: "unsupported executable", mod: "example.com/module", file: "tools/setup.fish", body: "#!/bin/fish\necho DATA\n", noSource: true},
+		{name: "Bash verification script", mod: "example.com/module", file: "verify/all.sh", body: "#!/bin/bash\necho DATA\n"},
+		{name: "required old control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/module\ngo 1.25\n"},
+		{name: "foreign required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module example.com/foreign\ngo 1.25\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
+		{name: "malformed required control", mod: "example.com/module", file: "module.go", body: "package module\n", requiredMod: "module (\n", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "module identity", mod: "example.com/other", file: "module.go", body: "package module", want: "M12_GO_MODULE_IDENTITY_MISMATCH"},
 		{name: "syntax", mod: "example.com/module", file: "module.go", body: "package !!!", want: "M12_GO_SOURCE_INVALID"},
 		{name: "negative test asset", mod: "example.com/module", file: "testdata/bad.go", body: "package !!!"},
@@ -78,9 +96,21 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 				z.Bytes()[pos] ^= 1
 			}
 			mod := []byte("module " + tc.mod + "\ngo 1.26.0\n")
-			body := append([]byte("HAA-GO-MODULE-1\n"), make([]byte, 8)...)
-			binary.BigEndian.PutUint64(body[len(body)-8:], uint64(len(mod)))
-			body = append(body, mod...)
+			control, header := mod, "HAA-GO-MODULE-1\n"
+			if tc.requiredMod != "" {
+				var err error
+				control, err = json.Marshal(struct {
+					Mod      []byte                          `json:"mod"`
+					Required []artifactgo.RequiredModControl `json:"required_mods"`
+				}{mod, []artifactgo.RequiredModControl{{Version: "v0.9.0", Body: []byte(tc.requiredMod)}}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				header = "HAA-GO-MODULE-2\n"
+			}
+			body := append([]byte(header), make([]byte, 8)...)
+			binary.BigEndian.PutUint64(body[len(body)-8:], uint64(len(control)))
+			body = append(body, control...)
 			body = append(body, z.Bytes()...)
 			root := t.TempDir()
 			run, err := domain.NewRunID()
@@ -108,6 +138,73 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			if err != nil {
 				t.Fatal(err)
 			}
+			sources, measured, sourceErr := inspector.InspectSources(context.Background(), acquired)
+			if sourceErr != nil {
+				t.Fatal(sourceErr)
+			}
+			census, contentSources, contentReport, contentErr := inspector.InspectContent(context.Background(), acquired)
+			if tc.want != "" || tc.contentFinding != "" {
+				if contentErr != nil || census.Matches(acquired) || len(contentSources) != 0 || len(contentReport.Executions()) != 1 || len(contentReport.Findings()) != 1 {
+					t.Fatal("module validation failure exposed provisional content facts", contentErr)
+				}
+			} else if tc.native {
+				if contentErr == nil || len(contentSources) != 0 || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionIncomplete {
+					t.Fatal("native source disguise was dropped or became complete", contentErr)
+				}
+			} else if contentErr != nil || !census.Matches(acquired) || !reflect.DeepEqual(contentSources, sources) || len(contentReport.Executions()) != 4 || contentReport.Executions()[1].Status() != domain.ExecutionCompleted {
+				t.Fatal("module content changed source DATA or invented binary applicability", contentErr)
+			}
+			if census.Matches(acquired) {
+				var summary struct {
+					Members, Sources, Binaries int
+					Unsupported                int `json:"unsupported_sources"`
+				}
+				found := false
+				for _, fact := range contentReport.Evidence() {
+					if fact.Kind() != "content-inventory" {
+						continue
+					}
+					found = true
+					if err := json.Unmarshal([]byte(fact.Summary()), &summary); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if !found || summary.Members != 1 || summary.Sources != len(contentSources) || (summary.Binaries == 1) != tc.native || (summary.Unsupported == 1) != (tc.file == "tools/setup.fish") {
+					t.Fatal("Go census lost measured role or DATA", summary)
+				}
+			}
+			if tc.want == "" && tc.contentFinding == "" && !tc.native && !tc.noSource {
+				failure := errors.New("source runtime unavailable fixture")
+				analyzer := &moduleSourceFailure{err: failure}
+				configured, err := NewStaticInspector(root, analyzer)
+				if err != nil {
+					t.Fatal(err)
+				}
+				declared, err := configured.ExpectedChecks(context.Background(), acquired, domain.CheckInspection)
+				if err != nil || len(declared) != 6 || analyzer.calls != 0 {
+					t.Fatal("current Go checks not frozen before parsing", err)
+				}
+				partial, err := configured.Inspect(context.Background(), acquired)
+				if !errors.Is(err, failure) || analyzer.calls != 1 || len(partial.Executions()) != 6 || partial.Executions()[4].Status() != domain.ExecutionIncomplete {
+					t.Fatal("configured Go parser error lost earlier facts or became completed", err)
+				}
+			}
+			if tc.contentFinding != "" {
+				if len(report.Findings()) != 0 || len(sources) != 0 || len(measured.Findings()) != 1 || measured.Findings()[0].Code() != tc.contentFinding {
+					t.Fatal("newly selected helper bytes did not receive independent ZIP integrity validation")
+				}
+				return
+			}
+			if !reflect.DeepEqual(report, measured) {
+				t.Fatal("source selection changed the existing static report")
+			}
+			if tc.want == "" {
+				if tc.noSource && len(sources) != 0 || !tc.noSource && (len(sources) != 1 || sources[0].Path != tc.file || !bytes.Equal(sources[0].Body, []byte(tc.body))) {
+					t.Fatal("validated source/testdata bytes were dropped or changed", sources)
+				}
+			} else if len(sources) != 0 {
+				t.Fatal("invalid module leaked partial sources")
+			}
 			if tc.want == "" {
 				if len(report.Findings()) != 0 {
 					t.Fatal(report.Findings())
@@ -117,4 +214,14 @@ func TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject(t 
 			}
 		})
 	}
+}
+
+type moduleSourceFailure struct {
+	calls int
+	err   error
+}
+
+func (a *moduleSourceFailure) Analyze(context.Context, ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+	a.calls++
+	return ports.SourceAnalysisOutput{}, a.err
 }

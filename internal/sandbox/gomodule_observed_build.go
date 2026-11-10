@@ -14,12 +14,14 @@ import (
 	"time"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
+	projectoutput "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type goBuildInputObserver interface {
+	projectBuildEnvironmentObserver
 	StartGoBuildInputProfile(context.Context, string, bool, *observationTraceLedger) (TraceReader, error)
-	AwaitMountAnchors(context.Context, string) error
 }
 
 type goBuildOutputObserver interface {
@@ -29,10 +31,11 @@ type goBuildOutputObserver interface {
 // ObservedGoBuilder consumes private, frozen source/cache data. It owns the
 // disposable offline runtime; it cannot approve or publish project outputs.
 type ObservedGoBuilder struct {
-	intake   string
-	runner   CommandRunner
-	observer goBuildInputObserver
-	probe    func(context.Context) (GoCapability, error)
+	intake           string
+	runner           CommandRunner
+	observer         goBuildInputObserver
+	probe            func(context.Context) (GoCapability, error)
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 type isolatedGoBuildFailure struct {
@@ -69,17 +72,19 @@ func newObservedGoBuilder(intake string, runner CommandRunner, observer goBuildI
 	if _, ok := runner.(streamingDockerOutput); !ok {
 		return nil, errGoBuildInput
 	}
-	return &ObservedGoBuilder{intake, admissionAwareRunner(runner), observer, probe}, nil
+	return &ObservedGoBuilder{intake: intake, runner: admissionAwareRunner(runner), observer: observer, probe: probe}, nil
 }
 
 type goBuildRuntime struct {
 	id        string
 	trace     TraceReader
 	collected bool
+	responder *inspectionResponder
 }
 
 type goBuildOperation struct {
 	builder         *ObservedGoBuilder
+	owner           domain.SandboxSessionID
 	volume          closureVolume
 	outputVolume    closureVolume
 	inputs          *goBuildPreparedInputs
@@ -90,6 +95,9 @@ type goBuildOperation struct {
 	firstDiagnostic TraceDiagnostic
 	commandReason   string
 	output          *artifactgo.CapturedBuildOutput
+	environment     *projectBuildEnvironment
+	states          []domain.SandboxEnvironmentState
+	responder       *responderSupply
 }
 
 // ObserveBuild covers materialization, exact offline graph reconciliation and
@@ -120,9 +128,11 @@ func (b *ObservedGoBuilder) Build(ctx context.Context, inputs domain.ProjectBuil
 			OutputFiles                         int
 			OutputFileBytes, OutputArchiveBytes int64
 			Profile                             string
-		}{"go-build-v2", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
+			Environment                         string
+			NormalizedEventLimit                uint64
+		}{"go-build-environments-v5", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
 			goBuildRecipeTopology(false), goBuildRecipeTopology(true), goBuildInputCapacity, goBuildOutputCapacity,
-			artifactgo.MaxBuildOutputFiles, artifactgo.MaxBuildOutputFileBytes, artifactgo.MaxBuildOutputArchiveBytes, goBuildProfile})
+			artifactgo.MaxBuildOutputFiles, artifactgo.MaxBuildOutputFileBytes, artifactgo.MaxBuildOutputArchiveBytes, goBuildProfile, projectBuildEnvironmentDescriptor, maximumGoBuildLedgerEvents})
 		if marshalErr != nil {
 			return domain.ProjectBuildObservation{}, errGoBuildInput
 		}
@@ -135,6 +145,10 @@ func (b *ObservedGoBuilder) Build(ctx context.Context, inputs domain.ProjectBuil
 }
 
 func goBuildRecipeTopology(readOnly bool) []observerMountExpectation {
+	if readOnly {
+		topology, _ := projectBuildEnvironmentExpectedTopology("go", true, false)
+		return topology
+	}
 	topology, _ := goBuildOutputExpectedTopology(readOnly)
 	return topology
 }
@@ -203,7 +217,7 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 	if err != nil {
 		return result, output, err
 	}
-	operation := &goBuildOperation{builder: b, phase: "INPUT"}
+	operation := &goBuildOperation{builder: b, owner: session, phase: "INPUT"}
 	defer func() {
 		primary := resultErr
 		cleanup := operation.dispose()
@@ -229,7 +243,7 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 			operation.observations = append(operation.observations, completed)
 		}
 		var resultError error
-		result, resultError = domain.NewSandboxResult(session, status, limitation, operation.observations)
+		result, resultError = domain.NewSandboxResult(session, status, limitation, operation.observations, operation.states...)
 		resultErr = errors.Join(resultErr, resultError)
 	}()
 	operation.inputs, err = prepareGoBuildInputs(ctx, b.intake, snapshot, source, cache)
@@ -245,89 +259,147 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 	if err != nil {
 		return result, output, err
 	}
-	operation.phase = "VOLUME"
-	operation.volume, err = createGoBuildInputVolume(ctx, b.runner, session.String(), operation.inputs.manifest.identity)
-	if err != nil {
-		return result, output, err
+	prepare := b.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
 	}
-	if capture != nil {
-		if _, ok := b.observer.(goBuildOutputObserver); !ok {
-			return result, output, errors.New("go build output topology observer unavailable")
-		}
-		operation.outputVolume, err = createGoBuildOutputVolume(ctx, b.runner, session.String(), operation.inputs.manifest.identity)
-		if err != nil {
-			return result, output, err
-		}
+	operation.responder, err = prepare(ctx, b.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || operation.responder == nil {
+		return result, output, errors.Join(errResponderSupply, err)
 	}
-	operation.phase = "PREPARATION"
-	preparation, err := operation.start(ctx, false)
-	if err != nil {
-		return result, output, err
-	}
-	if err := operation.inputs.introduce(ctx, b.runner, preparation.id); err != nil {
-		return result, output, err
-	}
-	if err := verifyGoBuildMaterialization(ctx, b.runner, preparation.id, operation.inputs.manifest); err != nil {
-		return result, output, err
-	}
-	operation.phase = "READ_ONLY"
-	build, err := operation.start(ctx, true)
-	if err != nil {
-		return result, output, err
-	}
-	if err := operation.volume.verifyAttachments(ctx, b.runner, map[string]bool{preparation.id: false, build.id: true}); err != nil {
-		return result, output, err
-	}
-	if operation.outputVolume.name != "" {
-		if err := operation.outputVolume.verifyAttachments(ctx, b.runner, map[string]bool{preparation.id: false, build.id: false}); err != nil {
-			return result, output, err
-		}
-	}
-	if err := operation.remove(preparation); err != nil {
-		return result, output, err
-	}
-	if err := operation.verify(ctx, build); err != nil {
-		return result, output, err
-	}
-	operation.phase = "CONFIG"
-	input := b.runner.(inputCommandRunner)
-	if err := input.RunInput(ctx, strings.NewReader("off\n"), "docker", boundaryInputExecArguments(build.id, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p /tmp/.config/go/telemetry /tmp/haa-go-output; cat > /tmp/.config/go/telemetry/mode")...); err != nil {
-		return result, output, errors.New("go build configuration failed")
-	}
-	operation.phase = "OFFLINE_GRAPH"
-	if err := operation.checkGraph(ctx, build, snapshot); err != nil {
-		return result, output, err
-	}
-	operation.phase = "BUILD"
-	runner := &goBuildArtifactRunner{operation: operation, runtime: build}
-	wrapper, err := NewGoBuildRunner(runner)
-	if err != nil {
-		return result, output, err
-	}
-	if err := wrapper.Build(ctx, goBuildGuestProject, goBuildGuestCache, selector); err != nil {
-		return result, output, err
-	}
-	operation.phase = "POST_BUILD"
-	if err := operation.verify(ctx, build); err != nil {
-		return result, output, err
-	}
-	if err := operation.checkGraph(ctx, build, snapshot); err != nil {
-		return result, output, err
-	}
-	if capture != nil {
-		operation.phase = "OUTPUT_CAPTURE"
-		operation.output, err = operation.captureOutput(ctx, build, *capture)
-		if err != nil {
-			return result, output, err
-		}
-		if err := operation.verify(ctx, build); err != nil {
+	for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+		if err := operation.experiment(ctx, snapshot, selector, capture, kind); err != nil {
 			return result, output, err
 		}
 	}
 	return result, output, nil
 }
 
-func (o *goBuildOperation) captureOutput(ctx context.Context, runtime *goBuildRuntime, inputs domain.ProjectBuildInputs) (*artifactgo.CapturedBuildOutput, error) {
+func (o *goBuildOperation) experiment(ctx context.Context, snapshot domain.ProjectDependencySnapshot, selector string, capture *domain.ProjectBuildInputs, kind inspectionEnvironment) error {
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return err
+	}
+	profile, err := newInspectionEnvironmentProfile(kind, session, o.responder)
+	if err != nil {
+		return err
+	}
+	o.phase = "VOLUME"
+	o.volume, err = createGoBuildInputVolume(ctx, o.builder.runner, session.String(), o.inputs.manifest.identity)
+	if err != nil {
+		return err
+	}
+	if capture != nil {
+		if _, ok := o.builder.observer.(goBuildOutputObserver); !ok {
+			return errors.New("go build output topology observer unavailable")
+		}
+		o.outputVolume, err = createGoBuildOutputVolume(ctx, o.builder.runner, session.String(), o.inputs.manifest.identity)
+		if err != nil {
+			return err
+		}
+	}
+	o.phase = "PREPARATION"
+	preparation, err := o.start(ctx, false)
+	if err != nil {
+		return err
+	}
+	if err := o.inputs.introduce(ctx, o.builder.runner, preparation.id); err != nil {
+		return err
+	}
+	if err := verifyGoBuildMaterialization(ctx, o.builder.runner, preparation.id, o.inputs.manifest); err != nil {
+		return err
+	}
+	o.environment = &projectBuildEnvironment{session: session, profile: profile}
+	o.environment.workspace, err = createEnvironmentWorkspace(ctx, o.builder.runner, o.owner, profile, projectBuildWorkspaceCapacity-responderSupplyCapacity)
+	if err != nil {
+		return err
+	}
+	o.phase = "READ_ONLY"
+	build, err := o.start(ctx, true)
+	if err != nil {
+		return err
+	}
+	if err := o.volume.verifyAttachments(ctx, o.builder.runner, map[string]bool{preparation.id: false, build.id: true}); err != nil {
+		return err
+	}
+	if o.outputVolume.name != "" {
+		if err := o.outputVolume.verifyAttachments(ctx, o.builder.runner, map[string]bool{preparation.id: false, build.id: false}); err != nil {
+			return err
+		}
+	}
+	if err := o.remove(preparation); err != nil {
+		return err
+	}
+	o.phase = "ENVIRONMENT_BASELINE"
+	var outputVolume *closureVolume
+	if o.outputVolume.name != "" {
+		outputVolume = &o.outputVolume
+	}
+	err = o.environment.begin(ctx, o.builder.runner, o.builder.observer, "go", build.id, outputVolume, o.budget)
+	if o.environment.reader != nil {
+		o.runtimes = append(o.runtimes, o.environment.reader)
+	}
+	if err != nil {
+		return err
+	}
+	if err := o.verify(ctx, build); err != nil {
+		return err
+	}
+	o.phase = "CONFIG"
+	input := o.builder.runner.(inputCommandRunner)
+	if err := input.RunInput(ctx, strings.NewReader("off\n"), "docker", boundaryInputExecArguments(build.id, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p /tmp/.config/go/telemetry /tmp/haa-go-output; cat > /tmp/.config/go/telemetry/mode")...); err != nil {
+		return errors.New("go build configuration failed")
+	}
+	o.phase = "OFFLINE_GRAPH"
+	if err := o.checkGraph(ctx, build, snapshot); err != nil {
+		return err
+	}
+	o.phase = "BUILD"
+	runner := &goBuildArtifactRunner{operation: o, runtime: build}
+	wrapper, err := NewGoBuildRunner(runner)
+	if err != nil {
+		return err
+	}
+	if err := wrapper.Build(ctx, goBuildGuestProject, goBuildGuestCache, selector); err != nil {
+		return err
+	}
+	o.phase = "POST_BUILD"
+	if err := o.verify(ctx, build); err != nil {
+		return err
+	}
+	if err := o.checkGraph(ctx, build, snapshot); err != nil {
+		return err
+	}
+	o.phase = "ENVIRONMENT_FINAL"
+	if err := o.remove(build); err != nil {
+		return err
+	}
+	state, err := o.environment.final(ctx, o.builder.runner, outputVolume)
+	if err != nil {
+		return err
+	}
+	if capture != nil {
+		o.phase = "OUTPUT_CAPTURE"
+		candidate, err := o.captureOutput(ctx, o.environment.reader, *capture, o.output == nil)
+		if err != nil {
+			return err
+		}
+		if candidate != nil {
+			o.output = candidate
+		}
+	}
+	if err := o.remove(o.environment.reader); err != nil {
+		return err
+	}
+	o.states = append(o.states, state)
+	if err := o.closeVolumes(); err != nil {
+		return err
+	}
+	o.environment = nil
+	return nil
+}
+
+func (o *goBuildOperation) captureOutput(ctx context.Context, runtime *goBuildRuntime, inputs domain.ProjectBuildInputs, retain bool) (*artifactgo.CapturedBuildOutput, error) {
 	reader, writer := io.Pipe()
 	command := make(chan error, 1)
 	go func() {
@@ -335,7 +407,13 @@ func (o *goBuildOperation) captureOutput(ctx context.Context, runtime *goBuildRu
 		_ = writer.CloseWithError(err)
 		command <- err
 	}()
-	output, err := artifactgo.CaptureBuildOutput(ctx, o.builder.intake, inputs, reader)
+	var output *artifactgo.CapturedBuildOutput
+	var err error
+	if retain {
+		output, err = artifactgo.CaptureBuildOutput(ctx, o.builder.intake, inputs, reader)
+	} else {
+		err = projectoutput.ValidateBuildOutput(ctx, reader)
+	}
 	_ = reader.CloseWithError(err)
 	commandErr := <-command
 	if err != nil || commandErr != nil || ctx.Err() != nil {
@@ -359,6 +437,24 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 	if err != nil {
 		return nil, err
 	}
+	if o.environment != nil {
+		if !readOnly {
+			return nil, errEnvironmentState
+		}
+		args, err = applyEnvironmentWorkspace(args, PinnedGoRuntime().ImageReference, o.environment.profile, o.environment.workspace, false, "")
+		if err != nil {
+			return nil, err
+		}
+	}
+	activeResponder := o.environment != nil && o.environment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = o.responder.containerArguments(args, PinnedGoRuntime().ImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{o.responder}
+	}
 	created, err := o.builder.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -366,6 +462,11 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 	}
 	runtime := &goBuildRuntime{id: id}
 	o.runtimes = append(o.runtimes, runtime)
+	if activeResponder {
+		if err := o.responder.verifyReader(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
+	}
 	if err := o.volume.verifyContainerMount(ctx, o.builder.runner, id, readOnly); err != nil {
 		return nil, err
 	}
@@ -373,6 +474,13 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 		if err := outputVolume.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
 			return nil, err
 		}
+	}
+	if o.environment != nil {
+		if err := o.environment.workspace.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
+			return nil, err
+		}
+		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "go", outputVolume != nil, false, o.budget, supplies...)
+	} else if outputVolume != nil {
 		runtime.trace, err = o.builder.observer.(goBuildOutputObserver).StartGoBuildOutputProfile(ctx, id, readOnly, o.budget)
 	} else {
 		runtime.trace, err = o.builder.observer.StartGoBuildInputProfile(ctx, id, readOnly, o.budget)
@@ -380,11 +488,21 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 	if err != nil {
 		return nil, err
 	}
-	if _, err := o.builder.runner.Output(ctx, "docker", "start", id); err != nil {
-		return nil, errors.New("go build runtime start failed")
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, o.builder.runner, id)
+	} else {
+		_, err = o.builder.runner.Output(ctx, "docker", "start", id)
 	}
-	if awaitBoundaryHelper(ctx, o.builder.runner, id) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
+	if err != nil {
+		return nil, errors.Join(errors.New("go build runtime start failed"), err)
+	}
+	if awaitBoundaryHelper(ctx, o.builder.runner, id, activeResponder) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
 		return nil, errors.New("go build runtime boundary is incomplete")
+	}
+	if o.environment != nil {
+		if err := verifyEnvironmentResolver(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -397,7 +515,16 @@ func (o *goBuildOperation) verify(ctx context.Context, build *goBuildRuntime) er
 		return err
 	}
 	if o.outputVolume.name != "" {
-		if err := o.outputVolume.verifyAttachments(ctx, o.builder.runner, map[string]bool{build.id: false}); err != nil {
+		attachments := map[string]bool{build.id: false}
+		if o.environment != nil && o.environment.reader != nil {
+			attachments[o.environment.reader.id] = true
+		}
+		if err := o.outputVolume.verifyAttachments(ctx, o.builder.runner, attachments); err != nil {
+			return err
+		}
+	}
+	if o.environment != nil && o.environment.reader != nil {
+		if err := o.environment.workspace.verifyAttachments(ctx, o.builder.runner, map[string]bool{build.id: false, o.environment.reader.id: true}); err != nil {
 			return err
 		}
 	}
@@ -409,16 +536,22 @@ func (o *goBuildOperation) remove(runtime *goBuildRuntime) error {
 		return nil
 	}
 	ctx, cancel := resolverCleanupContext()
-	_, err := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
-	cancel()
+	defer cancel()
 	var failure error
+	if runtime.responder != nil {
+		failure = runtime.responder.stop(ctx)
+	}
+	_, err := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
 	if err != nil {
-		failure = errors.New("go build runtime cleanup failed")
+		failure = errors.Join(failure, errors.New("go build runtime cleanup failed"))
+	}
+	if runtime.responder != nil {
+		failure = errors.Join(failure, runtime.responder.waitAfterTermination(ctx, err == nil))
 	}
 	if runtime.trace != nil {
-		ctx, cancel = resolverCleanupContext()
-		observed, limitation, diagnostic := collectTraceDiagnostic(ctx, runtime.trace)
-		cancel()
+		traceCtx, traceCancel := resolverCleanupContext()
+		observed, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		traceCancel()
 		o.observations = append(o.observations, observed...)
 		if limitation != "" {
 			if o.firstDiagnostic.Reason == "" {
@@ -438,21 +571,36 @@ func (o *goBuildOperation) dispose() error {
 	for i := len(o.runtimes) - 1; i >= 0; i-- {
 		err = errors.Join(err, o.remove(o.runtimes[i]))
 	}
-	for _, volume := range []*closureVolume{&o.outputVolume, &o.volume} {
-		if volume.name != "" {
-			ctx, cancel := resolverCleanupContext()
-			if volume.verify(ctx, o.builder.runner) != nil {
-				err = errors.Join(err, errors.New("go build volume cleanup identity unavailable"))
-			} else if _, failure := o.builder.runner.Output(ctx, "docker", "volume", "rm", volume.name); failure != nil {
-				err = errors.Join(err, errors.New("go build volume cleanup failed"))
-			}
-			cancel()
-		}
+	err = errors.Join(err, o.closeVolumes())
+	if o.responder != nil {
+		ctx, cancel := resolverCleanupContext()
+		err = errors.Join(err, o.responder.close(ctx, o.builder.runner))
+		cancel()
 	}
 	if o.inputs != nil {
 		err = errors.Join(err, o.inputs.close())
 	}
 	return err
+}
+
+func (o *goBuildOperation) closeVolumes() error {
+	var failure error
+	volumes := []*closureVolume{&o.outputVolume, &o.volume}
+	if o.environment != nil {
+		volumes = append(volumes, &o.environment.workspace)
+	}
+	for _, volume := range volumes {
+		if volume.name != "" {
+			ctx, cancel := resolverCleanupContext()
+			err := closeWritableOutputVolume(ctx, o.builder.runner, volume, volume.destination())
+			cancel()
+			failure = errors.Join(failure, err)
+			if err == nil {
+				*volume = closureVolume{}
+			}
+		}
+	}
+	return failure
 }
 
 func (o *goBuildOperation) artifactOutput(ctx context.Context, runtime *goBuildRuntime, arguments ...string) ([]byte, error) {

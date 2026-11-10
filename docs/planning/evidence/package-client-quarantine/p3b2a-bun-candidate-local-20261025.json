@@ -1,0 +1,155 @@
+{
+  "schema": "p3b2a-bun-candidate-local/v1",
+  "baseline": "2e85c928756b8522b3d1bc865eb60244043371a1",
+  "status": {
+    "IMPLEMENTED": "YES (authenticated candidate output)",
+    "WIRED": "YES (materialize-bun-candidate command)",
+    "QUALIFIED": "YES (named local candidate + isolated runc version/revision only)",
+    "ACCEPTANCE_CLOSED": "NO (whole P3 production/runtime unresolved)"
+  },
+  "scope": "Shared exclusive publisher reused without relaxing PNPM conditions. Bun native bytes published only after complete publisher/ZIP/ELF verification; no Host Bun execution or installed runtime role.",
+  "source_inventory": [
+    {
+      "path": "scripts/update-runtime/bun_release.go",
+      "sha256": "8f99323f801b839d45ec48d2398809e2d7ea24fe9cd4aca9b8f4a4db55160efd"
+    },
+    {
+      "path": "scripts/update-runtime/bun_materialize.go",
+      "sha256": "cfbf23102a8f6e4ef378bdffc4edd5c1bc6dc0517e2bd0e90a1bcc60936c9e09"
+    },
+    {
+      "path": "scripts/update-runtime/bun_materialize_test.go",
+      "sha256": "b2a799e43f2aae01a5eee1cbf229a8e26d844f2a30fc1ba5650fc3b9c294c948"
+    },
+    {
+      "path": "scripts/update-runtime/bun_materialize_real_test.go",
+      "sha256": "663d48ae3008ae56be26864865709f64fe293aa3622d989fdd591c56a47b4bce"
+    },
+    {
+      "path": "scripts/update-runtime/native_asset.go",
+      "sha256": "b91495abdfc4c8b9d516a87deebc7de98972e05c52e8710e104443a641997fdb"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize.go",
+      "sha256": "ac42d2ecb17eeb30f76d66967fe3d600332933039b061314384572d549f22928"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize_test.go",
+      "sha256": "bca7005096582cf2f1e061c3b70ddcdbca2618cd031eea4975d75b6adaaf1bfb"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "c955b949f9c8c4746da2740f8186cb1ad3e8dc81396d360279cd387ca5dd2311"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-first-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 57.292,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-first-security.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 8.947,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-first-docs.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.238,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-first-race.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/verification/releaseprovenance",
+        "./internal/verification/terraformprovider",
+        "./scripts/update-runtime",
+        "./scripts/check",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 33.867,
+      "log_sha256": "f285925917e94a9f9d7f33ce3b054705ae0a30b28bfb6721302cead46d8776d5"
+    }
+  ],
+  "actual_candidate": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-official-candidate.json"
+  },
+  "verify_regression": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-verify-actual-result.json",
+    "seconds": 3.09,
+    "cases": 5
+  },
+  "native_query": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-native-query-v2-result.json",
+    "seconds": 5.182,
+    "version": "1.4.4",
+    "revision": "1.4.4+38afee6c8",
+    "candidate": {
+      "schema": "helox.bun-native-candidate/v1",
+      "asset": "bun-candidate",
+      "archive_sha256": "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c",
+      "sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235",
+      "size": 107308936,
+      "native_version_verified": false,
+      "runtime_qualified": false
+    },
+    "image": {
+      "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+      "id": "sha256:1cc81b664ff520c96dde07893e717ff070f9f7bd8bbcec50e10fa2f3cb5c4b1c",
+      "repo_digests": [
+        "node@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
+      ]
+    },
+    "candidate_unchanged": true,
+    "cleanup": [
+      {
+        "container": "f9670277936f7fe7a6a994830e7108321db3a4ca9f3b98fd4ee551fca260684b",
+        "removed": true,
+        "confirmed_absent": true
+      },
+      {
+        "container": "75b387fa20168a62b174cf8535c642ce26b8d3b561c71d5d9d9e76db031e4d4a",
+        "removed": true,
+        "confirmed_absent": true
+      }
+    ],
+    "qualification": "runc bounded native diagnostic only; not gVisor/observer admission or source/build attestation"
+  },
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p3b2a-native-publisher-mechanical-reuse.json",
+  "first_operator_failure": "docs/github-logs/package-client-quarantine-20261021/p3b2a-bun-query-first-assessment.json",
+  "missing": [
+    "B2b single production owner, notices, frozen maintenance and release/activation assets",
+    "B2c exact gVisor observer role and product startup/version/lock qualification",
+    "native lock/public graph/layout/Evidence/Policy/cache/records/transaction/CLI",
+    "whole P3 affected-source qualification and support acceptance"
+  ],
+  "ci": "No new push/CI. Fixed remote9410 CI410 deadline remains02:31:10UTC; cu132 follows same source.",
+  "cleanup": "Three task containers removed/confirmed absent; existing locked Node image kept; candidate/native/query inputs remain active for B2b; no memory-reclamation claim."
+}

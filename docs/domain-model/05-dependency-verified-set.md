@@ -577,6 +577,25 @@ Verified Manifest가 기록한 Artifact 집합
 
 Heliopause는 package manager가 resolve한 dependency 목록 자체를 신뢰하지 않고, 실제 사용자 환경으로 반입되는 Primary Artifact와 dependency 각각을 exact identity/digest 및 검증 근거에 연결하여 하나의 일관된 Verified Set으로 확정한 뒤에만 Promotion에 사용하는 것을 기본 원칙으로 한다.
 
+## 명시된 추가 root를 가진 일회성 실행
+
+`ExecutionDependencySelection`은 console provider의 기존 connected graph와 각 명시된
+추가 root의 실제 reachable graph를 함께 보유한다. 기존 `LockedDependencyGraph`의
+단일 primary·연결 조건은 유지한다. Root들을 가짜 dependency edge로 연결하거나
+설치 context/target으로 꾸미지 않는다. 공유 node의 source/record 사실과 outgoing edge가
+일치해야 하며 전체 union에도 기존 node/edge 한도를 적용한다.
+
+선택 자체는 DATA다. 모든 union node를 한 번씩 새로 acquire·verify·inspect하고 각자의
+Run/Evidence/entry Policy 및 한 번의 whole-set ALLOW로 `VerifiedExecutionSelection`을
+만든다. Python의 각 검사 대상은 선택된 전체 환경에서 관찰하되 기록의 관계는 실제
+metadata edge만 유지한다. 부분 검사나 기존 primary ALLOW는 전체 승인으로 쓰지 않는다.
+
+`ExecutionSelectionContext`는 같은 전체 resolution/approved selection과 primary console의
+재측정된 member·runtime·private argv를 결합한다. 그 전체 set은 Manifest/SBOM과 봉인된
+readonly 실행 입력까지 유지한다. 기존 single-root `ExecutionContext`나 설치용 bundle로
+변환해 권한을 확대하지 않는다. 세부 구문과 비공개 실행 데이터·보관 형식은
+[일회성 실행 계약](../user-journey-cli-ia/09-package-client-quarantine.md#3-일회성-실행의-추가-보안-계약)을 따른다.
+
 ## Domain-006 구조화된 결정과 구현 영향
 
 - Dependency Requirement, Resolved Dependency, Acquired Artifact, Verified Set, Verified Manifest를 서로 다른 개념으로 모델링한다.

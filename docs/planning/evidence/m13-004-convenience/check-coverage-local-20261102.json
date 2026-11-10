@@ -1,0 +1,500 @@
+{
+  "work_item": "M13-004",
+  "unit": "S09",
+  "baseline": "f20551d",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "NO",
+  "ACCEPTANCE_CLOSED": "NO",
+  "scope": "Independent role-specific run/subject/profile declarations, actual membership, evidence v2, current cache/build gates and human/JSON/partial operation results. Existing current inspection behavior retained; unimplemented S01-S08 not declared complete.",
+  "source_files": [
+    {
+      "path": "docs/domain-model/09-contract-evidence-staging-promotion.md",
+      "sha256": "3611a1d02550c30eaddb3c9ec0bedf124a98f91ef46e67597f0ed22a4e4aaa74"
+    },
+    {
+      "path": "docs/domain-model/10-m1-workflow-contract.md",
+      "sha256": "caf7e747ee467388c68218cd1f5ffdf66077e4a30f9281b0f490ab2077aff816"
+    },
+    {
+      "path": "docs/planning/21-goal-completion-design.md",
+      "sha256": "bba0c79ae9aaefb0615357eda62c83a3ecaf33ef49a08ced4a4adb4b934cb9c2"
+    },
+    {
+      "path": "internal/application/acquired_install_action_test.go",
+      "sha256": "cabf00c70639427204c38c4da713d093a797d7b8dcca602f9c4aae86b75cceb4"
+    },
+    {
+      "path": "internal/application/check_plan_test.go",
+      "sha256": "6777ec535106a97fa1996ad6be06e5944e5dbeac97f4b078517d9779fd08f407"
+    },
+    {
+      "path": "internal/application/dependency_batch_inspect.go",
+      "sha256": "ded543fa4067e3b7dbed5bfb2f843c87c3e9a40a1d2c71629f4222ab75a8650c"
+    },
+    {
+      "path": "internal/application/execution_inspect_test.go",
+      "sha256": "ae619659318d7a2e5965beda728b10501b9d8769f16142ad36640e1d51a96e2d"
+    },
+    {
+      "path": "internal/application/inspect.go",
+      "sha256": "4f1547d661414d680ba36b3a964af5282f9b97ace0f480461b5a0e3200e676a1"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "sha256": "d26debc0bd1688433e3d8da89103931561f836a53e9d7c4f5cb9de70ee583315"
+    },
+    {
+      "path": "internal/application/install_inspect_test.go",
+      "sha256": "e4f784378ba5ea376f8a8bf73a6f5eb89550c3c3c6915da39a79ca30db2bf40a"
+    },
+    {
+      "path": "internal/application/install_update_content_test.go",
+      "sha256": "33c2f0d609bf4fd0e9b8a4cbbdf2ffd54458f302d213e97e8cf67d989831e21b"
+    },
+    {
+      "path": "internal/application/install_update_test.go",
+      "sha256": "e9a5d0f6c7a840432254756b66e2a8c5561a22f1918f2082ddb56e861b354fe0"
+    },
+    {
+      "path": "internal/application/m7_qualification_test.go",
+      "sha256": "37e10f535323d89e7c1d01281dcc1c79db3aad104f18c15a92a6278a2dc2d8e5"
+    },
+    {
+      "path": "internal/application/project_batch_inspect_test.go",
+      "sha256": "68346d61ccf310c485508a914e49f5cb612db68d3519a46fbb8911a6c55ff044"
+    },
+    {
+      "path": "internal/application/project_build.go",
+      "sha256": "54148c96fe0f484c31fa53cac8e318192a7bd399decacf068a2c53ca663ba478"
+    },
+    {
+      "path": "internal/application/project_inspect_test.go",
+      "sha256": "b93ef832469a4c27b655783090353104b03397a4eaa5ef70e63d0131be7175ff"
+    },
+    {
+      "path": "internal/application/project_install_action_test.go",
+      "sha256": "451a9832900cf41f9ba1ce69a4247ad60bf14dc0db732dd1d5695b60d92d607b"
+    },
+    {
+      "path": "internal/application/project_update_test.go",
+      "sha256": "ae8c8360924a3dff54eb248f2010587415de0e3da4abc99987861ed6d64400e2"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "d83ffa9290862d03b60fec7dfaff9ee5b5fa54b2ef28cdddd306746e73a22ddd"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_update_failure_integration_test.go",
+      "sha256": "a49761371e8b502dfbc0585d54a701237bd41644b022b1afd619fef0c06789cb"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "fc1dfce55576c519862eed205196c03c0befb3b0baf80508065bfcbc8ae48b92"
+    },
+    {
+      "path": "internal/cli/execution.go",
+      "sha256": "4dadf61ad1bc795f7ff42ea7a0104ba0674a50c43489afeed7d5254cc659ed8a"
+    },
+    {
+      "path": "internal/cli/execution_report.go",
+      "sha256": "e0a2f08d689e0c9db24c5b8f0d048ae14298d3efd3c8375c7ddef94c273c3eab"
+    },
+    {
+      "path": "internal/cli/execution_report_test.go",
+      "sha256": "6cf76aab4709837a7624ca25f341f239b2625846240e7ea5b736e957221aa7dd"
+    },
+    {
+      "path": "internal/cli/human_report.go",
+      "sha256": "45b3eef6d2d4042451878bc964cc18bd475983565a5de487c1cd598a221f4462"
+    },
+    {
+      "path": "internal/cli/install_result.go",
+      "sha256": "78b4c3bfd12ac4f7f71e25f3f67d645a450810414b1d548bf4d39f2f5da03f41"
+    },
+    {
+      "path": "internal/cli/install_result_test.go",
+      "sha256": "7de21388cf7e3d2e95875eb20d37f3e24cdcd26d96eda62beb33353f72a65eae"
+    },
+    {
+      "path": "internal/cli/result.go",
+      "sha256": "dd3a05c24c5db2309b209866dd57675ef34b59bd1bc9ebf80f2c162d18d9553c"
+    },
+    {
+      "path": "internal/cli/result_test.go",
+      "sha256": "e41461ad43fcfe27b3b3e5d4d0d821f869b39bd194608abfc975e5037957b822"
+    },
+    {
+      "path": "internal/core/domain/check.go",
+      "sha256": "c1c4eb79be28e4fbba871134831048454ac368944ee9c4422256b8578d6936ce"
+    },
+    {
+      "path": "internal/core/domain/check_test.go",
+      "sha256": "91ffab83a2d32786a32f74e21efc26231a97a4665d22f5809d419d16b8e6613a"
+    },
+    {
+      "path": "internal/core/domain/derivation.go",
+      "sha256": "b97612204930d9ca253795d70e4ab38cd732ffa036e0f32636804f5b90bb35bf"
+    },
+    {
+      "path": "internal/core/domain/evidence.go",
+      "sha256": "ebca491f492dee48e4aef5e922ab7843510581ddc5cfa5e0c3f51ae316d70df3"
+    },
+    {
+      "path": "internal/core/domain/operation.go",
+      "sha256": "6a74c52bb09857be511805984aad04676be6e51b42eccae4404ea836044eb500"
+    },
+    {
+      "path": "internal/core/domain/project_build.go",
+      "sha256": "ecc1dce6a0b11065f16f3d01dc8d0d10a6ea0fdae3a6316d850c2b3c31c06454"
+    },
+    {
+      "path": "internal/core/domain/verified_set.go",
+      "sha256": "59e84b489196b73bdff75a540d13bb26a3f2b6d9dc811fecb244420304047807"
+    },
+    {
+      "path": "internal/core/ports/ports.go",
+      "sha256": "432d8885cb313733fad8ce07eef555a4d41ce717bfb2264060c5970e476acf8b"
+    },
+    {
+      "path": "internal/evidence/local/read.go",
+      "sha256": "74d6c3163168cb65846e792750d05de417af8887cca5b9a289a68a4a22c4f695"
+    },
+    {
+      "path": "internal/evidence/local/read_test.go",
+      "sha256": "e8e4ef32f26d1b738edf9ce9d53ddef5f949f0c13f4a27424dc3088333ba6120"
+    },
+    {
+      "path": "internal/evidence/local/store.go",
+      "sha256": "e8d52ea4181f6b009082222e18de4e6eb17479dd3d183188e7c55e36567b85c4"
+    },
+    {
+      "path": "internal/inspection/cargo/static.go",
+      "sha256": "ded76e7ddc8da9f5839f0e450d184cde8542393c19d207a1da9881ca41738e47"
+    },
+    {
+      "path": "internal/inspection/githubrelease/dynamic.go",
+      "sha256": "5281378ce98ac69cb4e625d0bc4e24066869296813bfe0cecc41ce52fffad1ba"
+    },
+    {
+      "path": "internal/inspection/githubrelease/pipx_runtime.go",
+      "sha256": "4ddd4559797810b07405bfca070a4091a3cfe426001ca0e09d3cf1084b7d12db"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_manifest.go",
+      "sha256": "a9ecdf4311daf32c74f8e0d32737dbaf363d99ce42022796ad4c6fb56a61dcd8"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "fb66c2e5270a8d4d595589ac7c9551323df772f8193fb464f5a79eef60fa0c6b"
+    },
+    {
+      "path": "internal/inspection/githubrelease/static.go",
+      "sha256": "2f488d7526db39b7a6cff2220ee97cb9c2d5324ffd415a00805172550f612834"
+    },
+    {
+      "path": "internal/inspection/gomodule/static.go",
+      "sha256": "8b18856f7f7eb9790fcdeaee9af5221786010f0ac83e53929a9ddbaa4f1ac397"
+    },
+    {
+      "path": "internal/inspection/npm/bun_execution.go",
+      "sha256": "93c36c7c7af14cdaf8b76b983d13ef9035c53e276827faf5548e222ead2c0514"
+    },
+    {
+      "path": "internal/inspection/npm/bun_project.go",
+      "sha256": "7925ee9af64ab223799536a55576bb2643006a7878b8bc915fef7534f80aec23"
+    },
+    {
+      "path": "internal/inspection/npm/composite.go",
+      "sha256": "c878f16bf8e0d33d52daea5fd01d79b7e6cb156788c7e9ea182e4c8809958fcd"
+    },
+    {
+      "path": "internal/inspection/npm/dynamic.go",
+      "sha256": "c396610f8d95fccb80ec72dcd3122aa5b90c4ff1c5ebb8eaff8e118d071b6823"
+    },
+    {
+      "path": "internal/inspection/npm/npm_project.go",
+      "sha256": "885e2640ac6901a436df3d26974963b8e9473a0fce7e8fb66fa1cf293a8b4559"
+    },
+    {
+      "path": "internal/inspection/npm/npm_project_root.go",
+      "sha256": "a1bfb4b3511ef33a759d94e8d76e61501d59ee10720997c2b099f527895d1b58"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic.go",
+      "sha256": "e3a01e9c062aae734c88dab2e999d624a75f03e6a14380b436d29c3c91e9dab3"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_execution.go",
+      "sha256": "48ccbf5466b642f084195568e90dd003d6f43121547b985d835082b0e400e9cd"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_project.go",
+      "sha256": "c750a19ac1f82a416404b674b8a9541426dbc0c2d65a2aa3e3bb1bf131fa41cb"
+    },
+    {
+      "path": "internal/inspection/npm/static.go",
+      "sha256": "b9d76b72d1acb6e7ba1f83012adcba5c881ec6182c9013155ddec5b119f9eda1"
+    },
+    {
+      "path": "internal/inspection/projectbuild/build.go",
+      "sha256": "c78ec82050025db19521d8fea07eb64d52e56eb3e907ce38edb835dcbf28b158"
+    },
+    {
+      "path": "internal/inspection/pypi/command_observation_test.go",
+      "sha256": "67b5d17dbf0c22c2e14bb7d8150d45b254e6322c0480fdb7c77894b9ef8d6866"
+    },
+    {
+      "path": "internal/inspection/pypi/composite.go",
+      "sha256": "b97ce8f1978adabee92f1399b772c09d6cd4f012e20b854b5a1dea074ee3b7bb"
+    },
+    {
+      "path": "internal/inspection/pypi/derivation.go",
+      "sha256": "fef280194e49803caf4051a82eb74768d86a7a7a83aa5bfd5d49ca64374169e8"
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic.go",
+      "sha256": "f14313b6f2813b5b90e80b56bffefacaea2b2d6371913294c1f5e6b7827ddc4a"
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic_test.go",
+      "sha256": "8123ac191d886cab792f7491f0c6ceee46a1229ac0dfa07db9c2fbe0f1cdcb3e"
+    },
+    {
+      "path": "internal/inspection/pypi/prerequisite_test.go",
+      "sha256": "37207b572cde6240bb2ee4cd1c4b20fefd69fd9e4714d71359dbca3fda0052c7"
+    },
+    {
+      "path": "internal/inspection/pypi/static.go",
+      "sha256": "2b33d56888606fb4e1dae3162c6ed44253a67ec9d80d6b54ef330a5ff812fded"
+    },
+    {
+      "path": "internal/inspection/pypi/static_test.go",
+      "sha256": "057cdc8b88a2aac31ad7aab560bd733e7f83f4adebf4ee5325634bce2ca80d88"
+    },
+    {
+      "path": "internal/inspection/terraformprovider/inspection.go",
+      "sha256": "857912245b7b5737859e9c6f00d0ea78a38142054dfe56841ac7728ad0f75027"
+    },
+    {
+      "path": "internal/inspection/terraformprovider/inspection_test.go",
+      "sha256": "22afcb29e954bfae4314c78951f78768031dbc1f27e88eee6cf475a1c8bef0fe"
+    },
+    {
+      "path": "internal/policy/m3.go",
+      "sha256": "ff73316ae6d983edbaa69db887dded25103788cc95690038ae8b5571eae68296"
+    },
+    {
+      "path": "internal/policy/m3_test.go",
+      "sha256": "dcb4e1e78a3e1f8436acc9161e540fcb1a61958bcc824ae099f8acd5cdf1a679"
+    },
+    {
+      "path": "internal/policy/m6.go",
+      "sha256": "c32c5b38a83ebfdf5fb54c44c4ebe8cae23bd8a4bea112a402f89313f6845efe"
+    },
+    {
+      "path": "internal/policy/npm_project_root.go",
+      "sha256": "e2f64e1e435cde5a606dc7496d430d1c316ff63f369d7144e03ac5e81f0a9c37"
+    },
+    {
+      "path": "internal/policy/npm_project_root_test.go",
+      "sha256": "f89812ed2e7ccb9cd9d4852490520202ccaa0c16a2cc3882dcf70acd248f7302"
+    },
+    {
+      "path": "internal/promotion/bun_cache_test.go",
+      "sha256": "b999ff2a320013ca2d418bf0c9395f5c8e20a98a8e736b28190505ecb6b2ca11"
+    },
+    {
+      "path": "internal/promotion/cargo_approved_transaction.go",
+      "sha256": "c0a5c559e987a3896fd149d3809c06284d1a63a9c87740a37d192f64e6d88219"
+    },
+    {
+      "path": "internal/promotion/cargo_build_output.go",
+      "sha256": "067755a8adcf9389c85a7ca4d4389323a7e4e1c447028911aa5ca3e1aec5391e"
+    },
+    {
+      "path": "internal/promotion/cargo_cache.go",
+      "sha256": "e8f8a74840e32e559c2576e24e866db1c397f7eaf6ef40e56602c2659541db28"
+    },
+    {
+      "path": "internal/promotion/cargo_cache_test.go",
+      "sha256": "667a73f34ddcb19b9dac59a09abe28988cc0cfa70bdc26b7a6a1a5a7c278f2af"
+    },
+    {
+      "path": "internal/promotion/githubrelease_approval.go",
+      "sha256": "6c4293593c1c24d39daf550e3975b883c725c316a3606147871623df16656879"
+    },
+    {
+      "path": "internal/promotion/githubrelease_promotion.go",
+      "sha256": "7d87abe132cd4e0b081bcff58282dd070840e892c0f2e9c15d1c7a6b70646b8b"
+    },
+    {
+      "path": "internal/promotion/githubrelease_update.go",
+      "sha256": "e47a7f58706cf89829a4d716f51377f4cbf8b12a97c6e051e4f5d9282bdcccba"
+    },
+    {
+      "path": "internal/promotion/githubrelease_update_test.go",
+      "sha256": "2e39b0c6682dc08b1df8ab9e1fd627bb22ca82e7182574effa8db0d44d8f6b64"
+    },
+    {
+      "path": "internal/promotion/go_approved_transaction.go",
+      "sha256": "7b7c7db80d3e9feb8b4b2a324c12e8be76d39c8369e3ff866b8d9a88b30247e2"
+    },
+    {
+      "path": "internal/promotion/go_build_output.go",
+      "sha256": "caf3c041206b7707e45bc2d1ea78642a6f7af9a352cd93c391c4b7992ff6fbaf"
+    },
+    {
+      "path": "internal/promotion/go_cache.go",
+      "sha256": "ee9b75d8f0daa4a6ec2c350faeb45f02672bed7deb9a4aa468cfdedd63e61134"
+    },
+    {
+      "path": "internal/promotion/go_cache_evidence_test.go",
+      "sha256": "1a1044a68d1e4b1a504bde3614848d7903970e590ed8dfedecf83d319cca9088"
+    },
+    {
+      "path": "internal/promotion/go_cache_test.go",
+      "sha256": "b0c4645be62766b136c6c8656390e2207fc140ba6c1247599daf557537b906c7"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache_test.go",
+      "sha256": "6a2579c00d521c393c9fbe3ec685436a7b0d7ad3e8de8b36136236c69fae2d44"
+    },
+    {
+      "path": "internal/promotion/project_cache_evidence.go",
+      "sha256": "9f07ed3c2658675b72fc8e5a4c0043239d36415eec10476ce1ac332e9971b041"
+    },
+    {
+      "path": "internal/promotion/terraform_cache_test.go",
+      "sha256": "ab04b05a7c667aa824f6fd6b98b653b1079edf244b5fd0e3ce3d5696b92613f5"
+    },
+    {
+      "path": "internal/promotion/uv_sync_publication_test.go",
+      "sha256": "9aaf475b4d36ed40fc22a6298a46d6c419d04ee68247b9e16e19d6d815676000"
+    },
+    {
+      "path": "internal/testutil/fakeworkflow/fake.go",
+      "sha256": "5389b4af9cba92025a6d9d05544c5e302194c0912ecbeeb2d39de2d23af45423"
+    },
+    {
+      "path": "internal/verification/cargo/integrity.go",
+      "sha256": "c8f3cbcb816773e8d675e98496b44c900aa2d467cc009df8611d65e64f9d671f"
+    },
+    {
+      "path": "internal/verification/githubrelease/integrity.go",
+      "sha256": "791d868815621fa014539904dddbc72686db973837428242e1e9e7deb81fbaaa"
+    },
+    {
+      "path": "internal/verification/gomodule/integrity.go",
+      "sha256": "12b51d1c16fd5f5fd29845a1867365fbf40dfdd2f31a263509a2b6058eb3af4d"
+    },
+    {
+      "path": "internal/verification/npm/integrity.go",
+      "sha256": "ce0eb63ab41fa84067a462d4f0338379951869ac44b2fec5ae07e4c2c6762fcf"
+    },
+    {
+      "path": "internal/verification/projectbuild/source.go",
+      "sha256": "3e9f0dad4b04116b73f2bdea6c6c45b0320412c83f5b7a2702c8b1bb08b0ae75"
+    },
+    {
+      "path": "internal/verification/pypi/integrity.go",
+      "sha256": "41b639d4e07bd0082492ae53a73433d5cb4ed47a03f35796e464e4f46eaf4d79"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/artifact.go",
+      "sha256": "6852d2865c47434dae1eb3a1dc0dfe1522d7f9889ad243ef37f50e42b22a1fab"
+    },
+    {
+      "path": "internal/verification/terraformprovider/integrity.go",
+      "sha256": "7ef80fa9894242351ba531c42fea2e79c324c52515db6dc0fa297ac067ede6f0"
+    },
+    {
+      "path": "schemas/operation-result-v2.schema.json",
+      "sha256": "235432b5d16c43cc6d7dc93ba6063841e389d8c2182907d3914fc81635e77cae"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "f94c8d053d5ec5dd2118e250512d3b079d0f18199f138b56ad5af7fb9eef7463"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-current-quick.json",
+      "sha256": "6a44e33d5b7d479d873ae309bcc02fc8b6f94970e3891d433062cd9ec3e589e0",
+      "exit_code": 1,
+      "elapsed": 284.249,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-quick-first-failures-green.json",
+      "sha256": "e5836e3a86c1310034c7340e008c491bc605eee6d29b4b3022ea376ccb5d4e05",
+      "exit_code": 0,
+      "elapsed": 19.725,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-checkpoint-foundation.json",
+      "sha256": "2c937d5eac1e572971accd6484633e13f8ba871c4e8be819c030a0d7ab8ab204",
+      "exit_code": 0,
+      "elapsed": 34.494,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-checkpoint-security.json",
+      "sha256": "082cf7bd250c560da81cd1b7cd73f8ee03f3ddc3845fcc32793b7e4ac32c38a6",
+      "exit_code": 0,
+      "elapsed": 24.866,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-build-record-profile-red.json",
+      "sha256": "792fb1524415396437f33c6c5992c4d6b28908d11a5a46b739b512776fe4debe",
+      "exit_code": 1,
+      "elapsed": 12.336,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-build-profile-and-partials-green.json",
+      "sha256": "5f4461132a9bb8acfac39e0d05c3d18812eec07c207541805c1e95be4c8f3bf5",
+      "exit_code": 0,
+      "elapsed": 18.471,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-partial-cli-coverage.json",
+      "sha256": "d3bfbae72ae117e514cbee30b77c06a7689e5287b73c8a7f8d44b5ab999b802f",
+      "exit_code": 0,
+      "elapsed": 2.973,
+      "source_unchanged": true
+    },
+    {
+      "path": "docs/github-logs/goal-implementation-20261101/s09-pnpm-bun-github-cache.json",
+      "sha256": "abbd5ea11336e164e853bef19fa2624559e72fa546080cb8e7e5fc33cf331ddf",
+      "exit_code": 0,
+      "elapsed": 19.804,
+      "source_unchanged": true
+    }
+  ],
+  "schema_validation": {
+    "path": "docs/github-logs/goal-implementation-20261101/s09-schema-metaschema-and-instances.json",
+    "sha256": "142c65af80dbe9a71e1ca8d1746eb133ade3e61e52b02793e1bf2e293c8638b8",
+    "validator": "github.com/santhosh-tekuri/jsonschema/v6@v6.0.3",
+    "binary_sha256": "6945c8e0c55f4b6c4897f76525e045a8c80b2003b1d67a7695ff12cbc84dd766",
+    "schema_sha256": "235432b5d16c43cc6d7dc93ba6063841e389d8c2182907d3914fc81635e77cae",
+    "unique_instances": 5,
+    "positive_exit": 0,
+    "invalid_exit": 1
+  },
+  "reuse_boundary": "First Quick exit1 is retained. The three first-failing owners passed targeted follow-up. Later foundation/security passed before one human-only unavailable-scope label correction; no control/data change in that correction. Do not claim a new whole Quick/native/hosted PASS. Group current full/Race/native qualification with C01 where needed.",
+  "runtime_maintenance": "No runtime lock, generated identity, helper or image version changes; no product dependency added. Schema validator is an isolated tooling artifact obtained and built through the installed baseline CLI.",
+  "MISSING": [
+    "Current S09+C01 grouped Quick/static analysis/Race and required actual/hosted/final acceptance.",
+    "Remaining C01/S01-S08/C02-C03/A01 and conditional A02 scope.",
+    "B01 Anyio compatibility/incomplete evaluation and bounded large-public-PyPI catalog compatibility before overall completion."
+  ],
+  "test_payload_cleanup": {
+    "path": "docs/github-logs/goal-implementation-20261101/s09-schema-validator-payload-cleanup.json",
+    "logical_bytes_removed": 179805369,
+    "retained": "One immutable validator binary needed for later checks; source and locks captured in validation receipt."
+  }
+}

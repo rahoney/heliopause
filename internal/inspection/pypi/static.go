@@ -10,29 +10,57 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
+
+const staticCheckProfileName = "pypi-static-archive-v2"
 
 // StaticInspector reads an acquired PyPI distribution only from trusted intake.
 type StaticInspector struct {
 	intakeRoot string
 	target     artifactpypi.WheelTarget
+	analyzer   ports.SourceAnalysis
 }
 
-func NewStaticInspector(intakeRoot string, target artifactpypi.WheelTarget) (*StaticInspector, error) {
+func NewStaticInspector(intakeRoot string, target artifactpypi.WheelTarget, analyzers ...ports.SourceAnalysis) (*StaticInspector, error) {
 	if !filepath.IsAbs(intakeRoot) || target.Python == "" || target.ABI == "" || target.Platform == "" {
 		return nil, errors.New("PyPI static inspector configuration is invalid")
 	}
-	return &StaticInspector{intakeRoot: filepath.Clean(intakeRoot), target: target}, nil
+	if len(analyzers) > 1 || len(analyzers) == 1 && analyzers[0] == nil {
+		return nil, errors.New("PyPI content inspection requires one configured analyzer")
+	}
+	inspector := &StaticInspector{intakeRoot: filepath.Clean(intakeRoot), target: target}
+	if len(analyzers) == 1 {
+		inspector.analyzer = analyzers[0]
+	}
+	return inspector, nil
 }
 
 func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	_, report, err := i.inspect(ctx, artifact)
+	if i != nil && i.analyzer != nil {
+		if artifact.Identity().Variant() == "sdist" {
+			_, _, report, err := i.InspectSdistContent(ctx, artifact)
+			return report, err
+		}
+		_, _, report, err := i.InspectWheelContent(ctx, artifact)
+		return report, err
+	}
+	_, report, err := i.inspect(ctx, artifact, nil)
 	return report, err
 }
 
 func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.WheelInspection, domain.InspectionReport, error) {
-	inspection, report, err := i.inspect(ctx, artifact)
-	if err != nil || artifact.Identity().Variant() != "wheel" {
+	if i != nil && i.analyzer != nil {
+		wheel, _, report, err := i.InspectWheelContent(ctx, artifact)
+		return wheel, report, err
+	}
+	return i.inspectWheel(ctx, artifact, nil)
+}
+
+func (i *StaticInspector) inspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, capture artifactpypi.MemberCapture) (artifactpypi.WheelInspection, domain.InspectionReport, error) {
+	inspection, report, err := i.inspect(ctx, artifact, capture)
+	if err != nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") {
 		return artifactpypi.WheelInspection{}, report, err
 	}
 	wheel, ok := inspection.(artifactpypi.WheelInspection)
@@ -49,7 +77,7 @@ func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.Acqu
 }
 
 func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.SdistInspection, error) {
-	inspection, _, err := i.inspect(ctx, artifact)
+	inspection, _, err := i.inspect(ctx, artifact, nil)
 	if err != nil || artifact.Identity().Variant() != "sdist" {
 		return artifactpypi.SdistInspection{}, err
 	}
@@ -60,7 +88,7 @@ func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.Acqu
 	return sdist, nil
 }
 
-func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact) (any, domain.InspectionReport, error) {
+func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, capture artifactpypi.MemberCapture) (any, domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil {
 		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection request is invalid")
 	}
@@ -85,51 +113,35 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
 		resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
+		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source(), capture)
 		if inspectErr != nil {
 			cause, stage := wheelDiagnostic(inspectErr)
-			return nil, i.violation(artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil
+			return nil, i.violation(ctx, artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil
 		}
-		var uncompressed int64
-		for _, item := range info.Files {
-			if item.Size < 0 || uncompressed > resourcePolicy.WheelLimits().MaxUncompressed-item.Size {
-				return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStagePerArtifactUncompressed), nil
-			}
-			uncompressed += item.Size
+		if artifactpypi.ChargeUncompressedFromContext(ctx, info.ArchiveUncompressedBytes) != nil {
+			return nil, i.violation(ctx, artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
-		if artifactpypi.ChargeUncompressedFromContext(ctx, uncompressed) != nil {
-			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
-		}
-		if artifactpypi.ChargeFilesFromContext(ctx, int64(len(info.Files))) != nil {
-			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
+		if artifactpypi.ChargeFilesFromContext(ctx, int64(info.ArchiveEntries)) != nil {
+			return nil, i.violation(ctx, artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))
-		return info, i.complete(artifact, "pypi-wheel-static", summary), nil
+		return info, i.complete(ctx, artifact, "pypi-wheel-static", summary), nil
 	case "sdist":
-		info, inspectErr := artifactpypi.InspectSdist(file, filename, declared, artifactpypi.DefaultSdistLimits())
+		info, inspectErr := artifactpypi.InspectSdist(file, filename, declared, artifactpypi.DefaultSdistLimits(), capture)
 		if inspectErr != nil {
-			return nil, i.violation(artifact, "M5_SDIST_STATIC_INVALID", domain.InspectionDiagnosticStaticFinding, ""), nil
+			return nil, i.violation(ctx, artifact, "M5_SDIST_STATIC_INVALID", domain.InspectionDiagnosticStaticFinding, ""), nil
 		}
 		summary = "PyPI PEP 517 source distribution static inspection completed."
-		return info, i.complete(artifact, "pypi-sdist-static", summary), nil
+		return info, i.complete(ctx, artifact, "pypi-sdist-static", summary), nil
 	default:
 		return nil, domain.InspectionReport{}, errors.New("PyPI distribution variant is unsupported")
 	}
 }
 
 func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string, string, error) {
-	parts := strings.Split(artifact.ContentHandle(), ":")
-	if len(parts) != 3 || parts[0] != "intake" || parts[2] != artifact.Identity().Variant() {
-		return "", "", errors.New("PyPI intake handle is invalid")
-	}
-	runID, err := domain.ParseRunID(parts[1])
+	directory, filenameRecord, name, err := i.artifactLocation(artifact)
 	if err != nil {
-		return "", "", errors.New("PyPI intake handle is invalid")
-	}
-	directory := filepath.Join(i.intakeRoot, runID.String())
-	filenameRecord := "filename"
-	if artifact.Identity().Variant() == "derived-wheel" {
-		filenameRecord = "derived-filename"
+		return "", "", err
 	}
 	filenameBytes, err := os.ReadFile(filepath.Join(directory, filenameRecord))
 	filename := string(filenameBytes)
@@ -140,14 +152,29 @@ func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string
 	if !ok || (variant != artifact.Identity().Variant() && !(variant == "wheel" && artifact.Identity().Variant() == "derived-wheel")) {
 		return "", "", errors.New("PyPI intake filename does not match Artifact")
 	}
-	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[variant]
-	if artifact.Identity().Variant() == "derived-wheel" {
-		name = "derived.whl"
-	}
-	if name == "" {
-		return "", "", errors.New("PyPI intake variant is unsupported")
-	}
 	return filepath.Join(directory, name), filename, nil
+}
+
+// artifactLocation shares handle routing without reading mutable intake data.
+func (i *StaticInspector) artifactLocation(artifact domain.AcquiredArtifact) (string, string, string, error) {
+	parts := strings.Split(artifact.ContentHandle(), ":")
+	if len(parts) != 3 || parts[0] != "intake" || parts[2] != artifact.Identity().Variant() {
+		return "", "", "", errors.New("PyPI intake handle is invalid")
+	}
+	runID, err := domain.ParseRunID(parts[1])
+	if err != nil {
+		return "", "", "", errors.New("PyPI intake handle is invalid")
+	}
+	directory := filepath.Join(i.intakeRoot, runID.String())
+	filenameRecord := "filename"
+	if artifact.Identity().Variant() == "derived-wheel" {
+		filenameRecord = "derived-filename"
+	}
+	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[artifact.Identity().Variant()]
+	if name == "" {
+		return "", "", "", errors.New("PyPI intake variant is unsupported")
+	}
+	return directory, filenameRecord, name, nil
 }
 
 func pypiVariant(filename string) (string, bool) {
@@ -160,18 +187,18 @@ func pypiVariant(filename string) (string, bool) {
 	return "", false
 }
 
-func (i *StaticInspector) complete(artifact domain.AcquiredArtifact, kind, summary string) domain.InspectionReport {
+func (i *StaticInspector) complete(ctx context.Context, artifact domain.AcquiredArtifact, kind, summary string) domain.InspectionReport {
 	checkID, _ := domain.NewCheckID("pypi-static-archive")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx, artifact))
 	evidenceID, _ := domain.NewEvidenceID("pypi-static-archive-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), kind, summary)
 	report, _ := domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
 	return report
 }
 
-func (i *StaticInspector) violation(artifact domain.AcquiredArtifact, code string, cause domain.InspectionDiagnosticCause, stage domain.InspectionDiagnosticStage) domain.InspectionReport {
+func (i *StaticInspector) violation(ctx context.Context, artifact domain.AcquiredArtifact, code string, cause domain.InspectionDiagnosticCause, stage domain.InspectionDiagnosticStage) domain.InspectionReport {
 	checkID, _ := domain.NewCheckID("pypi-static-archive")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", i.checkProfile(ctx, artifact))
 	evidenceID, _ := domain.NewEvidenceID("pypi-static-archive-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-static-archive", "PyPI static archive inspection rejected the distribution.")
 	finding, _ := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
@@ -215,4 +242,46 @@ func wheelDiagnostic(err error) (domain.InspectionDiagnosticCause, domain.Inspec
 	default:
 		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageOther
 	}
+}
+
+func (i *StaticInspector) checkProfile(ctx context.Context, artifact domain.AcquiredArtifact) domain.ContentDigest {
+	name := staticCheckProfileName
+	if artifact.Identity().Variant() == "sdist" {
+		// Older sdist results did not attest the complete gzip trailer.
+		// Keep the unchanged wheel profile and invalidate only that scope.
+		name = "pypi-static-sdist-v2"
+	}
+	profile, _ := domain.CheckProfileDigest(name, fmt.Sprintf("%q|%s", []string{i.target.Python, i.target.ABI, i.target.Platform}, pythonInspectionProfileDescriptor(ctx)))
+	return profile
+}
+
+func (i *StaticInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection {
+		return nil, errors.New("pypi static declaration is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return nil, errors.New("pypi static source is unsupported")
+	}
+	id, _ := domain.NewCheckID("pypi-static-archive")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile(ctx, artifact))
+	if err != nil {
+		return nil, err
+	}
+	result := []domain.CheckRequirement{requirement}
+	if i.analyzer != nil {
+		for _, declare := range []func() ([]domain.CheckRequirement, error){content.BinaryChecks, content.InventoryChecks, content.SourceChecks} {
+			checks, err := declare()
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, checks...)
+		}
+	}
+	return result, nil
+}
+
+// Controlled policy values and the root lane are configuration, not artifact
+// output. Including the value keeps rule limits owned by ResourcePolicy.
+func pythonInspectionProfileDescriptor(ctx context.Context) string {
+	return fmt.Sprintf("%q|%#v", artifactpypi.RootSourceProfileNameFromContext(ctx), artifactpypi.ResourcePolicyFromContext(ctx))
 }

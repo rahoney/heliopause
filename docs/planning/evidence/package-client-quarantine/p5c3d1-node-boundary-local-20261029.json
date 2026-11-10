@@ -1,0 +1,161 @@
+{
+  "scope": "P5-C3d1 controlled test fixture selected Node literal argv/TERM/KILL/mid-body caller cancellation/stdout overflow/stderr overflow; existing actual verifier/static/dynamic/Evidence/Policy and runtime reused; public registry/native solver NOT_RUN",
+  "status": "PASS (six named local actual cases)",
+  "baseline_commit": "558d75a818a661249f9dcde96211e4399a8aa844",
+  "runtime_inputs": 1332,
+  "existing1330_production_CPP_inputs_unchanged": true,
+  "states": {
+    "IMPLEMENTED": "YES (two test-only files)",
+    "WIRED": "YES (same existing production runtime and current inspection/Policy owners)",
+    "QUALIFIED": "YES (six controlled fixture local cases)",
+    "ACCEPTANCE_CLOSED": "YES (named six-case scope only)"
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 2.571
+    },
+    {
+      "step": "tagged-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 11.191
+    },
+    {
+      "step": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 13.927
+    },
+    {
+      "step": "tagged-bootstrap-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3d1-v1-bootstrap.test",
+        "./internal/bootstrap"
+      ],
+      "exit_code": 0,
+      "seconds": 3.176
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 19.415
+    }
+  ],
+  "staticcheck": {
+    "path": "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+    "version": "staticcheck 2026.2.2 (0.8.2)",
+    "sha256": "6c01079a5969c4bb79785facbeffca9ea74008865b53c696b53a44dbb87791d2"
+  },
+  "binary": [
+    {
+      "role": "bootstrap",
+      "path": "/tmp/haa-p5-c3d1-v1-bootstrap.test",
+      "sha256": "244a47b1fa33dc099a071a9e8fbdf05ebd47b7b8307d43d06b8718620ddb9793",
+      "bytes": 51089332
+    }
+  ],
+  "actual": {
+    "seconds": 92.871,
+    "parent_seconds": 90.87,
+    "cases": [
+      [
+        "argv",
+        "true",
+        "73",
+        "0"
+      ],
+      [
+        "term",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "kill",
+        "true",
+        "7",
+        "0"
+      ],
+      [
+        "cancel",
+        "false",
+        "6",
+        "0"
+      ],
+      [
+        "stdout-overflow",
+        "false",
+        "1048576",
+        "0"
+      ],
+      [
+        "stderr-overflow",
+        "false",
+        "0",
+        "1048576"
+      ]
+    ],
+    "signal_cases": "independent kernel TERM15/KILL9 with Complete/typed guest error; not inferred from Host status",
+    "cancel": "actual ready prefix6B then caller custom cause; original Canceled+custom cause/incomplete/no typed completed guest error",
+    "overflow": "independent exact1048576B prefix/other stream0; original ErrExecutionOutputLimit/incomplete/no typed completed guest error",
+    "current_integrity_static_dynamic_Evidence_Policy": "ACTUAL each fresh case; no manufactured approval/check/bundle/install target/result",
+    "fixture_source": "existing explicit controlled-test Resolver HTTP transport, exact metadata/tarball/SRI/lock parsing; no real network",
+    "native_registry_and_solver": "NOT_RUN",
+    "source_CPP_Host_fixed42_ZIP_Docker_preserved": true,
+    "helper_wait0_confirmedstop": true,
+    "owned_resources_and_observer_endpoints_absent": true,
+    "no_skip": true
+  },
+  "source_and_raw_evidence": {
+    "identity": "docs/github-logs/package-client-quarantine-20261021/p5-c3d1-v1-build-identity.json",
+    "actual": "docs/github-logs/package-client-quarantine-20261021/p5-c3d1-actual-v1-result.json",
+    "assessment": "docs/github-logs/package-client-quarantine-20261021/p5-c3d1-actual-v1-assessment.json"
+  },
+  "hosted": "NOT_INCLUDED in active CI428/source558d75a",
+  "MISSING": [
+    "actual filesystem/network/child/runtime/source substitution hostile cases",
+    "public application/CLI and safe output renderer",
+    "new grouped hosted for these tests",
+    "whole P5/final4profiles/signed acceptance"
+  ],
+  "next": "Same M13-004 C3d2 hostile FS/network/child baseline before source; local intermediate commit only while CI428 runs; consume20min timers and no new push."
+}

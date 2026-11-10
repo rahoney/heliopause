@@ -18,6 +18,7 @@ import (
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 // Synthetic ALLOW records exercise the staging boundary, not public registry
@@ -89,10 +90,13 @@ func cargoCacheFixture(t *testing.T, c *CargoVerifiedCache, project string, file
 	decision, _ := domain.NewPolicyDecision(domain.DecisionAllow, "fixture", 1, []string{"FIXTURE_ALLOW"})
 	var checks []domain.CheckExecution
 	var items []domain.Evidence
+	var requirements []domain.CheckRequirement
 	for _, kind := range []domain.CheckKind{domain.CheckVerification, domain.CheckInspection} {
 		id, _ := domain.NewCheckID("fixture-" + strings.ToLower(string(kind)))
-		check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		checks = append(checks, check)
+		requirement, _ := domain.NewCheckRequirement(id, kind, true, cacheFixtureProfile())
+		requirements = append(requirements, requirement)
 		eID, _ := domain.NewEvidenceID(id.String())
 		item, err := domain.NewEvidence(eID, id, identity, digest, "fixture", "Synthetic complete cache check evidence.")
 		if err != nil {
@@ -100,16 +104,24 @@ func cargoCacheFixture(t *testing.T, c *CargoVerifiedCache, project string, file
 		}
 		items = append(items, item)
 	}
+	contentReport, contentRequirements := archiveContentApprovalFixture(t, artifact)
+	checks = append(checks, contentReport.Executions()...)
+	items = append(items, contentReport.Evidence()...)
+	requirements = append(requirements, contentRequirements...)
 	store, err := evidencelocal.NewStore(c.evidenceRoot)
 	if err != nil {
 		t.Fatal(err)
 	}
-	refs, err := store.Record(context.Background(), run, items)
+	refs, err := store.Record(context.Background(), run, items, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
 	node, _ := domain.ProjectDependencyNodeID(identity)
-	inspection, err := domain.NewDependencyInspection(node, run, artifact, checks, refs, decision)
+	plan, err := domain.NewCheckPlan(run, artifact, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspection, err := domain.NewDependencyInspection(node, run, artifact, checks, refs, decision, plan)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,6 +149,106 @@ func newCargoCacheForTest(t *testing.T) (*CargoVerifiedCache, string) {
 		t.Fatal(err)
 	}
 	return cache, root
+}
+
+func TestCargoContentApprovalRequiresCurrentSummariesProfilesAndKinds(t *testing.T) {
+	for _, fault := range []string{"current", "legacy", "missing-source", "wrong-profile", "wrong-kind", "duplicate"} {
+		t.Run(fault, func(t *testing.T) {
+			cache, root := newCargoCacheForTest(t)
+			set, _ := cargoCacheFixture(t, cache, filepath.Join(root, "project"), nil)
+			doc, err := cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			entry := &doc.Entries[0]
+			if fault == "legacy" {
+				entry.Evidence = entry.Evidence[:2]
+				if err := cache.verifyRecordedApproval(context.Background(), doc, false); err != nil {
+					t.Fatal("historical original could not be independently read", err)
+				}
+				original := set.Inspected().Inspections()[0]
+				node, _ := domain.ProjectDependencyNodeID(original.Artifact().Identity())
+				legacyInspection, err := domain.NewDependencyInspection(node, original.RunID(), original.Artifact(), original.Checks()[:2], original.Evidence()[:2], original.PolicyDecision(), cacheFixturePlan(t, original.RunID(), original.Artifact(), []string{"fixture-verification", "fixture-inspection"}))
+				if err != nil {
+					t.Fatal(err)
+				}
+				legacyInspected, err := domain.NewInspectedProjectSet(set.Inspected().Snapshot(), []domain.DependencyInspection{legacyInspection})
+				if err != nil {
+					t.Fatal(err)
+				}
+				legacySet, err := domain.NewProjectVerifiedSet(legacyInspected, set.Decision())
+				if err != nil {
+					t.Fatal(err)
+				}
+				if staged, err := cache.StageProject(context.Background(), legacySet); err == nil || staged.Valid() {
+					t.Fatal("legacy incomplete content approval staged as current")
+				}
+			} else if fault == "missing-source" {
+				for index, record := range entry.Evidence {
+					if record.ID == content.SourceCoverageEvidenceID {
+						entry.Evidence = append(entry.Evidence[:index], entry.Evidence[index+1:]...)
+						break
+					}
+				}
+			} else if fault == "duplicate" {
+				entry.Evidence = append(entry.Evidence, entry.Evidence[2])
+			} else if fault == "wrong-profile" || fault == "wrong-kind" {
+				// Re-record valid bytes and hashes under a fresh Run, so this
+				// rejects stale semantics rather than just checksum damage.
+				original := set.Inspected().Inspections()[0]
+				run, _ := domain.NewRunID()
+				var facts []domain.Evidence
+				var checks []domain.CheckExecution
+				for _, record := range entry.Evidence {
+					id, _ := domain.NewEvidenceID(record.ID)
+					ref, _ := domain.NewEvidenceReference(id, "evidence:"+original.RunID().String()+":"+id.String())
+					fact, _, err := cache.evidence.ReadReference(context.Background(), original.RunID(), ref, original.Artifact().Identity(), original.Artifact().Digest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					profile, kind := fact.ProfileDigest(), fact.Kind()
+					if record.ID == content.SourceCoverageEvidenceID {
+						if fault == "wrong-profile" {
+							profile = cacheFixtureProfile()
+						} else {
+							kind = "unrelated-source-fact"
+						}
+					}
+					changed, err := domain.NewEvidence(fact.ID(), fact.CheckID(), fact.Identity(), fact.Digest(), kind, fact.Summary(), profile)
+					if err != nil {
+						t.Fatal(err)
+					}
+					facts = append(facts, changed)
+					checkKind := domain.CheckInspection
+					if fact.CheckID().String() == "fixture-verification" {
+						checkKind = domain.CheckVerification
+					}
+					check, err := domain.NewCheckExecution(fact.CheckID(), checkKind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+					if err != nil {
+						t.Fatal(err)
+					}
+					checks = append(checks, check)
+				}
+				store, _ := evidencelocal.NewStore(cache.evidenceRoot)
+				refs, err := store.Record(context.Background(), run, facts, checks...)
+				if err != nil {
+					t.Fatal(err)
+				}
+				entry.Run = run.String()
+				for index, ref := range refs {
+					_, digest, err := store.ReadReference(context.Background(), run, ref, original.Artifact().Identity(), original.Artifact().Digest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					entry.Evidence[index].SHA256 = digest.String()
+				}
+			}
+			err = cache.verifyRecordedApproval(context.Background(), doc, true)
+			if (err == nil) != (fault == "current") {
+				t.Fatal("current content evidence contract was bypassed", fault, err)
+			}
+		})
+	}
 }
 
 func TestCargoCacheStagesApprovedCrateAndRejectsDrift(t *testing.T) {
@@ -310,4 +422,37 @@ func TestCargoCacheRejectsMissingApprovalCancellationAndOverlappingRoots(t *test
 	if _, err := cache.StageProject(ctx, set); err == nil {
 		t.Fatal("cancelled staging succeeded")
 	}
+}
+
+// Explicit controller/Policy fixture for the shared approval gate. These facts
+// do not claim parser execution, public authentication or runtime completion.
+func archiveContentApprovalFixture(t *testing.T, artifact domain.AcquiredArtifact) (domain.InspectionReport, []domain.CheckRequirement) {
+	t.Helper()
+	declarations, err := content.ArchiveEvidenceRequirements()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reports []domain.InspectionReport
+	var requirements []domain.CheckRequirement
+	for _, declaration := range declarations {
+		check, err := domain.NewCheckExecution(declaration.Check.ID(), domain.CheckInspection, declaration.Check.Required(), domain.CapabilitySupported, domain.ExecutionCompleted, "", declaration.Check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		fact, err := domain.NewEvidence(declaration.ID, check.ID(), artifact.Identity(), artifact.Digest(), declaration.Kind, "Synthetic current content approval fixture; no scanner execution claimed.", check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		report, err := domain.NewInspectionReport(check, nil, []domain.Evidence{fact})
+		if err != nil {
+			t.Fatal(err)
+		}
+		reports = append(reports, report)
+		requirements = append(requirements, declaration.Check)
+	}
+	report, err := domain.NewCompositeInspectionReport(reports)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return report, requirements
 }

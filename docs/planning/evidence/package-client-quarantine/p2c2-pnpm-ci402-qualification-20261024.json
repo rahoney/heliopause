@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "run_id": 40064681181,
+  "run_number": 402,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/40064681181",
+  "source_head": "940d8e47c2a4639f3cbc158aeb92c12de43a50cb",
+  "checkout": "cab8183812d25c8945e4233114e218c6ce6d7e42",
+  "source_tree": "36c5d030c8ab0ca7834769d73bd4fb89712c09fe",
+  "checkout_tree": "36c5d030c8ab0ca7834769d73bd4fb89712c09fe",
+  "whole_tree_equal": true,
+  "files": 2151,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 120785323419,
+      "name": "Quick",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323501,
+      "name": "macOS",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323512,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323545,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323558,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323567,
+      "name": "Minimum Go",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323584,
+      "name": "gVisor Linux Integration",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323592,
+      "name": "Representative Wheel Corpus",
+      "conclusion": "success"
+    },
+    {
+      "id": 120785323598,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 120795512429,
+      "name": "Required",
+      "conclusion": "success"
+    }
+  ],
+  "elapsed_seconds": 3191,
+  "timer": {
+    "due_UTC": "2026-10-24T05:57:13.005877+00:00",
+    "first_check_after_due": true,
+    "before_due_API_poll": false
+  },
+  "actual": {
+    "PNPM": [
+      "--- PASS: TestPNPMActualIsolatedNativeStartup (3.21s)",
+      "--- PASS: TestPNPMActualIsolatedEmptyLock (2.85s)",
+      "--- PASS: TestPNPMActualIsolatedNodeQuery (2.95s)",
+      "--- PASS: TestPNPMActualReleaseArtifactProbe (4.51s)"
+    ],
+    "observer_latches": {
+      "linux_job": 110,
+      "observer_job": 110,
+      "failures": 0
+    },
+    "linux_job_top_level_passes": 57,
+    "CPU_full_seconds": 294.69,
+    "native_macos": {
+      "job": "success",
+      "production_build_logged": true,
+      "default_test_logged": true
+    },
+    "helper_wait_zero": 5,
+    "final_helper_state": "CONFIRMED_STOPPED",
+    "original_exit": 0,
+    "client_error": 0,
+    "client_restore": 0
+  },
+  "raw": [
+    {
+      "path": "p2c2-pnpm-ci402-final-run.json",
+      "sha256": "96100120c17ac86dcb4a2c1fef82cea86a8412029817099716895a9349dec0f2"
+    },
+    {
+      "path": "p2c2-pnpm-ci402-final-jobs.json",
+      "sha256": "c5502617aa3bb04cb45191af76c89a43b756b7b4f45aea5b12801df5a61f69d7"
+    },
+    {
+      "path": "p2c2-pnpm-ci402-checkout-commit.json",
+      "sha256": "d52bd5617279c305d1d34e600a5eaa1fb02089ff40704b96784a30260799a565"
+    },
+    {
+      "path": "p2c2-pnpm-ci402-linux.log",
+      "sha256": "5551b07479eb051860669f8f7b23f190791bccf72bc3e174e000c9589b5504b3"
+    },
+    {
+      "path": "p2c2-pnpm-ci402-macos.log",
+      "sha256": "ed7459ece0a0a5e0e0d4b413fb683197f9f0f41393dd086669102b2e64160d30"
+    },
+    {
+      "path": "p2c2-pnpm-ci402-observer.log",
+      "sha256": "ef66754b253e5b67bd6244f2ce6a3d63ac6a3a1aebe54a12a29ec3ee7325e6f4"
+    }
+  ],
+  "scope": "ordinary hosted qualification of source940, strict transport/native producer and current shared runtime; does not assert unrun public eight fixture or later C3/C4/C5 acceptance",
+  "missing": [
+    "later source0f8/40d/local C5 qualification",
+    "transitive/peer dependency-aware dynamic context",
+    "PNPM layout/transaction/CLI and native5 signed whole self-update"
+  ]
+}

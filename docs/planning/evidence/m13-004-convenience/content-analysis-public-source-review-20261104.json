@@ -1,0 +1,2530 @@
+{
+  "baseline": "987545b",
+  "scope": "S04 fixed Semgrep1.182.0 public CE source/build comparison only; no product adoption or new runtime lock",
+  "states": {
+    "IMPLEMENTED": "NO",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "source": {
+    "tag_commit": "240da9f30cd06fb4ee00c2c31c114c1c1f5ee0f4",
+    "actual_checkout": "d7359d1950da833cd8eff5b9a7b7a2088567df9c",
+    "tree": "a70ab55160149f38c0bd17a8cd0d639a8c90cce0",
+    "equal_tree": true,
+    "build_run": 39486928566,
+    "build_job": 118849638246,
+    "job_conclusion": "success",
+    "whole_run_conclusion": "cancelled",
+    "artifact_id": 12294769458,
+    "artifact_expires": "2027-01-18T19:50:53Z",
+    "cryptographic_build_attestation": "NOT_ESTABLISHED",
+    "archive_digest": {
+      "algorithm": "sha256",
+      "value": "13eb21fcf5ea262a23616b7a602543f06e998c5bf5db25fff40e5fda02e328ae"
+    }
+  },
+  "executable_digest": {
+    "algorithm": "sha256",
+    "value": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+  },
+  "executable_bytes": 255588872,
+  "elf": {
+    "format": "ELF64 x86-64",
+    "static": true,
+    "host_executed": false
+  },
+  "recipe": {
+    "files": 8,
+    "bytes": 36849,
+    "opam_repository": "78d29aba187e8362b8ab86c189790c0af9153d4b",
+    "compiler_fork": "4046c817ed2ed5c2431300902d1bd306230bf3dd",
+    "locked_opam_dependencies": 238,
+    "unique_remote_git_pins": 7
+  },
+  "vendored_notice_catalogue": {
+    "files": 49,
+    "bytes": 388966,
+    "scope": "Vendored core-source notice catalogue only; not the external static-link closure and not product redistribution approval"
+  },
+  "native_data": {
+    "elapsed": 0.959,
+    "exit_code": 0,
+    "parser_compatibility_pass": true,
+    "expected_targets": 12,
+    "expected_marker_matches": 6,
+    "container_removed": true,
+    "original_container_ids_preserved": true,
+    "inputs_unchanged": true
+  },
+  "cleanup": {
+    "scope": "only completed upstream artifact ZIP and isolated DATA executable copy; keep one active reference candidate and source notices; no installed/runtime/Docker/shared cache removal",
+    "queried_processes": 106,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "semgrep-core-1.182.0-public-source.zip",
+        "bytes": 64018684,
+        "sha256": "13eb21fcf5ea262a23616b7a602543f06e998c5bf5db25fff40e5fda02e328ae"
+      },
+      {
+        "file": "s04-public-source-runtime-v1/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      }
+    ],
+    "retained_active_inputs": [
+      "semgrep-core-1.182.0-public",
+      "s04-source-notices",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "policy-helper-s05-public-languages",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 319607556,
+    "complete": true
+  },
+  "raw": [
+    "s04-source-build-input-review.json",
+    "s04-public-source-artifacts.json",
+    "s04-public-source-jobs.json",
+    "s04-public-source-tag-commit.json",
+    "s04-public-source-merge-commit.json",
+    "s04-public-source-x86-selected.log",
+    "s04-public-source-binary-review.json",
+    "s04-public-source-elf-metadata.log",
+    "s04-source-notice-catalogue.json",
+    "s04-public-source-runtime-v1.json",
+    "s04-public-source-review-cleanup.json",
+    "s04-dependency-source-metadata.json",
+    "s04-public-source-os-inputs-selected.log",
+    "s04-source-notice-archive-review-8.json",
+    "s04-source-notice-archive-review-150.json",
+    "s04-source-license-declarations.json",
+    "s04-source-license-header-review.json",
+    "s04-bigstringaf-source-license.json",
+    "s04-opengrep-comparison.json",
+    "s04-source-builder-apk-inputs.json",
+    "s04-source-builder-prepared.json",
+    "s04-source-builder-inventory.json",
+    "s04-source-download-v1.json",
+    "s04-source-preflight-observed.json",
+    "s04-source-download-v2.json",
+    "s04-failed-git-pack-cleanup.json",
+    "s04-source-download-v3.json",
+    "s04-bigstringaf-source-tree.json",
+    "s04-bigstringaf-source-binding.json",
+    "s04-builder-curl-package-origin.json",
+    "s04-curl-APKBUILD.txt",
+    "s04-static-curl-source.json",
+    "s04-offline-build-v1-inputs.json",
+    "s04-rules-prototype-v1.json",
+    "s04-rules-prototype-v1-rules.json",
+    "s04-rules-prototype-v1-fixtures.json",
+    "s04-rules-prototype-v2.json",
+    "s04-rules-prototype-v2-rules.json",
+    "s04-rules-prototype-v2-fixtures.json",
+    "s04-rule-copies-cleanup.json",
+    "s04-native-static-build-inputs.json",
+    "s04-native-apkbuild-metadata.json",
+    "s04-offline-build-v1.json",
+    "s04-builder-opam-install-help.txt",
+    "s04-offline-build-v2.json",
+    "s04-offline-build-v2-pin-preconditions.json",
+    "s04-offline-build-v3.json",
+    "s04-offline-build-v3-expected-local-git.json",
+    "s04-rules-boundary-v1.json",
+    "s04-rules-boundary-v2.json",
+    "s04-rules-parser-v3.json",
+    "s04-strict-parse-patch-candidate.json",
+    "s04-tree-sitter-source.json",
+    "s04-quarantine-source-candidate.json",
+    "s04-quarantine-build.patch",
+    "s04-offline-build-v4-inputs.json",
+    "s04-offline-build-v4.json",
+    "s04-rules-patched-core-v4.json",
+    "s04-own-core-stripped.json",
+    "s04-own-core-stripped-v2.json",
+    "s04-own-core-elf-metadata-v2.log",
+    "s04-own-core-stripped-characterization.json",
+    "s04-rules-stripped-core-v5.json",
+    "s04-own-core-link-inputs.json",
+    "s04-own-core-native-link-metadata.json",
+    "s04-native-apkbuild-additional.json",
+    "s04-native-source-archive-inputs.json",
+    "s04-native-source-notice-review-15.json",
+    "s04-rules-parser-v3-fixtures.json",
+    "s04-boundary-copies-cleanup.json",
+    "s04-own-rule-copies-cleanup.json",
+    "s04-source-build-progress-docs.json",
+    "s04-builder-repository-origins.json",
+    "s04-registered-runtime-origins.json",
+    "s04-core-repro-v1-inputs.json",
+    "s04-core-repro-v1.json",
+    "s04-public-wheel-source-v1-inputs.json",
+    "s04-public-wheel-source-v1.json"
+  ],
+  "missing": [
+    "Canonical runtime owner/update/release supply integration, reproducible fixed build recipe and complete source/notice redistribution package; local data build is not signed production admission",
+    "Actual gVisor transport/lifecycle/accounting and scanner output/control integrity qualification",
+    "Product source/binary capabilities, all ecosystem/composite/transitive wiring and bounded Evidence/Policy/promotion denial",
+    "Whole S04 and design14 prerequisite-dependent S06 acceptance; S05 profile/grouped hosted acceptance remains separate"
+  ],
+  "dependency_metadata": {
+    "repository_packages": 225,
+    "pinned_packages": 13,
+    "remote_repositories": 7,
+    "metadata_and_notices": 245,
+    "bytes": 454777,
+    "scope": "build dependency superset only; not necessarily linked or full copyright/source closure"
+  },
+  "exact_source_notice_review": {
+    "selected_archives": 150,
+    "total_archives": 150,
+    "downloaded_this_run": 25970188,
+    "elapsed": 46.899,
+    "completed": 147,
+    "failed": [
+      {
+        "packages": [
+          "ambient-context.0.2",
+          "ambient-context-eio.0.2",
+          "ambient-context-lwt.0.2"
+        ],
+        "failure": "NO_NAMED_SOURCE_NOTICE_FILE"
+      },
+      {
+        "packages": [
+          "bigstringaf.0.10.0"
+        ],
+        "failure": "PRIMARY_SOURCE_HAS_NO_STRONG_CHECKSUM"
+      },
+      {
+        "packages": [
+          "trace.0.12"
+        ],
+        "failure": "NO_NAMED_SOURCE_NOTICE_FILE"
+      }
+    ],
+    "scope": "build dependency superset; first8 reused; 147 named notice sources and two exact declaration follow-ups; no product/redistribution approval"
+  },
+  "declaration_follow_up": "ambient-context full MIT notice in exact README; trace MIT opam declaration; bigstringaf exact GitHub tree independently matches actual cached archive18 files/modes; complete static-link/C native and copyright closure remains open.",
+  "private_builder": {
+    "scope": "frozen source build preparation only; not product runtime or upstream attestation",
+    "apk_files": 160,
+    "apk_bytes": 163056936,
+    "base_image": "docker.io/library/alpine@sha256:85fe1e81d6758c208f3e1eed4338a1997e19d4be002d4dd32d3100c9a8c010a0",
+    "local_image_id": "sha256:c51621f9bc40a3f73776ba3bd49eb1d88c8f6edd1f44f2fb40b1770bf81b48bf",
+    "opam_version": "2.5.2",
+    "preparation_elapsed": 23.793,
+    "installed_package_rows": 168,
+    "installed_metadata_digest": {
+      "algorithm": "sha256",
+      "value": "11f5618c13608d4b5cb2d7ca8162fba20031a5f88aa91e191e35a938befe0879"
+    },
+    "first_metadata_query": "empty implicit query was not inventory proof; explicit wildcard read168 rows without reinstall",
+    "containers_removed": true
+  },
+  "alternative_comparison": "OpenGrep1.33.1 not selected: its signed Nuitka CLI is a different payload from the required core; no signature transfer or crypto qualification",
+  "source_download": "v1 preflight enum failure; v2 source acquisition135.742s/exit20 failed required compiler full-history fetch at256MiB per-file bound. Same4046c817 depth1 prefill resumed locked v3 in101.860s/exit0, source240da9/treea70 unchanged,429 cache files; no compiler installed. Own container removed/original IDs preserved.",
+  "failed_download_cleanup": {
+    "scope": "only two failed Git temporary pack files at the source-fetch file-size bound; retain all valid source, Git objects and source receipts",
+    "queried_processes": 105,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "s04-source-build-work/opam/s04-review/.opam-switch/sources/ocaml-variants/.git/objects/pack/tmp_pack_cBVDEv",
+        "bytes": 268435456,
+        "sha256": "4e3b4f9bca14c7042c7b0373180c92107d7ece83c9397cc2635bb9f6a6b76d96"
+      },
+      {
+        "file": "s04-source-build-work/opam/s04-review/.opam-switch/sources/ocaml-variants/.git/objects/pack/tmp_pack_y3Yl8F",
+        "bytes": 268435456,
+        "sha256": "4e10d931372ec41f7ae92f621bd19678f8fda9c45e2d00d60c2b7cdabe6238cb"
+      }
+    ],
+    "retained_active_inputs": [
+      "s04-source-build-work",
+      "s04-source-builder-inputs",
+      "semgrep-core-1.182.0-public",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 536870912,
+    "complete": true
+  },
+  "bigstringaf_follow_up": {
+    "source_commit": "1f3c7638f394ca2fbb5b647a4a061c357e5e21d2",
+    "cached_archive_sha256": "ed92f5b05fbc11b9defcec734d59b1068f3717a9ae4f9705c16c7f7ac3729f28",
+    "bytes": 12175,
+    "all_18_git_blobs_and_modes_match": true,
+    "scope": "Independent exact public source comparison; old OPAM metadata remains MD5-only; no upstream build attestation or product admission"
+  },
+  "offline_build": {
+    "state": "SCOPED_LOCAL_SOURCE_BUILD_PASS",
+    "v1": {
+      "elapsed": 876.77,
+      "exit_code": 40,
+      "successful_installs": 240,
+      "cause": "Six source-pinned package fetches still attempted upstream in network-none; compiler/static curl and other installs retained"
+    },
+    "v2": {
+      "elapsed": 6.167,
+      "exit_code": 40,
+      "cause": "Documented --skip-updates does not suppress fetch of these source dependencies; not a working offline remedy"
+    },
+    "v3": {
+      "elapsed": 74.31,
+      "exit_code": 1,
+      "source_transport": "Five same-commit local bare mirrors; fsck and file-only Git transport; six packages retrieved with no changes",
+      "passed": "Remaining locked dependencies and compiler4046c817 validation",
+      "cause": "Core dune runtime recipe has separate tree-sitter0.26.3 archive download absent from source acquisition"
+    },
+    "scope": "No core produced yet; no Host installation or product adoption; preserve compiler/dependencies/cache instead of repeating prior successful stages",
+    "v4": {
+      "elapsed": 367.918,
+      "exit_code": 0,
+      "core_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+      "core_bytes": 255845624,
+      "source_patch_sha256": "f4628b965798f5482bfbc8967408e51ac9c823a693d2f764a2a6386a6d6bc2ad",
+      "compiler_dependencies_reused": true,
+      "network": "none",
+      "uid": 1000,
+      "container_removed": true,
+      "original_container_ids_preserved": true
+    }
+  },
+  "rule_prototype": {
+    "state": "SCOPED_REFERENCE_DATA_PASS",
+    "rules": 11,
+    "languages": 6,
+    "fixtures": 30,
+    "expected_matches": 16,
+    "normal_controls": 14,
+    "missing": 0,
+    "unexpected": 0,
+    "errors": 0,
+    "skipped_rules": 0,
+    "elapsed": 2.117,
+    "container_removed": true,
+    "inputs_unchanged": true,
+    "scope": "Four initial behavior categories plus literal credential file/lookup cases; normal credential headers/generated/minified/decode/command/file controls. Reference DATA only; not product/Policy/gVisor/transitive or representative detection-rate acceptance."
+  },
+  "rule_prototype_cleanup": {
+    "scope": "only two completed rule DATA executable copies; preserve active reference, source build inputs, tiny rule/fixture DATA and raw receipts",
+    "queried_processes": 119,
+    "references": [],
+    "query_errors": [],
+    "removed": [
+      {
+        "file": "s04-rules-prototype-v1/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      },
+      {
+        "file": "s04-rules-prototype-v2/semgrep-core",
+        "bytes": 255588872,
+        "sha256": "32f30ee929f1be3bcd8b3f24d0e1fd497e3b2fe8557d13110b2f7a3e5568ebf6"
+      }
+    ],
+    "retained_active_inputs": [
+      "semgrep-core-1.182.0-public",
+      "s04-source-notices",
+      "helox-s05-github",
+      "bootstrap-s05-consumers.test",
+      "policy-helper-s05-public-languages",
+      "s08-filesystem-sdk"
+    ],
+    "removed_bytes": 511177744,
+    "complete": true
+  },
+  "parse_boundary": {
+    "state": "SCOPED_PATCHED_AND_STRIPPED_DATA_PASS",
+    "v1": {
+      "elapsed": 2.631,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "v2": {
+      "elapsed": 2.671,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "v3": {
+      "elapsed": 3.979,
+      "exit_code": 0,
+      "operator_pass": false
+    },
+    "observed": "Explicit config/ignore are not adopted; nosemgrep match survives with is_ignored=true; malformed JS reports PartialParsing while malformed Python missing-node recovery is not in errors. Prefilter/parser flags alone did not fix it.",
+    "source_cause": "Core_scan.parse_and_resolve_name returns only skipped_tokens, dropping inserted_tokens and tolerated_errors exposed by Parsing_result2",
+    "patch": "Existing Core_scan result bridge retains skipped/inserted/tolerated token locations; two checksum-preserving offline recipe changes. Patched and stripped core34-source DATA passed expected19 findings/normal14 and both malformed-source errors; no artifact suppression authority.",
+    "product_requirement": "Never accept artifact suppression as authority; errors/coverage distinct from tool exit and findings",
+    "actual_patched": {
+      "elapsed": 1.556,
+      "core_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+      "sources": 34,
+      "matches": 19,
+      "parse_errors_expected": 2,
+      "missing": 0,
+      "unexpected": 0,
+      "container_removed": true,
+      "inputs_unchanged": true
+    },
+    "actual_stripped": {
+      "elapsed": 0.972,
+      "core_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+      "sources": 34,
+      "matches": 19,
+      "parse_errors_expected": 2,
+      "missing": 0,
+      "unexpected": 0,
+      "container_removed": true,
+      "inputs_unchanged": true
+    }
+  },
+  "own_stripped_candidate": {
+    "bytes": 169609664,
+    "sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "parent_sha256": "83aa1847db5a5a045ff294c8a88e256a9d283eea9555b74ec98fdc8612c9c7f2",
+    "static_elf": true,
+    "stack_executable": false,
+    "bytes_saved": 86235960,
+    "scope": "Separate own source-build lineage; not upstream artifact hash or attestation; private128MiB estimate refuted, no product budget changed"
+  },
+  "actual_link_input_review": {
+    "compiler_archives": 406,
+    "external_opam_archives": 219,
+    "opam_package_inputs": 150,
+    "unmapped_library_directories": [],
+    "native_library_flags": 54,
+    "scope": "Completed actual link arguments plus C autolink declarations; conservative archive/package input superset, not every archive member or final native symbol proof"
+  },
+  "native_source_notices": {
+    "sources": 15,
+    "completed": 15,
+    "failed": [],
+    "downloaded_bytes": 179687366,
+    "elapsed": 71.259,
+    "copyright_texts": 62,
+    "unique_bytes": 568930,
+    "scope": "Exact SDK origin/source checksums, reused curl/tree-sitter; source never installed/executed and downloaded compressed bodies not persisted. Not full redistribution/signed product supply acceptance."
+  },
+  "additional_completed_data_cleanup": {
+    "first_rule_copies": "s04-rule-copies-cleanup.json",
+    "reference_boundary_copies": "s04-boundary-copies-cleanup.json",
+    "own_core_copies": "s04-own-rule-copies-cleanup.json",
+    "bytes_removed": 1703399648,
+    "scope": "Only seven finished executable copies; current reference/source-build/stripped candidates, compiler/source/cache and small raw fixtures retained"
+  },
+  "source_core_reproducibility": {
+    "state": "SCOPED_CLEAN_CORE_REPRODUCED",
+    "inputs": "s04-core-repro-v1-inputs.json",
+    "scope": "Clean source and Dune outputs with same fixed compiled OPAM dependencies/SDK/static curl, source-commit epoch; not full SDK reproducibility",
+    "expected_stripped_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "elapsed": 387.467,
+    "output_bytes": 169609664,
+    "output_sha256": "c3f43f96b2a5a6c47f83b3b3f8cdc453cbaf0644e5c5bc1e02e514038d6be155",
+    "compiled_dependencies_unchanged": true,
+    "source_patch_unchanged": true,
+    "container_removed": true
+  },
+  "runtime_boundary": "Existing registered gVisor is runsc-trace only; use its existing typed helper/observation boundary, no new untraced runtime or generic role bypass.",
+  "public_wheel_source": {
+    "state": "INCOMPLETE",
+    "packages": 4,
+    "source_files": 279,
+    "source_bytes": 3305117,
+    "scanned": 279,
+    "findings": 0,
+    "parse_errors": 9,
+    "elapsed": 7.531,
+    "cause": "Original1.182 mapper mishandles seven of ten valid case-insensitive f/rf/fr prefixes; prototype reduced/combined DATA PASS; prefer released official1.183 fix. Original failure preserved.",
+    "scope": "Existing canonical corpus subset; source DATA only, no installation/binary coverage/representative FPR or product qualification",
+    "container_removed": true,
+    "inputs_unchanged": true
+  },
+  "public_prefix_follow_up": {
+    "scope": "Source DATA only; source files not executed; no product/gVisor/detection-rate claim",
+    "prefix_red": {
+      "source_files": 10,
+      "matches": 3,
+      "errors": 7,
+      "raw": "s04-python-prefix-red-v1.json"
+    },
+    "combined_prototype": {
+      "source_files": 326,
+      "expected_matches": 29,
+      "normal": 296,
+      "declared_malformed_errors": 2,
+      "complete": true,
+      "elapsed": 8.874,
+      "scanner_sha256": "0f099cf47c3bebc5ecd494c15a577bca4d98c19377d56ef7a40980f32fabbcf4",
+      "raw": "s04-combined-source-v7.json"
+    },
+    "official_candidate": {
+      "scope": "Separate fixed1.183 source candidate; preserve prior qualified1.182 source/SDK; reuse copied frozen compiler/native SDK/cache with identical guest prefixes; no Host installation",
+      "version": "1.183.0",
+      "commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "tag_object": "f4162666feb36c1f9d1788f9b331f6a59b5a83ec",
+      "compiler_commit": "4046c817ed2ed5c2431300902d1bd306230bf3dd",
+      "opam_repository": "922f67e068446a8d8e809a40251a259bd0549552",
+      "reason": "Reuse officially released exact f-string-prefix fix; own prototype parser change will not be adopted",
+      "changed_locked_packages": 43,
+      "acquisition": {
+        "complete": true,
+        "elapsed": 172.822,
+        "source_cache_files": 477,
+        "container_removed": true,
+        "original_container_ids_preserved": true,
+        "raw": "s04-source-download-1183-v1.json"
+      },
+      "source_notices": {
+        "locked_opam_packages": 236,
+        "external_archives": 148,
+        "unchanged_archives_reused": 125,
+        "changed_archives_reviewed_offline": 23,
+        "named_notice_archives": 146,
+        "declaration_follow_up": [
+          [
+            "ambient-context.0.2",
+            "ambient-context-eio.0.2",
+            "ambient-context-lwt.0.2"
+          ],
+          [
+            "trace.0.12"
+          ]
+        ],
+        "vendor_notices": 61,
+        "prior_vendor_notices_unchanged": 49,
+        "git_pin_repositories": 8,
+        "git_pin_notice_metadata_files": 35,
+        "raw": [
+          "s04-source-notice-review-1183-summary.json",
+          "s04-dependency-source-metadata-1183.json",
+          "s04-source-notice-catalogue-1183.json",
+          "s04-git-input-notices-1183.json"
+        ],
+        "scope": "Source notice inventory only; final source redistribution package/trust/adoption remains open"
+      },
+      "build": {
+        "complete": true,
+        "elapsed": 890.291,
+        "bytes": 171648864,
+        "sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+        "compiler_unchanged": true,
+        "source_patch_unchanged": true,
+        "static_elf": true,
+        "stack": "RW",
+        "raw": [
+          "s04-offline-build-1183-v1.json",
+          "s04-offline-build-1183-v1-inputs.json",
+          "s04-core-elf-1183.json",
+          "s04-installed-lock-binding-1183.json",
+          "s04-opam-installed-switch-1183.txt"
+        ],
+        "scope": "Official upstream prefix implementation; existing three-file strict-coverage/offline patch; same compiler/native SDK; changed exact tool dependency lock; not clean-full-SDK reproducibility or signed production admission"
+      },
+      "combined_source_data": {
+        "complete": true,
+        "elapsed": 8.55,
+        "source_files": 326,
+        "expected_matches": 29,
+        "normal": 296,
+        "declared_malformed_errors": 2,
+        "unexpected_matches": [],
+        "missing_matches": [],
+        "skipped_rules": [],
+        "container_removed": true,
+        "inputs_unchanged": true,
+        "raw": "s04-combined-source-1183-v1.json",
+        "scope": "Same frozen source326/own11 rules; source files unexecuted; runc DATA, no gVisor/product/detection-rate claim"
+      },
+      "link_inputs": {
+        "compiler_archives": 406,
+        "external_compiler_archives": 219,
+        "opam_input_packages": 150,
+        "unmapped": [],
+        "all_core_input_owners_locked": true,
+        "native_library_flags_unchanged": true,
+        "raw": [
+          "s04-own-core-link-inputs-1183.json",
+          "s04-own-core-native-link-metadata-1183.json"
+        ],
+        "scope": "Conservative actual archive input superset; unchanged flags/SDK allow prior15 native source notices; not every member/final symbol proof"
+      },
+      "retired_data_cleanup": {
+        "raw": "s04-superseded-source-copies-cleanup.json",
+        "removed_bytes": 508829312,
+        "removed_files": 3,
+        "references": [],
+        "query_errors": []
+      }
+    },
+    "next": "Use official1.183 source candidate; prototype Python edit is superseded by released upstream implementation. Continue canonical fixed build/source/notice supply and runtime-maintenance integration before product adoption."
+  },
+  "source_package_writer": {
+    "implementation": "scripts/update-runtime/semgrep_sources.go::packageSemgrepSource; existing native_asset.go publisher retains all callers through writer input",
+    "scope": "Developer source-package curation only; no artifact execution, runtime admission/Host installation; no language pin/schema change",
+    "checks": {
+      "s04-source-package-format-covered": {
+        "elapsed": 0.85,
+        "source_unchanged": true,
+        "raw": "s04-source-package-format-covered.json"
+      },
+      "s04-source-package-foundation": {
+        "elapsed": 40.393,
+        "source_unchanged": true,
+        "raw": "s04-source-package-foundation.json"
+      },
+      "s04-source-package-race": {
+        "elapsed": 34.64,
+        "source_unchanged": true,
+        "raw": "s04-source-package-race.json"
+      },
+      "s04-source-package-security": {
+        "elapsed": 13.456,
+        "source_unchanged": true,
+        "raw": "s04-source-package-security.json"
+      },
+      "s04-source-package-vet": {
+        "elapsed": 1.113,
+        "source_unchanged": true,
+        "raw": "s04-source-package-vet.json"
+      },
+      "s04-source-package-staticcheck": {
+        "elapsed": 2.39,
+        "source_unchanged": true,
+        "raw": "s04-source-package-staticcheck.json"
+      }
+    },
+    "actual": {
+      "raw": "s04-source-package-actual-v2.json",
+      "schema": "helox.semgrep-source-package/v1",
+      "source_commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "manifest_sha256": "cb08977805f411b873a79b0cb1cdbe9e49cab6ee844dd0a2cc6fb7f4c408a008",
+      "sha256": "72ff88618a91f48c1690aad7a613d1afb9792c4e14108d6cbca16fba88403db8",
+      "size": 306335744,
+      "files": 749,
+      "runtime_qualified": false,
+      "elapsed": 6.675,
+      "readback": "s04-source-package-readback-1183.json"
+    },
+    "inputs": {
+      "git_repositories": 9,
+      "opam_archives": 148,
+      "native_archives": 15,
+      "extra_source_files": 10,
+      "aports_recipe_files": 97,
+      "sdk_binary_packages_included": false
+    },
+    "first_failure": {
+      "raw": "s04-source-package-actual.json",
+      "cause": "Fixture pathlib-component sort differs from the required full-path byte order; rejected before output creation",
+      "correction": "s04-source-package-input-order-correction-1183.json",
+      "product_source_changed_for_retry": false
+    },
+    "remaining": "Final source/notice payload incl own license, canonical clean build recipe/SDK reproduction and trust, runtime owner/maintenance/release/backend adoption; whole S04 still open"
+  },
+  "notice_package_writer": {
+    "implementation": "Existing package-semgrep-source --notices projection; no new renderer/charset engine or change to pipx notice contract",
+    "scope": "Passive supplied source/build notice superset, not a claim all173 components are linked or legal/runtime admission",
+    "checks": {
+      "s04-notice-package-foundation": {
+        "elapsed": 32.574,
+        "raw": "s04-notice-package-foundation.json"
+      },
+      "s04-notice-package-race": {
+        "elapsed": 4.976,
+        "raw": "s04-notice-package-race.json"
+      },
+      "s04-notice-package-security": {
+        "elapsed": 12.446,
+        "raw": "s04-notice-package-security.json"
+      },
+      "s04-notice-package-vet": {
+        "elapsed": 0.835,
+        "raw": "s04-notice-package-vet.json"
+      },
+      "s04-notice-package-staticcheck": {
+        "elapsed": 2.14,
+        "raw": "s04-notice-package-staticcheck.json"
+      }
+    },
+    "actual": {
+      "schema": "helox.semgrep-notice-package/v1",
+      "source_commit": "4fe07d805dd2a4b64fed486e95136923f08648d0",
+      "manifest_sha256": "331cfa4e6b074edeb4c7101ecce600a34f4e04e0b42041688a9488470ba0dc6e",
+      "source_manifest_sha256": "54327d81a3ffb834769fff817a11260c60fcc189981f0d0cb06dc3b203cd9072",
+      "sha256": "6ea92e22369e12c22976080b2f41ed2cb48f82fbf4df0a187fedf69bbebefc0a",
+      "size": 1980416,
+      "files": 275,
+      "runtime_qualified": false,
+      "elapsed": 0.315,
+      "raw": "s04-notice-package-actual-v2.json",
+      "readback": "s04-notice-package-readback-1183.json"
+    },
+    "source_components": 173,
+    "original_texts": 273,
+    "source_encoding_preserved": {
+      "non_utf8_originals": 1,
+      "form_feeds": 133,
+      "no_text_reencoding": true
+    },
+    "supplier_trace_notice": {
+      "url": "https://semgrep.dev/cli-credits#shared-license-38",
+      "version": "1.183.0",
+      "applies_to": "trace v0.12",
+      "raw": "s04-supplier-credits-1183.json",
+      "scope": "Matching-version supplier-provided MIT text; original release source declarations retained, no invented copyright"
+    },
+    "declaration_only_git_fork": "opentelemetry c3a03bcc0afafea188b8aefa631788090f0b8fd4; exact README/opam declarations and full source preserved",
+    "first_failure": {
+      "raw": "s04-notice-package-actual.json",
+      "cause": "Two named source files were empty supplemental/test LICENSE files; curator had treated them as notice texts",
+      "correction": "s04-notice-package-empty-input-correction-1183.json",
+      "product_code_changed_for_retry": false,
+      "original_sources_unchanged": true
+    },
+    "canonical_inputs": [
+      {
+        "path": "tools/semgrep/rules.json",
+        "sha256": "7d4dc0345412d72000b596c08f2dcf8c53fd442bcba068a07d208d37f3305f22"
+      },
+      {
+        "path": "tools/semgrep/quarantine.patch",
+        "sha256": "f4628b965798f5482bfbc8967408e51ac9c823a693d2f764a2a6386a6d6bc2ad"
+      }
+    ],
+    "remaining": "Canonical clean build/SDK reproduction, final corresponding source payload, maintenance/runtime/release/backend integration; whole S04 remains open"
+  },
+  "canonical_clean_build": {
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES (local source-build scope)",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "implementation": "update-runtime rebuild-semgrep; existing Host executor, held source copier and no-replace native publisher reused; source worker embedded from one recipe",
+    "source_only_preflight": {
+      "raw": "s04-canonical-source-preflight-v7.json",
+      "elapsed": 206.516,
+      "exit_code": 0,
+      "container_removed": true,
+      "compiler_built": false,
+      "source_package_sha256": "cce4d6c2fb529605f9ce057a6e407a44ba3cfe3e5c00c341ae6069988a098150"
+    },
+    "source_projection_raw": "s04-canonical-source-projection-v2.json",
+    "source_input_correction_raw": "s04-source-offer-rresult-correction-v1.json",
+    "current_source_components": 174,
+    "current_notice_texts": 274,
+    "earlier_payload_scope": "Previous749/1026-file and173-component proofs retain their captured scope; actual fresh source retrieval found rresult missing from the collected archives and notices",
+    "checks_raw": [
+      "s04-clean-build-foundation-v5.json",
+      "s04-clean-build-race-v1.json",
+      "s04-clean-build-host-race-v2.json",
+      "s04-clean-build-security-final.json",
+      "s04-clean-build-vet-v1.json",
+      "s04-clean-build-static-final.json",
+      "s04-clean-build-vet-checkpoint.json",
+      "s04-clean-build-race-checkpoint.json",
+      "s04-clean-build-checkpoint-docs.json"
+    ],
+    "native_build": {
+      "status": "PASS",
+      "raw": "s04-canonical-build-v5.json",
+      "terminal_readback_raw": "s04-canonical-build-v5-terminal-readback.json",
+      "elapsed": 1453.045,
+      "native_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+      "native_bytes": 171648864,
+      "reference_bit_identical": true,
+      "installed_host_activation": false,
+      "installed_manifest_unchanged": true,
+      "owned_transient_cleanup_complete": true,
+      "runtime_qualified": false
+    },
+    "missing": [
+      "Existing runtime-owner/update/release supply integration",
+      "Actual gVisor source transport/lifecycle and all product consumer/Evidence/Policy wiring"
+    ],
+    "first_failures_raw": [
+      "s04-canonical-build-v1.json",
+      "s04-canonical-build-v2.json",
+      "s04-canonical-build-v3.json",
+      "s04-canonical-build-v4.json",
+      "s04-canonical-build-tmpfs-diagnostic-v1.json",
+      "s04-canonical-source-preflight-v5.json",
+      "s04-canonical-source-preflight-v6.json"
+    ],
+    "completed_failed_copy_cleanup": {
+      "removed_bytes": 1414175096,
+      "queried_processes": 121,
+      "checked_current_containers": 2,
+      "complete": true,
+      "raw": "s04-failed-build-copies-cleanup-v1.json"
+    }
+  },
+  "runtime_supply": {
+    "states": {
+      "IMPLEMENTED": "YES (owner/materialize/updater)",
+      "WIRED": "YES (developer pipeline)",
+      "QUALIFIED": "YES (local named scope)",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "schema_migration": "5 to6, all preexisting component values and reviews unchanged",
+    "preservation_raw": "s04-supply-owner-preservation.json",
+    "selected_native_sha256": "deffa9a1814d13ccdfa29b2a40a3e2e9b8878bc6e3b917bbdb4d2892c01964d4",
+    "actual_materialization_raw": "s04-supply-actual-v1.json",
+    "actual_materialization_elapsed": 30.049,
+    "checks_raw": [
+      "s04-supply-unit-foundation.json",
+      "s04-supply-unit-related-test.json",
+      "s04-supply-unit-corrected-test.json",
+      "s04-supply-unit-security-v2.json",
+      "s04-supply-unit-vet-v2.json",
+      "s04-supply-unit-static-v2.json",
+      "s04-supply-unit-race.json"
+    ],
+    "missing": [
+      "Hosted release supply/current-only admission and actual full self-quarantine/activation/recovery qualification",
+      "Actual gVisor scanner transport/lifecycle",
+      "All artifact consumers/Evidence/Policy and grouped profiles"
+    ]
+  },
+  "release_consumers": {
+    "states": {
+      "IMPLEMENTED": "YES (local producer/installed consumers)",
+      "WIRED": "YES (local named scope)",
+      "QUALIFIED": "YES (local named scope)",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "asset_count": 20,
+    "bundle_file_count": 24,
+    "runtime_manifest_schema": "helox.runtime-image-manifest/v4",
+    "legacy_readers_preserved": "8–16 assets, v2/v3 runtime metadata",
+    "actual_copy_raw": "s04-release-copy-actual-v1.json",
+    "actual_copy_elapsed": 11.266,
+    "installed_manifest_unchanged": true,
+    "ephemeral_copy_cleanup": "private namespace exited; tmpfs removed",
+    "checks_raw": [
+      "s04-release-foundation-v1.json",
+      "s04-release-related-v1.json",
+      "s04-release-corrected-v2.json",
+      "s04-release-race-v1.json",
+      "s04-release-security-v1.json",
+      "s04-release-vet-v1.json",
+      "s04-release-static-v1.json",
+      "s04-release-producer-delta-v1.json",
+      "s04-release-producer-delta-source-scope-v1.json"
+    ],
+    "missing": [
+      "Hosted source/native/notices supply for current release producer",
+      "Current-only admission gate and full self-quarantine/official provenance/activation/recovery actual",
+      "Actual gVisor scanner/all inspection consumers/Evidence/Policy/grouped profiles"
+    ],
+    "producer_delta_scope": "Named Go tests passed9.437s; whole-input stability false because operator changed documentation/inventory. Independent comparison confirms all Go inputs unchanged; no whole-tree stability claim.",
+    "source_files": [
+      {
+        "path": "internal/inspection/githubrelease/release_set.go",
+        "sha256": "6598260f11a731784dec6d4c7f927740d74f4c88d74cbb1eac98d21e1d8e7470"
+      },
+      {
+        "path": "internal/inspection/githubrelease/semgrep_release_route_test.go",
+        "sha256": "c925ddce6336ef8c91b1129ee29aa15fc070456c5aa93a9e5215411201e5b7fd"
+      },
+      {
+        "path": "internal/releaseactivation/semgrep_wire_linux_test.go",
+        "sha256": "a3397acb8c7ec3432b46f7b228d80f65b13d0700b222d9b0f11dfd8bd3a04e49"
+      },
+      {
+        "path": "internal/releaseinstall/installer.go",
+        "sha256": "9f9acf11828888c2413e7069f47d0333cbfaa3d6d59f881f1f21a2ea923a83f5"
+      },
+      {
+        "path": "internal/releaseinstall/manifest.go",
+        "sha256": "41e5feff68e5aa349f7a66ad6e4a4eaeb5e8debf657ca1406f1e471468265693"
+      },
+      {
+        "path": "internal/releaseinstall/metadata.go",
+        "sha256": "a40f2eb3f2826c2b4a5d1bf32e54f7117ca98bf67a4f34765c0b957ff3fbe712"
+      },
+      {
+        "path": "internal/releaseinstall/semgrep_namespace_linux_test.go",
+        "sha256": "7ec1d3d94bdb195fb9efc38248b91bead5d2a698c0a846cb8df4960546cdfa59"
+      },
+      {
+        "path": "internal/releaseinstall/semgrep_supply_test.go",
+        "sha256": "22410b6c7732176afc6eb0c3240029f73afaa7de91437894703f4a3d98de63d8"
+      },
+      {
+        "path": "internal/runtimeidentity/semgrep_supply.go",
+        "sha256": "e6c1d51f610dcb6c1dde782f7d0e4d7f8f51801e807ac32b5d4fe1abde1c2602"
+      },
+      {
+        "path": "internal/testutil/releasefixture/runtime.go",
+        "sha256": "3331c3a4deacb1ceec34d4e36d1f8da923fdb942a4fd2072894e62dcd024c377"
+      },
+      {
+        "path": "scripts/release-manifest/bundle_test.go",
+        "sha256": "10a9c031ddb058b13cce3e0fce91375bfac7cb48e67ad17f12114fe582550aef"
+      },
+      {
+        "path": "scripts/release-manifest/main.go",
+        "sha256": "90e15d6aefd0722a1624b36f9b6252b17ca31635f4f233e077d94bb68b41a335"
+      },
+      {
+        "path": "scripts/release-manifest/main_test.go",
+        "sha256": "7eb06550e6fecc57e8f24986b73ad2dafcbc8d1bafeec9bd566647dd5e42a0dc"
+      },
+      {
+        "path": "scripts/release-packages/main.go",
+        "sha256": "10c174e088acc2c3762eff6d12df06383202fb0098d06ac924d2da9a96d9bbc3"
+      },
+      {
+        "path": "scripts/release-packages/main_test.go",
+        "sha256": "0f8469a1dcc2520985534a0ef11b23c3dc74efe2e3beee482a8cfcf70905ddf0"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main.go",
+        "sha256": "ce2dee8acfcdbddd0b916e7c5b27f813c8bdafe1ac07f75f2f534477290093cd"
+      },
+      {
+        "path": "scripts/runtime-image-manifest/main_test.go",
+        "sha256": "d45240f934ac22c97c53fdd77bfa37739ccce03445226654a335599fee518588"
+      }
+    ]
+  },
+  "scanner_supply": {
+    "states": {
+      "IMPLEMENTED": "YES (core/rules supply and shared readonly owner)",
+      "WIRED": "YES (existing reader/transport/readonly lifecycle)",
+      "QUALIFIED": "YES (named local scope)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "actual_first_failure_raw": "s04-scanner-supply-actual-v1.json",
+    "actual_first_failure_cleanup_raw": "s04-scanner-supply-first-failure-cleanup.json",
+    "actual_pass_raw": "s04-scanner-supply-actual-v2.json",
+    "actual_elapsed": 20.116,
+    "scope": "Only fixed runc sleep keepers executed; selected core/rules are DATA. No scanner/artifact execution or gVisor qualification.",
+    "installed_manifest_unchanged": true,
+    "owned_resources_removed": true,
+    "completed_test_binary_cleanup_raw": "s04-completed-test-binaries-cleanup.json",
+    "completed_test_binaries_removed_bytes": 68143541,
+    "checks_raw": [
+      "s04-scanner-supply-foundation-v1.json",
+      "s04-scanner-supply-target-v1.json",
+      "s04-scanner-readonly-target-v1.json",
+      "s04-scanner-readonly-corrected-v2.json",
+      "s04-scanner-supply-sandbox-race-v1.json",
+      "s04-scanner-supply-security-v1.json",
+      "s04-scanner-supply-vet-v1.json",
+      "s04-scanner-supply-static-v1.json"
+    ],
+    "missing": [
+      "Actual traced gVisor scanner and readonly targets/capture/complete parsing coverage",
+      "Every inspection/transitive graph/Evidence/Policy consumer",
+      "Hosted release supply/current-only admission/full self-quarantine and activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/sandbox/native_tool_transport.go",
+        "sha256": "3aa14d01068ab390cda56a94fc0c7f6c1f89eb6caee58f2e6e77d32308a631b2"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume.go",
+        "sha256": "7990ddc0840285eea0158c7474fca01eb30ebfb890f95a495efcfca28bdbf954"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume_test.go",
+        "sha256": "d422461086a8cfd42a50a77369ca434c433323934d6062f83d90af05b7d5bb2e"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "f34e828adfcd8d8322ac291866847b0e1df380026d2396a457a5a480a88c1361"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply.go",
+        "sha256": "ebe6855b2cc43a95c3eb0769afdc8ac7ea8f5dbe5858f51ce6addb923d51c761"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply_real_test.go",
+        "sha256": "04e85653c5f287c1c4ce807f35aa8bbeb2be8cf5cf1291b69bca95d6172d0a44"
+      },
+      {
+        "path": "internal/sandbox/semgrep_tool_supply_test.go",
+        "sha256": "b888074b3a396d663d5127fd7f5418018c3180a29717ba97c1fbbd3478b1fc35"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "a34ecd38a412219679c46d798534f7d9f365ab426421dd7a16bb66a4b0bd53ed"
+      }
+    ]
+  },
+  "scanner_execution": {
+    "states": {
+      "IMPLEMENTED": "YES (bounded source input and fixed parser runtime)",
+      "WIRED": "YES (SourceAnalysis port/backend; production Inspection consumer pending)",
+      "QUALIFIED": "YES (named local runtime scope)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "actual_pass_raw": "s04-source-analysis-native-v9.json",
+    "actual_elapsed": 23.406,
+    "named_test_elapsed": 20.4,
+    "languages": [
+      "javascript",
+      "typescript",
+      "python",
+      "go",
+      "rust",
+      "hcl"
+    ],
+    "scanned": 7,
+    "findings": 1,
+    "parser_errors": 0,
+    "skipped_rules": 0,
+    "runtime": "traced gVisor; fixed core/rules and readonly noexec source DATA; no artifact installation/execution",
+    "resource_create_register_close": [
+      1,
+      1,
+      1
+    ],
+    "accounted_runtime_cpu_usec": 573885,
+    "host_unchanged": true,
+    "helper_wait_zero": true,
+    "actual_owned_resources_removed": true,
+    "actual_test_copies_removed_bytes": 214343077,
+    "cpp_raw": "s04-source-analysis-observer-batch-v8.json",
+    "cpp_passes": 138,
+    "cpp_elapsed": 49.676,
+    "go_scope": "Go source unchanged across observer-only deltas; each frozen receipt retains its own candidate inputs",
+    "checks_raw": [
+      "s04-scanner-execution-target-v2.json",
+      "s04-scanner-execution-foundation-v1.json",
+      "s04-scanner-execution-sandbox-race-v1.json",
+      "s04-scanner-execution-security-v1.json",
+      "s04-scanner-execution-vet-v1.json",
+      "s04-scanner-execution-static-v1.json"
+    ],
+    "first_failures_raw": [
+      "s04-source-analysis-native-v1.json",
+      "s04-source-analysis-native-v2.json",
+      "s04-source-analysis-native-v3.json",
+      "s04-source-analysis-native-v4.json",
+      "s04-source-analysis-native-v5.json",
+      "s04-source-analysis-native-v6.json",
+      "s04-source-analysis-native-v7.json",
+      "s04-source-analysis-native-v8.json"
+    ],
+    "diagnostic_scope": "SDK-only numeric query metadata, not production code/authority; canonical copy restored and temporary file deleted",
+    "missing": [
+      "Strict scanner JSON, complete target/rule/version binding and partial/incomplete interpretation",
+      "All inspection/transitive artifact/Evidence/Policy consumers",
+      "Remaining source runtime cancellation/fault/output-boundary qualification",
+      "Large graph/all PyTorch profiles/grouped hosted",
+      "Release current20 supply/current-only admission/official provenance/full self-quarantine and activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "db3a7070099caa0d4979b8d2530c4cde9e127ad0a7e90c5ce89a0e6be1da7a52"
+      },
+      {
+        "path": "internal/sandbox/pipx_data_volume.go",
+        "sha256": "13a99223acf7458754a1d6f73e5f604fc856cf6226aed183a4953e20f5c1ccce"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_input.go",
+        "sha256": "fffffb43b6de2a809f5241c5f67f060bf63e9152e38bbdc7061f35bece3de99e"
+      },
+      {
+        "path": "internal/sandbox/pipx_native_session.go",
+        "sha256": "d98e6b78a3d2d83bd0caa6699c6f5881f754e973aa33dc3bb8e062d34e381ef5"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume.go",
+        "sha256": "6ff9f2e5f153b17fa8c5cd339c808db8c98d358a113ddc26d3f519e4279bb318"
+      },
+      {
+        "path": "internal/sandbox/pipx_wheel_volume_test.go",
+        "sha256": "034b87bf4d1885f17ffa15cf196938fa999fb8877c0b6cf0d75f8734851615b1"
+      },
+      {
+        "path": "internal/sandbox/program_execution.go",
+        "sha256": "ec9ce7c76ea27b9e3957065dbaf0b65c57f6ed25525272fff462e618171816b5"
+      },
+      {
+        "path": "internal/sandbox/pypi_closure_volume.go",
+        "sha256": "9d124e76d41aab4f139f2dec631ef2892b1d204cb6318e5fc9f6ebcab979b29e"
+      },
+      {
+        "path": "internal/sandbox/readonly_input_tar.go",
+        "sha256": "0d04d18047e8152e820316354dbad6b86539c4e545033a37085580691f771fe2"
+      },
+      {
+        "path": "internal/sandbox/shared_observer.go",
+        "sha256": "191f3faf47156ff0490963486128a57bd782aab069b726ed34326b0ca9e4f51c"
+      },
+      {
+        "path": "internal/sandbox/source_analysis.go",
+        "sha256": "d6a89f6b12e104453e2db6dc4e7cd61d7f736142fb4b458f39691a99d4add789"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input.go",
+        "sha256": "2e93924346d408210b00115fb6bd164f7f1e4acd7985fd5e1d49ab519ecf287c"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input_test.go",
+        "sha256": "0c58f90fd7eac4376dc2a3b816e31bd2cba7aba56d0c8fe9c1a14e98929a030b"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_real_test.go",
+        "sha256": "fd27ada7b815d150b62c1aef94359b00f1dd625f5126abe1f725ee6fd7cd781e"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_runtime.go",
+        "sha256": "d64a0307336b0e1a981c509a6d385a567f0330ecf481f3c4766fea9d686de8b2"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_runtime_test.go",
+        "sha256": "b4cb4e10f9f752bef43fdac1d317713db80e07e2b9b4c80a9ee99b8918131834"
+      },
+      {
+        "path": "internal/sandbox/uv_runtime.go",
+        "sha256": "2e241872d52bcdba346c2007c6427758bc0c858bc2930e57fe3beefbae6a7f75"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "331d637e56cc42eabb8e54f1a6e606d4fc76febfdb6de17acdefd0acf0cbd1a6"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "814e8ffddb45469434b9b25b362ae74c6778b355efa354ef98d4b1ca14256a8e"
+      }
+    ],
+    "completed_binary_cleanup_raw": "s04-scanner-execution-binaries-cleanup-v1.json",
+    "completed_binary_cleanup_bytes": 92571760
+  },
+  "source_report": {
+    "states": {
+      "IMPLEMENTED": "YES (bounded strict output and Domain report helper)",
+      "WIRED": "YES (SourceAnalysis and actual runtime/report caller; production ecosystems pending)",
+      "QUALIFIED": "YES (named local cases only)",
+      "ACCEPTANCE_CLOSED": "NO (whole S04)"
+    },
+    "scope": "UTF8 same-file AST for selected rule languages; source inventory/scanned/unscanned digests, exact rule/target/position bindings; no raw source/filename/metavars/dataflow persisted",
+    "actual_first_failure": "s04-content-report-native-v1.json",
+    "actual_clean_child": "s04-content-report-native-v2.json (whole parent FAIL; clean child only PASS)",
+    "actual_clean_child_elapsed": 18.06,
+    "actual_clean_counts": {
+      "scanned": 6,
+      "findings": 0,
+      "parse_errors": 0,
+      "skipped": 0,
+      "accounted_cpu_usec": 517873
+    },
+    "actual_changed_partial": "s04-content-report-native-v3.json",
+    "actual_changed_partial_elapsed": 24.096,
+    "actual_partial_counts": {
+      "scanned": 9,
+      "findings": 1,
+      "ignored_hit_preserved": true,
+      "parse_errors": 2,
+      "skipped": 0,
+      "required_status": "INCOMPLETE",
+      "signal_status": "COMPLETED",
+      "accounted_cpu_usec": 624221
+    },
+    "qualified_observer_runtime_reused": true,
+    "host_unchanged": true,
+    "helper_wait_zero": true,
+    "owned_resources_removed": true,
+    "checks_raw": [
+      "s04-content-report-target-v2.json",
+      "s04-content-report-target-v6.json",
+      "s04-content-report-foundation-v1.json",
+      "s04-content-report-security-v1.json",
+      "s04-content-report-vet-v1.json",
+      "s04-content-report-static-v1.json"
+    ],
+    "foundation_scope": "Initial new-package build/import/architecture scope; not a final whole-source rerun after narrow same-owner fixes",
+    "completed_binary_cleanup_raw": "s04-content-report-binaries-cleanup-v1.json",
+    "completed_binary_cleanup_bytes": 118493232,
+    "missing": [
+      "Source/native byte capture from every existing ecosystem inventory without duplicate archive/budget work",
+      "Explicit no-source/unsupported/packed applicability and coverage",
+      "Actual M13_SOURCE_REVIEW Policy mapping and every transitive/cache/promotion/CLI consumer",
+      "Remaining runtime failure/output/large graph and PyTorch qualification",
+      "Grouped hosted/release supply/current-only gate/full official activation/recovery"
+    ],
+    "source_files": [
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "0c585111578635e1abffda56bc5bf38dc91eb319646a427335e16ff0ada2d6cd"
+      },
+      {
+        "path": "internal/inspection/content/source.go",
+        "sha256": "41ab5d7916515c12059418e14aa2a52dfb2c6b4f0790e9e1b6fbe05764ee7a18"
+      },
+      {
+        "path": "internal/inspection/content/source_json.go",
+        "sha256": "369191f4cca97842e50e19ffb8fb5520f2def98adb2617b2ad6f5a1eb62c2767"
+      },
+      {
+        "path": "internal/inspection/content/source_test.go",
+        "sha256": "55d402c6c3c59c69d274b7e523dd36f3cd529b17fc0b629307e48c69f848a941"
+      },
+      {
+        "path": "internal/sandbox/source_analysis.go",
+        "sha256": "54e710a30d1c87860185516dff68e88ebefe1439d460dd2dc94d2fa82daa9448"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_real_test.go",
+        "sha256": "e1094a38d2cac5bda88f856875a1cf7847f6b9e51f7660df581b0c9f254b47b6"
+      }
+    ]
+  },
+  "member_sources": {
+    "baseline": "f8a9546",
+    "scope": "Named local source-return API and existing structure report preservation for npm, Go and Cargo only; production analyzer/Policy consumers are not wired",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "api_checks_pass": true,
+    "raw": [
+      "s04-member-sources-target-v2.json",
+      "s04-member-sources-architecture-v1.json",
+      "s04-member-sources-foundation-v2.json",
+      "s04-member-sources-security-v1.json",
+      "s04-member-sources-vet-v1.json",
+      "s04-member-sources-static-v1.json"
+    ],
+    "foundation_first_failure": "s04-member-sources-foundation-v1.json",
+    "foundation_first_failure_reason": "Existing architecture allowlist did not include the actual npm to content edge; added only current consumer edges and constrained content owner",
+    "boundedness": "Existing npm20MiB/file and npm/Go/Cargo200MiB decoded bounds retained; no new archive extraction or graph accounting",
+    "limitations": [
+      "Parser selection uses names only as language hints, not a safety verdict",
+      "No-source/unsupported/packed/native coverage and remaining PyPI/GitHub/Terraform capture are OPEN",
+      "Production scanner/transitive graph/cache/promotion/CLI and Policy remain OPEN"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/cargo/sources_test.go",
+        "sha256": "1d678ea59dd508810de942d267522c8fec1b281978070670f1723095334f99c7"
+      },
+      {
+        "path": "internal/inspection/cargo/static.go",
+        "sha256": "49c3e827d00b3c5d8f1acaee65c17529a22d6be991975ace9736adcb44605fd9"
+      },
+      {
+        "path": "internal/inspection/content/language.go",
+        "sha256": "3faaa7d924f3d371c7752de9eff618034a14b9963c70bfde7329c945dd11011d"
+      },
+      {
+        "path": "internal/inspection/content/language_test.go",
+        "sha256": "df9aea31143df27ed62ab7204b9eb416bc0e5bc64809e031fc5754a890f69ddf"
+      },
+      {
+        "path": "internal/inspection/gomodule/static.go",
+        "sha256": "af23aa5e391a0b46721ed3bf7f7d65fc45899238159f4b36374a1ea960c114b7"
+      },
+      {
+        "path": "internal/inspection/gomodule/static_test.go",
+        "sha256": "150c425676aec9ec8f8e89bd8da51343a4ebdad623ce2edc3fb870db0a3d39b0"
+      },
+      {
+        "path": "internal/inspection/npm/archive_inventory.go",
+        "sha256": "580293c3f1f48e79384431abb5e7739b65451801042744dcce1990c05da288d5"
+      },
+      {
+        "path": "internal/inspection/npm/archive_sources_test.go",
+        "sha256": "bd11af9664605b5f94a2553e754a1334a67008c36a5fe1e7e7462642db664440"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "1095ad3ea6a6efa7f25dfd1c81d1bb33a12c4f7700019924e528806612b6fb4b"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "c02a74f68eec2d80962f0bb0f0e5c02fea245d526602cd3ddd2ec0bbf780927d"
+      }
+    ]
+  },
+  "pypi_member_sources": {
+    "baseline": "715e457",
+    "scope": "Named local wheel/derived-wheel/sdist source-return APIs and sdist gzip integrity correction only; not production content/Policy qualification",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "raw": [
+      "s04-pypi-sources-owner-race-v1.json",
+      "s04-pypi-sources-security-v1.json",
+      "s04-pypi-sources-vet-v1.json",
+      "s04-pypi-sources-static-v1.json"
+    ],
+    "initial_foundation_raw": "s04-pypi-sources-foundation-v1.json",
+    "initial_foundation_elapsed": 64.003,
+    "initial_foundation_scope": "Before final sdist-only profile and derived-source test additions; final source covered by owner Race/security/vet/Staticcheck, not a repeated full foundation",
+    "target_raw": "s04-pypi-sources-target-v1.json",
+    "target_elapsed": 27.189,
+    "sdist_red_raw": "s04-pypi-sdist-trailer-red.json",
+    "sdist_red_elapsed": 3.672,
+    "sdist_red_cases": [
+      "CRC mismatch accepted",
+      "second gzip member accepted",
+      "compressed tail accepted",
+      "nonzero decoded tail accepted"
+    ],
+    "sdist_correction": "Drain zero padding within the original decoded bound, verify gzip CRC and exact compressed exhaustion; sdist-only profile v2; wheel v1 retained",
+    "accounting": "The original wheel graph byte/file census is charged exactly once; fixed source retention limits share Ports constants with unchanged runtime admission values",
+    "no_native_ci_host_changes": true,
+    "missing": [
+      "GitHub/Terraform member/native facts",
+      "Explicit no-source/unsupported/packed/native coverage",
+      "Production analyzer and all graph/cache/promotion/CLI consumers",
+      "M13_SOURCE_REVIEW Policy mapping and grouped hosted/final/release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/artifact/pypi/pipx_runtime_plan.go",
+        "sha256": "8615ab46da0532ba688df9498fa8fc00b51c87862e5bec9decf73ec1d66095fa"
+      },
+      {
+        "path": "internal/artifact/pypi/sdist.go",
+        "sha256": "27e8710604ed2d6114c8341a26a05a8fe106fb7acf38434091350685fbaf3132"
+      },
+      {
+        "path": "internal/artifact/pypi/sdist_test.go",
+        "sha256": "2c3834f2e0bb6d162d9cda5b01104625dd1dc5d4cfca5609759413fbc902beda"
+      },
+      {
+        "path": "internal/artifact/pypi/wheel.go",
+        "sha256": "e950bb526d68b00e7e56e80af2cc8f5eed9932c5e565e452e780bc53511e03b4"
+      },
+      {
+        "path": "internal/core/ports/source_analysis.go",
+        "sha256": "918be868ccd09d0d56ca57edb995b47aac51fa999179770ee627e40c25f04eb3"
+      },
+      {
+        "path": "internal/inspection/pypi/sources.go",
+        "sha256": "9b7d7088a4db3700b21d3ae1a4f9bc1018a921c542dd4e0053d9fd3fb4776848"
+      },
+      {
+        "path": "internal/inspection/pypi/sources_test.go",
+        "sha256": "191f6821d958e316702e99d323530f10cdcb4ac83a82faa092c00b3e54b0a016"
+      },
+      {
+        "path": "internal/inspection/pypi/static.go",
+        "sha256": "e8b53efc0922f9d3a7c061d02ad25a8ce8166ec65a4a4b501e970cade0393a1d"
+      },
+      {
+        "path": "internal/inspection/pypi/static_test.go",
+        "sha256": "0d2c15b51621590f10480fb1b2c982a28b0f5affdeeeebd9d462d269edc9d664"
+      },
+      {
+        "path": "internal/sandbox/source_analysis_input.go",
+        "sha256": "974f483b70b0556b5866cecf166f38e994cb19b4cbbff989afe90666991396de"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "d5353e45ca38a2a8c03742e799dbf0586c53c766a03f95f79053b9dc2cb09ce5"
+      }
+    ]
+  },
+  "github_member_sources": {
+    "baseline": "bd42c02",
+    "scope": "Named local GitHub Release source-return and original archive integrity corrections, not production analyzer/Policy qualification",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "NO",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "red_raw": "s04-github-archive-payload-red.json",
+    "red_elapsed": 0.84,
+    "red_cases": [
+      "ZIP member CRC not read",
+      "gzip CRC not completed",
+      "second gzip member accepted",
+      "compressed tail accepted"
+    ],
+    "raw": [
+      "s04-github-sources-owner-race-v1.json",
+      "s04-github-sources-promotion-v1.json",
+      "s04-github-sources-architecture-v1.json",
+      "s04-github-sources-security-v1.json",
+      "s04-github-sources-vet-v1.json",
+      "s04-github-sources-static-v1.json"
+    ],
+    "changes": [
+      "Read all ZIP/TAR regular payloads within original archive bounds; verify CRC and complete gzip trailer/exhaustion",
+      "Capture only selected source during that same member pass; no extraction",
+      "Source API binds compressed subject SHA256; Root-confined nonblocking open checks held inode/size",
+      "Static profile v2 invalidates old header-only coverage; existing raw format/path/type/count/size checks retained"
+    ],
+    "missing": [
+      "Terraform/native content facts and explicit no-source/unsupported/packed applicability",
+      "Production analyzer, Policy and every transitive/cache/promotion/CLI consumer",
+      "Grouped native/hosted and release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/githubrelease/static.go",
+        "sha256": "cc68518a1f8fe402132e64bf1d7515a4d3a57f78eca43da637abae2e30d22165"
+      },
+      {
+        "path": "internal/inspection/githubrelease/archive_sources_test.go",
+        "sha256": "92b3bc52ee72d42d3eabffe86faf6c83d587a48d9899e46755ee0dcb64a03dc9"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "9dd432d2422606253ecef6ed717e9fffc05156f03977516e8b4168e494d61257"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "8d70fe91bf5c62634ab4b0ea4cbccf66118c8ae5a06e0898f1fd569022b27a52"
+      }
+    ]
+  },
+  "native_content_terraform": {
+    "baseline": "f56bb86",
+    "scope": "Bounded ELF64LE amd64 layout/UPX marker and Terraform actual inspection/cache code path in controlled local models only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "scope_limits": [
+      "Layout/execution permission facts and UPX marker plus matching sections; no general decompilation, maliciousness proof or all-packer detection",
+      "Only Terraform currently consumes a single verified ELF member; other ecosystems, multiple native members, aggregate/source applicability and Policy mapping remain OPEN"
+    ],
+    "raw": [
+      "s04-native-content-owner-race-v1.json",
+      "s04-native-content-fuzz-v1.json",
+      "s04-native-content-security-v1.json",
+      "s04-native-content-vet-v1.json",
+      "s04-native-content-static-v1.json",
+      "s04-native-content-cache-green-v1.json",
+      "s04-native-content-inspector-wiring-v2.json",
+      "s04-native-content-architecture-v1.json"
+    ],
+    "fuzz": {
+      "elapsed": 23.142,
+      "budget_seconds": 20,
+      "executions": 168595,
+      "scope": "bounded layout parser robustness, not detection-rate measurement"
+    },
+    "first_failures": [
+      {
+        "raw": "s04-native-content-old-approval-red.json",
+        "elapsed": 1.805,
+        "reason": "Old synthetic five-record positive approval lacked new required native facts; updated only current fixture authority and retained a five-record rejection case"
+      },
+      {
+        "raw": "s04-native-content-compressed-red.json",
+        "elapsed": 0.562,
+        "reason": "Candidate used expanded Section.Size as file extent; standard ELF Section.FileSize is the bounded on-disk extent; corrected without inflating debug data"
+      },
+      {
+        "raw": "s04-native-content-inspector-wiring-v1.json",
+        "elapsed": 1.095,
+        "reason": "Controlled test intake root had default TempDir permissions; fixture alone now explicitly sets0700; product privacy guard retained"
+      }
+    ],
+    "initial_foundation": {
+      "raw": "s04-native-content-foundation-v1.json",
+      "elapsed": 41.171,
+      "scope": "Before FileSize/compressed-debug and later wiring-test additions; final production code covered by later owner Race/fuzz/security/vet/Staticcheck"
+    },
+    "retained_approval": "Requires seven exact records, including current native coverage and signal profile/kind; optional advisory remains separate; valid rehashed wrong-kind/profile records rejected",
+    "no_native_host_ci_changes": true,
+    "missing": [
+      "Other ecosystem native/multiple-member/streaming consumers",
+      "Source inventory no-source/unsupported/packed applicability and production AST execution",
+      "M13_SOURCE_REVIEW and M13_BINARY_REVIEW actual Policy mapping and CLI presentation",
+      "Grouped native/public normal/adversarial/large/PyTorch/hosted and release qualification"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/content/binary.go",
+        "sha256": "82c871deff6d312b000c8266e241872e126a8dc18cba657f713709f3f277a703"
+      },
+      {
+        "path": "internal/inspection/content/binary_test.go",
+        "sha256": "5d2cda050b1b9c21d83402ac0cc3326c9c8c2b6400f55aafd23beed6cbb18624"
+      },
+      {
+        "path": "internal/inspection/terraformprovider/inspection.go",
+        "sha256": "bfdd280571dfa6780a6983da817f30505d50ca421683b4c55e81b522a24181fc"
+      },
+      {
+        "path": "internal/inspection/terraformprovider/native_test.go",
+        "sha256": "ef9da157a0c8837688d46ec4f0401213abf5b77ccf59a6a5eb3705f5ce09ab0c"
+      },
+      {
+        "path": "internal/promotion/terraform_cache.go",
+        "sha256": "82d5d1b8a7be69d06f4d821750bc429b99c2e281e22f1b22235bbe4f85a6fc60"
+      },
+      {
+        "path": "internal/promotion/terraform_cache_test.go",
+        "sha256": "c2b6b35a4d34f645c05d4d7aac9e55f27ce9e796e4d090f89ed58cb095ae7f1f"
+      },
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "df51f0fe3c6d0c7d4620e6a754c03a041a708c6f6a1a53f66fbfbfcd18c7ba3f"
+      },
+      {
+        "path": "scripts/check/architecture_test.go",
+        "sha256": "17dd2f629245666813ff076fd2653719099e73e581409c7becd0da562abf7435"
+      }
+    ]
+  },
+  "content_policy": {
+    "baseline": "c00dfc8",
+    "scope": "Existing M3/M6 explicit uncertain-source/native finding classification and existing set/promotion guards only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES"
+    },
+    "states_scope": "Normalized Policy model plus affected GitHub retained/install/rollback consumers; not complete ecosystem content ingestion or S04 qualification",
+    "red_raw": "s04-content-policy-review-red.json",
+    "red_elapsed": 0.839,
+    "versions": {
+      "M3": 4,
+      "M6": 3
+    },
+    "checks_raw": [
+      "s04-content-policy-owner-race-v1.json",
+      "s04-content-policy-m6-ownership-v1.json",
+      "s04-content-policy-security-v1.json",
+      "s04-content-policy-vet-v1.json",
+      "s04-content-policy-static-v1.json"
+    ],
+    "preserved": [
+      "Unknown finding and strong finding BLOCK priority in both orders",
+      "Integrity mismatch BLOCK before review",
+      "Required incomplete and undeclared plans never ALLOW",
+      "M4/M5 propagate review; NewVerifiedSet refuses automatic promotion",
+      "Runtime/asset/language/tool-version owners unchanged"
+    ],
+    "missing": [
+      "Production AST/native multi-member/streaming and source applicability for every ecosystem",
+      "Live/native/CLI all-entry/final grouped qualification and release supply"
+    ],
+    "source_files": [
+      {
+        "path": "internal/policy/m3.go",
+        "sha256": "7a2177b6584284f5f19e0ea6bfaa137cc1dacb401b17d2c3dc242ad11eeb5f11"
+      },
+      {
+        "path": "internal/policy/m6.go",
+        "sha256": "1e8daa49e2cfe5e6f05b4aa0bc0ecf3b00d367db39ff4d792ff0242dd8b66bba"
+      },
+      {
+        "path": "internal/policy/m3_test.go",
+        "sha256": "07594f9169b99eda3aba7ed90f496425939cef33ee158e9cede188fac1c32fbf"
+      }
+    ]
+  },
+  "source_prefix": {
+    "baseline": "26ae2ba",
+    "scope": "Bounded source parser hints for extensionless Node/Python shebang files in existing source-return APIs only",
+    "states": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO"
+    },
+    "states_scope": "Local collector wiring/tests; full source applicability, non-shebang metadata entry hints and actual AST consumers remain OPEN",
+    "checks_raw": [
+      "s04-source-prefix-owners-v1.json",
+      "s04-source-prefix-security-v1.json",
+      "s04-source-prefix-vet-v1.json",
+      "s04-source-prefix-static-v1.json"
+    ],
+    "bounds": "At most512 prefix bytes; original source/graph/archive limits unchanged",
+    "changes": [
+      "Common parser hint does not confer execution role/authority; existing suffix syntax takes priority",
+      "npm and GitHub retain and hash exact prefix/body in the current member read",
+      "PyPI writer handles split prefixes with no whole-body retention for non-source DATA",
+      "Go capture mode validates remaining non-source CRC without retaining those bodies; Cargo uses its existing checked byte map"
+    ],
+    "missing": [
+      "Metadata-selected extensionless source without a shebang and honest unknown/unsupported applicability",
+      "Production AST/multiple native/streaming/all graph/cache/CLI consumers",
+      "Grouped actual native/hosted and final security metrics"
+    ],
+    "source_files": [
+      {
+        "path": "internal/inspection/cargo/static.go",
+        "sha256": "06ca767b270d0dc961c5e7fee89e4c890626ea10f59b5ea0fc8f3fc141dd5637"
+      },
+      {
+        "path": "internal/inspection/content/language.go",
+        "sha256": "61479fb0175aa179a64bcdd1ce1061981899d9633dbecf0dcbad5761a4c3eae5"
+      },
+      {
+        "path": "internal/inspection/content/language_test.go",
+        "sha256": "06c8e42700bcffa4f55d2ebca59d7f0ac490113362051c334ebcedc8c02e56e7"
+      },
+      {
+        "path": "internal/inspection/githubrelease/archive_sources_test.go",
+        "sha256": "9f4d6e62ee8006cc7a5e386a83442e70cd5dd5e4fae577f3ce4fa71ce6659eee"
+      },
+      {
+        "path": "internal/inspection/githubrelease/static.go",
+        "sha256": "dec5bf3a7cb6743871c1fccf59f1af99d0310fad694cafe42809d861aa65d396"
+      },
+      {
+        "path": "internal/inspection/gomodule/static.go",
+        "sha256": "59d44d9173d3c40552edef8de44de39b3699b8b417ca917dbd2317d34ac8f08d"
+      },
+      {
+        "path": "internal/inspection/gomodule/static_test.go",
+        "sha256": "c0eda026a1225db0cc644a7e5b775933fc98492f62ca4700f99a8bfd3d287835"
+      },
+      {
+        "path": "internal/inspection/npm/archive_inventory.go",
+        "sha256": "fe3eb59e1cf4a9f847f76dbf50f8939ea3eef009b56cbe414f4de11fad3e412e"
+      },
+      {
+        "path": "internal/inspection/npm/archive_sources_test.go",
+        "sha256": "0f1ebab4ed685352325e82844192d8ef3d70526b6af65b9d741c3ac284c9f909"
+      },
+      {
+        "path": "internal/inspection/pypi/sources.go",
+        "sha256": "965a868e52a88dce1df573fc1bb80ae63e49405d79471c3b433c3c2f5411d550"
+      },
+      {
+        "path": "internal/inspection/pypi/sources_test.go",
+        "sha256": "9fb7d6b5cad0262ee0bd6025a6275a18bfc40017c45a695f774c28e387656e7b"
+      }
+    ]
+  },
+  "binary_members": {
+    "baseline": "2e74bb0",
+    "implemented": true,
+    "wired": "Cargo InspectContent only; legacy source/static APIs unchanged",
+    "qualified": "named local unit/archive DATA scope",
+    "acceptance_closed": false,
+    "missing": [
+      "streaming native collection in other archive owners",
+      "complete source/no-source/unsupported inventory",
+      "production AST and all graph/cache/promotion/CLI consumers",
+      "grouped native/hosted qualification"
+    ],
+    "checks": {
+      "s04-binary-members-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-format.json",
+        "sha256": "528613a3f0a57fd50aafdba3e5e42a80709f3ced3db4a0cbbd0eea29ca6f9f8d",
+        "elapsed": 0.932
+      },
+      "s04-binary-members-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-target.json",
+        "sha256": "e2a797dc5d6ed09db97223c90361f369acda5e1afb1e25e31f16a4898a0b8f6e",
+        "elapsed": 0.841
+      },
+      "s04-binary-members-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-race.json",
+        "sha256": "bc6afa4188acfe1bbff999d5fb2c94569f2cdb96d5a629f7545e60c74e0e2d10",
+        "elapsed": 3.301
+      },
+      "s04-binary-members-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-security.json",
+        "sha256": "e34405882ff86054e45a947ec01bd7d0d3b0fa31b5b6c06ee1c21476ec235371",
+        "elapsed": 19.353
+      },
+      "s04-binary-members-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-vet.json",
+        "sha256": "685e2032a4e857eb07105215477e7bacc5f6eae4a8617f31b05d08c9b3154194",
+        "elapsed": 0.601
+      },
+      "s04-binary-members-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-binary-members-staticcheck.json",
+        "sha256": "8f0a8d133039a53aa7b9e4747f6e9b60fcc6bdc9a2218fffaae3128e23d563e2",
+        "elapsed": 1.133
+      }
+    }
+  },
+  "pypi_native_streaming": {
+    "baseline": "a27189b",
+    "implemented": true,
+    "wired": "PyPI wheel/sdist content entry points; production AST/cache/CLI remain missing",
+    "qualified": "named local DATA/member/graph-accounting scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-pypi-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-format.json",
+        "sha256": "85b62ea9ab7cf2b9d4768e880f997b8f04fea96d5cf8feb133fafdda554ec42f",
+        "elapsed": 0.896,
+        "source_unchanged": false
+      },
+      "s04-pypi-native-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-target.json",
+        "sha256": "f4621585d2e87656b496a78f1691858a22fbd2264d1cab80df72e4202cc818a4",
+        "elapsed": 1.834,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-race.json",
+        "sha256": "73e278b7e6d67ca0340e5740175597f1e3aeb847cf8d3809159dacd6b73115ae",
+        "elapsed": 5.294,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-security.json",
+        "sha256": "778e77264ece09387b2e6a7cc4f288434442a513e64dfacf0260408f6b471575",
+        "elapsed": 18.972,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-vet.json",
+        "sha256": "c4e441db74acc7b52391422b37d49bbcd98e769854651a9d2382de77529c2abb",
+        "elapsed": 0.908,
+        "source_unchanged": true
+      },
+      "s04-pypi-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-pypi-native-staticcheck.json",
+        "sha256": "e931d157f73b8ed91450540b9754c958829e65ff7007eaee3abc28f0cd86728a",
+        "elapsed": 2.349,
+        "source_unchanged": true
+      }
+    }
+  },
+  "npm_go_native_streaming": {
+    "baseline": "a02ec5f",
+    "implemented": true,
+    "wired": "npm archive and Go module content DATA entry points",
+    "qualified": "named local archive/member scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-npm-go-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-format.json",
+        "sha256": "be106dd0095639dd25c6dbe4f1d419930fab324dcf9febd019a0dc2a08e0b828",
+        "elapsed": 0.899
+      },
+      "s04-npm-go-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-race.json",
+        "sha256": "4128f3b0d2cd0b92c855eb42e2f88e50884b2e409c7991d2fff2d2be73250f2c",
+        "elapsed": 18.354
+      },
+      "s04-npm-go-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-security.json",
+        "sha256": "f420d36c976f25e5ec6234887c13f70c2469a4cd95ed40f0f4ec597356b9bb0d",
+        "elapsed": 14.737
+      },
+      "s04-npm-go-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-vet.json",
+        "sha256": "157c68c513209b26181952854f92478ce6af4f7370ab543ee93ea200c48c52f0",
+        "elapsed": 0.59
+      },
+      "s04-npm-go-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-npm-go-native-staticcheck.json",
+        "sha256": "30ce4cc0c064da52c0d1a9b52356bbb43477cff3686d4f4bebeb14f3286dd60c",
+        "elapsed": 1.814
+      }
+    }
+  },
+  "github_native_streaming": {
+    "baseline": "154f046",
+    "implemented": true,
+    "wired": "GitHub ZIP/TAR/raw ELF content DATA entry point; archive source/static API unchanged",
+    "qualified": "named local held asset/member scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-github-native-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-format.json",
+        "sha256": "0aba13b372d33cb3b776431a250d5779003e309fc00c4a67d76e8d3453d4459c",
+        "elapsed": 0.901,
+        "source_unchanged": false
+      },
+      "s04-github-native-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-race.json",
+        "sha256": "95d0ef6f5f433013c1164089873b4e18c8ae7508c5f0023874ed43dcda971b79",
+        "elapsed": 7.315,
+        "source_unchanged": true
+      },
+      "s04-github-native-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-security.json",
+        "sha256": "66703e382ce4e05d126e249a7f40719cecfa302cd5e14d012f25f03fd25b0cef",
+        "elapsed": 17.285,
+        "source_unchanged": true
+      },
+      "s04-github-native-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-vet.json",
+        "sha256": "b524338470af87e9d140ed5c663299de28c601f433a52330b8b29b6a1dfcf198",
+        "elapsed": 0.676,
+        "source_unchanged": true
+      },
+      "s04-github-native-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-github-native-staticcheck.json",
+        "sha256": "b1dabb4eff0f3274c5a1a1171fe788edd93dd6a8706b40ce81bc311eb5a890fd",
+        "elapsed": 2.647,
+        "source_unchanged": true
+      }
+    }
+  },
+  "cargo_source_roles": {
+    "baseline": "c24e006",
+    "implemented": true,
+    "wired": "Cargo content DATA entry point; existing static/source/project validation contracts retained",
+    "qualified": "normalized manifest paths and committed itoa fixture, not native Cargo build",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-cargo-source-roles-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-red.json",
+        "sha256": "1edb934d05dcd5b966094d29d6dfa36fa17cbeb4014a36069f5e06ab9e844b83",
+        "elapsed": 0.851,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-format.json",
+        "sha256": "40d2b03066c1d85353312ae54d8be476b4a68a45003b59b6ff92a1dcdd9455a5",
+        "elapsed": 0.916,
+        "source_unchanged": false
+      },
+      "s04-cargo-source-roles-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-race.json",
+        "sha256": "e431288c4b6b0e981087c488028d1657dd372762cd86f10363dff5e762be64eb",
+        "elapsed": 5.609,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-security.json",
+        "sha256": "2d82bcbe714e44ba84b42e7eb8534fd0db6f6d8ca4b5bc9e98f0d03ce115aef9",
+        "elapsed": 23.322,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-vet.json",
+        "sha256": "88c979c72b21c92e91508c5d5700318771a05b948b030a939b847bf41ceb0a33",
+        "elapsed": 1.001,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-staticcheck.json",
+        "sha256": "29b6e2a1e38efce97e9f498366e223b8847aebb7da831260cf1055b008084506",
+        "elapsed": 1.459,
+        "source_unchanged": true
+      },
+      "s04-cargo-source-roles-public": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-source-roles-public.json",
+        "sha256": "b93d160f7178cced4122d717f382a374b3de7581922f6d66360fb0b47de89815",
+        "elapsed": 0.614,
+        "source_unchanged": true
+      }
+    }
+  },
+  "content_inventory_cargo": {
+    "baseline": "7130dfd",
+    "implemented": true,
+    "wired": "Cargo complete checked-map census + explicit InspectAnalyzed entry point; production bootstrap/cache/CLI not activated",
+    "qualified": "named local census/no-target binding and controlled unavailable analyzer wiring",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-content-inventory-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-target.json",
+        "sha256": "52c22b69aa5878377efbaeb75c942a9c9936cffdf7054f75d581fde9fc29f7e3",
+        "elapsed": 1.001,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-format.json",
+        "sha256": "e2cf71f5199df69bbdf3468ad0f0e2214737c37ea4460eab3e8ac4bde975b115",
+        "elapsed": 0.885,
+        "source_unchanged": false
+      },
+      "s04-content-inventory-foundation": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-foundation.json",
+        "sha256": "675f7ac48388e940bd15faa0773e1b06863ec5abc7ab9200a635af9dc6e68bfd",
+        "elapsed": 76.088,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-race.json",
+        "sha256": "9796dd74724988367973ade98f818df59308760aa6d84e4fe1ad5ceebbbab093",
+        "elapsed": 25.816,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-security.json",
+        "sha256": "9b89bcb065d8b84f460e163d8241d7a6a50007adb3058384f836fd2193bd5edd",
+        "elapsed": 24.704,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-vet.json",
+        "sha256": "13a9c862013ce58d8a780024441aa578ff00ba9c3e2c5d64797b96ced52dc9b6",
+        "elapsed": 1.002,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-staticcheck.json",
+        "sha256": "e1331d843b01a488cf935c70105ae1a19a1ff7a9630e4d68d7cc81e4c76e0f91",
+        "elapsed": 1.412,
+        "source_unchanged": true
+      },
+      "s04-content-inventory-proof": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-content-inventory-proof.json",
+        "sha256": "5609ff6c1f019c71b29fc79f02407b826ccfe6dcec999e6a84896a439f8ba305",
+        "elapsed": 0.716,
+        "source_unchanged": true
+      }
+    }
+  },
+  "build_environment_fixture": {
+    "baseline": "195b0d0",
+    "implemented": true,
+    "wired": "existing shared synthetic Go/Cargo build backend only",
+    "qualified": "affected full build tests and promotion Race with normal Unix socket permissions",
+    "acceptance_closed": true,
+    "checks": {
+      "s04-build-env-baseline-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-baseline-red.json",
+        "sha256": "11865e0a3089e2975aaa52983334fb0b619aadb6b5a91cf0c94136383856eee0",
+        "elapsed": 8.973,
+        "source_unchanged": true
+      },
+      "s04-build-env-fixture-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-fixture-format.json",
+        "sha256": "c8bf51046b8fcca06cd91624403d1097815d59ee6270e325764f5a67b6c9b2b9",
+        "elapsed": 0.906,
+        "source_unchanged": false
+      },
+      "s04-build-env-fixture-green": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-build-env-fixture-green.json",
+        "sha256": "9f983df21aa7bb545c53bc5d1dd3e55512014290bcd3aff8af612ba8c0c1f113",
+        "elapsed": 15.317,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-promotion-race-unrestricted": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-promotion-race-unrestricted.json",
+        "sha256": "130c013894d795819b96652d046b967a724c86ce24816b962fa4ada3fe0ec598",
+        "elapsed": 237.832,
+        "source_unchanged": true
+      }
+    }
+  },
+  "cargo_production": {
+    "baseline": "195b0d0",
+    "implemented": true,
+    "wired": "production Cargo inspector/bootstrap/frozen checks/current Stage/readback; default CLI actual remains missing",
+    "qualified": "named local unit profiles and public itoa source-analysis/Policy/cache native scope",
+    "acceptance_closed": false,
+    "checks": {
+      "s04-cargo-production-target": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-target.json",
+        "sha256": "10217f387a84ad2df177e66f6013e03e243bfe8e46e2c33b4738aeabeec2147a",
+        "exit_code": 0,
+        "elapsed": 16.393,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-retained-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-retained-red.json",
+        "sha256": "c48bb35fbd49d477b7ed3a6d0d872706e0bfe6256ae2bf6c563c590d2b914a82",
+        "exit_code": 1,
+        "elapsed": 9.456,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-format.json",
+        "sha256": "65dd337154b10cb3ff6d133288ab6d8e51991f2558c0d82fac594b342dfc0cfb",
+        "exit_code": 0,
+        "elapsed": 0.986,
+        "source_unchanged": false
+      },
+      "s04-cargo-production-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-race.json",
+        "sha256": "4c94cb1907e914878bd4008d34c59f86460037cb8ff19df7436b054aee3b1b1b",
+        "exit_code": 1,
+        "elapsed": 231.696,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-security.json",
+        "sha256": "f005d7b91999383580344bcd52c13085ffc1f469a3bcd0a386990d740a897814",
+        "exit_code": 0,
+        "elapsed": 35.71,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-vet.json",
+        "sha256": "da8231dc32d6e4c9357886b51aae35d653e8e287d1b237a3c267446599ead377",
+        "exit_code": 0,
+        "elapsed": 21.522,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-staticcheck.json",
+        "sha256": "86032fb64a4642c74293c4706e8d9c51ffaf7d56e9666495b86a6fe383b911f4",
+        "exit_code": 0,
+        "elapsed": 31.641,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-native-compile": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-native-compile.json",
+        "sha256": "36f5265b5c19fb06ddcd3526d2f4d4addfeda894ae8215be924ca04dc9f66832",
+        "exit_code": 0,
+        "elapsed": 22.085,
+        "source_unchanged": true
+      },
+      "s04-cargo-production-architecture-v2": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-production-architecture-v2.json",
+        "sha256": "afab3d1547902227a3f09202f42df167ed4b75e0162dc5901a31097facf46c6b",
+        "exit_code": 0,
+        "elapsed": 0.615,
+        "source_unchanged": true
+      },
+      "s04-source-engine-red": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-red.json",
+        "sha256": "afa66e2912d03d61b5b3429e1dfea4a383d50fb05185395ce854e27373990c4d",
+        "exit_code": 1,
+        "elapsed": 0.897,
+        "source_unchanged": true
+      },
+      "s04-source-engine-format": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-format.json",
+        "sha256": "31e876124ea91adaf8f97c7c5df7022d62a02b0ea13737ba4463d0d3779f5ea9",
+        "exit_code": 0,
+        "elapsed": 0.887,
+        "source_unchanged": false
+      },
+      "s04-source-engine-race": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-race.json",
+        "sha256": "84f174d04c06a6b21bfb5a442aa59be2e49855c9965fe8b0004d3c11225bd716",
+        "exit_code": 0,
+        "elapsed": 3.926,
+        "source_unchanged": true
+      },
+      "s04-source-engine-retained": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-retained.json",
+        "sha256": "572ef1653d49fef5318060966885bb0e035c77072fd123858ba3bf0566331411",
+        "exit_code": 0,
+        "elapsed": 11.532,
+        "source_unchanged": true
+      },
+      "s04-source-engine-security": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-security.json",
+        "sha256": "35f618f6d85e824102541ad758ce58149ec62a93a359fc528457dd96e38d3221",
+        "exit_code": 0,
+        "elapsed": 18.305,
+        "source_unchanged": true
+      },
+      "s04-source-engine-vet": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-vet.json",
+        "sha256": "ce47c6724ba0675c5da08640ac08988603fd9b8aa20d96decae88f06f5a29129",
+        "exit_code": 0,
+        "elapsed": 0.959,
+        "source_unchanged": true
+      },
+      "s04-source-engine-staticcheck": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-source-engine-staticcheck.json",
+        "sha256": "6fe4044712518e5ac06c7f0a04f11d710ed0275fc37b9e8839d217a04ca278e6",
+        "exit_code": 0,
+        "elapsed": 1.576,
+        "source_unchanged": true
+      }
+    },
+    "native": {
+      "1": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v1.json",
+        "sha256": "731f93beae31e5f61825518b8f768ed6d24f7bb4e43978271b202ff1b101f141",
+        "elapsed": 25.238,
+        "complete": false,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240578517
+      },
+      "2": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v2.json",
+        "sha256": "96d0f4d1bb93213ffa69e14e8b60c17311145e25dc22d219616ca64202695909",
+        "elapsed": 23.762,
+        "complete": false,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240582870
+      },
+      "3": {
+        "path": "docs/github-logs/goal-implementation-20261101/s04-cargo-content-native-v3.json",
+        "sha256": "5523c95724fd092af3c7c3c7efc0f0169f29248d1a016e3bb656f7bfa2e4145e",
+        "elapsed": 23.623,
+        "complete": true,
+        "host_unchanged": true,
+        "removed_copy_bytes": 240591830
+      }
+    },
+    "not_validation": [
+      "s04-cargo-production-architecture: old TestArchitecture regex selected no tests",
+      "native-compile: tagged build validity only, no runtime invocation",
+      "production-target: content/bootstrap packages selected no tests; real targeted tests ran in Cargo/promotion"
+    ]
+  },
+  "cargo_cli": {
+    "baseline": "22d34ef",
+    "implemented": "YES",
+    "wired": "YES",
+    "qualified": "YES (named local fetch CLI only)",
+    "acceptance_closed": "YES (named fetch flow); NO (whole S04)",
+    "native": [
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v1.json",
+        "elapsed": 93.41,
+        "complete": false,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 240586362
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v2.json",
+        "elapsed": 89.251,
+        "complete": false,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 246538115
+      },
+      {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-cargo-cli-content-native-v3.json",
+        "elapsed": 102.165,
+        "complete": true,
+        "host_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244586456
+      }
+    ],
+    "missing": [
+      "actual single/transitive add with current content checks",
+      "other ecosystem metadata/census/AST/production/cache paths",
+      "release supply/hosted/full S04 qualification"
+    ]
+  },
+  "npm_content_inventory": {
+    "baseline": "0964bf4",
+    "implemented": "YES (DATA)",
+    "wired": "YES (same verified member pass)",
+    "qualified": "YES (named local)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-red.json",
+        "exit_code": 1,
+        "elapsed": 1.008,
+        "source_unchanged": true
+      },
+      "race": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-race.json",
+        "exit_code": 0,
+        "elapsed": 19.114,
+        "source_unchanged": true
+      },
+      "foundation": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-foundation.json",
+        "exit_code": 0,
+        "elapsed": 61.845,
+        "source_unchanged": true
+      },
+      "security": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-security.json",
+        "exit_code": 0,
+        "elapsed": 15.682,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-vet.json",
+        "exit_code": 0,
+        "elapsed": 0.513,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-census-static.json",
+        "exit_code": 0,
+        "elapsed": 1.642,
+        "source_unchanged": true
+      }
+    },
+    "missing": [
+      "metadata-selected extensionless/main/bin/exports",
+      "actual source analyzer/default/project/cache consumers",
+      "transitive/CLI/native/hosted whole qualification"
+    ]
+  },
+  "npm_declared_entries": {
+    "baseline": "3df1dc5",
+    "implemented": "YES (root explicit main/bin DATA)",
+    "wired": "YES (existing archive capture and npm/Bun bin parser)",
+    "qualified": "YES (named local)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-red.json",
+        "exit_code": 1,
+        "elapsed": 1.132,
+        "source_unchanged": true
+      },
+      "race": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-race.json",
+        "exit_code": 0,
+        "elapsed": 62.535,
+        "source_unchanged": true
+      },
+      "foundation": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-foundation.json",
+        "exit_code": 0,
+        "elapsed": 64.85,
+        "source_unchanged": true
+      },
+      "security": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-security.json",
+        "exit_code": 0,
+        "elapsed": 29.178,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-vet.json",
+        "exit_code": 0,
+        "elapsed": 2.519,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-declared-static.json",
+        "exit_code": 0,
+        "elapsed": 5.817,
+        "source_unchanged": true
+      }
+    },
+    "missing": [
+      "exports/imports/nested metadata/module/browser/directory bin roles",
+      "configured actual AST/default/project/cache consumers",
+      "transitive/CLI/native/hosted whole qualification"
+    ]
+  },
+  "npm_metadata": {
+    "baseline": "80e5f1e",
+    "implemented": "YES (DATA)",
+    "wired": "YES (existing measured archive pass)",
+    "qualified": "NO",
+    "acceptance_closed": "NO",
+    "checks": {
+      "red": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-red.json",
+        "exit_code": 1,
+        "elapsed": 1.157,
+        "source_unchanged": true
+      },
+      "target": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-target.json",
+        "exit_code": 0,
+        "elapsed": 2.18,
+        "source_unchanged": true
+      },
+      "target-v2": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-target-v2.json",
+        "exit_code": 0,
+        "elapsed": 1.329,
+        "source_unchanged": true
+      },
+      "vet": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-vet.json",
+        "exit_code": 0,
+        "elapsed": 0.715,
+        "source_unchanged": true
+      },
+      "static": {
+        "receipt": "docs/github-logs/goal-implementation-20261101/s04-npm-metadata-static.json",
+        "exit_code": 0,
+        "elapsed": 4.231,
+        "source_unchanged": true
+      }
+    },
+    "pattern_semantics": "conservative local candidate superset; no Node execution/resolution authority",
+    "missing": [
+      "configured source analyzer/frozen checks/current production/project/cache",
+      "grouped canonical profiles/native/hosted and whole S04"
+    ]
+  },
+  "npm_source_port": {
+    "baseline": "79a2ce3",
+    "implemented": "YES (configured port)",
+    "wired": "YES (Inspect and InspectArchive)",
+    "qualified": "NO",
+    "acceptance_closed": "NO",
+    "controlled_scanner": "unavailable synthetic port; not actual analysis",
+    "target": {
+      "exit_code": 0,
+      "elapsed": 1.341,
+      "source_unchanged": true
+    },
+    "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-source-target.json",
+    "missing": [
+      "default bootstrap/current approval/cache consumers",
+      "grouped checks/native/hosted and whole S04"
+    ]
+  },
+  "npm_production": {
+    "baseline": "830b1aa",
+    "implemented": "YES",
+    "wired": "YES (five composition sites/shared current cache gate)",
+    "qualified": "YES (named local npm inspect/install/ci); NO (whole scope)",
+    "acceptance_closed": "NO",
+    "checks": {
+      "s04-npm-production-legacy-red": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-legacy-red.json",
+        "exit_code": 1,
+        "elapsed": 15.327,
+        "source_unchanged": true
+      },
+      "s04-npm-production-target": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-target.json",
+        "exit_code": 0,
+        "elapsed": 17.738,
+        "source_unchanged": true
+      },
+      "s04-npm-production-foundation": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-foundation.json",
+        "exit_code": 0,
+        "elapsed": 83.575,
+        "source_unchanged": true
+      },
+      "s04-npm-production-security": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-security.json",
+        "exit_code": 0,
+        "elapsed": 29.304,
+        "source_unchanged": true
+      },
+      "s04-npm-production-race": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-race.json",
+        "exit_code": 0,
+        "elapsed": 72.054,
+        "source_unchanged": true
+      },
+      "s04-npm-production-promotion-race": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-promotion-race.json",
+        "exit_code": 0,
+        "elapsed": 204.707,
+        "source_unchanged": true
+      },
+      "s04-npm-production-vet": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-vet.json",
+        "exit_code": 0,
+        "elapsed": 5.533,
+        "source_unchanged": true
+      },
+      "s04-npm-production-static": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-static.json",
+        "exit_code": 0,
+        "elapsed": 14.506,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-red": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-red.json",
+        "exit_code": 1,
+        "elapsed": 1.033,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-red-v2": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-red-v2.json",
+        "exit_code": 1,
+        "elapsed": 8.894,
+        "source_unchanged": true
+      },
+      "s04-npm-optional-native-green": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-optional-native-green.json",
+        "exit_code": 0,
+        "elapsed": 19.037,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-security": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-security.json",
+        "exit_code": 0,
+        "elapsed": 19.946,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-vet": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-vet.json",
+        "exit_code": 0,
+        "elapsed": 12.631,
+        "source_unchanged": true
+      },
+      "s04-npm-production-final-static": {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-production-final-static.json",
+        "exit_code": 0,
+        "elapsed": 17.485,
+        "source_unchanged": true
+      }
+    },
+    "native": [
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-content-native-v1.json",
+        "exit_code": 1,
+        "elapsed": 49.152,
+        "complete": false,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244627151
+      },
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-content-native-v2.json",
+        "exit_code": 1,
+        "elapsed": 120.525,
+        "complete": false,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244629616
+      },
+      {
+        "raw": "docs/github-logs/goal-implementation-20261101/s04-npm-inspect-native-v3.json",
+        "exit_code": 0,
+        "elapsed": 34.557,
+        "complete": true,
+        "host_unchanged": true,
+        "source_unchanged": true,
+        "helper_wait_zero": true,
+        "removed_copy_bytes": 244629579
+      }
+    ],
+    "source_reuse": "full promotion204.707s before exact optional no-native fix; targeted cache/Cargo Race19.037s and narrow final checks after fix; V3 changes test schema expectation only; V2 passed project parent reused",
+    "missing": [
+      "actual PNPM/Bun/transitive/execution/refusal/metadata-specific source paths",
+      "other platforms/hosted and whole S04/design",
+      "release supply/current-only/self-quarantine and other ecosystems/large native"
+    ]
+  },
+  "npm_family_prefilter": {
+    "status": "IMPLEMENTED_WIRED_SCOPED_LOCAL_QUALIFIED_ACCEPTANCE_OPEN",
+    "baseline": "c0eea9e",
+    "actual_failures": [
+      "s04-npm-family-cache-native-v1",
+      "s04-npm-family-cache-native-v2"
+    ],
+    "cause": {
+      "artifact": "react18.3.1",
+      "source_targets": 17,
+      "scanned": 17,
+      "parse_errors": 0,
+      "fixpoint_timeouts": 3,
+      "internal_taint_timeout_seconds": 0.2
+    },
+    "readiness": {
+      "red": "s04-npm-static-readiness-red",
+      "race": "s04-npm-static-readiness-green"
+    },
+    "rejected_flag_only": "s04-prefilter-coverage-red-v1",
+    "candidate": {
+      "patch_sha256": "e59e5809a219ad70d7098815036e246ab9796dc19d7e2d591b198b00130dd493",
+      "core_sha256": "b095ce48effdf06dcff7240750d6d101bb3a667931326f37d20c445344a9ce18",
+      "core_bytes": 171649056,
+      "data": "s04-prefilter-coverage-green-v2",
+      "syntax": "s04-prefilter-parse-boundary-v3",
+      "cpp": "s04-source-analysis-observer-prefilter-v9",
+      "updater": "s04-prefilter-owner-update-v3",
+      "canonical_build": "s04-prefilter-canonical-build-v2",
+      "canonical_status": "SUCCESS_EXACT_NATIVE_DIGEST_1585.681S",
+      "runtime_status": "BUN_PNPM_PEER_EMPTY_CACHE_SUCCESS",
+      "runtime": "s04-npm-family-cache-native-v5",
+      "supply": "s04-supply-prefilter-v2"
+    },
+    "not_whole_completion": true,
+    "preparation_failures": [
+      "s04-npm-family-cache-native-v3",
+      "s04-npm-family-cache-native-v4-preflight"
+    ],
+    "cleanup": "s04-completed-prefilter-cleanup-v1",
+    "local_bundle_checks": [
+      {
+        "label": "s04-content-bundle-foundation-final",
+        "elapsed": 83.741,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-security-final",
+        "elapsed": 34.789,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-race-final",
+        "elapsed": 316.14,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-vet-final",
+        "elapsed": 11.557,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-static-final",
+        "elapsed": 25.478,
+        "exit_code": 0,
+        "source_unchanged": true
+      }
+    ]
+  },
+  "pypi_census": {
+    "status": "DATA_IMPLEMENTED_WIRED_SCOPED_QUALIFIED_DEFAULT_SOURCE_CTOR_AND_ACCEPTANCE_OPEN",
+    "target": "s04-pypi-census-target",
+    "related_race": "s04-pypi-census-race",
+    "owner_bounds": "current ResourcePolicy.WheelLimits/default SdistLimits; source parser limits unchanged",
+    "archive_accounting": {
+      "red": "s04-pypi-archive-accounting-red",
+      "green": "s04-pypi-archive-accounting-green",
+      "wheel_static_profile": "pypi-static-archive-v2",
+      "complete_metrics": [
+        "ArchiveUncompressedBytes",
+        "ArchiveEntries"
+      ],
+      "CRC": "self RECORD and exact primary signature sidecars verified with or without capture"
+    },
+    "missing": [
+      "runtime role/source handoff",
+      "configured/default source analyzer",
+      "current promotion/cache/CLI",
+      "large native",
+      "hosted/final"
+    ],
+    "local_bundle_checks": [
+      {
+        "label": "s04-content-bundle-foundation-final",
+        "elapsed": 83.741,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-security-final",
+        "elapsed": 34.789,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-race-final",
+        "elapsed": 316.14,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-vet-final",
+        "elapsed": 11.557,
+        "exit_code": 0,
+        "source_unchanged": true
+      },
+      {
+        "label": "s04-content-bundle-static-final",
+        "elapsed": 25.478,
+        "exit_code": 0,
+        "source_unchanged": true
+      }
+    ],
+    "qualification_scope": "All eight affected packages Race316.140s, canonical foundation/security, pinned vet/Staticcheck; no default PyPI source activation or actual PyPI qualification."
+  }
+}

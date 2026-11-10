@@ -1,0 +1,258 @@
+{
+  "scope": "P5-C3c1 existing host-owned admission/kernel root terminal DATA foundation; eight fresh trusted controller roots and three existing dynamic-inspection consumers; no P5 Artifact user-run",
+  "source_base": "4db0111a4caa02f2f0f15749b876deb37bf32c21",
+  "source_inputs": 1316,
+  "prior1310_runtime_inputs_unchanged": true,
+  "changed_sources": [
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "sha256": "795ff97f836dbc93f0a5fa993b8e0c5f71c3c4827d736b2a048d822b046cb38f",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "5494d23411628aa2aa2d9c440e5b1f60ff22086d4cb655a64b17d367c33888a3",
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "191714a3c1dfadfab63e4223bb5725634a2d4aa1c9d1ff4fc21cd0dc88c9c9ef",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_outcome.go",
+      "sha256": "bd4793aa78f68f02083b6eb35a5e7e6ab1fc1c66a057b68c6ae7f2755c9800a3",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_outcome_test.go",
+      "sha256": "147ca0ee843ea54c5d76c0eee53c5fe8bcad8cbff5912ab985c394a283ac4104",
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_outcome_real_test.go",
+      "sha256": "80a192ebd58dca8caa91c1b6e9933fc201f287de0ae2e1f68f923618920f7b61",
+      "mode": "100644"
+    }
+  ],
+  "states": {
+    "IMPLEMENTED": "YES (bounded kernel root terminal retention/query)",
+    "WIRED": "YES (existing kernel/control path and actual controller caller); NO (P5 Artifact Node/application/CLI)",
+    "QUALIFIED": "YES (named local DATA/control/kernel and existing npm/Python/ELF scopes); NO (new hosted/whole common matrix)",
+    "ACCEPTANCE_CLOSED": "YES (C3c1 named local foundation); NO (actual P5 Node user-run/guest result/output/CLI/final profiles/signed)"
+  },
+  "source_census_sha256": "6efc3ce3a8084277038f7bfbc6d7571cf13581b1dd73f5db1a776119d53adc63",
+  "binaries": [
+    {
+      "role": "sandbox",
+      "path": "/tmp/haa-p5-c3c1-sandbox.test",
+      "size": 27510165,
+      "sha256": "b5166b7334184754d6915546c0f2b9411111c49c3e6448074d7f6e2c11a9ed80"
+    }
+  ],
+  "observer": {
+    "bytes": 3206728,
+    "sha256": "4df80d98633d9f4488f3ecf9de471ac55d11ed1845d92117fc1a4a4ef7614957"
+  },
+  "observer_build_seconds": 278.929,
+  "CPP_latches": {
+    "pass": 129,
+    "fail": 0,
+    "existing": 128,
+    "new_kernel_terminal_latch": 1
+  },
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 1.557
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 54.423
+    },
+    {
+      "step": "outcome-focused",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./internal/sandbox",
+        "-run",
+        "^TestDirectExecOutcome"
+      ],
+      "exit_code": 0,
+      "seconds": 0.936
+    },
+    {
+      "step": "sandbox-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 0.669
+    },
+    {
+      "step": "tagged-sandbox-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags=realcorpus",
+        "-o",
+        "/tmp/haa-p5-c3c1-sandbox.test",
+        "./internal/sandbox"
+      ],
+      "exit_code": 0,
+      "seconds": 7.466
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.315
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 9.976
+    }
+  ],
+  "prior_fresh_sandbox_race": {
+    "seconds": 29.21,
+    "default_source_inputs_unchanged_before_and_after_tagged_fixture": true,
+    "later_v2_race_result": "cached PASS, not a second fresh execution"
+  },
+  "kernel_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 9.014,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_client_workspaces_absent": true,
+    "log_sha256": "3430d5f9679b78bd94a749ac3ae2f38fcf99385c5228294ecce52312b1cf28cf",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-c3c1-actual-v1/protected-client",
+        "sha256": "b5166b7334184754d6915546c0f2b9411111c49c3e6448074d7f6e2c11a9ed80"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c1-actual-v1/observer",
+        "sha256": "4df80d98633d9f4488f3ecf9de471ac55d11ed1845d92117fc1a4a4ef7614957"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-20261029-source/internal/sandbox/direct_exec_outcome.go",
+        "sha256": "bd4793aa78f68f02083b6eb35a5e7e6ab1fc1c66a057b68c6ae7f2755c9800a3"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-20261029-source/internal/sandbox/direct_exec_outcome_real_test.go",
+        "sha256": "80a192ebd58dca8caa91c1b6e9933fc201f287de0ae2e1f68f923618920f7b61"
+      }
+    ],
+    "scope": "CURRENT existing admission kernel root terminal facts; eight fresh trusted controller cases/Host capture; no Artifact user program or Host install",
+    "passed_named_tests": [
+      "TestLinuxDirectExecKernelTerminalIntegration"
+    ],
+    "role_fs_network_budgets_unchanged": true,
+    "user_program_run": false,
+    "owned_terminal_workspaces_absent": true,
+    "kernel_terminal_cases": 8,
+    "named_pass": true
+  },
+  "common_actual": {
+    "cpp_source_unchanged": true,
+    "source_unchanged": true,
+    "fixed42_and_zip_unchanged": true,
+    "exit": 0,
+    "seconds": 11.163,
+    "host_before_after_identical": true,
+    "input_unchanged": true,
+    "no_skip": true,
+    "helper_confirmed_stopped": true,
+    "helper_wait_zero": true,
+    "no_helpers_after": true,
+    "owned_client_workspaces_absent": true,
+    "log_sha256": "f7295612f54a30e4808043673ee5f933a88c5d2c79cabf7e95a17995804d7738",
+    "sources": [
+      {
+        "path": "/tmp/haa-p5-c3c1-common-actual-v1/protected-client",
+        "sha256": "b5166b7334184754d6915546c0f2b9411111c49c3e6448074d7f6e2c11a9ed80"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c1-common-actual-v1/observer",
+        "sha256": "4df80d98633d9f4488f3ecf9de471ac55d11ed1845d92117fc1a4a4ef7614957"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-20261029-source/internal/sandbox/direct_exec_outcome.go",
+        "sha256": "bd4793aa78f68f02083b6eb35a5e7e6ab1fc1c66a057b68c6ae7f2755c9800a3"
+      },
+      {
+        "path": "/tmp/haa-p5-c3c-20261029-source/internal/sandbox/direct_exec_outcome_real_test.go",
+        "sha256": "80a192ebd58dca8caa91c1b6e9933fc201f287de0ae2e1f68f923618920f7b61"
+      }
+    ],
+    "scope": "CURRENT existing npm/Python/ELF dynamic-inspection admission consumers; same new kernel-terminal observer/source; no P5 user-run or Host install",
+    "passed_named_tests": [
+      "TestLinuxGVisorLifecycleIntegration",
+      "TestLinuxGitHubReleaseELFDynamicIntegration",
+      "TestLinuxPyPIWheelDynamicIntegration"
+    ],
+    "role_fs_network_budgets_unchanged": true,
+    "user_program_run": false,
+    "owned_terminal_workspaces_absent": true,
+    "common_parent_passes": 3,
+    "named_pass": true
+  },
+  "kernel_wait_cases": [
+    "exit0",
+    "exit37",
+    "exit125",
+    "exit126",
+    "exit127",
+    "exit255",
+    "SIGTERM15",
+    "SIGKILL9"
+  ],
+  "stream_scope": "Host client separate stdout/stderr3bytes each in eight controlled fixtures; kernel outcome separately observed; no Artifact output rendering or result promotion",
+  "control_contract": "existing generation/mode/nonce/peer/ordered lease and max64 slot bound; ordinary ARM/STATUS/CANCEL/COMPLETE states and ACK fields retained; separate outcome op uses same strict scalar-string ACK",
+  "terminal_authority": "exact consumed direct root group/start and trusted kernel ExitNotifyParentInfo.wait status; clone/foreign/reused/missing/duplicate and malformed/nonterminal facts do not become root success",
+  "invariants": "no new role/FS/network grant or CPU/trace/wall/cleanup budget; root terminal fact does not prove selected program image loaded, complete output, descendants drained, or Policy approval",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/p5-c3c1-*",
+  "provenance_limit": "whole prepared proto has existing HAA topology additions; exact exit status definition/producer blocks match upstream7c619980; first whole-file/census writer assumptions preserved and corrected as metadata errors",
+  "CI426_excludes_this_source": true,
+  "next": "C3c2 exact Artifact Node admission/profile and isolated lifecycle; bind current layout/entry/argv, separately reconcile target image/terminal/output/cleanup; no implicit CONTROL grant or fake SandboxResult."
+}

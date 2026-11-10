@@ -1,0 +1,118 @@
+{
+  "work_item": "M13-004/P4-K2",
+  "baseline": "a0135e8cd798b99debdc848a007e1ddff3225dc8",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES (existing complete Application workflow and actual Bootstrap factory)",
+    "QUALIFIED": "YES (named local lock-only backend, failure boundaries and actual native/current inspection)",
+    "ACCEPTANCE_CLOSED": "YES (named backend); NO (public CLI/whole P4)",
+    "MISSING": [
+      "public uv lock --upgrade CLI and result separating installation NOT_REQUESTED",
+      "persistent UV tool/pipx and temporary execution lanes",
+      "final affected-source/profile qualification"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v2-format.json",
+      "seconds": 0.635,
+      "sha256": "ad27b12e973dc02d46158331c76797e00553708d91c7b4588aa582dfb91d9138"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v1-quick.json",
+      "seconds": 168.957,
+      "sha256": "3d4cbe52ed5eacfcbc5988ff88a85f7bdc8c65321c19593512f96cb60f21ea22"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v1-security.json",
+      "seconds": 11.164,
+      "sha256": "1d09e0a20277750f6470a8dacb944922451da1d732ab71042a2aaf0d19b19b16"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v1-docs.json",
+      "seconds": 0.258,
+      "sha256": "c55f5189355e76f6f053252b6772d2988b60a88c3838de11442620b5c4f1a670"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v1-focused-race.json",
+      "seconds": 11.848,
+      "sha256": "8d6e4a977204b7dd7375835737f8752c33dbf2f875cee9cd2fc08ecbbe3e6ffc"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-v1-full-affected-race.json",
+      "seconds": 146.556,
+      "sha256": "6fb0cf6bb0a65fda9a1fcd5c3c046d0dee0777985cad55414b34a9b838aa2cdb"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k2-lock-publication-native-v1-result.json",
+    "seconds": 173.014,
+    "test_seconds": 170.47,
+    "previous_installed_requests": 5,
+    "new_control_only_requests": 3,
+    "observed": [
+      "existing installed add24.2->25.0/same-version/two roots/edited empty regression",
+      "fixed native empty-project original lock plus edited current packaging25 manifest; actual --upgrade current complete inspection/Evidence/Policy/cache readback then only lock publication",
+      "same-version control-only operation repeats all current checks; explicit edited-empty yields approved empty graph",
+      "original manifest bytes/inode/mode preserved; lock0600 preserved; first no venv provisioning then arbitrary .venv data untouched",
+      "six exact immutable project controls/current Manifest/SBOM; private approval Mode PYTHON_PROJECT_CONTROLS/exact project target/graph",
+      "no skips; helperwait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0; Host identical"
+    ],
+    "host_before_after_identical": true,
+    "sha256": "92f6180c05813e113eb52420de6bad1d8f77ca27c927f5e3391cd3a864b35b3c"
+  },
+  "source_reuse": "docs/github-logs/package-client-quarantine-20261021/p4k2-native-fixture-only-reuse-boundary.json",
+  "guarded_failure_scope": [
+    "four mutation boundaries ENOSPC preserve primary cause and restore original bytes/inode/mode",
+    "foreign published lock is preserved with authentic original backup and held recovery lock",
+    "foreign backup preserved after original restored; manifest drift preserved; uncertain recovery blocks reentry",
+    "same transaction lock excludes installed project operation; canceled/wrong mode/missing lock/symlink/shared hardlink preflight refuses"
+  ],
+  "unchanged_owners": [
+    "internal/promotion/pypi_venv_transaction.go",
+    "internal/promotion/uv_project_transaction.go",
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/python_project_output.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/sandbox/uv_project_update.go",
+    "internal/inspection/pypi/project.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/bootstrap/uv_project_publication_integration_test.go",
+      "sha256": "2d87cb6df2ba14fc0f984e2f3bf05854537c0aed3565d227f4d64ae6df531810"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_lock_integration_test.go",
+      "sha256": "6a96f8116a712e20b133c6194de5f59a5980545de1aa3e1378d3ee524b84ea0d"
+    },
+    {
+      "path": "internal/promotion/uv_project_lock_transaction.go",
+      "sha256": "e7dcc125a001e28010ee1aab0342af2f3b3c2789bd60de5330a88c5432d20728"
+    },
+    {
+      "path": "internal/promotion/uv_project_lock_publication.go",
+      "sha256": "85589763469e974334685621dcdc1872f9c60caf832908d1ed4d31cea1bb68d7"
+    },
+    {
+      "path": "internal/promotion/uv_project_lock_publication_test.go",
+      "sha256": "a94cf39578d479265207bcfb350cb1c698d42405d80dc7807b1b33f64ea9b2cc"
+    },
+    {
+      "path": "internal/application/uv_project.go",
+      "sha256": "9e36e22de4407533254f34f35aae07e703cc7970c0fe997486bb747c82809afb"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_lock.go",
+      "sha256": "45c8b7c627bb3c5e09bc4733fa38bb217ea4dde2462e98e5aa5219c6874a550c"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_test.go",
+      "sha256": "21e705d2bdb0c9a41da10425834c43c2ca5c34c3d8aa1d97dd73fd8216ec91b1"
+    }
+  ],
+  "remote": "NOT_RUN; grouped final qualification remains under plan20 section5"
+}

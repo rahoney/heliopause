@@ -50,6 +50,9 @@ func MaterializeModule(root string, bundle Bundle, identity domain.ResolvedArtif
 	if err != nil || zipSum != wantZip || modSum != wantMod {
 		return errors.New("go module changed before cache materialization")
 	}
+	if _, err := HashRequiredMods(bundle, identity, integrity); err != nil {
+		return err
+	}
 	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" {
 		return errors.New("go module cache root is invalid")
 	}
@@ -78,6 +81,26 @@ func MaterializeModule(root string, bundle Bundle, identity domain.ResolvedArtif
 			return errors.New("persist exact Go cache member")
 		}
 	}
+	for _, control := range bundle.RequiredMods() {
+		old, err := domain.NewResolvedArtifactIdentity(Source(), identity.Name(), control.Version, "module")
+		if err != nil {
+			return err
+		}
+		_, requiredPath, err := ModuleCachePaths(old)
+		if err != nil {
+			return err
+		}
+		f, err := os.OpenFile(filepath.Join(root, requiredPath+".mod"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+		if err != nil {
+			return errors.New("create exact required Go cache control")
+		}
+		_, writeErr := f.Write(control.Body)
+		syncErr := f.Sync()
+		closeErr := f.Close()
+		if err := errors.Join(writeErr, syncErr, closeErr); err != nil {
+			return errors.New("persist required Go cache control")
+		}
+	}
 	if err := modzip.Unzip(filepath.Join(root, extracted), module.Version{Path: identity.Name(), Version: identity.Version()}, filepath.Join(root, download+".zip")); err != nil {
 		return errors.New("go module archive violates canonical ZIP rules")
 	}
@@ -87,6 +110,9 @@ func MaterializeModule(root string, bundle Bundle, identity domain.ResolvedArtif
 // CheckMaterializedModule checks the payload and complete extracted source,
 // rather than treating .ziphash or a cached checksum declaration as authority.
 func CheckMaterializedModule(root string, bundle Bundle, identity domain.ResolvedArtifactIdentity, integrity string) error {
+	if _, err := HashRequiredMods(bundle, identity, integrity); err != nil {
+		return err
+	}
 	extracted, download, err := ModuleCachePaths(identity)
 	if err != nil {
 		return err
@@ -104,6 +130,20 @@ func CheckMaterializedModule(root string, bundle Bundle, identity domain.Resolve
 		got, err := readCacheMember(r, download+suffix, int64(len(want)))
 		if err != nil || !bytes.Equal(got, want) {
 			return errors.New("go cache payload changed")
+		}
+	}
+	for _, control := range bundle.RequiredMods() {
+		old, err := domain.NewResolvedArtifactIdentity(Source(), identity.Name(), control.Version, "module")
+		if err != nil {
+			return err
+		}
+		_, requiredPath, err := ModuleCachePaths(old)
+		if err != nil {
+			return err
+		}
+		got, err := readCacheMember(r, requiredPath+".mod", int64(len(control.Body)))
+		if err != nil || !bytes.Equal(got, control.Body) {
+			return errors.New("required Go cache control changed")
 		}
 	}
 	var count int

@@ -207,6 +207,16 @@ func TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate(t *testing.T)
 		}
 	})
 
+	t.Run("metadata hash cannot substitute for wheel hash", func(t *testing.T) {
+		page := parse(t, `<a href="`+selectedURL+`" data-core-metadata="sha256=`+selectedDigest+`" data-dist-info-metadata="sha256=`+selectedDigest+`">selected</a>`)
+		if len(page.Files()) != 0 {
+			t.Fatal("metadata-only hash introduced a wheel candidate")
+		}
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+			t.Fatal("CrossCheckReport used a sidecar metadata hash as the wheel digest")
+		}
+	})
+
 	t.Run("selected digest mismatch is rejected", func(t *testing.T) {
 		page := parse(t, `<a href="`+selectedURL+`#sha256=`+strings.Repeat("b", 64)+`" data-requires-python="">selected</a>`)
 		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {

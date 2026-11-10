@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/blakesmith/ar"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	rpmutils "github.com/sassoftware/go-rpmutils"
 )
 
@@ -35,6 +36,17 @@ func fixture(t *testing.T) packageFixture {
 		}
 	}
 	inputs := map[string]string{filepath.Join(f.assets, "helox-linux-amd64"): "cli-native-payload", filepath.Join(f.assets, "haa_gvisor_observer-linux-amd64"): "observer-native-payload", filepath.Join(f.assets, "haa-network-policy-helper-linux-amd64"): "policy-native-payload", filepath.Join(f.assets, "helox-runtime-images.json"): `{"schema":"helox.runtime-image-manifest/v1"}`, f.lock: `{"schema_version":1}`, f.license: "Apache License Version 2.0"}
+	inputs[filepath.Join(f.assets, "haa-release-installer-linux-amd64")] = "installer-native-payload"
+	inputs[filepath.Join(f.assets, runtimeidentity.SandboxResponderAssetName)] = "responder-native-payload"
+	inputs[filepath.Join(f.assets, "pnpm-linux-amd64")] = "pnpm-native-payload"
+	inputs[filepath.Join(f.assets, "pnpm-NOTICE.txt")] = "pnpm-notices-payload"
+	inputs[filepath.Join(f.assets, "bun-linux-amd64")] = "bun-native-payload"
+	inputs[filepath.Join(f.assets, "bun-NOTICE.txt")] = "bun-notices-payload"
+	inputs[filepath.Join(f.assets, "pipx-runtime-linux-amd64.zip")] = "pipx-data-payload"
+	inputs[filepath.Join(f.assets, "pipx-NOTICE.txt")] = "pipx-notices-payload"
+	for _, asset := range runtimeidentity.SemgrepReleaseAssets(runtimeidentity.SelectedSemgrepSupply()) {
+		inputs[filepath.Join(f.assets, asset.Path)] = "fixture-" + asset.Path
+	}
 	for p, b := range inputs {
 		if err := os.WriteFile(p, []byte(b), 0o600); err != nil {
 			t.Fatal(err)
@@ -80,17 +92,27 @@ func TestPackagesContainBoundedPayloadAndAreReproducible(t *testing.T) {
 		for _, want := range []struct {
 			name, body string
 			mode       int64
-		}{{"helox", "cli-native-payload", 0o555}, {"haa_gvisor_observer", "observer-native-payload", 0o555}, {"haa-network-policy-helper", "policy-native-payload", 0o500}} {
+		}{{"helox", "cli-native-payload", 0o555}, {"haa_gvisor_observer", "observer-native-payload", 0o555}, {"haa-network-policy-helper", "policy-native-payload", 0o500}, {runtimeidentity.SandboxResponderAssetName, "responder-native-payload", 0o555}, {"haa-release-installer", "installer-native-payload", 0o500}, {"pnpm", "pnpm-native-payload", 0o555}, {"pnpm-NOTICE.txt", "pnpm-notices-payload", 0o444}, {"bun", "bun-native-payload", 0o555}, {"bun-NOTICE.txt", "bun-notices-payload", 0o444}, {"pipx-runtime-linux-amd64.zip", "pipx-data-payload", 0o444}, {"pipx-NOTICE.txt", "pipx-notices-payload", 0o444}} {
 			m, ok := members[root+want.name]
 			if !ok || string(m.body) != want.body || m.mode&0o7777 != want.mode || m.owner != "root" || m.group != "root" || m.mtime != testEpoch {
 				t.Fatalf("%s payload %s = %#v", format, want.name, m)
+			}
+		}
+		for _, asset := range runtimeidentity.SemgrepReleaseAssets(runtimeidentity.SelectedSemgrepSupply()) {
+			mode := int64(0444)
+			if asset.Path == runtimeidentity.SelectedSemgrepSupply().Tool.Path {
+				mode = 0555
+			}
+			member, found := members[root+asset.Path]
+			if !found || string(member.body) != "fixture-"+asset.Path || member.mode&07777 != mode || member.owner != "root" || member.group != "root" {
+				t.Fatalf("%s Semgrep member %s = %#v", format, asset.Path, member)
 			}
 		}
 		if m := members["usr/bin/helox"]; m.link != "/"+root+"helox" {
 			t.Fatalf("%s CLI link = %#v", format, m)
 		}
 		unit := string(members["usr/lib/systemd/system/helox-network-policy.service"].body)
-		for _, required := range []string{"ConditionPathExists=/etc/heliopause/network-policy.json", "ExecStart=/" + root + "haa-network-policy-helper", "NoNewPrivileges=yes", "Restart=no"} {
+		for _, required := range []string{"ConditionPathExists=/etc/heliopause/network-policy.json", "ExecStart=/" + root + "haa-network-policy-helper serve\n", "RuntimeDirectory=heliopause-network-policy\n", "NoNewPrivileges=yes", "Restart=no"} {
 			if !strings.Contains(unit, required) {
 				t.Fatalf("%s service lacks %q", format, required)
 			}
@@ -109,7 +131,7 @@ func TestPackagesContainBoundedPayloadAndAreReproducible(t *testing.T) {
 }
 
 func TestPackageInputRejectionPreservesExistingOutputs(t *testing.T) {
-	for _, name := range []string{"short-version", "path-version", "zero-time", "negative-time", "overflow-time", "relative-assets", "symlink-assets", "symlink-input", "empty-input", "oversized-input", "existing-output"} {
+	for _, name := range []string{"short-version", "path-version", "zero-time", "negative-time", "overflow-time", "relative-assets", "symlink-assets", "symlink-input", "missing-installer", "empty-input", "oversized-input", "oversized-semgrep-source", "existing-output"} {
 		t.Run(name, func(t *testing.T) {
 			f := fixture(t)
 			version := "v1.2.3"
@@ -145,6 +167,10 @@ func TestPackageInputRejectionPreservesExistingOutputs(t *testing.T) {
 				if err := os.WriteFile(f.license, nil, 0o600); err != nil {
 					t.Fatal(err)
 				}
+			case "missing-installer":
+				if err := os.Remove(filepath.Join(f.assets, "haa-release-installer-linux-amd64")); err != nil {
+					t.Fatal(err)
+				}
 			case "oversized-input":
 				file, err := os.OpenFile(f.license, os.O_WRONLY, 0)
 				if err != nil {
@@ -154,6 +180,10 @@ func TestPackageInputRejectionPreservesExistingOutputs(t *testing.T) {
 				closeErr := file.Close()
 				if err != nil || closeErr != nil {
 					t.Fatal(err, closeErr)
+				}
+			case "oversized-semgrep-source":
+				if err := os.Truncate(filepath.Join(f.assets, "semgrep-SOURCES.tar"), 512<<20+1); err != nil {
+					t.Fatal(err)
 				}
 			case "existing-output":
 				if err := os.WriteFile(filepath.Join(f.output, "helox-linux-amd64.rpm"), []byte("keep"), 0o600); err != nil {

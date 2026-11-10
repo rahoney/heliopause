@@ -17,6 +17,7 @@ import (
 
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 type terraformCacheEntry struct {
@@ -336,6 +337,24 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 	if doc.Schema != 1 || doc.Policy == "" || doc.PolicyVersion == 0 || len(doc.Entries) == 0 || len(doc.Entries) > 32 || len(doc.Controls) != 2 {
 		return errors.New("terraform retained approval coverage is invalid")
 	}
+	expected := map[string]string{
+		"terraform-signed-package-result":                                     "terraform-signed-package",
+		"terraform-provider-static-result":                                    "terraform-provider-static",
+		"terraform-provider-dynamic-result":                                   "terraform-provider-dynamic",
+		"terraform-workspace-" + string(domain.SandboxEnvironmentMinimal):     "terraform-provider-dynamic",
+		"terraform-workspace-" + string(domain.SandboxEnvironmentDevelopment): "terraform-provider-dynamic",
+		"binary-content-coverage":                                             "binary-content",
+		"binary-content-signals-summary":                                      "binary-content-signals",
+	}
+	// Reuse only the current declaration. Cache readback never runs analysis.
+	nativeChecks, err := content.BinaryChecks()
+	if err != nil {
+		return err
+	}
+	nativeProfiles := make(map[string]domain.ContentDigest, len(nativeChecks))
+	for _, check := range nativeChecks {
+		nativeProfiles[check.ID().String()] = check.ProfileDigest()
+	}
 	seen := map[string]bool{}
 	for _, entry := range doc.Entries {
 		identity, e := domain.NewResolvedArtifactIdentity(artifactterraform.Source(), entry.Name, entry.Version, "linux/amd64")
@@ -345,7 +364,7 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 		if _, e := artifactterraform.IdentityReference(identity); e != nil {
 			return e
 		}
-		if seen[entry.Name] || entry.Policy == "" || entry.PolicyVersion == 0 || len(entry.Evidence) != 3 {
+		if seen[entry.Name] || entry.Policy == "" || entry.PolicyVersion == 0 || len(entry.Evidence) < len(expected) || len(entry.Evidence) > len(expected)+1 {
 			return errors.New("terraform retained entry approval is incomplete or ambiguous")
 		}
 		seen[entry.Name] = true
@@ -361,6 +380,10 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 			return e
 		}
 		covered := map[string]bool{}
+
+		seenEvidence := map[string]bool{}
+		var dynamicProfile domain.ContentDigest
+
 		for _, record := range entry.Evidence {
 			id, e := domain.NewEvidenceID(record.ID)
 			if e != nil {
@@ -371,10 +394,41 @@ func (c *TerraformVerifiedCache) verifyRecordedApproval(ctx context.Context, doc
 				return e
 			}
 			item, hash, e := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if e != nil || hash.String() != record.SHA256 || covered[item.CheckID().String()] {
+			expectedCheck, required := expected[record.ID]
+			optionalAdvisory := record.ID == "dependency-advisory-0"
+			if optionalAdvisory {
+				expectedCheck = "dependency-advisory"
+			}
+			if e != nil || hash.String() != record.SHA256 || seenEvidence[record.ID] || !required && !optionalAdvisory || expectedCheck != item.CheckID().String() {
 				return errors.New("terraform retained Evidence changed, missing or duplicated")
 			}
+			// This supplemental scope fact cannot replace any required record or
+			// introduce provider responses/affected-version authority for a binary.
+			if optionalAdvisory && (item.Kind() != "advisory-applicability" || item.ProfileDigest().String() == "") {
+				return errors.New("terraform retained advisory applicability is invalid")
+			}
+			if profile, native := nativeProfiles[expectedCheck]; native {
+				kind := "binary-content-signals"
+				if expectedCheck == "binary-content" {
+					kind = "binary-content-coverage"
+				}
+				if item.ProfileDigest() != profile || item.Kind() != kind {
+					return errors.New("terraform retained binary Evidence differs from the current requirement")
+				}
+			}
+			seenEvidence[record.ID] = true
+			if item.CheckID().String() == "terraform-provider-dynamic" {
+				if item.ProfileDigest().String() == "" || dynamicProfile.String() != "" && dynamicProfile != item.ProfileDigest() {
+					return errors.New("terraform retained dynamic Evidence profile differs")
+				}
+				dynamicProfile = item.ProfileDigest()
+			}
 			covered[item.CheckID().String()] = true
+		}
+		for id := range expected {
+			if !seenEvidence[id] {
+				return errors.New("terraform retained Evidence omits a required record")
+			}
 		}
 		if !covered["terraform-signed-package"] || !covered["terraform-provider-static"] || !covered["terraform-provider-dynamic"] {
 			return errors.New("terraform retained Evidence omits required coverage")

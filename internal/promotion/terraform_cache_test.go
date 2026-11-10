@@ -14,6 +14,7 @@ import (
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/inspection/content"
 )
 
 func newTerraformPromotionFixture(t *testing.T) (*TerraformProjectPromotion, domain.InstallContext) {
@@ -28,6 +29,7 @@ func newTerraformPromotionFixture(t *testing.T) (*TerraformProjectPromotion, dom
  random = { source = "hashicorp/random", version = "3.7.2" }
  }
 }
+
 `), 0o600); e != nil {
 		t.Fatal(e)
 	}
@@ -56,7 +58,7 @@ func newTerraformPromotionFixture(t *testing.T) (*TerraformProjectPromotion, dom
 
 // Synthetic ALLOW/Evidence exercises the approval consumer, never public signer
 // qualification. Public source, real observation and CLI tests remain separate.
-func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *approvedTerraformProjectGuard) (domain.ProjectDependencyUpdate, domain.ProjectVerifiedSet, string) {
+func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *approvedTerraformProjectGuard, optionalFactKind ...string) (domain.ProjectDependencyUpdate, domain.ProjectVerifiedSet, string) {
 	t.Helper()
 	elf := make([]byte, 128)
 	copy(elf, []byte{0x7f, 'E', 'L', 'F', 2, 1, 1})
@@ -198,12 +200,12 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		if i == 0 {
 			kind = domain.CheckVerification
 		}
-		check, e := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, e := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		if e != nil {
 			t.Fatal(e)
 		}
 		checks = append(checks, check)
-		eid, e := domain.NewEvidenceID(name)
+		eid, e := domain.NewEvidenceID(name + "-result")
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -213,15 +215,73 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		}
 		evidence = append(evidence, ev)
 	}
+	for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+		state := domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true}
+		summary, err := state.Summary()
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, _ := domain.NewEvidenceID("terraform-workspace-" + string(profile))
+		ev, err := domain.NewEvidence(id, checks[2].ID(), identity, digest, "workspace-state", summary)
+		if err != nil {
+			t.Fatal(err)
+		}
+		evidence = append(evidence, ev)
+	}
+	memberDigest, e := domain.NewSHA256Digest(terraformHash(elf))
+	if e != nil {
+		t.Fatal(e)
+	}
+	native, e := content.InspectELF(context.Background(), acquired, h.Name, elf, 0o755, memberDigest)
+	if e != nil || len(native.Findings()) != 0 {
+		t.Fatal("synthetic approval lacks bounded native facts", e)
+	}
+	checks = append(checks, native.Executions()...)
+	evidence = append(evidence, native.Evidence()...)
+	if len(optionalFactKind) > 0 {
+		checkID, _ := domain.NewCheckID("dependency-advisory")
+		profile := cacheFixtureProfile()
+		check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, false, domain.CapabilityUnsupported, domain.ExecutionNotExecuted, "M13_ADVISORY_BINARY_MAPPING_UNSUPPORTED", profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		eid, _ := domain.NewEvidenceID("dependency-advisory-0")
+		fact, err := domain.NewEvidence(eid, checkID, identity, digest, optionalFactKind[0], "Opaque binary: no advisory query; not a vulnerability-free result.", profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checks = append(checks, check)
+		evidence = append(evidence, fact)
+	}
 	store, e := evidencelocal.NewStore(p.cache.evidenceRoot)
 	if e != nil {
 		t.Fatal(e)
 	}
-	refs, e := store.Record(context.Background(), run, evidence)
+	refs, e := store.Record(context.Background(), run, evidence, checks...)
 	if e != nil {
 		t.Fatal(e)
 	}
-	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow)
+	plan := cacheFixturePlan(t, run, acquired, []string{"terraform-signed-package", "terraform-provider-static", "terraform-provider-dynamic"})
+	nativeRequirements, e := content.BinaryChecks()
+	if e != nil {
+		t.Fatal(e)
+	}
+	plan, e = domain.NewCheckPlan(run, acquired, append(plan.Requirements(), nativeRequirements...))
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(optionalFactKind) > 0 {
+		check := checks[len(checks)-1]
+		requirement, err := domain.NewCheckRequirement(check.ID(), check.Kind(), check.Required(), check.ProfileDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		plan, err = domain.NewCheckPlan(run, acquired, append(plan.Requirements(), requirement))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow, plan)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -234,6 +294,130 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		t.Fatal(e)
 	}
 	return update, set, file
+}
+
+func TestTerraformCacheRequiresExactEnvironmentRecords(t *testing.T) {
+	for _, name := range []string{"missing", "duplicate", "old-three", "foreign-id"} {
+		t.Run(name, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			guard, err := p.Begin(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer guard.Close()
+			_, set, _ := terraformApprovedFixture(t, p, guard)
+			doc, err := p.cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch name {
+			case "missing":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[:4]
+			case "duplicate":
+				doc.Entries[0].Evidence[4] = doc.Entries[0].Evidence[3]
+			case "old-three":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[:3]
+			case "foreign-id":
+				doc.Entries[0].Evidence[4].ID = "foreign-workspace"
+			}
+			if err := p.cache.verifyRecordedApproval(context.Background(), doc); err == nil {
+				t.Fatal("incomplete or substituted environment approval accepted")
+			}
+		})
+	}
+}
+
+func TestTerraformNativeApprovalRequiresCurrentBoundProfilesAndKinds(t *testing.T) {
+	for _, fault := range []string{"current", "missing-coverage", "missing-signals", "wrong-profile", "wrong-kind"} {
+		t.Run(fault, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			guard, err := p.Begin(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer guard.Close()
+			_, set, _ := terraformApprovedFixture(t, p, guard)
+			doc, err := p.cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			entry := &doc.Entries[0]
+			if fault == "missing-coverage" || fault == "missing-signals" {
+				wanted := "binary-content-coverage"
+				if fault == "missing-signals" {
+					wanted = "binary-content-signals-summary"
+				}
+				for index, record := range entry.Evidence {
+					if record.ID == wanted {
+						entry.Evidence = append(entry.Evidence[:index], entry.Evidence[index+1:]...)
+						break
+					}
+				}
+			}
+			if fault == "wrong-profile" || fault == "wrong-kind" {
+				// Write otherwise valid, rehashed records through the real store.
+				// Readback must reject semantics, not just a corrupt file checksum.
+				original := set.Inspected().Inspections()[0]
+				run, _ := domain.NewRunID()
+				var facts []domain.Evidence
+				var checks []domain.CheckExecution
+				seen := map[string]bool{}
+				for _, record := range entry.Evidence {
+					id, _ := domain.NewEvidenceID(record.ID)
+					ref, _ := domain.NewEvidenceReference(id, "evidence:"+original.RunID().String()+":"+record.ID)
+					item, _, err := p.cache.evidence.ReadReference(context.Background(), original.RunID(), ref, original.Artifact().Identity(), original.Artifact().Digest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					profile, kind := item.ProfileDigest(), item.Kind()
+					if record.ID == "binary-content-coverage" {
+						if fault == "wrong-profile" {
+							profile = cacheFixtureProfile()
+						} else {
+							kind = "unrelated-binary-fact"
+						}
+					}
+					changed, err := domain.NewEvidence(item.ID(), item.CheckID(), item.Identity(), item.Digest(), kind, item.Summary(), profile)
+					if err != nil {
+						t.Fatal(err)
+					}
+					facts = append(facts, changed)
+					if !seen[item.CheckID().String()] {
+						checkKind := domain.CheckInspection
+						if item.CheckID().String() == "terraform-signed-package" {
+							checkKind = domain.CheckVerification
+						}
+						check, err := domain.NewCheckExecution(item.CheckID(), checkKind, item.CheckID().String() != "binary-content-signals", domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
+						if err != nil {
+							t.Fatal(err)
+						}
+						checks = append(checks, check)
+						seen[item.CheckID().String()] = true
+					}
+				}
+				store, err := evidencelocal.NewStore(p.cache.evidenceRoot)
+				if err != nil {
+					t.Fatal(err)
+				}
+				refs, err := store.Record(context.Background(), run, facts, checks...)
+				if err != nil {
+					t.Fatal(err)
+				}
+				entry.Run = run.String()
+				for index, ref := range refs {
+					_, hash, err := store.ReadReference(context.Background(), run, ref, original.Artifact().Identity(), original.Artifact().Digest())
+					if err != nil {
+						t.Fatal(err)
+					}
+					entry.Evidence[index].SHA256 = hash.String()
+				}
+			}
+			err = p.cache.verifyRecordedApproval(context.Background(), doc)
+			if (err == nil) != (fault == "current") {
+				t.Fatalf("fault=%s readback=%v", fault, err)
+			}
+		})
+	}
 }
 
 func TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree(t *testing.T) {
@@ -630,6 +814,106 @@ func TestTerraformCommitAndRollbackPreserveForeignBackupMembers(t *testing.T) {
 			if next, e := p.Begin(ctx, install); e == nil {
 				next.Close()
 				t.Fatal("uncertain backup automatically adopted")
+			}
+		})
+	}
+}
+
+func TestTerraformUpgradeRetainsIdenticalLock(t *testing.T) {
+	p, install := newTerraformPromotionFixture(t)
+	ctx := context.Background()
+	initial, err := p.Begin(ctx, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	update, set, _ := terraformApprovedFixture(t, p, initial)
+	staged, err := p.cache.StageProject(ctx, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := initial.Commit(ctx, update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := initial.Close(); err != nil {
+		t.Fatal(err)
+	}
+	lock := filepath.Join(install.Target().String(), artifactterraform.LockControl)
+	if err := os.Chmod(lock, 0o640); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original, err := os.ReadFile(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	guard, err := p.BeginUpgrade(ctx, install, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer guard.Close()
+	update, set, _ = terraformApprovedFixture(t, p, guard)
+	update, err = domain.NewProjectDependencyUpdateFromSnapshot(update.OriginalControls(), update.SelectedControls(), update.Snapshot())
+	if err != nil {
+		t.Fatal(err)
+	}
+	staged, err = p.cache.StageProject(ctx, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Commit(ctx, update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Close(); err != nil {
+		t.Fatal(err)
+	}
+	after, err := os.Stat(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(lock)
+	if err != nil || !os.SameFile(before, after) || before.Mode() != after.Mode() || !before.ModTime().Equal(after.ModTime()) || !bytes.Equal(body, original) {
+		t.Fatal("identical upgrade lock lost its identity, permission, timestamp or bytes", err)
+	}
+}
+
+func TestTerraformRetainedApprovalAllowsOnlyBoundOptionalAdvisoryFact(t *testing.T) {
+	for _, mode := range []string{"current-seven", "legacy-five", "optional", "missing-required", "duplicate", "unknown-id", "wrong-kind"} {
+		t.Run(mode, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			guard, err := p.Begin(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer guard.Close()
+			var kinds []string
+			if mode != "current-seven" && mode != "legacy-five" {
+				kinds = []string{"advisory-applicability"}
+			}
+			if mode == "wrong-kind" {
+				kinds[0] = "advisory-record"
+			}
+			_, set, _ := terraformApprovedFixture(t, p, guard, kinds...)
+			doc, err := p.cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch mode {
+			case "legacy-five":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[:5]
+			case "missing-required":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[1:]
+			case "duplicate":
+				doc.Entries[0].Evidence = append(doc.Entries[0].Evidence, doc.Entries[0].Evidence[len(doc.Entries[0].Evidence)-1])
+			case "unknown-id":
+				doc.Entries[0].Evidence[len(doc.Entries[0].Evidence)-1].ID = "unknown-optional-fact"
+			}
+			err = p.cache.verifyRecordedApproval(context.Background(), doc)
+			wantValid := mode == "current-seven" || mode == "optional"
+			if (err == nil) != wantValid {
+				t.Fatalf("mode=%s valid=%t err=%v", mode, wantValid, err)
 			}
 		})
 	}

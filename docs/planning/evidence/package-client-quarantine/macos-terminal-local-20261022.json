@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "baseline": "3623d1ecc51320084e8556aa86d9bff45d2ad029",
+  "scope": "bounded diagnostic only; actual native macOS command timeout cause unresolved",
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.332,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 35.347,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.199,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.22,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.735,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "targeted": [
+    {
+      "check": "race",
+      "exit": 0,
+      "seconds": 15.425,
+      "args": [
+        "test",
+        "-race",
+        "-timeout=2m",
+        "./scripts/check"
+      ],
+      "environment_overrides": {}
+    },
+    {
+      "check": "darwin-compile",
+      "exit": 0,
+      "seconds": 1.776,
+      "args": [
+        "test",
+        "-c",
+        "-o",
+        "/tmp/haa-uv-runtime-0_e6zmn4/tmp/macos-terminal-check.test",
+        "./scripts/check"
+      ],
+      "environment_overrides": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "CGO_ENABLED": "0"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "scripts/check/runner.go",
+      "sha256": "94b899e905d2bb296e0f6dc25e728a445759ba43d17645b7da3be38711b68dbb"
+    },
+    {
+      "path": "scripts/check/go_test_capture.go",
+      "sha256": "493de8a04a0e51706bfa183e4d699fac527dca3892034f35de1b94b13afd47ff"
+    },
+    {
+      "path": "scripts/check/go_test_capture_test.go",
+      "sha256": "9636b1b368bf3e05f6708b7776e34deb0513179ab697fbb5ff8ee2dc4b166c21"
+    },
+    {
+      "path": "scripts/check/runner_timeout_unix_test.go",
+      "sha256": "002d579f413cf0450aab5cdb7911b5c353d6d51349eced73ffe3d290f2acbed9"
+    }
+  ],
+  "preserved": {
+    "test_timeout_seconds": 300,
+    "command_timeout_seconds": 360,
+    "test_scope": "./...",
+    "output_limit_bytes": 1048576,
+    "process_status_and_context_cause": "authoritative",
+    "new_os_or_pid_queries": false
+  },
+  "new_diagnostics": [
+    "Cmd.ProcessState availability/exited/success/exit-code/user-ms/system-ms after timeout",
+    "monotonic gap since final tracked package terminal when all packages terminal and no active entry"
+  ],
+  "native_execution": "NOT_TESTED on this diagnostic candidate",
+  "ci371_failure": "docs/github-logs/package-client-quarantine-20261021/ci371-macos-failed.log",
+  "temporary_darwin_binary": "remove after final consumer/reference check"
+}

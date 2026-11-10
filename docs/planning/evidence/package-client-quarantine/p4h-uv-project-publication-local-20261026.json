@@ -1,0 +1,154 @@
+{
+  "work_item": "M13-004/P4-H",
+  "baseline": "c1e296de0230ad604313d6d7e804612bc0a78eae",
+  "status": {
+    "IMPLEMENTED": "YES (held managed venv/native project/current approved publication backend)",
+    "WIRED": "YES (programmatic production composition and actual consumer); NO (public CLI)",
+    "QUALIFIED": "YES (named local actual installed backend and affected regression)",
+    "ACCEPTANCE_CLOSED": "YES (named installed backend); NO (whole P4)",
+    "MISSING": [
+      "public uv add/sync CLI/help/preflight and actual CLI qualification",
+      "native unmanaged original adoption/proof binding; current lane refuses before native selection",
+      "lock-only distinct publication and persistent UV tool/pipx",
+      "P7 final affected source/support matrix"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-format.json",
+      "seconds": 0.659,
+      "sha256": "888b1712f1f9cc72622aa28a4a72013f758fc30a59048a911ee8993409f15a5a"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-quick.json",
+      "seconds": 292.784,
+      "sha256": "ab3f7346bfb67c6d609a719eef252a29b33612ca05747afd5d8be16a37d84d9e"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-security.json",
+      "seconds": 15.138,
+      "sha256": "d1df130a0333ecd2bbd50b599d5a20b94c980d598ca8cd03f4643728daaa2b25"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-docs.json",
+      "seconds": 0.249,
+      "sha256": "cdab1ef26e8e2fbf8b70c061dc2df8d9cd656296b122a6e9eb953b91297e3d73"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-focused-race.json",
+      "seconds": 25.544,
+      "sha256": "d2f9847f0575b23be09e13a8851989877e836716e0f8a89d9ed0dbedf459160b"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-native-publication-v3-full-affected-race.json",
+      "seconds": 283.054,
+      "sha256": "fba35e4425edef3218335f80cfcda6b89c3b39bc5c5d70e22bb36f947ce6125a"
+    }
+  ],
+  "actual": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-project-publication-native-v3-result.json",
+    "seconds": 318.313,
+    "project_test_seconds": 140.47,
+    "existing_uv_sync_test_seconds": 175.04,
+    "project_selection_requests": 5,
+    "legacy_complete_sync_requests": 6,
+    "observed": [
+      "actual fresh add packaging24.2 then version25.0; current whole integrity/static/dynamic inspection/Evidence/Policy and atomic manifest+uv.lock+venv publication",
+      "same-version sync freshly inspects again; second idna3.10 root retains packaging and inspects both",
+      "edited empty manifest with stale original native lock regenerates current empty selected lock, retires all owned files, preserves user file and current source permissions",
+      "published two controls exact bytes/hash equal six-control Manifest; SBOM binding and fresh entry Run IDs",
+      "existing UV pip complete2/reinspect2/edited1/explicit empty requirements0/empty pylock0/native UV idna original fixture17files with adopted complete1",
+      "original control/runtime/source/target immutable under one-use workflow; unknown native original distribution refuses before selection"
+    ],
+    "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+    "host_before_after_identical": true,
+    "no_skips": true,
+    "not_claimed": "public project CLI, native project adoption, lock-only installed result, new runtime provisioning, persistent tools or remote P4 qualification"
+  },
+  "corrections": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4h-first-composition-staticcheck-assessment.json",
+      "scope": "default composition collaborator/cancel/missing-target contracts added; no diagnostic suppression/dummy production call"
+    },
+    {
+      "first_actual": "docs/github-logs/package-client-quarantine-20261021/p4h-stale-original-lock-first-assessment.json",
+      "red": "docs/github-logs/package-client-quarantine-20261021/p4h-stale-original-lock-red.json",
+      "green": "docs/github-logs/package-client-quarantine-20261021/p4h-stale-original-lock-bounded-green.json",
+      "scope": "historical original public graph validated via discarded old-requirement view; selected current manifest/native/export/independent archive checks unchanged"
+    }
+  ],
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p4h-materializer-mechanical-reuse.json",
+  "unchanged_owners": [
+    "internal/artifact/pypi/uv_native_project_lock.go",
+    "internal/artifact/pypi/uv_project_export.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/sandbox/uv_project_update.go",
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/pypi_venv_transaction.go",
+    "internal/promotion/uv_project_transaction.go",
+    "internal/application/project_update.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/uv_project_preparation.go",
+      "sha256": "50dc17fbe0cafcb7dc83f802bdb0664a78d483da357f965df68b2f59ec287052"
+    },
+    {
+      "path": "internal/promotion/uv_project_publication.go",
+      "sha256": "2bc8134d161838894496990179a6e8f66d00c7ad74abb6871f600428647abe3a"
+    },
+    {
+      "path": "internal/promotion/uv_project_publication_test.go",
+      "sha256": "865ea9d7daeca042d10d0b51ac6694c95c7beb3801f066cfa59c744e28c38266"
+    },
+    {
+      "path": "internal/promotion/python_project_output.go",
+      "sha256": "00d29106204f982b2242a0e93e627902fb493ae306644cccbe7d122deae5911e"
+    },
+    {
+      "path": "internal/promotion/uv_sync_publication.go",
+      "sha256": "f93d0b379193914db672ccb5e1fa7b70f4d0cb256e409e2f7622660726f02ae1"
+    },
+    {
+      "path": "internal/promotion/uv_project_cache.go",
+      "sha256": "ab8603974a74a66d069d2c6de66879a937863c065c3ded50ee2887962d9a649e"
+    },
+    {
+      "path": "internal/application/uv_project.go",
+      "sha256": "25188f06a1d5b652ce92d593e2a23760347915beae296fd25807176044e21cb4"
+    },
+    {
+      "path": "internal/bootstrap/uv_project.go",
+      "sha256": "1a17d33fc6856ad57c63eeea923bbe61de9a20ba7a405a550f811f76fd72a6ed"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_publication_integration_test.go",
+      "sha256": "91cd6de3d103737a899ff493e6c93167c32175145122ca97cb8a80e8c9152a4f"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_test.go",
+      "sha256": "90f82c55093524d3e2a454c3e7d10fed8efe4f56e86a48c5ba6639e884381e05"
+    },
+    {
+      "path": "internal/sandbox/uv_project_update_test.go",
+      "sha256": "bbf7a0035890629ad0f8f1ef859a16b9e1e026f8a5d4f821ab905b96ad88f22c"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_original_lock.go",
+      "sha256": "89d99e8f105e4406b640c68f3ee9e3d88416375efacc9ab1a04ea2ab6ce6240b"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_original_lock_test.go",
+      "sha256": "ca2ebb2c9732c8672d8d6e359769c506d0d42173e6ed0d203993010603a6ea1f"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver.go",
+      "sha256": "05a4c832303b8c7be633f8c366823ef9e5c428ad6caf389c2f2ea761ea50de3b"
+    }
+  ],
+  "ci": "No push/dispatch; final grouped source/profile checkpoint remains open",
+  "lessons_review": "artifact L15 updated with separate confirmed default tag consumer and stale original causes; original failed evidence preserved"
+}

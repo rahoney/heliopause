@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/url"
 	"os"
@@ -29,6 +30,12 @@ func checkMarkdownTree(root string) error {
 		}
 		if entry.IsDir() {
 			if path != root && (entry.Name() == ".git" || entry.Name() == "vendor") {
+				return filepath.SkipDir
+			}
+			// docs/github-logs holds untracked raw captures, including frozen source
+			// snapshots whose partial copies cannot resolve their own relative links.
+			// Editing them would change recorded source fingerprints.
+			if path == filepath.Join(root, "docs", "github-logs") {
 				return filepath.SkipDir
 			}
 			return nil
@@ -207,4 +214,32 @@ func displayPath(root, path string) string {
 		return path
 	}
 	return filepath.ToSlash(relative)
+}
+
+// docSizeLimits lists the documents that agents read at the start of work. A
+// document above its limit produces a warning only: existing oversized files
+// must not block CI, but the signal tells the next worker to compact them by
+// the rule in docs/lessons/INDEX.md instead of reading or growing them whole.
+var docSizeLimits = []struct {
+	pattern string
+	bytes   int64
+}{
+	{"AGENTS.md", 20 << 10},
+	{"PROJECT-DECISIONS.md", 30 << 10},
+	{"docs/planning/02-current-work-queue.md", 200 << 10},
+	{"docs/lessons/INDEX.md", 12 << 10},
+	{"docs/lessons/artifact.md", 100 << 10},
+	{"docs/lessons/ci.md", 100 << 10},
+	{"docs/lessons/evidence.md", 100 << 10},
+	{"docs/lessons/sandbox.md", 100 << 10},
+}
+
+func warnOversizedDocs(root string, w io.Writer) {
+	for _, limit := range docSizeLimits {
+		info, err := os.Stat(filepath.Join(root, filepath.FromSlash(limit.pattern)))
+		if err != nil || info.Size() <= limit.bytes {
+			continue
+		}
+		_, _ = fmt.Fprintf(w, "docs size warning: %s is %d bytes (limit %d); compact it per docs/lessons/INDEX.md before adding more\n", limit.pattern, info.Size(), limit.bytes)
+	}
 }

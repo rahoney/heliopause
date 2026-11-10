@@ -1,0 +1,446 @@
+{
+  "rules": [
+    {
+      "id": "haa-s04-js-credential-body",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "mode": "taint",
+      "pattern-sources": [
+        {
+          "patterns": [
+            {
+              "pattern": "process.env.$NAME"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$NAME",
+                "regex": "(?i).*(token|secret|password|private.?key|access.?key).*"
+              }
+            }
+          ]
+        },
+        {
+          "patterns": [
+            {
+              "pattern": "process.env[$KEY]"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$KEY",
+                "regex": "(?i).*(token|secret|password|private.?key|access.?key).*"
+              }
+            }
+          ]
+        },
+        {
+          "patterns": [
+            {
+              "pattern": "fs.readFileSync($PATH, ...)"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$PATH",
+                "regex": "(?i).*(?:\\.npmrc|\\.pypirc|\\.env(?:\\.[^/]*)?|\\.aws/credentials|\\.ssh/id_[^/]*).*"
+              }
+            }
+          ]
+        }
+      ],
+      "pattern-sinks": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "fetch($URL, {..., body: $DATA, ...})"
+                },
+                {
+                  "pattern": "axios.post($URL, $DATA, ...)"
+                }
+              ]
+            },
+            {
+              "focus-metavariable": "$DATA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-py-credential-body",
+      "languages": [
+        "python"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "mode": "taint",
+      "pattern-sources": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "os.environ[$KEY]"
+                },
+                {
+                  "pattern": "os.getenv($KEY, ...)"
+                }
+              ]
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$KEY",
+                "regex": "(?i).*(token|secret|password|private.?key|access.?key).*"
+              }
+            }
+          ]
+        },
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "open($PATH, ...).read(...)"
+                },
+                {
+                  "pattern": "pathlib.Path($PATH).read_text(...)"
+                },
+                {
+                  "pattern": "pathlib.Path($PATH).read_bytes(...)"
+                }
+              ]
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$PATH",
+                "regex": "(?i).*(?:\\.npmrc|\\.pypirc|\\.env(?:\\.[^/]*)?|\\.aws/credentials|\\.ssh/id_[^/]*).*"
+              }
+            }
+          ]
+        }
+      ],
+      "pattern-sinks": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "requests.post($URL, data=$DATA, ...)"
+                },
+                {
+                  "pattern": "requests.post($URL, json=$DATA, ...)"
+                }
+              ]
+            },
+            {
+              "focus-metavariable": "$DATA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-js-decoded-eval",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "pattern": "eval(Buffer.from($PAYLOAD, \"base64\").toString(...))"
+    },
+    {
+      "id": "haa-s04-py-decoded-exec",
+      "languages": [
+        "python"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "pattern": "exec(base64.b64decode(...))"
+    },
+    {
+      "id": "haa-s04-js-download-shell",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "child_process.execSync($CMD, ...)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$CMD",
+            "regex": "(?is).*(?:curl|wget)\\s[^\\n]*(?:\\||;|&&)\\s*(?:sh|bash)\\b.*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-py-download-shell",
+      "languages": [
+        "python"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "subprocess.run($CMD, shell=True, ...)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$CMD",
+            "regex": "(?is).*(?:curl|wget)\\s[^\\n]*(?:\\||;|&&)\\s*(?:sh|bash)\\b.*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-go-download-shell",
+      "languages": [
+        "go"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "exec.Command(\"sh\", \"-c\", $CMD, ...)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$CMD",
+            "regex": "(?is).*(?:curl|wget)\\s[^\\n]*(?:\\||;|&&)\\s*(?:sh|bash)\\b.*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-rust-download-shell",
+      "languages": [
+        "rust"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "Command::new(\"sh\").arg(\"-c\").arg($CMD)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$CMD",
+            "regex": "(?is).*(?:curl|wget)\\s[^\\n]*(?:\\||;|&&)\\s*(?:sh|bash)\\b.*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-hcl-download-shell",
+      "languages": [
+        "terraform"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "provisioner \"local-exec\" { ... command = $CMD ... }"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$CMD",
+            "regex": "(?is).*(?:curl|wget)\\s[^\\n]*(?:\\||;|&&)\\s*(?:sh|bash)\\b.*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-js-startup-write",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "fs.writeFileSync($PATH, $DATA, ...)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$PATH",
+            "regex": "(?i).*(?:\\.bashrc|\\.profile|\\.zshrc|\\.config/autostart/|\\.ssh/authorized_keys).*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-py-startup-write",
+      "languages": [
+        "python"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "patterns": [
+        {
+          "pattern": "pathlib.Path($PATH).write_text($DATA, ...)"
+        },
+        {
+          "metavariable-regex": {
+            "metavariable": "$PATH",
+            "regex": "(?i).*(?:\\.bashrc|\\.profile|\\.zshrc|\\.config/autostart/|\\.ssh/authorized_keys).*"
+          }
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-bash-network-execution",
+      "languages": [
+        "bash"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "pattern-either": [
+        {
+          "pattern": "curl ... | sh"
+        },
+        {
+          "pattern": "curl ... | bash"
+        },
+        {
+          "pattern": "wget ... | sh"
+        },
+        {
+          "pattern": "wget ... | bash"
+        }
+      ]
+    },
+    {
+      "id": "haa-s04-bash-credential-body",
+      "languages": [
+        "bash"
+      ],
+      "message": "Suspicious artifact behavior requires review; this pattern alone is not a malware verdict.",
+      "severity": "WARNING",
+      "metadata": {
+        "rule_version": 1,
+        "disposition": "manual-review"
+      },
+      "mode": "taint",
+      "pattern-sources": [
+        {
+          "patterns": [
+            {
+              "pattern": "$CREDENTIAL"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$CREDENTIAL",
+                "regex": "(?i)^\"?\\$\\{?[A-Z0-9_]+_(token|secret|password|private_?key|access_?key|api_?key)(?:_id)?\\}?\"?$"
+              }
+            }
+          ]
+        },
+        {
+          "patterns": [
+            {
+              "pattern": "cat $PATH"
+            },
+            {
+              "metavariable-regex": {
+                "metavariable": "$PATH",
+                "regex": "(?i).*(?:\\.npmrc|\\.pypirc|\\.env(?:\\.[^/]*)?|\\.aws/credentials|\\.ssh/id_[^/]*).*"
+              }
+            }
+          ]
+        }
+      ],
+      "pattern-sinks": [
+        {
+          "patterns": [
+            {
+              "pattern-either": [
+                {
+                  "pattern": "curl ... --data $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --data-raw $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --data-binary $DATA ..."
+                },
+                {
+                  "pattern": "curl ... -d $DATA ..."
+                },
+                {
+                  "pattern": "curl ... -H $DATA ..."
+                },
+                {
+                  "pattern": "curl ... --header $DATA ..."
+                },
+                {
+                  "pattern": "wget ... --post-data=$DATA ..."
+                }
+              ]
+            },
+            {
+              "focus-metavariable": "$DATA"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

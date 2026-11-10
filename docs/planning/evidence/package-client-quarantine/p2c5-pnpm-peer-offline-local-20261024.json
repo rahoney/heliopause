@@ -1,0 +1,83 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-A3",
+  "baseline": "043cadf6819086291eb7f1585102881c0e675786",
+  "status": "LOCAL_VERIFIED_OFFLINE_PRIMITIVES_ONLY",
+  "source_files": [
+    {
+      "path": "internal/sandbox/pnpm_offline_fixture_real_test.go",
+      "sha256": "1ad1d419b8ed64561fe1ac79f29781b9447d1a60656631b0508410957dcd2e8c"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/pnpm-v9-peer.synthetic.yaml",
+      "sha256": "51cbbbed33034beee7e7ae510e24ff2f8078f61567d371c0874069ef6e2f2ab1"
+    }
+  ],
+  "first_failure": {
+    "exit": 1,
+    "seconds": 14.682,
+    "transitive": "PASS",
+    "peer": "NOT_EXECUTED_ARCHIVES_AND_NATIVE_INSTALL",
+    "cause": "fixture used ordinary Resolve packument; response body exceeds configured limit",
+    "correction": "reuse exact-version BindPNPMLock with existing versioned synthetic peer fixture; ordinary M2 bound unchanged"
+  },
+  "actual": {
+    "exit": 0,
+    "seconds": 16.314,
+    "transitive_seconds": 6.01,
+    "peer_seconds": 8.01,
+    "peer_archives": 4,
+    "peer_instances": 4,
+    "peer_exact_links": 5,
+    "both_controls": "BYTE_IDENTICAL",
+    "both_offline_install_endpoints": 0,
+    "both_complete_trace": true,
+    "both_forbidden_observations": 0,
+    "artifact_scripts": "NOT_EXECUTED",
+    "Host_install": "NOT_EXECUTED",
+    "host_before_after_identical": true,
+    "host_native_installation_absent": true,
+    "helper_wait": 0,
+    "original_exit": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "client_error": 0,
+    "client_restore": 0
+  },
+  "missing": [
+    "production static-all/frozen dependency context",
+    "per-target lifecycle and same-archive multiple-peer-instance coverage",
+    "verified layout/records/transaction/CLI",
+    "full P2 qualification and acceptance"
+  ],
+  "evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-offline.json",
+      "sha256": "a36ede0af6eaaae93bb7f2e52c5427095ad46737dab333fe9200d79eda637dd7"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-offline-actual.log",
+      "sha256": "906e16d5d30b24ffa2de248ad5113468dab7858935846ee379a3b3a123d5eb99"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-exact.json",
+      "sha256": "95dd0dcd091ee69e2651f5610f4126563d9eac75b3c5f3e902cb924bda55b8bb"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-exact-actual.log",
+      "sha256": "e5a8c3ae195a9e0d5efb1bb7d301e78969eded1575de93aad545384796d407b0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-pnpm-peer-exact-runtime-preparation.json",
+      "sha256": "297061f73e63b6eee21703e4953134ad3a53c23c327b168ac10ec3d98a028952"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-peer-layout-upstream-0.rs",
+      "sha256": "c0a20ff65f40c622254feff37778b96da7dead92ddb3463c2a032a069628a39e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5-peer-layout-upstream-1.rs",
+      "sha256": "37d22ccdd2935715d2a7605b0dd9453ce89feef4f678edac60cfd5e6760351d6"
+    }
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

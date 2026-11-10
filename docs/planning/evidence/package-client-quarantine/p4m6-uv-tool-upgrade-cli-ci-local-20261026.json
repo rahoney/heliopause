@@ -1,0 +1,141 @@
+{
+  "scope": "P4-M4D public managed UV tool upgrade and exact canonical CI recipe wiring/actual local qualification; no native tool adoption/pipx/final-profile claim",
+  "baseline": "5687c8ad1e5ec95a090b62cee54e635333d888e7",
+  "implemented": "YES",
+  "wired": "YES (public descriptor/lazy updater/current shared pipeline and CI scopes)",
+  "qualified": "YES (named local); NO (new hosted cohort)",
+  "acceptance_closed": "YES (D local); NO (P4/global qualification)",
+  "checks": [
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-quick.json",
+      "seconds": 59.691,
+      "log_sha256": "49c65498a3fa6e30dd78e2954dd405628519fe89eb0136831a753f321dbf4548"
+    },
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-security.json",
+      "seconds": 11.095,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-docs.json",
+      "seconds": 0.261,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-workflow.json",
+      "seconds": 0.744,
+      "log_sha256": "4b33ec766e653569218a5b43e5a6805720c842265f2aad733d579520d20e005f"
+    },
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-full-affected-race.json",
+      "seconds": 45.34,
+      "log_sha256": "2bb113c1392faad3159747c9d51b38776756777df0760f3b1d914e33aabbb190"
+    }
+  ],
+  "actual": [
+    {
+      "receipt": "p4m6-tool-upgrade-cli-ci-v2-result.json",
+      "seconds": 304.877,
+      "helper_wait": 0,
+      "host_before_after_identical": true,
+      "no_skip": true
+    },
+    {
+      "receipt": "p4m6-tool-upgrade-ci-sandbox-v1-result.json",
+      "seconds": 40.537,
+      "helper_wait": 0,
+      "host_before_after_identical": true,
+      "no_skip": true
+    }
+  ],
+  "actual_bootstrap_seconds": {
+    "fresh_cli": 79.06,
+    "current_evidence_failure": 52.21,
+    "managed_backend": 82.18,
+    "public_upgrade_cli": 87.47,
+    "json": 28.5,
+    "human": 28.43
+  },
+  "verified": [
+    "same UV tool client with distinct upgrade operation; always current UPDATE, separate positional/native receipt conditions",
+    "explicit canonical absolute target/bin, unsafe/duplicate/native options refused before runtime; static English/Korean help",
+    "current whole inspection/Evidence/Policy/8-control Manifest/atomic Host receipt and command publication; no-op reinspection",
+    "public JSON/human upgrade and unsupported-option/unowned original refusal preserves state/staging",
+    "unmodified canonical CI bootstrap and sandbox scripts execute all six registered actual functions with existing helper owner",
+    "pinned never-started image DATA fixture exact label/image/state, bounded regular single-link file, removed before consumers; no Host interpreter/program execution",
+    "new CI active-command/client/helper/package-cwd/restore mutation guards; original PNPM/Bun/roles/jobs/budgets preserved"
+  ],
+  "reuse": "p4m6-public-upgrade-mechanical-reuse-v1.json; shared CLI body parameter-only extraction and17 complete owners unchanged",
+  "first_failures": [
+    "p4m6-first-canonical-fixture-assessment.json",
+    "p4m6-first-public-refusal-fixture-assessment.json"
+  ],
+  "operator_guard": "p4m6-sandbox-operator-first-assessment.json; old evidence protected, unique prefix corrected before compile/native start",
+  "late_tag_only_fix": "unsupported native flag preflight assertion corrected; production/default Quick/Race subject unchanged; canonical format, tagged build and full exact recipe verified",
+  "source_files": [
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "68ed8efa861aec3884e3bf66a63fd8e44a4d61ac77e4da0ca0a7384fc8b6ef0f"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "baf2d38f177836626b57880801b46005adda42b5a50ecf4c9e0089780deea26e"
+    },
+    {
+      "path": "internal/cli/uv_tool.go",
+      "sha256": "5e3f32dd045bc5116620db3077ae16953c5a55810c3e6b23e0c37d12d19e2b11"
+    },
+    {
+      "path": "internal/cli/uv_tool_upgrade.go",
+      "sha256": "886a0605decec3e22ad01e88dfa86e9f3369b553bd447cb1f9605012ad4d6080"
+    },
+    {
+      "path": "internal/cli/uv_tool_upgrade_test.go",
+      "sha256": "6b6cb835d93f652f5bd580e66e20efe55ea75df6a45308cf95f7384794976290"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_client.go",
+      "sha256": "09628c2b4a637d40e1182e3f8660ef89702a796ff607082a5f4cf2eaa81e23c9"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_client_test.go",
+      "sha256": "1d64fe2513df5700c2c3bb9afc994751f9a20bbb59583c7a83bd02eeb6c80f7a"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_upgrade_cli_integration_test.go",
+      "sha256": "ce88d259b673af84fc15efa2955859e9af63bbf34df8aa7aef9bba6ba5a2f5ac"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "20fa75ad1c49668923b9a6a6c3f3106afd3a6e6d91876932f6bfd39708bcd42e"
+    },
+    {
+      "path": "scripts/ci-uv-tools.sh",
+      "sha256": "19e6bc678afff838a6ce7516dda633f767ea3ea7e6ee3aef9226081ed74f2f58"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "54d665d811d955fd9fc6593a6d6c48938befe3d88b1017ef4d516b19ce6aef8e"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow.go",
+      "sha256": "2f6b3d1534e873b3638973748ffae6664888fd98c54ce66be12c418d97e6594b"
+    },
+    {
+      "path": "scripts/check/uv_tools_workflow_test.go",
+      "sha256": "7676dad314c8876648e3a4b01c6fc3b09d1028636c36cb15981e01db74bd2453"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "9ac6885563de439f22d422473faae4d0903c7d945563fb12cc6c9f29cf3e4adc"
+    }
+  ],
+  "original_fixture_boundary": "authentic current HAA public6.0 files; historical unversioned receipt condition explicitly synthetic, not native exact-pin override/adoption",
+  "missing": [
+    "new hosted cohort and CI414 fixture mitigation remote Git2.55 result",
+    "independent native original tool ownership/source proof, pipx",
+    "temporary runners and final exact source CPU/cu126/cu130/cu132 profiles"
+  ],
+  "remote_ci": "NOT_STARTED; one necessary ordinary end-to-end cohort follows this commit; CI414source294 failure not projected onto current source",
+  "first_timer_estimate_minutes": 80
+}

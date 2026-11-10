@@ -1,0 +1,105 @@
+{
+  "work_item": "M13-004/P3-B4d-c",
+  "baseline": "3f328e27f09d2d25a2b756f95f245502a565dafb",
+  "status": {
+    "IMPLEMENTED": "YES (typed Bun bound-layout instance execution through shared existing session owner)",
+    "WIRED": "YES (Bun public source/prepare/payload/target/trace/cleanup actual chain)",
+    "QUALIFIED": "YES (named local Node lifecycle lane; affected PNPM whole project)",
+    "ACCEPTANCE_CLOSED": "NO (whole B4d/Bun)",
+    "MISSING": [
+      "complete Bun static-all/dynamic aggregation/coverage and Policy wiring",
+      "explicit Bun executable/runtime script requirements and actual admission",
+      "approved cache/transaction/CLI and whole remote qualification; next meaningful macOS/Required gate remains"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "sha256": "44bef917fb647f65fc91a17ae5ea85869bb5f98b810f9581c2f490d2614e8c28"
+    },
+    {
+      "path": "internal/sandbox/bun_instance_backend.go",
+      "sha256": "7116572cb3eb142236446a8a5194a40bf12f2386ffd2f616a6e3651c7056dbb2"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend_test.go",
+      "sha256": "2deb7dc846840b933bc7a82369d43ab7f4098cc9f80e61e6732eafb549b510ba"
+    },
+    {
+      "path": "internal/sandbox/bun_instance_backend_test.go",
+      "sha256": "9efaba7445a87a274968e8cdebde96680cb25be0cdef4ef79fecf4601206096d"
+    },
+    {
+      "path": "internal/sandbox/bun_inspection_payload_test.go",
+      "sha256": "56f6fa33ee737d780bd4199ab1240c1160773bfa29926c13123838e3ababdc96"
+    },
+    {
+      "path": "internal/sandbox/bun_instance_backend_real_test.go",
+      "sha256": "316a8e2a66a3a10bc38ddaa36afb96b25b7bf0209c664f19de0ad4fd3434c168"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b4dc-reviewed-quick.json",
+      "exit": 0,
+      "seconds": 161.883,
+      "receipt_sha256": "23ed09f9cd6bfddeaad80aa9a09a68edac5f27bb264b2424c8c01a2784c8e806"
+    },
+    {
+      "receipt": "p3b4dc-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 25.135,
+      "receipt_sha256": "8b4f90e82fd0af5300723f9fd28e11079d78e7f68ac72110be2b3f4e2b6bed1f"
+    },
+    {
+      "receipt": "p3b4dc-bun-instance-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.22,
+      "receipt_sha256": "41818ea3010940b968e599c11f2045b29dfa7153db26fabda144975c01f24ffd"
+    },
+    {
+      "receipt": "p3b4dc-bun-instance-v2-actual-compile.json",
+      "exit": 0,
+      "seconds": 6.484,
+      "receipt_sha256": "2acff95d841b5a00a8b7f021f430492304f01cb7c330fab01749fe14e7854681"
+    },
+    {
+      "receipt": "p3b4dc-bun-instance-v2-result.json",
+      "exit": 0,
+      "seconds": 79.128,
+      "receipt_sha256": "f3f0ed192d1d8103623f1b873342a8a385ae996163015c77326d99532cf25f90"
+    }
+  ],
+  "bun_actual": {
+    "source": "fresh public peer archive4 with SRI/static inventories",
+    "exact_instances": 4,
+    "fresh_sessions": 4,
+    "whole_payload_readback": true,
+    "trace_cleanup_before_return": true,
+    "seconds": 31.41,
+    "lane": "fixed npm/Node lifecycle; explicit Bun executable NOT_EXERCISED",
+    "Policy_Host_install": "NOT_EXERCISED"
+  },
+  "pnpm_affected_actual": {
+    "fixtures": [
+      "transitive",
+      "peer"
+    ],
+    "archives": [
+      2,
+      4
+    ],
+    "fresh_dynamic_sessions": [
+      2,
+      4
+    ],
+    "static_all": true,
+    "required_dynamic": "COMPLETED",
+    "seconds": 45.02
+  },
+  "shared_body": "p3b4dc-instance-engine-mechanical-reuse.json",
+  "first_failure": "p3b4dc-first-quick.json (72.605s U1000; unused private create wrapper removed, public PNPM method preserved)",
+  "observer": "CPP unchanged from 3f328e2; same original canonical119-latch observer source/binary identity verified at actual namespace preparation",
+  "runtime_fs_network_grants_added": false,
+  "ci": "No push/new CI for instance consumer; integrate complete inspection/Policy before backend checkpoint; actual timer continuation rules remain."
+}

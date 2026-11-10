@@ -1,0 +1,150 @@
+{
+  "scope": "P4-O4-B1a selected acquired ZIP immutable snapshot; no Python execution or release acceptance",
+  "baseline": "46b91a6",
+  "implemented": true,
+  "wired": "public selected-byte parser only; controlled intake identity next",
+  "qualified": "local default/full PyPI race and explicit selected ZIP",
+  "acceptance_closed": false,
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.671
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 256.943
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 8.661
+    },
+    {
+      "step": "actual",
+      "command": [
+        "go",
+        "test",
+        "-tags=realcorpus",
+        "-count=1",
+        "-run",
+        "^TestPipxRuntimeZIPActualSelectedSnapshot$",
+        "-v",
+        "./internal/artifact/pypi"
+      ],
+      "exit_code": 0,
+      "seconds": 2.347
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.238
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 13.717
+    }
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip.go",
+      "sha256": "424b19e11eef7cab874e5f28d51784fcf0f4786eb2e2b665a3a6791daede036b"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip_test.go",
+      "sha256": "44c6f196ff3ef2bf6c3df10e811395a6cbf137b53407c4eeb26e87fb54f28ba3"
+    },
+    {
+      "path": "internal/artifact/pypi/pipx_runtime_zip_realcorpus_test.go",
+      "sha256": "7c28915fea94cdd76e8fa1f61d61f0c438b2828dba106f368f02caf1cb825959"
+    }
+  ],
+  "actual": {
+    "size": 2505814,
+    "files": 190,
+    "caller_and_accessor_mutation_isolation": true,
+    "changed_truncated_appended_refused": true,
+    "python_executed": false
+  },
+  "missing": [
+    "original HAA acquired identity/read binding",
+    "embedded metadata/RECORD and typed Python observation plan",
+    "external observer/backend and required composite",
+    "release complete set, pipx native/CLI/final profiles"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-format.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "bytes": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-quick.log",
+      "sha256": "de25279a746d221ef66f0a5a8f12cfd608f33c8c019fdae2965c64e6510367bc",
+      "bytes": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-race.log",
+      "sha256": "1e13ebc6afdfae5d5d0e03fd37e7a210f78e545128d56262448daa6914cc4b22",
+      "bytes": 65
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-actual.log",
+      "sha256": "e1a385848eef855e8b71e5c5a66ca45258d3dd33d1b6a677434cebcdeb1b9bb9",
+      "bytes": 325
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-security.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f",
+      "bytes": 80
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-checks.json",
+      "sha256": "a94730c923d0f0c4e215f2c0546d8f44cec44f203ef3bb55ef71f6888503d865",
+      "bytes": 1111
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/haa-p4o4b1a-source.json",
+      "sha256": "fea727c2a147a0bf11508acdd33cb0142988de5c19c33bb4944bdd174de5b920",
+      "bytes": 468
+    }
+  ]
+}

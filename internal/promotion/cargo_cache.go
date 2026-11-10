@@ -31,6 +31,9 @@ const (
 type CargoVerifiedCache struct {
 	intakeRoot, evidenceRoot, cacheRoot string
 	evidence                            ProjectEvidenceReader
+	// A private instance-local observer may inspect/abort. It never replaces
+	// the mandatory real tree sync before publication.
+	beforeTreeSync func(string) error
 }
 
 func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenceReader) (*CargoVerifiedCache, error) {
@@ -43,7 +46,7 @@ func NewCargoVerifiedCache(intake, evidence, cache string, reader ProjectEvidenc
 			return nil, errors.New("cargo cache roots must be canonical absolute paths")
 		}
 	}
-	return &CargoVerifiedCache{intake, evidence, cache, reader}, nil
+	return &CargoVerifiedCache{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, evidence: reader}, nil
 }
 
 type cargoCacheEntry struct {
@@ -90,8 +93,11 @@ func (c *CargoVerifiedCache) approval(ctx context.Context, set domain.ProjectVer
 		if err != nil || checksum != a.Digest().String() || a.Identity().Source() != artifactcargo.Source() || a.Identity().Variant() != "crate" {
 			return cargoCacheDocument{}, errors.New("cargo cache approval subject is invalid")
 		}
-		records, err := projectCacheEvidence(ctx, c.evidence, inspection)
+		records, facts, err := projectCacheEvidenceFacts(ctx, c.evidence, inspection)
 		if err != nil {
+			return cargoCacheDocument{}, err
+		}
+		if err := verifyArchiveContentEvidence(facts); err != nil {
 			return cargoCacheDocument{}, err
 		}
 		doc.Entries = append(doc.Entries, cargoCacheEntry{a.Identity().Source().String(), a.Identity().Name(), a.Identity().Version(), a.Digest().String(), integrity, inspection.RunID().String(), records, inspection.PolicyDecision().PolicyID(), inspection.PolicyDecision().Version()})
@@ -206,7 +212,7 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 			if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 				return staged, err
 			}
-			if err := writeRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
+			if err := writePrivateRecord(filepath.Dir(file), filepath.Base(file), files[name]); err != nil {
 				return staged, err
 			}
 		}
@@ -234,6 +240,11 @@ func (c *CargoVerifiedCache) StageProject(ctx context.Context, set domain.Projec
 	if err := writeRecord(temporary, cargoCacheReceipt, receipt); err != nil {
 		return staged, err
 	}
+	if c.beforeTreeSync != nil {
+		if err := c.beforeTreeSync(temporary); err != nil {
+			return staged, err
+		}
+	}
 	if err := syncTree(temporary); err != nil {
 		return staged, err
 	}
@@ -259,7 +270,7 @@ func (c *CargoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain
 }
 
 func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected cargoCacheDocument) (string, error) {
-	if err := c.verifyRecordedApproval(ctx, expected); err != nil {
+	if err := c.verifyRecordedApproval(ctx, expected, true); err != nil {
 		return "", err
 	}
 	id, ok := strings.CutPrefix(handle, "project-cache:")
@@ -321,7 +332,7 @@ func (c *CargoVerifiedCache) openDocument(ctx context.Context, handle string, di
 	return filepath.Join(root, "vendor"), nil
 }
 
-func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument) error {
+func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc cargoCacheDocument, requireProfiles bool) error {
 	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("cargo retained approval coverage is invalid")
 	}
@@ -344,6 +355,7 @@ func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc car
 		if err != nil {
 			return err
 		}
+		var facts []domain.Evidence
 		for _, record := range entry.Evidence {
 			id, err := domain.NewEvidenceID(record.ID)
 			if err != nil {
@@ -353,9 +365,17 @@ func (c *CargoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc car
 			if err != nil {
 				return err
 			}
-			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if err != nil || hash.String() != record.SHA256 {
+			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != record.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("cargo retained Evidence is changed or unavailable")
+			}
+			if requireProfiles {
+				facts = append(facts, fact)
+			}
+		}
+		if requireProfiles {
+			if err := verifyArchiveContentEvidence(facts); err != nil {
+				return err
 			}
 		}
 	}

@@ -1,0 +1,383 @@
+{
+  "date": "2026-10-30",
+  "work_item": "M13-004/P6-G3",
+  "status": "NAMED_LOCAL_QUALIFIED_EXPLICIT_BUN_NODE_COMPATIBLE_JS_ONLY",
+  "baseline": "p6g3-bun-readonly-runtime-baseline-20261030.md",
+  "source_base": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+  "source_files": [
+    {
+      "path": "internal/bootstrap/bun_execution_context_test.go",
+      "sha256": "653aea3addb23548ea739ebd939098c4e03bbb4efa20cf126a3c520a093e4937"
+    },
+    {
+      "path": "internal/bootstrap/bun_run_execution.go",
+      "sha256": "05ff8cfa14f0ee1b3d0b1b3cfd994bac5fbcdd9f6c2febd0593a4627fce45a13"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_boundary_fixture_test.go",
+      "sha256": "d37768a3cc31b6c7fbba1dd84749b2c203534bfe89801f39ae7113d366b9b43e"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_boundary_integration_test.go",
+      "sha256": "278a413ee465abdee662bcebecb213870102ed48790059166e34a9f772675546"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_context.go",
+      "sha256": "c0ed1d63d3131362d6d13e715c0a95f5c938fa4362832ff6f6ef1f8aa861e3a8"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_prepare.go",
+      "sha256": "088f74205d495c79c81fb2a5c13b08902e29118a798f51c001ab20064feada98"
+    },
+    {
+      "path": "internal/bootstrap/node_execution_run_integration_test.go",
+      "sha256": "fda73d5c7e5901d22ef4821b63d6aea25084e7ec2d3ea8046285cf1fb88e2e6f"
+    },
+    {
+      "path": "internal/bootstrap/npm_execution_integration_test.go",
+      "sha256": "9a6f93dcd75fcd017f6e50a25b89e7d4a0554788fc57af30989a723070222f0b"
+    },
+    {
+      "path": "internal/cli/bun_execution.go",
+      "sha256": "f7967fc4d4e7dab6272906bdde5da945c178c76445871cbf9aa90a6c9654874c"
+    },
+    {
+      "path": "internal/cli/bun_execution_test.go",
+      "sha256": "9dcd43a82a447bf7f23308ab6a3a26e44bae5d9ce842d6189a410bbb2bb2e968"
+    },
+    {
+      "path": "internal/cli/pnpm_execution_test.go",
+      "sha256": "30056814d0ff6dbfeee5f46f9889a010781cd4c359a6d9fb8b7551866159ca41"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper.go",
+      "sha256": "2449894e0a34d6475a8b29e85cb3d1067dbb2de88789c1cbac72a3fb98de5739"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper_test.go",
+      "sha256": "0687b8e936c42c3b5b8240b9d71e2e732727fc6cc09061c1f2eba52e3a16f06c"
+    },
+    {
+      "path": "internal/sandbox/bun_execution.go",
+      "sha256": "95929228b41f1acc549428b0e0eb4fe68c3a13be6dcb14b49d1e1e7ee49b6618"
+    },
+    {
+      "path": "internal/sandbox/bun_execution_test.go",
+      "sha256": "b895860d17f3227120ee9250903a6c6de38ae879cc313b78572f476267fa9835"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "sha256": "3be340729b5fdd002ab5ee7321c917209621f82684e3cfe768b323f341d0d8db"
+    },
+    {
+      "path": "internal/sandbox/node_execution.go",
+      "sha256": "53c32304dc9b125be5c124daa5b2748da79ea1d93592e27c016fd25a75dd3a83"
+    },
+    {
+      "path": "internal/sandbox/node_execution_inputs.go",
+      "sha256": "564707fe0c43c19027a4c68bd6d38bd9ef194069243b0e35cda21aa76366de48"
+    },
+    {
+      "path": "internal/sandbox/program_execution.go",
+      "sha256": "cbe1fdea6880f62053d07d90e47d66db5887d73d9d2c2c23a40fed1b0170ee7c"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "4d4ee1663ebd3c3a82488b374e8cf0453ec044fb9677fcee8be2f26b5bac063b"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow.go",
+      "sha256": "1dc98f3b4145a5794731edbf765b584150706b3517d9799421780dc649edc076"
+    },
+    {
+      "path": "scripts/check/bun_runtime_workflow_test.go",
+      "sha256": "65d8b0fec3744ee208b78f7ec2671f3edc3bad07f8f94bca834c9da8855533f5"
+    },
+    {
+      "path": "scripts/ci-bun-runtime.sh",
+      "sha256": "d04f36f82294e2aae7afddd72a08bef9e359adc8e3c4a3cec8a7bd9786b64e0e"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "6d72851ad053c23b5983bccfd28c0d84e7016cc6a83a195301dff4c2620e801f"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "081d75b2cc889c2113f55d68873e6cf2b9f359c5de89bac4c55637ff8113a176"
+    }
+  ],
+  "implementation": {
+    "reuse": [
+      "same measured Node-compatible JS entry and whole current inspection/Evidence/Policy/records",
+      "existing readonly input writer/reader/readback/attachment/cleanup",
+      "existing native Bun root-owned0555 supply and fixed hash/volume",
+      "existing private capture/external accepted-target and kernel terminal"
+    ],
+    "new_boundaries": [
+      "explicit --bun before package; same workflow private body and distinct Bun program runtime identity",
+      "exact --handoff-bun/current ARTIFACT direct-root Bun profile and finite existing Bun startup read body",
+      "fixed Bun argv --no-install --no-env-file --no-macros -- approved-entry; user argv remains literal"
+    ],
+    "Bun_only_shebang_TS_entry_auto_selection": "UNSUPPORTED",
+    "Core_Policy_runtime_pins_and_product_budgets_changed": false
+  },
+  "actual_named": {
+    "Bun_program_app2": {
+      "test_seconds": 65.68,
+      "operator": {
+        "exit_code": 0,
+        "seconds": 67.839,
+        "host_unchanged": true,
+        "helpers_after": {
+          "matches": [],
+          "errors": []
+        },
+        "no_skip": true,
+        "helper_wait_zero": true,
+        "helper_confirmed_stopped": true,
+        "observer_directory_empty_after": true,
+        "scope": "G3 explicit pinned Bun program: same current public TypeScript original/whole inspection/Policy/new records/readonly input, separate Bun identity/handoff and normal0/typed Bun nonzero1. Full CPP/current forced CLI/hosted/general/final still open",
+        "Go_source_base": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+        "new_test_source": {
+          "path": "internal/bootstrap/node_execution_run_integration_test.go",
+          "sha256": "fda73d5c7e5901d22ef4821b63d6aea25084e7ec2d3ea8046285cf1fb88e2e6f"
+        },
+        "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      }
+    },
+    "Bun_program_CLI3": {
+      "test_seconds": 177.83,
+      "operator": {
+        "exit_code": 0,
+        "seconds": 179.981,
+        "host_unchanged": true,
+        "helpers_after": {
+          "matches": [],
+          "errors": []
+        },
+        "no_skip": true,
+        "helper_wait_zero": true,
+        "helper_confirmed_stopped": true,
+        "observer_directory_empty_after": true,
+        "scope": "G3 forced Bun current CLI3: bunx/bun x TypeScript normal0/typed Bun nonzero1 and multi-node implicit Rimraf; same whole current source/Policy/records/private output/read-only input. Full CPP/hosted/general/final still open",
+        "Go_source_base": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+        "new_test_source": {
+          "path": "internal/bootstrap/node_execution_run_integration_test.go",
+          "sha256": "fda73d5c7e5901d22ef4821b63d6aea25084e7ec2d3ea8046285cf1fb88e2e6f"
+        },
+        "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      }
+    },
+    "affected_existing_Node_app2": {
+      "test_seconds": 64.11,
+      "operator": {
+        "exit_code": 0,
+        "seconds": 66.285,
+        "host_unchanged": true,
+        "helpers_after": {
+          "matches": [],
+          "errors": []
+        },
+        "no_skip": true,
+        "helper_wait_zero": true,
+        "helper_confirmed_stopped": true,
+        "observer_directory_empty_after": true,
+        "scope": "G3 changed shared input/helper/capture owner: affected existing Bun current Node application2 regression using same verified G3 Go ELF/observer. New Bun runtime controlled12/public CLI are separate; full CPP/hosted/general/final open",
+        "Go_source_base": "6d9d3bf8967f2116f01c7a05e5e8ce5cf52b7530",
+        "new_test_source": {
+          "path": "internal/bootstrap/node_execution_run_integration_test.go",
+          "sha256": "fda73d5c7e5901d22ef4821b63d6aea25084e7ec2d3ea8046285cf1fb88e2e6f"
+        },
+        "local_observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+      }
+    }
+  },
+  "controlled_boundary": {
+    "registry": "CONTROLLED_TEST",
+    "native_Bun_solver": "NOT_RUN",
+    "first_run": {
+      "operator": "p6-g3-controlled-boundary-first-v3",
+      "parent": "FAIL",
+      "seconds": 182.59,
+      "passed_first9": [
+        "argv",
+        "term",
+        "kill",
+        "cancel",
+        "stdout-overflow",
+        "stderr-overflow",
+        "outside-read",
+        "network",
+        "child"
+      ],
+      "first_failure": "comm-spoof test expected confirmed BUN image, but actual retained ARTIFACT/direct-root and rejected UNKNOWN/unpinned at exact PROC classification"
+    },
+    "remainder": {
+      "operator": "p6-g3-controlled-remainder-v7",
+      "parent": "PASS",
+      "seconds": 73.39,
+      "selected_only": [
+        "comm-spoof",
+        "readonly",
+        "deadline"
+      ],
+      "product_and_observer_unchanged": true,
+      "test_oracle_only_corrected": true
+    },
+    "coverage": "12 distinct cases across first9 + selected remainder3; NOT a single full12 parent PASS",
+    "aggregate_test_context": "Bun5m from measured ~235s total; existing Node4m and case deadline30s unchanged"
+  },
+  "CPP": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--pull=never",
+      "--platform",
+      "linux/amd64",
+      "--user",
+      "1000:1000",
+      "--env",
+      "HOME=/tmp/helox-release-observer.W911Qq",
+      "--env",
+      "USER=builder",
+      "--env",
+      "EXPECTED_BAZEL_VERSION=8.3.1",
+      "--env",
+      "EXPECTED_BAZEL_SHA512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",
+      "--mount",
+      "type=bind,src=/tmp/helox-release-observer.W911Qq,dst=/tmp/helox-release-observer.W911Qq",
+      "--workdir",
+      "/tmp/helox-release-observer.W911Qq/gvisor",
+      "--entrypoint",
+      "/bin/sh",
+      "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64@sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+      "-c",
+      "set -eu\ntest \"$(/usr/local/bin/bazel --version)\" = \"bazel $EXPECTED_BAZEL_VERSION\"\ntest \"$(sha512sum /usr/local/bin/bazel | awk '{print $1}')\" = \"$EXPECTED_BAZEL_SHA512\"\n/usr/local/bin/bazel build -c opt --jobs=4 --local_ram_resources=8192 //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test\nbazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test\n"
+    ],
+    "exit_code": 0,
+    "seconds": 59.054,
+    "source_identity": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "6d72851ad053c23b5983bccfd28c0d84e7016cc6a83a195301dff4c2620e801f"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "081d75b2cc889c2113f55d68873e6cf2b9f359c5de89bac4c55637ff8113a176"
+      },
+      {
+        "path": "tools/gvisor-observer/pod-init.json",
+        "sha256": "617c58d7ee72185a72b6dbc40abf5785985af6dbe019cdb68ef0f27728ffebdc"
+      }
+    ],
+    "canonical_builder_and_commands_reused": true,
+    "temporary_diagnostic_or_runner_in_final_source": false,
+    "latches_pass": 133,
+    "latches_fail": 0,
+    "observer_sha256": "09615d384351d3a4b6b2098e1ea768b1ea3959ff2be5ba7e3654785a88e5c721"
+  },
+  "first_Quick": {
+    "exit_code": 1,
+    "seconds": 343.861,
+    "only_failure": "TestObserverOCIBootstrapCommandMatchesBoundaryContainerCommand",
+    "validation_input_issue": "Quick started before final C++ private copy sync; exact initially read C++ bytes SHA not collected. Final25 Root/private match and same byte comparison PASS; no product/test weakening",
+    "original": "p6-g3-first-quick-input-mismatch"
+  },
+  "grouped_checks": [
+    {
+      "name": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 51.429
+    },
+    {
+      "name": "affected-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/sandbox",
+        "./internal/bootstrap",
+        "./internal/cli",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 53.679
+    },
+    {
+      "name": "checker-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./scripts/check",
+        "-count=1"
+      ],
+      "exit_code": 0,
+      "seconds": 77.532
+    },
+    {
+      "name": "tagged-staticcheck",
+      "command": [
+        "/home/winamp/.cache/heliopause/quality-tools/bin/staticcheck",
+        "-tags=realcorpus",
+        "./internal/sandbox",
+        "./internal/bootstrap",
+        "./internal/cli"
+      ],
+      "exit_code": 0,
+      "seconds": 2.832
+    }
+  ],
+  "hosted_wiring": {
+    "existing_script": "scripts/ci-bun-runtime.sh project",
+    "new_parents": 3,
+    "new_job_helper_rebind": false,
+    "guard": "exact parents, app2/CLI3/graph/boundary12 distinct, no-SKIP, original producer failure before readback failure",
+    "saved_actual_marker_DATA": {
+      "exit_code": 0,
+      "input_sources": [
+        "/tmp/haa-p6g3-actual-v1/actual.log",
+        "/tmp/haa-p6g3-cli-v2/actual.log",
+        "/tmp/haa-p6g3-boundary-v3/actual.log",
+        "/tmp/haa-p6g3-boundary-remainder-v7/actual.log"
+      ],
+      "app_cases": 2,
+      "cli_cases": 3,
+      "boundary_case_count": 12,
+      "parents": 3,
+      "scope": "Saved actual marker DATA only; first9 + selected remainder3 coverage across two controlled executions; NOT a new native rerun or one full twelve-case parent success"
+    },
+    "future_expected_Linux_parents": 122,
+    "future_expected_CPP_latches": 133,
+    "Required_jobs": 10,
+    "Linux_job_minutes": 120,
+    "new_source_hosted": "NOT_RUN; active CI440 is frozen G1/G2 source6d9d3bf"
+  },
+  "cleanup": {
+    "exit_code": 0,
+    "removed_names": 120,
+    "unique_inodes": 118,
+    "logical_bytes": 6992054739,
+    "unique_inode_bytes": 6832313217,
+    "references": 0,
+    "query_errors": 0,
+    "helpers": 0,
+    "containers": 0,
+    "logs_receipts_sources_original_cached_Bun_and_current_observer_preserved": true,
+    "scope": "Only completed G1/G2/G3 task-owned ELF and introduced Bun copies, including private namespace supply copies; no directory/root/shared cache removal"
+  },
+  "still_open": [
+    "new-source G3 hosted qualification",
+    "Bun-only shebang/TypeScript entry automatic selection and general native equivalence",
+    "P7 whole command/options/support/profile matrix and same frozen source CPU/three CUDA final qualification",
+    "signed distribution/channel publication and whole M13-004 acceptance"
+  ],
+  "documentation_security_evidence": "docs/github-logs/package-client-quarantine-20261021/p6-g3-final-go-checks/documentation-security-checks.json"
+}

@@ -1,0 +1,617 @@
+{
+  "schema": "goal-reinforcement-local-checkpoint/v1",
+  "unit": "B02",
+  "base_commit": "c6331e5fa78d842b1b6cb355c40a768df42740a7",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "NO",
+  "acceptance_closed": "NO",
+  "checks": [
+    {
+      "id": "b02-native-actual-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-native-actual-v1.json",
+      "sha256": "77ca9335a599de0996f5abcf18464a4fb9f0e7fe5d01169206206a8f6166e133",
+      "exit_code": 1,
+      "seconds": 25.6,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-native-tail-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-native-tail-v1.json",
+      "sha256": "12b74277ecb1d48c34e918d57ab7d252dc2d885a392309ddfb0c081535290d23",
+      "exit_code": 0,
+      "seconds": 18.109,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-native-meta-replay-red",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-native-meta-replay-red.json",
+      "sha256": "cf283d99cdd91c5c12bf0bd5d6a8906c62a351261792d1c1ad45b9871c28333c",
+      "exit_code": 1,
+      "elapsed": 2.606,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-cache-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-cache-v1.json",
+      "sha256": "8ba57d28323bc57b2b5c26b6dd50687d7878528b43ed5e402933e5ee588fa08a",
+      "exit_code": 1,
+      "seconds": 27.991,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-cache-v2",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-cache-v2.json",
+      "sha256": "211d20a6b1b6e9dc4c2b61efc60ac4faa732e6005ee429ae0e6de3636c71d300",
+      "exit_code": 0,
+      "seconds": 43.212,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-quarantine-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-quarantine-v1.json",
+      "sha256": "df0ef9e4c885414c96b6ffd18525c8ab468ff82f09be49963b6b35732da59523",
+      "exit_code": 0,
+      "seconds": 70.139,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-workflow-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-workflow-v1.json",
+      "sha256": "0c10872970c1a55551b0e4786ae08703253a8542a3c5a80f5276724c2acaeaa6",
+      "exit_code": 0,
+      "seconds": 81.57,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-node-abi-red-observer-build",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-node-abi-red-observer-build.json",
+      "sha256": "c71d0ef203cc1386d59b35d0c0e0865d1b17cc4e952cd3308a43ad8745c939ae",
+      "exit_code": 1,
+      "seconds": 46.815,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-node-abi-green-observer-build",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-node-abi-green-observer-build.json",
+      "sha256": "e47bfdbd9a24eaf2394be3cdfb4056df4ea14437ab3e3f2314bd9a1b172e5318",
+      "exit_code": 0,
+      "seconds": 48.949,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-root-cli-abi-v2",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-root-cli-abi-v2.json",
+      "sha256": "16f64d86341502a9472fa2537922123ac50c112a555ac11583f23503f6d5bfa7",
+      "exit_code": 0,
+      "seconds": 22.717,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-root-cli-tail-v1",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-root-cli-tail-v1.json",
+      "sha256": "dbb658eb030bda8cbe86c31c031cd6a8f203b3f76414eecea7912e7ab8d199a6",
+      "exit_code": 0,
+      "seconds": 53.946,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-root-cli-public-cli-v2",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-root-cli-public-cli-v2.json",
+      "sha256": "2d1ba57587bec659a0eb5e97d6f3a7ccca0a24a3b0220974bf5f8de94cb62ecd",
+      "exit_code": 0,
+      "seconds": 85.946,
+      "host_unchanged": true,
+      "helper_wait_zero": true,
+      "observer_runtime_empty": true,
+      "policy_runtime_empty": true
+    },
+    {
+      "id": "b02-complete-candidate-quick",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-complete-candidate-quick.json",
+      "sha256": "6c6d2ccbec71c436566e5c6b0922e03282d6126c54a3945489a4122cd7aa9e93",
+      "exit_code": 1,
+      "elapsed": 95.813,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-complete-candidate-quick-corrected",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-complete-candidate-quick-corrected.json",
+      "sha256": "01c106c6d788ab9c016cf3fc0d9af326c698f6afd64912efd78d29fefcb57a08",
+      "exit_code": 1,
+      "elapsed": 258.022,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-existing-cli-fixtures-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-existing-cli-fixtures-green.json",
+      "sha256": "c9938152e6661f2b04b7bdee6e63dd8a576d645fc3ae50930dda8601cf3cbf4e",
+      "exit_code": 0,
+      "elapsed": 3.085,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-concurrent-owners-race",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-concurrent-owners-race.json",
+      "sha256": "d19f48c522fafd3ce589ca7aea6b746322cc81dc83cdf0b3fb9c1ce53ff59552",
+      "exit_code": 0,
+      "elapsed": 222.851,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-complete-candidate-security",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-complete-candidate-security.json",
+      "sha256": "96e8098e9509baec39c92e7a730ebe7fe7e3e41f2708c909c74a008c887d04e6",
+      "exit_code": 0,
+      "elapsed": 18.968,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-complete-candidate-docs",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-complete-candidate-docs.json",
+      "sha256": "a9e5e0d2756fb8f4371a306886bc5d12e1593a3fd7b87f9a7f3b10046dadbc44",
+      "exit_code": 0,
+      "elapsed": 0.317,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-tagged-build-validity",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-tagged-build-validity.json",
+      "sha256": "39fb64a4e7ad51ad2d1b6ad074740d0445a78f4c87d6f7dfb3d13bf92a728144",
+      "exit_code": 0,
+      "elapsed": 10.659,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-transaction-and-ci-wiring",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-transaction-and-ci-wiring.json",
+      "sha256": "e087994b95634a27779db75f6e3fde84c6f3eae89361ab3f6a11b816505b648d",
+      "exit_code": 0,
+      "elapsed": 9.379,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-implicit-gyp-guard-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-implicit-gyp-guard-green.json",
+      "sha256": "fdaa5ca134af4a89f4cfb08086f5a6900da0facaa17c4845bbb2e20fcb47a9cd",
+      "exit_code": 0,
+      "elapsed": 10.589,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-unavailable-policy-red",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-unavailable-policy-red.json",
+      "sha256": "6c4eeb2d92f2f0fc2fa2dd9afcc5c00228982fa6cd56745e7e2301d29ae562e6",
+      "exit_code": 1,
+      "elapsed": 1.155,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-unavailable-policy-green",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-unavailable-policy-green.json",
+      "sha256": "c1952bddde2098a0d150db7ec376cdfb26030d83e7822d2bf803b90170df5618",
+      "exit_code": 0,
+      "elapsed": 3.069,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-checkpoint-format",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-checkpoint-format.json",
+      "sha256": "4651c420ff11b51304be18b8ebea8bd417556e7cdceafd0bdc5c6d61c734526a",
+      "exit_code": 0,
+      "elapsed": 0.753,
+      "source_unchanged": true
+    },
+    {
+      "id": "b02-checkpoint-docs",
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-checkpoint-docs.json",
+      "sha256": "1c0e744ae71ab472eb72739d9c50ecae0d86cbbe93ad786afff644da2fb6151b",
+      "exit_code": 0,
+      "elapsed": 0.327,
+      "source_unchanged": true
+    }
+  ],
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "ba267701412276e55e5223af9dc38c4c8ca91181a40da046b4a452485ceab5cd"
+    },
+    {
+      "path": "internal/application/pnpm_project.go",
+      "sha256": "22fe75c23279d8ac309dcfa20e71491ed1c6479476b25b384431b6bac740751a"
+    },
+    {
+      "path": "internal/artifact/npm/bun_inspection_layout.go",
+      "sha256": "b6cd8166ffea75e0dcc3004ec25ba237b932d87c4115232b5e2e9ee6920ed997"
+    },
+    {
+      "path": "internal/artifact/npm/bun_layout_binding_data.go",
+      "sha256": "5a5389699cfc0434c6ea510acc9418981f87a439b2c4c847fe02315eddcff380"
+    },
+    {
+      "path": "internal/artifact/npm/bun_native_cache.go",
+      "sha256": "daaf8a87d0da10c4172f9a2716c6bcf9216c055cf2353df22276f0e2d6f87147"
+    },
+    {
+      "path": "internal/artifact/npm/execution_materialization.go",
+      "sha256": "6d346a19347221c2a6151923362a2a39d8f1867a0a631b8ac98acd451f15546c"
+    },
+    {
+      "path": "internal/artifact/npm/npm_hoisted_layout.go",
+      "sha256": "d3a9c4e9d5b86636c01168d60a94b4a6ae06c3cf07cdd08337cf5b23d8d59016"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_input.go",
+      "sha256": "30c11b59cbd2e0267227b4168a2130f13d59a6792e0f5d5f7fc9fb07ee509182"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_input_test.go",
+      "sha256": "93200b7e1013e03423be3172c58cc4b0312da8f0681017296229599afbbbe2a5"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_inspection.go",
+      "sha256": "343b4207a43a5defabe834dabce5a72cf0847da8516b215fd5b15e090d4fd792"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_inspection_test.go",
+      "sha256": "4df51415b8ee93648f715231e3698a61b472adfcac4ef9927a8636bee911be43"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_inventory.go",
+      "sha256": "416a97b32897d78345b5ced6bacde2facc2899c3f3a50d1b56e0e29b5ebab613"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_layout_test.go",
+      "sha256": "dfbc1e64d1cd75da7ff11c47e9435db976c87f8a2447713f251d6daa0ec94803"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_lock.go",
+      "sha256": "b0ff196b53ef5773d3f8119d68b404919a586dd5c92698099ba5cbf63ff8640a"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_lock_test.go",
+      "sha256": "e0912f5b94fc0da8178e05fa9379764be97760bffd9dbec56636186c4e3e468f"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_root.go",
+      "sha256": "d964c4e6ff369091a3385f619726e03cb49fe509ddcbac0c868ee8aeeed69ba6"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_root_test.go",
+      "sha256": "9618bc286027c94ed3212a8ca52269d5e39febaed77b7d83fade3e01152557ce"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_selection.go",
+      "sha256": "5e52ec46871187093f5d35145f5b2167540aa11380fe850ac861b371f1d495c9"
+    },
+    {
+      "path": "internal/artifact/npm/npm_project_selection_test.go",
+      "sha256": "ca5220d49cb53455d4a597667c34b04a73faf9a94c0f09432a2c9da4151a689d"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/npm-project-native/debug.package-lock.json",
+      "sha256": "3bca2a3a9fcdc0e79c57e61d5185a04944a2b6feeb2a4cd20bf5b3b973eab36c"
+    },
+    {
+      "path": "internal/artifact/npm/testdata/npm-project-native/debug.package.json",
+      "sha256": "693d74346b91f3121470e1e6f8062c849b1eb3bd1e4cf653d23c2d6ea08c4bbb"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "f84f06b83c3abedd275fdc153d28a1e8d2d757b2b2bcf63ffeda2783d75dc329"
+    },
+    {
+      "path": "internal/bootstrap/npm_client.go",
+      "sha256": "56a487096f64c90080532d66aa5222c4f86e47cbe94e3423988054b5d4f4804f"
+    },
+    {
+      "path": "internal/bootstrap/npm_project.go",
+      "sha256": "821aad86170b56017bb646adf18b53c734213f767957f9933166aa6cc729fa6b"
+    },
+    {
+      "path": "internal/bootstrap/npm_project_integration_test.go",
+      "sha256": "7c74bb30b33df2d9e715d6e033fbe022c272628a2becd72138e3513261b34dd6"
+    },
+    {
+      "path": "internal/bootstrap/npm_project_root_integration_test.go",
+      "sha256": "a59a0fd9f2338758eff12f4c376e4330bd7d421db20063a545ce710c442b0e7f"
+    },
+    {
+      "path": "internal/bootstrap/pnpm_project.go",
+      "sha256": "ce69750bdf5bdba18babe092933314f53a6332d0d6fc3edfb205a98b63c9e7b5"
+    },
+    {
+      "path": "internal/bootstrap/presentation_test.go",
+      "sha256": "0427fa32140e0f025644a4d080929ea49335cc2be8845056372e4e3634a9e9a6"
+    },
+    {
+      "path": "internal/cli/cargo_update.go",
+      "sha256": "0bbc9fd4dc725e5c729030f3414ee4ece91322cc598a340722ce5d2cf453c7bf"
+    },
+    {
+      "path": "internal/cli/cargo_update_test.go",
+      "sha256": "538ec64d26f43170c383127f61ea8d60002cbb47dfeab7dc5abb9e79d08d553c"
+    },
+    {
+      "path": "internal/cli/launcher_test.go",
+      "sha256": "8c1ff9db84cb6892b3c4c73c70c43f64f2770e6786db34d56483e860cac0210a"
+    },
+    {
+      "path": "internal/cli/npm_project.go",
+      "sha256": "5c0397c4c70b979ee8a9d872acbe6c180fdd0e95d79554ccacd45d9b1f99047d"
+    },
+    {
+      "path": "internal/cli/npm_project_test.go",
+      "sha256": "16c783fbbbc64d69ddd6244fa075497fbe216697fc069a25132efff43ee872d2"
+    },
+    {
+      "path": "internal/cli/package_client.go",
+      "sha256": "afaa93838e8d32f848c0acae8bc0cc793c1f5b2a8c2a0cef48c9e892c4f7e1df"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "14e206222b745246293ff214c253fde42a0ed6bb623baa0b5e2a24c698aae480"
+    },
+    {
+      "path": "internal/inspection/npm/bun_dynamic_test.go",
+      "sha256": "9dd34ed796dd1b69329d5d036056d64ce8f63f3068dc646ab7a74ce7a39665b3"
+    },
+    {
+      "path": "internal/inspection/npm/bun_project.go",
+      "sha256": "b8ec888a7cea127fba72bc41cbd8e6f173184b3a4c1642418cae934d654b25f4"
+    },
+    {
+      "path": "internal/inspection/npm/npm_project.go",
+      "sha256": "0a2d12edd268a6d7a6dea87fafee4ff05a2cb0f9cbe9a48d4ebc9bf7a010b491"
+    },
+    {
+      "path": "internal/inspection/npm/npm_project_root.go",
+      "sha256": "748a1c2652bd08f679bc428f33d39d1d6d3dca944cc76f12b9bdc43cb0fe686f"
+    },
+    {
+      "path": "internal/inspection/npm/pnpm_dynamic.go",
+      "sha256": "a8ca634e7ef61683968e49d677c8356bc376277576a97fd1315241ee9df4ed03"
+    },
+    {
+      "path": "internal/inspection/npm/project_inspection.go",
+      "sha256": "61def6144e0fdfce8165fe4c233bb04104f1e53c94784f5c619e9ef0729dbcc1"
+    },
+    {
+      "path": "internal/policy/npm_project_root.go",
+      "sha256": "3331dcc21f487fc497e4fa353b0199cd679dca622cc9de31d2bb2edd98bb723c"
+    },
+    {
+      "path": "internal/policy/npm_project_root_test.go",
+      "sha256": "5f6ce0bf88e369850e066d9ae5c28fc96fa77c5926a3e2a792b8b0dea85712b0"
+    },
+    {
+      "path": "internal/promotion/bun_cache.go",
+      "sha256": "00568222f594a8b3471240710477a23013074c5da21d08e210ee2766304aa084"
+    },
+    {
+      "path": "internal/promotion/bun_cache_records.go",
+      "sha256": "b85dc4d6d2cc260cab076e727b21f03f54dc7fab72a683b4fad85a934789bc11"
+    },
+    {
+      "path": "internal/promotion/bun_transaction.go",
+      "sha256": "5232652d2c4d9297f9f66c526e395041e4b76201be2d56f8266658eef811eb8e"
+    },
+    {
+      "path": "internal/promotion/go_approved_transaction.go",
+      "sha256": "6be76188ddc06e2b3b10428e929c53767fb1ce9678e54a2a97e2da9a941ea2bd"
+    },
+    {
+      "path": "internal/promotion/go_build_source.go",
+      "sha256": "ab432d3e6260a8e9a9f9b8f13b498b14c08f3049618b1b46ecde5f4b6f57ae62"
+    },
+    {
+      "path": "internal/promotion/npm_project_cache.go",
+      "sha256": "5538dbb94bc06d064d383c5182c6c12d9af103ae319e1f8e592ee3803b1c4046"
+    },
+    {
+      "path": "internal/promotion/npm_project_cache_test.go",
+      "sha256": "53b09b6c8784a0f85007dccfd86f5074c9906ff6b5ebe1df706bb0ef9bda2112"
+    },
+    {
+      "path": "internal/promotion/npm_project_source.go",
+      "sha256": "abd2067f27855f5020a4b547db5060741d6c2a767413984f81ac7e23a5193275"
+    },
+    {
+      "path": "internal/promotion/npm_project_source_test.go",
+      "sha256": "b531854ae51120e670f40ca816e48e1be1b477f7c8a6eea9d6de35eee1e05901"
+    },
+    {
+      "path": "internal/promotion/npm_project_transaction_test.go",
+      "sha256": "2df71a625752eb446f40ce13e20442ac65743f46ff878e173c05af3548a7d79a"
+    },
+    {
+      "path": "internal/promotion/pnpm_approved_transaction.go",
+      "sha256": "e3173364d5b923144fd797f8a8ffdd61c6da98c312347216746804744195c758"
+    },
+    {
+      "path": "internal/promotion/pnpm_cache.go",
+      "sha256": "bc96aad0484fd0b0a34e80c57fb76c04f8d1dd4afbc1650dc9d8a6b11291cb55"
+    },
+    {
+      "path": "internal/promotion/pnpm_transaction.go",
+      "sha256": "3c19b4b5a49f985671b15987d465eab48ed54c14a6feb60463defab5fcbc0c44"
+    },
+    {
+      "path": "internal/sandbox/bun_target_lifecycle.go",
+      "sha256": "12419f1533396db1be89cae81abd9c3e22ad10a90651412138d0ec1f277bfbaa"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_inputs.go",
+      "sha256": "d2a1751d7863ba32c7ee19ef2fccff497325bd30aeebb7cfde8bcf83f02e550c"
+    },
+    {
+      "path": "internal/sandbox/native_project.go",
+      "sha256": "3af009a3943c1a5d1bc8c31b4b29cde1ee2e9793036dddec6b67761d3e2fce48"
+    },
+    {
+      "path": "internal/sandbox/native_tool_transport.go",
+      "sha256": "6312e07242e372d2a9a16fb4e9e15b9859047090fc91b413d5ef19a0fbbc6e4a"
+    },
+    {
+      "path": "internal/sandbox/node_execution_materialize.go",
+      "sha256": "b6f8bbfbc4af4f110c500f1218cc5caf0f3c67394ff1172feb335ea1d1d002e7"
+    },
+    {
+      "path": "internal/sandbox/npm_project_inspection.go",
+      "sha256": "52941ea96458ed3d4845127e9db71f2f731bf7fc36f7c91f22c4ea9b4772eb5b"
+    },
+    {
+      "path": "internal/sandbox/npm_project_inspection_test.go",
+      "sha256": "633799d55a300494507a8a8a975ae74873790ccc3c2f67d99e1bcf13ee09e101"
+    },
+    {
+      "path": "internal/sandbox/npm_project_resolver.go",
+      "sha256": "25a217fb8c4eb292ce5fe235f8873fca56c191e575677c6bbe9f09b593cf30e1"
+    },
+    {
+      "path": "internal/sandbox/npm_project_resolver_real_test.go",
+      "sha256": "7ac6d76bb6e245753040a8f510e56ce75ef79aa7db270cce0791d1275e5bff11"
+    },
+    {
+      "path": "internal/sandbox/npm_project_resolver_test.go",
+      "sha256": "d7564ac4dd047898bc62bd39af38c7a17b1075f430e5679e98b634f232e7a698"
+    },
+    {
+      "path": "internal/sandbox/npm_project_root.go",
+      "sha256": "7f3b95990ae6b30e29906470dd0b808d33d2f1e447c585d474b493da01f0fea4"
+    },
+    {
+      "path": "internal/sandbox/npm_project_source.go",
+      "sha256": "1637c6e3d60edf1ed5070442ee557fdd079b66479b4f1c87d23ae6e38877a642"
+    },
+    {
+      "path": "internal/sandbox/npm_project_source_test.go",
+      "sha256": "b8369bcecf45c8c53dff6b8c0f57b095f015d7ad07bfd491c4a9c2da65d3ba76"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver.go",
+      "sha256": "91eb60df85dcf75c7d809f507196080168b672c808be0430aaccfc2cc7b85f01"
+    },
+    {
+      "path": "internal/sandbox/pnpm_inspection_payload.go",
+      "sha256": "0c3a572d670d2602ac01d4e1cfdea56048382015d1d5d64fde555f7c9586e21a"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "sha256": "e76e38284ef6f401de0b054f24d1fa48d5079d4b61f5a3d0197a74b125a6381a"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "f5336ea4d8d19c0fe735d374ef5f9f71c474106cc26f2a19d3a1b6e062aabe31"
+    },
+    {
+      "path": "internal/verification/projectbuild/source.go",
+      "sha256": "ce89dfe09fdc2abde04977c4830b1f00081298219a46f7f12e81b0fefdaf092a"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "sha256": "e40998908d842c6ac967e61e31cbb813e3743a320de5ca46f091af0cdb2170ac"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "sha256": "a467922ecebfc20063c44c5447e564d9fceb5de1f8f366352487dc42691f8a80"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "a68b00d1f200eb5531010692df7b8b28fd7affc68b3bde850d871a515150862c"
+    },
+    {
+      "path": "scripts/ci-npm-project.sh",
+      "sha256": "32ef34caecf3c883c24ae00d95693958a72d899ceb064214cadbf198a7bda928"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "ead533f8febc04ecf2e2e0c108959139df47545d04ec854b01ff8d3b97cbd668"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "1307693be1551ca51e6cfe9ef4f8bb4ed15eb72f7afcc644ccf259342802fec1"
+    }
+  ],
+  "deleted_files": [
+    "internal/inspection/npm/bun_dynamic.go"
+  ],
+  "actual_cases": {
+    "native": "Composite seven selections: failed V1 prefix4 plus corrected tail3. Original failed parent retained; not a single seven-case parent PASS.",
+    "whole_graph": "Actual nested/bin/peer dependency inspection; cache/atomic target/independent old approval/tamper refusal named nested/bin only. Peer cache awaits grouped hosted case.",
+    "application": "Install1 → ci1 → edited install3 → ci3; fresh operations, mismatch refusal and original lock/payload/user-file preservation.",
+    "public_cli": "Actual bootstrap.Run install → ci; completed ALLOW records, exact package, unchanged CI lock/payload.",
+    "local_root": "Four composite root cases; postinstall and dependency-free hook complete observation; dependencies/postprepare preserve actual exit37 and required INCOMPLETE. Installation always refused, original source preserved.",
+    "root_authority": "Independent project-local/npm-source; no fake registry primary. Source frozen under existing guard; eight declared native keys plus implicit gyp detection. M3 findings and existing M4 Host execution restriction retained.",
+    "observer": "Full pinned builder/latches RED46.815 → GREEN48.949. Artifact Node shares existing bounded console ABI reads; role/creator/image/mount/flags and unexpected exec remain enforced.",
+    "rollback": "Ten mechanical publication phase/cancellation cases plus four implicit-gyp presence/alias guard cases. Existing shared managed transaction regressions also pass.",
+    "ci": "Native/project consumers registered in existing job; twelve synthetic parser complete/negative fixtures pass. No hosted run started."
+  },
+  "verification_interpretation": {
+    "quick": "First95.813s FAIL at SA4000. Corrected258.022s passes static stages and 47/49 default packages; CLI/bootstrap fail because two old syntax fixtures did not know npm ci. Corrected targeted2 PASS3.085s and full affected6-package Race PASS222.851s. No full Quick exit0 claim.",
+    "actual_reuse": "After actual runs: equivalent two-directory charge rewritten as a two-iteration loop, temporary native capture removed, regression/CI wiring added and old syntax fixtures updated. Final exact-source grouped qualification remains open.",
+    "not_reached": "Root earliest V1..V5 failures and runner input/self-path failures remain first-failure evidence; later success is scoped to corrected candidates."
+  },
+  "cleanup": [
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-native-owned-copies-cleanup.json",
+      "sha256": "829277b7129455c44cf7d0121ad65bbe4f703d04069ed1704f651c5e38d53f69",
+      "deleted": true,
+      "deleted_bytes": 129109286,
+      "processes": 89,
+      "references": [],
+      "query_errors": []
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-inspection-cache-owned-copies-cleanup.json",
+      "sha256": "7a8ae60f41c8e3f9e3e04b927d20ef245cbf2042413282b98ed27b413bf71d0a",
+      "deleted": true,
+      "deleted_bytes": 146476631,
+      "processes": 92,
+      "references": [],
+      "query_errors": []
+    },
+    {
+      "receipt": "docs/github-logs/goal-implementation-20261101/b02-root-public-owned-copies-cleanup.json",
+      "sha256": "2c097cb4554892667f1a6d556eb86ddcf6c4be4da2c7b1180ed438e96b6f69bb",
+      "deleted": true,
+      "deleted_bytes": 572577630,
+      "processes": 94,
+      "references": [],
+      "query_errors": []
+    }
+  ],
+  "missing": [
+    "Grouped hosted/four-profile qualification on final candidate, including peer cache and current single npm/update consumers.",
+    "Remaining design units04 onward (B03 and later) and final unit16 compatibility/source-aware/holdout metrics/cleanup/release readiness."
+  ],
+  "runtime_lock_sha256": "e7c3032907570d508cf0dcdc3bb49b8d079b735b48bd855e900b605f13b4a0b1",
+  "runtime_maintenance_changed": false,
+  "ci_started": false,
+  "host_installation_changed": false,
+  "ai_generated_execution": "DEFERRED v2 / planning22"
+}

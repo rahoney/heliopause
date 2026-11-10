@@ -1,0 +1,111 @@
+{
+  "schema": "helox.pnpm-ci-fixture-local/v1",
+  "baseline": "8a4ef5b377d2f63995fe3efe24a39867e3744831",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local)",
+    "ACCEPTANCE_CLOSED": "NO (remote/whole P2)"
+  },
+  "scope": "narrow CI compiled controlled fixture package cwd; source/tool/fixture/timeout/client/helper authority preserved",
+  "source_inventory": [
+    {
+      "path": "scripts/ci-pnpm-runtime.sh",
+      "bytes": 3009,
+      "sha256": "183f1196f3c02d8c439413078765f7947874253a87f21081bdf73053f03e9335"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow.go",
+      "bytes": 4162,
+      "sha256": "9547a79f64006a8b2c356353a17aedc3257e40f5bf535a20475925d2c4f6193c"
+    },
+    {
+      "path": "scripts/check/pnpm_runtime_workflow_test.go",
+      "bytes": 3955,
+      "sha256": "6c4f3d4af6e549f2e45794d3dba570844f49fb68f056dbd089fed767a09b8b2a"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 2.221,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-ready-format.json",
+        "bytes": 471,
+        "sha256": "34126f4c1bb1ad04c03bc7c5ef4614295a7f7a62dd82e2eaa3bdbdaa71b35378"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 66.975,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-ready-quick.json",
+        "bytes": 307,
+        "sha256": "7a9432d5e41d412ff451493e66cc34d18656799fe9b543c0fa8e156c62fe8b93"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.764,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-ready-security.json",
+        "bytes": 312,
+        "sha256": "064efedda7a050ecc7d2967bacfc9ae3201a558408825d0fb6bf060c47a8b1df"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.23,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-ready-docs.json",
+        "bytes": 303,
+        "sha256": "493fcb66228a9158b76755c242f063a4adc29f738a46a01a2c5a2d73088dfa4a"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.673,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-ready-workflow.json",
+        "bytes": 312,
+        "sha256": "bb0b5ed3aac5b0b5e4f92d1494e05754eaf0da5905fbee2e54437458a774329c"
+      }
+    }
+  ],
+  "bash_syntax": "PASS",
+  "reproduction": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-cwd-comparison.json",
+    "bytes": 930,
+    "sha256": "c48b018eb91bb4095516e9053fd0eda21e377f42713ec3316e149d7012f63a8c"
+  },
+  "actual": {
+    "seconds": 134.277,
+    "controlled_cases": 3,
+    "public_selections": 8,
+    "public_quarantined_entries": 8,
+    "public_quarantine_cases": 4,
+    "helper_wait": 0,
+    "host_unchanged": true,
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b4d-actual-result.json",
+      "bytes": 1391,
+      "sha256": "e506a06f4467f6b1279f3b6e4e2983f29c343e282303772487861b4515e70cf9"
+    }
+  },
+  "failed_remote": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/ci405-first-failure.json",
+    "bytes": 16265,
+    "sha256": "b324205f5ee33e38545786283ac02def27358cc99713c79b5aa5a00c10429815"
+  },
+  "not_qualified": [
+    "new remote Required",
+    "Host extraction and independent retained records",
+    "PNPM transaction and CLI",
+    "whole P2 acceptance"
+  ]
+}

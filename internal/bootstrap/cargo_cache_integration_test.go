@@ -1,4 +1,6 @@
-package bootstrap_test
+//go:build linux && realcorpus
+
+package bootstrap
 
 import (
 	"context"
@@ -11,6 +13,7 @@ import (
 	"github.com/rahoney/heliopause/internal/application"
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	inspectioncargo "github.com/rahoney/heliopause/internal/inspection/cargo"
 	"github.com/rahoney/heliopause/internal/policy"
@@ -19,11 +22,33 @@ import (
 	verificationcargo "github.com/rahoney/heliopause/internal/verification/cargo"
 )
 
-// This gate starts with an empty intake and authenticates public bytes twice.
+// Keep only bounded rule IDs/language counts in the native qualification log.
+// Artifact source and parser metavariables never enter this diagnostic.
+type sourceParserDiagnostic struct {
+	inner ports.SourceAnalysis
+	t     *testing.T
+}
+
+func (d sourceParserDiagnostic) Analyze(ctx context.Context, input ports.SourceAnalysisInput) (ports.SourceAnalysisOutput, error) {
+	output, err := d.inner.Analyze(ctx, input)
+	limitation, _ := output.Runtime.LimitationCode()
+	d.t.Logf("source_parser_runtime status=%s limitation=%s targets=%d error=%v", output.Runtime.Status(), limitation, len(input.Files), err)
+	var document map[string]json.RawMessage
+	if output.Output != nil && json.Unmarshal(output.Output.Stdout(), &document) == nil && len(document["rules_by_engine"]) <= 8<<10 {
+		languages := map[string]int{}
+		for _, file := range input.Files {
+			languages[file.Language]++
+		}
+		d.t.Logf("source_parser_rule_engines=%q source_languages=%v", document["rules_by_engine"], languages)
+	}
+	return output, err
+}
+
+// This gate starts with empty intake and uses the current protected analyzer.
 // It qualifies cache materialization; SDK resolution/add/build are separate.
 func TestCargoPublicVerifiedCacheIntegration(t *testing.T) {
 	if os.Getenv("HELOX_CARGO_CACHE_INTEGRATION") != "1" {
-		t.Skip("requires canonical public crates.io HTTPS")
+		t.Skip("requires canonical public crates.io HTTPS and protected source-analysis runtime")
 	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -38,7 +63,16 @@ func TestCargoPublicVerifiedCacheIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	inspector, err := inspectioncargo.NewStaticInspector(intake)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	// This existing helper owns executor/observer lifetime only; it supplies
+	// no Python artifact or inspection authority to this Cargo gate.
+	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
+	analyzer, err := sandbox.NewSourceAnalyzer(executor, observer.Observer(), newObservationResourceAdapter())
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := inspectioncargo.NewStaticInspector(intake, sourceParserDiagnostic{analyzer, t})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,8 +103,6 @@ func TestCargoPublicVerifiedCacheIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	approved, err := service.InspectProject(ctx, snapshot)
 	if err != nil {
 		t.Fatal(err)
@@ -79,7 +111,7 @@ func TestCargoPublicVerifiedCacheIntegration(t *testing.T) {
 		t.Fatal("public project coverage incomplete")
 	}
 	entry := approved.Inspected().Inspections()[0]
-	if entry.Artifact().Digest().String() != "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2" || len(entry.Checks()) != 2 || len(entry.Evidence()) != 2 || entry.PolicyDecision().Decision() != domain.DecisionAllow {
+	if entry.Artifact().Digest().String() != "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2" || len(entry.Checks()) != 7 || len(entry.Evidence()) != 7 || entry.PolicyDecision().Decision() != domain.DecisionAllow {
 		t.Fatal("public source/integrity/Evidence/Policy differs")
 	}
 	staged, err := cache.StageProject(ctx, approved)

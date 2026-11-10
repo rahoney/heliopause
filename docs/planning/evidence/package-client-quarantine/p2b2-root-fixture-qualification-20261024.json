@@ -1,0 +1,119 @@
+{
+  "scope": "Existing root namespace fixtures: independent installation directories and same-runtime immutable tool/notice inputs",
+  "baseline": "6f4acde",
+  "local_status": "VERIFIED",
+  "production_journal_unchanged": true,
+  "first_failures": [
+    {
+      "name": "standalone PREPARED writer",
+      "cause": "primitive fixture did not prepare protected versions directory required since20cecda; old passing qualification predates that guard",
+      "same_binary_control": "private owned versions directory only: exit0/0.658s; Host unchanged"
+    },
+    {
+      "name": "root activation transaction fixture",
+      "cause": "old blanket Linux payload mutation appended HAA version to newly added fixed notices",
+      "correction": "vary HAA-owned executable roles only; pinned tool and passive source notices remain unchanged"
+    }
+  ],
+  "changed_tests": [
+    {
+      "path": "internal/releaseactivation/journal_namespace_linux_test.go",
+      "sha256": "c54b8d935e2ece0bda4a59077f9d34b962d54b7f1e466c65efd0a2e98bcb2f7f"
+    },
+    {
+      "path": "internal/releaseactivation/operation_namespace_linux_test.go",
+      "sha256": "3a71355fbe37c0824ff7c58667041163e7da511cb7655244f15f96332de4ac55"
+    }
+  ],
+  "actual_namespace_cases": [
+    {
+      "name": "TestProtectedCopyInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "name": "TestProtectedReaderInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.037
+    },
+    {
+      "name": "TestProtectedPeerInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.173
+    },
+    {
+      "name": "TestProtectedStageInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.038
+    },
+    {
+      "name": "TestProtectedJournalAndLocksInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "name": "TestProtectedServiceFactsInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.122
+    },
+    {
+      "name": "TestProtectedProofAndRegistrationInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.07
+    },
+    {
+      "name": "TestRootActivationTransactionInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.171
+    },
+    {
+      "name": "TestInstallerSocketInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.038
+    },
+    {
+      "name": "TestProtectedHealthChannelInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.121
+    },
+    {
+      "name": "TestNativeEnrollmentInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.323
+    },
+    {
+      "name": "TestInitialNativeFilesInDisposableNamespace",
+      "exit": 0,
+      "seconds": 0.223
+    }
+  ],
+  "host_protected_files": 12,
+  "host_before_after_identical": true,
+  "raw_refs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-namespace-result-20261024.json",
+      "sha256": "60a5de61bfebb020398bb76cf8603bd9255a8461cd16727df3cdf908e948b763",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-journal-owned-versions-diagnostic.json",
+      "sha256": "9fc3e7cd511f6a2dbd5a69fc1bef55364b7ebb229a73b9bd1370b30780713843",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-final-namespace-result-20261024.json",
+      "sha256": "ed0cbd32eb1fd4aa423dedc692f3d76ea45549978557326313e4a0783f25e5f9",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-qualified-namespace-result-20261024.json",
+      "sha256": "46a0e80f5e77cf076f5160ddf26aafedfbcf658b952e35d698031bf31a671763",
+      "storage": "local untracked raw; not remotely archived"
+    }
+  ],
+  "not_claimed": [
+    "actual signed new release activation",
+    "PNPM runtime execution or artifact quarantine",
+    "native macOS/remote qualification"
+  ]
+}

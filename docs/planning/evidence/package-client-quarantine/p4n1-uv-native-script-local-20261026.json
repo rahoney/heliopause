@@ -1,0 +1,91 @@
+{
+  "scope": "PURE_DATA_MATCHER_ONLY; no production ownership or native adoption qualification",
+  "baseline": "a8389ded8f9f0f89802adad3a96374bb514228a6",
+  "symbol": "pypi.ValidateUVNativeConsoleScript",
+  "implemented": true,
+  "production_adoption_wired": false,
+  "named_helper_qualified": true,
+  "whole_native_tool_adoption_acceptance_closed": false,
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 1.75,
+      "source": "/tmp/hpr-bx53162k/source",
+      "explicit_copy_back": [
+        "internal/artifact/pypi/uv_native_script_test.go"
+      ],
+      "delta": [
+        "docs/planning/02-current-work-queue.md",
+        "docs/user-journey-cli-ia/09-package-client-quarantine.md",
+        "docs/planning/evidence/package-client-quarantine/p4n-uv-tool-native-ownership-plan-20261026.md",
+        "internal/artifact/pypi/uv_native_script.go",
+        "internal/artifact/pypi/uv_native_script_test.go",
+        "internal/artifact/pypi/testdata/persistent-tool/uv-native-launchers.json"
+      ]
+    },
+    "quick": {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 285.414,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b67da847925914ee839cb5cca1e35661223e4c2c60aa3c274b5244d85a03ac77"
+    },
+    "security": {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.95,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    "docs": {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.28,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "full-pypi-race": {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 11.215,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "80302f5fb3a5d9e0d04998c1b895aef91c9740662bf16d51e5bbc55ab869cf96"
+    }
+  },
+  "native_data_diagnostic": "p4m-tool-native-wrapper-query-v1-result.json",
+  "missing": [
+    "independent authenticated old wheel + held interpreter + generated script ownership integration",
+    "raw receipt/runtime proof and current Manifest binding",
+    "explicit native adoption CLI and actual normal/negative consumers"
+  ]
+}

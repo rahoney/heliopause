@@ -1,0 +1,455 @@
+{
+  "schema": "p2-pnpm-ci408-409-qualification/v1",
+  "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+  "tree": "e4ea86ceba92445ccb4de99078a6aac1c363b5df",
+  "status": "NAMED_REMOTE_QUALIFIED ordinary+cu126; whole P2 acceptance still OPEN",
+  "runs": [
+    {
+      "run_id": 40136882393,
+      "number": 408,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/40136882393",
+      "profile": "ordinary",
+      "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+      "tree": "e4ea86ceba92445ccb4de99078a6aac1c363b5df",
+      "files": 2280,
+      "checkouts": [
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161609,
+          "name": "Representative Wheel Corpus",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161706,
+          "name": "gVisor Observer Helper",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161752,
+          "name": "gVisor Linux Integration",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161766,
+          "name": "Docs",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161802,
+          "name": "Quick",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161816,
+          "name": "macOS",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161821,
+          "name": "Vulnerability",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161851,
+          "name": "Security",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161889,
+          "name": "Minimum Go",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121012873360,
+          "name": "Required",
+          "checkout": "2b116e35b83f40382d54482df5b18f405572ed54"
+        }
+      ],
+      "jobs_success": 10,
+      "created_at": "2026-10-24T22:03:08Z",
+      "completed_metadata_updated_at": "2026-10-24T23:03:38Z",
+      "elapsed_seconds": 3630,
+      "run": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci408-run-confirmed.json",
+        "bytes": 14701,
+        "sha256": "b1e86233f8c2a8839684f6c954c4081af0ab59bfabcf8aaf6a494ffaef481d35"
+      },
+      "jobs": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci408-jobs-confirmed.json",
+        "bytes": 13513,
+        "sha256": "f8e9e8460ba963161b44fd656b2af9bf5639a12afd57163557fdaba372625664"
+      },
+      "logs": [
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161609,
+          "name": "Representative Wheel Corpus",
+          "path": "ci408-representative-wheel-corpus.log",
+          "bytes": 35360,
+          "sha256": "d18a9c012fc951974d2f7fb58be2fd1e6f0d20477b837ff7f8c348c5801ea7b3",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161706,
+          "name": "gVisor Observer Helper",
+          "path": "ci408-gvisor-observer-helper.log",
+          "bytes": 266958,
+          "sha256": "4ebe52f6667cc83bf7f10cfd71efa8a112666aad5f291f59baf704acfceff3d2",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161752,
+          "name": "gVisor Linux Integration",
+          "path": "ci408-gvisor-linux-integration.log",
+          "bytes": 685830,
+          "sha256": "43e00867678ac051b4a33a00b3e018e78c34b05c06c93a5eaaa06fa8c169d519",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161766,
+          "name": "Docs",
+          "path": "ci408-docs.log",
+          "bytes": 20520,
+          "sha256": "3b3b0f83f67fb2c730219ef41c16fef59d2f1098e7c5ca8e1ee902ca47092fe6",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161802,
+          "name": "Quick",
+          "path": "ci408-quick.log",
+          "bytes": 23839,
+          "sha256": "373d7718a1c9ae6d019aadcd6dfb839f90a6891f0a7a6db5bee1c1bfb8dc4b21",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161816,
+          "name": "macOS",
+          "path": "ci408-macos.log",
+          "bytes": 25261,
+          "sha256": "7d88db2d3451e40e8bc9b0b8a55d07d36aefd05295098c91ce9332a54e54d035",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161821,
+          "name": "Vulnerability",
+          "path": "ci408-vulnerability.log",
+          "bytes": 21698,
+          "sha256": "8249ebb558f8c3c5776e8c890a000c9216a420e7674847590b4bb1774578cb47",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161851,
+          "name": "Security",
+          "path": "ci408-security.log",
+          "bytes": 21857,
+          "sha256": "00c86e40b7c3495e7ba32e80cfc911da752f69ac5f5b20d98e4beeb0c0c66670",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121000161889,
+          "name": "Minimum Go",
+          "path": "ci408-minimum-go.log",
+          "bytes": 21502,
+          "sha256": "34a2be9fd9e2208525e949ae0d2d287e531569d968cf6c59db0383b4407ee40c",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40136882393,
+          "number": 408,
+          "job": 121012873360,
+          "name": "Required",
+          "path": "ci408-required.log",
+          "bytes": 22296,
+          "sha256": "5cec9628d02d976d094adfc4d9bb47dd3d214abfac7803c33532b0958994f706",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        }
+      ],
+      "actual": {
+        "approved_cache_seconds": 33.3,
+        "guarded_transaction_seconds": 114.93,
+        "production_CLI_seconds": 146.4,
+        "native_original_seconds": 99.49,
+        "CLI_fresh_operations": 9,
+        "native_original_cases": [
+          "explicit add6->7, old retired archive source proof",
+          "native exact6 update with constraint preserved",
+          "peer4 native install full original file/instance closure"
+        ],
+        "original_refusal": "implicit/old-code tamper/forged SRI/extra file intended cause assertions; original preserved",
+        "CPU_full_seconds": 289.9,
+        "cu126_full_seconds": null,
+        "linux_top_level_PASS": 64,
+        "observer_latches_linux": 112,
+        "observer_latches_separate_job": 112,
+        "native_macos": "Go1.27.3 darwin/amd64 production/default actual SUCCESS",
+        "helpers_reaped_wait0": 7,
+        "final_cleanup": "original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0/NOT_REQUIRED"
+      }
+    },
+    {
+      "run_id": 40137000019,
+      "number": 409,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/40137000019",
+      "profile": "cu126",
+      "source": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+      "tree": "e4ea86ceba92445ccb4de99078a6aac1c363b5df",
+      "files": 2280,
+      "checkouts": [
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527268,
+          "name": "Minimum Go",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527377,
+          "name": "Security",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527444,
+          "name": "gVisor Observer Helper",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527449,
+          "name": "Vulnerability",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527452,
+          "name": "Docs",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527461,
+          "name": "Representative Wheel Corpus",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527475,
+          "name": "Quick",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527488,
+          "name": "gVisor Linux Integration",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527574,
+          "name": "macOS",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121012067446,
+          "name": "Required",
+          "checkout": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b"
+        }
+      ],
+      "jobs_success": 10,
+      "created_at": "2026-10-24T22:04:46Z",
+      "completed_metadata_updated_at": "2026-10-24T22:59:51Z",
+      "elapsed_seconds": 3305,
+      "run": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci409-run-confirmed.json",
+        "bytes": 14632,
+        "sha256": "d79c819945a3cb3b44378da05d64173ccff9e4cdab9b02c577a7f937d0a3bd72"
+      },
+      "jobs": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/ci409-jobs-confirmed.json",
+        "bytes": 13513,
+        "sha256": "271b2e6029a93b686713dc340f61a7d0565e3396f1845cdf7852e12f4f50b06b"
+      },
+      "logs": [
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527268,
+          "name": "Minimum Go",
+          "path": "ci409-minimum-go.log",
+          "bytes": 21041,
+          "sha256": "9f16144f2d96a91963e996f975cf47162078323d0976bb0959d6a39b7d9d13ca",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527377,
+          "name": "Security",
+          "path": "ci409-security.log",
+          "bytes": 21390,
+          "sha256": "0024b6bf75eee5f34eeda49fb188cedecff6d360b73c8f7e29881742c5190e20",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527444,
+          "name": "gVisor Observer Helper",
+          "path": "ci409-gvisor-observer-helper.log",
+          "bytes": 274041,
+          "sha256": "fa4739c44c9ee835bcf8d214c34e4bd0eb327b77ec404f20c9af8452f1ca7621",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527449,
+          "name": "Vulnerability",
+          "path": "ci409-vulnerability.log",
+          "bytes": 21243,
+          "sha256": "038aca5114fe45a475f400b8e4a4e7272ddf1c2507a727d18fba75763c7933c2",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527452,
+          "name": "Docs",
+          "path": "ci409-docs.log",
+          "bytes": 20057,
+          "sha256": "78097c81a408077e3e7406808700ef53588c73018329ce14fa7f0319bd4a483d",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527461,
+          "name": "Representative Wheel Corpus",
+          "path": "ci409-representative-wheel-corpus.log",
+          "bytes": 34899,
+          "sha256": "a6614caa94b7ba80e27636781fe5ac95687b60b085690fdd4bc3a8d1f09ba42c",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527475,
+          "name": "Quick",
+          "path": "ci409-quick.log",
+          "bytes": 23377,
+          "sha256": "2ea62fa72b720c09096f2f9b0df11b9f02005a2a35ad681af6b23562abb14b51",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527488,
+          "name": "gVisor Linux Integration",
+          "path": "ci409-gvisor-linux-integration.log",
+          "bytes": 1186062,
+          "sha256": "7fb7e4e0ba10060420c7444e7455452f5da81d6802c7ec8c138f0ba2ee6376e5",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121000527574,
+          "name": "macOS",
+          "path": "ci409-macos.log",
+          "bytes": 21718,
+          "sha256": "28b57a80a8e7256b7b70cb6608986e257fb99f9073cab1fde605401050a7c704",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        },
+        {
+          "run": 40137000019,
+          "number": 409,
+          "job": 121012067446,
+          "name": "Required",
+          "path": "ci409-required.log",
+          "bytes": 21840,
+          "sha256": "3b752e6bb666fcc83cee87b4ccc9e738515553c46870b76d6fcee43d206b1408",
+          "format": "exact decoded MCP log text UTF8 including BOM; every chunk readback matched"
+        }
+      ],
+      "actual": {
+        "approved_cache_seconds": 21.78,
+        "guarded_transaction_seconds": 70.94,
+        "production_CLI_seconds": 87.08,
+        "native_original_seconds": 61.89,
+        "CLI_fresh_operations": 9,
+        "native_original_cases": [
+          "explicit add6->7, old retired archive source proof",
+          "native exact6 update with constraint preserved",
+          "peer4 native install full original file/instance closure"
+        ],
+        "original_refusal": "implicit/old-code tamper/forged SRI/extra file intended cause assertions; original preserved",
+        "CPU_full_seconds": 182.04,
+        "cu126_full_seconds": 927.76,
+        "linux_top_level_PASS": 65,
+        "observer_latches_linux": 112,
+        "observer_latches_separate_job": 112,
+        "native_macos": "Go1.27.3 darwin/amd64 production/default actual SUCCESS",
+        "helpers_reaped_wait0": 7,
+        "final_cleanup": "original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0/NOT_REQUIRED"
+      }
+    }
+  ],
+  "raw_capture": "All20 complete decoded MCP job logs written as UTF8 including initial BOM; every20k-codepoint chunk readback equals source and complete byte length/SHA recorded; no HTTP zip-byte claim",
+  "timer_disposition": {
+    "ci408_due_observed": "2026-10-24T23:08:08.000148+00:00",
+    "ci409_due_observed": "2026-10-24T23:34:46.000125+00:00",
+    "consumption": "Previous active response ended before deadlines; DUE was recorded without querying/continuing. Fresh confirmation after user report. Active-turn clock waiting and continuation now required by plan5."
+  },
+  "remaining": [
+    "same executable source cu130/CI410 then cu132 sequential",
+    "final support and P2 acceptance closure; independent Bun supply-only local work may proceed inside the same M13-004"
+  ],
+  "no_extra_CI": "No push or ordinary rerun for these docs. cu130/cu132 are the existing final affected-profile qualification, not per-fix CI."
+}

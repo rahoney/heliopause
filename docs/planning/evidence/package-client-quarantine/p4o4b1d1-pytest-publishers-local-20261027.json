@@ -1,0 +1,154 @@
+{
+  "scope": "P4-O4-B1d1 explicit pytest/iniconfig/pluggy publisher policies; new runtime supply not yet materialized",
+  "baseline": "044eff9",
+  "checks": [
+    {
+      "step": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "seconds": 0.707
+    },
+    {
+      "step": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "seconds": 88.52
+    },
+    {
+      "step": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/verification/releaseprovenance"
+      ],
+      "exit_code": 0,
+      "seconds": 7.606
+    },
+    {
+      "step": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.283
+    },
+    {
+      "step": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "seconds": 11.346
+    }
+  ],
+  "source": [
+    {
+      "path": "internal/verification/releaseprovenance/pipx_dependency_publish.go",
+      "sha256": "f81cb237fecfe4115a1e00306f91e0244cf1b0622e0eaae5fd197183d8013901"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_publish.go",
+      "sha256": "d74a3357224274047cef9d6f59c815b535387a53270932d6a44aae3493c13dcb"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_publish_json.go",
+      "sha256": "c84997ddfea0b562453315db74eb9157ee3b583bcf923003f4c3be49dc9aa7c9"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_dependency_publish_test.go",
+      "sha256": "244491550a09804acf0e82f1a8b850bb29db7d7414c8b878d7fc70f16e331cd1"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/pipx_ref_publish_test.go",
+      "sha256": "b86df6b4ae04cb04af355891b493dea32f3e6c62796fd1d516b4b3e9ce7dd5d8"
+    }
+  ],
+  "provided_proof_fixtures": [
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/pytest/identity.json",
+      "sha256": "539695b1208aa9be893d3a8a3cdfb2d0abfc979aa267347b7c597e178392a3aa"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/pytest/provenance.json",
+      "sha256": "b135b9a81bb14af10cbb940ecec8c902672d2297488d2088e185c00dc6cc33ea"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/iniconfig/identity.json",
+      "sha256": "a65e4790576254a49e22d60eeec17d875923673db33e48c4de745cca657040e9"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/iniconfig/provenance.json",
+      "sha256": "8a8aaa6c314e055657f034eeb166fc849f563271480a203937e60ccffb6fa458"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/pluggy/identity.json",
+      "sha256": "ed441748303ceab5b066b09b27110416314556903a96063f1efe91e745b5b913"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/pipx-dependencies/pluggy/provenance.json",
+      "sha256": "0fd8944cb68a31293201d7aeda2846ebb50299c581e05e263bf4624615ef37ec"
+    }
+  ],
+  "qualification": "all eight existing+new fixed dependency publishers and mutation tests run in default/Race; original pipx main claims retained",
+  "new_claim_semantics": "only tag-push publisher with no environment requires publisher JSON null, signed exact ref token subject and absent OID23; environment-based publishers still require both signed OIDs",
+  "missing": [
+    "expanded whole-wheel two-root supply and namespace validation",
+    "Deflate candidate/new selected pin/NOTICE and frozen maintenance",
+    "new DATA/static plan/intake/runtime actual and observer/release qualification"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-format.log",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17",
+      "bytes": 15
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-quick.log",
+      "sha256": "a5efbe2e142a90caa406564279fd586d2e1a0bed82b0bb65c6e01ea595e4071c",
+      "bytes": 1354
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-race.log",
+      "sha256": "142322b66269ca562bc9a66f92c077c77263bd22ca8b91407e50169a5c642694",
+      "bytes": 82
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-security.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f",
+      "bytes": 80
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-checks.json",
+      "sha256": "5663371eb9d899a3bf4d39584f3e5c18ca99b85911791cc30c4d2f9c755c4cc4",
+      "bytes": 849
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p4o4b1d1-source.json",
+      "sha256": "a5eeec7c519b62c621cf836cc8ddb9ec9422816eba9542a9e5b5fcec2e4c0924",
+      "bytes": 849
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "scope": "P4-L4D fresh UV tool native selection to current whole inspection/Policy/Manifest/staging and guarded installed-file publication only",
+  "baseline": "6cc34e4557de22831cab6b3d5c12e3535c7fe12b",
+  "implemented": "YES (prepared primary tool install session, six controls and known workspace lifecycle)",
+  "wired": "YES (ordinary current primary pipeline/native selector/tool materializer/atomic publication/Bootstrap factory); NO (public CLI)",
+  "qualified": "YES (named local canonical profiles/full four-package Race/canonical observer reuse and actual tool plus old UV CLI)",
+  "acceptance_closed": "NO (whole persistent tools)",
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 65.549,
+      "raw_receipt": "p4l4d-approved-tool-v4-quick.json",
+      "log_sha256": "4bd7b15ef99ccd73cb06bca9f364b7f4e713ba0c32b2f5606519806dca377d3b"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 13.326,
+      "raw_receipt": "p4l4d-approved-tool-v4-security.json",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.258,
+      "raw_receipt": "p4l4d-approved-tool-v4-docs.json",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "full-affected-race",
+      "exit": 0,
+      "seconds": 160.736,
+      "raw_receipt": "p4l4d-approved-tool-v4-full-affected-race.json",
+      "log_sha256": "58befafb239d4bb0acddd5803a279c6d4a9562a70a9d5e3afdb5ffb0c431cf3d"
+    },
+    {
+      "profile": "conjunction-focused-race",
+      "exit": 0,
+      "seconds": 4.631,
+      "raw_receipt": "p4l4d-approved-tool-v4-conjunction-focused-race.json",
+      "log_sha256": "29da2ced47597447f2f2ac2350b76b4a8781a210d251100732147d1ca620635d"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "internal/promotion/pypi_promotion.go",
+      "sha256": "bd023731b9441f557c689f90f92593928506e4ee5718a635d19cbecfaea67dfe"
+    },
+    {
+      "path": "internal/promotion/tool_target.go",
+      "sha256": "6c619975762668d081b5e9571dc5bf216526dd1064b9aa3ad8ad2a155cb5a1fc"
+    },
+    {
+      "path": "internal/promotion/tool_publication.go",
+      "sha256": "e776229beb0cfad29ad822db72b10b1a198d325d46b4acf272552d7f14c26ad0"
+    },
+    {
+      "path": "internal/promotion/uv_tool_install.go",
+      "sha256": "29f609cd0d2d13cf231b84d5ce73c751f8b398ed6256ce80ad18037bd452cfd7"
+    },
+    {
+      "path": "internal/promotion/uv_tool_install_test.go",
+      "sha256": "d5358078e6af89242cf9aede84abf793aea82111f8a91ba53c741a2e41112914"
+    },
+    {
+      "path": "internal/promotion/tool_promotion.go",
+      "sha256": "193147235783a43b0d47c2dc063ee91263dad508de6152659d7207b7aaea1032"
+    },
+    {
+      "path": "internal/promotion/tool_workspace.go",
+      "sha256": "79ad7d361e7480b8649a61cc56d31396ade2e21a50aecf69afc602c371cd5a9e"
+    },
+    {
+      "path": "internal/promotion/tool_workspace_test.go",
+      "sha256": "6a44cf86f74efb1c0fab29992d332332b0dd8b2575cdad69b271225c856813b3"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool.go",
+      "sha256": "0ac613fc4e1a2679d9e1cf7775e22b6b0a87305fb825a0160b733988c15d1b27"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_test.go",
+      "sha256": "f5d2ccfa70044f13f85f29f7e4a711bef47e0ec873a95c25dae1a2b78035c03c"
+    },
+    {
+      "path": "internal/bootstrap/uv_tool_install_integration_test.go",
+      "sha256": "1b4173d0766be77359c4db036070f867949b3edf6bc16146886249c7431d6441"
+    },
+    {
+      "path": "internal/artifact/pypi/tool_requirement.go",
+      "sha256": "f5eb2672d6308f0022b9c7f983c0e98d7dfef0bb6e8815f3ac5ce765bafead14"
+    },
+    {
+      "path": "internal/artifact/pypi/tool_requirement_test.go",
+      "sha256": "ba0a07a51a60a87982345b8fddf2ee01dcdcc378186149554736e7c9243d4039"
+    },
+    {
+      "path": "internal/sandbox/uv_tool_resolver.go",
+      "sha256": "e5d12261091919a181a423cb528a73c5396d6afda3c84c4934417d01869082ea"
+    }
+  ],
+  "mechanical_reuse": "p4l4d-staged-validation-mechanical-reuse-v1.json",
+  "actual": {
+    "raw_receipt": "p4l4d-approved-tool-native-v2-result.json",
+    "seconds": 297.347,
+    "tool_seconds": 56.91,
+    "plain_seconds": 27.25,
+    "space_path_seconds": 28.29,
+    "old_uv_cli_seconds": 237.92,
+    "old_uv_cli_completed_requests": 7,
+    "verified": [
+      "public cowsay exact and same-conjunction bounded native requirements",
+      "fresh current full required checks/Evidence readback/ALLOW/Manifest/SBOM/staging",
+      "six native/Host controls and exact published receipt/links/RECORD/final interpreter path",
+      "existing tool fresh-install refusal leaves full identity/bytes/mode/link inventory unchanged",
+      "user data retained; controlled workspaces/guards removed",
+      "existing UV pip fresh/retained/root upgrade/closure no-op/new root/native adoption/retained no-adopt regressions"
+    ],
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "no_skip": true,
+    "host_protected_snapshot_identical": true,
+    "remaining_containers": "",
+    "remaining_volumes": "",
+    "binary": {
+      "size": 49310327,
+      "sha256": "0672051c9128ae289d402b27239eb5d8be7d73701bdc94d58c60e730b795520b"
+    },
+    "target_interpreter_fixture": {
+      "scope": "pinned image executable copied strictly as DATA; no Host interpreter/tool command execution or runtime provisioning qualification",
+      "raw_receipt": "p4l4d-approved-tool-native-v2-interpreter-fixture.json",
+      "image": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+      "sha256": "3fbc4d6c766a7a5d56c4bcc80d3325181a05f1b64596eb7cf622f0ec056dd546",
+      "bytes": 14480
+    },
+    "observer_reuse": "p4l3-uv-tool-directory-observer-canonical-v1.json; unchanged C++/lock source verified at preparation"
+  },
+  "first_actual_failure": {
+    "assessment": "p4l4d-first-actual-constraint-assessment.json",
+    "raw_receipt": "p4l4d-approved-tool-native-v1-result.json",
+    "seconds": 37.8,
+    "plain_pass_seconds": 27.64,
+    "space_refusal_seconds": 6.11,
+    "old_cli": "NOT_REACHED"
+  },
+  "native_constraint_diagnostic": {
+    "raw_receipt": "p4l4-tool-constraint-shape-v1-result.json",
+    "seconds": 1.73,
+    "queries_exit0": 1,
+    "scope": "offline inert same-clause order metadata only; Docker inventories unchanged"
+  },
+  "correction": "SameConstraints compares same source/project and exact operator/version/prefix clause set independent of order/repetition; parser/source/selected graph/original text/Policy remain unchanged",
+  "initial_comparator_test_failure": {
+    "raw_receipt": "p4l4d-approved-tool-v3-quick.json",
+    "seconds": 221.43,
+    "scope": "negative wildcard fixture used unsupported 1.*/1.0.* before assertion; existing three-component grammar preserved"
+  },
+  "missing": [
+    "public fresh UV tool install CLI wiring and actual qualification",
+    "original native upgrade/retired script reconciliation/adoption",
+    "pipx production supply/backend/admission/public commands",
+    "P5/P6 execution runners and P7 final affected source CPU/CUDA/support matrix"
+  ],
+  "remote_ci": "NOT_RUN for this local backend; next grouped end-to-end checkpoint retained",
+  "pending_cli_drafts_not_in_candidate": [
+    "internal/cli/uv_tool.go",
+    "internal/bootstrap/uv_tool_client.go"
+  ]
+}

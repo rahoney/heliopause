@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "baseline": "a511744a6d0165715e559fc11123fa7c273f1f6a",
+  "scope": "C3e3/B1 complete-only file transaction sharing legacy journal/backup/rollback; synthetic fixtures only",
+  "IMPLEMENTED": "YES private complete mode",
+  "WIRED": "YES legacy body sharing; actual complete guard caller NO",
+  "QUALIFIED": "LOCAL ONLY",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh shared source CI",
+    "actual complete guard/cache/Policy wiring and native publication qualification"
+  ],
+  "source": [
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "bytes": 35609,
+      "sha256": "fce048c49cf13c92cfd5dc791fa67a27959d962d83f211e00b91e7299555509a"
+    },
+    {
+      "path": "internal/promotion/pypi_complete_transaction_test.go",
+      "bytes": 8379,
+      "sha256": "37516e5ee32ac8543c6139e0bc946e317b06fd69835d09f9188d74068ec1463e"
+    }
+  ],
+  "tests": [
+    "complete nonempty retires unselected proven owners and script while preserving user data/config",
+    "explicit empty retires all with metadata absent/readState normal; already empty creates no controller directory; next ordinary transaction succeeds",
+    "legacy empty refusal and both mismatched complete empty intents reject before backup",
+    "metadata/sync/reconcile fault restores old files and metadata bytes/inodes",
+    "foreign metadata survives failed rollback; original journal/backup/guard retained and next mutation refused; primary error preserved",
+    "complete replaces entire shared-owner set while legacy partial-shared update still refuses"
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.32,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-format.json",
+        "bytes": 109,
+        "sha256": "430e7617d41502bae4850c9967c28a2a9f0d61a445396351f9e3d385f5a29002"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 151.891,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-quick.json",
+        "bytes": 111,
+        "sha256": "65214db19853469a9ef5947dd352a73bcaf81c9cc361c4c6441a2abaa7fa51cb"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-quick.log",
+        "bytes": 1354,
+        "sha256": "de25279a746d221ef66f0a5a8f12cfd608f33c8c019fdae2965c64e6510367bc"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 8.638,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-security.json",
+        "bytes": 112,
+        "sha256": "152a9b56c7e7dbed9d26651d7e818db1138a6d63ec0f847ef42efce081f53f25"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.298,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-docs.json",
+        "bytes": 108,
+        "sha256": "96a07be9ba3419782ff52d36d409c3f5a85e8dee36e4324bddd60a6624320735"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 1.002,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-workflow.json",
+        "bytes": 112,
+        "sha256": "d3e0685046f8c524acd56a25d3ddca02cc7021253d06fe3d7413730e36fbb16b"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-candidate-workflow.log",
+        "bytes": 1071,
+        "sha256": "170cae0b50b9eb7f10954ddc35b3398bea5fd0c3af8a0e0c94751faacc5c8601"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/promotion",
+      "./internal/bootstrap",
+      "./internal/application"
+    ],
+    "exit": 0,
+    "seconds": 170.772,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-race.json",
+      "bytes": 282,
+      "sha256": "88674a1aa195e7dfe898d1e2adc7be664364ce2036329120456f4c6a3d68896f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-complete-transaction-race.log",
+      "bytes": 187,
+      "sha256": "9647dd924a77095149612b6111c79510a8ca603ae7044f18e472239ef474cfd1"
+    }
+  ],
+  "cleanup": {
+    "all_local_checks_completed": true,
+    "fresh_owned_go_tmpdir_entries": 0,
+    "manual_native_resources": "NONE; synthetic fixture roots removed by existing test lifecycle; active SDK/runtime/cache retained"
+  },
+  "P1_remaining": [
+    "actual frozen source/target guard and whole-original enrollment",
+    "approved complete cache/Manifest/SBOM/offline publication",
+    "CLI/SKIP/report and whole P1 acceptance"
+  ]
+}

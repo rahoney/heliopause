@@ -16,6 +16,7 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/deb"
 	"github.com/goreleaser/nfpm/v2/files"
 	_ "github.com/goreleaser/nfpm/v2/rpm"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"golang.org/x/mod/semver"
 )
 
@@ -77,6 +78,21 @@ func buildPackages(version string, epoch int64, assets, output, lock, license st
 		{filepath.Join(assets, "helox-linux-amd64"), versionRoot + "/helox", 0o555},
 		{filepath.Join(assets, "haa_gvisor_observer-linux-amd64"), versionRoot + "/haa_gvisor_observer", 0o555},
 		{filepath.Join(assets, "haa-network-policy-helper-linux-amd64"), versionRoot + "/haa-network-policy-helper", 0o500},
+		{filepath.Join(assets, runtimeidentity.SandboxResponderAssetName), versionRoot + "/" + runtimeidentity.SandboxResponderAssetName, 0o555},
+		{filepath.Join(assets, "haa-release-installer-linux-amd64"), versionRoot + "/haa-release-installer", 0o500},
+		{filepath.Join(assets, "pnpm-linux-amd64"), versionRoot + "/pnpm", 0o555},
+		{filepath.Join(assets, "pnpm-NOTICE.txt"), versionRoot + "/pnpm-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "pnpm-NOTICE.txt"), "/usr/share/doc/helox/pnpm-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "bun-linux-amd64"), versionRoot + "/bun", 0o555},
+		{filepath.Join(assets, "bun-NOTICE.txt"), versionRoot + "/bun-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "bun-NOTICE.txt"), "/usr/share/doc/helox/bun-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "pipx-runtime-linux-amd64.zip"), versionRoot + "/pipx-runtime-linux-amd64.zip", 0o444},
+		{filepath.Join(assets, "pipx-NOTICE.txt"), versionRoot + "/pipx-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "pipx-NOTICE.txt"), "/usr/share/doc/helox/pipx-NOTICE.txt", 0o444},
+		{filepath.Join(assets, "semgrep-core-linux-amd64"), versionRoot + "/semgrep-core-linux-amd64", 0555},
+		{filepath.Join(assets, "semgrep-rules.json"), versionRoot + "/semgrep-rules.json", 0444},
+		{filepath.Join(assets, "semgrep-SOURCES.tar"), versionRoot + "/semgrep-SOURCES.tar", 0444},
+		{filepath.Join(assets, "semgrep-NOTICES.tar"), versionRoot + "/semgrep-NOTICES.tar", 0444},
 		{filepath.Join(assets, "helox-runtime-images.json"), versionRoot + "/helox-runtime-images.json", 0o444},
 		{lock, versionRoot + "/runtimes.lock.json", 0o444},
 		{license, "/usr/share/doc/helox/copyright", 0o444},
@@ -146,23 +162,32 @@ func regularInput(path string) error {
 	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > maxInputBytes {
 		return errors.New("package input must be a bounded nonempty regular file")
 	}
+	if maximum := runtimeidentity.SemgrepAssetMaximum(filepath.Base(path)); maximum != 0 && info.Size() > maximum {
+		return errors.New("semgrep package input exceeds its fixed supply bound")
+	}
 	return nil
 }
 
 func policyService(versionRoot string) string {
 	return "[Unit]\nDescription=Heliopause typed network-policy helper\nAfter=docker.service\nConditionPathExists=/etc/heliopause/network-policy.json\n\n" +
-		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper\nUser=root\nGroup=root\nUmask=0077\n" +
-		"RuntimeDirectory=heliopause-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
+		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper serve\nUser=root\nGroup=root\nUmask=0077\n" +
+		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
 }
 
 const packageReadme = `This package installs versioned native payload and a CLI symlink.
 It does not activate a runtime, overwrite installed runsc/observer identities,
 download images, create caller credentials, or start/enable a privileged service.
 
+The bundled release installer is inert until explicitly invoked and does not
+enroll this OS-package installation into native self-update management.
+Package files remain owned by the OS package manager. Native quarantine
+self-update requires a separately verified native installation; it does not
+overwrite this package layout or bypass the package database.
+
 The optional helox-network-policy.service remains disabled. Before enabling it,
 configure the existing protected runtime and a root-owned, non-writable
 /etc/heliopause/network-policy.json using the actual caller client_path,
-client_uid and client_gid and socket_path /run/heliopause-policy/network-policy.sock.
+client_uid and client_gid and socket_path /run/heliopause-network-policy/network-policy.sock.
 No working authorization configuration is generated from guessed IDs.
 
 Run helox doctor after controlled runtime setup. Package installation success

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "scope": "ACTUAL_PINNED_NATIVE_UV_RELOCATABLE_WRAPPER_DATA_ONLY; never executed; no source/Policy/ownership authority",
+  "uv": "0.13.4",
+  "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+  "origin": "p6d4b2 native complete DATA census original inventory",
+  "name": "cowsay",
+  "module": "cowsay.__main__",
+  "attr": "cli",
+  "body": "IyEvYmluL3NoCicnJ2V4ZWMnICIkKGRpcm5hbWUgLS0gIiQocmVhbHBhdGggLS0gIiQwIikiKSIvJ3B5dGhvbicgIiQwIiAiJEAiCicgJycnCiMgLSotIGNvZGluZzogdXRmLTggLSotCmltcG9ydCBzeXMKZnJvbSBjb3dzYXkuX19tYWluX18gaW1wb3J0IGNsaQppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgaWYgc3lzLmFyZ3ZbMF0uZW5kc3dpdGgoIi1zY3JpcHQucHl3Iik6CiAgICAgICAgc3lzLmFyZ3ZbMF0gPSBzeXMuYXJndlswXVs6LTExXQogICAgZWxpZiBzeXMuYXJndlswXS5lbmRzd2l0aCgiLmV4ZSIpOgogICAgICAgIHN5cy5hcmd2WzBdID0gc3lzLmFyZ3ZbMF1bOi00XQogICAgc3lzLmV4aXQoY2xpKCkpCg==",
+  "sha256": "8cfcb9de2f08230aed88727c17b4167e005d6af929a1b84d259b6df26e2f24bc",
+  "mode": 493
+}

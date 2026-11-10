@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"net"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ func makePypiVenvFixture(t *testing.T) (string, pypiVenvPlan) {
 		t.Skip("production venv transaction is Linux amd64 only")
 	}
 	root := realPromotionRoot(t)
-	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	site := filepath.Join(root, "lib", "python3.14", "site-packages")
@@ -341,7 +342,7 @@ func TestVenvRejectsConfigAndSchemeIdentity(t *testing.T) {
 					t.Fatal(err)
 				}
 			default:
-				body := map[string]string{"malformed": "invalid", "wrong-version": "version = 3.13.7\n", "version-substring": "note = version = 3.14.7\n", "duplicate": "version = 3.14.7\nversion = 3.14.7\n"}[kind]
+				body := map[string]string{"malformed": "invalid", "wrong-version": "version = 3.13.7\n", "version-substring": "note = version = " + runtimeidentity.PythonVersion + "\n", "duplicate": "version = " + runtimeidentity.PythonVersion + "\nversion = " + runtimeidentity.PythonVersion + "\n"}[kind]
 				if err := os.WriteFile(cfg, []byte(body), 0o600); err != nil {
 					t.Fatal(err)
 				}

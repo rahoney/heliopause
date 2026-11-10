@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "source_commit": "ab54d4abe873ac1e7318e4c1529c49b9b9b061d5",
+  "source_tree": "c8b7b9e1ba9411b04a0e3c554c11515ff9c66251",
+  "run_id": 39724639809,
+  "run_number": 375,
+  "status": "completed",
+  "conclusion": "failure",
+  "checkout": {
+    "sha": "7cd31f7701b949a6633ac618090c9088f7549a0e",
+    "tree": "c8b7b9e1ba9411b04a0e3c554c11515ff9c66251",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "id": 119645650099,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650203,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650241,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650277,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650286,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650316,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 119645650373,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650395,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119645650416,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119652182674,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "first_public_input": {
+    "reference": "idna@3.11",
+    "seconds": 2.57,
+    "outcome": "FAIL",
+    "operation": "native uv compile",
+    "reason": "STREAM_FAULT",
+    "fault_site": "OPEN_RESULT_CLASSIFICATION_OTHER",
+    "role": "CONTROL",
+    "provenance": "DIRECT_EXEC_ROOT",
+    "mount": "system",
+    "flags": 557056,
+    "locator_fnv1a64": "ab0a49b3f5f1fd68",
+    "mountpoint_fnv1a64": "ab0a49b3f5f1fd68",
+    "candidate_path": "/etc/hosts",
+    "trace_events": 30,
+    "session_complete": false
+  },
+  "public_multi_graph": "NOT_REACHED",
+  "independent_python_http": "NOT_REACHED",
+  "cleanup": {
+    "original": 1,
+    "helper_state": "CONFIRMED_STOPPED",
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "restore_result": "RESTORED",
+    "last_helper_wait": 0
+  },
+  "raw": "docs/github-logs/package-client-quarantine-20261021/ci375-linux.log",
+  "required_pass": false,
+  "p1_acceptance_closed": false
+}
