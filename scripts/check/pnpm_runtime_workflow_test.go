@@ -75,7 +75,7 @@ func TestPNPMProjectActualRequiresMatchingClientAndParentRestoration(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := string(body)
+	original := workflowWithoutSuiteGuards(string(body))
 	if findings := validatePNPMProjectClientOrder(original); len(findings) != 0 {
 		t.Fatal(findings)
 	}

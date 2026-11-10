@@ -99,7 +99,7 @@ func TestPyTorchQualificationUsesExplicitBoundedInputs(t *testing.T) {
 	}
 	for _, profile := range []string{"", "cu126", "cu130", "cu132"} {
 		t.Run("profile-"+profile, func(t *testing.T) {
-			if err := checkQualificationInputs(string(data), profile); err != nil {
+			if err := checkQualificationInputs(workflowWithoutSuiteGuards(string(data)), profile); err != nil {
 				t.Fatal(err)
 			}
 		})

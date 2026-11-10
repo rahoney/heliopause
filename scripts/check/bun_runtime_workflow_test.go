@@ -105,7 +105,7 @@ func TestBunActualFollowsProtectedSandboxRestoration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := string(body)
+	original := workflowWithoutSuiteGuards(string(body))
 	if findings := validateBunInspectionClientOrder(original); len(findings) != 0 {
 		t.Fatal(findings)
 	}
@@ -162,7 +162,7 @@ func TestBunProjectActualRequiresBootstrapHelperAndSandboxRestoration(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := string(body)
+	original := workflowWithoutSuiteGuards(string(body))
 	if findings := validateBunProjectClientOrder(original); len(findings) != 0 {
 		t.Fatal(findings)
 	}

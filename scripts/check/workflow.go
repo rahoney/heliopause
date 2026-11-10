@@ -216,6 +216,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	}
 	findings = append(findings, validateResponderSourceOrder(contents)...)
 	findings = append(findings, validateCUDAQualificationScope(contents)...)
+	findings = append(findings, validateIntegrationSuites(contents)...)
 	findings = append(findings, validateKernelTerminalQualification(contents)...)
 	findings = append(findings, validatePlatformBuildCache(contents)...)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
@@ -771,7 +772,7 @@ func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
 		for _, line := range strings.Split(run, "\n") {
 			lines = append(lines, strings.TrimSpace(line))
 		}
-		blocks = append(blocks, lines)
+		blocks = append(blocks, withoutIntegrationSuiteGuards(lines))
 	}
 	return blocks, nil
 }

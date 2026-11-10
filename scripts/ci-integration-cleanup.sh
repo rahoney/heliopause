@@ -161,6 +161,9 @@ haa_stop_policy_helper() {
   haa_helper_unknown 1 'helper remains active after bounded wait'
 }
 
+# Exactly one matrix leg owns each guarded integration region.
+haa_ci_suite() { [[ ${HELOX_CI_SUITE-} == "$1" ]]; }
+
 haa_install_ci_client() {
   local status
   if haa_stop_policy_helper; then :; else return $?; fi

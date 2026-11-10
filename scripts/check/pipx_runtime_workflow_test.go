@@ -83,7 +83,7 @@ func TestPipxCIClientLifetimeOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	baseline := string(body)
+	baseline := workflowWithoutSuiteGuards(string(body))
 	if findings := validatePipxInspectionClientOrder(baseline); len(findings) != 0 {
 		t.Fatal(findings)
 	}

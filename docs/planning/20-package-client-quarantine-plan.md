@@ -131,6 +131,9 @@ CI471의 같은 시험 지점이 CI448 대비 1.4–1.6× 늦어(26→36·32→4
 예상됐다([근거](./evidence/m13-004-convenience/wsl-recovery-20261105.md#ci471--bun-실행-cli-프로세스-한도와-linux-job-예산)).
 제품·개별 test 한도는 유지하며, 실행 시간이 계속 210분을 넘거나 240분에 가까워지면 독립 job 분할을 검토하고
 추가 상향은 자동으로 하지 않는다.
+2026-11-10 완주 추정이 281–307분으로 240분을 넘어, 사용자가 추가 상향 대신 분할을 승인했다. `gvisor-integration`은 시험군 8개
+matrix(`fail-fast: false`)로 나누고 leg당 한도를 120분으로 낮춘다. 시험 명령·순서·개별 한도와 Required aggregate는 그대로이며
+첫 hosted 실측 뒤 한도를 다시 낮춘다. 시험군 소유와 guard 규칙은 `scripts/check/integration_suite_workflow.go`가 검사한다.
 
 
 공통 observer/runtime/회계 변경, 로컬에서 확인할 수 없는 새 native 동작, 재현된 공통 회귀가
