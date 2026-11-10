@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -47,6 +48,10 @@ type uvSyncActualReport struct {
 }
 
 func uvSyncActualEnvironment(t *testing.T) (context.Context, string, string, string) {
+	return uvSyncActualEnvironmentWithin(t, 5*time.Minute)
+}
+
+func uvSyncActualEnvironmentWithin(t *testing.T, budget time.Duration) (context.Context, string, string, string) {
 	t.Helper()
 	if os.Getenv("HELOX_UV_SYNC_CLI_INTEGRATION") != "1" {
 		t.Skip("requires authenticated native UV/Python/gVisor integration")
@@ -70,9 +75,30 @@ func uvSyncActualEnvironment(t *testing.T) (context.Context, string, string, str
 	if err := os.WriteFile(filepath.Join(venv, "pyvenv.cfg"), []byte("version = "+sandbox.PinnedPythonRuntime().PythonVersion+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	// Stop before the process limit so a slow run still reports its typed cause.
+	if deadline, ok := t.Deadline(); ok {
+		if left := time.Until(deadline) - 30*time.Second; left < budget {
+			budget = left
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), budget)
 	t.Cleanup(cancel)
 	return ctx, root, cache, venv
+}
+
+// actualFailureChain prints the causes that a typed CLI failure keeps out of
+// its stable code, so one CI log line names the owner that refused.
+func actualFailureChain(err error) string {
+	var chain []string
+	for cause := err; cause != nil && len(chain) < 16; {
+		chain = append(chain, cause.Error())
+		if joined, ok := cause.(interface{ Unwrap() []error }); ok && len(joined.Unwrap()) != 0 {
+			cause = joined.Unwrap()[0]
+			continue
+		}
+		cause = errors.Unwrap(cause)
+	}
+	return strings.Join(chain, " <- ")
 }
 
 func runActualUVSync(t *testing.T, ctx context.Context, source, target string, flags ...string) uvSyncActualReport {
@@ -80,7 +106,7 @@ func runActualUVSync(t *testing.T, ctx context.Context, source, target string, f
 	args := append([]string{"--lang", "ko", "--output", "json", "uv", "pip", "sync", source, "--target", target}, flags...)
 	var out, diagnostic bytes.Buffer
 	if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
-		t.Fatalf("actual sync failed: %v stdout=%s stderr=%s", err, out.String(), diagnostic.String())
+		t.Fatalf("actual sync failed: %s stdout=%s stderr=%s", actualFailureChain(err), out.String(), diagnostic.String())
 	}
 	var report uvSyncActualReport
 	if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.project-update-result/v1" || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || report.Graph == "" || report.Verified.Manifest == "" || report.Verified.Count != len(report.Entries) || report.DependencyFree != (len(report.Entries) == 0) {
@@ -128,7 +154,7 @@ func actualUVSyncPayload(t *testing.T, cache string, report uvSyncActualReport) 
 }
 
 func TestLinuxUVSyncCompleteCLIIntegration(t *testing.T) {
-	ctx, root, cache, venv := uvSyncActualEnvironment(t)
+	ctx, root, cache, venv := uvSyncActualEnvironmentWithin(t, 10*time.Minute)
 	source := filepath.Join(root, "requirements.txt")
 	site := filepath.Join(venv, "lib", "python3.14", "site-packages")
 	user := filepath.Join(venv, "user-note.txt")

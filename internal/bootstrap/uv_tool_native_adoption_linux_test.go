@@ -282,7 +282,7 @@ func nativeToolAdoptionCLIIntegration(t *testing.T, pipx bool) {
 			}
 			var out, diagnostic bytes.Buffer
 			if err := bootstrap.Run(ctx, append(phaseArgs, "--adopt"), &out, &diagnostic); err != nil {
-				t.Fatal("current native tool adoption failed", err, out.String(), diagnostic.String())
+				t.Fatal("current native tool adoption failed", actualFailureChain(err), out.String(), diagnostic.String())
 			}
 			var report struct {
 				Operation string

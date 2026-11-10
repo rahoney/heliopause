@@ -50,7 +50,7 @@ func TestLinuxUVProjectCLIIntegration(t *testing.T) {
 		}
 		var out, diagnostic bytes.Buffer
 		if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
-			t.Fatalf("actual UV project CLI %s failed: %v stdout=%s diagnostics=%s", operation, err, out.String(), diagnostic.String())
+			t.Fatalf("actual UV project CLI %s failed: %s stdout=%s diagnostics=%s", operation, actualFailureChain(err), out.String(), diagnostic.String())
 		}
 		var report uvSyncActualReport
 		if json.Unmarshal(out.Bytes(), &report) != nil || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || report.Verified.Manifest == "" || report.Verified.Count != count || len(report.Entries) != count || report.DependencyFree != (count == 0) {
@@ -191,7 +191,7 @@ func TestLinuxUVProjectSelectionCLIIntegration(t *testing.T) {
 		args := append([]string{"--lang", "ko", "--output", "json", "uv", "sync", "--project", project}, flags...)
 		var out, diagnostic bytes.Buffer
 		if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
-			t.Fatalf("actual UV scope %s failed: %v stdout=%s diagnostics=%s", name, err, out.String(), diagnostic.String())
+			t.Fatalf("actual UV scope %s failed: %s stdout=%s diagnostics=%s", name, actualFailureChain(err), out.String(), diagnostic.String())
 		}
 		var report uvSyncActualReport
 		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.project-update-result/v1" || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || report.Verified.Manifest == "" || report.Verified.Count != len(expected) || len(report.Entries) != len(expected) || report.DependencyFree != (len(expected) == 0) {

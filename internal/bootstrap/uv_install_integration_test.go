@@ -76,7 +76,7 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 		args := append([]string{"--output", "json", "--lang", "ko", "uv", "pip", "install", step.spec, "--target", venv}, step.flags...)
 		var stdout, stderr bytes.Buffer
 		if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
-			t.Fatalf("actual UV %s failed: %v stdout=%s stderr=%s", step.name, err, stdout.String(), stderr.String())
+			t.Fatalf("actual UV %s failed: %s stdout=%s stderr=%s", step.name, actualFailureChain(err), stdout.String(), stderr.String())
 		}
 		var result struct {
 			Schema    string                    `json:"schema_version"`
@@ -268,7 +268,7 @@ func uvNativeEnrollmentCLI(t *testing.T, ctx context.Context, root, cache string
 		stdout.Reset()
 		stderr.Reset()
 		if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
-			t.Fatal("actual UV native enrollment/replay failed", adopt, err, stdout.String(), stderr.String())
+			t.Fatal("actual UV native enrollment/replay failed", adopt, actualFailureChain(err), stdout.String(), stderr.String())
 		}
 		var result struct {
 			Operation string                    `json:"operation"`

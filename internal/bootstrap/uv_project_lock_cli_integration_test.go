@@ -58,7 +58,7 @@ func TestLinuxUVProjectLockCLIIntegration(t *testing.T) {
 		}
 		var out, diagnostic bytes.Buffer
 		if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
-			t.Fatal("actual lock-only CLI failed", err, out.String(), diagnostic.String())
+			t.Fatal("actual lock-only CLI failed", actualFailureChain(err), out.String(), diagnostic.String())
 		}
 		if output == "json" {
 			var report struct {
