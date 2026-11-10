@@ -52,6 +52,22 @@ func TestCheckMarkdownTreeRejectsBrokenFixtures(t *testing.T) {
 	}
 }
 
+func TestCheckMarkdownTreeSkipsRawCaptureDirectory(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	writeTestFile(t, filepath.Join(root, "README.md"), "[guide](docs/guide.md)\n")
+	writeTestFile(t, filepath.Join(root, "docs", "guide.md"), "# Guide\n")
+	writeTestFile(t, filepath.Join(root, "docs", "github-logs", "snapshot", "queue.md"), "[missing](missing.md)\n")
+	if err := checkMarkdownTree(root); err != nil {
+		t.Fatalf("checkMarkdownTree error: %v", err)
+	}
+	writeTestFile(t, filepath.Join(root, "docs", "other", "queue.md"), "[missing](missing.md)\n")
+	if err := checkMarkdownTree(root); err == nil {
+		t.Fatal("checkMarkdownTree accepted a broken link outside the raw capture directory")
+	}
+}
+
 func TestFenceMarkerRequiresMatchingClosure(t *testing.T) {
 	t.Parallel()
 

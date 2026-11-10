@@ -32,6 +32,12 @@ func checkMarkdownTree(root string) error {
 			if path != root && (entry.Name() == ".git" || entry.Name() == "vendor") {
 				return filepath.SkipDir
 			}
+			// docs/github-logs holds untracked raw captures, including frozen source
+			// snapshots whose partial copies cannot resolve their own relative links.
+			// Editing them would change recorded source fingerprints.
+			if path == filepath.Join(root, "docs", "github-logs") {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		if strings.EqualFold(filepath.Ext(entry.Name()), ".md") {
