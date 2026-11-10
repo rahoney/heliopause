@@ -165,6 +165,7 @@ Read:
 - [Planning Index](./planning/README.md)
 - [Step 12 — Milestones](./planning/01-milestones.md)
 - [Step 13 — Current Work Queue](./planning/02-current-work-queue.md)
+  - 종결된 과거 checkpoint 이력은 `docs/planning/archive/`에 있으며 Queue 끝의 색인이 가리킨다. 현재 판정이 아니다.
 - 완료 milestone의 qualification evidence가 필요하면 해당 planning qualification
   문서를 읽고, 현재 M8 작업이면
   [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)를 읽는다.

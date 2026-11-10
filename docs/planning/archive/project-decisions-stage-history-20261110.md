@@ -1,0 +1,112 @@
+# PROJECT-DECISIONS.md 단계 이력 보관
+
+2026-11-10 R0-4 문서 정리로 [`PROJECT-DECISIONS.md`](../../../PROJECT-DECISIONS.md)의 Current Stage·Remaining Stages 서술 중 완료된 상세 이력을 그대로 옮겼다(본문 변경 없음, 상대 링크 경로만 조정). 당시 기록이며 현재 판정이 아니다. 현재 상태는 [Queue](../02-current-work-queue.md)가 소유한다.
+
+## 원본 줄 110-126: M13-001~M13-004 단계 기록, CLI-UX, 전체 감사, 보강 설계 (2026-10-17 ~ 2026-11-01)
+
+M13-001 저장소 보호와 M13-003의 보호된 v0.1.0 태그·자연 build·attestation·OS package lifecycle 검증을 완료했다. [M13-003 결과](../../../docs/planning/evidence/m13-003-release-build/qualification-20261017.md)가 정확한 범위를 소유한다. M13-002는 사용자가 승인한 [C3 조건부 유예](../../../docs/planning/evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`로 유지하고 최초 외부 기여 병합 전에 검증한다. 상세 계약은 [M13](../../../docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)을 따른다.
+
+CLI-UX-001·002의 다국어 리포트·진행 표시·OS 표시 언어 감지는 로컬 CLI와 원격 검증을 완료했다. [언어 qualification](../../../docs/planning/evidence/cli-os-language/qualification-20261018.md)이 실제 WSL·설치 CLI와 native macOS/CI328 범위를 연결한다. 후속 SEC-UPD-001도 [전체 검토](../../../docs/planning/evidence/update-quarantine/final-review-20261019.md)와 최종 소스cdac96d의 [CI344](../../../docs/planning/evidence/update-quarantine/ci344-closure.json)를 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 문서화된 여섯 생태계 업데이트·새 검사/Evidence·실패 시 원본 보호·복원·완료 시험 데이터 정리가 검증됐으며, named CPU/cu126/cu130/cu132는 각 소스별 실제 qualification 범위를 유지한다.
+
+CLI-UX-003은 source4cfe29e와 동일 전체 tree의 실제 checkoutf3d6816/[CI352](https://github.com/rahoney/heliopause/actions/runs/39316007445) 열 개 성공을 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 기존 CLI 서비스를 재사용한 대화형 시작 화면과 터미널 복원, 비공개 Cargo payload의 중복 초기 sync 축소를 검증했다. 파일·크기·보안 한도와 최종 real tree sync·no-replace 게시·parent sync는 유지했다. 이전 CI351 시간 초과의 정확한 원인은 미확정으로 남는다. [Qualification](../../../docs/planning/evidence/cli-launcher/qualification-20261020.md)이 검사·소스·정리 범위를 소유한다. 최종 문서 전달은 해당 head의 별도 실제 CI 결과로 확인한다. 현재 M13-004는 `IN_PROGRESS`다. 승인된 source7fedaf3의 rc5 공식 빌드와 독립13파일 검증, 실제 정상 업데이트·OS 관리자 인증·동시 실행 거부·서비스 rollback·Root 중단/guest cold recovery와 재실행을 [확인](../../../docs/planning/evidence/m13-004-convenience/signed-native-qualification-20261020.md)했다. 취소 cleanup gap은 [기존 observer owner 수리](../../../docs/planning/evidence/m13-004-convenience/observer-cancellation-plan-20261021.md)의 source4a8c278와 [CI358](../../../docs/planning/evidence/m13-004-convenience/signed-native-20261020/observer-remote-ci.json) 열 개 성공을 확인했다. [교정된 caller의 actual signed 시험](../../../docs/planning/evidence/m13-004-convenience/signed-caller-plan-20261021.md)도 승인된 rc6의 정상 전환·취소 두 경계·fresh whole 재실행으로 완료했다. Native same-runtime 경로는 QUALIFIED/ACCEPTANCE_CLOSED이며 시험 guest/image/volume·다운로드를 정리했다. rahoney 계정 준비는 완료됐고 이름·publisher binding은 채널 연결의 미정 항목이다. PR38은 draft이며 main 병합·정식 릴리스 활성화·공개 배포는 별도다. 현재 상태는 [Queue](../../../docs/planning/02-current-work-queue.md)가 소유한다.
+
+2026-10-31 이름 결정 전 [전체 코드·보안 감사](../../../docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 완료했다. 코드358/treee1ca의 일반/CPU·cu126·cu130·cu132가 모두 Required10SUCCESS이며 확인된 보안·중복·연결 문제를 기존 owner에서 최소 수정했다. 감사 자체는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES다. M13-004는 이름/publisher binding·채널·현재 서명 배포가 남아 IN_PROGRESS이며 사용자가 승인한 [동일 WSL 개발 체험 환경](../../../docs/planning/evidence/m13-004-convenience/local-dev-test-20261101.md)은 Docker29.9.2·현재 CLI/helper로 전환하고 실제 Python/Go 소비자를 확인했다. 이 개발 설치는 정식 릴리스 등록·현재 signed deployment의 완료가 아니다. 명명·main merge/tag/publish를 임의 실행하지 않는다.
+
+2026-11-01 [일괄 설치·원래 보안 목표 감사](../../../docs/planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)는 기존 여섯 생태계의 파일 기반 설치와 D-008/MVP-005~008을 대조해 B00~B07/S01~S09의 미지원·미완료를 기록했다. 감사는 완료했으며 기능 acceptance는 OPEN이다. 과거 bounded 구현·감사·Host 연결 완료는 유지하되 전체 사용자 목표 완료로 확대하지 않는다. 현재 Queue는 이름·배포보다 이 gap을 우선한다.
+
+같은 날 사용자는 구현보다 상세 설계를 먼저 요청했다. [보강 설계](../../../docs/planning/21-goal-completion-design.md)는 기존 owner 재사용, 순차 수정·완료 조건, 자동 정리/유한 보존, 성능·불용 코드, 시험 정리와 묶음 CI/20분 확인을 소유한다. 현재는 문서 작성만이며 모든 보강 구현은 NOT_STARTED다. 후속 구현 지시 전 제품·Host·아티팩트 삭제·CI를 시작하지 않는다.
+
+후속 최종 대조에서 같은 설계의 검사 적용/증명 부재 판정, 실제 설치본의 새 공급물·호환성, 기존 M13으로의 인계를 보완했다. 기능 acceptance와 이름 독립 준비를 닫으면 명명·배포 마무리로 진행하며, 이름에 의존하는 채널 구현·publisher binding·최종 서명/clean Host·게시 검증까지 마쳐야 배포 COMPLETE다. 이 구분은 [설계 §13](../../../docs/planning/21-goal-completion-design.md#13-기능-완료에서-이름-결정배포로-넘기는-조건)이 소유한다. 이번도 문서만 수정하며 실제 보강 작업은 시작하지 않는다.
+
+후속 보안 검토는 같은 설계 §3.1·§5.6·§11.1에 기존 버전 업데이트 경로 보존, 제한 실행의 실제 범위, 필수 동적 검사를 기본값에 유지하는 원칙과 마지막 보안 평가를 연결했다. 기존16번에서 공격자가 source를 안다는 전제의 평가와 탐지/오탐/미완료·비용을 확인한다. 추가 심층 profile은 실측 후 판단하며 현재 채택·구현으로 표시하지 않는다. 무해 시험의 성공을 실제 악성코드 대부분 차단의 근거로 확대하지 않는다. 제품 구현·Host 변경·CI는 계속 NOT_STARTED다.
+
+후속 AI 사용 요청은 [보강 설계 §4.8–4.9](../../../docs/planning/21-goal-completion-design.md)에 반영했다. A01의 전체 지원 생태계 CLI 흐름·실패 분류·대안 재검역·우회 금지 Skill은 이번 필수 acceptance다. A02 최소 MCP는 기존 경로 재사용·로컬 stdio 범위의 채택 조건을 충족하면 함께 구현한다. 기존16번에서 검증하며 현재는 설계만 반영/구현 NOT_STARTED다. AI 검사 코드 생성은 별도 향후 후보이고, 지침 제공을 Host 우회 강제 차단으로 표시하지 않는다.
+
+## 원본 줄 132-187: 버전 갱신 유지보수 보류, M12, M13-002 보호 경로 이력 (2026-10-03 ~ 2026-10-21)
+
+2026-10-15 사용자가 M13을 보류하고 버전 갱신 유지보수의 설계·계획을 먼저
+정리하도록 요청했다. UPG-001 baseline audit/design/planning을
+`milestone/runtime-upgrade-maintenance`에서 완료했고 UPG-002 owner/manifest/drift와
+UPG-003 updater/no-op·복구·canonical verify와 UPG-004 compiler 후보 build·재현성·capture 계획 연결을 검증했다. UPG-005의 실제 local CPU/세 CUDA 및 fresh ordinary/nativeMac/세 CUDA remote qualification을 완료했다. UPG-006의 기존 구현·설치 상태를 source 변경 전에 감사하고 실제 controlled 전환·retirement·운영 인계를 완료했다. 최종 metadata-head CI와 reviewer 정상 병합은 별도로 확인하며 M13 보류·새 baseline/별도 병합 승인 조건은 유지한다. 상세 결정은
+[Runtime upgrade design](../../../docs/engineering/05-runtime-upgrade-maintenance.md),
+작업·완료·재개 조건은 [plan](../../../docs/planning/19-runtime-upgrade-maintenance-plan.md)과
+Queue가 소유한다. 아래 M13 기록은 보류 전 관측이며 새 원격 상태를 뜻하지 않는다.
+
+M12-001~004 acceptance 및 누적 원격 qualification을 완료했다. M12-005의
+전체 생태계 qualification, 구현·설계 대조와 성공 테스트 데이터 정리를 완료하고
+네 exact PyTorch tuple의 bounded support 및 feature freeze를 확정했다. 상세 지원
+결정은 [M12 계약](../../../docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-support-tuples)을 따른다.
+M12-02의 여덟 영역 검토와 FIX-01~03 remediation을 완료했다. 같은 기능 후보의
+CPU·cu126·cu130·cu132 및 각 Required CI를 검증해 M12 기술 acceptance는 `COMPLETE`다.
+[검토 결과](../../../docs/planning/evidence/m12-02-red-team/result.json)가 소스와 원본을 연결한다.
+PR29·PR30은 merge됐고 main2e196a1의 CI38328099413도 SUCCESS다. M13-001의
+저장소 보호 설정 적용·API 검증을 완료했다. M13-002의 새 baseline 확인과
+로컬 검증 후보 준비를 완료했다. 승인된 e1e3aa8을 feature 브랜치에 push하고
+develop 대상 PR31을 생성했다. 새 Required 포함10개 CI job과 CLA 성공 및 두 필수
+check 연결을 확인했다. 별도 승인된 미해결 리뷰 스레드 시험의 일반 병합 요청
+1회가 HTTP405로 차단됐고, 브랜치 미변경과 스레드 해결 후 CLEAN 복귀를 확인했다.
+독립 보조 PR32의 새 Required 포함10개 job·CLA SUCCESS와 CLEAN을 확인한 뒤,
+별도 승인에 따라 정확한 e1e3aa8의 PR31을 정상 보호 경로로 develop에 병합했다.
+develop은84591ef로 전진했고 main2e196a1과 PR32 headff441d3는 그대로다.
+PR32는 다른 검사·리뷰·충돌 차단 없이 CLEAN→BEHIND로 변경됐다.
+[병합 및 stale 관측 증거](../../../docs/planning/evidence/m13-002-protected-path/develop-merge.json)를 보존했다.
+별도 승인한 PR32 일반 병합 요청 1회는 HTTP405로 거절됐다. 서버 응답은 필수 검사
+2개가 expected라는 사유이며, 독립 stale 차단 PASS는 확정하지 않았다. PR32 미병합과
+세 브랜치 HEAD 동일성을 확인하고 추가 요청을 중단했다. 기존 시험 원본은 그대로
+보존하고 읽기 전용 rule-suite4516024742 분석으로 실제 업데이트 후보0fd006b와
+실패한 Strict required_status_checks를 확인했다. 독립 freshness-only PASS는
+선언하지 않았다. [분석](../../../docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json)과
+[남은 검증·승인 계획](../../../docs/planning/evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)이
+필수 참가자·조건부 forward-only 묶음·별도 main merge/force-push 결정을 구분한다.
+현재는 [정확한 로컬 후보·유한 실행 계획](../../../docs/planning/evidence/m13-002-protected-path/forward-only-plan.json)을
+준비했고 원격 변경은 하지 않았다. 사용자가 실제 미서명 기여자 부재를 확인하여
+CLA 부정 시험은 `NOT_TESTED`로 보류한다. 기존 필수 설정·정상 성공 증거는 유지한다.
+나머지 검증은 계속할 수 있으나 현재 계약의 acceptance gap은 종료 전에 별도
+해소해야 한다. main stale을 최종 병합 전에 검증하기 위한 중간 보호 병합과
+최종 develop→main 병합, 실제 non-fast-forward 위험은 각각 별도 승인 범위다.
+후속 승인된 묶음 A는 두 direct push의 서버 PR-rule 차단을 확인했다. PR32의 main
+retarget는 성공했으나 읽기 전용 재확인에서도 BLOCKED여서3/8회 쓰기에서 중단했다.
+두 보호 브랜치·feature HEAD는 유지됐고 병합 요청·새 PR·수동 CI는0회다.
+[실행 결과](../../../docs/planning/evidence/m13-002-protected-path/bundle-a-result.json)와
+[수정 제안](../../../docs/planning/evidence/m13-002-protected-path/bundle-a-resume-plan.json)을 기록했다.
+다음 정상 병합은 실제 develop→main PR·새 CI·main 부정 결과가 확보된 뒤 승인 요청한다.
+승인된 수정 묶음 A′는 develop84591ef→main2e196a1 PR33을 생성했다. 실제 CLA
+성공·Required 누락 상태의 단회 일반 PUT은 Required만을 명시한405로 거절됐다.
+Suite4521104354 및 refs동일을 보존했고, 같은 자연CI38574753115/attempt1의10job과
+CLA 성공 뒤 main 대화·일반관리자 요청의 단회405도 확인했다(suite4521761091).
+생성한 시험 스레드만 해결하여 CLEAN으로 복귀했으며 A′는5/5회 쓰기로 완료했다.
+[A′ 결과](../../../docs/planning/evidence/m13-002-protected-path/bundle-a-prime-result.json)가
+현재 단계와 원본을 소유한다. [정확한 PR33 정상 병합 요청](../../../docs/planning/evidence/m13-002-protected-path/normal-main-merge-approval.json)은
+검토 가능하지만 미승인이다. 실제 main 병합·새 mainCI 및 남은 acceptance는 별도다.
+guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
+active/next work item은 [Current Work Queue](../../../docs/planning/02-current-work-queue.md)를 참조한다.
+
+## 원본 줄 189-194: M7~M12 흐름 요약
+
+M7 MVP qualification evidence는 보존한다. external security review에서 확인된
+production trust-boundary gap을 M8에서 remediation했고, M9 Product Install UX
+transaction hardening과 M10 verified bootstrap implementation을 완료했다. M11
+detection depth도 완료되었으며, M12 ecosystem expansion과 M12-02 final
+red-team/fix gate가 완료된 뒤 M13에서 repository activation과 public
+deployment를 수행한다.
+
+## 원본 줄 208-220: Remaining Stages 이후 client/runner·CI442·G4·아트 확정 서술
+
+2026-10-21 추가 요청의 [client/runner 설계](../../../docs/user-journey-cli-ia/09-package-client-quarantine.md)와
+[계획](../../../docs/planning/20-package-client-quarantine-plan.md)은 기존 검역/Policy/transaction을 재사용한다.
+P1 scoped acceptance와 Go1.27.3 전환은 완료했고, 현재 frozen sourceec1c260/tree84e70a9e는
+[CI442 ordinary/CPU](../../../docs/planning/evidence/package-client-quarantine/ci442-ordinary-cpu-qualification-20261031.json),
+[cu126](../../../docs/planning/evidence/package-client-quarantine/p7-cu126-final-qualification-20261031.json),
+[cu130](../../../docs/planning/evidence/package-client-quarantine/p7-cu130-final-qualification-20261031.json),
+[cu132](../../../docs/planning/evidence/package-client-quarantine/p7-cu132-final-qualification-20261031.json)의 Required10SUCCESS로 qualification을 확인했다.
+H1 root extras/H2 독립 --with와 현재 supported client/runner lane은
+[최종 지원표](../../../docs/planning/evidence/package-client-quarantine/p7-command-acceptance-matrix-20261030.md)를 따른다.
+이 소스의 결과를 후속 Bun 선언/TS 후보나 별도 TTY/파일 반출·새 서명 배포·채널 acceptance로 확대하지 않는다.
+첫 Read/build/job deadline의 하위 원인은 UNKNOWN이며 성공한 재검증을 원인 수리로 기록하지 않는다.
+2026-10-31 사용자 교정에 따라 기능 구현·acceptance를 채널 이름/배포보다 먼저 진행한다. 후속 G4 Bun 선언/TS entry·runtime 선택은 구현·연결해 실제 앱2/CLI3·기존 Node2를 로컬 검증했다. [최종 묶음 Quick/Race](../../../docs/planning/evidence/package-client-quarantine/p6g4-bun-declared-entry-local-20261031.json)도 PASS이며 [CI446](../../../docs/planning/evidence/package-client-quarantine/ci446-bun-declared-entry-hosted-qualification-20261031.json)의 새e3 ordinary 전체10SUCCESS/126·원본·정리까지 확인해 원래 bounded 기능 acceptance를 닫았다. 사용자가 이름을 검토하는 동안 이름과 무관한 미완료·미검토 책임을 기존 source/검증 근거와 대조한다. M13-004전체/새 서명 배포는 미완료다. 모든 native 옵션 동등성은 원래 계약의 약속이 아니며 별도 TTY/반출 확장을 필수 누락과 혼합하지 않는다. 이름 선택은 기능 작업의 blocker가 아니며 기존 질문은 현재 작업에 대해 superseded다. 채널 코드/등록/게시를 시작하지 않았다.
+현재 단일 active item은 M13-004이며 상세 상태·남은 순서는 [Queue](../../../docs/planning/02-current-work-queue.md)가 소유한다. 2026-11-01 사용자가 [CLI 시작 화면 아트](../../../docs/planning/evidence/cli-launcher/art-refresh-20261031.md)를 단순 문 로고·가로 그라데이션·별빛으로 확정했다. 승인된 최종 소스의 Quick/security와 docs를 확인해 해당 local 표시 작업을 완료했다. 새 hosted CI·설치본 교체는 별도다. 기존 표시 owner 두 파일만 수정하며 이름·runtime·채널 계약을 바꾸지 않는다. 2026-10-31 이름 결정 전 [전체 코드·보안 감사](../../../docs/planning/evidence/m13-004-convenience/full-source-audit-20261031.md)를 완료했으며 해당 소스·프로필의 검증 범위를 유지한다.
+
+## 원본 줄 245-246: B00~S01/S08 로컬 구현 서술 (2026-11-01 ~ 2026-11-02)
+
+
+2026-11-01 사용자가 [보강 설계](../../../docs/planning/21-goal-completion-design.md)의 순차 구현을 승인했다. 과거 설계 전용 제한은 현재 작업에서 superseded다. B00 로컬 완료와 B01+B05·[B02 로컬 구현/연결](../../../docs/planning/evidence/m13-004-convenience/npm-project-local-20261102.json)을 기록했으며 grouped qualification은 OPEN이다. [B03 Cargo fetch 구현·연결](../../../docs/planning/evidence/m13-004-convenience/cargo-fetch-local-20261102.json)도 로컬 검증했으며 [B04 기본 init](../../../docs/planning/evidence/m13-004-convenience/terraform-init-local-20261102.json)도 로컬 검증했으며 B06 선택·lock과 B07 Go tidy도 로컬 구현·연결했고 [S09 검사 선언·증거·결과 경계](../../../docs/planning/evidence/m13-004-convenience/check-coverage-local-20261102.json)를 연결했다. [C01 기본 저장 수명·예산 연결](../../../docs/planning/evidence/m13-004-convenience/storage-lifetime-baseline-20261102.md)을 로컬 검증했다. [S01/S08 baseline·공통 DATA 검증](../../../docs/planning/evidence/m13-004-convenience/environment-state-baseline-20261102.md)을 진행 중이며, 반증된 guest9p /tmp의 noexec 경계를 기존 pinned runtime에서 보완했고, npm의 두 fresh 환경·공유 자원 경로를 한정 native로 검증했다. Typed 상태 증거와 단기 VFS 동작 관찰을 연결하고 kernel7/CPP134/actual6를 한정 검증했다. npm 저장 Evidence의 실제 readback·ALLOW도 확인했다. Ordinary Python도 기존 원장에 두 환경/단위 분리와 상태 Evidence를 연결해 한정 native·공통 회귀를 통과했으며, Python의 실제 저장·보조 입력·no-import 및 선정된 네 root profile 경계도 한정 확인했다. 다른 consumer·공통 실패/취소·보안·묶음 qualification과 별도 source-binding 호환 조사는 계속 OPEN이다. C01 전체 정리·lease/recovery·cache/retention은 설계16에서 마치며 grouped qualification과 B01 호환 gap도 OPEN이다. 실행 상태·검증·후속 순서는 Queue를 따른다.

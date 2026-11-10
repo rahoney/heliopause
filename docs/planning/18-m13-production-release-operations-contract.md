@@ -573,7 +573,7 @@ main merge and publication remain separately gated; M13-003..005 are NOT_STARTED
 M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
 CI38328099413 is SUCCESS. The owner authorized live protection configuration on
 2026-10-13. Work-item scope, acceptance and current missing work are owned by
-[current work in the Queue](./02-current-work-queue.md#m13-002--protected-branch-qualification).
+[current work in the Queue](./archive/02-queue-m12-m13-history-20261007-20261026.md#m13-002--protected-branch-qualification).
 The no-known-release-blocking-finding condition remains subject to disposition
 of guest Go patch, Race fixtures and advisory follow-ups. Protection settings
 alone do not authorize publication or close that release-readiness condition.
