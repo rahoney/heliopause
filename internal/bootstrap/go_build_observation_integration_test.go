@@ -19,6 +19,16 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
+// goTransitiveBuildReference is a real public graph above 10,000 files whose
+// exact nodes had no OSV record when selected on 2026-11-10; that is a dated
+// observation, so a later advisory must still stop this ALLOW fixture. Its
+// root package imports nothing, so the approved tidy adds the selected
+// package's indirect requirements before the build.
+const (
+	goTransitiveBuildReference = "k8s.io/client-go@v0.38.0-beta.0"
+	goTransitiveBuildMain      = "package main\nimport \"k8s.io/client-go/util/workqueue\"\nfunc main() { _ = workqueue.DefaultTypedControllerRateLimiter[string]() }\n"
+)
+
 func TestLinuxGoDependencyFreeRetainedBuildObservationIntegration(t *testing.T) {
 	goRetainedBuildObservationIntegration(t, "", "package main\nfunc main() {}\n")
 }
@@ -28,7 +38,7 @@ func TestLinuxGoPublicRetainedBuildObservationIntegration(t *testing.T) {
 }
 
 func TestLinuxGoTransitiveRetainedBuildObservationIntegration(t *testing.T) {
-	goRetainedBuildObservationIntegration(t, "google.golang.org/grpc@v1.76.0", "package main\nimport \"google.golang.org/grpc\"\nfunc main() { _ = grpc.NewServer() }\n")
+	goRetainedBuildObservationIntegration(t, goTransitiveBuildReference, goTransitiveBuildMain)
 }
 
 func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
@@ -205,8 +215,21 @@ func prepareGoBuildIntegrationProject(t *testing.T, reference, main string) (con
 	if reference != "" {
 		args = []string{"go", "get", reference}
 	}
-	if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
+	started := time.Now()
+	err = bootstrap.Run(ctx, args, &stdout, &stderr)
+	logGoCLITiming(t, ctx, reference, "prepare", started)
+	if err != nil {
 		t.Fatalf("actual retained approval: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
+	}
+	if reference == goTransitiveBuildReference {
+		stdout.Reset()
+		stderr.Reset()
+		started = time.Now()
+		err = bootstrap.Run(ctx, []string{"go", "mod", "tidy"}, &stdout, &stderr)
+		logGoCLITiming(t, ctx, reference, "tidy", started)
+		if err != nil {
+			t.Fatalf("actual approved tidy: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
+		}
 	}
 	return ctx, root, project
 }

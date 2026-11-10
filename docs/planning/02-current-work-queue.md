@@ -46,6 +46,7 @@ CI452(9ca552e)는 6 SUCCESS/3 FAILURE였다. compress 취약점·macOS test comp
 CI453(ab63980)에서 세 교정은 hosted로 확인됐다. 남은 hosted 실패는 CI에 Semgrep 공급이 없어 생기며, S04 공급 결정 전까지 hosted ordinary·CUDA qualification은 **BLOCKED**다. macOS temp symlink 시험 교정은 로컬 검증 후 다음 CI에 묶는다.
 2026-11-07 사용자가 Semgrep 공급 A(자체 build→같은 저장소 Release 운송)를 선택했다. 사라진 source offer를 보존 원본과 고정 upstream으로 재수집하는 단계 계획은 복구 leaf가 소유하며 Release 게시는 실행 직전 별도 승인이다.
 2026-11-07 Semgrep 공급 재수집 완료: core `33ae4500` 정확 재현, SOURCES/NOTICES same-engine lock 갱신, CI Release 연결 구현. 다음은 Release 생성 승인→push/CI→CUDA 순차다. 상세는 복구 leaf.
+2026-11-10 별도 과제(미구현): advisory 시험을 고정 응답 결정론 회귀와 live OSV 통합으로 분리한다. 현재 ALLOW 공개 fixture는 live OSV에 묶여 있다. 근거는 복구 leaf의 CI477 항목이 소유한다.
 
 ### 2026-11-03 S05 advisory batch/page — 로컬 부분 구현
 

@@ -73,7 +73,14 @@ func TestLinuxGoGetDownloadIntegration(t *testing.T) {
 // This complete transitive graph exceeds the previous 10,000-file cache cap.
 // Keep the actual CLI gate alongside the aggregate budget/security tests.
 func TestLinuxGoTransitiveGetDownloadIntegration(t *testing.T) {
-	goGetDownloadIntegration(t, "google.golang.org/grpc@v1.76.0", 41)
+	goGetDownloadIntegration(t, "k8s.io/client-go@v0.38.0-beta.0", 47)
+}
+
+// logGoCLITiming separates a test-context expiry from a failed step, and gives
+// the single-node reference run a same-host baseline for the whole-graph runs.
+func logGoCLITiming(t *testing.T, ctx context.Context, reference, step string, started time.Time) {
+	t.Helper()
+	t.Logf("go_cli_timing reference=%s step=%s seconds=%.3f context_err=%v", reference, step, time.Since(started).Seconds(), ctx.Err())
 }
 
 func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
@@ -101,7 +108,9 @@ func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
 	var stdout, stderr bytes.Buffer
+	started := time.Now()
 	getErr := bootstrap.Run(ctx, []string{"--lang", "en", "go", "get", reference}, &stdout, &stderr)
+	logGoCLITiming(t, ctx, reference, "get", started)
 	if getErr != nil {
 		got, readErr := os.ReadFile(filepath.Join(project, "go.mod"))
 		_, sumErr := os.Lstat(filepath.Join(project, "go.sum"))
@@ -122,8 +131,11 @@ func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if err := bootstrap.Run(ctx, []string{"--lang", "en", "go", "mod", "download"}, &stdout, &stderr); err != nil {
-		t.Fatalf("actual retained managed download failed: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
+	started = time.Now()
+	downloadErr := bootstrap.Run(ctx, []string{"--lang", "en", "go", "mod", "download"}, &stdout, &stderr)
+	logGoCLITiming(t, ctx, reference, "download", started)
+	if downloadErr != nil {
+		t.Fatalf("actual retained managed download failed: %v stdout=%s stderr=%s", downloadErr, stdout.String(), stderr.String())
 	}
 	if !strings.Contains(stdout.String(), expected) {
 		t.Fatal("managed download did not retain the complete module graph")

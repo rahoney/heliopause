@@ -25,7 +25,7 @@ func TestLinuxGoPublicBuildCLIIntegration(t *testing.T) {
 	goBuildCLIIntegration(t, "github.com/spf13/pflag@v1.0.9", "package main\nimport \"github.com/spf13/pflag\"\nfunc main() { pflag.Parse() }\n", false, false)
 }
 func TestLinuxGoTransitiveBuildCLIIntegration(t *testing.T) {
-	goBuildCLIIntegration(t, "google.golang.org/grpc@v1.76.0", "package main\nimport \"google.golang.org/grpc\"\nfunc main() { _ = grpc.NewServer() }\n", false, false)
+	goBuildCLIIntegration(t, goTransitiveBuildReference, goTransitiveBuildMain, false, false)
 }
 func TestLinuxGoInvalidTestdataBuildCLIIntegration(t *testing.T) {
 	goBuildCLIIntegration(t, "", "package main\nfunc main() {}\n", true, false)
