@@ -1,5 +1,19 @@
 # Step 13 — Current Work Queue
 
+## R5 — 358adf9 복구 재개 (현재 상태)
+
+단일 active item은 M13-004 안의 R1이며 아래 기존 checkpoint는 358adf9 당시 이력이다.
+
+- R0-A 최소 실제 확인 완료: clean358/tree e1cac135의 packaging25 required3·ALLOW·승격·import PASS22.916s, 실제 observation observer 종료 거부 PASS20.834s. 현재 개발 설치14파일/서비스 원복·Docker 신규 잔여0/기존 network 보존. 원본 보존: `/home/winamp/haa-preserve-20261115/increments/20261115T094952.338045Z-r0a-local-integration/RESULT.md`. 전체 profile qualification 완료로 표시하지 않는다.
+- 재구성 위치: `milestone/m13-recovery-r1`, `/tmp/haa-recovery-r1-20261115`, 진입358adf9/tree e1cac135. 원래 개발 브랜치/미커밋 변경과 R0 pure worktree는 보존한다. 승인된 23번 계획은 원래 개발 작업 트리의 `docs/planning/23-recovery-stage1-plan.md`를 외부 Read로 사용한다.
+- R1-A LOCAL_CHECKED: F0/F0d1~11의 감사·확정 아트·service serve 인자·승인 설계 문서와 F1 B00 `d7688a5`의 공통 preflight/회귀를 선별 적용한다. 과거 Queue/README/결정의 현재 상태 문장은 재적용하지 않는다. 정확한 source SHA/path 목록은 이번 실행 원장 `/tmp/haa-r1-evidence-wwsg0abd/r1a-selected-map.json`.
+- 의도한 코드 변경: launcher.go/launcher_brand.go의 승인 아트, deploy service의 serve 인자, PreparePresentation의 Runnable/잔여 token/leaf Args 공통 거부. 새 제품 owner·런타임·한도·관찰 정책·CI job은 추가하지 않는다. TestInvalidCommandsFailBeforeRuntimePreparation, TestPreflightRejectsUnknownChildrenAndInvalidLeafArgs, TestPreflightAllowsParentsHelpAndLiteralProgramArguments가 추가될 예정이다.
+- 상태: B00 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(로컬 표적·전체 Quick)/ACCEPTANCE_CLOSED=NO(R1 실제 통합 묶음 대기). 수정 전 표적27RUN/13FAIL·14PASS, 수정 후27PASS(부모3개)/SKIP0. rebuild --full PASS: build/test-build/vet/Quick(Staticcheck·default test 포함), 선언0제거/4추가(회귀3+아트paint), dangling/없는시험/미사용 공개 후보0. docs PASS, service unit은 R0 실제에 쓴 설치본과 byte 동일. 실제 CLI preflight·R1 기능 통합은 다음 기록으로 구분한다.
+- 검증 환경 교정: 초기 Quick cache 부족은 기존 로컬 cache의 go.sum 검증 입력290개 보충(총532entries), 다운로드/의존성 변경 없음. tool sandbox socket 거부를 clean358에서도 재현했고, Host 소켓 허용·짧은 TMPDIR/GOTMPDIR에서 기준선/후보 표적각22PASS. Go1.27 testing.TempDir의 GOTMPDIR 우선 사용을 원문1615행에서 확인했다. 제품·시험·기대값·한도는 바꾸지 않았다. 정확한 원본은 `/tmp/haa-r1-evidence-wwsg0abd/`.
+- 다음 묶음: B01/B05 requirements c6331e5 + native 전달74372f5(해당 책임만), 이어 B02~B07/U2. R0-B 외부 교정·S04/S05·D1/D3 변경은 이번 묶음에 포함하지 않는다. 영향 K와 원래16/20/21 계약을 유지한다. 실패는 원본 보존·단계 중단·검증된 후보로 복귀하며 기존 개발 브랜치를 reset하지 않는다.
+
+
+
 이 문서는 Heliopause에서 **지금 실행할 작업, 순서, 상태와 완료 증거**를 관리한다. Milestone의 범위와 완료 조건은 [Step 12 — Milestones](./01-milestones.md)가 소유하며, 이 문서는 현재 milestone만 구현 가능한 크기로 분해한다.
 
 상세 Architecture·Domain·Engineering 결정을 복제하지 않는다. 각 work item은 필요한 canonical leaf 문서를 가리키고, Step 14는 해당 문서를 읽은 뒤 그 항목의 범위만 구현한다.
