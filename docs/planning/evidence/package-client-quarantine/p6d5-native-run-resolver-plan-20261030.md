@@ -1,5 +1,8 @@
 # P6-D5 — production native UV isolated-run resolver baseline
 
+현재 심볼 찾기용 명칭만 R1의 공유 Python API로 갱신했다. 당시 본문은 `git show e312713:docs/planning/evidence/package-client-quarantine/p6d5-native-run-resolver-plan-20261030.md`에 보존되며 아래 과거 qualification의 범위는 확대하지 않는다.
+
+
 Baseline3dff66eec849505d7459788672999319cc6337ff/treed5e8fc3d/3098tracked·runtime1379다.
 M13-004 하나만 active다. CI435는 remote b0f4cbc/treeeebd72a1/3097·1379로 frozen이며 actual
 20분 GET worker13791/PID3398839가18:11:42UTC부터 조회한다. 실행 중 새 push하지 않는다.
@@ -7,7 +10,7 @@ M13-004 하나만 active다. CI435는 remote b0f4cbc/treeeebd72a1/3097·1379로 
 Read: PROJECT/Queue/docs routes, lessons INDEX·artifact L01/L02·sandbox L03/L08/L12/L18
 (기존 tmpfs 실패 포함)·evidence L16·ci L05/L06, Architecture001/client09§3/plan20§5·§6,
 B2/B3/B4 receipts와 실제 fixed UV script/wheel producer·census84, UVResolver.resolveNativeSelection/
-materializeUVSelection/withUVNativeSessionForToolInstall, reader.withUVArchiveInputs,
+materializeUVSelection/withUVNativeSessionForToolInstall, reader.withPythonArchiveInputs,
 freezePipxNativeInput/manifestID·UVLock startup whole BindPipxQueryWheels, current test-only
 uvPublicRawMirror와 UV runtime fixture, pipxNativeSession dataKeeper/removeKeeper·wheel volume,
 SharedObserver.startProfileWithBudget/expected topology, readUVNativeTar/scanner/source-console

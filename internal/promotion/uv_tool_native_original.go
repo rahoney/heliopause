@@ -182,7 +182,7 @@ func captureUVToolNativeOriginal(ctx context.Context, g *toolFreshTarget, receip
 	}
 	lookup := *native
 	lookup.toolScripts = scripts
-	proof.ownership, err = prepareUVCompleteOwnership(ctx, g.tx, metadata, install, &lookup, true, g.verify)
+	proof.ownership, err = preparePythonCompleteOwnership(ctx, g.tx, metadata, install, &lookup, true, g.verify)
 	if err != nil {
 		return nil, err
 	}

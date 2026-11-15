@@ -3,6 +3,8 @@ package sandbox
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -210,5 +212,141 @@ func TestPyPIUpgradeResolverDeadlinePreservesCauseAndConfirmedCleanup(t *testing
 	}
 	if !removed {
 		t.Fatal("deadline skipped bounded independent cleanup", runner.calls)
+	}
+}
+
+func TestRequirementsParserCopiesFrozenDataWithoutUserProgramArguments(t *testing.T) {
+	input, err := artifactpypi.NewRequirementsInput(nil, nil, []string{"alpha==1.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	control, _ := input.Control()
+	parserControl, _ := input.ParserControl()
+	textHash := sha256.Sum256([]byte("alpha==1.0"))
+	body, err := json.Marshal(map[string]any{
+		"version": 1, "input_sha256": control.Digest().String(), "parser_sha256": parserControl.Digest().String(), "python": runtimeidentity.PythonVersion, "pip": runtimeidentity.PipVersion, "require_hashes": false,
+		"clauses": []any{map[string]any{"requirement": "alpha==1.0", "project": "alpha", "extras": []string{}, "constraint": false, "hashes": map[string][]string{}, "active": true, "source": "@positional", "line": 1, "text_sha256": hex.EncodeToString(textHash[:])}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &recordingRunner{responses: [][]byte{body}}
+	resolver := &PyPIResolver{runner: runner}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	parsed, err := resolver.parseRequirementsInSession(ctx, "0123456789abcdef", input)
+	if err != nil || !parsed.Valid() || parsed.InputDigest() != control.Digest() {
+		t.Fatal("frozen parser transport failed", err)
+	}
+	if len(runner.inputCalls) != 1 || !bytes.Equal(runner.input, parserControl.Body()) || len(runner.calls) != 1 {
+		t.Fatal("parser did not consume one frozen input")
+	}
+	if strings.Contains(strings.Join(runner.calls[0].arguments, "\n"), "alpha==1.0") {
+		t.Fatal("user requirement became executable program arguments")
+	}
+}
+
+func TestRequirementsParserRejectsBeforeCommands(t *testing.T) {
+	input, err := artifactpypi.NewRequirementsInput(nil, nil, []string{"alpha"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"nil context", "canceled", "missing container", "missing input"} {
+		runner := &recordingRunner{}
+		resolver := &PyPIResolver{runner: runner}
+		ctx := context.Background()
+		container := "0123456789abcdef"
+		source := input
+		switch kind {
+		case "nil context":
+			ctx = nil
+		case "canceled":
+			canceled, cancel := context.WithCancel(ctx)
+			cancel()
+			ctx = canceled
+		case "missing container":
+			container = ""
+		case "missing input":
+			source = artifactpypi.RequirementsInput{}
+		}
+		if _, err := resolver.parseRequirementsInSession(ctx, container, source); err == nil {
+			t.Fatal("invalid parser request accepted", kind)
+		}
+		if len(runner.calls) != 0 || len(runner.inputCalls) != 0 {
+			t.Fatal("invalid parser request ran a command", kind)
+		}
+	}
+}
+
+func TestRequirementsParserPreservesCancellationWithoutReplayingDiagnostic(t *testing.T) {
+	input, err := artifactpypi.NewRequirementsInput(nil, nil, []string{"alpha"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &recordingRunner{errors: []error{context.Canceled}}
+	resolver := &PyPIResolver{runner: runner}
+	_, err = resolver.parseRequirementsInSession(context.Background(), "0123456789abcdef", input)
+	if !errors.Is(err, context.Canceled) || err.Error() != "pinned requirements grammar validation failed" {
+		t.Fatal("parser lost its cancellation cause or replayed diagnostics", err)
+	}
+}
+
+func TestRequirementsPipSelectionKeepsMultipleRootsInOneNativeRequest(t *testing.T) {
+	for _, kind := range []string{"ordinary", "upgrade", "second-resolution-canceled", "omitted-final-root"} {
+		t.Run(kind, func(t *testing.T) {
+			source, err := artifactpypi.NewRequirementsInput(nil, nil, []string{"primary==1.0", "child==2.0"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			source, err = source.WithInstallation("pip", kind == "upgrade", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			control, _ := source.Control()
+			parserControl, _ := source.ParserControl()
+			clauses := []any{}
+			for index, entry := range []struct{ text, project string }{{"primary==1.0", "primary"}, {"child==2.0", "child"}} {
+				sum := sha256.Sum256([]byte(entry.text))
+				clauses = append(clauses, map[string]any{"active": true, "source": "@positional", "line": index + 1, "text_sha256": hex.EncodeToString(sum[:]), "requirement": entry.text, "project": entry.project, "extras": []string{}, "constraint": false, "hashes": map[string][]string{}})
+			}
+			grammar, _ := json.Marshal(map[string]any{"version": 1, "input_sha256": control.Digest().String(), "parser_sha256": parserControl.Digest().String(), "python": runtimeidentity.PythonVersion, "pip": runtimeidentity.PipVersion, "require_hashes": false, "clauses": clauses})
+			report := []byte(strings.ReplaceAll(pypiResolverReportJSON(), `"requested":false`, `"requested":true`))
+			final := report
+			if kind == "omitted-final-root" {
+				final = []byte(pypiResolverReportJSON())
+			}
+			runner := &recordingRunner{responses: [][]byte{grammar, nil, report, nil, final}}
+			if kind == "second-resolution-canceled" {
+				runner.errors = []error{nil, nil, nil, context.Canceled}
+			}
+			resolver := &PyPIResolver{runner: runner, profile: artifactpypi.PublicPyPIProfile()}
+			result, err := resolver.selectPipRequirements(context.Background(), "0123456789abcdef", source)
+			if kind == "second-resolution-canceled" {
+				if !errors.Is(err, context.Canceled) || len(result.report) != 0 {
+					t.Fatal("failed complete selection returned data or lost cause", err)
+				}
+				return
+			}
+			if kind == "omitted-final-root" {
+				if err == nil {
+					t.Fatal("missing real root accepted")
+				}
+				return
+			}
+			if err != nil || !bytes.Equal(result.report, report) || !result.input.HasActiveRoots() {
+				t.Fatal("multi-root native selection failed", err)
+			}
+			first := strings.Join(runner.calls[1].arguments, "\n")
+			second := strings.Join(runner.calls[3].arguments, "\n")
+			if strings.Contains(first, "primary==") || strings.Contains(second, "child==") || !strings.Contains(first, "requirements-roots.txt") || !strings.Contains(second, "--ignore-installed") {
+				t.Fatal("requirements escaped data files or complete selection was omitted")
+			}
+			if strings.Contains(first, "--upgrade") != (kind == "upgrade") {
+				t.Fatal("ordinary install changed to upgrade")
+			}
+			if len(runner.inputCalls) != 4 {
+				t.Fatal("roots were split into separate native installations")
+			}
+		})
 	}
 }

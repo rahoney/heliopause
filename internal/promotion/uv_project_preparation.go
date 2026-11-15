@@ -23,7 +23,7 @@ type UVProjectPreparation struct {
 	native       *pypiNativeEnrollment
 	trustedRoots []string
 	started      bool
-	active       *uvProjectSession
+	active       *pythonProjectSession
 }
 
 func NewUVProjectPreparation(promoter *PyPIPromotion, resolver ports.ProjectLockUpdateResolver, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool, trustedRoots []string) (*UVProjectPreparation, error) {
@@ -56,7 +56,7 @@ func (p *UVProjectPreparation) WithNativeEnrollment(resolver ports.DependencyRes
 	return &copy, nil
 }
 
-type uvProjectSession struct {
+type pythonProjectSession struct {
 	install                      domain.InstallContext
 	transaction                  *pypiVenvTransaction
 	original                     pypiInstalledSnapshot
@@ -69,7 +69,7 @@ type uvProjectSession struct {
 	closeErr                     error
 }
 
-func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.InstallContext) (result *uvProjectSession, resultErr error) {
+func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.InstallContext) (result *pythonProjectSession, resultErr error) {
 	if p == nil || p.started || ctx == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv || p.promoter.goos != "linux" || p.promoter.goarch != "amd64" || strings.Contains(install.Target().String(), ",") {
 		return nil, errors.New("UV project requires one existing Linux amd64 venv transaction")
 	}
@@ -85,7 +85,7 @@ func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.Install
 	if err != nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", err)
 	}
-	s := &uvProjectSession{install: install, transaction: tx}
+	s := &pythonProjectSession{install: install, transaction: tx}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, s.Close())
@@ -100,7 +100,7 @@ func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.Install
 	if err != nil {
 		return nil, err
 	}
-	s.proof, err = prepareUVCompleteOwnership(ctx, tx, s.original, install, p.native, p.adopt, s.VerifyUnchanged)
+	s.proof, err = preparePythonCompleteOwnership(ctx, tx, s.original, install, p.native, p.adopt, s.VerifyUnchanged)
 	if err != nil {
 		return nil, err
 	}
@@ -119,16 +119,16 @@ func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.Install
 	return s, nil
 }
 
-func (s *uvProjectSession) Controls() []domain.ProjectControlFile {
+func (s *pythonProjectSession) Controls() []domain.ProjectControlFile {
 	return append([]domain.ProjectControlFile(nil), s.controls...)
 }
-func (s *uvProjectSession) VerifyUnchanged(ctx context.Context) error {
+func (s *pythonProjectSession) VerifyUnchanged(ctx context.Context) error {
 	if s == nil || ctx == nil || s.closed || s.committed {
-		return errors.New("UV project original guard is unavailable")
+		return errors.New("python project original guard is unavailable")
 	}
 	return s.original.verify(ctx, s.transaction)
 }
-func (s *uvProjectSession) Close() error {
+func (s *pythonProjectSession) Close() error {
 	if s == nil {
 		return nil
 	}

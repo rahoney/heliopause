@@ -41,10 +41,11 @@ func (e *ProjectUpdateFailure) Decision() domain.PolicyDecision       { return e
 type projectUpdateResult struct {
 	update   domain.ProjectDependencyUpdate
 	verified domain.ProjectVerifiedSet
+	noop     bool
 }
 
-func executeGuardedProjectUpdate(ctx context.Context, installContext domain.InstallContext, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging, source, label string, selectUpdate func([]domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)) (result projectUpdateResult, resultErr error) {
-	if ctx == nil || !installContext.Valid() || promoter == nil || inspection == nil || staging == nil || selectUpdate == nil {
+func executeGuardedProjectUpdate(ctx context.Context, installContext domain.InstallContext, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging, source, label string, selectUpdate func([]domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error), skipEmptySelection ...bool) (result projectUpdateResult, resultErr error) {
+	if ctx == nil || !installContext.Valid() || promoter == nil || inspection == nil || staging == nil || selectUpdate == nil || len(skipEmptySelection) > 1 {
 		return result, errors.New("guarded project update requires all workflow boundaries")
 	}
 	if err := ctx.Err(); err != nil {
@@ -77,8 +78,18 @@ func executeGuardedProjectUpdate(ctx context.Context, installContext domain.Inst
 	if err := guard.VerifyUnchanged(ctx); err != nil {
 		return result, err
 	}
+	if len(skipEmptySelection) == 1 && skipEmptySelection[0] && update.Snapshot().DependencyFree() {
+		return projectUpdateResult{update: update, noop: true}, nil
+	}
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
-	verified, err := inspection.InspectProject(ctx, update.Snapshot())
+	var verified domain.ProjectVerifiedSet
+	if selectedInspector, ok := inspection.(interface {
+		InspectSelectedProject(context.Context, domain.ProjectDependencyUpdate) (domain.ProjectVerifiedSet, error)
+	}); ok {
+		verified, err = selectedInspector.InspectSelectedProject(ctx, update)
+	} else {
+		verified, err = inspection.InspectProject(ctx, update.Snapshot())
+	}
 	if err != nil {
 		return result, fmt.Errorf("inspect complete selected %s project: %w", label, err)
 	}

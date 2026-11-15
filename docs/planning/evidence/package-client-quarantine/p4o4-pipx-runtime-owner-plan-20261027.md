@@ -1,5 +1,8 @@
 # P4-O4 — pipx 단일 runtime owner와 배포 공급
 
+현재 심볼 찾기용 명칭만 R1의 공유 Python API로 갱신했다. 당시 본문은 `git show e312713:docs/planning/evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md`에 보존되며 아래 과거 qualification의 범위는 확대하지 않는다.
+
+
 기준 ec07636/tree d2670b67692fe01e85e89c22b2c2357ca0a7f839/2694files다.
 Read: Queue/plan20 §5·6/client09, D-012/013/015, maintenance §2·3·6·7,
 O2/O3 plan·local receipt, 관련 artifact/sandbox/ci/evidence lessons.
@@ -2033,7 +2036,7 @@ ToolReceipt/complete binder 및 constructor/ordinary integration을 대조했다
 | 기존 책임 / symbol | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | 실제 MISSING |
 | --- | --- | --- | --- | --- | --- |
 | `UVResolver.resolveNativeSelection`/compile/sync/strict UVLock | YES | YES (UV public) | YES (기존 named scopes) | YES (UV scope) | pipx 고정 UV backend entry와 결합 |
-| `withUVArchiveInputs`/metadata URL-size-SHA/readers | YES | YES | YES (기존 UV) | YES (그 scope) | callback에서 whole source/startup frozen snapshot만 만들고 reader 정리 후 native 실행 |
+| `withPythonArchiveInputs`/metadata URL-size-SHA/readers | YES | YES | YES (기존 UV) | YES (그 scope) | callback에서 whole source/startup frozen snapshot만 만들고 reader 정리 후 native 실행 |
 | `preparePipxTool`/C-a session/whole output binder | YES | YES | YES (C-a/C-b1 actual) | YES (그 scope) | public 선택의 same frozen graph/native receipt와 unapproved selection provenance |
 | pipx production resolver/factory | NO | NO | NO | NO | required resources·transport/profile 사전검사, fixed installed supply preflight, 기존 owners 연결·actual public 양성/무command 거부 |
 | original upgrade/current Evidence/Policy/Host transaction/CLI | NO | NO | NO | NO | 별도 후속; 이번 selection에서 완료·approval을 발급하지 않음 |
@@ -2496,7 +2499,7 @@ enrollment·uvNativeToolScriptProof·pypiNativeClient·native fixture를 읽었�
 | --- | --- | --- | --- | --- | --- |
 | Pipx typed original/고정 native upgrade/current 승인·CLI | YES | YES(managed) | YES(B3b/C2/C3) | YES(그 scopes) | unmanaged original의 독립 source·whole ownership proof |
 | UV tool raw receipt/held interpreter/link/native proof | YES | YES(UV) | YES(existing local/hosted scopes) | YES(UV fixed recipe) | closed pipx codec/원본 projection·raw receipt 이름 |
-| pypiNativeEnrollment·prepareUVCompleteOwnership / old whole wheel/metadata/script/caches | YES | YES(pip/UV formats) | YES(existing scopes) | YES(existing formats) | pipx의 고정 UV backend 형식으로 같은 engine 소비 |
+| pypiNativeEnrollment·preparePythonCompleteOwnership / old whole wheel/metadata/script/caches | YES | YES(pip/UV formats) | YES(existing scopes) | YES(existing formats) | pipx의 고정 UV backend 형식으로 같은 engine 소비 |
 | uvNativeToolScriptProof / pinned Python·실제 UV 생성 script 증명 | YES | YES(UV backend) | YES(existing) | YES(existing) | pipx UV backend original에서 같은 byte grammar 소비 |
 | Pipx native enrollment fixed recipe/static gate | NO | NO | NO | NO | no-build/no-sources/link-mode copy가 명시된 한정 original |
 | Pipx optional native capability/current source proof/actual·CLI flag | NO | NO | NO | NO | 아래 bridge/default 다음의 actual public native qualification |

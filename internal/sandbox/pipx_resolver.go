@@ -154,7 +154,7 @@ func (r *PipxResolver) resolveToolSelection(ctx context.Context, requirement art
 		return PipxToolSelection{}, err
 	}
 	var frozen *pipxNativeInput
-	err = r.native.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.native.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var freezeErr error
 		frozen, freezeErr = freezePipxNativeInput(ctx, lock, inputs, pages)
 		return freezeErr

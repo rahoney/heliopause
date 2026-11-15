@@ -95,7 +95,7 @@ func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, e
 	if err != nil {
 		return UpgradeProposal{}, err
 	}
-	proposal.constraints, err = u.selectedVersionConstraints(proposal.versions, proposal.requiredExtras)
+	proposal.constraints, err = selectedInstalledVersionConstraints(u.installed, u.python, proposal.versions, proposal.requiredExtras)
 	if err != nil {
 		return UpgradeProposal{}, err
 	}
@@ -103,7 +103,7 @@ func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, e
 }
 
 // Both native selectors retain the same original dependency obligations.
-func (u UpgradeInput) selectedVersionConstraints(versions map[string]string, requiredExtras map[string][]string) ([]byte, error) {
+func selectedInstalledVersionConstraints(installed []InstalledProject, python string, versions map[string]string, requiredExtras map[string][]string) ([]byte, error) {
 	var err error
 	names := make([]string, 0, len(versions))
 	for name := range versions {
@@ -114,11 +114,11 @@ func (u UpgradeInput) selectedVersionConstraints(versions map[string]string, req
 	for _, name := range names {
 		lines = append(lines, name+"=="+versions[name])
 	}
-	for _, project := range u.installed {
+	for _, project := range installed {
 		if project.version == versions[project.project] {
 			retained := project
 			if extras := requiredExtras[project.project]; len(extras) > 0 {
-				retained, err = parseUpgradeInstalledMetadataWithExtras(InstalledMetadataFile{project.directory, project.metadata}, u.python, extras)
+				retained, err = parseUpgradeInstalledMetadataWithExtras(InstalledMetadataFile{project.directory, project.metadata}, python, extras)
 				if err != nil {
 					return nil, err
 				}

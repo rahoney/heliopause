@@ -130,14 +130,17 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	}
 	// Preflight and Execute parse the same argv. Slice flags must not accumulate
 	// one accepted occurrence twice; explicit repeats were validated before reset.
-	sliceFlag := ""
+	var sliceFlags []string
 	if command.CommandPath() == "helox cargo update" {
-		sliceFlag = "package"
+		sliceFlags = append(sliceFlags, "package")
 	}
 	if packageClient && descriptor.id == UVRunPackageClient {
-		sliceFlag = "with"
+		sliceFlags = append(sliceFlags, "with")
 	}
-	if sliceFlag != "" {
+	if packageClient && (descriptor.id == PipPackageClient || descriptor.id == UVPipPackageClient) && descriptor.path[len(descriptor.path)-1] == "install" {
+		sliceFlags = append(sliceFlags, "requirement", "constraint")
+	}
+	for _, sliceFlag := range sliceFlags {
 		flag := command.Flags().Lookup(sliceFlag)
 		defer func() { _ = flag.Value.(interface{ Replace([]string) error }).Replace(nil); flag.Changed = false }()
 	}

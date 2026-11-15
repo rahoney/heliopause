@@ -479,3 +479,28 @@ CLI3/거부2·12-node 기본 명령과 필수 로컬 검사까지 named local qu
 G4의 [감사·수정 지도](../planning/evidence/package-client-quarantine/p6g4-bun-entry-runtime-baseline-20261031.md)에
 따른 public `bun-install@0.5.0`의 Bun shebang/TS 앱2·CLI3 및 기존 Node 앱2는 실제 로컬 PASS다.
 후속 [CI446](../planning/evidence/package-client-quarantine/ci446-bun-declared-entry-hosted-qualification-20261031.json)의 sourcee3b2b70/전체tree·Required10SUCCESS/Linux126/새 앱2·CLI3와 정리로 원래 bounded 기능 acceptance를 닫았다. 기존 ec1의 CUDA3를 새e3의 qualification으로 전용하지 않는다.
+
+## requirements 일괄 설치 보강
+
+구현 후보의 전체 검증 상태는 [현재 감사](../planning/evidence/m13-004-convenience/goal-coverage-audit-20261101.md)의
+B01+B05를 따른다. 앞의 P1 exact sync와 구분하여, 아래 요청은 기존 venv에 대한 additive
+INSTALL이며 선택에서 제외된 무관 패키지를 삭제하지 않는다.
+
+| 요청·입력 | 동작 |
+| --- | --- |
+| `helox pip install -r requirements.txt`, `helox uv pip install -r requirements.txt` | 반복 `-r`/`--requirement`, `-c`/`--constraint`, positional requirement를 하나의 선택·검역·반입으로 처리 |
+| 이름·정확 버전·범위·extra·환경 marker | 고정 pip의 공식 문법과 대상 Python 환경으로 해석하고 실제 pip 또는 UV의 선택을 사용. 버전은 기존 runtime lock/generator를 따름 |
+| 상대 include·constraint | 첫 입력 파일의 root 안에서 전체 파일 closure를 고정하고 줄 위치·bytes·identity를 유지. constraint는 설치 root가 아님 |
+| `--require-hashes` 또는 requirement의 hash | 전체 선택을 명시적인 정확 버전·hash와 결합하고 실제 wheel bytes를 대조. 누락·불일치는 전체 거부 |
+| `--upgrade`/`-U` | 요청 roots와 필요한 의존성을 갱신하고 무관 원본은 보존. 기본 install은 호환되는 기존 버전을 선호 |
+| 빈 입력·marker로 모두 제외 | SKIPPED/NOT_PERFORMED. 새 검사·Evidence·반입을 만들지 않고 target/control 보존 |
+
+일괄 경로는 Linux/WSL2 amd64·공개 PyPI wheel·기존 venv에 한정한다. 기존 단일 패키지의
+named source 지원을 변경하지 않는다. 일괄 요청의 임의 index/URL/VCS/editable/local source,
+환경변수 확장, `--upgrade-package` 및 선언된 대상에서 결정할 수 없는 kernel marker는
+명시적으로 거부한다. 문법 오류는 안전한 상대 파일·줄 위치와 제한된 이유로 표시하며
+원문·환경변수·native stderr를 제품 결과에 재출력하지 않는다.
+
+전체 원본·선택·archive·metadata를 결합한 뒤 기존 static-all gate, 동적 관찰,
+Evidence/Policy와 Python transaction을 거친다. 선택·검사·반입 중 실패 또는 commit 전
+원본 변경은 전체 거부/검증된 rollback이며, hash·native report만으로 승인하지 않는다.

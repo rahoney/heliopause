@@ -1,5 +1,8 @@
 # P4-D isolated UV project selection consumer
 
+현재 심볼 찾기용 명칭만 R1의 공유 Python API로 갱신했다. 당시 본문은 `git show e312713:docs/planning/evidence/package-client-quarantine/p4d-uv-project-resolver-plan-20261026.md`에 보존되며 아래 과거 qualification의 범위는 확대하지 않는다.
+
+
 Baseline dc777a1 (전체 SHA는 Git receipt), treec8d25cbbb65d0eb034ffcc6cd3db4cfead5ced0f/2493files.
 Read: P4-A/B/C audit/results, client 설계§1/§2/§4, Architecture sandbox/Domain operation,
 lessons L03/L08/L14/L16, UVResolver.withUVNativeSession·native output tar와 UV sync independent
@@ -37,7 +40,7 @@ Host에서 실행하거나 native argv를 전달하는 fallback은 없다.
   expected map의 세 project controls/해당 directory만 추가하며 기존 original input·P1 nil
   경로/UID/GID/mode/link/budget/drain·missing checks는 보존한다. Complete scanner의 expected
   input variant는 기존 wrapper에서 nil로 위임해 기존 동작을 유지한다.
-- Native census→UVProjectExport.SelectInstalledWheelControls→existing withUVArchiveInputs/
+- Native census→UVProjectExport.SelectInstalledWheelControls→existing withPythonArchiveInputs/
   independent whole archive/metadata→UVProjectExport.BindProject→기존 typed update를 연결한다.
   Cleanup/trace 실패는 native result를 버리는 기존 session owner를 유지한다. 별도 Policy나
   승인 cache/Host mutation을 만들지 않는다. Original/selected control 개수/namespace 일치와

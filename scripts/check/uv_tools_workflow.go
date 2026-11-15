@@ -33,6 +33,35 @@ const pythonExecutionHostileCommand = `HELOX_PYTHON_EXECUTION_HOSTILE_INTEGRATIO
 
 const pythonExecutionWorkflowCommand = `HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_PYTHON_EXECUTION_WORKFLOW_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestLinuxPythonExecutionWorkflowIntegration$'`
 
+const pythonRequirementsCIScope = `if [[ ${1-} == python-requirements ]]; then
+(
+cd internal/bootstrap
+HELOX_PYTHON_REQUIREMENTS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=42m -test.run '^TestPythonRequirementsPublicInstallationIntegration$' | tee "$RUNNER_TEMP/python-requirements.log"
+)
+awk '
+BEGIN {
+split("initial-empty excluded-marker final-empty", names, " "); for (i in names) expected[names[i]]="NOOP"
+split("two-roots retained-compatible update-roots include-extra shared-transitive hash-match", names, " "); for (i in names) expected[names[i]]="INSTALLED"
+split("joint-conflict invalid-grammar hash-missing hash-mismatch transitive-block installation-failure source-drift", names, " "); for (i in names) expected[names[i]]="DENIED"
+}
+/^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS:/ { if ($3!="TestPythonRequirementsPublicInstallationIntegration" || parents++) bad=1 }
+/requirements_actual client=/ {
+if ($0 !~ /^[[:space:]]+python_requirements_integration_test[.]go:[0-9]+: requirements_actual client=(pip|uv) case=/) bad=1
+client=$3; sub(/^client=/,"",client); name=$4; sub(/^case=/,"",name); id=client "/" name
+if (!(name in expected) || (client!="pip" && client!="uv") || seen[id]++) bad=1
+if (expected[name]=="NOOP" && ($5!="entries=0" || $6!="noop=true")) bad=1
+if (expected[name]=="INSTALLED" && ($5!~/^entries=[1-9][0-9]*$/ || $6!="noop=false")) bad=1
+if (expected[name]=="DENIED" && $5!="denied=true") bad=1
+count++
+}
+END {
+if (parents!=1 || count!=32 || bad) exit 1
+for (name in expected) if (seen["pip/" name]!=1 || seen["uv/" name]!=1) exit 1
+}' "$RUNNER_TEMP/python-requirements.log"
+exit 0
+fi`
+
 func validateUVToolsScript(contents string) []string {
 	counts := map[string]int{}
 	var active []string
@@ -45,7 +74,7 @@ func validateUVToolsScript(contents string) []string {
 	}
 	var findings []string
 	for _, command := range []string{
-		"set -euo pipefail", `0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli) ;;`, `if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source && ${1-} != uv-run-workflow && ${1-} != uv-run-cli && ${1-} != pipx-run-workflow && ${1-} != pipx-run-cli ]]; then`, `*) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;`,
+		"set -euo pipefail", `0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli|1:python-requirements) ;;`, `if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source && ${1-} != uv-run-workflow && ${1-} != uv-run-cli && ${1-} != pipx-run-workflow && ${1-} != pipx-run-cli && ${1-} != python-requirements ]]; then`, `*) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;`,
 		`test "$(id -u)" != 0`, "trap uv_tools_cleanup EXIT", "go run ./scripts/generate-runtime-lock.go -check",
 		`uv_tools_image=$(jq -er '.python_image.reference' scripts/runtimes.lock.json)`,
 		`uv_tools_container=$(docker create --pull never --network none --read-only --cap-drop ALL --label "io.heliopause.ci.uv-tools-data=$uv_tools_owner" --entrypoint /bin/false "$uv_tools_image")`,
@@ -58,6 +87,9 @@ func validateUVToolsScript(contents string) []string {
 		}
 	}
 	joined := strings.Join(active, "\n")
+	if strings.Count(joined, pythonRequirementsCIScope) != 1 {
+		findings = append(findings, "requirements CI needs its protected tagged client, complete pip/UV cases and no-SKIP result guard")
+	}
 	for _, scope := range [][]string{{"test \"$(id -u)\" != 0", "if [[ ${1-} == uv-run-source ]]; then", "(", "cd internal/sandbox", uvRunSourceCommand, uvRunSupplementalSourceCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-cli || ${1-} == pipx-run-cli ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-cli ]]; then", pipxRunCLICommand, "else", uvRunCLICommand, uvRunSupplementalCLICommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == python-execution-boundary ]]; then", "(", "cd internal/bootstrap", pythonExecutionBoundaryCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-hostile ]]; then", "(", "cd internal/bootstrap", pythonExecutionHostileCommand, ")", "exit 0", "fi"}, {"(", "cd internal/sandbox", uvToolNativeCommand, ")", "exit 0"}, {"uv_tools_owned", "uv_tools_remove", "if [[ ${1-} == python-execution-preparation ]]; then", "(", "cd internal/bootstrap", pythonExecutionPreparationCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-inputs ]]; then", "(", "cd internal/bootstrap", pythonExecutionInputsCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution ]]; then", "(", "cd internal/bootstrap", pythonConsoleExecutionCommand, ")", "exit 0", "fi", "if [[ ${1-} == python-execution-workflow ]]; then", "(", "cd internal/bootstrap", pythonExecutionWorkflowCommand, ")", "exit 0", "fi", "if [[ ${1-} == uv-run-workflow || ${1-} == pipx-run-workflow ]]; then", "(", "cd internal/bootstrap", "if [[ ${1-} == pipx-run-workflow ]]; then", pipxRunWorkflowCommand, "else", uvRunWorkflowCommand, "fi", ")", "exit 0", "fi", "if [[ ${1-} == pipx-bootstrap ]]; then"}, {"if [[ ${1-} == pipx-bootstrap ]]; then", "(", "cd internal/bootstrap", pipxToolBootstrapCommand, ")", "else", "(", "cd internal/bootstrap", uvToolBootstrapCommand, ")", "fi"}} {
 		if strings.Count(joined, strings.Join(scope, "\n")) != 1 {
 			findings = append(findings, "UV tools consumer requires its package and owned data cleanup scope")
@@ -71,7 +103,7 @@ func validateUVToolsClientOrder(contents string) []string {
 	if err != nil {
 		return nil
 	}
-	bootstrap := strings.Join([]string{`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, "haa_start_policy_helper", "bash scripts/ci-uv-tools.sh bootstrap", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper"}, "\n")
+	bootstrap := strings.Join([]string{`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, "haa_start_policy_helper", "bash scripts/ci-uv-tools.sh bootstrap", "bash scripts/ci-uv-tools.sh python-requirements", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper"}, "\n")
 	native := strings.Join([]string{"(", "cd internal/sandbox", uvPublicResolverIntegrationCommand, ")", "bash scripts/ci-uv-tools.sh"}, "\n")
 	for _, lines := range blocks {
 		joined := strings.Join(lines, "\n")

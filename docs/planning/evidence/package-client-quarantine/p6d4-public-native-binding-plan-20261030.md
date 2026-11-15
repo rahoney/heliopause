@@ -1,5 +1,8 @@
 # P6-D4A — public native UV 준비 전 whole original 결합
 
+현재 심볼 찾기용 명칭만 R1의 공유 Python API로 갱신했다. 당시 본문은 `git show e312713:docs/planning/evidence/package-client-quarantine/p6d4-public-native-binding-plan-20261030.md`에 보존되며 아래 과거 qualification의 범위는 확대하지 않는다.
+
+
 Baseline47e0c23/tree8905c3db/3077tracked·runtime1370이다. 단일 active item M13-004다.
 D3 named cached query는 CPP132/UV120·clean native4.56s·기존 Python2/68.28s로 local 완료다.
 CI434는 source d81을 고정했고 poll03은7SUCCESS/macOS build2mFAIL/Linux 진행, next15:41:50UTC다.
@@ -25,7 +28,7 @@ session dataKeeper/owned cleanup과 현재 withActualUVNativeRuntime를 대조�
 withActualUVNativeRuntime의 기존 body를 한 extended helper에 그대로 두고 원래 signature는 nil
 input wrapper로 보존한다. Optional frozen input은 현재 consumer가 즉시 사용한다. 새 native
 public tagged test는 NewLinuxUVResolverWithExecutorAndPolicy→resolveNativeSelection의 actual
-proposal/lock→independent withUVArchiveInputs→unchanged freezePipxNativeInput의 owned bytes/
+proposal/lock→independent withPythonArchiveInputs→unchanged freezePipxNativeInput의 owned bytes/
 whole startup gate를 사용한다. 이 private type 이름은 pipx runtime/승인을 부여하지 않으며
 새 native receipt를 꾸며내거나 uv-tool-install identity를 uvx로 바꾸지 않는다.
 

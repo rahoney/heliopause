@@ -156,7 +156,7 @@ func (r *UVResolver) resolveToolSelection(ctx context.Context, requirement artif
 	}
 	controls = append(controls, originalControls...)
 	var result UVToolSelection
-	err = r.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		graph, err := tool.receipt.BindWheels(lock, inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits())
 		if err != nil {
 			return err

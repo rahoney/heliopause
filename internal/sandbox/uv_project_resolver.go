@@ -142,7 +142,7 @@ func (r *UVProjectResolver) ResolveProjectLockUpdate(ctx context.Context, instal
 		return domain.ProjectDependencyUpdate{}, err
 	}
 	var snapshot domain.ProjectDependencySnapshot
-	err = r.native.reader.withUVArchiveInputs(ctx, wheels, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = r.native.reader.withPythonArchiveInputs(ctx, wheels, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var err error
 		snapshot, err = export.BindProject(install, selected, inputs, pages, target, artifactpypi.PublicPyPIProfile().ResourcePolicy().WheelLimits())
 		return err

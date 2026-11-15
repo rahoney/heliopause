@@ -18,8 +18,57 @@ import (
 
 type upgradeSelectionPorts struct {
 	prerequisiteSelectionPorts
-	updates  int
-	controls []domain.ProjectControlFile
+	updates    int
+	controls   []domain.ProjectControlFile
+	lockUpdate func(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
+}
+
+func (p *upgradeSelectionPorts) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
+	return p.lockUpdate(ctx, install, controls, selector)
+}
+
+func TestPythonRequirementsRoutingRetainsNativeInputAndErrors(t *testing.T) {
+	for _, mode := range []string{"public", "cancelled", "missing-public", "unsupported-public", "torch-only"} {
+		t.Run(mode, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			if mode == "cancelled" {
+				cancel()
+			}
+			target, _ := domain.NewInstallTarget("/tmp/haa-requirements-routing")
+			install, _ := domain.NewPythonVenvInstallContext(target)
+			control, _ := domain.NewProjectControlFile("requirements-input.json", []byte("frozen controls"), true)
+			cause := errors.New("native selection cause")
+			calls := 0
+			base := &upgradeSelectionPorts{lockUpdate: func(got context.Context, selected domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
+				calls++
+				if got != ctx || selected != install || selector != "native selector" || len(controls) != 1 || !bytes.Equal(controls[0].Body(), control.Body()) {
+					t.Fatal("router changed the native request")
+				}
+				if got.Err() != nil {
+					return domain.ProjectDependencyUpdate{}, got.Err()
+				}
+				return domain.ProjectDependencyUpdate{}, cause
+			}}
+			routes := map[string]ports.DependencyResolver{"pypi": base}
+			switch mode {
+			case "missing-public":
+				delete(routes, "pypi")
+			case "unsupported-public":
+				routes["pypi"] = &base.prerequisiteSelectionPorts
+			case "torch-only":
+				delete(routes, "pypi")
+				routes["pytorch-cu126"] = base
+			}
+			update, err := (pythonSourceResolver{routes: routes}).ResolveProjectLockUpdate(ctx, install, []domain.ProjectControlFile{control}, "native selector")
+			if err == nil || update.Valid() {
+				t.Fatal("router manufactured a completed selection")
+			}
+			if mode == "public" && (!errors.Is(err, cause) || calls != 1) || mode == "cancelled" && (!errors.Is(err, context.Canceled) || calls != 1) || mode != "public" && mode != "cancelled" && calls != 0 {
+				t.Fatal("public route/error changed or another source was used", mode, calls, err)
+			}
+		})
+	}
 }
 
 type namedUpdateResourceFixture struct {

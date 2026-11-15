@@ -73,7 +73,7 @@ func (r *UVResolver) ResolveToolRunWithRequirements(ctx context.Context, request
 		return result, err
 	}
 	var frozen *pipxNativeInput
-	if err := r.reader.withUVArchiveInputs(ctx, controls, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	if err := r.reader.withPythonArchiveInputs(ctx, controls, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var freezeErr error
 		frozen, freezeErr = freezeUVRunSelectionInput(ctx, lock, inputs, pages, request)
 		return freezeErr

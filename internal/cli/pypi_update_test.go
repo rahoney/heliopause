@@ -72,8 +72,6 @@ func TestPyPIUpgradeCLIExplicitNamedSourcePreservesNativeSelector(t *testing.T) 
 func TestPyPIUpgradeUnsupportedInputRejectsBeforeComposition(t *testing.T) {
 	t.Setenv("VIRTUAL_ENV", "/tmp/haa-pypi-upgrade-cli")
 	for _, args := range [][]string{
-		{"pip", "install", "-U", "a", "b"},
-		{"pip", "install", "-U", "a[extra]"},
 		{"pip", "install", "-U", "https://example.invalid/a.whl"},
 		{"pip", "install", "-U", "a", "--upgrade-strategy", "eager"},
 		{"pip", "install", "-U", "a", "--index-url", "https://example.invalid"},

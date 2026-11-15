@@ -3,7 +3,7 @@
 # Interpreter fixture bytes are exported from a pinned, never-started image.
 set -euo pipefail
 case "$#:${1-}" in
-  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli) ;;
+  0:|1:bootstrap|1:pipx-bootstrap|1:python-execution-preparation|1:python-execution-inputs|1:python-execution|1:python-execution-boundary|1:python-execution-hostile|1:python-execution-workflow|1:uv-run-source|1:uv-run-workflow|1:uv-run-cli|1:pipx-run-workflow|1:pipx-run-cli|1:python-requirements) ;;
   *) echo 'unsupported UV tools CI profile' >&2; exit 2 ;;
 esac
 test "$(id -u)" != 0
@@ -41,7 +41,7 @@ if [[ ${1-} == python-execution-hostile ]]; then
   )
   exit 0
 fi
-if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source && ${1-} != uv-run-workflow && ${1-} != uv-run-cli && ${1-} != pipx-run-workflow && ${1-} != pipx-run-cli ]]; then
+if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution-preparation && ${1-} != python-execution-inputs && ${1-} != python-execution && ${1-} != python-execution-boundary && ${1-} != python-execution-hostile && ${1-} != python-execution-workflow && ${1-} != uv-run-source && ${1-} != uv-run-workflow && ${1-} != uv-run-cli && ${1-} != pipx-run-workflow && ${1-} != pipx-run-cli && ${1-} != python-requirements ]]; then
   (
     cd internal/sandbox
     HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'
@@ -50,6 +50,34 @@ if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution
 fi
 test -n "${RUNNER_TEMP:-}"
 test "${RUNNER_TEMP:0:1}" = /
+if [[ ${1-} == python-requirements ]]; then
+(
+cd internal/bootstrap
+HELOX_PYTHON_REQUIREMENTS_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=42m -test.run '^TestPythonRequirementsPublicInstallationIntegration$' | tee "$RUNNER_TEMP/python-requirements.log"
+)
+awk '
+BEGIN {
+split("initial-empty excluded-marker final-empty", names, " "); for (i in names) expected[names[i]]="NOOP"
+split("two-roots retained-compatible update-roots include-extra shared-transitive hash-match", names, " "); for (i in names) expected[names[i]]="INSTALLED"
+split("joint-conflict invalid-grammar hash-missing hash-mismatch transitive-block installation-failure source-drift", names, " "); for (i in names) expected[names[i]]="DENIED"
+}
+/^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS:/ { if ($3!="TestPythonRequirementsPublicInstallationIntegration" || parents++) bad=1 }
+/requirements_actual client=/ {
+if ($0 !~ /^[[:space:]]+python_requirements_integration_test[.]go:[0-9]+: requirements_actual client=(pip|uv) case=/) bad=1
+client=$3; sub(/^client=/,"",client); name=$4; sub(/^case=/,"",name); id=client "/" name
+if (!(name in expected) || (client!="pip" && client!="uv") || seen[id]++) bad=1
+if (expected[name]=="NOOP" && ($5!="entries=0" || $6!="noop=true")) bad=1
+if (expected[name]=="INSTALLED" && ($5!~/^entries=[1-9][0-9]*$/ || $6!="noop=false")) bad=1
+if (expected[name]=="DENIED" && $5!="denied=true") bad=1
+count++
+}
+END {
+if (parents!=1 || count!=32 || bad) exit 1
+for (name in expected) if (seen["pip/" name]!=1 || seen["uv/" name]!=1) exit 1
+}' "$RUNNER_TEMP/python-requirements.log"
+exit 0
+fi
 uv_tools_work=$(mktemp -d "$RUNNER_TEMP/haa-uv-tools.XXXXXXXX")
 uv_tools_container=''
 uv_tools_owner=''

@@ -64,7 +64,7 @@ func publicUVToolRunInput(t *testing.T) *pipxNativeInput {
 		t.Fatal(err)
 	}
 	var frozen *pipxNativeInput
-	if err := resolver.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	if err := resolver.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		var err error
 		frozen, err = freezePipxNativeInput(ctx, lock, inputs, pages)
 		return err

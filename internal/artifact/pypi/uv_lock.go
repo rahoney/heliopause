@@ -215,36 +215,63 @@ func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs
 }
 
 func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string, requestedExtras map[string][]string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits, collect func(WheelInspection) error) ([]Candidate, error) {
+	candidates := make([]Candidate, 0, len(inputs))
+	err := inspectSelectedWheelArchives(packages, python, inputs, target, limits, func(item UVLockedPackage, wheel UVLockedWheel, inspection WheelInspection) error {
+		var candidate Candidate
+		var err error
+		if extras := requestedExtras[item.Name]; len(extras) != 0 {
+			candidate, err = candidateFromUVRunWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, extras)
+		} else {
+			candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
+		}
+		if err != nil {
+			return err
+		}
+		if collect != nil {
+			if err := collect(inspection); err != nil {
+				return err
+			}
+		}
+		candidates = append(candidates, candidate)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return candidates, nil
+}
+
+// Archive identity, RECORD, expansion and whole-graph budgets have one owner.
+// Consumers separately interpret the authenticated dependency metadata.
+func inspectSelectedWheelArchives(packages []UVLockedPackage, python string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits, collect func(UVLockedPackage, UVLockedWheel, WheelInspection) error) error {
 	if len(inputs) != len(packages) {
-		return nil, errors.New("uv selected wheel set is incomplete")
+		return errors.New("uv selected wheel set is incomplete")
 	}
 	parts := strings.Split(python, ".")
 	if len(parts) != 3 || target.Python != "cp"+parts[0]+parts[1] || target.ABI != target.Python {
-		return nil, errors.New("uv wheel target differs from locked Python")
+		return errors.New("uv wheel target differs from locked Python")
 	}
 	policy := PublicPyPIProfile().ResourcePolicy()
 	allowed := policy.WheelLimits()
 	if limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 || limits.MaxCompressed > allowed.MaxCompressed || limits.MaxUncompressed > allowed.MaxUncompressed || limits.MaxFiles > allowed.MaxFiles || limits.MaxMetadata > allowed.MaxMetadata {
-		return nil, errors.New("uv wheel limits exceed public source policy")
+		return errors.New("uv wheel limits exceed public source policy")
 	}
 	if len(packages) == 0 {
-		return []Candidate{}, nil
+		return nil
 	}
 	var compressed, expanded, files int64
 	selected := make(map[string]UVWheelInput)
 	for _, input := range inputs {
 		if input.Reader == nil || input.Size <= 0 || compressed > policy.MaxGraphCompressed()-input.Size {
-			return nil, errors.New("uv selected wheel input is invalid")
+			return errors.New("uv selected wheel input is invalid")
 		}
 		if _, exists := selected[input.URL]; exists {
-			return nil, errors.New("uv selected wheel input is duplicated")
+			return errors.New("uv selected wheel input is duplicated")
 		}
 		compressed += input.Size
 		selected[input.URL] = input
 	}
-	candidates := make([]Candidate, 0, len(inputs))
 	for _, item := range packages {
-		var candidate Candidate
 		matches := 0
 		for _, wheel := range item.Wheels {
 			input, ok := selected[wheel.URL]
@@ -253,41 +280,28 @@ func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string,
 			}
 			matches++
 			if input.Size != wheel.Size {
-				return nil, errors.New("uv selected wheel size mismatch")
+				return errors.New("uv selected wheel size mismatch")
 			}
 			inspection, err := InspectWheel(input.Reader, input.Size, wheel.Filename, wheel.SHA256, target, limits)
 			if err != nil {
-				return nil, errors.New("uv selected wheel validation failed")
+				return errors.New("uv selected wheel validation failed")
 			}
 			for _, file := range inspection.Files {
 				if files >= policy.MaxGraphFiles() || expanded > policy.MaxGraphUncompressed()-file.Size {
-					return nil, errors.New("uv wheel graph exceeds public expansion budget")
+					return errors.New("uv wheel graph exceeds public expansion budget")
 				}
 				files++
 				expanded += file.Size
 			}
-			// Reuse metadata/marker normalization, not pip resolution or a fake pip
-			// report. These fields come only from the digest-validated wheel above.
-			if extras := requestedExtras[item.Name]; len(extras) != 0 {
-				candidate, err = candidateFromUVRunWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, extras)
-			} else {
-				candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
-			}
-			if err != nil {
-				return nil, err
-			}
-			if collect != nil {
-				if err := collect(inspection); err != nil {
-					return nil, err
-				}
+			if err := collect(item, wheel, inspection); err != nil {
+				return err
 			}
 		}
 		if matches != 1 {
-			return nil, errors.New("uv selected wheel is absent or ambiguous")
+			return errors.New("uv selected wheel is absent or ambiguous")
 		}
-		candidates = append(candidates, candidate)
 	}
-	return candidates, nil
+	return nil
 }
 
 func validateUVCandidateConstraints(candidates []Candidate, python string) error {

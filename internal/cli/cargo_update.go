@@ -207,7 +207,11 @@ func writeProjectMutationReportWithRecords(output io.Writer, verified domain.Pro
 		}
 		p.line("%s %s", label, p.stateLabel(report.Promotion))
 	} else if source == "pypi" {
-		p.line("%s %s", p.text("Python environment synchronization:", "Python 환경 동기화:"), p.stateLabel(report.Promotion))
+		label := p.text("Python environment synchronization:", "Python 환경 동기화:")
+		if installing {
+			label = p.text("Python environment installation:", "Python 환경 설치:")
+		}
+		p.line("%s %s", label, p.stateLabel(report.Promotion))
 	} else if source == "go-proxy" {
 		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
 	} else if source == "terraform-registry" {

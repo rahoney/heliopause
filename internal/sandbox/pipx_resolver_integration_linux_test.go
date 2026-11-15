@@ -158,7 +158,7 @@ func pipxActualOriginalForSelection(t *testing.T, ctx context.Context, resolver 
 	}
 	var original artifactpypi.PipxToolUpgradeInput
 	var result []artifactpypi.UVInstalledWheelControls
-	err = resolver.native.reader.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+	err = resolver.native.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
 		frozen, err := freezePipxNativeInput(ctx, lock, inputs, pages)
 		if err != nil {
 			return err
