@@ -157,7 +157,7 @@ func validatePNPMProjectClientOrder(contents string) []string {
 	sequence := strings.Join([]string{
 		"bash scripts/ci-pnpm-runtime.sh", pnpmBootstrapTestBuildCommand,
 		`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, "haa_start_policy_helper",
-		"bash scripts/ci-pnpm-runtime.sh project", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper",
+		"bash scripts/ci-npm-project.sh project", "bash scripts/ci-pnpm-runtime.sh project", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper",
 	}, "\n")
 	for _, lines := range blocks {
 		if strings.Count(strings.Join(lines, "\n"), sequence) == 1 {
@@ -172,7 +172,7 @@ func validatePNPMInspectionClientOrder(contents string) []string {
 	if err != nil {
 		return nil
 	}
-	sequence := []string{pnpmSandboxTestBuildCommand, `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper", "bash scripts/ci-pnpm-runtime.sh"}
+	sequence := []string{pnpmSandboxTestBuildCommand, `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper", "bash scripts/ci-npm-project.sh native", "bash scripts/ci-pnpm-runtime.sh"}
 	for _, lines := range blocks {
 		next := 0
 		for _, line := range lines {

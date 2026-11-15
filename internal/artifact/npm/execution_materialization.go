@@ -19,6 +19,16 @@ func BindMaterializedNodeExecutionLayout(ctx context.Context, execution domain.E
 	if ctx.Err() != nil {
 		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, ctx.Err(), context.Cause(ctx))
 	}
+	cleaned, err := stripNPMHiddenLockCache(ctx, native, false)
+	if err != nil {
+		return NodeExecutionLayout{}, err
+	}
+	return BindNodeExecutionLayout(ctx, execution, inventories, cleaned)
+}
+
+// Cache metadata is bounded transport data, never source/Policy authority.
+// npm projects retain verified bin links; the old execution lane rejects them.
+func stripNPMHiddenLockCache(ctx context.Context, native PNPMLayoutArchive, allowBinLinks bool) (PNPMLayoutArchive, error) {
 	const cacheName = "node_modules/.package-lock.json"
 	present := false
 	for _, entry := range native.entries {
@@ -26,50 +36,50 @@ func BindMaterializedNodeExecutionLayout(ctx context.Context, execution domain.E
 			continue
 		}
 		if entry.Kind != tar.TypeReg || entry.Size > 4<<20 || !pnpmLayoutEntryModeOwner(entry, pnpmLayoutRequirement{kind: tar.TypeReg}, 1000, 1000) {
-			return NodeExecutionLayout{}, errNodeExecutionLayout
+			return PNPMLayoutArchive{}, errNodeExecutionLayout
 		}
 		present = true
 	}
 	if !present {
-		return BindNodeExecutionLayout(ctx, execution, inventories, native)
+		return native, nil
 	}
 	var output bytes.Buffer
 	writer := tar.NewWriter(&output)
 	for _, entry := range native.entries {
 		if ctx.Err() != nil {
-			return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, ctx.Err(), context.Cause(ctx))
+			return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, ctx.Err(), context.Cause(ctx))
 		}
 		if entry.Name == cacheName {
 			continue
 		}
-		if entry.Kind != tar.TypeReg && entry.Kind != tar.TypeDir || entry.Size < 0 || entry.Size > int64(PNPMLayoutArchiveLimit-output.Len()) {
-			return NodeExecutionLayout{}, errNodeExecutionLayout
+		if entry.Kind != tar.TypeReg && entry.Kind != tar.TypeDir && !(allowBinLinks && entry.Kind == tar.TypeSymlink) || entry.Size < 0 || entry.Size > int64(PNPMLayoutArchiveLimit-output.Len()) {
+			return PNPMLayoutArchive{}, errNodeExecutionLayout
 		}
 		var body []byte
 		if entry.Kind == tar.TypeReg {
 			var err error
 			body, err = native.ReadFile(entry.Name)
 			if err != nil {
-				return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
+				return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, err)
 			}
 		}
-		header := &tar.Header{Name: entry.Name, Typeflag: entry.Kind, Mode: entry.Mode, Size: entry.Size, Uid: entry.UID, Gid: entry.GID}
+		header := &tar.Header{Name: entry.Name, Typeflag: entry.Kind, Mode: entry.Mode, Size: entry.Size, Uid: entry.UID, Gid: entry.GID, Linkname: entry.Link}
 		if err := writer.WriteHeader(header); err != nil {
-			return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
+			return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, err)
 		}
 		if _, err := writer.Write(body); err != nil {
-			return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
+			return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, err)
 		}
 		if output.Len() > PNPMLayoutArchiveLimit {
-			return NodeExecutionLayout{}, errNodeExecutionLayout
+			return PNPMLayoutArchive{}, errNodeExecutionLayout
 		}
 	}
 	if err := writer.Close(); err != nil {
-		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
+		return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, err)
 	}
 	cleaned, err := ParsePNPMLayoutArchive(ctx, output.Bytes())
 	if err != nil {
-		return NodeExecutionLayout{}, errors.Join(errNodeExecutionLayout, err)
+		return PNPMLayoutArchive{}, errors.Join(errNodeExecutionLayout, err)
 	}
-	return BindNodeExecutionLayout(ctx, execution, inventories, cleaned)
+	return cleaned, nil
 }

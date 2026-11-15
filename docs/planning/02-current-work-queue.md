@@ -21,6 +21,14 @@
 
 
 
+- R1-C LOCAL_CHECKED(적용 전 기록 범위 유지): 진입680afad/tree e695493d. B02 2dba2bd의 npm 인자 없는 install/ci·frozen whole-project·root/target lifecycle·guarded 승격·CI caller를 선별 재사용한다. 공통 hoisted layout은 Bun 소비자와 함께 일반화하고 기존 Go/Cargo source reader는 npm-source에 한해 실행 비트 보존을 매개변수화한다. 정확한 경로/의도는 `/tmp/haa-r1-evidence-wwsg0abd/r1c-selected-map.json`. 원래 README/PROJECT/Queue 현재 상태는 복사하지 않는다. IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO에서 시작하며 기존 npm 단일 install/update·Policy·transaction은 재구현하지 않는다.
+- R1-C MISSING/검증: npm project 입력/ci lock 불변·whole graph·source drift·lifecycle 거부·승격 rollback 표적, 영향 Bun/PNPM·Go/Cargo source 소비자, rebuild 연결·CPP/latch·실제 npm normal/거부·정리. observer.cc의 fixed npm ci/lifecycle·Node startup read 분류는 Artifact 역할/lineage·exact argv/topology를 유지하며 해당 CPP 전부와 영향 실제 소비자 검증 전 QUALIFIED로 표시하지 않는다. 고정 runtime/Host/CI 실행은 이번 적용에 포함하지 않는다.
+
+- R1-C 검증 현황: 표적171PASS/부모41/SKIP0, 공유 npm/Bun/PNPM 및 source reader1200PASS/3opt-in SKIP(실제 통합 미수행), fast rebuild build/testbuild/vet/참조·CI 연결 PASS. 선언 제거/추가는 공통 hoisted reader 및 npm project 도입에 한정해 대조하며 새 공개 후보 Unwrap은 오류 체인의 표준 인터페이스 구현이다. 전체 rebuild --full/Quick(Staticcheck·default test 포함)·canonical security/docs PASS. tagged compile는 실행0의 빌드 확인으로만 기록한다. IMPLEMENTED=YES/WIRED=YES(로컬 연결)/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO(CPP/native 미수행). full541.786s·단일 child max RSS921764KiB/CPU2·swap0이며 aggregate peak로 확대하지 않는다.
+- R1-C 실제 통합 선행 입력 BLOCKED: 고정 builder image는 로컬에 있으나 기존 gVisor local Git은 promisor/부분 clone이고 기준선7c619980의 blob4d2f0955d09f7e52437e308b2252a9a4f6e5e77a를 제공하지 못해 canonical source prepare의 offline fetch가 실패했다. 로컬 손상으로 단정하지 않는다. CPP build/latch·새 관찰기/실제 npm 검증은 미수행이다. 첫 원본 r1c-cpp-source-prepare.log·판정 r1c-cpp-input-blocker.json. 자동 download·기존 cache/Host 변경·재시도 없음. 해제 조건은 기존 cache와 분리된 새 입력 저장소에 exact7c619980의 필요한 source bytes를 확보·검증하고 같은 patch/Go/builder/Bazel로 CPP를 통과하는 것이다.
+
+- R1-C 승인 경계: exact7c619980 GitHub fetch를 새 전용 입력 저장소에 수행하는 요청은 자동 승인 검토가 “고정 입력 부재 시 자동 다운로드 없이 중단하라는 사용자 조건에 별도 승인이 없다”는 이유로 실행 전에 거절했다. 다운로드/우회·재시도는 없었다. 다음 실행안은 원장 NEXT-EXECUTION.md이며 필요한 새 권한은 이 고정 소스 입력의 다운로드다. CPP/native 미완료 위에 B03~B07을 쌓지 않는다. 원래 개발 HEAD4a43f2c·index·미커밋 diff/목록 동일, Host 보호14파일 hash/size/mode/uid/gid 동일·helper active·container/volume0을 읽기 전용으로 확인했다.
+
 
 이 문서는 Heliopause에서 **지금 실행할 작업, 순서, 상태와 완료 증거**를 관리한다. Milestone의 범위와 완료 조건은 [Step 12 — Milestones](./01-milestones.md)가 소유하며, 이 문서는 현재 milestone만 구현 가능한 크기로 분해한다.
 

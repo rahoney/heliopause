@@ -10,7 +10,11 @@ const bunTargetLifecycleCommand = `mkdir -p /tmp/.npm; HOME=/tmp npm_config_cach
 
 // This validates a control locator selected from a bound layout, never identity.
 func validBunTargetLifecyclePath(target string) bool {
-	const prefix = bunProjectDirectory + "/node_modules/"
+	return validHoistedTargetLifecyclePath(target, bunProjectDirectory)
+}
+
+func validHoistedTargetLifecyclePath(target, projectDirectory string) bool {
+	prefix := projectDirectory + "/node_modules/"
 	if len(target) > 512 || !strings.HasPrefix(target, prefix) || path.Clean(target) != target {
 		return false
 	}

@@ -36,12 +36,18 @@ func (p *BunProjectPromotion) PublishedRecords() (domain.ContentDigest, string, 
 	return p.engine.PublishedRecords()
 }
 func (p *PNPMProjectPromotion) lockName() string {
+	if p.client == npmProjectCacheNPM {
+		return "package-lock.json"
+	}
 	if p.client == npmProjectCacheBun {
 		return "bun.lock"
 	}
 	return "pnpm-lock.yaml"
 }
 func (p *PNPMProjectPromotion) clientPrefix() string {
+	if p.client == npmProjectCacheNPM {
+		return "npm-project"
+	}
 	if p.client == npmProjectCacheBun {
 		return "bun"
 	}
@@ -95,13 +101,27 @@ func npmApprovedMemberDigest(client npmProjectCacheClient, name string, member *
 }
 
 func (p *PNPMProjectPromotion) sameControls(a, b []domain.ProjectControlFile) bool {
-	if p.client == npmProjectCacheBun {
+	if p.client == npmProjectCacheBun || p.client == npmProjectCacheNPM {
 		return len(a) == 2 && len(b) == 2 && sameUVSyncControls(a, b)
 	}
 	return sameGoTransactionControls(a, b)
 }
 
 func (g *approvedPNPMProjectGuard) selectedCacheData(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (string, func() (*PNPMPreparedProject, error), error) {
+	if g.owner.client == npmProjectCacheNPM {
+		cache, err := g.owner.selectedNPMCache(update.Snapshot())
+		if err != nil {
+			return "", nil, err
+		}
+		if cache == nil || cache.intakeRoot != g.owner.intakeRoot || cache.evidenceRoot != g.owner.evidenceRoot || cache.cacheRoot != g.owner.cacheRoot || cache.operation != g.owner.operation || !cache.frozen.MatchesSnapshot(update.Snapshot()) || !cache.frozen.MatchesSnapshot(staged.Set().Inspected().Snapshot()) || !g.owner.sameControls(cache.frozen.Controls(), update.SelectedControls()) {
+			return "", nil, errors.New("npm project selected cache belongs to another operation or frozen context")
+		}
+		data, err := cache.OpenProjectCache(ctx, staged)
+		if err != nil {
+			return "", nil, err
+		}
+		return data, func() (*PNPMPreparedProject, error) { return cache.PrepareProject(ctx, staged) }, nil
+	}
 	if g.owner.client == npmProjectCacheBun {
 		cache, err := g.owner.selectedBunCache(update.Snapshot())
 		if err != nil {

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -91,7 +92,20 @@ type cargoUpdateEntry struct {
 	Policy   machinePolicy              `json:"policy"`
 }
 
+type projectLifecycleReport struct {
+	checked, required bool
+	result            domain.OperationResult
+}
+type machineProjectLifecycle struct {
+	Checked  bool            `json:"checked"`
+	Required bool            `json:"required"`
+	Status   string          `json:"inspection_status"`
+	Result   json.RawMessage `json:"result,omitempty"`
+}
+
 type cargoUpdateReport struct {
+	LocalProjectLifecycle *machineProjectLifecycle `json:"project_lifecycle,omitempty"`
+
 	Schema         string              `json:"schema_version"`
 	Operation      string              `json:"operation"`
 	Status         string              `json:"operation_status"`
@@ -167,8 +181,10 @@ func buildProjectMutationReport(verified domain.ProjectVerifiedSet, cause error,
 	if inspected.Valid() {
 		report.Graph = inspected.Snapshot().GraphDigest().String()
 		report.DependencyFree = inspected.Snapshot().DependencyFree()
-		policy := projectUpdatePolicy(decision)
-		report.Policy = &policy
+		if decision.PolicyID() != "" {
+			policy := projectUpdatePolicy(decision)
+			report.Policy = &policy
+		}
 		for _, inspection := range inspected.Inspections() {
 			a := inspection.Artifact()
 			id := a.Identity()
@@ -187,9 +203,43 @@ func buildProjectMutationReport(verified domain.ProjectVerifiedSet, cause error,
 	return projectMutationReportFacts{report, inspected, decision, checks}
 }
 
-func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool) error {
+func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool, lifecycle ...projectLifecycleReport) error {
 	facts := buildProjectMutationReport(verified, cause, selector, source, records, installing)
 	report, inspected, decision, checks := facts.report, facts.inspected, facts.decision, facts.checks
+	if len(lifecycle) > 1 {
+		return errors.New("project report requires one local lifecycle result")
+	}
+	if len(lifecycle) == 1 {
+		local := lifecycle[0]
+		status := "NOT_CHECKED"
+		if local.checked {
+			status = "NOT_REQUIRED"
+			if local.required {
+				status = "NOT_EXECUTED"
+			}
+		}
+		var result json.RawMessage
+		if local.result.OperationID().String() != "" {
+			var data bytes.Buffer
+			if err := WriteJSONResult(&data, local.result); err != nil {
+				return err
+			}
+			result = bytes.TrimSpace(data.Bytes())
+			status = "INCOMPLETE"
+			if local.result.Status() == domain.OperationCompleted {
+				complete := true
+				for _, check := range local.result.Checks() {
+					if check.Required() && (check.Status() != domain.ExecutionCompleted || check.Capability() != domain.CapabilitySupported) {
+						complete = false
+					}
+				}
+				if complete {
+					status = "COMPLETED"
+				}
+			}
+		}
+		report.LocalProjectLifecycle = &machineProjectLifecycle{local.checked, local.required, status, result}
+	}
 	p := presentationFor(output)
 	if !p.human() {
 		return json.NewEncoder(output).Encode(report)
@@ -258,6 +308,16 @@ func writeProjectMutationReportWithRecords(output io.Writer, verified domain.Pro
 		}
 		p.renderChecks(checks)
 		p.renderReasons(decision.Reasons())
+	}
+	if report.LocalProjectLifecycle != nil {
+		local := report.LocalProjectLifecycle
+		p.line("%s %s", p.text("Local project lifecycle inspection:", "로컬 프로젝트 lifecycle 검사:"), p.stateLabel(local.Status))
+		if len(lifecycle) == 1 && lifecycle[0].result.OperationID().String() != "" {
+			if rootDecision, known := lifecycle[0].result.PolicyDecision(); known {
+				p.renderReasons(rootDecision.Reasons())
+			}
+			p.renderChecks(lifecycle[0].result.Checks())
+		}
 	}
 	if records != nil {
 		p.line("Manifest: sha256:%s", records.ManifestID)

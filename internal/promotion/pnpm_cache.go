@@ -177,6 +177,7 @@ type npmProjectCacheClient uint8
 const (
 	npmProjectCachePNPM npmProjectCacheClient = iota + 1
 	npmProjectCacheBun
+	npmProjectCacheNPM
 )
 
 type npmProjectCacheSpec struct{ prefix, stagePrefix, provenanceName string }
@@ -187,6 +188,8 @@ func npmProjectCacheIdentity(client npmProjectCacheClient) (npmProjectCacheSpec,
 		return npmProjectCacheSpec{"pnpm", ".pnpm-stage-", "pnpm-provenance.json"}, true
 	case npmProjectCacheBun:
 		return npmProjectCacheSpec{"bun", ".bun-stage-", "bun-provenance.json"}, true
+	case npmProjectCacheNPM:
+		return npmProjectCacheSpec{"npm-project", ".npm-project-stage-", "npm-project-provenance.json"}, true
 	default:
 		return npmProjectCacheSpec{}, false
 	}

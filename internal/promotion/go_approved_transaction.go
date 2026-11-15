@@ -44,7 +44,7 @@ type approvedGoProjectGuard struct {
 	originalStateInfo os.FileInfo
 	closed            bool
 	committed         bool
-	buildSource       *goBuildSourcePlan
+	buildSource       *projectSourcePlan
 	buildCache        *domain.AcquiredArtifact
 	buildInputs       *domain.ProjectBuildInputs
 }

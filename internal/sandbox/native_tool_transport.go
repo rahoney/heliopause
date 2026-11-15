@@ -20,6 +20,8 @@ const (
 	nativeRuntimePNPM
 	nativeRuntimeBun
 	nativeRuntimePipx
+	// npm project inspection uses the existing Node image, not a supplied tool volume.
+	nativeRuntimeNPMProject
 )
 
 type nativeRuntimeToolSpec struct {

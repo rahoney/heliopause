@@ -6,8 +6,8 @@ Status: 감사·미지원 목록 작성 완료, 아래 기능·보안 acceptance
 설치본, Policy, Host 설정을 변경하지 않았으며 새 설치 시험·CI·악성코드 실행은 하지 않았다.
 
 후속 [보강 설계와 완료 기준](../../21-goal-completion-design.md)은 이 감사의 B00–B07/S01–S09와
-자동 정리·시험 정리·불용 코드 확인 C01–C03의 수정 지도를 소유한다. 현재는 설계만 작성하며
-보강 구현은 NOT_STARTED다. 이 감사에서 YES인 기존 retention API는 일반 자동 수거 완료를
+자동 정리·시험 정리·불용 코드 확인 C01–C03의 수정 지도를 소유한다. 최초 설계 작성 당시 구현은 NOT_STARTED였다. 현재 구현 상태는 아래 표·후속 checkpoint와
+Queue를 따른다. 이 감사에서 YES인 기존 retention API는 일반 자동 수거 완료를
 뜻하지 않는다. 자동 수거·quota·crash 복구의 추가 baseline은 해당 설계 §2/§7을 따른다.
 
 ## 1. 기준과 증거
@@ -77,7 +77,7 @@ Native 의미 확인은 공식 문서를 사용했다. [pip requirements](https:
 | --- | --- | --- | --- | --- | --- | --- |
 | B00 | 미지원 하위 명령의 명시적 실패 | NO | NO | NO | NO | `npm ci`, `cargo fetch`, `go mod tidy`가 도움말만 출력하고 exit0. 공통 CLI 사전 검증에서 거부하되 부모 도움말/정상 명령은 유지. 현재 runtime 준비 뒤 발견되는 일부 문법 오류도 runtime 전에 판정 |
 | B01 | pip·UV pip requirements 설치 | YES | YES | NO | NO | `-r`/`--requirement`와 여러 root를 하나의 frozen 입력·전체 graph·승인/원자 반영에 연결. 기존 pip/UV resolver·inspection·promotion 재사용. 한 줄씩 독립 설치하거나 sync로 바꿔 기존 패키지를 삭제하지 않음 |
-| B02 | npm 기본 프로젝트 설치와 ci | NO | NO | NO | NO | package.json/lock 전체 설치, ci의 lock 필수·불일치 거부·lock 무변경과 target 교체/원복. 기존 npm whole graph/update/ownership owner 재사용, 다른 client로 몰래 대체하지 않음 |
+| B02 | npm 기본 프로젝트 설치와 ci | YES | YES | NO | NO | package.json/lock 전체 설치, ci의 lock 필수·불일치 거부·lock 무변경과 target 교체/원복. 기존 npm whole graph/update/ownership owner 재사용, 다른 client로 몰래 대체하지 않음 |
 | B03 | Cargo fetch-only | NO | NO | NO | NO | 기존 complete project resolve/inspect/cache 경로를 공개 명령에 연결. Cargo.toml만 있는 최초 lock 생성과 기존 lock 보존을 별도 검증. build를 대신 실행하지 않음 |
 | B04 | Terraform 기본 init | NO | NO | NO | NO | 현재 configuration의 전체 provider와 기존 lock 선택 보존. lock 없을 때 선택, unchanged 재검사, ownership/원복. upgrade를 자동 붙이지 않음; backend/cloud 실행은 별도 범위 |
 | B05 | Python 일괄 입력의 일반 요구사항 문법 | YES | YES | NO | NO | 버전 범위·extras·환경 marker·주석/빈 줄/CRLF, 반복 -r와 제한된 상대 include/-c, hash 검증. 중복·충돌·include cycle/경로 탈출/파일 변경·빈 파일 no-op·부분 설치 금지까지 B01 acceptance로 묶음. 임의 index·VCS·editable은 자동 허용하지 않음 |
@@ -276,3 +276,205 @@ MISSING은 전체32의 grouped hosted 증거, 공통 Python 변경의 네 profil
 [로컬 checkpoint](./requirements-local-20261102.json)가 정확한 source inventory와 부분/후속
 검사·실제 사례 범위·정리·미완료 acceptance를 연결한다. 다음 B02는 이 검증된 구현을
 재구현하지 않고 진행하며 네 profile/hosted는 후속 의미 있는 변경 묶음에서 검증한다.
+
+## B02 — npm 기본 install/ci 착수 감사
+
+기준 `c6331e5`. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. 기존 단일 install/update는 구현돼 있으므로 다시 구현하지 않는다.
+MISSING은 no-argument install/ci의 전체 manifest 선택, 최초/기존/변경 lock 의미,
+peer/optional·project lifecycle, 전체 검사·cache·원자 반영, CLI 결과와 실제 실패 회귀다.
+
+Read는 보강 설계 §4.3, client leaf §2/§4, package-client 계획 §3/§5, Architecture의
+Core/Application 의존 방향·Inspection/Policy·Evidence/Promotion, Domain의 project
+snapshot/update/verified-set와 operation context, fail-closed·runtime maintenance다.
+공식 [npm ci](https://docs.npmjs.com/cli/v11/commands/npm-ci/)의 lock 필수·manifest 불일치
+실패·control 무변경을 [lock v3 형식](https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/)
+과 대조했다. Native 고정 버전은 기존 generated Node/npm identity에서 읽는다.
+
+| 기존 owner | 재사용 / 실제 gap |
+| --- | --- |
+| `artifact/npm/project_controls.go`, `lockfile.go` | 단일 root/primary 계약 유지. 같은 bounded strict JSON·registry URL/SRI·path/identity 검증을 쓰되 전체 project 입력/선택은 별도 adapter 값으로 표현 |
+| `application/project_update.go`, `ProjectInspectService` | whole snapshot·guard·전체 검사/Policy·staging lifecycle 그대로 재사용; 가짜 primary 없음 |
+| `sandbox/npm_resolver.go` | 기존 Node/npm runtime·typed network·observer·폐기 재사용. install/ci의 정확한 native argv·control freeze/readback 및 전체 placement를 연결 |
+| `promotion/npm_transaction.go`, PNPM/Bun project cache·guard | 기존 backup/journal/rollback·independent approval·cache byte 검증 공유. Npm provenance/lock/regular hoisted layout만 해당 실제 adapter로 연결; 다른 client 실행으로 대체하지 않음 |
+| `cli/root.go`, `package_client.go`, 기존 project presenter | 명시 패키지 install/update 유지. 인자 없는 install과 ci만 whole service로 연결하고 preflight/JSON 결과 owner 재사용 |
+
+먼저 bounded controls와 install/ci intent·출력 불변성의 싼 검사를 진행한다. 그 뒤 실제
+native 전체 선택/registry binding→전체 검사/배치/반영→CLI/실제 정상·거부·원복을 연결한다.
+Root lifecycle과 OS/CPU optional 선택은 검사 범위에 포함하고 무시하지 않는다. Project 파일을
+freeze하지 않은 상태에서 script를 실행하거나 필수 검사를 완화하지 않는다. 최종 acceptance
+전에는 지원/완료로 표시하지 않는다. 새 CI·job·runtime pin·Host 설치 변경은 없다.
+
+B02 입력/whole lock·registry binding·snapshot과 native install/ci 선택을 연결하는 후보를
+작성했다. 기존 single-primary parser는 유지하며 graph의 archive 중복 제거와 설치 위치·peer
+edge를 구분한다. 잘못된 optional OS/CPU를 선택 제외로 오인하는 표적 RED를 교정했고,
+source binding/기존 npm 소비자 포함 표적9.325s와 native 경계·실패 회귀7.972s가 PASS다.
+이는 실제 반입/전체 검사 완료가 아니다.
+
+기존 npm resolver의 lifecycle을 두 실제 선택 소비자가 공유하도록 추출하고 보호된 argv와
+Node/npm identity·typed network·trace·cleanup은 유지했다. 새 CI 선택은 정확한
+`ci --dry-run --ignore-scripts ...`만 observer에 연결했다. Canonical builder/Bazel과 검증한
+캐시 gVisor source를 사용한 전체 C++ latch53.287s가 PASS다. 이전 캐시 확인의 operator
+오류는 patch의 신규 미추적 파일을 tracked diff와 혼동한 것으로 제품/빌드 미도달 원본을
+보존했다. Runtime lock와 Host 설치본을 갱신하지 않았다.
+
+실제 DATA V1은 최초2roots/3placements·ci 원문 보존·ci version 불일치 거부·변경 manifest
+선택을 각각5.230/4.242/4.223/4.330s에 통과했고 optional-peer lock 해석에서 FAIL이다.
+Operator25.600s/helperwait0·Host/Docker 동일·runtime 회수를 확인했다. 그 첫 실패만
+고정 native readback의 bounded test capture로 조사한다. 통과한 앞4나 CPP를 재실행하지
+않는다. 전체 B02 네 상태는 NO이며 후속 actual/검사·cache·반입·CLI가 MISSING이다.
+
+
+B02 첫 metadata 원인은 실제 debug4.4.3 lock1405B/SHA3bca2a3a의 선언 없는
+`peerDependenciesMeta`였다. 보호 executor의 marker를 보존한 capture V2로 입력을 확보했고,
+정상 주석을 선언 peer로 강제하던 validator를 교정했다. 주석은 독립 metadata로 보존하며
+의존성/검사 root/edge를 만들지 않는다. 동일 원본 fixture RED2.606s 뒤 npm 전체6.079s가
+PASS다. Capture V1은 wrapper가 marker를 숨긴 별도 startup 실패였으며 제품 권한 변경 없이
+교정했다. 상세 교훈/원본은 artifact L02/L15가 소유한다.
+
+`b02-native-tail-v1`은 앞4를 반복하지 않고 metadata-only 주석4.819s·실제 선언 peer
+(React/ReactDOM)6.004s·Darwin-only optional 제외4.063s를 통과했다. Tail parent16.25s
+PASS와 operator의 helperwait0·Host/Docker 동일·runtime 정리를 확인했다. V1의 앞4와
+합성한7사례 coverage이며 V1 parent FAIL은 보존한다. 이 단계는 native DATA/source
+binding/snapshot 부분 검증이고 whole inspection·cache·원자 반영·root lifecycle·CLI는
+계속 MISSING이다. CPP/통과 prefix를 다시 실행하지 않고 다음 실제 연결을 진행한다.
+
+
+### B02 whole inspection·approved cache·임시 target 반입 checkpoint
+
+Native 선택 뒤에도 원래 static-all·관찰 세션·전체 instance coverage·기록 Evidence·
+entry/set Policy를 모두 거친다. Bun의 hoisted tree 대조·digest와 instance 검사 driver를
+현재 npm 소비자가 공유하고, 중복 Bun fact wrapper는 제거했다. 고정 Node data
+materializer와 PNPM/Bun의 기존 실행·4-member transaction·인증 cache 엔진을 재사용한다.
+Npm 전용 opaque layout/명령·workspace·lineage는 다른 client 권한과 구분한다.
+
+새 exact instance 명령/위치의 전체 C++ builder/latch46.867s PASS는 이전 ci 선택-only
+53.287s와 다른 후보다. `b02-quarantine-v1`의 실제 중첩3archives/3placements24.843s,
+bin(1archive/1placement)14.937s, peer(3archives/3placements)27.052s는 각각 whole quarantine/Policy까지 PASS다. Parent68.27s,
+operator70.139s/helperwait0·Host/Docker 동일·runtime 정리가 확인됐다. 이 시점에는
+root lifecycle·Host 반입을 검사하지 않았다.
+
+이후 cache V1은 중첩 graph 검역/승인 cache 뒤 첫 commit에서 FAIL했다. Domain update가
+control 이름을 정렬하지만 새 npm guard 연결이 순서까지 비교한 것이 확정 원인이다.
+기존 Bun의 이름/존재/digest 비교를 재사용한 같은 입력 RED7.643s/GREEN10.581s와 기존
+transaction 회귀를 확인했다. 공통 Domain이나 Go/PNPM control 의미를 바꾸지 않았다.
+
+`b02-cache-v2`는 중첩25.274s와 bin14.752s 두 사례를 whole 검사→current approved cache→
+script-free private copy→원자적 임시 target 반영→독립 old approval 재확인까지 통과했다.
+명시 control 편집은 기존 approved payload/cache가 검증될 때만 새 선택을 허용한다.
+Cache 변조는 replay/새 guard를 거부하며 원래 target control을 보존했다. Parent41.42s,
+operator43.212s/helperwait0·Host/Docker 동일·runtime 정리 PASS다. Cache V1 FAIL과 최초
+시험의 sandbox→promotion import cycle compile 실패를 보존하며 제품 권한을 완화하지
+않았다. Composition 검사는 기존 의존 방향에 맞춰 bootstrap test로 옮겼다.
+
+기존 PNPM complete-project Application workflow를 현재 npm consumer도 쓰도록 client
+label만 분리했다. 새 npm composition session이 정확한 snapshot/runtime/control을 전달한다.
+B02 전체 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 아직 NO다. Root project
+source freeze·정적/동적 lifecycle, 공개 no-argument install/ci CLI, 실제 연속 사용자 흐름,
+rollback/취소 및 grouped qualification이 MISSING이다. Runtime pin/generator와 Host
+설치본은 바꾸지 않았고 새 CI는 실행하지 않았다.
+
+
+Canonical Quick120.748s는 format/drift/module/build/test-build/Architecture/CI/go vet까지
+PASS 뒤 Staticcheck의 새 npm composition unused로 FAIL했다. 공개 CLI가 아직 연결되지
+않은 실제 중간 상태이며 warning 억제·가짜 소비자를 추가하지 않는다. 현재 수행하는
+연속 install/ci Application parent 및 실제 CLI 연결을 마친 후 변경된 실패 단계부터
+확인한다. Default test 단계에는 미도달했고 Quick 전체 PASS로 쓰지 않는다. 완료된
+quarantine/cache3 namespace의 ELF 사본6개146476631B는92 processes의 fd/maps 참조0·
+queryerror0과 inode/hash 확인 뒤 제거했다. 현재 빌드·SDK·cache와 원본은 보존했다.
+
+
+`b02-workflow-v1`은 새 npm composition과 기존 guarded complete-project Application을
+실제로 연결했다. Install1archive14.910s→ci1archive14.215s→수정 manifest install3archives
+24.760s→ci3archives24.426s가 fresh operation으로 PASS다. 변경 없는 ci는 lock bytes와
+payload inode를 보존한다. 이어진 ci 불일치는 staging 미도달/기존 lock·payload·user file
+보존으로 거부됐다. Parent79.70s/operator81.570s/helperwait0·Host/Docker 동일·runtime
+정리를 확인했다. Root lifecycle/공개 CLI actual은 이 parent의 검증 범위가 아니다.
+
+이후 공개 CLI의 no-argument install/ci를 같은 descriptor·preflight·JSON report로
+연결하고, 명시 package install/update는 기존 흐름을 유지하는 후보를 작성했다.
+검토된 npm identity는 기존 generated NodeNPMVersion에서 공급한다. 새 CLI/bootstrap의
+표적 회귀4.604s는 PASS다. Root source/lifecycle 구현 전 후보이며 실제 CLI·전체 Quick·
+B02 완료를 주장하지 않는다. 아직 새 CI/Host 설치/커밋을 수행하지 않았다.
+
+다음 root 책임 지도: 기존 Go source snapshot의 anchored bounded copy/identity 검증과
+`project_build_archive.go`의 local transport 소유를 재사용할 수 있는 부분을 먼저 분리한다.
+기존 build output/ApprovedProjectBuild는 output publication 전제이므로 npm root 검사의
+가짜 승인으로 사용하지 않는다. Root는 `project-local` byte binding이며 npm registry
+artifact나 dependency primary로 위장하지 않는다. 원래 guard 아래 source를 freeze하고,
+metadata/credential namespace·owned node_modules를 별도 경계로 유지하며 실행/반입 전
+source 불변성을 재확인한다. 기존 Run/Evidence/Policy와 정확한 root lifecycle 관찰을
+연결하고, Host lifecycle/생성 효과에 대한 기존 M4 제한을 실행 성공만으로 완화하지 않는다.
+이 부분이 현재 최초 MISSING이며 뒤의 B03 작업을 먼저 착수하지 않는다.
+
+
+Root source 단계의 local candidate는 기존 Go source collector를 현재 npm guard와
+공유한다. Go의 기존 한도/mode/제외 의미는 유지하며 npm은 기존 workspace 상한 안에서
+single-link·anchored copy를 수행하고 실행 비트를 보존한다. `.env` 등 hidden namespace와
+owned node_modules를 source 복사에서 제외한다. Local identity는 `project-local/npm-source`다.
+Guard의 기존 payload 검증과 source 재검증은 재귀·중복 tree census 없이 연결했다.
+`b02-root-source-reader-first`는 추출 시 int/int64 비교 compile 오류로 미도달했고, 교정한
+`b02-root-source-reader-green`12.181s는 새 source의 unchanged/bytes/add/mode/replacement/
+symlink 및 기존 Go source·Bun/PNPM transaction 회귀가 PASS다. 이는 root static/dynamic
+실행·Evidence/Policy 연결 완료가 아니다. 현재 첫 MISSING은 source transport reader→
+root lifecycle 계획/실행→실제 기록/Policy와 설치 report 연결이며, 공개 CLI actual과
+root hostile/rollback/cancel이 뒤따른다. Root lifecycle이 아직 연결되지 않은 개발 후보를
+설치/배포하거나 B02 완료로 표시하지 않는다. 최종 formatter/Quick/Race는 의미 있는 다음
+묶음에서 수행하고 통과한 old DATA prefix/기존 C++를 이유 없이 반복하지 않는다.
+
+
+Root transport reader의 exact mode/bytes/hidden/traversal/link/identity/cancel 회귀와 기존
+Go/Cargo input 소비자7.346s가 PASS다. 새 root lifecycle은 별도 `project-local/npm-source`
+subject로 기존 Inspect Run/Evidence/Policy를 쓰며, 외부 망 없는 private source+measured
+archives만으로 고정 npm의 전체 ci lifecycle을 실행하도록 연결했다. Native 동작은 고정
+[npm11.19.1 ci source](https://github.com/npm/cli/blob/v11.19.1/lib/commands/ci.js)와
+[공식 scripts 의미](https://docs.npmjs.com/cli/v11/using-npm/scripts/)를 대조했다. Install7개
+기본 단계뿐 아니라 조건부 `dependencies` hook과 implicit binding.gyp를 검사 필요 판단에
+포함한다. 비어 있지 않은 script를 Unicode trim으로 무실행 처리하지 않는다.
+
+Root C++ 정확 명령/위치/기존 one-shot lineage·negative/topology와 전체 기존 latch48.215s
+PASS다. Runtime lock/SDK patch/Host 설치본은 불변이다. Root first CLI V1은21.25s FAIL /
+operator23.111s/helperwait0·Host/Docker 동일·runtime 정리다. 정상 postinstall에서
+M3_DYNAMIC_OBSERVER_FAILED·authority ambiguity가 발생했으며 원인은 아직 미확정이다.
+동시에 새 root inspector가 incomplete check에 Findings를 붙여 Domain 불변식에 거부됐다.
+Domain을 바꾸지 않고 기존 PNPM 방식대로 accepted facts의 optional completed check와
+필수 실행 coverage를 분리했다. 이제 verification/static/coverage3필수+facts1optional이다.
+
+Root partial-facts/policy exact membership·기존 관련 검사0.935s PASS 뒤 diagnostic V2는
+같은 postinstall21.04s/operator22.912s FAIL이다. 원래 관찰기 실패는 그대로지만,4 checks와
+partial accepted facts가 기록돼 Root Policy의 MANUAL_REVIEW/M3_UNEXPECTED_PROCESS를
+정확히 보여준다. 다른 lifecycle 사례는 아직 미도달이다. 첫 진단 helper의 depth8에서는
+bounded fault 노드를 확보하지 못했으므로 현재 exact case만 깊이 제한24의 오류 타입/기존
+helper enum·locator로 재확인한다. 제품 observer 권한/필수 검사/예산을 완화하지 않는다.
+이 최초 unresolved failure를 조사하며 B03·추가 broad/CI 검증으로 넘어가지 않는다.
+
+
+### B02 로컬 구현·연결 checkpoint — grouped qualification OPEN
+
+[npm 로컬 원장](./npm-project-local-20261102.json)이 source80 files/삭제1, native7의
+composite 범위, 실제 전체 graph·cache·원자적 target·install/ci·root4·공개 CLI를 결합한다.
+Npm 원래 intent와 버전 owner를 유지하고 기존 complete inspection/기존4-member transaction을
+재사용했다. 임시 native capture wrapper는 제거했다. 상세 사용자 계약은
+[기본 npm install/ci](../../../user-journey-cli-ia/09-package-client-quarantine.md#npm-기본-프로젝트-설치와-ci--b02-개발-후보)가 소유한다.
+
+첫 root stream fault의 pinned Node loader 판독은 기존 console ABI helper 재사용으로
+교정했다. ARTIFACT/실제 clone·image/mount/flags와 unexpected-process·M3/M4 판정을 유지한다.
+CPP RED46.815s→전체 GREEN48.949s, 실제 정상 root20.854s·tail52.10s와 공개 install/ci31.16s가
+PASS다. 두 nonzero hook의 exit37도 보존했고 원본 target은 바뀌지 않았다. 관찰 완료와
+Host 스크립트 실행 승인을 구분하며 root가 있으면 설치는 계속 보류한다.
+
+Quick95.813s의 SA4000은 두 seed directory의 side-effect charge를 명시한 두 회로 교정했다.
+후속 Quick258.022s는 static 단계 전부와 default47/49를 통과하고 기존 두 syntax fixture에서
+실패했다. 새 npm ci의 version/lock 전제를 추가하고 미지원 시험에는 잘못된 추가 인자를
+사용했다. Targeted3.085s와 전체 영향6-package Race222.851s PASS다. 두 원래 Quick FAIL을
+full PASS로 바꾸지 않는다. Security18.968s/docs0.317s/tagged compile10.659s, transaction10/
+CI-order9.379s와 implicit-gyp4/10.589s가 PASS다. 이후 변경은 해당 syntax fixture뿐이며
+다른 default47/native/CPP를 반복하지 않았다.
+
+기존 CI job에 native/project exact coverage를 등록했다. Synthetic parser12는 PASS지만
+hosted 실행이 아니다. Peer cache와 기존 단일 npm/update, 최종 후보의 grouped hosted/
+four-profile 및 최종 보안·호환성 평가는 남는다. IMPLEMENTED/WIRED=YES,
+QUALIFIED/ACCEPTANCE_CLOSED=NO다. B02 완료 판정을 전체 보강 완료로 확대하지 않는다.
+시험 사본34개848163547B를 task digest·owner·프로세스 참조 부재 확인 뒤 제거했으며
+Host 설치본·runtime lock·SDK/캐시·실패 원본은 유지했다. 새 CI/설치/배포는 하지 않았다.
+독립적인 다음 로컬 항목은 B03 Cargo fetch-only다.

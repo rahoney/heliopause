@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -52,7 +53,7 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 
 func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error), prepare func(context.Context) (nativeProjectTool, error)) (domain.SandboxResult, error) {
 	spec, known := nativeProjectIdentity(kind)
-	validTarget := kind == nativeRuntimePNPM && validPNPMTargetLifecyclePath(target) || kind == nativeRuntimeBun && validBunTargetLifecyclePath(target)
+	validTarget := kind == nativeRuntimePNPM && validPNPMTargetLifecyclePath(target) || kind == nativeRuntimeBun && validBunTargetLifecyclePath(target) || kind == nativeRuntimeNPMProject && (validNPMProjectTargetLifecyclePath(target) || target == nodeExecutionProject)
 	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || startTrace == nil || prepare != nil && kind != nativeRuntimeBun {
 		return domain.SandboxResult{}, errPNPMInstanceExecution
 	}
@@ -87,6 +88,9 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 			done()
 			observations = facts
 			if limitation != "" {
+				if kind == nativeRuntimeNPMProject && target == nodeExecutionProject {
+					cause = errors.Join(cause, fmt.Errorf("npm local root observer diagnostic: %s", diagnostic.String()))
+				}
 				observations = retainedSuspiciousTraceFacts(diagnostic.KindCounts)
 				if code == "" {
 					code = limitation
@@ -213,6 +217,10 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 		} else {
 			command, err = bunTargetLifecycleExecArguments(container, target)
 		}
+	} else if kind == nativeRuntimeNPMProject && target == nodeExecutionProject {
+		command, err = npmProjectRootLifecycleExecArguments(container)
+	} else if kind == nativeRuntimeNPMProject {
+		command, err = npmProjectTargetLifecycleExecArguments(container, target)
 	} else {
 		command, err = pnpmTargetLifecycleExecArguments(container, target)
 	}

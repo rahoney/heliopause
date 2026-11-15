@@ -165,8 +165,8 @@ func (i BunInspectionInput) BindNativeCache(ctx context.Context, inventory Archi
 	if err != nil {
 		return BunNativeCacheEntry{}, errors.Join(errBunNativeCache, err)
 	}
-	wanted := map[string]bunLayoutRequirement{root: {kind: tar.TypeDir}}
-	add := func(name string, requirement bunLayoutRequirement) error {
+	wanted := map[string]npmLayoutRequirement{root: {kind: tar.TypeDir}}
+	add := func(name string, requirement npmLayoutRequirement) error {
 		if !validInventoryPath(name) {
 			return errBunNativeCache
 		}
@@ -178,14 +178,14 @@ func (i BunInspectionInput) BindNativeCache(ctx context.Context, inventory Archi
 			if old, present := wanted[parent]; present && old.kind != tar.TypeDir {
 				return errBunNativeCache
 			}
-			wanted[parent] = bunLayoutRequirement{kind: tar.TypeDir}
+			wanted[parent] = npmLayoutRequirement{kind: tar.TypeDir}
 		}
 		return nil
 	}
 	for _, entry := range inventory.entries {
-		requirement := bunLayoutRequirement{kind: tar.TypeReg, size: entry.Size, mode: entry.Mode &^ 0o022, digest: entry.Digest}
+		requirement := npmLayoutRequirement{kind: tar.TypeReg, size: entry.Size, mode: entry.Mode &^ 0o022, digest: entry.Digest}
 		if entry.Directory {
-			requirement = bunLayoutRequirement{kind: tar.TypeDir}
+			requirement = npmLayoutRequirement{kind: tar.TypeDir}
 		}
 		if err := add(root+"/"+entry.Path, requirement); err != nil {
 			return BunNativeCacheEntry{}, err
@@ -197,7 +197,7 @@ func (i BunInspectionInput) BindNativeCache(ctx context.Context, inventory Archi
 	if err != nil {
 		return BunNativeCacheEntry{}, err
 	}
-	if err := add(root+"/.bun-tag", bunLayoutRequirement{kind: tar.TypeReg, size: int64(len(sri)), mode: 0o644, digest: digest}); err != nil {
+	if err := add(root+"/.bun-tag", npmLayoutRequirement{kind: tar.TypeReg, size: int64(len(sri)), mode: 0o644, digest: digest}); err != nil {
 		return BunNativeCacheEntry{}, err
 	}
 	if len(wanted) != len(native.entries) {

@@ -1,12 +1,9 @@
 package npm
 
 import (
-	"archive/tar"
 	"context"
 	"errors"
-	"fmt"
 	"maps"
-	"path"
 	"slices"
 	"strings"
 
@@ -15,24 +12,12 @@ import (
 
 var errBunInspectionLayout = errors.New("bun hoisted layout differs from its frozen archives, instances or bins")
 
-type bunLayoutTarget struct {
-	artifact domain.AcquiredArtifact
-	instance string
-}
-
-type bunLayoutRequirement struct {
-	kind       byte
-	size, mode int64
-	digest     domain.ContentDigest
-	link       string
-}
-
 // BunInspectionLayout binds measured static inputs. Lifecycle/dynamic coverage,
 // Policy and publication are separate consumers; zero values grant no execution.
 type BunInspectionLayout struct {
 	input    BunInspectionInput
 	layout   BunLayoutArchive
-	targets  map[bunLayoutTarget]string
+	targets  map[npmLayoutTarget]string
 	digest   domain.ContentDigest
 	manifest []byte
 }
@@ -69,31 +54,12 @@ func (i BunInspectionInput) bindLayoutForOwner(ctx context.Context, inventories 
 	for subject, inventory := range bySubject {
 		byPackage[subject.Identity().Name()+"@"+subject.Identity().Version()] = inventory
 	}
-	wanted := map[string]bunLayoutRequirement{}
-	add := func(name string, requirement bunLayoutRequirement) error {
-		if !validInventoryPath(name) || name != "node_modules" && !strings.HasPrefix(name, "node_modules/") {
-			return errBunInspectionLayout
-		}
-		if previous, present := wanted[name]; present && previous != requirement {
-			return errBunInspectionLayout
-		}
-		wanted[name] = requirement
-		for parent := path.Dir(name); parent != "."; parent = path.Dir(parent) {
-			if previous, present := wanted[parent]; present && previous.kind != tar.TypeDir {
-				return errBunInspectionLayout
-			}
-			wanted[parent] = bunLayoutRequirement{kind: tar.TypeDir}
-		}
-		if len(wanted) > pnpmLayoutEntryLimit {
-			return errBunInspectionLayout
-		}
-		return nil
-	}
 	packages := map[string]BunLockedPackage{}
-	targets := map[bunLayoutTarget]string{}
+	targets := map[npmLayoutTarget]string{}
 	for _, pkg := range i.context.selection.lock.packages {
 		packages[pkg.Key] = pkg
 	}
+	placements := make([]npmHoistedPlacement, 0, len(packages))
 	for _, pkg := range i.context.selection.lock.packages {
 		if err := ctx.Err(); err != nil {
 			return BunInspectionLayout{}, errors.Join(errBunInspectionLayout, err, context.Cause(ctx))
@@ -107,70 +73,23 @@ func (i BunInspectionInput) bindLayoutForOwner(ctx context.Context, inventories 
 		if err != nil {
 			return BunInspectionLayout{}, err
 		}
-		targets[bunLayoutTarget{inventory.artifact, pkg.Key}] = root
-		if err := add(root, bunLayoutRequirement{kind: tar.TypeDir}); err != nil {
-			return BunInspectionLayout{}, err
-		}
-		for _, file := range inventory.entries {
-			// The private cache envelope removes only group/other write bits.
-			// Original packed modes remain in the measured source inventory.
-			requirement := bunLayoutRequirement{kind: tar.TypeReg, size: file.Size, mode: file.Mode &^ 0o022, digest: file.Digest}
-			if file.Directory {
-				requirement = bunLayoutRequirement{kind: tar.TypeDir}
-			}
-			if err := add(root+"/"+file.Path, requirement); err != nil {
-				return BunInspectionLayout{}, err
-			}
-		}
+		targets[npmLayoutTarget{inventory.artifact, pkg.Key}] = root
+		placements = append(placements, npmHoistedPlacement{root, inventory, bins})
 		for name, target := range pkg.Targets {
 			resolved, exists := resolveBunTreeDependency(pkg.Key, name, packages)
 			if !exists || resolved.Key != target {
 				return BunInspectionLayout{}, errBunInspectionLayout
 			}
 		}
-		modules := strings.TrimSuffix(root, "/"+pkg.Name)
-		for command, file := range bins {
-			bin := modules + "/.bin/" + command
-			link := pnpmBinRelativePath(path.Dir(bin), root+"/"+file)
-			if err := add(bin, bunLayoutRequirement{kind: tar.TypeSymlink, mode: 0o777, link: link}); err != nil {
-				return BunInspectionLayout{}, err
-			}
-		}
 	}
-	entries := layout.Entries()
-	if len(entries) != len(wanted) {
-		return BunInspectionLayout{}, fmt.Errorf("%w: expected=%d observed=%d", errBunInspectionLayout, len(wanted), len(entries))
-	}
-	for _, actual := range entries {
-		if err := ctx.Err(); err != nil {
-			return BunInspectionLayout{}, errors.Join(errBunInspectionLayout, err, context.Cause(ctx))
-		}
-		expected, present := wanted[actual.Name]
-		if !present || actual.Kind != expected.kind || actual.UID != uid || actual.GID != gid {
-			return BunInspectionLayout{}, errBunInspectionLayout
-		}
-		switch expected.kind {
-		case tar.TypeDir:
-			if actual.Mode < 0 || actual.Mode > 0o777 || actual.Mode&0o022 != 0 || actual.Mode&0o700 != 0o700 {
-				return BunInspectionLayout{}, errBunInspectionLayout
-			}
-		case tar.TypeSymlink:
-			if actual.Mode != 0o777 || actual.Link != expected.link {
-				return BunInspectionLayout{}, errBunInspectionLayout
-			}
-		case tar.TypeReg:
-			if actual.Mode != expected.mode || actual.Mode&0o022 != 0 || actual.Mode&0o600 != 0o600 || actual.Size != expected.size || actual.Digest != expected.digest {
-				return BunInspectionLayout{}, errBunInspectionLayout
-			}
-		default:
-			return BunInspectionLayout{}, errBunInspectionLayout
-		}
+	if err := validateNPMHoistedLayout(ctx, placements, layout.native, uid, gid); err != nil {
+		return BunInspectionLayout{}, errors.Join(errBunInspectionLayout, err)
 	}
 	manifest, err := bunInspectionManifest(i.context.selection.lock)
 	if err != nil {
 		return BunInspectionLayout{}, err
 	}
-	digest, err := bunInspectionLayoutDigest(i, layout, manifest)
+	digest, err := npmInspectionLayoutDigest("bun-inspection-layout/v1", i.context.bindingDigest(), i.context.runtime, i.artifacts, layout.Entries(), manifest)
 	if err != nil {
 		return BunInspectionLayout{}, err
 	}
@@ -201,7 +120,7 @@ func bunArchiveMetadata(pkg BunLockedPackage, inventory ArchiveInventory) (map[s
 }
 
 func (l BunInspectionLayout) Target(artifact domain.AcquiredArtifact, instance string) (string, error) {
-	value, present := l.targets[bunLayoutTarget{artifact, instance}]
+	value, present := l.targets[npmLayoutTarget{artifact, instance}]
 	if !present || l.digest.String() == "" {
 		return "", errBunInspectionLayout
 	}

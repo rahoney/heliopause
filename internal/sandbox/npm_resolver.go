@@ -37,10 +37,11 @@ type EndpointResolver interface {
 // and bounded opaque selection controls for exact publication. Runtime output
 // never becomes Evidence, Policy or Host-execution authority.
 type NPMResolver struct {
-	runner    CommandRunner
-	endpoints EndpointResolver
-	observer  TraceObserver
-	policy    ResolverPolicyService
+	projectOutput streamingDockerOutput
+	runner        CommandRunner
+	endpoints     EndpointResolver
+	observer      TraceObserver
+	policy        ResolverPolicyService
 }
 
 func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver, policy ResolverPolicyService) (*NPMResolver, error) {
@@ -50,7 +51,12 @@ func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver, policy Res
 	if _, ok := runner.(inputCommandRunner); !ok {
 		return nil, errors.New("npm resolver requires input stream runner")
 	}
-	return &NPMResolver{runner: admissionAwareRunner(runner), endpoints: endpoints, policy: policy}, nil
+	wrapped := admissionAwareRunner(runner)
+	resolver := &NPMResolver{runner: wrapped, endpoints: endpoints, policy: policy}
+	if _, ok := runner.(streamingDockerOutput); ok {
+		resolver.projectOutput = wrapped.(streamingDockerOutput)
+	}
+	return resolver, nil
 }
 
 // NewNPMResolverWithObserver constructs the production resolver with the
@@ -151,25 +157,107 @@ func (r *NPMResolver) ResolveDependencyUpdate(ctx context.Context, reference dom
 	return r.resolveDependencies(ctx, reference, values)
 }
 
-func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, original map[string][]byte) (resolution domain.DependencyResolution, resultErr error) {
+func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, original map[string][]byte) (domain.DependencyResolution, error) {
 	if ctx == nil || reference.Source().String() != "npm" {
 		return domain.DependencyResolution{}, errors.New("valid npm resolver request is required")
 	}
+	var resolution domain.DependencyResolution
+	err := r.withNPMResolver(ctx, func(ctx context.Context, containerID string) error {
+		input, ok := r.runner.(inputCommandRunner)
+		if !ok {
+			return errors.New("resolver input stream unavailable")
+		}
+		packageName, err := artifactnpm.RequestedPackageName(reference)
+		if err != nil {
+			return errors.New("resolver package reference is invalid")
+		}
+		packageSpec, err := artifactnpm.RequestedPackageSpec(reference)
+		if err != nil {
+			return errors.New("resolver package reference is invalid")
+		}
+		manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + packageSpec + "\"}}")
+		if original != nil {
+			manifest = original["package.json"]
+		}
+		if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json")...); err != nil {
+			return errors.New("write resolver manifest failed")
+		}
+		selection := "npm install"
+		selectionFlags := ""
+		if original != nil {
+			if err := input.RunInput(ctx, bytes.NewReader(original["package-lock.json"]), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > "+resolverProjectDir+"/package-lock.json")...); err != nil {
+				return errors.New("write frozen npm lock failed")
+			}
+			// The supported subset has one direct root; zero/one CLI selections both
+			// update that complete graph, respecting all original dependency constraints.
+			selection = "npm update"
+			selectionFlags = " --save=false"
+		}
+		command := "cd " + resolverProjectDir + "; HOME=/tmp npm_config_cache=/tmp/cache " + selection + " --package-lock-only --ignore-scripts --no-audit --no-fund" + selectionFlags + " --registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc"
+		if _, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", command)...); err != nil {
+			return errors.New("run locked npm resolution failed")
+		}
+		lock, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "cat", resolverProjectDir+"/package-lock.json")...)
+		if err != nil {
+			return errors.New("read resolver lockfile failed")
+		}
+		graph, parseErr := artifactnpm.ParseProjectControls(reference, manifest, lock)
+		if parseErr != nil {
+			return fmt.Errorf("parse resolver lockfile: %w", parseErr)
+		}
+		sum := sha256.Sum256(lock)
+		digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		if err != nil {
+			return err
+		}
+		resolution, err = domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+		if err != nil {
+			return err
+		}
+		controls := make([]domain.ProjectControlFile, 0, 2)
+		for _, item := range []struct {
+			name string
+			body []byte
+		}{{"package.json", manifest}, {"package-lock.json", lock}} {
+			control, err := domain.NewProjectControlFile(item.name, item.body, true)
+			if err != nil {
+				return err
+			}
+			controls = append(controls, control)
+		}
+		resolution, err = resolution.WithProjectControls(controls)
+		return err
+	})
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return resolution, nil
+}
+
+// The existing isolated lifecycle is shared by explicit-root and whole-project
+// npm selection. Callback output is discarded by callers on cleanup failure.
+func (r *NPMResolver) withNPMResolver(ctx context.Context, selectControls func(context.Context, string) error) (resultErr error) {
+	if ctx == nil || r == nil || r.runner == nil || r.endpoints == nil || r.policy == nil || selectControls == nil {
+		return errors.New("npm resolver infrastructure is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	addresses, err := r.endpoints.Resolve(ctx, []string{"registry.npmjs.org"})
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
+		return errors.New("resolver endpoint preflight failed")
 	}
 	hostArguments, err := npmNetworkArguments(addresses)
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
+		return errors.New("resolver endpoint preflight failed")
 	}
 	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	network, err := policy.Prepare(ctx, addresses)
 	if err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	var cleanupErr error
 	containerID := ""
@@ -198,7 +286,6 @@ func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.
 			cleanupErr = errors.Join(cleanupErr, closeErr)
 		}
 		if cleanupErr != nil {
-			resolution = domain.DependencyResolution{}
 			if resultErr != nil {
 				resultErr = errors.Join(resultErr, cleanupErr)
 			} else {
@@ -209,92 +296,30 @@ func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.
 
 	created, err := r.runner.Output(ctx, "docker", npmCreateArguments(network, hostArguments)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
-		return domain.DependencyResolution{}, errors.New("create resolver container failed")
+		return errors.New("create resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
 	if r.observer == nil {
-		return domain.DependencyResolution{}, errors.New("resolver observation is unavailable")
+		return errors.New("resolver observation is unavailable")
 	}
 	trace, err = startTrace(ctx, r.observer, containerID, "npm-lifecycle")
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("start resolver observer failed")
+		return errors.New("start resolver observer failed")
 	}
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
-		return domain.DependencyResolution{}, errors.New("start resolver container failed")
+		return errors.New("start resolver container failed")
 	}
 	if err := awaitBoundaryHelper(ctx, r.runner, containerID); err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver boundary helper failed")
+		return errors.New("resolver boundary helper failed")
 	}
 	if err := awaitMountAnchors(ctx, r.observer, containerID); err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver observer mount anchors failed")
+		return errors.New("resolver observer mount anchors failed")
 	}
 	version, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "npm", "--version")...)
 	if err != nil || strings.TrimSpace(string(version)) != resolverNPMVersion {
-		return domain.DependencyResolution{}, errors.New("resolver npm runtime version mismatch")
+		return errors.New("resolver npm runtime version mismatch")
 	}
-	input, ok := r.runner.(inputCommandRunner)
-	if !ok {
-		return domain.DependencyResolution{}, errors.New("resolver input stream unavailable")
-	}
-	packageName, err := artifactnpm.RequestedPackageName(reference)
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver package reference is invalid")
-	}
-	packageSpec, err := artifactnpm.RequestedPackageSpec(reference)
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("resolver package reference is invalid")
-	}
-	manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + packageSpec + "\"}}")
-	if original != nil {
-		manifest = original["package.json"]
-	}
-	if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json")...); err != nil {
-		return domain.DependencyResolution{}, errors.New("write resolver manifest failed")
-	}
-	selection := "npm install"
-	selectionFlags := ""
-	if original != nil {
-		if err := input.RunInput(ctx, bytes.NewReader(original["package-lock.json"]), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > "+resolverProjectDir+"/package-lock.json")...); err != nil {
-			return domain.DependencyResolution{}, errors.New("write frozen npm lock failed")
-		}
-		// The supported subset has one direct root; zero/one CLI selections both
-		// update that complete graph, respecting all original dependency constraints.
-		selection = "npm update"
-		selectionFlags = " --save=false"
-	}
-	command := "cd " + resolverProjectDir + "; HOME=/tmp npm_config_cache=/tmp/cache " + selection + " --package-lock-only --ignore-scripts --no-audit --no-fund" + selectionFlags + " --registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc"
-	if _, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", command)...); err != nil {
-		return domain.DependencyResolution{}, errors.New("run locked npm resolution failed")
-	}
-	lock, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "cat", resolverProjectDir+"/package-lock.json")...)
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("read resolver lockfile failed")
-	}
-	graph, parseErr := artifactnpm.ParseProjectControls(reference, manifest, lock)
-	if parseErr != nil {
-		return domain.DependencyResolution{}, fmt.Errorf("parse resolver lockfile: %w", parseErr)
-	}
-	sum := sha256.Sum256(lock)
-	digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	resolution, err = domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	controls := make([]domain.ProjectControlFile, 0, 2)
-	for _, item := range []struct {
-		name string
-		body []byte
-	}{{"package.json", manifest}, {"package-lock.json", lock}} {
-		control, err := domain.NewProjectControlFile(item.name, item.body, true)
-		if err != nil {
-			return domain.DependencyResolution{}, err
-		}
-		controls = append(controls, control)
-	}
-	return resolution.WithProjectControls(controls)
+	return selectControls(ctx, containerID)
 }
 
 func npmCreateArguments(network string, hostArguments []string) []string {

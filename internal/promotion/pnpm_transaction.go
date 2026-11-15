@@ -18,6 +18,7 @@ type PNPMProjectPromotion struct {
 	verifyBunOriginal                              BunOriginalVerifier
 	client                                         npmProjectCacheClient
 	selectedBunCache                               func(domain.ProjectDependencySnapshot) (*BunVerifiedCache, error)
+	selectedNPMCache                               func(domain.ProjectDependencySnapshot) (*NPMProjectVerifiedCache, error)
 	intakeRoot, evidenceRoot, cacheRoot, stateRoot string
 	evidence                                       ProjectEvidenceReader
 	operation                                      domain.OperationID
@@ -60,23 +61,25 @@ type pnpmProjectApproval struct {
 }
 
 type approvedPNPMProjectGuard struct {
-	owner                       *PNPMProjectPromotion
-	ctx                         context.Context
-	install                     domain.InstallContext
-	guard                       goProjectGuard
-	controls                    []domain.ProjectControlFile
-	controlInfo                 map[string]os.FileInfo
-	members                     map[string]*npmTransactionMember
-	state                       *os.Root
-	stateInfo                   os.FileInfo
-	stateName                   string
-	originalState, currentState []byte
-	currentStateInfo            os.FileInfo
-	previous                    *pnpmProjectApproval
-	closed, committed           bool
-	recordManifest              domain.ContentDigest
-	recordHandle                string
-	originalProof               string
+	owner                                                       *PNPMProjectPromotion
+	ctx                                                         context.Context
+	install                                                     domain.InstallContext
+	guard                                                       goProjectGuard
+	controls                                                    []domain.ProjectControlFile
+	controlInfo                                                 map[string]os.FileInfo
+	members                                                     map[string]*npmTransactionMember
+	state                                                       *os.Root
+	stateInfo                                                   os.FileInfo
+	stateName                                                   string
+	originalState, currentState                                 []byte
+	currentStateInfo                                            os.FileInfo
+	previous                                                    *pnpmProjectApproval
+	rootSource                                                  *projectSourcePlan
+	rootLifecycleChecked, rootLifecycleRequired, rootBindingGyp bool
+	closed, committed                                           bool
+	recordManifest                                              domain.ContentDigest
+	recordHandle                                                string
+	originalProof                                               string
 }
 
 func (p *PNPMProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (*approvedPNPMProjectGuard, error) {
@@ -308,6 +311,13 @@ func (g *approvedPNPMProjectGuard) Controls() []domain.ProjectControlFile {
 	return append([]domain.ProjectControlFile(nil), g.controls...)
 }
 func (g *approvedPNPMProjectGuard) VerifyUnchanged(ctx context.Context) error {
+	if g != nil && g.rootSource != nil {
+		return g.VerifyNPMProjectSource(ctx, g.rootSource.artifact)
+	}
+	return g.verifyPayloadUnchanged(ctx)
+}
+
+func (g *approvedPNPMProjectGuard) verifyPayloadUnchanged(ctx context.Context) error {
 	if ctx == nil || g == nil || g.closed || g.committed {
 		return errors.New("pnpm project mutation is not active")
 	}
@@ -316,6 +326,11 @@ func (g *approvedPNPMProjectGuard) VerifyUnchanged(ctx context.Context) error {
 	}
 	if err := g.verifyPinned(); err != nil {
 		return err
+	}
+	if g.rootLifecycleChecked && !g.rootBindingGyp {
+		if _, err := g.guard.root.Lstat("binding.gyp"); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("npm local lifecycle input changed during mutation")
+		}
 	}
 	for name, before := range g.members {
 		if before == nil {

@@ -1740,11 +1740,24 @@ constexpr char kLockUpdateCommand[] =
     "--registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc "
     "--globalconfig=/tmp/haa-global.npmrc";
 
+constexpr char kLockCIValidationCommand[] =
+    "cd /tmp/haa-resolver; HOME=/tmp npm_config_cache=/tmp/cache npm ci --dry-run "
+    "--ignore-scripts --no-audit --no-fund "
+    "--registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc "
+    "--globalconfig=/tmp/haa-global.npmrc";
+
+bool IsExactLockGenerationNpmLauncher(const gvisor::sentry::ExecveInfo& message);
+bool IsExactLockGenerationNpmNodeInterpreter(const gvisor::sentry::ExecveInfo& message);
+
 CommandPhase ClassifyCommandShape(const gvisor::sentry::ExecveInfo& message) {
+  if (IsExactLockGenerationNpmLauncher(message) || IsExactLockGenerationNpmNodeInterpreter(message)) {
+    return CommandPhase::kLockGeneration;
+  }
   for (int index = 0; index < message.argv_size(); ++index) {
     const std::string& arg = message.argv(index);
     if (arg.find("package-lock-only") != std::string::npos ||
-        (arg.find("npm install") != std::string::npos && arg.find("--offline") == std::string::npos)) {
+        (arg.find("npm install") != std::string::npos && arg.find("--offline") == std::string::npos) ||
+        arg == kLockCIValidationCommand) {
       return CommandPhase::kLockGeneration;
     }
     if (arg.find("package.json") != std::string::npos ||
@@ -1919,7 +1932,11 @@ bool IsExactNpmNodeTransition(const gvisor::sentry::ExecveInfo& message,
 constexpr char kPNPMTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-pnpm-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
 constexpr char kPNPMProjectMount[] = "/tmp/haa-pnpm-input";
 constexpr char kBunTargetProjectMount[] = "/tmp/haa-bun-input";
+constexpr char kNPMProjectTargetMount[] = "/tmp/haa-node-execution";
 constexpr char kBunTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
+constexpr char kNPMProjectTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-node-execution/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
+constexpr char kNPMProjectDirectory[] = "/tmp/haa-node-execution/project";
+constexpr char kNPMProjectRootLifecycleCommand[] = R"HAA(cd /tmp/haa-node-execution/project; mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm ci --ignore-scripts=false --bin-links=true --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts)HAA";
 constexpr char kBunRuntimeTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; PATH=/haa-runtime:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
 
 bool ValidPNPMTargetLifecyclePath(const std::string& path) {
@@ -1949,8 +1966,8 @@ bool ValidPNPMTargetLifecyclePath(const std::string& path) {
       name.find('/', slash + 1) == std::string::npos && name.substr(slash + 1) != "." && name.substr(slash + 1) != "..";
 }
 
-bool ValidBunTargetLifecyclePath(const std::string& path) {
-  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+bool ValidHoistedTargetLifecyclePath(const std::string& path, const char* project_mount) {
+  const std::string prefix = std::string(project_mount) + "/project/node_modules/";
   if (path.size() > kMaxTopologyMountpointBytes || !HasPrefix(path, prefix.c_str()) || !IsNormalizedAbsolutePath(path)) return false;
   auto segment = [](const std::string& value) {
     if (value.empty() || value == "." || value == "..") return false;
@@ -1977,11 +1994,17 @@ bool ValidBunTargetLifecyclePath(const std::string& path) {
   return false;
 }
 
-bool HasExactNPMTargetLifecycleMount(const TopologyState* topology, const std::string& target, bool bun) {
-  const char* project_mount = bun ? kBunTargetProjectMount : kPNPMProjectMount;
+bool ValidBunTargetLifecyclePath(const std::string& path) {
+  return ValidHoistedTargetLifecyclePath(path, kBunTargetProjectMount);
+}
 
+bool ValidNPMProjectTargetLifecyclePath(const std::string& path) {
+  return ValidHoistedTargetLifecyclePath(path, kNPMProjectTargetMount);
+}
+
+bool HasExactNPMWorkspaceMount(const TopologyState* topology, const std::string& target, const char* project_mount) {
   if (topology == nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id == 0 ||
-      !(bun ? ValidBunTargetLifecyclePath(target) : ValidPNPMTargetLifecyclePath(target)) || !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath) ||
+      !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath) ||
       !IsPinnedReadOnlyRootPath(topology, kNodePath)) return false;
   size_t expected = 0, actual = 0;
   for (const auto& mount : topology->expected) {
@@ -2001,6 +2024,14 @@ bool HasExactNPMTargetLifecycleMount(const TopologyState* topology, const std::s
   return expected == 1 && actual == 1;
 }
 
+bool HasExactNPMTargetLifecycleMount(const TopologyState* topology, const std::string& target, const char* project_mount) {
+  const bool valid = (strcmp(project_mount, kPNPMProjectMount) == 0 && ValidPNPMTargetLifecyclePath(target)) ||
+      (strcmp(project_mount, kBunTargetProjectMount) == 0 && ValidBunTargetLifecyclePath(target)) ||
+      (strcmp(project_mount, kNPMProjectTargetMount) == 0 && ValidNPMProjectTargetLifecyclePath(target));
+
+  return valid && HasExactNPMWorkspaceMount(topology, target, project_mount);
+}
+
 bool IsExactPNPMTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
                                        const char* profile, const TopologyState* topology) {
   return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
@@ -2009,7 +2040,30 @@ bool IsExactPNPMTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& messag
       message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
       message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
       message.argv(5) == kPNPMTargetLifecycleCommand && message.argv(6) == "helox-pnpm-target" &&
-      HasExactNPMTargetLifecycleMount(topology, message.argv(7), false);
+      HasExactNPMTargetLifecycleMount(topology, message.argv(7), kPNPMProjectMount);
+}
+
+bool IsExactNPMProjectTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, const TopologyState* topology) {
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 8 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
+      message.argv(5) == kNPMProjectTargetLifecycleCommand && message.argv(6) == "helox-npm-project-target" &&
+      HasExactNPMTargetLifecycleMount(topology, message.argv(7), kNPMProjectTargetMount);
+}
+
+bool IsExactNPMProjectRootLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, const TopologyState* topology) {
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 8 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
+      message.argv(5) == kNPMProjectRootLifecycleCommand && message.argv(6) == "helox-npm-project-root" &&
+      message.argv(7) == kNPMProjectDirectory &&
+      HasExactNPMWorkspaceMount(topology, message.argv(7), kNPMProjectTargetMount);
 }
 
 // The native runtime and fixed hoisted project are separately Host-attested.
@@ -2042,19 +2096,30 @@ bool IsExactBunTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message
       (message.argv(5) == kBunTargetLifecycleCommand ||
        (message.argv(5) == kBunRuntimeTargetLifecycleCommand && IsBunArtifactRuntimeImage(topology, kBunToolPath))) &&
       message.argv(6) == "helox-bun-target" &&
-      HasExactNPMTargetLifecycleMount(topology, message.argv(7), true);
+      HasExactNPMTargetLifecycleMount(topology, message.argv(7), kBunTargetProjectMount);
 }
 
 bool IsExactPNPMTargetLifecycleArguments(const gvisor::sentry::ExecveInfo& message,
                                         int first, const std::string& target) {
+  if (target == kNPMProjectDirectory) {
+    static constexpr const char* root_args[] = {"ci", "--ignore-scripts=false", "--bin-links=true",
+        "--foreground-scripts", "--offline", "--no-update-notifier", "--workspaces=false",
+        "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"};
+    const int root_count = static_cast<int>(sizeof(root_args) / sizeof(root_args[0]));
+    if (message.argv_size() != first + root_count) return false;
+    for (int i = 0; i < root_count; ++i) if (message.argv(first + i) != root_args[i]) return false;
+    return true;
+  }
   static constexpr const char* args[] = {"--prefix", "/tmp/haa-pnpm-input/project", "rebuild",
       "--ignore-scripts=false", "--bin-links=false", "--foreground-scripts", "--offline",
       "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"};
   const int count = static_cast<int>(sizeof(args) / sizeof(args[0]));
   const bool bun = ValidBunTargetLifecyclePath(target);
-  if ((!bun && !ValidPNPMTargetLifecyclePath(target)) || message.argv_size() != first + count + 1 || message.argv(first + count) != target) return false;
+  const bool npm_project = ValidNPMProjectTargetLifecyclePath(target);
+  if ((!bun && !npm_project && !ValidPNPMTargetLifecyclePath(target)) || message.argv_size() != first + count + 1 || message.argv(first + count) != target) return false;
   for (int i = 0; i < count; ++i) {
-    const char* expected = bun && i == 1 ? "/tmp/haa-bun-input/project" : args[i];
+    const char* expected = i == 1 && npm_project ? "/tmp/haa-node-execution/project" :
+        bun && i == 1 ? "/tmp/haa-bun-input/project" : args[i];
     if (message.argv(first + i) != expected) return false;
   }
   return true;
@@ -2116,14 +2181,15 @@ bool IsExactNpmVersionLauncher(const gvisor::sentry::ExecveInfo& message) {
 }
 
 // This is the complete boundary invocation emitted only by
-// NPMResolver's install/update selection. The command string is trusted controller
+// NPMResolver's install/update/frozen-ci selection. The command string is trusted controller
 // source, not artifact input; any resolver-side drift fails closed here.
 bool IsExactResolverLockGenerationBoundary(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
       message.argv_size() == 6 && message.argv(0) == kBoundaryHelperPath &&
       message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
       message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
-      (message.argv(5) == kLockGenerationCommand || message.argv(5) == kLockUpdateCommand);
+      (message.argv(5) == kLockGenerationCommand || message.argv(5) == kLockUpdateCommand ||
+       message.argv(5) == kLockCIValidationCommand);
 }
 
 bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
@@ -2138,10 +2204,17 @@ bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
       "--save=false", "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
       "--globalconfig=/tmp/haa-global.npmrc",
   };
+  static constexpr const char* kCIArguments[] = {
+      "ci", "--dry-run", "--ignore-scripts", "--no-audit", "--no-fund",
+      "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
+      "--globalconfig=/tmp/haa-global.npmrc",
+  };
   if (message.argv_size() <= first_argument) return false;
+  const bool ci = message.argv(first_argument) == "ci";
   const bool update = message.argv(first_argument) == "update";
-  const auto* arguments = update ? kUpdateArguments : kArguments;
-  const size_t count = update ? sizeof(kUpdateArguments) / sizeof(kUpdateArguments[0]) :
+  const auto* arguments = ci ? kCIArguments : update ? kUpdateArguments : kArguments;
+  const size_t count = ci ? sizeof(kCIArguments) / sizeof(kCIArguments[0]) :
+      update ? sizeof(kUpdateArguments) / sizeof(kUpdateArguments[0]) :
       sizeof(kArguments) / sizeof(kArguments[0]);
   if (message.argv_size() != first_argument + static_cast<int>(count)) return false;
   for (size_t index = 0; index < count; ++index) {
@@ -3209,6 +3282,23 @@ bool SameNodeExecutionTarget(const gvisor::sentry::ExecveInfo& message, const Pr
   return SameCapturedExecutionTarget(message,group.node_execution_target,offset);
 }
 
+// ABI reads shared by the selected Node console and npm lifecycle children.
+// Callers retain independent provenance checks; this grants no execution role.
+bool IsNodeImageStartupRead(const gvisor::common::ContextData& context,
+                            const std::string& path, uint64_t flags, const MountAnchor* anchor) {
+  if (anchor == nullptr || flags != 557056) return false;
+  if (anchor->mountpoint == "/" && anchor->mount_class == "oci-root")
+    return IsExactPinnedLibraryRead(path) || path == kNodePath || path == "/etc/ssl/openssl.cnf" || path == "/usr/share/zoneinfo/Etc/UTC";
+  if (anchor->mountpoint == "/sys/fs/cgroup/memory" && anchor->mount_class == "system")
+    return path == "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes" || path == "/sys/fs/cgroup/memory/memory.limit_in_bytes";
+  if (anchor->mountpoint == "/dev" && anchor->mount_class == "system") return path == "/dev/null";
+  if (anchor->mountpoint == "/sys" && anchor->mount_class == "system") return path == "/sys/devices/system/cpu/online";
+  if (anchor->mountpoint != "/proc" || anchor->mount_class != "system") return false;
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  return path == "/proc/self/maps" || path == self+"/maps" || path == self+"/cgroup" ||
+      path == "/proc/meminfo" || path == "/proc/version_signature" || path == "/proc/sys/vm/overcommit_memory";
+}
+
 bool IsPinnedNodeExecutionRead(const gvisor::common::ContextData& context, const ProcessState& state,
                                 const std::string& path, uint64_t flags, const char* profile,
                                 const MountAnchor* anchor) {
@@ -3221,21 +3311,12 @@ bool IsPinnedNodeExecutionRead(const gvisor::common::ContextData& context, const
   const bool node = group->node_execution_active && group->current_image_class == ProcessClass::kNode && !group->handoff_target_pending;
   const bool demoting = group->node_execution_demoting && group->handoff_target_pending;
   if (!node && !demoting) return false;
-  if (anchor->mountpoint == "/" && anchor->mount_class == "oci-root") {
-    if (demoting) return IsExactPinnedLibraryRead(path) || path == "/etc/nsswitch.conf" || path == "/etc/passwd" || path == "/etc/group";
-    return flags == 557056 && (IsExactPinnedLibraryRead(path) || path == kNodePath || path == "/etc/ssl/openssl.cnf" || path == "/usr/share/zoneinfo/Etc/UTC");
-  }
-  if (node && anchor->mountpoint == "/sys/fs/cgroup/memory" && anchor->mount_class == "system" && flags == 557056)
-    return path == "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes" || path == "/sys/fs/cgroup/memory/memory.limit_in_bytes";
-  if (node && anchor->mountpoint == "/dev" && anchor->mount_class == "system" && flags == 557056)
-    return path == "/dev/null";
-  if (node && anchor->mountpoint == "/sys" && anchor->mount_class == "system" && flags == 557056)
-    return path == "/sys/devices/system/cpu/online";
-  if (anchor->mountpoint != "/proc" || anchor->mount_class != "system") return false;
-  const std::string self = "/proc/"+std::to_string(context.thread_group_id());
-  return (node && flags == 557056 && (path == "/proc/self/maps" || path == self+"/maps" || path == self+"/cgroup" ||
-      path == "/proc/meminfo" || path == "/proc/version_signature" || path == "/proc/sys/vm/overcommit_memory")) ||
-      (demoting && (path == "/proc/self/status" || path == self+"/status" || path == "/proc/sys/kernel/cap_last_cap"));
+  if (node) return IsNodeImageStartupRead(context,path,flags,anchor);
+  if (anchor->mountpoint == "/" && anchor->mount_class == "oci-root")
+    return IsExactPinnedLibraryRead(path) || path == "/etc/nsswitch.conf" || path == "/etc/passwd" || path == "/etc/group";
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  return anchor->mountpoint == "/proc" && anchor->mount_class == "system" &&
+      (path == "/proc/self/status" || path == self+"/status" || path == "/proc/sys/kernel/cap_last_cap");
 }
 
 // The selected console owns no CONTROL or ambient Python/Pipx authority.
@@ -3392,19 +3473,21 @@ bool IsPinnedBunExecutionRead(const gvisor::common::ContextData& context,const P
       (path=="/proc/self/status" || path==self+"/status" || path=="/proc/sys/kernel/cap_last_cap");
 }
 
-bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
+bool IsPinnedNPMArtifactRuntimeRead(const gvisor::common::ContextData& context,
                                   const ProcessState& state, const std::string& path,
                                   uint64_t flags, const char* profile, const MountAnchor* anchor) {
   if (profile == nullptr || strcmp(profile, kProfileNPM) != 0 || anchor == nullptr) return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
       group->provenance != ProcessState::Provenance::kCloneChild ||
-      group->current_image_class != ProcessClass::kBun || FilesystemProcessClass(context, state) != ProcessClass::kBun ||
+      (group->current_image_class != ProcessClass::kBun && group->current_image_class != ProcessClass::kNode) ||
+      FilesystemProcessClass(context, state) != group->current_image_class ||
       group->root_eligible || !group->root_consumed || group->trusted_control_network_active ||
       group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
       context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
       state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
-  return IsBunImageStartupRead(context,path,flags,anchor);
+  return group->current_image_class == ProcessClass::kNode ? IsNodeImageStartupRead(context,path,flags,anchor) :
+      IsBunImageStartupRead(context,path,flags,anchor);
 }
 
 bool IsPinnedBunRuntimeRead(const gvisor::common::ContextData& context,
@@ -4456,7 +4539,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
-      IsPinnedBunArtifactRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedNPMArtifactRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedBunRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedPNPMRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -5163,7 +5246,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
-    if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology) || IsExactBunTargetLifecycleBoundary(message, profile, topology))
+    if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology) || IsExactBunTargetLifecycleBoundary(message, profile, topology) ||
+        IsExactNPMProjectTargetLifecycleBoundary(message, profile, topology) ||
+        IsExactNPMProjectRootLifecycleBoundary(message, profile, topology))
       group->second.pnpm_target_lifecycle = message.argv(7);
     if (boundary_mode == BoundaryMode::kNodeHandoff && !BindNodeExecutionTarget(message,topology,&group->second)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
@@ -5236,6 +5321,13 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
   group->second.diagnostic_build_target_image = strcmp(profile,kProfileCargoBuild)==0 && IsCargoBuildTargetImage(topology,message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
+  // Artifact Node receives ABI classification only from the actual immutable
+  // kernel image. A shadow or artifact copy cannot borrow its runtime reads.
+  if (strcmp(profile,kProfileNPM) == 0 && group->second.role == ProcessState::Role::kArtifact &&
+      group->second.current_image_class == ProcessClass::kNode &&
+      !IsPinnedReadOnlyRootPath(topology,message.binary_path()))
+    group->second.current_image_class = ProcessClass::kUnknown;
+
   const auto* bun_creator = bun_install_candidate ? BunRunInstallCreator(message.context_data(),group->second,candidate) : nullptr;
   const bool bun_install = strcmp(profile,kProfileBunProjectResolver)==0 && bun_creator != nullptr &&
       candidate.expected_groups.find(group_id)==candidate.expected_groups.end() && IsExactBunRunInstall(message,*bun_creator);

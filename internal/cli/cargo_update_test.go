@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -236,5 +237,33 @@ func TestCargoUpdateReportSeparatesInspectionAndCompletedPublication(t *testing.
 				})
 			}
 		}
+	}
+}
+
+func TestProjectFailureBeforePolicyDoesNotInventADecision(t *testing.T) {
+	var out bytes.Buffer
+	root, err := cli.New(&out, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspected, _ := cargoUpdateFacts(t, domain.DecisionAllow)
+	cause := errors.New("local source verification failed before project Policy")
+	updater := &cargoUpdateCLI{failure: cargoFailedUpdateFacts{inspected, domain.PolicyDecision{}, cause}}
+	if err = cli.AddCargoUpdate(root, updater); err != nil {
+		t.Fatal(err)
+	}
+	root.SetArgs([]string{"--output", "json", "cargo", "update"})
+	if err = root.ExecuteContext(context.Background()); !errors.Is(err, cause) {
+		t.Fatal("original project error lost", err)
+	}
+	var report map[string]json.RawMessage
+	if err = json.Unmarshal(out.Bytes(), &report); err != nil {
+		t.Fatal(err)
+	}
+	if _, present := report["policy"]; present {
+		t.Fatal("missing Policy was reported as a decision", out.String())
+	}
+	if string(report["operation_status"]) != `"FAILED"` || string(report["promotion_status"]) != `"NOT_COMPLETED"` {
+		t.Fatal("failed project claimed completion")
 	}
 }
