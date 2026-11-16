@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func qualifyUVProjectLockOnly(t *testing.T, ctx context.Context, b uvProjectBindings, root string) {
@@ -28,6 +29,9 @@ func qualifyUVProjectLockOnly(t *testing.T, ctx context.Context, b uvProjectBind
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Bind historical format DATA to the current pinned runtime; preserve captured files.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	if !bytes.Contains(manifest, []byte("dependencies = []")) {
 		t.Fatal("fixed empty original manifest changed")
 	}

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxUVProjectLockCLIIntegration(t *testing.T) {
@@ -32,6 +33,9 @@ func TestLinuxUVProjectLockCLIIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Bind historical format DATA to the current pinned runtime; preserve captured files.
+	manifest = bytes.ReplaceAll(manifest, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
+	lock = bytes.ReplaceAll(lock, []byte("3.14.7"), []byte(runtimeidentity.PythonVersion))
 	manifest = bytes.Replace(manifest, []byte("dependencies = []"), []byte("dependencies = ['packaging==25.0']"), 1)
 	manifestPath := filepath.Join(project, "pyproject.toml")
 	if err := os.WriteFile(manifestPath, manifest, 0o644); err != nil {
