@@ -210,9 +210,9 @@ func verifyDetached(entity *openpgp.Entity, body, signature []byte, config *pack
 	return verifyDetachedWithCurrent(entity, entity, body, signature, config)
 }
 
-// Historical bindings must be valid at signature creation; the same full
-// primary and signing key must also be valid now in the current authority's
-// certificate. Neither expiry nor revocation is ignored at either boundary.
+// Historical bindings keep the original verification path. Only the pinned
+// official authority can verify a signature whose older binding is absent
+// after recertification; current key validity and signature checks still apply.
 func verifyDetachedWithCurrent(entity, current *openpgp.Entity, body, signature []byte, config *packet.Config) (string, error) {
 	if len(signature) == 0 || len(signature) > 16<<10 {
 		return "", errors.New("openpgp detached signature exceeds bounds")
@@ -238,11 +238,35 @@ func verifyDetachedWithCurrent(entity, current *openpgp.Entity, body, signature 
 		return "", errors.New("openpgp signing key is expired, revoked or unbound")
 	}
 	historical, valid := entity.SigningKeyById(sig.CreationTime, *sig.IssuerKeyId, config)
-	if !valid || fingerprint(historical.PublicKey) != fingerprint(key.PublicKey) {
-		return "", errors.New("openpgp historical and current signing keys differ")
+	if valid {
+		if fingerprint(historical.PublicKey) != fingerprint(key.PublicKey) {
+			return "", errors.New("openpgp historical and current signing keys differ")
+		}
+		_, signer, err := openpgp.VerifyDetachedSignature(openpgp.EntityList{entity}, bytes.NewReader(body), bytes.NewReader(signature), config)
+		if err != nil || signer != entity {
+			return "", errors.New("openpgp detached signature does not verify")
+		}
+		return fingerprint(key.PublicKey), nil
 	}
-	_, signer, err := openpgp.VerifyDetachedSignature(openpgp.EntityList{entity}, bytes.NewReader(body), bytes.NewReader(signature), config)
-	if err != nil || signer != entity {
+	// Registry recertification may omit old bindings. This exception uses the
+	// independently pinned official authority, never partner/community keys.
+	if fingerprint(current.PrimaryKey) != OfficialFingerprint {
+		return "", errors.New("openpgp historical signing binding is unavailable")
+	}
+	if sig.CreationTime.Before(key.PublicKey.CreationTime) {
+		return "", errors.New("openpgp signature predates its signing key")
+	}
+	for _, notation := range sig.Notations {
+		if notation.IsCritical {
+			return "", errors.New("openpgp signature carries an unsupported critical notation")
+		}
+	}
+	hasher, err := sig.PrepareVerify()
+	if err != nil {
+		return "", errors.New("openpgp signature hash is unsupported")
+	}
+	_, _ = hasher.Write(body)
+	if err := key.PublicKey.VerifySignature(hasher, sig); err != nil || sig.SigExpired(config.Now()) {
 		return "", errors.New("openpgp detached signature does not verify")
 	}
 	return fingerprint(key.PublicKey), nil
