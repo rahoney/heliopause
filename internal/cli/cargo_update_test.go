@@ -267,3 +267,87 @@ func TestProjectFailureBeforePolicyDoesNotInventADecision(t *testing.T) {
 		t.Fatal("failed project claimed completion")
 	}
 }
+
+func (f *cargoUpdateCLI) Fetch(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	return f.Update(ctx, install, "", false)
+}
+
+func TestCargoFetchReportsOnlyDependencyPreparation(t *testing.T) {
+	for _, failed := range []bool{false, true} {
+		for _, output := range []string{"json", "human"} {
+			t.Run(output+map[bool]string{false: "-complete", true: "-failed"}[failed], func(t *testing.T) {
+				var out bytes.Buffer
+				root, err := cli.New(&out, io.Discard)
+				if err != nil {
+					t.Fatal(err)
+				}
+				inspected, decision := cargoUpdateFacts(t, domain.DecisionAllow)
+				verified, err := domain.NewProjectVerifiedSet(inspected, decision)
+				if err != nil {
+					t.Fatal(err)
+				}
+				fetcher := &cargoUpdateCLI{set: verified}
+				primary := errors.New("controlled cache preparation failure")
+				if failed {
+					fetcher.failure = cargoFailedUpdateFacts{inspected, decision, primary}
+				}
+				if err = cli.AddCargoFetch(root, fetcher); err != nil {
+					t.Fatal(err)
+				}
+				args := []string{"--lang", "en", "--output", output, "cargo", "fetch"}
+				if source, err := cli.PreparePresentation(root, args); err != nil || source != "cargo" {
+					t.Fatal("fetch route", source, err)
+				}
+				root.SetArgs(args)
+				err = root.ExecuteContext(context.Background())
+				if failed && !errors.Is(err, primary) || !failed && err != nil || fetcher.calls != 1 || fetcher.selector != "" || fetcher.adopt {
+					t.Fatal("fetch lost guarded operation", err)
+				}
+				if output == "json" {
+					var report struct{ Schema, Operation, Scope, Status, Promotion string }
+					var fields map[string]json.RawMessage
+					if err = json.Unmarshal(out.Bytes(), &fields); err != nil {
+						t.Fatal(err)
+					}
+					decode := func(key string) string {
+						var text string
+						if err := json.Unmarshal(fields[key], &text); err != nil {
+							t.Fatal(key, err)
+						}
+						return text
+					}
+					report.Schema = decode("schema_version")
+					report.Operation = decode("operation")
+					report.Scope = decode("inspection_scope")
+					report.Status = decode("operation_status")
+					report.Promotion = decode("promotion_status")
+					if report.Schema != "helox.project-fetch-result/v1" || report.Operation != "FETCH" || report.Scope != "DEPENDENCY_PREPARATION" {
+						t.Fatal("fetch claimed another operation", out.String())
+					}
+					if failed && (report.Status != "FAILED" || report.Promotion != "NOT_COMPLETED") || !failed && (report.Status != "COMPLETED" || report.Promotion != "COMPLETED") {
+						t.Fatal("fetch failure became completed", out.String())
+					}
+				} else if !strings.Contains(out.String(), "Dependency preparation:") || !strings.Contains(out.String(), "were not executed") {
+					t.Fatal("fetch scope absent", out.String())
+				}
+			})
+		}
+	}
+}
+
+func TestCargoFetchRejectsUnsupportedInputBeforeUseCase(t *testing.T) {
+	for _, tail := range [][]string{{"extra"}, {"--adopt"}, {"-p", "itoa"}, {"--target", "foreign"}, {"--config", "foreign"}, {"--offline"}} {
+		root, err := cli.New(io.Discard, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fetcher := &cargoUpdateCLI{}
+		if err = cli.AddCargoFetch(root, fetcher); err != nil {
+			t.Fatal(err)
+		}
+		args := append([]string{"cargo", "fetch"}, tail...)
+		if _, err = cli.PreparePresentation(root, args); err == nil || fetcher.calls != 0 {
+			t.Fatal("unsupported fetch input reached operation", args, err)
+		}
+	}
+}

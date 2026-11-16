@@ -164,3 +164,49 @@ func TestCargoCompleteProjectSnapshotBindsLocalManifestsFeaturesAndRuntime(t *te
 		t.Fatalf("complete project dropped unrelated package %v", err)
 	}
 }
+
+func TestFetchLockCoverageIsCompleteWithoutChangingBuildSubsets(t *testing.T) {
+	metadata, lock := cargoActualMetadataFixture(t)
+	manifest := []byte("[package]\nname='haa_schema_fixture'\nversion='0.1.0'\nedition='2021'\n[dependencies]\nitoa='=1.0.17'\n")
+	target, _ := domain.NewInstallTarget("/project")
+	install, _ := domain.NewInstallContext(target)
+	build := func(lock []byte) domain.ProjectDependencySnapshot {
+		t.Helper()
+		snapshot, err := BuildProjectSnapshot(install, metadata, manifest, lock, "/fixture", "fixed-runtime", map[string][]byte{"Cargo.toml": manifest, "Cargo.lock": lock})
+		if err != nil {
+			t.Fatal("existing build graph was changed", err)
+		}
+		return snapshot
+	}
+	snapshot := build(lock)
+	if err := ValidateFetchLockCoverage(snapshot, lock); err != nil {
+		t.Fatal("complete lock rejected", err)
+	}
+	extra := append(bytes.Clone(lock), []byte("\n[[package]]\nname='unselected_optional'\nversion='1.0.0'\nsource='"+registrySourceURL+"'\nchecksum='"+strings.Repeat("a", 64)+"'\n")...)
+	subset := build(extra) // A build may legitimately select a subset of locked optional packages.
+	if len(subset.Dependencies()) != 1 {
+		t.Fatal("build feature subset was expanded")
+	}
+	if err := ValidateFetchLockCoverage(subset, extra); err == nil {
+		t.Fatal("fetch silently omitted a locked registry package")
+	}
+	if err := ValidateFetchLockCoverage(snapshot, extra); err == nil {
+		t.Fatal("fetch accepted a different lock envelope")
+	}
+	if err := ValidateFetchLockCoverage(domain.ProjectDependencySnapshot{}, lock); err == nil {
+		t.Fatal("fetch accepted zero snapshot")
+	}
+	artifacts := snapshot.Dependencies()
+	original := artifacts[0]
+	changed, err := domain.NewResolvedArtifact(original.Identity(), original.AcquisitionLocator(), "sha256="+strings.Repeat("b", 64))
+	if err != nil {
+		t.Fatal(err)
+	}
+	forged, err := domain.NewProjectDependencySnapshot(snapshot.Context(), snapshot.Source(), snapshot.ControlDigests(), []domain.ResolvedArtifact{changed}, snapshot.GraphDigest())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateFetchLockCoverage(forged, lock); err == nil {
+		t.Fatal("fetch accepted a changed locked checksum")
+	}
+}

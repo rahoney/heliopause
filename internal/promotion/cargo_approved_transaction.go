@@ -55,10 +55,21 @@ type approvedCargoProjectGuard struct {
 	committed         bool
 	source            *sandbox.CargoProjectSource
 	buildInputs       *domain.ProjectBuildInputs
+	fetchOnly         bool
 }
 
 func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (*approvedCargoProjectGuard, error) {
 	return p.begin(ctx, install, false, false)
+}
+
+// BeginFetch retains the normal source/approval guard while admitting only
+// an unchanged manifest and a first lock, or the exact existing lock.
+func (p *CargoProjectPromotion) BeginFetch(ctx context.Context, install domain.InstallContext) (*approvedCargoProjectGuard, error) {
+	guard, err := p.begin(ctx, install, false, false)
+	if err == nil {
+		guard.fetchOnly = true
+	}
+	return guard, err
 }
 
 // BeginLockUpdate requires current independent approval or explicit enrollment.
@@ -274,6 +285,16 @@ func (g *approvedCargoProjectGuard) Commit(ctx context.Context, update domain.Pr
 	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactcargo.Source() || !sameCargoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("cargo transaction update differs from guarded project")
 	}
+	if g.fetchOnly {
+		if update.HasRequestedResolution() {
+			return errors.New("cargo fetch cannot invent a requested primary")
+		}
+		for _, control := range update.SelectedControls() {
+			if control.Name() == "Cargo.toml" && sha256.Sum256(control.Body()) != g.plan.cargoToml || control.Name() == "Cargo.lock" && g.plan.members["Cargo.lock"] != nil && sha256.Sum256(control.Body()) != g.plan.cargoLock {
+				return errors.New("cargo fetch changed its guarded manifest or existing lock")
+			}
+		}
+	}
 	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged, !update.HasRequestedResolution())
 }
 
@@ -345,7 +366,7 @@ func (g *approvedCargoProjectGuard) commitSelection(ctx context.Context, selecte
 	if len(selectedBodies) != 2 || artifactcargo.ValidateProjectManifest(selectedBodies["Cargo.toml"], "Cargo.toml") != nil || artifactcargo.ValidateProjectLock(selectedBodies["Cargo.lock"]) != nil {
 		return errors.New("cargo selected controls are incomplete or invalid")
 	}
-	if lockOnly && (g.plan.members["Cargo.lock"] == nil || sha256.Sum256(selectedBodies["Cargo.toml"]) != g.plan.cargoToml) {
+	if lockOnly && (g.plan.members["Cargo.lock"] == nil && !g.fetchOnly || sha256.Sum256(selectedBodies["Cargo.toml"]) != g.plan.cargoToml) {
 		return errors.New("cargo lock update requires the original manifest and existing lock")
 	}
 	selectedFiles := g.source.Files()

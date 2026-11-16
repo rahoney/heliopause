@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -241,10 +242,13 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 	}
 	source := string(body)
 	for name, fixture := range map[string]string{
-		"wrong step":        strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Cargo commands outside lifecycle owner", 1),
-		"conditional step":  strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        if: false", 1),
-		"ignored failure":   strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        continue-on-error: true", 1),
-		"duplicate command": strings.Replace(source, `          docker pull "$rust_image"`, `          docker pull "$rust_image"`+"\n"+`          docker pull "$rust_image"`, 1),
+		"wrong step":                        strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Cargo commands outside lifecycle owner", 1),
+		"conditional step":                  strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        if: false", 1),
+		"ignored failure":                   strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        continue-on-error: true", 1),
+		"duplicate command":                 strings.Replace(source, `          docker pull "$rust_image"`, `          docker pull "$rust_image"`+"\n"+`          docker pull "$rust_image"`, 1),
+		"fetch wrong client":                strings.Replace(source, `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", 1),
+		"fetch missing helper rebind":       strings.Replace(source, `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          # haa_start_policy_helper\n          cargo_fetch_cli_log=", 1),
+		"fetch missing sandbox restoration": strings.Replace(source, `rm -- "$cargo_fetch_cli_log"`+"\n          haa_install_ci_client", `rm -- "$cargo_fetch_cli_log"`+"\n          # haa_install_ci_client", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
@@ -263,8 +267,17 @@ func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
 	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
 		t.Fatal(findings)
 	}
-	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"} {
-		scope := "          (\n            cd " + directory + "\n            " + command + "\n          )"
+	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"} {
+		cd, end := "cd "+directory, ")"
+		if command == cargoFetchSelectionIntegrationCommand || command == cargoFetchCLIIntegrationCommand {
+			cd += " || exit"
+			log := "cargo_fetch_selection_log"
+			if command == cargoFetchCLIIntegrationCommand {
+				log = "cargo_fetch_cli_log"
+			}
+			end += ` 2>&1 | tee "$` + log + `"`
+		}
+		scope := "          (\n            " + cd + "\n            " + command + "\n          " + end
 		if strings.Count(source, scope) != 1 {
 			t.Fatal("canonical fixture command has no unique package scope")
 		}
@@ -331,4 +344,77 @@ func selectedGoForTest(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return owners["Go"]
+}
+
+func TestCargoFetchLogsRejectIncompleteExecution(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	native := "    cargo_fetch_real_test.go:84: cargo_fetch_native inactive_optional=INCLUDED primary=NONE original_lock=ABSENT public_auth/quarantine/build=NOT_EXERCISED\n--- PASS: TestCargoPublicFetchOptionalSelectionIntegration (1.00s)\nPASS\n"
+	cli := "    cargo_fetch_integration_test.go:117: cargo_fetch_cli case=cold-first-lock crates=1 required_checks=2 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=1.00\n" +
+		"    cargo_fetch_integration_test.go:117: cargo_fetch_cli case=warm-existing-lock crates=1 required_checks=2 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=1.00\n" +
+		"    cargo_fetch_integration_test.go:176: cargo_fetch_cli case=cache-tamper result=REFUSED original_controls/approval=PRESERVED\n" +
+		"    cargo_fetch_integration_test.go:196: cargo_fetch_cli case=existing-build approved_dependencies=CONSUMED output=APPROVED_ELF seconds=1.00\n--- PASS: TestCargoPublicFetchCLIIntegration (4.00s)\nPASS\n"
+	for label, original := range map[string]string{"selection": native, "cli": cli} {
+		t.Run(label, func(t *testing.T) {
+			// Execute the actual workflow consumer, rather than a copied log parser.
+			lines := strings.Split(string(body), "\n")
+			marker := `) 2>&1 | tee "$cargo_fetch_` + label + `_log"`
+			var program []string
+			capturing, found := false, false
+			for i, line := range lines {
+				if strings.TrimSpace(line) == marker && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "awk '" {
+					capturing, found = true, true
+					continue
+				}
+				if !capturing || strings.TrimSpace(line) == "awk '" {
+					continue
+				}
+				if strings.TrimSpace(line) == `' "$cargo_fetch_`+label+`_log"` {
+					break
+				}
+				program = append(program, strings.TrimSpace(line))
+			}
+			if !found || len(program) == 0 {
+				t.Fatal("actual Cargo fetch log guard is unavailable")
+			}
+			fixtures := map[string]string{
+				"complete":       original,
+				"empty":          "",
+				"skip":           original + "--- SKIP: MissingPrerequisite (0.00s)\n",
+				"failure":        original + "--- FAIL: RuntimeFailure (0.00s)\n",
+				"no tests":       original + "testing: warning: no tests to run\n",
+				"duplicate":      original + original,
+				"foreign parent": strings.Replace(original, "--- PASS: TestCargoPublicFetch", "--- PASS: TestForeignCargoFetch", 1),
+				"missing parent": strings.Split(original, "--- PASS:")[0],
+			}
+			if label == "selection" {
+				fixtures["omitted optional"] = strings.Replace(original, "inactive_optional=INCLUDED", "inactive_optional=OMITTED", 1)
+			} else {
+				for _, name := range []string{"cold-first-lock", "warm-existing-lock", "cache-tamper", "existing-build"} {
+					var kept []string
+					for _, line := range strings.Split(original, "\n") {
+						if !strings.Contains(line, "case="+name+" ") {
+							kept = append(kept, line)
+						}
+					}
+					fixtures["missing "+name] = strings.Join(kept, "\n")
+				}
+				fixtures["policy denied"] = strings.Replace(original, "Policy=ALLOW", "Policy=DENY", 1)
+				fixtures["tamper allowed"] = strings.Replace(original, "result=REFUSED", "result=ALLOWED", 1)
+				fixtures["unapproved output"] = strings.Replace(original, "output=APPROVED_ELF", "output=UNAPPROVED_ELF", 1)
+			}
+			for name, fixture := range fixtures {
+				t.Run(name, func(t *testing.T) {
+					command := exec.Command("awk", strings.Join(program, "\n"))
+					command.Stdin = strings.NewReader(fixture)
+					output, err := command.CombinedOutput()
+					if (err == nil) != (name == "complete") {
+						t.Fatalf("actual log guard error=%v output=%s", err, output)
+					}
+				})
+			}
+		})
+	}
 }

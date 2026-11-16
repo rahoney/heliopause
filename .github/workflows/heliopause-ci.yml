@@ -443,6 +443,46 @@ jobs:
             cd internal/sandbox
             HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'
           )
+          cargo_fetch_selection_log="$RUNNER_TEMP/haa-cargo-fetch-selection.log"
+          (
+            cd internal/sandbox || exit
+            HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'
+          ) 2>&1 | tee "$cargo_fetch_selection_log"
+          awk '
+            /--- (FAIL|SKIP):|no tests to run/ { bad=1 }
+            /^--- PASS:/ { if ($3 != "TestCargoPublicFetchOptionalSelectionIntegration" || parent++) bad=1 }
+            /cargo_fetch_native / {
+              if ($0 !~ /^[[:space:]]+cargo_fetch_real_test\.go:[0-9]+: cargo_fetch_native inactive_optional=INCLUDED primary=NONE original_lock=ABSENT public_auth\/quarantine\/build=NOT_EXERCISED$/ || seen++) bad=1
+            }
+            END { exit (bad || parent != 1 || seen != 1) }
+          ' "$cargo_fetch_selection_log"
+          rm -- "$cargo_fetch_selection_log"
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          cargo_fetch_cli_log="$RUNNER_TEMP/haa-cargo-fetch-cli.log"
+          (
+            cd internal/bootstrap || exit
+            HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'
+          ) 2>&1 | tee "$cargo_fetch_cli_log"
+          awk '
+            BEGIN {
+              expected["cold-first-lock"]="crates=1 required_checks=2 Policy=ALLOW compilation=NOT_RUN manifest=PRESERVED seconds=[0-9.]+"
+              expected["warm-existing-lock"]=expected["cold-first-lock"]
+              expected["cache-tamper"]="result=REFUSED original_controls/approval=PRESERVED"
+              expected["existing-build"]="approved_dependencies=CONSUMED output=APPROVED_ELF seconds=[0-9.]+"
+            }
+            /--- (FAIL|SKIP):|no tests to run/ { bad=1 }
+            /^--- PASS:/ { if ($3 != "TestCargoPublicFetchCLIIntegration" || parent++) bad=1 }
+            /cargo_fetch_cli case=/ {
+              id=$3; sub(/^case=/,"",id)
+              if (!(id in expected) || seen[id]++ || $0 !~ ("^[[:space:]]+cargo_fetch_integration_test\\.go:[0-9]+: cargo_fetch_cli case=" id " " expected[id] "$")) bad=1
+              cases++
+            }
+            END { exit (bad || parent != 1 || cases != 4) }
+          ' "$cargo_fetch_cli_log"
+          rm -- "$cargo_fetch_cli_log"
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
           HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'
           fi
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap

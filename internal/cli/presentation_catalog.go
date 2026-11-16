@@ -36,6 +36,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		"helox go build":              {"Build the approved Go project", "허용된 Go 프로젝트를 격리 환경에서 빌드합니다"},
 		"helox cargo":                 {"Inspect and build public crates.io packages", "공개 crates.io 패키지 검사·빌드"},
 		"helox cargo add":             {"Inspect and add Rust dependencies", "Rust 의존성을 검사한 뒤 프로젝트에 추가합니다"},
+		"helox cargo fetch":           {"Quarantine and prepare Rust dependencies without building", "Rust 의존성 전체를 검역하고 빌드 없이 준비합니다"},
 		"helox cargo update":          {"Inspect and update the complete Rust lock graph", "전체 Rust 의존성을 검사한 뒤 잠금파일을 업데이트합니다"},
 		"helox cargo build":           {"Build the approved Rust project", "허용된 Rust 프로젝트를 격리 환경에서 빌드합니다"},
 		"helox terraform":             {"Install public Terraform Providers", "공개 Terraform Provider 설치"},
@@ -54,6 +55,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		}
 		if command.CommandPath() == "helox npm update" {
 			command.Long = p.text(npmUpdateDescriptionEnglish, npmUpdateDescriptionKorean)
+		}
+		if command.CommandPath() == "helox cargo fetch" {
+			command.Long = p.text(cargoFetchDescriptionEnglish, cargoFetchDescriptionKorean)
 		}
 		if command.CommandPath() == "helox cargo update" {
 			command.Long = p.text(cargoUpdateDescriptionEnglish, cargoUpdateDescriptionKorean)

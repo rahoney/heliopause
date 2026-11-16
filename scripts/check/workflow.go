@@ -601,6 +601,8 @@ func workflowJobIDs(contents string) []string {
 // Their presence in comments, another job or a skipped step supplies no gate.
 const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
 const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
+const cargoFetchSelectionIntegrationCommand = `HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'`
+const cargoFetchCLIIntegrationCommand = `HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'`
 const uvSyncCLIIntegrationCommand = `HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'`
 
 var uvIntegrationCommands = []string{
@@ -646,6 +648,18 @@ func validatePlatformBuildCache(contents string) []string {
 }
 
 var cargoIntegrationCommands = []string{
+	cargoFetchSelectionIntegrationCommand,
+	cargoFetchCLIIntegrationCommand,
+	`cargo_fetch_selection_log="$RUNNER_TEMP/haa-cargo-fetch-selection.log"`,
+	`) 2>&1 | tee "$cargo_fetch_selection_log"`,
+	`END { exit (bad || parent != 1 || seen != 1) }`,
+	`' "$cargo_fetch_selection_log"`,
+	`rm -- "$cargo_fetch_selection_log"`,
+	`cargo_fetch_cli_log="$RUNNER_TEMP/haa-cargo-fetch-cli.log"`,
+	`) 2>&1 | tee "$cargo_fetch_cli_log"`,
+	`END { exit (bad || parent != 1 || cases != 4) }`,
+	`' "$cargo_fetch_cli_log"`,
+	`rm -- "$cargo_fetch_cli_log"`,
 	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
 	`docker pull "$rust_image"`,
 	cargoSourceIntegrationCommand,
@@ -663,7 +677,20 @@ func validateTerraformIntegrationGates(contents string) []string {
 	return validateLifecycleIntegrationCommands(contents, "Terraform", terraformIntegrationCommands)
 }
 func validateCargoIntegrationGates(contents string) []string {
-	return validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
+	findings := validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
+	blocks, _ := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if len(blocks) == 1 {
+		body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+		for _, binding := range []string{
+			`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"` + "\nhaa_start_policy_helper\n" + `cargo_fetch_cli_log="$RUNNER_TEMP/haa-cargo-fetch-cli.log"`,
+			`rm -- "$cargo_fetch_cli_log"` + "\n" + `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"` + "\nhaa_start_policy_helper\n" + terraformIntegrationCommands[1],
+		} {
+			if strings.Count(body, binding) != 1 {
+				findings = append(findings, "Cargo fetch requires its compiled bootstrap client and subsequent sandbox rebind")
+			}
+		}
+	}
+	return findings
 }
 func validateLifecycleIntegrationCommands(contents, label string, commands []string) []string {
 	return validateActiveJobCommands(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration", label, commands)
@@ -777,7 +804,8 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 	if err != nil {
 		return nil
 	}
-	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"}
+	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap", cargoFetchSelectionIntegrationCommand: "internal/sandbox", cargoFetchCLIIntegrationCommand: "internal/bootstrap"}
+	captured := map[string]string{cargoFetchSelectionIntegrationCommand: "cargo_fetch_selection_log", cargoFetchCLIIntegrationCommand: "cargo_fetch_cli_log"}
 	counts := map[string]int{}
 	for _, block := range blocks {
 		var lines []string
@@ -787,13 +815,19 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 			}
 		}
 		for i := 2; i+1 < len(lines); i++ {
-			if directory := scopes[lines[i]]; directory != "" && lines[i-2] == "(" && lines[i-1] == "cd "+directory && lines[i+1] == ")" {
+			directory := scopes[lines[i]]
+			cd, end := "cd "+directory, ")"
+			if log := captured[lines[i]]; log != "" {
+				cd += " || exit"
+				end += ` 2>&1 | tee "$` + log + `"`
+			}
+			if directory != "" && lines[i-2] == "(" && lines[i-1] == cd && lines[i+1] == end {
 				counts[lines[i]]++
 			}
 		}
 	}
 	var findings []string
-	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand, uvSyncCLIIntegrationCommand} {
+	for command := range scopes {
 		if counts[command] != 1 {
 			findings = append(findings, fmt.Sprintf("fixture integration requires one matching package subshell for %q", command))
 		}

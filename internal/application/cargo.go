@@ -59,3 +59,38 @@ func (s *CargoUpdateService) Update(ctx context.Context, install domain.InstallC
 		})
 	return selected.verified, err
 }
+
+// CargoFetchResolver selects complete source inputs without invoking a build.
+type CargoFetchResolver interface {
+	ResolveProjectFetch(context.Context, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)
+}
+
+// CargoFetchService uses the same guarded selected-controls workflow as update.
+// It owns no build capability, so preparation cannot substitute observed build.
+type CargoFetchService struct {
+	resolver   CargoFetchResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
+}
+
+func NewCargoFetchService(resolver CargoFetchResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*CargoFetchService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("cargo fetch requires guarded selection, complete inspection and cache staging")
+	}
+	return &CargoFetchService{resolver, promoter, inspection, staging}, nil
+}
+func (s *CargoFetchService) Fetch(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	if s == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("cargo fetch service is unavailable")
+	}
+	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "crates-io", "Cargo",
+		func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+			update, err := s.resolver.ResolveProjectFetch(ctx, install, controls)
+			if err == nil && update.HasRequestedResolution() {
+				return domain.ProjectDependencyUpdate{}, errors.New("cargo fetch requires complete-project selection without a requested primary")
+			}
+			return update, err
+		})
+	return selected.verified, err
+}

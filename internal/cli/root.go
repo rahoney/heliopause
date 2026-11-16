@@ -730,6 +730,7 @@ func initializeCommandTree(root *cobra.Command) {
 	cargo := ensureCargoCommand(root)
 	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
 	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
+	cargo.AddCommand(newStaticNoArgLeaf("fetch", "Quarantine and prepare complete locked Cargo dependencies without building"))
 	cargoUpdate := newStaticNoArgLeaf("update", "Inspect the complete selected crate graph before updating Cargo.lock")
 	cargoUpdate.Args = validateCargoUpdateArgs
 	cargoUpdate.Long = cargoUpdateDescriptionEnglish

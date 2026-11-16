@@ -217,9 +217,9 @@ func (t *cargoProjectTransaction) prepareSelectedControls() error {
 		if t.plan.lockOnly {
 			if original := t.plan.members[name]; original != nil {
 				modeErr = f.Chmod(original.Mode().Perm())
-			} else {
+			} else if name != "Cargo.lock" {
 				modeErr = errors.New("cargo lock update original control is missing")
-			}
+			} // a typed first-lock fetch keeps the new lock's private 0600 mode
 		}
 		info, statErr := f.Stat()
 		syncErr := f.Sync()
