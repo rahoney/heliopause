@@ -297,7 +297,7 @@ func TestUserCancellationIsNotReportedAsBrokenObserver(t *testing.T) {
 
 func TestPreflightRejectsUnknownChildrenAndInvalidLeafArgs(t *testing.T) {
 	for _, args := range [][]string{
-		{"npm", "ci"}, {"cargo", "fetch", "extra"}, {"go", "mod", "tidy"},
+		{"npm", "ci"}, {"cargo", "fetch", "extra"}, {"go", "mod", "verify"},
 		{"npm", "not-a-command"}, {"pipx", "not-a-command"},
 		{"uv", "pip", "not-a-command"}, {"config", "not-a-command"},
 		{"go", "build"}, {"cargo", "build", "extra"},

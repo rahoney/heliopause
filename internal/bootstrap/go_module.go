@@ -134,3 +134,15 @@ func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.G
 	}
 	return get, download, &goUpgradeService{resolver, promoter, inspection, cache}, nil
 }
+
+func (s *goUpgradeService) Tidy(ctx context.Context, install domain.InstallContext, adopt bool) (domain.ProjectVerifiedSet, error) {
+	preparation, err := promotion.NewGoTidyPreparation(s.promoter, s.resolver, adopt)
+	if err != nil {
+		return domain.ProjectVerifiedSet{}, err
+	}
+	service, err := application.NewGoModuleTidyService(preparation, preparation, s.inspection, s.cache)
+	if err != nil {
+		return domain.ProjectVerifiedSet{}, err
+	}
+	return service.Tidy(ctx, install)
+}

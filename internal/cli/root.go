@@ -729,6 +729,10 @@ func initializeCommandTree(root *cobra.Command) {
 	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
 	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
 	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
+	goTidy := newStaticNoArgLeaf("tidy", "Reconcile frozen Go source dependencies after complete quarantine")
+	goTidy.Long = goTidyDescriptionEnglish
+	goTidy.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed controls after full inspection")
+	goMod.AddCommand(goTidy)
 	goCommand.AddCommand(goMod)
 	cargo := ensureCargoCommand(root)
 	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))

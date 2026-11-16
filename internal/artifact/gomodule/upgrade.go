@@ -102,3 +102,20 @@ func nonRequireTokens(file *modfile.File) [][]string {
 	}
 	return result
 }
+
+// ValidateTidyControls permits native requirement additions/removals only.
+// An SDK/toolchain or source directive change needs a separate user operation.
+func ValidateTidyControls(original, selected []byte) error {
+	before, err := parseProjectMod(original)
+	if err != nil {
+		return err
+	}
+	after, err := parseProjectMod(selected)
+	if err != nil {
+		return err
+	}
+	if !reflect.DeepEqual(nonRequireTokens(before), nonRequireTokens(after)) {
+		return errors.New("go tidy changed a non-require directive")
+	}
+	return nil
+}

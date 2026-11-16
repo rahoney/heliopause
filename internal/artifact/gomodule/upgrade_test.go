@@ -40,3 +40,25 @@ func TestUpgradeFreezesRealNamedModuleAndPreservesDirectives(t *testing.T) {
 		}
 	}
 }
+
+func TestTidyControlsCannotChangeSDKOrSource(t *testing.T) {
+	original := []byte("module example.com/app\ngo 1.26.0\nrequire example.com/old v1.0.0\n")
+	for _, selected := range []string{
+		"module example.com/app\ngo 1.26.0\n",
+		"module example.com/app\ngo 1.26.0\nrequire example.com/new v1.2.3\n",
+	} {
+		if err := ValidateTidyControls(original, []byte(selected)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, selected := range []string{
+		"module example.com/foreign\ngo 1.26.0\n",
+		"module example.com/app\ngo 1.27.0\n",
+		"module example.com/app\ngo 1.26.0\ntoolchain go1.27.0\n",
+		"module example.com/app\ngo 1.26.0\nreplace example.com/new => ../local\n",
+	} {
+		if err := ValidateTidyControls(original, []byte(selected)); err == nil {
+			t.Fatal("tidy changed source or SDK")
+		}
+	}
+}
