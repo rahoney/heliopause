@@ -22,7 +22,7 @@ type UVProjectLock struct {
 }
 
 func ParseUVProjectLock(body []byte, expectedPython string) (UVProjectLock, error) {
-	packages, err := parseUVLockedPackages(body, expectedPython, "", "", false, true)
+	packages, err := parseUVLockedPackages(body, expectedPython, "", "", false, true, false)
 	if err != nil {
 		return UVProjectLock{}, err
 	}
@@ -90,6 +90,14 @@ func (l UVProjectLock) SelectInstalledWheelControls(controls []UVInstalledWheelC
 // Its snapshot is still unapproved. The caller must separately bind the actual
 // runtime, original guard and source intent before entry/set Policy/publication.
 func (l UVProjectLock) BindProject(install domain.InstallContext, controls []domain.ProjectControlFile, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits) (domain.ProjectDependencySnapshot, error) {
+	candidates, err := bindUVSelectedWheels(l.packages, l.python, "", inputs, pages, target, limits)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	return l.snapshotFromCandidates(install, controls, candidates, target)
+}
+
+func (l UVProjectLock) snapshotFromCandidates(install domain.InstallContext, controls []domain.ProjectControlFile, candidates []Candidate, target WheelTarget) (domain.ProjectDependencySnapshot, error) {
 	if len(l.body) == 0 || !install.Valid() || (install.Mode() != domain.InstallPythonVenv && install.Mode() != domain.InstallPythonProjectControls) || !utf8.ValidString(install.Target().String()) || !utf8.ValidString(target.Platform) || target.Platform == "" || len(controls) == 0 || len(controls) > 32 {
 		return domain.ProjectDependencySnapshot{}, errors.New("complete UV project context or controls are unavailable")
 	}
@@ -115,10 +123,6 @@ func (l UVProjectLock) BindProject(install domain.InstallContext, controls []dom
 	}
 	if !foundLock {
 		return domain.ProjectDependencySnapshot{}, errors.New("complete UV native lock control is missing")
-	}
-	candidates, err := bindUVSelectedWheels(l.packages, l.python, "", inputs, pages, target, limits)
-	if err != nil {
-		return domain.ProjectDependencySnapshot{}, err
 	}
 	artifacts := make([]domain.ResolvedArtifact, 0, len(candidates))
 	for _, candidate := range candidates {

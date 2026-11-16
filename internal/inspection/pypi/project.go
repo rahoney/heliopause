@@ -29,6 +29,15 @@ func (i *CompositeInspector) InspectProjectSelection(ctx context.Context, update
 		}
 	}
 	if !sourceControl.Present() && !selectionControl.Present() {
+		for _, control := range update.SelectedControls() {
+			if control.Name() == artifactpypi.UVProjectIntentControl {
+				selection, err := sandbox.ParseUVProjectUpdate(update)
+				if err != nil {
+					return nil, err
+				}
+				return i.inspectProject(ctx, update.Snapshot(), acquired, selection)
+			}
+		}
 		return i.InspectProject(ctx, update.Snapshot(), acquired)
 	}
 	runtime := sandbox.PinnedPythonRuntime()
@@ -37,10 +46,15 @@ func (i *CompositeInspector) InspectProjectSelection(ctx context.Context, update
 	if err != nil {
 		return nil, err
 	}
-	return i.inspectProject(ctx, update.Snapshot(), acquired, &selection)
+	return i.inspectProject(ctx, update.Snapshot(), acquired, selection)
 }
 
-func (i *CompositeInspector) inspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, selection *artifactpypi.RequirementsSelection) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+// The two actual producers retain their own provenance and share static readback.
+type projectMetadataRecords interface {
+	ProjectRecordsFromInspections([]domain.ResolvedArtifact, []artifactpypi.WheelInspection) ([]domain.LockedDependency, []domain.DependencyEdge, error)
+}
+
+func (i *CompositeInspector) inspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact, selection projectMetadataRecords) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
 	if ctx == nil || !snapshot.Valid() || (snapshot.Context().Mode() != domain.InstallPythonVenv && snapshot.Context().Mode() != domain.InstallPythonProjectControls) || snapshot.Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return nil, errors.New("PyPI project inspection requires a complete public wheel snapshot")
 	}

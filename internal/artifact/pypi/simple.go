@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1143,10 +1144,23 @@ func matchesSimpleFile(candidate Candidate, page SimpleProject, exactPythonMetad
 	matches := 0
 	for _, file := range page.files {
 		requiresPythonMatches := requiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)
-		if exactPythonMetadata && file.requiresPython == candidate.requiresPython {
-			// No normalization: independently authenticated bytes are identical.
-			// The requirements lane still validates the syntax and target with pip.
-			requiresPythonMatches = true
+		if exactPythonMetadata && !requiresPythonMatches {
+			if file.requiresPython == candidate.requiresPython {
+				requiresPythonMatches = true
+			} else {
+				// Preserve every literal clause. Only comma ordering and surrounding
+				// whitespace may differ; the fixed PEP validator still checks syntax
+				// and the actual runtime. Do not remove whitespace inside a version.
+				simple, archive := strings.Split(file.requiresPython, ","), strings.Split(candidate.requiresPython, ",")
+				if len(simple) == len(archive) && len(simple) <= maxRequiresPythonComponents {
+					for i := range simple {
+						simple[i], archive[i] = strings.TrimSpace(simple[i]), strings.TrimSpace(archive[i])
+					}
+					sort.Strings(simple)
+					sort.Strings(archive)
+					requiresPythonMatches = slices.Equal(simple, archive)
+				}
+			}
 		}
 		if IsPyTorchSource(page.source) && file.requiresPythonPresent {
 			requiresPythonMatches = authenticatedRequiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)

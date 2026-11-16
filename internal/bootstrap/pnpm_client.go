@@ -24,7 +24,7 @@ func pnpmProjectPlatform(goos, goarch string) error {
 type pnpmProjectCLIService struct{ bindings pnpmProjectBindings }
 
 func (s pnpmProjectCLIService) ApplyPNPM(ctx context.Context, request cli.PNPMProjectRequest) (outcome cli.PNPMProjectOutcome, resultErr error) {
-	service, err := newPNPMProjectService(s.bindings, request.Intent, request.Selector, request.Adopt)
+	service, err := newPNPMProjectService(s.bindings, request.Intent, request.Selector, request.Adopt, request.FrozenLockfile)
 	if err != nil {
 		return outcome, err
 	}

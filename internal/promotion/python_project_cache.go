@@ -133,6 +133,12 @@ func pythonSelectedProject(update domain.ProjectDependencyUpdate) (pythonProject
 		return selection, selection.RuntimeIdentity(), nil
 	}
 	for _, control := range update.SelectedControls() {
+		if control.Name() == artifactpypi.UVProjectIntentControl {
+			selection, err := sandbox.ParseUVProjectUpdate(update)
+			return selection, sandbox.UVResolverRuntimeIdentity(), err
+		}
+	}
+	for _, control := range update.SelectedControls() {
 		if control.Name() == artifactpypi.UVSelectionLockControlName {
 			selection, err := artifactpypi.ParseUVProjectLock(control.Body(), sandbox.PinnedPythonRuntime().PythonVersion)
 			return selection, sandbox.UVResolverRuntimeIdentity(), err

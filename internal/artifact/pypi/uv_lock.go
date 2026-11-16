@@ -82,7 +82,7 @@ func ParseUVLock(reference domain.ArtifactReference, body []byte, expectedPython
 	if err != nil {
 		return UVLock{}, err
 	}
-	packages, err := parseUVLockedPackages(body, expectedPython, root, requested, exact, false)
+	packages, err := parseUVLockedPackages(body, expectedPython, root, requested, exact, false, false)
 	if err != nil {
 		return UVLock{}, err
 	}
@@ -91,7 +91,7 @@ func ParseUVLock(reference domain.ArtifactReference, body []byte, expectedPython
 
 // The complete-project caller alone accepts a present, explicit empty array.
 // All source/header/identity/archive-alternative budgets remain common.
-func parseUVLockedPackages(body []byte, expectedPython, root, requested string, exact, allowEmpty bool) ([]UVLockedPackage, error) {
+func parseUVLockedPackages(body []byte, expectedPython, root, requested string, exact, allowEmpty, allowVariants bool) ([]UVLockedPackage, error) {
 	if len(body) == 0 || len(body) > maxReportBytes {
 		return nil, errors.New("uv lock input is unsupported")
 	}
@@ -113,10 +113,14 @@ func parseUVLockedPackages(body []byte, expectedPython, root, requested string, 
 	var declaredMaximum int64
 	for _, item := range *wire.Packages {
 		name, err := NormalizeProjectName(item.Name)
-		if err != nil || name != item.Name || seen[name] {
+		identity := name
+		if allowVariants {
+			identity += "@" + item.Version
+		}
+		if err != nil || name != item.Name || seen[identity] {
 			return nil, errors.New("uv lock package identity is ambiguous")
 		}
-		seen[name] = true
+		seen[identity] = true
 		version, err := NormalizeVersion(item.Version)
 		if err != nil || version != item.Version || !IsFinalVersion(version) || name == root && exact && version != requested {
 			return nil, errors.New("uv lock package version does not bind its request")
@@ -157,7 +161,12 @@ func parseUVLockedPackages(body []byte, expectedPython, root, requested string, 
 	if root != "" && !seen[root] {
 		return nil, errors.New("uv lock requested package is absent")
 	}
-	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Name != result[j].Name {
+			return result[i].Name < result[j].Name
+		}
+		return result[i].Version < result[j].Version
+	})
 	return result, nil
 }
 

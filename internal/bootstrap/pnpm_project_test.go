@@ -18,7 +18,7 @@ func TestPNPMProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
 			t.Fatal("unsupported PNPM platform accepted", target)
 		}
 	}
-	if service, err := newPNPMProjectService(pnpmProjectBindings{}, artifactnpm.PNPMInstall, "", false); err == nil || service != nil {
+	if service, err := newPNPMProjectService(pnpmProjectBindings{}, artifactnpm.PNPMInstall, "", false, false); err == nil || service != nil {
 		t.Fatal("missing actual adapters accepted")
 	}
 	s := &pnpmProjectSession{}
@@ -35,5 +35,31 @@ func TestPNPMProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
 	}
 	if _, err := s.ResolveProjectLockUpdate(context.Background(), domain.InstallContext{}, nil, ""); err == nil || !strings.Contains(err.Error(), "exactly one") {
 		t.Fatal("request repeated selection", err)
+	}
+}
+
+func TestPNPMFrozenInstallRequiresGuardedLockBeforeNativeSelection(t *testing.T) {
+	manifest, err := domain.NewProjectControlFile("package.json", []byte(`{"dependencies":{}}`), true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := domain.NewProjectControlFile("pnpm-lock.yaml", nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := domain.NewInstallTarget(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	install, err := domain.NewNPMProjectInstallContext(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &pnpmProjectSession{intent: artifactnpm.PNPMInstall, frozenLockfile: true}
+	if _, err = s.ResolveProjectLockUpdate(context.Background(), install, []domain.ProjectControlFile{manifest, lock}, ""); err == nil || !strings.Contains(err.Error(), "existing guarded lock") {
+		t.Fatal("missing guarded lock reached native selection", err)
+	}
+	if !s.used {
+		t.Fatal("refused native request was reusable")
 	}
 }

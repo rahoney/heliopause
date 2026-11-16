@@ -19,6 +19,7 @@ type UVProjectPreparation struct {
 	root         string
 	intent       artifactpypi.UVProjectIntent
 	selector     string
+	selection    artifactpypi.UVProjectSelection
 	adopt        bool
 	native       *pypiNativeEnrollment
 	trustedRoots []string
@@ -26,8 +27,8 @@ type UVProjectPreparation struct {
 	active       *pythonProjectSession
 }
 
-func NewUVProjectPreparation(promoter *PyPIPromotion, resolver ports.ProjectLockUpdateResolver, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool, trustedRoots []string) (*UVProjectPreparation, error) {
-	if promoter == nil || resolver == nil || len(trustedRoots) == 0 || len(trustedRoots) > 32 || (intent != artifactpypi.UVProjectAdd && intent != artifactpypi.UVProjectSync) || (intent == artifactpypi.UVProjectSync && selector != "") {
+func NewUVProjectPreparation(promoter *PyPIPromotion, resolver ports.ProjectLockUpdateResolver, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool, trustedRoots []string, selections ...artifactpypi.UVProjectSelection) (*UVProjectPreparation, error) {
+	if len(selections) > 1 || promoter == nil || resolver == nil || len(trustedRoots) == 0 || len(trustedRoots) > 32 || (intent != artifactpypi.UVProjectAdd && intent != artifactpypi.UVProjectSync) || (intent == artifactpypi.UVProjectSync && selector != "") {
 		return nil, errors.New("UV project installation requires guarded add/sync, storage and native selection")
 	}
 	found := false
@@ -37,7 +38,11 @@ func NewUVProjectPreparation(promoter *PyPIPromotion, resolver ports.ProjectLock
 	if !found {
 		return nil, errors.New("UV project guard omits actual staging")
 	}
-	return &UVProjectPreparation{promoter: promoter, resolver: resolver, root: root, intent: intent, selector: selector, adopt: adopt, trustedRoots: append([]string(nil), trustedRoots...)}, nil
+	selection := artifactpypi.UVProjectSelection{}
+	if len(selections) == 1 {
+		selection = selections[0]
+	}
+	return &UVProjectPreparation{selection: selection, promoter: promoter, resolver: resolver, root: root, intent: intent, selector: selector, adopt: adopt, trustedRoots: append([]string(nil), trustedRoots...)}, nil
 }
 
 func (p *UVProjectPreparation) WithNativeEnrollment(resolver ports.DependencyResolver, intake ports.Artifact, intakeRoot string) (*UVProjectPreparation, error) {
@@ -92,7 +97,7 @@ func (p *UVProjectPreparation) Begin(ctx context.Context, install domain.Install
 			result = nil
 		}
 	}()
-	input, err := freezeUVProjectFiles(ctx, tx, p.root, p.intent, p.selector, p.trustedRoots)
+	input, err := freezeUVProjectFiles(ctx, tx, p.root, p.intent, p.selector, p.trustedRoots, p.selection)
 	if err != nil {
 		return nil, err
 	}

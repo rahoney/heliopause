@@ -52,8 +52,9 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 			if err := os.WriteFile(note, []byte("preserve user file\n"), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			apply := func(operation, selector string, adopt bool) {
+			apply := func(operation, selector string, adopt bool, flags ...string) {
 				args := []string{"--lang", "ko", "--output", "json", "bun", operation, "--target", target}
+				args = append(args, flags...)
 
 				if adopt {
 					args = append(args, "--adopt")
@@ -146,7 +147,21 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			apply("install", "", false)
+			if fixture.entries > 0 {
+				lockPath := filepath.Join(target, "bun.lock")
+				before, err := os.ReadFile(lockPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				apply("install", "", false, "--frozen-lockfile")
+				after, err := os.ReadFile(lockPath)
+				if err != nil || !bytes.Equal(before, after) {
+					t.Fatal("explicit frozen CLI changed lock bytes", err)
+				}
+				t.Logf("actual_frozen_lockfile=PASS client=bun fixture=%s", fixture.name)
+			} else {
+				apply("install", "", false)
+			}
 			if fixture.entries == 0 {
 				if _, err := os.Lstat(filepath.Join(target, "bun.lock")); !os.IsNotExist(err) {
 					t.Fatal("empty CLI manufactured lock", err)

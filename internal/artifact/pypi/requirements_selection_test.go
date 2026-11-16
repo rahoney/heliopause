@@ -153,7 +153,7 @@ func TestRequirementsDeclaredHashesBindTheSameCompleteArchiveBytes(t *testing.T)
 	}
 }
 
-func TestRequirementsSourceBindingAcceptsExactGeneralPythonMetadataWithoutChangingLegacyComparison(t *testing.T) {
+func TestRequirementsSourceBindingPreservesGeneralPythonClausesWithoutChangingLegacyComparison(t *testing.T) {
 	const python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 	source := PublicPyPIProfile().Source()
 	candidate := Candidate{project: "pysocks", source: source, version: "1.7.1", filename: "PySocks-1.7.1-py3-none-any.whl", url: "https://files.pythonhosted.org/packages/PySocks-1.7.1-py3-none-any.whl", sha256: strings.Repeat("a", 64), requiresPython: python}
@@ -180,7 +180,7 @@ func TestRequirementsSourceBindingAcceptsExactGeneralPythonMetadataWithoutChangi
 			if kind == "absent" {
 				page.files = nil
 			}
-			if _, err := crossCheckReport(report, []SimpleProject{page}, true); (err == nil) != (kind == "exact") {
+			if _, err := crossCheckReport(report, []SimpleProject{page}, true); (err == nil) != (kind == "exact" || kind == "whitespace-difference") {
 				t.Fatal("requirements source equality or identity differs", kind, err)
 			}
 			if _, err := CrossCheckReport(report, []SimpleProject{page}); err == nil {

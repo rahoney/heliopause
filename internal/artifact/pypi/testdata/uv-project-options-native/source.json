@@ -1,0 +1,41 @@
+{
+  "scope": "native DATA parser fixtures; no authenticity or inspection approval",
+  "uv_version": "0.13.4",
+  "files": [
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v1/pyproject.toml",
+      "sha256": "5c97b268d5ff3f45c3064d29cd7d4f034adb1b913eefd175d464ad95ea9ed6fd",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v1-files/pyproject.toml"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v1/uv.lock",
+      "sha256": "29b353158e6feb84f592d4bac5e4ef25f9ad2920e43397a7c94995371e34822a",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v1-files/uv.lock"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v2/pyproject.toml",
+      "sha256": "293d61ebaba10bd8b7ad48597cdbffa1a4e02a06275c9648ce16e31ae24718b2",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v2-files/pyproject.toml"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v2/uv.lock",
+      "sha256": "fa3903ccdcfb36004af52c6ce206da5cdc72de178891defcef55274ef08caba5",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v2-files/uv.lock"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v3/pyproject.toml",
+      "sha256": "24fc686f4d35db51c3a9aa42be465496ed9d4d1c1886ec77223f84a1c2e2265f",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v3b-files/pyproject.toml"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v3/uv.lock",
+      "sha256": "a6e4aa72d607a688afca71c564bc258eb3f6cebccc7909ca7b732000dcf40ead",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v3b-files/uv.lock"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/uv-project-options-native/v3/default.pylock.toml",
+      "sha256": "399a8ca89c32a5a0a54cec33cd2a19efe86795b75ab30383bc5152268502b8b6",
+      "origin": "docs/github-logs/goal-implementation-20261101/b06-uv-options-data-v3b-files/default.pylock.toml"
+    }
+  ]
+}

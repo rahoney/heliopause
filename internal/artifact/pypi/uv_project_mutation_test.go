@@ -116,3 +116,20 @@ func TestUVSyncSelectionCannotRewriteEvenEquivalentManifest(t *testing.T) {
 		t.Fatal("original buffer mutated")
 	}
 }
+
+func TestUVNativeAddPreservesUnrelatedConditionalRequirements(t *testing.T) {
+	input := uvAddInput(t, `["idna==3.10; sys_platform == 'linux'"]`, "packaging==25.0")
+	valid := uvVirtualProjectTestInput(`["idna==3.10; sys_platform == 'linux'", "packaging==25.0"]`)
+	if _, err := input.SelectManifest(valid); err != nil {
+		t.Fatal(err)
+	}
+	for _, dependencies := range []string{
+		`["packaging==25.0"]`,
+		`["idna==3.10; sys_platform == 'win32'", "packaging==25.0"]`,
+		`["idna==3.10; sys_platform == 'linux'", "packaging==25.0", "foreign==1.0; sys_platform == 'win32'"]`,
+	} {
+		if _, err := input.SelectManifest(uvVirtualProjectTestInput(dependencies)); err == nil {
+			t.Fatal("native add changed an unrelated conditional requirement")
+		}
+	}
+}

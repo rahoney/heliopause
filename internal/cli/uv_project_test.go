@@ -268,3 +268,66 @@ func TestUVProjectCLIHelpAndFailureNeverClaimCompletion(t *testing.T) {
 		}
 	}
 }
+
+func TestUVProjectCLIBindsSelectionAndRefusesInvalidScopeBeforeBackend(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		flags  []string
+		refuse bool
+	}{
+		{name: "group", flags: []string{"--group", "lint", "--group", "dev"}},
+		{name: "only", flags: []string{"--only-group", "lint"}},
+		{name: "exclude", flags: []string{"--group", "dev", "--no-group", "dev"}},
+		{name: "extra", flags: []string{"--extra", "net"}},
+		{name: "all-extras", flags: []string{"--all-extras"}},
+		{name: "missing-group", flags: []string{"--group", "absent"}, refuse: true},
+		{name: "missing-extra", flags: []string{"--extra", "absent"}, refuse: true},
+		{name: "empty-group", flags: []string{"--group="}, refuse: true},
+		{name: "group-conflict", flags: []string{"--group", "dev", "--only-group", "lint"}, refuse: true},
+		{name: "lock-conflict", flags: []string{"--locked", "--frozen"}, refuse: true},
+		{name: "missing-locked", flags: []string{"--locked"}, refuse: true},
+		{name: "missing-frozen", flags: []string{"--frozen"}, refuse: true},
+		{name: "false-frozen", flags: []string{"--frozen=false"}, refuse: true},
+		{name: "repeat-all", flags: []string{"--all-extras", "--all-extras"}, refuse: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			project := uvCLIProjectFixture(t)
+			path := filepath.Join(project, "pyproject.toml")
+			body, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			body = append(body, []byte("\n[project.optional-dependencies]\nnet=['idna==3.10']\n[dependency-groups]\ndev=['packaging==25.0']\nlint=['six==1.17.0']\n")...)
+			if err := os.WriteFile(path, body, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			recorder := &uvProjectCLIRecorder{t: t, cause: errors.New("selection fixture reached backend")}
+			root, err := New(io.Discard, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			args := append([]string{"uv", "sync", "--project", project}, test.flags...)
+			_, err = PreparePresentation(root, args)
+			if test.refuse {
+				if err == nil {
+					t.Fatal("invalid UV scope passed preflight")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := AddUVProject(root, recorder); err != nil {
+				t.Fatal(err)
+			}
+			root.SetArgs(args)
+			if err := root.Execute(); err == nil || len(recorder.requests) != 1 {
+				t.Fatal("valid UV scope did not reach backend exactly once", err)
+			}
+			selection := recorder.requests[0].Selection
+			if len(selection.Groups)+len(selection.OnlyGroups)+len(selection.NoGroups)+len(selection.Extras) == 0 && !selection.AllExtras {
+				t.Fatal("UV scope was dropped")
+			}
+		})
+	}
+}

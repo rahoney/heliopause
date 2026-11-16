@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/pelletier/go-toml/v2"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -117,7 +119,7 @@ func TestUVNativeProjectLockRefusesSourceSchemaGraphAndManifestSubstitution(t *t
 		"self edge":               {"dependencies=[{name='child'}]", "dependencies=[{name='parent'}]"},
 		"root edge":               {"dependencies=[{name='child'}]", "dependencies=[{name='haa-example'}]"},
 		"disconnected":            {"dependencies=[{name='child'}]", "dependencies=[]"},
-		"marker":                  {"dependencies=[{name='child'}]", "dependencies=[{name='child',marker=\"python_version>'3'\"}]"},
+		"invalid marker type":     {"dependencies=[{name='child'}]", "dependencies=[{name='child',marker=true}]"},
 		"wrong root constraint":   {"specifier='<2,>=1.0'", "specifier='>=2'"},
 		"missing root metadata":   {"requires-dist=[{name='parent',specifier='<2,>=1.0'}]", "requires-dist=[]"},
 		"duplicate metadata":      {"requires-dist=[{name='parent',specifier='<2,>=1.0'}]", "requires-dist=[{name='parent',specifier='<2,>=1.0'},{name='parent',specifier='<2,>=1.0'}]"},
@@ -184,5 +186,123 @@ func TestUVNativeProjectLockRefusesTargetExportSubstitution(t *testing.T) {
 	}
 	if _, err := (UVNativeProjectLock{}).Control(); err == nil {
 		t.Fatal("zero native lock produced a control")
+	}
+}
+
+func TestUVNativeProjectConditionalVariantsAndGroupClosure(t *testing.T) {
+	for _, name := range []string{"v1", "v2"} {
+		t.Run(name, func(t *testing.T) {
+			root := filepath.Join("testdata", "uv-project-options-native", name)
+			manifest, err := os.ReadFile(filepath.Join(root, "pyproject.toml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			body, err := os.ReadFile(filepath.Join(root, "uv.lock"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Captured data remains immutable. If a later central runtime leaves the
+			// historical Python range, project only both test headers for this
+			// structural test instead of adding another runtime version pin.
+			var manifestWire uvProjectInputWire
+			if err := toml.Unmarshal(manifest, &manifestWire); err != nil {
+				t.Fatal(err)
+			}
+			requirement, err := ParseBoundedRequirement("python" + manifestWire.Project.Python)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !requirement.Satisfies(runtimeidentity.PythonVersion) {
+				var lockWire uvNativeProjectLockWire
+				if err := toml.Unmarshal(body, &lockWire); err != nil {
+					t.Fatal(err)
+				}
+				manifestWire.Project.Python = "==" + runtimeidentity.PythonVersion
+				lockWire.Python = manifestWire.Project.Python
+				manifest, err = toml.Marshal(manifestWire)
+				if err != nil {
+					t.Fatal(err)
+				}
+				body, err = toml.Marshal(lockWire)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			input, err := ParseUVProjectInput(manifest, nil, false, UVProjectSync, "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if name == "v2" {
+				// The actual universal charset-normalizer lock has 91 alternatives,
+				// beyond the existing 64-wheel bound. Retain that refusal unchanged.
+				if _, err := ParseUVNativeProjectLock(input, body); err == nil {
+					t.Fatal("actual over-budget universal lock accepted")
+				}
+				var wire uvNativeProjectLockWire
+				if err := toml.Unmarshal(body, &wire); err != nil {
+					t.Fatal(err)
+				}
+				// Structural variant/group test only; this projection is not native evidence.
+				for i := range wire.Packages {
+					if len(wire.Packages[i].Wheels) > maxUVWheelAlternatives {
+						wire.Packages[i].Wheels = wire.Packages[i].Wheels[:maxUVWheelAlternatives]
+					}
+				}
+				body, err = toml.Marshal(wire)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			lock, err := ParseUVNativeProjectLock(input, body)
+			if err != nil {
+				t.Fatal("bounded conditional/group lock rejected", err)
+			}
+			if !lock.rich || len(lock.variants) == 0 || lock.root.Name != input.Project() {
+				t.Fatal("universal identities were lost")
+			}
+			if name == "v2" {
+				if lock.variants["idna@3.8"].Name == "" || lock.variants["idna@3.20"].Name == "" {
+					t.Fatal("conditional versions collapsed")
+				}
+			}
+		})
+	}
+}
+
+func TestUVNativeProjectEmptyGroupMetadataDoesNotRequireAnEdgeList(t *testing.T) {
+	input, body, _ := uvNativeProjectFixture(t)
+	manifest := append(input.Body(), []byte("\n[dependency-groups]\nempty=[]\n[tool.uv]\npackage=false\ndefault-groups=['empty']\n")...)
+	input, err := ParseUVProjectInput(manifest, nil, false, UVProjectSync, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var wire uvNativeProjectLockWire
+	if err := toml.Unmarshal(body, &wire); err != nil {
+		t.Fatal(err)
+	}
+	for i := range wire.Packages {
+		if wire.Packages[i].Name == input.Project() {
+			wire.Packages[i].DefaultGroups = []string{"empty"}
+			wire.Packages[i].Metadata.RequiresDev = map[string][]uvNativeRequirement{"empty": {}}
+		}
+	}
+	changed, err := toml.Marshal(wire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseUVNativeProjectLock(input, changed); err != nil {
+		t.Fatal("native empty group metadata rejected", err)
+	}
+	for i := range wire.Packages {
+		if wire.Packages[i].Name == input.Project() {
+			wire.Packages[i].Metadata.RequiresDev["empty"] = []uvNativeRequirement{{Name: "parent", Specifier: ">=1.0"}}
+		}
+	}
+	changed, err = toml.Marshal(wire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseUVNativeProjectLock(input, changed); err == nil {
+		t.Fatal("nonempty metadata group accepted without a locked scope")
 	}
 }

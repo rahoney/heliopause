@@ -46,6 +46,17 @@ if [[ ${1-} != bootstrap && ${1-} != pipx-bootstrap && ${1-} != python-execution
     cd internal/sandbox
     HELOX_UV_TOOL_RESOLVER_INTEGRATION=1 HELOX_UV_TOOL_UPGRADE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestUVPublicTool(Install|Upgrade)ResolverIntegration$'
   )
+(
+  cd internal/sandbox
+  HELOX_UV_PROJECT_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestUVProjectSelectionOptionsIntegration$' | tee "$RUNNER_TEMP/uv-project-scope.log"
+)
+awk '
+/no tests to run|^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS: TestUVProjectSelectionOptionsIntegration [(]/ { parents++ }
+/actual_uv_scope=/ { selected++ }
+/stale_locked=REFUSED/ { refused++ }
+END { if (parents!=1 || selected!=11 || refused!=1 || bad) exit 1 }
+' "$RUNNER_TEMP/uv-project-scope.log"
   exit 0
 fi
 test -n "${RUNNER_TEMP:-}"
@@ -184,4 +195,14 @@ else
   cd internal/bootstrap
   HELOX_TOOL_TARGET_PYTHON_FIXTURE="$uv_tools_work/python3.14" HELOX_TOOL_TARGET_PYTHON_SHA256="$uv_tools_sha" HELOX_UV_TOOL_INSTALL_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_CLI_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_INTEGRATION=1 HELOX_UV_TOOL_UPDATE_EVIDENCE_FAILURE=1 HELOX_UV_TOOL_NATIVE_ADOPTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^(TestLinuxUVTool(Install|Upgrade|NativeAdoption)CLIIntegration|TestUVPublicTool(ApprovedUpgrade|UpgradeEvidenceFailure)Integration)$'
 )
+(
+  cd internal/bootstrap
+  HELOX_UV_SYNC_CLI_INTEGRATION=1 HELOX_UV_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=8m -test.run '^TestLinuxUVProjectSelectionCLIIntegration$' | tee "$RUNNER_TEMP/uv-project-scope-cli.log"
+)
+awk '
+/no tests to run|^[[:space:]]*--- (SKIP|FAIL):/ { bad=1 }
+/^--- PASS: TestLinuxUVProjectSelectionCLIIntegration [(]/ { parents++ }
+/actual_uv_scope_cli=PASS case=/ { cases++ }
+END { if (parents!=1 || cases!=5 || bad) exit 1 }
+' "$RUNNER_TEMP/uv-project-scope-cli.log"
 fi

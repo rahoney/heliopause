@@ -104,6 +104,9 @@ func (i PNPMSelectionInput) ParseOutput(manifest, lock []byte) (PNPMLock, error)
 	if len(i.controls) != 2 {
 		return PNPMLock{}, errPNPMLock
 	}
+	if i.intent == PNPMInstall && i.controls[1].Present() && !bytes.Equal(i.controls[1].Body(), lock) {
+		return PNPMLock{}, errPNPMLock
+	}
 	before, err := pnpmManifestConstraints(i.controls[0].Body(), i.version)
 	if err != nil {
 		return PNPMLock{}, err
