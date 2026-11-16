@@ -338,3 +338,85 @@ func TestTerraformUpgradePreservesForeignRetainedLockAndBackup(t *testing.T) {
 		})
 	}
 }
+
+func TestTerraformDefaultInitPublishesFirstAndPreservesRetainedLock(t *testing.T) {
+	p, install := newTerraformPromotionFixture(t)
+	var originalLock os.FileInfo
+	var expectedLock []byte
+	for _, stage := range []string{"first", "retained"} {
+		g, err := p.BeginInit(context.Background(), install)
+		if err != nil {
+			t.Fatal(stage, err)
+		}
+		update, set, _ := terraformApprovedFixture(t, p, g)
+		complete, err := domain.NewProjectDependencyUpdateFromSnapshot(g.Controls(), update.SelectedControls(), update.Snapshot())
+		if err != nil {
+			_ = g.Close()
+			t.Fatal(err)
+		}
+		staged, err := p.cache.StageProject(context.Background(), set)
+		if err != nil {
+			_ = g.Close()
+			t.Fatal(err)
+		}
+		if err = g.Commit(context.Background(), complete, staged); err != nil {
+			_ = g.Close()
+			t.Fatal(stage, err)
+		}
+		if err = g.Close(); err != nil {
+			t.Fatal(err)
+		}
+		lockPath := filepath.Join(install.Target().String(), artifactterraform.LockControl)
+		body, err := os.ReadFile(lockPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		info, err := os.Lstat(lockPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if stage == "retained" && (!bytes.Equal(expectedLock, body) || !os.SameFile(originalLock, info) || originalLock.Mode() != info.Mode()) {
+			t.Fatal("default init replaced retained lock")
+		}
+		originalLock, expectedLock = info, body
+	}
+}
+
+func TestTerraformDefaultInitRollbackRestoresProviderlessProject(t *testing.T) {
+	for _, phase := range []string{"before-backup", "after-lock-publication", "after-provider-publication", "before-approval", "after-approval"} {
+		t.Run(phase, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			before := terraformProjectSnapshot(t, install.Target().String())
+			g, err := p.BeginInit(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			update, set, _ := terraformApprovedFixture(t, p, g)
+			complete, err := domain.NewProjectDependencyUpdateFromSnapshot(g.Controls(), update.SelectedControls(), update.Snapshot())
+			if err != nil {
+				_ = g.Close()
+				t.Fatal(err)
+			}
+			staged, err := p.cache.StageProject(context.Background(), set)
+			if err != nil {
+				_ = g.Close()
+				t.Fatal(err)
+			}
+			primary := errors.New("injected default-init failure")
+			p.checkpoint = func(current string) error {
+				if current == phase {
+					return primary
+				}
+				return nil
+			}
+			if err = g.Commit(context.Background(), complete, staged); !errors.Is(err, primary) {
+				_ = g.Close()
+				t.Fatal("default init lost original failure", err)
+			}
+			if err = g.Close(); err != nil {
+				t.Fatal(err)
+			}
+			terraformProjectUnchanged(t, install.Target().String(), before)
+		})
+	}
+}

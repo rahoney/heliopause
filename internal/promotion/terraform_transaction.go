@@ -15,12 +15,12 @@ import (
 const terraformTransactionMetadata = ".heliopause/terraform-transaction.json"
 
 type terraformProjectPlan struct {
-	root       string
-	lockHash   [32]byte
-	rootInfo   os.FileInfo
-	lockInfo   os.FileInfo
-	authorized bool
-	upgrade    bool
+	root         string
+	lockHash     [32]byte
+	rootInfo     os.FileInfo
+	lockInfo     os.FileInfo
+	authorized   bool
+	preserveLock bool
 }
 
 func freezeTerraformProject(root string) (terraformProjectPlan, error) {
@@ -54,8 +54,8 @@ func (p terraformProjectPlan) verifyUnchanged() error {
 	if err != nil || current.lockHash != p.lockHash || !os.SameFile(p.rootInfo, current.rootInfo) || (p.lockInfo == nil) != (current.lockInfo == nil) || p.lockInfo != nil && !os.SameFile(p.lockInfo, current.lockInfo) {
 		return errors.New("terraform lock file changed during transaction")
 	}
-	if p.upgrade && p.lockInfo != nil && (current.lockInfo.Mode() != p.lockInfo.Mode() || !current.lockInfo.ModTime().Equal(p.lockInfo.ModTime())) {
-		return errors.New("terraform original lock permissions or timestamp changed during upgrade")
+	if p.preserveLock && p.lockInfo != nil && (current.lockInfo.Mode() != p.lockInfo.Mode() || !current.lockInfo.ModTime().Equal(p.lockInfo.ModTime())) {
+		return errors.New("terraform original lock permissions or timestamp changed during transaction")
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func beginTerraformProjectTransaction(plan terraformProjectPlan, workspace strin
 	}
 	_, writeErr := lockFile.Write(body)
 	var modeErr error
-	if plan.upgrade && plan.lockInfo != nil {
+	if plan.preserveLock && plan.lockInfo != nil {
 		modeErr = lockFile.Chmod(plan.lockInfo.Mode().Perm())
 	}
 	selectedInfo, statErr := lockFile.Stat()
@@ -176,7 +176,7 @@ func beginTerraformProjectTransaction(plan terraformProjectPlan, workspace strin
 		_ = boundary.Close()
 		return nil, err
 	}
-	return &terraformProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, backupInfo: backupInfo, selectedInfo: selectedInfo, selectedDirectoryInfo: selectedDirectoryInfo, expectedLock: body, retainedLock: plan.upgrade && plan.lockInfo != nil && sha256.Sum256(body) == plan.lockHash}, nil
+	return &terraformProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, backupInfo: backupInfo, selectedInfo: selectedInfo, selectedDirectoryInfo: selectedDirectoryInfo, expectedLock: body, retainedLock: plan.preserveLock && plan.lockInfo != nil && sha256.Sum256(body) == plan.lockHash}, nil
 }
 func (t *terraformProjectTransaction) commit() error {
 	defer t.boundary.Close()

@@ -35,6 +35,8 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
  hashes = ["zh:772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3"]
 }
 `, 2},
+		{"default-complete-project", "", `random = { source = "hashicorp/random", version = "3.7.2" }
+ github = { source = "integrations/github", version = "6.6.0" }`, "", 2},
 	} {
 		t.Run(fixture.name, func(t *testing.T) {
 			root, e := filepath.EvalSymlinks(t.TempDir())
@@ -66,9 +68,21 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 			defer cancel()
 			previousRuns := map[string]bool{}
+			var previousLock []byte
+			var previousLockInfo os.FileInfo
+			if fixture.reference == "" {
+				t.Setenv("XDG_CONFIG_HOME", filepath.Join(root, "config"))
+				t.Setenv("XDG_STATE_HOME", filepath.Join(root, "state"))
+			}
 			for attempt := 0; attempt < 2; attempt++ {
 				var out, errs bytes.Buffer
-				e := bootstrap.Run(ctx, []string{"terraform", "init", fixture.reference}, &out, &errs)
+				args := []string{"terraform", "init"}
+				if fixture.reference == "" {
+					args = append([]string{"--lang", "en", "--output", "json"}, args...)
+				} else {
+					args = append(args, fixture.reference)
+				}
+				e := bootstrap.Run(ctx, args, &out, &errs)
 				if e != nil {
 					if attempt == 0 {
 						got, re := os.ReadFile(filepath.Join(project, ".terraform.lock.hcl"))
@@ -85,7 +99,59 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 					}
 					t.Fatalf("actual Terraform init attempt%d: %v stdout=%s stderr=%s", attempt, e, out.String(), errs.String())
 				}
-				if !strings.Contains(out.String(), fmt.Sprintf("Source: terraform-registry\nProviders: %d\nLock digest: ", fixture.count)) {
+				if fixture.reference == "" {
+					var report struct {
+						Schema    string `json:"schema_version"`
+						Operation string `json:"operation"`
+						Status    string `json:"operation_status"`
+						Promotion string `json:"promotion_status"`
+						Entries   []struct {
+							Checks []struct {
+								Required bool
+								Status   string `json:"execution_status"`
+							} `json:"checks"`
+						} `json:"entries"`
+						Policy struct{ Decision string } `json:"policy"`
+					}
+					if err := json.Unmarshal(out.Bytes(), &report); err != nil {
+						t.Fatal(err)
+					}
+					if report.Schema != "helox.project-install-result/v1" || report.Operation != "INSTALL" || report.Status != "COMPLETED" || report.Promotion != "COMPLETED" || report.Policy.Decision != "ALLOW" || len(report.Entries) != fixture.count {
+						t.Fatal("default init lost complete installation", out.String())
+					}
+					for _, entry := range report.Entries {
+						required := 0
+						for _, check := range entry.Checks {
+							if check.Required {
+								required++
+								if check.Status != "COMPLETED" {
+									t.Fatal("required provider check incomplete", check)
+								}
+							}
+						}
+						if required != 3 {
+							t.Fatal("provider inspection coverage differs", required)
+						}
+					}
+					lockPath := filepath.Join(project, ".terraform.lock.hcl")
+					if attempt == 0 {
+						if err := os.Chmod(lockPath, 0640); err != nil {
+							t.Fatal(err)
+						}
+					}
+					current, err := os.ReadFile(lockPath)
+					if err != nil {
+						t.Fatal(err)
+					}
+					info, err := os.Lstat(lockPath)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if attempt != 0 && (!bytes.Equal(previousLock, current) || !os.SameFile(previousLockInfo, info) || previousLockInfo.Mode() != info.Mode()) {
+						t.Fatal("default init replaced retained lock")
+					}
+					previousLock, previousLockInfo = current, info
+				} else if !strings.Contains(out.String(), fmt.Sprintf("Source: terraform-registry\nProviders: %d\nLock digest: ", fixture.count)) {
 					t.Fatalf("complete count missing: %s", out.String())
 				}
 				got, re := os.ReadFile(filepath.Join(project, "main.tf"))
@@ -137,7 +203,11 @@ func TestLinuxTerraformInitIntegration(t *testing.T) {
 					}
 				}
 				previousRuns = runs
-				t.Logf("actual_terraform_init_attempt=%d %s", attempt, strings.TrimSpace(out.String()))
+				if fixture.reference == "" {
+					t.Logf("terraform_default_init attempt=%d providers=2 required_checks=3 fresh_runs=2 signed_source/static/dynamic/Policy/cache/atomic=COMPLETE lock=PRESERVED", attempt)
+				} else {
+					t.Logf("actual_terraform_init_attempt=%d %s", attempt, strings.TrimSpace(out.String()))
+				}
 			}
 		})
 	}

@@ -275,7 +275,11 @@ func writeProjectMutationFacts(output io.Writer, facts projectMutationReportFact
 	} else if source == "go-proxy" {
 		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
 	} else if source == "terraform-registry" {
-		p.line("%s %s", p.text("Provider update:", "Provider 업데이트:"), p.stateLabel(report.Promotion))
+		label := p.text("Provider update:", "Provider 업데이트:")
+		if installing {
+			label = p.text("Provider installation:", "Provider 설치:")
+		}
+		p.line("%s %s", label, p.stateLabel(report.Promotion))
 	} else {
 		p.line("%s %s", p.text("Lockfile update:", "잠금파일 업데이트:"), p.stateLabel(report.Promotion))
 	}

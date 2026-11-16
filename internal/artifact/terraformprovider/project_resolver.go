@@ -14,24 +14,30 @@ import (
 // existing inspection workflow subsequently verifies signer, observes each ELF,
 // records independent Evidence and obtains entry/set Policy decisions.
 func (c *Client) ResolveProjectDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
-	return c.resolveProjectSelection(ctx, reference, install, controls, false)
+	return c.resolveProjectSelection(ctx, reference, install, controls, false, false)
 }
 
 func (c *Client) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
 	if selector != "" {
 		return domain.ProjectDependencyUpdate{}, errors.New("terraform upgrade selects all required providers without a package selector")
 	}
-	return c.resolveProjectSelection(ctx, domain.ArtifactReference{}, install, controls, true)
+	return c.resolveProjectSelection(ctx, domain.ArtifactReference{}, install, controls, true, false)
 }
 
-func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile, upgrade bool) (domain.ProjectDependencyUpdate, error) {
+// ResolveProjectInit preserves an existing complete lock; only a missing lock
+// permits first stable selection. No provider is invented as a primary.
+func (c *Client) ResolveProjectInit(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+	return c.resolveProjectSelection(ctx, domain.ArtifactReference{}, install, controls, false, true)
+}
+
+func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile, upgrade, initialize bool) (domain.ProjectDependencyUpdate, error) {
 	if c == nil || ctx == nil || !install.Valid() || len(controls) != 2 {
 		return domain.ProjectDependencyUpdate{}, errors.New("terraform guarded update request is invalid")
 	}
 	if err := ctx.Err(); err != nil {
 		return domain.ProjectDependencyUpdate{}, err
 	}
-	if !upgrade {
+	if !upgrade && !initialize {
 		parsed, e := ParseReference(reference.Locator())
 		if e != nil || parsed != reference {
 			return domain.ProjectDependencyUpdate{}, errors.New("terraform exact primary reference is invalid")
@@ -42,11 +48,13 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 		return domain.ProjectDependencyUpdate{}, e
 	}
 	var originalLock []byte
+	originalLockPresent := false
 	var config domain.ProjectControlFile
 	for _, control := range controls {
 		switch control.Name() {
 		case LockControl:
 			originalLock = control.Body()
+			originalLockPresent = control.Present()
 		case ConfigurationControl:
 			config = control
 		default:
@@ -64,9 +72,26 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 	for _, l := range locks {
 		locked[l.Address] = l
 	}
+	// Refuse a partial/stale retained lock before any public package acquisition.
+	if initialize && originalLockPresent {
+		if len(locked) != len(requirements) {
+			return domain.ProjectDependencyUpdate{}, errors.New("terraform default init requires a complete existing lock")
+		}
+		for _, requirement := range requirements {
+			old, exists := locked[requirement.Address]
+			if !exists {
+				return domain.ProjectDependencyUpdate{}, errors.New("terraform required provider is absent from the existing lock")
+			}
+			for _, constraint := range requirement.Constraints {
+				if !MatchesConstraint(old.Version, constraint) {
+					return domain.ProjectDependencyUpdate{}, errors.New("terraform locked selection does not satisfy configuration constraints")
+				}
+			}
+		}
+	}
 	primaryParts := strings.Split(reference.Locator(), "@")
 	primaryAddress := ""
-	if !upgrade {
+	if !upgrade && !initialize {
 		primaryAddress = "registry.terraform.io/" + primaryParts[0]
 	}
 	found := false
@@ -85,12 +110,12 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 			version = primaryParts[1]
 			found = true
 		}
-		if !upgrade && !primary && !exists {
+		if !upgrade && !primary && !exists && (!initialize || originalLockPresent) {
 			return domain.ProjectDependencyUpdate{}, errors.New("terraform non-primary provider requires an exact existing lock selection")
 		}
 		var resolved domain.ResolvedArtifact
 		var ref domain.ArtifactReference
-		if upgrade {
+		if upgrade || initialize && !exists {
 			resolved, e = c.resolveUpgrade(ctx, r)
 			if e != nil {
 				return domain.ProjectDependencyUpdate{}, e
@@ -157,12 +182,15 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 			nodes = append(nodes, node)
 		}
 	}
-	if !upgrade && !found || len(locked) != 0 {
+	if !upgrade && !initialize && !found || len(locked) != 0 {
 		return domain.ProjectDependencyUpdate{}, errors.New("terraform requested/locked provider set differs from complete configuration")
 	}
 	body, e := EncodeLock(selected)
 	if e != nil {
 		return domain.ProjectDependencyUpdate{}, e
+	}
+	if initialize && originalLockPresent {
+		body = originalLock
 	}
 	lock, e := domain.NewProjectControlFile(LockControl, body, true)
 	if e != nil {
@@ -188,7 +216,7 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 	if e != nil {
 		return domain.ProjectDependencyUpdate{}, e
 	}
-	if upgrade {
+	if upgrade || initialize {
 		return domain.NewProjectDependencyUpdateFromSnapshot(controls, after, snapshot)
 	}
 	graph, e := domain.NewLockedDependencyGraph(nodes, nil)

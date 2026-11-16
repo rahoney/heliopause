@@ -53,6 +53,10 @@ func (f *terraformUpgradeCLI) Upgrade(ctx context.Context, install domain.Instal
 	return f.Update(ctx, install, "", adopt)
 }
 
+func (f *terraformUpgradeCLI) InitProject(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	return f.Update(ctx, install, "init", false)
+}
+
 func TestTerraformUpgradeRejectsUnsupportedArgsBeforeComposition(t *testing.T) {
 	for _, tail := range [][]string{
 		{"-upgrade=false"}, {"--upgrade=true"}, {"-upgrade", "--upgrade"},
@@ -185,6 +189,64 @@ func TestTerraformUpgradeReportSeparatesPolicyAndPublication(t *testing.T) {
 					}
 				})
 			}
+		}
+	}
+}
+
+func TestTerraformDefaultInitReportsInstallationAndPreservesUpgrade(t *testing.T) {
+	for _, failed := range []bool{false, true} {
+		for _, output := range []string{"json", "human"} {
+			t.Run(output+map[bool]string{false: "-complete", true: "-failed"}[failed], func(t *testing.T) {
+				var out, diag bytes.Buffer
+				root, err := cli.New(&out, &diag)
+				if err != nil {
+					t.Fatal(err)
+				}
+				inspected, decision := projectUpdateFactsForSource(t, domain.DecisionAllow, "terraform-registry")
+				verified, err := domain.NewProjectVerifiedSet(inspected, decision)
+				if err != nil {
+					t.Fatal(err)
+				}
+				f := &terraformUpgradeCLI{cargoUpdateCLI: cargoUpdateCLI{set: verified}}
+				primary := errors.New("controlled default init publication failure")
+				if failed {
+					f.failure = cargoFailedUpdateFacts{inspected, decision, primary}
+				}
+				if err = cli.AddTerraformInit(root, &terraformResolverFixture{}); err != nil {
+					t.Fatal(err)
+				}
+				if err = cli.AddTerraformUpgrade(root, f); err != nil {
+					t.Fatal(err)
+				}
+				args := []string{"--lang", "en", "--output", output, "terraform", "init"}
+				if source, err := cli.PreparePresentation(root, args); err != nil || source != "terraform" {
+					t.Fatal(source, err)
+				}
+				root.SetArgs(args)
+				err = root.ExecuteContext(context.Background())
+				if failed && !errors.Is(err, primary) || !failed && err != nil || f.calls != 1 || f.selector != "init" || f.adopt {
+					t.Fatal("default init lost typed intent", err)
+				}
+				if output == "json" {
+					var fields struct {
+						Schema    string `json:"schema_version"`
+						Operation string `json:"operation"`
+						Status    string `json:"operation_status"`
+						Promotion string `json:"promotion_status"`
+					}
+					if err = json.Unmarshal(out.Bytes(), &fields); err != nil {
+						t.Fatal(err)
+					}
+					if fields.Schema != "helox.project-install-result/v1" || fields.Operation != "INSTALL" {
+						t.Fatal("default init reported an upgrade", out.String())
+					}
+					if failed && (fields.Status != "FAILED" || fields.Promotion != "NOT_COMPLETED") || !failed && (fields.Status != "COMPLETED" || fields.Promotion != "COMPLETED") {
+						t.Fatal("publication status lost", out.String())
+					}
+				} else if !strings.Contains(out.String(), "Provider installation:") {
+					t.Fatal("installation absent", out.String())
+				}
+			})
 		}
 	}
 }

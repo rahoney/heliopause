@@ -646,6 +646,9 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		if upgrade, _ := command.Flags().GetBool("upgrade"); upgrade {
 			return errors.New("terraform upgrade service is unavailable")
 		}
+		if len(args) == 0 {
+			return errors.New("terraform current-project init service is unavailable")
+		}
 		reference, err := artifactterraform.ParseReference(args[0])
 		if err != nil {
 			return err
