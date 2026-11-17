@@ -55,11 +55,11 @@ func (p *projectFailingPorts) Verify(ctx context.Context, a domain.AcquiredArtif
 	}
 	return p.multiInspectionPorts.Verify(ctx, a)
 }
-func (p *projectFailingPorts) Record(ctx context.Context, run domain.RunID, e []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *projectFailingPorts) Record(ctx context.Context, run domain.RunID, e []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	if e[0].Identity().Name() == "second" && p.fail == "evidence" {
 		return nil, errors.New("fixture evidence failed")
 	}
-	return p.multiInspectionPorts.Record(ctx, run, e)
+	return p.multiInspectionPorts.Record(ctx, run, e, checks...)
 }
 
 func TestProjectInspectNeverReturnsPartialApproval(t *testing.T) {

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -174,7 +175,7 @@ func (v *FrozenIntake) Resolve(ctx context.Context, reference domain.ArtifactRef
 	return entry.entry.Resolved, nil
 }
 
-func (v *FrozenIntake) Acquire(ctx context.Context, run domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+func (v *FrozenIntake) Acquire(ctx context.Context, run domain.RunID, resolved domain.ResolvedArtifact) (artifact domain.AcquiredArtifact, resultErr error) {
 	if v == nil || ctx == nil || run.String() == "" {
 		return domain.AcquiredArtifact{}, errors.New("frozen intake acquisition is invalid")
 	}
@@ -198,35 +199,88 @@ func (v *FrozenIntake) Acquire(ctx context.Context, run domain.RunID, resolved d
 	if err := v.root.Mkdir(run.String(), 0700); err != nil {
 		return domain.AcquiredArtifact{}, errors.New("frozen intake destination already exists or is unavailable")
 	}
-	cleanup := func(cause error) (domain.AcquiredArtifact, error) {
-		if err := v.root.RemoveAll(run.String()); err != nil {
-			return domain.AcquiredArtifact{}, errors.Join(cause, errors.New("frozen intake partial copy cleanup failed"))
-		}
-		return domain.AcquiredArtifact{}, cause
-	}
-	output, err := v.root.OpenFile(run.String()+"/asset", os.O_WRONLY|os.O_CREATE|os.O_EXCL|syscall.O_NOFOLLOW, 0600)
+	allocation, err := v.root.Lstat(run.String())
 	if err != nil {
-		return cleanup(errors.New("frozen intake destination file is unavailable"))
+		return domain.AcquiredArtifact{}, err
 	}
+	directory, err := v.root.OpenRoot(run.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, directory.Close()) }()
+	opened, err := directory.Stat(".")
+	if err != nil || !os.SameFile(allocation, opened) {
+		return domain.AcquiredArtifact{}, errors.New("frozen intake allocation changed")
+	}
+	var lease ports.StorageLease
+	var created os.FileInfo
+	successful := false
+	defer func() {
+		if !successful {
+			var cleanupErr error
+			current, err := v.root.Lstat(run.String())
+			if err != nil || !os.SameFile(allocation, current) {
+				cleanupErr = errors.Join(errors.New("frozen intake cleanup ownership uncertain"), err)
+			} else if created != nil {
+				cleanupErr = discardReplayRun(v.root, run.String(), replayedReleaseRun{allocation, created})
+			} else {
+				cleanupErr = v.root.Remove(run.String())
+			}
+			if cleanupErr == nil {
+				parent, err := v.root.Open(".")
+				cleanupErr = err
+				if err == nil {
+					cleanupErr = errors.Join(parent.Sync(), parent.Close())
+				}
+			}
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				cleanupErr = lease.Abort(cleanupCtx)
+				cancel()
+			}
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
+	}()
 	expected := entry.entry.Acquired
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: expected.SizeBytes() + 1, Files: 1})
+		if err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	output, err := directory.OpenFile("asset", os.O_WRONLY|os.O_CREATE|os.O_EXCL|syscall.O_NOFOLLOW, 0600)
+	if err != nil {
+		return domain.AcquiredArtifact{}, errors.New("frozen intake destination file is unavailable")
+	}
 	hash := sha256.New()
 	reader := ports.DownloadReader(ctx, frozenContextReader{ctx: ctx, reader: io.NewSectionReader(entry.file, 0, int64(expected.SizeBytes())+1)}, int64(expected.SizeBytes()))
 	count, copyErr := io.Copy(io.MultiWriter(output, hash), reader)
-	syncErr, closeErr := output.Sync(), output.Close()
-	if copyErr != nil || syncErr != nil || closeErr != nil || uint64(count) != expected.SizeBytes() || hex.EncodeToString(hash.Sum(nil)) != expected.Digest().String() {
-		return cleanup(errors.Join(errors.New("frozen intake copied bytes differ from inspected selection"), ctx.Err()))
+	syncErr := output.Sync()
+	created, err = output.Stat()
+	closeErr := output.Close()
+	if copyErr != nil || syncErr != nil || err != nil || closeErr != nil || uint64(count) != expected.SizeBytes() || hex.EncodeToString(hash.Sum(nil)) != expected.Digest().String() {
+		return domain.AcquiredArtifact{}, errors.Join(errors.New("frozen intake copied bytes differ from inspected selection"), ctx.Err())
 	}
 	if err := ctx.Err(); err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, err
 	}
 	current, err = os.Lstat(v.rootPath)
 	if err != nil || !privateIntakeDirectory(current) || !os.SameFile(v.rootInfo, current) {
-		return cleanup(errors.New("frozen intake root changed during copy"))
+		return domain.AcquiredArtifact{}, errors.New("frozen intake root changed during copy")
 	}
-	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), expected.Digest(), "intake:"+run.String()+":"+SourceName, expected.SizeBytes(), resolved.DeclaredIntegrity())
+	artifact, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), expected.Digest(), "intake:"+run.String()+":"+SourceName, expected.SizeBytes(), resolved.DeclaredIntegrity())
 	if err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, err
 	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	successful = true
 	return artifact, nil
 }
 

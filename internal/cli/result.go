@@ -12,6 +12,7 @@ import (
 )
 
 const operationResultSchema = "helox.operation-result/v1"
+const declaredOperationResultSchema = "helox.operation-result/v2"
 
 // Inspector is the use-case boundary consumed by the Inspect CLI adapter.
 type Inspector interface {
@@ -101,6 +102,19 @@ func WriteHumanResult(output io.Writer, result domain.OperationResult) error {
 			return fmt.Errorf("write human Artifact digest: %w", err)
 		}
 	}
+	if plan := result.CheckPlan(); plan.Valid() {
+		for _, requirement := range plan.Requirements() {
+			if _, err := fmt.Fprintf(output, "Declared check: %s %s required=%t profile=%s\n", requirement.ID(), requirement.Kind(), requirement.Required(), requirement.ProfileDigest()); err != nil {
+				return err
+			}
+		}
+	}
+	for _, check := range result.Checks() {
+		limitation, _ := check.LimitationCode()
+		if _, err := fmt.Fprintf(output, "Check: %s required=%t %s/%s profile=%s %s\n", check.ID(), check.Required(), check.Capability(), check.Status(), check.ProfileDigest(), limitation); err != nil {
+			return err
+		}
+	}
 	if decision, ok := result.PolicyDecision(); ok {
 		if _, err := fmt.Fprintf(output, "Policy: %s (%s v%d)\nReasons: %v\n", decision.Decision(), decision.PolicyID(), decision.Version(), decision.Reasons()); err != nil {
 			return fmt.Errorf("write human Policy Decision: %w", err)
@@ -119,36 +133,7 @@ func WriteJSONResult(output io.Writer, result domain.OperationResult) error {
 	if output == nil || result.OperationID().String() == "" {
 		return errors.New("JSON presenter requires output and a valid Operation Result")
 	}
-	document := machineResult{
-		SchemaVersion: operationResultSchema,
-		OperationID:   result.OperationID().String(), Operation: string(result.Operation()), OperationStatus: string(result.Status()),
-		Artifact: machineArtifact{Reference: machineReference{SourceID: result.Reference().Source().String(), Locator: result.Reference().Locator()}},
-		Checks:   []machineCheck{}, EvidenceReferences: []machineEvidenceReference{},
-	}
-	if runID, ok := result.RunID(); ok {
-		outcome, _ := result.RunOutcome()
-		document.Run = &machineRun{ID: runID.String(), Outcome: string(outcome)}
-	}
-	if identity, ok := result.ResolvedIdentity(); ok {
-		document.Artifact.ResolvedIdentity = &machineIdentity{SourceID: identity.Source().String(), Name: identity.Name(), Version: identity.Version(), Variant: identity.Variant()}
-	}
-	if digest, ok := result.Digest(); ok {
-		document.Artifact.Digest = &machineDigest{Algorithm: digest.Algorithm(), Value: digest.String()}
-	}
-	for _, check := range result.Checks() {
-		item := machineCheck{ID: check.ID().String(), Kind: string(check.Kind()), Required: check.Required(), Capability: string(check.Capability()), ExecutionStatus: string(check.Status())}
-		item.LimitationCode, _ = check.LimitationCode()
-		document.Checks = append(document.Checks, item)
-	}
-	for _, reference := range result.Evidence() {
-		document.EvidenceReferences = append(document.EvidenceReferences, machineEvidenceReference{ID: reference.ID().String(), Handle: reference.Handle()})
-	}
-	if decision, ok := result.PolicyDecision(); ok {
-		document.Policy = &machinePolicy{Decision: string(decision.Decision()), ID: decision.PolicyID(), Version: decision.Version(), Reasons: decision.Reasons()}
-	}
-	if operationError, ok := result.Error(); ok {
-		document.Error = &machineError{Code: operationError.Code(), Message: operationError.Message()}
-	}
+	document := presentOperationResult(result)
 	encoder := json.NewEncoder(output)
 	encoder.SetEscapeHTML(true)
 	if err := encoder.Encode(document); err != nil {
@@ -165,6 +150,7 @@ type machineResult struct {
 	Run                *machineRun                `json:"run,omitempty"`
 	Artifact           machineArtifact            `json:"artifact"`
 	Checks             []machineCheck             `json:"checks"`
+	CheckPlan          *machineCheckPlan          `json:"check_plan,omitempty"`
 	EvidenceReferences []machineEvidenceReference `json:"evidence_references"`
 	Policy             *machinePolicy             `json:"policy,omitempty"`
 	Error              *machineError              `json:"error,omitempty"`
@@ -200,6 +186,9 @@ type machineCheck struct {
 	Capability      string `json:"capability"`
 	ExecutionStatus string `json:"execution_status"`
 	LimitationCode  string `json:"limitation_code,omitempty"`
+	ProfileSHA256   string `json:"profile_sha256,omitempty"`
+	Node            string `json:"node,omitempty"`
+	RunID           string `json:"run_id,omitempty"`
 }
 type machineEvidenceReference struct {
 	ID     string `json:"id"`
@@ -214,4 +203,92 @@ type machinePolicy struct {
 type machineError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
+}
+
+func presentCheck(check domain.CheckExecution) machineCheck {
+	limitation, _ := check.LimitationCode()
+	return machineCheck{ID: check.ID().String(), Kind: string(check.Kind()), Required: check.Required(), Capability: string(check.Capability()), ExecutionStatus: string(check.Status()), LimitationCode: limitation, ProfileSHA256: check.ProfileDigest().String()}
+}
+
+type machineCheckRequirement struct {
+	ID            string `json:"id"`
+	Kind          string `json:"kind"`
+	Required      bool   `json:"required"`
+	ProfileSHA256 string `json:"profile_sha256"`
+}
+type machineCheckPlan struct {
+	SchemaVersion string                    `json:"schema_version"`
+	RunID         string                    `json:"run_id"`
+	Subject       machineIdentity           `json:"subject"`
+	SHA256        string                    `json:"sha256"`
+	Requirements  []machineCheckRequirement `json:"requirements"`
+}
+
+func presentCheckPlan(plan domain.CheckPlan) *machineCheckPlan {
+	if !plan.Valid() {
+		return nil
+	}
+	identity := plan.Identity()
+	value := &machineCheckPlan{SchemaVersion: "helox.check-plan/v1", RunID: plan.RunID().String(), Subject: machineIdentity{identity.Source().String(), identity.Name(), identity.Version(), identity.Variant()}, SHA256: plan.Digest().String()}
+	for _, requirement := range plan.Requirements() {
+		value.Requirements = append(value.Requirements, machineCheckRequirement{requirement.ID().String(), string(requirement.Kind()), requirement.Required(), requirement.ProfileDigest().String()})
+	}
+	return value
+}
+
+func presentOperationResult(result domain.OperationResult) machineResult {
+	document := machineResult{
+		SchemaVersion: operationResultSchema,
+		OperationID:   result.OperationID().String(), Operation: string(result.Operation()), OperationStatus: string(result.Status()),
+		Artifact: machineArtifact{Reference: machineReference{SourceID: result.Reference().Source().String(), Locator: result.Reference().Locator()}},
+		Checks:   []machineCheck{}, EvidenceReferences: []machineEvidenceReference{},
+	}
+	if runID, ok := result.RunID(); ok {
+		outcome, _ := result.RunOutcome()
+		document.Run = &machineRun{ID: runID.String(), Outcome: string(outcome)}
+	}
+	if identity, ok := result.ResolvedIdentity(); ok {
+		document.Artifact.ResolvedIdentity = &machineIdentity{SourceID: identity.Source().String(), Name: identity.Name(), Version: identity.Version(), Variant: identity.Variant()}
+	}
+	if digest, ok := result.Digest(); ok {
+		document.Artifact.Digest = &machineDigest{Algorithm: digest.Algorithm(), Value: digest.String()}
+	}
+	for _, check := range result.Checks() {
+		item := presentCheck(check)
+		document.Checks = append(document.Checks, item)
+	}
+	document.CheckPlan = presentCheckPlan(result.CheckPlan())
+	if document.CheckPlan != nil {
+		document.SchemaVersion = declaredOperationResultSchema
+	}
+	for _, check := range document.Checks {
+		if check.ProfileSHA256 != "" {
+			document.SchemaVersion = declaredOperationResultSchema
+			break
+		}
+	}
+	for _, reference := range result.Evidence() {
+		document.EvidenceReferences = append(document.EvidenceReferences, machineEvidenceReference{ID: reference.ID().String(), Handle: reference.Handle()})
+	}
+	if decision, ok := result.PolicyDecision(); ok {
+		document.Policy = &machinePolicy{Decision: string(decision.Decision()), ID: decision.PolicyID(), Version: decision.Version(), Reasons: decision.Reasons()}
+	}
+	if operationError, ok := result.Error(); ok {
+		document.Error = &machineError{Code: operationError.Code(), Message: operationError.Message()}
+	}
+	return document
+}
+
+func machineInspectionFailures(cause error) []machineResult {
+	var failure *application.InspectionFailure
+	if !errors.As(cause, &failure) {
+		return nil
+	}
+	var results []machineResult
+	for _, result := range failure.Results() {
+		value := presentOperationResult(result)
+		value.SchemaVersion = declaredOperationResultSchema
+		results = append(results, value)
+	}
+	return results
 }

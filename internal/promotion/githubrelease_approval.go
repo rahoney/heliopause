@@ -17,11 +17,12 @@ const githubAssetLimit int64 = 512 << 20 // Existing M6 acquisition bound.
 const githubApprovalLimit int64 = 1 << 20
 
 type githubApprovalCheck struct {
-	ID         string                 `json:"id"`
-	Kind       domain.CheckKind       `json:"kind"`
-	Required   bool                   `json:"required"`
-	Capability domain.Capability      `json:"capability"`
-	Status     domain.ExecutionStatus `json:"status"`
+	ID            string                 `json:"id"`
+	Kind          domain.CheckKind       `json:"kind"`
+	Required      bool                   `json:"required"`
+	Capability    domain.Capability      `json:"capability"`
+	Status        domain.ExecutionStatus `json:"status"`
+	ProfileSHA256 string                 `json:"profile_sha256,omitempty"`
 }
 
 // The target copy is only a binding. Independent controller state and actual
@@ -60,15 +61,21 @@ func (p *GitHubReleasePromotion) approval(ctx context.Context, bundle domain.Ver
 		return empty, nil, errors.New("GitHub ownership subject differs from frozen resolution")
 	}
 	entry, set := inspection.PolicyDecision(), bundle.Set().Decision()
-	if entry.Decision() != domain.DecisionAllow || set.Decision() != domain.DecisionAllow {
+	if entry.Decision() != domain.DecisionAllow || set.Decision() != domain.DecisionAllow || entry.Version() != p.policyVersion || set.Version() != p.policyVersion {
 		return empty, nil, errors.New("GitHub ownership requires complete ALLOW")
 	}
-	d := githubAssetApproval{Schema: 1, Target: install.Target().String(), Reference: selector.Locator(), Locator: node.Artifact().AcquisitionLocator(), Name: artifact.Identity().Name(), Version: artifact.Identity().Version(), Asset: artifact.Identity().Variant(), SHA256: artifact.Digest().String(), Size: size, Mode: 0o400, Manifest: bundle.ManifestID().String(), Run: inspection.RunID().String(), EntryPolicy: entry.PolicyID(), EntryPolicyVersion: entry.Version(), SetPolicy: set.PolicyID(), SetPolicyVersion: set.Version()}
+	if !inspection.CheckPlan().Valid() {
+		return empty, nil, errors.New("GitHub new approval requires a frozen check declaration")
+	}
+	if err := inspection.CheckPlan().Validate(inspection.RunID(), artifact, inspection.Checks()); err != nil {
+		return empty, nil, err
+	}
+	d := githubAssetApproval{Schema: 2, Target: install.Target().String(), Reference: selector.Locator(), Locator: node.Artifact().AcquisitionLocator(), Name: artifact.Identity().Name(), Version: artifact.Identity().Version(), Asset: artifact.Identity().Variant(), SHA256: artifact.Digest().String(), Size: size, Mode: 0o400, Manifest: bundle.ManifestID().String(), Run: inspection.RunID().String(), EntryPolicy: entry.PolicyID(), EntryPolicyVersion: entry.Version(), SetPolicy: set.PolicyID(), SetPolicyVersion: set.Version()}
 	for _, c := range inspection.Checks() {
 		if limitation, _ := c.LimitationCode(); limitation != "" {
 			return empty, nil, errors.New("GitHub ownership check is incomplete")
 		}
-		d.Checks = append(d.Checks, githubApprovalCheck{c.ID().String(), c.Kind(), c.Required(), c.Capability(), c.Status()})
+		d.Checks = append(d.Checks, githubApprovalCheck{c.ID().String(), c.Kind(), c.Required(), c.Capability(), c.Status(), c.ProfileDigest().String()})
 		if c.ID().String() == "github-release-elf-dynamic" && c.Status() == domain.ExecutionCompleted {
 			d.Mode = 0o500
 		}
@@ -100,7 +107,7 @@ func (p *GitHubReleasePromotion) verifyApproval(ctx context.Context, d githubAss
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if d.Schema != 1 || d.Target == "" || d.Asset == githubOwnershipMarker || d.Size == 0 || d.Size > uint64(githubAssetLimit) || (d.Mode != 0o400 && d.Mode != 0o500) || d.EntryPolicy != "m6-github-release" || d.EntryPolicyVersion != 1 || d.SetPolicy != "m6-github-release" || d.SetPolicyVersion != 1 || len(d.Checks) < 2 || len(d.Checks) > 16 || len(d.Evidence) < 2 || len(d.Evidence) > 32 {
+	if (d.Schema != 1 && d.Schema != 2) || d.Target == "" || d.Asset == githubOwnershipMarker || d.Size == 0 || d.Size > uint64(githubAssetLimit) || (d.Mode != 0o400 && d.Mode != 0o500) || d.EntryPolicy != "m6-github-release" || d.EntryPolicyVersion == 0 || d.EntryPolicyVersion > p.policyVersion || d.SetPolicy != "m6-github-release" || d.SetPolicyVersion != d.EntryPolicyVersion || (d.Schema == 1 && d.EntryPolicyVersion != 1) || (d.Schema == 2 && d.EntryPolicyVersion < 2) || len(d.Checks) < 2 || len(d.Checks) > 16 || len(d.Evidence) < 2 || len(d.Evidence) > 32 {
 		return errors.New("GitHub independent approval coverage is invalid")
 	}
 	if _, err := domain.NewInstallTarget(d.Target); err != nil {
@@ -131,13 +138,23 @@ func (p *GitHubReleasePromotion) verifyApproval(ctx context.Context, d githubAss
 		return err
 	}
 	checks := map[string]bool{}
+	profiles := make(map[string]domain.ContentDigest)
 	required := map[string]bool{}
 	for _, c := range d.Checks {
 		id, err := domain.NewCheckID(c.ID)
 		if err != nil {
 			return err
 		}
-		if _, err := domain.NewCheckExecution(id, c.Kind, c.Required, c.Capability, c.Status, ""); err != nil {
+		var binding []domain.ContentDigest
+		if d.Schema == 2 {
+			profile, e := domain.NewSHA256Digest(c.ProfileSHA256)
+			if e != nil {
+				return errors.New("GitHub approval check profile is invalid")
+			}
+			binding = []domain.ContentDigest{profile}
+			profiles[c.ID] = profile
+		}
+		if _, err := domain.NewCheckExecution(id, c.Kind, c.Required, c.Capability, c.Status, "", binding...); err != nil {
 			return err
 		}
 		if checks[c.ID] || c.Status != domain.ExecutionCompleted || c.Capability != domain.CapabilitySupported {
@@ -162,6 +179,9 @@ func (p *GitHubReleasePromotion) verifyApproval(ctx context.Context, d githubAss
 		e, hash, err := p.evidence.ReadReference(ctx, run, ref, identity, digest)
 		if err != nil || hash.String() != r.SHA256 || !checks[e.CheckID().String()] {
 			return errors.New("GitHub old Evidence is missing, changed or unbound")
+		}
+		if d.Schema == 2 && (e.ProfileDigest().String() == "" || e.ProfileDigest() != profiles[e.CheckID().String()]) {
+			return errors.New("GitHub approval Evidence is legacy or belongs to another profile")
 		}
 		proof[r.ID] = e
 	}

@@ -2,6 +2,8 @@ package releaseprovenance
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -85,8 +87,12 @@ func (v *ArtifactVerifier) Verify(ctx context.Context, artifact domain.AcquiredA
 			}
 		}
 	}
-	checkID, _ := domain.NewCheckID("release-authenticity")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	requirement, err := authenticityRequirement(ctx, artifact, v.expected)
+	if err != nil {
+		return domain.VerificationReport{}, err
+	}
+	checkID := requirement.ID()
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", requirement.ProfileDigest())
 	evidenceID, _ := domain.NewEvidenceID("release-authenticity-result")
 	summary := "Declared SHA-256 and official release provenance did not both match the exact controlled subject."
 	if matched {
@@ -101,4 +107,48 @@ func (v *ArtifactVerifier) Verify(ctx context.Context, artifact domain.AcquiredA
 	}
 	finding, _ := domain.NewFinding("SELF_UPDATE_AUTHENTICITY_MISMATCH", []domain.EvidenceID{evidenceID})
 	return domain.NewVerificationReportWithFindings(check, domain.VerificationMismatch, []domain.Finding{finding}, []domain.Evidence{evidence})
+}
+
+func authenticityRequirement(ctx context.Context, artifact domain.AcquiredArtifact, expected Identity) (domain.CheckRequirement, error) {
+	if !validIdentity(expected) {
+		return domain.CheckRequirement{}, errors.New("release authenticity declaration identity is invalid")
+	}
+	base, err := (githubverification.IntegrityVerifier{}).ExpectedChecks(ctx, artifact, domain.CheckVerification)
+	if err != nil {
+		return domain.CheckRequirement{}, err
+	}
+	descriptor, err := json.Marshal(struct {
+		Integrity string
+		Root      [32]byte
+		Identity  Identity
+	}{base[0].ProfileDigest().String(), sha256.Sum256(publicRoot), expected})
+	if err != nil {
+		return domain.CheckRequirement{}, err
+	}
+	profile, err := domain.CheckProfileDigest("release-authenticity-v1", string(descriptor))
+	if err != nil {
+		return domain.CheckRequirement{}, err
+	}
+	id, _ := domain.NewCheckID("release-authenticity")
+	return domain.NewCheckRequirement(id, domain.CheckVerification, true, profile)
+}
+
+func (v *ArtifactVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if v == nil || kind != domain.CheckVerification {
+		return nil, errors.New("release authenticity declaration is unavailable")
+	}
+	requirement, err := authenticityRequirement(ctx, artifact, v.expected)
+	return []domain.CheckRequirement{requirement}, err
+}
+
+func (v *ResolvedArtifactVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if v == nil || v.proof == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckVerification {
+		return nil, errors.New("resolved release authenticity declaration is unavailable")
+	}
+	expected, _, err := v.proof(artifact)
+	if err != nil {
+		return nil, err
+	}
+	requirement, err := authenticityRequirement(ctx, artifact, expected)
+	return []domain.CheckRequirement{requirement}, err
 }

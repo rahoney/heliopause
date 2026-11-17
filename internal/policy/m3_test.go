@@ -30,14 +30,19 @@ func TestM3RequiresCompletedDynamicCheckAndInterpretsDynamicFindings(t *testing.
 	}
 }
 
-func policyInput(t *testing.T, dynamic domain.CheckExecution, code string) domain.PolicyInput {
+func policyInput(t *testing.T, dynamic domain.CheckExecution, code string, sources ...string) domain.PolicyInput {
 	t.Helper()
-	source, _ := domain.NewSourceID("npm")
+	sourceName := "npm"
+	if len(sources) == 1 {
+		sourceName = sources[0]
+	}
+	source, _ := domain.NewSourceID(sourceName)
 	identity, _ := domain.NewResolvedArtifactIdentity(source, "tiny", "1.2.3", "tarball")
 	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
 	artifact, _ := domain.NewAcquiredArtifact(identity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:tarball", 1)
 	verificationID, _ := domain.NewCheckID("npm-integrity")
-	verificationCheck, _ := domain.NewCheckExecution(verificationID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest("m3-fixture-v1", "")
+	verificationCheck, _ := domain.NewCheckExecution(verificationID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	verificationEvidence := evidence(t, "integrity-evidence", verificationCheck, artifact)
 	verification, err := domain.NewVerificationReport(verificationCheck, domain.VerificationVerified, []domain.Evidence{verificationEvidence})
 	if err != nil {
@@ -71,7 +76,24 @@ func policyInput(t *testing.T, dynamic domain.CheckExecution, code string) domai
 		references = append(references, reference)
 	}
 	runID, _ := domain.ParseRunID("run_aaaaaaaaaaaaaaaaaaaaaaaaaa")
-	input, err := domain.NewPolicyInput(runID, artifact, verification, inspection, references)
+	requirements := []domain.CheckRequirement{}
+	for index, name := range []string{"npm-integrity", "npm-static-archive", "npm-dynamic-lifecycle"} {
+		id, _ := domain.NewCheckID(name)
+		kind := domain.CheckInspection
+		if index == 0 {
+			kind = domain.CheckVerification
+		}
+		requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		requirements = append(requirements, requirement)
+	}
+	plan, err := domain.NewCheckPlan(runID, artifact, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := domain.NewPolicyInput(runID, artifact, verification, inspection, references, plan)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +103,8 @@ func policyInput(t *testing.T, dynamic domain.CheckExecution, code string) domai
 func check(t *testing.T, value string, status domain.ExecutionStatus, limitation string) domain.CheckExecution {
 	t.Helper()
 	id, _ := domain.NewCheckID(value)
-	execution, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+	profile, _ := domain.CheckProfileDigest("m3-fixture-v1", "")
+	execution, err := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, profile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,4 +118,112 @@ func evidence(t *testing.T, value string, check domain.CheckExecution, artifact 
 		t.Fatal(err)
 	}
 	return item
+}
+
+func TestM3UsesStrongestFindingRegardlessOfReportOrder(t *testing.T) {
+	for _, codes := range [][2]string{
+		{"M3_NETWORK_ATTEMPT", "M3_HONEYTOKEN_ACCESS"},
+		{"M3_UNEXPECTED_PROCESS", "M3_FILESYSTEM_VIOLATION"},
+		{"M3_NETWORK_ATTEMPT", "UNKNOWN_SECURITY_FINDING"},
+	} {
+		for _, reverse := range []bool{false, true} {
+			ordered := codes
+			if reverse {
+				ordered[0], ordered[1] = ordered[1], ordered[0]
+			}
+			t.Run(strings.Join(ordered[:], "-"), func(t *testing.T) {
+				input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "")
+				evidence := input.Inspection().Evidence()
+				findings := []domain.Finding{}
+				for _, code := range ordered {
+					finding, err := domain.NewFinding(code, []domain.EvidenceID{evidence[1].ID()})
+					if err != nil {
+						t.Fatal(err)
+					}
+					findings = append(findings, finding)
+				}
+				executions := input.Inspection().Executions()
+				static, err := domain.NewInspectionReport(executions[0], nil, evidence[:1])
+				if err != nil {
+					t.Fatal(err)
+				}
+				dynamic, err := domain.NewInspectionReport(executions[1], findings, evidence[1:])
+				if err != nil {
+					t.Fatal(err)
+				}
+				inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
+				if err != nil {
+					t.Fatal(err)
+				}
+				selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence())
+				if err != nil {
+					t.Fatal(err)
+				}
+				decision, err := (M3{}).Evaluate(selected)
+				if err != nil || decision.Decision() != domain.DecisionBlock {
+					t.Fatalf("later block was hidden by finding order: decision=%s error=%v", decision.Decision(), err)
+				}
+			})
+		}
+	}
+}
+
+func TestM3RefusesLegacyUndeclaredCheckCoverage(t *testing.T) {
+	input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "")
+	legacy, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), input.Inspection(), input.Evidence())
+	if err != nil {
+		t.Fatal(err)
+	}
+	decision, err := (M3{}).Evaluate(legacy)
+	if err != nil || decision.Decision() != domain.DecisionManualReview {
+		t.Fatal("undeclared reports automatically allowed", err)
+	}
+}
+
+func TestM6PreservesBlockPriorityAndRequiresDeclaredCoverage(t *testing.T) {
+	for _, reverse := range []bool{false, true} {
+		input := policyInput(t, check(t, "npm-dynamic-lifecycle", domain.ExecutionCompleted, ""), "", "github-release")
+		evidence := input.Inspection().Evidence()
+		executions := input.Inspection().Executions()
+		codes := []string{"M6_FORMAT_UNSUPPORTED", "M3_HONEYTOKEN_ACCESS"}
+		if reverse {
+			codes[0], codes[1] = codes[1], codes[0]
+		}
+		var findings []domain.Finding
+		for _, code := range codes {
+			finding, err := domain.NewFinding(code, []domain.EvidenceID{evidence[1].ID()})
+			if err != nil {
+				t.Fatal(err)
+			}
+			findings = append(findings, finding)
+		}
+		static, err := domain.NewInspectionReport(executions[0], nil, evidence[:1])
+		if err != nil {
+			t.Fatal(err)
+		}
+		dynamic, err := domain.NewInspectionReport(executions[1], findings, evidence[1:])
+		if err != nil {
+			t.Fatal(err)
+		}
+		inspection, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
+		if err != nil {
+			t.Fatal(err)
+		}
+		selected, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), inspection, input.Evidence(), input.CheckPlan())
+		if err != nil {
+			t.Fatal(err)
+		}
+		decision, err := (M6{}).Evaluate(selected)
+		if err != nil || decision.Decision() != domain.DecisionBlock {
+			t.Fatal("M6 format review hid later block", decision, err)
+		}
+		legacy, err := domain.NewPolicyInput(input.RunID(), input.Artifact(), input.Verification(), input.Inspection(), input.Evidence())
+		if err != nil {
+			t.Fatal(err)
+		}
+		decision, err = (M6{}).Evaluate(legacy)
+		if err != nil || decision.Decision() != domain.DecisionManualReview {
+			t.Fatal("M6 accepted undeclared legacy coverage", decision, err)
+		}
+	}
 }

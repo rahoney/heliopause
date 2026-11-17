@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	checkIDValue    = "npm-declared-integrity"
-	evidenceIDValue = "npm-declared-integrity-result"
+	checkIDValue     = "npm-declared-integrity"
+	checkProfileName = "npm-declared-integrity-v1"
+	evidenceIDValue  = "npm-declared-integrity-result"
 )
 
 // IntegrityVerifier compares public npm's declared SHA-512 SRI to the acquired byte stream.
@@ -35,7 +36,8 @@ func (IntegrityVerifier) Verify(ctx context.Context, artifact domain.AcquiredArt
 	if err != nil {
 		return domain.VerificationReport{}, err
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.VerificationReport{}, err
 	}
@@ -87,4 +89,20 @@ func decodeSHA512SRI(value string) ([]byte, bool) {
 		return nil, false
 	}
 	return decoded, true
+}
+
+func (IntegrityVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if ctx == nil || kind != domain.CheckVerification || artifact.Identity().Source().String() != "npm" {
+		return nil, errors.New("npm verification declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID(checkIDValue)
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

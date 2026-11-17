@@ -3,9 +3,11 @@ package githubrelease
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type DynamicInspector struct{ sandbox ports.Sandbox }
@@ -41,19 +43,19 @@ func githubDynamicReport(artifact domain.AcquiredArtifact, result domain.Sandbox
 		if limitation == "M3_LINUX_ONLY" || limitation == "M3_RUNTIME_UNAVAILABLE" || limitation == "M3_RUNTIME_VERSION_UNSUPPORTED" || limitation == "M3_IMAGE_UNAVAILABLE" || (name == pipxRuntimeCheck && limitation == "P4_PIPX_RUNTIME_UNAVAILABLE") {
 			capability, status = domain.CapabilityUnsupported, domain.ExecutionNotExecuted
 		}
-		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
+		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, githubDynamicProfile(name))
 		return domain.NewInspectionReport(check, nil, nil)
 	}
 	for _, observation := range result.Observations() {
 		if observation.Category() == domain.ObservationResource {
-			check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M6_DYNAMIC_RESOURCE_LIMIT")
+			check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M6_DYNAMIC_RESOURCE_LIMIT", githubDynamicProfile(name))
 			return domain.NewInspectionReport(check, nil, nil)
 		}
 	}
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", githubDynamicProfile(name))
 	summary, err := result.ObservationSummary()
 	if err != nil {
-		incomplete, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
+		incomplete, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID", githubDynamicProfile(name))
 		return domain.NewInspectionReport(incomplete, nil, nil)
 	}
 	evidenceID, _ := domain.NewEvidenceID(name + "-result")
@@ -101,8 +103,20 @@ func NewCompositeInspector(static *StaticInspector, dynamic *DynamicInspector) (
 }
 func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	static, err := i.static.Inspect(ctx, artifact)
-	if err != nil || len(static.Findings()) != 0 {
+	if err != nil {
 		return static, err
+	}
+	if len(static.Findings()) != 0 {
+		if !githubReleaseRequiresELFProbe(artifact) {
+			return static, nil
+		}
+		id, _ := domain.NewCheckID("github-release-elf-dynamic")
+		check, _ := domain.NewCheckExecution(id, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionNotExecuted, "M6_STATIC_PREREQUISITE_FAILED", githubDynamicProfile("github-release-elf-dynamic"))
+		skipped, e := domain.NewInspectionReport(check, nil, nil)
+		if e != nil {
+			return domain.InspectionReport{}, e
+		}
+		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
 	}
 	elf := false
 	for _, evidence := range static.Evidence() {
@@ -116,4 +130,31 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 		return domain.InspectionReport{}, err
 	}
 	return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
+}
+
+func githubDynamicProfile(name string) domain.ContentDigest {
+	image := runtimeidentity.NodeImageReference
+	if name == pipxRuntimeCheck {
+		image = runtimeidentity.PythonImageReference + "|" + runtimeidentity.PipxToolSHA256
+	}
+	profile, _ := domain.CheckProfileDigest(name+"-v1", image)
+	return profile
+}
+
+func githubReleaseRequiresELFProbe(a domain.AcquiredArtifact) bool {
+	name := a.Identity().Variant()
+	return !strings.HasSuffix(name, ".zip") && !strings.HasSuffix(name, ".tar.gz")
+}
+
+func (i *CompositeInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil || i.dynamic == nil {
+		return nil, errors.New("github release inspection declaration is unavailable")
+	}
+	result, err := i.static.ExpectedChecks(ctx, a, kind)
+	if err != nil || !githubReleaseRequiresELFProbe(a) {
+		return result, err
+	}
+	id, _ := domain.NewCheckID("github-release-elf-dynamic")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, githubDynamicProfile("github-release-elf-dynamic"))
+	return append(result, requirement), err
 }

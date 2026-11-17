@@ -13,6 +13,7 @@ type DependencyInspection struct {
 	runID                 RunID
 	artifact              AcquiredArtifact
 	checks                []CheckExecution
+	plan                  CheckPlan
 	evidence              []EvidenceReference
 	decision              PolicyDecision
 	installActionEvidence Evidence
@@ -20,7 +21,7 @@ type DependencyInspection struct {
 
 // NewDependencyInspection constructs one completed inspection record for an
 // exact locked dependency.
-func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact AcquiredArtifact, checks []CheckExecution, evidence []EvidenceReference, decision PolicyDecision) (DependencyInspection, error) {
+func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact AcquiredArtifact, checks []CheckExecution, evidence []EvidenceReference, decision PolicyDecision, plans ...CheckPlan) (DependencyInspection, error) {
 	if node.value == "" || runID.value == "" || artifact.identity.source.value == "" || decision.policyID == "" {
 		return DependencyInspection{}, errors.New("dependency inspection requires node, completed run subject, and policy decision")
 	}
@@ -39,9 +40,19 @@ func NewDependencyInspection(node DependencyNodeID, runID RunID, artifact Acquir
 		}
 		seenEvidence[reference.id] = true
 	}
+	if len(plans) > 1 {
+		return DependencyInspection{}, errors.New("dependency inspection has multiple declarations")
+	}
+	var plan CheckPlan
+	if len(plans) == 1 {
+		plan = plans[0]
+		if err := plan.Validate(runID, artifact, checks); err != nil {
+			return DependencyInspection{}, err
+		}
+	}
 	return DependencyInspection{
 		node: node, runID: runID, artifact: artifact,
-		checks:   append([]CheckExecution(nil), checks...),
+		plan: plan, checks: append([]CheckExecution(nil), checks...),
 		evidence: append([]EvidenceReference(nil), evidence...), decision: decision,
 	}, nil
 }
@@ -50,6 +61,8 @@ func (i DependencyInspection) Node() DependencyNodeID         { return i.node }
 func (i DependencyInspection) RunID() RunID                   { return i.runID }
 func (i DependencyInspection) Artifact() AcquiredArtifact     { return i.artifact }
 func (i DependencyInspection) PolicyDecision() PolicyDecision { return i.decision }
+func (i DependencyInspection) CheckPlan() CheckPlan           { return i.plan }
+
 func (i DependencyInspection) Checks() []CheckExecution {
 	return append([]CheckExecution(nil), i.checks...)
 }

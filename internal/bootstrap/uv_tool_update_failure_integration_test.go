@@ -21,7 +21,7 @@ import (
 
 type uvToolUnavailableEvidence struct{ cause error }
 
-func (e uvToolUnavailableEvidence) Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (e uvToolUnavailableEvidence) Record(context.Context, domain.RunID, []domain.Evidence, ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	return nil, e.cause
 }
 

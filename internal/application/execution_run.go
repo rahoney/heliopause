@@ -108,10 +108,21 @@ func (s *ExecutionService) Run(ctx context.Context, request ExecutionPreparation
 
 // The runtime evidence, output capture and terminal rules are identical for
 // connected and explicit-root preparations.
-func executePreparedExecution(ctx context.Context, result ExecutionResult, execute func() (ExecutionRuntimeOutcome, error)) (ExecutionResult, error) {
+func executePreparedExecution(ctx context.Context, result ExecutionResult, execute func() (ExecutionRuntimeOutcome, error)) (final ExecutionResult, finalErr error) {
 	if ctx.Err() != nil {
 		return result, ctx.Err()
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return result, err
+	}
+	defer func() {
+		if final.complete {
+			finishUse(nil)
+		} else {
+			finishUse(errors.Join(errors.New("execution consumer finalization is unproven"), finalErr))
+		}
+	}()
 	ports.ReportProgress(ctx, ports.Progress{Stage: "execute"})
 	result.attempted = true
 	outcome, resultErr := execute()

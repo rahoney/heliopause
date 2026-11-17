@@ -11,6 +11,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const checkProfileName = "pypi-declared-sha256-v1"
+
 type IntegrityVerifier struct{}
 
 func (IntegrityVerifier) Verify(ctx context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {
@@ -21,7 +23,8 @@ func (IntegrityVerifier) Verify(ctx context.Context, artifact domain.AcquiredArt
 		return domain.VerificationReport{}, errors.New("PyPI integrity source is unsupported")
 	}
 	checkID, _ := domain.NewCheckID("pypi-declared-sha256")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	declared, ok := artifact.DeclaredIntegrity()
 	valid := ok && strings.HasPrefix(declared, "sha256:") && len(strings.TrimPrefix(declared, "sha256:")) == 64
 	match := valid && subtle.ConstantTimeCompare([]byte(strings.TrimPrefix(declared, "sha256:")), []byte(artifact.Digest().String())) == 1
@@ -32,4 +35,17 @@ func (IntegrityVerifier) Verify(ctx context.Context, artifact domain.AcquiredArt
 		return domain.NewVerificationReportWithFindings(check, domain.VerificationMismatch, []domain.Finding{finding}, []domain.Evidence{evidence})
 	}
 	return domain.NewVerificationReport(check, domain.VerificationVerified, []domain.Evidence{evidence})
+}
+
+func (IntegrityVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if ctx == nil || ctx.Err() != nil || kind != domain.CheckVerification {
+		return nil, errors.New("pypi verification declaration is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return nil, errors.New("pypi verification source is unsupported")
+	}
+	id, _ := domain.NewCheckID("pypi-declared-sha256")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	return []domain.CheckRequirement{requirement}, err
 }

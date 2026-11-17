@@ -17,6 +17,11 @@ func resolveProjectSnapshot(ctx context.Context, installContext domain.InstallCo
 	if err := ctx.Err(); err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return snapshot, err
+	}
+	defer func() { finishUse(resultErr) }()
 	guard, err := promoter.Begin(ctx, installContext)
 	if err != nil {
 		return snapshot, fmt.Errorf("guard "+label+" project inputs: %w", err)

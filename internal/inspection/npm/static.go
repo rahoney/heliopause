@@ -18,6 +18,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const staticCheckProfileName = "npm-static-archive-v1"
+
 const (
 	decodedLimit  = artifactnpm.ArchiveDecodedLimit
 	entryLimit    = artifactnpm.ArchiveEntryLimit
@@ -224,7 +226,8 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, codes []string, sum
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(staticCheckProfileName, "")
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -245,4 +248,20 @@ func (i *Inspector) report(artifact domain.AcquiredArtifact, codes []string, sum
 		findings = append(findings, finding)
 	}
 	return domain.NewInspectionReport(execution, findings, []domain.Evidence{evidence})
+}
+
+func (i *Inspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || kind != domain.CheckInspection || artifact.Identity().Source().String() != "npm" {
+		return nil, errors.New("npm static declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("npm-static-archive")
+	profile, _ := domain.CheckProfileDigest(staticCheckProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

@@ -126,14 +126,17 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/artifact/gomodule": {
+			modulePath + "/internal/core/ports":            true,
 			modulePath + "/internal/core/domain":           true,
 			modulePath + "/internal/artifact/projectbuild": true,
 		},
 		modulePath + "/internal/artifact/projectbuild": {modulePath + "/internal/core/domain": true},
 		modulePath + "/internal/artifact/cargo": {
+			modulePath + "/internal/core/ports":  true,
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/terraformprovider": {
+			modulePath + "/internal/core/ports":             true,
 			modulePath + "/internal/core/domain":            true,
 			modulePath + "/internal/artifact/githubrelease": true,
 		},
@@ -174,7 +177,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/terraformprovider": true,
 			modulePath + "/internal/core/domain":                true,
 		},
-		modulePath + "/internal/inspection/terraformprovider": {modulePath + "/internal/artifact/terraformprovider": true, modulePath + "/internal/core/domain": true, modulePath + "/internal/core/ports": true},
+		modulePath + "/internal/inspection/terraformprovider": {modulePath + "/internal/artifact/terraformprovider": true, modulePath + "/internal/core/domain": true, modulePath + "/internal/core/ports": true, modulePath + "/internal/runtimeidentity": true},
 		modulePath + "/internal/inspection/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
 			modulePath + "/internal/core/domain":    true,
@@ -184,7 +187,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":             true,
 			modulePath + "/internal/inspection/projectbuild": true,
 		},
-		modulePath + "/internal/inspection/projectbuild": {modulePath + "/internal/core/domain": true},
+		modulePath + "/internal/inspection/projectbuild": {modulePath + "/internal/core/domain": true, modulePath + "/internal/runtimeidentity": true},
 		modulePath + "/internal/verification/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
@@ -193,17 +196,25 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":   true,
 		},
 		modulePath + "/internal/inspection/npm": {
-			modulePath + "/internal/artifact/npm": true,
-			modulePath + "/internal/core/domain":  true,
-			modulePath + "/internal/core/ports":   true,
+			modulePath + "/internal/artifact/npm":    true,
+			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/core/ports":      true,
+			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/inspection/pypi": {
-			modulePath + "/internal/artifact/pypi": true,
-			modulePath + "/internal/core/domain":   true,
-			modulePath + "/internal/sandbox":       true,
+			modulePath + "/internal/core/ports":      true,
+			modulePath + "/internal/artifact/pypi":   true,
+			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/sandbox":         true,
+			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/evidence/local": {
 			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/ports":  true,
+		},
+		modulePath + "/internal/storage": {
+			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/ports":  true,
 		},
 		modulePath + "/internal/sandbox": {
 			modulePath + "/internal/artifact/terraformprovider": true,
@@ -213,6 +224,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/npm":               true,
 			modulePath + "/internal/artifact/pypi":              true,
 			modulePath + "/internal/core/domain":                true,
+			modulePath + "/internal/core/ports":                 true,
 			modulePath + "/internal/runtimeidentity":            true,
 		},
 		modulePath + "/internal/promotion": {
@@ -302,6 +314,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/pypi":            {},
 		modulePath + "/internal/inspection/npm":               {},
 		modulePath + "/internal/evidence/local":               {},
+		modulePath + "/internal/storage":                      {},
 		modulePath + "/internal/sandbox":                      {},
 		modulePath + "/internal/promotion":                    {},
 		modulePath + "/internal/runtimeidentity":              {},

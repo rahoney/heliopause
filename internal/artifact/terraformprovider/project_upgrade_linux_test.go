@@ -3,12 +3,15 @@ package terraformprovider
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/storage"
 )
 
 func TestTerraformUpgradeFreezesAllIndependentProviders(t *testing.T) {
@@ -245,5 +248,152 @@ func TestTerraformDefaultInitRejectsIncompleteLockBeforePublicIO(t *testing.T) {
 				t.Fatal("incomplete retained lock contacted public endpoints", transport.calls)
 			}
 		})
+	}
+}
+
+func TestProjectSelectionPreparationUsesBoundedMemoryBeforeReservedAcquisition(t *testing.T) {
+	for _, mode := range []string{"explicit-init", "default-init", "upgrade"} {
+		for _, fault := range []string{"none", "cancelled", "malformed-archive", "memory-limit"} {
+			t.Run(mode+"/"+fault, func(t *testing.T) {
+				client, transport, ref := clientFixture(t)
+				archive := packageFixture(t, []string{"terraform-provider-random_v3.7.2_x5"}, []os.FileMode{0755}, [][]byte{providerELFFixture()}).parts[5]
+				key := registryEndpoint + "/v1/providers/hashicorp/random/3.7.2/download/linux/amd64"
+				transport.bodies[key] = bytes.ReplaceAll(transport.bodies[key], []byte(sha256Hex([]byte("synthetic acquisition bytes; not a verified provider archive"))), []byte(sha256Hex(archive)))
+				archiveURL := "https://releases.hashicorp.com/terraform-provider-random/3.7.2/terraform-provider-random_3.7.2_linux_amd64.zip"
+				transport.bodies[archiveURL] = archive
+				if fault == "malformed-archive" {
+					transport.bodies[archiveURL] = []byte("not a provider archive")
+				}
+				if fault == "memory-limit" {
+					client.preparedBytes = providerExpandedLimit
+				}
+				base, err := filepath.EvalSymlinks(t.TempDir())
+				if err != nil {
+					t.Fatal(err)
+				}
+				root := filepath.Join(base, "haa")
+				owner, err := storage.NewLocal(context.Background(), root, domain.DefaultStoragePolicy())
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer owner.Close()
+				client.intakeRoot = filepath.Join(root, "intake")
+				project := filepath.Join(base, "project")
+				if err := os.Mkdir(project, 0700); err != nil {
+					t.Fatal(err)
+				}
+				config := []byte("terraform {\n required_providers {\n random={source=\"hashicorp/random\",version=\"3.7.2\"}\n }\n}\n")
+				control := filepath.Join(project, "main.tf")
+				if err := os.WriteFile(control, config, 0640); err != nil {
+					t.Fatal(err)
+				}
+				original, err := os.Stat(control)
+				if err != nil {
+					t.Fatal(err)
+				}
+				foreign := filepath.Join(base, "foreign.note")
+				if err := os.WriteFile(foreign, []byte("preserve unrelated user data"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				capture, err := CaptureProject(context.Background(), project)
+				if err != nil {
+					t.Fatal(err)
+				}
+				target, err := domain.NewInstallTarget(project)
+				if err != nil {
+					t.Fatal(err)
+				}
+				install, err := domain.NewInstallContext(target)
+				if err != nil {
+					t.Fatal(err)
+				}
+				ctx, cancel := context.WithCancel(ports.WithStorage(context.Background(), owner))
+				defer cancel()
+				if fault == "cancelled" {
+					cancel()
+				}
+				var update domain.ProjectDependencyUpdate
+				switch mode {
+				case "explicit-init":
+					update, err = client.ResolveProjectDependencyUpdate(ctx, ref, install, capture.Controls)
+				case "default-init":
+					update, err = client.ResolveProjectInit(ctx, install, capture.Controls)
+				case "upgrade":
+					update, err = client.ResolveProjectLockUpdate(ctx, install, capture.Controls, "")
+				}
+				if fault != "none" {
+					if err == nil || update.Valid() {
+						t.Fatal("failed preparation returned a valid selection", fault, err)
+					}
+					if fault == "cancelled" && !errors.Is(err, context.Canceled) {
+						t.Fatal("cancellation cause lost", err)
+					}
+				} else if err != nil || !update.Valid() {
+					t.Fatal("bounded selection before operation failed", err)
+				}
+				if _, e := os.Stat(root); !os.IsNotExist(e) {
+					t.Fatal("preparation published intake or opened the storage journal", e)
+				}
+				current, e := os.Stat(control)
+				body, re := os.ReadFile(control)
+				if e != nil || re != nil || !os.SameFile(original, current) || original.Mode() != current.Mode() || !bytes.Equal(body, config) {
+					t.Fatal("selection changed original user control", e, re)
+				}
+				if body, e := os.ReadFile(foreign); e != nil || string(body) != "preserve unrelated user data" {
+					t.Fatal("selection removed foreign data", e)
+				}
+				if fault != "none" {
+					return
+				}
+				// Preparation is not an approval: real acquisition still requires admission.
+				selected := update.Snapshot().Dependencies()[0]
+				calls := 0
+				for _, n := range transport.calls {
+					calls += n
+				}
+				run, err := domain.NewRunID()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = client.Acquire(ctx, run, selected); err == nil || err.Error() != "invalid storage reservation" {
+					t.Fatal("actual acquisition bypassed missing operation", err)
+				}
+				operation, err := domain.NewOperationID()
+				if err != nil {
+					t.Fatal(err)
+				}
+				ctx = ports.WithStorageOperation(ctx, operation)
+				run, err = domain.NewRunID()
+				if err != nil {
+					t.Fatal(err)
+				}
+				acquired, err := client.Acquire(ctx, run, selected)
+				if err != nil {
+					t.Fatal("reserved acquisition failed", err)
+				}
+				bundle, err := ReadIntake(client.intakeRoot, acquired)
+				if err != nil || bundle.ArchiveDigest() != sha256Hex(archive) {
+					t.Fatal("frozen package identity changed", err)
+				}
+				afterCalls := 0
+				for _, n := range transport.calls {
+					afterCalls += n
+				}
+				if calls != afterCalls {
+					t.Fatal("inspection reselected or downloaded package", calls, afterCalls)
+				}
+				// Real inspection is deliberately not run by this unit. Storage must retain it.
+				if err := owner.Finish(ctx, true); err == nil {
+					t.Fatal("uninspected intake was treated as complete")
+				}
+				if _, err := ReadIntake(client.intakeRoot, acquired); err != nil {
+					t.Fatal("incomplete inspection intake was deleted", err)
+				}
+				journal, err := os.ReadFile(filepath.Join(root, ".storage/resources.jsonl"))
+				if err != nil || !bytes.Contains(journal, []byte(operation.String())) || !bytes.Contains(journal, []byte(`"phase":"RETAINED"`)) {
+					t.Fatal("operation accounting was lost", err)
+				}
+			})
+		}
 	}
 }

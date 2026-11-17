@@ -175,3 +175,133 @@ func inspectFixture(t *testing.T, scenario fakeworkflow.Scenario) (*application.
 	}
 	return service, fake, request
 }
+
+// A late provider failure must not erase already confirmed facts before the
+// operation's transient payloads can be finalized. These results never approve.
+type operationalInspectionPorts struct {
+	*fakeworkflow.Ports
+	partial            bool
+	foreign            bool
+	cancel             context.CancelFunc
+	cause, recordError error
+	recorded           int
+	boundedRecord      bool
+}
+
+func (p *operationalInspectionPorts) Inspect(ctx context.Context, a domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	report, err := p.Ports.Inspect(ctx, a)
+	if err != nil {
+		return report, err
+	}
+	if p.cancel != nil {
+		p.cancel()
+	}
+	if !p.partial {
+		report = domain.InspectionReport{}
+	}
+	if p.foreign {
+		identity, _ := domain.NewResolvedArtifactIdentity(a.Identity().Source(), "foreign", a.Identity().Version(), a.Identity().Variant())
+		id, _ := domain.NewEvidenceID("foreign-inspection")
+		fact, e := domain.NewEvidence(id, report.Execution().ID(), identity, a.Digest(), "fixture", "Foreign subject must be rejected.")
+		if e != nil {
+			return domain.InspectionReport{}, e
+		}
+		report, e = domain.NewInspectionReport(report.Execution(), nil, []domain.Evidence{fact})
+		if e != nil {
+			return report, e
+		}
+	}
+	return report, p.cause
+}
+func (p *operationalInspectionPorts) Record(ctx context.Context, run domain.RunID, facts []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
+	p.recorded = len(facts)
+	_, p.boundedRecord = ctx.Deadline()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if p.recordError != nil {
+		return nil, p.recordError
+	}
+	return p.Ports.Record(ctx, run, facts, checks...)
+}
+func TestFailedInspectionRetainsConfirmedEvidence(t *testing.T) {
+	for _, install := range []bool{false, true} {
+		for _, mode := range []string{"empty-report", "partial-report", "canceled", "record-failed", "foreign"} {
+			name := mode
+			if install {
+				name = "install/" + name
+			} else {
+				name = "inspect/" + name
+			}
+			t.Run(name, func(t *testing.T) {
+				base, _ := fakeworkflow.New(fakeworkflow.Safe)
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				cause := errors.New("late inspection failure")
+				recordError := errors.New("storage unavailable")
+				fixture := &operationalInspectionPorts{Ports: base, partial: mode != "empty-report", foreign: mode == "foreign", cause: cause}
+				if mode == "canceled" {
+					fixture.cancel = cancel
+				}
+				if mode == "record-failed" {
+					fixture.recordError = recordError
+				}
+				reference, _ := fixture.Reference()
+				var result domain.OperationResult
+				var err error
+				if install {
+					target, _ := domain.NewInstallTarget("/tmp/heliopause-install-target")
+					installContext, _ := domain.NewInstallContext(target)
+					request, _ := application.NewInstallRequest(reference, installContext)
+					service, e := application.NewInstallInspectService(&lockedResolver{graph: fixtureLockedGraph(t)}, fixture, fixture, fixture, fixture, policy.M1{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+					if e != nil {
+						t.Fatal(e)
+					}
+					outcome, e := service.Inspect(ctx, request)
+					err = e
+					if outcome.Set().Valid() {
+						t.Fatal("failed partial inspection became an approved set")
+					}
+					var failure *application.InspectionFailure
+					if !errors.As(err, &failure) || len(failure.Results()) != 1 {
+						t.Fatalf("partial result unavailable: %v", err)
+					}
+					result = failure.Results()[0]
+				} else {
+					request, _ := application.NewInspectRequest(reference)
+					service, e := application.NewInspectService(fixture, fixture, fixture, fixture, policy.M1{}, domain.NewOperationID, domain.NewRunID)
+					if e != nil {
+						t.Fatal(e)
+					}
+					result, err = service.Inspect(ctx, request)
+				}
+				if !errors.Is(err, cause) {
+					t.Fatalf("first failure lost: %v", err)
+				}
+				if mode == "record-failed" && !errors.Is(err, recordError) {
+					t.Fatalf("secondary record failure lost: %v", err)
+				}
+				want := 2
+				if mode == "empty-report" || mode == "foreign" {
+					want = 1
+				}
+				if fixture.recorded != want || !fixture.boundedRecord {
+					t.Fatalf("confirmed facts not saved with bounded finalization context: %d/%v", fixture.recorded, fixture.boundedRecord)
+				}
+				if len(result.Checks()) != want {
+					t.Fatalf("actual checks lost: %d", len(result.Checks()))
+				}
+				wantRefs := want
+				if mode == "record-failed" {
+					wantRefs = 0
+				}
+				if len(result.Evidence()) != wantRefs {
+					t.Fatalf("durable evidence references=%d, want %d", len(result.Evidence()), wantRefs)
+				}
+				if _, ok := result.PolicyDecision(); ok || result.Status() != domain.OperationFailed {
+					t.Fatal("operational failure acquired Policy/completion")
+				}
+			})
+		}
+	}
+}

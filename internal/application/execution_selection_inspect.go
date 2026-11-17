@@ -66,6 +66,7 @@ func (s *ExecutionInspectService) InspectSelection(ctx context.Context, resoluti
 	if err != nil {
 		return ExecutionSelectionInspection{}, fmt.Errorf("generate execution inspection operation: %w", err)
 	}
+	ctx = ports.WithStorageOperation(ctx, operation)
 	partial := ExecutionSelectionInspection{operation: operation, resolution: resolution}
 	if operation.String() == "" {
 		return partial, errors.New("execution inspection operation is invalid")

@@ -141,3 +141,57 @@ func TestPreparedInstallRejectsBeforeSelectionAndPreservesStartedFailure(t *test
 		t.Fatal("canceled preparation started", err, calls)
 	}
 }
+
+func TestPreparedInstallTracksStorageBeforeBeginAndAfterActualClose(t *testing.T) {
+	for _, scenario := range []string{"normal", "policy denied", "begin failure", "close failure"} {
+		t.Run(scenario, func(t *testing.T) {
+			decision := domain.DecisionAllow
+			if scenario == "policy denied" {
+				decision = domain.DecisionBlock
+			}
+			request, inspection := installWorkflowFixtureWithPolicy(t, fixedSetPolicy{decision: decision})
+			calls := []string{}
+			base, _ := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
+			cause := errors.New("controlled lifecycle fault")
+			session := &ordinaryInstallSession{resolver: &lockedResolver{graph: twoNodeGraph(t)}, promoter: &promotionPort{calls: &calls}, calls: &calls}
+			preparation := ordinaryPreparationFixture{session: session, calls: &calls}
+			if scenario == "begin failure" {
+				preparation.err = cause
+			}
+			if scenario == "close failure" {
+				session.closeErr = cause
+			}
+			service, _ := application.NewPreparedInstallService(base, preparation)
+			tracker := &workflowStorageUse{calls: &calls}
+			_, err := service.Install(ports.WithStorage(context.Background(), tracker), request)
+			if len(calls) < 3 || calls[0] != "storage.begin" || calls[len(calls)-1] != "storage.end" {
+				t.Fatal("storage lifetime did not enclose the guard", calls)
+			}
+			last := tracker.causes[len(tracker.causes)-1]
+			if scenario == "begin failure" || scenario == "close failure" {
+				if !errors.Is(err, cause) || !errors.Is(last, cause) {
+					t.Fatal("primary/close error lost", err, last)
+				}
+			} else if err != nil || last != nil {
+				t.Fatal("normal close or policy denial became unknown", err, last)
+			}
+			if scenario != "begin failure" && calls[len(calls)-2] != "close" {
+				t.Fatal("storage released before actual guard close", calls)
+			}
+		})
+	}
+}
+
+type workflowStorageUse struct {
+	calls  *[]string
+	causes []error
+}
+
+func (*workflowStorageUse) Policy() domain.StoragePolicy { return domain.DefaultStoragePolicy() }
+func (*workflowStorageUse) Reserve(context.Context, ports.StorageRequest) (ports.StorageLease, error) {
+	return nil, errors.New("unexpected fake-workflow storage write")
+}
+func (s *workflowStorageUse) TrackUse(context.Context) (func(error), error) {
+	*s.calls = append(*s.calls, "storage.begin")
+	return func(cause error) { *s.calls = append(*s.calls, "storage.end"); s.causes = append(s.causes, cause) }, nil
+}

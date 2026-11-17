@@ -35,7 +35,7 @@ func (p selectedUpdatePreparation) BeginInstallUpdate(_ context.Context, _ domai
 
 type concurrentUpdateEvidence struct{}
 
-func (concurrentUpdateEvidence) Record(_ context.Context, run domain.RunID, items []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (concurrentUpdateEvidence) Record(_ context.Context, run domain.RunID, items []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	refs := make([]domain.EvidenceReference, 0, len(items))
 	for _, item := range items {
 		ref, err := domain.NewEvidenceReference(item.ID(), "fixture:"+run.String()+":"+item.ID().String())

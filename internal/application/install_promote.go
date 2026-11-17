@@ -40,7 +40,7 @@ func NewInstallService(inspection *InstallInspectService, manifest ports.Manifes
 	return &InstallService{inspection: inspection, manifest: manifest, staging: staging, promotion: promotion}, nil
 }
 
-func (s *InstallService) Install(ctx context.Context, request InstallRequest) (InstallOutcome, error) {
+func (s *InstallService) Install(ctx context.Context, request InstallRequest) (outcome InstallOutcome, resultErr error) {
 	if request.update {
 		if _, ok := s.promotion.(ports.InstallUpdateSession); !ok {
 			return InstallOutcome{failureCode: "UPDATE_PREPARATION_FAILED"}, errors.New("update requires an original-state session before resolution")
@@ -50,7 +50,7 @@ func (s *InstallService) Install(ctx context.Context, request InstallRequest) (I
 	if err != nil {
 		return InstallOutcome{inspection: inspected, failureCode: "INSTALL_INSPECTION_FAILED"}, err
 	}
-	outcome := InstallOutcome{inspection: inspected}
+	outcome = InstallOutcome{inspection: inspected}
 	if inspected.Decision().Decision() != domain.DecisionAllow {
 		return outcome, nil
 	}
@@ -66,6 +66,11 @@ func (s *InstallService) Install(ctx context.Context, request InstallRequest) (I
 		return outcome, fmt.Errorf("build verified Manifest and SBOM: %w", err)
 	}
 	outcome.bundle = bundle
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return outcome, err
+	}
+	defer func() { finishUse(resultErr) }()
 	ports.ReportProgress(ctx, ports.Progress{Stage: "stage"})
 	staged, err := s.staging.Stage(ctx, bundle)
 	if err != nil {

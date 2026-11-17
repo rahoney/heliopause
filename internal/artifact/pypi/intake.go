@@ -49,7 +49,7 @@ func (i *Intake) Resolve(context.Context, domain.ArtifactReference) (domain.Reso
 	return domain.ResolvedArtifact{}, errors.New("PyPI intake cannot resolve a reference; use the isolated resolver")
 }
 
-func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (artifact domain.AcquiredArtifact, resultErr error) {
 	if ctx == nil || ctx.Err() != nil || i == nil || i.client == nil || runID.String() == "" {
 		return domain.AcquiredArtifact{}, errors.New("PyPI intake request is invalid")
 	}
@@ -78,33 +78,92 @@ func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domai
 	if err := os.Mkdir(directory, 0o700); err != nil {
 		return domain.AcquiredArtifact{}, fmt.Errorf("create PyPI intake Run directory: %w", err)
 	}
-	cleanup := func(cause error) (domain.AcquiredArtifact, error) {
-		if removeErr := os.RemoveAll(directory); removeErr != nil {
-			return domain.AcquiredArtifact{}, errors.Join(cause, fmt.Errorf("remove incomplete PyPI intake: %w", removeErr))
-		}
-		return domain.AcquiredArtifact{}, cause
-	}
-	file, digest, size, err := i.download(ctx, resolved.AcquisitionLocator(), directory, filename, profile)
+	root, err := os.OpenRoot(i.intakeRoot)
 	if err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
+	identity, err := root.Lstat(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	held, err := root.OpenRoot(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, held.Close()) }()
+	opened, err := held.Stat(".")
+	if err != nil || !os.SameFile(identity, opened) {
+		return domain.AcquiredArtifact{}, errors.New("PyPI intake directory changed")
+	}
+	var lease ports.StorageLease
+	successful := false
+	defer func() {
+		if !successful {
+			current, cleanupErr := root.Lstat(runID.String())
+			if cleanupErr == nil && os.SameFile(identity, current) {
+				// Remove is deliberately non-recursive: unproven payloads stay
+				// accounted until their lifetime/ownership can be recovered.
+				cleanupErr = root.Remove(runID.String())
+				if cleanupErr == nil {
+					parent, err := root.Open(".")
+					cleanupErr = err
+					if err == nil {
+						cleanupErr = errors.Join(parent.Sync(), parent.Close())
+					}
+				}
+			} else {
+				cleanupErr = errors.Join(errors.New("PyPI intake cleanup ownership is unknown"), cleanupErr)
+			}
+			resultErr = errors.Join(resultErr, cleanupErr)
+			if lease != nil && cleanupErr == nil {
+				cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				resultErr = errors.Join(resultErr, lease.Abort(cleanupCtx))
+				cancel()
+			}
+		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
+	}()
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		policy, _ := resourcePolicyFromContext(ctx)
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: runID, Kind: "intake", Temporary: runID.String(), Target: runID.String(), Bytes: uint64(policy.MaxArtifactCompressed()) + 1 + uint64(len(filename)), Files: 2})
+		if err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	_, digest, size, err := i.download(ctx, resolved.AcquisitionLocator(), held, filename, profile)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
 	}
 	if digest != strings.TrimPrefix(declared, "sha256:") {
-		return cleanup(errors.New("PyPI acquired SHA-256 differs from resolved integrity"))
+		return domain.AcquiredArtifact{}, errors.New("PyPI acquired SHA-256 differs from resolved integrity")
 	}
-	if err := os.WriteFile(filepath.Join(directory, "filename"), []byte(filename), 0o400); err != nil {
-		return cleanup(fmt.Errorf("persist PyPI distribution filename: %w", err))
-	}
-	identity := resolved.Identity()
-	handle := "intake:" + runID.String() + ":" + identity.Variant()
-	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, mustSHA256(digest), handle, size, declared)
+	file, err := held.OpenFile("filename", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o400)
 	if err != nil {
-		return cleanup(err)
+		return domain.AcquiredArtifact{}, fmt.Errorf("persist PyPI distribution filename: %w", err)
 	}
-	_ = file
+	_, writeErr := file.WriteString(filename)
+	if err := errors.Join(writeErr, file.Sync(), file.Close()); err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	artifactIdentity := resolved.Identity()
+	handle := "intake:" + runID.String() + ":" + artifactIdentity.Variant()
+	artifact, err = domain.NewAcquiredArtifactWithDeclaredIntegrity(artifactIdentity, mustSHA256(digest), handle, size, declared)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	successful = true
 	return artifact, nil
 }
 
-func (i *Intake) download(ctx context.Context, rawURL, directory, filename string, profile SourceProfile) (string, string, uint64, error) {
+func (i *Intake) download(ctx context.Context, rawURL string, directory *os.Root, filename string, profile SourceProfile) (string, string, uint64, error) {
 	if err := validateDistributionURLForSource(rawURL, filename, profile, false); err != nil {
 		return "", "", 0, errors.New("PyPI distribution URL is invalid")
 	}
@@ -127,19 +186,19 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	if response.StatusCode != http.StatusOK {
 		return "", "", 0, errors.New("PyPI distribution returned unexpected status")
 	}
-	if CheckTemporaryDisk(directory, policy) != nil || response.ContentLength > policy.MaxArtifactCompressed() || session.beginArtifact(response.ContentLength) != nil {
+	if CheckTemporaryDisk(directory.Name(), policy) != nil || response.ContentLength > policy.MaxArtifactCompressed() || session.beginArtifact(response.ContentLength) != nil {
 		return "", "", 0, errors.New("PyPI distribution exceeds resource budget")
 	}
 	variantFile := map[string]string{"wheel": "wheel.whl", "sdist": "sdist.tar.gz"}[distributionVariantName(filename)]
 	if variantFile == "" {
 		return "", "", 0, errors.New("PyPI distribution type is unsupported")
 	}
-	temporary, err := os.OpenFile(filepath.Join(directory, ".download"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	temporary, err := directory.OpenFile(".download", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return "", "", 0, err
 	}
-	temporaryPath := temporary.Name()
-	defer os.Remove(temporaryPath)
+	temporaryPath := ".download"
+	defer directory.Remove(temporaryPath)
 	hash := sha256.New()
 	writer := io.MultiWriter(temporary, hash, resourceBudgetWriter{session: session})
 	written, copyErr := io.Copy(writer, ports.DownloadReader(ctx, io.LimitReader(response.Body, policy.MaxArtifactCompressed()+1), response.ContentLength))
@@ -147,7 +206,7 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || written > policy.MaxArtifactCompressed() {
 		return "", "", 0, errors.New("stream PyPI distribution failed or exceeded bounds")
 	}
-	if err := os.Rename(temporaryPath, filepath.Join(directory, variantFile)); err != nil {
+	if err := directory.Rename(temporaryPath, variantFile); err != nil {
 		return "", "", 0, err
 	}
 	return variantFile, hex.EncodeToString(hash.Sum(nil)), uint64(written), nil

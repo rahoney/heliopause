@@ -1,6 +1,6 @@
 # Heliopause Artifact Airlock Project Decisions
 
-현재 복구 실행: clean358adf9 기반의 R1 선별 재구성이 진행 중이다. 실제 상태와 다음 단계는 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 소유한다. 기존 checkpoint는 해당 source/시점의 범위로 유지한다.
+현재 복구 실행: clean358adf9 기반 R2 선별 구현·로컬/표적 실제 연결을 확인했고 R3 준비로 이어간다. 공통 큰 프로필·hosted/최종R8 qualification은 OPEN이다. 실제 상태와 다음 단계는 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 소유한다. 기존 checkpoint는 해당 source/시점의 범위로 유지한다.
 
 
 이 문서는 확정된 설계 결정과 canonical 문서 링크를 기록하는 결정 색인이다. 상세 설계와 사용자 원문은 [Documentation Guide](./docs/README.md)를 통해 canonical leaf 문서에서 확인한다. 현재 milestone/work item 진행 상태는 [Current Work Queue](./docs/planning/02-current-work-queue.md)가 유일한 canonical owner다.

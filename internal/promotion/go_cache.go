@@ -248,6 +248,9 @@ func (c *GoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.St
 // The expected document is either derived from a live typed approval or read
 // from the separate controller-owned project receipt, never the project marker.
 func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected goCacheDocument) (string, error) {
+	if err := c.verifyRecordedApproval(ctx, expected, true); err != nil {
+		return "", err
+	}
 	id, ok := strings.CutPrefix(handle, "project-cache:")
 	if !ok {
 		return "", errors.New("invalid Go cache handle")
@@ -304,7 +307,7 @@ func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle s
 	return filepath.Join(root, "modcache"), nil
 }
 
-func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument) error {
+func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument, requireProfiles bool) error {
 	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("go retained approval coverage is invalid")
 	}
@@ -332,8 +335,8 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 			if err != nil {
 				return err
 			}
-			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
-			if err != nil || hash.String() != recorded.SHA256 {
+			fact, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != recorded.SHA256 || requireProfiles && fact.ProfileDigest().String() == "" {
 				return errors.New("go retained Evidence changed or is unavailable")
 			}
 		}

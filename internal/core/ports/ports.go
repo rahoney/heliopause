@@ -23,6 +23,12 @@ type Inspection interface {
 	Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error)
 }
 
+// CheckPlanner declares independently configured check identities before the
+// corresponding provider executes. Actual reports never define this list.
+type CheckPlanner interface {
+	ExpectedChecks(context.Context, domain.AcquiredArtifact, domain.CheckKind) ([]domain.CheckRequirement, error)
+}
+
 // Sandbox executes exact controlled content in one ephemeral Session and returns raw observations.
 type Sandbox interface {
 	Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error)
@@ -30,7 +36,7 @@ type Sandbox interface {
 
 // Evidence records a bounded batch and returns trusted references.
 type Evidence interface {
-	Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error)
+	Record(context.Context, domain.RunID, []domain.Evidence, ...domain.CheckExecution) ([]domain.EvidenceReference, error)
 }
 
 // DependencyResolver resolves one requested Artifact into a bounded exact graph.

@@ -1,6 +1,7 @@
 package npm
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func pnpmKeyDigest(value string) string {
@@ -66,7 +68,7 @@ func npmProjectInstanceFacts(subject domain.AcquiredArtifact, instance string, l
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	execution, err := domain.NewCheckExecution(check, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	execution, err := domain.NewCheckExecution(check, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", npmProjectCheckProfile(client))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -129,7 +131,7 @@ func npmProjectCoverageReport(subject domain.AcquiredArtifact, expected, attempt
 			status, code = domain.ExecutionNotExecuted, notExecuted
 		}
 	}
-	execution, err := domain.NewCheckExecution(check, domain.CheckInspection, true, domain.CapabilitySupported, status, code)
+	execution, err := domain.NewCheckExecution(check, domain.CheckInspection, true, domain.CapabilitySupported, status, code, npmProjectCheckProfile(client))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -174,4 +176,42 @@ func npmProjectInstanceSummary(result domain.SandboxResult, client projectInspec
 		return "", errors.Join(original, err)
 	}
 	return string(body), original
+}
+
+func npmProjectCheckProfile(client projectInspectionClient) domain.ContentDigest {
+	prefix, _ := projectInspectionPrefix(client)
+	version := runtimeidentity.NodeNPMVersion
+	if client == projectInspectionPNPM {
+		version = runtimeidentity.PNPMVersion
+	}
+	if client == projectInspectionBun {
+		version = runtimeidentity.BunVersion
+	}
+	profile, _ := domain.CheckProfileDigest(prefix+"-instance-experiment-v1", runtimeidentity.NodeImageReference+"|"+version)
+	return profile
+}
+
+func npmProjectExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind, static *Inspector, instances []string, client projectInspectionClient) ([]domain.CheckRequirement, error) {
+	if len(instances) == 0 {
+		return nil, errors.New("project declaration has no frozen instances for subject")
+	}
+	result, err := static.ExpectedChecks(ctx, artifact, kind)
+	if err != nil {
+		return nil, err
+	}
+	prefix, err := projectInspectionPrefix(client)
+	if err != nil {
+		return nil, err
+	}
+	for _, instance := range instances {
+		id, _ := domain.NewCheckID(prefix + "-instance-facts-" + pnpmKeyDigest(instance)[:24])
+		requirement, err := domain.NewCheckRequirement(id, kind, false, npmProjectCheckProfile(client))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, requirement)
+	}
+	id, _ := domain.NewCheckID(prefix + "-dynamic-lifecycle")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, npmProjectCheckProfile(client))
+	return append(result, requirement), err
 }

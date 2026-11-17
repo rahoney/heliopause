@@ -3,9 +3,11 @@ package pypi
 import (
 	"context"
 	"errors"
+	"path/filepath"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // graphStaticState is private PyPI preparation state. It never crosses the
@@ -57,11 +59,15 @@ func (i *CompositeInspector) Inspect(ctx context.Context, artifact domain.Acquir
 		return domain.InspectionReport{}, err
 	}
 	if hasBlockingFinding(static) {
-		return static, nil
+		skipped, err := skippedDynamicReport(ctx)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, skipped})
 	}
 	dynamic, err := i.dynamic.InspectWheel(ctx, artifact, wheel)
 	if err != nil {
-		return domain.InspectionReport{}, err
+		return static, err
 	}
 	return domain.NewCompositeInspectionReport([]domain.InspectionReport{static, dynamic})
 }
@@ -106,14 +112,28 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 	// A blocked or incomplete static result must not be made executable as a
 	// dependency of another node's dynamic import fixture.
 	if !staticReady {
+		for _, dependency := range nodes {
+			if acquired[dependency.Node()].Identity().Variant() == "sdist" {
+				continue
+			}
+			skipped, err := skippedDynamicReport(ctx)
+			if err != nil {
+				return nil, err
+			}
+			report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], skipped})
+			if err != nil {
+				return nil, err
+			}
+			reports[dependency.Node()] = report
+		}
 		return reports, nil
 	}
 	if i.dynamic == nil {
-		return nil, errors.New("PyPI dynamic inspector is unavailable")
+		return reports, errors.New("PyPI dynamic inspector is unavailable")
 	}
 	edges, prerequisites, err := prepare(states)
 	if err != nil {
-		return nil, err
+		return reports, err
 	}
 	for _, dependency := range nodes {
 		artifact := acquired[dependency.Node()]
@@ -128,11 +148,11 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			var err error
 			closure, err = graphClosureNodes(nodes, edges, dependency.Node(), acquired)
 			if err != nil {
-				return nil, err
+				return reports, err
 			}
 		}
 		if err := validateRuntimeClosureNodes(ctx, closure, nodes, states); err != nil {
-			return nil, err
+			return reports, err
 		}
 		var dynamic domain.InspectionReport
 		if input, present := prerequisites[dependency.Node()]; present {
@@ -141,13 +161,34 @@ func (i *CompositeInspector) inspectDependencySet(ctx context.Context, nodes []d
 			dynamic, err = i.dynamic.InspectWheelWithClosure(ctx, artifact, states[dependency.Node()].wheel, closure)
 		}
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		report, err := domain.NewCompositeInspectionReport([]domain.InspectionReport{reports[dependency.Node()], dynamic})
 		if err != nil {
-			return nil, err
+			return reports, err
 		}
 		reports[dependency.Node()] = report
+	}
+	if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+		for target, input := range prerequisites {
+			directory, _, _, err := i.static.artifactLocation(input)
+			if err != nil {
+				return reports, err
+			}
+			run, err := domain.ParseRunID(filepath.Base(directory))
+			if err != nil {
+				return reports, err
+			}
+			complete := true
+			for _, execution := range reports[target].Executions() {
+				if execution.Required() && execution.Status() != domain.ExecutionCompleted {
+					complete = false
+				}
+			}
+			if err := lifetime.NoteInspection(ctx, run, complete); err != nil {
+				return reports, err
+			}
+		}
 	}
 	return reports, nil
 }
@@ -251,3 +292,15 @@ func validateRuntimeClosureNodes(ctx context.Context, closure []domain.AcquiredA
 }
 
 func hasBlockingFinding(report domain.InspectionReport) bool { return len(report.Findings()) != 0 }
+
+func (i *CompositeInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil || i.dynamic == nil {
+		return nil, errors.New("pypi check declaration is unavailable")
+	}
+	result, err := i.static.ExpectedChecks(ctx, artifact, kind)
+	if err != nil || artifact.Identity().Variant() == "sdist" {
+		return result, err
+	}
+	dynamic, err := i.dynamic.ExpectedChecks(ctx, artifact, kind)
+	return append(result, dynamic...), err
+}

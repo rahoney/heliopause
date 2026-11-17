@@ -72,7 +72,7 @@ func newNPMProjectService(bindings npmProjectBindings, intent artifactnpm.NPMPro
 }
 
 func (s *npmProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
-	return s.workflow.Apply(ctx, install)
+	return s.workflow.Apply(ports.WithStorageOperation(ctx, s.operation), install)
 }
 
 func (s *npmProjectService) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {

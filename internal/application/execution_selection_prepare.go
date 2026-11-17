@@ -79,6 +79,11 @@ func (s *ExecutionSelectionPreparationService) Prepare(ctx context.Context, requ
 	if err := ctx.Err(); err != nil {
 		return fail("CANCELED", err)
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return fail("STORAGE_USE_UNAVAILABLE", err)
+	}
+	defer func() { finishUse(resultErr) }()
 	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolution, err := s.resolver.ResolveExecutionSelection(ctx, validated.Reference())
 	if err != nil {

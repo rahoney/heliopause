@@ -85,7 +85,8 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 				t.Fatal("required probe coverage lost")
 			}
 			signedID, _ := domain.NewCheckID("fixture-signed-source")
-			signedCheck, _ := domain.NewCheckExecution(signedID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			signedProfile, _ := domain.CheckProfileDigest("fixture-signed-v1", "")
+			signedCheck, _ := domain.NewCheckExecution(signedID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", signedProfile)
 			signedEvidenceID, _ := domain.NewEvidenceID("fixture-signed-evidence")
 			signedEvidence, e := domain.NewEvidence(signedEvidenceID, signedID, artifact.Identity(), artifact.Digest(), "fixture", "Synthetic verification for Policy composition only.")
 			if e != nil {
@@ -104,7 +105,21 @@ func TestProviderProbePreservesSuspiciousFactsAndRequiresCompleteTerminal(t *tes
 				refs = append(refs, ref)
 			}
 			run, _ := domain.NewRunID()
-			input, e := domain.NewPolicyInput(run, artifact, verification, report, refs)
+			signedRequirement, _ := domain.NewCheckRequirement(signedID, domain.CheckVerification, true, signedProfile)
+			requirements := []domain.CheckRequirement{signedRequirement}
+			for _, name := range []string{"terraform-provider-dynamic", "terraform-provider-observed-facts"} {
+				id, _ := domain.NewCheckID(name)
+				requirement, err := domain.NewCheckRequirement(id, domain.CheckInspection, name != "terraform-provider-observed-facts", providerCheckProfile(name))
+				if err != nil {
+					t.Fatal(err)
+				}
+				requirements = append(requirements, requirement)
+			}
+			plan, err := domain.NewCheckPlan(run, artifact, requirements)
+			if err != nil {
+				t.Fatal(err)
+			}
+			input, e := domain.NewPolicyInput(run, artifact, verification, report, refs, plan)
 			if e != nil {
 				t.Fatal(e)
 			}

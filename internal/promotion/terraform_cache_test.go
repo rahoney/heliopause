@@ -199,7 +199,7 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		if i == 0 {
 			kind = domain.CheckVerification
 		}
-		check, e := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, e := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -218,11 +218,11 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 	if e != nil {
 		t.Fatal(e)
 	}
-	refs, e := store.Record(context.Background(), run, evidence)
+	refs, e := store.Record(context.Background(), run, evidence, checks...)
 	if e != nil {
 		t.Fatal(e)
 	}
-	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow)
+	entry, e := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, allow, cacheFixturePlan(t, run, acquired, []string{"terraform-signed-package", "terraform-provider-static", "terraform-provider-dynamic"}))
 	if e != nil {
 		t.Fatal(e)
 	}

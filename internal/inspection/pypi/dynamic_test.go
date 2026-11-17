@@ -33,7 +33,7 @@ func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
 	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true,
 		Surface: artifactpypi.RuntimeSurface{InstalledFiles: []artifactpypi.InstalledFile{{ArchivePath: "example-1.0.dist-info/METADATA", Scheme: artifactpypi.SchemeDistInfo, Destination: "example-1.0.dist-info/METADATA", Role: artifactpypi.RuntimeRoleMetadata}}}}
 	report, err := inspector.InspectWheel(context.Background(), artifact, static)
-	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
+	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import" || report.Evidence()[0].Kind() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
 		t.Fatalf("proven no-import report = %#v, %v; runner = %#v", report, err, runner)
 	}
 	static.NoImportSurface = false
@@ -210,4 +210,50 @@ func observation(t *testing.T, category domain.ObservationCategory, subject stri
 		t.Fatal(err)
 	}
 	return value
+}
+
+func TestPythonChecksBindConfiguredRootProfileBeforeExecution(t *testing.T) {
+	artifact := pypiWheelArtifact(t)
+	static, err := NewStaticInspector(t.TempDir(), artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	dynamic, err := NewDynamicInspector(&wheelRunner{result: completedResult(t)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seenStatic := map[domain.ContentDigest]bool{}
+	seenDynamic := map[domain.ContentDigest]bool{}
+	for _, name := range []string{"pypi", "cpu", "cu126", "cu130", "cu132"} {
+		selected := artifactpypi.PublicPyPIProfile()
+		if name != "pypi" {
+			var ok bool
+			selected, ok = artifactpypi.PyTorchProfile(name)
+			if !ok {
+				t.Fatal(name)
+			}
+		}
+		ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), selected)
+		if err != nil {
+			t.Fatal(err)
+		}
+		declaredStatic, err := static.ExpectedChecks(ctx, artifact, domain.CheckInspection)
+		if err != nil {
+			t.Fatal(err)
+		}
+		declaredDynamic, err := dynamic.ExpectedChecks(ctx, artifact, domain.CheckInspection)
+		if err != nil {
+			t.Fatal(err)
+		}
+		staticProfile, dynamicProfile := declaredStatic[0].ProfileDigest(), declaredDynamic[0].ProfileDigest()
+		if seenStatic[staticProfile] || seenDynamic[dynamicProfile] {
+			t.Fatal("different configured root lanes collapsed", name)
+		}
+		seenStatic[staticProfile] = true
+		seenDynamic[dynamicProfile] = true
+		report, err := dynamic.InspectWheel(ctx, artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
+		if err != nil || report.Execution().ProfileDigest() != dynamicProfile {
+			t.Fatal("actual execution differs from declaration", name, err)
+		}
+	}
 }

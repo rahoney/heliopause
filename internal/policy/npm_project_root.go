@@ -7,6 +7,8 @@ import "github.com/rahoney/heliopause/internal/core/domain"
 // dependency/primary, and successful observation cannot grant Host execution.
 type NPMProjectRoot struct{}
 
+func (NPMProjectRoot) RequiresCheckPlan() bool { return true }
+
 func (NPMProjectRoot) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	decision, err := (M3{}).Evaluate(input)
 	if err != nil || decision.Decision() != domain.DecisionAllow {

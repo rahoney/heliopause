@@ -13,6 +13,8 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/storage"
 )
 
 func TestPythonSdistBuilderUsesOnlyVerifiedBuildWheels(t *testing.T) {
@@ -45,6 +47,95 @@ func TestPythonSdistBuilderUsesOnlyVerifiedBuildWheels(t *testing.T) {
 	if err != nil || string(filename) != derived.Filename || !declaredOK || declared != "sha256:"+derived.Artifact.Digest().String() {
 		t.Fatalf("derived wheel binding filename=%q declared=%q ok=%v err=%v", filename, declared, declaredOK, err)
 	}
+}
+
+func TestDerivedWheelStorageReservesBeforeOutputAndUpdatesExistingRun(t *testing.T) {
+	for _, denied := range []bool{false, true} {
+		t.Run(map[bool]string{false: "complete", true: "quota"}[denied], func(t *testing.T) {
+			parent, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(parent, "haa")
+			spec := domain.DefaultStoragePolicy().Spec()
+			spec.MinimumFreeBytes = 1
+			if denied {
+				spec.TotalBytes, spec.CacheBytes, spec.EvidenceBytes = 64<<10, 16<<10, 32<<10
+			}
+			policy, err := domain.NewStoragePolicy(spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			owner, err := storage.NewLocal(context.Background(), path, policy)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer owner.Close()
+			run, _ := domain.NewRunID()
+			op, _ := domain.NewOperationID()
+			ctx := ports.WithStorageOperation(ports.WithStorage(context.Background(), owner), op)
+			root := filepath.Join(path, "intake")
+			directory := filepath.Join(root, run.String())
+			if err := os.MkdirAll(directory, 0700); err != nil {
+				t.Fatal(err)
+			}
+			lease, err := owner.Reserve(ctx, ports.StorageRequest{Operation: op, Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: 128, Files: 2})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(directory, "sdist.tar.gz"), []byte("source"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(directory, "filename"), []byte("example-1.0.tar.gz"), 0400); err != nil {
+				t.Fatal(err)
+			}
+			if err := lease.Commit(ctx); err != nil {
+				t.Fatal(err)
+			}
+			if err := lease.Close(); err != nil {
+				t.Fatal(err)
+			}
+			sourceID, _ := domain.NewSourceID("pypi")
+			id, _ := domain.NewResolvedArtifactIdentity(sourceID, "example", "1.0", "sdist")
+			digest, _ := domain.NewSHA256Digest(fmt.Sprintf("%x", sha256.Sum256([]byte("source"))))
+			source, _ := domain.NewAcquiredArtifact(id, digest, "intake:"+run.String()+":sdist", 6)
+			runner := &derivedStorageRunner{buildRunner: buildRunner{output: []byte("derived wheel")}}
+			introducer, _ := NewPythonArtifactIntroducer(root, runner)
+			builder := &PythonSdistBuilder{runner: runner, introducer: introducer}
+			_, err = builder.streamDerivedWheel(ctx, "0123456789abcdef", source, "example-1.0-py3-none-any.whl", artifactpypi.SdistInspection{Project: "example", Version: "1.0"}, nil)
+			if denied {
+				if err == nil || runner.outputs != 0 {
+					t.Fatalf("derived output preceded admission: %d %v", runner.outputs, err)
+				}
+				if _, err := os.Stat(filepath.Join(directory, "derived.whl")); !os.IsNotExist(err) {
+					t.Fatal("denied output was published")
+				}
+				return
+			}
+			if err != nil || runner.outputs != 1 {
+				t.Fatalf("derived output failed: %d %v", runner.outputs, err)
+			}
+			if err := owner.NoteInspection(ctx, run, true); err != nil {
+				t.Fatal(err)
+			}
+			if err := owner.Finish(ctx, true); err != nil {
+				t.Fatal("derived files not included in updated storage seal", err)
+			}
+			if _, err := os.Stat(directory); !os.IsNotExist(err) {
+				t.Fatalf("derived/source copies remain after last use: %v", err)
+			}
+		})
+	}
+}
+
+type derivedStorageRunner struct {
+	buildRunner
+	outputs int
+}
+
+func (r *derivedStorageRunner) RunOutput(ctx context.Context, output io.Writer, binary string, args ...string) error {
+	r.outputs++
+	return r.buildRunner.RunOutput(ctx, output, binary, args...)
 }
 
 func TestPythonSdistBuilderRejectsGraphExpansionBeforeDocker(t *testing.T) {

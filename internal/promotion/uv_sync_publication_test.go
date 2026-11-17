@@ -87,7 +87,7 @@ func uvSyncApprovedFixture(t *testing.T, empty bool) uvSyncPublicationFixture {
 		var items []domain.Evidence
 		for _, kind := range []domain.CheckKind{domain.CheckVerification, domain.CheckInspection} {
 			id, _ := domain.NewCheckID("synthetic-" + strings.ToLower(string(kind)))
-			check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			check, _ := domain.NewCheckExecution(id, kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 			checks = append(checks, check)
 			eID, _ := domain.NewEvidenceID(id.String())
 			item, err := domain.NewEvidence(eID, id, a.Identity(), a.Digest(), "synthetic", "Synthetic checker facts for transaction regression only.")
@@ -96,11 +96,11 @@ func uvSyncApprovedFixture(t *testing.T, empty bool) uvSyncPublicationFixture {
 			}
 			items = append(items, item)
 		}
-		refs, err := store.Record(context.Background(), old.RunID(), items)
+		refs, err := store.Record(context.Background(), old.RunID(), items, checks...)
 		if err != nil {
 			t.Fatal(err)
 		}
-		i, err := domain.NewDependencyInspection(node, old.RunID(), a, checks, refs, decision)
+		i, err := domain.NewDependencyInspection(node, old.RunID(), a, checks, refs, decision, cacheFixturePlan(t, old.RunID(), a, []string{"synthetic-verification", "synthetic-inspection"}))
 		if err != nil {
 			t.Fatal(err)
 		}

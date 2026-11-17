@@ -86,7 +86,7 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
 			t.Fatal(err, stdout.String())
 		}
-		if result.Schema != "helox.operation-result/v1" || result.Operation != step.operation || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+		if result.Schema != "helox.operation-result/v2" || result.Operation != step.operation || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
 			t.Fatal("incomplete UV CLI operation", step.name, stdout.String())
 		}
 		if step.name == "fresh" {

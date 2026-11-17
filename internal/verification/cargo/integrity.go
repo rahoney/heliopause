@@ -16,6 +16,8 @@ type registryLookup interface {
 	LookupChecksum(context.Context, string, string) (string, error)
 }
 
+const checkProfileName = "cargo-registry-integrity-v1"
+
 type IntegrityVerifier struct {
 	intakeRoot string
 	registry   registryLookup
@@ -61,7 +63,8 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 
 func verificationReport(artifact domain.AcquiredArtifact, verified bool, code string) (domain.VerificationReport, error) {
 	checkID, _ := domain.NewCheckID("cargo-registry-integrity")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("cargo-registry-integrity-result")
 	summary := "Exact crate bytes compared with frozen lock and independently retrieved official HTTPS sparse-index checksum."
 	if !verified {
@@ -79,4 +82,20 @@ func verificationReport(artifact domain.AcquiredArtifact, verified bool, code st
 		return domain.VerificationReport{}, err
 	}
 	return domain.NewVerificationReportWithFindings(check, domain.VerificationMismatch, []domain.Finding{finding}, []domain.Evidence{evidence})
+}
+
+func (p *IntegrityVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if p == nil || ctx == nil || kind != domain.CheckVerification || artifact.Identity().Source() != artifactcargo.Source() {
+		return nil, errors.New("cargo check declaration requires its configured source")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("cargo-registry-integrity")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, domain.CheckVerification, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

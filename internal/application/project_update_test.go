@@ -208,7 +208,7 @@ func (p *cargoUpdateAdversePorts) Inspect(ctx context.Context, a domain.Acquired
 	}
 	check := report.Executions()[0]
 	if p.kind == "incomplete" {
-		check, err = domain.NewCheckExecution(check.ID(), check.Kind(), true, domain.CapabilitySupported, domain.ExecutionIncomplete, "FIXTURE_INCOMPLETE")
+		check, err = domain.NewCheckExecution(check.ID(), check.Kind(), true, domain.CapabilitySupported, domain.ExecutionIncomplete, "FIXTURE_INCOMPLETE", check.ProfileDigest())
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}

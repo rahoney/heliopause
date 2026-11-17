@@ -18,6 +18,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence"
 	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/policy"
 )
 
 type githubOwnershipFixture struct {
@@ -33,7 +34,7 @@ func newGitHubOwnershipFixture(t *testing.T) githubOwnershipFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p, err := NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "state"), reader)
+	p, err := NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "state"), reader, policy.M6PolicyVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +76,7 @@ func (f githubOwnershipFixture) bundle(t *testing.T, tag, asset string, payload 
 		check    domain.CheckKind
 	}{{"github-release-declared-sha256", "github-release-declared-sha256", domain.CheckVerification}, {"github-release-static", "github-release-zip-static", domain.CheckInspection}} {
 		id, _ := domain.NewCheckID(v.id)
-		check, _ := domain.NewCheckExecution(id, v.check, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		check, _ := domain.NewCheckExecution(id, v.check, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", cacheFixtureProfile())
 		checks = append(checks, check)
 		eid, _ := domain.NewEvidenceID(v.id + "-result")
 		fact, err := domain.NewEvidence(eid, id, identity, digest, v.kind, "Controlled transaction fixture; not public artifact qualification.")
@@ -84,12 +85,12 @@ func (f githubOwnershipFixture) bundle(t *testing.T, tag, asset string, payload 
 		}
 		facts = append(facts, fact)
 	}
-	refs, err := f.reader.Record(context.Background(), run, facts)
+	refs, err := f.reader.Record(context.Background(), run, facts, checks...)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decision, _ := domain.NewPolicyDecision(domain.DecisionAllow, "m6-github-release", 1, []string{"M6_REQUIRED_CHECKS_COMPLETED"})
-	inspection, err := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, decision)
+	decision, _ := domain.NewPolicyDecision(domain.DecisionAllow, "m6-github-release", policy.M6PolicyVersion, []string{"M6_REQUIRED_CHECKS_COMPLETED"})
+	inspection, err := domain.NewDependencyInspection(nodeID, run, acquired, checks, refs, decision, cacheFixturePlan(t, run, acquired, []string{"github-release-declared-sha256", "github-release-static"}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -573,5 +574,34 @@ func TestGitHubReplacementNeverChmodsAForeignSelectedSymlink(t *testing.T) {
 	}
 	if err := oldTree.verify(f.target); err != nil {
 		t.Fatal("old installed target changed", err)
+	}
+}
+
+func TestGitHubHistoricalApprovalCannotBecomeNewPolicyCoverage(t *testing.T) {
+	fixture := newGitHubOwnershipFixture(t)
+	bundle, _, install := fixture.bundle(t, "v1.0.0", "tool.zip", []byte("controlled historical ownership"), false)
+	current, _, err := fixture.p.approval(context.Background(), bundle, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := current
+	legacy.Schema = 1
+	legacy.EntryPolicyVersion = 1
+	legacy.SetPolicyVersion = 1
+	legacy.Checks = append([]githubApprovalCheck(nil), current.Checks...)
+	for index := range legacy.Checks {
+		legacy.Checks[index].ProfileSHA256 = ""
+	}
+	fixture.p.policyVersion++
+	if err := fixture.p.verifyApproval(context.Background(), legacy); err != nil {
+		t.Fatal("historical ownership cannot be read", err)
+	}
+	if _, _, err := fixture.p.approval(context.Background(), bundle, install); err == nil {
+		t.Fatal("old completed Policy became new approval")
+	}
+	legacy.EntryPolicyVersion = fixture.p.policyVersion + 1
+	legacy.SetPolicyVersion = legacy.EntryPolicyVersion
+	if err := fixture.p.verifyApproval(context.Background(), legacy); err == nil {
+		t.Fatal("unknown future Policy was accepted")
 	}
 }

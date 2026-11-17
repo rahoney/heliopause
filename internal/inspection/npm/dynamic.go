@@ -6,9 +6,12 @@ import (
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // DynamicInspector interprets raw Sandbox results; it never controls a runtime.
+const dynamicCheckProfileName = "npm-dynamic-lifecycle-v1"
+
 type DynamicInspector struct{ sandbox ports.Sandbox }
 
 // NewDynamicInspector constructs an npm lifecycle inspector from the consumer-owned Sandbox Port.
@@ -39,6 +42,7 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 }
 
 func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.SandboxResult) (domain.InspectionReport, error) {
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, runtimeidentity.NodeImageReference)
 	checkID, err := domain.NewCheckID("npm-dynamic-lifecycle")
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -49,7 +53,7 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 		if limitation == "M3_LINUX_ONLY" || limitation == "M3_RUNTIME_UNAVAILABLE" || limitation == "M3_RUNTIME_VERSION_UNSUPPORTED" || limitation == "M3_IMAGE_UNAVAILABLE" {
 			capability, status = domain.CapabilityUnsupported, domain.ExecutionNotExecuted
 		}
-		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
+		execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, profile)
 		if err != nil {
 			return domain.InspectionReport{}, err
 		}
@@ -57,20 +61,20 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	}
 	for _, observation := range result.Observations() {
 		if observation.Category() == domain.ObservationResource {
-			execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M3_DYNAMIC_RESOURCE_LIMIT")
+			execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M3_DYNAMIC_RESOURCE_LIMIT", profile)
 			if err != nil {
 				return domain.InspectionReport{}, err
 			}
 			return domain.NewInspectionReport(execution, nil, nil)
 		}
 	}
-	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	execution, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
 	summary, err := result.ObservationSummary()
 	if err != nil {
-		incomplete, checkErr := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
+		incomplete, checkErr := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID", profile)
 		if checkErr != nil {
 			return domain.InspectionReport{}, checkErr
 		}
@@ -121,4 +125,20 @@ func dynamicFindingCodes(observations []domain.SandboxObservation) []string {
 		}
 	}
 	return codes
+}
+
+func (i *DynamicInspector) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.sandbox == nil || ctx == nil || kind != domain.CheckInspection || artifact.Identity().Source().String() != "npm" {
+		return nil, errors.New("npm dynamic declaration is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	id, _ := domain.NewCheckID("npm-dynamic-lifecycle")
+	profile, _ := domain.CheckProfileDigest(dynamicCheckProfileName, runtimeidentity.NodeImageReference)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	if err != nil {
+		return nil, err
+	}
+	return []domain.CheckRequirement{requirement}, nil
 }

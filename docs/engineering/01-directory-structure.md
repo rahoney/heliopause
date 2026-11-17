@@ -91,6 +91,7 @@
 | `internal/hosttool` | root-owned executable identity, minimal child environment와 verified local Docker endpoint를 소유하는 production Infrastructure executor | Core/Application/Policy, shell command 또는 Artifact 입력 기반 tool selection |
 | `internal/releaseactivation` | 승인된 M13-004 설치 역할의 protected registration/provenance·runtime lease·narrow installation lifecycle Adapter | Policy 재판정, 검역 우회, generic root command/임의 target·UID·service 선택 |
 | `internal/releasebootstrap` | ordinary 최초 공식 native 세트의 bounded 획득·offline provenance·owned file export; actual preparation Port | Root 작업, runtime 설치·quarantine/Policy 판정, user URL/credential/API origin 선택 |
+| `internal/storage` | controller-owned resource reservation journal, finite storage policy accounting and opaque leases; Evidence foundation first | Artifact parsing, inspection/Policy, Host promotion, unproven ownership or deletion |
 | `internal/evidence` | Evidence/Result/SBOM 저장 Adapter와 trusted writer | Finding 해석, Staging, Promotion |
 | `internal/promotion` | Staging과 trusted Promotion Adapter | Policy 재판정, 재검사, 자유로운 dependency resolve |
 | `internal/testutil` | 여러 package가 공유하는 test-only helper | production workflow 또는 Domain rule |
@@ -162,6 +163,7 @@ sandbox     → Sandbox Port 구현 + core/domain
 
 - npm, PyPI, GitHub Releases의 생태계 전용 parsing·API·metadata·dependency resolution은 각각 `internal/artifact/npm`, `pypi`, `githubreleases`에 둔다.
 - 공통 Artifact identity와 result는 `core/domain`, 계약은 `core/ports`를 사용한다.
+- 현재 npm/PyPI/GitHub·Go/Cargo/Terraform 획득 owner는 `core/ports.Storage`의 opaque 예약/게시 계약을 사용한다. PyPI inspection은 보조 입력의 실제 검사 완료만 같은 Port에 전달하며 구체 `internal/storage`를 import하거나 Policy를 생성하지 않는다.
 - 생태계별 구현 간 공유 코드가 실제로 생기기 전에는 `artifact/common`을 만들지 않는다.
 
 ### Verification, Inspection과 Sandbox

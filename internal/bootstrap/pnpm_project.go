@@ -48,12 +48,13 @@ type pnpmProjectMutationAdapter struct {
 }
 
 type pnpmProjectService struct {
-	workflow *application.NPMCompleteProjectService
-	promoter *promotion.PNPMProjectPromotion
+	operation domain.OperationID
+	workflow  *application.NPMCompleteProjectService
+	promoter  *promotion.PNPMProjectPromotion
 }
 
 func (s *pnpmProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
-	return s.workflow.Apply(ctx, install)
+	return s.workflow.Apply(ports.WithStorageOperation(ctx, s.operation), install)
 }
 
 func (a pnpmProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
@@ -82,7 +83,7 @@ func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPM
 	if err != nil {
 		return nil, err
 	}
-	return &pnpmProjectService{workflow, owner}, nil
+	return &pnpmProjectService{operation, workflow, owner}, nil
 }
 
 func (s *pnpmProjectSession) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {

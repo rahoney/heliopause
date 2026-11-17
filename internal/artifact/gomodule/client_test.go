@@ -11,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/storage"
 )
 
 type proxyTransport func(*http.Request) (*http.Response, error)
@@ -132,5 +134,83 @@ func TestGoIntakeRejectsLinksAndMalformedEnvelope(t *testing.T) {
 	}
 	if _, err := ReadIntake(root, acquired); err == nil {
 		t.Fatal("symlink Run accepted")
+	}
+}
+
+func TestAcquisitionStorageAdmissionAndLastUse(t *testing.T) {
+	for _, denied := range []bool{false, true} {
+		t.Run(map[bool]string{false: "complete", true: "quota"}[denied], func(t *testing.T) {
+			parent, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			root := filepath.Join(parent, "haa")
+			spec := domain.DefaultStoragePolicy().Spec()
+			spec.MinimumFreeBytes = 1
+			if denied {
+				spec.TotalBytes, spec.CacheBytes, spec.EvidenceBytes = 64<<10, 16<<10, 32<<10
+			}
+			policy, err := domain.NewStoragePolicy(spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+			owner, err := storage.NewLocal(context.Background(), root, policy)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer owner.Close()
+			run, _ := domain.NewRunID()
+			operation, _ := domain.NewOperationID()
+			ctx := ports.WithStorageOperation(ports.WithStorage(context.Background(), owner), operation)
+
+			client, err := NewPublicClient(filepath.Join(root, "intake"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			ref, _ := ParseReference("example.org/sample@v1.0.0")
+			resolved, err := client.Resolve(ctx, ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			calls := 0
+			client.http.Transport = proxyTransport(func(r *http.Request) (*http.Response, error) {
+				calls++
+				body := []byte("module example.org/sample\n")
+				if strings.HasSuffix(r.URL.Path, ".zip") {
+					body = []byte("small archive fixture")
+				}
+				return &http.Response{StatusCode: 200, Header: make(http.Header), ContentLength: int64(len(body)), Body: io.NopCloser(bytes.NewReader(body))}, nil
+			})
+
+			artifact, err := client.Acquire(ctx, run, resolved)
+			if denied {
+				if err == nil || calls != 0 {
+					t.Fatalf("quota admitted download: calls=%d err=%v", calls, err)
+				}
+				return
+			}
+			if err != nil || calls == 0 {
+				t.Fatalf("acquire: %v calls=%d", err, calls)
+			}
+			journal, err := os.ReadFile(filepath.Join(root, ".storage", "resources.jsonl"))
+			if err != nil || !bytes.Contains(journal, []byte(`"phase":"RETAINED"`)) {
+				t.Fatalf("unsealed intake: %s %v", journal, err)
+			}
+			if _, err := ReadIntake(client.intakeRoot, artifact); err != nil {
+				t.Fatal(err)
+			}
+			if err := owner.Finish(ctx, true); err == nil {
+				t.Fatal("deleted before inspection completion")
+			}
+			if err := owner.NoteInspection(ctx, run, true); err != nil {
+				t.Fatal(err)
+			}
+			if err := owner.Finish(ctx, true); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := os.Stat(filepath.Join(client.intakeRoot, run.String())); !os.IsNotExist(err) {
+				t.Fatalf("completed intake remains: %v", err)
+			}
+		})
 	}
 }

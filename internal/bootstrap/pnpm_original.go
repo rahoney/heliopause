@@ -7,6 +7,7 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
@@ -41,6 +42,7 @@ func (b pnpmProjectBindings) provePNPMOriginal(ctx context.Context, install doma
 	}
 	acquired := make(map[domain.DependencyNodeID]domain.AcquiredArtifact)
 	var compressed uint64
+	var runs []domain.RunID
 	for _, resolved := range frozen.Snapshot().Dependencies() {
 		if err := ctx.Err(); err != nil {
 			return domain.ContentDigest{}, errors.Join(err, context.Cause(ctx))
@@ -66,6 +68,7 @@ func (b pnpmProjectBindings) provePNPMOriginal(ctx context.Context, install doma
 			return domain.ContentDigest{}, err
 		}
 		acquired[node] = subject
+		runs = append(runs, run)
 	}
 	input, err := frozen.BindAcquired(frozen.Snapshot(), acquired)
 	if err != nil {
@@ -92,5 +95,18 @@ func (b pnpmProjectBindings) provePNPMOriginal(ctx context.Context, install doma
 	if err := budget.Complete(); err != nil {
 		return domain.ContentDigest{}, err
 	}
-	return input.ProveOriginalLayout(ctx, inventories, original)
+	proof, err := input.ProveOriginalLayout(ctx, inventories, original)
+	if err != nil {
+		return domain.ContentDigest{}, err
+	}
+	if lifetime, ok := ports.StorageFromContext(ctx).(ports.InspectionStorage); ok {
+		// This scope proves original installed DATA, not an installation ALLOW.
+		// Shared selected runtimes and the outer guard must still finish first.
+		for _, run := range runs {
+			if err := lifetime.NoteInspection(ctx, run, true); err != nil {
+				return domain.ContentDigest{}, err
+			}
+		}
+	}
+	return proof, nil
 }

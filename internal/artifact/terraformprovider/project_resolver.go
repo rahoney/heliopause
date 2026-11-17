@@ -136,18 +136,21 @@ func (c *Client) resolveProjectSelection(ctx context.Context, reference domain.A
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
-		run, e := domain.NewRunID()
+		// Selection already freezes a bounded package body in memory. Do not create
+		// an uninspected disk intake before the inspection operation exists.
+		snapshot, artifact, packageKey, e := c.selectedPackage(ctx, resolved)
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
-		acquired, e := c.Acquire(ctx, run, resolved)
+		body, e := c.packageBody(ctx, snapshot, artifact, packageKey)
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
-		bundle, e := ReadIntake(c.intakeRoot, acquired)
+		parts, e := decodeParts(body, bundleHeader, bundleLimits)
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e
 		}
+		bundle := Bundle{parts}
 		contents, e := InspectPackage(ctx, bundle, ref.Locator())
 		if e != nil {
 			return domain.ProjectDependencyUpdate{}, e

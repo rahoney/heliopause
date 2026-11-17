@@ -79,6 +79,7 @@ func (s *ProjectInspectService) inspectProject(ctx context.Context, snapshot dom
 	if err != nil {
 		return domain.ProjectVerifiedSet{}, fmt.Errorf("generate project inspection operation: %w", err)
 	}
+	ctx = ports.WithStorageOperation(ctx, operation)
 	nodes := make([]domain.LockedDependency, 0, len(snapshot.Dependencies()))
 	for _, artifact := range snapshot.Dependencies() {
 		node, err := domain.ProjectDependencyNodeID(artifact.Identity())

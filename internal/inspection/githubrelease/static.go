@@ -172,7 +172,8 @@ func (i *StaticInspector) finding(artifact domain.AcquiredArtifact, code, summar
 }
 func (i *StaticInspector) report(artifact domain.AcquiredArtifact, kind, summary, code string) (domain.InspectionReport, error) {
 	checkID, _ := domain.NewCheckID("github-release-static")
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	profile, _ := domain.CheckProfileDigest("github-release-static-v1", "")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 	evidenceID, _ := domain.NewEvidenceID("github-release-static-result")
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), kind, summary)
 	if err != nil {
@@ -183,4 +184,14 @@ func (i *StaticInspector) report(artifact domain.AcquiredArtifact, kind, summary
 	}
 	finding, _ := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
 	return domain.NewInspectionReport(check, []domain.Finding{finding}, []domain.Evidence{evidence})
+}
+
+func (i *StaticInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || a.Identity().Source().String() != "github-release" {
+		return nil, errors.New("github release static declaration is invalid")
+	}
+	id, _ := domain.NewCheckID("github-release-static")
+	profile, _ := domain.CheckProfileDigest("github-release-static-v1", "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	return []domain.CheckRequirement{requirement}, err
 }

@@ -93,7 +93,7 @@ func newResolver(registry *url.URL, client *http.Client, intakeRoot string, requ
 }
 
 // Acquire streams a resolved npm tarball into the configured Run-local controlled intake root.
-func (r *Resolver) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+func (r *Resolver) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (artifact domain.AcquiredArtifact, resultErr error) {
 	if ctx == nil {
 		return domain.AcquiredArtifact{}, errors.New("context is required")
 	}
@@ -112,19 +112,65 @@ func (r *Resolver) Acquire(ctx context.Context, runID domain.RunID, resolved dom
 	if runID.String() == "" {
 		return domain.AcquiredArtifact{}, errors.New("npm intake requires Run ID")
 	}
-	runDirectory, err := createRunDirectory(r.intakeRoot, runID.String())
+	_, err := createRunDirectory(r.intakeRoot, runID.String())
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	path, digest, observedIntegrity, size, err := r.downloadTarball(ctx, resolved.AcquisitionLocator(), runDirectory)
+	root, err := os.OpenRoot(r.intakeRoot)
 	if err != nil {
-		if cleanupErr := os.RemoveAll(runDirectory); cleanupErr != nil {
-			return domain.AcquiredArtifact{}, errors.Join(err, fmt.Errorf("remove incomplete npm intake: %w", cleanupErr))
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
+	identity, err := root.Lstat(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	directory, err := root.OpenRoot(runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, directory.Close()) }()
+	held, err := directory.Stat(".")
+	if err != nil || !os.SameFile(identity, held) {
+		return domain.AcquiredArtifact{}, errors.New("npm intake directory changed")
+	}
+	var lease ports.StorageLease
+	successful := false
+	defer func() {
+		if !successful {
+			cleanupErr := removeEmptyIntakeRun(root, runID.String(), identity)
+			resultErr = errors.Join(resultErr, cleanupErr)
+			if lease != nil && cleanupErr == nil {
+				cleanupContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+				resultErr = errors.Join(resultErr, lease.Abort(cleanupContext))
+				cancel()
+			}
 		}
+		if lease != nil {
+			resultErr = errors.Join(resultErr, lease.Close())
+		}
+	}()
+	if storage := ports.StorageFromContext(ctx); storage != nil {
+		lease, err = storage.Reserve(ctx, ports.StorageRequest{Operation: ports.StorageOperationFromContext(ctx), Run: runID, Kind: "intake", Temporary: runID.String(), Target: runID.String(), Bytes: tarballLimit + 1, Files: 1})
+		if err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	_, digest, observedIntegrity, size, err := r.downloadTarball(ctx, resolved.AcquisitionLocator(), directory)
+	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	_ = path
-	return domain.NewAcquiredArtifactWithIntegrity(resolved.Identity(), digest, "intake:"+runID.String()+":tarball", size, resolved.DeclaredIntegrity(), observedIntegrity)
+	artifact, err = domain.NewAcquiredArtifactWithIntegrity(resolved.Identity(), digest, "intake:"+runID.String()+":tarball", size, resolved.DeclaredIntegrity(), observedIntegrity)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if lease != nil {
+		if err := lease.Commit(ctx); err != nil {
+			return domain.AcquiredArtifact{}, err
+		}
+	}
+	successful = true
+	return artifact, nil
 }
 
 func createRunDirectory(root, runID string) (string, error) {
@@ -176,7 +222,7 @@ func rejectSymlinkComponents(path string, allowMissing bool) error {
 	return nil
 }
 
-func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string) (string, domain.ContentDigest, string, uint64, error) {
+func (r *Resolver) downloadTarball(ctx context.Context, rawURL string, directory *os.Root) (string, domain.ContentDigest, string, uint64, error) {
 	timeoutContext, cancel := context.WithTimeout(ctx, tarballTimeout)
 	defer cancel()
 	request, err := http.NewRequestWithContext(timeoutContext, http.MethodGet, rawURL, nil)
@@ -194,12 +240,12 @@ func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string
 	if !isTarballContentType(response.Header.Get("Content-Type")) {
 		return "", domain.ContentDigest{}, "", 0, errors.New("npm tarball response has an unsupported content type")
 	}
-	temporary, err := os.OpenFile(filepath.Join(directory, ".tarball.tmp"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	temporary, err := directory.OpenFile(".tarball.tmp", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("create npm intake temporary file: %w", err)
 	}
-	temporaryPath := temporary.Name()
-	defer func() { _ = os.Remove(temporaryPath) }()
+	temporaryPath := ".tarball.tmp"
+	defer func() { _ = directory.Remove(temporaryPath) }()
 	hash := sha256.New()
 	integrityHash := sha512.New()
 	limited := io.LimitReader(response.Body, tarballLimit+1)
@@ -218,14 +264,14 @@ func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string
 	if closeErr != nil {
 		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("close npm intake temporary file: %w", closeErr)
 	}
-	if err := os.Rename(temporaryPath, filepath.Join(directory, "tarball.tgz")); err != nil {
+	if err := directory.Rename(temporaryPath, "tarball.tgz"); err != nil {
 		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("finalize npm intake tarball: %w", err)
 	}
 	digest, err := domain.NewSHA256Digest(fmt.Sprintf("%x", hash.Sum(nil)))
 	if err != nil {
 		return "", domain.ContentDigest{}, "", 0, err
 	}
-	return filepath.Join(directory, "tarball.tgz"), digest, "sha512-" + base64.StdEncoding.EncodeToString(integrityHash.Sum(nil)), uint64(written), nil
+	return filepath.Join(directory.Name(), "tarball.tgz"), digest, "sha512-" + base64.StdEncoding.EncodeToString(integrityHash.Sum(nil)), uint64(written), nil
 }
 
 // ParseReference parses one supported npm package locator without resolving it.
@@ -516,4 +562,46 @@ type npmVersionMetadata struct {
 		Tarball   string `json:"tarball"`
 		Integrity string `json:"integrity"`
 	} `json:"dist"`
+}
+
+// Failure before publication leaves an empty owned Run. Unexpected remaining
+// members are preserved and remain charged; they require verified finalization.
+func removeEmptyIntakeRun(root *os.Root, name string, identity os.FileInfo) (resultErr error) {
+	current, err := root.Lstat(name)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil || identity == nil || !current.IsDir() || !os.SameFile(identity, current) {
+		return errors.New("npm intake cleanup ownership is unknown")
+	}
+	directory, err := root.OpenRoot(name)
+	if err != nil {
+		return err
+	}
+	defer func() { resultErr = errors.Join(resultErr, directory.Close()) }()
+	held, err := directory.Stat(".")
+	if err != nil || !os.SameFile(identity, held) {
+		return errors.New("npm intake cleanup directory changed")
+	}
+	file, err := directory.Open(".")
+	if err != nil {
+		return err
+	}
+	entries, readErr := file.ReadDir(1)
+	closeErr := file.Close()
+	if len(entries) != 0 || readErr != io.EOF || closeErr != nil {
+		return errors.Join(errors.New("npm failed intake retains unproven members"), closeErr)
+	}
+	current, err = root.Lstat(name)
+	if err != nil || !os.SameFile(identity, current) {
+		return errors.New("npm intake cleanup parent changed")
+	}
+	if err := root.Remove(name); err != nil {
+		return err
+	}
+	parent, err := root.Open(".")
+	if err != nil {
+		return err
+	}
+	return errors.Join(parent.Sync(), parent.Close())
 }

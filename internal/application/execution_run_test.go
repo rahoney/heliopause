@@ -12,6 +12,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // Runtime doubles exercise orchestration only. Public real runtime qualification
@@ -89,7 +90,12 @@ func TestExecutionWorkflowDoesNotRunFailedPreparation(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			result, err := service.Run(context.Background(), request)
+			calls := []string{}
+			tracker := &workflowStorageUse{calls: &calls}
+			result, err := service.Run(ports.WithStorage(context.Background(), tracker), request)
+			if len(tracker.causes) != 1 || !errors.Is(tracker.causes[0], p.err) {
+				t.Fatal("failed preparation lost storage protection", tracker.causes)
+			}
 			if !errors.Is(err, p.err) || result.Complete() || result.FailureCode() != "PREPARATION_FAILED" || result.RuntimeAttempted() || len(runtime.requests) != 0 {
 				t.Fatal("failed preparation reached runtime or lost cause", err)
 			}
@@ -122,7 +128,12 @@ func TestExecutionWorkflowReconcilesTerminalWithoutErasingCause(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			result, err := service.Run(context.Background(), request)
+			calls := []string{}
+			tracker := &workflowStorageUse{calls: &calls}
+			result, err := service.Run(ports.WithStorage(context.Background(), tracker), request)
+			if len(tracker.causes) != 2 || tracker.causes[0] != nil || (tracker.causes[1] == nil) != row.complete {
+				t.Fatal("storage completion confused guest exit with runtime drainage", row.name, tracker.causes)
+			}
 			if result.Complete() != row.complete || row.runtime.err != nil && !errors.Is(err, cause) || !row.complete && err == nil {
 				t.Fatal("terminal/cause contract lost", err)
 			}

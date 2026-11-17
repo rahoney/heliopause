@@ -18,7 +18,8 @@ func TestNPMProjectRootPolicyKeepsExactChecksAndHostActionBoundary(t *testing.T)
 				t.Fatal(err)
 			}
 			verificationID, _ := domain.NewCheckID("project-build-input-binding")
-			verified, _ := domain.NewCheckExecution(verificationID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			profile, _ := domain.CheckProfileDigest("m3-fixture-v1", "")
+			verified, _ := domain.NewCheckExecution(verificationID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 			verification, err := domain.NewVerificationReport(verified, domain.VerificationVerified, []domain.Evidence{evidence(t, "source-binding", verified, artifact)})
 			if err != nil {
 				t.Fatal(err)
@@ -50,7 +51,7 @@ func TestNPMProjectRootPolicyKeepsExactChecksAndHostActionBoundary(t *testing.T)
 				t.Fatal(err)
 			}
 			factCheckID, _ := domain.NewCheckID("npm-project-root-observation-facts")
-			factCheck, _ := domain.NewCheckExecution(factCheckID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+			factCheck, _ := domain.NewCheckExecution(factCheckID, domain.CheckInspection, false, domain.CapabilitySupported, domain.ExecutionCompleted, "", profile)
 			factReport, err := domain.NewInspectionReport(factCheck, nil, []domain.Evidence{evidence(t, "accepted-observations", factCheck, artifact)})
 			if err != nil {
 				t.Fatal(err)
@@ -66,7 +67,7 @@ func TestNPMProjectRootPolicyKeepsExactChecksAndHostActionBoundary(t *testing.T)
 					status, limitation = domain.ExecutionIncomplete, "M13_NPM_PROJECT_ROOT_INCOMPLETE"
 				}
 				checkID, _ := domain.NewCheckID(id)
-				dynamic, err := domain.NewCheckExecution(checkID, domain.CheckInspection, fault != "optional lifecycle", domain.CapabilitySupported, status, limitation)
+				dynamic, err := domain.NewCheckExecution(checkID, domain.CheckInspection, fault != "optional lifecycle", domain.CapabilitySupported, status, limitation, profile)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -98,7 +99,30 @@ func TestNPMProjectRootPolicyKeepsExactChecksAndHostActionBoundary(t *testing.T)
 				references = append(references, reference)
 			}
 			run, _ := domain.ParseRunID("run_aaaaaaaaaaaaaaaaaaaaaaaaaa")
-			input, err := domain.NewPolicyInput(run, artifact, verification, inspection, references)
+			var requirements []domain.CheckRequirement
+			for _, name := range []string{"project-build-input-binding", "npm-project-root-static", "npm-project-root-lifecycle", "npm-project-root-observation-facts"} {
+				id, _ := domain.NewCheckID(name)
+				kind := domain.CheckInspection
+				if name == "project-build-input-binding" {
+					kind = domain.CheckVerification
+				}
+				requirement, e := domain.NewCheckRequirement(id, kind, name != "npm-project-root-observation-facts", profile)
+				if e != nil {
+					t.Fatal(e)
+				}
+				requirements = append(requirements, requirement)
+			}
+			plan, err := domain.NewCheckPlan(run, artifact, requirements)
+			if err != nil {
+				t.Fatal(err)
+			}
+			input, err := domain.NewPolicyInput(run, artifact, verification, inspection, references, plan)
+			if fault == "missing lifecycle" || fault == "optional lifecycle" || fault == "unexpected check" {
+				if err == nil {
+					t.Fatal("invalid declared membership accepted")
+				}
+				return
+			}
 			if err != nil {
 				t.Fatal(err)
 			}

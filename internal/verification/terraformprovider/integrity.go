@@ -10,6 +10,8 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+const checkProfileName = "terraform-signed-package-v1"
+
 type IntegrityVerifier struct{ intakeRoot string }
 
 func NewIntegrityVerifier(intakeRoot string) (*IntegrityVerifier, error) {
@@ -58,7 +60,8 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 
 func signedReport(artifact domain.AcquiredArtifact, status domain.VerificationOutcome, execution domain.ExecutionStatus, limitation string, binding SignatureBinding) (domain.VerificationReport, error) {
 	checkID, _ := domain.NewCheckID("terraform-signed-package")
-	check, err := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, execution, limitation)
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	check, err := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, execution, limitation, profile)
 	if err != nil {
 		return domain.VerificationReport{}, err
 	}
@@ -79,4 +82,14 @@ func signedReport(artifact domain.AcquiredArtifact, status domain.VerificationOu
 		return domain.VerificationReport{}, err
 	}
 	return domain.NewVerificationReportWithFindings(check, status, []domain.Finding{finding}, []domain.Evidence{evidence})
+}
+
+func (v *IntegrityVerifier) ExpectedChecks(ctx context.Context, artifact domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if v == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckVerification || artifact.Identity().Source() != artifactterraform.Source() {
+		return nil, errors.New("terraform verification declaration is invalid")
+	}
+	id, _ := domain.NewCheckID("terraform-signed-package")
+	profile, _ := domain.CheckProfileDigest(checkProfileName, "")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, profile)
+	return []domain.CheckRequirement{requirement}, err
 }

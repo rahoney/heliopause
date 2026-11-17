@@ -21,20 +21,26 @@ type BunInstanceExecutor interface {
 // BunProjectInspector retains frozen complete-project context beside the
 // source-neutral Inspection interface. It cannot silently inspect one primary.
 type BunProjectInspector struct {
-	frozen    artifactnpm.BunInspectionContext
-	static    *Inspector
-	prepare   BunInspectionPreparer
-	execute   BunInstanceExecutor
-	handoffMu sync.Mutex
-	active    bool
-	prepared  artifactnpm.BunInspectionLayout
+	expectedInstances map[string][]string
+	frozen            artifactnpm.BunInspectionContext
+	static            *Inspector
+	prepare           BunInspectionPreparer
+	execute           BunInstanceExecutor
+	handoffMu         sync.Mutex
+	active            bool
+	prepared          artifactnpm.BunInspectionLayout
 }
 
 func NewBunProjectInspector(frozen artifactnpm.BunInspectionContext, static *Inspector, prepare BunInspectionPreparer, execute BunInstanceExecutor) (*BunProjectInspector, error) {
 	if !frozen.Valid() || static == nil || prepare == nil || execute == nil {
 		return nil, errors.New("bun project inspection requires frozen context and all consumers")
 	}
-	return &BunProjectInspector{frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
+	expectedInstances := make(map[string][]string)
+	for _, pkg := range frozen.Lock().Packages() {
+		key := pkg.Name + "\x00" + pkg.Version
+		expectedInstances[key] = append(expectedInstances[key], pkg.Key)
+	}
+	return &BunProjectInspector{expectedInstances: expectedInstances, frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
 }
 func (i *BunProjectInspector) Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	return domain.InspectionReport{}, errors.New("bun inspection requires the complete frozen project")
@@ -134,4 +140,11 @@ func (i *BunProjectInspector) preparedLayoutFor(input artifactnpm.BunInspectionI
 		return artifactnpm.BunInspectionLayout{}, errors.New("bun completed layout does not match the exact request")
 	}
 	return i.prepared, nil
+}
+
+func (i *BunProjectInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.static == nil {
+		return nil, errors.New("project declaration is unavailable")
+	}
+	return npmProjectExpectedChecks(ctx, a, kind, i.static, i.expectedInstances[a.Identity().Name()+"\x00"+a.Identity().Version()], projectInspectionBun)
 }

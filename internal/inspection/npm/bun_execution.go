@@ -64,3 +64,10 @@ func (i *BunExecutionInspector) PreparedLayoutFor(resolution domain.DependencyRe
 	}
 	return i.shared.preparedLayoutFor(input)
 }
+
+func (i *BunExecutionInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.shared == nil {
+		return nil, errors.New("execution declaration is unavailable")
+	}
+	return i.shared.ExpectedChecks(ctx, a, kind)
+}

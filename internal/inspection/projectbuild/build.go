@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 // BuildInspector interprets build observations. It cannot operate a runtime,
@@ -50,7 +51,7 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 	if err != nil {
 		return domain.ProjectBuildReport{}, errors.New("project build observation summary is invalid")
 	}
-	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation, i.checkProfile())
 	observationID, _ := domain.NewEvidenceID("project-build-observation-result")
 	bindingID, _ := domain.NewEvidenceID("project-build-output-binding")
 	facts := make([]domain.Evidence, 0, 2)
@@ -96,4 +97,22 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 		return domain.ProjectBuildReport{}, err
 	}
 	return domain.NewProjectBuildReport(observation, report)
+}
+
+func (i *Inspector) checkProfile() domain.ContentDigest {
+	image := runtimeidentity.GoImageReference
+	if i.kind == "cargo" {
+		image = runtimeidentity.RustImageReference
+	}
+	profile, _ := domain.CheckProfileDigest("project-build-observation-v1", image)
+	return profile
+}
+
+func (i *Inspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if i == nil || i.sandbox == nil || ctx == nil || ctx.Err() != nil || kind != domain.CheckInspection || a.Identity().Source().String() != "project-local" || a.Identity().Variant() != i.kind+"-source" {
+		return nil, errors.New("project build declaration is invalid")
+	}
+	id, _ := domain.NewCheckID("project-build-observation")
+	requirement, err := domain.NewCheckRequirement(id, kind, true, i.checkProfile())
+	return []domain.CheckRequirement{requirement}, err
 }

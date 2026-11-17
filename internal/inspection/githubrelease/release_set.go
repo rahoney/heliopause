@@ -34,55 +34,23 @@ func NewReleaseSetInspector(intakeRoot string, manifest func() (releaseinstall.R
 }
 
 func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
-	if i == nil || i.manifest == nil || i.metadata == nil || i.native == nil || ctx == nil {
-		return domain.InspectionReport{}, errors.New("release set inspection is unavailable")
-	}
-	if err := ctx.Err(); err != nil {
-		return domain.InspectionReport{}, err
-	}
-	manifest, err := i.manifest()
+	manifest, err := i.selectedManifest(ctx, artifact)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	if artifact.Identity().Source().String() != "github-release" || artifact.Identity().Name() != "rahoney-heliopause" || artifact.Identity().Version() != manifest.Version() {
-		return domain.InspectionReport{}, errors.New("release inspection subject differs from the frozen selection")
-	}
-	name := artifact.Identity().Variant()
-	if name == "helox-release-manifest.json" {
-		if manifest.SHA256() != artifact.Digest().String() {
-			return domain.InspectionReport{}, errors.New("release manifest input differs from the frozen selection")
-		}
+	switch artifact.Identity().Variant() {
+	case "helox-release-manifest.json":
 		return i.metadata.Inspect(ctx, artifact)
-	}
-	var selected releaseinstall.ReleaseFile
-	for _, file := range manifest.Files() {
-		if file.Name == name {
-			selected = file
-			break
-		}
-	}
-	if selected.Name == "" || selected.SHA256 != artifact.Digest().String() || uint64(selected.Size) != artifact.SizeBytes() {
-		return domain.InspectionReport{}, errors.New("release inspection subject is absent from the manifest")
-	}
-	if name == "pipx-runtime-linux-amd64.zip" {
+	case "pipx-runtime-linux-amd64.zip":
 		if i.pipx == nil {
 			return pipxRuntimeIncomplete("P4_PIPX_RUNTIME_INSPECTION_UNAVAILABLE")
 		}
 		return i.pipx.Inspect(ctx, artifact)
-	}
-	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" || name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" || name == "pipx-NOTICE.txt" {
+	case "helox-release-sbom.cdx.json", "helox-runtime-images.json", "pnpm-NOTICE.txt", "bun-NOTICE.txt", "pipx-NOTICE.txt":
 		return i.inspectMetadata(ctx, artifact, manifest)
+	default:
+		return i.native.Inspect(ctx, artifact)
 	}
-	native, err := manifest.NativeUpdateFiles()
-	if err != nil {
-		return domain.InspectionReport{}, err
-	}
-	for _, file := range native {
-		if file.Name == name {
-			return i.native.Inspect(ctx, artifact)
-		}
-	}
-	return domain.InspectionReport{}, errors.New("release subject is not selected for this platform")
 }
 
 func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact domain.AcquiredArtifact, manifest releaseinstall.ReleaseManifest) (report domain.InspectionReport, resultErr error) {
@@ -135,4 +103,78 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 
 func (i *ReleaseSetInspector) invalidMetadata(artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	return i.metadata.static.report(artifact, "release-metadata-schema", "Fixed passive release metadata schema or identity is invalid.", "SELF_UPDATE_METADATA_INVALID")
+}
+
+func (i *ReleaseSetInspector) ExpectedChecks(ctx context.Context, a domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	if kind != domain.CheckInspection {
+		return nil, errors.New("release declaration kind is invalid")
+	}
+	if _, err := i.selectedManifest(ctx, a); err != nil {
+		return nil, err
+	}
+	switch a.Identity().Variant() {
+	case "helox-release-manifest.json":
+		return i.metadata.ExpectedChecks(ctx, a, kind)
+	case "pipx-runtime-linux-amd64.zip":
+		id, _ := domain.NewCheckID(pipxRuntimeCheck)
+		requirement, err := domain.NewCheckRequirement(id, kind, true, githubDynamicProfile(pipxRuntimeCheck))
+		return []domain.CheckRequirement{requirement}, err
+	case "helox-release-sbom.cdx.json", "helox-runtime-images.json", "pnpm-NOTICE.txt", "bun-NOTICE.txt", "pipx-NOTICE.txt":
+		return i.metadata.static.ExpectedChecks(ctx, a, kind)
+	default:
+		planner, ok := i.native.(ports.CheckPlanner)
+		if !ok {
+			return nil, errors.New("native release declaration is unavailable")
+		}
+		return planner.ExpectedChecks(ctx, a, kind)
+	}
+}
+
+// The same frozen member binding selects both declarations and actual checks.
+func (i *ReleaseSetInspector) selectedManifest(ctx context.Context, a domain.AcquiredArtifact) (releaseinstall.ReleaseManifest, error) {
+	var empty releaseinstall.ReleaseManifest
+	if i == nil || i.manifest == nil || i.metadata == nil || i.native == nil || ctx == nil {
+		return empty, errors.New("release set inspection is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return empty, err
+	}
+	manifest, err := i.manifest()
+	if err != nil {
+		return empty, err
+	}
+	if a.Identity().Source().String() != "github-release" || a.Identity().Name() != "rahoney-heliopause" || a.Identity().Version() != manifest.Version() {
+		return empty, errors.New("release inspection subject differs from the frozen selection")
+	}
+	name := a.Identity().Variant()
+	if name == "helox-release-manifest.json" {
+		if a.Digest().String() != manifest.SHA256() {
+			return empty, errors.New("release manifest input differs from the frozen selection")
+		}
+		return manifest, nil
+	}
+	present := false
+	for _, file := range manifest.Files() {
+		if file.Name == name && file.SHA256 == a.Digest().String() && uint64(file.Size) == a.SizeBytes() {
+			present = true
+			break
+		}
+	}
+	if !present {
+		return empty, errors.New("release inspection subject is absent from the manifest")
+	}
+	switch name {
+	case "pipx-runtime-linux-amd64.zip", "helox-release-sbom.cdx.json", "helox-runtime-images.json", "pnpm-NOTICE.txt", "bun-NOTICE.txt", "pipx-NOTICE.txt":
+		return manifest, nil
+	}
+	native, err := manifest.NativeUpdateFiles()
+	if err != nil {
+		return empty, err
+	}
+	for _, file := range native {
+		if file.Name == name {
+			return manifest, nil
+		}
+	}
+	return empty, errors.New("release subject is not selected for this platform")
 }

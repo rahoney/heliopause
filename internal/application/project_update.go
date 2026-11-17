@@ -51,6 +51,11 @@ func executeGuardedProjectUpdate(ctx context.Context, installContext domain.Inst
 	if err := ctx.Err(); err != nil {
 		return result, err
 	}
+	finishUse, err := ports.TrackStorageUse(ctx)
+	if err != nil {
+		return result, err
+	}
+	defer func() { finishUse(resultErr) }()
 	guard, err := promoter.Begin(ctx, installContext)
 	if err != nil {
 		return result, fmt.Errorf("guard %s project: %w", label, err)

@@ -1,6 +1,6 @@
 # Heliopause Artifact Airlock
 
-현재 복구 실행: clean358adf9 기반의 R1 선별 재구성이 진행 중이다. 실제 상태와 다음 단계는 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 소유한다. 기존 checkpoint는 해당 source/시점의 범위로 유지한다.
+현재 복구 실행: clean358adf9 기반 R2 선별 구현·로컬/표적 실제 연결을 확인했고 R3 준비로 이어간다. 공통 큰 프로필·hosted/최종R8 qualification은 OPEN이다. 실제 상태와 다음 단계는 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 소유한다. 기존 checkpoint는 해당 source/시점의 범위로 유지한다.
 
 
 외부 Software Artifact와 package를 목표 개발 환경에 설치하기 전에 출처·identity·무결성과 정적·동적 행위를 검사하고, Policy가 허용한 정확한 Artifact만 trusted Promotion하는 도구의 실용성을 탐색한다.

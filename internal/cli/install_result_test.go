@@ -33,11 +33,12 @@ func TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy(t 
 			if exitCode != test.exit || !errors.Is(err, test.promotion) {
 				t.Fatalf("ExecuteInstall() exit=%d error=%v", exitCode, err)
 			}
+			t.Logf("S09_SCHEMA_FIXTURE=%s", output.Bytes())
 			var document map[string]any
 			if err := json.Unmarshal(output.Bytes(), &document); err != nil {
 				t.Fatal(err)
 			}
-			if document["schema_version"] != "helox.operation-result/v1" || document["operation"] != "INSTALL" || document["operation_status"] != test.status || document["promotion_status"] != test.status {
+			if document["schema_version"] != "helox.operation-result/v2" || document["operation"] != "INSTALL" || document["operation_status"] != test.status || document["promotion_status"] != test.status {
 				t.Fatalf("Install result = %#v", document)
 			}
 			policyDocument, _ := document["policy"].(map[string]any)
@@ -152,7 +153,7 @@ func (p *installCLIPorts) Inspect(_ context.Context, artifact domain.AcquiredArt
 	return domain.NewInspectionReport(check, nil, []domain.Evidence{item})
 }
 
-func (p *installCLIPorts) Record(_ context.Context, runID domain.RunID, items []domain.Evidence) ([]domain.EvidenceReference, error) {
+func (p *installCLIPorts) Record(_ context.Context, runID domain.RunID, items []domain.Evidence, checks ...domain.CheckExecution) ([]domain.EvidenceReference, error) {
 	references := make([]domain.EvidenceReference, 0, len(items))
 	for _, item := range items {
 		reference, _ := domain.NewEvidenceReference(item.ID(), "evidence:"+runID.String()+":"+item.ID().String())
@@ -188,4 +189,87 @@ func mustCLIInstallEvidenceID(value string) domain.EvidenceID {
 		panic(err)
 	}
 	return id
+}
+
+type declaredInstallFailurePorts struct {
+	*installCLIPorts
+	profile domain.ContentDigest
+	cause   error
+}
+
+func (p *declaredInstallFailurePorts) ExpectedChecks(_ context.Context, _ domain.AcquiredArtifact, kind domain.CheckKind) ([]domain.CheckRequirement, error) {
+	name := "cli-integrity"
+	if kind == domain.CheckInspection {
+		name = "cli-inspection"
+	}
+	id, _ := domain.NewCheckID(name)
+	requirement, err := domain.NewCheckRequirement(id, kind, true, p.profile)
+	return []domain.CheckRequirement{requirement}, err
+}
+func (p *declaredInstallFailurePorts) Verify(ctx context.Context, a domain.AcquiredArtifact) (domain.VerificationReport, error) {
+	report, err := p.installCLIPorts.Verify(ctx, a)
+	if err != nil {
+		return report, err
+	}
+	actual := report.Execution()
+	check, err := domain.NewCheckExecution(actual.ID(), actual.Kind(), actual.Required(), actual.Capability(), actual.Status(), "", p.profile)
+	if err != nil {
+		return domain.VerificationReport{}, err
+	}
+	return domain.NewVerificationReport(check, report.Outcome(), report.Evidence())
+}
+func (p *declaredInstallFailurePorts) Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	return domain.InspectionReport{}, p.cause
+}
+
+func TestInstallFailureKeepsDeclaredAndPerformedChecksInHumanAndJSON(t *testing.T) {
+	cause := errors.New("private provider diagnostic")
+	for _, machine := range []bool{false, true} {
+		base := newInstallCLIPorts(t)
+		profile, _ := domain.CheckProfileDigest("cli-failure-fixture-v1", "")
+		provider := &declaredInstallFailurePorts{base, profile, cause}
+		inspection, err := application.NewInstallInspectService(provider, provider, provider, provider, provider, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		service, err := application.NewInstallService(inspection, evidence.Generator{}, installCLIStaging{}, installCLIPromotion{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		target, _ := domain.NewInstallTarget("/tmp/heliopause-cli-failure-target")
+		install, _ := domain.NewInstallContext(target)
+		request, err := application.NewInstallRequest(base.reference, install)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var output bytes.Buffer
+		code, err := cli.ExecuteInstall(context.Background(), service, request, machine, &output)
+		if code != 1 || !errors.Is(err, cause) || strings.Contains(output.String(), cause.Error()) {
+			t.Fatal("partial failure lost cause or disclosed provider output", code, err)
+		}
+		if machine {
+			t.Logf("S09_SCHEMA_FIXTURE=%s", output.Bytes())
+			var value struct {
+				SchemaVersion string `json:"schema_version"`
+				Policy        any    `json:"policy"`
+				VerifiedSet   any    `json:"verified_set"`
+				Results       []struct {
+					Status string `json:"operation_status"`
+					Checks []any  `json:"checks"`
+					Policy any    `json:"policy"`
+					Plan   struct {
+						Requirements []any `json:"requirements"`
+					} `json:"check_plan"`
+				} `json:"inspection_results"`
+			}
+			if err := json.Unmarshal(output.Bytes(), &value); err != nil {
+				t.Fatal(err)
+			}
+			if value.SchemaVersion != "helox.operation-result/v2" || value.Policy != nil || value.VerifiedSet != nil || len(value.Results) != 1 || value.Results[0].Status != "FAILED" || value.Results[0].Policy != nil || len(value.Results[0].Checks) != 1 || len(value.Results[0].Plan.Requirements) != 2 {
+				t.Fatal("partial run coverage was collapsed or approved", output.String())
+			}
+		} else if !strings.Contains(output.String(), "cli-inspection") || !strings.Contains(output.String(), "cli-integrity") {
+			t.Fatal("human partial coverage differs from JSON", output.String())
+		}
+	}
 }

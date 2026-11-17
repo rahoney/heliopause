@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
@@ -28,6 +29,7 @@ import (
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
+	resourcestorage "github.com/rahoney/heliopause/internal/storage"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 	verificationpypi "github.com/rahoney/heliopause/internal/verification/pypi"
@@ -35,6 +37,7 @@ import (
 
 // Run constructs and executes the CLI with process-owned dependencies.
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultErr error) {
+	outerFinalizersClosed := true
 	command, err := cli.New(stdout, stderr)
 	if err != nil {
 		return err
@@ -152,6 +155,25 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
+	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" {
+		cacheRoot, storageErr := os.UserCacheDir()
+		if storageErr != nil {
+			return storageErr
+		}
+		storage, storageErr := resourcestorage.NewLocal(ctx, filepath.Join(cacheRoot, "heliopause"), domain.DefaultStoragePolicy())
+		if storageErr != nil {
+			return storageErr
+		}
+		ctx = ports.WithStorage(ctx, storage)
+		defer func() {
+			cleanupContext, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+			finishErr := storage.Finish(cleanupContext, outerFinalizersClosed)
+			cancel()
+			closeErr := errors.Join(finishErr, storage.Close())
+			cli.PresentFinalizationError(command, closeErr)
+			resultErr = errors.Join(resultErr, closeErr)
+		}()
+	}
 	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
 		var closeRuntime func() error
 		ctx, closeRuntime, err = commandRuntime(ctx)
@@ -164,6 +186,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if closeRuntime != nil {
 			defer func() {
 				cleanupErr := closeRuntime()
+				outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 				cli.PresentFinalizationError(command, cleanupErr)
 				resultErr = errors.Join(resultErr, cleanupErr)
 			}()
@@ -184,6 +207,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		defer func() {
 			cleanupErr := trustedExecutor.Close()
+			outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 			cli.PresentFinalizationError(command, cleanupErr)
 			resultErr = errors.Join(resultErr, cleanupErr)
 		}()
@@ -201,6 +225,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		processObserver = observerSupervisor.Observer()
 		defer func() {
 			cleanupErr := observerSupervisor.Close()
+			outerFinalizersClosed = outerFinalizersClosed && cleanupErr == nil
 			cli.PresentFinalizationError(command, cleanupErr)
 			resultErr = errors.Join(resultErr, cleanupErr)
 		}()
@@ -590,7 +615,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence)
+		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence, policy.M6PolicyVersion)
 		if err != nil {
 			return err
 		}

@@ -14,11 +14,32 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 	pending := make([]*pendingDependencyInspection, 0, len(nodes))
 	byNode := make(map[domain.DependencyNodeID]*pendingDependencyInspection, len(nodes))
 	failPending := func(code string, cause error) ([]domain.DependencyInspection, map[domain.DependencyNodeID]domain.InspectionReport, []DependencyPolicyDiagnostic, error) {
+		var results []domain.OperationResult
 		for _, item := range pending {
-			if item.finalized || item.run == nil {
+			if item.run == nil {
 				continue
 			}
-			_ = item.run.FinalizeFailed(code)
+			if item.finalized {
+				record := item.inspection
+				result, err := domain.NewInspectOperationResult(domain.OperationResultData{OperationID: operationID, Status: domain.OperationCompleted, Reference: item.run.Reference(), ResolvedIdentity: item.artifact.Identity(), Digest: item.artifact.Digest(), RunID: item.runID, RunOutcome: domain.RunCompleted, Checks: record.Checks(), CheckPlan: record.CheckPlan(), Evidence: record.Evidence(), PolicyDecision: record.PolicyDecision()})
+				if err != nil {
+					cause = errors.Join(cause, err)
+				} else {
+					results = append(results, result)
+				}
+				continue
+			}
+			failure := failDependencyRun(item, code, nil)
+			var retained *InspectionFailure
+			if errors.As(failure, &retained) {
+				results = append(results, retained.Results()...)
+				cause = errors.Join(cause, retained.Unwrap())
+			} else {
+				cause = errors.Join(cause, failure)
+			}
+		}
+		if len(results) != 0 {
+			return nil, nil, nil, &InspectionFailure{cause: cause, results: results}
 		}
 		return nil, nil, nil, cause
 	}
@@ -52,12 +73,18 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 		if !acquiredMatchesLocked(artifact, dependency, runID) {
 			return failPending("ARTIFACT_BINDING_INVALID", fmt.Errorf("acquired artifact binding is invalid for dependency %s", dependency.Node().String()))
 		}
+		item.artifact = artifact
+		item.plans, err = freezeCheckPlan(ctx, runID, artifact, s.verification, s.inspection, s.entryPolicy)
+		if err != nil {
+			return failPending("CHECK_PLAN_UNAVAILABLE", err)
+		}
 		ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 		verification, err := s.verification.Verify(ctx, artifact)
 		if err != nil {
 			return failPending("VERIFICATION_PROVIDER_FAILED", err)
 		}
-		item.artifact, item.verification = artifact, verification
+		item.verification = verification
+		item.checks = []domain.CheckExecution{verification.Execution()}
 	}
 	artifacts := make(map[domain.DependencyNodeID]domain.AcquiredArtifact, len(pending))
 	for _, dependency := range nodes {
@@ -70,20 +97,23 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	reports, err := inspect(artifacts)
 	if err != nil {
-		// A provider may return bounded partial facts with its original failure.
-		// Record only exact complete report coverage; never evaluate Policy or
-		// construct an approved set on this path.
-		if len(reports) != 0 {
+		// Keep verification even if no complete, subject-bound inspection map
+		// is available. Invalid partial reports never become performed checks.
+		validReports := len(reports) != 0
+		if validReports {
 			if reportErr := validateFailedDependencyReports(nodes, reports, byNode); reportErr != nil {
 				err = errors.Join(err, reportErr)
-			} else {
-				for _, item := range pending {
-					facts := append(item.verification.Evidence(), reports[item.dependency.Node()].Evidence()...)
-					if _, recordErr := s.evidence.Record(ctx, item.runID, facts); recordErr != nil {
-						err = errors.Join(err, recordErr)
-					}
-				}
+				validReports = false
 			}
+		}
+		for _, item := range pending {
+			var report domain.InspectionReport
+			if validReports {
+				report = reports[item.dependency.Node()]
+			}
+			var recordErr error
+			item.checks, item.references, recordErr = recordFailedInspection(ctx, s.evidence, item.runID, item.artifact, item.verification, report)
+			err = errors.Join(err, recordErr)
 		}
 		return failPending("INSPECTION_PROVIDER_FAILED", err)
 	}
@@ -93,12 +123,14 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 	for _, item := range pending {
 		report := reports[item.dependency.Node()]
 		checks := append([]domain.CheckExecution{item.verification.Execution()}, report.Executions()...)
+		item.checks = checks
 		evidence := append(item.verification.Evidence(), report.Evidence()...)
-		references, err := s.evidence.Record(ctx, item.runID, evidence)
+		references, err := recordInspectionEvidence(ctx, s.evidence, item.runID, evidence, checks...)
 		if err != nil {
 			return failPending("EVIDENCE_RECORD_FAILED", err)
 		}
-		input, err := domain.NewPolicyInput(item.runID, item.artifact, item.verification, report, references)
+		item.references = references
+		input, err := domain.NewPolicyInput(item.runID, item.artifact, item.verification, report, references, item.plans...)
 		if err != nil {
 			return failPending("POLICY_INPUT_INVALID", err)
 		}
@@ -107,7 +139,7 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 		if err != nil {
 			return failPending("POLICY_EVALUATION_FAILED", err)
 		}
-		record, err := newRecordedDependencyInspection(item.dependency.Node(), item.runID, item.artifact, checks, references, decision, evidence)
+		record, err := newRecordedDependencyInspection(item.dependency.Node(), item.runID, item.artifact, checks, references, decision, evidence, item.plans...)
 		if err != nil {
 			return failPending("DEPENDENCY_INSPECTION_INVALID", err)
 		}
