@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "e7c3032907570d508cf0dcdc3bb49b8d079b735b48bd855e900b605f13b4a0b1"
+	RuntimeLockSHA256            = "e0ea7315c6fc974323d3995e96ea40eafebf4fab9ae69423d63cb92550d0e44b"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -68,8 +68,8 @@ const (
 	PythonImageReference         = "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86"
 	PythonVersion                = "3.14.10"
 	PipVersion                   = "26.2.2"
-	GoImageReference             = "golang:1.27.3-bookworm@sha256:fea12ba16096adec0f699ce1c4da2154d320450e56c1f63671f95d2a3551c77b"
-	GoVersion                    = "1.27.3"
+	GoImageReference             = "golang:1.27.4-bookworm@sha256:fb7cceb528b47141eccd9b60bf3cbd27d5ef5f8cf5b7d338bec866da495b50dc"
+	GoVersion                    = "1.27.4"
 	GoArchitecture               = "amd64"
 	RustImageReference           = "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0"
 	RustVersion                  = "1.99.0"
@@ -112,10 +112,10 @@ type GVisorBundleMemberLock struct {
 }
 
 var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
-	{Path: "containerd-shim-runsc-v1", Size: 43865876, SHA512: "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"},
-	{Path: "gvisor-bin/checkpointgofer", Size: 68249064, SHA512: "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"},
+	{Path: "containerd-shim-runsc-v1", Size: 43864612, SHA512: "9622b28a577a31532a5a9d584732e3f687c7d373e4562437847cd72df46fa787b1d6b591e0cb92a90fb3888312a505c1cb7fe72dfe117b525640ce5728470ed6"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 68257632, SHA512: "44d0015b8bcf8aa7b47e6718d1eb0c764101574bdfaa108ce780fde76bd4e2e919f86001da32f9e2b6ca94349e02abc1db2ed58f592455266d07952101d95aae"},
 	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-	{Path: "gvisor-bin/gvisor_sentry", Size: 51923536, SHA512: "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"},
-	{Path: "gvisor-bin/runsc-metric-server", Size: 53387149, SHA512: "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"},
-	{Path: "runsc", Size: 110972712, SHA512: "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 51923128, SHA512: "94e9395113239e672ee4260fc99ca9d3802d81e20b90aaecf2f3aa1c110adf8981d5f784673192d3eb51f3c67671ceeaccdd4fb2eb4150f67d96932766cb1ec5"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 53387709, SHA512: "312e9d15f332e6f86aa55094dbfc0ed85bdbcb28d7518ebf7d58cf67826d6517c01a03e0f8ad5dafad7633665ae90e980beb271111b84b05338a252d25d91b98"},
+	{Path: "runsc", Size: 110977528, SHA512: "657fa1c73b606a1eb0e7023421f886140c45c0870de08f5cbd3442d9a72e93949787e1578acbc283cb1249c070ee69e097af391627aeee017fa80c05ae8905a8"},
 }

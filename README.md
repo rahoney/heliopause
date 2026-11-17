@@ -39,7 +39,7 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Build
 
-Heliopause는 Go `1.27.3` 이상이 필요하며, 개발·CI toolchain은 Go `1.27.3`으로 고정한다.
+Heliopause는 Go `1.27.4` 이상이 필요하며, 개발·CI toolchain은 Go `1.27.4`으로 고정한다.
 
 개발용 Go는 영구 경로 `$HOME/.local/go`의 단일 SDK를 사용하고 해당 `bin`을
 PATH에 둔다. `GOTOOLCHAIN=local`로 자동 SDK 추가 다운로드를 금지한다. 버전
