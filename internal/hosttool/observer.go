@@ -122,7 +122,7 @@ func verifyObserverBuildIdentity(ctx context.Context, path string) error {
 	command := exec.CommandContext(ctx, path, "--identity")
 	command.Env = []string{"LANG=C", "LC_ALL=C"}
 	output, err := command.Output()
-	if err != nil || strings.TrimSpace(string(output)) != "gvisor-commit="+gVisorObserverCommit {
+	if err != nil || strings.TrimSpace(string(output)) != "gvisor-commit="+gVisorObserverCommit+"\nfilesystem-mutation=v1" {
 		return errors.New("observer helper build identity is unavailable or mismatched")
 	}
 	return nil

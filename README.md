@@ -1,6 +1,6 @@
 # Heliopause Artifact Airlock
 
-현재 복구 실행: clean358adf9 기반 R2 선별 구현·로컬/표적 실제 연결을 확인했고 R3 준비로 이어간다. 공통 큰 프로필·hosted/최종R8 qualification은 OPEN이다. 실제 상태와 다음 단계는 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 소유한다. 기존 checkpoint는 해당 source/시점의 범위로 유지한다.
+현재 복구 실행: R3의 로컬 기능 범위를 검증했다(runtime/kernel7·CPP136·native25부모·mandatory full, pnpm/Bun 원래 전체 회귀 포함). [R3 체크포인트](./docs/planning/evidence/recovery-20261115/r3-local-checkpoint-20261118.md)와 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 근거·재개를 소유한다. 다음은 U1 없이 기존 S02/S03·후손 drain의 독립 선별 준비이며 D3 자동회수는 독립 검토 REVISE/미채택이다. 공통 큰 profile·hosted·최종R8 및 전체 설계 잔여 요구는 OPEN이다.
 
 
 외부 Software Artifact와 package를 목표 개발 환경에 설치하기 전에 출처·identity·무결성과 정적·동적 행위를 검사하고, Policy가 허용한 정확한 Artifact만 trusted Promotion하는 도구의 실용성을 탐색한다.

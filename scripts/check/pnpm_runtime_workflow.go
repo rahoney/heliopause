@@ -2,7 +2,9 @@ package main
 
 import "strings"
 
-const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActual(Isolated(NativeStartup|EmptyLock|NodeQuery)|ReleaseArtifactProbe)$'`
+const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActualIsolated(NativeStartup|EmptyLock|NodeQuery)$'`
+
+const pnpmArtifactProbeCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestPNPMActualReleaseArtifactProbe$'`
 
 const pnpmProjectIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionProjectInspection$'`
 const pnpmControlledIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionInstanceExecution$/^controlled-(success|exit37|long-name)$'`
@@ -103,6 +105,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		`go run ./scripts/update-runtime materialize-pnpm --root "$PWD" --archive "$pnpm_work/archive.tar.gz" --output "$pnpm_work/pnpm-linux-amd64" --notices-output "$pnpm_work/pnpm-NOTICE.txt"`,
 		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause",
 		pnpmRuntimeIntegrationCommand,
+		pnpmArtifactProbeCommand,
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,
 		pnpmPublicQuarantineCommand,

@@ -46,6 +46,13 @@ func githubDynamicReport(artifact domain.AcquiredArtifact, result domain.Sandbox
 		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation, githubDynamicProfile(name))
 		return domain.NewInspectionReport(check, nil, nil)
 	}
+	if name != pipxRuntimeCheck {
+		states := result.EnvironmentStates()
+		if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+			check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M6_DYNAMIC_ENVIRONMENT_INCOMPLETE", githubDynamicProfile(name))
+			return domain.NewInspectionReport(check, nil, nil)
+		}
+	}
 	for _, observation := range result.Observations() {
 		if observation.Category() == domain.ObservationResource {
 			check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M6_DYNAMIC_RESOURCE_LIMIT", githubDynamicProfile(name))
@@ -62,6 +69,23 @@ func githubDynamicReport(artifact domain.AcquiredArtifact, result domain.Sandbox
 	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), name, summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
+	}
+	facts := []domain.Evidence{evidence}
+	states := result.EnvironmentStates()
+	if name == pipxRuntimeCheck {
+		states = nil
+	}
+	for _, state := range states {
+		summary, err := state.Summary()
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		id, _ := domain.NewEvidenceID("github-elf-workspace-" + string(state.Profile))
+		fact, err := domain.NewEvidence(id, checkID, artifact.Identity(), artifact.Digest(), "workspace-state", summary)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		facts = append(facts, fact)
 	}
 	findings := []domain.Finding{}
 	seen := map[string]bool{}
@@ -87,7 +111,7 @@ func githubDynamicReport(artifact domain.AcquiredArtifact, result domain.Sandbox
 			seen[code] = true
 		}
 	}
-	return domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
+	return domain.NewInspectionReport(check, findings, facts)
 }
 
 type CompositeInspector struct {
@@ -137,7 +161,12 @@ func githubDynamicProfile(name string) domain.ContentDigest {
 	if name == pipxRuntimeCheck {
 		image = runtimeidentity.PythonImageReference + "|" + runtimeidentity.PipxToolSHA256
 	}
-	profile, _ := domain.CheckProfileDigest(name+"-v1", image)
+	revision := name + "-v1"
+	if name != pipxRuntimeCheck {
+		revision = name + "-environments-v2"
+		image += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+	}
+	profile, _ := domain.CheckProfileDigest(revision, image)
 	return profile
 }
 

@@ -10,10 +10,6 @@ import (
 
 var errBunInstanceExecution = errors.New("bun instance inspection is unavailable or incomplete")
 
-type bunTargetTraceObserver interface {
-	StartBunTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-}
-
 // ExecuteBunInstance consumes one exact bound hoisted instance in a fresh session.
 // This current lane executes npm/Node lifecycle and grants no Policy authority.
 func (b *Backend) ExecuteBunInstance(ctx context.Context, layout artifactnpm.BunInspectionLayout, subject domain.AcquiredArtifact, instance string) (domain.SandboxResult, error) {
@@ -23,7 +19,7 @@ func (b *Backend) ExecuteBunInstance(ctx context.Context, layout artifactnpm.Bun
 	if err := ctx.Err(); err != nil {
 		return domain.SandboxResult{}, errors.Join(errBunInstanceExecution, err, context.Cause(ctx))
 	}
-	observer, ok := b.observer.(bunTargetTraceObserver)
+	_, ok := b.observer.(npmInstanceEnvironmentTraceObserver)
 	_, inputOK := b.runner.(inputCommandRunner)
 	_, outputOK := b.runner.(streamingDockerOutput)
 	if !ok || !inputOK || !outputOK {
@@ -38,7 +34,7 @@ func (b *Backend) ExecuteBunInstance(ctx context.Context, layout artifactnpm.Bun
 	if err != nil {
 		return domain.SandboxResult{}, errors.Join(errBunInstanceExecution, err)
 	}
-	result, err := b.executeNPMInstance(ctx, nativeRuntimeBun, target, payload, observer.StartBunTargetLifecycleProfile)
+	result, err := b.executeNPMInstance(ctx, nativeRuntimeBun, target, payload)
 	if err != nil {
 		return result, errors.Join(errBunInstanceExecution, err)
 	}

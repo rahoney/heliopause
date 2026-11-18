@@ -47,7 +47,7 @@ func newTerraformServices(executor sandbox.TrustedExecutor, observer sandbox.Tra
 	if err != nil {
 		return nil, nil, err
 	}
-	backend, err := sandbox.NewLinuxTerraformProviderBackend(intake, executor, observer)
+	backend, err := sandbox.NewLinuxTerraformProviderBackend(intake, executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return nil, nil, err
 	}

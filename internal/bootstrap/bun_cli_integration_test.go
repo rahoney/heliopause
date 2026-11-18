@@ -22,8 +22,6 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 	if os.Geteuid() == 0 {
 		t.Fatal("Bun CLI actual requires ordinary UID")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-	defer cancel()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -63,6 +61,8 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					args = append(args, "--", selector)
 				}
 				var out, diagnostic bytes.Buffer
+				ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+				defer cancel()
 				if err := bootstrap.Run(ctx, args, &out, &diagnostic); err != nil {
 					t.Fatalf("actual bun %s failed: %v stdout=%s diagnostics=%s", operation, err, out.String(), diagnostic.String())
 				}
@@ -205,6 +205,8 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 				var out, diagnostic bytes.Buffer
+				ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+				defer cancel()
 				if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", target}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"operation_status":"FAILED"`)) {
 					t.Fatal("implicit changed-control enrollment accepted", err, out.String())
 				}
@@ -237,6 +239,8 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	var out, diagnostic bytes.Buffer
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
 	if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", native, "--adopt"}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"promotion_status":"NOT_COMPLETED"`)) {
 		t.Fatal("native adoption bypass accepted", err, out.String())
 	}

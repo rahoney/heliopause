@@ -76,7 +76,7 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer())
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer(), newObservationResourceAdapter())
 	if err != nil {
 		t.Fatal(err)
 	}

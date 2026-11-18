@@ -46,30 +46,7 @@ func TestPythonRequirementsPublicInstallationIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	launcher, err := hosttool.NewSystemObserverLauncher()
-	if err != nil {
-		t.Fatal(err)
-	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := observer.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
+	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
 	for _, client := range []string{"pip", "uv"} {
 		t.Run(client, func(t *testing.T) {
 			root, err := filepath.EvalSymlinks(t.TempDir())
@@ -509,4 +486,257 @@ func TestRequirementsSyntheticBlockPreservesRealChecks(t *testing.T) {
 	if len(original.Executions()) != 2 || len(original.Findings()) != 0 {
 		t.Fatal("original report was mutated")
 	}
+}
+
+// Public intake and the production Application/store qualify the normalized
+// evidence separately from the backend-only controlled-wheel scenarios.
+func TestPythonEnvironmentEvidenceIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYTHON_ENVIRONMENT_EVIDENCE_INTEGRATION") != "1" {
+		t.Skip("requires protected Python environment evidence integration")
+	}
+	if os.Geteuid() == 0 {
+		t.Fatal("requires ordinary-user client and protected infrastructure")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	executor, observer := pythonRequirementsIntegrationRuntime(t, ctx)
+	policyService, err := newSystemResolverPolicyAdapter()
+	if err != nil {
+		t.Fatal(err)
+	}
+	native, err := sandbox.NewLinuxPyPIResolverWithExecutorAndPolicy(executor, observer.Observer(), policyService)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := native.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	intakeRoot := filepath.Join(root, "intake")
+	intake, err := artifactpypi.NewPublicIntake(intakeRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	source, err := artifactpypi.NewGraphArtifact(native, intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := sandbox.PinnedPythonRuntime()
+	static, err := inspectionpypi.NewStaticInspector(intakeRoot, artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag})
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot, executor, observer.Observer(), newObservationResourceAdapter())
+	if err != nil {
+		t.Fatal(err)
+	}
+	dynamic, err := inspectionpypi.NewDynamicInspector(backend)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := inspectionpypi.NewCompositeInspector(static, dynamic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := local.NewStore(filepath.Join(root, "evidence"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	service, err := application.NewInstallInspectService(native, intake, verificationpypi.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, err := artifactpypi.ParseReference("packaging@24.2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := domain.NewInstallTarget(filepath.Join(root, "target"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	install, err := domain.NewInstallContext(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, err := application.NewInstallRequest(reference, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := service.Inspect(ctx, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Decision().Decision() != domain.DecisionAllow || len(result.Set().Inspections()) != 1 {
+		t.Fatalf("clean public wheel did not complete/allow: decision=%+v", result.Decision())
+	}
+	entry := result.Set().Inspections()[0]
+	run, artifact := entry.RunID(), entry.Artifact()
+	identity, digest := artifact.Identity(), artifact.Digest()
+	var check domain.CheckExecution
+	for _, execution := range entry.Checks() {
+		if execution.ID().String() == "pypi-dynamic-import" {
+			check = execution
+		}
+	}
+	if !check.Required() || check.Status() != domain.ExecutionCompleted {
+		t.Fatal("current required dynamic check missing")
+	}
+	profiles := map[domain.SandboxEnvironmentProfile]bool{}
+	observationSeen := false
+	for _, ref := range entry.Evidence() {
+		fact, _, err := store.ReadReference(ctx, run, ref, identity, digest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fact.CheckID() != check.ID() {
+			continue
+		}
+		if fact.ProfileDigest() != check.ProfileDigest() || len(fact.Summary()) > 1024 {
+			t.Fatal("persisted current check/profile binding lost")
+		}
+		if fact.Kind() == "pypi-dynamic-import" {
+			if !strings.Contains(fact.Summary(), "filesystem-workspace-create") || !strings.Contains(fact.Summary(), "filesystem-workspace-write") {
+				t.Fatal("actual VFS facts missing from persisted observation")
+			}
+			observationSeen = true
+		}
+		if fact.Kind() != "workspace-state" {
+			continue
+		}
+		var state struct {
+			Schema     string                           `json:"schema"`
+			Profile    domain.SandboxEnvironmentProfile `json:"profile"`
+			Fixture    string                           `json:"fixture_digest"`
+			Before     string                           `json:"baseline_digest"`
+			After      string                           `json:"final_digest"`
+			Scope      string                           `json:"scope"`
+			Transient  string                           `json:"transient_changes"`
+			Operations string                           `json:"operation_scope"`
+		}
+		if err := json.Unmarshal([]byte(fact.Summary()), &state); err != nil {
+			t.Fatal(err)
+		}
+		if state.Schema != domain.SandboxEnvironmentStateSchema || state.Scope != "MUTABLE_WORKSPACE" || state.Transient != "SESSION_VFS_OPERATIONS" || state.Operations != "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE" || len(state.Fixture) != 64 || len(state.Before) != 64 || len(state.After) != 64 || profiles[state.Profile] {
+			t.Fatalf("persisted environment evidence incomplete/duplicate: %+v", state)
+		}
+		profiles[state.Profile] = true
+	}
+	if !observationSeen || len(profiles) != 2 || !profiles[domain.SandboxEnvironmentMinimal] || !profiles[domain.SandboxEnvironmentDevelopment] {
+		t.Fatalf("actual persisted coverage missing: observations=%t profiles=%v", observationSeen, profiles)
+	}
+	// A separately approved inspection input exercises the actual v2 metadata
+	// encoding and store, without changing the original selected dependency set.
+	inputReference, err := artifactpypi.ParseReference("typing-extensions@4.15.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolvedInput, err := source.Resolve(ctx, inputReference)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputRun, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := source.Acquire(ctx, inputRun, resolvedInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wheel, _, err := static.InspectWheel(ctx, artifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputWheel, _, err := static.InspectWheel(ctx, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := artifactpypi.ValidateInspectionPrerequisite(inputWheel, []artifactpypi.WheelInspection{wheel}, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
+		t.Fatalf("declared leaf fixture does not meet prerequisite contract: %v", err)
+	}
+	supplemented, err := dynamic.InspectWheelWithPrerequisites(ctx, artifact, wheel, []domain.AcquiredArtifact{artifact}, []domain.AcquiredArtifact{input})
+	if err != nil || supplemented.Execution().Status() != domain.ExecutionCompleted {
+		t.Fatalf("actual supplemented inspection failed: %+v %v", supplemented.Executions(), err)
+	}
+	supplementedRun, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	refs, err := store.Record(ctx, supplementedRun, supplemented.Evidence(), supplemented.Executions()...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var metadata, observations domain.Evidence
+	stateCount := 0
+	for _, ref := range refs {
+		fact, _, err := store.ReadReference(ctx, supplementedRun, ref, identity, digest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fact.ProfileDigest() != supplemented.Execution().ProfileDigest() || fact.CheckID() != supplemented.Execution().ID() {
+			t.Fatal("supplemented current check/profile lost on readback")
+		}
+		switch fact.Kind() {
+		case "pypi-dynamic-import-supplemented":
+			metadata = fact
+		case "pypi-supplemented-observations":
+			observations = fact
+		case "workspace-state":
+			stateCount++
+		}
+	}
+	var binding struct {
+		Schema            string `json:"schema"`
+		Original          string `json:"original_environment"`
+		Input             string `json:"input_sha256"`
+		ObservationID     string `json:"observations_evidence"`
+		ObservationDigest string `json:"observation_summary_sha256"`
+	}
+	if err := json.Unmarshal([]byte(metadata.Summary()), &binding); err != nil {
+		t.Fatal(err)
+	}
+	observedDigest := sha256.Sum256([]byte(observations.Summary()))
+	if binding.Schema != "m5-inspection-environment/v2" || binding.Original != "NOT_ATTESTED" || binding.Input != input.Digest().String() || binding.ObservationID != observations.ID().String() || binding.ObservationDigest != hex.EncodeToString(observedDigest[:]) || observations.Summary() == "" || stateCount != 2 {
+		t.Fatalf("actual supplemented metadata/observation/state readback lost: %+v states=%d", binding, stateCount)
+	}
+	if !strings.Contains(observations.Summary(), "filesystem-workspace-create") || !strings.Contains(observations.Summary(), "filesystem-workspace-write") {
+		t.Fatal("supplemented actual VFS observations omitted")
+	}
+	if len(result.Set().Inspections()) != 1 || result.Set().Inspections()[0].Artifact().Digest() != artifact.Digest() {
+		t.Fatal("inspection input changed the original dependency set")
+	}
+	t.Log("actual pinned public Python wheel -> two fresh environments/VFS -> current required check -> persisted same-subject/profile Evidence readback -> Policy ALLOW; actual separate prerequisite metadata/observation/state readback; original set preserved")
+}
+
+func pythonRequirementsIntegrationRuntime(t *testing.T, ctx context.Context) (*hosttool.Executor, *sandbox.ObserverSupervisor) {
+	t.Helper()
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := executor.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	launcher, err := hosttool.NewSystemObserverLauncher()
+	if err != nil {
+		t.Fatal(err)
+	}
+	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
+		return launcher.StartObserver(start, remote, output)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := observer.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	return executor, observer
 }

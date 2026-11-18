@@ -100,7 +100,11 @@ func npmProjectInstanceFacts(subject domain.AcquiredArtifact, instance string, l
 		}
 		findings = append(findings, finding)
 	}
-	report, err := domain.NewInspectionReport(execution, findings, []domain.Evidence{observed, bound})
+	workspaces, err := workspaceEvidence(subject, check, result, prefix+"-ws-"+key[:24])
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	report, err := domain.NewInspectionReport(execution, findings, append([]domain.Evidence{observed, bound}, workspaces...))
 	return report, errors.Join(summaryErr, err)
 }
 
@@ -182,12 +186,12 @@ func npmProjectCheckProfile(client projectInspectionClient) domain.ContentDigest
 	prefix, _ := projectInspectionPrefix(client)
 	version := runtimeidentity.NodeNPMVersion
 	if client == projectInspectionPNPM {
-		version = runtimeidentity.PNPMVersion
+		version = runtimeidentity.PNPMVersion + "|" + runtimeidentity.PNPMToolSHA256
 	}
 	if client == projectInspectionBun {
-		version = runtimeidentity.BunVersion
+		version = runtimeidentity.BunVersion + "|" + runtimeidentity.BunToolSHA256
 	}
-	profile, _ := domain.CheckProfileDigest(prefix+"-instance-experiment-v1", runtimeidentity.NodeImageReference+"|"+version)
+	profile, _ := domain.CheckProfileDigest(prefix+"-instance-environments-v2", dynamicCheckRuntimeDescriptor+"|"+version)
 	return profile
 }
 

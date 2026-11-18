@@ -26,9 +26,7 @@ func (b *Backend) ExecuteNPMProjectRoot(ctx context.Context, input artifactnpm.N
 	if b == nil || ctx == nil || b.runner == nil || b.probe == nil || b.newSessionID == nil || !input.Valid() || (input.Dependencies().Context().RuntimeIdentity() != NPMProjectRuntimeIdentity() || input.Dependencies().Context().ClientVersion() != resolverNPMVersion) {
 		return domain.SandboxResult{}, errors.New("npm root lifecycle lacks current complete source context")
 	}
-	observer, ok := b.observer.(interface {
-		StartNPMProjectTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-	})
+	_, ok := b.observer.(npmInstanceEnvironmentTraceObserver)
 	intake, measured := b.introducer.(*DockerArtifactIntroducer)
 	if !ok || !measured {
 		return domain.SandboxResult{}, errors.New("npm root lifecycle requires typed observation and measured intake")
@@ -45,7 +43,7 @@ func (b *Backend) ExecuteNPMProjectRoot(ctx context.Context, input artifactnpm.N
 	if err != nil {
 		return domain.SandboxResult{}, err
 	}
-	return b.executeNPMInstance(ctx, nativeRuntimeNPMProject, nodeExecutionProject, payload, observer.StartNPMProjectTargetLifecycleProfile)
+	return b.executeNPMInstance(ctx, nativeRuntimeNPMProject, nodeExecutionProject, payload)
 }
 
 func (b *Backend) prepareNPMRootInspectionPayload(ctx context.Context, input artifactnpm.NPMProjectRootInspectionInput, source artifactnpm.PNPMLayoutArchive) (pnpmInspectionPayload, error) {

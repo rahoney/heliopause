@@ -1,0 +1,84 @@
+{
+  "status": "R3_STOPPED_FOR_USER_AFTER_TWO_OFFLINE_PREPARATION_FAILURES",
+  "entry_commit": "607d79f522f38d55dc005eba1a63eb800f9383f1",
+  "entry_tree": "d7f94049851ae24525af99d9117cff91e836440a",
+  "draft_product_projection_tree": "ac2c1b26cf79d93a4580b6377b36fd7fa12ff882",
+  "selected_files": 117,
+  "intended_added": 188,
+  "intended_removed": 19,
+  "normal_refusal_units": {
+    "parents": 19,
+    "subtests": 36,
+    "PASS": 55,
+    "FAIL": 0,
+    "SKIP": 0,
+    "seconds": 48.801
+  },
+  "basic_build_testbuild_vet": "PASS; diagnostic whole initially FAIL only historical JSON refs; narrow exact hash guard6PASS",
+  "full_canonical": "NOT_RUN final runtime pins pending",
+  "runtime_compilation": "NOT_REACHED; no compiled output produced",
+  "kernel_CPP_native": "NOT_RUN; not counted as PASS",
+  "attempts": [
+    {
+      "exit": 37,
+      "seconds": 6.523,
+      "reason": "CAS canonical identity sidecars omitted by operator; exact24 existing zero-byte sidecars imported; pinned payloads already match"
+    },
+    {
+      "exit": 48,
+      "seconds": 12.68,
+      "reason": "upstream rules_go fetch_sdks_by_version unconditionally downloads checksumless Go versions catalogue; local offline CAS payload alone cannot fulfill URL query"
+    }
+  ],
+  "compiler": "1.27.4",
+  "SDK_archive_sha256": "7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840",
+  "gvisor_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+  "gvisor_patch_sha256": "c8a546d074e4857eb28da198a4782c76cdebb045dec7eda7d7b95253f5a3bd68",
+  "builder_image": "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64@sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+  "new_runtime_members": "NOT_CAPTURED; lock member values remain draft old pins, never executed",
+  "read_only_Host": "READ_ONLY_ORIGINAL_HOST_IDENTITY_PASS",
+  "original14_verified": true,
+  "current_and3_assets_verified": true,
+  "helper": "active/enabled",
+  "containers": 0,
+  "volumes": 0,
+  "CLI_observer_gvisor_processes": 0,
+  "original_branch_HEAD_index_product_diff_SDK": "UNCHANGED",
+  "CI": "NOT_RUN",
+  "third_build": "NOT_RUN",
+  "resource_peaks": {
+    "first_private": 583572100,
+    "second_private": 719802348,
+    "local_small_RSS": 783904768
+  },
+  "preapply_preservation": {
+    "status": "PRESERVATION_AND_ACTUAL_RESTORE_PASS",
+    "destination": "/home/winamp/haa-preserve-20261115/increments/20261117T110618.972191Z-r3-environment-preapply",
+    "manifest_sha256": "239c7e1b5d13f35ce5bd97d14ce8ec8802357e5a49c8beb1063120849fb05e73",
+    "actual_restored_files": 285
+  },
+  "resume_proposal": "/tmp/haa-r3-runtime-20670k5d/resume-execution-proposal.json",
+  "remaining": [
+    "runtime coherent build/capture/generated current member pins",
+    "historical kernel7 + CPP134 and existing Go/Cargo scoped latches",
+    "mandatory full canonical and affected Race",
+    "same-candidate affected native normal/refusal/cancel/cleanup and K integration profiles",
+    "b91fe64 Linux-only adapter consumer move before Darwin checks; eafb082/3b2829b CI-client scope before respective consumers; no CI execution",
+    "npm current10k remains unchanged; c8ffe4e40k not automatically approved",
+    "R4 D3 and R5 D1 separate policy decisions; R8 Required+CPU/CUDA3+largeGo remain OPEN"
+  ],
+  "completed_data_cleanup": {
+    "status": "OWNED_COMPLETED_ARTIFACTS_AND_DERIVED_CACHES_COLLECTED",
+    "roots": 8,
+    "logical_bytes_removed": 834740119,
+    "source_raw_fixed_inputs_retained": true,
+    "windows_physical_reclamation_measured": false
+  },
+  "stop_preservation": {
+    "status": "PRESERVATION_AND_ACTUAL_RESTORE_PASS",
+    "destination": "/home/winamp/haa-preserve-20261115/increments/20261117T112841.213661Z-r3-offline-preparation-stop",
+    "manifest_sha256": "82d2229d287955ee524311fc62e4f0a4f10acd10ed36e9e2d4ba0f3b7980cd94",
+    "files": 264,
+    "source_files117_restored": true
+  }
+}

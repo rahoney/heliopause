@@ -139,7 +139,7 @@ func observeNPMProjectInstances(ctx context.Context, states []npmProjectInspecti
 				state.leaves = append(state.leaves, facts)
 			}
 			session := result.SessionID()
-			invalid := session.String() == "" || sessions[session] || result.Status() != domain.SandboxCompleted
+			invalid := session.String() == "" || sessions[session] || result.Status() != domain.SandboxCompleted || !completeDynamicEnvironments(result)
 			sessions[session] = true
 			for _, fact := range result.Observations() {
 				if fact.Category() == domain.ObservationResource {

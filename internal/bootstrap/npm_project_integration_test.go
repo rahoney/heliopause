@@ -5,8 +5,10 @@ package bootstrap
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -91,7 +93,7 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer())
+			backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), newObservationResourceAdapter())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -116,6 +118,7 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 			if err != nil || !approved.Valid() || approved.Inspected().Snapshot().GraphDigest() != snapshot.GraphDigest() {
 				t.Fatal("complete npm dependency quarantine", err)
 			}
+			requireNPMProjectEnvironmentEvidence(t, ctx, store, "npm-project", approved.Inspected().Inspections())
 			acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
 			count := 0
 			for _, entry := range approved.Inspected().Inspections() {
@@ -274,6 +277,64 @@ func TestNPMPublicWholeProjectQuarantineIntegration(t *testing.T) {
 	}
 }
 
+// Current npm, PNPM and Bun application tests read the actual persisted facts,
+// rather than substituting model results for the sandbox-to-store connection.
+func requireNPMProjectEnvironmentEvidence(t *testing.T, ctx context.Context, store *local.Store, prefix string, entries []domain.DependencyInspection) {
+	t.Helper()
+	for _, entry := range entries {
+		checks := map[domain.CheckID]domain.CheckExecution{}
+		profiles := map[domain.CheckID]map[domain.SandboxEnvironmentProfile]bool{}
+		for _, check := range entry.Checks() {
+			if strings.HasPrefix(check.ID().String(), prefix+"-instance-facts-") {
+				if check.Status() != domain.ExecutionCompleted {
+					t.Fatal("actual project observation interpretation incomplete")
+				}
+				checks[check.ID()] = check
+				profiles[check.ID()] = map[domain.SandboxEnvironmentProfile]bool{}
+			}
+		}
+		if len(checks) == 0 {
+			t.Fatal("actual project instance checks missing")
+		}
+		for _, ref := range entry.Evidence() {
+			fact, _, err := store.ReadReference(ctx, entry.RunID(), ref, entry.Artifact().Identity(), entry.Artifact().Digest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fact.Kind() != "workspace-state" {
+				continue
+			}
+			check, known := checks[fact.CheckID()]
+			if !known || fact.ProfileDigest() != check.ProfileDigest() || len(fact.Summary()) > 1024 {
+				t.Fatal("persisted project environment check/profile binding lost")
+			}
+			var state struct {
+				Schema     string                           `json:"schema"`
+				Profile    domain.SandboxEnvironmentProfile `json:"profile"`
+				Fixture    string                           `json:"fixture_digest"`
+				Before     string                           `json:"baseline_digest"`
+				After      string                           `json:"final_digest"`
+				Scope      string                           `json:"scope"`
+				Transient  string                           `json:"transient_changes"`
+				Operations string                           `json:"operation_scope"`
+			}
+			if err := json.Unmarshal([]byte(fact.Summary()), &state); err != nil {
+				t.Fatal(err)
+			}
+			if state.Schema != domain.SandboxEnvironmentStateSchema || state.Scope != "MUTABLE_WORKSPACE" || state.Transient != "SESSION_VFS_OPERATIONS" || state.Operations != "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE" || len(state.Fixture) != 64 || len(state.Before) != 64 || len(state.After) != 64 || profiles[check.ID()][state.Profile] {
+				t.Fatal("persisted project environment state incomplete or duplicated")
+			}
+			profiles[check.ID()][state.Profile] = true
+		}
+		for _, seen := range profiles {
+			if len(seen) != 2 || !seen[domain.SandboxEnvironmentMinimal] || !seen[domain.SandboxEnvironmentDevelopment] {
+				t.Fatal("actual project instance lost its two persisted environment profiles")
+			}
+		}
+	}
+	t.Logf("project_environment_evidence client=%s archives=%d same_run/subject/check/profile=true two_states_per_instance=true", prefix, len(entries))
+}
+
 func npmProjectIntegrationRuntime(t *testing.T, ctx context.Context) (sandbox.TrustedExecutor, *sandbox.ObserverSupervisor, *sandbox.NPMResolver) {
 	t.Helper()
 	executor, err := hosttool.NewSystem(ctx)
@@ -353,7 +414,7 @@ func TestNPMPublicProjectWorkflowIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(filepath.Join(root, "intake"), executor, observer.Observer())
+	backend, err := sandbox.NewLinuxBackendWithExecutor(filepath.Join(root, "intake"), executor, observer.Observer(), newObservationResourceAdapter())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -440,4 +501,135 @@ func TestNPMPublicProjectWorkflowIntegration(t *testing.T) {
 		t.Fatal("npm workflow changed unrelated user file", err)
 	}
 	t.Log("npm_workflow install/ci/edited_install/ci=PASS ci_mismatch=REFUSED old_target/user_file=PRESERVED root_lifecycle/CLI=NOT_EXERCISED")
+}
+
+// The existing Application and store consume actual Sandbox facts here;
+// model-only results cannot qualify persisted environment coverage.
+func TestNPMEnvironmentEvidenceIntegration(t *testing.T) {
+	if os.Getenv("HELOX_NPM_ENVIRONMENT_EVIDENCE_INTEGRATION") != "1" {
+		t.Skip("requires protected npm environment evidence integration")
+	}
+	if os.Geteuid() == 0 {
+		t.Fatal("requires ordinary-user client and protected infrastructure")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	executor, supervisor, _ := npmProjectIntegrationRuntime(t, ctx)
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	intake := filepath.Join(root, "intake")
+	source, err := artifactnpm.NewPublicResolver(intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), newObservationResourceAdapter())
+	if err != nil {
+		t.Fatal(err)
+	}
+	static, err := inspectionnpm.NewInspector(intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dynamic, err := inspectionnpm.NewDynamicInspector(backend)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspector, err := inspectionnpm.NewCompositeInspector(static, dynamic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := local.NewStore(filepath.Join(root, "evidence"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	service, err := application.NewInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, err := artifactnpm.ParseReference("is-number@7.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, err := application.NewInspectRequest(reference)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := service.Inspect(ctx, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decision, known := result.PolicyDecision()
+	if result.Status() != domain.OperationCompleted || !known || decision.Decision() != domain.DecisionAllow {
+		t.Fatalf("actual inspection did not allow clean fixture: status=%s decision=%+v", result.Status(), decision)
+	}
+	run, ok := result.RunID()
+	if !ok {
+		t.Fatal("completed result missing Run")
+	}
+	identity, ok := result.ResolvedIdentity()
+	if !ok {
+		t.Fatal("completed result missing identity")
+	}
+	digest, ok := result.Digest()
+	if !ok {
+		t.Fatal("completed result missing digest")
+	}
+	var dynamicCheck domain.CheckExecution
+	for _, check := range result.Checks() {
+		if check.ID().String() == "npm-dynamic-lifecycle" {
+			dynamicCheck = check
+		}
+	}
+	if !dynamicCheck.Required() || dynamicCheck.Status() != domain.ExecutionCompleted {
+		t.Fatal("actual required dynamic check missing")
+	}
+	profiles := map[domain.SandboxEnvironmentProfile]bool{}
+	observationSeen := false
+	for _, ref := range result.Evidence() {
+		fact, _, err := store.ReadReference(ctx, run, ref, identity, digest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fact.CheckID() != dynamicCheck.ID() {
+			continue
+		}
+		if fact.ProfileDigest() != dynamicCheck.ProfileDigest() || len(fact.Summary()) > 1024 {
+			t.Fatal("persisted current check/profile binding lost")
+		}
+		if fact.Kind() == "npm-dynamic-lifecycle" {
+			if !strings.Contains(fact.Summary(), "filesystem-workspace-create") || !strings.Contains(fact.Summary(), "filesystem-workspace-write") {
+				t.Fatal("actual VFS facts missing from persisted observation")
+			}
+			observationSeen = true
+		}
+		if fact.Kind() != "workspace-state" {
+			continue
+		}
+		var state struct {
+			Schema     string                           `json:"schema"`
+			Profile    domain.SandboxEnvironmentProfile `json:"profile"`
+			Fixture    string                           `json:"fixture_digest"`
+			Before     string                           `json:"baseline_digest"`
+			After      string                           `json:"final_digest"`
+			Scope      string                           `json:"scope"`
+			Transient  string                           `json:"transient_changes"`
+			Operations string                           `json:"operation_scope"`
+		}
+		if err := json.Unmarshal([]byte(fact.Summary()), &state); err != nil {
+			t.Fatal(err)
+		}
+		if state.Schema != domain.SandboxEnvironmentStateSchema || state.Scope != "MUTABLE_WORKSPACE" || state.Transient != "SESSION_VFS_OPERATIONS" || state.Operations != "CREATE_WRITE_PWRITE_RENAME_UNLINK_MODE_OWNER_SIZE" || len(state.Fixture) != 64 || len(state.Before) != 64 || len(state.After) != 64 {
+			t.Fatalf("persisted environment evidence incomplete: %+v", state)
+		}
+		if profiles[state.Profile] {
+			t.Fatal("duplicate environment evidence")
+		}
+		profiles[state.Profile] = true
+	}
+	if !observationSeen || len(profiles) != 2 || !profiles[domain.SandboxEnvironmentMinimal] || !profiles[domain.SandboxEnvironmentDevelopment] {
+		t.Fatal("actual persisted observations/two fresh profiles missing")
+	}
+	t.Log("actual public pinned artifact -> two fresh environments -> active VFS facts -> current required check -> persisted same-subject Evidence readback -> Policy ALLOW")
 }

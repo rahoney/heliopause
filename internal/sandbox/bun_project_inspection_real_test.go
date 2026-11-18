@@ -59,7 +59,7 @@ func TestBunPublicProjectQuarantineIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer())
+			backend, err := NewLinuxBackendWithExecutor(intake, executor, supervisor.Observer(), integrationObservationResourceAdapter(t))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -104,8 +104,8 @@ func TestBunPublicProjectQuarantineIntegration(t *testing.T) {
 				}
 				count += len(instances)
 				action, known := entry.HostInstallActionEvidence()
-				if !known || action.Kind() != domain.EvidenceHostInstallActionNotRequired || action.Identity() != entry.Artifact().Identity() || action.Digest() != entry.Artifact().Digest() || entry.PolicyDecision().Decision() != domain.DecisionAllow || len(entry.Checks()) != 3+len(instances) || len(entry.Evidence()) != 4+2*len(instances) {
-					t.Fatal("archive facts/recorded evidence/Policy lost")
+				if !known || action.Kind() != domain.EvidenceHostInstallActionNotRequired || action.Identity() != entry.Artifact().Identity() || action.Digest() != entry.Artifact().Digest() || entry.PolicyDecision().Decision() != domain.DecisionAllow || len(entry.Checks()) != 3+len(instances) || len(entry.Evidence()) != 4+4*len(instances) {
+					t.Fatal("archive facts/recorded evidence/Policy lost", len(entry.Checks()), len(entry.Evidence()), len(instances))
 				}
 				required := 0
 				for _, check := range entry.Checks() {

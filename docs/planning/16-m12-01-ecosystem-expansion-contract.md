@@ -820,8 +820,13 @@ verified cache에 없으면 build 중 외부 download로 보충하지 않고 res
 검증했다. 측정 최대값을 새 recipe의 event count로 전용하지 않는다. 검증 소비자와
 최종 qualification은 [Go qualification evidence](./evidence/m12-002-go-build-qualification/result.json)와 Queue가 소유한다.
 
-Host transaction의 preparation/build 공용 normalized-event 원장은 20,000으로
-제한한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
+Host transaction의 두 필수 fresh 환경에 대한 preparation/build/readonly keeper 공용
+normalized-event 원장은 **40,000**으로 제한한다. 2026-11-03에 사용자가 기존20,000의
+Go-only 조정을 승인했다. 새 VFS 관찰/두 환경을 포함한 실제 pflag의
+16,920+3,696>20,000 실패를 근거로 하며 기존 단일 실험 상한을 환경마다 다시 지급하지
+않는다. 실제 source/원본과 한정 qualification은
+[환경 상태 원장](./evidence/m13-004-convenience/environment-state-local-20261102.json)이
+소유한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
 새로 열어 예산을 보충하지 않는다. Physical collector는 10,000 records / 2 MiB,
 workspace summary saturation은 10,000, CPU 1 core·memory 512 MiB·build transaction
 3 minutes를 유지한다. Helper charged events, physical records, summary count와
@@ -1242,9 +1247,11 @@ member64MiB, expanded aggregate200MiB, archive10,000entries, complete installed 
 200MiB/10,000files/20,000entries의 한도를 유지한다. 한도 밖 package는 자동 설치하지 않는다.
 
 Verified signer에만 같은 acquired subject의 required isolated `-help` probe를 수행한다.
-`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 한 번 실행하고
+`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 각 필수 fresh 환경에서 한 번 실행하고
 network-none, readonly OCI root, 기존 CPU30s/wall30s/memory512MiB/PID64/charged10,000
-경계를 적용한다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
+경계를 두 환경 전체의 공유 원장에 적용한다. Wall30s/CPU30s/charged10,000을 환경마다
+재부여하지 않는다. 종료 후 상태는 고정 RO keeper에서 기록하며 두 환경의 terminal과
+workspace Evidence가 모두 필요하다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
 기록한다. Terminal1은 consumed exact direct-exec admission과 typed external target exit를
 함께 요구한다. stdout·error string·bare exit error는 완료 authority가 아니다. Missing
 observation, ambiguous admission, timeout/resource/cleanup failure는 required INCOMPLETE다.

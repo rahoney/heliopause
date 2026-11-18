@@ -2,7 +2,7 @@
 
 ## R5 — 358adf9 복구 재개 (현재 상태)
 
-단일 active item은 M13-004 안의 R1이며 아래 기존 checkpoint는 358adf9 당시 이력이다.
+단일 active item은 M13-004 복구의 R4 독립 S02/S03·후손 drain 선별 준비(U1 미채택)다. R3는 로컬 기능 범위를 검증했으며 큰 K/전체 qualification은 OPEN이다. 아래 과거 기록은 당시 범위이고 현재 재개는 이 절 마지막 줄을 따른다.
 
 - R0-A 최소 실제 확인 완료: clean358/tree e1cac135의 packaging25 required3·ALLOW·승격·import PASS22.916s, 실제 observation observer 종료 거부 PASS20.834s. 현재 개발 설치14파일/서비스 원복·Docker 신규 잔여0/기존 network 보존. 원본 보존: `/home/winamp/haa-preserve-20261115/increments/20261115T094952.338045Z-r0a-local-integration/RESULT.md`. 전체 profile qualification 완료로 표시하지 않는다.
 - 재구성 위치: `milestone/m13-recovery-r1`, `/tmp/haa-recovery-r1-20261115`, 진입358adf9/tree e1cac135. 원래 개발 브랜치/미커밋 변경과 R0 pure worktree는 보존한다. 승인된 23번 계획은 원래 개발 작업 트리의 `docs/planning/23-recovery-stage1-plan.md`를 외부 Read로 사용한다.
@@ -110,12 +110,18 @@
 
 - R0-B Go1.27.4 LOCAL_QUALIFIED: 현재R1+compress 보정 조합08a9 working tree e4457259의owner7/currentvulnerability/rebuild--full·독립bundle6/trace4·attestation Race4부모+20하위PASS. 실제packaging25 설치3필수/ALLOW/승격/import26.045s와시스템Python실주입거부20.903s·target불변/ALLOW없음, Go·Cargo7부모/13PASS/FAIL0/SKIP0·U2실제6모듈/12필수23.401s. grpc41 195.652s<240(현재advisory/D2합격아님). M545.011s/private486180174B; Host14/서비스복원·Docker/volume/CLI/observer/gVisor잔존0·network/rules동일. realcorpus/PATH Python준비오류원본보존/미수행정상처리후성공조건만복원, 제품·시험·한도완화0. 최종증분/수거후compress2+canonicalGo10(중복제외11제품파일)선별checkpoint; 다음R2 S09/C01. 실제전체R0/R1/R8·SDK전환·hosted/CPU·CUDA3는OPEN. 재개 `/tmp/haa-r0b-go1274-fhkqkdmi/STATE.md`; 원본개발/영구Host/CI변경0.
 
-
-
-
-
-
-
+- R2 체크포인트607d79f/tree d7f94049의 실제 검증·남은 범위는 [R2 원장](./evidence/recovery-20261115/r2-local-checkpoint-20261117.md)에 따른다. R3 최초 준비 STOP은 후속 사용자 지시와23§0 규칙으로 재개했다.
+- R3 LOCAL_CANONICAL_PASS_NATIVE_UNQUALIFIED: prospective cff4ab23(+189/-19), full/security/docs/vulnerability 및 영향Race2138PASS. 기존 성공 실행 절차 재사용으로 실제23부모PASS·packaging정상/관찰미완료거부/취소3·Go6tidy PASS; pnpm/Bun 원래 부모는 공유context240s소진 FAIL. 같은Host의 coherent R2 원코드/바이너리/runtime 대조는180.064/202.285s 전체PASS. 원인 기여는 미분리·시험한도변경 미승인/미적용, R3완료/R4착수0. Host14/current3/개발Git·SDK/기존자원·방화벽독립복원PASS. [최신 원장·정확한 차이·미적용안](./evidence/recovery-20261115/r3-local-verification-20261118.md). 다음은 실패 횟수가 아닌 실제 원인/시험한도 경계에 따라 기존 성공 성능 수정 또는 명시된 시험한도안 결정; 같은가설 반복/무단상향/통과범위재실행0.
+- R3 PNPM_BUN_COST_DIAGNOSIS_RESUMED: 사용자지시로중단하지않고원인기여분리부터계속한다. R2성공원본PNPM180.064/Bun202.285s와현재공유240s실패·설계21§5.2/5.3·오답노트ci의docker-events방법대조. 제품/원시험/한도변경없이정확cff/기존4binary/runtime를재사용해원래PNPM single+후단거부만진단(전체부모성공전용금지),canonical외부5m·내부240s/CPU2·기존bounded10path+14원복/고정2asset 절차유지. 실행 폴더 `/tmp/haa-r3-pnpm-cost-ah1w3sr3`;계측으로준비/실행/상태/정리비용을분리한뒤성공코드의최소수정또는깨뜨린변경좁히기를판단한다.
+- R3 PNPM_COST_DIAGNOSTIC_PASS_NOT_PARENT_CLOSE: 동일cff·원래single+후단거부122.608s/FAIL0/SKIP0, 정상CLI5회·두환경writer10/anchor10·resolver10관찰. 부모240s공유context가여러요청/fixture에걸쳐소진되는구조;단일정체명령은관찰없음·독점snapshot비용미분리. 현재canonical외부5m/내부240s·제품무수정;이전T/U실제외부10m표기는원장에교정(raw유지). 원Host14/current3/자원/개발Git·방화벽독립원복PASS. 시험context만요청별로옮기는diff의나머지줄완전동일확인,전체허용240→최대300s변경은사용자질문대기·미적용. 고정입력/현재실행파일유지하며답변전독립기록·보존·완료산출물정리를계속한다. 원본 `/tmp/haa-r3-pnpm-cost-ah1w3sr3`.
+- R3 BUN_REMAINING_DIAGNOSTIC_SCOPE: 승인질문은전체시험context변경에만대기하고독립원인분리는계속한다. 원래Bun peer+empty+후단인수거부를기존cff/4binary/runtime·내부240s/canonical5m그대로실행해기능오류와그룹시간공유문제를구분한다. 기존single138.25s는범위내재사용,합친부모PASS로대체하지않는다. 기존bounded10path/14복원·고정2asset·CPU2/RSS4GiB/45분불변,원본 `/tmp/haa-r3-bun-remaining-2_4n7p69`.
+- R3 BUN_REMAINING_PASS_CPU_DIAGNOSIS: 原peer151.25/empty14.94s+후단native인수거부PASS·부모167.60s(진단). 기존single138.25와단순합304.44s로canonical5m도위험해context이동안은미적용재검토. 제품·기존한도/사례변경없이동일compiledBIN의표준-test.cpuprofile로원peer한정CPU비용함수분석;새프레임워크/설치/CI0,기존CPU2/5m/내부240s와10임시전환·14원복그대로. 원본 `/tmp/haa-r3-bun-cpu-7hr833mj`;앞선질문은300초초과상향승인이아님.
+- R3 PNPM_BUN_DIAGNOSED_TEST_BUDGET_DECISION: 原PNPMsingle122.608s/原Bun peer+empty167.924s·CPU동일peer145.735s 진단PASS·거부유지/제품무수정. R2대조와원문코드에서두환경필수비용및공유240s집합context소진확인;CPU51.46중SHA51225.29/bundle누적19.06s는기존신원검사이며무단cache/삭제안함. 각원래사례PASS는원합친2부모FAIL을대체하지않음. 최신검토diff는기존시험2개context요청별240s+canonicalBun CLI부모만5→6분(pnpm5분);실측Bun합297~304s/제품·Policy·개별관찰한도불변/모든assertion유지. 앞선300s안대체·정확한시험한도승인질문대기,미적용/새candidate미생성. Host원14/current3/자원/방화벽/Git·SDK독립복원PASS. [최신근거·미적용diff](./evidence/recovery-20261115/r3-local-verification-20261118.md). 질문답변을추정하지않으며후속예산승인뒤표적적용/정확후보/원래전체2부모검증으로재개한다.
+- R3 EXACT_TEST_FIX_APPROVED_SCOPE: 사용자“준비가되면자동진행”으로직전구체적3파일안승인. 기존두CLI시험context를각요청240s로옮기고BunCLI canonical부모만5→6분(PNPM5분유지),선언추가/삭제0·제품/runtime/Policy/개별관찰한도·지원축소0·모든원래3fixture/거부/공유cache/ID검사유지. 승인안/3preimage/Queue부터증분보존뒤적용,새검증사본신원고정/싼형식·workflow/기존taggedbootstrap시험binary만재빌드/원래전체2부모실행. 과거23부모/4제품BIN·runtime/CPP/kernel 성공범위재사용·새CI/브랜치/원개발Host영구변경0. 실행 `/tmp/haa-r3-context-fix-wosbxnc8`.
+- R3 승인한도소비자연결: 정적대조에서scripts/check/bun_runtime_workflow.go의기존bunProjectCLICommand가원래5분문자열을단일owner로검사함을확인했다. 승인Bun6분과같은상수한줄만함께동기화(의도선언추가/삭제0·검사guard/부정시험제거0). 원본/근거증분보존뒤필수연결교정,새지원/제품/추가한도변경없음.
+- R3 APPROVED_TEST_FIX_LOCAL_PASS_NATIVE2_READY: 새prospective treea95c084f는cff대비시험2·Bun명령·필수canonical상수4파일만변경/나머지3372해시모드동일/제품·runtime·Policy불변. workflow32.34s·기존연결/누락/중복/복원4부모31하위35PASS2.148s,taggedbootstrap만90.373s재빌드SHA d508d48a/Go1.27.4;기존제품CLI/helper/sandbox3 재사용. 다음원래전체PNPM5m/Bun6m각3fixture/정상9요청/거부·공유cache/전역ID검증을기존bounded10path/14원복·고정2asset으로실행. 새binary/4postimage/정확입력먼저추가보존·원Host읽기확인. 실행 `/tmp/haa-r3-context-fix-wosbxnc8/native`;no-tests/SKIP미도달은PASS금지,첫오류원본/성공/오답노트대조후교정.
+- R3 PNPM_FULL_PARENT_PASS_BUN_NOT_RUN_OPERATOR_PIPE: 同a95c084f/newBINd508 원래PNPM전체277.583s<5분·3fixture·정상9요청/전역ID/공유cache/frozen2·거부2 모두PASS·FAIL/SKIP0. 서버재시작뒤기존RPC stdout파이프가닫혀PASS출력시BrokenPipeError가발생해후행Bun미수행;제품실패로분류하지않으며raw상태STOPPED원본유지. finally14/current3·자원0·방화벽원복독립PASS. 원인/성공실행/오답노트대조후동일실행기stdout/stderr만파일로분리해미수행Bun6분원부모만재개(제품/시험/source한도변경0·PNPM반복0). 原본 `/tmp/haa-r3-context-fix-wosbxnc8/daemon-interruption`, 재개 `/tmp/haa-r3-context-fix-wosbxnc8/native-bun`.
+- R3 LOCAL_FUNCTIONAL_SCOPES_VERIFIED: 실제검증a95c084f(진입607),의도+189/-19정확/mandatory--full812.737sPASS·미사용/실행/CI연결오류0. 승인교정후原PNPM전체277.583s<5m/Bun304.698s<6m 각3fixture·정상9·frozen2·공유cache/전역ID·거부2PASS/FAIL0/SKIP0;기존불변소비자23+production3/Go6tidy/Race범위재사용으로native25부모PASS. 원14/current3/서비스/자원/방화벽/Git·SDK독립복원PASS. [체크포인트](./evidence/recovery-20261115/r3-local-checkpoint-20261118.md). codecheckpoint 보존/선별commit 후 U1없는F6/144/148 독립준비로계속. D5 [D3독립검토REVISE](./evidence/recovery-20261115/r4-d3-independent-review-20261118.md): U1회수실패삭제/정리실패release/RAM재시작/무owner/retained기록/실제socket형미검증으로미채택·D3/R4전체OPEN;일반독립선별은기존사전승인범위. 큰K/hosted/R8/후속요구OPEN.
 
 
 ## 1. 현재 상태
@@ -7481,3 +7487,64 @@ intent/receipt와 source/runtime/Policy를 보존했다. 최초 actual와 wildca
 - R2 actual TF검증 PASS: 078da676 정상4×2 95.161s/거부4 7.766s FAIL0/SKIP0. 추가production defaultinit도exit0/7.489s뒤검증기가declared4(required3+optional observed-facts1)를총3으로오인해중단; 원래CheckPlan.Validate/Inspector조건/21§5.1·lessonsL12와대조하여제품오류아님확인. 필수3·knownoptional선언/정책/원시험·한도불변. 원본/tmp/haa-r2-tf-native-36gzg19w/OPTIONAL-DECLARATION-CAUSE.md 및실제Evidence/profile/정리독립확인. initialpreinode는미측정;기존8normal검증재사용.14/current3/서비스/프로세스0·network/firewall복귀확인. 새/tmp/haa-r2-tf-resume-ijsy3ml4 에서기존knownfixture의upgrade만+GoCargo/Go6재개준비; 아직재실행/제품추가수정없음.
 
 - R2 LOCAL_COMPONENT_CHECKPOINT_PASS: source078da676/base0bb에서기존13부모·25하위38GoPASS/FAIL0/SKIP0의호출별actual·재사용범위완전대조. 새TF정상4×2 95.161s/거부4 7.766s, 추가init7.489s→upgrade8.126s(currentrequired3+optional1/Evidence/C01정리), GoBuild74.186s/보안3 61.667s/CargoLibrary23.545s/Go6tidy25.974s 모두PASS. original14/current3/서비스/프로세스·container·volume0/network4/firewall동일·원개발Git/SDK불변독립검증. 제품추가수정0, R8전체프로필/Q/대형Go qualification은OPEN으로정직하게분리한다. [R2근거](./evidence/recovery-20261115/r2-local-checkpoint-20261117.md). 다음은결과보존/완료payload정리·관련docs/의미있는checkpoint후R3범위기록; 원본계획23재감사/수정은하지않는다.
+
+- R2 CHECKPOINT_ADOPTED: 607d79f522f38d55dc005eba1a63eb800f9383f1/tree d7f94049851ae24525af99d9117cff91e836440a; tested078와Go/lock1524개동일. Gitbundle·157파일실제복원244a58b6, 완료전용native/docs20root399591981B ref0/errors0·보존42657a0b후수거. originalHost14/current3·개발Git/SDK불변, 전체R8/K대형·hostedOPEN. 다음R3 범위기록/기존S01·S08선별복구; 재개입력 /tmp/haa-r3-environment-d7puheoo/entry.json.
+
+- R3 SCOPE_RECORDED: 607d79f/tree d7f94049 진입; F5 27~37 기존S01/S08 및136/138/140/142 adapter·기대값/U3 kind/154·156 Bun wrapper 선별. 117개draft경로·선언목록은 /tmp/haa-r3-environment-d7puheoo/draft-path-scope.json·PLAN.md. 기존R2 TF사전disk/Operation수정 재도입0, R0-B SDK/공급pin유지. 새patch c8a546d0의6member/CPP/실제소비자검증은미완료이며oldmemberhash로실행금지. npm40k는Go-only40k승인과구분해OPEN/자동적용0;S04시험R5. 먼저privateproposal의싼단위·AST/연결검사, product실제적용전보존·의도목록확정;원개발Host/branch/CI변경0.
+
+- R3 의도확정: 기존선별구현차이 추가188/삭제19(AST전체 /tmp/haa-r3-environment-d7puheoo/intended-declarations.json). single실험helper/oldtrace형/testfake19선언은공통2환경owner로대체,oldone-shot시험은fresh2환경정상·준비/관찰거부로대응. private후보19부모36하위55PASS/FAIL0/SKIP0(48.801s);제품worktree미적용,runtime새6member/CPP/actual미검증.원개발/Host/CI변경0.
+
+- R3 SELECTED_APPLIED_UNQUALIFIED: 진입607d79f522f38d55dc005eba1a63eb800f9383f1/tree d7f94049851ae24525af99d9117cff91e836440a → draft제품projection ac2c1b26cf79d93a4580b6377b36fd7fa12ff882(Queue메타별도). 정확117제품파일/추가188·삭제19, preapply239c7e1b 실제285파일복원후적용; 새runtime6member capture/CPP·실제소비자·full점검전qualification없음. 현재런타임member핀은DRAFT/실행금지, 실제Host미변경. 준비55PASS·firstoperator원본은 /tmp/haa-r3-environment-d7puheoo;다음고정소스번들/CPP검증.
+
+- R3 연결점검 first-error는제품빌드/시험빌드/vet/실제CIselector가아닌historicalJSON옛시험명2개오인. 원본은358과SHA8f6b07c5/03186e5f동일. raw/제품시험/한도불변, 작업공간전용점검도구1개에서정확2경로+SHA만기록참조분류;변경된동일파일/active문서·workflow는계속거부(6대조PASS). 추가188/삭제19불변,새runtime후mandatory--full은OPEN. 원본·근거 /tmp/haa-r3-environment-d7puheoo/historical-reference-checker-cause.
+
+- R3 STOPPED_FOR_USER: source선별117/188추가·19삭제,단위55PASS. 동일오프라인빌드준비2회(exit37/6.523s CAS id누락→정확24표식보완;exit48/12.680s checksum없는SDK목록URL조회는CAS만으로미지원). compiler/CPP/kernel/native 미도달·--full미수행,third0. 원본c8/Go1.27.3 coherent86.563s·kernel7/CPP134 및Go1.27.4 strict884.226s(bridge)와대조완료. 실제Host14/current3/SDK/Git불변·helperactiveenabled·proc/container/volume0. R3lockmemberDRAFT/실행금지,미커밋소스/고정입력보존. [원인·기준선표·정확재개안](./evidence/recovery-20261115/r3-preparation-stop-20261117.md). 다음은compile만기존로컬builder bridge로재개하는범위사용자확인;kernel/CPP networknone·원본kernel7유지,새VM/Host설치/한도상향/CI없음. 정리/보존마감만진행하며추가제품수정·재시도중지.
+
+- R3 STOP 마감: 보존82d2229d/264파일·제품117실제복원 후 refs/errors0인 완료검사·실패준비파생8root834740119B수거. 원본·소스·SDK·고정입력유지,파생symlink잔존0,oldR3wrapper퇴역. next사용자확인전compile/native/추가제품변경없음; 최종문서검사·작은마감증분만진행.
+
+- R3 RESUMED_USER_RULES(2026-11-17): 사용자지시로원본계획23§0에성공코드/명령/환경재사용·첫실패원본보존/성공대조/오답노트/원인교정후2차시도·로컬횟수만의기계적종료금지를필수화했다. INDEX/회귀노트도같은규칙으로연결했다(hostedCI별도관문유지). 원개발제품/Host/CI변경0. R3재개는기존실제성공빌드코드/스크립트/명령을재사용하고필요차이만기록;별도오프라인/캐시재설계폐기. 현재규칙문서검사후기존로컬builder 성공방식으로계속하며같은원인미해결반복없음. 규칙원본 /home/winamp/projects/Heliopause-Artifact-Airlock/docs/planning/23-recovery-stage1-plan.md §0, 변경근거 /tmp/haa-recovery-rules-viq0l2f5.
+
+- R3 성공절차재사용 PREPARED: 실제PASS strict884.226s의compile-inside.sh를byte동일하게재사용하고로컬builder bridge/CPU4·RAM/디스크8GiB·22분·추가CAS2GiB까지기존성공조건그대로복원했다. R3기존patch c8a/SDK1.27.4/공급pin/117파일불변;새입력설계0. 규칙23§0·INDEX·회귀노트수정/원개발docs27.857s·recoverydocsPASS,read-onlyHost14/current3/proc/container/volume0 확인. 다음원본보존후동일성공절차compile실행→기존kernel7/CPP/정확pin/실제소비자. 첫오류는즉시원인대조/오답노트/교정전재시도없음. 실행원장 /tmp/haa-r3-runtime-20670k5d/execution-plan-success-reuse.json.
+
+- R3 기존의존scope: b91fe64의Linux전용adapter호출시험은현재1함수본문byte동일하게_linux_test.go로이동(S02후발함수도입0).72a7a02/db32813의승인된16/21 Go-only40k·TF두환경공유한도문구/당시JSON근거선별,추가/삭제선언0·새구현/Policy/한도변경0. 적용전근거 /tmp/haa-recovery-rules-viq0l2f5/r3-existing-dependencies/scope.json。
+
+- R3 기존CI-client연결scope: eafb082의lifecycle/ELF 고정client실행·복원과pipx반례대상,3b2829b의PNPMartifact-probe분리를원커밋3way로선별(5파일/scanner문맥도입0/새job·CI실행0). 의도추가pnpmArtifactProbeCommand상수1개/삭제0,총R3 +189/-19. 범위·원본·선별해시 /tmp/haa-recovery-rules-viq0l2f5/r3-ci-client-reuse/scope.json.
+
+- R3 기존성공절차compile PASS791.911s: 동일strict성공스크립트재사용/source7c619+patchc8a+Go1.27.4,6member생성·최대전용6956916505B<8GiB/오류0/잔존container0. 실제Bazel SDK binary도고정1.27.4와SHAde0ae3동일. 다음원본kernel7/CPP134+Go/Cargo별도latch·기존capture/verify이며제품실물qualification은OPEN;원본 /tmp/haa-r3-runtime-20670k5d/success-result.json.
+
+- R3 runtimepin 적용scope: 기존capture/strictverify로현재6member·manifest/Go1.27.4/trace5·kernel7/CPP134+표적2확인. lock은관측한6member만교체,기존canonical generator로genGo동기화(선언증감0/다른SDK·image·보안pin변경0). 적용전근거 /tmp/haa-recovery-rules-viq0l2f5/runtime-pin-adoption/scope.json, 결과 /tmp/haa-r3-runtime-20670k5d/runtime-qualified.json. 먼저새산출물/원본보존후적용; actual제품검사/전체qualification은OPEN.
+
+- R3 검증후보FROZEN: 독립검사소스 /tmp/haa-r3-environment-d7puheoo/proposal,base607d79f522f38d55dc005eba1a63eb800f9383f1/prospective tree c46498192feb0cc7879a423ee3862a783122326f(3374파일). code/lock은recovery와동일,이후Queue상태줄만별도갱신. 새6member strictverify/Go1.27.4/trace5/kernel7/CPP134+2·실제복원40ef0e61확인;원래canonical generator로currentpin동기화. 의도선언+189/-19정확대조/기존workflow40.387sPASS. 다음동결후보rebuild--full/security/docs/currentvulnerability,표적실물연결은이후. 최초실패는§0절차로분석/교정후재개.
+
+- R3 FIRST_FULL_ERROR_CAUSE_CONFIRMED: tree c4649819 canonical--full811.721s에서4부모FAIL. Go/Cargo공통mock의필수2환경상태누락은기존c8fe972재사용,release mock같은누락은7cf8adc의상태부분만재사용(11member/6call/28check유지·Evidence40). TF는제거된사전disk를전제하는db32813시험차분재혼입이므로검증된607d79f의시험파일그대로복원. 4시험파일만/제품·계약·한도·시험case삭제0/선언증감0. 원본·비교·적용전 /tmp/haa-recovery-rules-viq0l2f5/first-full-failure/cause-and-scope.json. §0/회귀§5a/C01오답노트대조완료;동일실패부모와기존정상·거부부터검사후원인교정된2차full진행.
+
+- R3 원인교정후기존표적7부모/63하위/70PASS20.131s·FAIL0/SKIP0. 기존두환경미완료거부·정상/악성/외부출력소유권·메모리준비/실제Acquire예약/취소12case모두유지. 제품변경0·의도선언+189/-19불변. 기존4시험파일교정후새후보고정→필수canonical--full2차시도,기존성공compile/kernel/CPP는동일입력증거재사용.
+
+- R3 별개실행권한원인확정: 교정후tree ca106814의2차full353.843s는소켓생성/setsockopt EPERM. 영향3시험원본은R2성공607과byte동일하며동일실행sandbox의TCP6/UNIXpacket직접probe도errno1. 제품원인으로혼합하지않음(기존sandbox L12/evidence실패방법대조). 원본 /tmp/haa-recovery-rules-viq0l2f5/socket-permission-failure/cause.json. 제품/시험/한도변경0,기존성공로컬권한조건에서동일부모먼저확인후같은ca106814후보full재개;횟수만의중단/재승인없음.
+
+- R3 실행권한교정표적3부모/17하위/20PASS5.101s·FAIL0/SKIP0. 일반UID1000/같은Go1.27.4/원본3파일동일/제품수정0으로socket EPERM원인반증확인. 같은ca106814/3374파일전체해시불변대조후성공당시로컬권한에서mandatory--full/security/docs/vulnerability재개. 결과 /tmp/haa-recovery-rules-viq0l2f5/r3-socket-corrected-check-result.json;원Host14/개발branch/CI변경0.
+
+- R3 mandatory--full395.225s/보안56.969s PASS(ca106814/선언+189/-19·dangling/ghost/selector오류0). 후속docs첫실패는P에기존미추적R3stop근거leaf누락;원본W의md/JSON정확2개복사만보완,기존3374파일모두해시동일/제품변경0. docs포함후보tree cff4ab234fdf6985f5fbcf35ebb387e55f70ee53/3376파일. scope·원본 /tmp/haa-recovery-rules-viq0l2f5/missing-existing-doc-input/cause.json. 전체/보안반복없이docs·미실행vulnerability만검사. 원본필수규칙docs도올바른고정Go1.27.3에서3.078sPASS/INDEX12181B로경고해소.
+
+- R3 LOCAL_CANONICAL_PASS_ACTUAL_OPEN: code ca106814 full395.225s/보안56.969s PASS;기존근거2leaf추가만한cff4ab23 docs2.594s/currentvulnerability29.413s PASS·기존3374파일해시동일. +189/-19 의도일치·dangling/ghost/CIselector오류0. 규칙23§0/INDEX/회귀노트와첫실패원본/기존수정증분보존,원본SDK3 docs3.078s PASS/INDEX12181B. 다음영향9owner Race→정확cff후보새4binary→기존bounded14복원/동일성공native실행기재사용. R3실물·K네profile/대형Go/hosted/R8미완료;원본/소스 /tmp/haa-recovery-rules-viq0l2f5/r3-local-qualified.json.
+
+- R3 영향9owner Race101.407s: 671부모/1467하위/2138PASS·FAIL0,통합opt-in59는NOT_RUN. 현재cff후보/선별133경로와규칙·원본359파일을R2원본에패치실제복원/해시·모드대조e5ee5f31로보존. ref0/queryerror0인완료tool compiler캐시18333파일2306981378B만수거;고정도구/SDK/module/source/주컴파일cache보존. 기존성공native준비4binary는 /tmp/haa-r3-native-9h89e9dz/prepare-binaries.py 실행중(원Host/CI변경0),동일소스/SDK/기존controller재사용. 준비뒤고정runtime6·localimage·original14/current3·정확14복원/root읽기전용확인→보존후에만기존bounded실물실행.
+
+- R3 실제연결실행scope: cff4ab23/Go1.27.4새CLI/helper/bootstrap/sandbox4binary준비112.488s·sourcebuildinfo/hash기록. 원Host14/current3/로컬image5/R3bundle6신원과원14백업private복원PASS,원Archive불변. 기존성공controller재사용26단계(25부모+Go6tidy fixture)·packaging정상/observer SIGTERM/CLI SIGINT3case,기존CPU2/45분/RSS·전용4GiB/각source한도유지. 10기존path만임시전환·고정pipx ZIP소유1개/최종14원복,영구설치·새계약·CI없음. 원본·4binary추가보존53파일실제복원093eff94 후실행. 첫오류후행중단→원본/성공코드/오답노트/최소교정원칙. 실행원장 /tmp/haa-r3-native-9h89e9dz/result.json,큰K/hosted/전체R8는OPEN.
+
+- R3 실제부분: packaging25 정상/관찰자종료거부/CLI SIGINT취소 모두PASS(거부·취소대상불변); NPM/Python두환경Evidence재조회와npm실제inspect/install/ci/root4case PASS. UV5설치·업데이트+native인수2 전체PASS287.429s/원래context300s(여유약12.6s는비용주의,한도변경/재실행0). 현재native session59299는UV프로젝트인수다음단계를계속하며최종원Host복원전완료표시없음. 원본 /tmp/haa-r3-native-9h89e9dz/result.json.
+
+- R3 FIRST_NATIVE_PREPARATION_ERROR: UVtool부모0.313s/하위·제품미도달은고정interpreterDATA2env누락. 시험은607과byte동일,기존R2성공81.546s의env/14480B·SHA3fbc4d6c입력이남아일치. 제품/시험/runtime수정없이기존성공UV/Pipx env재사용. 통과7부모/packaging정상·거부·cancel3case는반복하지않음. 원본·대조 /tmp/haa-r3-native-9h89e9dz/first-fixture-error/cause-and-scope.json. finally원Host14/current3/ZIP제거/service/process/container/volume/network복원·독립root43735확인/개발Git·index·SDK불변. 방화벽raw차이는생성·완료시각2주석뿐으로실제규칙동일. 다음원본보존뒤같은후보·성공실행기로남은19단계만재개.
+
+- R3 원인교정재개scope: 기존R2성공UV/Pipx env전체를그대로사용(고정PythonDATA14480B·SHA3fbc4d6c/동일Python image확인). 소스cff/SDK4/4binary/runtime/profile/Policy/원한도변경0, 통과7부모+정상·거부·취소3case 재사용하고남은19단계만실행. 첫원본·223파일실제복원16127c5d, 재개입력33파일실제복원016ae49e, 원Host14/current3/image5/14복원원본읽기PASS뒤동일bounded10path/14원복절차. 실행 /tmp/haa-r3-native-resume-74gvd46f/result.json; 첫오류후행중단·원인교정전동일반복없음, R3전체/큰K/R8미완료.
+
+- R3 별개첫공급준비오류: PNPM single3.755s는immutable native tool없음으로graph/Artifact실행전거부. 원Host current3에는Bun/PNPM실행파일이원래없고,R2전용검증계획의ZIP1개만재사용하며R1승인2공급물배치를빠뜨림. 같은오답노트E16 S02/G4원인과607동일시험대조;기존보존R1 bun107308936B/SHA10702245·pnpm57822504B/SHA8cca52dc가현재lock과일치하며다운로드불필요. 제품/4binary/runtime/한도변경0,기존R1의정확2공급물읽기·임시원자배치·소유inode제거절차재사용. 통과15부모+packaging3+Go6tidy1은동일후보근거재사용;남은10부모만재개예정. 원본 /tmp/haa-r3-native-resume-74gvd46f/first-native-supply-error/cause-and-scope.json,finallyHost14복원보고/독립확인뒤진행.
+
+- R3 정확공급입력교정후재개: Root원14/current3/프로세스·container·volume0/기존network/방화벽규칙·개발Git/SDK불변독립확인, 첫원본177파일실제복원899c227c. 기존R1고정Bun/PNPM2개가현재PIN과동일함을사전확인, 기존성공2asset소유inode배치/회수코드만재사용하며Pipx공급은남은소비자없어미배치. 코드/4binary/runtime/profile/원한도변경0, 현재통과15부모+packaging3+Go6tidy1 재사용. 남은10부모계획31파일실제복원33a9aa64뒤기존bounded10path+원14복원/정확2DATA임시공급실행. 원장 /tmp/haa-r3-native-tools-njuzzil3/result.json; 동일실패무교정반복/새다운로드/CI/정책확장0.
+
+- R3 첫공유예산오류확정: PNPM single120.16s/peer118.15s PASS뒤empty2.01s에부모240s공유ctx소진·OPERATION_TIMED_OUT/부모FAIL240.51s. 같은시험607대조/358은동일ctx·3fixture이나B06 frozen반복검사차이있음(CI448관련부모152.03s). 코드/한도수정0,비용기여미분리·3447은내부ctx해결증거아님. 원부모FAIL유지하고원래empty선택/240s 그대로진단+독립9부모만검증,후속R4코드적용은미착수. 원본 /tmp/haa-r3-native-tools-njuzzil3/first-shared-deadline-error/cause-and-scope.json, 진단 /tmp/haa-recovery-rules-viq0l2f5/native-diagnostic-location.json.
+
+- R3 원래PNPM부모FAIL/240s보존65c36142 실제85파일복원·Host원14/current3/프로세스·container·volume0/기존network·firewall규칙독립확인. 코드/원시험/한도수정없이원빈fixture선택(^TestPNPMProjectCLIIntegration$/^empty$)과원래post-loop native인수거부만진단(qualification아님), 독립원래9부모는Cargo/관찰먼저·Bun마지막으로검증. 기존실행기test_run선택인자1개만사용·진단PASS를원부모PASS로취급금지,후행R4소스미적용. 고정입력/소스cff/4binary/runtime/Policy동일·재개31파일실제복원a23d9495. 실행 /tmp/haa-r3-native-diagnostic-jrllpylk/result.json; 전체통합4분실패는해소전계속OPEN.
+
+- R3 독립관찰8부모전부PASS(Cargo정상script/환경조건부network거부/2환경실패승격거부·NPM/Pythonfresh+transient VFS·ELF), PNPM empty진단15.046s+원post-loop거부PASS이나원부모FAIL유지. Bun도single138.25s PASS→peer에서공유240s소진·부모FAIL241.158s/empty미도달. 현재정식23부모PASS·PNPM/Bun2부모FAIL,production3/Go6tidy1별도PASS. Ufinally원14/current3/자원0/방화벽규칙동일독립확인. 소스/시험한도수정0; 원인기여대조는같은Host의정확R2세트로원래2부모만추가실측.
+- R2_COHERENT_CONTROL_SCOPE: 607 tree d7f94049를별도archive/source에읽기복원, 실제빌드078 manifest2f79와제품Go/lock1525일치. 보존원본Go3binary(13ced435/69207372/c8625731)와당시runtime6/CPP3ff/pod-init를짝지어재사용,현재R3tuple혼용0/재빌드0. 같은Host/CPU2·동일image5·고정Bun/PNPM2·원래parentctx240s/canonical-testtimeout5m으로두부모만control실행. 기존전환/원14복원/정확2asset회수절차·32입력실제복원8c79dbb7뒤실행,branch/worktree/후행R4변경0. 원장 /tmp/haa-r3-r2-control-e8_d7gif/result.json; controlPASS를R3로전용금지.

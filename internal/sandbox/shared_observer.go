@@ -111,9 +111,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 type pythonClosurePhase string
 
 const (
-	pythonClosurePreparation pythonClosurePhase = "PREPARATION"
-	pythonClosureAnchor      pythonClosurePhase = "ANCHOR"
-	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
+	pythonClosurePreparation            pythonClosurePhase = "PREPARATION"
+	pythonClosureAnchor                 pythonClosurePhase = "ANCHOR"
+	pythonClosureObservation            pythonClosurePhase = "OBSERVATION"
+	pythonClosureEnvironmentPreparation pythonClosurePhase = "ENVIRONMENT_PREPARATION"
+	pythonClosureEnvironmentAnchor      pythonClosurePhase = "ENVIRONMENT_ANCHOR"
+	pythonClosureEnvironmentObservation pythonClosurePhase = "ENVIRONMENT_OBSERVATION"
 )
 
 // observationTraceLedger is shared by every phase of one observation
@@ -126,12 +129,12 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
-// The Go build ledger aggregates preparation and compiler streams, including
-// counted workspace summaries. This does not increase physical collector limits.
-const maximumGoBuildLedgerEvents = 20000
+// Both required Go environments share this one preparation/compiler/keeper
+// ledger, including counted summaries. Physical collector limits are unchanged.
+const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile {
+	if !isPythonObserverProfile(profile) && profile != pipxObserverProfile && profile != goBuildProfile && profile != cargoBuildProfile && profile != "npm-lifecycle" && profile != "github-elf" && profile != "terraform-provider" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)
@@ -216,17 +219,38 @@ func pythonClosureExpectedTopology(profile string, phase pythonClosurePhase) ([]
 	if !ok {
 		return nil, false
 	}
-	readOnly := phase == pythonClosureAnchor || phase == pythonClosureObservation
-	if phase != pythonClosurePreparation && !readOnly {
+	var readOnly bool
+	switch phase {
+	case pythonClosurePreparation, pythonClosureEnvironmentPreparation:
+	case pythonClosureAnchor, pythonClosureObservation, pythonClosureEnvironmentAnchor, pythonClosureEnvironmentObservation:
+		readOnly = true
+	default:
 		return nil, false
 	}
-	for index := range base {
-		if base[index].Mountpoint == pythonSitePath {
-			base[index] = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
-			return base, true
+	result := make([]observerMountExpectation, 0, len(base)+2)
+	site := false
+	for _, mount := range base {
+		if mount.Mountpoint == pythonSitePath {
+			site = true
+			if phase == pythonClosureEnvironmentAnchor {
+				continue
+			}
+			mount = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
+		}
+		if mount.Mountpoint == environmentWorkspaceRoot && (phase == pythonClosureEnvironmentAnchor || phase == pythonClosureEnvironmentObservation) {
+			mount = observerMountExpectation{environmentWorkspaceRoot, "workspace", "/", "9p", phase == pythonClosureEnvironmentAnchor, true, true, false}
+		}
+		result = append(result, mount)
+	}
+	if !site {
+		return nil, false
+	}
+	if phase == pythonClosureEnvironmentPreparation {
+		for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
+			result = append(result, observerMountExpectation{pythonEnvironmentPreparationPrefix + string(kind), "workspace", environmentWorkspaceRoot, "9p", false, false, false, false})
 		}
 	}
-	return nil, false
+	return result, true
 }
 
 func isPythonObserverProfile(profile string) bool {
@@ -357,7 +381,7 @@ func validRecordCount(record helperRecord) bool {
 		return record.Count == nil
 	case "mount-anchors-ready":
 		return record.Count == nil
-	case "filesystem-workspace-access":
+	case "filesystem-workspace-access", "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation":
 		return record.Count != nil && *record.Count >= 1 && *record.Count <= domain.MaximumObservationSummaryCount
 	case "process-exec", "process-exec-expected", "process-exec-unexpected", "filesystem-outside-workspace", "network-attempt", "honeytoken-access":
 		return record.Count == nil || (*record.Count == 1)
@@ -400,7 +424,7 @@ func validFixed(value string, allowed ...string) bool {
 
 func validObserverReason(reason string) bool {
 	switch reason {
-	case "EVENT_LIMIT", "BYTE_LIMIT", "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "ATTRIBUTION_FAILURE", "FINALIZATION_TIMEOUT", "UNKNOWN_EVENT_KIND", "CHANNEL_OVERFLOW", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "TOPOLOGY_INVALID", "TOPOLOGY_MISMATCH", "TOPOLOGY_MUTATION", "TOPOLOGY_NOT_READY", "SOCKET_AF_UNSPEC", "SOCKET_AF_NETLINK", "SOCKET_AF_PACKET", "SOCKET_OTHER_FAMILY", "CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH", "CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_AF_NETLINK_INVALID_LENGTH", "CONNECT_AF_PACKET_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY", "RAW_SYSCALL_INVALID", "FD_STATE_UNKNOWN", "FD_STATE_LIMIT", "EXEC_CORRELATION_INVALID", "PROCESS_PROVENANCE_UNKNOWN", "PROCESS_IDENTITY_REUSED", "CLONE_PROVENANCE_INVALID", "PROCESS_STATE_LIMIT", "CONTAINER_ROOT_INVALID", "CONTAINER_ROOT_DUPLICATE":
+	case "OBSERVATION_PROFILE_INCOMPLETE", "EVENT_LIMIT", "BYTE_LIMIT", "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "ATTRIBUTION_FAILURE", "FINALIZATION_TIMEOUT", "UNKNOWN_EVENT_KIND", "CHANNEL_OVERFLOW", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "TOPOLOGY_INVALID", "TOPOLOGY_MISMATCH", "TOPOLOGY_MUTATION", "TOPOLOGY_NOT_READY", "SOCKET_AF_UNSPEC", "SOCKET_AF_NETLINK", "SOCKET_AF_PACKET", "SOCKET_OTHER_FAMILY", "CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH", "CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_AF_NETLINK_INVALID_LENGTH", "CONNECT_AF_PACKET_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY", "RAW_SYSCALL_INVALID", "FD_STATE_UNKNOWN", "FD_STATE_LIMIT", "EXEC_CORRELATION_INVALID", "PROCESS_PROVENANCE_UNKNOWN", "PROCESS_IDENTITY_REUSED", "CLONE_PROVENANCE_INVALID", "PROCESS_STATE_LIMIT", "CONTAINER_ROOT_INVALID", "CONTAINER_ROOT_DUPLICATE":
 		return true
 	default:
 		return false
@@ -1101,7 +1125,7 @@ func validFaultSite(record helperRecord) bool {
 		return false
 	}
 	switch record.FaultSite {
-	case "NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND":
+	case "FILESYSTEM_MUTATION", "NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND":
 		return true
 	default:
 		return false

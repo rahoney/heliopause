@@ -130,7 +130,7 @@ func runNodeExecutionFixtureIntegration(t *testing.T, client string, fixture nod
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer())
+	backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer(), newObservationResourceAdapter())
 	if err != nil {
 		t.Fatal(err)
 	}

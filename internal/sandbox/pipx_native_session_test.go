@@ -339,3 +339,26 @@ func TestPipxNativeUpgradeRejectsOriginalBeforeCommands(t *testing.T) {
 		})
 	}
 }
+
+func TestPipxNativeObservationAcceptsWorkspaceOperationsOnly(t *testing.T) {
+	allowed := map[string]uint64{"process-exec-expected": 1}
+	for _, kind := range recognizedTraceKinds {
+		if strings.HasPrefix(kind, "filesystem-workspace-") {
+			allowed[kind] = 3
+		}
+	}
+	if len(allowed) != 8 {
+		t.Fatal("workspace operation kinds changed; review the pipx native boundary", len(allowed))
+	}
+	if err := pipxNativeForbiddenKind(allowed); err != nil {
+		t.Fatal("pinned pipx workspace operations refused:", err)
+	}
+	for _, kind := range append([]string{"future-kind"}, recognizedTraceKinds...) {
+		if _, ok := allowed[kind]; ok {
+			continue
+		}
+		if err := pipxNativeForbiddenKind(map[string]uint64{"process-exec-expected": 1, kind: 1}); err == nil {
+			t.Fatal("actionable or unknown observation accepted:", kind)
+		}
+	}
+}

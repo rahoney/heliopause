@@ -69,7 +69,7 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 	if err != nil {
 		return nil, err
 	}
-	backend, err := sandbox.NewLinuxHeliopauseNativeBackendWithExecutor(intakeRoot, executor, observer)
+	backend, err := sandbox.NewLinuxHeliopauseNativeBackendWithExecutor(intakeRoot, executor, observer, newObservationResourceAdapter())
 	if err != nil {
 		return nil, err
 	}

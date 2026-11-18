@@ -204,13 +204,26 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 			t.Fatal(e)
 		}
 		checks = append(checks, check)
-		eid, e := domain.NewEvidenceID(name)
+		eid, e := domain.NewEvidenceID(name + "-result")
 		if e != nil {
 			t.Fatal(e)
 		}
 		ev, e := domain.NewEvidence(eid, id, identity, digest, "fixture", "Synthetic approval consumer evidence.")
 		if e != nil {
 			t.Fatal(e)
+		}
+		evidence = append(evidence, ev)
+	}
+	for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+		state := domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true}
+		summary, err := state.Summary()
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, _ := domain.NewEvidenceID("terraform-workspace-" + string(profile))
+		ev, err := domain.NewEvidence(id, checks[2].ID(), identity, digest, "workspace-state", summary)
+		if err != nil {
+			t.Fatal(err)
 		}
 		evidence = append(evidence, ev)
 	}
@@ -235,6 +248,37 @@ func terraformApprovedFixture(t *testing.T, p *TerraformProjectPromotion, g *app
 		t.Fatal(e)
 	}
 	return update, set, file
+}
+
+func TestTerraformCacheRequiresExactEnvironmentRecords(t *testing.T) {
+	for _, name := range []string{"missing", "duplicate", "old-three", "foreign-id"} {
+		t.Run(name, func(t *testing.T) {
+			p, install := newTerraformPromotionFixture(t)
+			guard, err := p.Begin(context.Background(), install)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer guard.Close()
+			_, set, _ := terraformApprovedFixture(t, p, guard)
+			doc, err := p.cache.approval(context.Background(), set)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch name {
+			case "missing":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[:4]
+			case "duplicate":
+				doc.Entries[0].Evidence[4] = doc.Entries[0].Evidence[3]
+			case "old-three":
+				doc.Entries[0].Evidence = doc.Entries[0].Evidence[:3]
+			case "foreign-id":
+				doc.Entries[0].Evidence[4].ID = "foreign-workspace"
+			}
+			if err := p.cache.verifyRecordedApproval(context.Background(), doc); err == nil {
+				t.Fatal("incomplete or substituted environment approval accepted")
+			}
+		})
+	}
 }
 
 func TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree(t *testing.T) {

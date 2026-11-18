@@ -92,6 +92,23 @@ func (r *bunArtifactExecutionCapture) RunOutput(ctx context.Context, output io.W
 	return r.CommandRunner.(streamingDockerOutput).RunOutput(ctx, output, binary, args...)
 }
 
+// Production discards lifecycle output. Only the exact controller lifecycle
+// command uses the same admission-owning Output path so this oracle sees it.
+func (r *bunArtifactExecutionCapture) RunDiscard(ctx context.Context, binary string, args ...string) error {
+	for _, arg := range args {
+		if arg == bunTargetLifecycleCommand || arg == bunRuntimeTargetLifecycleCommand {
+			_, err := r.Output(ctx, binary, args...)
+			return err
+		}
+	}
+	return r.CommandRunner.(discardCommandRunner).RunDiscard(ctx, binary, args...)
+}
+func (r *bunArtifactExecutionCapture) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	return r.CommandRunner.(interface {
+		StartContainerInputOutput(context.Context, io.Reader, io.Writer, string) error
+	}).StartContainerInputOutput(ctx, input, output, id)
+}
+
 func TestBunActualArtifactExecutionBoundary(t *testing.T) {
 	if os.Geteuid() == 0 || os.Getenv("HELOX_BUN_ARTIFACT_EXECUTION") != "1" {
 		t.Fatal("declare ordinary-user controlled Bun Artifact execution")
@@ -124,6 +141,7 @@ func TestBunActualArtifactExecutionBoundary(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			backend.resources = integrationObservationResourceAdapter(t)
 			capture := &bunArtifactExecutionCapture{CommandRunner: backend.runner}
 			backend.runner = capture
 			result, err := backend.ExecuteBunRuntimeInstance(ctx, layout, subject, instance)

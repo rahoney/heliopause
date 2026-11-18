@@ -47,7 +47,14 @@ func (s *releasePipelineSandbox) Execute(_ context.Context, request domain.Sandb
 	if request.Artifact().Identity().Variant() == s.incomplete {
 		return domain.NewSandboxResult(id, domain.SandboxIncomplete, "M3_DYNAMIC_OBSERVER_FAILED", nil)
 	}
-	return domain.NewSandboxResult(id, domain.SandboxCompleted, "", nil)
+	// This is a model result, not runtime evidence. Match the current required
+	// two-environment contract; missing coverage must remain incomplete.
+	digest := request.Artifact().Digest()
+	states := []domain.SandboxEnvironmentState{
+		{Profile: domain.SandboxEnvironmentMinimal, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true},
+		{Profile: domain.SandboxEnvironmentDevelopment, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true},
+	}
+	return domain.NewSandboxResult(id, domain.SandboxCompleted, "", nil, states...)
 }
 
 type releasePromotionSpy struct{ calls int }
@@ -143,7 +150,7 @@ func TestHeliopauseSetUsesExistingCompleteWorkflowAndStopsBeforePromotion(t *tes
 				t.Fatalf("required checks=%d, want 28", checks)
 			}
 			if name == "source-and-staging-only" {
-				if outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" || evidenceCount != 28 {
+				if outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" || evidenceCount != 40 {
 					t.Fatal("existing complete-set staging was not reached")
 				}
 			} else {

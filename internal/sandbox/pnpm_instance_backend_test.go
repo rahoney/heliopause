@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
@@ -18,6 +18,9 @@ import (
 // Stateful Docker format fixture: it supplies no native execution evidence.
 // Existing volume checks consume the same actual/configured mount views.
 type pnpmInstanceRunner struct {
+	*environmentBackendModel
+	mu                                                   sync.Mutex
+	rootOpen                                             bool
 	kind                                                 nativeRuntimeToolKind
 	t                                                    *testing.T
 	volume                                               dockerVolumeInspection
@@ -53,72 +56,57 @@ func (r *pnpmInstanceRunner) encoded(v any) []byte {
 	return b
 }
 func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...string) ([]byte, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.t.Helper()
+	if r.environmentBackendModel == nil {
+		r.environmentBackendModel = newEnvironmentBackendState()
+	}
 	r.calls++
 	if binary != "docker" || len(args) == 0 {
 		r.t.Fatal("unexpected command")
 	}
 	r.events = append(r.events, args[0])
 	if args[0] == "volume" {
-		switch args[1] {
-		case "ls":
-			return nil, nil
-		case "create":
-			r.volume = dockerVolumeInspection{Name: args[len(args)-1], Driver: "local", Scope: "local", Mountpoint: "/owned/fixture", CreatedAt: "fixed", Options: map[string]string{}, Labels: map[string]string{}}
-			for i := 2; i+1 < len(args); i++ {
-				if args[i] == "--opt" || args[i] == "--label" {
-					k, v, _ := strings.Cut(args[i+1], "=")
-					if args[i] == "--opt" {
-						r.volume.Options[k] = v
-					} else {
-						r.volume.Labels[k] = v
-					}
-					i++
-				}
-			}
-			r.volumes = append(r.volumes, r.volume.Name)
-			return []byte(r.volume.Name), nil
-		case "inspect":
-			return r.encoded(r.volume), nil
-		case "rm":
-			r.volumeRemovals++
-			return nil, nil
+		body, err := r.environmentBackendModel.Output(ctx, binary, args...)
+		if args[1] == "create" && err == nil {
+			name := args[len(args)-1]
+			r.volume = r.environmentBackendModel.volumes[name]
+			r.volumes = append(r.volumes, name)
 		}
+		if args[1] == "rm" && err == nil {
+			r.volumeRemovals++
+		}
+		return body, err
 	}
 	switch args[0] {
 	case "create":
-		r.creates++
-		r.id = fmt.Sprintf("%064x", r.creates)
-		r.ids = append(r.ids, r.id)
-		r.active = true
-		filtered := slices.Clone(args)
-		mountIndex := slices.Index(filtered, "--mount")
-		if mountIndex < 0 {
-			r.t.Fatal("private mount absent")
+		body, err := r.environmentBackendModel.Output(ctx, binary, args...)
+		if err == nil {
+			r.creates++
+			r.id = string(body)
+			r.ids = append(r.ids, r.id)
+			r.active = true
 		}
-		filtered = slices.Delete(filtered, mountIndex, mountIndex+2)
-		assertConstrainedCreateCommand(r.t, filtered)
-		if !slices.Contains(args, "type=volume,source="+r.volume.Name+",target="+r.projectSpec().root+",volume-nocopy") {
-			r.t.Fatal("fresh project volume absent")
-		}
-		return []byte(r.id), nil
+		return body, err
 	case "ps":
-		if r.active {
-			if r.fault == "foreign-writer" {
-				return []byte(strings.Repeat("e", 64)), nil
-			}
-			return []byte(r.id), nil
+		if r.fault == "foreign-writer" {
+			return []byte(strings.Repeat("e", 64)), nil
 		}
-		return nil, nil
+		return r.environmentBackendModel.Output(ctx, binary, args...)
 	case "inspect":
 		if args[2] == containerMountInspectTemplate {
-			configured := dockerHostMountInspection{Type: "volume", Source: r.volume.Name, Target: r.projectSpec().root}
-			configured.VolumeOptions.NoCopy = true
-			mount := dockerContainerMountInspection{ID: r.id, Mounts: []dockerMountInspection{{Type: "volume", Name: r.volume.Name, Source: r.volume.Mountpoint, Destination: r.projectSpec().root, Driver: "local", RW: true}}, HostMounts: []dockerHostMountInspection{configured}}
-			if r.fault == "mount-drift" {
-				mount.Mounts[0].Source = "/foreign"
+			body, err := r.environmentBackendModel.Output(ctx, binary, args...)
+			if err != nil {
+				return nil, err
 			}
-			return r.encoded(mount), nil
+			if r.fault == "mount-drift" {
+				var view dockerContainerMountInspection
+				_ = json.Unmarshal(body, &view)
+				view.Mounts[0].Source = "/foreign"
+				return r.encoded(view), nil
+			}
+			return body, nil
 		}
 		if args[2] == "{{.HostConfig.NetworkMode}}" {
 			if r.fault == "network-query" {
@@ -135,38 +123,96 @@ func (r *pnpmInstanceRunner) Output(ctx context.Context, binary string, args ...
 			}
 			return []byte(`{"none":{"NetworkID":"` + strings.Repeat("b", 64) + `"}}`), nil
 		}
+		return r.environmentBackendModel.Output(ctx, binary, args...)
 	case "network":
 		return []byte(`{"Name":"none","Id":"` + strings.Repeat("b", 64) + `","Driver":"null","Scope":"local"}`), nil
 	case "start":
-		return nil, nil
+		return nil, r.environmentBackendModel.RunDiscard(ctx, binary, args...)
 	case "exec":
-		command := pnpmTargetLifecycleCommand
-		if r.kind == nativeRuntimeBun {
-			command = bunTargetLifecycleCommand
-		}
-		if slices.Contains(args, command) {
+		if slices.Contains(args, pnpmTargetLifecycleCommand) || slices.Contains(args, bunTargetLifecycleCommand) || slices.Contains(args, bunRuntimeTargetLifecycleCommand) {
 			r.executions++
+			r.environmentBackendModel.mu.Lock()
+			r.environmentBackendModel.events += 2
+			r.environmentBackendModel.mu.Unlock()
 			if r.cancel != nil {
 				r.cancel(r.runErr)
 				return nil, ctx.Err()
 			}
 			return nil, r.runErr
 		}
-		if !slices.Equal(args, boundaryReadinessArguments(r.id)) {
+		if len(args) < 4 || !slices.Equal(args, boundaryReadinessArguments(args[3])) {
 			r.t.Fatal("unexpected exec", args)
 		}
 		return nil, nil
 	case "rm":
-		r.removals++
+		r.environmentBackendModel.mu.Lock()
+		present := r.environmentBackendModel.containers[args[len(args)-1]] != nil
+		r.environmentBackendModel.mu.Unlock()
+		body, err := r.environmentBackendModel.Output(ctx, binary, args...)
 		r.active = false
-		return nil, r.cleanupErr
+		if present {
+			r.removals++
+		}
+		return body, errors.Join(err, r.cleanupErr)
 	}
 	r.t.Fatal("unhandled command", args)
 	return nil, nil
 }
-func (r *pnpmInstanceRunner) RunInput(_ context.Context, input io.Reader, binary string, args ...string) error {
-	r.t.Helper()
+func (r *pnpmInstanceRunner) RunDiscard(ctx context.Context, binary string, args ...string) error {
+	_, err := r.Output(ctx, binary, args...)
+	return err
+}
+func (r *pnpmInstanceRunner) Create(ctx context.Context, owner, profile string) (ObservationResourceLease, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.rootOpen {
+		return ObservationResourceLease{}, errors.New("instance root budget replenished")
+	}
+	f := r.environmentBackendModel
+	f.mu.Lock()
+	f.creates = 0
+	f.registers = 0
+	f.budget = nil
+	f.events = 0
+	f.usage = 0
+	f.snapshots = 0
+	f.mu.Unlock()
+	lease, err := f.Create(ctx, owner, profile)
+	r.rootOpen = err == nil
+	return lease, err
+}
+func (r *pnpmInstanceRunner) Terminate(ctx context.Context, owner, id string) (ObservationResourceLease, error) {
+	f := r.environmentBackendModel
+	f.mu.Lock()
+	present := f.containers[id] != nil
+	f.mu.Unlock()
+	lease, err := f.Terminate(ctx, owner, id)
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if present {
+		r.removals++
+	}
+	r.active = false
+	return lease, errors.Join(err, r.cleanupErr)
+}
+func (r *pnpmInstanceRunner) Close(ctx context.Context, owner string) (ObservationResourceLease, error) {
+	lease, err := r.environmentBackendModel.Close(ctx, owner)
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if err == nil {
+		r.rootOpen = false
+	}
+	return lease, err
+}
+
+func (r *pnpmInstanceRunner) RunInput(ctx context.Context, input io.Reader, binary string, args ...string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.calls++
+	_, destination, _ := strings.Cut(args[len(args)-1], ":")
+	if destination == "/tmp" {
+		return r.environmentBackendModel.RunInput(ctx, input, binary, args...)
+	}
 	r.events = append(r.events, "copy")
 	if binary != "docker" || !slices.Equal(args, []string{"cp", "--archive", "-", r.id + ":" + r.projectSpec().root}) {
 		r.t.Fatal("copy destination is not fixed")
@@ -176,11 +222,18 @@ func (r *pnpmInstanceRunner) RunInput(_ context.Context, input io.Reader, binary
 	}
 	var err error
 	r.payload, err = io.ReadAll(io.LimitReader(input, artifactnpm.PNPMLayoutArchiveLimit+1))
-	return err
+	if err != nil {
+		return err
+	}
+	return r.environmentBackendModel.RunInput(ctx, bytes.NewReader(r.payload), binary, args...)
 }
-func (r *pnpmInstanceRunner) RunOutput(_ context.Context, output io.Writer, binary string, args ...string) error {
-	r.t.Helper()
+func (r *pnpmInstanceRunner) RunOutput(ctx context.Context, output io.Writer, binary string, args ...string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.calls++
+	if strings.HasSuffix(args[1], ":/tmp/.") {
+		return r.environmentBackendModel.RunOutput(ctx, output, binary, args...)
+	}
 	r.events = append(r.events, "readback")
 	if binary != "docker" || !slices.Equal(args, []string{"cp", r.id + ":" + r.projectSpec().directory, "-"}) {
 		r.t.Fatal("readback is not whole project")
@@ -198,6 +251,7 @@ func (r *pnpmInstanceRunner) RunOutput(_ context.Context, output io.Writer, bina
 }
 
 type pnpmInstanceObserver struct {
+	*environmentBackendModel
 	reader TraceReader
 	err    error
 	ids    []string
@@ -206,17 +260,33 @@ type pnpmInstanceObserver struct {
 func (o *pnpmInstanceObserver) Start(context.Context, string) (TraceReader, error) {
 	return nil, errors.New("ordinary profile must not be used")
 }
-func (o *pnpmInstanceObserver) StartPNPMTargetLifecycleProfile(_ context.Context, id string) (TraceReader, error) {
+func (o *pnpmInstanceObserver) AwaitMountAnchors(context.Context, string) error { return nil }
+
+func (o *pnpmInstanceObserver) startNPMInstanceEnvironmentProfile(ctx context.Context, id string, _ nativeRuntimeToolKind, _ bool, reader bool, budget *observationTraceLedger) (TraceReader, error) {
 	o.ids = append(o.ids, id)
 	if o.err != nil {
 		return nil, o.err
 	}
-	if o.reader != nil {
-		return o.reader, nil
+	f := o.environmentBackendModel
+	f.mu.Lock()
+	f.traceRecords = nil
+	f.traceError = nil
+	if !reader {
+		f.traceRecords = []TraceRecord{{Kind: "network-attempt", Count: 2}}
+		if custom, ok := o.reader.(*traceReader); ok {
+			f.traceRecords = append([]TraceRecord(nil), custom.records...)
+			f.traceError = custom.err
+		}
 	}
-	return &traceReader{records: []TraceRecord{{Kind: "network-attempt", Count: 2}}}, nil
+	f.mu.Unlock()
+	return f.StartEnvironmentProfile(ctx, id, reader, budget)
 }
-func (o *pnpmInstanceObserver) AwaitMountAnchors(context.Context, string) error { return nil }
+func wirePNPMInstanceEnvironment(b *Backend, r *pnpmInstanceRunner, o *pnpmInstanceObserver) {
+	f := newEnvironmentBackendState()
+	r.environmentBackendModel = f
+	o.environmentBackendModel = f
+	b.resources = r
+}
 
 func pnpmInstanceFixture(t *testing.T) (artifactnpm.PNPMInspectionLayout, domain.AcquiredArtifact, string) {
 	t.Helper()
@@ -229,6 +299,7 @@ func pnpmInstanceBackend(t *testing.T, r *pnpmInstanceRunner, o *pnpmInstanceObs
 	if err != nil {
 		t.Fatal(err)
 	}
+	wirePNPMInstanceEnvironment(b, r, o)
 	return b
 }
 func TestPNPMInstanceRunsExactBoundTargetWithFreshSessions(t *testing.T) {
@@ -245,7 +316,7 @@ func TestPNPMInstanceRunsExactBoundTargetWithFreshSessions(t *testing.T) {
 		sessions = append(sessions, result.SessionID().String())
 		found := false
 		for _, fact := range result.Observations() {
-			if fact.Category() == domain.ObservationNetwork && fact.Count() == 2 {
+			if fact.Category() == domain.ObservationNetwork && fact.Count() == 4 {
 				found = true
 			}
 		}
@@ -253,7 +324,7 @@ func TestPNPMInstanceRunsExactBoundTargetWithFreshSessions(t *testing.T) {
 			t.Fatal("accepted observation lost")
 		}
 	}
-	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 2 || r.removals != 2 || r.volumeRemovals != 2 || !slices.Equal(o.ids, r.ids) {
+	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 4 || r.removals != 8 || r.volumeRemovals != 8 || !slices.Equal(o.ids, r.ids) {
 		t.Fatal("session/resources reused or not finalized")
 	}
 	if slices.Index(r.events, "readback") < slices.Index(r.events, "copy") {
@@ -306,7 +377,7 @@ func TestPNPMInstanceNeverRunsAfterUnprovenPreparation(t *testing.T) {
 				o.err = errors.New("observer unavailable")
 			}
 			result, err := pnpmInstanceBackend(t, r, o).ExecutePNPMInstance(context.Background(), layout, subject, key)
-			if err == nil || result.Status() != domain.SandboxIncomplete || r.executions != 0 || r.removals != 1 || r.volumeRemovals != 1 {
+			if err == nil || result.Status() != domain.SandboxIncomplete || r.executions != 0 || len(r.environmentBackendModel.containers) != 0 || (mode != "foreign-writer" && len(r.environmentBackendModel.volumes) != 0) || (mode == "foreign-writer" && r.volumeRemovals != 0) {
 				t.Fatal("failed preparation executed target or lost cleanup", err, r.executions, r.removals, r.volumeRemovals)
 			}
 		})
@@ -336,7 +407,7 @@ func TestPNPMInstanceRetainsFirstFailureAndPartialSuspiciousFacts(t *testing.T) 
 				o.reader = &traceReader{records: []TraceRecord{{Kind: "network-attempt", Count: 3}}, err: errors.New("incomplete stream"), errAfter: 1}
 			}
 			result, err := pnpmInstanceBackend(t, r, o).ExecutePNPMInstance(ctx, layout, subject, key)
-			if err == nil || result.Status() != domain.SandboxIncomplete || r.executions != 1 || r.removals != 1 || r.volumeRemovals != 1 {
+			if err == nil || result.Status() != domain.SandboxIncomplete || r.executions != 1 || len(r.environmentBackendModel.containers) != 0 || len(r.environmentBackendModel.volumes) != 0 {
 				t.Fatal("failure lost or cleanup skipped", err)
 			}
 			if (mode == "execution" || mode == "cancel") && (!errors.Is(err, cause) || !errors.Is(err, cleanup)) {

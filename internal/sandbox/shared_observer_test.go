@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func registerTeardownTestSession(t *testing.T, containerID string) *observerSecuritySession {
@@ -1023,4 +1025,58 @@ func observerEndpoint(t *testing.T) string {
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(directory) })
 	return filepath.Join(directory, "o.sock")
+}
+
+func TestFilesystemMutationRecordsAreBoundedNeutralFacts(t *testing.T) {
+	kinds := []string{"filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation"}
+	var records []TraceRecord
+	for _, kind := range kinds {
+		t.Run(kind, func(t *testing.T) {
+			for _, count := range []uint64{1, domain.MaximumObservationSummaryCount} {
+				payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: &count})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := decodeHelperRecord(payload); err != nil {
+					t.Fatalf("bounded fact rejected: %v", err)
+				}
+			}
+			for _, count := range []*uint64{nil, new(uint64)} {
+				payload, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: count})
+				if _, err := decodeHelperRecord(payload); err == nil {
+					t.Fatal("missing or zero operation count accepted")
+				}
+			}
+			count := uint64(domain.MaximumObservationSummaryCount + 1)
+			payload, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind, Count: &count})
+			if _, err := decodeHelperRecord(payload); err == nil {
+				t.Fatal("unbounded operation count accepted")
+			}
+		})
+		records = append(records, TraceRecord{Kind: kind, Count: 2, Bytes: 100})
+	}
+	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{records: records})
+	if limitation != "" || !diagnostic.SessionComplete || len(observations) != len(kinds) {
+		t.Fatalf("operation trace incomplete: %s %+v", limitation, diagnostic)
+	}
+	for _, fact := range observations {
+		if fact.Category() != domain.ObservationFilesystem || fact.Count() != 2 || !strings.Contains(diagnostic.String(), fact.Subject()+":2") {
+			t.Fatalf("fact not retained: %+v", fact)
+		}
+	}
+	if len(retainedSuspiciousTraceFacts(diagnostic.KindCounts)) != 0 {
+		t.Fatal("workspace operation became a suspicious partial fact")
+	}
+	ledger, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := ledger.maxEvents
+	if err := ledger.charge(helperRecord{Kind: kinds[0], Count: &count}, 100); err != nil {
+		t.Fatal(err)
+	}
+	one := uint64(1)
+	if err := ledger.charge(helperRecord{Kind: kinds[1], Count: &one}, 100); err == nil || ledger.events != count {
+		t.Fatal("operation aggregate replenished the shared budget")
+	}
 }

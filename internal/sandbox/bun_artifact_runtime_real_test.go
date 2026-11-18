@@ -54,6 +54,7 @@ func TestBunPublicArtifactRuntimeSupplyIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	backend.resources = integrationObservationResourceAdapter(t)
 	sessions := map[string]bool{}
 	for _, subject := range input.Artifacts() {
 		instances, err := input.InstancesFor(subject)
@@ -62,7 +63,7 @@ func TestBunPublicArtifactRuntimeSupplyIntegration(t *testing.T) {
 		}
 		for _, instance := range instances {
 			result, err := backend.ExecuteBunRuntimeInstance(ctx, layout, subject, instance.Key)
-			if err != nil || result.Status() != domain.SandboxCompleted {
+			if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
 				t.Fatal("production bound Bun instance", err, result.Status())
 			}
 			session := result.SessionID().String()

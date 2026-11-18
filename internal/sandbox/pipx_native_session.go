@@ -454,8 +454,20 @@ func (s *pipxNativeSession) collectTrace(ctx context.Context) error {
 	if diagnostic.KindCounts["process-exec-expected"] == 0 {
 		return errors.New("pipx native observation lacks expected execution")
 	}
-	for kind, count := range diagnostic.KindCounts {
-		if count > 0 && kind != "process-exec-expected" && kind != "filesystem-workspace-access" {
+	return pipxNativeForbiddenKind(diagnostic.KindCounts)
+}
+
+// Successful workspace VFS operations are session facts of the pinned pipx
+// run (workspace-state-v2), not actionable signals. Every other kind,
+// including a kind added to the collector later, stays refused.
+func pipxNativeForbiddenKind(counts map[string]uint64) error {
+	for kind, count := range counts {
+		if count == 0 {
+			continue
+		}
+		switch kind {
+		case "process-exec-expected", "filesystem-workspace-access", "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation":
+		default:
 			return fmt.Errorf("pipx native observation contains actionable or unsupported kind: %s", kind)
 		}
 	}

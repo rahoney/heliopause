@@ -33,7 +33,7 @@ func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
 	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true,
 		Surface: artifactpypi.RuntimeSurface{InstalledFiles: []artifactpypi.InstalledFile{{ArchivePath: "example-1.0.dist-info/METADATA", Scheme: artifactpypi.SchemeDistInfo, Destination: "example-1.0.dist-info/METADATA", Role: artifactpypi.RuntimeRoleMetadata}}}}
 	report, err := inspector.InspectWheel(context.Background(), artifact, static)
-	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import" || report.Evidence()[0].Kind() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
+	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import" || report.Evidence()[0].Kind() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 3 {
 		t.Fatalf("proven no-import report = %#v, %v; runner = %#v", report, err, runner)
 	}
 	static.NoImportSurface = false
@@ -90,7 +90,7 @@ func TestDynamicInspectorNormalizesFindingsAndBoundedSummary(t *testing.T) {
 		t.Fatal(err)
 	}
 	report, err := inspector.InspectWheel(context.Background(), artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
-	if err != nil || report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 1 {
+	if err != nil || report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 3 {
 		t.Fatalf("report = %#v, %v", report, err)
 	}
 	if summary := report.Evidence()[0].Summary(); !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":4`) {
@@ -185,7 +185,12 @@ func completedResultWithObservations(t *testing.T, observations []domain.Sandbox
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", observations)
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	states := []domain.SandboxEnvironmentState{}
+	for _, profile := range []domain.SandboxEnvironmentProfile{domain.SandboxEnvironmentMinimal, domain.SandboxEnvironmentDevelopment} {
+		states = append(states, domain.SandboxEnvironmentState{Profile: profile, FixtureDigest: digest, Before: digest, After: digest, VFSOperationsCovered: true})
+	}
+	result, err := domain.NewSandboxResult(session, domain.SandboxCompleted, "", observations, states...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,6 +259,26 @@ func TestPythonChecksBindConfiguredRootProfileBeforeExecution(t *testing.T) {
 		report, err := dynamic.InspectWheel(ctx, artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
 		if err != nil || report.Execution().ProfileDigest() != dynamicProfile {
 			t.Fatal("actual execution differs from declaration", name, err)
+		}
+	}
+}
+
+func TestDynamicInspectorRequiresTwoActiveEnvironmentStates(t *testing.T) {
+	full := completedResult(t)
+	for _, count := range []int{0, 1, 2} {
+		states := full.EnvironmentStates()[:count]
+		if count == 2 {
+			states[1].VFSOperationsCovered = false
+		}
+		result, err := domain.NewSandboxResult(full.SessionID(), domain.SandboxCompleted, "", nil, states...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		inspector, _ := NewDynamicInspector(&wheelRunner{result: result})
+		report, err := inspector.InspectWheel(context.Background(), pypiWheelArtifact(t), artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
+		code, _ := report.Execution().LimitationCode()
+		if err != nil || report.Execution().Status() != domain.ExecutionIncomplete || code != "M13_DYNAMIC_ENVIRONMENT_INCOMPLETE" || len(report.Evidence()) != 0 {
+			t.Fatalf("missing environment coverage accepted: count=%d err=%v", count, err)
 		}
 	}
 }

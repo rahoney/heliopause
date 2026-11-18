@@ -187,18 +187,17 @@ func awaitMountAnchors(ctx context.Context, observer TraceObserver, containerID 
 	return ready.AwaitMountAnchors(ctx, containerID)
 }
 
-// collectTrace normalizes trusted gVisor observer kinds without retaining raw
-// paths, argv, environment, file contents, or process output.
-func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string) {
-	observations, limitation, _ := collectTraceDiagnostic(ctx, reader)
-	return observations, limitation
-}
-
 var recognizedTraceKinds = []string{
 	"process-exec",
 	"process-exec-expected",
 	"process-exec-unexpected",
 	"filesystem-workspace-access",
+	"filesystem-workspace-create",
+	"filesystem-workspace-write",
+	"filesystem-workspace-rename",
+	"filesystem-workspace-unlink",
+	"filesystem-workspace-permission-operation",
+	"filesystem-workspace-size-operation",
 	"filesystem-outside-workspace",
 	"network-attempt",
 	"honeytoken-access",
@@ -426,7 +425,7 @@ func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	switch kind {
 	case "process-exec", "process-exec-expected", "process-exec-unexpected":
 		return domain.ObservationProcess, kind, true
-	case "filesystem-workspace-access", "filesystem-outside-workspace":
+	case "filesystem-workspace-access", "filesystem-outside-workspace", "filesystem-workspace-create", "filesystem-workspace-write", "filesystem-workspace-rename", "filesystem-workspace-unlink", "filesystem-workspace-permission-operation", "filesystem-workspace-size-operation":
 		return domain.ObservationFilesystem, kind, true
 	case "network-attempt":
 		return domain.ObservationNetwork, kind, true

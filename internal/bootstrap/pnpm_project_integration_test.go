@@ -86,7 +86,7 @@ func TestPNPMPublicProjectTransactionIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer())
+			backend, err := sandbox.NewLinuxBackendWithExecutor(intake, executor, observer.Observer(), newObservationResourceAdapter())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -118,6 +118,7 @@ func TestPNPMPublicProjectTransactionIntegration(t *testing.T) {
 				if err != nil || !approved.Valid() {
 					t.Fatal("actual guarded PNPM application failed", err)
 				}
+				requireNPMProjectEnvironmentEvidence(t, ctx, store, "pnpm", approved.Inspected().Inspections())
 				body, err := os.ReadFile(filepath.Join(target, ".heliopause/manifest.json"))
 				if err != nil {
 					t.Fatal(err)
