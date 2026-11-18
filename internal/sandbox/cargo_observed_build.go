@@ -15,6 +15,7 @@ import (
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	projectoutput "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type cargoBuildObserver interface {
@@ -23,10 +24,11 @@ type cargoBuildObserver interface {
 }
 
 type ObservedCargoBuilder struct {
-	intake   string
-	runner   CommandRunner
-	observer cargoBuildObserver
-	probe    func(context.Context) (CargoCapability, error)
+	intake           string
+	runner           CommandRunner
+	observer         cargoBuildObserver
+	probe            func(context.Context) (CargoCapability, error)
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 func NewLinuxObservedCargoBuilder(intake string, executor TrustedExecutor, observer TraceObserver) (*ObservedCargoBuilder, error) {
@@ -40,7 +42,7 @@ func NewLinuxObservedCargoBuilder(intake string, executor TrustedExecutor, obser
 	if _, ok := executor.(streamingDockerOutput); !ok {
 		return nil, errors.New("cargo build output transport is unavailable")
 	}
-	return &ObservedCargoBuilder{intake, admissionAwareRunner(executor), trusted, func(ctx context.Context) (CargoCapability, error) { return ProbeCargo(ctx, executor) }}, nil
+	return &ObservedCargoBuilder{intake: intake, runner: admissionAwareRunner(executor), observer: trusted, probe: func(ctx context.Context) (CargoCapability, error) { return ProbeCargo(ctx, executor) }}, nil
 }
 
 type isolatedCargoBuildFailure struct {
@@ -71,6 +73,7 @@ type cargoBuildOperation struct {
 	output        *projectoutput.CapturedBuildOutput
 	environment   *projectBuildEnvironment
 	states        []domain.SandboxEnvironmentState
+	responder     *responderSupply
 }
 
 func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectBuildInputs) (observation domain.ProjectBuildObservation, resultErr error) {
@@ -127,6 +130,14 @@ func (b *ObservedCargoBuilder) Build(ctx context.Context, inputs domain.ProjectB
 	if err != nil {
 		return observation, err
 	}
+	prepare := b.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
+	}
+	op.responder, err = prepare(ctx, b.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || op.responder == nil {
+		return observation, errors.Join(errResponderSupply, err)
+	}
 	for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
 		if err := op.experiment(ctx, inputs, kind); err != nil {
 			return observation, err
@@ -145,7 +156,7 @@ func (op *cargoBuildOperation) experiment(ctx context.Context, inputs domain.Pro
 	if err != nil {
 		return err
 	}
-	profile, err := newInspectionEnvironmentProfile(kind, session)
+	profile, err := newInspectionEnvironmentProfile(kind, session, op.responder)
 	if err != nil {
 		return err
 	}
@@ -170,7 +181,7 @@ func (op *cargoBuildOperation) experiment(ctx context.Context, inputs domain.Pro
 		return err
 	}
 	op.environment = &projectBuildEnvironment{session: session, profile: profile}
-	op.environment.workspace, err = createEnvironmentWorkspace(ctx, op.builder.runner, op.owner, profile, projectBuildWorkspaceCapacity)
+	op.environment.workspace, err = createEnvironmentWorkspace(ctx, op.builder.runner, op.owner, profile, projectBuildWorkspaceCapacity-responderSupplyCapacity)
 	if err != nil {
 		return err
 	}
@@ -262,7 +273,7 @@ func cargoBuildRecipeDigest() (domain.ContentDigest, error) {
 		OutputSelection, AliasHandling, Profile                                      string
 		TimeoutNanoseconds                                                           int64
 		Environment                                                                  string
-	}{"cargo-build-environments-v4", runtime, cargoBuildSourceConfiguration,
+	}{"cargo-build-environments-v5", runtime, cargoBuildSourceConfiguration,
 		append([]string{runtime.CargoBinary()}, cargoBuildMetadataArguments()...), append([]string{runtime.CargoBinary()}, cargoBuildCompilerArguments()...),
 		cargoBuildCreateArgumentsForMounts(inputMount, targetMount), cargoBuildCreateArgumentsForMounts(inputMount+",readonly", targetMount), preparation, build,
 		goBuildInputCapacity, projectoutput.MaxBuildOutputBytes, artifactcargo.MaxCrateExpandedBytes, artifactcargo.MaxCrateFileBytes, projectoutput.MaxBuildOutputArchiveBytes,
@@ -289,6 +300,15 @@ func (o *cargoBuildOperation) start(ctx context.Context, readOnly bool) (*goBuil
 			return nil, err
 		}
 	}
+	activeResponder := o.environment != nil && o.environment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = o.responder.containerArguments(args, PinnedCargoRuntime().ImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{o.responder}
+	}
 	created, err := o.builder.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -296,6 +316,11 @@ func (o *cargoBuildOperation) start(ctx context.Context, readOnly bool) (*goBuil
 	}
 	runtime := &goBuildRuntime{id: id}
 	o.runtimes = append(o.runtimes, runtime)
+	if activeResponder {
+		if err := o.responder.verifyReader(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
+	}
 	if err := o.input.verifyContainerMount(ctx, o.builder.runner, id, readOnly); err != nil {
 		return nil, err
 	}
@@ -306,18 +331,28 @@ func (o *cargoBuildOperation) start(ctx context.Context, readOnly bool) (*goBuil
 		if err := o.environment.workspace.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
 			return nil, err
 		}
-		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "cargo", true, false, o.budget)
+		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "cargo", true, false, o.budget, supplies...)
 	} else {
 		runtime.trace, err = o.builder.observer.StartCargoBuildProfile(ctx, id, readOnly, o.budget)
 	}
 	if err != nil {
 		return nil, err
 	}
-	if _, err := o.builder.runner.Output(ctx, "docker", "start", id); err != nil {
-		return nil, errors.New("cargo build runtime start failed")
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, o.builder.runner, id)
+	} else {
+		_, err = o.builder.runner.Output(ctx, "docker", "start", id)
 	}
-	if awaitBoundaryHelper(ctx, o.builder.runner, id) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
+	if err != nil {
+		return nil, errors.Join(errors.New("cargo build runtime start failed"), err)
+	}
+	if awaitBoundaryHelper(ctx, o.builder.runner, id, activeResponder) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
 		return nil, errors.New("cargo build runtime boundary is incomplete")
+	}
+	if o.environment != nil {
+		if err := verifyEnvironmentResolver(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -347,16 +382,22 @@ func (o *cargoBuildOperation) remove(runtime *goBuildRuntime) error {
 		return nil
 	}
 	ctx, cancel := resolverCleanupContext()
-	_, removeErr := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
-	cancel()
+	defer cancel()
 	var failure error
+	if runtime.responder != nil {
+		failure = runtime.responder.stop(ctx)
+	}
+	_, removeErr := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
 	if removeErr != nil {
-		failure = errors.New("cargo build runtime cleanup failed")
+		failure = errors.Join(failure, errors.New("cargo build runtime cleanup failed"))
+	}
+	if runtime.responder != nil {
+		failure = errors.Join(failure, runtime.responder.waitAfterTermination(ctx, removeErr == nil))
 	}
 	if runtime.trace != nil {
-		ctx, cancel := resolverCleanupContext()
-		facts, limitation, diagnostic := collectTraceDiagnostic(ctx, runtime.trace)
-		cancel()
+		traceCtx, traceCancel := resolverCleanupContext()
+		facts, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		traceCancel()
 		o.observations = append(o.observations, facts...)
 		if o.diagnostic.Reason == "" {
 			o.diagnostic = diagnostic
@@ -377,6 +418,11 @@ func (o *cargoBuildOperation) dispose() error {
 		failure = errors.Join(failure, o.remove(o.runtimes[i]))
 	}
 	failure = errors.Join(failure, o.closeVolumes())
+	if o.responder != nil {
+		ctx, cancel := resolverCleanupContext()
+		failure = errors.Join(failure, o.responder.close(ctx, o.builder.runner))
+		cancel()
+	}
 	if o.inputs != nil {
 		failure = errors.Join(failure, o.inputs.close())
 	}

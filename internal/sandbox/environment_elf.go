@@ -18,7 +18,7 @@ const (
 )
 
 type elfEnvironmentTraceObserver interface {
-	startELFEnvironmentProfile(context.Context, string, string, bool, *observationTraceLedger) (TraceReader, error)
+	startELFEnvironmentProfile(context.Context, string, string, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
 }
 
 // The existing ELF owner retains introduction and fixed terminal semantics.
@@ -32,7 +32,7 @@ func (b *GitHubELFBackend) executeELFEnvironments(ctx context.Context, request d
 	if !ok || !elfObserver || !input || !output || !discard || b.resources == nil {
 		return incomplete(owner, "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE")
 	}
-	backend := &Backend{runner: b.runner, observer: b.observer, resources: b.resources, newSessionID: b.newSessionID, wallTimeout: sandboxWallTimeout}
+	backend := &Backend{runner: b.runner, observer: b.observer, resources: b.resources, newSessionID: b.newSessionID, wallTimeout: sandboxWallTimeout, prepareResponder: b.prepareResponder}
 	if profile == "terraform-provider" {
 		backend.wallTimeout = 30 * time.Second
 	}
@@ -53,7 +53,7 @@ func (b *GitHubELFBackend) executeELFEnvironments(ctx context.Context, request d
 			return op.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", errors.Join(errEnvironmentState, err))
 		}
 		seen[session.String()] = true
-		environment, err := newInspectionEnvironmentProfile(kind, session)
+		environment, err := newInspectionEnvironmentProfile(kind, session, op.responder)
 		if err != nil {
 			return op.finish(ctx, run, "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err)
 		}
@@ -74,7 +74,7 @@ func (n *environmentInspection) elfExperiment(ctx context.Context, artifact doma
 		n.uncertain = n.work.name != ""
 		return "M3_DYNAMIC_SETUP_FAILED", err
 	}
-	n.volume, err = createEnvironmentWorkspace(ctx, n.backend.runner, n.owner, profile, elfWorkspaceCapacity)
+	n.volume, err = createEnvironmentWorkspace(ctx, n.backend.runner, n.owner, profile, elfWorkspaceCapacity-responderSupplyCapacity)
 	if err != nil {
 		n.uncertain = n.volume.name != ""
 		return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
@@ -186,10 +186,17 @@ func elfEnvironmentExpectedTopology(profile string, readOnly bool) ([]observerMo
 	return append(topology, observerMountExpectation{root, "workspace", mountRoot, "9p", readOnly, false, false, false}), ok
 }
 
-func (o *SharedObserver) startELFEnvironmentProfile(ctx context.Context, container, profile string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+func (o *SharedObserver) startELFEnvironmentProfile(ctx context.Context, container, profile string, readOnly bool, budget *observationTraceLedger, supplies ...*responderSupply) (TraceReader, error) {
 	topology, ok := elfEnvironmentExpectedTopology(profile, readOnly)
-	if !ok || budget == nil {
+	if !ok || budget == nil || len(supplies) > 1 || len(supplies) == 1 && readOnly {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if len(supplies) == 1 {
+		var err error
+		topology, err = supplies[0].expectedTopology(topology)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if readOnly {
 		profile = "npm-lifecycle"

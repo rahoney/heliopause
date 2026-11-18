@@ -17,12 +17,13 @@ import (
 // GitHubELFBackend executes only a verified GitHub Release ELF in an isolated
 // gVisor session. It owns no GitHub API or Policy concern.
 type GitHubELFBackend struct {
-	runner       CommandRunner
-	intakeRoot   string
-	observer     TraceObserver
-	probe        CapabilityProbe
-	resources    ObservationResourceClient
-	newSessionID func() (domain.SandboxSessionID, error)
+	runner           CommandRunner
+	intakeRoot       string
+	observer         TraceObserver
+	probe            CapabilityProbe
+	resources        ObservationResourceClient
+	newSessionID     func() (domain.SandboxSessionID, error)
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer TraceObserver, probe CapabilityProbe) (*GitHubELFBackend, error) {

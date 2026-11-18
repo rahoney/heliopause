@@ -187,12 +187,13 @@ func (i *PythonArtifactIntroducer) validatedWheelDestinations(target domain.Acqu
 // a statically declared wheel surface or selected runtime ZIP. It returns observations only;
 // it never creates Findings, Evidence, Policy or Promotion state.
 type PythonDynamicBackend struct {
-	runner       CommandRunner
-	introducer   *PythonArtifactIntroducer
-	observer     TraceObserver
-	probe        func(context.Context) (PythonCapability, error)
-	newSessionID func() (domain.SandboxSessionID, error)
-	resources    ObservationResourceClient
+	runner           CommandRunner
+	introducer       *PythonArtifactIntroducer
+	observer         TraceObserver
+	probe            func(context.Context) (PythonCapability, error)
+	newSessionID     func() (domain.SandboxSessionID, error)
+	resources        ObservationResourceClient
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactIntroducer, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PythonDynamicBackend, error) {

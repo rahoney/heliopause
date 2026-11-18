@@ -71,6 +71,9 @@ func (m ReleaseManifest) Files() []ReleaseFile {
 // Historical releases lacking any current native role or its notices fail closed.
 func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 	roles := nativeUpdateRoleSet()
+	if m.HasSandboxResponder() {
+		roles[runtimeidentity.SandboxResponderAssetName] = "sandbox-responder"
+	}
 
 	notices := map[string]bool{"pnpm-NOTICE.txt": false, "bun-NOTICE.txt": false}
 	result := make([]ReleaseFile, 0, len(roles))
@@ -87,6 +90,17 @@ func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 		return nil, errors.New("release does not contain the complete native update role set")
 	}
 	return result, nil
+}
+
+// Historical records remain readable for rollback. Current admission requires
+// this component separately before accepting a new release.
+func (m ReleaseManifest) HasSandboxResponder() bool {
+	for _, file := range m.Files() {
+		if file.Name == runtimeidentity.SandboxResponderAssetName && file.Platform == "linux/amd64" && file.Role == "sandbox-responder" {
+			return true
+		}
+	}
+	return false
 }
 
 func nativeUpdateRoleSet() map[string]string {
@@ -132,6 +146,9 @@ func (m ReleaseManifest) NativeUpdatePayloads() ([]ReleaseFile, error) {
 	if m.HasPipxRuntime() {
 		expected = 12
 	}
+	if m.HasSandboxResponder() {
+		expected++
+	}
 	if len(files) != expected {
 		return nil, errors.New("native update payload set is incomplete")
 	}
@@ -169,23 +186,24 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		return ReleaseManifest{}, errors.New("release metadata binding exceeds supported bounds")
 	}
 	want := map[string]struct{ platform, role string }{
-		"helox-linux-amd64":                     {"linux/amd64", "helox"},
-		"helox-linux-arm64":                     {"linux/arm64", "helox"},
-		"helox-darwin-amd64":                    {"darwin/amd64", "helox"},
-		"helox-darwin-arm64":                    {"darwin/arm64", "helox"},
-		"haa_gvisor_observer-linux-amd64":       {"linux/amd64", "gvisor-observer"},
-		"haa-network-policy-helper-linux-amd64": {"linux/amd64", "network-policy-helper"},
-		"helox-linux-amd64.deb":                 {"linux/amd64", "os-package-deb"},
-		"helox-linux-amd64.rpm":                 {"linux/amd64", "os-package-rpm"},
-		"haa-release-installer-linux-amd64":     {"linux/amd64", "release-installer"},
-		"pnpm-linux-amd64":                      {"linux/amd64", "pnpm"},
-		"pnpm-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
-		"bun-linux-amd64":                       {"linux/amd64", "bun"},
-		"bun-NOTICE.txt":                        {"linux/amd64", "release-metadata"},
-		runtimeidentity.PipxRuntimeAssetName:    {"linux/amd64", "pipx-runtime"},
-		"pipx-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
+		"helox-linux-amd64":                       {"linux/amd64", "helox"},
+		"helox-linux-arm64":                       {"linux/arm64", "helox"},
+		"helox-darwin-amd64":                      {"darwin/amd64", "helox"},
+		"helox-darwin-arm64":                      {"darwin/arm64", "helox"},
+		"haa_gvisor_observer-linux-amd64":         {"linux/amd64", "gvisor-observer"},
+		"haa-network-policy-helper-linux-amd64":   {"linux/amd64", "network-policy-helper"},
+		"helox-linux-amd64.deb":                   {"linux/amd64", "os-package-deb"},
+		"helox-linux-amd64.rpm":                   {"linux/amd64", "os-package-rpm"},
+		"haa-release-installer-linux-amd64":       {"linux/amd64", "release-installer"},
+		"pnpm-linux-amd64":                        {"linux/amd64", "pnpm"},
+		"pnpm-NOTICE.txt":                         {"linux/amd64", "release-metadata"},
+		"bun-linux-amd64":                         {"linux/amd64", "bun"},
+		"bun-NOTICE.txt":                          {"linux/amd64", "release-metadata"},
+		runtimeidentity.PipxRuntimeAssetName:      {"linux/amd64", "pipx-runtime"},
+		"pipx-NOTICE.txt":                         {"linux/amd64", "release-metadata"},
+		runtimeidentity.SandboxResponderAssetName: {"linux/amd64", "sandbox-responder"},
 	}
-	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 && len(value.Assets) != 15 {
+	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 && len(value.Assets) != 14 && len(value.Assets) != 15 && len(value.Assets) != 16 {
 		return ReleaseManifest{}, errors.New("release asset set is incomplete")
 	}
 	seen := make(map[string]bool, len(value.Assets))
@@ -203,6 +221,9 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		if item.Name == runtimeidentity.PipxRuntimeAssetName && item.Size > 8<<20 || item.Name == "pipx-NOTICE.txt" && item.Size > 64<<10 {
 			return ReleaseManifest{}, errors.New("pipx DATA or notices exceed their fixed role")
 		}
+		if item.Name == runtimeidentity.SandboxResponderAssetName && item.Size > runtimeidentity.SandboxResponderMaxBytes {
+			return ReleaseManifest{}, errors.New("sandbox responder exceeds its fixed supply")
+		}
 		seen[item.Name] = true
 	}
 	if seen["pnpm-linux-amd64"] != seen["pnpm-NOTICE.txt"] || seen["pnpm-linux-amd64"] && !seen["haa-release-installer-linux-amd64"] {
@@ -214,8 +235,11 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 	if seen[runtimeidentity.PipxRuntimeAssetName] != seen["pipx-NOTICE.txt"] || seen[runtimeidentity.PipxRuntimeAssetName] && !seen["bun-linux-amd64"] {
 		return ReleaseManifest{}, errors.New("pipx DATA and notices require the complete current release set")
 	}
+	if seen[runtimeidentity.SandboxResponderAssetName] && ((len(value.Assets) != 14 && len(value.Assets) != 16) || !seen["bun-linux-amd64"]) {
+		return ReleaseManifest{}, errors.New("sandbox responder requires the complete current release set")
+	}
 	for name := range want {
-		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && name != runtimeidentity.PipxRuntimeAssetName && name != "pipx-NOTICE.txt" && !seen[name] {
+		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && name != runtimeidentity.PipxRuntimeAssetName && name != "pipx-NOTICE.txt" && name != runtimeidentity.SandboxResponderAssetName && !seen[name] {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}

@@ -35,7 +35,7 @@ func TestPipxActualProducerBundleAndOriginalZIPCensus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !manifest.HasPipxRuntime() || len(declared.Assets) != 15 {
+	if !manifest.HasPipxRuntime() || !manifest.HasSandboxResponder() || len(declared.Assets) != 16 {
 		t.Fatal("incomplete DATA release", len(declared.Assets))
 	}
 	names, err := verifyBundle(root, declared.Version, declared.SourceCommit, declared.WorkflowRun)

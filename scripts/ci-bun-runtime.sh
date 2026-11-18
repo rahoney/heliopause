@@ -9,16 +9,18 @@ bun_profile=${1:-sandbox}
 test "$(id -u)" != 0
 test -n "${RUNNER_TEMP:-}"
 test "${RUNNER_TEMP:0:1}" = /
-test ! -e /usr/lib/heliopause
-test ! -L /usr/lib/heliopause
+source scripts/ci-responder-source.sh
+haa_ci_require_responder_base
 bun_work=$(mktemp -d "$RUNNER_TEMP/haa-bun.XXXXXXXX")
-bun_root_created=0
+bun_version_created=0
 bun_cleanup() {
   local primary=$? cleanup_status=0
   trap - EXIT
-  if ((bun_root_created)); then
-    sudo -n rm -f -- /usr/lib/heliopause/current /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64 || cleanup_status=1
-    sudo -n rmdir -- /usr/lib/heliopause/versions/v1.0.0-bun-ci /usr/lib/heliopause/versions /usr/lib/heliopause || cleanup_status=1
+  if ((bun_version_created)); then
+    if haa_ci_restore_responder_base v1.0.0-bun-ci; then
+      sudo -n rm -f -- /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64 /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder || cleanup_status=1
+      sudo -n rmdir -- /usr/lib/heliopause/versions/v1.0.0-bun-ci || cleanup_status=1
+    else cleanup_status=1; fi
   fi
   rm -rf -- "$bun_work" || cleanup_status=1
   if ((cleanup_status)); then echo 'Bun CI supply cleanup unproven' >&2; fi
@@ -32,11 +34,11 @@ bun_size=$(jq -er '.bun_tool.archive.size' scripts/runtimes.lock.json)
 curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_work/archive.zip" "$bun_url"
 go run ./scripts/update-runtime materialize-bun --root "$PWD" --archive "$bun_work/archive.zip" --output "$bun_work/bun-linux-amd64" --notices-output "$bun_work/bun-NOTICE.txt"
 rm -- "$bun_work/archive.zip"
-sudo -n mkdir -m 0755 -- /usr/lib/heliopause
-bun_root_created=1
-sudo -n install -d -m 0755 /usr/lib/heliopause/versions/v1.0.0-bun-ci
+sudo -n mkdir -m 0755 -- /usr/lib/heliopause/versions/v1.0.0-bun-ci
+bun_version_created=1
 sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64
-sudo -n ln -s versions/v1.0.0-bun-ci /usr/lib/heliopause/current
+sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder
+sudo -n ln -sfnT versions/v1.0.0-bun-ci /usr/lib/heliopause/current
 # The owning parent installed this tagged client and started its policy helper.
 if [[ "$bun_profile" == project ]]; then
   (

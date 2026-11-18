@@ -1,0 +1,49 @@
+{
+  "status": "D5_SCOPED_SOURCE_ACCEPTABLE_P2_CORRECTED_ACTUAL_QUALIFICATION_OPEN",
+  "reviewer": "/root/d3_entry_review",
+  "read_only": true,
+  "scope": "91 original selected paths SHA verified, exact71df beforeP2 and5a170fee after narrow92-path correction; not whole recovery audit",
+  "source_tree": "5a170feebcb5a3790cb13418a540655b92151976",
+  "sources": [
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "sha256": "906e6e1916a5ea2e4b7ae531b10d437df05fee624d91c03b996665a6c2ea3963"
+    },
+    {
+      "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+      "sha256": "e2a9fd4e737b08dcec4ff207c5a6a6054dbd5a6c2bd4b5d99fd4f0afdaf1e77a"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "sha256": "469285c99f1bacba48c8e7fc27614b33ce9460bd9c92ed8c30359354ea1c917c"
+    },
+    {
+      "path": "internal/sandbox/responder.go",
+      "sha256": "ad73d3f251166a0fe17eea5facf37fa24de854b5a806d0c33e09ba6c9f323ae3"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "035ac63831cece2708a4b48a867af10036a1d65d8048f081f02e2db5cdff2c56"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "e08cc92f8712586ba369ddd9c80a53a872d9a001e51c29737223e8403d0d53fc"
+    }
+  ],
+  "findings": [
+    {
+      "id": "P2",
+      "location": "internal/sandbox/pypi_trusted_transaction.go:559",
+      "origin": "8df85009 (ordinal148)",
+      "problem": "prior drainErr lost if subsequent terminatePhase fails",
+      "policy": "INCOMPLETE already held; not auto-ALLOW defect",
+      "correction": "non-nil unit-descendants joined into failureErr and existing pythonCleanupFailure used with unit-termination",
+      "status": "SOURCE_CORRECTED_AND_OWNERS_VERIFIED",
+      "test_scope": "existing real UNKNOWN control/drain plus fake termination/error-combination owners; test does NOT execute full pipeline return branch and old caller could pass it; caller binding independently read"
+    }
+  ],
+  "other_scope_findings": "existing S02/S03+148 connected; strict supervisor/helper/bootstrap/kernel pin unchanged; no U1/S04 product code or duplicate ELF test",
+  "D3": "REVISE / NOT_APPROVED, independent separate gate",
+  "actual_qualification": "OPEN",
+  "local_raw": "/tmp/haa-r4-existing-coai78y_"
+}

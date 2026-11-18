@@ -1,6 +1,6 @@
 # Heliopause Artifact Airlock Project Decisions
 
-현재 복구 실행: R3의 로컬 기능 범위를 검증했다(runtime/kernel7·CPP136·native25부모·mandatory full, pnpm/Bun 원래 전체 회귀 포함). [R3 체크포인트](./docs/planning/evidence/recovery-20261115/r3-local-checkpoint-20261118.md)와 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)가 근거·재개를 소유한다. 다음은 U1 없이 기존 S02/S03·후손 drain의 독립 선별 준비이며 D3 자동회수는 독립 검토 REVISE/미채택이다. 공통 큰 profile·hosted·최종R8 및 전체 설계 잔여 요구는 OPEN이다.
+현재 복구 실행: R4의 기존 S02/S03·후손 종료 관찰 묶음은 실제 부모 20개와 packaging 정상·관찰 미완료·취소 3개를 통과했다. D3 강제 종료 복구와 R4 전체는 OPEN이다. [R4 통합 증거](./docs/planning/evidence/recovery-20261115/r4-native-20261118.md)와 [Queue R5](./docs/planning/02-current-work-queue.md#r5--358adf9-복구-재개-현재-상태)를 따른다.
 
 
 이 문서는 확정된 설계 결정과 canonical 문서 링크를 기록하는 결정 색인이다. 상세 설계와 사용자 원문은 [Documentation Guide](./docs/README.md)를 통해 canonical leaf 문서에서 확인한다. 현재 milestone/work item 진행 상태는 [Current Work Queue](./docs/planning/02-current-work-queue.md)가 유일한 canonical owner다.

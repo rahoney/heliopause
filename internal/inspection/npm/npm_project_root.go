@@ -162,7 +162,7 @@ func (i *NPMProjectRootInspector) Inspect(ctx context.Context, subject domain.Ac
 }
 
 func npmRootCheckProfile() domain.ContentDigest {
-	profile, _ := domain.CheckProfileDigest("npm-project-root-environments-v2", dynamicCheckRuntimeDescriptor)
+	profile, _ := domain.CheckProfileDigest("npm-project-root-environments-v3", dynamicCheckRuntimeDescriptor)
 	return profile
 }
 

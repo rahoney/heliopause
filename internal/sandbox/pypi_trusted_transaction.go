@@ -17,6 +17,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func pythonLiteral(value string) string {
@@ -145,7 +146,7 @@ type observationPhaseObserver interface {
 
 type pythonClosureObserver interface {
 	observationPhaseObserver
-	StartPythonClosureProfileWithBudget(context.Context, string, string, pythonClosurePhase, *observationTraceLedger) (TraceReader, error)
+	StartPythonClosureProfileWithBudget(context.Context, string, string, pythonClosurePhase, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
 }
 
 type pipxRuntimeObserver interface {
@@ -172,6 +173,7 @@ type pythonPhaseTrace struct {
 
 type pythonPhaseRuntime struct {
 	id          string
+	responder   *inspectionResponder
 	phase       pythonObservationPhase
 	trace       TraceReader
 	registered  bool
@@ -183,12 +185,20 @@ type pythonPhaseRuntime struct {
 // Both existing Python transactions and environment experiments use the same
 // once-only drain and independently authenticated resource termination.
 func (runtime *pythonPhaseRuntime) stopAndCollect(resources ObservationResourceClient, transaction string) (ObservationResourceLease, pythonPhaseTrace, error) {
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancel()
+	var stopErr error
+	if runtime.responder != nil {
+		stopErr = runtime.responder.stop(cleanupCtx)
+	}
 	traceDone := make(chan pythonPhaseTrace, 1)
 	go func() { traceDone <- runtime.collect() }()
-	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
 	lease, err := resources.Terminate(cleanupCtx, transaction, runtime.id)
-	cancel()
-	return lease, <-traceDone, err
+	trace := <-traceDone
+	if runtime.responder != nil {
+		stopErr = errors.Join(stopErr, runtime.responder.waitAfterTermination(cleanupCtx, err == nil))
+	}
+	return lease, trace, errors.Join(stopErr, err)
 }
 
 func (runtime *pythonPhaseRuntime) collect() pythonPhaseTrace {
@@ -224,6 +234,7 @@ type pythonTransactionExecutor struct {
 	allObserved        []domain.SandboxObservation
 	watch              *observationCPUWatch
 	finalCPU           uint64
+	responder          *responderSupply
 	artifact           domain.AcquiredArtifact
 	started            time.Time
 	activeUnit         string
@@ -428,6 +439,16 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
 	}
 	transaction.created, transaction.lease = true, lease
+	if withEnvironments {
+		prepare := b.prepareResponder
+		if prepare == nil {
+			prepare = prepareResponderSupply
+		}
+		transaction.responder, err = prepare(runCtx, b.runner, runtimeidentity.NativeInstallRoot)
+		if err != nil || transaction.responder == nil {
+			return pythonClosureFailure(sessionID, "prepare fixed responder", errors.Join(errResponderSupply, err))
+		}
+	}
 	watch, watchErr := startObservationCPUWatch(runCtx, b.resources, transaction.transaction, ledger, cancel, func(stopCtx context.Context) error {
 		return transaction.abortAll(stopCtx)
 	})
@@ -522,6 +543,10 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 			arguments = append(arguments, unit.candidate)
 		}
 		commandErr := discardCommand(runCtx, b.runner, "docker", arguments...)
+		var drainErr error
+		if commandErr == nil && observedDrainRequired(b.runner, probe.id) {
+			drainErr = awaitObservedProcessDrain(runCtx, probe.id)
+		}
 		transaction.commandReason = pythonCommandErrorReason(commandErr)
 		outcome := observationZeroExit
 		if commandErr != nil {
@@ -533,7 +558,14 @@ func (b *PythonDynamicBackend) executeObservationTransaction(ctx context.Context
 		}
 		if err := transaction.terminatePhase(probe.id); err != nil {
 			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
-			return failed, errors.Join(failureErr, transaction.diagnostic("unit-termination", err))
+			if drainErr != nil {
+				failureErr = errors.Join(failureErr, transaction.diagnostic("unit-descendants", drainErr))
+			}
+			return pythonCleanupFailure(sessionID, failed, failureErr, transaction.diagnostic("unit-termination", err))
+		}
+		if drainErr != nil {
+			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-descendants", drainErr))
 		}
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
@@ -680,6 +712,15 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	if err != nil {
 		return nil, err
 	}
+	activeResponder := phase == phaseObservation && t.activeEnvironment != nil && t.activeEnvironment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = t.responder.containerArguments(args, pythonImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{t.responder}
+	}
 	created, err := t.backend.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -697,6 +738,11 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	}
 	if err := t.verifyEnvironmentRuntimeMounts(ctx, id, phase); err != nil {
 		return nil, err
+	}
+	if activeResponder {
+		if err := t.responder.verifyReader(ctx, t.backend.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	observerPhase := pythonClosureObservation
 	if phase == phasePreparation {
@@ -733,26 +779,36 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 		if !ok {
 			return nil, errors.New("python transaction observer unavailable")
 		}
-		trace, err = observer.StartPythonClosureProfileWithBudget(ctx, id, t.profile, observerPhase, t.traceLedger)
+		trace, err = observer.StartPythonClosureProfileWithBudget(ctx, id, t.profile, observerPhase, t.traceLedger, supplies...)
 	}
 	if err != nil {
 		return nil, err
 	}
 	runtime.trace = trace
-	startErr := discardCommand(ctx, t.backend.runner, "docker", "start", id)
+	var startErr error
+	if activeResponder {
+		runtime.responder, startErr = startResponderInit(ctx, t.backend.runner, id)
+	} else {
+		startErr = discardCommand(ctx, t.backend.runner, "docker", "start", id)
+	}
 	if startErr != nil &&
 		verifyObservationRuntimeAlive(ctx, t.backend.runner, id) != nil {
-		return nil, errors.New("python observation runtime startup is incomplete")
+		return nil, errors.Join(errors.New("python observation runtime startup is incomplete"), startErr)
 	}
 	lease, err := t.resources.Register(ctx, t.transaction, id, string(phase))
 	if err != nil || lease.CgroupParent != t.lease.CgroupParent || lease.CPU != t.lease.CPU {
 		return nil, errors.New("python observation runtime cgroup admission failed")
 	}
 	runtime.registered = true
-	if startErr != nil || awaitBoundaryHelper(ctx, t.backend.runner, id) != nil ||
+	if startErr != nil || awaitBoundaryHelper(ctx, t.backend.runner, id, activeResponder) != nil ||
 		t.observer.AwaitMountAnchors(ctx, id) != nil ||
 		verifyObservationRuntimeAlive(ctx, t.backend.runner, id) != nil {
 		return nil, errors.New("python observation runtime startup is incomplete")
+	}
+	if t.activeEnvironment != nil {
+		if err := verifyEnvironmentResolver(ctx, t.backend.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -949,6 +1005,9 @@ func (t *pythonTransactionExecutor) cleanup() error {
 		if err := discardCommand(ctx, t.backend.runner, "docker", "volume", "rm", t.volume.name); err != nil {
 			failed = errors.Join(failed, err)
 		}
+	}
+	if t.responder != nil {
+		failed = errors.Join(failed, t.responder.close(ctx, t.backend.runner))
 	}
 	if failed == nil {
 		t.ledger.mu.Lock()

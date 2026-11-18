@@ -1591,3 +1591,70 @@ func TestDiscardReservedAndNonzeroExitStatuses(t *testing.T) {
 		})
 	}
 }
+
+func TestObservedProcessDrainUsesOnlyObserverExitLedger(t *testing.T) {
+	var mu sync.Mutex
+	statuses := map[string][]string{}
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		mu.Lock()
+		defer mu.Unlock()
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "processes":
+			status := "running"
+			if queue := statuses[request.ContainerID]; len(queue) > 0 {
+				status, statuses[request.ContainerID] = queue[0], queue[1:]
+			}
+			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "processes", "status": status,
+				"container_id": request.ContainerID, "session_generation": request.Generation})
+			_, _ = listener.Write(response)
+		}
+	})
+	for _, item := range []struct {
+		name, container string
+		statuses        []string
+		wall            time.Duration
+		deadline        bool
+	}{
+		{"drained-after-descendant", "0123456789abcde1", []string{"running", "running", "drained"}, 5 * time.Second, false},
+		{"descendant-outlives-wall", "0123456789abcde2", nil, 1200 * time.Millisecond, true},
+		{"unbound-ledger", "0123456789abcde3", []string{"unknown"}, 5 * time.Second, false},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			mu.Lock()
+			statuses[item.container] = item.statuses
+			mu.Unlock()
+			registerAdmissionSession(t, item.container)
+			ctx, cancel := context.WithTimeout(context.Background(), item.wall)
+			defer cancel()
+			err := awaitObservedProcessDrain(ctx, item.container)
+			switch {
+			case item.statuses != nil && item.statuses[len(item.statuses)-1] == "drained":
+				if err != nil {
+					t.Fatal("observed drain rejected", err)
+				}
+			case item.deadline:
+				if !errors.Is(err, context.DeadlineExceeded) {
+					t.Fatal("live descendant did not expire within the wall", err)
+				}
+				if code, _ := awaitLifecycleDescendants(ctx, nil, item.container); code != "M3_DYNAMIC_TIMEOUT" {
+					t.Fatal("wall expiry lost INCOMPLETE timeout", code)
+				}
+			default:
+				if err == nil {
+					t.Fatal("unknown exit ledger accepted as drained")
+				}
+			}
+		})
+	}
+	if err := awaitObservedProcessDrain(context.Background(), "0123456789abcde9"); err == nil {
+		t.Fatal("drain without an observer session accepted")
+	}
+	if observedDrainRequired(nil, "0123456789abcde9") || !observedDrainRequired(&admissionAwareCommandRunner{}, "0123456789abcde9") {
+		t.Fatal("drain gate skipped the production admission runner or waited for a fake runner")
+	}
+	if code, err := awaitLifecycleDescendants(context.Background(), &admissionAwareCommandRunner{}, "0123456789abcde9"); code != "M3_DYNAMIC_OBSERVER_FAILED" || err == nil {
+		t.Fatal("production runner without a session did not fail closed", code, err)
+	}
+}

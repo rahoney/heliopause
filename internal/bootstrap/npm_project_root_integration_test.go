@@ -12,6 +12,9 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/evidence/local"
 )
 
 func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
@@ -31,6 +34,7 @@ func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
 		{"dependencies", "dependencies", "process.exit(37)", true, true},
 		{"postprepare", "postprepare", "process.exit(37)", true, true},
 		{"empty-dependencies", "postinstall", "process.exit(0)", false, false},
+		{"conditional-network", "postinstall", "if(process.env.GITHUB_TOKEN&&require('fs').existsSync('/tmp/project/.env')){const s=require('net').connect(9,'127.0.0.1');s.on('error',()=>{});}", false, false},
 	} {
 		if !t.Run(tc.name, func(t *testing.T) {
 			started := time.Now()
@@ -79,11 +83,19 @@ func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
 					Required bool   `json:"required"`
 					Status   string `json:"inspection_status"`
 					Result   struct {
-						Status    string `json:"operation_status"`
+						Status string `json:"operation_status"`
+						Run    struct {
+							ID string `json:"id"`
+						} `json:"run"`
+						Evidence []struct {
+							ID     string `json:"id"`
+							Handle string `json:"handle"`
+						} `json:"evidence_references"`
 						RawChecks []struct {
 							ID       string `json:"id"`
 							Status   string `json:"execution_status"`
 							Required bool   `json:"required"`
+							Profile  string `json:"profile_sha256"`
 						} `json:"checks"`
 						Policy struct {
 							Decision string   `json:"decision"`
@@ -93,7 +105,12 @@ func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
 							Identity struct {
 								Source  string `json:"source_id"`
 								Variant string `json:"variant"`
+								Name    string `json:"name"`
+								Version string `json:"version"`
 							} `json:"resolved_identity"`
+							Digest struct {
+								Value string `json:"value"`
+							} `json:"digest"`
 						} `json:"artifact"`
 					} `json:"result"`
 				} `json:"project_lifecycle"`
@@ -144,6 +161,75 @@ func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
 					t.Fatal("existing M4 Host action restriction was lost", report.Lifecycle.Result.Policy.Reasons)
 				}
 			}
+			if tc.name == "conditional-network" {
+				// M3 retains the first review reason when both process and
+				// network findings exist. Verify the actual network Evidence.
+				run, err := domain.ParseRunID(report.Lifecycle.Result.Run.ID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				identity := report.Lifecycle.Result.Artifact.Identity
+				source, err := domain.NewSourceID(identity.Source)
+				if err != nil {
+					t.Fatal(err)
+				}
+				subject, err := domain.NewResolvedArtifactIdentity(source, identity.Name, identity.Version, identity.Variant)
+				if err != nil {
+					t.Fatal(err)
+				}
+				digest, err := domain.NewSHA256Digest(report.Lifecycle.Result.Artifact.Digest.Value)
+				if err != nil {
+					t.Fatal(err)
+				}
+				store, err := local.NewStore(filepath.Join(root, "cache", "heliopause", "evidence"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				profile := ""
+				for _, check := range report.Lifecycle.Result.RawChecks {
+					if check.ID == "npm-project-root-observation-facts" {
+						profile = check.Profile
+					}
+				}
+				if profile == "" {
+					t.Fatal("root observation profile missing")
+				}
+				states, network := 0, uint64(0)
+				for _, reference := range report.Lifecycle.Result.Evidence {
+					id, err := domain.NewEvidenceID(reference.ID)
+					if err != nil {
+						t.Fatal(err)
+					}
+					ref, err := domain.NewEvidenceReference(id, reference.Handle)
+					if err != nil {
+						t.Fatal(err)
+					}
+					fact, _, err := store.ReadReference(ctx, run, ref, subject, digest)
+					if err != nil {
+						t.Fatal("current root Evidence unavailable", err)
+					}
+					if fact.Kind() != "workspace-state" && fact.Kind() != "npm-project-root-observation" {
+						continue
+					}
+					if fact.ProfileDigest().String() != profile || fact.CheckID().String() != "npm-project-root-observation-facts" {
+						t.Fatal("root Evidence/check/profile binding differs")
+					}
+					if fact.Kind() == "workspace-state" {
+						states++
+						continue
+					}
+					var summary struct {
+						Counts map[string]uint64 `json:"counts"`
+					}
+					if err := json.Unmarshal([]byte(fact.Summary()), &summary); err != nil {
+						t.Fatal(err)
+					}
+					network += summary.Counts["NETWORK:network-attempt"]
+				}
+				if states != 2 || network == 0 {
+					t.Fatal("root conditional activation/current persisted environments missing", states, network)
+				}
+			}
 			for _, name := range []string{"node_modules", "package-lock.json"} {
 				if _, err := os.Lstat(filepath.Join(target, name)); !os.IsNotExist(err) {
 					t.Fatal("root inspection changed the original target", name, err)
@@ -156,6 +242,13 @@ func TestNPMPublicProjectRootCLIIntegration(t *testing.T) {
 			original, err = os.ReadFile(filepath.Join(target, "hook.js"))
 			if err != nil || !bytes.Equal(original, code) {
 				t.Fatal("root inspection changed local source", err)
+			}
+			original, err = os.ReadFile(filepath.Join(target, ".env"))
+			if err != nil || string(original) != "fixture-only dummy\n" {
+				t.Fatal("root inspection changed original dummy env", err)
+			}
+			if tc.name == "conditional-network" {
+				t.Log("npm_root_conditional network=OBSERVED stored_states=2 original_target=PRESERVED")
 			}
 			t.Logf("npm_root_cli case=%s local_identity=true required_checks=3 lifecycle=%s installation=REFUSED original_target=PRESERVED seconds=%.3f", tc.name, lifecycleStatus, time.Since(started).Seconds())
 		}) {

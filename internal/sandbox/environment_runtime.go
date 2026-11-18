@@ -14,15 +14,16 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type environmentTraceObserver interface {
 	observationPhaseObserver
-	StartEnvironmentProfile(context.Context, string, bool, *observationTraceLedger) (TraceReader, error)
+	StartEnvironmentProfile(context.Context, string, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
 }
 
 type npmInstanceEnvironmentTraceObserver interface {
-	startNPMInstanceEnvironmentProfile(context.Context, string, nativeRuntimeToolKind, bool, bool, *observationTraceLedger) (TraceReader, error)
+	startNPMInstanceEnvironmentProfile(context.Context, string, nativeRuntimeToolKind, bool, bool, *observationTraceLedger, ...*responderSupply) (TraceReader, error)
 }
 
 // This is the existing npm lifecycle's resource owner, extended to two fresh
@@ -45,6 +46,7 @@ type environmentInspection struct {
 	project       closureVolume
 	projectKind   nativeRuntimeToolKind
 	native        nativeRuntimeVolume
+	responder     *responderSupply
 	uncertain     bool
 	attempted     bool
 	finalCPU      uint64
@@ -147,6 +149,14 @@ func (n *environmentInspection) initialize(ctx context.Context, cancel context.C
 		return errors.Join(errEnvironmentState, err)
 	}
 	n.lease = lease
+	prepare := n.backend.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
+	}
+	n.responder, err = prepare(ctx, n.backend.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || n.responder == nil {
+		return errors.Join(errResponderSupply, err)
+	}
 	n.watch, err = startObservationCPUWatch(ctx, n.backend.resources, n.owner.String(), n.ledger, cancel, n.abort)
 	if err != nil {
 		return err
@@ -165,7 +175,7 @@ func (n *environmentInspection) inspect(ctx context.Context, cancel context.Canc
 			return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
 		}
 		seen[session.String()] = true
-		profile, err := newInspectionEnvironmentProfile(kind, session)
+		profile, err := newInspectionEnvironmentProfile(kind, session, n.responder)
 		if err != nil {
 			return "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", err
 		}
@@ -182,7 +192,7 @@ func (n *environmentInspection) inspect(ctx context.Context, cancel context.Canc
 }
 
 func (n *environmentInspection) experiment(ctx context.Context, artifact domain.AcquiredArtifact, session domain.SandboxSessionID, profile inspectionEnvironmentProfile) (string, error) {
-	volume, err := createEnvironmentWorkspace(ctx, n.backend.runner, n.owner, profile, n.policy.RuntimeTmpfs())
+	volume, err := createEnvironmentWorkspace(ctx, n.backend.runner, n.owner, profile, n.policy.RuntimeTmpfs()-responderSupplyCapacity)
 	n.volume = volume
 	if err != nil {
 		n.uncertain = volume.name != ""
@@ -237,6 +247,8 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 		if ctx.Err() != nil {
 			primaryCode = "M3_DYNAMIC_TIMEOUT"
 		}
+	} else {
+		primaryCode, commandErr = awaitLifecycleDescendants(ctx, n.backend.runner, writer.id)
 	}
 	if err := n.stop(writer.id); err != nil {
 		if primaryCode != "" {
@@ -248,6 +260,24 @@ func (n *environmentInspection) experiment(ctx context.Context, artifact domain.
 		return primaryCode, commandErr
 	}
 	return n.completeEnvironment(ctx, profile, writer, anchor, before, limits)
+}
+
+// awaitLifecycleDescendants maps a failed observed drain after a successful
+// lifecycle to INCOMPLETE: expiry of the existing wall limit is a timeout and
+// any other loss of the observer's exit ledger is an observer failure.
+func awaitLifecycleDescendants(ctx context.Context, runner CommandRunner, container string) (string, error) {
+	if !observedDrainRequired(runner, container) {
+		return "", nil
+	}
+	err := awaitObservedProcessDrain(ctx, container)
+	switch {
+	case err == nil:
+		return "", nil
+	case errors.Is(err, context.DeadlineExceeded):
+		return "M3_DYNAMIC_TIMEOUT", err
+	default:
+		return "M3_DYNAMIC_OBSERVER_FAILED", err
+	}
 }
 
 // Both current npm archive and instance experiments snapshot only after their
@@ -375,6 +405,16 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 	if readOnly {
 		phase = phaseAnchor
 	}
+	activeResponder := profile.kind == developmentEnvironment && !readOnly
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = n.responder.containerArguments(args, nodeImageReference)
+		if err != nil {
+			return nil, err
+		}
+		image = slices.Index(args, nodeImageReference)
+		supplies = []*responderSupply{n.responder}
+	}
 	extra := []string{"--cpuset-cpus", strconv.Itoa(n.lease.CPU), "--cgroup-parent", n.lease.CgroupParent, "--label", "io.heliopause.observation-phase=" + string(phase)}
 	args = append(append(append([]string{}, args[:image]...), extra...), args[image:]...)
 	created, err := n.backend.runner.Output(ctx, "docker", args...)
@@ -390,6 +430,11 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 	if err := n.volume.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
 		return nil, err
 	}
+	if activeResponder {
+		if err := n.responder.verifyReader(ctx, n.backend.runner, id); err != nil {
+			return nil, err
+		}
+	}
 	if n.work.name != "" {
 		work := n.work
 		if readOnly {
@@ -402,7 +447,7 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 		if !ok {
 			return nil, errEnvironmentState
 		}
-		runtime.trace, err = observer.startELFEnvironmentProfile(ctx, id, n.profileName, readOnly, n.traceBudget)
+		runtime.trace, err = observer.startELFEnvironmentProfile(ctx, id, n.profileName, readOnly, n.traceBudget, supplies...)
 	} else if n.project.name != "" {
 		if err := n.project.verifyContainerMount(ctx, n.backend.runner, id, readOnly); err != nil {
 			return nil, err
@@ -411,14 +456,19 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 		if !ok {
 			return nil, errEnvironmentState
 		}
-		runtime.trace, err = observer.startNPMInstanceEnvironmentProfile(ctx, id, n.projectKind, n.native.name != "" && !readOnly, readOnly, n.traceBudget)
+		runtime.trace, err = observer.startNPMInstanceEnvironmentProfile(ctx, id, n.projectKind, n.native.name != "" && !readOnly, readOnly, n.traceBudget, supplies...)
 	} else {
-		runtime.trace, err = n.observer.StartEnvironmentProfile(ctx, id, readOnly, n.traceBudget)
+		runtime.trace, err = n.observer.StartEnvironmentProfile(ctx, id, readOnly, n.traceBudget, supplies...)
 	}
 	if err != nil {
 		return nil, err
 	}
-	if err := discardCommand(ctx, n.backend.runner, "docker", "start", id); err != nil {
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, n.backend.runner, id)
+	} else {
+		err = discardCommand(ctx, n.backend.runner, "docker", "start", id)
+	}
+	if err != nil {
 		return nil, err
 	}
 	lease, err := n.backend.resources.Register(ctx, n.owner.String(), id, string(phase))
@@ -426,10 +476,13 @@ func (n *environmentInspection) start(ctx context.Context, session domain.Sandbo
 		return nil, errors.Join(errEnvironmentState, err)
 	}
 	runtime.registered = true
-	if err := awaitBoundaryHelper(ctx, n.backend.runner, id); err != nil {
+	if err := awaitBoundaryHelper(ctx, n.backend.runner, id, activeResponder); err != nil {
 		return nil, err
 	}
 	if err := n.observer.AwaitMountAnchors(ctx, id); err != nil {
+		return nil, err
+	}
+	if err := verifyEnvironmentResolver(ctx, n.backend.runner, id); err != nil {
 		return nil, err
 	}
 	if err := verifyObservationRuntimeAlive(ctx, n.backend.runner, id); err != nil {
@@ -552,6 +605,9 @@ func (n *environmentInspection) close() error {
 	}
 	if n.native.name != "" && !n.uncertain {
 		failure = errors.Join(failure, n.native.close(ctx, n.backend.runner))
+	}
+	if n.responder != nil {
+		failure = errors.Join(failure, n.responder.close(ctx, n.backend.runner))
 	}
 	if n.uncertain {
 		failure = errors.Join(failure, errors.New("uncertain environment ownership retained"))

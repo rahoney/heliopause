@@ -14,7 +14,7 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-func TestHeliopausePipxDataGraphIncludesThirteenExactSubjects(t *testing.T) {
+func TestHeliopausePipxDataGraphIncludesCurrentExactSubjects(t *testing.T) {
 	zip := []byte("unsigned graph DATA only; never imported")
 	notices, err := os.ReadFile(filepath.Join("..", "..", "..", "tools", "pipx", "NOTICE"))
 	if err != nil {
@@ -37,7 +37,7 @@ func TestHeliopausePipxDataGraphIncludesThirteenExactSubjects(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resolution.Graph().Nodes()) != 13 || len(resolution.Graph().Edges()) != 12 {
+	if len(resolution.Graph().Nodes()) != 14 || len(resolution.Graph().Edges()) != 13 {
 		t.Fatal("incomplete DATA graph")
 	}
 	manifest, err := f.set.Manifest()
@@ -45,11 +45,11 @@ func TestHeliopausePipxDataGraphIncludesThirteenExactSubjects(t *testing.T) {
 		t.Fatal(err)
 	}
 	native, err := manifest.NativeUpdateFiles()
-	if err != nil || len(native) != 6 {
-		t.Fatal("native6 changed", err)
+	if err != nil || len(native) != 7 {
+		t.Fatal("current native responder missing", err)
 	}
 	payloads, err := manifest.NativeUpdatePayloads()
-	if err != nil || len(payloads) != 12 {
+	if err != nil || len(payloads) != 13 {
 		t.Fatal("incomplete payload selection", err)
 	}
 	found := 0

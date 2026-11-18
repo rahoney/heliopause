@@ -7,6 +7,7 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestDynamicInspectorUsesOnlyStaticImportNames(t *testing.T) {
@@ -259,6 +260,17 @@ func TestPythonChecksBindConfiguredRootProfileBeforeExecution(t *testing.T) {
 		report, err := dynamic.InspectWheel(ctx, artifact, artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
 		if err != nil || report.Execution().ProfileDigest() != dynamicProfile {
 			t.Fatal("actual execution differs from declaration", name, err)
+		}
+		oldDescriptor := runtimeidentity.PythonImageReference + "|" + pythonInspectionProfileDescriptor(ctx) + "|" + strings.TrimSuffix(dynamicEnvironmentDescriptor, "|"+runtimeidentity.SandboxResponderInspectionIdentity)
+		oldProfile, _ := domain.CheckProfileDigest("pypi-dynamic-environments-v3", oldDescriptor)
+		oldCheck, err := domain.NewCheckExecution(declaredDynamic[0].ID(), domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "", oldProfile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		run, _ := domain.NewRunID()
+		plan, err := domain.NewCheckPlan(run, artifact, declaredDynamic)
+		if err != nil || plan.Validate(run, artifact, []domain.CheckExecution{oldCheck}) == nil {
+			t.Fatal("pre-responder approval accepted", name, err)
 		}
 	}
 }

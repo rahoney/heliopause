@@ -52,7 +52,7 @@ func TestBunInstanceRunsExactBoundTargetWithFreshSessions(t *testing.T) {
 			t.Fatal("accepted observation lost")
 		}
 	}
-	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 4 || r.removals != 8 || r.volumeRemovals != 8 || !slices.Equal(o.ids, r.ids) {
+	if sessions[0] == sessions[1] || r.volumes[0] == r.volumes[1] || r.ids[0] == r.ids[1] || r.executions != 4 || r.removals != 8 || r.volumeRemovals != 10 || !slices.Equal(o.ids, r.ids) {
 		t.Fatal("session/resources reused or not finalized")
 	}
 	if slices.Index(r.events, "readback") < slices.Index(r.events, "copy") {

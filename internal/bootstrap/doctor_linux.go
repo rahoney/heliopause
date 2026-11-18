@@ -9,19 +9,24 @@ import (
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
+	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
 func doctorHostChecks(ctx context.Context) (checks []cli.DoctorCheck) {
+	responder := cli.DoctorCheck{Name: "sandbox-responder", Detail: "SANDBOX_RESPONDER_UNAVAILABLE"}
+	if sandbox.CheckResponderSource(ctx) == nil {
+		responder.Healthy, responder.Detail = true, "OK"
+	}
 	executor, err := hosttool.NewSystem(ctx)
 	if err != nil {
-		return []cli.DoctorCheck{{Name: "trusted-host-runtime", Detail: "TRUSTED_HOST_RUNTIME_UNAVAILABLE"}, {Name: "observer-helper", Detail: "OBSERVER_HELPER_UNAVAILABLE"}, {Name: "network-policy-service", Detail: "NETWORK_POLICY_SERVICE_UNAVAILABLE"}, {Name: "runtime-images", Detail: "RUNTIME_IMAGES_UNAVAILABLE"}}
+		return []cli.DoctorCheck{{Name: "trusted-host-runtime", Detail: "TRUSTED_HOST_RUNTIME_UNAVAILABLE"}, {Name: "observer-helper", Detail: "OBSERVER_HELPER_UNAVAILABLE"}, {Name: "network-policy-service", Detail: "NETWORK_POLICY_SERVICE_UNAVAILABLE"}, responder, {Name: "runtime-images", Detail: "RUNTIME_IMAGES_UNAVAILABLE"}}
 	}
 	defer func() {
 		if err := executor.Close(); err != nil {
 			checks = append(checks, cli.DoctorCheck{Name: "trusted-host-runtime", Detail: "TRUSTED_HOST_RUNTIME_CLEANUP_UNCERTAIN"})
 		}
 	}()
-	checks = []cli.DoctorCheck{{Name: "trusted-host-runtime", Healthy: true, Detail: "OK"}}
+	checks = []cli.DoctorCheck{{Name: "trusted-host-runtime", Healthy: true, Detail: "OK"}, responder}
 	if _, err := hosttool.NewSystemObserverLauncher(); err != nil {
 		checks = append(checks, cli.DoctorCheck{Name: "observer-helper", Detail: "OBSERVER_HELPER_UNAVAILABLE"})
 	} else {

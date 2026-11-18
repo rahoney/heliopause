@@ -64,6 +64,14 @@ func boundaryContainerCommand() string {
 		boundaryHelperPath + "; exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
 }
 
+// Reuse the exact boundary installer; only the OCI init's final target/UID
+// changes. Direct Artifact entries retain the original UID1000 demotion.
+func responderContainerCommand() string {
+	tail := "exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
+	return strings.TrimSuffix(boundaryContainerCommand(), tail) + "GOMAXPROCS=1 exec " + boundarySetprivPath + " " +
+		strings.ReplaceAll(boundaryDemotionArguments, "1000", "1001") + " " + responderGuestPath + " serve"
+}
+
 // Reuse the credential validator and the existing CONTROL grep readers.
 // Capture both fixed statuses once, then validate their fields with builtins.
 var boundaryReadinessScript = func() string {
@@ -101,18 +109,23 @@ func boundaryInputExecArguments(containerID, mode string, command ...string) []s
 	return append(arguments, command...)
 }
 
-func boundaryReadinessArguments(containerID string) []string {
-	return boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", boundaryReadinessScript)
+func boundaryReadinessArguments(containerID string, responder ...bool) []string {
+	script := boundaryReadinessScript
+	if len(responder) == 1 && responder[0] {
+		split := strings.Index(script, "\nalready_demoted()")
+		script = strings.ReplaceAll(script[:split], "1000", "1001") + script[split:]
+	}
+	return boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", script)
 }
 
 // awaitBoundaryHelper is a bounded readiness check. It never invokes an
 // unwrapped docker exec: the first executable transition is the HAA helper.
-func awaitBoundaryHelper(ctx context.Context, runner CommandRunner, containerID string) error {
-	if runner == nil || !containerIDPattern.MatchString(containerID) {
+func awaitBoundaryHelper(ctx context.Context, runner CommandRunner, containerID string, responder ...bool) error {
+	if runner == nil || !containerIDPattern.MatchString(containerID) || len(responder) > 1 {
 		return errors.New("sandbox boundary helper runner is unavailable")
 	}
 	for attempt := 0; attempt < 20; attempt++ {
-		if _, err := runner.Output(ctx, "docker", boundaryReadinessArguments(containerID)...); err == nil {
+		if _, err := runner.Output(ctx, "docker", boundaryReadinessArguments(containerID, responder...)...); err == nil {
 			return nil
 		} else if errors.Is(err, errObserverAuthorityAmbiguous) {
 			// An ARM/CANCEL uncertainty poisons this registration. Retrying the

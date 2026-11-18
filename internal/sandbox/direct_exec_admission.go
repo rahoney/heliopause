@@ -87,6 +87,18 @@ func (r *admissionAwareCommandRunner) RunInput(ctx context.Context, input io.Rea
 	return commandErr
 }
 
+// Init attachment is not a direct exec admission. Artifact launches still use
+// the existing one-at-a-time admission owner while this control pipe is open.
+func (r *admissionAwareCommandRunner) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	runner, ok := r.runner.(interface {
+		StartContainerInputOutput(context.Context, io.Reader, io.Writer, string) error
+	})
+	if !ok || !exactObservationContainerID(id) {
+		return errors.New("sandbox init controller channel is unavailable")
+	}
+	return runner.StartContainerInputOutput(ctx, input, output, id)
+}
+
 func (r *admissionAwareCommandRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	runner, ok := r.runner.(discardCommandRunner)
 	if !ok {
@@ -970,6 +982,60 @@ func completeDirectExecAdmission(ctx context.Context, admission directExecAdmiss
 		return err
 	}
 	return nil
+}
+
+// awaitObservedProcessDrain keeps a lifecycle's container alive until the
+// observer has processed the kernel exit of every process except the OCI root,
+// including detached descendants. Only the observer's processed clone/exit
+// ledger is authority; guest output and runsc listings (which retain exited
+// orphans) are not. The caller's existing wall deadline bounds the wait; one
+// second is reserved so the exchange itself cannot outlive it and poison the
+// session. Expiry returns context.DeadlineExceeded for an INCOMPLETE result.
+// observedDrainRequired is true for the production admission-aware runner
+// (which always has a session, so a missing one fails closed) and for any
+// container with a registered observer session. Only fake unit runners, which
+// have neither direct-exec admission nor a session, skip the wait.
+func observedDrainRequired(runner CommandRunner, containerID string) bool {
+	_, admitted := runner.(*admissionAwareCommandRunner)
+	return admitted || activeObserverSession(containerID) != nil
+}
+
+func awaitObservedProcessDrain(ctx context.Context, containerID string) error {
+	session := activeObserverSession(containerID)
+	if ctx == nil || session == nil {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	request := controlRequest{Op: "processes", Container: containerID, Session: session.generation}
+	required := map[string]string{"op": "ack", "ack_op": "processes", "container_id": containerID, "session_generation": session.generation}
+	for {
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			return observerFault{reason: "LIFECYCLE_ERROR"}
+		}
+		if ctx.Err() != nil || time.Until(deadline) < time.Second {
+			return context.DeadlineExceeded
+		}
+		acknowledgement, err := session.peer.exchangeAckAuthorized(ctx, request, session, func(acknowledgement strictControlAck) bool {
+			status := acknowledgement["status"]
+			return exactControlAckExceptStatus(acknowledgement, required) && (status == "drained" || status == "running" || status == "unknown")
+		})
+		if err != nil {
+			return err
+		}
+		switch acknowledgement["status"] {
+		case "drained":
+			return nil
+		case "unknown":
+			return observerFault{reason: "LIFECYCLE_ERROR"}
+		}
+		timer := time.NewTimer(directExecAdmissionPollInterval)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return context.DeadlineExceeded
+		case <-timer.C:
+		}
+	}
 }
 
 func exchangeDirectExecAdmission(ctx context.Context, operation string, admission directExecAdmission, semanticStatusValid func(string) bool) (strictControlAck, error) {

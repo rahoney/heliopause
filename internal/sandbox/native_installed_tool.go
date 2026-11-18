@@ -14,8 +14,9 @@ import (
 
 var errInstalledNativeTool = errors.New("immutable installed native tool supply is unavailable or changed")
 
-// readInstalledNativeTool accepts only compiled installed-tool identities. It
-// reads data through a held root; it never executes the native file.
+// readInstalledNativeTool accepts only compiled installed-tool identities and
+// the fixed HAA responder component. It reads through a held protected current
+// root; it never executes a Host file. Third-party pins remain mandatory.
 func readInstalledNativeTool(ctx context.Context, installation string, kind nativeRuntimeToolKind) (prepared []byte, resultErr error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
 	if !known || spec.installedName == "" {
@@ -65,6 +66,14 @@ func readInstalledNativeTool(ctx context.Context, installation string, kind nati
 	}
 	name := target + "/" + spec.installedName
 	beforeFile, err := root.Lstat(name)
+	if kind == nativeRuntimeResponder && err == nil {
+		// HAA components are release-bound by the protected current version.
+		// Third-party tools below retain their compiled size/digest pins.
+		if beforeFile.Size() <= 0 || beforeFile.Size() > spec.maxBytes {
+			return nil, errInstalledNativeTool
+		}
+		spec.size = beforeFile.Size()
+	}
 	if err != nil || !nativePinnedFileMode(beforeFile, spec.size, os.FileMode(spec.fileMode())) {
 		return nil, errInstalledNativeTool
 	}
@@ -87,7 +96,7 @@ func readInstalledNativeTool(ctx context.Context, installation string, kind nati
 		return nil, errors.Join(errInstalledNativeTool, err, ctx.Err())
 	}
 	digest := sha256.Sum256(body)
-	if hex.EncodeToString(digest[:]) != spec.sha256 {
+	if kind != nativeRuntimeResponder && hex.EncodeToString(digest[:]) != spec.sha256 {
 		return nil, errInstalledNativeTool
 	}
 	afterFile, fileErr := root.Lstat(name)

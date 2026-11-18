@@ -16,6 +16,7 @@ import (
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	projectoutput "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type goBuildInputObserver interface {
@@ -30,10 +31,11 @@ type goBuildOutputObserver interface {
 // ObservedGoBuilder consumes private, frozen source/cache data. It owns the
 // disposable offline runtime; it cannot approve or publish project outputs.
 type ObservedGoBuilder struct {
-	intake   string
-	runner   CommandRunner
-	observer goBuildInputObserver
-	probe    func(context.Context) (GoCapability, error)
+	intake           string
+	runner           CommandRunner
+	observer         goBuildInputObserver
+	probe            func(context.Context) (GoCapability, error)
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 type isolatedGoBuildFailure struct {
@@ -70,13 +72,14 @@ func newObservedGoBuilder(intake string, runner CommandRunner, observer goBuildI
 	if _, ok := runner.(streamingDockerOutput); !ok {
 		return nil, errGoBuildInput
 	}
-	return &ObservedGoBuilder{intake, admissionAwareRunner(runner), observer, probe}, nil
+	return &ObservedGoBuilder{intake: intake, runner: admissionAwareRunner(runner), observer: observer, probe: probe}, nil
 }
 
 type goBuildRuntime struct {
 	id        string
 	trace     TraceReader
 	collected bool
+	responder *inspectionResponder
 }
 
 type goBuildOperation struct {
@@ -94,6 +97,7 @@ type goBuildOperation struct {
 	output          *artifactgo.CapturedBuildOutput
 	environment     *projectBuildEnvironment
 	states          []domain.SandboxEnvironmentState
+	responder       *responderSupply
 }
 
 // ObserveBuild covers materialization, exact offline graph reconciliation and
@@ -126,7 +130,7 @@ func (b *ObservedGoBuilder) Build(ctx context.Context, inputs domain.ProjectBuil
 			Profile                             string
 			Environment                         string
 			NormalizedEventLimit                uint64
-		}{"go-build-environments-v4", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
+		}{"go-build-environments-v5", PinnedGoRuntime(), goBuildCreateArgumentsForCache(goBuildGuestCache), goBuildValidationArguments(inputs.Selector()), goBuildRoleArguments(inputs.Selector()), goBuildCompilerArguments(inputs.Selector()),
 			goBuildRecipeTopology(false), goBuildRecipeTopology(true), goBuildInputCapacity, goBuildOutputCapacity,
 			artifactgo.MaxBuildOutputFiles, artifactgo.MaxBuildOutputFileBytes, artifactgo.MaxBuildOutputArchiveBytes, goBuildProfile, projectBuildEnvironmentDescriptor, maximumGoBuildLedgerEvents})
 		if marshalErr != nil {
@@ -255,6 +259,14 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 	if err != nil {
 		return result, output, err
 	}
+	prepare := b.prepareResponder
+	if prepare == nil {
+		prepare = prepareResponderSupply
+	}
+	operation.responder, err = prepare(ctx, b.runner, runtimeidentity.NativeInstallRoot)
+	if err != nil || operation.responder == nil {
+		return result, output, errors.Join(errResponderSupply, err)
+	}
 	for _, kind := range []inspectionEnvironment{minimalEnvironment, developmentEnvironment} {
 		if err := operation.experiment(ctx, snapshot, selector, capture, kind); err != nil {
 			return result, output, err
@@ -268,7 +280,7 @@ func (o *goBuildOperation) experiment(ctx context.Context, snapshot domain.Proje
 	if err != nil {
 		return err
 	}
-	profile, err := newInspectionEnvironmentProfile(kind, session)
+	profile, err := newInspectionEnvironmentProfile(kind, session, o.responder)
 	if err != nil {
 		return err
 	}
@@ -298,7 +310,7 @@ func (o *goBuildOperation) experiment(ctx context.Context, snapshot domain.Proje
 		return err
 	}
 	o.environment = &projectBuildEnvironment{session: session, profile: profile}
-	o.environment.workspace, err = createEnvironmentWorkspace(ctx, o.builder.runner, o.owner, profile, projectBuildWorkspaceCapacity)
+	o.environment.workspace, err = createEnvironmentWorkspace(ctx, o.builder.runner, o.owner, profile, projectBuildWorkspaceCapacity-responderSupplyCapacity)
 	if err != nil {
 		return err
 	}
@@ -434,6 +446,15 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 			return nil, err
 		}
 	}
+	activeResponder := o.environment != nil && o.environment.profile.kind == developmentEnvironment
+	var supplies []*responderSupply
+	if activeResponder {
+		args, err = o.responder.containerArguments(args, PinnedGoRuntime().ImageReference)
+		if err != nil {
+			return nil, err
+		}
+		supplies = []*responderSupply{o.responder}
+	}
 	created, err := o.builder.runner.Output(ctx, "docker", args...)
 	id := strings.TrimSpace(string(created))
 	if err != nil || !exactObservationContainerID(id) {
@@ -441,6 +462,11 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 	}
 	runtime := &goBuildRuntime{id: id}
 	o.runtimes = append(o.runtimes, runtime)
+	if activeResponder {
+		if err := o.responder.verifyReader(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
+	}
 	if err := o.volume.verifyContainerMount(ctx, o.builder.runner, id, readOnly); err != nil {
 		return nil, err
 	}
@@ -453,7 +479,7 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 		if err := o.environment.workspace.verifyContainerMount(ctx, o.builder.runner, id, false); err != nil {
 			return nil, err
 		}
-		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "go", outputVolume != nil, false, o.budget)
+		runtime.trace, err = o.builder.observer.startProjectBuildEnvironmentProfile(ctx, id, "go", outputVolume != nil, false, o.budget, supplies...)
 	} else if outputVolume != nil {
 		runtime.trace, err = o.builder.observer.(goBuildOutputObserver).StartGoBuildOutputProfile(ctx, id, readOnly, o.budget)
 	} else {
@@ -462,11 +488,21 @@ func (o *goBuildOperation) start(ctx context.Context, readOnly bool) (*goBuildRu
 	if err != nil {
 		return nil, err
 	}
-	if _, err := o.builder.runner.Output(ctx, "docker", "start", id); err != nil {
-		return nil, errors.New("go build runtime start failed")
+	if activeResponder {
+		runtime.responder, err = startResponderInit(ctx, o.builder.runner, id)
+	} else {
+		_, err = o.builder.runner.Output(ctx, "docker", "start", id)
 	}
-	if awaitBoundaryHelper(ctx, o.builder.runner, id) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
+	if err != nil {
+		return nil, errors.Join(errors.New("go build runtime start failed"), err)
+	}
+	if awaitBoundaryHelper(ctx, o.builder.runner, id, activeResponder) != nil || o.builder.observer.AwaitMountAnchors(ctx, id) != nil || verifyObservationRuntimeAlive(ctx, o.builder.runner, id) != nil {
 		return nil, errors.New("go build runtime boundary is incomplete")
+	}
+	if o.environment != nil {
+		if err := verifyEnvironmentResolver(ctx, o.builder.runner, id); err != nil {
+			return nil, err
+		}
 	}
 	return runtime, nil
 }
@@ -500,16 +536,22 @@ func (o *goBuildOperation) remove(runtime *goBuildRuntime) error {
 		return nil
 	}
 	ctx, cancel := resolverCleanupContext()
-	_, err := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
-	cancel()
+	defer cancel()
 	var failure error
+	if runtime.responder != nil {
+		failure = runtime.responder.stop(ctx)
+	}
+	_, err := o.builder.runner.Output(ctx, "docker", "rm", "--force", runtime.id)
 	if err != nil {
-		failure = errors.New("go build runtime cleanup failed")
+		failure = errors.Join(failure, errors.New("go build runtime cleanup failed"))
+	}
+	if runtime.responder != nil {
+		failure = errors.Join(failure, runtime.responder.waitAfterTermination(ctx, err == nil))
 	}
 	if runtime.trace != nil {
-		ctx, cancel = resolverCleanupContext()
-		observed, limitation, diagnostic := collectTraceDiagnostic(ctx, runtime.trace)
-		cancel()
+		traceCtx, traceCancel := resolverCleanupContext()
+		observed, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+		traceCancel()
 		o.observations = append(o.observations, observed...)
 		if limitation != "" {
 			if o.firstDiagnostic.Reason == "" {
@@ -530,6 +572,11 @@ func (o *goBuildOperation) dispose() error {
 		err = errors.Join(err, o.remove(o.runtimes[i]))
 	}
 	err = errors.Join(err, o.closeVolumes())
+	if o.responder != nil {
+		ctx, cancel := resolverCleanupContext()
+		err = errors.Join(err, o.responder.close(ctx, o.builder.runner))
+		cancel()
+	}
 	if o.inputs != nil {
 		err = errors.Join(err, o.inputs.close())
 	}

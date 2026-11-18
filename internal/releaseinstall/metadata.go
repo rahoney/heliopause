@@ -65,6 +65,9 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 	}
 	seen := map[string]bool{}
 	applications := map[string]string{"pnpm": runtimeidentity.PNPMVersion, "bun": runtimeidentity.BunVersion}
+	if manifest.HasSandboxResponder() {
+		applications[runtimeidentity.SandboxResponderAssetName] = manifest.Version()
+	}
 	if manifest.HasPipxRuntime() {
 		applications["pipx"] = runtimeidentity.PipxVersion
 	}

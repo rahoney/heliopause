@@ -268,6 +268,7 @@ Core assets:
 - `helox` native binaries
 - gVisor observer helper
 - Linux network-policy helper
+- `haa-sandbox-responder`: 현재 Go owner로 CGO 없이 빌드하는 Linux/amd64 guest 전용 고정 DNS/HTTP 공급물. `sandbox-responder` role/최대 bytes는 공통 runtime identity를 따르고 release manifest의 size/SHA256과 SBOM의 동일 release version에 결합한다. 새 service나 독립 version lock은 없다.
 - lock-pinned pnpm native client와 source-bound passive notices — [현재 P2 공급·배포 범위](./evidence/package-client-quarantine/p2b2-pnpm-runtime-plan-20261024.md); 실제 guest/제품 qualification과 구분
 - lock-pinned Bun native client와 source-bound passive notices — [현재 P3 공급·배포 범위](./evidence/package-client-quarantine/p3b2b2-bun-release-plan-20261025.md); 실제 gVisor/client qualification은 후속으로 유지
 - lock-pinned pipx Python ZIP DATA와 원본 NOTICE — [현재 P4 공급·배포 범위](./evidence/package-client-quarantine/p4o4-pipx-runtime-owner-plan-20261027.md). `pipx-runtime-linux-amd64.zip`은 native6와 별도인 fixed `pipx-runtime` role이며 system installed0444/private root staging0600으로 다룬다. `pipx-NOTICE.txt`는 release-metadata다. DATA role은 safety·검사 완료·Host import/실행 권한이 아니며 실제 전체 공급/지원 qualification은 별도로 확인한다.
@@ -320,6 +321,12 @@ unit는 기본 비활성이고, 실제 caller identity로 보호한
 Release-installer payload의 포함은 OS package를 native `/versions/` 관리 설치로
 등록하거나 package database를 우회한 self-update를 활성화하지 않는다. 해당 helper는
 자동 실행하지 않으며 native 관리 설치와의 전환은 별도의 명시적 bootstrap/migration이다.
+
+새 native 설치·업데이트 후보는 응답기 누락을 거부한다. 과거 manifest/설치 기록의 읽기와
+기존 버전 rollback은 보존하며, 과거 기록을 새 모의 검사 지원으로 표시하지 않는다.
+기존 installer/보호 복사/activation은 이 role도 같은 payload 집합으로 검증한다.
+응답기 파일은 root0555이며 doctor는 고정 current 위치에서 compiler/program identity까지
+읽기만 검증한다. OS package의 `/releases/` 배치와 native `/versions/` 등록은 계속 별도다.
 
 Checksum 생성과 publish의 file set은 같은 manifest verifier를 소비한다.
 Publish는 manifest attestation/source를 먼저 검증한 뒤 basename·role·platform·

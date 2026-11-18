@@ -189,6 +189,8 @@ func (p *presentation) doctorDescription(name string) (string, string) {
 		return p.text("Trusted runtime", "신뢰된 실행 환경"), p.text("Check the protected installed tools and runtime identities.", "보호된 설치 도구와 런타임의 준비 상태를 확인하세요.")
 	case "observer-helper":
 		return p.text("Isolated behavior observer", "격리 동작 관찰기"), p.text("The required installed observer helper is unavailable.", "격리 동작 관찰에 필요한 helper를 사용할 수 없습니다.")
+	case "sandbox-responder":
+		return p.text("Synthetic inspection responses", "모의 검사 응답"), p.text("The required fixed inspection responder is unavailable.", "모의 검사 응답에 필요한 고정 공급물이 준비되지 않았습니다.")
 	case "network-policy-service":
 		return p.text("Network policy service", "네트워크 정책 서비스"), p.text("The configured network-policy helper is not ready. Start the controlled service before inspecting dependencies.", "네트워크 정책 helper가 준비되지 않았습니다. 의존성 검사 전에 설정된 서비스를 실행하세요.")
 	case "runtime-images":

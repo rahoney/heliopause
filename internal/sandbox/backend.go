@@ -35,14 +35,15 @@ type CapabilityProbe func(context.Context) (Capability, error)
 
 // Backend owns fresh gVisor experiments and their common inspection budget.
 type Backend struct {
-	runner       CommandRunner
-	introducer   ArtifactIntroducer
-	observer     TraceObserver
-	resources    ObservationResourceClient
-	probe        CapabilityProbe
-	newSessionID func() (domain.SandboxSessionID, error)
-	wallTimeout  time.Duration
-	cleanupWait  time.Duration
+	runner           CommandRunner
+	introducer       ArtifactIntroducer
+	observer         TraceObserver
+	resources        ObservationResourceClient
+	probe            CapabilityProbe
+	newSessionID     func() (domain.SandboxSessionID, error)
+	wallTimeout      time.Duration
+	cleanupWait      time.Duration
+	prepareResponder func(context.Context, CommandRunner, string) (*responderSupply, error)
 }
 
 // NewBackend constructs the M3 Linux dynamic-inspection backend.

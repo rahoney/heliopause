@@ -20,6 +20,8 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"missing-responder-copy":        strings.Replace(original, `sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder`, "true", 1),
+		"missing-responder-restore":     strings.Replace(original, "if haa_ci_restore_responder_base v1.0.0-bun-ci; then", "if true; then", 1),
 		"missing-program-boundary-env":  strings.Replace(original, "HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 ", "", 1),
 		"wrong-program-filter":          strings.Replace(original, "Workflow|CLI|Boundary", "Workflow|CLI", 1),
 		"missing-current-run-env":       strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 ", "", 1),
@@ -38,7 +40,7 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		"duplicate-native":              strings.Replace(original, bunNativeIntegrationCommand, bunNativeIntegrationCommand+"\n"+bunNativeIntegrationCommand, 1),
 		"commented-quarantine":          strings.Replace(original, bunProjectQuarantineCommand, "# "+bunProjectQuarantineCommand, 1),
 		"wrong-cwd":                     strings.Replace(original, "cd internal/sandbox", "cd internal/bootstrap", 1),
-		"relaxed-absence":               strings.Replace(original, "test ! -e /usr/lib/heliopause", "echo existing-ok", 1),
+		"foreign-root":                  strings.Replace(original, "haa_ci_require_responder_base", "echo existing-ok", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
 			if len(validateBunRuntimeScript(candidate)) == 0 {

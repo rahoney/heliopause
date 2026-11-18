@@ -214,8 +214,8 @@ func providerCheckProfile(name string) domain.ContentDigest {
 	}
 	revision := name + "-v1"
 	if name != "terraform-provider-static" {
-		revision = name + "-environments-v2"
-		runtime += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment)
+		revision = name + "-environments-v3"
+		runtime += "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 	}
 	profile, _ := domain.CheckProfileDigest(revision, runtime)
 	return profile

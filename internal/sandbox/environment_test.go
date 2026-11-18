@@ -13,6 +13,80 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+func TestEnvironmentResolverRejectsAmbientOrWritableConfiguration(t *testing.T) {
+	const fixed = "# generated\nnameserver 127.0.0.1\nsearch .\noptions ndots:0 timeout:1 attempts:1\n"
+	for _, variant := range []string{"fixed", "neutral-search-omitted", "upstream", "search", "option", "duplicate", "owner", "writable", "link", "extra", "trailing"} {
+		t.Run(variant, func(t *testing.T) {
+			content := fixed
+			switch variant {
+			case "neutral-search-omitted":
+				content = strings.ReplaceAll(content, "search .\n", "")
+			case "upstream":
+				content = strings.ReplaceAll(content, "127.0.0.1", "8.8.8.8")
+			case "search":
+				content = strings.ReplaceAll(content, "search .", "search host.invalid")
+			case "option":
+				content = strings.ReplaceAll(content, "attempts:1", "attempts:5")
+			case "duplicate":
+				content += "nameserver 127.0.0.1\n"
+			}
+			var body bytes.Buffer
+			archive := tar.NewWriter(&body)
+			header := tar.Header{Name: "resolv.conf", Typeflag: tar.TypeReg, Mode: 0644, Size: int64(len(content))}
+			if variant == "owner" {
+				header.Uid = 1000
+			}
+			if variant == "writable" {
+				header.Mode = 0666
+			}
+			if variant == "link" {
+				header.Typeflag = tar.TypeSymlink
+				header.Linkname = "/tmp/config"
+				header.Size = 0
+				content = ""
+			}
+			if err := archive.WriteHeader(&header); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := archive.Write([]byte(content)); err != nil {
+				t.Fatal(err)
+			}
+			if variant == "extra" {
+				if err := archive.WriteHeader(&tar.Header{Name: "extra", Mode: 0644, Typeflag: tar.TypeReg}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := archive.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if variant == "trailing" {
+				body.WriteString("foreign")
+			}
+			err := verifyEnvironmentResolverArchive(context.Background(), body.Bytes())
+			if (err == nil) != (variant == "fixed" || variant == "neutral-search-omitted") {
+				t.Fatal("unexpected resolver attestation", err)
+			}
+		})
+	}
+}
+
+func TestEnvironmentFixtureBindsResponderAndResolverConfiguration(t *testing.T) {
+	session, _ := domain.NewSandboxSessionID()
+	supply := &responderSupply{name: "haa-responder-" + session.String(), owner: session.String(), digest: strings.Repeat("a", 64), createdAt: "fixed", mountpoint: "/model/fixed"}
+	first, err := newInspectionEnvironmentProfile(developmentEnvironment, session, supply)
+	if err != nil {
+		t.Fatal(err)
+	}
+	supply.digest = strings.Repeat("b", 64)
+	second, err := newInspectionEnvironmentProfile(developmentEnvironment, session, supply)
+	if err != nil || first.identity == second.identity {
+		t.Fatal("responder substitution reused fixture identity", err)
+	}
+	if _, err := newInspectionEnvironmentProfile(developmentEnvironment, session, nil); err == nil {
+		t.Fatal("missing supply accepted")
+	}
+}
+
 func TestELFEnvironmentPreservesFixedMountsAndSharedAccounting(t *testing.T) {
 	for key, value := range map[string]string{"GITHUB_TOKEN": "fake-github-token", "NPM_TOKEN": "fake-npm-token", "PYPI_TOKEN": "fake-pypi-token", "AWS_SECRET_ACCESS_KEY": "fake-aws-secret", "OPENAI_API_KEY": "fake-openai-key", "CI_SECRET": "fake-ci-secret", "ARBITRARY_TOKEN": "fake-arbitrary-token", "SSH_AUTH_SOCK": "/tmp/fake-ssh-agent.sock", "DOCKER_HOST": "tcp://fake-host.invalid:2375"} {
 		t.Setenv(key, value)

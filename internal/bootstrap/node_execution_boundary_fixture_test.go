@@ -73,7 +73,16 @@ func (f nodeBoundaryTransport) RoundTrip(request *http.Request) (*http.Response,
 
 func nodeBoundarySource(t *testing.T, ctx context.Context, intake string) (*artifactnpm.Resolver, domain.DependencyResolution) {
 	t.Helper()
-	manifest, err := json.Marshal(map[string]any{"name": nodeBoundaryPackage, "version": "1.0.0", "bin": map[string]string{"haa-runtime-probe": "cli.js"}})
+	return nodeBoundaryFixtureSource(t, ctx, intake, nil, nodeBoundaryScript)
+}
+
+func nodeBoundaryFixtureSource(t *testing.T, ctx context.Context, intake string, scripts map[string]string, program string) (*artifactnpm.Resolver, domain.DependencyResolution) {
+	t.Helper()
+	metadataInput := map[string]any{"name": nodeBoundaryPackage, "version": "1.0.0", "bin": map[string]string{"haa-runtime-probe": "cli.js"}}
+	if len(scripts) != 0 {
+		metadataInput["scripts"] = scripts
+	}
+	manifest, err := json.Marshal(metadataInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +93,7 @@ func nodeBoundarySource(t *testing.T, ctx context.Context, intake string) (*arti
 		name string
 		mode int64
 		body []byte
-	}{{"package.json", 0o644, manifest}, {"cli.js", 0o755, []byte(nodeBoundaryScript)}} {
+	}{{"package.json", 0o644, manifest}, {"cli.js", 0o755, []byte(program)}} {
 		if err := writer.WriteHeader(&tar.Header{Name: "package/" + file.name, Mode: file.mode, Typeflag: tar.TypeReg, Size: int64(len(file.body))}); err != nil {
 			t.Fatal(err)
 		}

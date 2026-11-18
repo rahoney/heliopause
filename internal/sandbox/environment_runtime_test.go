@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type environmentModelFile struct {
@@ -26,6 +27,7 @@ type environmentModelFile struct {
 type environmentModelContainer struct {
 	volume            string
 	mounts            map[string]string
+	mountReadOnly     map[string]bool
 	readOnly, started bool
 	trace             *cleanupGatedTraceReader
 	done              chan struct{}
@@ -50,6 +52,8 @@ type environmentBackendModel struct {
 	traceError                                                            error
 	order                                                                 []string
 	traces                                                                []*cleanupGatedTraceReader
+	cancel                                                                context.CancelFunc
+	terminations                                                          int
 }
 
 func newEnvironmentBackendState() *environmentBackendModel {
@@ -76,7 +80,52 @@ func newEnvironmentBackendModel(t *testing.T) (*Backend, *environmentBackendMode
 		t.Fatal(err)
 	}
 	backend.resources = f
+	backend.prepareResponder = f.prepareResponder
 	return backend, f, request
+}
+
+func (f *environmentBackendModel) prepareResponder(_ context.Context, _ CommandRunner, installation string) (*responderSupply, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if installation != runtimeidentity.NativeInstallRoot || f.owner == "" || f.failure == "responder-supply" {
+		return nil, errResponderSupply
+	}
+	supply := &responderSupply{name: "haa-responder-" + f.owner, owner: f.owner, digest: strings.Repeat("b", 64), createdAt: "model-created"}
+	supply.mountpoint = "/model/" + supply.name
+	f.volumes[supply.name] = dockerVolumeInspection{Name: supply.name, Driver: "local", Scope: "local", Mountpoint: supply.mountpoint, CreatedAt: supply.createdAt, Labels: map[string]string{responderSupplyLabel: supply.owner, closureManifestLabel: supply.digest}}
+	return supply, nil
+}
+
+func (f *environmentBackendModel) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	f.mu.Lock()
+	c := f.containers[id]
+	if c == nil || !c.mountReadOnly[responderGuestRoot] {
+		f.mu.Unlock()
+		return errResponderSupply
+	}
+	c.started = true
+	model := responderControllerModel{terminate: c.done}
+	failure, cancel := f.failure, f.cancel
+	f.mu.Unlock()
+	switch failure {
+	case "responder-start":
+		_, err := io.WriteString(output, "INVALID\n")
+		return err
+	case "responder-stop":
+		if _, err := io.WriteString(output, "READY\n"); err != nil {
+			return err
+		}
+		if _, err := io.ReadAll(input); err != nil {
+			return err
+		}
+		_, err := io.WriteString(output, "INVALID\n")
+		return err
+	case "responder-cancel":
+		cancel()
+		<-ctx.Done()
+		return ctx.Err()
+	}
+	return model.StartContainerInputOutput(ctx, input, output, id)
 }
 
 func modelArgument(args []string, name string) string {
@@ -129,7 +178,7 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 	case "create":
 		f.next++
 		id := fmt.Sprintf("%064x", f.next)
-		c := &environmentModelContainer{mounts: make(map[string]string)}
+		c := &environmentModelContainer{mounts: make(map[string]string), mountReadOnly: make(map[string]bool)}
 		for index, arg := range args {
 			if arg != "--mount" || index+1 >= len(args) {
 				continue
@@ -140,6 +189,7 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 				fields[key] = value
 			}
 			c.mounts[fields["target"]] = fields["source"]
+			_, c.mountReadOnly[fields["target"]] = fields["readonly"]
 			if fields["target"] == "/tmp" {
 				c.volume = fields["source"]
 				c.readOnly = strings.Contains(args[index+1], ",readonly")
@@ -153,13 +203,21 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 		if c == nil {
 			return nil, errors.New("unknown model container")
 		}
+		if modelArgument(args, "--format") == environmentResolverInspectTemplate {
+			dns := []string{"127.0.0.1"}
+			if f.failure == "resolver" {
+				dns = []string{"8.8.8.8"}
+			}
+			return json.Marshal(map[string]any{"ID": id, "DNS": dns, "Search": []string{"."}, "Options": []string{"ndots:0", "timeout:1", "attempts:1"}})
+		}
 		if modelArgument(args, "--format") == containerMountInspectTemplate {
 			view := dockerContainerMountInspection{ID: id}
 			for target, name := range c.mounts {
 				volume := f.volumes[name]
-				configured := dockerHostMountInspection{Type: "volume", Source: name, Target: target, ReadOnly: c.readOnly}
+				readOnly := c.mountReadOnly[target]
+				configured := dockerHostMountInspection{Type: "volume", Source: name, Target: target, ReadOnly: readOnly}
 				configured.VolumeOptions.NoCopy = true
-				view.Mounts = append(view.Mounts, dockerMountInspection{Type: "volume", Name: name, Source: volume.Mountpoint, Destination: target, Driver: "local", RW: !c.readOnly})
+				view.Mounts = append(view.Mounts, dockerMountInspection{Type: "volume", Name: name, Source: volume.Mountpoint, Destination: target, Driver: "local", RW: !readOnly})
 				view.HostMounts = append(view.HostMounts, configured)
 			}
 			return json.Marshal(view)
@@ -244,6 +302,7 @@ func (f *environmentBackendModel) RunInput(_ context.Context, input io.Reader, _
 	defer f.mu.Unlock()
 	id, destination, _ := strings.Cut(args[len(args)-1], ":")
 	c := f.containers[id]
+
 	if c == nil {
 		return errors.New("unknown model writer")
 	}
@@ -283,6 +342,17 @@ func (f *environmentBackendModel) RunOutput(_ context.Context, output io.Writer,
 	defer f.mu.Unlock()
 	id, _, _ := strings.Cut(args[1], ":")
 	c := f.containers[id]
+	if c != nil && args[1] == id+":/etc/resolv.conf" {
+		const content = "nameserver 127.0.0.1\noptions ndots:0 timeout:1 attempts:1\n"
+		archive := tar.NewWriter(output)
+		if err := archive.WriteHeader(&tar.Header{Name: "resolv.conf", Mode: 0644, Typeflag: tar.TypeReg, Size: int64(len(content))}); err != nil {
+			return err
+		}
+		if _, err := io.WriteString(archive, content); err != nil {
+			return err
+		}
+		return archive.Close()
+	}
 	if c == nil || !c.readOnly {
 		return errors.New("snapshot reader must be readonly")
 	}
@@ -333,7 +403,7 @@ func (f *environmentBackendModel) Introduce(_ context.Context, id string, _ doma
 func (f *environmentBackendModel) Start(context.Context, string) (TraceReader, error) {
 	return nil, errors.New("legacy observer cannot authorize environment experiments")
 }
-func (f *environmentBackendModel) StartEnvironmentProfile(_ context.Context, id string, _ bool, budget *observationTraceLedger) (TraceReader, error) {
+func (f *environmentBackendModel) StartEnvironmentProfile(_ context.Context, id string, _ bool, budget *observationTraceLedger, _ ...*responderSupply) (TraceReader, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.failure == "observer" {
@@ -398,6 +468,7 @@ func (f *environmentBackendModel) Read(context.Context, string) (ObservationReso
 func (f *environmentBackendModel) Terminate(_ context.Context, _ string, id string) (ObservationResourceLease, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	f.terminations++
 	f.remove(id)
 	f.usage += 100
 	return f.lease(), nil
@@ -418,7 +489,7 @@ func TestNPMEnvironmentFlowUsesTwoFreshWorkspacesAndOneBudget(t *testing.T) {
 		code, _ := result.LimitationCode()
 		t.Fatalf("result=%s/%s err=%v", result.Status(), code, err)
 	}
-	if model.creates != 1 || model.registers != 4 || model.commands != 2 || model.introductions != 2 || model.snapshots != 4 || model.removed != 2 || len(model.containers) != 0 || len(model.volumes) != 0 {
+	if model.creates != 1 || model.registers != 4 || model.commands != 2 || model.introductions != 2 || model.snapshots != 4 || model.removed != 3 || len(model.containers) != 0 || len(model.volumes) != 0 {
 		t.Fatalf("resources were reused, replenished or not drained: creates=%d registrations=%d commands=%d introductions=%d snapshots=%d removed=%d", model.creates, model.registers, model.commands, model.introductions, model.snapshots, model.removed)
 	}
 	states := result.EnvironmentStates()
@@ -447,6 +518,8 @@ func TestNPMEnvironmentPreparationAndFinalStateFailuresCannotComplete(t *testing
 		commands      int
 	}{
 		{"placement", "M3_DYNAMIC_ENVIRONMENT_PREPARATION_FAILED", 0},
+		{"responder-supply", "M3_DYNAMIC_ACCOUNTING_UNAVAILABLE", 0},
+		{"resolver", "M3_DYNAMIC_SETUP_FAILED", 0},
 		{"input-mutated", "M3_DYNAMIC_ENVIRONMENT_INCOMPLETE", 1},
 		{"registration", "M3_DYNAMIC_SETUP_FAILED", 0},
 	} {
@@ -466,6 +539,44 @@ func TestNPMEnvironmentPreparationAndFinalStateFailuresCannotComplete(t *testing
 				if len(reader.records) != 0 {
 					t.Fatal("started observer was not drained")
 				}
+			}
+		})
+	}
+}
+
+func TestNPMResponderFailureAndCancellationCannotCompleteOrLeak(t *testing.T) {
+	for _, failure := range []string{"responder-start", "responder-stop", "responder-cancel"} {
+		t.Run(failure, func(t *testing.T) {
+			backend, model, request := newEnvironmentBackendModel(t)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			model.failure, model.cancel = failure, cancel
+			model.traceRecords = []TraceRecord{{Kind: "network-attempt", Bytes: 1}}
+			result, err := backend.Execute(ctx, request)
+			if err == nil || result.Status() != domain.SandboxIncomplete {
+				t.Fatal("failed responder became completed", result.Status(), err)
+			}
+			if failure == "responder-cancel" && !errors.Is(err, context.Canceled) {
+				t.Fatal("caller cancellation lost", err)
+			}
+			wantCommands := 1
+			if failure == "responder-stop" {
+				wantCommands = 2
+			}
+			if model.commands != wantCommands || model.terminations < 2 || model.creates != 1 || len(model.containers) != 0 || len(model.volumes) != 0 {
+				t.Fatal("failure replenished authorization, ran extra work or leaked owned resources", model.commands, model.terminations)
+			}
+			for _, trace := range model.traces {
+				if len(trace.records) != 0 {
+					t.Fatal("failed responder trace not drained")
+				}
+			}
+			found := false
+			for _, fact := range result.Observations() {
+				found = found || fact.Category() == domain.ObservationNetwork
+			}
+			if !found {
+				t.Fatal("observed network fact lost during failure cleanup")
 			}
 		})
 	}

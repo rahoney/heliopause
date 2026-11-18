@@ -16,6 +16,7 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/deb"
 	"github.com/goreleaser/nfpm/v2/files"
 	_ "github.com/goreleaser/nfpm/v2/rpm"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"golang.org/x/mod/semver"
 )
 
@@ -77,6 +78,7 @@ func buildPackages(version string, epoch int64, assets, output, lock, license st
 		{filepath.Join(assets, "helox-linux-amd64"), versionRoot + "/helox", 0o555},
 		{filepath.Join(assets, "haa_gvisor_observer-linux-amd64"), versionRoot + "/haa_gvisor_observer", 0o555},
 		{filepath.Join(assets, "haa-network-policy-helper-linux-amd64"), versionRoot + "/haa-network-policy-helper", 0o500},
+		{filepath.Join(assets, runtimeidentity.SandboxResponderAssetName), versionRoot + "/" + runtimeidentity.SandboxResponderAssetName, 0o555},
 		{filepath.Join(assets, "haa-release-installer-linux-amd64"), versionRoot + "/haa-release-installer", 0o500},
 		{filepath.Join(assets, "pnpm-linux-amd64"), versionRoot + "/pnpm", 0o555},
 		{filepath.Join(assets, "pnpm-NOTICE.txt"), versionRoot + "/pnpm-NOTICE.txt", 0o444},

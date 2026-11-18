@@ -22,9 +22,9 @@ test -f "$input"
 test ! -L "$input"
 test "$(stat -c '%h' "$input")" = 1
 test "$(stat -c '%u' "$input")" = "$user_id"
-test ! -e /usr/lib/heliopause
-test ! -L /usr/lib/heliopause
 repo=$(cd -- "$(dirname -- "$0")/.." && pwd -P)
+source "$repo/scripts/ci-responder-source.sh"
+haa_ci_require_responder_base
 expected_sha=$(jq -er '.pipx_tool.tool.sha256' "$repo/scripts/runtimes.lock.json")
 expected_size=$(jq -er '.pipx_tool.tool.size' "$repo/scripts/runtimes.lock.json")
 test "$(stat -c '%s' "$input")" = "$expected_size"
@@ -69,8 +69,9 @@ mkdir -m 0755 "$work/upper"
 mkdir -m 0700 "$work/mount-work"
 mount -t overlay overlay -o "lowerdir=/usr/lib,upperdir=$work/upper,workdir=$work/mount-work" /usr/lib
 test "$(stat -c '%a' /usr/lib)" = 755
-mkdir -m 0755 /usr/lib/heliopause /usr/lib/heliopause/versions /usr/lib/heliopause/versions/v0.0.0-ci-fixture
-ln -s versions/v0.0.0-ci-fixture /usr/lib/heliopause/current
+mkdir -m 0755 /usr/lib/heliopause/versions/v0.0.0-ci-fixture
+install -m 0555 -o 0 -g 0 -- "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v0.0.0-ci-fixture/haa-sandbox-responder
+ln -sfnT versions/v0.0.0-ci-fixture /usr/lib/heliopause/current
 installed=/usr/lib/heliopause/versions/v0.0.0-ci-fixture/pipx-runtime-linux-amd64.zip
 install -m 0444 -o 0 -g 0 -- "$input" "$installed"
 test "$(sha256sum "$installed" | cut -d ' ' -f 1)" = "$expected_sha"

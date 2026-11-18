@@ -14,9 +14,9 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
-const dynamicCheckProfileName = "pypi-dynamic-environments-v3"
+const dynamicCheckProfileName = "pypi-dynamic-environments-v4"
 const supplementedObservationEvidenceID = "pypi-supplemented-observations"
-const dynamicEnvironmentDescriptor = runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|unit-subpaths-v1"
+const dynamicEnvironmentDescriptor = runtimeidentity.GVisorPatchSHA256 + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + domain.SandboxEnvironmentStateSchema + "|unit-subpaths-v1|" + runtimeidentity.SandboxResponderInspectionIdentity
 
 // DynamicInspector reconciles the statically admitted observation plan with a
 // consumer-owned gVisor runner. It does not control Docker/gVisor directly.

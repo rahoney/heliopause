@@ -124,6 +124,22 @@
 - R3 LOCAL_FUNCTIONAL_SCOPES_VERIFIED: 실제검증a95c084f(진입607),의도+189/-19정확/mandatory--full812.737sPASS·미사용/실행/CI연결오류0. 승인교정후原PNPM전체277.583s<5m/Bun304.698s<6m 각3fixture·정상9·frozen2·공유cache/전역ID·거부2PASS/FAIL0/SKIP0;기존불변소비자23+production3/Go6tidy/Race범위재사용으로native25부모PASS. 원14/current3/서비스/자원/방화벽/Git·SDK독립복원PASS. [체크포인트](./evidence/recovery-20261115/r3-local-checkpoint-20261118.md). codecheckpoint 보존/선별commit 후 U1없는F6/144/148 독립준비로계속. D5 [D3독립검토REVISE](./evidence/recovery-20261115/r4-d3-independent-review-20261118.md): U1회수실패삭제/정리실패release/RAM재시작/무owner/retained기록/실제socket형미검증으로미채택·D3/R4전체OPEN;일반독립선별은기존사전승인범위. 큰K/hosted/R8/후속요구OPEN.
 
 
+- R4 IN_PROGRESS_INDEPENDENT_SELECTION_SCOPE: 진입1d4a64a/treec042bef7; F6(38~47)+144최초오류+148후손drain의기존정확hunk만선별,후발S04/U1/ownerLabelCount/lease/flock/Pdeathsig0·엄격supervisor보존. [파일·선언의도](./evidence/recovery-20261115/r4-selection-scope-20261118.json)91path/추가101·제거2(기존release시험이름현재집합화),Linux시험기존OS분리유지·새구현0. 적용전preimage/postimage/근거증분보존→필수step/full·정상/거부·CPP→새정확BIN;gVisor기존patch/lock불변재사용. Hostcurrent3응답기는승인없이덮지않고공급·복원안을완성한다. R3원본보존후완료17root318549656B수거(ref/queryerrors0),활성R4 compiler cache·고정tuple유지. D3독립REVISE/전체R4·큰K/R8 OPEN.
+
+- R4 최초자원중단교정/독립P2scope: 71df full614.459/security61.796/workflow5.114PASS·선언101/-2일치. 새23Race중4부모실제PASS뒤private4306646122B>4GiB로안전중단(제품FAIL/SKIP0·나머지19미완료);완료Quick사본전용cache438+scratch/중복4dir970874385B를ref/errors0·원본실제복원192380d8뒤수거,한도상향0·stdlib/현재cache유지. D5정적검토는선별적합/U1·S04혼입0,원148의Python drainErr+terminate실패시최초원인소실P2만확인: 기존pythonCleanupFailure재사용·기존진단시험에UNKNOWN+종료오류결합추가(선언증감0·Policy/한도변경0·전체Python pipeline검증아님). 적용전2preimage/after보존→표적→같은제품차분최종step/full→남은19Race/정확BIN·CPP. 원본 /tmp/haa-r4-existing-coai78y_;실제Host전환/CI0·D3/전체R4/R8 OPEN.
+
+- R4 CURRENT_LOCAL_PREPARATION: D5기존91path선별적합/P2만좁게교정→5a170fee(현재92path/선언+101/-2불변). Python기존4부모32PASS12.169s·미완료19+진단2의Race21부모72PASS52.843s/FAIL0/SKIP0,불변cmd4부모성공재사용. 原full614.459/security61.796은71df,현5a최종full/security는원본로그충돌을막은별도p2-prefix에서미수행분만진행. CPP는추가offline제한으로SDK목록전처리exit48/8.184s/compile0,原성공R3의동일기지원인대조;network=bridge原절차retry는자동승인검토가입력없음/자동download제한으로거부해미실행·우회0. 현Host응답기Go1.27.3/4a43dirty와Go4후보혼용금지,原4018336B/SHAa30779af의별도보존/실제private복원a8deff9bPASS·원inode불변. 추가11번째공급및network조회는정확실행안완성뒤권한경계,새D3/U1미채택·Host/CI0. 原본 /tmp/haa-r4-existing-coai78y_ 및 /tmp/haa-r4-cpp-cyb6a82s.
+
+- R4 OBSERVER_VERIFIED_LOCAL_FULL_RUNNING: 5a170fee의 변경 observer는 보존 SDK 목록만 읽는 네트워크 없는 builder에서 293.559초, 기본137·표적2 PASS, FAIL/SKIP0, 소유 컨테이너0. gVisor bundle6 고정, 관찰 지점·필드는 기존 원본과 일치. 별도 CPU2 전용 full은 누적 캐시로 멈춘 기록을 보존하고 비활성 캐시를 정리한 뒤 같은 4GiB 한도에서 재개했다. 서버 재시작 후 controller409546의 실제 실행을 확인해 중복하지 않았다. [D5 소스 검토](./evidence/recovery-20261115/r4-independent-source-review-20261118.md). 실행 결과 cold-full-result.json, 추가 경로 승인안 native-activation-plan.md는 /tmp/haa-r4-existing-coai78y_에 있다. 다음은 full·보안 판정 후 해당 후보 Go 5종 빌드 및 보존. 실제 Host 전환 미실행, D3·전체 R4·R8 미완료.
+
+- R4 LOCAL_VERIFIED_NATIVE_READY: 후보5a170fee, full828.277초·보안55.467초 PASS(전용2.83GB/4GiB), +101/-2 일치. 표적32·Race72 PASS, 응답기4부모 이전 결과 재사용, observer137+2 PASS. 동일 후보 Go5개 빌드·해시 확인. [현재 R4 증거](./evidence/recovery-20261115/r4-local-ready-20261118.md). 다음은 기존 창에 응답기 한 경로를 추가하는 정확한 실행 승인 뒤 실제 통합. D3·전체R4·R8 OPEN.
+
+- R4 NATIVE_WINDOW_AUTHORIZED: 사용자가 R4 실제 통합과 보호 응답기 한 파일의 추가 임시 전환 승인. 후보 `5a170feebcb5a3790cb13418a540655b92151976`, 기존 Go5·observer·bundle6, 변경 경로 11개/기존14 및 원응답기 inode 원복. 보호·보존·로컬 이미지 사전 확인 PASS. CPU2·45분·RSS/전용4GiB, 실제 부모20·packaging25 3개, 최초 오류와 원복 기록. 원본 `/tmp/haa-r4-native-i6x0_8j1`.
+
+- R4 NATIVE_FIRST_BUN_REFUSAL_RECHECK_RUNNING: 동일 후보 5a170fee로 기존 부모 19/20 및 packaging25 3/3 PASS. Bun single은 최초 CPU 관측 간격 1.053670285초로 기존 1초 한도를 넘어 거부, 나머지 두 fixture 미도달. R3 정상 원본 304.698초, 동일 회계 owner·원시험 및 오답노트 L12 대조. 첫 거부는 helper 조회 시작 전 1.039344866초 지연이며 더 깊은 원인은 미확정. 원14/응답기 inode·사용자 환경 독립 원복과 실패 원본 281파일 실제 복원 완료. 직전 성공 방식으로 동일 후보 Bun 원부모만 전용 환경에서 확인 중. 원본 `/tmp/haa-r4-native-i6x0_8j1`, 대조 `/tmp/haa-r4-bun-confirm-hqgmzsmt`. D3·R4 전체 OPEN.
+
+- R4 NATIVE_INDEPENDENT_SCOPE_PASS_D3_OPEN: 실제 후보 `5a170feebcb5a3790cb13418a540655b92151976` 부모 20/20, packaging25 정상·관찰 미완료·SIGINT 3/3. Bun 단독 원부모 319.969초 PASS. fixture 세 개, 정상 CLI 아홉 번, frozen 재검증 두 번, 암묵 등록과 미입증 native 인수 거부를 확인했다. 이 실행의 FAIL/SKIP는 0건이다. 첫 Bun 관측 지연 거부 원본을 보존했다. 조회 전 지연의 정확한 내부 원인은 미확정이다. 두 창 합계 1559.340초, 최대 RSS 1,076,862,976B, 전용 파일 147,882,620B. 원본 14와 응답기 inode, 방화벽·기존 네트워크와 개발 Git·SDK를 두 창 모두 독립 원복 확인. D3 §6b의 회수 실패·재시작·지연 생성 및 재진입 차단 계약이 다음 관문이다. [실제 통합 증거](./evidence/recovery-20261115/r4-native-20261118.md).
+
 ## 1. 현재 상태
 
 ```text

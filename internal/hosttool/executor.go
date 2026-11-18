@@ -261,6 +261,16 @@ func (e *Executor) RunOutput(ctx context.Context, output io.Writer, name string,
 	return command.Run()
 }
 
+// StartContainerInputOutput carries only the guest init responder control channel.
+func (e *Executor) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
+	command, err := e.command(ctx, "docker", "start", "--attach", "--interactive", "--", id)
+	if err != nil {
+		return err
+	}
+	command.Stdin, command.Stdout = input, output
+	return command.Run()
+}
+
 // RunDiscard executes while discarding both bounded diagnostic streams.
 func (e *Executor) RunDiscard(ctx context.Context, name string, arguments ...string) error {
 	command, err := e.command(ctx, name, arguments...)

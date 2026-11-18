@@ -2,9 +2,11 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -363,6 +365,40 @@ func TestPythonCleanupPreservesPrimaryIncompleteResult(t *testing.T) {
 			t.Fatalf("primary=%s result=%s err=%v", primary, code, err)
 		}
 	}
+	t.Run("unknown-descendants-and-termination-failure", func(t *testing.T) {
+		withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+			switch request.Op {
+			case "profile":
+				_, _ = listener.Write(profileACK(request))
+			case "processes":
+				body, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "processes", "status": "unknown", "container_id": request.ContainerID, "session_generation": request.Generation})
+				_, _ = listener.Write(body)
+			}
+		})
+		id := strings.Repeat("a", 64)
+		registerAdmissionSession(t, id)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		drainErr := awaitObservedProcessDrain(ctx, id)
+		if drainErr == nil {
+			t.Fatal("unknown descendants accepted")
+		}
+		helperErr := errors.New("independent unit termination failure")
+		policy := artifactpypi.ResourcePolicyFromContext(ctx)
+		tx := &pythonTransactionExecutor{profile: "pypi-wheel", policy: policy, transaction: session.String(), started: time.Now(), requestCtx: ctx,
+			lease: ObservationResourceLease{CgroupParent: "parent"}, resources: terminationDiagnosticClient{lease: ObservationResourceLease{CgroupParent: "parent"}, err: helperErr},
+			runtimes: map[string]*pythonPhaseRuntime{id: {id: id, phase: phaseObservation, registered: true, trace: terminationDiagnosticTrace{err: io.EOF}}}}
+		terminationErr := tx.terminatePhase(id)
+		if terminationErr == nil || !strings.Contains(terminationErr.Error(), "helper=RESOURCE_ERROR") {
+			t.Fatal("termination failure lost", terminationErr)
+		}
+		failed, first := pythonIncomplete(session, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+		actual, err := pythonCleanupFailure(session, failed, errors.Join(first, tx.diagnostic("unit-descendants", drainErr)), tx.diagnostic("unit-termination", terminationErr))
+		code, _ := actual.LimitationCode()
+		if actual.Status() != domain.SandboxIncomplete || code != "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE" || !errors.Is(err, drainErr) || !errors.Is(err, terminationErr) || !strings.Contains(err.Error(), "stage=unit-descendants") || !strings.Contains(err.Error(), "stage=unit-termination") {
+			t.Fatal("first descendant failure or independent cleanup failure lost", err)
+		}
+	})
 }
 
 func TestPythonResourceDiagnosticRedactsTransportPayload(t *testing.T) {
