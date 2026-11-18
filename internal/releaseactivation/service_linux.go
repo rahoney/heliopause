@@ -250,12 +250,8 @@ func rootKernelCredentials(body []byte) bool {
 var errServiceNotReady = errors.New("SELF_UPDATE_SERVICE_NOT_READY")
 
 func (c *serviceController) active(ctx context.Context, version string, gid uint32) (_ *serviceProcess, resultErr error) {
-	unit, err := nativePolicyUnit(version)
-	if err != nil {
-		return nil, err
-	}
 	actual, err := readProtected(ctx, policyUnitPath, 16<<10)
-	if err != nil || !bytes.Equal(actual, unit) {
+	if err != nil || !matchesNativePolicyUnit(version, actual) {
 		return nil, errors.Join(ErrUntrusted, err)
 	}
 	state, err := c.query(ctx)
@@ -425,12 +421,8 @@ func (c *serviceController) stopKnown(ctx context.Context, process *serviceProce
 	if process == nil {
 		return ErrUntrusted
 	}
-	unit, err := nativePolicyUnit(diskVersion)
-	if err != nil {
-		return err
-	}
 	actual, err := readProtected(ctx, policyUnitPath, 16<<10)
-	if err != nil || !bytes.Equal(unit, actual) {
+	if err != nil || !matchesNativePolicyUnit(diskVersion, actual) {
 		return errors.Join(ErrUntrusted, err)
 	}
 	state, err := c.query(ctx)
@@ -445,12 +437,8 @@ func (c *serviceController) stopKnown(ctx context.Context, process *serviceProce
 }
 
 func (c *serviceController) start(ctx context.Context, version string, gid uint32) (*serviceProcess, error) {
-	unit, err := nativePolicyUnit(version)
-	if err != nil {
-		return nil, err
-	}
 	actual, err := readProtected(ctx, policyUnitPath, 16<<10)
-	if err != nil || !bytes.Equal(unit, actual) {
+	if err != nil || !matchesNativePolicyUnit(version, actual) {
 		return nil, errors.Join(ErrUntrusted, err)
 	}
 	if err := c.command(ctx, "daemon-reload"); err != nil {

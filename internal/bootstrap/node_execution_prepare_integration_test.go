@@ -48,9 +48,7 @@ func TestLinuxNodeExecutionPreparationIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
+	ctx, observer, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}

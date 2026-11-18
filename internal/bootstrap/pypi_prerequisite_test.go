@@ -12,7 +12,6 @@ import (
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
-	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
 // Explicit local integration: official metadata selection and authenticated
@@ -40,9 +39,7 @@ func TestLinuxInspectionPrerequisiteAcquisitionIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
+	ctx, observer, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}

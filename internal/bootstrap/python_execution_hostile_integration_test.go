@@ -24,18 +24,18 @@ func TestLinuxPythonExecutionHostileIntegration(t *testing.T) {
 	}
 	ctx, stop := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer stop()
-	executor, err := hosttool.NewSystem(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	seen := map[string]bool{}
 	for _, mode := range []string{"outside-read", "network", "clone-exec", "comm-spoof", "readonly"} {
 		if !t.Run(mode, func(t *testing.T) {
+			executor, err := hosttool.NewSystem(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := executor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
 				t.Fatal(err)
@@ -44,9 +44,7 @@ func TestLinuxPythonExecutionHostileIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-				return launcher.StartObserver(start, remote, output)
-			})
+			ctx, observer, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 			if err != nil {
 				t.Fatal(err)
 			}

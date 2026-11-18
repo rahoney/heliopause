@@ -14,6 +14,8 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/releaseinstall"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 	"golang.org/x/sys/unix"
 )
 
@@ -84,13 +86,6 @@ func operationReleaseFixture(t *testing.T, version string) (wireRelease, map[str
 		t.Fatal(err)
 	}
 	sbom["metadata"].(map[string]any)["component"].(map[string]any)["version"] = version
-	body, err := json.Marshal(sbom)
-	if err != nil {
-		t.Fatal(err)
-	}
-	files["helox-release-sbom.cdx.json"] = body
-	metadata := value["sbom"].(map[string]any)
-	metadata["sha256"], metadata["size"] = bodySHA256(body), len(body)
 	for _, raw := range value["assets"].([]any) {
 		asset := raw.(map[string]any)
 		name := asset["name"].(string)
@@ -105,11 +100,26 @@ func operationReleaseFixture(t *testing.T, version string) (wireRelease, map[str
 			}
 		}
 	}
-	body, err = json.Marshal(value)
+	responder := []byte("synthetic native transaction responder " + version)
+	files[runtimeidentity.SandboxResponderAssetName] = responder
+	value["assets"] = append(value["assets"].([]any), map[string]any{
+		"name": runtimeidentity.SandboxResponderAssetName, "platform": "linux/amd64", "role": "sandbox-responder",
+		"sha256": bodySHA256(responder), "size": len(responder),
+	})
+	body, err := json.Marshal(value)
 	if err != nil {
 		t.Fatal(err)
 	}
-	release, err = newWireRelease(body, release.proofs)
+	sbomBody, err := json.Marshal(sbom)
+	if err != nil {
+		t.Fatal(err)
+	}
+	materials, err := releasefixture.BindCurrentRuntime(body, sbomBody, files["helox-runtime-images.json"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	files["helox-release-sbom.cdx.json"], files["helox-runtime-images.json"] = materials.SBOM, materials.Images
+	release, err = newWireRelease(materials.Manifest, release.proofs)
 	if err != nil {
 		t.Fatal(err)
 	}

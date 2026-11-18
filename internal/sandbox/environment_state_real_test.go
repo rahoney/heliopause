@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -31,7 +30,7 @@ func TestEnvironmentStateWorkspaceTransportPrimitive(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
-	runner, err := hosttool.NewSystem(ctx)
+	runner, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}

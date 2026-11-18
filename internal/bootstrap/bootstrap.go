@@ -215,9 +215,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if launcherErr != nil {
 			return launcherErr
 		}
-		observerSupervisor, err = sandbox.NewObserverSupervisor(ctx, func(startContext context.Context, remoteEndpoint, outputEndpoint string) (sandbox.ObserverProcess, error) {
-			return launcher.StartObserver(startContext, remoteEndpoint, outputEndpoint)
-		})
+		ctx, observerSupervisor, err = newProtectedObserverSupervisor(ctx, trustedExecutor, launcher)
 		if err != nil {
 			return err
 		}
@@ -648,6 +646,50 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 	}
 	return command.ExecuteContext(ctx)
+}
+
+func newProtectedObserverSupervisor(ctx context.Context, executor *hosttool.Executor, launcher hosttool.ObserverLauncher) (context.Context, *sandbox.ObserverSupervisor, error) {
+	ctx, err := executor.ProtectExecution(ctx)
+	if err != nil {
+		return ctx, nil, err
+	}
+	if err := executor.PrepareRecoveryObserver(ctx); err != nil {
+		return ctx, nil, err
+	}
+	spawnUncertain := false
+	var observerDone <-chan struct{}
+	supervisor, err := sandbox.NewObserverSupervisor(ctx, func(startContext context.Context, remoteEndpoint, outputEndpoint string) (sandbox.ObserverProcess, error) {
+		process, err := launcher.StartObserver(startContext, remoteEndpoint, outputEndpoint)
+		if err != nil {
+			spawnUncertain = !errors.Is(err, hosttool.ErrObserverNotSpawned)
+			return nil, err
+		}
+		spawnUncertain = true
+		observerDone = process.Done()
+		if err := executor.RecordRecoveryObserver(startContext, process); err != nil {
+			stop, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			return nil, errors.Join(err, process.Stop(stop))
+		}
+		return process, nil
+	})
+	if err != nil {
+		if !spawnUncertain {
+			check, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+			defer cancel()
+			err = errors.Join(err, executor.CancelRecoveryObserver(check))
+		}
+		return ctx, nil, err
+	}
+	guarded, cancel := context.WithCancelCause(ctx)
+	go func() {
+		select {
+		case <-observerDone:
+			cancel(errors.New("protected observer process stopped"))
+		case <-guarded.Done():
+		}
+	}()
+	return guarded, supervisor, nil
 }
 
 func helpRequested(args []string) bool {

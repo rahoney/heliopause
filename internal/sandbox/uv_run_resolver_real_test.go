@@ -12,7 +12,6 @@ import (
 	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 type uvRunActualObserver struct {
@@ -93,7 +92,7 @@ func runUVPublicToolRunResolverCases(t *testing.T, supplemental bool) {
 	for _, mode := range []string{"normal", "incomplete-refused"} {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		supervisor := integrationObserverSupervisor(t)
-		executor, err := hosttool.NewSystem(ctx)
+		executor, err := integrationSystemExecutor(t, ctx)
 		if err != nil {
 			cancel()
 			t.Fatal(err)
@@ -141,7 +140,7 @@ func runUVPublicToolRunResolverCases(t *testing.T, supplemental bool) {
 			resolution := selected.Resolution()
 			nodes, runtime, digest = len(resolution.Graph().Nodes()), resolution.RuntimeIdentity(), resolution.LockfileDigest().String()
 		}
-		closeErr := errors.Join(resolver.Close(), executor.Close(), supervisor.Close())
+		closeErr := errors.Join(resolver.Close(), supervisor.Close())
 		cancel()
 		if closeErr != nil {
 			t.Fatal("actual production resolver cleanup", closeErr)

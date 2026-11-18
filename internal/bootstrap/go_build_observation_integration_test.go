@@ -105,9 +105,7 @@ func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
+	ctx, observer, err := bootstrap.PrepareProtectedObserverIntegration(ctx, executor, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}

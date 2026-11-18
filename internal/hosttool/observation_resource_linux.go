@@ -55,6 +55,8 @@ type ObservationResourceReadTiming struct {
 
 type observationResourceRequest struct {
 	Operation   string `json:"operation"`
+	Owner       string `json:"owner,omitempty"`
+	ObserverPID int    `json:"observer_pid,omitempty"`
 	Transaction string `json:"transaction"`
 	Profile     string `json:"profile,omitempty"`
 	Container   string `json:"container,omitempty"`
@@ -62,6 +64,7 @@ type observationResourceRequest struct {
 }
 
 type observationResourceResponse struct {
+	Owner string                   `json:"owner,omitempty"`
 	OK    bool                     `json:"ok"`
 	Lease ObservationResourceLease `json:"lease"`
 }
@@ -580,25 +583,18 @@ func readObservationCPU(parent string) (uint64, error) {
 
 // ServeObservationResources runs within the existing authenticated helper
 // process. Its socket is independent of resolver-network protocol state.
-func serveObservationResources(ctx context.Context, config policyServiceConfig, executor *Executor) error {
+func serveObservationResources(ctx context.Context, config policyServiceConfig, executor *Executor, recovery *d3Recovery) error {
 	if os.Geteuid() != 0 || executor == nil || filepath.Dir(observationResourceSocket) != filepath.Dir(config.SocketPath) {
 		return errors.New("observation resource helper identity is unavailable")
 	}
 	if _, err := os.Lstat(observationResourceSocket); !errors.Is(err, os.ErrNotExist) {
 		return errors.New("observation resource socket already exists")
 	}
-	listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: observationResourceSocket, Net: "unix"})
+	listener, socketID, err := recovery.publishSocket(observationResourceSocket, config.ClientGID)
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
-	socketID, err := os.Lstat(observationResourceSocket)
-	if err != nil || socketID.Mode()&os.ModeSocket == 0 {
-		return errors.New("observation resource socket identity unavailable")
-	}
-	if os.Chmod(observationResourceSocket, 0o660) != nil || os.Chown(observationResourceSocket, 0, int(config.ClientGID)) != nil {
-		return errors.New("observation resource socket protection failed")
-	}
 	defer func() {
 		current, statErr := os.Lstat(observationResourceSocket)
 		if statErr == nil && os.SameFile(socketID, current) {
@@ -611,6 +607,8 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 	}
 	engine := &observationResourceEngine{executor: executor, keeper: systemdObservationKeeper{executor: executor}, sessions: make(map[string]*observationResourceSession)}
 	var slowReadReports atomic.Uint32
+	var requests sync.WaitGroup
+	defer requests.Wait()
 	go func() { <-ctx.Done(); _ = listener.Close() }()
 	for {
 		connection, err := listener.AcceptUnix()
@@ -621,19 +619,24 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 			return errors.New("accept observation resource client")
 		}
 		accepted := time.Now()
+		requests.Add(1)
 		go func(accepted time.Time) {
+			defer requests.Done()
+			stop := context.AfterFunc(ctx, func() { _ = connection.Close() })
+			defer stop()
 			timing := observationServerReadTiming{started: accepted, dispatched: time.Now()}
 			defer func() {
 				_ = connection.Close()
 				timing.report(os.Stderr, &slowReadReports, time.Now())
 			}()
 			_ = connection.SetDeadline(time.Now().Add(5 * time.Second))
-			peer, err := authorizer.AuthorizePeer(connection)
+			peer, err := exactD3Peer(authorizer, connection)
 			timing.authorized = time.Now()
 			if err != nil {
 				return
 			}
-			body, err := bufio.NewReaderSize(connection, maxObservationResourceMessage+1).ReadSlice('\n')
+			reader := bufio.NewReaderSize(connection, maxObservationResourceMessage+1)
+			body, err := reader.ReadSlice('\n')
 			if err != nil || len(body) < 2 || len(body) > maxObservationResourceMessage {
 				return
 			}
@@ -644,12 +647,29 @@ func serveObservationResources(ctx context.Context, config policyServiceConfig, 
 				return
 			}
 			timing.decoded = time.Now()
+			if request.Operation == "hold" && request.Transaction == "" && request.Container == "" && request.Profile == "" && request.Role == "" && request.Owner == "" && request.ObserverPID == 0 {
+				recovery.hold(ctx, connection, reader, peer)
+				return
+			}
+			generation, err := recovery.authorize(peer)
+			if err != nil {
+				return
+			}
 			timing.authenticatedRead = request.Operation == "read"
 			requestLimit := observationResourceTimeout(request.Operation)
 			_ = connection.SetDeadline(time.Now().Add(requestLimit))
 			requestContext, cancel := context.WithTimeout(ctx, requestLimit)
-			lease, err := engine.apply(requestContext, peer, request)
-			cancel()
+			defer cancel()
+			var lease ObservationResourceLease
+			if request.Operation == "guard-observer" || request.Operation == "guard-observer-prepare" || request.Operation == "guard-observer-abort" {
+				err = recovery.recordObserver(ctx, generation, peer, request)
+			} else if strings.HasPrefix(request.Operation, "guard-") && request.ObserverPID == 0 {
+				err = recovery.dockerRequest(requestContext, generation, request)
+			} else if request.Owner == "" && request.ObserverPID == 0 {
+				lease, err = recovery.observationRequest(requestContext, engine, generation, request)
+			} else {
+				return
+			}
 			timing.applied = time.Now()
 			if err == nil {
 				_ = json.NewEncoder(connection).Encode(observationResourceResponse{OK: true, Lease: lease})

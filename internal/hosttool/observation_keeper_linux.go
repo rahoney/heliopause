@@ -168,6 +168,48 @@ func (k systemdObservationKeeper) Close(ctx context.Context, parent, scope strin
 	}
 }
 
+// recover resumes after a keeper stop whose slice cleanup did not finish.
+func (k systemdObservationKeeper) recover(ctx context.Context, parent string) error {
+	if !validObservationParent(parent) {
+		return errD3Unconfirmed
+	}
+	path, scope := observationKeeperPaths(parent)
+	if k.Verify(ctx, parent, scope) == nil {
+		_, err := k.Close(ctx, parent, scope)
+		return err
+	}
+	service := observationKeeperService(parent)
+	keeper, err := k.executor.Output(ctx, "systemctl", "show", service, "-p", "LoadState", "-p", "ActiveState", "-p", "ControlGroup", "-p", "MainPID", "-p", "Job")
+	if err != nil || len(keeper) > 1024 || !exactSystemdProperty(keeper, "ActiveState", "inactive") ||
+		!exactSystemdProperty(keeper, "MainPID", "0") && !exactSystemdProperty(keeper, "LoadState", "not-found") ||
+		!exactSystemdProperty(keeper, "ControlGroup", "") || !exactSystemdProperty(keeper, "Job", "") {
+		return errD3Unconfirmed
+	}
+	slice, err := k.executor.Output(ctx, "systemctl", "show", parent, "-p", "LoadState", "-p", "ActiveState", "-p", "ControlGroup", "-p", "CPUAccounting", "-p", "Job")
+	if err != nil || len(slice) > 1024 || !exactSystemdProperty(slice, "Job", "") || verifyDrainedScope(path) != nil {
+		return errD3Unconfirmed
+	}
+	if _, statErr := os.Lstat(path); errors.Is(statErr, os.ErrNotExist) && exactSystemdProperty(slice, "LoadState", "not-found") &&
+		exactSystemdProperty(slice, "ActiveState", "inactive") && exactSystemdProperty(slice, "ControlGroup", "") {
+		return nil
+	}
+	if !exactSystemdProperty(slice, "CPUAccounting", "yes") ||
+		!exactSystemdProperty(slice, "ControlGroup", "/"+parent) {
+		return errD3Unconfirmed
+	}
+	if err := k.executor.RunDiscard(ctx, "systemctl", "stop", parent); err != nil {
+		return err
+	}
+	if err := k.executor.RunDiscard(ctx, "systemctl", "revert", parent); err != nil {
+		return err
+	}
+	_, err = os.Lstat(path)
+	if !errors.Is(err, os.ErrNotExist) {
+		return errD3Unconfirmed
+	}
+	return nil
+}
+
 func systemdProperty(body []byte, key string) (string, bool) {
 	value, found := "", false
 	for _, line := range strings.Split(strings.TrimSpace(string(body)), "\n") {

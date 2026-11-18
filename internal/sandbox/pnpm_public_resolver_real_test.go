@@ -16,7 +16,6 @@ import (
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/evidence/local"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -32,15 +31,10 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {

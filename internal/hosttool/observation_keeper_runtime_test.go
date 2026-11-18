@@ -29,33 +29,53 @@ func TestObservationKeeperPinnedLocalRuntime(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer executor.Close()
-	id, err := domain.NewSandboxSessionID()
-	if err != nil {
-		t.Fatal(err)
-	}
-	parent, err := observationParent(id.String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	k := systemdObservationKeeper{executor: executor}
-	t.Cleanup(func() {
-		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 15*time.Second)
-		defer cleanupCancel()
-		_ = executor.RunDiscard(cleanupCtx, "systemctl", "stop", observationKeeperService(parent), parent)
-		_ = executor.RunDiscard(cleanupCtx, "systemctl", "revert", parent)
-	})
-	path, scope, baseline, err := k.Start(ctx, parent)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := k.Verify(ctx, parent, scope); err != nil {
-		t.Fatal(err)
-	}
-	usage, err := k.Close(ctx, parent, scope)
-	if err != nil || usage < baseline {
-		t.Fatalf("final CPU accounting = %d, baseline = %d, error = %v", usage, baseline, err)
-	}
-	if _, err := os.Lstat(path); !os.IsNotExist(err) {
-		t.Fatalf("transaction parent remains after close: %v", err)
+	for _, scenario := range []struct {
+		name        string
+		interrupted bool
+	}{{"normal", false}, {"after-keeper-stopped", true}} {
+		t.Run(scenario.name, func(t *testing.T) {
+			interrupted := scenario.interrupted
+			id, err := domain.NewSandboxSessionID()
+			if err != nil {
+				t.Fatal(err)
+			}
+			parent, err := observationParent(id.String())
+			if err != nil {
+				t.Fatal(err)
+			}
+			k := systemdObservationKeeper{executor: executor}
+			t.Cleanup(func() {
+				cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 15*time.Second)
+				defer cleanupCancel()
+				_ = executor.RunDiscard(cleanupCtx, "systemctl", "stop", observationKeeperService(parent), parent)
+				_ = executor.RunDiscard(cleanupCtx, "systemctl", "revert", parent)
+			})
+			path, scope, baseline, err := k.Start(ctx, parent)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := k.Verify(ctx, parent, scope); err != nil {
+				t.Fatal(err)
+			}
+			if interrupted {
+				if err := executor.RunDiscard(ctx, "systemctl", "stop", observationKeeperService(parent)); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := os.Lstat(path); err != nil {
+					t.Fatalf("the stopped keeper must still have its recorded slice: %v", err)
+				}
+				if err := k.recover(ctx, parent); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				usage, err := k.Close(ctx, parent, scope)
+				if err != nil || usage < baseline {
+					t.Fatalf("final CPU accounting = %d, baseline = %d, error = %v", usage, baseline, err)
+				}
+			}
+			if _, err := os.Lstat(path); !os.IsNotExist(err) {
+				t.Fatalf("transaction parent remains after close: %v", err)
+			}
+		})
 	}
 }

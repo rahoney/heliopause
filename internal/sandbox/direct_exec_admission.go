@@ -40,7 +40,16 @@ var sessionEntropy = rand.Read
 
 type directExecAdmissionRequired interface{ RequiresDirectExecAdmission() }
 
+type dockerRecoveryLabeler interface{ DockerRecoveryLabel() (string, string) }
+
 type admissionAwareCommandRunner struct{ runner CommandRunner }
+
+func (r *admissionAwareCommandRunner) DockerRecoveryLabel() (string, string) {
+	if labeler, ok := r.runner.(dockerRecoveryLabeler); ok {
+		return labeler.DockerRecoveryLabel()
+	}
+	return "", ""
+}
 
 func admissionAwareRunner(runner CommandRunner) CommandRunner {
 	if runner == nil {

@@ -61,18 +61,18 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 	}
 	ctx, stop := context.WithTimeout(context.Background(), budget)
 	defer stop()
-	executor, err := hosttool.NewSystem(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	var previous string
 	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof", "readonly", "deadline"} {
 		if !t.Run(mode, func(t *testing.T) {
+			executor, err := hosttool.NewSystem(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := executor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
 				t.Fatal(err)
@@ -93,9 +93,7 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			observer, err := sandbox.NewObserverSupervisor(run, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-				return launcher.StartObserver(start, remote, output)
-			})
+			run, observer, err := newProtectedObserverSupervisor(run, executor, launcher)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -36,12 +36,31 @@ func nativeVersionPath(version, name string) string {
 // nativePolicyUnit is the exact unit explicitly owned by native bootstrap.
 // Package/foreign units and drop-ins are not silently adopted by an update.
 func nativePolicyUnit(version string) ([]byte, error) {
+	return renderNativePolicyUnit(version, true)
+}
+
+func renderNativePolicyUnit(version string, recovery bool) ([]byte, error) {
 	if !exactVersion(version) {
 		return nil, ErrUntrusted
 	}
+	helper := nativeVersionPath(version, "haa-network-policy-helper-linux-amd64")
+	recoveryOptions := ""
+	if recovery {
+		recoveryOptions = "ExecStopPost=" + helper + " recover\nStateDirectory=heliopause-recovery\nStateDirectoryMode=0700\n"
+	}
 	return []byte("[Unit]\nDescription=Heliopause typed network-policy helper\nAfter=docker.service\nConditionPathExists=" + policyConfigPath + "\n\n" +
-		"[Service]\nType=simple\nExecStart=" + nativeVersionPath(version, "haa-network-policy-helper-linux-amd64") + " serve\nUser=root\nGroup=root\nUMask=0077\n" +
+		"[Service]\nType=simple\nExecStart=" + helper + " serve\n" + recoveryOptions + "User=root\nGroup=root\nUMask=0077\n" +
 		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\nKillMode=control-group\nTimeoutStopSec=15s\n\n[Install]\nWantedBy=multi-user.target\n"), nil
+}
+
+func matchesNativePolicyUnit(version string, body []byte) bool {
+	for _, recovery := range []bool{false, true} {
+		unit, err := renderNativePolicyUnit(version, recovery)
+		if err == nil && bytes.Equal(unit, body) {
+			return true
+		}
+	}
+	return false
 }
 
 func parseNativeConfigs(journal updateJournal) (nativePolicyConfig, hosttool.Config, error) {
@@ -82,8 +101,7 @@ func parseNativeInstallationConfigs(record registration, configs [3]savedConfig)
 	if host.DockerEndpoint != "unix://"+endpoint || !filepath.IsAbs(endpoint) || filepath.Clean(endpoint) != endpoint || strings.ContainsAny(endpoint, "\x00\r\n") {
 		return policy, host, ErrUntrusted
 	}
-	unit, err := nativePolicyUnit(record.Version)
-	if err != nil || !bytes.Equal(unit, configs[2].Body) {
+	if !matchesNativePolicyUnit(record.Version, configs[2].Body) {
 		return policy, host, ErrUntrusted
 	}
 	return policy, host, nil

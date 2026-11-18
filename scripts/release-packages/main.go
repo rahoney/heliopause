@@ -163,8 +163,8 @@ func regularInput(path string) error {
 
 func policyService(versionRoot string) string {
 	return "[Unit]\nDescription=Heliopause typed network-policy helper\nAfter=docker.service\nConditionPathExists=/etc/heliopause/network-policy.json\n\n" +
-		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper serve\nUser=root\nGroup=root\nUmask=0077\n" +
-		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
+		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper serve\nExecStopPost=" + versionRoot + "/haa-network-policy-helper recover\nUser=root\nGroup=root\nUmask=0077\n" +
+		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nStateDirectory=heliopause-recovery\nStateDirectoryMode=0700\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
 }
 
 const packageReadme = `This package installs versioned native payload and a CLI symlink.

@@ -40,15 +40,10 @@ func TestPNPMPublicColdToolRunSelectionIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {

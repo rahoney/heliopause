@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "serve" {
+	if len(os.Args) == 2 && (os.Args[1] == "serve" || os.Args[1] == "recover") {
 		os.Clearenv()
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -36,14 +36,18 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		}
 		return 0
 	}
-	if len(args) != 1 || args[0] != "serve" || ctx == nil {
+	if len(args) != 1 || (args[0] != "serve" && args[0] != "recover") || ctx == nil {
 		_, _ = fmt.Fprintln(stderr, "haa-network-policy-helper: unsupported operation")
 		return 1
 	}
 	if err := ctx.Err(); err != nil {
 		return 1
 	}
-	if err := hosttool.ServeNetworkPolicy(ctx); err != nil {
+	operation := hosttool.ServeNetworkPolicy
+	if args[0] == "recover" {
+		operation = hosttool.RecoverProtectedExecution
+	}
+	if err := operation(ctx); err != nil {
 		_, _ = fmt.Fprintf(stderr, "haa-network-policy-helper: %v\n", err)
 		return 1
 	}

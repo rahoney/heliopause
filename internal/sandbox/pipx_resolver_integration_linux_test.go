@@ -36,15 +36,10 @@ func TestLinuxPipxPublicInstallResolverIntegration(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	client, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)
@@ -249,15 +244,10 @@ func TestLinuxPipxPublicOriginalUpgradeIntegration(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	client, err := hosttool.NewSystemObservationResourceClient()
 	if err != nil {
 		t.Fatal(err)

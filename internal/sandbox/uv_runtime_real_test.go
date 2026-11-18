@@ -13,7 +13,6 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -117,15 +116,10 @@ func withActualUVNativeRuntimeInput(t *testing.T, frozen *pipxNativeInput, opera
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	runner := admissionAwareRunner(executor)
 	tool, err := prepareUVTool(ctx, runner)
 	if err != nil {

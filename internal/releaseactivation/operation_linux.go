@@ -505,9 +505,9 @@ func (c *serviceController) quiesce(ctx context.Context, journal updateJournal, 
 	if err != nil {
 		return err
 	}
-	oldUnit, err := nativePolicyUnit(old.Version())
-	if err != nil {
-		return err
+	oldUnit := journal.Configs[2].Body
+	if !matchesNativePolicyUnit(old.Version(), oldUnit) {
+		return ErrUntrusted
 	}
 	newUnit, err := nativePolicyUnit(journal.Version)
 	if err != nil {

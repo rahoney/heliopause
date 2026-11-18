@@ -20,7 +20,6 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -216,15 +215,10 @@ func withActualNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTargetL
 	wantFailure, wantEvents, wantArtifactExecs := expect.failure, expect.events, expect.artifactExecs
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	runner := admissionAwareRunner(executor)
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {

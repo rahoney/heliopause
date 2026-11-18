@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os/exec"
 	"runtime"
 	"slices"
@@ -142,11 +143,20 @@ func (s *responderSupply) verify(ctx context.Context, runner CommandRunner) erro
 	if s == nil || ctx == nil || runner == nil || s.name != "haa-responder-"+s.owner || s.owner == "" || len(s.digest) != 64 {
 		return errResponderSupply
 	}
+	labels := map[string]string{responderSupplyLabel: s.owner, closureManifestLabel: s.digest}
+	if owned, ok := runner.(dockerRecoveryLabeler); ok {
+		if key, value := owned.DockerRecoveryLabel(); key != "" {
+			if _, exists := labels[key]; exists || value == "" {
+				return errResponderSupply
+			}
+			labels[key] = value
+		}
+	}
 	body, err := runner.Output(ctx, "docker", "volume", "inspect", "--format", "{{json .}}", s.name)
 	var actual dockerVolumeInspection
 	if err != nil || len(body) == 0 || len(body) > 16<<10 || json.Unmarshal(body, &actual) != nil ||
 		actual.Name != s.name || actual.Driver != "local" || actual.Scope != "local" || len(actual.Options) != 0 ||
-		len(actual.Labels) != 2 || actual.Labels[responderSupplyLabel] != s.owner || actual.Labels[closureManifestLabel] != s.digest ||
+		!maps.Equal(actual.Labels, labels) ||
 		actual.CreatedAt == "" || actual.Mountpoint == "" || s.createdAt != "" && (s.createdAt != actual.CreatedAt || s.mountpoint != actual.Mountpoint) {
 		return errResponderSupply
 	}

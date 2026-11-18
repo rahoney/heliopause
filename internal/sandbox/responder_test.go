@@ -2,12 +2,64 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"strings"
 	"testing"
 	"time"
 )
+
+type responderInspectionRunner struct {
+	body       []byte
+	key, owner string
+}
+
+func (r responderInspectionRunner) Output(context.Context, string, ...string) ([]byte, error) {
+	return r.body, nil
+}
+
+func (responderInspectionRunner) RequiresDirectExecAdmission() {}
+
+func (r responderInspectionRunner) DockerRecoveryLabel() (string, string) { return r.key, r.owner }
+
+func TestResponderSupplyRequiresExactRecoveryOwner(t *testing.T) {
+	const recoveryKey = "io.heliopause.process-owner"
+	for _, item := range []struct {
+		name, expected, actual string
+		extra, wantError       bool
+	}{
+		{name: "original"},
+		{name: "protected", expected: "current", actual: "current"},
+		{name: "foreign", expected: "current", actual: "other", wantError: true},
+		{name: "missing", expected: "current", wantError: true},
+		{name: "extra", expected: "current", actual: "current", extra: true, wantError: true},
+		{name: "unexpected-owner", actual: "other", wantError: true},
+	} {
+		t.Run(item.name, func(t *testing.T) {
+			s := responderSupply{name: "haa-responder-fixture", owner: "fixture", digest: strings.Repeat("a", 64)}
+			labels := map[string]string{responderSupplyLabel: s.owner, closureManifestLabel: s.digest}
+			if item.actual != "" {
+				labels[recoveryKey] = item.actual
+			}
+			if item.extra {
+				labels["foreign"] = "extra"
+			}
+			volume := dockerVolumeInspection{Name: s.name, Driver: "local", Scope: "local", CreatedAt: "known", Mountpoint: "/fixture", Labels: labels}
+			body, err := json.Marshal(volume)
+			if err != nil {
+				t.Fatal(err)
+			}
+			runner := responderInspectionRunner{body: body, owner: item.expected}
+			if item.expected != "" {
+				runner.key = recoveryKey
+			}
+			if err := s.verify(context.Background(), admissionAwareRunner(runner)); (err != nil) != item.wantError {
+				t.Fatalf("verify: %v", err)
+			}
+		})
+	}
+}
 
 type responderControllerModel struct {
 	terminate chan struct{}

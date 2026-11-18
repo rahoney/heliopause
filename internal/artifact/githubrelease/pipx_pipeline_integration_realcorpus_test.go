@@ -5,6 +5,7 @@ package githubrelease_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -98,12 +99,28 @@ func TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging(t *testing.T) {
 			t.Error(err)
 		}
 	}()
+	ctx, err = executor.ProtectExecution(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := executor.PrepareRecoveryObserver(ctx); err != nil {
+		t.Fatal(err)
+	}
 	launcher, err := hosttool.NewSystemObserverLauncher()
 	if err != nil {
 		t.Fatal(err)
 	}
 	supervisor, err := sandbox.NewObserverSupervisor(ctx, func(c context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(c, remote, output)
+		observer, err := launcher.StartObserver(c, remote, output)
+		if err != nil {
+			return nil, err
+		}
+		if err := executor.RecordRecoveryObserver(c, observer); err != nil {
+			stop, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			return nil, errors.Join(err, observer.Stop(stop))
+		}
+		return observer, nil
 	})
 	if err != nil {
 		t.Fatal(err)

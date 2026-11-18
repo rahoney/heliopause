@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"os"
 	"path/filepath"
 	"slices"
@@ -125,15 +124,10 @@ func TestResponderSupplyDATAIntegration(t *testing.T) {
 	must(os.Symlink("versions/v1.0.0-s02-data", filepath.Join(root, "current")))
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supply, err := prepareResponderSupply(ctx, executor, root)
 	if err != nil {
 		t.Fatal("fixed source/never-started DATA failed", err)
@@ -205,11 +199,10 @@ func TestResponderRoleDATAIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer executor.Close()
 	runner := admissionAwareRunner(executor)
 	supply, err := prepareResponderSupply(ctx, runner, os.Getenv("HELOX_RESPONDER_SOURCE_INSTALLATION"))
 	if err != nil {

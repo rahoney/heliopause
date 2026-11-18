@@ -26,18 +26,18 @@ func TestLinuxPythonExecutionBoundaryIntegration(t *testing.T) {
 	}
 	ctx, stop := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer stop()
-	executor, err := hosttool.NewSystem(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	seen := map[string]bool{}
 	for _, mode := range []string{"argv", "exit37", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "deadline"} {
 		if !t.Run(mode, func(t *testing.T) {
+			executor, err := hosttool.NewSystem(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if err := executor.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {
 				t.Fatal(err)
@@ -54,12 +54,12 @@ func TestLinuxPythonExecutionBoundaryIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			// Caller cancellation does not end the trusted observer cleanup lifetime.
-			observer, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-				return launcher.StartObserver(start, remote, output)
-			})
+			guarded, observer, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 			if err != nil {
 				t.Fatal(err)
 			}
+			stopGuard := context.AfterFunc(guarded, func() { cancel(context.Cause(guarded)) })
+			defer stopGuard()
 			defer func() {
 				if err := observer.Close(); err != nil {
 					t.Error(err)

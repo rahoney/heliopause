@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -374,14 +375,58 @@ func linuxBuildBackendWheel(t *testing.T) []byte {
 	return output.Bytes()
 }
 
+// The authenticated native fixtures share the production executor and lease.
+// The test's own raw Docker probes remain available before execution and for
+// fixtures that intentionally inspect Docker state without launching a guest.
+var integrationExecutors sync.Map
+
+func integrationSystemExecutor(t *testing.T, ctx context.Context) (*hosttool.Executor, error) {
+	t.Helper()
+	if existing, ok := integrationExecutors.Load(t); ok {
+		return existing.(*hosttool.Executor), nil
+	}
+	executor, err := hosttool.NewSystem(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := executor.ProtectExecution(ctx); err != nil {
+		return nil, errors.Join(err, executor.Close())
+	}
+	integrationExecutors.Store(t, executor)
+	t.Cleanup(func() {
+		integrationExecutors.Delete(t)
+		if err := executor.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	return executor, nil
+}
+
 func integrationObserverSupervisor(t *testing.T) *ObserverSupervisor {
 	t.Helper()
+	ctx := context.Background()
+	executor, err := integrationSystemExecutor(t, ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	launcher, err := hosttool.NewObserverLauncher("/usr/libexec/heliopause/haa_gvisor_observer")
 	if err != nil {
 		t.Fatalf("load pinned observer helper: %v", err)
 	}
-	supervisor, err := NewObserverSupervisor(context.Background(), func(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
-		return launcher.StartObserver(ctx, remoteEndpoint, outputEndpoint)
+	if err := executor.PrepareRecoveryObserver(ctx); err != nil {
+		t.Fatal(err)
+	}
+	supervisor, err := NewObserverSupervisor(ctx, func(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
+		observer, err := launcher.StartObserver(ctx, remoteEndpoint, outputEndpoint)
+		if err != nil {
+			return nil, err
+		}
+		if err := executor.RecordRecoveryObserver(ctx, observer); err != nil {
+			stop, cancel := context.WithTimeout(context.Background(), supervisorStopTimeout)
+			defer cancel()
+			return nil, errors.Join(err, observer.Stop(stop))
+		}
+		return observer, nil
 	})
 	if err != nil {
 		t.Fatalf("start observer supervisor: %v", err)
@@ -406,6 +451,9 @@ func integrationResponderSupply(ctx context.Context, runner CommandRunner, insta
 
 func (r integrationRunner) StartContainerInputOutput(ctx context.Context, input io.Reader, output io.Writer, id string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok {
+		return e.(*hosttool.Executor).StartContainerInputOutput(ctx, input, output, id)
+	}
 	executor, err := hosttool.NewSystem(ctx)
 	if err != nil {
 		return err
@@ -443,6 +491,9 @@ func integrationBinary(binary string) string {
 
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).Output(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output, err := command.Output()
 	if err != nil {
@@ -466,6 +517,9 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 
 func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunInput(ctx, input, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdin = input
 	output, err := command.CombinedOutput()
@@ -477,6 +531,9 @@ func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary
 
 func (r integrationRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunDiscard(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
@@ -490,6 +547,9 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunBounded(ctx, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
@@ -500,6 +560,9 @@ func (r integrationRunner) RunBounded(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
 	r.t.Helper()
+	if e, ok := integrationExecutors.Load(r.t); ok && binary == "docker" {
+		return e.(*hosttool.Executor).RunOutput(ctx, output, binary, arguments...)
+	}
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdout = output
 	stderr := &boundedIntegrationOutput{remaining: 16 << 10}

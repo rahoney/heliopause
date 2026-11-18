@@ -142,15 +142,10 @@ func TestLinuxPipxObservedNativeInstallIntegration(t *testing.T) {
 			}()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 			defer cancel()
-			system, err := hosttool.NewSystem(ctx)
+			system, err := integrationSystemExecutor(t, ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() {
-				if err := system.Close(); err != nil {
-					t.Error(err)
-				}
-			}()
 			runner := &pipxNativeSessionActualRunner{CommandRunner: system}
 			client, err := hosttool.NewSystemObservationResourceClient()
 			if err != nil {

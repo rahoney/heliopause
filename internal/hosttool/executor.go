@@ -49,11 +49,14 @@ type identity struct {
 // Executor executes only registered trusted tools with a fresh minimal
 // environment. It never searches PATH or consumes Docker context variables.
 type Executor struct {
-	tools         map[string]identity
-	runscManifest identity
-	endpoint      string
-	endpointID    os.FileInfo
-	clientHome    string
+	tools                map[string]identity
+	runscManifest        identity
+	endpoint             string
+	endpointID           os.FileInfo
+	clientHome           string
+	recovery             *d3LeaseClient
+	releaseRecovery      func() error
+	recoveryObserverDone <-chan struct{}
 }
 
 // RequiresDirectExecAdmission marks this production Host executor as the only
@@ -216,7 +219,11 @@ func (e *Executor) Close() error {
 	}
 	path := e.clientHome
 	e.clientHome = ""
-	return os.RemoveAll(path)
+	var releaseErr error
+	if e.releaseRecovery != nil {
+		releaseErr = e.releaseRecovery()
+	}
+	return errors.Join(releaseErr, os.RemoveAll(path))
 }
 
 // LookPath returns only a registered absolute identity and revalidates it.
@@ -318,6 +325,12 @@ func (b *boundedCommandOutput) Write(data []byte) (int, error) {
 // Run executes one Docker Promotion command. The project argument is already
 // validated by Promotion and is not inherited as process working directory.
 func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error {
+	if e.recovery != nil && len(arguments) > 0 && arguments[0] == "run" {
+		if err := e.runProtectedPromotion(ctx, arguments); err != nil {
+			return errors.New("trusted Docker command failed")
+		}
+		return nil
+	}
 	command, err := e.command(ctx, "docker", arguments...)
 	if err != nil {
 		return err
@@ -328,7 +341,51 @@ func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error 
 	return nil
 }
 
-func (e *Executor) command(ctx context.Context, name string, arguments ...string) (*exec.Cmd, error) {
+type guardedCommand struct {
+	*exec.Cmd
+	finish       func(error) error
+	observerDone <-chan struct{}
+}
+
+func (c *guardedCommand) checkObserver() error {
+	select {
+	case <-c.observerDone:
+		return errors.New("protected observer process stopped before launch")
+	default:
+		return nil
+	}
+}
+
+func (c *guardedCommand) Start() error {
+	if err := c.checkObserver(); err != nil {
+		return err
+	}
+	return c.Cmd.Start()
+}
+
+func (c *guardedCommand) Run() error {
+	if err := c.checkObserver(); err != nil {
+		return err
+	}
+	err := c.Cmd.Run()
+	if c.finish != nil {
+		return c.finish(err)
+	}
+	return err
+}
+
+func (c *guardedCommand) Output() ([]byte, error) {
+	if err := c.checkObserver(); err != nil {
+		return nil, err
+	}
+	body, err := c.Cmd.Output()
+	if c.finish != nil {
+		err = c.finish(err)
+	}
+	return body, err
+}
+
+func (e *Executor) command(ctx context.Context, name string, arguments ...string) (*guardedCommand, error) {
 	if ctx == nil {
 		return nil, errors.New("trusted command context is required")
 	}
@@ -336,7 +393,12 @@ func (e *Executor) command(ctx context.Context, name string, arguments ...string
 	if err != nil {
 		return nil, err
 	}
+	var finish func(error) error
+	var observerDone <-chan struct{}
 	if name == "docker" {
+		if len(arguments) > 0 && (arguments[0] == "start" || arguments[0] == "exec") {
+			observerDone = e.recoveryObserverDone
+		}
 		currentEndpoint, endpointErr := verifyLocalSocket(e.endpoint)
 		if endpointErr != nil || currentEndpoint != e.endpoint {
 			return nil, errors.New("local Docker endpoint changed after validation")
@@ -345,12 +407,16 @@ func (e *Executor) command(ctx context.Context, name string, arguments ...string
 		if statErr != nil || !os.SameFile(e.endpointID, currentInfo) {
 			return nil, errors.New("local Docker endpoint identity changed after validation")
 		}
+		arguments, finish, err = e.protectDocker(ctx, arguments)
+		if err != nil {
+			return nil, err
+		}
 		arguments = dockerArguments(e.endpoint, e.clientHome, arguments)
 	}
 	command := exec.CommandContext(ctx, tool.path, arguments...)
 	command.Env = minimalEnvironment(e.clientHome)
 	command.Stdin = nil
-	return command, nil
+	return &guardedCommand{Cmd: command, finish: finish, observerDone: observerDone}, nil
 }
 
 func dockerArguments(endpoint, clientHome string, arguments []string) []string {

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 // This exercises trusted controller roots, not Artifact Node admission. The
@@ -23,11 +22,10 @@ func TestLinuxDirectExecKernelTerminalIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer executor.Close()
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
 	for _, test := range []struct {

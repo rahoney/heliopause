@@ -12,7 +12,6 @@ import (
 	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 // The shared pipx-named helpers below hold only authenticated wheel DATA.
@@ -27,15 +26,10 @@ func publicUVToolRunInput(t *testing.T) *pipxNativeInput {
 			t.Error(err)
 		}
 	}()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	resolver, err := NewLinuxUVResolverWithExecutorAndPolicy(executor, supervisor.Observer(), integrationResolverPolicyService(t))
 	if err != nil {
 		t.Fatal(err)

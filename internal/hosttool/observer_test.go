@@ -58,6 +58,29 @@ func stopObserverChild(t *testing.T, process ObserverProcess) {
 	}
 }
 
+func TestObserverStartFailureIdentifiesMissingChild(t *testing.T) {
+	_, remote, output := observerChildPaths(t)
+	missing := filepath.Join(t.TempDir(), "absent")
+	if child, err := startObserverProcess(context.Background(), missing, remote, output); child != nil || !errors.Is(err, ErrObserverNotSpawned) {
+		t.Fatalf("known start failure: child=%v, err=%v", child, err)
+	}
+}
+
+func TestObserverExitRevokesPreparedCommand(t *testing.T) {
+	done := make(chan struct{})
+	prepared := &guardedCommand{observerDone: done}
+	close(done)
+	if err := prepared.Start(); err == nil {
+		t.Fatal("async command accepted after observer exit")
+	}
+	if err := prepared.Run(); err == nil {
+		t.Fatal("command accepted after observer exit")
+	}
+	if _, err := prepared.Output(); err == nil {
+		t.Fatal("output command accepted after observer exit")
+	}
+}
+
 func TestObserverReadyChildSurvivesOperationCancellationUntilOwnedStop(t *testing.T) {
 	executable, remote, output := observerChildPaths(t)
 	ctx, cancel := context.WithCancel(context.Background())

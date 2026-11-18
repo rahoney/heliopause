@@ -5,6 +5,7 @@ package releaseactivation
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/hosttool"
@@ -90,5 +91,26 @@ func TestRuntimeConfigDerivationKeepsHostIdentity(t *testing.T) {
 				t.Fatal("foreign managed config was adopted")
 			}
 		})
+	}
+}
+
+func TestD3NativePolicyUnitKeepsExactLegacyAndRecoveryForms(t *testing.T) {
+	current, err := nativePolicyUnit("v1.2.3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy, err := renderNativePolicyUnit("v1.2.3", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	action := "ExecStopPost=/usr/lib/heliopause/versions/v1.2.3/haa-network-policy-helper-linux-amd64 recover\n"
+	state := "StateDirectory=heliopause-recovery\nStateDirectoryMode=0700\n"
+	if !strings.Contains(string(current), action+state) || strings.Contains(string(legacy), "ExecStopPost=") ||
+		strings.Contains(string(legacy), "StateDirectory=") {
+		t.Fatal("recovery action and private state directory must belong to the recovery unit")
+	}
+	if !matchesNativePolicyUnit("v1.2.3", legacy) || !matchesNativePolicyUnit("v1.2.3", current) ||
+		matchesNativePolicyUnit("v1.2.4", current) || matchesNativePolicyUnit("v1.2.3", append(legacy, byte(' '))) {
+		t.Fatal("unit matcher did not enforce exact release identity")
 	}
 }

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -95,15 +94,10 @@ func withActualPNPMNativeRuntimePolicy(t *testing.T, online bool, operation func
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	runner := admissionAwareRunner(executor)
 	tool, err := preparePNPMTool(ctx)
 	if err != nil {
@@ -291,15 +285,10 @@ func TestPNPMActualReleaseArtifactProbe(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {

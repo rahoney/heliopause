@@ -350,9 +350,7 @@ func npmProjectIntegrationRuntime(t *testing.T, ctx context.Context) (sandbox.Tr
 	if err != nil {
 		t.Fatal(err)
 	}
-	supervisor, err := sandbox.NewObserverSupervisor(ctx, func(start context.Context, remote, output string) (sandbox.ObserverProcess, error) {
-		return launcher.StartObserver(start, remote, output)
-	})
+	ctx, supervisor, err := newProtectedObserverSupervisor(ctx, executor, launcher)
 	if err != nil {
 		t.Fatal(err)
 	}

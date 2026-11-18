@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"net"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -85,20 +84,25 @@ func ServeNetworkPolicy(ctx context.Context) error {
 	if err := verifyPolicySocketParent(config.SocketPath); err != nil {
 		return err
 	}
-	if _, err := os.Lstat(config.SocketPath); !errors.Is(err, os.ErrNotExist) {
-		return errors.New("network policy socket is already owned")
-	}
-	hostConfig, err := loadSystemConfig()
-	if err != nil {
-		return err
-	}
-	// Only the root-owned policy service requests firewall identities; the
-	// ordinary product executor is always constructed without them.
-	executor, err := newExecutor(ctx, hostConfig, true)
+	executor, err := newD3Executor(ctx)
 	if err != nil {
 		return err
 	}
 	defer executor.Close()
+	if err := verifyD3Unit(ctx, executor); err != nil {
+		return err
+	}
+	recovery, err := openD3Recovery(executor, true)
+	if err != nil {
+		return err
+	}
+	defer recovery.journal.lock.Close()
+	recoverCtx, cancelRecovery := context.WithTimeout(ctx, d3RecoveryTimeout)
+	err = recovery.recover(recoverCtx, true)
+	cancelRecovery()
+	if err := errors.Join(err, recovery.retireHelperSockets(config)); err != nil {
+		return err
+	}
 	authorizer, err := NewPolicyPeerAuthorizer(config.ClientPath, config.ClientUID)
 	if err != nil {
 		return err
@@ -107,16 +111,16 @@ func ServeNetworkPolicy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: config.SocketPath, Net: "unix"})
+	engine.beginMutation = recovery.beginPolicyMutation
+	engine.endMutation = recovery.endPolicyMutation
+	if _, err := os.Lstat(config.SocketPath); !errors.Is(err, os.ErrNotExist) {
+		return errors.New("network policy socket is already owned")
+	}
+	listener, info, err := recovery.publishSocket(config.SocketPath, config.ClientGID)
 	if err != nil {
-		return errors.New("bind network policy socket")
+		return err
 	}
-	info, err := os.Lstat(config.SocketPath)
-	if err != nil || info.Mode()&os.ModeSocket == 0 || os.Chmod(config.SocketPath, 0o660) != nil || os.Chown(config.SocketPath, 0, int(config.ClientGID)) != nil {
-		_ = listener.Close()
-		return errors.New("protect network policy socket")
-	}
-	server, err := networkpolicy.NewServer(listener, authorizer, engine)
+	server, err := networkpolicy.NewServer(listener, d3PolicyAuthorizer{peer: authorizer, recovery: recovery}, engine)
 	if err != nil {
 		_ = listener.Close()
 		return err
@@ -131,7 +135,7 @@ func ServeNetworkPolicy(ctx context.Context) error {
 	defer cancel()
 	resourceResult := make(chan error, 1)
 	networkResult := make(chan error, 1)
-	go func() { resourceResult <- serveObservationResources(serviceContext, config, executor) }()
+	go func() { resourceResult <- serveObservationResources(serviceContext, config, executor, recovery) }()
 	go func() { networkResult <- server.Serve(serviceContext) }()
 	select {
 	case err := <-resourceResult:
@@ -183,3 +187,15 @@ func verifyPolicySocket(path string, group uint32) error {
 }
 
 func verifyPolicySocketParent(path string) error { return verifyTrustedParents(filepath.Dir(path)) }
+
+// Only the installed root helper obtains firewall and system service tools.
+func newD3Executor(ctx context.Context) (*Executor, error) {
+	if os.Geteuid() != 0 {
+		return nil, errors.New("protected execution helper requires root")
+	}
+	config, err := loadSystemConfig()
+	if err != nil {
+		return nil, err
+	}
+	return newExecutor(ctx, config, true)
+}

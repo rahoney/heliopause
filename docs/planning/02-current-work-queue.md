@@ -140,6 +140,48 @@
 
 - R4 NATIVE_INDEPENDENT_SCOPE_PASS_D3_OPEN: 실제 후보 `5a170feebcb5a3790cb13418a540655b92151976` 부모 20/20, packaging25 정상·관찰 미완료·SIGINT 3/3. Bun 단독 원부모 319.969초 PASS. fixture 세 개, 정상 CLI 아홉 번, frozen 재검증 두 번, 암묵 등록과 미입증 native 인수 거부를 확인했다. 이 실행의 FAIL/SKIP는 0건이다. 첫 Bun 관측 지연 거부 원본을 보존했다. 조회 전 지연의 정확한 내부 원인은 미확정이다. 두 창 합계 1559.340초, 최대 RSS 1,076,862,976B, 전용 파일 147,882,620B. 원본 14와 응답기 inode, 방화벽·기존 네트워크와 개발 Git·SDK를 두 창 모두 독립 원복 확인. D3 §6b의 회수 실패·재시작·지연 생성 및 재진입 차단 계약이 다음 관문이다. [실제 통합 증거](./evidence/recovery-20261115/r4-native-20261118.md).
 
+- R4 D3_APPLICATION_REVIEW: 진입 `1b894562f5` / tree `dc489bdb206d`. 기존 owner 단위 14부모·21상하위 PASS. 과거 관찰 SIGKILL은 runtime 중단 후 slice 1·재실행255가 남았다. D5 독립 검토의 시작 전 신원/시작 후 회계 분리, 두 helper 소켓 공통 복구, 보호 단위 upgrade/rollback 지적을 [D3 적용안](./evidence/recovery-20261115/r4-d3-application-plan.md)에 반영했다. 실제 개발 단위와 native 단위의 종료·재시작 조건이 다르다. D5 재검토는 구현 방향 승인 가능. resolver 및 Docker 시작→CPU 등록 전 사망의 실물 증명과 제품 반영 계약 승인·별도 Host 통합은 OPEN.
+
+- R4 D3_IMPLEMENTING: 사용자 제품·표적 시험 적용 지시. 진입 1b894562f5/dc489bdb206d. U1에서 검증한 peer 연결 종료와 자원 소유 label만 선별 재사용. 의도 선언은 hosttool의 root 보호 복구 기록·세대별 lease/요청/회수, Executor 시작/생성 연결, helper 시작·종료의 검증된 경로, bootstrap 연결, 해당 단위·재시작·오류 회귀다. 기존 Register/CPU 회계·socket 신원·정책과 다른 작업 보존. 실제 개발 Host 전환과 R5는 별도.
+
+- R4 D3_SOURCE_APPLIED_LOCAL_VERIFICATION: R4 진입 1b894562f5, D3 동결 후보 `8fee77c6a6c29b1b65a6c5e52a3aad9f8917636d`. 보호 lease·기존 Executor/observer/helper/정책 연결, 중단 후 대사·native unit·직접 실물 fixture의 소유/종료 순서 반영. 기존 resolver·승격·forced-stop의 실제 확인 및 이전 updater가 제어하는 첫 단위 전환은 OPEN. [실행과 보호 경계](./evidence/recovery-20261115/r4-d3-application-plan.md). CI/활성 unit 변경 0.
+
+- R4 D3_LOCAL_VERIFIED_NATIVE_OPEN: 후보 `8fee77c6a6c29b1b65a6c5e52a3aad9f8917636d` canonical --full 593.64초·보안 48.27초 PASS, 7패키지 Race 2025 PASS/0 FAIL/129 SKIP, 6 바이너리 빌드·해시 확인, 임시 단위 사본 구문 PASS. 활성 개발 unit에는 독립 복구 훅이 없고 D3 원장 디렉터리도 없다. 실제 gVisor 강제 종료·재시작과 이전 updater의 최초 단위 전환은 OPEN. [실행 증거](./evidence/recovery-20261115/r4-d3-application-plan.md). 제품 코드는 복구 worktree에 보존하며 Host·CI·R5는 미착수.
+
+- R4 D3_NATIVE_WINDOW: 사용자 R4 완주 요청으로 기존 검토 범위의 임시 D3 실물 검증 진행. 후보 `8fee77c6a6c29b1b65a6c5e52a3aad9f8917636d`, 승인된 기존 11경로와 unit·전용 원장. 원14·기존 unit의 보존/복원 검증, 기존 빈 slice와 네트워크 inode/ID 보존. 실물 정상 packaging 뒤 CLI·observer·helper 종료 및 각 재실행. 출처 `/tmp/haa-r4-d3-native-AJITEj52`.
+
+- R4 D3_FIRST_START_FAILED_RESTORED: 후보 `8fee77c6`, 2026-11-18 16:21 helper 최초 오류 `mkdir /var/lib/heliopause-recovery: read-only file system`. 기존 개발 단위의 `ProtectSystem=strict`와 `/run/heliopause-network-policy` 한정 쓰기 대조로 원인 확인. 실제 설치·중단 시험 미도달. 원복 자가 검사에 검토한 후보 unit 해시가 빠진 별도 오류를 수정해 원래 파일 14개·응답기 inode·다른 자원·정책과 helper 재기동을 독립 확인. 방안은 기존 제약을 보존하고 전용 `StateDirectory` 0700과 그 아래 원장을 개발·패키지·native 단위에 연결한다. 원장 존재 검증·실행 예산·보안 검증 범위는 유지한다. 원본 `/tmp/haa-r4-d3-native-AJITEj52/helper-first-attempt.journal`, `activate.stderr`, `restore-ok.json`.
+
+- R4 D3_HOST_AUTHORITY_AND_UPDATER_FIXTURE: tree `802eca42` 개발 helper 기동·리스너 통과, 정상 packaging은 1.656초에 Docker 미생성·대상 불변으로 거부. 기존 bounded capability로 observer0700 하위 `stat` EACCES와 소유 시험 프로세스 신호 검사 EPERM을 독립 확인. 두 번째 창도 원본14와 응답기 inode·서비스·네트워크·방화벽 복구 확인. 현재 Host 권한을 유지하고 실제 updater 대신 기존 mount/network namespace 회귀를 수행. 2026-10-24 정상 원본 대비 `1b89456` 이후 synthetic native fixture에 필수 고정 responder 역할 누락을 확인했으며 기존 fixture 생성자만 보강한다. 제품 수용 조건과 거부 기대값은 유지한다. 출처 `/tmp/haa-d3nr-pxKEKg5g`, `/tmp/haa-r4-d3-systemd-retry-r5Ini147`.
+
+- R4 D3_BLOCKED_NATIVE_AUTHORITY_AND_FIRST_UPDATE: 기존 R4 `1b89456`에 보존된 정상 증거는 유지. 후보 `802eca42` 기동·원장은 PASS, 정상 실제 packaging은 observer 권한에서 FAIL, 강제 종료 matrix 미도달. same-mount 회수 경계와 읽기·신호 권한 증거를 보존하고 별도 Host 권한 승인 대기. 테스트 보강 후보 `76c08dc6`은 격리 초기 준비·등록·트랜잭션 부모3/하위76 PASS, releaseactivation Race117 PASS·11 SKIP. 실제 서명된 이전 updater의 첫 전환 및 롤백, D3 실제 정상·거부·재시작은 OPEN. 원래 Host 14개/응답기 inode/서비스 복구·새 container/volume 0 확인. R5 미착수. [상세·원본](./evidence/recovery-20261115/r4-d3-application-plan.md#개발-host의-최초-두-검증-창과-updater-회귀-2026-11-18).
+
+- R4 D3_NATIVE_RETRY_SCOPE: 사용자의 필요 시 진행 지시로 기존 임시 검증을 이어간다. `EXDEV` 원본을 기준으로 observer endpoint를 같은 mount 안의 보호 디렉터리로 inode 확인 후 회수. 기존 `renameat2(RENAME_NOREPLACE)`와 신원·실패 시 거부 의미 유지. 적용·점검 뒤 임시 Host 후보에만 앞서 요청한 두 capability와 observer 경로 쓰기를 추가하고, 기존 정상 packaging 및 강제 종료/원복을 검증한다. 설치 기본 권한·한도와 영구 Host는 이 변경에 포함하지 않는다.
+
+- R4 D3_RESPONDER_LABEL_FIX_SCOPE: `a8195859` 임시 unit에서 observer·resolver 실제 실행. 정상 packaging 16.274s/exit10, `M5_PYPI_DYNAMIC_CLOSURE_INVALID`·대상 불변. Docker 응답기 volume create/destroy를 실제 확인. `1b89456`의 두 정확 라벨 검증이 D3 부여 라벨을 거부하는 연결 누락. Execution owner가 기대하는 현재 라벨만 기존 두 라벨에 결합하여 대조. 기존 원래 응답기·다른 label 거부를 보존. 임시 Host 원복 독립 확인. 원본 `/tmp/haa-d3win-JgWg1bR3`.
+
+- R4 D3_RESPONDER_PRODUCTION_ADMISSION_FORWARDING: 후보 `5290b1f9`의 단위26 PASS 후 실제 packaging 17.672s/exit10과 응답기 볼륨 create/destroy, stager 미도달 확인. 성공 R4가 사용하는 `newPythonObservationBackend`의 `admissionAwareCommandRunner`가 새 라벨 조회 메서드를 전달하지 않았다. 기존 wrapper가 정확한 하위 owner를 전달하도록 생산 경로를 연결하고 동일 표적 회귀가 그 wrapper를 실제로 통과하게 한다. 원래 콘텐츠·Docker/관찰 거부 권한 유지, 기존 Host 원복 후 진행. 원본 `/tmp/haa-d3lab-kRClVmxP`.
+
+- R4 D3_NATIVE_NORMAL_PASS_INTERRUPTION_RUNNING: `026e2d12` 실제 packaging 25.0 정상 설치 35.587초, 필수3/Evidence5/ALLOW/승격/import/소유 자원 완료 확인. 기존 observer 경로 권한과 same-mount 회수 교정, 실제 admission wrapper의 소유 라벨 연결을 확인. 임시 시험에서 observer/CLI/helper 강제 종료와 각각의 다음 요청 확인 진행 중. 원본 `/tmp/haa-d3fwd-06bIv7Y1/result.json`.
+
+- R4 D3_PACKAGING_FORCED_STOP_PASS_REMAINDER_OPEN: `026e2d12` 표적 Race26 PASS/0 FAIL/0 SKIP 및 rebuild-step PASS. 실제 packaging 최초·observer·CLI·helper 종료 뒤 정상 4종, 세 SIGKILL 거부와 대상 불변·회수 실측. helper 첫 다음 요청은 소켓 준비 전 거부됐고 같은 후보의 별도 창에서 5.412s 새 PID/리스너2 확인 후 30.533s 정상/승격/import. 종료 훅 첫 exit1은 두 창에서 기록, 정확한 초기 실패 지점 OPEN. 두 창 원본14/기존 자원 독립 복구, container/volume0. resolver/build 중단·동시/지연·실제 서명 이전 updater 첫 전환은 OPEN. R5 미착수. [실행 결과](./evidence/recovery-20261115/r4-d3-application-plan.md#observer-권한볼륨-소유권-교정과-실제-packaging-검증).
+
+- R4 D3_REUSE_RESOLVER_TARGETED: §6b·§8.3과 적용 원장을 대조했다. 실제 서명된 이전 updater에서 첫 전환은 출시 호환성 OPEN으로 추적한다. R4에서 검증할 관리 helper 시작·종료와 정확한 원복 단위 검증은 유지한다. `026e2d12`의 기존 관찰 경계 7종 및 2026-11-12 resolver kill 성공 로그/시작 조건을 재사용한다. 이번 실물 범위는 현재 후보에서 아직 확인하지 않은 고정 packaging resolver 시작 후 CLI SIGKILL·회수·다음 정상 설치다. 기존 제품 후보·한도·필수 검사 변경 없음.
+
+- R4 D3_RESOLVER_FORCED_STOP_PASS: 동일 `026e2d12`, 성공했던 2026-11-12 resolver 시험 재사용. 실제 resolver CLI SIGKILL 10.807s/137, 대상 불변·ALLOW/승격/후속 검사 없음·회수 확인. 다음 정상 33.072s/0·필수 검사·승격·import PASS. 창66.289s, 최대 client RSS137105408B, 원본14·서비스·기존 자원 독립 복구. 관찰7종 재사용. §6b build·동시 소유/지연·불확실 생성과 종료 훅 최초 오류 상세 OPEN. 공식 서명 updater 전환은 출시 호환성 OPEN. [실행](./evidence/recovery-20261115/r4-d3-application-plan.md#기존-성공-증거-재사용과-resolver-종료-실측).
+
+- R4 D3_BUILD_OWNER_WINDOW: `026e2d12` 동일 바이너리, 기존 성공 Go 공개 pflag v1.0.9 fixture, `./...` 및 8분 합산 조건 사용. 실제 compiler 실행 시 같은 UID의 보호 실행 거부와 정상 소유자 완료, 별도 build SIGKILL·원본/기존 결과/별도 시험 컨테이너 보존을 검증한다. 기존 관찰·resolver의 통과는 재사용. 제품 및 기존 성공 시험 변경 없음.
+
+- R4 D3_EXISTING_FAULT_CASE_EXTENSION: 기존 D3 journal/late-create 회귀에서 빈 조회 뒤 실제 owner ID가 나타난다는 대역, 생성 응답 원장 쓰기 오류·새 프로세스의 원장 재개를 같은 기존 recovery fixture에 추가한다. §6b의 지연·미확인 생성 및 기록 실패 범위, 제품 동작·승인 계약 변경 없음.
+
+- R4 D3_FIRST_STOP_DIAGNOSTIC: 026e2d12 실제 helper stop 훅이 초기 중단·소켓 폐기·최종 회수 오류를 한 문장으로 반환해 L12의 최초 오류를 특정할 수 없다. 종료 과정에서 고정된 단계 이름을 붙이고 기존 오류/거부/정리 판단은 유지. 현재 Go 검증과 독립이며 frozen 후보는 변경하지 않는다. helper 강제 종료 재개 경계만 표적 재현한다.
+
+- R4 D3_RECOVERY_ORDER_NARROW_FIX: 실제 `33223c44` SIGKILL 원본에서 초기 정지 당시 `haa-output.sock` 활성 확인. cgroup·기록된 observer 프로세스 정지를 먼저 하고, inode/소켓 회수는 기존 최종 회수에 맡긴다. D5의 중단된 정책 제거 문제는 정확한 기록에 제거 중 표식을 추가하고 이전 helper가 정지한 재개에서만 검증 후 해당 기록을 해소. 미확인 create 및 같은 helper의 진행 중 제거는 계속 차단. 재시작 전체 경로의 회귀를 연결한다. 보호 계약·한도·일반 명령과 R5 범위 유지.
+
+- R4 D3_D5_LAUNCH_BOUNDARY_CORRECTION: 독립 검토가 이전 관찰 기동 fail/no-spawn 구분과 observer 종료 뒤 보류된 시작 취소를 확인 요청. 기존 Launcher가 OS child를 시작하지 않았음을 확인하는 실패만 표시, 기존 `CancelRecoveryObserver`의 endpoint 증거 대사를 사용. 실제 소유 observer child 종료 채널을 기존 명령 context 취소에 연결한다. exact ID 회수/UNKNOWN 원장 거부는 유지. 동일 보호 연결로 정상/observer 종료 회귀를 재측정한다.
+
+- R4 D3_KEEPER_EXISTING_RUNTIME_TEST: D5의 keeper stop 뒤 slice 재개는 기존 태그 `haa_local_runtime`의 실제 systemd keeper 시험에 정해진 한 사례만 추가한다. 동일 고정 executor와 원래 정상 종료도 유지하며 task-owned 무작위 slice만 사용한다. 제품 변경 없음.
+
 ## 1. 현재 상태
 
 ```text

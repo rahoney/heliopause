@@ -13,7 +13,6 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -23,15 +22,10 @@ func TestBunPublicNativeResolverIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 9*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {
@@ -143,15 +137,10 @@ func TestBunActualNativeProjectSelectionBoundary(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
-	executor, err := hosttool.NewSystem(ctx)
+	executor, err := integrationSystemExecutor(t, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		if err := executor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {
