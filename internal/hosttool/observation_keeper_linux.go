@@ -185,12 +185,11 @@ func (k systemdObservationKeeper) recover(ctx context.Context, parent string) er
 		!exactSystemdProperty(keeper, "ControlGroup", "") || !exactSystemdProperty(keeper, "Job", "") {
 		return errD3Unconfirmed
 	}
-	slice, err := k.executor.Output(ctx, "systemctl", "show", parent, "-p", "LoadState", "-p", "ActiveState", "-p", "ControlGroup", "-p", "CPUAccounting", "-p", "Job")
-	if err != nil || len(slice) > 1024 || !exactSystemdProperty(slice, "Job", "") || verifyDrainedScope(path) != nil {
+	slice, err := k.executor.Output(ctx, "systemctl", "show", parent, "-p", "Id", "-p", "LoadState", "-p", "ActiveState", "-p", "SubState", "-p", "ControlGroup", "-p", "CPUAccounting", "-p", "Job", "-p", "FragmentPath", "-p", "DropInPaths", "-p", "Transient", "-p", "NeedDaemonReload")
+	if err != nil || len(slice) > 1024 || !exactSystemdProperty(slice, "Id", parent) || !exactSystemdProperty(slice, "Job", "") || verifyDrainedScope(path) != nil {
 		return errD3Unconfirmed
 	}
-	if _, statErr := os.Lstat(path); errors.Is(statErr, os.ErrNotExist) && exactSystemdProperty(slice, "LoadState", "not-found") &&
-		exactSystemdProperty(slice, "ActiveState", "inactive") && exactSystemdProperty(slice, "ControlGroup", "") {
+	if _, statErr := os.Lstat(path); errors.Is(statErr, os.ErrNotExist) && absentObservationSlice(slice) {
 		return nil
 	}
 	if !exactSystemdProperty(slice, "CPUAccounting", "yes") ||
@@ -208,6 +207,23 @@ func (k systemdObservationKeeper) recover(ctx context.Context, parent string) er
 		return errD3Unconfirmed
 	}
 	return nil
+}
+
+func absentObservationSlice(body []byte) bool {
+	if !exactSystemdProperty(body, "ActiveState", "inactive") || !exactSystemdProperty(body, "ControlGroup", "") {
+		return false
+	}
+	if exactSystemdProperty(body, "LoadState", "not-found") {
+		return true
+	}
+	// systemd can load an implicit slice definition on lookup after its
+	// cgroup and runtime properties are gone.
+	return exactSystemdProperty(body, "LoadState", "loaded") &&
+		exactSystemdProperty(body, "SubState", "dead") &&
+		exactSystemdProperty(body, "FragmentPath", "") &&
+		exactSystemdProperty(body, "DropInPaths", "") &&
+		exactSystemdProperty(body, "Transient", "no") &&
+		exactSystemdProperty(body, "NeedDaemonReload", "no")
 }
 
 func systemdProperty(body []byte, key string) (string, bool) {

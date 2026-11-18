@@ -76,6 +76,9 @@ func TestObservationKeeperPinnedLocalRuntime(t *testing.T) {
 			if _, err := os.Lstat(path); !os.IsNotExist(err) {
 				t.Fatalf("transaction parent remains after close: %v", err)
 			}
+			if err := k.recover(ctx, parent); err != nil {
+				t.Fatalf("recovery failed after verified keeper and cgroup removal: %v", err)
+			}
 		})
 	}
 }
