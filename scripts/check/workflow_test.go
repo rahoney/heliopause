@@ -241,16 +241,21 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 	source := string(body)
+	const fetchStart = `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"` + "\n          haa_start_policy_helper\n          if haa_ci_suite go-cargo-tf; then\n          cargo_fetch_cli_log="
+	const fetchEnd = `rm -- "$cargo_fetch_cli_log"` + "\n          fi # suite\n          haa_install_ci_client"
 	for name, fixture := range map[string]string{
 		"wrong step":                        strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Cargo commands outside lifecycle owner", 1),
 		"conditional step":                  strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        if: false", 1),
 		"ignored failure":                   strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        continue-on-error: true", 1),
 		"duplicate command":                 strings.Replace(source, `          docker pull "$rust_image"`, `          docker pull "$rust_image"`+"\n"+`          docker pull "$rust_image"`, 1),
-		"fetch wrong client":                strings.Replace(source, `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", 1),
-		"fetch missing helper rebind":       strings.Replace(source, `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          haa_start_policy_helper\n          cargo_fetch_cli_log=", `haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`+"\n          # haa_start_policy_helper\n          cargo_fetch_cli_log=", 1),
-		"fetch missing sandbox restoration": strings.Replace(source, `rm -- "$cargo_fetch_cli_log"`+"\n          haa_install_ci_client", `rm -- "$cargo_fetch_cli_log"`+"\n          # haa_install_ci_client", 1),
+		"fetch wrong client":                strings.Replace(source, fetchStart, strings.Replace(fetchStart, "helox-pnpm-project-test", "helox-sandbox-test", 1), 1),
+		"fetch missing helper rebind":       strings.Replace(source, fetchStart, strings.Replace(fetchStart, "haa_start_policy_helper", "# haa_start_policy_helper", 1), 1),
+		"fetch missing sandbox restoration": strings.Replace(source, fetchEnd, strings.Replace(fetchEnd, "haa_install_ci_client", "# haa_install_ci_client", 1), 1),
 	} {
 		t.Run(name, func(t *testing.T) {
+			if fixture == source {
+				t.Fatal("fixture unchanged")
+			}
 			if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
 				t.Fatal("inactive or duplicate Cargo gate accepted")
 			}

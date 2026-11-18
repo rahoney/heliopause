@@ -65,7 +65,7 @@ func TestUVToolsProtectedClientAndHelperScopes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := string(body)
+	original := workflowWithoutSuiteGuards(string(body))
 	if findings := validateUVToolsClientOrder(original); len(findings) != 0 {
 		t.Fatal(findings)
 	}
@@ -273,7 +273,7 @@ func TestUVRunSourceHostedDispatchAndLogs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := string(body)
+	original := workflowWithoutSuiteGuards(string(body))
 	start := strings.Index(original, "          uv_run_source_log=")
 	closeLine := "          rm -- \"$uv_run_source_log\"\n"
 	if start < 0 {
