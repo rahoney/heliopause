@@ -129,8 +129,7 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
-// Both required Go environments share this one preparation/compiler/keeper
-// ledger, including counted summaries. Physical collector limits are unchanged.
+// Go preparation and compilation share one ledger, including counted summaries.
 const maximumGoBuildLedgerEvents = 40000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {

@@ -84,9 +84,10 @@ func TestBuildEnvironmentCoverageAndEvidence(t *testing.T) {
 						t.Fatal(err)
 					}
 					report, err := inspector.InspectBuild(context.Background(), inputs)
-					if test.name != "complete" {
+					wantComplete := kind == "go" && test.count == 0 || kind == "cargo" && test.name == "complete"
+					if !wantComplete {
 						if err == nil {
-							t.Fatal("missing required environment coverage accepted")
+							t.Fatal("incorrect environment coverage accepted")
 						}
 						return
 					}
@@ -95,7 +96,7 @@ func TestBuildEnvironmentCoverageAndEvidence(t *testing.T) {
 					}
 					checks := report.Inspection().Executions()
 					facts, err := domain.BindEvidenceProfiles(checks, report.Inspection().Evidence())
-					if err != nil || len(checks) != 1 || !checks[0].Required() || checks[0].Status() != domain.ExecutionCompleted || len(facts) != 4 {
+					if err != nil || len(checks) != 1 || !checks[0].Required() || checks[0].Status() != domain.ExecutionCompleted || len(facts) != 2+test.count {
 						t.Fatal("current build check/Evidence incomplete", err)
 					}
 					seen := 0
@@ -107,8 +108,8 @@ func TestBuildEnvironmentCoverageAndEvidence(t *testing.T) {
 							}
 						}
 					}
-					if seen != 2 {
-						t.Fatal("two environment Evidence values missing")
+					if seen != test.count {
+						t.Fatal("unexpected number of environment Evidence records")
 					}
 				})
 			}

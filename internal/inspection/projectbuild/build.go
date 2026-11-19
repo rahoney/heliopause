@@ -41,8 +41,12 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 	}
 	result := observation.SandboxResult()
 	states := result.EnvironmentStates()
-	if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
-		return domain.ProjectBuildReport{}, errors.New("project build environment observation is incomplete")
+	if i.kind == "cargo" {
+		if len(states) != 2 || !states[0].VFSOperationsCovered || !states[1].VFSOperationsCovered {
+			return domain.ProjectBuildReport{}, errors.New("project build environment observation is incomplete")
+		}
+	} else if len(states) != 0 {
+		return domain.ProjectBuildReport{}, errors.New("Go build observation contains unexpected environment states")
 	}
 	checkID, _ := domain.NewCheckID("project-build-observation")
 	status, limitation := domain.ExecutionCompleted, ""
@@ -119,14 +123,12 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 }
 
 func (i *Inspector) checkProfile() domain.ContentDigest {
-	image := runtimeidentity.GoImageReference
-	name := "project-build-observation-environments-v4"
-	if i.kind == "cargo" {
-		image = runtimeidentity.RustImageReference
-		name = "project-build-observation-environments-v3"
+	if i.kind == "go" {
+		profile, _ := domain.CheckProfileDigest("project-build-observation-go-single-environment-v1", runtimeidentity.GoImageReference+"|"+runtimeidentity.GVisorPatchSHA256)
+		return profile
 	}
-	descriptor := image + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
-	profile, _ := domain.CheckProfileDigest(name, descriptor)
+	descriptor := runtimeidentity.RustImageReference + "|" + runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + runtimeidentity.SandboxResponderInspectionIdentity
+	profile, _ := domain.CheckProfileDigest("project-build-observation-environments-v3", descriptor)
 	return profile
 }
 

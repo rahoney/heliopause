@@ -35,7 +35,7 @@ func TestLinuxGoExplicitInvalidTestdataBuildIntegration(t *testing.T) {
 	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./testdata", true, false)
 }
 
-func TestLinuxGoDependencyFreeRetainedOutputEnvironmentIntegration(t *testing.T) {
+func TestLinuxGoDependencyFreeRetainedOutputIntegration(t *testing.T) {
 	goRetainedBuildSelectionIntegration(t, "", "package main\nfunc main() {}\n", "./...", false, true)
 }
 
@@ -154,7 +154,7 @@ func goRetainedBuildSelectionIntegration(t *testing.T, reference, main, selector
 		if err == nil || result.Status() != domain.SandboxIncomplete || !strings.Contains(err.Error(), "command_status=EXIT_STATUS_1") {
 			t.Fatalf("explicit invalid source did not preserve compiler failure: %v status=%s", err, result.Status())
 		}
-	} else if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 2 {
+	} else if err != nil || result.Status() != domain.SandboxCompleted || len(result.EnvironmentStates()) != 0 {
 		t.Fatalf("actual retained-cache observed build: %v status=%s", err, result.Status())
 	}
 	for _, observed := range result.Observations() {

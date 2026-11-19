@@ -548,6 +548,8 @@ expected 집합만 허용한다. 사람이 읽는 화면과 machine result가 �
 
 환경 profile은 한 곳에서 버전 관리하는 typed 데이터다. 각 client가 같은 `.env` 생성
 코드를 복사하지 않는다. 최소 환경과 모의 개발환경을 **서로 독립된 fresh 실험**으로 준비한다.
+R8 복구에서는 사용자 승인으로 **Go 빌드에만** CI448의 단일 격리 환경을 적용한다.
+모의 개발환경 및 두 workspace 상태 증거는 기존 3분 안에서 두 실험을 검증할 때까지 Go의 S01·S08 후속 작업으로 남긴다.
 모의 profile은 run 전용 HOME/workspace, 내용 없는 가짜 project 구조, 무효한 credential
 형태의 dummy env/.env 및 대표 인증 설정 파일을 가진다. 실제 Host 파일을 템플릿으로 읽지
 않고 고정 synthetic fixture와 run 전용 무효 marker만 사용한다. 실제 인증될 수 있는 값·

@@ -250,7 +250,7 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 		if strings.HasPrefix(main, "package library\n") {
 			outputFiles = 0
 		}
-		if filepath.Base(directory) != receipt.Run || len(receipt.Files) != outputFiles || len(receipt.Evidence) != 5 {
+		if filepath.Base(directory) != receipt.Run || len(receipt.Files) != outputFiles || len(receipt.Evidence) != 3 {
 			t.Fatal("build output/Run/Evidence coverage differs")
 		}
 		for _, digest := range []string{receipt.Source, receipt.Cache, receipt.Graph, receipt.Output, receipt.Recipe} {
@@ -268,7 +268,6 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 				t.Fatal("published output differs from receipt")
 			}
 		}
-		profiles := map[domain.SandboxEnvironmentProfile]string{}
 		for _, record := range receipt.Evidence {
 			body, err := os.ReadFile(filepath.Join(root, "cache", "heliopause", "evidence", receipt.Run, record.ID+".json"))
 			if err != nil || record.Handle != "evidence:"+receipt.Run+":"+record.ID {
@@ -278,10 +277,6 @@ func goBuildCLIWithLibraryIntegration(t *testing.T, reference, main string, inva
 			if hex.EncodeToString(hash[:]) != record.SHA256 {
 				t.Fatal("build Evidence binding changed")
 			}
-			readWorkspaceEnvironmentEvidence(t, body, "go", receipt.Run, receipt.Source, profiles)
-		}
-		if len(profiles) != 2 || profiles[domain.SandboxEnvironmentMinimal] == "" || profiles[domain.SandboxEnvironmentMinimal] != profiles[domain.SandboxEnvironmentDevelopment] {
-			t.Fatal("actual Go build lost same-check two-environment Evidence")
 		}
 		t.Logf("actual CLI retained build reference=%s graph=%s source=%s cache=%s output=%s recipe=%s", reference, receipt.Graph, receipt.Source, receipt.Cache, receipt.Output, receipt.Recipe)
 	}

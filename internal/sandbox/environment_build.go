@@ -13,7 +13,7 @@ import (
 
 const projectBuildEnvironmentDescriptor = runtimeidentity.NodeImageReference + "|" + runtimeidentity.GVisorPatchSHA256 + "|" + domain.SandboxEnvironmentStateSchema + "|" + string(domain.SandboxEnvironmentMinimal) + "|" + string(domain.SandboxEnvironmentDevelopment) + "|" + environmentWorkspacePolicy + "|" + runtimeidentity.SandboxResponderInspectionIdentity
 
-// Matches the existing Go/Cargo private /tmp limit; experiments are sequential.
+// Matches the Cargo private /tmp limit. Its experiments are sequential.
 const projectBuildWorkspaceCapacity int64 = 512 << 20
 
 type projectBuildEnvironmentObserver interface {
@@ -21,8 +21,8 @@ type projectBuildEnvironmentObserver interface {
 	AwaitMountAnchors(context.Context, string) error
 }
 
-// Go/Cargo retain their own input, compiler and output owners. This shared
-// state holder covers only the fresh mutable workspace and its DATA keeper.
+// Cargo retains its input, compiler and output owners.
+// This state holder covers the mutable workspace and its DATA keeper.
 type projectBuildEnvironment struct {
 	session   domain.SandboxSessionID
 	profile   inspectionEnvironmentProfile
@@ -151,29 +151,16 @@ func (e *projectBuildEnvironment) final(ctx context.Context, runner CommandRunne
 // Build writers keep the original immutable inputs and executable output role.
 // A fixed Node DATA keeper sees only mutable roots, never the dependency cache.
 func projectBuildEnvironmentExpectedTopology(kind string, output, reader bool) ([]observerMountExpectation, bool) {
-	if kind != "go" && kind != "cargo" || kind == "cargo" && !output {
+	if kind != "cargo" || !output {
 		return nil, false
 	}
 	var topology []observerMountExpectation
 	var ok bool
 	if reader {
 		topology, ok = environmentExpectedTopology(true)
-		if output {
-			root := goBuildGuestOutput
-			if kind == "cargo" {
-				root = cargoBuildGuestTarget
-			}
-			topology = append(topology, observerMountExpectation{root, "workspace", "/tmp", "9p", true, false, false, false})
-		}
-		return topology, ok
+		return append(topology, observerMountExpectation{cargoBuildGuestTarget, "workspace", "/tmp", "9p", true, false, false, false}), ok
 	}
-	if kind == "cargo" {
-		topology, ok = cargoBuildExpectedTopology(true)
-	} else if output {
-		topology, ok = goBuildOutputExpectedTopology(true)
-	} else {
-		topology, ok = goBuildInputExpectedTopology(true)
-	}
+	topology, ok = cargoBuildExpectedTopology(true)
 	if !ok {
 		return nil, false
 	}
@@ -198,10 +185,7 @@ func (o *SharedObserver) startProjectBuildEnvironmentProfile(ctx context.Context
 			return nil, err
 		}
 	}
-	profile := goBuildProfile
-	if kind == "cargo" {
-		profile = cargoBuildProfile
-	}
+	profile := cargoBuildProfile
 	if reader {
 		profile = "npm-lifecycle"
 	}
