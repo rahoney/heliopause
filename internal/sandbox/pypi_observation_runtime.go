@@ -73,6 +73,11 @@ func pythonObservationRuntimeArguments(transaction string, ordinal int, phase py
 		"--label", "io.heliopause.observation-phase=" + string(phase),
 	}
 	args = append(args, isolatedContainerEnvironmentArguments()...)
+	if !readOnly && !zipData {
+		// pip --target unpacks into a temporary directory before moving files
+		// into the site. Stage on the same volume to avoid cross-mount copies.
+		args = append(args, "--env", "TMPDIR="+pythonSitePath)
+	}
 	return append(args, "--name", name, pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()), nil
 }
 
