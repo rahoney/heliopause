@@ -232,3 +232,90 @@ func TestPythonEnvironmentTopologyKeepsCodeAndUnitWorkspaceSeparate(t *testing.T
 		}
 	}
 }
+
+type pythonAnchorInspectRunner struct {
+	volumeInspectRunner
+	mountQueries  int
+	volumeQueries int
+	stopped       bool
+}
+
+func (r *pythonAnchorInspectRunner) Output(ctx context.Context, command string, args ...string) ([]byte, error) {
+	if len(args) == 4 && args[0] == "inspect" && args[1] == "--format" {
+		if args[2] == `{{.Id}}|{{.State.Running}}|{{.State.Pid}}` {
+			if r.stopped {
+				return []byte(args[3] + "|false|0"), nil
+			}
+			return []byte(args[3] + "|true|42"), nil
+		}
+		if args[2] == containerMountInspectTemplate {
+			r.mountQueries++
+		}
+	}
+	if len(args) > 1 && args[0] == "volume" && args[1] == "inspect" {
+		r.volumeQueries++
+	}
+	return r.volumeInspectRunner.Output(ctx, command, args...)
+}
+
+func TestPythonAnchorAttachmentInspectedOnce(t *testing.T) {
+	ctx := context.Background()
+	volume := closureVolume{
+		name: "haa-closure-abc", transaction: "tx", manifestID: strings.Repeat("f", 64),
+		createdAt: "2026-09-29T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-abc/_data", capacity: 1024,
+	}
+	anchor := strings.Repeat("a", 64)
+	volumeBody, err := json.Marshal(dockerVolumeInspection{
+		Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint, CreatedAt: volume.createdAt,
+		Options: map[string]string{"type": "tmpfs", "device": "tmpfs", "o": volume.tmpfsOptions()},
+		Labels:  map[string]string{closureVolumeLabel: volume.transaction, closureManifestLabel: volume.manifestID},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mounts := dockerContainerMountInspection{
+		ID: anchor,
+		Mounts: []dockerMountInspection{{
+			Type: "volume", Name: volume.name, Source: volume.mountpoint, Destination: pythonSitePath, Driver: "local",
+		}},
+		HostMounts: []dockerHostMountInspection{{
+			Type: "volume", Source: volume.name, Target: pythonSitePath, ReadOnly: true,
+		}},
+	}
+	mounts.HostMounts[0].VolumeOptions.NoCopy = true
+	mountBody, err := json.Marshal(mounts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &pythonAnchorInspectRunner{volumeInspectRunner: volumeInspectRunner{volume: volumeBody, mounts: mountBody, listed: anchor + "\n"}}
+	transaction := pythonTransactionExecutor{backend: &PythonDynamicBackend{runner: runner}, volume: volume, anchor: anchor}
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err != nil {
+		t.Fatal(err)
+	}
+	if runner.mountQueries != 1 || runner.volumeQueries != 2 {
+		t.Fatalf("anchor mount queries = %d, volume queries = %d, want 1 and 2", runner.mountQueries, runner.volumeQueries)
+	}
+
+	runner.stopped = true
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("stopped anchor accepted")
+	}
+	runner.stopped = false
+	runner.listed = ""
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("missing anchor accepted")
+	}
+	runner.listed = anchor + "\n"
+	mounts.Mounts[0].RW = true
+	mounts.HostMounts[0].ReadOnly = false
+	runner.mounts, err = json.Marshal(mounts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := transaction.verifyAnchorAndVolume(ctx, nil); err == nil {
+		t.Fatal("writable anchor accepted")
+	}
+	if err := transaction.verifyAnchorAndVolume(ctx, map[string]bool{anchor: false}); err == nil {
+		t.Fatal("additional attachment changed the anchor's required mode")
+	}
+}

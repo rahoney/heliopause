@@ -901,12 +901,14 @@ func (t *pythonTransactionExecutor) verifyAnchorAndVolume(ctx context.Context, a
 		}
 		return t.pipxVolume.verifyReader(ctx, t.backend.runner, reader)
 	}
-	if t == nil || t.anchor == "" || verifyObservationRuntimeAlive(ctx, t.backend.runner, t.anchor) != nil ||
-		t.volume.verifyContainerMount(ctx, t.backend.runner, t.anchor, true) != nil {
+	if t == nil || t.anchor == "" || verifyObservationRuntimeAlive(ctx, t.backend.runner, t.anchor) != nil {
 		return errors.New("python observation anchor is unavailable")
 	}
 	attachments := map[string]bool{t.anchor: true}
 	for id, readOnly := range additional {
+		if id == t.anchor && !readOnly {
+			return errors.New("python observation anchor must be read-only")
+		}
 		attachments[id] = readOnly
 	}
 	return t.volume.verifyAttachments(ctx, t.backend.runner, attachments)
