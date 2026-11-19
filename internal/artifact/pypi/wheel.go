@@ -144,13 +144,9 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	var metadataFiles = map[string][]byte{}
 	var regularFiles []string
 	primaryDistInfo := ""
-	hash := sha256.New()
-	if err := hashReaderAt(reader, size, hash); err != nil {
-		return WheelInspection{}, wheelValidation(WheelValidationDigest)
-	}
-	observed := hex.EncodeToString(hash.Sum(nil))
-	if observed != declaredSHA256 {
-		return WheelInspection{}, wheelValidation(WheelValidationDigest)
+	observed, err := verifyWheelSHA256(reader, size, declaredSHA256)
+	if err != nil {
+		return WheelInspection{}, err
 	}
 	for _, entry := range archive.File {
 		name, directory, ok := wheelEntryPath(entry)

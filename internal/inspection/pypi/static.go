@@ -87,7 +87,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
 		resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
+		info, inspectErr := artifactpypi.InspectWheelForSourceInScope(ctx, file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
 		if inspectErr != nil {
 			cause, stage := wheelDiagnostic(inspectErr)
 			return nil, i.violation(ctx, artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil

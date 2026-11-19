@@ -32,7 +32,7 @@ func (i *CompositeInspector) InspectExecutionSelection(ctx context.Context, sele
 			return nil, errors.New("PyPI execution selection requires only exact public wheels")
 		}
 	}
-	return i.inspectDependencySet(ctx, nodes, acquired, true, func(map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
+	return i.inspectDependencySet(ctx, nodes, acquired, true, func(context.Context, map[domain.DependencyNodeID]graphStaticState) ([]domain.DependencyEdge, map[domain.DependencyNodeID]domain.AcquiredArtifact, error) {
 		return selection.Edges(), nil, nil
 	})
 }

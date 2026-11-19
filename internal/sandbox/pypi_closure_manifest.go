@@ -78,7 +78,7 @@ func (i *PythonArtifactIntroducer) buildClosureManifest(ctx context.Context, clo
 			_ = file.Close()
 			return closureManifest{}, errors.New("authenticated Python wheel changed")
 		}
-		inspection, inspectErr := artifactpypi.InspectWheelForSource(file, info.Size(), filename,
+		inspection, inspectErr := artifactpypi.InspectWheelForSourceInScope(ctx, file, info.Size(), filename,
 			artifact.Digest().String(), target, policy.WheelLimits(), artifact.Identity().Source())
 		closeErr := file.Close()
 		if inspectErr != nil || closeErr != nil || inspection.ObservedSHA256 != artifact.Digest().String() {
