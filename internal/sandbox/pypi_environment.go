@@ -210,12 +210,37 @@ func (t *pythonTransactionExecutor) environmentRuntimeArguments(args []string, p
 	return applyEnvironmentWorkspace(args, pythonImageReference, environment.profile, environment.volume, false, pythonEnvironmentUnitRoot(t.activeUnitOriginal))
 }
 
-func (t *pythonTransactionExecutor) verifyEnvironmentRuntimeMounts(ctx context.Context, id string, phase pythonObservationPhase) error {
+func (t *pythonTransactionExecutor) verifyCreatedRuntimeMounts(ctx context.Context, id string, phase pythonObservationPhase, activeResponder bool) error {
+	// Docker fixes the mount configuration when it creates the container.
+	// Share this view before start, and inspect live anchors independently.
+	var actual *dockerContainerMountInspection
+	if len(t.environments) != 0 && phase != phaseAnchor {
+		var err error
+		actual, err = inspectContainerMounts(ctx, t.backend.runner, id)
+		if err != nil {
+			return err
+		}
+	}
+	if !(phase == phaseAnchor && t.activeEnvironment != nil) {
+		if err := t.volume.verifyContainerMountWithInspection(ctx, t.backend.runner, id, phase != phasePreparation, actual); err != nil {
+			return err
+		}
+	}
+	if err := t.verifyEnvironmentRuntimeMounts(ctx, id, phase, actual); err != nil {
+		return err
+	}
+	if activeResponder {
+		return t.responder.verifyReaderWithInspection(ctx, t.backend.runner, id, actual)
+	}
+	return nil
+}
+
+func (t *pythonTransactionExecutor) verifyEnvironmentRuntimeMounts(ctx context.Context, id string, phase pythonObservationPhase, actual *dockerContainerMountInspection) error {
 	if phase == phasePreparation {
 		for _, environment := range t.environments {
 			volume := environment.volume
 			volume.projectBuildDestination = pythonEnvironmentPreparationPrefix + string(environment.profile.kind)
-			if err := volume.verifyContainerMount(ctx, t.backend.runner, id, false); err != nil {
+			if err := volume.verifyContainerMountWithInspection(ctx, t.backend.runner, id, false, actual); err != nil {
 				return err
 			}
 		}
@@ -229,7 +254,7 @@ func (t *pythonTransactionExecutor) verifyEnvironmentRuntimeMounts(ctx context.C
 		if err := verifyObservationRuntimeAlive(ctx, t.backend.runner, environment.anchor); err != nil {
 			return err
 		}
-		return environment.volume.verifyAttachments(ctx, t.backend.runner, map[string]bool{environment.anchor: true, id: false}, map[string]string{id: pythonEnvironmentUnitRoot(t.activeUnitOriginal)})
+		return environment.volume.verifyAttachmentsWithInspection(ctx, t.backend.runner, map[string]bool{environment.anchor: true, id: false}, actual, map[string]string{id: pythonEnvironmentUnitRoot(t.activeUnitOriginal)})
 	}
 	return t.activeEnvironment.volume.verifyContainerMount(ctx, t.backend.runner, id, true)
 }

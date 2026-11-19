@@ -730,19 +730,8 @@ func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase python
 	t.mu.Lock()
 	t.runtimes[id] = runtime
 	t.mu.Unlock()
-	readOnly := phase != phasePreparation
-	if !(phase == phaseAnchor && t.activeEnvironment != nil) {
-		if err := t.volume.verifyContainerMount(ctx, t.backend.runner, id, readOnly); err != nil {
-			return nil, err
-		}
-	}
-	if err := t.verifyEnvironmentRuntimeMounts(ctx, id, phase); err != nil {
+	if err := t.verifyCreatedRuntimeMounts(ctx, id, phase, activeResponder); err != nil {
 		return nil, err
-	}
-	if activeResponder {
-		if err := t.responder.verifyReader(ctx, t.backend.runner, id); err != nil {
-			return nil, err
-		}
 	}
 	observerPhase := pythonClosureObservation
 	if phase == phasePreparation {

@@ -403,12 +403,21 @@ func (s *responderSupply) expectedTopology(base []observerMountExpectation) ([]o
 }
 
 func (s *responderSupply) verifyReader(ctx context.Context, runner CommandRunner, id string) error {
+	return s.verifyReaderWithInspection(ctx, runner, id, nil)
+}
+
+func (s *responderSupply) verifyReaderWithInspection(ctx context.Context, runner CommandRunner, id string, actual *dockerContainerMountInspection) error {
 	if s.verify(ctx, runner) != nil || !exactObservationContainerID(id) {
 		return errResponderSupply
 	}
-	body, err := runner.Output(ctx, "docker", "inspect", "--format", containerMountInspectTemplate, id)
-	var actual dockerContainerMountInspection
-	if err != nil || len(body) == 0 || len(body) > 16<<10 || json.Unmarshal(body, &actual) != nil || actual.ID != id || len(actual.Binds) != 0 {
+	if actual == nil {
+		var err error
+		actual, err = inspectContainerMounts(ctx, runner, id)
+		if err != nil {
+			return errResponderSupply
+		}
+	}
+	if actual.ID != id {
 		return errResponderSupply
 	}
 	mounted, configured := 0, 0

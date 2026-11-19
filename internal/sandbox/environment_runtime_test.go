@@ -28,6 +28,7 @@ type environmentModelContainer struct {
 	volume            string
 	mounts            map[string]string
 	mountReadOnly     map[string]bool
+	mountSubpaths     map[string]string
 	readOnly, started bool
 	trace             *cleanupGatedTraceReader
 	done              chan struct{}
@@ -50,6 +51,7 @@ type environmentBackendModel struct {
 	payload                                                               []byte
 	traceRecords                                                          []TraceRecord
 	traceError                                                            error
+	mountInspections                                                      []string
 	order                                                                 []string
 	traces                                                                []*cleanupGatedTraceReader
 	cancel                                                                context.CancelFunc
@@ -178,7 +180,7 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 	case "create":
 		f.next++
 		id := fmt.Sprintf("%064x", f.next)
-		c := &environmentModelContainer{mounts: make(map[string]string), mountReadOnly: make(map[string]bool)}
+		c := &environmentModelContainer{mounts: make(map[string]string), mountReadOnly: make(map[string]bool), mountSubpaths: make(map[string]string)}
 		for index, arg := range args {
 			if arg != "--mount" || index+1 >= len(args) {
 				continue
@@ -189,6 +191,7 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 				fields[key] = value
 			}
 			c.mounts[fields["target"]] = fields["source"]
+			c.mountSubpaths[fields["target"]] = fields["volume-subpath"]
 			_, c.mountReadOnly[fields["target"]] = fields["readonly"]
 			if fields["target"] == "/tmp" {
 				c.volume = fields["source"]
@@ -211,12 +214,14 @@ func (f *environmentBackendModel) Output(_ context.Context, _ string, args ...st
 			return json.Marshal(map[string]any{"ID": id, "DNS": dns, "Search": []string{"."}, "Options": []string{"ndots:0", "timeout:1", "attempts:1"}})
 		}
 		if modelArgument(args, "--format") == containerMountInspectTemplate {
+			f.mountInspections = append(f.mountInspections, id)
 			view := dockerContainerMountInspection{ID: id}
 			for target, name := range c.mounts {
 				volume := f.volumes[name]
 				readOnly := c.mountReadOnly[target]
 				configured := dockerHostMountInspection{Type: "volume", Source: name, Target: target, ReadOnly: readOnly}
 				configured.VolumeOptions.NoCopy = true
+				configured.VolumeOptions.Subpath = c.mountSubpaths[target]
 				view.Mounts = append(view.Mounts, dockerMountInspection{Type: "volume", Name: name, Source: volume.Mountpoint, Destination: target, Driver: "local", RW: !readOnly})
 				view.HostMounts = append(view.HostMounts, configured)
 			}
@@ -602,5 +607,90 @@ func TestNPMEnvironmentRejectsReusedSessionAndAbsentResourcePort(t *testing.T) {
 				t.Fatalf("result=%s/%s commands=%d err=%v", result.Status(), code, model.commands, err)
 			}
 		})
+	}
+}
+
+func TestPythonCreatedRuntimeSharesExactMountInspection(t *testing.T) {
+	ctx := context.Background()
+	model := newEnvironmentBackendState()
+	model.owner = "sbx_model"
+	digest := strings.Repeat("a", 64)
+	shared, err := createClosureVolume(ctx, model, model.owner, digest, 1024)
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspace, err := createInputVolume(ctx, model, "workspace", digest, 1024, false, projectBuildVolumeConfig{destination: environmentWorkspaceRoot})
+	if err != nil {
+		t.Fatal(err)
+	}
+	responder, err := model.prepareResponder(ctx, model, runtimeidentity.NativeInstallRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	create := func(mounts ...string) string {
+		t.Helper()
+		args := []string{"create"}
+		for _, mount := range mounts {
+			args = append(args, "--mount", mount)
+		}
+		id, err := model.Output(ctx, "docker", args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(id)
+	}
+	anchorMount, err := workspace.mountArgument(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	anchor := create(anchorMount)
+	transaction := pythonTransactionExecutor{
+		backend: &PythonDynamicBackend{runner: model}, volume: shared, responder: responder,
+		environments:       []pythonEnvironmentWorkspace{{volume: workspace, anchor: anchor}},
+		activeUnitOriginal: "direct-import:" + digest,
+	}
+	transaction.activeEnvironment = &transaction.environments[0]
+	subpath := pythonEnvironmentUnitRoot(transaction.activeUnitOriginal)
+	unitMount, err := workspace.mountArgument(false, subpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	closureMount, err := shared.mountArgument(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	responderMount, err := responder.mountArgument()
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := create(closureMount, unitMount, responderMount)
+	verify := func() error {
+		return transaction.verifyCreatedRuntimeMounts(ctx, id, phaseObservation, true)
+	}
+	if err := verify(); err != nil {
+		t.Fatal(err)
+	}
+	if len(model.mountInspections) != 2 || model.mountInspections[0] != id || model.mountInspections[1] != anchor {
+		t.Fatalf("expected one mount inspection of the new container and one of its live anchor, got %v", model.mountInspections)
+	}
+	container := model.containers[id]
+	container.mountSubpaths[environmentWorkspaceRoot] = ""
+	if err := verify(); err == nil {
+		t.Fatal("accepted the workspace root instead of a private unit")
+	}
+	container.mountSubpaths[environmentWorkspaceRoot] = subpath
+	container.mountReadOnly[responderGuestRoot] = false
+	if err := verify(); !errors.Is(err, errResponderSupply) {
+		t.Fatalf("expected a writable responder rejection, got %v", err)
+	}
+	container.mountReadOnly[responderGuestRoot] = true
+	unexpected := create(anchorMount)
+	if err := verify(); err == nil {
+		t.Fatal("accepted an unexpected workspace attachment")
+	}
+	model.remove(unexpected)
+	model.containers[anchor].mountReadOnly[environmentWorkspaceRoot] = false
+	if err := verify(); err == nil {
+		t.Fatal("accepted a changed workspace keeper mount")
 	}
 }

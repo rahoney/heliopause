@@ -229,7 +229,23 @@ type dockerContainerMountInspection struct {
 
 const containerMountInspectTemplate = `{"id":{{json .Id}},"mounts":{{json .Mounts}},"host_mounts":{{json .HostConfig.Mounts}},"binds":{{json .HostConfig.Binds}}}`
 
+func inspectContainerMounts(ctx context.Context, runner CommandRunner, id string) (*dockerContainerMountInspection, error) {
+	body, err := runner.Output(ctx, "docker", "inspect", "--format", containerMountInspectTemplate, id)
+	if err != nil || len(body) == 0 || len(body) > 16<<10 {
+		return nil, errors.New("python closure container mount inspection failed")
+	}
+	var actual dockerContainerMountInspection
+	if json.Unmarshal(body, &actual) != nil || actual.ID != id || len(actual.Binds) != 0 {
+		return nil, errors.New("python closure container mount identity is invalid")
+	}
+	return &actual, nil
+}
+
 func (v *closureVolume) verifyContainerMount(ctx context.Context, runner CommandRunner, containerID string, readOnly bool, subpaths ...string) error {
+	return v.verifyContainerMountWithInspection(ctx, runner, containerID, readOnly, nil, subpaths...)
+}
+
+func (v *closureVolume) verifyContainerMountWithInspection(ctx context.Context, runner CommandRunner, containerID string, readOnly bool, actual *dockerContainerMountInspection, subpaths ...string) error {
 	if v == nil || !containerIDPattern.MatchString(containerID) || v.verify(ctx, runner) != nil {
 		return errors.New("python closure volume identity changed")
 	}
@@ -240,12 +256,14 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 	if len(subpaths) == 1 {
 		subpath = subpaths[0]
 	}
-	body, err := runner.Output(ctx, "docker", "inspect", "--format", containerMountInspectTemplate, containerID)
-	if err != nil || len(body) == 0 || len(body) > 16<<10 {
-		return errors.New("python closure container mount inspection failed")
+	if actual == nil {
+		var err error
+		actual, err = inspectContainerMounts(ctx, runner, containerID)
+		if err != nil {
+			return err
+		}
 	}
-	var actual dockerContainerMountInspection
-	if json.Unmarshal(body, &actual) != nil || actual.ID != containerID || len(actual.Binds) != 0 {
+	if actual.ID != containerID {
 		return errors.New("python closure container mount identity is invalid")
 	}
 	for _, mount := range actual.Mounts {
@@ -305,6 +323,10 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 // the controller did not create for this exact transaction. Docker's volume
 // filter is used only as inventory; every returned full ID is checked again.
 func (v *closureVolume) verifyAttachments(ctx context.Context, runner CommandRunner, authorized map[string]bool, expectedSubpaths ...map[string]string) error {
+	return v.verifyAttachmentsWithInspection(ctx, runner, authorized, nil, expectedSubpaths...)
+}
+
+func (v *closureVolume) verifyAttachmentsWithInspection(ctx context.Context, runner CommandRunner, authorized map[string]bool, created *dockerContainerMountInspection, expectedSubpaths ...map[string]string) error {
 	if v == nil || v.verify(ctx, runner) != nil || len(authorized) == 0 {
 		return errors.New("python closure volume attachment inventory is unavailable")
 	}
@@ -327,7 +349,11 @@ func (v *closureVolume) verifyAttachments(ctx context.Context, runner CommandRun
 	seen := make(map[string]bool, len(authorized))
 	for _, id := range strings.Fields(string(listed)) {
 		readOnly, expected := authorized[id]
-		if !exactObservationContainerID(id) || !expected || seen[id] || v.verifyContainerMount(ctx, runner, id, readOnly, subpaths[id]) != nil {
+		var actual *dockerContainerMountInspection
+		if created != nil && created.ID == id {
+			actual = created
+		}
+		if !exactObservationContainerID(id) || !expected || seen[id] || v.verifyContainerMountWithInspection(ctx, runner, id, readOnly, actual, subpaths[id]) != nil {
 			return errors.New("python closure volume has an unauthorized attachment")
 		}
 		seen[id] = true
