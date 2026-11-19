@@ -46,7 +46,7 @@ func (i *Inspector) InspectBuild(ctx context.Context, inputs domain.ProjectBuild
 			return domain.ProjectBuildReport{}, errors.New("project build environment observation is incomplete")
 		}
 	} else if len(states) != 0 {
-		return domain.ProjectBuildReport{}, errors.New("Go build observation contains unexpected environment states")
+		return domain.ProjectBuildReport{}, errors.New("unexpected environment states in Go build observation")
 	}
 	checkID, _ := domain.NewCheckID("project-build-observation")
 	status, limitation := domain.ExecutionCompleted, ""
