@@ -210,6 +210,9 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 	operation := &goBuildOperation{builder: b, phase: "INPUT"}
 	defer func() {
 		primary := resultErr
+		if operation.commandReason == "" && (errors.Is(primary, context.DeadlineExceeded) || errors.Is(primary, context.Canceled)) {
+			operation.commandReason = pythonCommandErrorReason(primary)
+		}
 		cleanup := operation.dispose()
 		resultErr = errors.Join(primary, cleanup)
 		if operation.output != nil {
@@ -324,6 +327,7 @@ func (b *ObservedGoBuilder) observe(ctx context.Context, snapshot domain.Project
 		if err != nil {
 			return result, output, err
 		}
+		operation.phase = "POST_CAPTURE_INPUT"
 		if err := operation.verify(ctx, build); err != nil {
 			return result, output, err
 		}

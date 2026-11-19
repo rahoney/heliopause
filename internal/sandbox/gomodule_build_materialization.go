@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"archive/tar"
+	"bufio"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -74,7 +75,8 @@ func (p *goBuildPreparedInputs) introduceAt(ctx context.Context, runner CommandR
 	reader, pipe := io.Pipe()
 	result := make(chan error, 1)
 	go func() {
-		writer := tar.NewWriter(pipe)
+		buffered := bufio.NewWriterSize(pipe, 64<<10)
+		writer := tar.NewWriter(buffered)
 		var err error
 		for _, root := range []string{"project", "cache"} {
 			if err = writer.WriteHeader(&tar.Header{Name: root, Typeflag: tar.TypeDir, Mode: 0o500, Uid: 1000, Gid: 1000}); err != nil {
@@ -91,6 +93,9 @@ func (p *goBuildPreparedInputs) introduceAt(ctx context.Context, runner CommandR
 			err = writeCargoBuildConfiguration(writer)
 		}
 		err = errors.Join(err, writer.Close())
+		if err == nil {
+			err = buffered.Flush()
+		}
 		_ = pipe.CloseWithError(err)
 		result <- err
 	}()
@@ -136,7 +141,11 @@ func scanGoBuildMaterialization(ctx context.Context, input io.Reader, manifest g
 	}
 	// Bound the entire transport, including extended headers and padding.
 	bounded := &io.LimitedReader{R: input, N: goBuildInputCapacity + (4*(goBuildCacheFiles+10000)+16)*512}
-	archive := tar.NewReader(bounded)
+	stream := bufio.NewReaderSize(bounded, 64<<10)
+	archive := tar.NewReader(stream)
+	var copyBuffer [32 << 10]byte
+	memberBytes := &io.LimitedReader{R: archive}
+	hash := sha256.New()
 	seen := map[string]bool{}
 	for {
 		if err := ctx.Err(); err != nil {
@@ -180,8 +189,9 @@ func scanGoBuildMaterialization(ctx context.Context, input io.Reader, manifest g
 		if header.Mode != 0o400 || expected.kind != tar.TypeReg {
 			return errGoBuildInput
 		}
-		hash := sha256.New()
-		if _, err := io.CopyN(hash, archive, expected.size); err != nil || hex.EncodeToString(hash.Sum(nil)) != expected.sha256 {
+		hash.Reset()
+		memberBytes.N = expected.size
+		if n, err := io.CopyBuffer(hash, memberBytes, copyBuffer[:]); err != nil || n != expected.size || hex.EncodeToString(hash.Sum(nil)) != expected.sha256 {
 			return errGoBuildInput
 		}
 	}
@@ -193,7 +203,7 @@ func scanGoBuildMaterialization(ctx context.Context, input io.Reader, manifest g
 			return errGoBuildInput
 		}
 	}
-	if _, err := io.Copy(io.Discard, bounded); err != nil || bounded.N == 0 {
+	if _, err := io.Copy(io.Discard, stream); err != nil || bounded.N == 0 {
 		return errGoBuildInput
 	}
 	return nil

@@ -14,7 +14,7 @@ import (
 func TestGoBuildMaterializationRequiresCompleteContentAndFixedOwnership(t *testing.T) {
 	hash := sha256.Sum256([]byte("approved"))
 	manifest := goBuildInputManifest{members: map[string]goBuildInputMember{"project/main.go": {kind: tar.TypeReg, size: 8, sha256: hex.EncodeToString(hash[:])}}}
-	for _, failure := range []string{"", "content", "missing", "extra", "writable", "owner", "link", "duplicate", "root"} {
+	for _, failure := range []string{"", "content", "missing", "extra", "writable", "owner", "link", "duplicate", "root", "truncated"} {
 		t.Run(failure, func(t *testing.T) {
 			var body bytes.Buffer
 			writer := tar.NewWriter(&body)
@@ -59,6 +59,9 @@ func TestGoBuildMaterializationRequiresCompleteContentAndFixedOwnership(t *testi
 			}
 			if err := writer.Close(); err != nil {
 				t.Fatal(err)
+			}
+			if failure == "truncated" {
+				body.Truncate(4*512 + 4) // Three directory headers, one file header, and part of the file.
 			}
 			err := scanGoBuildMaterialization(context.Background(), &body, manifest)
 			if (err == nil) != (failure == "") {
