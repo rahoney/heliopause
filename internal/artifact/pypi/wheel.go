@@ -247,7 +247,8 @@ func parseWheelMetadata(project, version, filename, distInfo string, metadata, w
 			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 	}
-	files, err := validateRecord(record, regular, entries, distInfo)
+	dataDir := strings.TrimSuffix(distInfo, ".dist-info") + ".data"
+	validated, err := validateRecord(record, regular, entries, distInfo, dataDir, limits.MaxUncompressed)
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
@@ -277,8 +278,7 @@ func parseWheelMetadata(project, version, filename, distInfo string, metadata, w
 	}
 	sort.Strings(entryPoints)
 
-	dataDir := strings.TrimSuffix(distInfo, ".dist-info") + ".data"
-	surface, imports, noImportSurface, err := classifyWheelSurface(files, distInfo, dataDir, declared, entryPoints, epDetails, entries, limits)
+	surface, imports, noImportSurface, err := classifyWheelSurface(validated, distInfo, dataDir, declared, entryPoints, epDetails, entries, limits)
 	if err != nil {
 		return WheelInspection{}, err
 	}
@@ -296,7 +296,7 @@ func parseWheelMetadata(project, version, filename, distInfo string, metadata, w
 		Filename:         filename,
 		WheelVersion:     wheelVer,
 		Tags:             wheelHeaders.all("tag"),
-		Files:            files,
+		Files:            validated.files,
 		RequiresPython:   reqPy,
 		RequiresDist:     metaHeaders.all("requires-dist"),
 		providesExtra:    metaHeaders.all("provides-extra"),
@@ -478,7 +478,7 @@ func parseSiteHookLines(file string, body []byte) ([]SiteHookLine, error) {
 	return lines, nil
 }
 
-func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredImports, epList []string, epDetails []EntryPoint, entries map[string]*zip.File, limits WheelLimits) (RuntimeSurface, []string, bool, error) {
+func classifyWheelSurface(record inspectedWheelRecord, distInfo, dataDir string, declaredImports, epList []string, epDetails []EntryPoint, entries map[string]*zip.File, limits WheelLimits) (RuntimeSurface, []string, bool, error) {
 	var surface RuntimeSurface
 	surface.EntryPoints = append(surface.EntryPoints, epList...)
 	surface.EntryPointDetails = append(surface.EntryPointDetails, epDetails...)
@@ -488,11 +488,11 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 		scheme InstallationScheme
 		dest   string
 	}
-	mapped := make([]mappedFile, 0, len(files))
+	mapped := make([]mappedFile, 0, len(record.files))
 	initDirSet := make(map[string]bool)
-	seenDestinations := make(map[string]string, len(files))
+	seenDestinations := make(map[string]string, len(record.files))
 
-	for _, file := range files {
+	for _, file := range record.files {
 		scheme, dest, err := mapWheelInstalledLocation(file.Path, distInfo, dataDir)
 		if err != nil {
 			return RuntimeSurface{}, nil, false, err
@@ -573,26 +573,16 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 				surface.PythonExtensions = append(surface.PythonExtensions, extMod)
 
 			} else if isBareSO(dest) {
-				entry := entries[m.file.Path]
-				if entry != nil {
-					class, modName, err := classifyBareSO(entry, limits.MaxUncompressed)
-					if err == nil && class == soPythonExtension && modName != "" {
-						candidate := bareSOImportName(dest, modName)
-						if candidate != "" && validPythonImportName(candidate) {
-							role = RuntimeRolePythonExtension
-							surface.PythonExtensions = append(surface.PythonExtensions, candidate)
-						} else {
-							role = RuntimeRoleUnresolved
-							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
-						}
-					} else if err == nil && class == soProvenNative {
-						role = RuntimeRoleNativeLibrary
-						surface.NativeLibraries = append(surface.NativeLibraries, dest)
-					} else {
-						role = RuntimeRoleUnresolved
-						surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
-					}
-				} else {
+				native := record.bareSO[m.file.Path]
+				candidate := bareSOImportName(dest, native.module)
+				switch {
+				case native.class == soPythonExtension && candidate != "" && validPythonImportName(candidate):
+					role = RuntimeRolePythonExtension
+					surface.PythonExtensions = append(surface.PythonExtensions, candidate)
+				case native.class == soProvenNative:
+					role = RuntimeRoleNativeLibrary
+					surface.NativeLibraries = append(surface.NativeLibraries, dest)
+				default:
 					role = RuntimeRoleUnresolved
 					surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
 				}
@@ -822,33 +812,12 @@ func isBareSO(name string) bool {
 	return !strings.Contains(base, ".cpython-") && !strings.Contains(base, ".abi3.so")
 }
 
-func classifyBareSO(entry *zip.File, maxUncompressed int64) (class soClassification, pyInitModule string, err error) {
-	if entry == nil || entry.UncompressedSize64 > uint64(maxUncompressed) || entry.UncompressedSize64 < 64 {
-		return soAmbiguous, "", nil
-	}
-	r, err := entry.Open()
-	if err != nil {
-		return soAmbiguous, "", err
-	}
-	defer r.Close()
-
-	data, err := io.ReadAll(io.LimitReader(r, int64(entry.UncompressedSize64)+1))
-	if err != nil || int64(len(data)) != int64(entry.UncompressedSize64) {
-		return soAmbiguous, "", err
-	}
-
+func classifyBareSO(name string, data []byte) bareSOInspection {
 	class, modName, err := classifyELFBytes(data)
-	if err != nil || class != soPythonExtension {
-		return class, modName, err
+	if err != nil || class == soPythonExtension && modName != strings.TrimSuffix(path.Base(name), ".so") {
+		return bareSOInspection{}
 	}
-
-	// For a Python extension, the exported PyInit_<module> must match the file basename.
-	base := path.Base(entry.Name)
-	fileBase := strings.TrimSuffix(base, ".so")
-	if modName != fileBase {
-		return soAmbiguous, "", nil
-	}
-	return soPythonExtension, modName, nil
+	return bareSOInspection{class: class, module: modName}
 }
 
 func classifyELFBytes(data []byte) (class soClassification, pyInitModule string, err error) {
@@ -1062,43 +1031,54 @@ func validEntryPointName(name string) bool {
 	return true
 }
 
-func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string) ([]WheelFile, error) {
+type inspectedWheelRecord struct {
+	files  []WheelFile
+	bareSO map[string]bareSOInspection
+}
+
+type bareSOInspection struct {
+	class  soClassification
+	module string
+}
+
+func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo, dataDir string, maxUncompressed int64) (inspectedWheelRecord, error) {
 	primaryRecord := primaryDistInfo + "/RECORD"
 	r := csv.NewReader(bytes.NewReader(body))
 	r.FieldsPerRecord = 3
 	recorded := map[string]WheelFile{}
+	var validated inspectedWheelRecord
 	for {
 		row, err := r.Read()
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil || row[0] == "" {
-			return nil, errors.New("wheel RECORD is invalid")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD is invalid")
 		}
 		name, ok := wheelPath(row[0])
 		if !ok || recorded[name].Path != "" {
-			return nil, errors.New("wheel RECORD path is invalid")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD path is invalid")
 		}
 		if row[1] == "" && row[2] == "" {
 			if name != primaryRecord {
-				return nil, errors.New("wheel RECORD exemption is invalid")
+				return inspectedWheelRecord{}, errors.New("wheel RECORD exemption is invalid")
 			}
 			recorded[name] = WheelFile{Path: name}
 			continue
 		}
 		if name == primaryRecord {
-			return nil, errors.New("wheel RECORD self-entry must be empty")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD self-entry must be empty")
 		}
 		if !strings.HasPrefix(row[1], "sha256=") {
-			return nil, errors.New("wheel RECORD digest is invalid")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD digest is invalid")
 		}
 		digest, err := base64.RawURLEncoding.DecodeString(row[1][len("sha256="):])
 		if err != nil || len(digest) != sha256.Size {
-			return nil, errors.New("wheel RECORD digest is invalid")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD digest is invalid")
 		}
 		n, err := strconv.ParseInt(row[2], 10, 64)
 		if err != nil || n < 0 {
-			return nil, errors.New("wheel RECORD size is invalid")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD size is invalid")
 		}
 		recorded[name] = WheelFile{Path: name, Size: n, SHA256: hex.EncodeToString(digest)}
 	}
@@ -1111,18 +1091,40 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		}
 		file, ok := recorded[name]
 		if !ok || file.Path == "" {
-			return nil, errors.New("wheel contains unrecorded file")
+			return inspectedWheelRecord{}, errors.New("wheel contains unrecorded file")
 		}
 		if name == primaryRecord && file.Size == 0 && file.SHA256 == "" {
 			continue
 		}
 		entry := entries[name]
+		if entry != nil && isBareSO(name) && entry.UncompressedSize64 >= 64 && entry.UncompressedSize64 <= uint64(maxUncompressed) {
+			scheme, _, err := mapWheelInstalledLocation(name, primaryDistInfo, dataDir)
+			if err == nil && scheme == SchemeSite {
+				if file.Size != int64(entry.UncompressedSize64) || file.Size == 1<<63-1 {
+					return inspectedWheelRecord{}, errors.New("wheel RECORD size mismatch")
+				}
+				// Read through EOF to verify the ZIP checksum and reuse the bytes for ELF.
+				data, err := readZipEntry(entry, file.Size)
+				if err != nil || int64(len(data)) != file.Size {
+					return inspectedWheelRecord{}, errors.New("wheel RECORD size mismatch")
+				}
+				sum := sha256.Sum256(data)
+				if hex.EncodeToString(sum[:]) != file.SHA256 {
+					return inspectedWheelRecord{}, errors.New("wheel RECORD digest mismatch")
+				}
+				if validated.bareSO == nil {
+					validated.bareSO = make(map[string]bareSOInspection)
+				}
+				validated.bareSO[name] = classifyBareSO(name, data)
+				continue
+			}
+		}
 		actualSize, actualDigest, err := streamRecordFile(entry)
 		if err != nil || actualSize != file.Size {
-			return nil, errors.New("wheel RECORD size mismatch")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD size mismatch")
 		}
 		if actualDigest != file.SHA256 {
-			return nil, errors.New("wheel RECORD digest mismatch")
+			return inspectedWheelRecord{}, errors.New("wheel RECORD digest mismatch")
 		}
 	}
 	expected := 0
@@ -1132,15 +1134,15 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		}
 	}
 	if len(recorded) != expected {
-		return nil, errors.New("wheel RECORD contains unknown file")
+		return inspectedWheelRecord{}, errors.New("wheel RECORD contains unknown file")
 	}
-	files := make([]WheelFile, 0, len(recorded))
+	validated.files = make([]WheelFile, 0, len(recorded))
 	for _, file := range recorded {
 		if file.Path != "" {
-			files = append(files, file)
+			validated.files = append(validated.files, file)
 		}
 	}
-	return files, nil
+	return validated, nil
 }
 
 func streamRecordFile(file *zip.File) (int64, string, error) {

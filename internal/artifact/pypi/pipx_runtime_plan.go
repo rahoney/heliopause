@@ -161,17 +161,17 @@ func pipxRuntimeDistributionImports(distribution PipxRuntimeDistribution, distIn
 	if err != nil {
 		return nil, err
 	}
-	files, err := validateRecord(record, regular, entries, distInfo)
+	validated, err := validateRecord(record, regular, entries, distInfo, dataDir, limits.MaxUncompressed)
 	if err != nil {
 		return nil, err
 	}
-	for index, file := range files {
+	for index, file := range validated.files {
 		fact, ok := original[file.Path]
 		if !ok {
 			return nil, errors.New("pipx runtime RECORD contains foreign member")
 		}
-		files[index].Size = fact.Size
-		files[index].SHA256 = fact.SHA256
+		validated.files[index].Size = fact.Size
+		validated.files[index].SHA256 = fact.SHA256
 	}
 	declared, err := declaredWheelImports(headers.all("import-name"), headers.all("import-namespace"))
 	if err != nil {
@@ -191,7 +191,7 @@ func pipxRuntimeDistributionImports(distribution PipxRuntimeDistribution, distIn
 		epList = append(epList, parsed...)
 		details = epDetails
 	}
-	surface, imports, empty, err := classifyWheelSurface(files, distInfo, dataDir, declared, epList, details, entries, limits)
+	surface, imports, empty, err := classifyWheelSurface(validated, distInfo, dataDir, declared, epList, details, entries, limits)
 	if err != nil {
 		return nil, err
 	}

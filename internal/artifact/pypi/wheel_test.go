@@ -349,6 +349,50 @@ func TestWheelBareSOClassificationSemantics(t *testing.T) {
 	}
 }
 
+func TestWheelBareSORecordIntegrity(t *testing.T) {
+	const filename = "example-1.0-py3-none-any.whl"
+	entries := []wheelTestEntry{{
+		name: "example-1.0.data/platlib/_native.so",
+		body: buildSyntheticELF([]string{"PyInit__native"}),
+	}}
+	makeArchive := func(t *testing.T, transform func([]string) []string) []byte {
+		return recordedWheelArchive(t, "example", "1.0", "example-1.0.dist-info", entries, []string{"py3-none-any"}, transform)
+	}
+	archive := makeArchive(t, nil)
+	inspection := inspectTestWheel(t, archive, filename)
+	if extensions := inspection.Surface.PythonExtensions; len(extensions) != 1 || extensions[0] != "_native" {
+		t.Fatalf("Python extensions = %v, want [_native]", extensions)
+	}
+	for _, field := range []string{"ZIP checksum", "RECORD size", "RECORD digest"} {
+		t.Run(field, func(t *testing.T) {
+			var invalid []byte
+			switch field {
+			case "ZIP checksum":
+				invalid = bytes.Clone(archive)
+				centralDirectory := bytes.Index(invalid, []byte("PK\x01\x02"))
+				if centralDirectory < 0 {
+					t.Fatal("ZIP central directory missing")
+				}
+				invalid[centralDirectory+16] ^= 1 // First member's central-directory CRC32.
+			case "RECORD size":
+				invalid = makeArchive(t, replaceRecordRow(func(row []string) []string {
+					row[2] = "1"
+					return row
+				}))
+			case "RECORD digest":
+				invalid = makeArchive(t, replaceRecordRow(func(row []string) []string {
+					row[1] = "sha256=" + base64.RawURLEncoding.EncodeToString(make([]byte, sha256.Size))
+					return row
+				}))
+			}
+			_, err := inspectTestWheelResult(invalid, filename)
+			if stage, ok := WheelValidationStageOf(err); !ok || stage != WheelValidationRecord {
+				t.Fatalf("validation stage = %q (%v), want RECORD", stage, err)
+			}
+		})
+	}
+}
+
 func buildSyntheticELF(symbols []string) []byte {
 	shstrtab := []byte("\x00.text\x00.dynsym\x00.dynstr\x00.shstrtab\x00")
 	offTextName := uint32(1)
