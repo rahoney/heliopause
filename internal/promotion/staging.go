@@ -118,10 +118,10 @@ func (s *LocalStaging) stageDocuments(ctx context.Context, id domain.ContentDige
 			return domain.StagedSet{}, err
 		}
 	}
-	if err := writeRecord(temporary, manifestFilename, manifest); err != nil {
+	if err := writePrivateRecord(temporary, manifestFilename, manifest); err != nil {
 		return domain.StagedSet{}, err
 	}
-	if err := writeRecord(temporary, sbomFilename, sbom); err != nil {
+	if err := writePrivateRecord(temporary, sbomFilename, sbom); err != nil {
 		return domain.StagedSet{}, err
 	}
 	if err := sealFiles(temporary); err != nil {
@@ -187,9 +187,7 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 	}
 	copied, copyErr := io.Copy(writer, io.LimitReader(input, int64(artifact.SizeBytes())+1))
 	if output != nil {
-		if copyErr == nil {
-			copyErr = output.Sync()
-		}
+		// stageDocuments syncs each file when it seals the private tree.
 		if closeErr := output.Close(); copyErr == nil {
 			copyErr = closeErr
 		}
