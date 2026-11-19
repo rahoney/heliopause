@@ -369,6 +369,8 @@ func (w *limitedFileWriter) Write(data []byte) (int, error) {
 	return n, err
 }
 
-const pythonCopyArtifactScript = "import os,sys\np=sys.argv[1]\nos.makedirs(os.path.dirname(p),mode=0o700,exist_ok=True)\nout=open(p,'xb')\nwhile True:\n chunk=sys.stdin.buffer.read(65536)\n if not chunk: break\n out.write(chunk)\nout.close()\n"
+// Read one bounded MiB at a time to avoid generating a VFS write event for
+// each small chunk of a large authenticated wheel during introduction.
+const pythonCopyArtifactScript = "import os,sys\np=sys.argv[1]\nos.makedirs(os.path.dirname(p),mode=0o700,exist_ok=True)\nout=open(p,'xb')\nwhile True:\n chunk=sys.stdin.buffer.read(1024*1024)\n if not chunk: break\n out.write(chunk)\nout.close()\n"
 const pythonSingleWheelNameScript = "import os,sys\nfiles=[x for x in os.listdir(sys.argv[1]) if x.endswith('.whl') and os.path.isfile(os.path.join(sys.argv[1],x))]\nif len(files)!=1: raise SystemExit(1)\nprint(files[0])\n"
 const pythonStreamFileScript = "import os,stat,sys\ns=os.lstat(sys.argv[1])\nif not stat.S_ISREG(s.st_mode): raise SystemExit(1)\nwith open(sys.argv[1],'rb') as f:\n while True:\n  b=f.read(65536)\n  if not b: break\n  sys.stdout.buffer.write(b)\n"
