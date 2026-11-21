@@ -203,7 +203,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 		return runtimeImageManifest{}, errors.New("python runtime image identity is invalid")
 	}
 	if lock.PythonImage.ResolverCache != nil && (*lock.PythonImage.ResolverCache != runtimeidentity.PinnedPythonResolverImage() || lock.PythonImage.Reference != runtimeidentity.PythonImageReference) {
-		return runtimeImageManifest{}, errors.New("Python resolver image differs from the compiled runtime lock")
+		return runtimeImageManifest{}, errors.New("python resolver image differs from the compiled runtime lock")
 	}
 	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion, "-bookworm")
 	if err != nil || lock.GoImage.Architecture != "amd64" || !strings.HasPrefix(lock.GoImage.Reference, "golang:"+lock.GoImage.GoVersion+"-bookworm@") {

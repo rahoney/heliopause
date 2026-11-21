@@ -147,7 +147,7 @@ func validateRuntimeImages(body []byte, expectedData *bool, requireResolverImage
 		return err
 	}
 	if value.PythonResolverImage == nil && requireResolverImage || value.PythonResolverImage != nil && *value.PythonResolverImage != runtimeidentity.PinnedPythonResolverImage() {
-		return errors.New("Python resolver image metadata differs from the active lock")
+		return errors.New("python resolver image metadata differs from the active lock")
 	}
 	hasData := value.Schema == "helox.runtime-image-manifest/v3"
 	toolCount := 2

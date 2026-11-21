@@ -578,7 +578,7 @@ func validate(lock runtimeLock) error {
 	cache := lock.PythonImage.ResolverCache
 	imageDigest := regexp.MustCompile(`^sha256:[a-f0-9]{64}$`)
 	if !imageDigest.MatchString(cache.BaseConfig) || !imageDigest.MatchString(cache.LayerDiffID) || !imageDigest.MatchString(cache.Config) || cache.BaseConfig == cache.Config {
-		return errors.New("Python resolver image identity is invalid")
+		return errors.New("python resolver image identity is invalid")
 	}
 	uv := lock.UVImage
 	if !exactVersion.MatchString(uv.Version) || uv.Architecture != "amd64" || !regexp.MustCompile(`^ghcr.io/astral-sh/uv:`+regexp.QuoteMeta(uv.Version)+`@sha256:[a-f0-9]{64}$`).MatchString(uv.Reference) || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(uv.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(uv.Provenance.WorkflowRun) || !hex256.MatchString(uv.Provenance.IndexSHA256) || !hex256.MatchString(uv.Provenance.BundleSHA256) || !hex256.MatchString(uv.Provenance.ConfigSHA256) || uv.Tool.Path != "/uv" || uv.Tool.Size <= 0 || uv.Tool.Size > 64<<20 || !hex256.MatchString(uv.Tool.SHA256) {
