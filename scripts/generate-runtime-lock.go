@@ -91,12 +91,12 @@ type runtimeLock struct {
 			ABI         string `json:"abi"`
 			Platform    string `json:"platform"`
 		} `json:"target"`
+		ResolverCache struct {
+			BaseConfig  string `json:"base_config"`
+			LayerDiffID string `json:"layer_diff_id"`
+			Config      string `json:"config"`
+		} `json:"resolver_cache"`
 	} `json:"python_image"`
-	PythonResolverImage struct {
-		BaseConfig  string `json:"base_config"`
-		LayerDiffID string `json:"layer_diff_id"`
-		Config      string `json:"config"`
-	} `json:"python_resolver_image"`
 	UVImage struct {
 		Reference    string `json:"reference"`
 		Version      string `json:"uv_version"`
@@ -575,7 +575,7 @@ func validate(lock runtimeLock) error {
 	if lock.PythonImage.Target.Interpreter != pythonTag || lock.PythonImage.Target.ABI != pythonTag || lock.PythonImage.Target.Platform != "manylinux_2_36_x86_64" {
 		return errors.New("python interpreter, ABI or platform does not match the image target")
 	}
-	cache := lock.PythonResolverImage
+	cache := lock.PythonImage.ResolverCache
 	imageDigest := regexp.MustCompile(`^sha256:[a-f0-9]{64}$`)
 	if !imageDigest.MatchString(cache.BaseConfig) || !imageDigest.MatchString(cache.LayerDiffID) || !imageDigest.MatchString(cache.Config) || cache.BaseConfig == cache.Config {
 		return errors.New("Python resolver image identity is invalid")
@@ -690,7 +690,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 		{"PNPMSourceCommit", lock.PNPMTool.Provenance.SourceCommit}, {"PNPMWorkflowRun", lock.PNPMTool.Provenance.WorkflowRun}, {"PNPMBundlePath", lock.PNPMTool.Provenance.BundlePath}, {"PNPMBundleSHA256", lock.PNPMTool.Provenance.BundleSHA256}, {"PNPMToolPath", lock.PNPMTool.Tool.Path}, {"PNPMToolSHA256", lock.PNPMTool.Tool.SHA256}, {"PNPMNoticesPath", lock.PNPMTool.Notices.Path}, {"PNPMNoticesSHA256", lock.PNPMTool.Notices.SHA256},
 		{"PipxVersion", lock.PipxTool.Version}, {"PipxArchitecture", lock.PipxTool.Architecture}, {"PipxRuntimeImage", lock.PipxTool.RuntimeImage}, {"PipxToolPath", lock.PipxTool.Tool.Path}, {"PipxToolSHA256", lock.PipxTool.Tool.SHA256}, {"PipxNoticesPath", lock.PipxTool.Notices.Path}, {"PipxNoticesSHA256", lock.PipxTool.Notices.SHA256},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
-		{"PythonResolverBaseConfig", lock.PythonResolverImage.BaseConfig}, {"PythonResolverLayerDiffID", lock.PythonResolverImage.LayerDiffID}, {"PythonResolverImageConfig", lock.PythonResolverImage.Config},
+		{"PythonResolverBaseConfig", lock.PythonImage.ResolverCache.BaseConfig}, {"PythonResolverLayerDiffID", lock.PythonImage.ResolverCache.LayerDiffID}, {"PythonResolverImageConfig", lock.PythonImage.ResolverCache.Config},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
 		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
 		{"PythonInterpreterTag", lock.PythonImage.Target.Interpreter}, {"PythonABITag", lock.PythonImage.Target.ABI}, {"PythonPlatformTag", lock.PythonImage.Target.Platform},

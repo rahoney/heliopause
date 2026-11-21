@@ -117,7 +117,7 @@ def materialize(lock, output, identity_only):
             if identity_only:
                 print(json.dumps(identity, sort_keys=True))
                 return
-            if identity != lock['python_resolver_image']:
+            if identity != lock['python_image']['resolver_cache']:
                 raise ValueError('derived Python image differs from the lock')
             filename = identity['config'].removeprefix('sha256:') + '.json'
             layer_name = diff_id.removeprefix('sha256:') + '/layer.tar'

@@ -48,12 +48,12 @@ type runtimeLock struct {
 		NPMVersion string `json:"npm_version"`
 	} `json:"node_image"`
 	PythonImage struct {
-		Reference     string `json:"reference"`
-		PythonVersion string `json:"python_version"`
-		PipVersion    string `json:"pip_version"`
+		Reference     string                               `json:"reference"`
+		PythonVersion string                               `json:"python_version"`
+		PipVersion    string                               `json:"pip_version"`
+		ResolverCache *runtimeidentity.PythonResolverImage `json:"resolver_cache"`
 	} `json:"python_image"`
-	PythonResolverImage *runtimeidentity.PythonResolverImage `json:"python_resolver_image"`
-	UVImage             struct {
+	UVImage struct {
 		Reference    string `json:"reference"`
 		Version      string `json:"uv_version"`
 		Architecture string `json:"architecture"`
@@ -202,7 +202,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if err != nil || !versionPattern.MatchString(lock.PythonImage.PipVersion) {
 		return runtimeImageManifest{}, errors.New("python runtime image identity is invalid")
 	}
-	if lock.PythonResolverImage != nil && (*lock.PythonResolverImage != runtimeidentity.PinnedPythonResolverImage() || lock.PythonImage.Reference != runtimeidentity.PythonImageReference) {
+	if lock.PythonImage.ResolverCache != nil && (*lock.PythonImage.ResolverCache != runtimeidentity.PinnedPythonResolverImage() || lock.PythonImage.Reference != runtimeidentity.PythonImageReference) {
 		return runtimeImageManifest{}, errors.New("Python resolver image differs from the compiled runtime lock")
 	}
 	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion, "-bookworm")
@@ -235,7 +235,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
 		CustomImageDecision: "upstream official immutable images, including signed Astral uv supply; no HAA-owned image is published",
-		PythonResolverImage: lock.PythonResolverImage,
+		PythonResolverImage: lock.PythonImage.ResolverCache,
 		Provenance: provenanceContract{
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",

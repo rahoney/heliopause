@@ -77,12 +77,12 @@
     "reference": "node:24.22.1-slim@sha256:e1582112fb9f152ed38eefcd712efc93fee1becb519fdfa57574d5e07eaa5e7d",
     "npm_version": "11.19.1"
   },
-  "python_resolver_image": {
-    "base_config": "sha256:96c10b1906ce7ac6bdce9f94228a5730f200e571e7d1e158dd91945c85df6715",
-    "layer_diff_id": "sha256:5cbe5e96717cbfe0195160973da21888b731e46f5fa381cd1251f193ba564e13",
-    "config": "sha256:a03f53c03920da6ac608b64758c5e7db3bc87647bed96f8ce1c425363cf633c8"
-  },
   "python_image": {
+    "resolver_cache": {
+      "base_config": "sha256:96c10b1906ce7ac6bdce9f94228a5730f200e571e7d1e158dd91945c85df6715",
+      "layer_diff_id": "sha256:5cbe5e96717cbfe0195160973da21888b731e46f5fa381cd1251f193ba564e13",
+      "config": "sha256:a03f53c03920da6ac608b64758c5e7db3bc87647bed96f8ce1c425363cf633c8"
+    },
     "reference": "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86",
     "python_version": "3.14.10",
     "pip_version": "26.2.2",

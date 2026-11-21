@@ -84,7 +84,7 @@ jobs:
           docker buildx imagetools inspect "$python_image" >/dev/null
           docker pull --platform linux/amd64 "$python_image"
           python_resolver_identity="$(TMPDIR="$RUNNER_TEMP" python3 -I -B scripts/build-python-resolver-image.py --runtime-lock scripts/runtimes.lock.json --identity-only)"
-          jq -e --argjson actual "$python_resolver_identity" '.python_resolver_image == $actual' scripts/runtimes.lock.json >/dev/null
+          jq -e --argjson actual "$python_resolver_identity" '.python_image.resolver_cache == $actual' scripts/runtimes.lock.json >/dev/null
           docker buildx imagetools inspect "$rust_image" >/dev/null
           docker buildx imagetools inspect "$go_image" >/dev/null
           docker buildx imagetools inspect "$uv_image" >/dev/null
