@@ -28,7 +28,7 @@ func TestContainerCreationUsesExplicitNonAuthorityEnvironment(t *testing.T) {
 	sets := [][]string{
 		createArguments(session),
 		pythonDynamicCreateArguments(session, artifactpypi.PublicPyPIProfile().ResourcePolicy()),
-		pypiCreateArguments("haa-resolver-test", []string{"--add-host", "pypi.org:127.0.0.1"}),
+		pypiCreateArguments("haa-resolver-test", []string{"--add-host", "pypi.org:127.0.0.1"}, pythonImageReference),
 	}
 	for _, arguments := range sets {
 		assertExplicitNonAuthorityEnvironment(t, arguments)

@@ -34,7 +34,7 @@ func pipxNativeCreateArguments(data *pipxDataVolume, wheels *pipxWheelVolume, ru
 	if err != nil {
 		return nil, err
 	}
-	base := pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", zipMount, "--mount", wheelMount})
+	base := pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", zipMount, "--mount", wheelMount}, pythonImageReference)
 	environment := isolatedContainerEnvironmentArguments()
 	tail := []string{pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()}
 	start := len(base) - len(environment) - len(tail)

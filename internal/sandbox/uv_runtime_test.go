@@ -10,7 +10,7 @@ func TestUVRuntimeKeepsPythonIsolationAndSeparateToolMount(t *testing.T) {
 		t.Fatal("unattested tool volume accepted")
 	}
 	hosts := []string{"--add-host", "pypi.org:192.0.2.1"}
-	old := pypiCreateArguments("isolated-test", hosts)
+	old := pypiCreateArguments("isolated-test", hosts, pythonImageReference)
 	volume := uvRuntimeVolume{name: "haa-uv-runtime-test", owner: "test", createdAt: "fixed", mountpoint: "/owned"}
 	output := closureVolume{name: "haa-closure-output", transaction: "output", manifestID: "fixed", createdAt: "fixed", mountpoint: "/output"}
 	if _, err := uvCreateArguments("none", nil, volume, closureVolume{}); err == nil {

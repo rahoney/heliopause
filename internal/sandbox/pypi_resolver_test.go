@@ -17,6 +17,31 @@ import (
 
 const resolverTestSHA256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+func TestPyTorchResolverCacheRequiresPinnedLocalImage(t *testing.T) {
+	image := runtimeidentity.PythonResolverImageConfig
+	for _, test := range []struct{ name, result, want string }{
+		{"exact cache", image + "\n", image},
+		{"unavailable cache", "", ""},
+		{"other local image", runtimeidentity.PythonResolverBaseConfig, ""},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			output := map[string]string{
+				"docker version --format {{.Server.Version}}": runtimeidentity.DockerMinimumEngine,
+				"runsc --version":      canonicalRunscVersionOutput,
+				"runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\nName: sentry/filesystem_mutation\n",
+				"docker image inspect " + pythonImageReference + " --format {{.Id}}": runtimeidentity.PythonResolverBaseConfig,
+			}
+			if test.result != "" {
+				output["docker image inspect --format {{.Id}} "+image] = test.result
+			}
+			capability, err := probePyTorchResolver(context.Background(), "linux", "amd64", fakeExecutor{outputs: output})
+			if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() || capability.resolverImage != test.want {
+				t.Fatalf("resolver probe returned %#v, %v", capability, err)
+			}
+		})
+	}
+}
+
 func TestPyPIResolverKeepsSourceOwnershipAndCanonicalRootMetadataBudget(t *testing.T) {
 	for _, tc := range []struct {
 		root  string

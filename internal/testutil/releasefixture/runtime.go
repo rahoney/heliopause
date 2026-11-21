@@ -24,6 +24,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 			return Materials{}, err
 		}
 	}
+	im["python_resolver_image"] = runtimeidentity.PinnedPythonResolverImage()
 	metadata, ok := s["metadata"].(map[string]any)
 	if !ok {
 		return Materials{}, errors.New("synthetic SBOM metadata missing")

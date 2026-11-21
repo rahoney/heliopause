@@ -59,7 +59,7 @@ func TestUVRunFrozenArgumentsKeepOnlyOfflineReadonlyOriginals(t *testing.T) {
 	runtimeMount, _ := runtime.mountArgument()
 	outputMount, _ := output.mountArgument(false)
 	wheelMount, _ := wheels.readerMount()
-	expected := pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount})
+	expected := pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount}, pythonImageReference)
 	if !reflect.DeepEqual(args, expected) {
 		t.Fatal("existing fixed boundary changed")
 	}

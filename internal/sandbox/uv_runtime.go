@@ -20,7 +20,7 @@ func uvCreateArguments(network string, hostArguments []string, volume uvRuntimeV
 	if err != nil {
 		return nil, err
 	}
-	return pythonResolverCreateArguments(network, hostArguments, []string{"--mount", mount}, []string{"--mount", outputMount}), nil
+	return pythonResolverCreateArguments(network, hostArguments, []string{"--mount", mount}, []string{"--mount", outputMount}, pythonImageReference), nil
 }
 
 func closeUVOutputVolume(ctx context.Context, runner CommandRunner, volume *closureVolume) error {

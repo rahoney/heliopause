@@ -41,6 +41,20 @@ type PythonCapability struct {
 	Available      bool
 	LimitationCode string
 	Runtime        PythonRuntime
+	resolverImage  string
+}
+
+func probePyTorchResolver(ctx context.Context, operatingSystem, architecture string, executor Executor) (PythonCapability, error) {
+	capability, err := probePython(ctx, operatingSystem, architecture, executor)
+	if err != nil || !capability.Available {
+		return capability, err
+	}
+	image := runtimeidentity.PythonResolverImageConfig
+	id, inspectErr := executor.Output(ctx, "docker", "image", "inspect", "--format", "{{.Id}}", image)
+	if inspectErr == nil && strings.TrimSpace(string(id)) == image {
+		capability.resolverImage = image
+	}
+	return capability, ctx.Err()
 }
 
 func probePython(ctx context.Context, operatingSystem, architecture string, executor Executor) (PythonCapability, error) {

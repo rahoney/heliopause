@@ -93,7 +93,7 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 
 // ValidateRuntimeImages compares the fixed passive runtime image records to
 // the running controller's lock. Artifact metadata never selects host tools.
-func ValidateRuntimeImages(body []byte) error { return validateRuntimeImages(body, nil) }
+func ValidateRuntimeImages(body []byte) error { return validateRuntimeImages(body, nil, false) }
 
 // ValidateRuntimeImagesForRelease binds legacy/v3 metadata to the exact DATA
 // membership. Metadata never selects a runtime or bypasses acquired inspection.
@@ -106,10 +106,10 @@ func ValidateRuntimeImagesForRelease(body []byte, manifest ReleaseManifest) erro
 			}
 		}
 	}
-	return validateRuntimeImages(body, &expected)
+	return validateRuntimeImages(body, &expected, manifest.RuntimeLockSHA256() == runtimeidentity.RuntimeLockSHA256)
 }
 
-func validateRuntimeImages(body []byte, expectedData *bool) error {
+func validateRuntimeImages(body []byte, expectedData *bool, requireResolverImage bool) error {
 	type image struct {
 		Name       string `json:"name"`
 		Reference  string `json:"reference"`
@@ -132,9 +132,10 @@ func validateRuntimeImages(body []byte, expectedData *bool) error {
 		NoticesSize   int64  `json:"notices_size"`
 	}
 	var value struct {
-		Schema              string `json:"schema"`
-		CustomGHCRImage     *bool  `json:"custom_ghcr_image"`
-		CustomImageDecision string `json:"custom_image_decision"`
+		PythonResolverImage *runtimeidentity.PythonResolverImage `json:"python_resolver_image,omitempty"`
+		Schema              string                               `json:"schema"`
+		CustomGHCRImage     *bool                                `json:"custom_ghcr_image"`
+		CustomImageDecision string                               `json:"custom_image_decision"`
 		Provenance          struct {
 			Required     bool   `json:"required"`
 			Verification string `json:"verification"`
@@ -144,6 +145,9 @@ func validateRuntimeImages(body []byte, expectedData *bool) error {
 	}
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
+	}
+	if value.PythonResolverImage == nil && requireResolverImage || value.PythonResolverImage != nil && *value.PythonResolverImage != runtimeidentity.PinnedPythonResolverImage() {
+		return errors.New("Python resolver image metadata differs from the active lock")
 	}
 	hasData := value.Schema == "helox.runtime-image-manifest/v3"
 	toolCount := 2

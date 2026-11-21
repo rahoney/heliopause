@@ -113,7 +113,7 @@ func NewLinuxPyTorchResolverWithExecutorAndPolicy(executor TrustedExecutor, obse
 		return nil, errors.New("process-scoped observer is required")
 	}
 	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
-		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+		return probePyTorchResolver(ctx, runtime.GOOS, runtime.GOARCH, executor)
 	}
 	return newPythonResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe, policy, profile)
 }
@@ -335,7 +335,11 @@ func (r *PyPIResolver) withPythonResolverSourceSession(ctx context.Context, sour
 		}
 	}()
 
-	created, err := r.runner.Output(ctx, "docker", pypiCreateArguments(network, hostArguments)...)
+	image := capability.resolverImage
+	if image == "" {
+		image = capability.Runtime.ImageReference
+	}
+	created, err := r.runner.Output(ctx, "docker", pypiCreateArguments(network, hostArguments, image)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return errors.New("create PyPI resolver container failed")
 	}
@@ -608,12 +612,12 @@ func pypiResolveArguments(profile artifactpypi.SourceProfile, request string) []
 	return append(arguments, request)
 }
 
-func pypiCreateArguments(network string, hostArguments []string) []string {
+func pypiCreateArguments(network string, hostArguments []string, image string) []string {
 	return pythonResolverCreateArguments(network, hostArguments, []string{"--tmpfs", boundaryHelperMount},
-		[]string{"--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"})
+		[]string{"--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}, image)
 }
 
-func pythonResolverCreateArguments(network string, hostArguments, helperMount, siteMount []string) []string {
+func pythonResolverCreateArguments(network string, hostArguments, helperMount, siteMount []string, image string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
@@ -631,7 +635,7 @@ func pythonResolverCreateArguments(network string, hostArguments, helperMount, s
 	arguments = append(arguments, helperMount...)
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
-	arguments = append(arguments, pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
+	arguments = append(arguments, image, "/bin/sh", "-ceu", boundaryContainerCommand())
 	return arguments
 }
 

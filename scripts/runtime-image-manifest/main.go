@@ -10,6 +10,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const manifestSchema = "helox.runtime-image-manifest/v3"
@@ -50,7 +52,8 @@ type runtimeLock struct {
 		PythonVersion string `json:"python_version"`
 		PipVersion    string `json:"pip_version"`
 	} `json:"python_image"`
-	UVImage struct {
+	PythonResolverImage *runtimeidentity.PythonResolverImage `json:"python_resolver_image"`
+	UVImage             struct {
 		Reference    string `json:"reference"`
 		Version      string `json:"uv_version"`
 		Architecture string `json:"architecture"`
@@ -88,12 +91,13 @@ type runtimeLock struct {
 }
 
 type runtimeImageManifest struct {
-	Schema              string              `json:"schema"`
-	CustomGHCRImage     bool                `json:"custom_ghcr_image"`
-	CustomImageDecision string              `json:"custom_image_decision"`
-	Provenance          provenanceContract  `json:"provenance"`
-	Images              []runtimeImageEntry `json:"images"`
-	Tools               []runtimeToolEntry  `json:"tools"`
+	Schema              string                               `json:"schema"`
+	CustomGHCRImage     bool                                 `json:"custom_ghcr_image"`
+	CustomImageDecision string                               `json:"custom_image_decision"`
+	PythonResolverImage *runtimeidentity.PythonResolverImage `json:"python_resolver_image,omitempty"`
+	Provenance          provenanceContract                   `json:"provenance"`
+	Images              []runtimeImageEntry                  `json:"images"`
+	Tools               []runtimeToolEntry                   `json:"tools"`
 }
 
 type runtimeToolEntry struct {
@@ -198,6 +202,9 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if err != nil || !versionPattern.MatchString(lock.PythonImage.PipVersion) {
 		return runtimeImageManifest{}, errors.New("python runtime image identity is invalid")
 	}
+	if lock.PythonResolverImage != nil && (*lock.PythonResolverImage != runtimeidentity.PinnedPythonResolverImage() || lock.PythonImage.Reference != runtimeidentity.PythonImageReference) {
+		return runtimeImageManifest{}, errors.New("Python resolver image differs from the compiled runtime lock")
+	}
 	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion, "-bookworm")
 	if err != nil || lock.GoImage.Architecture != "amd64" || !strings.HasPrefix(lock.GoImage.Reference, "golang:"+lock.GoImage.GoVersion+"-bookworm@") {
 		return runtimeImageManifest{}, errors.New("go runtime image identity is invalid")
@@ -228,6 +235,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
 		CustomImageDecision: "upstream official immutable images, including signed Astral uv supply; no HAA-owned image is published",
+		PythonResolverImage: lock.PythonResolverImage,
 		Provenance: provenanceContract{
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",

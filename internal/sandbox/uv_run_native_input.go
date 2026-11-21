@@ -82,7 +82,7 @@ func uvFrozenRunCreateArguments(runtime uvRuntimeVolume, output closureVolume, w
 	if err != nil {
 		return nil, err
 	}
-	return pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount}), nil
+	return pythonResolverCreateArguments("none", nil, []string{"--mount", runtimeMount}, []string{"--mount", outputMount, "--mount", wheelMount}, pythonImageReference), nil
 }
 
 func startUVFrozenRunTrace(ctx context.Context, observer TraceObserver, container string) (TraceReader, error) {

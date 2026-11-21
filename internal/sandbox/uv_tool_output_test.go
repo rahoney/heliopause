@@ -268,7 +268,7 @@ func TestUVToolSelectionRejectsBeforeRuntime(t *testing.T) {
 }
 
 func TestUVToolFixedEnvironmentPreservesDirectExecAdmission(t *testing.T) {
-	base := pythonResolverCreateArguments("isolated-tool-network", nil, nil, nil)
+	base := pythonResolverCreateArguments("isolated-tool-network", nil, nil, nil, pythonImageReference)
 	before := append([]string(nil), base...)
 	tool, err := uvToolCreateArguments(base)
 	if err != nil {

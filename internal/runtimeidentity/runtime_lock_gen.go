@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "1e7b7c94e6aa375c7c8a84d8a0fae60036fb8810eed31eeeb40d2a7cc2aea411"
+	RuntimeLockSHA256            = "9ca024275dc8c7f5009318acce92bed67f5b7f0a734ff7e344f35649e7a96433"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -68,6 +68,9 @@ const (
 	PythonImageReference         = "python:3.14.10-slim-bookworm@sha256:47d41ea4947601fd5bc7ed6c00a7b9c1fbb936a7684873908a3c3b4e68ce3c86"
 	PythonVersion                = "3.14.10"
 	PipVersion                   = "26.2.2"
+	PythonResolverBaseConfig     = "sha256:96c10b1906ce7ac6bdce9f94228a5730f200e571e7d1e158dd91945c85df6715"
+	PythonResolverLayerDiffID    = "sha256:5cbe5e96717cbfe0195160973da21888b731e46f5fa381cd1251f193ba564e13"
+	PythonResolverImageConfig    = "sha256:a03f53c03920da6ac608b64758c5e7db3bc87647bed96f8ce1c425363cf633c8"
 	GoImageReference             = "golang:1.27.4-bookworm@sha256:fb7cceb528b47141eccd9b60bf3cbd27d5ef5f8cf5b7d338bec866da495b50dc"
 	GoVersion                    = "1.27.4"
 	GoArchitecture               = "amd64"
