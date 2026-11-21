@@ -185,7 +185,8 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 	if output != nil {
 		writer = io.MultiWriter(digest, output)
 	}
-	copied, copyErr := io.Copy(writer, io.LimitReader(input, int64(artifact.SizeBytes())+1))
+	size := int64(artifact.SizeBytes())
+	copied, copyErr := copyArtifact(writer, io.LimitReader(input, size+1), size)
 	if output != nil {
 		// stageDocuments syncs each file when it seals the private tree.
 		if closeErr := output.Close(); copyErr == nil {
@@ -197,6 +198,14 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 	}
 	written[artifact.Digest().String()] = true
 	return nil
+}
+
+func copyArtifact(dst io.Writer, src io.Reader, size int64) (int64, error) {
+	if size < 32<<20 {
+		return io.Copy(dst, src)
+	}
+	// Expose only Read so os.File.WriteTo cannot bypass the larger buffer.
+	return io.CopyBuffer(dst, struct{ io.Reader }{src}, make([]byte, 1<<20))
 }
 
 func verifyDocuments(bundle domain.VerifiedBundle) error {

@@ -376,7 +376,7 @@ func copyDigestFileMode(source, destination, expected string, mode os.FileMode) 
 		return errors.New("create target-local artifact")
 	}
 	hash := sha256.New()
-	_, copyErr := io.Copy(io.MultiWriter(output, hash), input)
+	_, copyErr := copyArtifact(io.MultiWriter(output, hash), input, info.Size())
 	if copyErr == nil && mode != 0 {
 		if hex.EncodeToString(hash.Sum(nil)) != expected {
 			copyErr = errors.New("staged artifact digest changed before permissions")
