@@ -197,7 +197,11 @@ func TestVenvPublishJournalPairsCompletionWithNextIntent(t *testing.T) {
 			return err
 		}
 		final := filepath.Join(plan.site, name)
-		if intent.Action != "publish" || intent.Path != final || intent.Output != tx.outputs[final] {
+		want := tx.outputs[final]
+		got := intent.Output
+		if intent.Action != "publish" || intent.Path != final ||
+			got.Digest != want.Digest || got.Size != want.Size || got.Mode != want.Mode ||
+			got.Device != want.Device || got.Inode != want.Inode {
 			return errors.New("durable intent does not identify the exact output")
 		}
 		if name == "b.py" {
