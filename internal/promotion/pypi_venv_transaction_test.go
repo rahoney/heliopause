@@ -165,6 +165,61 @@ func TestVenvManagedReplacementRemovesObsoleteOutputs(t *testing.T) {
 	}
 }
 
+func TestVenvPublishJournalPairsCompletionWithNextIntent(t *testing.T) {
+	_, plan := makePypiVenvFixture(t)
+	destinations := venvDestinations(t, map[string]string{"site/a.py": "first", "site/b.py": "second"}, "demo")
+	tx, err := beginPyPIVenvTransaction(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.close()
+	checked := 0
+	tx.fault = func(step string) error {
+		name := ""
+		switch {
+		case step == "after-publish:site" && len(tx.published) == 1:
+			name = "a.py"
+		case step == "after-publish-intent:site/b.py":
+			name = "b.py"
+		default:
+			return nil
+		}
+		body, err := os.ReadFile(filepath.Join(tx.backup, "ledger.json"))
+		if err != nil {
+			return err
+		}
+		lines := bytes.Split(bytes.TrimSuffix(body, []byte("\n")), []byte("\n"))
+		var intent struct {
+			Action, Path string
+			Output       pypiFileSnapshot
+		}
+		if err := json.Unmarshal(lines[len(lines)-1], &intent); err != nil {
+			return err
+		}
+		final := filepath.Join(plan.site, name)
+		if intent.Action != "publish" || intent.Path != final || intent.Output != tx.outputs[final] {
+			return errors.New("durable intent does not identify the exact output")
+		}
+		if name == "b.py" {
+			var completion struct{ Published pypiDestination }
+			if err := json.Unmarshal(lines[len(lines)-2], &completion); err != nil {
+				return err
+			}
+			if completion.Published.key() != "site/a.py" {
+				return errors.New("next intent did not follow the prior completion")
+			}
+		}
+		checked++
+		return nil
+	}
+	if err := tx.commit(destinations); err != nil {
+		t.Fatal(err)
+	}
+	if checked != 2 {
+		t.Fatalf("checked %d publication boundaries, want 2", checked)
+	}
+}
+
 func TestVenvRollbackPhases(t *testing.T) {
 	for _, phase := range []string{"before-mutation", "after-publish:site", "after-publish:scripts", "after-publish:data", "metadata", "sync", "reconcile"} {
 		t.Run(phase, func(t *testing.T) {

@@ -787,10 +787,13 @@ func (t *pypiVenvTransaction) persistLedger() error {
 	}
 	return nil
 }
-func (t *pypiVenvTransaction) appendJournal(value any) error {
-	body, err := json.Marshal(value)
-	if err != nil {
-		return err
+func (t *pypiVenvTransaction) appendJournal(values ...any) error {
+	var buffer bytes.Buffer
+	encoder := json.NewEncoder(&buffer)
+	for _, value := range values {
+		if err := encoder.Encode(value); err != nil {
+			return err
+		}
 	}
 	flags := os.O_WRONLY | os.O_APPEND
 	if !t.journalStarted {
@@ -814,7 +817,7 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 	if t.journalHash == nil {
 		t.journalHash = sha256.New()
 	}
-	line := append(body, '\n')
+	line := buffer.Bytes()
 	n, we := f.Write(line)
 	if we == nil && n != len(line) {
 		we = io.ErrShortWrite
@@ -833,6 +836,33 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 func (t *pypiVenvTransaction) journalIntent(action, path string) error {
 	return t.appendJournal(struct{ Action, Path string }{action, path})
 }
+
+// A completion and the following intent can share one sync. The intent
+// identifies the source inode even if its subsequent completion is missing.
+func (t *pypiVenvTransaction) journalPublishIntent(destination pypiDestination) error {
+	output, present := t.outputs[destination.Final]
+	if !present {
+		return errors.New("publication intent output identity missing")
+	}
+	intent := struct {
+		Action, Path string
+		Output       pypiFileSnapshot
+	}{"publish", destination.Final, output}
+	switch len(t.published) - t.journalPublished {
+	case 0:
+		return t.appendJournal(intent)
+	case 1:
+		previous := struct{ Published pypiDestination }{t.published[t.journalPublished]}
+		if err := t.appendJournal(previous, intent); err != nil {
+			return err
+		}
+		t.journalPublished++
+		return nil
+	default:
+		return errors.New("publication intent follows multiple pending results")
+	}
+}
+
 func (t *pypiVenvTransaction) commit(destinations []pypiDestination) error {
 	return t.commitSelection(destinations, false, false)
 }
@@ -952,8 +982,15 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 			return err
 		}
 	}
+	batchPublication := !complete && t.project == nil && t.tool == nil
 	for _, d := range ordered {
-		if err := t.createParents(filepath.Dir(d.Final)); err != nil {
+		parent := filepath.Dir(d.Final)
+		if _, known := t.directories[parent]; batchPublication && !known && t.journalPublished < len(t.published) {
+			if err := t.persistLedger(); err != nil {
+				return err
+			}
+		}
+		if err := t.createParents(parent); err != nil {
 			return err
 		}
 		if err := t.step("before-publish:" + d.key()); err != nil {
@@ -965,17 +1002,31 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 		if !t.outputs[d.Final].matches(d.Source) {
 			return errors.New("private output changed before publication")
 		}
-		if err := t.journalIntent("publish", d.Final); err != nil {
+		if batchPublication {
+			if err := t.journalPublishIntent(d); err != nil {
+				return err
+			}
+			if err := t.step("after-publish-intent:" + d.key()); err != nil {
+				return err
+			}
+		} else if err := t.journalIntent("publish", d.Final); err != nil {
 			return err
 		}
 		if err := t.rename(d.Source, d.Final); err != nil {
 			return err
 		}
 		t.published = append(t.published, d)
-		if err := t.persistLedger(); err != nil {
-			return err
+		if !batchPublication {
+			if err := t.persistLedger(); err != nil {
+				return err
+			}
 		}
 		if err := t.step("after-publish:" + d.Scheme); err != nil {
+			return err
+		}
+	}
+	if batchPublication {
+		if err := t.persistLedger(); err != nil {
 			return err
 		}
 	}
