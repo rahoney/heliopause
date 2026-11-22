@@ -438,6 +438,7 @@ func validateInstalledRecord(site, directory string, expected pypiExpected, reco
 			return errors.New("PyPI installed RECORD is invalid")
 		}
 		self := entryPath == filepath.Join(directory, "RECORD")
+		var declaredDigest string
 		if row[1] == "" {
 			if !self || row[2] != "" {
 				return errors.New("PyPI installed RECORD hash is invalid")
@@ -450,38 +451,29 @@ func validateInstalledRecord(site, directory string, expected pypiExpected, reco
 			if err != nil || len(digest) != sha256.Size {
 				return errors.New("PyPI installed RECORD hash is invalid")
 			}
-			body, readErr := os.ReadFile(entryPath)
-			sum := sha256.Sum256(body)
-			if readErr != nil || !infoRegular(entryPath) || !bytes.Equal(sum[:], digest) {
-				return errors.New("PyPI installed RECORD content hash is invalid")
-			}
+			declaredDigest = hex.EncodeToString(digest)
 		}
+		var declaredSize int64
 		if row[2] != "" {
-			size, sizeErr := strconv.ParseInt(row[2], 10, 64)
-			info, infoErr := os.Lstat(entryPath)
-			if sizeErr != nil || size < 0 || infoErr != nil || !info.Mode().IsRegular() || info.Size() != size {
+			declaredSize, err = strconv.ParseInt(row[2], 10, 64)
+			if err != nil || declaredSize < 0 {
 				return errors.New("PyPI installed RECORD size is invalid")
 			}
 		}
-		destination.Distribution = expected.name
-		destination.Version = expected.version
-		destination.ArtifactDigest = expected.digest
+		// Verify the declaration and bind the destination to the same file read.
 		fingerprint, err := snapshotPyPIFile(entryPath)
 		if err != nil {
 			return errors.New("PyPI installed output identity is unsafe")
 		}
-		if row[1] != "" {
-			declared, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(row[1], "sha256="))
-			if err != nil || hex.EncodeToString(declared) != fingerprint.Digest {
-				return errors.New("PyPI RECORD output changed before destination binding")
-			}
+		if declaredDigest != "" && declaredDigest != fingerprint.Digest {
+			return errors.New("PyPI installed RECORD content hash is invalid")
 		}
-		if row[2] != "" {
-			size, err := strconv.ParseInt(row[2], 10, 64)
-			if err != nil || size != fingerprint.Size {
-				return errors.New("PyPI RECORD size changed before destination binding")
-			}
+		if row[2] != "" && declaredSize != fingerprint.Size {
+			return errors.New("PyPI installed RECORD size is invalid")
 		}
+		destination.Distribution = expected.name
+		destination.Version = expected.version
+		destination.ArtifactDigest = expected.digest
 		destination.Digest, destination.Size = fingerprint.Digest, fingerprint.Size
 		if previous, duplicate := recordedDestinations[entryPath]; duplicate {
 			prior := &(*destinations)[previous]
@@ -615,11 +607,6 @@ func validateRecordedOutputRoots(site, transactionRoot string, recorded map[stri
 		}
 	}
 	return nil
-}
-
-func infoRegular(path string) bool {
-	info, err := os.Lstat(path)
-	return err == nil && info.Mode().IsRegular()
 }
 
 func parseInstalledMetadata(body []byte) (string, string, error) {

@@ -235,7 +235,11 @@ func (s pypiFileSnapshot) matches(path string) bool {
 	} else {
 		now, err = snapshotPyPIFile(path)
 	}
-	return err == nil && os.SameFile(s.info, now.info) && s.Digest == now.Digest && s.Size == now.Size && s.Mode == now.Mode
+	return err == nil && s.matchesSnapshot(now)
+}
+func (s pypiFileSnapshot) matchesSnapshot(now pypiFileSnapshot) bool {
+	return s.info != nil && now.info != nil && os.SameFile(s.info, now.info) &&
+		s.Digest == now.Digest && s.Size == now.Size && s.Mode == now.Mode
 }
 
 type pypiVenvState struct {
@@ -272,6 +276,10 @@ func (p pypiVenvPlan) readState() (pypiVenvState, bool, error) {
 	return state, true, nil
 }
 func (p pypiVenvPlan) verifyState(state pypiVenvState) error {
+	return p.verifyStateWithIdentity(state, nil)
+}
+
+func (p pypiVenvPlan) verifyStateWithIdentity(state pypiVenvState, verify func(string, pypiFileSnapshot) error) error {
 	for key, d := range state.Files {
 		bound, err := p.bind(d)
 		if err != nil || key != d.key() {
@@ -280,6 +288,11 @@ func (p pypiVenvPlan) verifyState(state pypiVenvState) error {
 		actual, err := snapshotPyPIFile(bound.Final)
 		if err != nil || actual.Digest != d.Digest || actual.Size != d.Size {
 			return errors.New("HAA-owned file drift")
+		}
+		if verify != nil {
+			if err := verify(bound.Final, actual); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -1112,15 +1125,21 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 	if err := t.verifyIdentity(); err != nil {
 		return err
 	}
-	if err := t.plan.verifyState(desired); err != nil {
+	if batchPublication {
+		if err := t.plan.verifyStateWithIdentity(desired, t.verifyOrdinaryFileIdentity); err != nil {
+			return err
+		}
+	} else if err := t.plan.verifyState(desired); err != nil {
 		return err
 	}
 	if err := t.tool.verifyPublished(); err != nil {
 		return err
 	}
-	for _, d := range ordered {
-		if !t.outputs[d.Final].matches(d.Final) {
-			return errors.New("published file inode drift")
+	if !batchPublication {
+		for _, d := range ordered {
+			if !t.outputs[d.Final].matches(d.Final) {
+				return errors.New("published file inode drift")
+			}
 		}
 	}
 	if !omitMetadata && !t.publishedMetadata.matches(meta) {
@@ -1131,13 +1150,15 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 			return errors.New("obsolete owned output remains")
 		}
 	}
-	changed := map[string]bool{}
-	for _, d := range t.backed {
-		changed[d.Final] = true
-	}
-	for path, before := range t.before {
-		if before != nil && !changed[path] && !before.matches(path) {
-			return errors.New("retained managed file drift")
+	if !batchPublication {
+		changed := map[string]bool{}
+		for _, d := range t.backed {
+			changed[d.Final] = true
+		}
+		for path, before := range t.before {
+			if before != nil && !changed[path] && !before.matches(path) {
+				return errors.New("retained managed file drift")
+			}
 		}
 	}
 	if omitMetadata {
@@ -1160,6 +1181,23 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 	}
 	return nil
 }
+
+// Ordinary publication keeps newly published and retained file identities
+// alongside the ownership metadata. Check both against the same live snapshot.
+func (t *pypiVenvTransaction) verifyOrdinaryFileIdentity(path string, actual pypiFileSnapshot) error {
+	if published, ok := t.outputs[path]; ok {
+		if !published.matchesSnapshot(actual) {
+			return errors.New("published file inode drift")
+		}
+		return nil
+	}
+	retained := t.before[path]
+	if retained == nil || !retained.matchesSnapshot(actual) {
+		return errors.New("retained managed file drift")
+	}
+	return nil
+}
+
 func (t *pypiVenvTransaction) syncDirectories() error {
 	paths := []string{}
 	for path := range t.directories {
