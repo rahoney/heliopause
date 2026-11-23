@@ -697,7 +697,7 @@ func (t *pypiVenvTransaction) createParents(path string) error {
 	if err := t.createParents(filepath.Dir(path)); err != nil {
 		return err
 	}
-	if err := t.journalIntent("mkdir", path); err != nil {
+	if err := t.journalAfterPublication(struct{ Action, Path string }{"mkdir", path}); err != nil {
 		return err
 	}
 	parent, name, err := t.openParent(path)
@@ -850,8 +850,7 @@ func (t *pypiVenvTransaction) journalIntent(action, path string) error {
 	return t.appendJournal(struct{ Action, Path string }{action, path})
 }
 
-// A completion and the following intent can share one sync. The intent
-// identifies the source inode even if its subsequent completion is missing.
+// Identify the source inode even if its subsequent completion is missing.
 func (t *pypiVenvTransaction) journalPublishIntent(destination pypiDestination) error {
 	output, present := t.outputs[destination.Final]
 	if !present {
@@ -861,6 +860,12 @@ func (t *pypiVenvTransaction) journalPublishIntent(destination pypiDestination) 
 		Action, Path string
 		Output       pypiFileSnapshot
 	}{"publish", destination.Final, output}
+	return t.journalAfterPublication(intent)
+}
+
+// Persist the prior rename completion before authorizing the next mutation.
+// Both records keep their original order in a single synchronized append.
+func (t *pypiVenvTransaction) journalAfterPublication(intent any) error {
 	switch len(t.published) - t.journalPublished {
 	case 0:
 		return t.appendJournal(intent)
@@ -997,13 +1002,7 @@ func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDest
 	}
 	batchPublication := !complete && t.project == nil && t.tool == nil
 	for _, d := range ordered {
-		parent := filepath.Dir(d.Final)
-		if _, known := t.directories[parent]; batchPublication && !known && t.journalPublished < len(t.published) {
-			if err := t.persistLedger(); err != nil {
-				return err
-			}
-		}
-		if err := t.createParents(parent); err != nil {
+		if err := t.createParents(filepath.Dir(d.Final)); err != nil {
 			return err
 		}
 		if err := t.step("before-publish:" + d.key()); err != nil {
