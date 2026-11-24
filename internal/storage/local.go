@@ -967,7 +967,8 @@ func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (
 	if err != nil || !os.SameFile(current, held) {
 		return errors.New("intake cleanup directory changed")
 	}
-	bytes, digest, err := measureResource(ctx, root, "intake", record.ReservedBytes, record.ReservedFiles, nil)
+	members := make(map[string]measuredMember)
+	bytes, digest, err := measureResource(ctx, root, "intake", record.ReservedBytes, record.ReservedFiles, members)
 	if err != nil {
 		return err
 	}
@@ -979,10 +980,7 @@ func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (
 	if err := s.append(journalEvent{"deleting", deleting}); err != nil {
 		return err
 	}
-	// Re-read after the durable transition, immediately before removing members.
-	members := make(map[string]measuredMember)
-	bytes, digest, err = measureResource(ctx, root, "intake", record.ReservedBytes, record.ReservedFiles, members)
-	if err != nil || bytes != record.LogicalBytes || digest != record.Content {
+	if err := ctx.Err(); err != nil {
 		return errors.Join(errors.New("intake cleanup readback changed"), err)
 	}
 	directory, err := root.Open(".")
@@ -991,21 +989,34 @@ func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (
 	}
 	entries, readErr := directory.ReadDir(int(record.ReservedFiles) + 1)
 	closeErr := directory.Close()
-	if (readErr != nil && readErr != io.EOF) || closeErr != nil || uint64(len(entries)) > record.ReservedFiles {
+	if (readErr != nil && readErr != io.EOF) || closeErr != nil || len(entries) != len(members) {
 		return errors.Join(errors.New("intake cleanup inventory changed"), readErr, closeErr)
 	}
-	for _, entry := range entries {
+	largest := 0
+	var largestSize int64 = -1
+	for i, entry := range entries {
 		if err := ctx.Err(); err != nil {
-			return err
+			return errors.Join(errors.New("intake cleanup readback changed"), err)
 		}
 		expected, known := members[entry.Name()]
-		info, err := root.Lstat(entry.Name())
-		if !known || err != nil || !privateResourceFile(info) || info.Mode() != expected.info.Mode() || !os.SameFile(expected.info, info) || info.Size() != expected.info.Size() || !info.ModTime().Equal(expected.info.ModTime()) {
-			return errors.New("intake cleanup member ownership changed")
+		if !known {
+			return errors.New("intake cleanup inventory changed")
 		}
-		digest, err := hashResourceMember(ctx, root, entry.Name(), info)
-		if err != nil || digest != expected.sha256 {
-			return errors.Join(errors.New("intake cleanup member changed after inventory"), err)
+		if size := expected.info.Size(); size > largestSize {
+			largest, largestSize = i, size
+		}
+	}
+	entries[0], entries[largest] = entries[largest], entries[0]
+	// Verify every member after the durable transition before the first
+	// unlink. The largest member's last readback also guards its unlink.
+	for _, entry := range entries[1:] {
+		if err := verifySealedIntakeMember(ctx, root, entry.Name(), members[entry.Name()]); err != nil {
+			return errors.Join(errors.New("intake cleanup readback changed"), err)
+		}
+	}
+	for _, entry := range entries {
+		if err := verifySealedIntakeMember(ctx, root, entry.Name(), members[entry.Name()]); err != nil {
+			return err
 		}
 		if err := root.Remove(entry.Name()); err != nil {
 			return err
@@ -1025,6 +1036,22 @@ func (s *Local) removeSealedIntake(ctx context.Context, record resourceRecord) (
 	removed.Phase = "REMOVED"
 	return s.append(journalEvent{"removed", removed})
 }
+
+func verifySealedIntakeMember(ctx context.Context, root *os.Root, name string, expected measuredMember) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	info, err := root.Lstat(name)
+	if err != nil || !privateResourceFile(info) || info.Mode() != expected.info.Mode() || !os.SameFile(expected.info, info) || info.Size() != expected.info.Size() || !info.ModTime().Equal(expected.info.ModTime()) {
+		return errors.New("intake cleanup member ownership changed")
+	}
+	digest, err := hashResourceMember(ctx, root, name, info)
+	if err != nil || digest != expected.sha256 {
+		return errors.Join(errors.New("intake cleanup member changed after inventory"), err)
+	}
+	return nil
+}
+
 func matchesIdentity(info os.FileInfo, identity fileIdentity) bool {
 	if !privateDirectory(info) {
 		return false

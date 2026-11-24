@@ -738,6 +738,61 @@ func TestIntakeFinalizationRechecksMemberAfterWholeInventory(t *testing.T) {
 	}
 }
 
+func TestIntakeFinalizationAuthenticatesEveryMemberBeforeFirstUnlink(t *testing.T) {
+	path := storageTestRoot(t)
+	ctx := context.Background()
+	storage, err := openTestStorage(ctx, path, storageFixturePolicy(t, 4))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer storage.Close()
+	run, _ := domain.NewRunID()
+	operation, _ := domain.NewOperationID()
+	ctx = ports.WithStorageOperation(ctx, operation)
+	if err := storage.intake.Mkdir(run.String(), 0700); err != nil {
+		t.Fatal(err)
+	}
+	lease, err := storage.Reserve(ctx, ports.StorageRequest{Operation: operation, Run: run, Kind: "intake", Temporary: run.String(), Target: run.String(), Bytes: 2048, Files: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory := filepath.Join(path, "intake", run.String())
+	large := filepath.Join(directory, "wheel.whl")
+	small := filepath.Join(directory, "filename")
+	original := bytes.Repeat([]byte("a"), 1024)
+	if err := os.WriteFile(large, original, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(small, []byte("sealed bytes"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := lease.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := storage.NoteInspection(ctx, run, true); err != nil {
+		t.Fatal(err)
+	}
+
+	// The callback mutates the smaller file at the first cancellation check
+	// after the journal has recorded DELETING.
+	callback := &finalizationReadbackContext{Context: ctx, journal: filepath.Join(path, ".storage", "resources.jsonl"), payload: small, checks: 2}
+	if err := storage.Finish(callback, true); err == nil || !callback.mutated {
+		t.Fatal("post-transition member mutation was not detected", err)
+	}
+	if body, err := os.ReadFile(large); err != nil || !bytes.Equal(body, original) {
+		t.Fatal("unchanged member was removed before the entire set was verified", err)
+	}
+	if body, err := os.ReadFile(small); err != nil || string(body) != "changed data" {
+		t.Fatal("mutated member was removed", err)
+	}
+	if entry := storage.entries[resourceKey("intake", run.String())]; entry.Phase != "DELETING" || storage.charged == 0 {
+		t.Fatal("failed readback did not retain the durable accounting")
+	}
+}
+
 func TestIntakeFinalizationWaitsForSharedConsumersAndAcknowledgesOwnerRemoval(t *testing.T) {
 	for _, scenario := range []string{"shared incomplete", "owner removed", "consumer active", "consumer failed"} {
 		t.Run(scenario, func(t *testing.T) {
