@@ -235,9 +235,20 @@ func (c *checker) runProfile(profile string) error {
 	}
 }
 
+// Hosted Intel macOS runners vary about twofold in speed; only Darwin gets the
+// user-approved wider build and default-test limits (2026-11-07).
+func darwinLimit(standard, darwin time.Duration) time.Duration {
+	if runtime.GOOS == "darwin" {
+		return darwin
+	}
+	return standard
+}
+
 func (c *checker) platformSteps() []checkStep {
 	return []checkStep{
-		{"production build", func() error { return c.runGo("production build", "build", "-v", "-trimpath", "./...") }},
+		{"production build", func() error {
+			return c.runGoWithTimeout("production build", darwinLimit(commandTimeout, 4*time.Minute), "build", "-v", "-trimpath", "./...")
+		}},
 		{"default test", func() error {
 			return c.runDefaultTests()
 		}},
@@ -332,8 +343,8 @@ func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, envi
 
 func (c *checker) runDefaultTests() error {
 	output := newGoTestCapture(time.Now)
-	_, err := c.runCapturedCommand("default test", 6*time.Minute, c.offlineEnvironment(), c.goExecutable,
-		output, goTestStderr{output}, output.String, "test", "-trimpath", "-json", "-timeout=5m", "./...")
+	_, err := c.runCapturedCommand("default test", darwinLimit(6*time.Minute, 9*time.Minute), c.offlineEnvironment(), c.goExecutable,
+		output, goTestStderr{output}, output.String, "test", "-trimpath", "-json", "-timeout="+darwinLimit(5*time.Minute, 8*time.Minute).String(), "./...")
 	if err != nil && output.offlineMissing {
 		return &checkFailure{class: unavailable, step: "default test", detail: "offline module cache prerequisite is missing", cause: err}
 	}
