@@ -112,5 +112,5 @@ func TestPipxSystemDataInDisposableNamespace(t *testing.T) {
 	if err != nil || digest(copied) != runtimeidentity.PipxToolSHA256 {
 		t.Fatal("selected DATA bytes changed", err)
 	}
-	t.Log("unsigned copy-only fixture: native6 retained; selected ZIP/NOTICE root-owned single-link0444; no artifact execution or authenticity qualification")
+	t.Log("unsigned copy-only fixture: native7 retained; selected ZIP/NOTICE root-owned single-link0444; no artifact execution or authenticity qualification")
 }

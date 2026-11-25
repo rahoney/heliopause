@@ -42,7 +42,14 @@ if [[ "$#" == 5 ]]; then
         if current=$(readlink "$path"); then
           if [[ "$current" == "$namespace" ]]; then cleanup_status=1; fi
         elif [[ -d "${path%/ns/mnt}" ]]; then
-          cleanup_status=1
+          # A positively identified single-threaded zombie with no FDs holds no mount namespace.
+          if ! (
+            cd -- "${path%/ns/mnt}" &&
+            awk '$1 == "State:" && $2 == "Z" { zombie=1 } $1 == "Threads:" && $2 == "1" { single=1 } END { exit !(zombie && single) }' status &&
+            entries=$(ls -A -- fd) && [[ -z "$entries" ]]
+          ); then
+            cleanup_status=1
+          fi
         fi
       done
     else

@@ -203,14 +203,21 @@ func TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging(t *testing.T) {
 				t.Fatal(err)
 			}
 			entries := outcome.Inspection().Set().Inspections()
-			if len(entries) != 13 || nativeSandbox.calls != 6 {
+			if len(entries) != 14 || nativeSandbox.calls != 7 {
 				t.Fatal("complete graph coverage differs", len(entries), nativeSandbox.calls)
 			}
-			checks, evidenceCount, zipChecks, zipEvidence := 0, 0, 0, 0
+			checks, evidenceCount, zipChecks, zipEvidence, responderDynamic := 0, 0, 0, 0, 0
 			for _, entry := range entries {
 				checks += len(entry.Checks())
 				evidenceCount += len(entry.Evidence())
+				responder := entry.Artifact().Identity().Variant() == runtimeidentity.SandboxResponderAssetName
+				if responder && mode == "current-source-and-staging-only" && len(entry.Evidence()) != 5 {
+					t.Fatal("sandbox responder requires its own Evidence", len(entry.Evidence()))
+				}
 				for _, check := range entry.Checks() {
+					if responder && check.ID().String() == "github-release-elf-dynamic" && check.Required() {
+						responderDynamic++
+					}
 					if mode == "current-source-and-staging-only" && (!check.Required() || check.Status() != domain.ExecutionCompleted) {
 						t.Fatal("required check not completed", check.ID())
 					}
@@ -247,8 +254,13 @@ func TestPipxActualCompleteGraphCurrentEvidencePolicyAndStaging(t *testing.T) {
 					}
 				}
 			}
+			if responderDynamic != 1 {
+				t.Fatal("required sandbox responder dynamic check missing or duplicated", responderDynamic)
+			}
 			if mode == "current-source-and-staging-only" {
-				if checks != 32 || evidenceCount != 37 || zipChecks != 1 || zipEvidence != 7 || outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" {
+				// The complete native set has 31 checks and 45 Evidence. The
+				// pipx ZIP and NOTICE add four checks and nine Evidence.
+				if checks != 35 || evidenceCount != 54 || zipChecks != 1 || zipEvidence != 7 || outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" {
 					t.Fatal("current complete set not staged", checks, evidenceCount, zipChecks, zipEvidence)
 				}
 			} else {
