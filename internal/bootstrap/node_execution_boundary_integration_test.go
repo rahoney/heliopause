@@ -56,7 +56,7 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 	}
 	budget := 4 * time.Minute
 	if bun {
-		// The twelve Bun fixtures take about four minutes in total.
+		// The first eleven Bun fixtures share the existing five-minute budget.
 		budget = 5 * time.Minute
 	}
 	ctx, stop := context.WithTimeout(context.Background(), budget)
@@ -64,7 +64,13 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 	var previous string
 	for _, mode := range []string{"argv", "term", "kill", "cancel", "stdout-overflow", "stderr-overflow", "outside-read", "network", "child", "comm-spoof", "readonly", "deadline"} {
 		if !t.Run(mode, func(t *testing.T) {
-			executor, err := hosttool.NewSystem(ctx)
+			caseContext := ctx
+			bunDeadline := bun && mode == "deadline"
+			if bunDeadline {
+				// Give the final Bun case its existing 30-second timer independently.
+				caseContext = context.WithoutCancel(ctx)
+			}
+			executor, err := hosttool.NewSystem(caseContext)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -77,11 +83,13 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			run, cancel := context.WithCancelCause(ctx)
+			run, cancel := context.WithCancelCause(caseContext)
 			defer cancel(nil)
+			var deadlineStarted time.Time
 			if mode == "deadline" {
 				var finish context.CancelFunc
-				run, finish = context.WithTimeout(ctx, 30*time.Second)
+				deadlineStarted = time.Now()
+				run, finish = context.WithTimeout(caseContext, 30*time.Second)
 				defer finish()
 			}
 			cause := errors.New("controlled Node caller cancellation")
@@ -122,10 +130,16 @@ func testJavaScriptExecutionBoundaryIntegration(t *testing.T, bun bool) {
 			}
 			var result application.ExecutionRuntimeOutcome
 			var executeErr error
+			executionStarted := time.Now()
 			if bun {
 				result, executeErr = backend.ExecuteBunExecution(run, execution, layout)
 			} else {
 				result, executeErr = backend.ExecuteNodeExecution(run, execution, layout)
+			}
+			if bunDeadline {
+				t.Logf("bun_deadline_timing preparation_seconds=%.3f execution_seconds=%.3f parent_expired=%t caller_expired=%t run_error_deadline=%t",
+					executionStarted.Sub(deadlineStarted).Seconds(), time.Since(executionStarted).Seconds(),
+					errors.Is(ctx.Err(), context.DeadlineExceeded), errors.Is(run.Err(), context.DeadlineExceeded), errors.Is(executeErr, context.DeadlineExceeded))
 			}
 			isProgramError := func(err error) bool {
 				if bun {
