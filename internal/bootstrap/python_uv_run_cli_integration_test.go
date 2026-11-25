@@ -138,6 +138,7 @@ func runPythonNativeExecutionCLICohort(t *testing.T, pipx, supplemental bool) {
 					t.Fatal("native guest/preparation status differs", cause)
 				}
 			}
+			var reportedRuns map[string]bool
 			if row.output == "json" {
 				var report struct {
 					Schema, Quarantine, Policy, Preparation, Execution string
@@ -146,7 +147,15 @@ func runPythonNativeExecutionCLICohort(t *testing.T, pipx, supplemental bool) {
 					Promotion                                          string `json:"output_promotion"`
 					Cleanup                                            string `json:"execution_guest_cleanup"`
 					Failure                                            string `json:"failure_code"`
-					Output                                             struct {
+					CheckPlans                                         []struct {
+						RunID string `json:"run_id"`
+					} `json:"check_plans"`
+					Checks []struct {
+						RunID    string `json:"run_id"`
+						Required bool
+					} `json:"checks"`
+					InspectionResults []json.RawMessage `json:"inspection_results"`
+					Output            struct {
 						Untrusted   bool
 						Encoding    string
 						StdoutBytes int    `json:"stdout_bytes"`
@@ -155,15 +164,35 @@ func runPythonNativeExecutionCLICohort(t *testing.T, pipx, supplemental bool) {
 						Stderr      string `json:"stderr_escaped"`
 					} `json:"program_output"`
 				}
-				if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || !report.Output.Untrusted || report.Promotion != "NOT_REQUESTED" {
+				if err := json.Unmarshal(out.Bytes(), &report); err != nil {
+					t.Fatal("decode native execution report", err)
+				}
+				if !report.Output.Untrusted || report.Promotion != "NOT_REQUESTED" {
 					t.Fatal("actual separate native report missing")
 				}
 				if row.refused {
+					if report.Schema != "helox.execution-result/v1" || len(report.CheckPlans) != 0 || len(report.Checks) != 0 || len(report.InspectionResults) != 0 {
+						t.Fatalf("pre-inspection refusal must retain v1 without inspection data: schema=%q plans=%d checks=%d failures=%d", report.Schema, len(report.CheckPlans), len(report.Checks), len(report.InspectionResults))
+					}
 					if report.Quarantine != "INCOMPLETE" || report.Policy != "NOT_AVAILABLE" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.ExitCode != nil || report.Signal != nil || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || report.Output.StdoutBytes != 0 || report.Output.StderrBytes != 0 {
 						t.Fatal("native source-console refusal became approval/program result")
 					}
+				} else if report.Schema != "helox.execution-result/v2" || len(report.CheckPlans) != row.nodes || len(report.Checks) < row.nodes || len(report.InspectionResults) != 0 {
+					t.Fatalf("inspected native execution must report v2 with current inspection data: schema=%q plans=%d want=%d checks=%d failures=%d", report.Schema, len(report.CheckPlans), row.nodes, len(report.Checks), len(report.InspectionResults))
 				} else if report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "COMPLETED" || report.Execution != "COMPLETED" || report.ExitCode == nil || *report.ExitCode != row.code || report.Cleanup != "CONFIRMED" || row.code == 0 && report.Output.StdoutBytes == 0 || row.code != 0 && report.Output.StderrBytes == 0 {
 					t.Fatal("current native CLI result axes differ")
+				}
+				if !row.refused {
+					reportedRuns = make(map[string]bool, len(report.CheckPlans))
+					for _, plan := range report.CheckPlans {
+						reportedRuns[plan.RunID] = false
+					}
+					for _, check := range report.Checks {
+						if _, planned := reportedRuns[check.RunID]; !planned {
+							t.Fatalf("reported check has no inspection plan for run %q", check.RunID)
+						}
+						reportedRuns[check.RunID] = reportedRuns[check.RunID] || check.Required
+					}
 				}
 				if row.show != (report.Output.Encoding == "ASCII_QUOTED") || !row.show && (report.Output.Stdout != "" || report.Output.Stderr != "") {
 					t.Fatal("private output or explicit ASCII choice lost")
@@ -220,6 +249,9 @@ func runPythonNativeExecutionCLICohort(t *testing.T, pipx, supplemental bool) {
 				for _, entry := range manifest.Entries {
 					if entry.Source != "pypi" || len(entry.SHA256) != 64 || len(entry.Evidence) < 3 || entry.Run == "" || seenRuns[entry.Run] {
 						t.Fatal("fresh current whole source/Evidence missing")
+					}
+					if reportedRuns != nil && !reportedRuns[entry.Run] {
+						t.Fatalf("missing report plan or required check for current run %q", entry.Run)
 					}
 					seenRuns[entry.Run] = true
 					names[entry.Name] = true

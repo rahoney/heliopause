@@ -18,56 +18,61 @@ import (
 // No pipx ZIP, interpreter query, receipt or runtime identity is introduced.
 func publicUVToolRunInput(t *testing.T) *pipxNativeInput {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-	supervisor := integrationObserverSupervisor(t)
-	defer func() {
-		if err := supervisor.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	executor, err := integrationSystemExecutor(t, ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	resolver, err := NewLinuxUVResolverWithExecutorAndPolicy(executor, supervisor.Observer(), integrationResolverPolicyService(t))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err := resolver.Close(); err != nil {
-			t.Error(err)
-		}
-	}()
-	requirement, err := artifactpypi.ParseUpgradeRequirement("cowsay==6.1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	proposal, err := resolver.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
-	if err != nil {
-		t.Fatal("public UV proposal failed", err)
-	}
-	lock, err := artifactpypi.ParseUVLock(requirement.Reference(), proposal.lock, PinnedPythonRuntime().PythonVersion)
-	if err != nil {
-		t.Fatal(err)
-	}
-	runtime := PinnedPythonRuntime()
-	target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
-	selected, err := lock.SelectInstalledWheelControls(proposal.controls, target)
-	if err != nil {
-		t.Fatal(err)
-	}
 	var frozen *pipxNativeInput
-	if err := resolver.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
-		var err error
-		frozen, err = freezePipxNativeInput(ctx, lock, inputs, pages)
-		return err
-	}); err != nil {
-		t.Fatal("whole public original/source/startup binding failed", err)
-	}
-	if frozen == nil || !frozen.valid() || len(frozen.graph.Nodes()) != 1 || len(frozen.files) != 1 ||
-		frozen.files[0].digest != "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a" {
-		t.Fatal("public frozen source changed")
+	// Release the source observer's protected executor before the native query.
+	if !t.Run("public-source", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		supervisor := integrationObserverSupervisor(t)
+		defer func() {
+			if err := supervisor.Close(); err != nil {
+				t.Error(err)
+			}
+		}()
+		executor, err := integrationSystemExecutor(t, ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resolver, err := NewLinuxUVResolverWithExecutorAndPolicy(executor, supervisor.Observer(), integrationResolverPolicyService(t))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			if err := resolver.Close(); err != nil {
+				t.Error(err)
+			}
+		}()
+		requirement, err := artifactpypi.ParseUpgradeRequirement("cowsay==6.1")
+		if err != nil {
+			t.Fatal(err)
+		}
+		proposal, err := resolver.resolveNativeSelection(ctx, requirement.Reference(), requirement.Requirement())
+		if err != nil {
+			t.Fatal("public UV proposal failed", err)
+		}
+		lock, err := artifactpypi.ParseUVLock(requirement.Reference(), proposal.lock, PinnedPythonRuntime().PythonVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+		runtime := PinnedPythonRuntime()
+		target := artifactpypi.WheelTarget{Python: runtime.InterpreterTag, ABI: runtime.ABITag, Platform: runtime.PlatformTag}
+		selected, err := lock.SelectInstalledWheelControls(proposal.controls, target)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := resolver.reader.withPythonArchiveInputs(ctx, selected, true, func(_ context.Context, _ string, inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+			var err error
+			frozen, err = freezePipxNativeInput(ctx, lock, inputs, pages)
+			return err
+		}); err != nil {
+			t.Fatal("whole public original/source/startup binding failed", err)
+		}
+		if frozen == nil || !frozen.valid() || len(frozen.graph.Nodes()) != 1 || len(frozen.files) != 1 ||
+			frozen.files[0].digest != "274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a" {
+			t.Fatal("public frozen source changed")
+		}
+	}) {
+		t.FailNow()
 	}
 	return frozen
 }
