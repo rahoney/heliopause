@@ -442,6 +442,16 @@ type integrationRunner struct {
 // the production-equivalent trusted Host command boundary.
 func (integrationRunner) RequiresDirectExecAdmission() {}
 
+// DockerRecoveryLabel exposes the label assigned by the same executor that
+// creates Docker resources for this integration fixture.
+func (r integrationRunner) DockerRecoveryLabel() (string, string) {
+	executor, _ := integrationExecutors.Load(r.t)
+	if owner, ok := executor.(dockerRecoveryLabeler); ok {
+		return owner.DockerRecoveryLabel()
+	}
+	return "", ""
+}
+
 func integrationResponderSupply(ctx context.Context, runner CommandRunner, installation string) (*responderSupply, error) {
 	if fixture := os.Getenv("HELOX_RESPONDER_SOURCE_INSTALLATION"); fixture != "" {
 		installation = fixture
