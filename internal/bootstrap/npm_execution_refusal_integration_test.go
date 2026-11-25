@@ -87,15 +87,24 @@ func testNodeExecutionCLIRefusalIntegration(t *testing.T, client string) {
 			Promotion   string `json:"output_promotion"`
 			Cleanup     string `json:"execution_guest_cleanup"`
 			Failure     string `json:"failure_code"`
-			Output      struct {
+			Checks      []struct {
+				Required bool
+				Status   string `json:"execution_status"`
+			} `json:"checks"`
+			Output struct {
 				Untrusted bool
 				Encoding  string
 				Stdout    int `json:"stdout_bytes"`
 				Stderr    int `json:"stderr_bytes"`
 			} `json:"program_output"`
 		}
-		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.Exit != nil || report.Signal != nil || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || !report.Output.Untrusted || report.Output.Encoding != "OMITTED" || report.Output.Stdout != 0 || report.Output.Stderr != 0 {
+		if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v2" || len(report.Checks) == 0 || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "INCOMPLETE" || report.Execution != "NOT_STARTED" || report.Exit != nil || report.Signal != nil || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "NOT_STARTED" || report.Failure != "PREPARATION_FAILED" || !report.Output.Untrusted || report.Output.Encoding != "OMITTED" || report.Output.Stdout != 0 || report.Output.Stderr != 0 {
 			t.Fatal("post-Policy entry refusal axes incorrect")
+		}
+		for _, check := range report.Checks {
+			if check.Required && check.Status != "COMPLETED" {
+				t.Fatal("execution report lost completed required coverage")
+			}
 		}
 		if strings.Contains(out.String(), "private-cli-argv") || strings.Contains(diagnostic.String(), "private-cli-argv") {
 			t.Fatal("refused request leaked private argv")

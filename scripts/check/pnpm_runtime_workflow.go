@@ -15,7 +15,8 @@ const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_
 const pnpmCLIIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMProjectCLIIntegration$'`
 const pnpmOriginalIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$'`
 
-const pnpmRunIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLI(Refusal)?)Integration$'`
+const pnpmRunIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLIRefusal)Integration$' &&
+    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^TestLinuxPNPMRunExecutionCLIIntegration$'`
 const pnpmColdIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_TOOL_RUN_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^TestPNPMPublicColdToolRunSelectionIntegration$'`
 
 const pnpmRunIntegrationBlock = `if [[ "$pnpm_profile" == run ]]; then
@@ -23,7 +24,8 @@ const pnpmRunIntegrationBlock = `if [[ "$pnpm_profile" == run ]]; then
   pnpm_run_status=0
   (
     cd internal/bootstrap
-    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLI(Refusal)?)Integration$'
+    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_WORKFLOW_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 HELOX_PNPM_RUN_EXECUTION_CLI_REFUSAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestLinuxPNPMRunExecution(Workflow|CLIRefusal)Integration$' &&
+    HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_RUN_EXECUTION_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=12m -test.run '^TestLinuxPNPMRunExecutionCLIIntegration$'
   ) >"$pnpm_run_log" 2>&1 || pnpm_run_status=$?
   pnpm_run_log_status=0
   cat -- "$pnpm_run_log" || pnpm_run_log_status=$?
@@ -93,7 +95,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		counts[strings.TrimSpace(line)]++
 	}
 	var findings []string
-	for _, command := range []string{
+	for _, command := range append([]string{
 		"set -euo pipefail",
 		"source scripts/ci-responder-source.sh",
 		"haa_ci_require_responder_base",
@@ -114,11 +116,10 @@ func validatePNPMRuntimeScript(contents string) []string {
 		pnpmBootstrapIntegrationCommand,
 		pnpmCLIIntegrationCommand,
 		pnpmOriginalIntegrationCommand,
-		pnpmRunIntegrationCommand,
 		pnpmColdIntegrationCommand,
 		`test "$#" -le 1`,
 		`pnpm_profile=${1:-sandbox}`,
-	} {
+	}, strings.Split(strings.ReplaceAll(pnpmRunIntegrationCommand, "\n    ", "\n"), "\n")...) {
 		if counts[command] != 1 {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
 		}

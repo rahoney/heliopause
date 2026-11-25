@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestCollectTraceNormalizesKindsWithoutPayload(t *testing.T) {
@@ -82,7 +83,11 @@ func TestGoBuildAggregateLedgerNeverReplenishesAcrossStreams(t *testing.T) {
 	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 40000 || ledger.bytes != 804 {
 		t.Fatal("overflow succeeded or changed the remaining authorization")
 	}
-	for _, profile := range []string{"npm-lifecycle", cargoBuildProfile, "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
+	npm, err := newObservationTraceLedger("npm-lifecycle")
+	if err != nil || npm.maxEvents != ports.NPMEnvironmentTraceEventLimit || npm.maxBytes != defaultTraceBudget.bytes || traceBudgetForProfile("npm-lifecycle").events != 10000 {
+		t.Fatal("npm aggregate or physical collector budget changed", err)
+	}
+	for _, profile := range []string{cargoBuildProfile, "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
 		other, err := newObservationTraceLedger(profile)
 		if err != nil || other.maxEvents != uint64(traceBudgetForProfile(profile).events) {
 			t.Fatalf("existing profile budget changed: %q", profile)

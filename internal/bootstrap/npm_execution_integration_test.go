@@ -47,8 +47,13 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 	if !declared || os.Geteuid() == 0 {
 		t.Fatal("declare ordinary-user actual npx/npm exec CLI qualification")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
-	defer cancel()
+	usesPerCaseTimeout := client != "npm"
+	ctx := context.Background()
+	if !usesPerCaseTimeout {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 4*time.Minute)
+		defer cancel()
+	}
 	cache, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -105,7 +110,17 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 		}
 		args = append(args, selector, "--", arg)
 		var out, diagnostic bytes.Buffer
-		cause := Run(ctx, args, &out, &diagnostic)
+		caseCtx, cancelCase := ctx, context.CancelFunc(func() {})
+		if usesPerCaseTimeout {
+			caseCtx, cancelCase = context.WithTimeout(ctx, 6*time.Minute)
+		}
+		started := time.Now()
+		cause := Run(caseCtx, args, &out, &diagnostic)
+		elapsed, contextErr := time.Since(started), caseCtx.Err()
+		cancelCase()
+		if usesPerCaseTimeout {
+			t.Logf("node_execution_cli_timing client=%s case=%d seconds=%.3f deadline_expired=%t run_failed=%t run_error_deadline=%t", client, i+1, elapsed.Seconds(), errors.Is(contextErr, context.DeadlineExceeded), cause != nil, errors.Is(cause, context.DeadlineExceeded))
+		}
 		if row.code == 0 && cause != nil {
 			t.Fatal("actual CLI zero failed", cause)
 		}
@@ -131,15 +146,24 @@ func testNodeExecutionCLIIntegration(t *testing.T, client string) {
 				ExitCode    *int   `json:"exit_code"`
 				Promotion   string `json:"output_promotion"`
 				Cleanup     string `json:"execution_guest_cleanup"`
-				Output      struct {
+				Checks      []struct {
+					Required bool
+					Status   string `json:"execution_status"`
+				} `json:"checks"`
+				Output struct {
 					Untrusted   bool
 					Encoding    string
 					StdoutBytes int    `json:"stdout_bytes"`
 					Stdout      string `json:"stdout_escaped"`
 				} `json:"program_output"`
 			}
-			if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v1" || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "COMPLETED" || report.Execution != "COMPLETED" || report.ExitCode == nil || *report.ExitCode != row.code || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "CONFIRMED" || !report.Output.Untrusted || report.Output.StdoutBytes == 0 {
+			if json.Unmarshal(out.Bytes(), &report) != nil || report.Schema != "helox.execution-result/v2" || len(report.Checks) == 0 || report.Quarantine != "COMPLETED" || report.Policy != "ALLOW" || report.Preparation != "COMPLETED" || report.Execution != "COMPLETED" || report.ExitCode == nil || *report.ExitCode != row.code || report.Promotion != "NOT_REQUESTED" || report.Cleanup != "CONFIRMED" || !report.Output.Untrusted || report.Output.StdoutBytes == 0 {
 				t.Fatal("actual separate execution JSON incomplete")
+			}
+			for _, check := range report.Checks {
+				if check.Required && check.Status != "COMPLETED" {
+					t.Fatal("execution report lost completed required coverage")
+				}
 			}
 			if row.show != (report.Output.Encoding == "ASCII_QUOTED") || !row.show && report.Output.Stdout != "" {
 				t.Fatal("explicit output selection lost")

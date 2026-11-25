@@ -23,7 +23,7 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		"missing-responder-copy":        strings.Replace(original, `sudo -n install -m 0555 "$(haa_ci_responder_source)" /usr/lib/heliopause/versions/v1.0.0-bun-ci/haa-sandbox-responder`, "true", 1),
 		"missing-responder-restore":     strings.Replace(original, "if haa_ci_restore_responder_base v1.0.0-bun-ci; then", "if true; then", 1),
 		"missing-program-boundary-env":  strings.Replace(original, "HELOX_BUN_PROGRAM_EXECUTION_BOUNDARY_INTEGRATION=1 ", "", 1),
-		"wrong-program-filter":          strings.Replace(original, "Workflow|CLI|Boundary", "Workflow|CLI", 1),
+		"wrong-program-filter":          strings.Replace(original, "Workflow|Boundary", "Workflow", 1),
 		"missing-current-run-env":       strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_CLI_INTEGRATION=1 ", "", 1),
 		"missing-declared-entry-filter": strings.Replace(original, "|DeclaredEntry(Workflow|CLI)", "", 1),
 		"case-sensitive-current-env":    strings.Replace(original, "HELOX_BUN_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", "HELOX_Bun_RUN_EXECUTION_WORKFLOW_INTEGRATION=1", 1),
