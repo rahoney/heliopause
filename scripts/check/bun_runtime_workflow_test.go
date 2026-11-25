@@ -133,6 +133,7 @@ func TestBunProjectSupplyRequiresAllCurrentConsumersAndExactMode(t *testing.T) {
 	for name, candidate := range map[string]string{
 		"missing-cache":            strings.Replace(original, "HELOX_BUN_CACHE_INTEGRATION=1 ", "", 1),
 		"missing-transaction":      strings.Replace(original, "HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 ", "", 1),
+		"missing-remaining-case":   strings.Replace(original, `-test.skip '^TestBunPublicProjectTransactionIntegration$/^(single|peer)$'`, `-test.skip '^TestBunPublicProjectTransactionIntegration$/^(single|peer|empty)$'`, 1),
 		"missing-cli":              strings.Replace(original, bunProjectCLICommand, "echo skipped", 1),
 		"missing-original":         strings.Replace(original, bunOriginalProjectCommand, "echo skipped", 1),
 		"ignored-original-failure": strings.Replace(original, bunOriginalProjectCommand, bunOriginalProjectCommand+" || true", 1),
