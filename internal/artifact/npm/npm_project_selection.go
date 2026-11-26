@@ -54,7 +54,7 @@ func (r *Resolver) BindNPMProjectLock(ctx context.Context, lock NPMProjectLock) 
 		facts.Location, facts.Targets, facts.HasInstallScript = "", nil, false
 		value, exists := candidates[key]
 		if !exists {
-			body, err := r.fetchMetadataBody(ctx, pkg.Name, pkg.Version)
+			body, err := r.fetchMetadataBody(ctx, pkg.Name, pkg.Version, false)
 			if err != nil {
 				return NPMProjectSelection{}, errors.Join(errNPMProjectBinding, err)
 			}

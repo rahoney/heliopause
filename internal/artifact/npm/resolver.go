@@ -431,7 +431,7 @@ func (locator npmLocator) selectVersion(metadata packument) (string, error) {
 }
 
 func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packument, error) {
-	body, err := r.fetchMetadataBody(ctx, packageName, "")
+	body, err := r.fetchMetadataBody(ctx, packageName, "", false)
 	if err != nil {
 		return packument{}, err
 	}
@@ -446,7 +446,7 @@ func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packu
 	return metadata, nil
 }
 
-func (r *Resolver) fetchMetadataBody(ctx context.Context, packageName, version string) ([]byte, error) {
+func (r *Resolver) fetchMetadataBody(ctx context.Context, packageName, version string, retryBunHeaders bool) ([]byte, error) {
 	if ctx == nil || r == nil || r.registry == nil || r.client == nil || validatePackageName(packageName) != nil || version != "" && !exactVersion.MatchString(version) {
 		return nil, errors.New("npm metadata request is invalid")
 	}
@@ -469,7 +469,11 @@ func (r *Resolver) fetchMetadataBody(ctx context.Context, packageName, version s
 	}
 	request.Header.Set("Accept", accept)
 	request.Header.Set("User-Agent", "helox/0")
-	response, err := r.client.Do(request)
+	do := r.client.Do
+	if retryBunHeaders {
+		do = r.requestBunMetadata
+	}
+	response, err := do(request)
 	if err != nil {
 		return nil, fmt.Errorf("request npm metadata: %w", err)
 	}
@@ -496,7 +500,7 @@ func (r *Resolver) fetchVersionMetadata(ctx context.Context, name, version strin
 	if !exactVersion.MatchString(version) {
 		return npmVersionMetadata{}, errors.New("npm version metadata requires an exact version")
 	}
-	body, err := r.fetchMetadataBody(ctx, name, version)
+	body, err := r.fetchMetadataBody(ctx, name, version, false)
 	if err != nil {
 		return npmVersionMetadata{}, err
 	}

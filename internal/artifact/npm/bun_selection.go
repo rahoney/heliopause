@@ -3,11 +3,16 @@ package npm
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"maps"
+	"net"
+	"net/http"
+	"net/http/httptrace"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -71,7 +76,7 @@ func (r *Resolver) BindBunLock(ctx context.Context, lock BunLock) (BunSelection,
 func (r *Resolver) bindBunPackage(ctx context.Context, pkg BunLockedPackage) (domain.ResolvedArtifact, error) {
 	// The already implemented exact-version HTTP owner retains its deadline,
 	// origin, escaped path, response type and body bound. PNPM is unchanged.
-	body, err := r.fetchMetadataBody(ctx, pkg.Name, pkg.Version)
+	body, err := r.fetchMetadataBody(ctx, pkg.Name, pkg.Version, true)
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
@@ -116,6 +121,35 @@ func (r *Resolver) bindBunPackage(ctx context.Context, pkg BunLockedPackage) (do
 		return domain.ResolvedArtifact{}, errBunBinding
 	}
 	return artifact, nil
+}
+
+// requestBunMetadata retries a written HTTP/2 GET once when it times out
+// before response headers arrive. Both attempts share the original deadline.
+func (r *Resolver) requestBunMetadata(request *http.Request) (*http.Response, error) {
+	var http2, wroteRequest, startedResponse atomic.Bool
+	trace := &httptrace.ClientTrace{
+		GotConn: func(info httptrace.GotConnInfo) {
+			conn, ok := info.Conn.(*tls.Conn)
+			http2.Store(ok && conn.ConnectionState().NegotiatedProtocol == "h2")
+			wroteRequest.Store(false)
+		},
+		WroteRequest: func(info httptrace.WroteRequestInfo) {
+			wroteRequest.Store(info.Err == nil)
+		},
+		GotFirstResponseByte: func() { startedResponse.Store(true) },
+	}
+	ctx := request.Context()
+	response, err := r.client.Do(request.WithContext(httptrace.WithClientTrace(ctx, trace)))
+	var timeout net.Error
+	if err == nil || response != nil || ctx.Err() != nil || !http2.Load() ||
+		!wroteRequest.Load() || startedResponse.Load() || !errors.As(err, &timeout) || !timeout.Timeout() {
+		return response, err
+	}
+	response, retryErr := r.client.Do(request)
+	if retryErr != nil {
+		return response, errors.Join(err, retryErr)
+	}
+	return response, nil
 }
 
 func bunArtifactMatches(pkg BunLockedPackage, artifact domain.ResolvedArtifact) bool {
