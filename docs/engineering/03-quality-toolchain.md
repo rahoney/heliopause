@@ -747,6 +747,8 @@ module graph에서 Go proxy/checksum database 검증으로 준비한다. 제품 
 `.github/workflows/*.yml`/`*.yaml`에 고정 도구를 실행한다. 기존 YAML 구조와
 저장소 정책 검사는 유지하며 Actions 표현식의 허용 context는 actionlint가
 검사한다. optional ShellCheck/Pyflakes 연동만 끄고 Actions 진단은 억제하지 않는다.
+YAML 구조 검사는 보간이 있는 step `run`의 이스케이프를 반영한 Actions 표현식 길이도
+검사한다. GitHub의 21,000자 제한은 일반 Bash 본문과 구분한다.
 
 ```bash
 go run ./scripts/check bootstrap

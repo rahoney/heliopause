@@ -274,6 +274,10 @@ jobs:
           cache: false
       - name: Install pinned runtime and run lifecycle integration
         shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
+        env:
+          HELOX_CI_CU126: ${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}
+          HELOX_CI_CU130: ${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}
+          HELOX_CI_CU132: ${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}
         run: |
           set -eu
           if [ "$HELOX_CI_CUDA_ONLY" = true ] && [ "$HELOX_CI_SUITE" != exec-py ]; then echo 'qualification_scope=exec-py-leg'; exit 0; fi
@@ -575,9 +579,9 @@ jobs:
           fi
           if haa_ci_suite exec-py; then
           selected_cuda_profiles=0
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "$HELOX_CI_CU126" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "$HELOX_CI_CU130" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "$HELOX_CI_CU132" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
           if [ "$selected_cuda_profiles" -gt 1 ]; then
             echo "select at most one CUDA PyTorch qualification profile" >&2
             exit 1
@@ -587,13 +591,13 @@ jobs:
           fi
           # Explicit qualification inputs only; never infer dependencies from artifact output.
           HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='' HELOX_PYTORCH_NOT_ATTESTED_MODULE='' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then
+          if [ "$HELOX_CI_CU126" = true ]; then
             HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then
+          if [ "$HELOX_CI_CU130" = true ]; then
             HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu130 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then
+          if [ "$HELOX_CI_CU132" = true ]; then
             HELOX_PYTORCH_INSPECTION_PREREQUISITE='' HELOX_PYTORCH_QUALIFICATION_PLAN='cuda-bindings-numpy' HELOX_PYTORCH_NOT_ATTESTED_MODULE='triton.profiler.viewer' HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu132 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
           fi # suite

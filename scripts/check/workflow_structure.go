@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
+	"unicode/utf16"
 
 	"go.yaml.in/yaml/v3"
 )
@@ -36,6 +38,35 @@ func parseWorkflow(contents string) (map[string]any, error) {
 }
 
 func workflowMap(value any) map[string]any { result, _ := value.(map[string]any); return result }
+
+const workflowExpressionMaxLength = 21000
+
+// A quoted expression string can contain "}}" and doubled single quotes.
+var workflowInterpolation = regexp.MustCompile(`\$\{\{((?:'[^']*'|[^'}])*)\}\}`)
+
+// Mixed Actions scalars become one format expression, including the escaped
+// shell text. Context, expression syntax and Bash validation remain separate.
+func workflowRunExpressionLength(run string) int {
+	matches := workflowInterpolation.FindAllStringSubmatchIndex(run, -1)
+	if len(matches) == 0 {
+		return 0
+	}
+	if match := matches[0]; len(matches) == 1 && match[0] == 0 && match[1] == len(run) {
+		return len(utf16.Encode([]rune(strings.TrimSpace(run[match[2]:match[3]]))))
+	}
+	escape := strings.NewReplacer("'", "''", "{", "{{", "}", "}}")
+	var format, args strings.Builder
+	previous := 0
+	for index, match := range matches {
+		format.WriteString(escape.Replace(run[previous:match[0]]))
+		fmt.Fprintf(&format, "{%d}", index)
+		args.WriteString(", " + strings.TrimSpace(run[match[2]:match[3]]))
+		previous = match[1]
+	}
+	format.WriteString(escape.Replace(run[previous:]))
+	expanded := "format('" + format.String() + "'" + args.String() + ")"
+	return len(utf16.Encode([]rune(expanded)))
+}
 
 // Validate the Actions structures used by this repository before textual policy
 // checks. Expressions are scalar strings, not YAML keys or evaluated host code.
@@ -84,13 +115,16 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 		if !ok || len(steps) == 0 {
 			bad("job %s requires nonempty steps", id)
 		}
-		for _, value := range steps {
+		for index, value := range steps {
 			step := workflowMap(value)
 			checkKeys("step", step, "name id env if run uses with shell working-directory timeout-minutes continue-on-error")
-			_, run := step["run"].(string)
+			body, run := step["run"].(string)
 			_, uses := step["uses"].(string)
 			if step == nil || run == uses {
 				bad("job %s step must have exactly one string run or uses", id)
+			}
+			if length := workflowRunExpressionLength(body); length > workflowExpressionMaxLength {
+				bad("job %s step %d run expression length %d exceeds GitHub Actions limit %d", id, index+1, length, workflowExpressionMaxLength)
 			}
 		}
 		if value, exists := job["needs"]; exists {

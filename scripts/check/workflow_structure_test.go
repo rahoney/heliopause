@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,6 +82,48 @@ func TestCIWorkflowStructureMutations(t *testing.T) {
 func indentWorkflow(s string, n int) string {
 	return strings.Repeat(" ", n) + strings.ReplaceAll(strings.TrimSuffix(s, "\n"), "\n", "\n"+strings.Repeat(" ", n)) + "\n"
 }
+
+func TestWorkflowRunExpressionLength(t *testing.T) {
+	exact := strings.Repeat("a", workflowExpressionMaxLength-len("format('{0}', inputs.profile)")) + "${{ inputs.profile }}"
+	cases := []struct {
+		name string
+		body string
+		want int
+	}{
+		{"plain shell", strings.Repeat("a", workflowExpressionMaxLength+1), 0},
+		{"at limit", exact, workflowExpressionMaxLength},
+		{"quote escaping", "'" + exact[1:], workflowExpressionMaxLength + 1},
+		{"brace escaping", "{" + exact[1:], workflowExpressionMaxLength + 1},
+		{"UTF-16", "😀" + exact[1:], workflowExpressionMaxLength + 1},
+		{"quoted terminator", "prefix ${{ 'it''s }}' }} suffix", len("format('prefix {0} suffix', 'it''s }}')")},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := workflowRunExpressionLength(tc.body); got != tc.want {
+				t.Fatalf("rendered expression length = %d, want %d", got, tc.want)
+			}
+			workflow := "on:\n  pull_request:\njobs:\n  ci:\n    runs-on: ubuntu-24.04\n    steps:\n      - name: run\n        run: |-\n          " + tc.body + "\n"
+			if got := validateWorkflowStructure(workflow, false); (len(got) != 0) != (tc.want > workflowExpressionMaxLength) {
+				t.Fatalf("invalid length verdict: %v", got)
+			}
+		})
+	}
+	t.Run("CI480 inline CUDA routing", func(t *testing.T) {
+		data, err := os.ReadFile("../../" + workflowRelativePath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		workflow := string(data)
+		for _, profile := range []string{"cu126", "cu130", "cu132"} {
+			workflow = strings.ReplaceAll(workflow, "$HELOX_CI_"+strings.ToUpper(profile), fmt.Sprintf(cudaProfileCIExpression, profile))
+		}
+		findings := validateWorkflowStructure(workflow, false)
+		if len(findings) != 1 || !strings.Contains(findings[0], "gvisor-integration step 3 run expression length 21482") {
+			t.Fatalf("CI480's failing expression was not detected: %v", findings)
+		}
+	})
+}
+
 func commentWorkflow(s string) string {
 	return "# " + strings.ReplaceAll(strings.TrimSuffix(s, "\n"), "\n", "\n# ") + "\n"
 }

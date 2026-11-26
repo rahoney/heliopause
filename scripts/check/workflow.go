@@ -760,6 +760,7 @@ func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
 }
 
 const cudaOnlyCIExpression = "${{ github.event_name == 'workflow_dispatch' && (inputs.pytorch_cu126_qualification || inputs.pytorch_cu130_qualification || inputs.pytorch_cu132_qualification) }}"
+const cudaProfileCIExpression = "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_%s_qualification }}"
 const ordinaryCILifecycleGuard = `if [ "$HELOX_CI_CUDA_ONLY" = false ]; then`
 const cudaOnlyExecutionStepGuard = `if [ "$HELOX_CI_CUDA_ONLY" = true ]; then
 echo 'qualification_scope=cpu+selected_cuda; ordinary execution cohorts require separate same-source qualification'
@@ -780,8 +781,18 @@ func validateCUDAQualificationScope(contents string) []string {
 	}
 	steps, _ := job["steps"].([]any)
 	for _, raw := range steps {
-		if workflowMap(workflowMap(raw)["env"])["HELOX_CI_CUDA_ONLY"] != nil {
+		step := workflowMap(raw)
+		env := workflowMap(step["env"])
+		if env["HELOX_CI_CUDA_ONLY"] != nil {
 			findings = append(findings, "qualification scope must not be overridden by a step")
+		}
+		if step["name"] == "Install pinned runtime and run lifecycle integration" {
+			for _, profile := range []string{"cu126", "cu130", "cu132"} {
+				flag := "HELOX_CI_" + strings.ToUpper(profile)
+				if env[flag] != fmt.Sprintf(cudaProfileCIExpression, profile) {
+					findings = append(findings, "lifecycle must bind the dispatch-only input for "+profile)
+				}
+			}
 		}
 	}
 	blocks, _ := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
@@ -789,6 +800,12 @@ func validateCUDAQualificationScope(contents string) []string {
 		return append(findings, "CUDA qualification requires the existing unconditional runtime lifecycle")
 	}
 	body := kernelQualificationLines(strings.Join(blocks[0], "\n"))
+	for _, profile := range []string{"cu126", "cu130", "cu132"} {
+		flag := "HELOX_CI_" + strings.ToUpper(profile)
+		if strings.Count(body, `if [ "$`+flag+`" = true ]; then`) != 2 {
+			findings = append(findings, "lifecycle must count and select the same input for "+profile)
+		}
+	}
 	if strings.Count(body, ordinaryCILifecycleGuard) != 3 {
 		findings = append(findings, "ordinary lifecycle requires three exact profile scopes")
 	}
