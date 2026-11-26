@@ -2,14 +2,13 @@ package main
 
 import "strings"
 
-const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActualIsolated(NativeStartup|EmptyLock|NodeQuery)$'`
+const pnpmRuntimeIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestPNPMActualIsolated(NativeStartup|EmptyLock|NodeQuery)$'`
 
 const pnpmArtifactProbeCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestPNPMActualReleaseArtifactProbe$'`
 
 const pnpmProjectIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionProjectInspection$'`
 const pnpmControlledIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionInstanceExecution$/^controlled-(success|exit37|long-name)$'`
 const pnpmPublicQuarantineCommand = `HELOX_PNPM_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicNativeResolverIntegration$'`
-const pnpmSandboxTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox`
 const pnpmBootstrapTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap`
 const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublic(ApprovedCache|ProjectTransaction)Integration$'`
 const pnpmCLIIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMProjectCLIIntegration$'`
@@ -124,31 +123,19 @@ func validatePNPMRuntimeScript(contents string) []string {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
 		}
 	}
-	// Same fixed package-subshell convention as the UV/Cargo compiled consumers.
-	// Source fixture access belongs to this command, never the supply commands.
-	var active []string
-	for _, line := range strings.Split(contents, "\n") {
-		line = strings.TrimSpace(line)
-		if line != "" && !strings.HasPrefix(line, "#") {
-			active = append(active, line)
+	active := kernelQualificationLines(contents)
+	for _, command := range []string{pnpmRuntimeIntegrationCommand, pnpmControlledIntegrationCommand} {
+		if strings.Count(active, "(\ncd internal/sandbox\n"+command+"\n)") != 1 {
+			findings = append(findings, "PNPM compiled test requires one matching package subshell: "+command)
 		}
-	}
-	scoped := 0
-	for i := 2; i+1 < len(active); i++ {
-		if active[i] == pnpmControlledIntegrationCommand && active[i-2] == "(" && active[i-1] == "cd internal/sandbox" && active[i+1] == ")" {
-			scoped++
-		}
-	}
-	if scoped != 1 {
-		findings = append(findings, "PNPM controlled fixture requires one matching package subshell")
 	}
 	profileGuard := "case \"$pnpm_profile\" in\nsandbox|project|run) ;;\n*) echo 'unsupported PNPM CI profile' >&2; exit 2 ;;\nesac"
 	projectScope := "if [[ \"$pnpm_profile\" == project ]]; then\n" + pnpmBootstrapIntegrationCommand + "\n" + pnpmCLIIntegrationCommand + "\n" + pnpmOriginalIntegrationCommand + "\nexit 0\nfi"
-	if strings.Count(strings.Join(active, "\n"), profileGuard) != 1 || strings.Count(strings.Join(active, "\n"), projectScope) != 1 {
+	if strings.Count(active, profileGuard) != 1 || strings.Count(active, projectScope) != 1 {
 		findings = append(findings, "PNPM project profile requires its fixed argument guard and exclusive installed-client command")
 	}
 	for _, block := range []string{pnpmRunIntegrationBlock, pnpmColdIntegrationBlock} {
-		if strings.Count(kernelQualificationLines(contents), kernelQualificationLines(block)) != 1 {
+		if strings.Count(active, kernelQualificationLines(block)) != 1 {
 			findings = append(findings, "PNPM one-off qualification requires exact scopes, complete unique cohorts, no-SKIP and original-error guards")
 		}
 	}
@@ -179,18 +166,11 @@ func validatePNPMInspectionClientOrder(contents string) []string {
 	if err != nil {
 		return nil
 	}
-	sequence := []string{pnpmSandboxTestBuildCommand, `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper", "bash scripts/ci-npm-project.sh native", "bash scripts/ci-pnpm-runtime.sh"}
+	binding := strings.Join([]string{sandboxRealCorpusClientInstallCommand, "haa_start_policy_helper", "bash scripts/ci-npm-project.sh native", "bash scripts/ci-pnpm-runtime.sh"}, "\n")
 	for _, lines := range blocks {
-		next := 0
-		for _, line := range lines {
-			if line == "bash scripts/ci-pnpm-runtime.sh" && next != len(sequence)-1 {
-				return []string{"PNPM inspection must follow the tagged installed client and authenticated helper"}
-			}
-			if next < len(sequence) && line == sequence[next] {
-				next++
-			}
-		}
-		if next == len(sequence) {
+		body := kernelQualificationLines(strings.Join(lines, "\n"))
+		build := strings.Index(body, sandboxRealCorpusTestBuildCommand)
+		if build >= 0 && strings.Count(body, binding) == 1 && build < strings.Index(body, binding) {
 			return nil
 		}
 	}

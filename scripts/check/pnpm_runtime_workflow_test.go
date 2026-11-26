@@ -121,6 +121,7 @@ func TestPNPMRuntimeHelperKeepsSupplyAndActualCoverage(t *testing.T) {
 		"skip":          strings.Replace(pnpmRuntimeIntegrationCommand, "RUNTIME=1", "RUNTIME=0", 1),
 		"missing-node":  strings.Replace(pnpmRuntimeIntegrationCommand, "|NodeQuery", "", 1),
 		"missing-start": strings.Replace(pnpmRuntimeIntegrationCommand, "NativeStartup|", "", 1),
+		"plain-client":  `HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActualIsolated(NativeStartup|EmptyLock|NodeQuery)$'`,
 		"duplicate":     pnpmRuntimeIntegrationCommand + "\n" + pnpmRuntimeIntegrationCommand,
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -168,8 +169,8 @@ func TestPNPMInspectionCommandsCannotLoseProjectOrControlledCoverage(t *testing.
 	}
 	call := "          bash scripts/ci-pnpm-runtime.sh\n"
 	moved := strings.Replace(original, call, "", 1)
-	moved = strings.Replace(moved, "          "+pnpmSandboxTestBuildCommand, "          bash scripts/ci-pnpm-runtime.sh\n          "+pnpmSandboxTestBuildCommand, 1)
-	for _, candidate := range []string{moved, strings.Replace(original, pnpmSandboxTestBuildCommand, strings.Replace(pnpmSandboxTestBuildCommand, "-tags=realcorpus ", "", 1), 1), strings.Replace(original, call, "          # bash scripts/ci-pnpm-runtime.sh\n", 1)} {
+	moved = strings.Replace(moved, "          "+sandboxRealCorpusTestBuildCommand, "          bash scripts/ci-pnpm-runtime.sh\n          "+sandboxRealCorpusTestBuildCommand, 1)
+	for _, candidate := range []string{moved, strings.Replace(original, sandboxRealCorpusTestBuildCommand, strings.Replace(sandboxRealCorpusTestBuildCommand, "-tags=realcorpus ", "", 1), 1), strings.Replace(original, call, "          # bash scripts/ci-pnpm-runtime.sh\n", 1)} {
 		if len(validatePNPMInspectionClientOrder(candidate)) == 0 {
 			t.Fatal("unprepared client identity accepted")
 		}
@@ -182,23 +183,25 @@ func TestPNPMControlledFixtureRequiresPackageSubshell(t *testing.T) {
 		t.Fatal(err)
 	}
 	original := string(body)
-	scope := "(\n  cd internal/sandbox\n  " + pnpmControlledIntegrationCommand + "\n)"
-	if strings.Count(original, scope) != 1 {
-		t.Fatal("controlled fixture has no unique package scope")
-	}
-	for name, replacement := range map[string]string{
-		"missing cd":       strings.Replace(scope, "  cd internal/sandbox\n", "", 1),
-		"wrong cd":         strings.Replace(scope, "cd internal/sandbox", "cd internal/cli", 1),
-		"commented cd":     strings.Replace(scope, "cd internal/sandbox", "# cd internal/sandbox", 1),
-		"unscoped":         pnpmControlledIntegrationCommand,
-		"outside subshell": "cd internal/sandbox\n(\n  " + pnpmControlledIntegrationCommand + "\n)",
-		"duplicate scope":  scope + "\n" + scope,
-	} {
-		t.Run(name, func(t *testing.T) {
-			if len(validatePNPMRuntimeScript(strings.Replace(original, scope, replacement, 1))) == 0 {
-				t.Fatal("incorrect controlled fixture cwd accepted")
-			}
-		})
+	for _, command := range []string{pnpmRuntimeIntegrationCommand, pnpmControlledIntegrationCommand} {
+		scope := "(\n  cd internal/sandbox\n  " + command + "\n)"
+		if strings.Count(original, scope) != 1 {
+			t.Fatal("controlled fixture has no unique package scope")
+		}
+		for name, replacement := range map[string]string{
+			"missing cd":       strings.Replace(scope, "  cd internal/sandbox\n", "", 1),
+			"wrong cd":         strings.Replace(scope, "cd internal/sandbox", "cd internal/cli", 1),
+			"commented cd":     strings.Replace(scope, "cd internal/sandbox", "# cd internal/sandbox", 1),
+			"unscoped":         command,
+			"outside subshell": "cd internal/sandbox\n(\n  " + command + "\n)",
+			"duplicate scope":  scope + "\n" + scope,
+		} {
+			t.Run(command+"/"+name, func(t *testing.T) {
+				if len(validatePNPMRuntimeScript(strings.Replace(original, scope, replacement, 1))) == 0 {
+					t.Fatal("incorrect controlled fixture cwd accepted")
+				}
+			})
+		}
 	}
 }
 

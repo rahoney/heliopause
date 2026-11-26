@@ -95,7 +95,11 @@ func TestAuthenticityPortAndSchemaFeedExistingEvidenceAndPolicy(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			store, err := local.NewStore(t.TempDir())
+			root, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			store, err := local.NewStore(root)
 			if err != nil {
 				t.Fatal(err)
 			}

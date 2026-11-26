@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,15 +108,11 @@ func TestWorkflowRunExpressionLength(t *testing.T) {
 		})
 	}
 	t.Run("CI480 inline CUDA routing", func(t *testing.T) {
-		data, err := os.ReadFile("../../" + workflowRelativePath)
+		data, err := os.ReadFile(filepath.Join("testdata", "ci480-lifecycle.yml"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		workflow := string(data)
-		for _, profile := range []string{"cu126", "cu130", "cu132"} {
-			workflow = strings.ReplaceAll(workflow, "$HELOX_CI_"+strings.ToUpper(profile), fmt.Sprintf(cudaProfileCIExpression, profile))
-		}
-		findings := validateWorkflowStructure(workflow, false)
+		findings := validateWorkflowStructure(string(data), false)
 		if len(findings) != 1 || !strings.Contains(findings[0], "gvisor-integration step 3 run expression length 21482") {
 			t.Fatalf("CI480's failing expression was not detected: %v", findings)
 		}

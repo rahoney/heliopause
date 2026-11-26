@@ -9,14 +9,23 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
+func newReadTestStore(t *testing.T) *Store {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := NewStore(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return store
+}
+
 func TestReadReferenceRejectsMissingCorruptOrForeignEvidence(t *testing.T) {
 	for _, name := range []string{"normal", "missing", "content", "subject", "reference", "symlink", "run-symlink", "directory", "oversize", "duplicate-json"} {
 		t.Run(name, func(t *testing.T) {
-			root, err := filepath.EvalSymlinks(t.TempDir())
-			if err != nil {
-				t.Fatal(err)
-			}
-			store, _ := NewStore(root)
+			store := newReadTestStore(t)
 			run, item := storeFixture(t)
 			refs, err := store.Record(context.Background(), run, []domain.Evidence{item})
 			if err != nil {
@@ -76,10 +85,7 @@ func TestReadReferenceRejectsMissingCorruptOrForeignEvidence(t *testing.T) {
 
 func TestEvidenceProfilesRemainExplicitAcrossStorage(t *testing.T) {
 	for _, current := range []bool{false, true} {
-		store, err := NewStore(t.TempDir())
-		if err != nil {
-			t.Fatal(err)
-		}
+		store := newReadTestStore(t)
 		run, item := storeFixture(t)
 		profile, _ := domain.CheckProfileDigest("record-fixture-v1", "pinned-runtime")
 		var checks []domain.CheckExecution
@@ -106,10 +112,7 @@ func TestEvidenceProfilesRemainExplicitAcrossStorage(t *testing.T) {
 
 func TestEvidenceRecordingRefusesForeignOrDuplicateActualCheck(t *testing.T) {
 	for _, duplicate := range []bool{false, true} {
-		store, err := NewStore(t.TempDir())
-		if err != nil {
-			t.Fatal(err)
-		}
+		store := newReadTestStore(t)
 		run, item := storeFixture(t)
 		profile, _ := domain.CheckProfileDigest("record-fixture-v1", "pinned-runtime")
 		id := item.CheckID()
@@ -131,10 +134,7 @@ func TestEvidenceRecordingRefusesForeignOrDuplicateActualCheck(t *testing.T) {
 }
 
 func TestEvidenceRecordingCannotRelabelAnExistingProfile(t *testing.T) {
-	store, err := NewStore(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
+	store := newReadTestStore(t)
 	run, item := storeFixture(t)
 	profile, _ := domain.CheckProfileDigest("record-fixture-v1", "")
 	foreign, _ := domain.CheckProfileDigest("foreign-profile-v1", "")

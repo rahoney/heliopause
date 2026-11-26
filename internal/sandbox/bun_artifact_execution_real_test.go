@@ -75,6 +75,13 @@ type bunArtifactExecutionCapture struct {
 	output string
 }
 
+func (r *bunArtifactExecutionCapture) DockerRecoveryLabel() (string, string) {
+	if owner, ok := r.CommandRunner.(dockerRecoveryLabeler); ok {
+		return owner.DockerRecoveryLabel()
+	}
+	return "", ""
+}
+
 func (r *bunArtifactExecutionCapture) Output(ctx context.Context, binary string, args ...string) ([]byte, error) {
 	body, err := r.CommandRunner.Output(ctx, binary, args...)
 	for _, arg := range args {
@@ -106,6 +113,25 @@ func (r *bunArtifactExecutionCapture) StartContainerInputOutput(ctx context.Cont
 	return r.CommandRunner.(interface {
 		StartContainerInputOutput(context.Context, io.Reader, io.Writer, string) error
 	}).StartContainerInputOutput(ctx, input, output, id)
+}
+
+func TestBunArtifactCapturePreservesResponderOwner(t *testing.T) {
+	const recoveryKey = "io.heliopause.process-owner"
+	const recoveryOwner = "current"
+	supply := responderSupply{name: "haa-responder-fixture", owner: "fixture", digest: strings.Repeat("a", 64)}
+	volume := dockerVolumeInspection{
+		Name: supply.name, Driver: "local", Scope: "local", CreatedAt: "known", Mountpoint: "/fixture",
+		Labels: map[string]string{responderSupplyLabel: supply.owner, closureManifestLabel: supply.digest, recoveryKey: recoveryOwner},
+	}
+	body, err := json.Marshal(volume)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := admissionAwareRunner(responderInspectionRunner{body: body, key: recoveryKey, owner: recoveryOwner})
+	capture := &bunArtifactExecutionCapture{CommandRunner: runner}
+	if err := supply.verify(context.Background(), capture); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestBunActualArtifactExecutionBoundary(t *testing.T) {

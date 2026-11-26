@@ -38,6 +38,8 @@ func TestIntegrationSuitesCoverEveryCommandOnce(t *testing.T) {
 	const pnpmOpen = "          if haa_ci_suite pnpm; then\n"
 	const client = `          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"` + "\n"
 	const npmNative = "          bash scripts/ci-npm-project.sh native\n"
+	const uvScope = "          (\n            cd internal/sandbox\n            " + uvNativeRuntimeIntegrationCommand
+	const initialExecScope = "          if haa_ci_suite exec-py; then\n          go test -run='^$' -fuzz=FuzzDecodeHelperRecord"
 	const refusalRemove = "          rm -- \"$node_refusal_log\"\n          fi # suite\n"
 	first := func(old, updated string) func(string) string {
 		return func(s string) string { return strings.Replace(s, old, updated, 1) }
@@ -59,6 +61,10 @@ func TestIntegrationSuitesCoverEveryCommandOnce(t *testing.T) {
 		{"stray close", "closes without opening", first(npmNative, npmNative+"          fi # suite\n          fi # suite\n")},
 		{"unguarded test", "must belong to one suite", first("          if haa_ci_suite requirements; then\n          bash scripts/ci-uv-tools.sh python-requirements\n          fi # suite\n", "          bash scripts/ci-uv-tools.sh python-requirements\n")},
 		{"guarded client", "outside suite guards", first(npmNative, npmNative+client)},
+		{"UV wrong suite", "isolated UV requires", first(initialExecScope, strings.Replace(initialExecScope, "exec-py", "uv", 1))},
+		{"UV wrong cwd", "isolated UV requires", first(uvScope, strings.Replace(uvScope, "cd internal/sandbox", "cd internal/bootstrap", 1))},
+		{"UV missing helper", "isolated UV requires", first(client+"          haa_start_policy_helper\n", client)},
+		{"UV temporary client", "isolated UV requires", first(uvNativeRuntimeIntegrationCommand, `HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`)},
 		{"split log consumer", "share one suite", first(refusalRemove, "          fi # suite\n          if haa_ci_suite bun; then\n          rm -- \"$node_refusal_log\"\n          fi # suite\n")},
 		{"missing recovery directory", "protected recovery directory before launch", first("          "+integrationRecoveryDirectory+"\n", "")},
 		{"missing cuda exit", "leave only the exec-py leg", first("          "+integrationSuiteCUDAExit+"\n", "")},

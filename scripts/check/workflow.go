@@ -616,7 +616,10 @@ func workflowJobIDs(contents string) []string {
 
 // These fixed commands belong to the actual unconditional lifecycle step.
 // Their presence in comments, another job or a skipped step supplies no gate.
+const sandboxRealCorpusTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox`
+const sandboxRealCorpusClientInstallCommand = `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`
 const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
+const uvNativeRuntimeIntegrationCommand = `HELOX_UV_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`
 const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
 const cargoFetchSelectionIntegrationCommand = `HELOX_CARGO_FETCH_SELECTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=4m -test.run '^TestCargoPublicFetchOptionalSelectionIntegration$'`
 const cargoFetchCLIIntegrationCommand = `HELOX_CARGO_FETCH_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=10m -test.run '^TestCargoPublicFetchCLIIntegration$'`
@@ -628,7 +631,7 @@ var uvIntegrationCommands = []string{
 	`HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'`,
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,
-	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
+	uvNativeRuntimeIntegrationCommand,
 	uvPublicResolverIntegrationCommand,
 }
 

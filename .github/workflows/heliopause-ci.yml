@@ -390,7 +390,7 @@ jobs:
           source scripts/ci-responder-source.sh
           haa_ci_prepare_responder_base
           echo 'Installing network-policy helper and preparing its identity contract'
-          sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
           sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
           sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
           # The foreground helper runs without the service unit StateDirectory.
@@ -399,6 +399,7 @@ jobs:
           # The ordinary client must read the root-owned, non-writable public
           # identity contract; it contains no credential or secret.
           sudo chmod 0644 /etc/heliopause/network-policy.json
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           /usr/libexec/heliopause/gvisor/runsc --version
           docker version --format '{{.Server.Version}}'
@@ -406,7 +407,10 @@ jobs:
           if haa_ci_suite exec-py; then
           go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
-          HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'
+          (
+            cd internal/sandbox
+            HELOX_UV_NATIVE_RUNTIME=1 /usr/libexec/heliopause/helox -test.v -test.timeout=3m -test.run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'
+          )
           fi # suite
           # Both experiments use the observation resource service, which admits
           # only the configured client inode; run them as that client, then restore.
@@ -447,7 +451,6 @@ jobs:
           test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
           HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'
           fi # suite
-          go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           if haa_ci_suite npm-core; then

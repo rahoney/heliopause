@@ -170,5 +170,20 @@ func validateIntegrationSuiteRun(step, run string, used map[string]int) []string
 	if step == integrationSuiteLifecycle && exits != 1 {
 		findings = append(findings, "manual CUDA runs must leave only the exec-py leg active")
 	}
+	if step == integrationSuiteLifecycle {
+		uvBinding := strings.Join([]string{
+			sandboxRealCorpusClientInstallCommand, "haa_start_policy_helper",
+			"/usr/libexec/heliopause/gvisor/runsc --version", `docker version --format '{{.Server.Version}}'`,
+			`docker info --format '{{json (index .Runtimes "runsc-trace")}}'`, "if haa_ci_suite exec-py; then",
+			`go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox`,
+			"HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration",
+			"(", "cd internal/sandbox", uvNativeRuntimeIntegrationCommand, ")", integrationSuiteClose,
+		}, "\n")
+		common, _, _ := strings.Cut(kernelQualificationLines(run), ordinaryCILifecycleGuard)
+		build := strings.Index(common, sandboxRealCorpusTestBuildCommand)
+		if build < 0 || strings.Count(common, uvBinding) != 1 || build >= strings.Index(common, uvBinding) {
+			findings = append(findings, "isolated UV requires the tagged installed sandbox client and helper in exec-py")
+		}
+	}
 	return findings
 }
