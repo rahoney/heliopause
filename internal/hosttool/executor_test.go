@@ -117,13 +117,15 @@ func TestRegisteredRunscPathMustBeCanonicalHAAInstallation(t *testing.T) {
 	}
 }
 
+const gVisorBundleTestArchitecture = "amd64"
+
 func validGVisorBundleManifest() runtimeidentity.LocalGVisorBundleManifest {
 	members := make([]runtimeidentity.GVisorBundleMember, len(runtimeidentity.GVisorRuntimeBundleMembers))
 	for i, member := range runtimeidentity.GVisorRuntimeBundleMembers {
 		members[i] = runtimeidentity.GVisorBundleMember(member)
 	}
 	return runtimeidentity.LocalGVisorBundleManifest{
-		SchemaVersion: runtimeidentity.LocalGVisorBundleSchema, Architecture: runtime.GOARCH,
+		SchemaVersion: runtimeidentity.LocalGVisorBundleSchema, Architecture: gVisorBundleTestArchitecture,
 		GVisorCommit: runtimeidentity.GVisorCommit, GVisorPatchSHA256: runtimeidentity.GVisorPatchSHA256,
 		BazelModuleLockSHA256:  runtimeidentity.GVisorBazelModuleLockSHA256,
 		BuilderImageRepository: runtimeidentity.GVisorBuilderImageRepository,
@@ -142,8 +144,8 @@ func TestBundleMemberDigestMismatchRejected(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := runtimeidentity.ParseLocalGVisorBundleManifest(body, runtime.GOARCH); err == nil {
-		t.Fatal("changed bundle member hash was accepted")
+	if _, err := runtimeidentity.ParseLocalGVisorBundleManifest(body, gVisorBundleTestArchitecture); err == nil || err.Error() != "local gVisor bundle member identity mismatch" {
+		t.Fatalf("expected bundle member identity mismatch for changed hash, got %v", err)
 	}
 }
 
@@ -153,14 +155,14 @@ func TestChangedManifestRejectedDuringRevalidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	digest, _, err := validateLocalGVisorBundleManifestBody(body, "amd64", "")
+	digest, _, err := validateLocalGVisorBundleManifestBody(body, gVisorBundleTestArchitecture, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	changed := append([]byte(nil), body...)
 	changed[len(changed)-2] ^= 1
-	if _, _, err := validateLocalGVisorBundleManifestBody(changed, "amd64", digest); err == nil {
-		t.Fatal("changed manifest retained its validated identity")
+	if _, _, err := validateLocalGVisorBundleManifestBody(changed, gVisorBundleTestArchitecture, digest); err == nil || err.Error() != "local gVisor bundle manifest digest mismatch" {
+		t.Fatalf("expected manifest digest mismatch for changed body, got %v", err)
 	}
 }
 
