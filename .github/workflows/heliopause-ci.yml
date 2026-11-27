@@ -23,6 +23,11 @@ on:
         required: false
         default: false
         type: boolean
+      macos_intel_qualification:
+        description: Use an Intel runner for the macOS platform check.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -198,7 +203,7 @@ jobs:
 
   macos:
     name: macOS
-    runs-on: macos-26-intel
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.macos_intel_qualification && 'macos-26-intel' || 'macos-26' }}
     # Setup (~5m) plus the approved Mac platform limits (build 4m, tests 9m).
     timeout-minutes: 25
     env:

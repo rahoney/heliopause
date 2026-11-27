@@ -207,7 +207,6 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 		"  workflow_dispatch:",
 		"permissions:\n  contents: read",
 		"runs-on: ubuntu-24.04",
-		"runs-on: macos-26-intel",
 		"persist-credentials: false",
 		".docker.ci_ubuntu_24_04_amd64.docker_ce_package",
 		".docker.ci_ubuntu_24_04_amd64.containerd_package",

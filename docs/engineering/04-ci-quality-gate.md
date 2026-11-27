@@ -119,12 +119,12 @@ exact runner label, Go patch와 현재 사용하는 Action/tool version은 아�
 | Role | Exact identity | 근거와 적용 |
 | --- | --- | --- |
 | Linux runner | `ubuntu-24.04` | GA versioned x64 image; primary, minimum, docs와 required aggregate |
-| macOS runner | `macos-26-intel` | public/private repository에 공통 제공되는 GA versioned x64 image; macOS CLI build/default test |
+| macOS runner | `macos-26` (기본), `macos-26-intel` (수동 선택) | GA 고정 버전 Apple Silicon ARM64 및 Intel x64 이미지. 두 경로에서 macOS CLI build/default test 실행 |
 | Checkout Action | `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1` | signed stable release `v7.0.1` |
 | Go setup Action | `actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e` | signed immutable stable release `v7.0.0` |
 
 - `ubuntu-26.04`는 확인 시점에 public preview이므로 required gate에 사용하지 않는다. `ubuntu-24.04`는 최신 GA LTS versioned Ubuntu label이다.
-- `macos-26-intel`은 `-latest` alias 대신 사용하는 최신 GA versioned x64 label이며 public/private repository 표에 공통으로 존재한다. arm64 qualification이 실제 requirement가 되면 repository visibility와 runner 제공 범위를 다시 확인해 별도 matrix로 추가한다.
+- 기본 macOS 검사는 Apple Silicon ARM64 러너 `macos-26`에서 실행한다. `workflow_dispatch`에서 `macos_intel_qualification`을 선택하면 같은 `macOS` job을 `macos-26-intel`에서 실행한다. 두 경로 모두 같은 build·test 명령과 한도를 사용하며 `Required`는 해당 `macos` job 결과를 받는다.
 - 두 Action은 GitHub-owned이고 MIT license이며 active release와 dependency maintenance가 확인된다. tag 이동에 의존하지 않도록 exact release commit을 full SHA로 사용한다.
 - Checkout은 `persist-credentials: false`, setup-go는 exact Go patch, `check-latest: false`, `cache: false`로 사용한다. 이 input은 각 Action의 implicit network·credential·cache 동작을 Step 11 invariant와 맞춘다.
 - GitHub-hosted runner가 제공하는 current runner application은 두 Node 24 Action의 requirement를 충족한다. self-hosted runner는 M0 required gate에 사용하지 않는다.

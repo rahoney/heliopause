@@ -40,6 +40,7 @@ func parseWorkflow(contents string) (map[string]any, error) {
 func workflowMap(value any) map[string]any { result, _ := value.(map[string]any); return result }
 
 const workflowExpressionMaxLength = 21000
+const macOSRunnerExpression = "${{ github.event_name == 'workflow_dispatch' && inputs.macos_intel_qualification && 'macos-26-intel' || 'macos-26' }}"
 
 // A quoted expression string can contain "}}" and doubled single quotes.
 var workflowInterpolation = regexp.MustCompile(`\$\{\{((?:'[^']*'|[^'}])*)\}\}`)
@@ -146,6 +147,9 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 	if !ordinaryCI {
 		return findings
 	}
+	if workflowMap(jobs["macos"])["runs-on"] != macOSRunnerExpression {
+		bad("macOS must use Apple Silicon by default and Intel only on explicit workflow dispatch")
+	}
 	wantJobs := []string{"required"}
 	wantNeeds := []any{}
 	wantEnv := map[string]any{"GOTOOLCHAIN": "local"}
@@ -207,14 +211,18 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 	}
 	dispatch := workflowMap(events["workflow_dispatch"])
 	inputs := workflowMap(dispatch["inputs"])
-	if len(dispatch) != 1 || len(inputs) != 3 {
-		bad("dispatch requires exactly three qualification inputs")
+	if len(dispatch) != 1 || len(inputs) != 4 {
+		bad("dispatch requires exactly the three CUDA inputs and the macOS Intel input")
 	}
 	for _, profile := range []string{"cu126", "cu130", "cu132"} {
 		input := workflowMap(inputs["pytorch_"+profile+"_qualification"])
 		if len(input) != 4 || input["type"] != "boolean" || input["required"] != false || input["default"] != false || input["description"] != "Run only the bounded "+profile+" full qualification." {
 			bad("invalid %s dispatch input structure", profile)
 		}
+	}
+	intelInput := workflowMap(inputs["macos_intel_qualification"])
+	if len(intelInput) != 4 || intelInput["type"] != "boolean" || intelInput["required"] != false || intelInput["default"] != false || intelInput["description"] != "Use an Intel runner for the macOS platform check." {
+		bad("invalid macOS Intel dispatch input structure")
 	}
 	for id, value := range jobs {
 		job := workflowMap(value)
