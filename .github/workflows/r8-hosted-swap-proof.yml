@@ -1,0 +1,23 @@
+name: R8 hosted swap activation proof
+
+on:
+  push:
+    branches:
+      - diagnostic/r8-hosted-swap-20261127
+
+permissions:
+  contents: read
+
+jobs:
+  swap-proof:
+    name: Fresh Ubuntu swap activation and cleanup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the diagnostic branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the existing CUDA swap lifecycle
+        shell: bash
+        run: bash scripts/diagnostics/ci-hosted-swap-proof.sh
